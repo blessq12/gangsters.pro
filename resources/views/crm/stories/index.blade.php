@@ -1,7 +1,7 @@
 @extends('layouts.crm')
 
-@section('title', 'Дашборд')
+@section('title', 'Истории')
 
 @section('content')
-    content
+    Истории
 @endsection

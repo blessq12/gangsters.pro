@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Front;
 
 use App\Http\Controllers\Controller;
+use App\Models\Banner;
 use App\Models\Company;
 use App\Models\ProductCategory;
+use App\Models\Story;
 use Illuminate\Http\Request;
 
 class MainController extends Controller
@@ -14,7 +16,9 @@ class MainController extends Controller
         $company->legals;
         return view('front.index',[
             'goods' => ProductCategory::all()->each( fn ($item) => $item->products ),
-            'company' => $company
+            'company' => $company,
+            'banners' => Banner::all(),
+            'stories' => Story::all()
         ]);
     }
 

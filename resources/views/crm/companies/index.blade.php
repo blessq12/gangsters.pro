@@ -1,7 +1,7 @@
 @extends('layouts.crm')
 
-@section('title', 'Дашборд')
+@section('title', 'Кампания')
 
 @section('content')
-    content
+    {{ $company }}
 @endsection

@@ -4,7 +4,9 @@ import {userStore} from './stores/userStore.js'
 export default{
     props:{
         goods: Object,
-        company: Object
+        company: Object,
+        stories: Object,
+        banners: Object
     },
     provide(){
         return {
@@ -22,13 +24,13 @@ export default{
 <template>
     <navbar></navbar>
     <section>
-        <stories :stories="[]"></stories>
+        <stories :stories="stories"></stories>
     </section>
     <section class="pt-0">
-        <hero-banner :banners="[]"></hero-banner>
+        <hero-banner :banners="banners"></hero-banner>
     </section>
     <section class="pt-0">
-        <catalog :goods="[]"></catalog>
+        <catalog :goods="goods"></catalog>
     </section>
     <Footer></Footer>
 </template>
