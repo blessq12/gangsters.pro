@@ -1,0 +1,45 @@
+.categories
+    display: flex
+    align-items: center
+    white-space: nowrap 
+    overflow: hidden
+    overflow-x: scroll
+    &::-webkit-scrollbar
+        display: none
+    li
+        margin-right: 16px
+        button
+            background: $color-main
+            border: none
+            padding: 18px 22px
+            font-size: 1.2rem
+            border-radius: $default-radius
+            transition: all .3s
+            &:hover
+                background: $color-secondary
+                color: #fff
+.category-list
+    display: flex
+    white-space: nowrap
+    align-items: start
+    overflow: hidden
+    overflow-x: scroll
+    margin-bottom: 48px
+    &::-webkit-scrollbar
+        display: none
+    li
+        margin-right: 24px
+        .product
+            width: 300px
+            white-space: normal
+            .header
+                width: 100%
+                height: 180px
+                background: $color-main
+                margin-bottom: 12px
+                border-radius: $default-radius
+            .content
+                height: 80px
+                overflow: hidden
+                position: relative
+                margin-bottom: 24px
