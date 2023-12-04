@@ -1,41 +1,21 @@
 {
-  "node_modules/font-awesome/fonts/fontawesome-webfont.eot": {
-    "file": "assets/fontawesome-webfont-7bfcab6d.eot",
-    "src": "node_modules/font-awesome/fonts/fontawesome-webfont.eot"
-  },
-  "node_modules/font-awesome/fonts/fontawesome-webfont.svg": {
-    "file": "assets/fontawesome-webfont-ad615792.svg",
-    "src": "node_modules/font-awesome/fonts/fontawesome-webfont.svg"
-  },
-  "node_modules/font-awesome/fonts/fontawesome-webfont.ttf": {
-    "file": "assets/fontawesome-webfont-aa58f33f.ttf",
-    "src": "node_modules/font-awesome/fonts/fontawesome-webfont.ttf"
-  },
-  "node_modules/font-awesome/fonts/fontawesome-webfont.woff": {
-    "file": "assets/fontawesome-webfont-ba0c59de.woff",
-    "src": "node_modules/font-awesome/fonts/fontawesome-webfont.woff"
-  },
-  "node_modules/font-awesome/fonts/fontawesome-webfont.woff2": {
-    "file": "assets/fontawesome-webfont-2adefcbc.woff2",
-    "src": "node_modules/font-awesome/fonts/fontawesome-webfont.woff2"
-  },
   "resources/js/app.js": {
-    "file": "assets/app-8c9e4163.js",
+    "file": "assets/app-ce928ad3.js",
     "isEntry": true,
     "src": "resources/js/app.js"
   },
   "resources/sass/auth.sass": {
-    "file": "assets/auth-cc1f2a22.css",
+    "file": "assets/auth-4ed993c7.js",
     "isEntry": true,
     "src": "resources/sass/auth.sass"
   },
   "resources/sass/crm/app.sass": {
-    "file": "assets/app-59f78656.css",
+    "file": "assets/app-f70e5c93.css",
     "isEntry": true,
     "src": "resources/sass/crm/app.sass"
   },
   "resources/sass/front/app.sass": {
-    "file": "assets/app-4f9c5577.css",
+    "file": "assets/app-0d648ee3.css",
     "isEntry": true,
     "src": "resources/sass/front/app.sass"
   }
