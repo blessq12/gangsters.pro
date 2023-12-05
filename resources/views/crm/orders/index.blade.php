@@ -1,6 +1,6 @@
 @extends('layouts.crm')
 
-@section('title', 'Баннеры')
+@section('title', 'Заказы')
 
 @section('content')
     <x-alert></x-alert>
@@ -10,13 +10,13 @@
                 <div class="accordion-item">
                     <h2 class="accordion-header">
                         <button type="button" class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#create">
-                            Создать новый
+                            Создать новый заказ 
                             <i class="fa fa-plus px-2"></i>
                         </button>
                     </h2>
                     <div class="accordion-collapse collapse" id="create">
                         <div class="accordion-body">
-                            Новый баннер
+                            Создать новый заказ
                         </div>
                     </div>
                 </div>
@@ -24,15 +24,15 @@
         </div>
     </div>
     <div class="row">
-        @if ($banners->isEmpty())
+        @if ($orders->isEmpty())
             <div class="col-12">
-                <p>Нет ни одного активного баннера</p>
+                <p>Еще нет ни одного заказа</p>
             </div>
         @endif
         <div class="col-12">
-            @foreach ($banners as $banner)
+            @foreach ($orders as $order)
                 <div class="mb-4">
-                    {{ $banner }}
+                    {{ $order }}
                 </div>
             @endforeach
         </div>

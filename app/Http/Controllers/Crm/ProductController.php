@@ -1,19 +1,20 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Crm;
 
-use App\Models\User;
+use App\Http\Controllers\Controller;
+use App\Models\ProductCategory;
 use Illuminate\Http\Request;
 
-class UserController extends Controller
+class ProductController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        return view('crm.users.index', [
-            'users' => User::paginate(10)
+        return view('crm.products.index',[
+            'categories' => ProductCategory::all()
         ]);
     }
 
@@ -38,7 +39,10 @@ class UserController extends Controller
      */
     public function show(string $id)
     {
-        //
+        return view('crm.products.category',[
+            'category' => ProductCategory::findOrFail($id),
+            'products' => ProductCategory::find($id)->products()->paginate(15)
+        ]);
     }
 
     /**

@@ -3,6 +3,7 @@
 @section('title', 'Вакансии')
 
 @section('content')
+    <x-alert></x-alert>
     <div class="row mb-4">
         <div class="col-12">
             <div class="accordion">

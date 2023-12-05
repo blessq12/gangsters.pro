@@ -1,11 +1,14 @@
 <script>
+import { mapStores } from 'pinia';
+import { localStore } from '../stores/localStore';
 export default{
     props:{
         goods: Object
     },
-    data:()=>({
-        pholder: [1,1,1,1]
-    })
+    data:()=>({}),
+    computed:{
+        ...mapStores(localStore)
+    }
 }
 </script>
 
@@ -34,11 +37,17 @@ export default{
                                 <p>{{ product.consist }}</p>
                             </div>
                             <div class="footer">
-                                <button type="button" class="btn btn-primary">
+                                <button type="button" class="btn btn-primary" style="margin-right: 12px;"
+                                    @click="localStore.manageStore(product, 'cart')"
+                                >
+                                    {{ localStore.checkItemInStore( product, 'cart') ? 'Remove from' : 'Add to' }} cart
                                     <i class="fa fa-plus"></i>
                                 </button>
-                                <button type="button" class="btn btn-secondary">
-                                    <i class="fa fa-minus"></i>
+                                <button type="button" class="btn btn-danger"
+                                    @click="localStore.manageStore(product, 'fav')"
+                                >
+                                    fav
+                                    <i class="fa fa-plus"></i>
                                 </button>
                             </div>
                         </div>

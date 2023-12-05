@@ -2,7 +2,9 @@
     <div class="container-fluid">
         <div class="row align-items-center">
             <div class="col-6">
-                {{ $company->name }}
+                <a href="{{ route('main.index') }}">
+                    {{ $company->name }}
+                </a>
             </div>
             <div class="col-6 d-flex justify-content-end">
 

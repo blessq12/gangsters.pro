@@ -1,6 +1,7 @@
 <script>
 import { mapStores } from 'pinia';
-import {userStore} from './stores/userStore.js'
+import { userStore } from './stores/userStore.js';
+import { localStore } from './stores/localStore.js';
 export default{
     props:{
         goods: Object,
@@ -14,9 +15,11 @@ export default{
             company: this.company
         }
     },
-    mounted(){},
+    mounted(){
+        this.localStore.loadStores()
+    },
     computed:{
-        ...mapStores(userStore)
+        ...mapStores(userStore, localStore)
     }
 }
 </script>
