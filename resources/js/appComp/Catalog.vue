@@ -37,18 +37,21 @@ export default{
                                 <p>{{ product.consist }}</p>
                             </div>
                             <div class="footer">
-                                <button type="button" class="btn btn-primary" style="margin-right: 12px;"
+                                <button type="button" class="btn btn-primary"
                                     @click="localStore.manageStore(product, 'cart')"
                                 >
-                                    {{ localStore.checkItemInStore( product, 'cart') ? 'Remove from' : 'Add to' }} cart
+                                    {{ localStore.checkItemInStore( product, 'cart') ? 'In' : 'Add to' }} cart
                                     <i class="fa fa-plus"></i>
                                 </button>
-                                <button type="button" class="btn btn-danger"
+                                <button type="button" class="btn btn-danger mx-1"
                                     @click="localStore.manageStore(product, 'fav')"
                                 >
-                                    fav
+                                    {{ localStore.checkItemInStore(product, 'fav') ? 'In' : 'Add to' }} fav
                                     <i class="fa fa-plus"></i>
                                 </button>
+                                <button class="btn btn-outline-primary rounded-circle px-3 fw-bold"
+                                    @click="$emit('toggleAdditional', product)"
+                                >i</button>
                             </div>
                         </div>
                     </li>
