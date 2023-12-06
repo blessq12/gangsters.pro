@@ -1,27 +1,43 @@
 <script>
 import { mapStores } from 'pinia';
 import { localStore } from '../stores/localStore';
+import { getTransitionRawChildren } from 'vue';
 export default{
+    emits:['close'],
     props:{
-        product: Object
+        product: Object,
+        render: Boolean
     },
     computed:{
         ...mapStores(localStore)
     },
     mounted(){
+        this.overlay = !this.overlay
         setTimeout(()=>{
-            this.render = true
-        },100)
+            if (this.render){
+                this.show = true
+            }
+        },200)
     },
     data:()=>({
-        render: false
-    })
+        show: false,
+        overlay: false
+    }),
+    methods:{
+        closeAdditional(){
+            this.show=!this.show
+            this.overlay=!this.overlay
+            setTimeout(()=>{
+                this.$emit('close')
+            },200)
+        }
+    }
 }
 </script>
 
 <template>
+    <overlay :overlay="overlay" @click="closeAdditional"></overlay>
     <div class="additional-wrap">
-
         <div class="container">
             <div class="row">
                 <div class="col-12 d-flex justify-content-center">
@@ -30,7 +46,7 @@ export default{
                         enter-active-class="animate__animated animate__zoomIn"
                         leave-active-class="animate__animated animate__zoomOut"
                     >
-                        <div class="additional" v-if="render">
+                        <div class="additional" v-if="show">
                             <div class="row h-100">
                                 <div class="col-6 ">
                                     <div class="h-100">

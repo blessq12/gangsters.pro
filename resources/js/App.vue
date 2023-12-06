@@ -22,32 +22,14 @@ export default{
         ...mapStores(userStore, localStore)
     },
     data:()=>({
-        overlay: false,
         modal: false,
         additional: false,
         currentProduct: null,
         currentComponent: null
     }),
-    watch:{
-        overlay(val){
-            if (!val){
-                this.modal = false
-                this.additional = false
-                this.currentProduct = null
-                this.currentComponent = null
-                if (document.body.classList.contains('overflow-hidden')){
-                    document.body.classList.remove('overflow-hidden')
-                }
-            } else {
-                if (!document.body.classList.contains('overflow-hidden')){
-                    document.body.classList.add('overflow-hidden')
-                }
-            }
-        }
-    },
+    watch:{},
     methods:{
         toggleAdditional(product){
-            this.overlay = true
             this.additional = true
             this.currentProduct = product
         }
@@ -56,21 +38,17 @@ export default{
 </script>
 
 <template>
-    <transition
-        enter-active-class="animate__animated animate__fadeIn"
-        leave-active-class="animate__animated animate__fadeOut"
-    >
-        <div class="overlay" v-if="overlay" @click="overlay = !overlay"></div>
-    </transition>
-
     <modal 
         v-if="modal"
-        :comp="currentComponent"    
+        :comp="currentComponent"
+        @close="modal = false"
     ></modal>
     
     <additional 
         v-if="additional" 
         :product="currentProduct"
+        :render="additional"
+        @close="additional = false"
     ></additional>
 
     <navbar @toggleModal="(component)=>{ overlay=!overlay;modal=!modal;currentComponent=component }"></navbar>

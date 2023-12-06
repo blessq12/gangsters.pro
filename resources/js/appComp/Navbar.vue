@@ -1,5 +1,10 @@
 <script>
+import { mapStores } from 'pinia';
+import { localStore } from '../stores/localStore';
 export default{
+    computed:{
+        ...mapStores(localStore)
+    },
     inject:['company']
 }
 </script>
@@ -13,16 +18,22 @@ export default{
                         {{ company.name }}
                     </a>
                 </div>
-                <div class="col-6 text-end">
-                    <ul class="list-unstyled p-0 m-0">
-                        <li class="btn btn-outline-primary" @click="$emit('toggleModal', 'cart')">
-                            <i class="fa fa-shopping-basket"></i>
+                <div class="col-6">
+                    <ul class="list-unstyled p-0 m-0 d-flex justify-content-end">
+                        <li>
+                            <button class="btn btn-outline-primary" type="button" @click="$emit('toggleModal', 'cart')">
+                                <i class="fa fa-shopping-basket"></i>
+                            </button>
                         </li>
-                        <li class="btn btn-outline-primary mx-3" @click="$emit('toggleModal', 'fav')">
-                            <i class="fa fa-heart"></i>
+                        <li>
+                            <button class="btn btn-outline-primary mx-3" type="button" @click="$emit('toggleModal', 'fav')">
+                                <i class="fa fa-heart"></i>
+                            </button>
                         </li>
-                        <li class="btn btn-outline-primary" @click="$emit('toggleModal', 'user')">
-                            <i class="fa fa-user"></i>
+                        <li>
+                            <button class="btn btn-outline-primary" type="button" @click="$emit('toggleModal', 'user')">
+                                <i class="fa fa-user"></i>
+                            </button>
                         </li>
                     </ul>
                 </div>
