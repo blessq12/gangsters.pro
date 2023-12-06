@@ -1,9 +1,16 @@
 <script>
-export default{}
+import { mapStores } from 'pinia';
+import { localStore } from '../stores/localStore';
+export default{
+    computed:{
+        ...mapStores(localStore)
+    }
+
+}
 </script>
 
 <template>
-    fav comp
+    {{ localStore.fav }}
 </template>
 
 <style lang="sass"></style>

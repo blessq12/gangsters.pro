@@ -1,5 +1,6 @@
 <script>
 export default{
+    emits:['close'],
     props:{
         comp: String
     },

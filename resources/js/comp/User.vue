@@ -1,9 +1,15 @@
 <script>
-export default{}
+import { mapStores } from 'pinia';
+import { userStore } from '../stores/userStore';
+export default{
+    computed:{
+        ...mapStores(userStore)
+    }
+}
 </script>
 
 <template>
-    user comp
+    {{ userStore }}
 </template>
 
 <style lang="sass"></style>
