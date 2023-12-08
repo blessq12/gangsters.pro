@@ -7,7 +7,10 @@ export const localStore = defineStore( 'local', {
     }),
     getters:{
         totalCart(){
-            return this.cart.reduce( (acc, item) => { acc += parseInt(item.price) } )
+            return this.cart.reduce( (acc, item) => acc += parseInt(item.price) * parseInt(item.qty) , 0 )
+        },
+        totalKits(){
+            return this.cart.reduce( (acc, item) => acc += parseInt(item.qty) , 0 )
         }
     },
     actions:{
@@ -58,6 +61,18 @@ export const localStore = defineStore( 'local', {
             } else {
                 return false
             }
+        },
+        qtyManager(product, direction){
+            if (direction) {
+                this.cart[this.cart.findIndex( e => e.id == product.id )].qty++
+            } else {
+                if (this.cart[this.cart.findIndex( e => e.id == product.id )].qty < 2) {
+                    this.cart.splice(this.cart.findIndex( e => e.id == product.id), 1)
+                } else {
+                    this.cart[this.cart.findIndex( e => e.id == product.id )].qty--
+                }
+            }
+            localStorage.setItem('cart', JSON.stringify(this.cart))
         }
     }
 } )

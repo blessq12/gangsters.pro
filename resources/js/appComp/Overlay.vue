@@ -2,6 +2,16 @@
 export default{
     props:{
         overlay: Boolean
+    },
+    mounted(){
+        if (!document.body.classList.contains('overflow-hidden')) {
+            document.body.classList.add('overflow-hidden')
+        }
+    },
+    beforeUnmount(){
+        if (document.body.classList.contains('overflow-hidden')) {
+            document.body.classList.remove('overflow-hidden')
+        }
     }
 }
 </script>

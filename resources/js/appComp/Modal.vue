@@ -37,7 +37,7 @@ export default{
                 leave-active-class="animate__animated animate__zoomOut"
                 mode="out-in"
                 >
-                    <div class="mw" v-if="show">
+                    <div class="mw overflow-hidden" v-if="show">
                         <component :is="comp"></component>
                     </div>
                 </transition>
