@@ -26,8 +26,19 @@ export default{
                 </div>
             </div>
             <div class="d-flex" v-if="comp == 'fav'">
-                <button type="button" class="btn btn-outline-primary btn-sm"></button>
-                <button type="button" class="btn btn-outline-danger btn-sm mx-2">
+                <button 
+                    type="button" 
+                    class="btn btn-outline-primary btn-sm"
+
+                >
+                    В корзину
+                    <i class="fa fa-plus"></i>
+                </button>
+                <button 
+                    type="button" 
+                    class="btn btn-outline-danger btn-sm mx-2"
+                    @click="localStore.manageStore(prod, 'fav')"
+                >
                     <i class="fa fa-trash"></i>
                 </button>
             </div>

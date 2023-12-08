@@ -17,6 +17,11 @@ return new class extends Migration
             $table->boolean('visible')->default(true);
             $table->foreignIdFor(ProductCategory::class);
             $table->string('name')->default('Название не задано');
+            $table->boolean('hit')->default(false);
+            $table->boolean('spicy')->default(false);
+            $table->boolean('kidsAllow')->default(false);
+            $table->boolean('onion')->default(false);
+            $table->boolean('garlic')->default(false);
             $table->string('consist');
             $table->string('weight');
             $table->string('price');

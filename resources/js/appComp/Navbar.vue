@@ -21,12 +21,22 @@ export default{
                 <div class="col-6">
                     <ul class="list-unstyled p-0 m-0 d-flex justify-content-end">
                         <li>
-                            <button class="btn btn-outline-primary" type="button" @click="$emit('toggleModal', 'cart')">
+                            <button class="btn btn-outline-primary position-relative" type="button" @click="$emit('toggleModal', 'cart')">
+                                <span 
+                                    v-if="localStore.cart.length"
+                                    class="bg-danger rounded-circle position-absolute text-white d-flex align-items-center justify-content-center"
+                                    style=" top:-12px; right: -12px; width: 25px;height: 25px;"
+                                >{{ localStore.cart.length }}</span>
                                 <i class="fa fa-shopping-basket"></i>
                             </button>
                         </li>
                         <li>
-                            <button class="btn btn-outline-primary mx-3" type="button" @click="$emit('toggleModal', 'fav')">
+                            <button class="btn btn-outline-primary position-relative mx-3" type="button" @click="$emit('toggleModal', 'fav')">
+                                <span
+                                    v-if="localStore.fav.length"
+                                    class="bg-danger rounded-circle position-absolute text-white d-flex align-items-center justify-content-center"
+                                    style=" top:-12px; right: -12px; width: 25px;height: 25px;"
+                                >{{ localStore.fav.length }}</span>
                                 <i class="fa fa-heart"></i>
                             </button>
                         </li>

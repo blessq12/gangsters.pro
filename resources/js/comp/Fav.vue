@@ -18,6 +18,20 @@ export default{
     <div class="row" v-if="localStore.fav.length" key="fav">
         <div class="col-6">
             <h4>Избранное:</h4>
+            <p>Товаров в избранном: <b>{{ localStore.fav.length }}</b></p>
+            <p>Стоимость: <b>{{ localStore.totalFav }}</b></p>
+            <div class="d-flex">
+                <button type="button" class="btn btn-outline-primary">
+                    Перенести в корзиину
+                </button>
+                <button 
+                    type="button" 
+                    class="btn btn-danger mx-2"
+                    @click="localStore.clearStore('fav')"
+                >
+                    Удалить все
+                </button>
+            </div>
         </div>
         <div class="col-6">
             <transition-group
@@ -33,7 +47,9 @@ export default{
         </div>
     </div>
     <div class="row" v-else key="emptyFav">
-        <div class="col-12"></div>
+        <div class="col-12 text-center">
+            <h2>В избранном ничего нет</h2>
+        </div>
     </div>
 </transition>
 </template>

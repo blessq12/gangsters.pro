@@ -9,6 +9,9 @@ export const localStore = defineStore( 'local', {
         totalCart(){
             return this.cart.reduce( (acc, item) => acc += parseInt(item.price) * parseInt(item.qty) , 0 )
         },
+        totalFav(){
+            return this.fav.reduce( (acc, item) => acc += parseInt(item.price) , 0 ) 
+        },
         totalKits(){
             return this.cart.reduce( (acc, item) => acc += parseInt(item.qty) , 0 )
         }
@@ -73,6 +76,15 @@ export const localStore = defineStore( 'local', {
                 }
             }
             localStorage.setItem('cart', JSON.stringify(this.cart))
+        },
+        clearStore(store){
+            switch (store) {
+                case 'cart': this.cart = []
+                    break;
+                case 'fav': this.fav = []
+                    break;
+            }
+            localStorage.setItem(store, JSON.stringify([]))
         }
     }
 } )
