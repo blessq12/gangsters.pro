@@ -3,6 +3,7 @@ import './bootstrap';
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import { vMaska } from 'maska';
+import { Field, Form, ErrorMessage } from 'vee-validate';
 
 /**
  * Next, we will create a fresh Vue application instance. You may then begin
@@ -12,6 +13,7 @@ import { vMaska } from 'maska';
 
 const app = createApp({});
 app.use(createPinia());
+app.component('Field', Field).component('Form', Form).component('ErrorMessage', ErrorMessage);
 app.directive('maska', vMaska);
 
 

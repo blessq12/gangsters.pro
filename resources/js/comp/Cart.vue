@@ -1,40 +1,38 @@
 <script>
+
+import * as yup from 'yup';
+import { ru } from 'yup-locales';
+import { setLocale } from 'yup';
+setLocale(ru);
+
 import { mapStores } from 'pinia';
 import { localStore } from '../stores/localStore';
+import { orderStore } from '../stores/orderStore';
+
 export default{
     computed:{
-        ...mapStores(localStore)
+        ...mapStores(localStore, orderStore)
     },
     data:()=>({
         order: false,
-        orderData: {
-            name: '',
-            tel: '',
-            street: '',
-            house: '',
-            staircase: '',
-            floor: '',
-            appartment: '',
-            payType: 'cash',
-            comment: ''
-        }
+        validated: false,
+        schema: yup.object({
+            name: yup.string().required('Имя обязательно'),
+            tel: yup.string().required('Телефон обязательно').min(18,'Некорректный телефон'),
+            street: yup.string().required('Обязательное поле').min(10, 'Слишком короткое название улицы'),
+            house: yup.string().required('Обязательное поле'),
+            staircase: yup.number().typeError('Допускаются цифры').required('Обязательное поле'),
+            floor: yup.number().typeError('Допускаются цифры'),
+            appartment: yup.number().typeError('Допускаются цифры').required('Обязательное поле')
+        })
     }),
     methods:{
-        validate(){},
-        resetState(){
-            this.orderData = {
-                name: '',
-                tel: '',
-                street: '',
-                house: '',
-                staircase: '',
-                floor: '',
-                apartment: '',
-                payType: 'cash',
-                comment: ''
-            }
+        create(){
+            console.log('asd')
         }
-    }
+    },
+    mounted(){},
+    watch:{}
 }
 </script>
 
@@ -58,7 +56,6 @@ export default{
                     <button type="button" class="btn btn-outline-primary" @click="order=!order">Назад в корзину</button>
                 </div>
             </div>
-            
         </div>
         <div class="col-6">
             <transition
@@ -79,91 +76,74 @@ export default{
                     </transition-group>
                 </div>
                 <div v-else>
-                    <form action="">
-                        <div class="row row-cols g-2 mb-4">
+                    <Form @submit="create" :validation-schema="schema" >
+                        <div class="row row-cols g-2 mb-2">
                             <div class="col">
-                                <label for="name">Имя:</label>
-                                <input type="text" name="name" id="name" class="form-control" v-model="orderData.name">
+                                <label for="name">Имя <ErrorMessage name="name" class="text-danger mx-2" style="font-size: 10px;"/></label>
+                                <field name="name" id="name" v-slot="{ meta, field }">
+                                    <input type="text" v-bind="field" class="form-control" :class=" meta.valid ? 'border-success' : 'border-danger' ">
+                                </field>
                             </div>
                             <div class="col">
-                                <label for="tel">Номер телефона</label>
-                                <input type="text" name="tel" id="tel" class="form-control" v-model="orderData.tel" v-maska data-maska="+7 (###) ###-##-##">
+                                <label for="tel">Телефон <ErrorMessage name="tel" class="text-danger mx-2" style="font-size: 10px;"/></label>
+                                <field name="tel" v-slot="{ meta, field }">
+                                    <input type="text" class="form-control" :class="meta.valid ? 'border-success' : 'border-danger'" v-bind="field" v-maska data-maska="+7 (###) ###-##-##">
+                                </field>
+                            </div>
+                        </div>
+                        <div class="row row-cols mb-2">
+                            <div class="col-12">
+                                <label for="street">Улица(переулок) <ErrorMessage name="street" class="text-danger mx-2" style="font-size: 10px;"/></label>
+                                <Field name="street" v-slot="{ meta, field }">
+                                    <input type="text" v-bind="field" class="form-control" :class="meta.valid ? 'border-success' : 'border-danger'">
+                                </Field>
                             </div>
                         </div>
                         <div class="row row-cols g-2 mb-4">
-                            <div class="col-12 mb-2">
-                                <label for="street">Улица:</label>
-                                <input type="text" name="street" id="street" class="form-control" v-model="orderData.street">
+                            <div class="col-6">
+                                <label for="house">Номер дома <ErrorMessage name="house" class="text-danger mx-2" style="font-size: 10px;"/></label>
+                                <Field name="house" v-slot="{ meta, field }">
+                                    <input type="text" v-bind="field" class="form-control" :class="meta.valid ? 'border-success' : 'border-danger'">
+                                </Field>
+                                
                             </div>
-                            <div class="col">
-                                <label for="">Дом</label>
-                                <input type="text" name="" id="" class="form-control" v-model="orderData.house">
+                            <div class="col-6">
+                                <label for="staircase">Подъезд <ErrorMessage name="staircase" class="text-danger mx-2" style="font-size: 10px;"/></label>
+                                <Field name="staircase" v-slot="{ meta, field }">
+                                    <input type="text" v-bind="field" class="form-control" :class="meta.valid ? 'border-success' : 'border-danger'">
+                                </Field>
                             </div>
-                            <div class="col">
-                                <label for="">Подъезд</label>
-                                <input type="text" name="" id="" class="form-control" v-model="orderData.staircase">
+                            <div class="col-6">
+                                <label for="floor">Этаж <ErrorMessage name="floor" class="text-danger mx-2" style="font-size: 10px;"/></label>
+                                <Field name="floor" v-slot="{ meta, field }">
+                                    <input type="text" v-bind="field" class="form-control" :class="meta.valid ? 'border-success' : 'border-danger' ">
+                                </Field>    
                             </div>
-                            <div class="col">
-                                <label for="">Этаж</label>
-                                <input type="text" name="" id="" class="form-control" v-model="orderData.floor">
+                            <div class="col-6">
+                                <label for="appartment">Квартира <ErrorMessage name="appartment" class="text-danger mx-2" style="font-size: 10px;"/></label>
+                                <Field name="appartment" v-slot="{ meta, field }">
+                                    <input type="text" v-bind="field" class="form-control" :class="meta.valid ? 'border-success' : 'border-danger' ">
+                                </Field>
                             </div>
-                            <div class="col">
-                                <label for="">Квартира</label>
-                                <input type="text" name="" id="" class="form-control" v-model="orderData.appartment">
-                            </div>
-                        </div>
-                        <div class="row row-cols g-2 mb-4">
-                            <label for="payType">Способ оплаты:</label>
-                            <div class="col">
-                                <button type="button" class="btn btn-outline-primary w-100" 
-                                    :class="orderData.payType == 'cash' ? 'active' : ''"
-                                    @click="orderData.payType = 'cash'"
-                                >
-                                    Наличными
-                                    <i class="fa fa-money mx-2"></i>
-                                </button>
-                            </div>
-                            <div class="col">
-                                <button type="button" class="btn btn-outline-primary w-100"
-                                    :class="orderData.payType == 'creditCard' ? 'active' : ''"
-                                    @click="orderData.payType = 'creditCard'"
-                                >
-                                    Картой курьеру
-                                    <i class="fa fa-credit-card mx-2"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="row row-cols mb-4">
-                            <div class="col">
-                                <div class="accordion">
-                                    <div class="accordion-item">
-                                        <h2 class="accordion-header" id="headingOne">
-                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
-                                                Добавить комментарий к заказу
-                                                <i class="fa fa-plus mx-2"></i>
-                                            </button>
-                                        </h2>
-                                        <div id="collapseOne" class="accordion-collapse collapse">
-                                            <div class="accordion-body">
-                                                <textarea name="comment" id="comment" cols="30" rows="5" class="form-control" v-model="orderData.comment"></textarea>
-                                            </div>
-                                        </div>
+                            <div class="col-12">
+                                <div class="row row-cols g-2">
+                                    <div class="col">
+                                        <button type="button" class="btn btn-primary w-100">
+                                            Наличными
+                                            <i class="fa fa-money"></i>
+                                        </button>
+                                    </div>
+                                    <div class="col">
+                                        <button type="button" class="btn btn-outline-primary w-100">
+                                            Картой курьеру
+                                            <i class="fa fa-credit-card"></i>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="row row-cols">
-                            <div class="col">
-                                <button type="button" class="btn btn-primary" @click="validate">
-                                    Создать заказ
-                                    <div class="fa fa-send mx-2"></div>
-                                </button>
-                                <button type="button" class="btn btn-outline-primary mx-2" @click="resetState">
-                                    Очистить
-                                </button>
-                            </div>
-                        </div>
-                    </form>
+                        <button type="submit" class="btn btn-primary">asdsd</button>
+                    </Form>
                 </div>
             </transition>
         </div>

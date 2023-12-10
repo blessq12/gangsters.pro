@@ -14,6 +14,15 @@ export const localStore = defineStore( 'local', {
         },
         totalKits(){
             return this.cart.reduce( (acc, item) => acc += parseInt(item.qty) , 0 )
+        },
+        cartToOrder(){
+            return this.cart.map( (item) => {
+                return {
+                    productId: item.id,
+                    price: item.price,
+                    qty: item.qty
+                }
+            } )
         }
     },
     actions:{
