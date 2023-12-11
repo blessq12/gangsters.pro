@@ -10,12 +10,17 @@ export default{
 
 <template>
     <div class="container">
-        <div class="row">
-            <div class="col-12 col-md-6 mb-4 mb-md-0">
+        <div class="row mb-4">
+            <div class="col-12">
                 <div class="d-flex justify-content-between align-items-center">
                     <h4>Избранное</h4>
                     <button type="button" class="btn btn-close" @click="$emit('close')"></button>
                 </div>
+            </div>
+        </div>
+        <div class="row flex-column-reverse flex-md-row">
+            <div class="col-12 col-md-6 mb-4 mb-md-0">
+                
                 <p>
                     Добавляйте товары в избранное, чтобы иметь быстрый доступ к понравившися позициями, каждый товар из избранного можно добавлять по-одному в корзину, либо же скопировать все товары из избранного в корзину, чтобы заказ закнимал меньше времени
                 </p>

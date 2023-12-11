@@ -9,7 +9,7 @@ export default{
         ...mapStores(userStore)
     },
     data:()=>({
-        form: 'login',
+        form: 'register',
         formData:{
             login:{},
             register:{}
@@ -18,7 +18,12 @@ export default{
             email: yup.string().required('Обязательное поле').email('Невалидный email'),
             password: yup.string().required('Обязательное поле').min(6, 'Минимум 6 символов')
         }),
-        registerSchema: yup.object({}),
+        registerSchema: yup.object({
+            email: yup.string().required('Обязательное поле').email('Невалидный email'),
+            name: yup.string().required('Обязательное поле').min( 3, 'Минимум 3 символа'),
+            tel: yup.string().required('Обязательное поле').min(18, 'Некорретный номер'),
+            password: yup.string().required('Обязательное поле').min(6, 'Минимум 6 символов')
+        }),
         formErrors:{}
     }),
     methods:{
@@ -36,10 +41,27 @@ export default{
                     } )
                 })
             }
-            if ( form == 'register' ){}
+            if ( form == 'register' ){
+                this.registerSchema.validate(this.formData.register, { abortEarly: false })
+                .then( res => {
+                    this.formErrors = {}
+                    console.log(res)
+                } )
+                .catch( err => {
+                    this.formErrors = {}
+                    err.inner.forEach( e => 
+                        this.formErrors[e.path] = e.message
+                    )
+                } )
+            }
         }
     },
     watch:{
+        form(val){
+            this.formErrors = {}
+            this.formData.login.password = null
+            this.formData.register.password = null
+        },
         formData:{
             deep: true,
             handler(val){
@@ -112,7 +134,12 @@ export default{
             </div>
             <div class="form-group mb-4">
                 <label for="password">Пароль <error-message name="password" :errors="formErrors" class="text-danger mx-2"></error-message></label>
-                <input type="text" name="password" id="password" class="form-control" autocomplete="additional-name" v-model="formData.register.password">
+                <div class="input-group">
+                    <input type="password" ref="regPass" name="password" id="password" class="form-control" autocomplete="additional-name" v-model="formData.register.password">
+                    <span class="input-group-text cursor-pointer" @click="$refs.regPass.type == 'password' ? $refs.regPass.type = 'text' : $refs.regPass.type = 'password'">
+                        <i class="fa fa-eye"></i>
+                    </span>
+                </div>
             </div>
             <button type="submit" class="btn btn-primary">Регистрация</button>
         </form>

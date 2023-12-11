@@ -10,12 +10,16 @@ export default{
 
 <template>
     <div class="container">
-        <div class="row">
-            <div class="col-12 col-md-6 mb-4 mb-md-0">
+        <div class="row mb-4">
+            <div class="col-12">
                 <div class="d-flex justify-content-between">
                     <h4>Корзина</h4>
                     <button class="btn btn-close" @click="$emit('close')"></button>
                 </div>
+            </div>
+        </div>
+        <div class="row flex-column-reverse flex-md-row">
+            <div class="col-12 col-md-6 mb-4 mb-md-0">
                 <p>
                     Оформляйте заказы онлайн и участвуйте в нашей бонусной системе кешбэка. С каждого онлайн заказа вам будут начисляться бонусные монеты "Gangsta" койны, которымии можно оплачивать последующие заказы частично или полностью
                 </p>

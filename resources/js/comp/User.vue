@@ -11,12 +11,16 @@ export default{
 
 <template>
     <div class="container">
-        <div class="row">
-            <div class="col-12 col-md-6 mb-4 mb-md-0">
+        <div class="row mb-4">
+            <div class="col-12">
                 <div class="d-flex align-items-center justify-content-between">
                     <h2>{{ company.name }}</h2>
                     <button type="button" class="btn btn-close" @click="$emit('close')"></button>
                 </div>
+            </div>
+        </div>
+        <div class="row flex-column-reverse flex-md-row">
+            <div class="col-12 col-md-6 mb-4 mb-md-0">
                 <p>
                     Самый лучший ресторан доставки в городе. У нас всегда свежие продукты и отличные повара, что превосходно готовят настоящие роллы и суши.
                     При онлайн заказах действует система кешбэка в виде виртуальной валюты "Gangsta" койны. С кадого онлайн заказа начисляются монеты на ваш личный счет с которого 
@@ -38,7 +42,7 @@ export default{
                     </a>
                 </ul>
             </div>
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-6 mb-4 mb-md-0">
                 <auth-form v-if="!userStore.auth"></auth-form>
             </div>
         </div>
