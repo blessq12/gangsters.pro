@@ -6,7 +6,7 @@ import { localStore } from '../stores/localStore';
 
 export default{
     computed:{
-        ...mapStores(localStore, orderStore)
+        ...mapStores(localStore)
     },
     data:()=>({
         order: true,

@@ -12,14 +12,14 @@ use Illuminate\Http\Request;
 class MainController extends Controller
 {
     public function index(){
-        $company = Company::first();
-        $company->legals;
+
         return view('front.index',[
             'goods' => ProductCategory::all()->each( fn ($item) => $item->products ),
-            'company' => $company,
+            'company' => Company::first(),
             'banners' => Banner::all(),
             'stories' => Story::all()
         ]);
+        
     }
 
     public function about(){
