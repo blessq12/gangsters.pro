@@ -29,21 +29,15 @@ export default{
 <template>
     <overlay :overlay="overlay" @click="close"></overlay>
 <div class="m-wrap">
-    <div class="container">
-        <div class="row">
-            <div class="col-12 d-flex justify-content-center">
-                <transition
-                enter-active-class="animate__animated animate__zoomIn"
-                leave-active-class="animate__animated animate__zoomOut"
-                mode="out-in"
-                >
-                    <div class="mw overflow-hidden" v-if="show">
-                        <component :is="comp"></component>
-                    </div>
-                </transition>
+        <transition 
+        enter-active-class="animate__animated animate__zoomIn"
+        leave-active-class="animate__animated animate__zoomOut"
+        mode="out-in"
+        >
+            <div class="m-win" v-if="show">
+                <component :is="comp" @close="close"></component>
             </div>
-        </div>
-    </div>
+        </transition>
 </div>
 </template>
 

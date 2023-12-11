@@ -5,53 +5,42 @@ export default{
     computed:{
         ...mapStores(localStore)
     }
-
 }
 </script>
 
 <template>
-<transition
-    enter-active-class="animate__animated animate__fadeIn"
-    leave-active-class="animate__animated animate__fadeOut"
-    mode="out-in"
->
-    <div class="row" v-if="localStore.fav.length" key="fav">
-        <div class="col-6">
-            <h4>Избранное:</h4>
-            <p>Товаров в избранном: <b>{{ localStore.fav.length }}</b></p>
-            <p>Стоимость: <b>{{ localStore.totalFav }}</b></p>
-            <div class="d-flex">
-                <button type="button" class="btn btn-outline-primary">
-                    Перенести в корзиину
-                </button>
-                <button 
-                    type="button" 
-                    class="btn btn-danger mx-2"
-                    @click="localStore.clearStore('fav')"
+    <div class="container">
+        <div class="row">
+            <div class="col-12 col-md-6 mb-4 mb-md-0">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4>Избранное</h4>
+                    <button type="button" class="btn btn-close" @click="$emit('close')"></button>
+                </div>
+                <p>
+                    Добавляйте товары в избранное, чтобы иметь быстрый доступ к понравившися позициями, каждый товар из избранного можно добавлять по-одному в корзину, либо же скопировать все товары из избранного в корзину, чтобы заказ закнимал меньше времени
+                </p>
+                <button type="button" class="btn btn-primary">Скопировать в корзину</button>
+            </div>
+            <div class="col-12 col-md-6">
+                <transition-group
+                    v-if="localStore.fav.length"
+                    enter-active-class="animate__animated animate__fadeInRight"
+                    leave-active-class="animate__animated animate__fadeOutRight"
+                    tag="ul"
+                    class="list-unstyled p-0 m-0"
                 >
-                    Удалить все
-                </button>
+                    <li v-for="prod in localStore.fav" :key="prod.id">
+                        <single-product comp="fav" :prod="prod"></single-product>
+                    </li>
+                </transition-group>
+                <div v-else class="text-center">
+                    <p class="text-danger">В избранном еще нет ни одного товара</p>
+                </div>
             </div>
         </div>
-        <div class="col-6">
-            <transition-group
-                tag="ul"
-                class="list-unstyled p-0 m-0"
-                enter-active-class="animate__animated animate__fadeInRight"
-                leave-active-class="animate__animated animate__fadeOutRight"
-            >
-                <li v-for="fav in localStore.fav" :key="fav.id">
-                    <single-product :prod="fav" comp="fav"></single-product>
-                </li>
-            </transition-group>
-        </div>
     </div>
-    <div class="row" v-else key="emptyFav">
-        <div class="col-12 text-center">
-            <h2>В избранном ничего нет</h2>
-        </div>
-    </div>
-</transition>
 </template>
 
-<style lang="sass"></style>
+<style lang="sass">
+
+</style>
