@@ -9,7 +9,7 @@ export default{
         ...mapStores(userStore)
     },
     data:()=>({
-        form: 'register',
+        form: 'login',
         formData:{
             login:{},
             register:{}
@@ -27,6 +27,18 @@ export default{
         formErrors:{}
     }),
     methods:{
+        forgetPassword(event){
+            // event.target[0].value
+            yup.object({forget: yup.string().required('Обязательное поле').email('Невалидный адрес')})
+            .validate({ forget: event.target[0].value})
+                .then( res => {
+                    this.formErrors = {}
+                    console.log(res)
+                } )
+                .catch( err => {
+                    this.formErrors[err.path] = err.message 
+                    })
+        },
         validate(form){
             if ( form == 'login' ){
                 this.loginSchema.validate(this.formData.login, { abortEarly: false })
@@ -62,12 +74,6 @@ export default{
             this.formData.login.password = null
             this.formData.register.password = null
         },
-        formData:{
-            deep: true,
-            handler(val){
-                console.log(val)
-            }
-        }
     }
 }
 </script>
@@ -115,7 +121,10 @@ export default{
                     </span>
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary">Авторизоваться</button>
+            <div class="d-flex align-items-center">
+                <button type="submit" class="btn btn-primary">Авторизоваться</button>
+                <button class="btn text-muted mx-4" @click="form = 'forget'">Забыли пароль?</button>
+            </div>
         </form>
         <!-- register form -->
         <form v-else-if="form == 'register'" key="register" @submit.prevent="validate('register')" novalidate>
@@ -142,6 +151,16 @@ export default{
                 </div>
             </div>
             <button type="submit" class="btn btn-primary">Регистрация</button>
+        </form>
+        <form v-else-if="form == 'forget'" @submit.prevent="forgetPassword">
+            <p>Для восстановления пароля введите Email учетной записи. Мы отправим ссылку на восстановление пароля по адресу в учетной записи.</p>
+            <div class="form-group mb-4">
+                <label for="login">Введите Email <error-message name="forget" :errors="formErrors" class="text-danger mx-2"></error-message> </label>
+                <input type="text" name="login" id="login" class="form-control" autocomplete="username">
+            </div>
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary w-100">Отправить</button>
+            </div>
         </form>
     </transition>
 </template>
