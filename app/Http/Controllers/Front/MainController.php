@@ -16,7 +16,7 @@ class MainController extends Controller
         return view('front.index',[
             'goods' => ProductCategory::all()->each( fn ($item) => $item->products ),
             'company' => Company::first(),
-            'banners' => Banner::all(),
+            'banners' => Banner::all()->each(fn($item)=>$item->image),
             'stories' => Story::all()
         ]);
         

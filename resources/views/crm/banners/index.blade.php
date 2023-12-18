@@ -6,21 +6,10 @@
     <x-alert></x-alert>
     <div class="row mb-4">
         <div class="col-12">
-            <div class="accordion">
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button type="button" class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#create">
-                            Создать новый
-                            <i class="fa fa-plus px-2"></i>
-                        </button>
-                    </h2>
-                    <div class="accordion-collapse collapse" id="create">
-                        <div class="accordion-body">
-                            Новый баннер
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <a href="{{ route('crm.banners.create') }}" class="btn btn-outline-dark">
+                Создать новый 
+                <i class="fa fa-plus"></i>
+            </a>
         </div>
     </div>
     <div class="row">

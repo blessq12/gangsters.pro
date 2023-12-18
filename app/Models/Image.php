@@ -8,6 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 class Image extends Model
 {
     use HasFactory;
+    protected $hidden = [
+        'image_type',
+        'created_at',
+        'updated_at',
+        'image_id'
+    ];
     protected $fillable = [
         'path'
     ];
