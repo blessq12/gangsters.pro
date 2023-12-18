@@ -10,7 +10,9 @@ class Story extends Model
     use HasFactory;
 
     protected $fillable = [
-        
+        'name',
+        'thumb',
+        'image'
     ];
 
     public function image(){

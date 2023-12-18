@@ -6,35 +6,23 @@
     <x-alert></x-alert>
     <div class="row mb-4">
         <div class="col-12">
-            <div class="accordion">
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button type="button" class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#create">
-                            Создать новую историю
-                            <i class="fa fa-plus px-2"></i>
-                        </button>
-                    </h2>
-                    <div class="accordion-collapse collapse" id="create">
-                        <div class="accordion-body">
-                            Создать новую историю
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <a href="{{ route('crm.stories.create') }}" class="btn btn-outline-dark">
+                Создать новую 
+                <i class="fa fa-plus mx-2"></i>
+            </a>
         </div>
     </div>
-    <div class="row">
+    <div class="row row-cols row-cols-md-3">
         @if ($stories->isEmpty())
             <div class="col-12">
                 <p>Нет ни одной активной истории</p>
             </div>
         @endif
-        <div class="col-12">
-            @foreach ($stories as $story)
-                <div class="mb-4">
-                    {{ $story }}
-                </div>
-            @endforeach
-        </div>
+        @foreach ($stories as $story)
+            <div class="col">
+                <img src="{{ $story->thumb }}" alt="" class="img-fluid">
+                <img src="{{ $story->image }}" alt="" class="img-fluid">
+            </div>
+        @endforeach
     </div>
 @endsection

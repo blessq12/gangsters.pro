@@ -14,6 +14,9 @@ return new class extends Migration
         Schema::create('stories', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->boolean('status')->default(false);
+            $table->string('thumb')->nullable();
+            $table->string('image')->nullable();
             $table->timestamps();
         });
     }
