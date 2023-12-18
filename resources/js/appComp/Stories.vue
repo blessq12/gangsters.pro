@@ -66,8 +66,10 @@ export default{
     >
         <div class="overlay" v-if="overlay" @click="storyState('close')"></div>
     </transition>
-        <div class="d-flex justify-content-center h-100 position-relative invisible">
-            <img :src="current" alt="" class="img-fluid h-100 rounded visible" style="z-index: 10;">
+        <div class="d-flex justify-content-center align-items-center h-100 position-relative invisible">
+            <div class="overflow-hidden rounded" style="z-index: 10;height: -webkit-fill-avaliable;">
+                <img :src="current" alt="" class="rounded visible w-100" >
+            </div>
         </div>
     </div>
 </template>
