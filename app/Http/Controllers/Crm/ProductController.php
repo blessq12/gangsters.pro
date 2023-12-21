@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Crm;
 
 use App\Http\Controllers\Controller;
+use App\Models\Product;
 use App\Models\ProductCategory;
 use Illuminate\Http\Request;
 
@@ -35,9 +36,9 @@ class ProductController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified resource products category model
      */
-    public function show(string $id)
+    public function showCategory(string $id)
     {
         return view('crm.products.category',[
             'category' => ProductCategory::findOrFail($id),
@@ -45,6 +46,16 @@ class ProductController extends Controller
         ]);
     }
 
+    /**
+     * Display the specified resource products model.
+     */
+    public function show(string $id){
+        $product = Product::findOrFail($id);
+        
+        return view('crm.products.show-product',[
+            'product' => $product,
+        ]);
+    }
     /**
      * Show the form for editing the specified resource.
      */
@@ -66,6 +77,6 @@ class ProductController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        return $id;
     }
 }

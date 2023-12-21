@@ -13,10 +13,10 @@
     <div class="container-fluid">
         <div class="row">
 
-            <div class="col-12 col-lg-3">
+            <div class="col-12 col-lg-2">
                 <x-crm.sidebar></x-crm.sidebar>
             </div>
-            <div class="col-12 col-lg-9 py-4">
+            <div class="col-12 col-lg-10 py-4">
                 <div class="row">
                     <div class="col-12">
                         <h3 class="mb-4">

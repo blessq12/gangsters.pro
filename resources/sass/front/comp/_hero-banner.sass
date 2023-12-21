@@ -1,8 +1,31 @@
 .hero-wrap  
-    height: 350px
+    height: 220px
+    @media (min-width: 768px)
+        height: 320px
+    @media (min-width: 992px)
+        height: 370px
+    @media (min-width: 1200px)
+        height: 450px
     display: flex
     width: 100%
     overflow: hidden
     border-radius: $default-radius
-    img
-        align-self: center
+    .nav
+        i
+            font-size: 1rem
+            @media (min-width: 992px)
+                font-size: 1.5rem
+            @media (min-width: 1200px)
+                font-size: 2rem
+    .hero-overlay
+        background: rgba(0,0,0,.4)
+        z-index: 1
+        left: 0
+    .img
+        padding: 12px
+    h4
+        font-size: 1rem
+        margin-bottom: 0
+    p
+        font-size: .6rem
+        margin-bottom: 0

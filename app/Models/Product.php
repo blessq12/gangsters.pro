@@ -18,7 +18,7 @@ class Product extends Model
     public function images(){
         return $this->morphMany(Image::class,'image');
     }
-    public function category(){
+    public function productCategory(){
         return $this->belongsTo(ProductCategory::class);
     }
 }

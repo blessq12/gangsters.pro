@@ -39,6 +39,9 @@ Route::controller(CrmController::class)->middleware(['auth','can:admin'])->prefi
     Route::resource('users', UserController::class);
     Route::resource('vacancies', VacancyController::class);
     Route::resource('orders', OrderController::class);
+
+    Route::get('/products/category/{category}', [ProductController::class, 'showCategory'])->name('products.showCategory');
+    
     Route::resource('products', ProductController::class);
 });
 

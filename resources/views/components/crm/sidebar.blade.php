@@ -5,7 +5,7 @@
         (object)['name' => 'Заказы', 'route' => 'crm.orders.index'],
         (object)['name' => 'Пользователи', 'route' => 'crm.users.index'],
         (object)['name' => 'Вакансии', 'route' => 'crm.vacancies.index'],
-        (object)['name' => 'Товар', 'route' => 'crm.products.index'],
+        (object)['name' => 'Товары', 'route' => 'crm.products.index'],
         (object)['name' => 'Истории', 'route' => 'crm.stories.index'],
         (object)['name' => 'Баннеры', 'route' => 'crm.banners.index'],
     ];

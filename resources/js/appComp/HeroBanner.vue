@@ -4,8 +4,34 @@ export default{
         banners: Object
     },
     data:()=>({
-        current: 1
-    })
+        current: 1,
+        direction: null
+    }),
+    methods:{
+        slide(dir){
+            console.log(dir)
+            if (dir){
+                this.direction = true
+                if(this.current < this.banners.length -1 ){
+                    this.current++
+                } else {
+                    this.current = 1 
+                }
+            }
+
+            else {
+                this.direction = false
+                if (this.current !== 1){
+                    this.current-- 
+                } else {
+                    this.current = this.banners.length - 1
+                }
+            }
+            setTimeout(() => {
+                this.direction = null
+            }, 100);
+        }
+    }
 }
 </script>
 
@@ -14,20 +40,27 @@ export default{
         <div class="row">
 
             <div class="col-12" v-if="banners.length">
-                <div class="hero-wrap position-relative">
-                    
+                <div class="hero-wrap position-relative d-flex align-items-center">
+                    <div class="position-absolute d-flex justify-content-between w-100 nav" style="z-index: 11;">
+                        <button class="btn" @click="slide(false)">
+                            <i class="fa fa-arrow-left text-light"></i>
+                        </button>
+                        <button class="btn" @click="slide(true)">
+                            <i class="fa fa-arrow-right text-light"></i>
+                        </button>
+                    </div>
                    <transition-group
-                        enter-active-class="animate__animated animate__fadeInRight"
-                        leave-active-class="animate__animated animate__fadeOutLeft"
+                        :enter-active-class="direction ? 'animate__animated animate__fadeInRight' : 'animate__animated animate__fadeInLeft'"
+                        :leave-active-class="direction ? 'animate__animated animate__fadeOutLeft' : 'animate__animated animate__fadeOutRight'"
                    >
                         <div 
                             v-show="current == banner.id"
-                            class="bg-image h-100 w-100 py-3 px-4 position-absolute top-0 left-0" 
+                            class="bg-image h-100 w-100 img position-absolute top-0 left-0" 
                             v-for="banner in banners" 
                             :key="banner.id" 
                             :style="'background: url('+ banner.image.path +')'"
                         >
-                        <div class="position-absolute top-0 w-100 h-100" style="background: rgba(0,0,0,.6);z-index: 1; left: 0;"></div>
+                        <div class="position-absolute top-0 w-100 h-100 hero-overlay"></div>
                             <div class="h-100 w-100 d-flex align-items-end position-relative text-light" style="z-index: 1;">
                                 <div>
                                     <h4>{{ banner.header }}</h4>
@@ -39,8 +72,6 @@ export default{
                         </div>
                    </transition-group>
                 </div>
-                <button @click="current--">prev</button>
-                <button class="mx-4" @click="current++">next</button>
             </div>
 
             <div class="col-12 placeholder-glow" v-else>
