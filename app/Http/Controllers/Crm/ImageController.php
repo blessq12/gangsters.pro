@@ -10,7 +10,7 @@ class ImageController extends Controller
 {
     public function store(Request $request){
         if (!is_dir(storage_path('app/public/products'))){
-            mkdir(storage_path('app/public/products'),777);
+            mkdir(storage_path('app/public/products'),0777);
         }
         $id = $request->product_id;
         $count = 0;
