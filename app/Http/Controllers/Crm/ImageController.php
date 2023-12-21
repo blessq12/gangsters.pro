@@ -9,7 +9,9 @@ use Intervention\Image\Facades\Image;
 class ImageController extends Controller
 {
     public function store(Request $request){
-
+        if (!is_dir(storage_path('app/public/products'))){
+            mkdir(storage_path('app/public/products'),777);
+        }
         $id = $request->product_id;
         $count = 0;
         foreach ($request->file('images') as $image){
