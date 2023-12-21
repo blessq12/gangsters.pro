@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Crm\BannerController;
 use App\Http\Controllers\Crm\CompanyController;
 use App\Http\Controllers\Crm\CrmController;
+use App\Http\Controllers\Crm\ImageController as CrmImageController;
 use App\Http\Controllers\Crm\ProductController;
 use App\Http\Controllers\Crm\StoryController;
 use App\Http\Controllers\Crm\VacancyController;
@@ -25,24 +26,27 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::controller(MainController::class)->name('main.')->group(function(){
+
     Route::get('/', 'index')->name('index');
     Route::get('/about', 'about')->name('about');
     Route::get('/contact', 'contact')->name('contact');
+
 });
 
 Route::controller(CrmController::class)->middleware(['auth','can:admin'])->prefix('crm')->name('crm.')->group(function(){
     Route::get('/', 'index')->name('index');
-
     Route::resource('stories', StoryController::class);
     Route::resource('banners', BannerController::class);
     Route::resource('companies', CompanyController::class);
     Route::resource('users', UserController::class);
     Route::resource('vacancies', VacancyController::class);
     Route::resource('orders', OrderController::class);
-
     Route::get('/products/category/{category}', [ProductController::class, 'showCategory'])->name('products.showCategory');
-    
     Route::resource('products', ProductController::class);
+    Route::controller(CrmImageController::class)->name('image.')->prefix('image')->group(function(){
+        Route::post('/store', 'store')->name('store');
+        Route::delete('/destroy/{id}', 'destroy')->name('destroy');
+    });
 });
 
 Route::controller(AuthController::class)->prefix('auth')->name('auth.')->group(function(){

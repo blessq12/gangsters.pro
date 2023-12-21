@@ -16,7 +16,7 @@
             <div class="col-12 col-lg-2">
                 <x-crm.sidebar></x-crm.sidebar>
             </div>
-            <div class="col-12 col-lg-10 py-4">
+            <div class="col-12 col-lg-10 py-4 overflow-auto" style="height: calc(100vh - 70px)">
                 <div class="row">
                     <div class="col-12">
                         <h3 class="mb-4">
