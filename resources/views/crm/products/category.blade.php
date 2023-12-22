@@ -31,7 +31,7 @@
                                 @if (!$product->images->isEmpty())
                                     <img src="{{ optional($product->thumbs()->first())->path ? optional($product->thumbs()->first())->path : '//via.placeholder.com/128x128' }}" style="width: 50px; height: 50px" alt="" class="img-fluid rounded">
                                 @else
-                                    <img src="//via.placeholder.com/128x128" style="width: 100px; height: 100px" alt="" class="img-fluid">
+                                    <img src="//via.placeholder.com/128x128" style="width: 50px; height: 50px" alt="" class="img-fluid rounded">
                                 @endif
                             </td >
                             <td style='vertical-align:middle'>{{ $product->name }}</td>
