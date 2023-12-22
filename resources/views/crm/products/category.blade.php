@@ -28,7 +28,7 @@
                         <tr>
                             <th scope="row">{{ $product->id }}</th>
                             <td style='vertical-align:middle'>
-                                <img src="//via.placeholder.com/50x50" alt="" class="img-fluid rounded">
+                                <img src="{{ optional($product->thumbs()->first())->path ? optional($product->thumbs()->first())->path : '//via.placeholder.com/128x128' }}" style="width: 50px; height: 50px" alt="" class="img-fluid rounded">
                             </td >
                             <td style='vertical-align:middle'>{{ $product->name }}</td>
                             <td style='vertical-align:middle'>{{ $product->visible ? 'Виден' : 'Нет' }}</td>

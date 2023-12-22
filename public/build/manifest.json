@@ -7,7 +7,7 @@
     "css": [
       "assets/app-6068a396.css"
     ],
-    "file": "assets/app-cc906ce2.js",
+    "file": "assets/app-7a5790dd.js",
     "isEntry": true,
     "src": "resources/js/app.js"
   },
@@ -22,7 +22,7 @@
     "src": "resources/sass/crm/app.sass"
   },
   "resources/sass/front/app.sass": {
-    "file": "assets/app-cc609023.css",
+    "file": "assets/app-5dba0600.css",
     "isEntry": true,
     "src": "resources/sass/front/app.sass"
   }

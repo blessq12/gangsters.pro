@@ -15,12 +15,17 @@
     <div class="row mb-4">
         <div class="col-12">
             <h5>Фотографии</h5>
+            @if ($product->images->isEmpty())
+                <p class="m-0 text-warning">Ни одной фотографии не было добавлено</p>
+                <a href="{{ route('crm.products.edit', $product->id) }}">Добавить</a>
+            @else
             <ul class="d-flex overflow-hidden align-items-center list-unstyled" style="overflow-x: scroll">
-                <li style="margin-right: 12px; background:url('//via.placeholder.com/150x150'); height: 150px; width: 150px" class="bg-image rounded"></li>
-                <li style="margin-right: 12px; background:url('//via.placeholder.com/150x150'); height: 150px; width: 150px" class="bg-image rounded"></li>
-                <li style="margin-right: 12px; background:url('//via.placeholder.com/150x150'); height: 150px; width: 150px" class="bg-image rounded"></li>
-                <li style="margin-right: 12px; background:url('//via.placeholder.com/150x150'); height: 150px; width: 150px" class="bg-image rounded"></li>
+                @foreach ($product->thumbs as $image)
+                    <li style="margin-right: 12px; background:url('{{ $image->path }}'); height: 150px; width: 150px; background-size: cover" class="bg-image rounded"></li>
+                @endforeach
             </ul>
+            @endif
+            
         </div>
     </div>
     {{-- badges --}}

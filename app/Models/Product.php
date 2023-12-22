@@ -20,6 +20,10 @@ class Product extends Model
         return $this->morphMany(ProductImage::class, 'image');
     }
 
+    public function thumbs(){
+        return $this->images()->where('type', 'thumb');
+    }
+
     public function productCategory(){
         return $this->belongsTo(ProductCategory::class);
     }
