@@ -38,9 +38,6 @@
                             <td style='vertical-align:middle'>{{ $product->visible ? 'Виден' : 'Нет' }}</td>
                             <td style='vertical-align:middle'>
                                 <div class="d-flex align-items-center">
-                                    <a href="{{ route('crm.products.show', $product->id) }}" class="btn {{ $product->visible ? 'btn-success' : 'btn-warning' }}" title="Изменить видимость товара">
-                                        <i class="{{ $product->visible ? 'fa fa-eye' : 'fa fa-eye-slash' }}"></i>
-                                    </a>
                                     <a href="{{ route('crm.products.edit', $product->id) }}" class="btn btn-primary mx-2" title="Редактировать товар">
                                         <i class="fa fa-pencil"></i>
                                     </a>
