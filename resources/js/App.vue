@@ -52,19 +52,24 @@ export default{
     ></additional>
 
     <navbar @toggleModal="(component)=>{ overlay=!overlay;modal=!modal;currentComponent=component }"></navbar>
+    
     <section>
         <stories :stories="stories"></stories>
     </section>
+
     <section class="pt-0">
         <hero-banner :banners="banners"></hero-banner>
     </section>
+
     <section class="pt-0">
         <catalog 
             :goods="goods"
             @toggleAdditional="toggleAdditional"
         ></catalog>
     </section>
+
     <Footer></Footer>
+
 </template>
 
 <style lang="sass">

@@ -12,9 +12,12 @@ class Image extends Model
         'image_type',
         'created_at',
         'updated_at',
-        'image_id'
+        'image_id',
+        'type'
     ];
     protected $fillable = [
-        'path'
+        'path',
+        'type',
+        'uniq'
     ];
 }

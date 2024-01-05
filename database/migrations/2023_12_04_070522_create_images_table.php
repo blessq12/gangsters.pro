@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('path');
             $table->string('type');
+            $table->string('uniq');
             $table->morphs('image');
             $table->timestamps();
         });

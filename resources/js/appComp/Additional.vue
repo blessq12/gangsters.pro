@@ -48,12 +48,13 @@ export default{
                     >
                         <div class="additional" v-if="show">
                             <div class="row h-100">
-                                <div class="col-6 ">
+                                <div class="col-6">
                                     <div class="h-100">
-                                        <ul>
-                                            <li></li>
-                                            <li></li>
-                                            <li></li>
+                                        <ul v-if="product.original_image.length">
+                                            <li v-for="item in product.original_image" :style="'background: url(' + item.path + ')'"></li>
+                                        </ul>
+                                        <ul v-else>
+                                            <li style="background: url('/images/placeholder/product-image-empty-1024x1024.jpg');"></li>
                                         </ul>
                                     </div>
                                 </div>

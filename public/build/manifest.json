@@ -7,7 +7,7 @@
     "css": [
       "assets/app-6068a396.css"
     ],
-    "file": "assets/app-7a5790dd.js",
+    "file": "assets/app-eec2fddb.js",
     "isEntry": true,
     "src": "resources/js/app.js"
   },
@@ -17,12 +17,12 @@
     "src": "resources/sass/auth.sass"
   },
   "resources/sass/crm/app.sass": {
-    "file": "assets/app-90a5ea9a.css",
+    "file": "assets/app-5f006ca3.css",
     "isEntry": true,
     "src": "resources/sass/crm/app.sass"
   },
   "resources/sass/front/app.sass": {
-    "file": "assets/app-5dba0600.css",
+    "file": "assets/app-1409da49.css",
     "isEntry": true,
     "src": "resources/sass/front/app.sass"
   }

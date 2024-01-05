@@ -44,9 +44,10 @@ Route::controller(CrmController::class)->middleware(['auth','can:admin'])->prefi
     Route::get('/products/category/{category}', [ProductController::class, 'showCategory'])->name('products.showCategory');
     Route::resource('products', ProductController::class);
     Route::controller(CrmImageController::class)->name('image.')->prefix('image')->group(function(){
-        Route::post('/image/product/store', 'productImageUpload')->name('product-image-upload');
-        Route::post('/store', 'store')->name('store');
-        Route::delete('/destroy/{id}', 'destroy')->name('destroy');
+        Route::post('/story/store', 'storyImageUpload')->name('story-image-upload');
+        Route::post('/banner/store', 'bannerImageUpload')->name('banner-image-upload');
+        Route::post('/product/store', 'productImageUpload')->name('product-image-upload');
+        Route::delete('/destroy/{id}', 'destroyImage')->name('image-destroy');
     });
 });
 

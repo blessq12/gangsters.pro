@@ -3,11 +3,12 @@
 namespace App\Http\Controllers\Crm;
 
 use App\Http\Controllers\Controller;
+use App\Models\Image as ModelsImage;
 use App\Models\Product;
-use App\Models\ProductImage;
 use Illuminate\Http\Request;
 use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 
 class ImageController extends Controller
 {
@@ -16,35 +17,7 @@ class ImageController extends Controller
             mkdir(public_path('assets/products'));
         }
     }
-    public function store(Request $request){
 
-        if (!is_dir(storage_path('app/public/products'))){
-            mkdir(storage_path('app/public/products'),0777);
-        }
-
-        $product = Product::findOrFail($request->product_id);
-
-        foreach ($request->file('images') as $image){
-
-            $filename = time() .'.' .$image->getClientOriginalExtension();
-
-            Image::make($image)
-            ->resize(1024, 1024, fn ($item) => $item->aspectRatio())
-            ->save(public_path('products/' .$filename), 90);
-
-            Image::make($image)
-            ->resize(150, 150, fn ($item) => $item->aspectRatio())
-            ->save(public_path('products/' . 'thumb-' .$filename), 90);
-
-            $product->images()->createMany([
-                ['path' => '/products/' .$filename , 'type' => 'image'],
-                ['path' => '/products/' . 'thumb-' .$filename , 'type' => 'thumb']
-            ]);
-            
-        }
-
-        return back()->with('success', 'Фотографии добавлены');
-    }
     public function productImageUpload(Request $request){
 
         $product = Product::findOrFail($request->prod_id);
@@ -56,16 +29,36 @@ class ImageController extends Controller
          * thumb small 128x128
          */
         foreach($images as $e){
-            Image::make($e)->resize(1024,1024, fn($item)=> $item->aspectRatio());
-            Image::make($e)->resize(512,512, fn($item)=> $item->aspectRatio());
-            Image::make($e)->resize(128,128, fn($item)=> $item->aspectRatio());
-
+            $uniq = Str::random(10);
+            $name = time() .'-' . $product->id . '.' . $e->getClientOriginalExtension() ;
+            Image::make($e)->resize(1024,1024, fn($item)=> $item->aspectRatio())->save( public_path('assets/products/original-') . $name , 95);
+            Image::make($e)->resize(512,512, fn($item)=> $item->aspectRatio())->save(public_path('assets/products/thumb-medium-') . $name , 95);
+            Image::make($e)->resize(128,128, fn($item)=> $item->aspectRatio())->save(public_path('assets/products/thumb-small-') . $name , 100);
+            $product->images()->createMany([
+                ['uniq'=> $uniq, 'type' => 'original', 'path' => '/assets/products/original-' .$name],
+                ['uniq'=> $uniq, 'type' => 'thumb-medium', 'path' => '/assets/products/thumb-medium-' . $name],
+                ['uniq'=> $uniq, 'type' => 'thumb-small', 'path' => '/assets/products/thumb-small-' . $name],
+            ]);
         }
+        
+        return back()->with('success', 'Изображение(я) загружено');
     }
-    public function destroy(string $id){
-        $image = ProductImage::findOrFail($id);
-        if ( File::exists(public_path($image->path))) File::delete(public_path($image->path));
-        $image->delete();
-        return back()->with('success', 'Фотография удалена');
+    public function storyImageUpload(Request $request){}
+    public function bannerImageUpload(Request $request){}
+    public function destroyImage(Request $request,string $id){
+        if ($request->instance == 'product'){
+            $uniq = ModelsImage::find($id)->uniq;
+            $images = ModelsImage::where('uniq', $uniq)->get();
+            foreach ($images as $e) {
+                if (File::exists($e->path)){
+                    File::delete($e->path);
+                }
+                $e->delete();
+            }
+            return back()->with('success', 'Фотография успешно удалена');
+        }
+        if ($request->instance == 'story'){}
+        if ($request->instance == 'banner'){}
     }
+
 }

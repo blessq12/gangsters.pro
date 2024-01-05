@@ -14,7 +14,11 @@ class MainController extends Controller
     public function index(){
 
         return view('front.index',[
-            'goods' => ProductCategory::all()->each( fn ($item) => $item->products ),
+            'goods' => ProductCategory::all()->each( fn ($item) => ($item->products)->each(function($e){
+                $e->originalImage->setHidden(['type','image_type','created_at','updated_at','image_id']);
+                $e->thumbMedium->setHidden(['type','image_type','created_at','updated_at','image_id']);
+                $e->thumbSmall->setHidden(['type','image_type','created_at','updated_at','image_id']);
+            })),
             'company' => Company::first(),
             'banners' => Banner::all()->each(fn($item)=>$item->image),
             'stories' => Story::all()

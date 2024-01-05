@@ -31,7 +31,9 @@ export default{
                 <ul class="list-unstyled p-0 category-list">
                     <li v-for="product in category.products" :key="product.id">
                         <div class="product">
-                            <div class="header"></div>
+                            <div class="header bg-image" v-if="product.thumb_medium.length" :style="'background:url('+ product.thumb_medium[0].path +')'">
+                            </div>
+                            <div class="header bg-image" style="background: url('/images/placeholder/product-image-empty-512x512.jpg');" v-else></div>
                             <div class="content">
                                 <h5>{{ product.name }}</h5>
                                 <p>{{ product.consist }}</p>

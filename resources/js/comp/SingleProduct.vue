@@ -16,7 +16,8 @@ export default{
 
 <template>
     <div class="single-product">
-        <div class="image bg-image rounded" style="background: url('//via.placeholder.com/100x100');"></div>
+        <div class="image bg-image rounded" v-if="prod.thumb_small.length" :style="'background: url(' + prod.thumb_small[0].path + ')'"></div>
+        <div class="image bg-image rounded" v-else style="background: url('/images/placeholder/product-image-empty-128x128.jpg');"></div>
         <div class="content">
             <div class="mb-2">
                 <h5>{{ prod.name }}</h5>

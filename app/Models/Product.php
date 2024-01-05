@@ -17,11 +17,16 @@ class Product extends Model
     ];
 
     public function images(){
-        return $this->morphMany(ProductImage::class, 'image');
+        return $this->morphMany(Image::class, 'image');
     }
-
-    public function thumbs(){
-        return $this->images()->where('type', 'thumb');
+    public function originalImage(){
+        return $this->images()->where('type', 'original');
+    }
+    public function thumbMedium(){
+        return $this->images()->where('type', 'thumb-medium');
+    }
+    public function thumbSmall(){
+        return $this->images()->where('type', 'thumb-small');
     }
 
     public function productCategory(){
