@@ -30,6 +30,7 @@ export default{
     <div class="container">
         <div class="row">
             <div class="col">
+                {{ banners }}
                 <div class="position-relative d-flex align-items-center">
                     <transition-group
                         class="wrap position-relative overflow-hidden w-100"
