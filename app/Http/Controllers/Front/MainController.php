@@ -20,8 +20,8 @@ class MainController extends Controller
                 $e->thumbSmall->setHidden(['type','image_type','created_at','updated_at','image_id']);
             })),
             'company' => Company::first(),
-            'banners' => Banner::all()->each(fn($item)=>$item->image),
-            'stories' => Story::all()
+            'banners' => Banner::where('status', true)->get()->each(fn($item)=>$item->image),
+            'stories' => Story::where('status', true)->get()->each( fn ($item) => $item->image )
         ]);
         
     }

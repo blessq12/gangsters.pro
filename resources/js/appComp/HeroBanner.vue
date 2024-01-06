@@ -1,35 +1,26 @@
 <script>
+import { es } from 'yup-locales';
+
 export default{
     props:{
         banners: Object
     },
     data:()=>({
-        current: 1,
+        current: 0,
         direction: null
     }),
     methods:{
-        slide(dir){
-            console.log(dir)
-            if (dir){
-                this.direction = true
-                if(this.current < this.banners.length -1 ){
-                    this.current++
-                } else {
-                    this.current = 1 
-                }
-            }
+        slide(){
 
-            else {
-                this.direction = false
-                if (this.current !== 1){
-                    this.current-- 
-                } else {
-                    this.current = this.banners.length - 1
-                }
+        }
+    },
+    watch:{
+        current(val){
+            if (val >= this.banners.length){
+                this.current = 0
+            } else if (val < 0){
+                this.current = this.banners.length - 1
             }
-            setTimeout(() => {
-                this.direction = null
-            }, 100);
         }
     }
 }
@@ -38,56 +29,47 @@ export default{
 <template>
     <div class="container">
         <div class="row">
-
-            <div class="col-12" v-if="banners.length">
-                <div class="hero-wrap position-relative d-flex align-items-center">
-                    <div class="position-absolute d-flex justify-content-between w-100 nav" style="z-index: 11;">
-                        <button class="btn" @click="slide(false)">
-                            <i class="fa fa-arrow-left text-light"></i>
-                        </button>
-                        <button class="btn" @click="slide(true)">
-                            <i class="fa fa-arrow-right text-light"></i>
-                        </button>
-                    </div>
-                   <transition-group
-                        :enter-active-class="direction ? 'animate__animated animate__fadeInRight' : 'animate__animated animate__fadeInLeft'"
-                        :leave-active-class="direction ? 'animate__animated animate__fadeOutLeft' : 'animate__animated animate__fadeOutRight'"
-                   >
+            <div class="col">
+                <div class="position-relative d-flex align-items-center">
+                    <transition-group
+                        class="wrap position-relative overflow-hidden w-100"
+                        tag="div"
+                        :enter-active-class="direction ? 'animate__animated animate__slideInRight' : 'animate__animated animate__slideInLeft'"
+                        :leave-active-class="direction ? 'animate__animated animate__slideOutLeft' : 'animate__animated animate__slideOutRight'"
+                    >
                         <div 
-                            v-show="current == banner.id"
-                            class="bg-image h-100 w-100 img position-absolute top-0 left-0" 
-                            v-for="banner in banners" 
-                            :key="banner.id" 
-                            :style="'background: url('+ banner.image.path +')'"
-                        >
-                        <div class="position-absolute top-0 w-100 h-100 hero-overlay"></div>
-                            <div class="h-100 w-100 d-flex align-items-end position-relative text-light" style="z-index: 1;">
-                                <div>
+                        class="position-absolute w-100 h-100 bg-image"
+                        :style="'background: url(' + banner.image.path + ')'" 
+                        v-for="banner in banners" :key="banner.id" 
+                        v-show="banners.indexOf(banner) == current">
+                            <div class="d-flex align-items-end position-relative h-100 p-2 p-md-3">
+                                <div class="text-light">
                                     <h4>{{ banner.header }}</h4>
-                                    <p v-if="banner.subheader !== null">
-                                        {{ banner.subheader }}
-                                    </p>
+                                    <p class="mb-0">{{ banner.subheader }}</p>
                                 </div>
                             </div>
                         </div>
-                   </transition-group>
-                </div>
-            </div>
-
-            <div class="col-12 placeholder-glow" v-else>
-                <div class="hero-wrap position-relative placeholder p-4 d-flex align-items-end">
-                    <div class="placegolder-glow w-100">
-                        <h2 class="placeholder col-4 bg-light"></h2>
-                        <br>
-                        <p class="placeholder col-7 bg-light"></p>
+                    </transition-group>
+                    <div class="position-absolute d-flex justify-content-between w-100 px-1 px-md-3">
+                        <button type="button" class="btn p-0 text-light" @click="current--; direction = false"><i class="fa fa-arrow-left"></i></button>
+                        <button type="button" class="btn p-0 text-light" @click="current++; direction = true"><i class="fa fa-arrow-right"></i></button>
                     </div>
                 </div>
+                
             </div>
-
+            
         </div>
     </div>
 </template>
 
-<style lang="sass">
-
+<style lang="sass" scoped>
+.wrap
+    background: $color-main
+    min-height: 220px
+    border-radius: $default-radius !important
+    h4
+        font-size: 1rem
+        margin-bottom: 0
+    p
+        font-size: .6rem
 </style>

@@ -40,8 +40,8 @@ export default{
         <div class="row">
             <div class="col-12" v-if="stories.length">
                 <ul class="list-unstyled p-0 m-0 stories">
-                    <li v-for="story in stories" class="cursor-pointer" :key="story" @click="()=>{storyState('open'); current = story.image}">
-                        <div class="story bg-image" :style="'background: url('+ story.thumb +')'"></div>
+                    <li v-for="story in stories" class="cursor-pointer" :key="story" @click="()=>{storyState('open'); current = story.image.path}">
+                        <div class="story bg-image" :style="'background: url('+ story.image.path +')'"></div>
                         <h4 class="mb-0 mt-2">{{ story.name }}</h4>
                     </li>
                 </ul>
@@ -49,10 +49,10 @@ export default{
 
             <div class="col-12" v-else>
                 <ul class="list-unstyled p-0 m-0 stories placeholder-glow">
-                    <li><div class="story placeholder bg-dark"></div></li>
-                    <li><div class="story placeholder bg-dark"></div></li>
-                    <li><div class="story placeholder bg-dark"></div></li>
-                    <li><div class="story placeholder bg-dark"></div></li>
+                    <li v-for="e in 4">
+                        <div class="story placeholder bg-dark mb-2"></div>
+                        <div class="placeholder rounded col-7" style="height: 25px;"></div>
+                    </li>
                 </ul>
             </div>
 

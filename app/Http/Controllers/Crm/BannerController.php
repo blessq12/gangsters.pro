@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Banner;
 use Illuminate\Http\Request;
 use Intervention\Image\Facades\Image;
+use Illuminate\Support\Str;
 
 class BannerController extends Controller
 {
@@ -32,30 +33,23 @@ class BannerController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'header' => 'required|max:255',
-            'subheader' => '',
-            'image' => 'required|image'
-        ]);
-        $validated = (object)$validated;
         $banner = new Banner();
-        $banner->header = $validated->header;
-        $banner->subheader = $validated->subheader;
-        
-        if (!$banner->save()){
-            return back()->withErrors(['create' => 'Не удалось создать баннер, попробуйте снова']);
-        }
+        $banner->header = $request->header;
+        $banner->subheader = $request->subheader;
 
+        if (!$banner->save()) return back()->withErrors(['error'=>'Не удалось сохранить запись']);
+        if (!is_dir(public_path('assets/banners'))) mkdir(public_path('assets/banners'));
+        $image = Str::random(10) . '.' . $request->file('image')->getClientOriginalExtension();
         Image::make($request->file('image'))
-        ->resize(1920, 1080, fn($item)=>$item->aspectRatio())
-        ->save('banners/banner-' .$banner->id .'.'.$request->file('image')->getClientOriginalExtension(), 90);
-        ;
+        ->resize(1920, 1080, fn ($e) => $e->aspectRatio())
+        ->save(public_path('assets/banners/') . $image, 90);
 
         $banner->image()->create([
-            'path' => '/banners/banner-' .$banner->id .'.'.$request->file('image')->getClientOriginalExtension()
+            'path' => '/assets/banners/'.$image,
+            'type' => 'banner'
         ]);
 
-        return back()->with('success', 'Баннер успешно создан');
+        return back()->with('success', 'Запись успешно создана');
     }
 
     /**

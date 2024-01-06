@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Story;
 use Illuminate\Http\Request;
 use Intervention\Image\Facades\Image;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\File;
+
 
 
 class StoryController extends Controller
@@ -23,43 +26,31 @@ class StoryController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
-    {
-        return view('crm.stories.create');
-    }
+    public function create(){}
 
     /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|max:255',
-            'thumb' => 'required|image',
-            'image' => 'required|image'
-        ]);
-        $validated = (object) $validated;
         $story = new Story();
-        $story->name = $validated->name;
-        if (!$story->save()){
-            return back()->withErrors(['create' => 'Ошибка при создании']);
+        $story->name = $request->header;
+        $image = Str::random(10) . '.' . $request->file('image')->getClientOriginalExtension();
+        
+        if(!is_dir(public_path('assets/stories'))){
+            mkdir(public_path('assets/stories'));
         }
-        // images
-        Image::make($request->file('thumb'))
-        ->resize(350, 200, fn($img)=>$img->aspectRatio())
-        ->save(public_path('/stories/thumb_' . $story->id . '.' .$request->file('thumb')->getClientOriginalExtension()),80);
+
+        if (!$story->save()) return back()->with('error','При сохранении возникла ошибка, попробуйте повторить');
 
         Image::make($request->file('image'))
-        ->resize(1080, 1920, fn($img)=>$img->aspectRatio())
-        ->save('stories/image_' .$story->id . '.' .$request->file('image')->getClientOriginalExtension(),80);
-
-        $story->update([
-            'thumb' => '/stories/thumb_' .$story->id . '.' .$request->file('thumb')->getClientOriginalExtension(),
-            'image' => '/stories/image_' .$story->id . '.' .$request->file('image')->getClientOriginalExtension()
+        ->save(public_path('assets/stories/' . $image), 90);
+        $story->image()->create([
+            'type' => 'story',
+            'path' => '/assets/stories/' . $image
         ]);
-        if ($story->save()){
-            return back()->with('success', 'Успешно создано');
-        }
+
+        return back()->with('success', 'Новая запись создана');
     }
 
     /**
@@ -83,7 +74,18 @@ class StoryController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $story = Story::findOrFail($id);
+
+        $story->status = !$story->status;
+
+        
+        
+
+        if ( !$story->update() ) {
+            return back()->with('error', 'При обновлении произошла ошибка');
+        }
+
+        return back()->with('success', 'Запись успешно обновлена');
     }
 
     /**
@@ -91,6 +93,15 @@ class StoryController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $story = Story::findOrFail($id);
+        $image = $story->image;
+
+        if (File::exists(public_path($image->path))){
+            File::delete(public_path($image->path));
+        }
+        $image->delete();
+        $story->delete();
+
+        return back()->with('success', 'Запись была удалена');
     }
 }

@@ -14,6 +14,11 @@ class Story extends Model
         'thumb',
         'image'
     ];
+    protected $hidden = [
+        'status',
+        'created_at',
+        'updated_at',
+    ];
 
     public function image(){
         return $this->morphOne(Image::class, 'image');
