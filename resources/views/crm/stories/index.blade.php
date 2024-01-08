@@ -75,7 +75,7 @@
                         </button>
                     </form>
                     <form action="{{ route('crm.stories.destroy', $story->id) }}" method="post"> @csrf @method('delete')
-                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Действие необратимо, нажмите OK для продолжения')"><i class="fa fa-trash"></i></button>
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Действительно хотите удалить?')"><i class="fa fa-trash"></i></button>
                     </form>
                 </div>
                 <h6>{{ $story->name }}</h6>

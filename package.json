@@ -19,6 +19,7 @@
         "@vee-validate/i18n": "^4.12.2",
         "animate.css": "^4.1.1",
         "font-awesome": "^4.7.0",
+        "htmx.org": "^1.9.10",
         "maska": "^2.1.10",
         "pinia": "^2.1.7",
         "vee-validate": "^4.12.2",

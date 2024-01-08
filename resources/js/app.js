@@ -3,6 +3,7 @@ import './bootstrap';
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import { vMaska } from 'maska';
+import { HtmxExtension } from 'htmx.org';
 
 /**
  * Next, we will create a fresh Vue application instance. You may then begin

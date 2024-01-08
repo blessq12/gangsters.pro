@@ -13,6 +13,7 @@ use App\Http\Controllers\Crm\OrderController;
 use App\Http\Controllers\Crm\UserController;
 use App\Models\Company;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Request;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,6 +31,7 @@ Route::controller(MainController::class)->name('main.')->group(function(){
     Route::get('/', 'index')->name('index');
     Route::get('/about', 'about')->name('about');
     Route::get('/contact', 'contact')->name('contact');
+    Route::any('/test', 'test')->name('test');
 
 });
 
