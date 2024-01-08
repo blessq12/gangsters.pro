@@ -29,8 +29,7 @@ export default{
 <template>
     <div class="container">
         <div class="row">
-            <div class="col">
-                {{ banners }}
+            <div class="col" v-if="banners.length">
                 <div class="position-relative d-flex align-items-center">
                     <transition-group
                         class="wrap position-relative overflow-hidden w-100"
@@ -58,7 +57,11 @@ export default{
                 </div>
                 
             </div>
-            
+            <div class="col" v-else>
+                <div class="placeholder-glow wrap position-relative overflow-hidden">
+                    <div class="position-absolute w-100 h-100 placeholder"></div>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -67,6 +70,12 @@ export default{
 .wrap
     background: $color-main
     min-height: 220px
+    @media(min-width: 576px)
+        min-height: 280px
+    @media(min-width: 768px)
+        min-height: 320px
+    @media (min-width: 992px)
+        min-height: 400px   
     border-radius: $default-radius !important
     h4
         font-size: 1rem

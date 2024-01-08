@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Crm;
 use App\Http\Controllers\Controller;
 use App\Models\Banner;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use Intervention\Image\Facades\Image;
 use Illuminate\Support\Str;
 
@@ -75,12 +76,26 @@ class BannerController extends Controller
     {
         //
     }
-
+    public function updateStatus(Request $request, string $id){
+        $banner = Banner::findOrFail($id);
+        $banner->status = !$banner->status;
+        $banner->update();
+        return back()->with('success', 'Статус баннера обновлен');
+    }
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
     {
-        //
+        $banner = Banner::findOrFail($id);
+        $image = $banner->image;
+
+        if (File::exists(public_path($image->path))){
+            File::delete(public_path($image->path));
+        }
+        $image->delete();
+        $banner->delete();
+
+        return back()->with('success', 'Запись успешно удалена');
     }
 }

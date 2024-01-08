@@ -14,8 +14,7 @@
         <x-crm.navbar></x-crm.navbar>
         <div class="container-fluid">
             <div class="row">
-
-                <div class="col-12 col-lg-2">
+                <div class="col-lg-2 d-none d-lg-block">
                     <x-crm.sidebar></x-crm.sidebar>
                 </div>
                 <div class="col-12 col-lg-10 py-4 overflow-auto" style="height: calc(100vh - 70px)">

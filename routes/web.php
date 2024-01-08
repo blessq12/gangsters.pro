@@ -36,6 +36,7 @@ Route::controller(MainController::class)->name('main.')->group(function(){
 Route::controller(CrmController::class)->middleware(['auth','can:admin'])->prefix('crm')->name('crm.')->group(function(){
     Route::get('/', 'index')->name('index');
     Route::resource('stories', StoryController::class);
+    Route::patch('banners/{id}/status', [BannerController::class, 'updateStatus'])->name('banners.update-status');
     Route::resource('banners', BannerController::class);
     Route::resource('companies', CompanyController::class);
     Route::resource('users', UserController::class);

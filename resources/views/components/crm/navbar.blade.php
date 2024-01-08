@@ -2,24 +2,26 @@
     <div class="container-fluid">
         <div class="row align-items-center">
             <div class="col-6">
-                <a href="{{ route('main.index') }}">
+                <a href="{{ route('main.index') }}" class="text-decoration-none fw-bold text-dark">
                     {{ $company->name }}
                 </a>
             </div>
             <div class="col-6 d-flex justify-content-end">
 
                 <div class="dropdown">
-                    
-                    <button class="btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <span>{{ Auth::user()->name }}</span>
-                        <i class="fa fa-user px-2"></i>
+                    {{-- user --}}
+                    <button class="btn borde border-dark" type="button" data-bs-toggle="dropdown" style="margin-right: 6px">
+                        <i class="fa fa-user"></i>
                     </button>
                     <ul class="dropdown-menu">
-                      <li>
-                        <a class="dropdown-item text-danger" href="{{ route('auth.user-logout') }}">Выйти</a>
-                    </li>
+                        <li>
+                            <a class="dropdown-item text-danger" href="{{ route('auth.user-logout') }}">Выйти</a>
+                        </li>
                     </ul>
-                  </div>
+                    {{-- mmenu --}}
+                    
+                </div>
+                <crm-mobile-menu :links='@json($crmLinks)'></crm-mobile-menu>
             </div>
         </div>
     </div>

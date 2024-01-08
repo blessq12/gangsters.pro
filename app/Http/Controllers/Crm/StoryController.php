@@ -99,9 +99,10 @@ class StoryController extends Controller
         if (File::exists(public_path($image->path))){
             File::delete(public_path($image->path));
         }
+
         $image->delete();
         $story->delete();
 
-        return back()->with('success', 'Запись была удалена');
+        return back()->with('success', 'Запись успешно удалена');
     }
 }
