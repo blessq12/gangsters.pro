@@ -75,7 +75,12 @@ class ProductController extends Controller
     {
         //
     }
-
+    public function updateTag(string $id, string $tag){
+       $product = Product::findOrFail($id);
+       $product[$tag] = !$product[$tag];
+       $product->update();
+       return back()->with('success', 'Тэг продукта обновлен');
+    }
     /**
      * Remove the specified resource from storage.
      */

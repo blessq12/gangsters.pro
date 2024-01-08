@@ -44,8 +44,11 @@ Route::controller(CrmController::class)->middleware(['auth','can:admin'])->prefi
     Route::resource('users', UserController::class);
     Route::resource('vacancies', VacancyController::class);
     Route::resource('orders', OrderController::class);
+
+    Route::patch('/product/{id}/tag/{tag}', [ProductController::class, 'updateTag'])->name('update-product-tag');
     Route::get('/products/category/{category}', [ProductController::class, 'showCategory'])->name('products.showCategory');
     Route::resource('products', ProductController::class);
+
     Route::controller(CrmImageController::class)->name('image.')->prefix('image')->group(function(){
         Route::post('/story/store', 'storyImageUpload')->name('story-image-upload');
         Route::post('/banner/store', 'bannerImageUpload')->name('banner-image-upload');

@@ -82,11 +82,5 @@
                 </div>
             @endforeach
         </div>
-        <button 
-            type="button" 
-            hx-get="{{ route('main.test') }}" 
-            hx-target=".output"
-            class="btn btn-primary">test button</button>
-        <div class="output"></div>
     </div>
 @endsection
