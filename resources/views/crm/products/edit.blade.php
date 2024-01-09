@@ -39,7 +39,7 @@
             @endif
         </div>
         <div class="col mb-4">
-            <h4 class="mb-4">Теги: </h4>
+            <h4 class="mb-2">Теги: </h4>
             @php
                 $tags = [
                     (object) ['uri' => 'hit', 'name' => 'Хит'],
@@ -62,7 +62,48 @@
             </ul>
         </div>
         <div class="col">
-            <h4 class="mb-4">Основная информация</h4>
+            <h4 class="mb-2">Основная информация</h4>
+            <div class="row mb-4">
+                <div class="col">
+                    {!! $product->created_at !== null ? '<p class="mb-0" style="font-size: 10px">Дата создания: ' . $product->created_at->format('Y/m/d H:i:s') . '</p>' : '' !!}
+                    {!! $product->updated_at !== null ? '<p class="mb-0" style="font-size: 10px">Дата обновления: ' . $product->updated_at->format('Y/m/d H:i:s') . '</p>' : '' !!}
+                    
+                </div>
+            </div>
+            <form action=""> @csrf @method('PATCH')
+                <div class="row row-cols-1">
+                    <div class="col-12 col-lg-6">
+                        <div class="form-group mb-2">
+                            <label for="name">Название</label>
+                            <input type="text" name="name" id="name" class="form-control" value="{{ $product->name }}">
+                        </div>
+                        <div class="form-group mb-2">
+                            <label for="consist">Состав</label>
+                            <textarea name="consist" id="consist" rows="2" class="form-control">{{ $product->consist }}</textarea>
+                        </div>
+                        <div class="form-group mb-4">
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label for="weight">Масса нетто (гр)</label>
+                                        <input type="text" name="weight" id="weight" class="form-control" value="{{ $product->weight }}">
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label for="price">Цена (руб)</label>
+                                        <input type="text" name="price" id="price" class="form-control" value="{{ $product->price }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-dark">Сохранить</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
         </div>
     </div>
 @endsection
