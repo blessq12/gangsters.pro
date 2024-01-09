@@ -45,7 +45,10 @@ Route::controller(CrmController::class)->middleware(['auth','can:admin'])->prefi
     Route::resource('vacancies', VacancyController::class);
     Route::resource('orders', OrderController::class);
 
-    Route::patch('/product/{id}/tag/{tag}', [ProductController::class, 'updateTag'])->name('update-product-tag');
+    Route::delete('/category/{id}/delete', [ProductController::class, 'destroyCategory'])->name('product.destroy-category');
+    Route::post('/category/store', [ProductController::class, 'storeCategory'])->name('product.store-new-category');
+    Route::patch('/category/{id}/visibility', [ProductController::class, 'categoryVisibility'])->name('product.update-category-visibility');
+    Route::patch('/product/{id}/tag/{tag}', [ProductController::class, 'updateTag'])->name('product.update-product-tag');
     Route::get('/products/category/{category}', [ProductController::class, 'showCategory'])->name('products.showCategory');
     Route::resource('products', ProductController::class);
 

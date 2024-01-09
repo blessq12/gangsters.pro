@@ -30,7 +30,7 @@ class ImageController extends Controller
          */
         foreach($images as $e){
             $uniq = Str::random(10);
-            $name = time() .'-' . $product->id . '.' . $e->getClientOriginalExtension() ;
+            $name = time() .'-' . $product->id . '.' . $e->getClientOriginalExtension();
             Image::make($e)->resize(1024,1024, fn($item)=> $item->aspectRatio())->save( public_path('assets/products/original-') . $name , 95);
             Image::make($e)->resize(512,512, fn($item)=> $item->aspectRatio())->save(public_path('assets/products/thumb-medium-') . $name , 95);
             Image::make($e)->resize(128,128, fn($item)=> $item->aspectRatio())->save(public_path('assets/products/thumb-small-') . $name , 100);

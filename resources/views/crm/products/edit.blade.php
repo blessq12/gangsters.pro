@@ -52,7 +52,7 @@
             <ul class="list-unstyled p-0 m-0 d-flex align-items-center" style="overflow: hidden; overflow-x: scroll;">
                 @foreach ($tags as $tag)
                     <li style="margin-right: 12px; white-space: nowrap;">
-                        <form action="{{ route('crm.update-product-tag', ['id' => $product->id,'tag' => $tag->uri]) }}" method="post"> @csrf @method('PATCH')
+                        <form action="{{ route('crm.product.update-product-tag', ['id' => $product->id,'tag' => $tag->uri]) }}" method="post"> @csrf @method('PATCH')
                             <button type="submit" class="btn btn-outline-dark {{ $product[$tag->uri] ? 'active' : ''}}">
                                 {{ $tag->name }}
                             </button>
@@ -65,5 +65,4 @@
             <h4 class="mb-4">Основная информация</h4>
         </div>
     </div>
-
 @endsection

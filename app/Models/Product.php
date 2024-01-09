@@ -13,7 +13,8 @@ class Product extends Model
         'name',
         'consist',
         'weight',
-        'price'
+        'price',
+        'product_category_id'
     ];
 
     public function images(){

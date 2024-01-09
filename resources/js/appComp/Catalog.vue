@@ -28,7 +28,7 @@ export default{
         <div class="row">
             <div class="col-12" v-for="category in goods" :key="category.id">
                 <h4>{{ category.name }}</h4>
-                <ul class="list-unstyled p-0 category-list">
+                <ul class="list-unstyled p-0 category-list" v-if="category.products.length">
                     <li v-for="product in category.products" :key="product.id">
                         <div class="product">
                             <div class="header bg-image" v-if="product.thumb_medium.length" :style="'background:url('+ product.thumb_medium[0].path +')'">
@@ -54,6 +54,22 @@ export default{
                                 <button class="btn btn-outline-primary rounded-circle px-3 fw-bold"
                                     @click="$emit('toggleAdditional', product)"
                                 >i</button>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+                <ul v-else class="list-unstyled p-0 category-list">
+                    <li v-for="e in 4">
+                        <div class="product placeholder-glow">
+                            <div class="header bg-dark placeholder"></div>
+                            <div class="content">
+                                <h5 class="placeholder col-7 rounded"></h5>
+                                <p class="placeholder col-12 mb-0 rounded"></p>
+                                <p class="placeholder col-8 rounded"></p>
+                            </div>
+                            <div class="footer">
+                                <button type="button" class="btn placeholder col-4" style="margin-right: 6px;"></button>
+                                <button type="button" class="btn placeholder col-2"></button>
                             </div>
                         </div>
                     </li>
