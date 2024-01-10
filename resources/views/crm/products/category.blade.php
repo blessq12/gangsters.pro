@@ -3,6 +3,15 @@
 @section('title', 'Категория - ' . $category->name )
 
 @section('content')
+    @if (session('success'))
+        <div class="row">
+            <div class="col">
+                <div class="alert alert-success">
+                    {{session('success')}}
+                </div>
+            </div>
+        </div>
+    @endif
     <div class="row mb-2">
         <div class="col-12">
             <a href="{{ route('crm.products.index') }}" class="text-decoration-none text-dark">
@@ -34,13 +43,13 @@
                                 <div class="row mb-2">
                                     <div class="col">
                                         <div class="form-group">
-                                            <label for="weigth">Вес нетто</label>
+                                            <label for="weigth">Вес нетто (гр)</label>
                                             <input type="text" onkeyup="this.value = this.value.replace(/[^\d+]/g, '')" name="weight" id="weight" class="form-control">
                                         </div>
                                     </div>
                                     <div class="col">
                                         <div class="form-group">
-                                            <label for="price">Вес нетто</label>
+                                            <label for="price">Цена (руб)</label>
                                             <input type="text" onkeyup="this.value = this.value.replace(/[^\d+]/g, '')" name="price" id="price" class="form-control">
                                         </div>
                                     </div>
@@ -81,7 +90,7 @@
                                     </label>
                                     <ul id="images-preview" class="list-unstyled p-0 m-0 d-flex mt-2 align-items-center"></ul>
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group d-block d-md-none d-lg-none">
                                     <button type="submit" class="btn btn-dark">Создать</button>
                                 </div>
                             </div>
@@ -120,7 +129,14 @@
                                     @endif
                                 </td >
                                 <td style='vertical-align:middle'>{{ $product->name }}</td>
-                                <td style='vertical-align:middle'>{{ $product->visible ? 'Виден' : 'Нет' }}</td>
+                                <td style='vertical-align:middle'>
+                                    <form action="{{ route('crm.product.product-visibility', $product->id) }}" method="post"> @csrf @method('PATCH')
+                                        <div class="btn-group">
+                                            <button type="submit" class="btn btn-outline-dark btn-sm {{ $product->visible ? 'active' : '' }}">Виден</button>
+                                            <button type="submit" class="btn btn-outline-dark btn-sm {{ !$product->visible ? 'active' : '' }}">Скрыт</button>
+                                        </div>
+                                    </form>
+                                </td>
                                 <td style='vertical-align:middle'>
                                     <div class="d-flex align-items-center">
                                         <a href="{{ route('crm.products.edit', $product->id) }}" class="btn btn-primary mx-2" title="Редактировать товар">

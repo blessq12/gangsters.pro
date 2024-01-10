@@ -8,7 +8,14 @@
             {{ session('success') }}
         </div>
     @endif
-
+    <div class="row mb-2">
+        <div class="col">
+            <a href="{{ route('crm.products.showCategory', $product->productCategory->id) }}" class="text-decoration-none text-dark">
+                <i class="fa fa-arrow-left" style="margin-right: 6px"></i>
+                Назад в категорию
+            </a>
+        </div>
+    </div>
     <div class="row row-cols-1 row-cols-md-1">
         <div class="col mb-4 d-flex" style="overflow: hidden; overflow-x: scroll">        
             <form action="{{ route('crm.image.product-image-upload') }}" method="post" enctype="multipart/form-data" id="upload">
@@ -61,6 +68,15 @@
                 @endforeach
             </ul>
         </div>
+        <div class="col mb-4">
+            <h4>Видимость:</h4>
+            <form action="{{ route('crm.product.product-visibility', $product->id) }}" method="post"> @csrf @method('PATCH')
+                <div class="btn-group">
+                    <button class="btn btn-outline-dark {{ $product->visible ? 'active' : '' }}" type="submit">Виден</button>
+                    <button class="btn btn-outline-dark {{ !$product->visible ? 'active' : '' }}" type="submit">Скрыт</button>
+                </div>
+            </form>
+        </div>
         <div class="col">
             <h4 class="mb-2">Основная информация</h4>
             <div class="row mb-4">
@@ -70,7 +86,7 @@
                     
                 </div>
             </div>
-            <form action=""> @csrf @method('PATCH')
+            <form action="{{ route('crm.products.update', $product->id) }}" method="post"> @csrf @method('PATCH')
                 <div class="row row-cols-1">
                     <div class="col-12 col-lg-6">
                         <div class="form-group mb-2">

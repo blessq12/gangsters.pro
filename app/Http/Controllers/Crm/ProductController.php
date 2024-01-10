@@ -41,7 +41,8 @@ class ProductController extends Controller
             'name' => $request->name,
             'consist' => $request->consist,
             'weigth' => $request->weight,
-            'price' => $request->price
+            'price' => $request->price,
+            'visible' => false
         ]);
 
         // tags 
@@ -137,7 +138,16 @@ class ProductController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $product = Product::findOrFail($id);
+        $product->update($request->all());
+
+        return back()->with('success', 'Данные обновлены');
+    }
+    public function productVisibility(string $id){
+        $product = Product::findOrFail($id);
+        $product->visible = !$product->visible;
+        $product->update();
+        return back()->with('success', 'Статус товара обновлен');
     }
     public function updateTag(string $id, string $tag){
        $product = Product::findOrFail($id);

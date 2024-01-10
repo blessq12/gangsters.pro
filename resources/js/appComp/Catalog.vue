@@ -81,28 +81,21 @@ export default{
         <div class="row">
             <div class="col-12" style="margin-bottom: 48px;">
                 <ul class="list-unstyled p-0 m-0 categories placeholder-glow">
-                    <li><button class="placeholder bg-dark" style="min-width: 140px;min-height: 50px;"></button></li>
-                    <li><button class="placeholder bg-dark" style="min-width: 140px;min-height: 50px;"></button></li>
-                    <li><button class="placeholder bg-dark" style="min-width: 140px;min-height: 50px;"></button></li>
-                    <li><button class="placeholder bg-dark" style="min-width: 140px;min-height: 50px;"></button></li>
-                    <li><button class="placeholder bg-dark" style="min-width: 140px;min-height: 50px;"></button></li>
-                    <li><button class="placeholder bg-dark" style="min-width: 140px;min-height: 50px;"></button></li>
-                    <li><button class="placeholder bg-dark" style="min-width: 140px;min-height: 50px;"></button></li>
-                    <li><button class="placeholder bg-dark" style="min-width: 140px;min-height: 50px;"></button></li>
-                    <li><button class="placeholder bg-dark" style="min-width: 140px;min-height: 50px;"></button></li>
+                    <li v-for="e in 5"><button class="placeholder bg-dark" style="min-width: 140px;min-height: 50px;"></button></li>
                 </ul>
             </div>
         </div>
         <div class="row">
-            <div class="col-12 placeholder-glow" v-for="item in pholder" :key="item">
+            <div class="col-12 placeholder-glow" v-for="e in 4">
                 <h4 class="placeholder col-5 mb-4"></h4>
                 <ul class="category-list list-unstyled p-0">
-                    <li>
+                    <li v-for="e in 5">
                         <div class="product">
                             <div class="header placeholder bg-dark"></div>
                             <div class="content">
-                                <h5 class="placeholder col-5"></h5>
-                                <p class="placeholder col-8"></p>
+                                <h4 class="placeholder col-9"></h4>
+                                <p class="placeholder col-12 mb-0"></p>
+                                <p class="placeholder col-5 mb-0"></p>
                             </div>
                             <div class="footer">
                                 <button class="btn placeholder">asdasdasd</button>
@@ -110,71 +103,7 @@ export default{
                             </div>
                         </div>
                     </li>
-                    <li>
-                        <div class="product">
-                            <div class="header placeholder bg-dark"></div>
-                            <div class="content">
-                                <h5 class="placeholder col-5"></h5>
-                                <p class="placeholder col-8"></p>
-                            </div>
-                            <div class="footer">
-                                <button class="btn placeholder">asdasdasd</button>
-                                <button class="btn placeholder mx-2">asdasdasd</button>
-                            </div>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="product">
-                            <div class="header placeholder bg-dark"></div>
-                            <div class="content">
-                                <h5 class="placeholder col-5"></h5>
-                                <p class="placeholder col-8"></p>
-                            </div>
-                            <div class="footer">
-                                <button class="btn placeholder">asdasdasd</button>
-                                <button class="btn placeholder mx-2">asdasdasd</button>
-                            </div>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="product">
-                            <div class="header placeholder bg-dark"></div>
-                            <div class="content">
-                                <h5 class="placeholder col-5"></h5>
-                                <p class="placeholder col-8"></p>
-                            </div>
-                            <div class="footer">
-                                <button class="btn placeholder">asdasdasd</button>
-                                <button class="btn placeholder mx-2">asdasdasd</button>
-                            </div>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="product">
-                            <div class="header placeholder bg-dark"></div>
-                            <div class="content">
-                                <h5 class="placeholder col-5"></h5>
-                                <p class="placeholder col-8"></p>
-                            </div>
-                            <div class="footer">
-                                <button class="btn placeholder">asdasdasd</button>
-                                <button class="btn placeholder mx-2">asdasdasd</button>
-                            </div>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="product">
-                            <div class="header placeholder bg-dark"></div>
-                            <div class="content">
-                                <h5 class="placeholder col-5"></h5>
-                                <p class="placeholder col-8"></p>
-                            </div>
-                            <div class="footer">
-                                <button class="btn placeholder">asdasdasd</button>
-                                <button class="btn placeholder mx-2">asdasdasd</button>
-                            </div>
-                        </div>
-                    </li>
+                    
                 </ul>
             </div>
         </div>
