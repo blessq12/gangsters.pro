@@ -39,17 +39,27 @@ export default{
                                 <p>{{ product.consist }}</p>
                             </div>
                             <div class="footer">
-                                <button type="button" class="btn btn-primary"
-                                    @click="localStore.manageStore(product, 'cart')"
-                                >
-                                    {{ localStore.checkItemInStore( product, 'cart') ? 'In' : 'Add to' }} cart
-                                    <i class="fa fa-plus"></i>
+
+                                <button type="button" class="btn btn-primary" @click="localStore.manageStore(product, 'cart')">
+                                
+                                    {{  localStore.checkItemInStore(product, 'cart') ? 'asdasd' : 'hhhghhghg' }}
+                                
                                 </button>
+                                
+                                
                                 <button type="button" class="btn btn-danger mx-1"
                                     @click="localStore.manageStore(product, 'fav')"
                                 >
-                                    {{ localStore.checkItemInStore(product, 'fav') ? 'In' : 'Add to' }} fav
-                                    <i class="fa fa-plus"></i>
+                                    <transition
+                                        enter-active-class="animate__animated animate__fadeIn"
+                                        leave-active-class="animate__animated animate__fadeOut"
+                                        :duration="50"
+                                        mode="out-in"
+                                    >
+                                        <i class="fa fa-heart-o" v-if="!localStore.checkItemInStore( product, 'fav')"></i>
+                                        <i class="fa fa-heart" v-else></i>
+                                    </transition>
+
                                 </button>
                                 <button class="btn btn-outline-primary rounded-circle px-3 fw-bold"
                                     @click="$emit('toggleAdditional', product)"
@@ -109,3 +119,65 @@ export default{
         </div>
     </div>
 </template>
+
+<style lang="sass" scoped>
+.categories
+    display: flex
+    align-items: center
+    white-space: nowrap 
+    overflow: hidden
+    overflow-x: scroll
+    &::-webkit-scrollbar
+        display: none
+    li
+        margin-right: 16px
+        button
+            background: $color-main
+            border: none
+            padding: 18px 22px
+            font-size: 1.2rem
+            border-radius: $default-radius
+            transition: all .3s
+            &:hover
+                background: $color-secondary
+                color: #fff
+.category-list
+    display: flex
+    white-space: nowrap
+    align-items: start
+    overflow: hidden
+    overflow-x: scroll
+    margin-bottom: 48px
+    &::-webkit-scrollbar
+        display: none
+    li
+        margin-right: 24px
+        .product
+            min-width: 300px
+            white-space: normal
+            .header
+                width: 100%
+                height: 180px
+                background: $color-main
+                margin-bottom: 12px
+                border-radius: $default-radius
+            .content
+                margin-bottom: 24px
+                h5
+                p
+@media(min-width: 992px)
+    .category-list
+        flex-wrap: wrap
+        li
+            width: 33.333%
+            margin-right: 0
+            margin-bottom: 24px
+            padding: 6px
+
+@media(min-width: 1200px)
+    .category-list
+            flex-wrap: wrap
+            li
+                width: 25%
+
+</style>

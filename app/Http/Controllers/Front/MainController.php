@@ -34,9 +34,4 @@ class MainController extends Controller
         return view('front.contact');
     }
 
-    public function test(Request $request){
-        if ($request->header('hx-request')){
-            return view('components.crm.sidebar');
-        }
-    }
 }

@@ -19,29 +19,31 @@
                             <div class="col mb-2 mb-md-0">
                                 <div class="form-group mb-2">
                                     <label for="header">Заголовок</label>
-                                    <input type="text" name="header" id="header" class="form-control" placeholder="Поле не обязательно">
+                                    <input type="text" name="header" id="header" class="form-control" placeholder="Поле необязательно">
                                 </div>
                                 <div class="form-group mb-4">
                                     <label for="subheader">Подзаголовок</label>
-                                    <input type="text" name="subheader" id="subheader" class="form-control" placeholder="Поле не обязательно">
+                                    <input type="text" name="subheader" id="subheader" class="form-control" placeholder="Поле необязательно">
                                 </div>
-                                <label for="image" class="w-100 btn btn-primary d-block mb-4">
-                                    Добавить фото
-                                    <i class="fa fa-plus"></i>
-                                    <input type="file" name="image" id="image" class="d-none" 
-                                        onchange="{
-                                            document.querySelector('#image-preview').src = window.URL.createObjectURL(this.files[0])
-                                            document.querySelector('button[type=submit]').disabled = false
-                                        }"
-                                    >
-                            </label>
-                                <div class="form-group">
+                                <div class="form-group d-none d-lg-block">
                                     <button type="submit" class="btn btn-primary" disabled>Создать</button>
                                 </div>
                             </div>
                             <div class="col">
-                                <div style="max-width: 200px">
-                                    <img src="" alt="" id="image-preview" class="img-fluid">
+                                <div class="form-group">
+                                    <p class="mb-0">Изображение</p>
+                                    <label for="image" id="preview" 
+                                        class="bg-image text-secondary rounded d-flex align-items-center justify-content-center cursor-pointer"
+                                        style="background: #dedede; height: 200px; width: 200px"
+                                    > 
+                                        <i class="fa fa-plus fa-3x"></i>
+                                        <input type="file" name="image" id="image" class="d-none" onchange="{
+                                            document.querySelector('#preview').style.background = 'url(' + window.URL.createObjectURL(this.files[0]) + ')'
+                                            document.querySelector('#preview').querySelector('i').classList.remove('fa-plus')
+                                            document.querySelector('#preview').querySelector('i').classList.add('fa-pencil')
+                                            document.querySelectorAll('button[type=submit]').forEach( e => e.disabled = false )
+                                        }">
+                                    </label>
                                 </div>
                             </div>
                         </div>

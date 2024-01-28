@@ -26,7 +26,7 @@ class BannerController extends Controller
      */
     public function create()
     {
-        return view('crm.banners.create');
+        // 
     }
 
     /**
@@ -34,9 +34,7 @@ class BannerController extends Controller
      */
     public function store(Request $request)
     {
-        $banner = new Banner();
-        $banner->header = $request->header;
-        $banner->subheader = $request->subheader;
+        $banner = new Banner($request->except('_token'));
 
         if (!$banner->save()) return back()->withErrors(['error'=>'Не удалось сохранить запись']);
         if (!is_dir(public_path('assets/banners'))) mkdir(public_path('assets/banners'));
