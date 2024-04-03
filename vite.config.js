@@ -17,6 +17,7 @@ export default defineConfig({
                 'resources/sass/crm/app.sass',
                 'resources/sass/auth.sass',
                 'resources/js/app.js',
+                'resources/js/front/app.js',
             ],
             refresh: true,
         }),

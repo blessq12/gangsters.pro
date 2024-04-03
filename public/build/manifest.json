@@ -1,28 +1,26 @@
 {
-  "resources/js/app.css": {
-    "file": "assets/app-4987e2f8.css",
-    "src": "resources/js/app.css"
-  },
   "resources/js/app.js": {
-    "css": [
-      "assets/app-4987e2f8.css"
-    ],
-    "file": "assets/app-d3fb6061.js",
+    "file": "assets/app-02b332ad.js",
     "isEntry": true,
     "src": "resources/js/app.js"
   },
+  "resources/js/front/app.js": {
+    "file": "assets/app-ec4d8b22.js",
+    "isEntry": true,
+    "src": "resources/js/front/app.js"
+  },
   "resources/sass/auth.sass": {
-    "file": "assets/auth-6d737bf9.css",
+    "file": "assets/app-6d737bf9.css",
     "isEntry": true,
     "src": "resources/sass/auth.sass"
   },
   "resources/sass/crm/app.sass": {
-    "file": "assets/app-69c2c3eb.css",
+    "file": "assets/app-6d737bf9.css",
     "isEntry": true,
-    "src": "resources/sass/crm/app.sass"
+    "src": "resources/sass/auth.sass"
   },
   "resources/sass/front/app.sass": {
-    "file": "assets/app-8b416e7c.css",
+    "file": "assets/app-cebbf548.css",
     "isEntry": true,
     "src": "resources/sass/front/app.sass"
   }
