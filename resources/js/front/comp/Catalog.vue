@@ -18,16 +18,17 @@ export default {
             </div>
         </div>
         <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-3 mb-4 category-list">
-            <div class="col" v-for="product in category.products" :key="product.id">
+            <div class="col rounded" v-for="product in category.products" :key="product.id">
                 <div class="product">
                     <div class="header bg-image rounded" style="background: url('http://via.placeholder.com/512x512');"></div>
                     <div class="content">
                         <span>{{ product.name }}</span>
                     </div>
                     <div class="footer">
-                        <button type="button" class="rounded btn" @click="">
+                        <button type="button" class="btn rounded" >
                             + В корзину
                         </button>
+                        <button type="button" class="additional btn">i</button>
                     </div>
                 </div>
             </div>

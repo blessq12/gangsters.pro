@@ -7,15 +7,36 @@
             flex-wrap: wrap
         &::-webkit-scrollbar
             display: none
+        .col
+            padding: 12px
+            &:hover
+                background: rgba(212, 212, 212, 0.265)
     .product
         .header
-            min-height: 200px
+            min-height: 160px
         .content
             margin: 12px 0
             min-height: 50px
         .footer
+            display: flex
+            align-items: center
             button
                 background: $color-main
                 border: unset
-                padding: 18px 24px
+                padding: 14px 18px
                 white-space: nowrap
+                margin-right: 12px
+                &:hover
+                    background: #2e2e2e
+                    color: #fff
+                &.additional
+                    background: transparent
+                    border: 1px solid $color-main
+                    border-radius: 100px
+                    padding: 12px 22px
+                    display: flex
+                    align-items: center
+                    justify-content: center
+                    &:hover
+                        background: $color-main
+                        color: #2e2e2e
