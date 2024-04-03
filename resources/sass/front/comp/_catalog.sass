@@ -1,0 +1,21 @@
+.category
+    .category-list
+        flex-wrap: nowrap
+        overflow: hidden
+        overflow-x: scroll
+        @media(min-width: 992px)
+            flex-wrap: wrap
+        &::-webkit-scrollbar
+            display: none
+    .product
+        .header
+            min-height: 200px
+        .content
+            margin: 12px 0
+            min-height: 50px
+        .footer
+            button
+                background: $color-main
+                border: unset
+                padding: 18px 24px
+                white-space: nowrap
