@@ -2,8 +2,7 @@
 import './bootstrap';
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
-import { vMaska } from 'maska';
-import { HtmxExtension } from 'htmx.org';
+import { MaskInput, vMaska } from 'maska';
 
 /**
  * Next, we will create a fresh Vue application instance. You may then begin
@@ -12,18 +11,13 @@ import { HtmxExtension } from 'htmx.org';
  */
 
 const app = createApp({});
-
 app.use(createPinia());
-
 app.directive('maska', vMaska);
-
 
 /**
  * The following block of code may be used to automatically register your
  * Vue components. It will recursively scan this directory for the Vue
  * components and automatically register them with their "basename".
- *
- * Eg. ./components/ExampleComponent.vue -> <example-component></example-component>
  */
 
 Object.entries(import.meta.glob('./**/*.vue', { eager: true })).forEach(([path, definition]) => {
@@ -37,3 +31,5 @@ Object.entries(import.meta.glob('./**/*.vue', { eager: true })).forEach(([path, 
  */
 
 app.mount('#app');
+
+new MaskInput("[data-maska]")

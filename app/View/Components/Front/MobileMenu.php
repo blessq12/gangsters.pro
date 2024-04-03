@@ -5,17 +5,15 @@ namespace App\View\Components\Front;
 use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
-use App\Models\Company;
 
-class Navbar extends Component
+class MobileMenu extends Component
 {
-    public Company $company;
     /**
      * Create a new component instance.
      */
     public function __construct()
     {
-        $this->company = Company::first();
+        //
     }
 
     /**
@@ -23,6 +21,6 @@ class Navbar extends Component
      */
     public function render(): View|Closure|string
     {
-        return view('components.front.navbar');
+        return view('components.front.mobile-menu');
     }
 }

@@ -1,0 +1,28 @@
+.mobile-menu
+    position: fixed
+    top: 0
+    left: 0
+    width: 100%
+    height: 100%
+    transform: translateX(100%)
+    background: $color-dark
+    transition: all .3s
+    &.show
+        transform: translateX(0%)
+    .mobile-header
+        padding: 12px 0
+        .inner
+            height: 50px
+    .mobile-nav
+        padding: 0
+        margin: 0
+        list-style: none
+        a
+            color: #fff
+            li
+                padding: 12px 0
+                border-bottom: 1px solid transparent
+                transition: all .3s
+            &:hover
+                li
+                    border-color: $color-main
