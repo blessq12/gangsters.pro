@@ -4,5 +4,5 @@
 @section('desc', '')
 
 @section('content')
-    
+    <x-front.stories></x-front.stories>
 @endsection

@@ -14,6 +14,11 @@
         <div class="row">
             <div class="col">
                 <ul class="mobile-nav">
+                    @if (!Request::is('/'))
+                    <a href="{{ route('main.index') }}">
+                        <li>{{ __('Главная') }}</li>
+                    </a>
+                    @endif
                     <a href="{{ route('main.about') }}">
                         <li>{{ __('О компании') }}</li>
                     </a>
