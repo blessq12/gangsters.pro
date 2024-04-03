@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Front;
 
 use App\Http\Controllers\Controller;
+use App\Models\ProductCategory;
 use Illuminate\Http\Request;
 
 class MainController extends Controller

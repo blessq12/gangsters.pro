@@ -2,20 +2,20 @@
 
 namespace App\View\Components\Front;
 
-use App\Models\Story;
+use App\Models\ProductCategory;
 use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
 
-class Stories extends Component
+class CategoryBar extends Component
 {
-    public $stories;
+    public $categories;
     /**
      * Create a new component instance.
      */
     public function __construct()
     {
-        $this->stories = Story::all();
+        $this->categories = ProductCategory::all();
     }
 
     /**
@@ -23,6 +23,6 @@ class Stories extends Component
      */
     public function render(): View|Closure|string
     {
-        return view('components.front.stories');
+        return view('components.front.category-bar');
     }
 }
