@@ -22,6 +22,7 @@ Route::controller(MainController::class)->name('main.')->group(function () {
     Route::get('/about', 'about')->name('about');
     Route::get('/vacancy', 'vacancy')->name('vacancy');
     Route::get('/contact', 'contact')->name('contact');
+    Route::get('/xml', 'sendXml');
 });
 
 Route::controller(CrmController::class)->middleware(['auth', 'can:admin'])->prefix('crm')->name('crm.')->group(function () {
