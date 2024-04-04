@@ -1,7 +1,12 @@
 <script>
+import { mapStores } from 'pinia';
+import { appStore } from '../../stores/appStorage';
 export default {
     props: {
         goods: Object
+    },
+    computed: {
+        ...mapStores( appStore )
     }
 }
 </script>
@@ -28,7 +33,12 @@ export default {
                         <button type="button" class="btn rounded" >
                             + В корзину
                         </button>
-                        <button type="button" class="additional btn">i</button>
+                        <button 
+                            type="button" 
+                            class="additional btn"
+                            @click="appStore.additional = !appStore.additional"
+
+                        >i</button>
                     </div>
                 </div>
             </div>
