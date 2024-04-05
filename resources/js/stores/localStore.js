@@ -33,6 +33,9 @@ export const localStore = defineStore('local', {
             if (storeName == 'fav') store = this.fav
             
             if (store.findIndex(e => e.id == product.id) == -1) {
+                if (storeName == 'cart') {
+                    product.qty = 1
+                }
                 store.push(product)
             } else {
                 store.splice(store.findIndex(e => e.id == product.id), 1)
@@ -53,9 +56,25 @@ export const localStore = defineStore('local', {
                 return false
             }
 
+        },
+        manageQty( direction, product ) {
+            let index = this.cart.findIndex(e => e.id == product.id)
+            if (direction) {
+                this.cart[index].qty++
+            } else {
+                this.cart[index].qty--
+            }
+            if (this.cart[index].qty < 1) {
+                this.cart.splice(index, 1)    
+            }
+            localStorage.setItem('cart', JSON.stringify(this.cart))
         }
     },
-    getters:{}
+    getters: {
+        cartTotal() {
+            return this.cart.reduce( (acc, item) => { return acc += parseInt(item.qty) * parseInt(item.price) }, 0 )
+        }
+    }
 })
 
 if (import.meta.hot) {
