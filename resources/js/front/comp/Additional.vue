@@ -21,8 +21,9 @@ export default {
             enter-active-class="animate__animated animate__fadeIn"
             leave-active-class="animate__animated animate__fadeOut"
         >
-            <div class="wrap" v-if="appStore.additional" @click="appStore.additional = !appStore.additional">
-                <div class="container invisible">
+            <div class="wrap" v-if="appStore.additional" >
+                <div class="overlay" @click="appStore.additional = !appStore.additional"></div>
+                <div class="container invisible position-relative">
                     <div class="row row-cols-1 row-cols-md-1 row-cols-lg-2 justify-content-center">
                         <div class="col">
                             <div class="additional visible bg-light p-5 rounded">

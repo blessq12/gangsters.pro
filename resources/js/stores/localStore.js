@@ -1,0 +1,63 @@
+import { defineStore, acceptHMRUpdate } from "pinia";
+import { array } from "yup";
+
+export const localStore = defineStore('local', {
+    state: () => ({
+        cart: [],
+        fav: []
+    }),
+    actions: {
+        loadStorage() {
+
+            let localCart = JSON.parse(localStorage.getItem('cart')),
+                localFav = JSON.parse(localStorage.getItem('fav'))
+            
+            if (localStorage.getItem('cart') == null) {
+                localStorage.setItem('cart', JSON.stringify([]))
+                this.cart = []
+            }
+            if (localStorage.getItem('fav') == null) {
+                localStorage.setItem('fav', JSON.stringify([]))
+                this.cart = []
+            }
+
+            this.cart = localCart == null ? [] : localCart
+            this.fav = localFav == null ? [] : localFav
+
+        },
+        manageStore(storeName, product) {
+            
+            let store = null
+
+            if (storeName == 'cart') store = this.cart
+            if (storeName == 'fav') store = this.fav
+            
+            if (store.findIndex(e => e.id == product.id) == -1) {
+                store.push(product)
+            } else {
+                store.splice(store.findIndex(e => e.id == product.id), 1)
+            }
+
+            localStorage.setItem(storeName, JSON.stringify(store))
+        },
+        checkExist(storeName, product) {
+            
+            let store = null
+
+            if (storeName == 'cart') store = this.cart
+            if (storeName == 'fav') store = this.fav
+
+            if (store.findIndex(e => e.id == product.id) !== -1) {
+                return true
+            } else {
+                return false
+            }
+
+        }
+    },
+    getters:{}
+})
+
+if (import.meta.hot) {
+    import.meta.hot.accept(acceptHMRUpdate(localStore, import.meta.hot))
+}

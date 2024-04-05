@@ -3,7 +3,9 @@ import { defineStore, acceptHMRUpdate } from "pinia";
 export const appStore = defineStore('app', {
     state: () => ({
         additional: false,
-        modal: false
+        modal: false,
+        currentAdditional: null,
+        modalName: null
     }),
     actions: {},
     getters:{}
