@@ -60,7 +60,6 @@ export default {
 .wrap
     display: flex
     align-items: center
-    padding: 48px
     .modal-win
         max-height: calc( 100vh - 48px )
         overflow: hidden
