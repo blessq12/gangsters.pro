@@ -16,7 +16,6 @@ class CompanySeeder extends Seeder
         DB::table('companies')->insert([
             'name' => "Gangster's Sushi",
             'description' => 'Доставка готовой еды в Томске',
-            'logo' => '/assets/images/logo.png',
             'country' => 'Россия',
             'state' => 'Томская',
             'city' => 'Томск',

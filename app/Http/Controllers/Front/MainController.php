@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Front;
 
 use App\Http\Controllers\Controller;
 use App\Models\ProductCategory;
+use App\Models\User;
+use App\Models\UserRole;
 use Illuminate\Http\Request;
 
 class MainController extends Controller

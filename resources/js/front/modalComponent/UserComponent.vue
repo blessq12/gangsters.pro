@@ -1,6 +1,11 @@
 <script>
 import { object, string } from 'yup'
+import { userStore } from '../../stores/userStore'
+import { mapStores } from 'pinia'
 export default {
+    computed: {
+        ...mapStores(userStore)
+    },
     data: () => ({
         form: 'login',
         showPass: false,
@@ -29,13 +34,13 @@ export default {
         validate(form) {
             if (form == 'login') {
                 this.loginSchema.validate(this.loginData, { abortEarly: false })
-                    .then(res => {
+                    .then( res => {
                         this.loginErrorBag = {}
-                        console.log(res)
+                        this.userStore.auth(res)
                     })
-                    .catch(err => {
+                    .catch( err => {
                         this.loginErrorBag = {}
-                        err.inner.forEach(e => { 
+                        err.inner.forEach( e => { 
                             this.loginErrorBag[e.path] = e.message
                      })})
             }
@@ -43,7 +48,7 @@ export default {
                 this.registerSchema.validate(this.registerData, { abortEarly: false })
                     .then(res => {
                         this.registerErrorBag = {}
-                        console.log(res)
+                        this.userStore.register(res)
                     })
                     .catch(err => {
                         this.registerErrorBag = {}
