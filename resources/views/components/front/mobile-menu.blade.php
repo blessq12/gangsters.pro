@@ -11,13 +11,15 @@
                 </div>
             </div>
         </div>
-        <div class="row">
+        <div class="row mb-4">
             <div class="col text-light">
                 <user-component></user-component>
             </div>
         </div>
         <div class="row">
             <div class="col">
+                <h4 class="text-light">Навигация</h4>
+                <hr class="border-warning m-0">
                 <ul class="mobile-nav">
                     @if (!Request::is('/'))
                     <a href="{{ route('main.index') }}">

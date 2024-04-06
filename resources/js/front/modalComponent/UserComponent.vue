@@ -3,8 +3,57 @@ import { object, string } from 'yup'
 export default {
     data: () => ({
         form: 'login',
-        showPass: false
-    })
+        showPass: false,
+        loginData: {
+            tel: null,
+            password: null
+        },
+        registerData: {
+            name: null,
+            tel: null,
+            email: null
+        },
+        loginSchema: object({
+            tel: string().required('Обязательное поле').min(18, 'Номер 18 символов').max(18, 'Номер 18 символов'),
+            password: string().required('Обязательное поле').min(6, "Минимум 6 символов")
+        }),
+        registerSchema: object({
+            name: string().required('Обязательное поле').min(3, "Минимум 3 символа").max(255, 'Максимум 255 символов'),
+            tel: string().required('Обязательное поле').min(18, 'Номер 18 символов').max(18, 'Номер 18 символов'),
+            email: string().required('Обязательное поле').email('Невалидный email адрес').max(255, 'Максимум 255 символов')
+        }),
+        loginErrorBag: {},
+        registerErrorBag: {},
+    }),
+    methods: {
+        validate(form) {
+            if (form == 'login') {
+                this.loginSchema.validate(this.loginData, { abortEarly: false })
+                    .then(res => {
+                        this.loginErrorBag = {}
+                        console.log(res)
+                    })
+                    .catch(err => {
+                        this.loginErrorBag = {}
+                        err.inner.forEach(e => { 
+                            this.loginErrorBag[e.path] = e.message
+                     })})
+            }
+            if (form == 'register') {
+                this.registerSchema.validate(this.registerData, { abortEarly: false })
+                    .then(res => {
+                        this.registerErrorBag = {}
+                        console.log(res)
+                    })
+                    .catch(err => {
+                        this.registerErrorBag = {}
+                        err.inner.forEach( e => {
+                            this.registerErrorBag[e.path] = e.message
+                        })
+                    })
+            }
+        }
+    }
 }
 </script>
 
@@ -28,34 +77,59 @@ export default {
     </div>
     <div class="row">
         <div class="col">
-            <form @submit.prevent="validate" v-if="form == 'login'">
+            <form @submit.prevent="validate('login')" v-if="form == 'login'">
                 <div class="form-group">
-                    <label for="tel">Номер телефона</label>
-                    <input type="text" name="tel" id="tel" class="form-control" v-maska data-maska="+7 (###) ###-##-##" placeholder="+7 ">
+                    <div class="d-flex mb-2">
+                        <label for="tel">Номер телефона</label>
+                        <error-label :errorBag="loginErrorBag" name="tel"></error-label>
+                    </div>
+                    <input type="text" name="tel" id="tel" class="form-control" v-maska data-maska="+7 (###) ###-##-##" placeholder="+7 " v-model="loginData.tel">
                 </div>
                 <div class="form-group">
-                    <label for="password">Пароль</label>
+                    <div class="d-flex mb-2">
+                        <label for="password">Пароль</label>
+                        <error-label :errorBag="loginErrorBag" name="password"></error-label>
+                    </div>
                     <div class="input-group">
-                        <input :type="showPass ? 'text' : 'password'" class="form-control" name="password" id="password">
+                        <input :type="showPass ? 'text' : 'password'" class="form-control" name="password" id="password" v-model="loginData.password">
                         <span class="input-group-text" @click="showPass = !showPass">
                             <i class="fa fa-eye" v-if="!showPass"></i>
                             <i class="fa fa-eye-slash" v-else></i>
                         </span>
                     </div>
                 </div>
+                <div class="form-group mt-4">
+                    <button type="submit" class="btn rounded btn-light">
+                        Отправить
+                    </button>
+                </div>
             </form>
-            <form @submit.prevent="validate" v-else>
+            <form @submit.prevent="validate('register')" v-else>
                 <div class="form-group">
-                    <label for="name">Имя</label>
-                    <input type="text" name="name" id="name" class="form-control">
+                    <div class="d-flex mb-2">
+                        <label for="name">Имя</label>
+                        <error-label :errorBag="registerErrorBag" name="name"></error-label>
+                    </div>
+                    <input type="text" name="name" id="name" class="form-control" v-model="registerData.name">
                 </div>
                 <div class="form-group">
-                    <label for="tel">Номер телефона</label>
-                    <input type="text" name="tel" id="tel" class="form-control" v-maska data-maska="+7 (###) ###-##-##" placeholder="+7 ">
+                    <div class="d-flex mb-2">
+                        <label for="tel">Номер телефона</label>
+                        <error-label :errorBag="registerErrorBag" name="tel"></error-label>
+                    </div>
+                    <input type="text" name="tel" id="tel" class="form-control" v-maska data-maska="+7 (###) ###-##-##" placeholder="+7 " v-model="registerData.tel">
                 </div>
                 <div class="form-group">
-                    <label for="email">Email адрес</label>
-                    <input type="text" name="email" id="email" class="form-control">
+                    <div class="d-flex mb-2">
+                        <label for="email">Email адрес</label>
+                        <error-label :errorBag="registerErrorBag" name="email"></error-label>
+                    </div>
+                    <input type="text" name="email" id="email" class="form-control" v-model="registerData.email">
+                </div>
+                <div class="form-group mt-4">
+                    <button type="submit" class="btn rounded btn-light">
+                        Отправить
+                    </button>
                 </div>
             </form>
         </div>
