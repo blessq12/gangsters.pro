@@ -61,7 +61,7 @@ export default {
     display: flex
     align-items: center
     .modal-win
-        max-height: calc( 100vh - 48px )
+        max-height: calc( 100vh - 96px )
         overflow: hidden
         overflow-y: scroll
         position: relative

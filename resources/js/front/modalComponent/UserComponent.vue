@@ -66,6 +66,7 @@ export default {
 .btn-group
     button
         border: 0
+        background: #fff
     button:first-child
         border-radius: 18px 0 0 18px !important
     button:last-child
