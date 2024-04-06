@@ -8,7 +8,7 @@ export const localStore = defineStore('local', {
     }),
     actions: {
         loadStorage() {
-
+            console.log('load local store')
             let localCart = JSON.parse(localStorage.getItem('cart')),
                 localFav = JSON.parse(localStorage.getItem('fav'))
             

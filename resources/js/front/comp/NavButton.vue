@@ -4,7 +4,6 @@ import { appStore } from '../../stores/appStorage.js'
 import { localStore } from '../../stores/localStore';
 export default {
     mounted() {
-        this.localStore.loadStorage()
     },
     props: {
         target: String

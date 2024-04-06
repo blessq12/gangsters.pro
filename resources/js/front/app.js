@@ -11,11 +11,3 @@ let mobileMenuObserver = new MutationObserver(function (entries, observer) {
 })
 
 mobileMenuObserver.observe(mobileMenu, { attributes: true })
-
-if (window.navigator.standalone !== void(0)) {
-	$(window).load(function() {
-		if (!this.navigator.standalone) {
-			this.setTimeout(function() { this.scrollTo(this.scrollX, this.scrollY + 1); }, 500);
-		}
-	});
-}

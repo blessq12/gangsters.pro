@@ -12,6 +12,11 @@
             </div>
         </div>
         <div class="row">
+            <div class="col text-light">
+                <user-component></user-component>
+            </div>
+        </div>
+        <div class="row">
             <div class="col">
                 <ul class="mobile-nav">
                     @if (!Request::is('/'))
