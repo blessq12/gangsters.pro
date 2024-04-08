@@ -70,8 +70,7 @@ class AuthController extends Controller
 
     public function apiLogin(Request $request)
     {
-        if (User::where('tel', $request->tel)->exists()) {
-        }
+        return response()->json($request, 200);
     }
     public function apiRegister(Request $request)
     {
