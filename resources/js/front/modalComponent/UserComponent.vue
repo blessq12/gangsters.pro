@@ -2,6 +2,7 @@
 import { object, string } from 'yup'
 import { userStore } from '../../stores/userStore'
 import { mapStores } from 'pinia'
+
 export default {
     computed: {
         ...mapStores(userStore)
@@ -57,86 +58,112 @@ export default {
                         })
                     })
             }
+        },
+        showToast() {
         }
     }
 }
 </script>
 
 <template>
-    <div class="row">
-        <div class="col">
-            <p>Авторизуйтесь или зарегистрируйте новую учетную запись</p>
+    <div v-if="!userStore.authStatus">
+        <div class="row">
+            <div class="col">
+                <p>Авторизуйтесь или зарегистрируйте новую учетную запись</p>
+            </div>
         </div>
-    </div>
-    <div class="row mb-4">
-        <div class="col">
-            <div class="btn-group">
-                <button :class="`rounded btn ${form == 'login' ? 'active' : ''}`" type="button" @click="form = 'login'">
-                    Авторизация
-                </button>
-                <button :class="`rounded btn ${form == 'register' ? 'active' : ''}`" type="button" @click="form = 'register'">
-                    Регистрация
-                </button>
+        <div class="row mb-4">
+            <div class="col">
+                <div class="btn-group">
+                    <button :class="`rounded btn ${form == 'login' ? 'active' : ''}`" type="button" @click="form = 'login'">
+                        Авторизация
+                    </button>
+                    <button :class="`rounded btn ${form == 'register' ? 'active' : ''}`" type="button" @click="form = 'register'">
+                        Регистрация
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <form @submit.prevent="validate('login')" v-if="form == 'login'">
+                    <div class="form-group">
+                        <div class="d-flex mb-2">
+                            <label for="tel">Номер телефона</label>
+                            <error-label :errorBag="loginErrorBag" name="tel"></error-label>
+                        </div>
+                        <input type="text" name="tel" id="tel" class="form-control" v-maska data-maska="+7 (###) ###-##-##" placeholder="+7 " v-model="loginData.tel">
+                    </div>
+                    <div class="form-group">
+                        <div class="d-flex mb-2">
+                            <label for="password">Пароль</label>
+                            <error-label :errorBag="loginErrorBag" name="password"></error-label>
+                        </div>
+                        <div class="input-group">
+                            <input :type="showPass ? 'text' : 'password'" class="form-control" name="password" id="password" v-model="loginData.password">
+                            <span class="input-group-text" @click="showPass = !showPass">
+                                <i class="fa fa-eye" v-if="!showPass"></i>
+                                <i class="fa fa-eye-slash" v-else></i>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group mt-4">
+                        <button type="submit" class="btn rounded btn-light">
+                            Отправить
+                        </button>
+                    </div>
+                </form>
+                <form @submit.prevent="validate('register')" v-else>
+                    <div class="form-group">
+                        <div class="d-flex mb-2">
+                            <label for="name">Имя</label>
+                            <error-label :errorBag="registerErrorBag" name="name"></error-label>
+                        </div>
+                        <input type="text" name="name" id="name" class="form-control" v-model="registerData.name">
+                    </div>
+                    <div class="form-group">
+                        <div class="d-flex mb-2">
+                            <label for="tel">Номер телефона</label>
+                            <error-label :errorBag="registerErrorBag" name="tel"></error-label>
+                        </div>
+                        <input type="text" name="tel" id="tel" class="form-control" v-maska data-maska="+7 (###) ###-##-##" placeholder="+7 " v-model="registerData.tel">
+                    </div>
+                    <div class="form-group">
+                        <div class="d-flex mb-2">
+                            <label for="email">Email адрес</label>
+                            <error-label :errorBag="registerErrorBag" name="email"></error-label>
+                        </div>
+                        <input type="text" name="email" id="email" class="form-control" v-model="registerData.email">
+                    </div>
+                    <div class="form-group mt-4">
+                        <button type="submit" class="btn rounded btn-light">
+                            Отправить
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
-    <div class="row">
-        <div class="col">
-            <form @submit.prevent="validate('login')" v-if="form == 'login'">
-                <div class="form-group">
-                    <div class="d-flex mb-2">
-                        <label for="tel">Номер телефона</label>
-                        <error-label :errorBag="loginErrorBag" name="tel"></error-label>
-                    </div>
-                    <input type="text" name="tel" id="tel" class="form-control" v-maska data-maska="+7 (###) ###-##-##" placeholder="+7 " v-model="loginData.tel">
+    <div v-else>
+        <div class="row">
+            <div class="col">
+                <h5>Привет, {{ userStore.userData.name }}</h5>
+                <p>На данный момент на счету {{ userStore.userData.coins }} койнов. Продолжать совершать заказы, чтобы накопить больше</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <button type="button" class="btn btn-secondary w-100" data-bs-toggle="collapse" data-bs-target="#orders">
+                    Мои заказы
+                </button>
+                <div class="collapse mt-2" id="orders">
+                    <ul>
+                        <li>Заказ 1</li>
+                        <li>Заказ 2</li>
+                        <li>Заказ 3</li>
+                    </ul>
                 </div>
-                <div class="form-group">
-                    <div class="d-flex mb-2">
-                        <label for="password">Пароль</label>
-                        <error-label :errorBag="loginErrorBag" name="password"></error-label>
-                    </div>
-                    <div class="input-group">
-                        <input :type="showPass ? 'text' : 'password'" class="form-control" name="password" id="password" v-model="loginData.password">
-                        <span class="input-group-text" @click="showPass = !showPass">
-                            <i class="fa fa-eye" v-if="!showPass"></i>
-                            <i class="fa fa-eye-slash" v-else></i>
-                        </span>
-                    </div>
-                </div>
-                <div class="form-group mt-4">
-                    <button type="submit" class="btn rounded btn-light">
-                        Отправить
-                    </button>
-                </div>
-            </form>
-            <form @submit.prevent="validate('register')" v-else>
-                <div class="form-group">
-                    <div class="d-flex mb-2">
-                        <label for="name">Имя</label>
-                        <error-label :errorBag="registerErrorBag" name="name"></error-label>
-                    </div>
-                    <input type="text" name="name" id="name" class="form-control" v-model="registerData.name">
-                </div>
-                <div class="form-group">
-                    <div class="d-flex mb-2">
-                        <label for="tel">Номер телефона</label>
-                        <error-label :errorBag="registerErrorBag" name="tel"></error-label>
-                    </div>
-                    <input type="text" name="tel" id="tel" class="form-control" v-maska data-maska="+7 (###) ###-##-##" placeholder="+7 " v-model="registerData.tel">
-                </div>
-                <div class="form-group">
-                    <div class="d-flex mb-2">
-                        <label for="email">Email адрес</label>
-                        <error-label :errorBag="registerErrorBag" name="email"></error-label>
-                    </div>
-                    <input type="text" name="email" id="email" class="form-control" v-model="registerData.email">
-                </div>
-                <div class="form-group mt-4">
-                    <button type="submit" class="btn rounded btn-light">
-                        Отправить
-                    </button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 </template>

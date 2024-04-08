@@ -8,7 +8,6 @@
     <x-front.banner></x-front.banner>
     <x-front.category-bar></x-front.category-bar>
     <x-front.catalog></x-front.catalog>
-    <x-front.footer></x-front.footer>
     <additional></additional>
     <modal></modal>
 @endsection

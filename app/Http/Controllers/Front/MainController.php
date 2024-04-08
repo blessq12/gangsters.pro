@@ -27,6 +27,7 @@ class MainController extends Controller
     }
     public function vacancy()
     {
+        return view('front.vacancy');
     }
     public function contact()
     {

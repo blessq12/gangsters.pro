@@ -18,7 +18,8 @@ class GreetingMessageWithPassword extends Mailable
      */
 
     public function __construct(
-        public $data
+        public object $data,
+        public string $password
     ) {
         //
     }

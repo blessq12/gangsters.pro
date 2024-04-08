@@ -23,6 +23,7 @@ export default {
             mode="out-in"
         >
             <div class="wrap" v-if="show" @click="show = !show">
+            
             </div>
         </transition>
     </teleport>

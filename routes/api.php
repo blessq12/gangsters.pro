@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\ApiClientAuthController;
 use App\Http\Controllers\AuthController;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -15,8 +17,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::controller(AuthController::class)->prefix('auth')->group(function () {
-    Route::post('/login', 'apiLogin');
-    Route::post('/register', 'apiRegister');
-    Route::post('/user', 'getUser');
+Route::controller(ApiClientAuthController::class)->prefix('auth')->group(function () {
+    Route::post('/login', 'clientLogin');
+    Route::post('/register', 'clientRegister');
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/user', 'getUser');
+    });
 });

@@ -3,7 +3,9 @@ import './bootstrap';
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import { MaskInput, vMaska } from 'maska';
-
+import Toast from 'vue-toastification';
+import { useToast } from 'vue-toastification';
+import "vue-toastification/dist/index.css";
 /**
  * Next, we will create a fresh Vue application instance. You may then begin
  * registering components with the application instance so they are ready
@@ -11,8 +13,14 @@ import { MaskInput, vMaska } from 'maska';
  */
 
 const app = createApp({});
+
+const options = {
+}
+app.use( Toast , options)
 app.use(createPinia());
 app.directive('maska', vMaska);
+
+
 
 /**
  * The following block of code may be used to automatically register your
@@ -31,5 +39,4 @@ Object.entries(import.meta.glob('./**/*.vue', { eager: true })).forEach(([path, 
  */
 
 app.mount('#app');
-
 new MaskInput("[data-maska]")
