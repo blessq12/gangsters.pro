@@ -7,10 +7,10 @@
     <meta name="description" content="@yield('desc')">
     <title>@yield('title')</title>
     @include('inc/cdn')
+    @include('inc/favicon')
     @vite('resources/sass/front/app.sass')
     @vite('resources/js/app.js')
     @vite('resources/js/front/app.js')
-
 </head>
 <body>
     <div id="app">
