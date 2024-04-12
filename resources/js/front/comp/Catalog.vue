@@ -64,5 +64,7 @@ export default {
 </template>
 
 <style lang="sass" scoped>
-
+.category
+    .col
+        max-width: 320px
 </style>
