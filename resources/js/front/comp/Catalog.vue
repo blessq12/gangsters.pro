@@ -53,7 +53,7 @@ export default {
                         <button 
                             type="button" 
                             class="additional btn"
-                            @click="appStore.additional = !appStore.additional"
+                            @click="appStore.additional = !appStore.additional; appStore.currentAdditional = product"
 
                         >i</button>
                     </div>

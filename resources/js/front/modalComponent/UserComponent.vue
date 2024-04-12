@@ -157,11 +157,7 @@ export default {
                     Мои заказы
                 </button>
                 <div class="collapse mt-2" id="orders">
-                    <ul>
-                        <li>Заказ 1</li>
-                        <li>Заказ 2</li>
-                        <li>Заказ 3</li>
-                    </ul>
+                    <p>Нет ни одного заказа в истории</p>
                 </div>
             </div>
         </div>
