@@ -56,6 +56,12 @@ export const userStore = defineStore('user', {
                         toast.error(`${value}`)
                     }
                  })
+        },
+        logout(){
+            this.authStatus = false
+            this.userData = null
+            localStorage.removeItem('token')
+            toast.success('Вы вышли из аккаунта')
         }
     },
     getters:{}

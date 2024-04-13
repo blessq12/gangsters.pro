@@ -1,5 +1,7 @@
 import { defineStore, acceptHMRUpdate } from "pinia";
 import { array } from "yup";
+import { useToast } from "vue-toastification";
+const toast = useToast();
 
 export const localStore = defineStore('local', {
     state: () => ({
@@ -37,8 +39,20 @@ export const localStore = defineStore('local', {
                     product.qty = 1
                 }
                 store.push(product)
+                if (storeName == 'cart'){
+                    toast.success( product.name + ' добавлен в корзину')
+                }
+                if (storeName == 'fav'){
+                    toast.success( product.name + ' добавлен в избранное')
+                }
             } else {
                 store.splice(store.findIndex(e => e.id == product.id), 1)
+                if (storeName == 'cart'){
+                    toast.warning( product.name + ' удалено из корзины')
+                }
+                if (storeName == 'fav'){
+                    toast.warning( product.name + ' удалено из избранного')
+                }
             }
 
             localStorage.setItem(storeName, JSON.stringify(store))
@@ -66,13 +80,33 @@ export const localStore = defineStore('local', {
             }
             if (this.cart[index].qty < 1) {
                 this.cart.splice(index, 1)    
+                toast.warning( product.name + ' удалено из корзины')
             }
             localStorage.setItem('cart', JSON.stringify(this.cart))
+        },
+        clearStore(storeName){
+            if (storeName == 'cart'){
+                this.cart = []
+            }
+            if (storeName == 'fav'){
+                this.fav = []
+            }
+            localStorage.setItem(storeName, JSON.stringify([]))
+            toast.success( storeName == 'cart' ? 'Корзина очищена' : 'Избранное очищено' )
         }
     },
     getters: {
-        cartTotal() {
+        cartTotal()
+        {
             return this.cart.reduce( (acc, item) => { return acc += parseInt(item.qty) * parseInt(item.price) }, 0 )
+        },
+        cartQty()
+        {
+            return this.cart.reduce( (acc, item) => { return acc += parseInt(item.qty) }, 0 )
+        },
+        favTotal()
+        {
+            return this.fav.reduce( ( acc, item ) => { return acc+= parseInt(item.price)}, 0 )
         }
     }
 })

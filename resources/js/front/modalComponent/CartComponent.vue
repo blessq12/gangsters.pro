@@ -101,8 +101,30 @@ export default {
                                 </div>
                             </li>
                         </transition-group>
-                    
-                    <button class="btn rounded btn-secondary" @click="checkout = !checkout">Оформление</button>
+                        <div class="cart-footer border-top pt-4 pb-2">
+                            <ul class="list-unstyled">
+                                <li> <b>Стоимость: </b> 
+                                    <transition
+                                        enter-active-class="animate__animated animate__fadeIn"
+                                        leave-active-class="animate__animated animate__fadeOut"
+                                        mode="out-in"
+                                    >
+                                        <span v-if="localStore.cartTotal" :key="localStore.cartTotal">{{ localStore.cartTotal + ' рублей' }}</span>
+                                    </transition>    
+                                </li>
+                                <li> <b>Наборов: </b> 
+                                    <transition
+                                        enter-active-class="animate__animated animate__fadeIn"
+                                        leave-active-class="animate__animated animate__fadeOut"
+                                        mode="out-in"
+                                    >
+                                        <span v-if="localStore.cartQty" :key="localStore.cartQty">{{ localStore.cartQty + ' шт' }}</span>
+                                    </transition>    
+                                </li>
+                            </ul>
+                        </div>
+                        <button class="btn rounded btn-secondary" @click="checkout = !checkout">Оформление</button>
+                        <button class="btn rounded btn-danger mx-2" @click="localStore.clearStore('cart')"> <i class="fa fa-trash"></i> Очистить корзину</button>
                 </div>
                 <div v-else>
                     <button type="btn" aria-label="Назад" class="btn p-0 mb-4" @click="checkout = !checkout"> <i class="fa fa-arrow-left" style="margin-right: 6px;"></i> Назад в корзину</button>

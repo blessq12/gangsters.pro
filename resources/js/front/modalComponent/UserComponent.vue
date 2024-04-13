@@ -38,6 +38,10 @@ export default {
                     .then( res => {
                         this.loginErrorBag = {}
                         this.userStore.auth(res)
+                        this.loginData = {
+                            tel: null,
+                            password: null
+                        }
                     })
                     .catch( err => {
                         this.loginErrorBag = {}
@@ -50,6 +54,11 @@ export default {
                     .then(res => {
                         this.registerErrorBag = {}
                         this.userStore.register(res)
+                        this.registerData = {
+                            name: null,
+                            tel: null,
+                            email: null
+                        }
                     })
                     .catch(err => {
                         this.registerErrorBag = {}
@@ -147,7 +156,11 @@ export default {
     <div v-else>
         <div class="row">
             <div class="col">
-                <h5>Привет, {{ userStore.userData.name }}</h5>
+                <div class="d-flex align-items-center mb-4">
+                    <h5 class="mb-0">Привет, {{ userStore.userData.name }}</h5>
+                    <a href="javascript:void(0)" @click="userStore.logout()" class="text-danger mx-4" style="font-size: 12px;"> <i class="fa fa-sign-out"></i>Выйти</a>
+                </div>
+
                 <p>На данный момент на счету {{ userStore.userData.coins }} койнов. Продолжать совершать заказы, чтобы накопить больше</p>
             </div>
         </div>
