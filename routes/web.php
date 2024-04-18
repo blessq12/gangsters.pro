@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Request;
 |
 */
 
-Route::controller(MainController::class)->name('main.')->group(function () {
+Route::controller(MainController::class)->middleware('cors')->name('main.')->group(function () {
     Route::get('/', 'index')->name('index');
     Route::get('/about', 'about')->name('about');
     Route::get('/vacancy', 'vacancy')->name('vacancy');

@@ -1,23 +1,26 @@
-import { defineConfig } from 'vite';
-import laravel from 'laravel-vite-plugin';
-import vue from '@vitejs/plugin-vue';
+import { defineConfig } from "vite";
+import laravel from "laravel-vite-plugin";
+import vue from "@vitejs/plugin-vue";
+import mkcert from "vite-plugin-mkcert";
 
 export default defineConfig({
-    css:{
-        preprocessorOptions:{
-            sass:{
-                additionalData: "@import 'resources/sass/_var.sass' \n"
-            }
-        }
+    // server: {https: true,},
+    css: {
+        preprocessorOptions: {
+            sass: {
+                additionalData: "@import 'resources/sass/_var.sass' \n",
+            },
+        },
     },
     plugins: [
+        // mkcert(),
         laravel({
             input: [
-                'resources/sass/front/app.sass',
-                'resources/sass/crm/app.sass',
-                'resources/sass/auth.sass',
-                'resources/js/app.js',
-                'resources/js/front/app.js',
+                "resources/sass/front/app.sass",
+                "resources/sass/crm/app.sass",
+                "resources/sass/auth.sass",
+                "resources/js/app.js",
+                "resources/js/front/app.js",
             ],
             refresh: true,
         }),
@@ -32,7 +35,7 @@ export default defineConfig({
     ],
     resolve: {
         alias: {
-            vue: 'vue/dist/vue.esm-bundler.js',
+            vue: "vue/dist/vue.esm-bundler.js",
         },
     },
 });
