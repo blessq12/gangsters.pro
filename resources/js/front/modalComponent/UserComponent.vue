@@ -51,6 +51,7 @@ export default {
             name: string().required('Обязательное поле').min(3, "Минимум 3 символа").max(255, 'Максимум 255 символов'),
             tel: string().required('Обязательное поле').min(18, 'Номер 18 символов').max(18, 'Номер 18 символов'),
             email: string().required('Обязательное поле').email('Невалидный email адрес').max(255, 'Максимум 255 символов'),
+            dob: string().required('Обязательное поле').transform(val => moment.utc(val).toISOString())
         }),
         loginErrorBag: {},
         registerErrorBag: {},
@@ -254,7 +255,7 @@ export default {
                                             <label for="dob">Дата рождения</label>
                                             <error-label :errorBag="editErrorBag" name="dob"></error-label>
                                         </div>
-                                        <input type="date" name="dob" id="dob" class="form-control" v-model="editForm.dob">
+                                        <input type="date" name="dob" id="dob" class="form-control"  v-model="editForm.dob">
                                     </div>  
                                 </div>
                             </div>
