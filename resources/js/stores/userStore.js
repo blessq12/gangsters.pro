@@ -62,6 +62,18 @@ export const userStore = defineStore('user', {
             this.userData = null
             localStorage.removeItem('token')
             toast.success('Вы вышли из аккаунта')
+        },
+        updateUser(data){
+            axios.patch( '/api/auth/update-user', data )
+                .then(res => {
+                    this.userData = res.data.user
+                    toast.success('Изменения сохранены')
+                 })
+                .catch (err => { 
+                    for (const [key, value] of Object.entries(err.response.data.errors)) {
+                        toast.error(`${value}`)
+                    }
+                 })
         }
     },
     getters:{}

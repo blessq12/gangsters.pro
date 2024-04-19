@@ -7,6 +7,7 @@ import Toast from 'vue-toastification';
 import { useToast } from 'vue-toastification';
 import "vue-toastification/dist/index.css";
 import moment from 'moment';
+
 /**
  * Next, we will create a fresh Vue application instance. You may then begin
  * registering components with the application instance so they are ready
@@ -18,7 +19,6 @@ const app = createApp({});
 const options = {
 }
 app.use( Toast , options)
-app.use( moment );
 app.use(createPinia());
 app.directive('maska', vMaska);
 

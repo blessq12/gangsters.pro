@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ApiRegisterRequest;
 use App\Mail\GreetingMessageWithPassword;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -83,5 +84,18 @@ class ApiClientAuthController extends Controller
                 'message' => 'Пользователь с таким токеном не найден'
             ], 401);
         }
+    }
+    public function updateUser(Request $request){
+        $user = auth('sanctum')->user();
+        $user->update([
+            'name' => $request->name,
+            'email' => $request->email,
+            'tel' => $request->tel,
+            'dob' => Carbon::parse($request->dob),
+        ]);
+        return response([
+           'status' => true,
+            'user' => $user
+        ], 200);
     }
 }

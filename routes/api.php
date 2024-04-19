@@ -22,6 +22,7 @@ Route::controller(ApiClientAuthController::class)->prefix('auth')->group(functio
     Route::post('/register', 'clientRegister');
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/user', 'getUser');
+        Route::patch('/update-user', 'updateUser');
     });
 });
 

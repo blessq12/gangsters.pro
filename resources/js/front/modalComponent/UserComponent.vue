@@ -51,7 +51,7 @@ export default {
             name: string().required('Обязательное поле').min(3, "Минимум 3 символа").max(255, 'Максимум 255 символов'),
             tel: string().required('Обязательное поле').min(18, 'Номер 18 символов').max(18, 'Номер 18 символов'),
             email: string().required('Обязательное поле').email('Невалидный email адрес').max(255, 'Максимум 255 символов'),
-            dob: string().required('Обязательное поле').transform(val => moment.utc(val).toISOString())
+            dob: string().required('Обязательное поле').transform(val => moment(val).toISOString())
         }),
         loginErrorBag: {},
         registerErrorBag: {},
@@ -97,14 +97,7 @@ export default {
                 this.editSchema.validate(this.editForm, { abortEarly: false })
                     .then(res => {
                         this.editErrorBag = {}
-                        // this.userStore.edit(res)
-                        console.log(res)
-                        this.editForm = {
-                            name: null,
-                            tel: null,
-                            email: null,
-                            dob: null
-                        }
+                        this.userStore.updateUser(res)
                     })
                     .catch(err => {
                         this.editErrorBag = {}
@@ -118,7 +111,7 @@ export default {
             this.editForm.name = this.userStore.userData.name
             this.editForm.tel = this.userStore.userData.tel
             this.editForm.email = this.userStore.userData.email
-            this.editForm.dob = this.userStore.userData.dob
+            this.editForm.dob = moment(this.userStore.userData.dob).format('YYYY-MM-DD')
         }
     }
 }
