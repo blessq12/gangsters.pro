@@ -3,12 +3,9 @@ import { object, string } from 'yup'
 import { userStore } from '../../stores/userStore'
 import { mapStores } from 'pinia'
 import moment from 'moment'
-const dataOptions = {
-    postProcess: val => {
-    const max = "" + new Date().getFullYear()
-    return val > max ? max : val
-  }
-}
+import { useToast } from 'vue-toastification'
+const toast = useToast()
+
 export default {
     mounted(){
         setTimeout(() => {
@@ -21,9 +18,10 @@ export default {
     data: () => ({
         moment: moment,
         form: 'login',
+        resetPassword: false,
         showPass: false,
         loginData: {
-            tel: null,
+            email: null,
             password: null
         },
         registerData: {
@@ -32,7 +30,7 @@ export default {
             email: null
         },
         loginSchema: object({
-            tel: string().required('Обязательное поле').min(18, 'Номер 18 символов').max(18, 'Номер 18 символов'),
+            email: string().required('Обязательное поле').email('Некорректный email'),
             password: string().required('Обязательное поле').min(6, "Минимум 6 символов")
         }),
         registerSchema: object({
@@ -64,10 +62,7 @@ export default {
                     .then( res => {
                         this.loginErrorBag = {}
                         this.userStore.auth(res)
-                        this.loginData = {
-                            tel: null,
-                            password: null
-                        }
+                        this.loginData.password = null
                     })
                     .catch( err => {
                         this.loginErrorBag = {}
@@ -112,6 +107,18 @@ export default {
             this.editForm.tel = this.userStore.userData.tel
             this.editForm.email = this.userStore.userData.email
             this.editForm.dob = moment(this.userStore.userData.dob).format('YYYY-MM-DD')
+        },
+        resetPass(email){
+            object({ email: string().required('Введите Email').email('Некорретный email адрес')}).validate(this.loginData, { abortEarly: false })
+            .then( res => {
+                this.loginErrorBag = {}
+                this.userStore.resetPassword(res.email)
+            })
+            .catch( err => {
+            err.inner.forEach( e => { 
+                this.loginErrorBag[e.path] = e.message 
+                })                    
+            })
         }
     }
 }
@@ -141,10 +148,10 @@ export default {
                 <form @submit.prevent="validate('login')" v-if="form == 'login'">
                     <div class="form-group">
                         <div class="d-flex mb-2">
-                            <label for="tel">Номер телефона</label>
-                            <error-label :errorBag="loginErrorBag" name="tel"></error-label>
+                            <label for="email">Email адрес</label>
+                            <error-label :errorBag="loginErrorBag" name="email"></error-label>
                         </div>
-                        <input type="text" name="tel" id="tel" class="form-control" v-maska data-maska="+7 (###) ###-##-##" placeholder="+7 " v-model="loginData.tel">
+                        <input type="text" name="email" id="email" class="form-control" placeholder="example@gangsters.pro " v-model="loginData.email">
                     </div>
                     <div class="form-group">
                         <div class="d-flex mb-2">
@@ -159,10 +166,11 @@ export default {
                             </span>
                         </div>
                     </div>
-                    <div class="form-group mt-4">
+                    <div class="form-group mt-4 d-flex align-items-center">
                         <button type="submit" class="btn rounded btn-light">
                             Отправить
                         </button>
+                        <a href="" @click.prevent="resetPass(loginData.email)" class="text-md-dark text-light mx-3"> Забыли пароль?</a>
                     </div>
                 </form>
                 <form @submit.prevent="validate('register')" v-else>

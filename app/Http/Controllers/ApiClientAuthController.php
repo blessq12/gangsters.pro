@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ApiRegisterRequest;
 use App\Mail\GreetingMessageWithPassword;
+use App\Mail\ResetPassword;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
@@ -16,21 +17,21 @@ class ApiClientAuthController extends Controller
 {
     public function clientLogin(Request $request)
     {
-        if (!User::where('tel', $request->tel)->exists()) {
+        if (!User::where('email', $request->email)->exists()) {
             return response()->json(
                 [
                     'status' => false,
                     'errors' => [
                         (object) [
                             'name' => 'account',
-                            'message' => 'Нет учетной записи с этим номером'
+                            'message' => 'Нет учетной записи с этой почтой'
                         ]
                     ]
                 ],
                 401
             );
         }
-        if (!Auth::attempt(['tel' => $request->tel, 'password' => $request->password])) {
+        if (!Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
             return response([
                 'status' => false,
                 'errors' => [
@@ -85,6 +86,29 @@ class ApiClientAuthController extends Controller
             ], 401);
         }
     }
+
+    public function resetPassword(Request $request){
+
+        $user = User::where('email', $request->email)->first();
+        $password = Str::random(16);
+        if (!$user) {
+            return response([
+                'status' => false,
+                'message' => 'Пользователь с таким email не найден'
+            ],404);
+        }
+        
+        $user->password = Hash::make($password);
+        $user->save();
+
+        Mail::to($user->email)->send(new ResetPassword($password));
+
+        return response([
+            'status' => true,
+            'message' => 'Письмо с новым паролем отправлено на ваше почту'
+        ]);
+    }
+
     public function updateUser(Request $request){
         $user = auth('sanctum')->user();
         $user->update([

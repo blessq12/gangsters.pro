@@ -74,6 +74,15 @@ export const userStore = defineStore('user', {
                         toast.error(`${value}`)
                     }
                  })
+        },
+        resetPassword(email){
+            axios.post('/api/auth/reset-password', {email: email})
+            .then( res => { 
+                toast.success(res.data.message)
+             })
+            .catch( err => { 
+                toast.error(err.response.data.message)
+             })
         }
     },
     getters:{}
