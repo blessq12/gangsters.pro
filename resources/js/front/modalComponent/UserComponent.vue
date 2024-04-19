@@ -2,6 +2,7 @@
 import { object, string } from 'yup'
 import { userStore } from '../../stores/userStore'
 import { mapStores } from 'pinia'
+import moment from 'moment'
 const dataOptions = {
     postProcess: val => {
     const max = "" + new Date().getFullYear()
@@ -18,6 +19,7 @@ export default {
         ...mapStores(userStore)
     },
     data: () => ({
+        moment: moment,
         form: 'login',
         showPass: false,
         loginData: {
@@ -49,7 +51,6 @@ export default {
             name: string().required('Обязательное поле').min(3, "Минимум 3 символа").max(255, 'Максимум 255 символов'),
             tel: string().required('Обязательное поле').min(18, 'Номер 18 символов').max(18, 'Номер 18 символов'),
             email: string().required('Обязательное поле').email('Невалидный email адрес').max(255, 'Максимум 255 символов'),
-            dob: string().required('Обязательное поле').datetime()
         }),
         loginErrorBag: {},
         registerErrorBag: {},
@@ -219,7 +220,7 @@ export default {
                 </button>
                 <div class="collapse mt-2 py-2" id="edit">
                         <form @submit.prevent="validate('edit')">
-                            <div class="row row-cols-1 row-cols-md-2">
+                            <div class="mb-2 row row-cols-1 row-cols-md-2">
                                 <div class="col">
                                     <div class="form-group">
                                         <div class="d-flex">
@@ -253,10 +254,12 @@ export default {
                                             <label for="dob">Дата рождения</label>
                                             <error-label :errorBag="editErrorBag" name="dob"></error-label>
                                         </div>
-                                        <input type="text" name="dob" id="dob" onkeyup="{}" class="form-control" v-maska data-maska="## / ## / ####" v-model="editForm.dob">
+                                        <input type="date" name="dob" id="dob" class="form-control" v-model="editForm.dob">
                                     </div>  
                                 </div>
-                                 <div class="col pt-3">
+                            </div>
+                            <div class="row">
+                                 <div class="col">
                                     <div class="form-group">
                                         <button type="submit" class="btn btn-light rounded">Сохранить</button>
                                     </div>  

@@ -4,6 +4,7 @@ import { localStore } from "../../stores/localStore";
 import { userStore } from "../../stores/userStore";
 import { mapStores } from "pinia";
 import { object, string } from "yup";
+import moment from "moment";
 
 export default {
     mounted(){
@@ -15,6 +16,7 @@ export default {
         }
     },
     data: () => ({
+        moment: moment,
         checkout: false,
         delivery: true,
         payType: "cash",
@@ -128,6 +130,7 @@ export default {
 </script>
 
 <template>
+    {{ moment() }}
     <transition
         enter-active-class="animate__animated animate__fadeIn"
         leave-active-class="animate__animated animate__fadeOut"
