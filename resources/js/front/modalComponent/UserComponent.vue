@@ -2,8 +2,18 @@
 import { object, string } from 'yup'
 import { userStore } from '../../stores/userStore'
 import { mapStores } from 'pinia'
-
+const dataOptions = {
+    postProcess: val => {
+    const max = "" + new Date().getFullYear()
+    return val > max ? max : val
+  }
+}
 export default {
+    mounted(){
+        setTimeout(() => {
+            if (this.userStore.authStatus) this.loadEditForm()
+        },3000)
+    },
     computed: {
         ...mapStores(userStore)
     },
@@ -28,8 +38,22 @@ export default {
             tel: string().required('Обязательное поле').min(18, 'Номер 18 символов').max(18, 'Номер 18 символов'),
             email: string().required('Обязательное поле').email('Невалидный email адрес').max(255, 'Максимум 255 символов')
         }),
+        // edit group
+        editForm: {
+            name: null,
+            tel: null,
+            email: null,
+            dob: null
+        },
+        editSchema: object({
+            name: string().required('Обязательное поле').min(3, "Минимум 3 символа").max(255, 'Максимум 255 символов'),
+            tel: string().required('Обязательное поле').min(18, 'Номер 18 символов').max(18, 'Номер 18 символов'),
+            email: string().required('Обязательное поле').email('Невалидный email адрес').max(255, 'Максимум 255 символов'),
+            dob: string().required('Обязательное поле').datetime()
+        }),
         loginErrorBag: {},
         registerErrorBag: {},
+        editErrorBag: {}
     }),
     methods: {
         validate(form) {
@@ -67,8 +91,32 @@ export default {
                         })
                     })
             }
+            if (form == 'edit') {
+                this.editSchema.validate(this.editForm, { abortEarly: false })
+                    .then(res => {
+                        this.editErrorBag = {}
+                        // this.userStore.edit(res)
+                        console.log(res)
+                        this.editForm = {
+                            name: null,
+                            tel: null,
+                            email: null,
+                            dob: null
+                        }
+                    })
+                    .catch(err => {
+                        this.editErrorBag = {}
+                        err.inner.forEach( e => {
+                            this.editErrorBag[e.path] = e.message
+                        })
+                    })
+            }
         },
-        showToast() {
+        loadEditForm(){
+            this.editForm.name = this.userStore.userData.name
+            this.editForm.tel = this.userStore.userData.tel
+            this.editForm.email = this.userStore.userData.email
+            this.editForm.dob = this.userStore.userData.dob
         }
     }
 }
@@ -165,7 +213,60 @@ export default {
             </div>
         </div>
         <div class="row">
-            <div class="col">
+            <div class="col-12 mb-4">
+                <button type="button" class="btn btn-secondary w-100" data-bs-toggle="collapse" data-bs-target="#edit">
+                    Редактировать профиль
+                </button>
+                <div class="collapse mt-2 py-2" id="edit">
+                        <form @submit.prevent="validate('edit')">
+                            <div class="row row-cols-1 row-cols-md-2">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <div class="d-flex">
+                                            <label for="name">Имя</label>
+                                            <error-label :errorBag="editErrorBag" name="name"></error-label>
+                                        </div>
+                                        <input type="text" name="name" id="name" class="form-control" v-model="editForm.name">
+                                    </div>  
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <div class="d-flex">
+                                            <label for="tel">Телефон</label>
+                                            <error-label :errorBag="editErrorBag" name="tel"></error-label>
+                                        </div>
+                                        <input type="text" name="tel" id="tel" class="form-control" v-maska data-maska="+7 (###) ###-##-##" v-model="editForm.tel">
+                                    </div>  
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <div class="d-flex">
+                                            <label for="email">Email</label>
+                                            <error-label :errorBag="editErrorBag" name="email"></error-label>
+                                        </div>
+                                        <input type="text" name="email" id="email" class="form-control" v-model="editForm.email" disabled>
+                                    </div>  
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <div class="d-flex">
+                                            <label for="dob">Дата рождения</label>
+                                            <error-label :errorBag="editErrorBag" name="dob"></error-label>
+                                        </div>
+                                        <input type="text" name="dob" id="dob" onkeyup="{}" class="form-control" v-maska data-maska="## / ## / ####" v-model="editForm.dob">
+                                    </div>  
+                                </div>
+                                 <div class="col pt-3">
+                                    <div class="form-group">
+                                        <button type="submit" class="btn btn-light rounded">Сохранить</button>
+                                    </div>  
+                                </div>
+                            </div>
+                        </form>
+                
+                </div>
+            </div>
+            <div class="col-12">
                 <button type="button" class="btn btn-secondary w-100" data-bs-toggle="collapse" data-bs-target="#orders">
                     Мои заказы
                 </button>

@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\ApiClientAuthController;
 use App\Http\Controllers\AuthController;
-
+use App\Http\Controllers\OrderController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -23,4 +23,8 @@ Route::controller(ApiClientAuthController::class)->prefix('auth')->group(functio
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/user', 'getUser');
     });
+});
+
+Route::controller(OrderController::class)->prefix('orders')->group(function () {
+    Route::post('create', 'createOrder');
 });

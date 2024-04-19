@@ -1,10 +1,19 @@
 <script>
 import { validate } from "vee-validate";
 import { localStore } from "../../stores/localStore";
+import { userStore } from "../../stores/userStore";
 import { mapStores } from "pinia";
 import { object, string } from "yup";
 
 export default {
+    mounted(){
+        if (this.userStore.authStatus){
+            this.formData.name = this.userStore.userData.name;
+            this.formData.tel = this.userStore.userData.tel;
+            this.noDelForm.name = this.userStore.userData.name;
+            this.noDelForm.tel = this.userStore.userData.tel;
+        }
+    },
     data: () => ({
         checkout: false,
         delivery: true,
@@ -57,7 +66,7 @@ export default {
         validatorBag: {},
     }),
     computed: {
-        ...mapStores(localStore),
+        ...mapStores(localStore, userStore),
     },
     methods: {
         validate(form) {
@@ -66,6 +75,21 @@ export default {
                     .validate(this.formData, { abortEarly: false })
                     .then((res) => {
                         this.validatorBag = {};
+                        let data = {
+                            delivery: true,
+                            cart: this.localStore.cart.map((item) => {
+                                return {
+                                    id: item.id,
+                                    name: item.name,
+                                    price: item.price,
+                                    count: item.qty,
+                                };
+                            }),
+                            order: res
+                        }
+                        axios.post('/api/orders/create', data)
+                        .then((res) => {console.log(res.data)})
+                        .catch((err) => {console.log(err)})
                     })
                     .catch((err) => {
                         this.validatorBag = {};
@@ -149,19 +173,8 @@ export default {
                                             >
                                                 <i class="fa fa-minus"></i>
                                             </button>
-                                            <span>{{
-                                                item.qty ? item.qty : "Нет"
-                                            }}</span>
-                                            <button
-                                                type="button"
-                                                class="btn"
-                                                @click="
-                                                    localStore.manageQty(
-                                                        true,
-                                                        item
-                                                    )
-                                                "
-                                            >
+                                            <span>{{item.qty ? item.qty : "Нет"}}</span>
+                                            <button type="button" class="btn" @click=" localStore.manageQty(true,item)">
                                                 <i class="fa fa-plus"></i>
                                             </button>
                                         </div>
