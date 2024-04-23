@@ -27,22 +27,18 @@ class OrderController extends Controller
         if ($request->delivery){
 
             $order->delivery = $request->delivery;
-            $order->name = $request->name;
-            $order->tel = $request->tel;
-            $order->street = $request->street;
-            $order->house = $request->house;
-            $order->building = $request->building;
-            $order->staircase = $request->staircase;
-            $order->floor = $request->floor;
-            $order->apartment = $request->apartment;
-            $order->total = $request->total;
-
+            $order->name = $request->order['name'];
+            $order->tel = $request->order['tel'];
+            $order->street = $request->order['street'];
+            $order->house = $request->order['house'];
+            $order->building = $request->order['building'];
+            $order->staircase = $request->order['staircase'];
+            $order->floor = $request->order['floor'];
+            $order->apartment = $request->order['apartment'];
         } else {
-
             $order->delivery = $request->delivery;
-            $order->name = $request->name;
-            $order->tel = $request->tel;
-
+            $order->name = $request->order['name'];
+            $order->tel = $request->order['tel'];
         }
         
         if (auth('sanctum')->user()){

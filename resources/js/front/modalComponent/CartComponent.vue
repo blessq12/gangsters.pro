@@ -39,7 +39,7 @@ export default {
             building: string().nullable(),
             staircase: string().nullable(),
             floor: string().nullable(),
-            appartment: string().required("Обязательно"),
+            apartment: string().required("Обязательно"),
         }),
         formData: {
             name: null,
@@ -49,7 +49,7 @@ export default {
             building: null,
             staircase: null,
             floor: null,
-            appartment: null,
+            apartment: null,
         },
         noDelForm: {
             name: null,
@@ -464,15 +464,15 @@ export default {
                                                 >
                                                 <error-label
                                                     :errorBag="validatorBag"
-                                                    name="appartment"
+                                                    name="apartment"
                                                 ></error-label>
                                             </div>
                                             <input
                                                 type="text"
-                                                name="appartment"
-                                                id="appartment"
+                                                name="apartment"
+                                                id="apartment"
                                                 class="form-control"
-                                                v-model="formData.appartment"
+                                                v-model="formData.apartment"
                                             />
                                         </div>
                                     </div>
