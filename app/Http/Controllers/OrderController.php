@@ -23,6 +23,7 @@ class OrderController extends Controller
      */
     public function createOrder(Request $request)
     {
+
         $order = new Order();
         if ($request->delivery){
 
@@ -35,20 +36,26 @@ class OrderController extends Controller
             $order->staircase = $request->order['staircase'];
             $order->floor = $request->order['floor'];
             $order->apartment = $request->order['apartment'];
+
         } else {
+
             $order->delivery = $request->delivery;
             $order->name = $request->order['name'];
             $order->tel = $request->order['tel'];
+
         }
         
         if (auth('sanctum')->user()){
             $order->user_id = auth('sanctum')->user()->id;
-        } 
+        }
 
         $order->total = $this->cartTotal($request->cart);
-        $order->cart = $request->cart;
+        
+        if (!$order->save()) throw new \Exception('Ошибка при создании заказа');
 
-        return response($order);
+        if (!$this->addCartItems($order, $request->cart)) throw new \Exception('Ошибка при добавлении товаров в заказ');
+        
+        return response('Заказ успешно создан', 200);
     }
     /**
      * Display a listing of the resource.

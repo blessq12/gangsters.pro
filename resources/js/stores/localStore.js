@@ -93,6 +93,15 @@ export const localStore = defineStore('local', {
             }
             localStorage.setItem(storeName, JSON.stringify([]))
             toast.success( storeName == 'cart' ? 'Корзина очищена' : 'Избранное очищено' )
+        },
+        async createOrder(data)
+        {
+            try {
+                const response = await axios.post('/api/orders/create', data)
+                return true
+            } catch (error) {
+                return false
+            }
         }
     },
     getters: {

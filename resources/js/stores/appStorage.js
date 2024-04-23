@@ -4,8 +4,8 @@ export const appStore = defineStore('app', {
     state: () => ({
         additional: false,
         modal: false,
+        modalName: null,
         currentAdditional: null,
-        modalName: null
     }),
     actions: {},
     getters:{}
