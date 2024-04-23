@@ -84,7 +84,7 @@ export default {
                                     id: item.id,
                                     name: item.name,
                                     price: item.price,
-                                    count: item.qty,
+                                    qty: item.qty,
                                 };
                             }),
                             order: res
@@ -95,12 +95,12 @@ export default {
                     })
                     .catch((err) => {
                         this.validatorBag = {};
-                        let et = {};
+                        // let et = {};
                         err.inner.forEach((e) => {
                             this.validatorBag[e.path] = e.message;
                             et[e.path] = e.message;
                         });
-                        console.table(et);
+                        // console.table(et);
                     });
             }
             if (form == "noDelivery") {
@@ -108,15 +108,30 @@ export default {
                     .validate(this.noDelForm, { abortEarly: false })
                     .then((res) => {
                         this.validatorBag = {};
+                        let data = {
+                            delivery: false,
+                            cart: this.localStore.cart.map((item) => {
+                                return {
+                                    id: item.id,
+                                    name: item.name,
+                                    price: item.price,
+                                    qty: item.qty,
+                                };
+                            }),
+                            order: res
+                        }
+                        axios.post('/api/orders/create', data)
+                        .then((res) => {console.log(res.data)})
+                        .catch((err) => {console.log(err)})
                     })
                     .catch((err) => {
                         this.validatorBag = {};
-                        let et = {};
+                        // let et = {};
                         err.inner.forEach((e) => {
                             this.validatorBag[e.path] = e.message;
                             et[e.path] = e.message;
                         });
-                        console.table(et);
+                        // console.table(et);
                     });
             }
         },

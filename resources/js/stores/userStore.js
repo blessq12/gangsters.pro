@@ -35,7 +35,7 @@ export const userStore = defineStore('user', {
                     this.userData = res.data.user
                     localStorage.setItem('token', res.data.token)
                     axios.defaults.headers['Accept'] = 'application/json'
-                    axios.defaults.headers['Authorization'] = 'Bearer-' + res.data.token
+                    axios.defaults.headers['Authorization'] = 'Bearer ' + res.data.token
                 })
                 .catch(err => {
                     err.response.data.errors.forEach( e => toast.error(e.message) )
@@ -61,6 +61,7 @@ export const userStore = defineStore('user', {
             this.authStatus = false
             this.userData = null
             localStorage.removeItem('token')
+            axios.defaults.headers['Authorization'] = ''
             toast.success('Вы вышли из аккаунта')
         },
         updateUser(data){
