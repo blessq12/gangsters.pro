@@ -9,7 +9,7 @@
         </div>
         <div class="row">
             <div class="col">
-                <hero-banner></hero-banner>
+                <hero-banner :banners='@json($banners)'></hero-banner>
             </div>
         </div>
     </div>

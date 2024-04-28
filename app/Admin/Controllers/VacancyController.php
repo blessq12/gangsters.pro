@@ -15,7 +15,7 @@ class VacancyController extends AdminController
      *
      * @var string
      */
-    protected $title = 'Vacancy';
+    protected $title = 'Вакансии';
 
     /**
      * Make a grid builder.

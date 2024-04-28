@@ -23,6 +23,6 @@ class Banner extends Component
      */
     public function render(): View|Closure|string
     {
-        return view('components.front.banner');
+        return view('components.front.banner', ['banners' => $this->banners]);
     }
 }
