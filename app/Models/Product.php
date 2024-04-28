@@ -9,6 +9,7 @@ use PDO;
 class Product extends Model
 {
     use HasFactory;
+    use \Encore\Admin\Traits\Resizable;
 
     protected $fillable = [
         'name',

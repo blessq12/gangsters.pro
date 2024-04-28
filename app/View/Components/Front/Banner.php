@@ -15,7 +15,7 @@ class Banner extends Component
      */
     public function __construct()
     {
-        $this->banners = ModelsBanner::all();
+        $this->banners = ModelsBanner::where('visible', true)->get();
     }
 
     /**

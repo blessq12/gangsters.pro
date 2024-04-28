@@ -25,7 +25,7 @@ export default {
 </script>
 
 <template>
-    <div class="banner-wrap rounded">
+    <div class="banner-wrap rounded" v-if="banners.length">
         <transition-group
             :enter-active-class="`animate__animated animate__slideIn${ direction ? 'Right' : 'Left' }`"
             :leave-active-class="`animate__animated animate__slideOut${ direction ? 'Left' : 'Right' }`"
@@ -47,6 +47,9 @@ export default {
                 <i class="fa fa-arrow-right"></i>
             </button>
         </div>
+    </div>
+    <div class="banner-wrap rounded placeholder-glow" v-else>
+        <div class="banner-item bg-image placeholder" style="height: 100%; width: 100%;"></div>
     </div>
 </template>
 

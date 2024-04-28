@@ -15,7 +15,7 @@ class Stories extends Component
      */
     public function __construct()
     {
-        $this->stories = Story::all();
+        $this->stories = Story::where('visible', true)->get();
     }
 
     /**

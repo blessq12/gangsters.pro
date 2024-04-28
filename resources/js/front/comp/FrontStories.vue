@@ -16,13 +16,18 @@ export default {
 </script>
 
 <template>
-    <ul class="story-list">
+    <ul class="story-list" v-if="stories.length">
         <li v-for="story in stories" :key="story.id" class="bg-primary">
             <div class="story-item rounded bg-image" :style="'background:url(/uploads/' + story.image + ')'" @click="show = !show">
             </div>
         </li>
     </ul>
-
+    <ul class="story-list" v-else>
+        <li v-for="e in 5" class="placeholder-glow">
+            <div class="story-item rounded bg-image placeholder" style="width: 160px;height: 200px;">
+            </div>
+        </li>
+    </ul>
     <teleport to="body">
         <transition
             enter-active-class="animate__animated animate__fadeIn"

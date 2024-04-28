@@ -36,7 +36,7 @@ class BannerController extends AdminController
         $grid->column('created_at', __('Created at'))->display(function ($value) {
             return Carbon::parse($value)->format('Y.m.d');
         });
-        $grid->column('status', __('Status'));
+        $grid->column('visible', __('Visible'));
 
         return $grid;
     }
@@ -74,7 +74,7 @@ class BannerController extends AdminController
         $form->text('header', __('Header'));
         $form->textarea('subheader', __('Subheader'));
         $form->image('image', __('Image'))->uniqueName();
-        $form->switch('status', __('Status'));
+        $form->switch('visible', __('Visible'));
 
         return $form;
     }
