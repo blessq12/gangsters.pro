@@ -1,5 +1,7 @@
 <?php
 
+use Encore\Admin\Grid\Displayers\Prefix;
+
 return [
 
     /*
@@ -289,7 +291,7 @@ return [
     | "sidebar-mini".
     |
     */
-    'layout' => ['sidebar-mini', 'sidebar-collapse'],
+    'layout' => ['sidebar-mini'],
 
     /*
     |--------------------------------------------------------------------------
