@@ -1,8 +1,9 @@
 <script>
 export default {
-    props: {},
+    props: {
+        'banners' : Object
+    },
     data: () => ({
-        banners: [{id:1},{id:2},{id:3},{id:4},{id:5}],
         current: 0,
         direction: true
     }),
@@ -34,7 +35,7 @@ export default {
                 v-for="e in banners" 
                 :key="e.id"
                 v-show=" banners.indexOf(e) === current"
-                style="background: url('http://via.placeholder.com/1920x1080');"
+                :style="'background: url( /uploads/' + e.image + ' )'"
             >
             </div>
         </transition-group>

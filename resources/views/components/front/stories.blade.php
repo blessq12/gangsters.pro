@@ -9,7 +9,7 @@
         </div>
         <div class="row">
             <div class="col">
-                <front-stories></front-stories>
+                <front-stories :stories='@json($stories)'></front-stories>
             </div>
         </div>
     </div>

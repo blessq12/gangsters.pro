@@ -1,17 +1,24 @@
 <script>
 export default {
-    props: {},
+    props: {
+        'stories' : Object
+    },
     data: () => ({
         show: false
-    })
+    }),
+    computed: {
+        storyImage(story){
+            return '/uploads/' + story.image;
+        }
+    }
+
 }
 </script>
 
 <template>
     <ul class="story-list">
-        <li v-for="e in 5" class="bg-primary">
-            <div class="story-item rounded bg-image" style="background: url('http://via.placeholder.com/512x512');" @click="show = !show">
-                
+        <li v-for="story in stories" :key="story.id" class="bg-primary">
+            <div class="story-item rounded bg-image" :style="'background:url(/uploads/' + story.image + ')'" @click="show = !show">
             </div>
         </li>
     </ul>
