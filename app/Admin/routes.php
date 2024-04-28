@@ -17,4 +17,6 @@ Route::group([
     $router->resource('products', ProductController::class);
     $router->resource('users', ClientController::class);
     $router->resource('orders', OrderController::class);
+    $router->resource('stories', StoryController::class);
+    $router->resource('banners', BannerController::class);
 });

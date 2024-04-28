@@ -10,13 +10,7 @@ class Banner extends Model
     use HasFactory;
     protected $fillable = [
         'header',
-        'subheader'
+        'subheader',
+        'image'
     ];
-    protected $hidden = [
-        'created_at',
-        'updated_at',
-    ];
-    public function image(){
-        return $this->morphOne(Image::class, 'image');
-    }
 }
