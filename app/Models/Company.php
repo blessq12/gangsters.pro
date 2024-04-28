@@ -9,13 +9,22 @@ class Company extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'name',
+        'description',
+        'country',
+        'state',
+        'city',
+        'street',
+        'house',
+        'phone',
+        'phone_additional',
+        'email_address',
+        'logo',
+    ];
+
     public function legals()
     {
         return $this->hasOne(CompanyLegal::class);
-    }
-
-    public function logo()
-    {
-        return $this->morphOne(Image::class, 'image')->where('type', 'app-logo');
     }
 }
