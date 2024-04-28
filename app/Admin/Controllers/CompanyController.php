@@ -15,7 +15,7 @@ class CompanyController extends AdminController
      *
      * @var string
      */
-    protected $title = 'Company';
+    protected $title = 'Компания';
 
     /**
      * Make a grid builder.

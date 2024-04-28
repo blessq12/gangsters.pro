@@ -15,4 +15,5 @@ Route::group([
     $router->resource('companies', CompanyController::class);
     $router->resource('product-categories', ProductCategoryController::class);
     $router->resource('products', ProductController::class);
+    $router->resource('users', ClientController::class);
 });
