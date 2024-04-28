@@ -19,4 +19,5 @@ Route::group([
     $router->resource('orders', OrderController::class);
     $router->resource('stories', StoryController::class);
     $router->resource('banners', BannerController::class);
+    $router->resource('vacancies', VacancyController::class);
 });
