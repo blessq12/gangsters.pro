@@ -8,6 +8,15 @@ export default {
     },
     computed: {
         ...mapStores( appStore, localStore )
+    },
+    methods: {
+        showImage(prod) {
+            if (prod.images.length) {
+                return '/uploads/' + prod.images[0].path
+            } else {
+                return 'https://via.placeholder.com/512x512'
+            }
+        }
     }
 }
 </script>
@@ -26,9 +35,8 @@ export default {
         <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-3 mb-4 category-list">
             <div class="col rounded" v-for="product in category.products" :key="product.id">
                 <div class="product">
-                    <div class="header bg-image rounded" style="background: url('http://via.placeholder.com/512x512');">
+                    <div class="header bg-image rounded" :style="'background: url('+showImage(product)+')'">
                         <div class="badge">
-
                             <button type="button" class="btn btn-light" @click="localStore.manageStore('fav', product)" v-if="!localStore.checkExist('fav', product)">
                                 <i class="fa fa-heart-o"></i>
                             </button>

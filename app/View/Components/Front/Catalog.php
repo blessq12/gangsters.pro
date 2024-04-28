@@ -29,7 +29,7 @@ class Catalog extends Component
     public function getProducts()
     {
         $categories = ProductCategory::has('products')->get();
-        $products = $categories->each(fn ($category) => $category->products);
+        $products = $categories->each(fn ($category) => $category->products->each(fn ($product) => $product->images = $product->productImages));
         return $products;
     }
 }
