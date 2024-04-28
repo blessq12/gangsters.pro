@@ -4,7 +4,6 @@ import vue from "@vitejs/plugin-vue";
 import mkcert from "vite-plugin-mkcert";
 
 export default defineConfig({
-    // server: {https: true,},
     css: {
         preprocessorOptions: {
             sass: {
@@ -13,7 +12,6 @@ export default defineConfig({
         },
     },
     plugins: [
-        // mkcert(),
         laravel({
             input: [
                 "resources/sass/front/app.sass",
