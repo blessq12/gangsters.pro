@@ -13,7 +13,10 @@
     @vite('resources/js/front/app.js')
 </head>
 <body>
-    <div id="app">
+    @if (Admin::user())
+        <x-front.admin-bar></x-front.admin-bar>
+    @endif
+    <div id="app">    
         <app-init></app-init>
         <x-front.navbar></x-front.navbar>
         @yield('content')
