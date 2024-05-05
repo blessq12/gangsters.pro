@@ -19,9 +19,6 @@ class MainController extends Controller
 
     public function index()
     {
-
-
-
         return view('front.index');
     }
 
@@ -35,5 +32,6 @@ class MainController extends Controller
     }
     public function contact()
     {
+        return view('front.contact');
     }
 }
