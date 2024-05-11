@@ -26,6 +26,7 @@ class OrderController extends AdminController
     protected function grid()
     {
         $grid = new Grid(new Order());
+        $grid->model()->orderBy('id', 'desc');
 
         $grid->column('id', __('Id'));
         $grid->column('created_at', __('Created at'))->display(function ($val) {
@@ -36,12 +37,16 @@ class OrderController extends AdminController
                 "<span class='badge' style='background: #008d4c'>Авторизован</span>" :
                 "<span class='badge'>Не авторизован</span>";
         });
+        $grid->column('delivery', __('Delivery'))->display(function ($del) {
+            return $del ?
+                "<span class='badge' style='background: #008d4c'>Доставка</span>" :
+                "<span class='badge'>Самовывоз</span>";
+        });
         $grid->column('name', __('Name'));
         $grid->column('tel', __('Tel'));
         $grid->column('street', __('Street'));
         $grid->column('house', __('House'));
         $grid->column('total', __('Total'));
-        $grid->column('delivery', __('Delivery'));
 
         return $grid;
     }

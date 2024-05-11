@@ -57,24 +57,11 @@ class ProductController extends AdminController
         $show->field('visible', __('Visible'))->as(function ($val) {
             return $val ? 'Да' : 'Нет';
         });
-        $show->productImages()->as(function ($val) {
-            $html = '';
-            foreach ($val as $image) {
-                $html .= '
-                    <div style="
-                        display: inline-block;
-                        background-image: url(/uploads/' . $image->path . ');
-                        background-size: cover;
-                        background-position: center;
-                        width: 120px;
-                        height: 120px;
-                        margin-right: 8px;
-                    ">
-                    </div>
-                ';
-            }
-            return $html;
-        })->unescape();
+        $show->productImages()->as(function ($images) {
+            return $images->map(function ($image) {
+                return $image->path;
+            });
+        })->image();
         $show->field('product_category_id', __('Product category id'))->as(function ($id) {
             return ProductCategory::find($id)->name;
         });
@@ -114,9 +101,9 @@ class ProductController extends AdminController
         $form->switch('visible', __('Visible'))->default(1);
         $form->select('product_category_id', __('Product category id'))->options($this->categories());
         $form->multipleImage('productImages', __('Images'))->pathColumn('path')->thumbnail([
-            'small' => [150, 150],
-            'medium' => [512, 512],
-            'large' => [1024, 1024],
+            'small' => [150, null],
+            'medium' => [512, null],
+            'large' => [1024, null],
         ])->removable();
         $form->text('name', __('Name'))->default('Название не задано');
 
@@ -131,6 +118,8 @@ class ProductController extends AdminController
         $form->textarea('consist', __('Consist'));
         $form->text('weight', __('Weight'));
         $form->text('price', __('Price'));
+
+
 
         return $form;
     }
