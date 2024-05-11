@@ -190,14 +190,12 @@ export default {
                                             <div class="fav-card">
                                                 <div
                                                     class="image bg-image rounded"
-                                                    style="
-                                                        background: url('http://via.placeholder.com/256x256');
-                                                    "
+                                                    :style="'background: url(' + (item.thumbs.length ? item.thumbs[0].small : '') + ');'"
                                                 ></div>
                                                 <div class="d-blo">
                                                     <div class="content">
-                                                        <span>{{ item.name }}</span>
-                                                        <p class="mb-0">{{ item.consist }}</p>
+                                                        <span class="d-block">{{ item.name }}</span>
+                                                        <p class="mb-0"><b>Цена: </b>{{ item.price }} руб.</p>
                                                     </div>
                                                     <div class="footer">
                                                         <div class="qty">

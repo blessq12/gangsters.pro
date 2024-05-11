@@ -18,16 +18,18 @@ export default {
             <ul class="fav-list">
                 <li v-for="item in localStore.fav">
                     <div class="fav-card">
-                        <div class="image bg-image rounded" style="background: url('http://via.placeholder.com/256x256');">
+                        <div class="image bg-image rounded" 
+                        :style="'background: url(' + (item.thumbs.length ? item.thumbs[0].small : '') + ');'"
+                        >
                         </div>
                         <div class="d-block">
                             <div class="content">
                                 <span>{{ item.name }}</span>
-                                <p class="mb-0">{{ item.consist }}</p>
+                                <p class="mb-0"><b>Цена: </b>{{ item.price }} руб.</p>
                             </div>
                             <div class="footer">
-                                <button type="button" class="btn btn-secondary rounded">В корзину</button>
-                                <button type="button" class="btn btn-danger rounded" @click="localStore.manageStore('fav', item)">Удалить</button>
+                                <button type="button" class="btn btn-sm btn-secondary rounded">В корзину</button>
+                                <button type="button" class="btn btn-sm btn-danger rounded" @click="localStore.manageStore('fav', item)">Удалить</button>
                             </div>
                         </div>
                     </div>
