@@ -20,11 +20,11 @@ export default {
                 if (val) {
                     document.body.classList.add('overflow-hidden')
                     this.prodAdditional = {
-                    onion: this.appStore.currentAdditional.onion,
+                    hit: this.appStore.currentAdditional.hit,
                     spicy: this.appStore.currentAdditional.spicy,
                     kidsAllow: this.appStore.currentAdditional.kidsAllow,
                     garlic: this.appStore.currentAdditional.garlic,
-                    hit: this.appStore.currentAdditional.hit
+                    onion: this.appStore.currentAdditional.onion,
                 }
                 }
                 else {
@@ -96,6 +96,7 @@ export default {
                                     <div class="col">
                                         <ul class="list-unstyled prod-additionals d-flex align-items-center">
                                             <li v-for="(value, key, index) in prodAdditional" :key="key" style="margin-right: 6px;">
+                                                <div class="disable" v-if="!value" style="background: url('/images/additionals/disabled.png');"></div>
                                                 <img :src="'/images/additionals/' + key + '.png'" alt="">
                                             </li>
                                         </ul>
@@ -175,6 +176,19 @@ export default {
                 width: 100%
         .prod-additionals
             li
+                position: relative
+                overflow: hidden
                 img
                     max-height: 35px
+                    @media(min-width: 768px)
+                        max-height: 45px
+                .disable              
+                    height: 100%
+                    width: 100%
+                    background: url('/images/additionals/disabled.png')
+                    background-position: 0 0 !important
+                    background-size: cover !important
+                    position: absolute
+                    top: 0
+                    left: 0
 </style>
