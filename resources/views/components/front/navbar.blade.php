@@ -24,6 +24,9 @@
                     <a href="{{ route('main.vacancy') }}">
                         <li>{{ __('Вакансии') }}</li>
                     </a>
+                    <a href="{{ route('main.purchaseAndDelivery') }}">
+                        <li>{{ __('Оплата и доставка') }}</li>
+                    </a>
                     <a href="{{ route('main.contact') }}">
                         <li>{{ __('Контакты') }}</li>
                     </a>

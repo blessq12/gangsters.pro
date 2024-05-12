@@ -1,5 +1,5 @@
 footer
-    padding: 24px 0
+    padding: 24px 0 0 0 
     background: $color-main
     .footer-logo
         display: flex
@@ -13,3 +13,57 @@ footer
             display: block
             line-height: 1.2
             text-transform: uppercase
+    h5
+        font-size: 1.1rem
+        font-weight: 400
+        padding-bottom: 6px
+        border-bottom: 2px solid $color-secondary
+        width: 80%
+        margin-bottom: 18px
+    ul
+        list-style: none
+        padding: 0
+        margin: 0
+        a
+            text-decoration: none
+            color: $color-secondary    
+            margin-bottom: 6px
+            display: block
+            li
+                i
+                    transition: all .3s
+                    border: 1px solid $color-secondary
+                    padding: 6px 8px
+                    display: flex
+                    align-items: center
+                    justify-content: center
+                    margin-right: 12px
+            &:hover
+                li
+                    i
+                        background: $color-secondary
+                        color: #fff
+    ul.links
+        a
+            text-decoration: none
+            color: $color-secondary
+            display: flex
+            &:hover
+                li
+                    &::before
+                        padding-left: 10px
+            li
+                &::before
+                    font-family: fontawesome
+                    content: "\f0da"
+                    width: 15px
+                    display: inline-block
+                    transition: all .3s
+    ul.social
+
+    .copyright
+        background: $color-secondary
+        margin-top: 24px
+        a
+            color: $color-main
+            font-size: .8rem

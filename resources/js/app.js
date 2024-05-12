@@ -41,4 +41,5 @@ Object.entries(import.meta.glob('./**/*.vue', { eager: true })).forEach(([path, 
  */
 
 app.mount('#app');
+
 new MaskInput("[data-maska]")

@@ -22,6 +22,8 @@ Route::controller(MainController::class)->middleware('cors')->name('main.')->gro
     Route::get('/about', 'about')->name('about');
     Route::get('/vacancy', 'vacancy')->name('vacancy');
     Route::get('/contact', 'contact')->name('contact');
+    Route::get('/privacy', 'privacy')->name('privacy');
+    Route::get('/purchase-and-delivery', 'purchaseAndDelivery')->name('purchaseAndDelivery');
 });
 
 Route::controller(CrmController::class)->middleware(['auth', 'can:admin'])->prefix('crm')->name('crm.')->group(function () {
@@ -31,7 +33,6 @@ Route::controller(AuthController::class)->prefix('auth')->name('auth.')->group(f
     Route::middleware('guest')->group(function () {
         Route::get('/login', 'loginPage')->name('login-page');
         Route::post('/login', 'userLogin')->name('user-login');
-
         Route::get('/register', 'registerPage')->name('register-page');
         Route::post('/register', 'userRegister')->name('user-register');
     });

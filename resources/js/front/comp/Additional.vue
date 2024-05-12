@@ -69,7 +69,7 @@ export default {
                                     </div>
                                 </div>
                                 <div class="row row-cols-1 row-cols-md-2">
-                                    <div class="col mb-4 mb-lg-0">
+                                    <div class="col mb-4 mb-lg-0" v-if="appStore.currentAdditional.images.length">
                                         <transition-group
                                             tag="ul"
                                             class="images list-unstyled"
@@ -92,6 +92,11 @@ export default {
                                                 <button class="btn btn-outline-primary btn-sm" @click="imgIndex++"><i class="fa fa-arrow-right"></i></button>
                                             </div>
                                         </div>
+                                    </div>
+                                    <div class="col mb-4 mb-lg-0">
+                                        <ul class="images list-unstyled">
+                                            <li class="bg-image rounded" style="background: url('/images/placeholder/phldr-512.png'); background-size: contain !important;"></li>
+                                        </ul>
                                     </div>
                                     <div class="col">
                                         <ul class="list-unstyled prod-additionals d-flex align-items-center">

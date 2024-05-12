@@ -170,6 +170,7 @@ export default {
             <transition
                 enter-active-class="animate__animated animate__fadeIn"
                 leave-active-class="animate__animated animate__fadeOut"
+                mode="out-in"
             >
                 <div v-if="localStore.cart.length">
                         <div v-if="!orderCreated">
@@ -190,7 +191,7 @@ export default {
                                             <div class="fav-card">
                                                 <div
                                                     class="image bg-image rounded"
-                                                    :style="'background: url(' + (item.thumbs.length ? item.thumbs[0].small : 'http://via.placeholder.com/512x512') + ');'"
+                                                    :style="'background: url(' + (item.thumbs.length ? item.thumbs[0].small : '/images/placeholder/phldr-512.png') + ');'"
                                                 ></div>
                                                 <div class="d-blo">
                                                     <div class="content">
@@ -611,11 +612,17 @@ export default {
                     
                 </div>
                 <div v-else>
-                    <div class="row">
-                        <div class="col text-center">
-                            <p class="mb-0">Пусто</p>
-                        </div>
-                    </div>
+                    <div class="row align-items-center">
+                <div class="col text-center">
+                    <img src="/images/placeholder/empty-storage-cart.png" alt="" class="img-fluid" style="max-height: 280px">
+                </div>
+                <div class="col">
+                    <h5 class="fw-semibold">Твоя корзина пуста</h5>
+                    <p>
+                        Чтобы оформить заказ - необходимо добавить товары в корзину
+                    </p>
+                </div>
+            </div>
                 </div>
             </transition>
         </div>

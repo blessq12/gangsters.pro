@@ -8,6 +8,7 @@ use App\Models\ProductCategory;
 use App\Models\User;
 use App\Models\UserRole;
 use Encore\Admin\Facades\Admin;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
@@ -33,5 +34,13 @@ class MainController extends Controller
     public function contact()
     {
         return view('front.contact');
+    }
+    public function purchaseAndDelivery(): View
+    {
+        return view('front.purchaseAndDelivery');
+    }
+    public function privacy(): View
+    {
+        return view('front.privacy');
     }
 }

@@ -1,6 +1,6 @@
 @extends('layouts.front')
 
-@section('title', '')
+@section('title', 'Контакты')
 @section('desc', '')
 
 @section('content')

@@ -1,8 +1,8 @@
 @extends('layouts.front')
 
-@section('title', 'О компании')
+@section('title', 'Оплата и доставка')
 @section('desc', '')
 
 @section('content')
-    
+
 @endsection
