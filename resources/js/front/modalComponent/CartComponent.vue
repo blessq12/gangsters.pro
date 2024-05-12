@@ -190,7 +190,7 @@ export default {
                                             <div class="fav-card">
                                                 <div
                                                     class="image bg-image rounded"
-                                                    :style="'background: url(' + (item.thumbs.length ? item.thumbs[0].small : '') + ');'"
+                                                    :style="'background: url(' + (item.thumbs.length ? item.thumbs[0].small : 'http://via.placeholder.com/512x512') + ');'"
                                                 ></div>
                                                 <div class="d-blo">
                                                     <div class="content">
@@ -216,18 +216,6 @@ export default {
                                                                 <i class="fa fa-plus"></i>
                                                             </button>
                                                         </div>
-                                                        <button
-                                                            type="button"
-                                                            class="btn btn-danger rounded"
-                                                            @click="
-                                                                localStore.manageStore(
-                                                                    'cart',
-                                                                    item
-                                                                )
-                                                            "
-                                                        >
-                                                            Удалить
-                                                        </button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -277,7 +265,7 @@ export default {
                                         class="btn rounded btn-danger mx-2"
                                         @click="localStore.clearStore('cart')"
                                     >
-                                        <i class="fa fa-trash"></i> Очистить корзину
+                                        <i class="fa fa-trash"></i> Очистить
                                     </button>
                                 </div>
                                 <div v-else>
