@@ -100,11 +100,13 @@ class ProductController extends AdminController
         $form = new Form(new Product());
         $form->switch('visible', __('Visible'))->default(1);
         $form->select('product_category_id', __('Product category id'))->options($this->categories());
-        $form->multipleImage('productImages', __('Images'))->pathColumn('path')->thumbnail([
-            'small' => [150, null],
-            'medium' => [512, null],
-            'large' => [1024, null],
-        ])->removable();
+
+        $form->multipleImage('productImages', __('Images'))
+            ->thumbnail(['small' => [150, null], 'medium' => [512, null], 'large' => [1024, null]])
+            ->pathColumn('path')
+            ->uniqueName()
+            ->removable();
+
         $form->text('name', __('Name'))->default('Название не задано');
 
         $form->switch('hit', __('Hit'));
@@ -118,8 +120,6 @@ class ProductController extends AdminController
         $form->textarea('consist', __('Consist'));
         $form->text('weight', __('Weight'));
         $form->text('price', __('Price'));
-
-
 
         return $form;
     }

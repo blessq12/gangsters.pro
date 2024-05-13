@@ -93,7 +93,7 @@ export default {
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col mb-4 mb-lg-0">
+                                    <div class="col mb-4 mb-lg-0" v-else>
                                         <ul class="images list-unstyled">
                                             <li class="bg-image rounded" style="background: url('/images/placeholder/phldr-512.png'); background-size: contain !important;"></li>
                                         </ul>
