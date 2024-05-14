@@ -14,22 +14,16 @@
             <div class="col d-none d-lg-block">
                 <ul class="nav-links" style="justify-content:{{!Request::is('/') ? 'end' : ''}}">
                     @if (!Request::is('/'))
-                    <a href="{{ route('main.index') }}">
-                        <li>{{ __('Главная') }}</li>
-                    </a>
+                        <a href="{{ route('main.index') }}">
+                            <li>{{ __('Главная') }}</li>
+                        </a>
                     @endif
-                    <a href="{{ route('main.about') }}">
-                        <li>{{ __('О компании') }}</li>
+                    @foreach ($links as $link)
+                    <a href="{{ route($link->route) }}" class="{{ Route::currentRouteName() === $link->route ? 'active' : '' }}">
+                        <li>{{ __($link->name) }}</li>
                     </a>
-                    <a href="{{ route('main.vacancy') }}">
-                        <li>{{ __('Вакансии') }}</li>
-                    </a>
-                    <a href="{{ route('main.purchaseAndDelivery') }}">
-                        <li>{{ __('Оплата и доставка') }}</li>
-                    </a>
-                    <a href="{{ route('main.contact') }}">
-                        <li>{{ __('Контакты') }}</li>
-                    </a>
+                    @endforeach
+                    
                 </ul>
             </div>
             @if (Request::is('/'))

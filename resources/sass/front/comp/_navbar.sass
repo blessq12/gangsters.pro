@@ -2,9 +2,8 @@ nav
     .nav-badge
         margin-right: 6px
     // background: $color-main
-    padding: 12px 0
     @media(min-width: 768px)
-        padding: 24px 0
+        padding: 12px 0
     .nav-logo
         display: flex
         align-items: center
@@ -26,9 +25,19 @@ nav
         padding: 0
         white-space: nowrap
         a
-            font-weight: 300
+            font-weight: 400
+            font-size: 1.15rem
+            border-bottom: 3px solid transparent
+            padding-bottom: 4px
+            color: $color-secondary
+            transition: all .3s
+            &:hover
+                border-color: $color-secondary
+            &.active
+                border-color: $color-secondary
             li
                 padding: 0px 8px
+                
     .shop-links
         display: flex
         align-items: center

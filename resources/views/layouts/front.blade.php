@@ -19,6 +19,9 @@
     <div id="app">    
         <app-init></app-init>
         <x-front.navbar></x-front.navbar>
+        @hasSection('hero')
+            @yield('hero')
+        @endif
         @yield('content')
         <x-front.footer></x-front.footer>
     </div>

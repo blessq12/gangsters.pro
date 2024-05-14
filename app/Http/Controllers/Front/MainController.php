@@ -4,11 +4,13 @@ namespace App\Http\Controllers\Front;
 
 use App\Http\Controllers\Controller;
 use App\Mail\GreetingMessageWithPassword;
+use App\Models\Company;
 use App\Models\ProductCategory;
 use App\Models\User;
 use App\Models\UserRole;
 use Encore\Admin\Facades\Admin;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\View as ViewFacade;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
@@ -16,6 +18,7 @@ class MainController extends Controller
 {
     public function __construct()
     {
+        ViewFacade::share('company', Company::first());
     }
 
     public function index()

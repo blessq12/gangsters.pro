@@ -58,8 +58,9 @@ class CompanyController extends AdminController
         $show->field('phone', __('Phone'));
         $show->field('phone_additional', __('Phone additional'));
         $show->field('email_address', __('Email address'));
+        $show->field('vk', 'Вконтакте');
+        $show->field('inst', 'Instagram');
         $show->field('logo', __('Logo'))->image();
-        $show->field('created_at', __('Created at'));
         $show->field('updated_at', __('Updated at'));
 
         return $show;
@@ -74,30 +75,19 @@ class CompanyController extends AdminController
     {
         $form = new Form(new Company());
 
-        $form->text('name', __('Name'));
-        $form->text('description', __('Description'));
-        $form->text('country', __('Country'));
-        $form->text('state', __('State'));
-        $form->text('city', __('City'));
-        $form->text('street', __('Street'));
-        $form->text('house', __('House'));
-        $form->mobile('phone', __('Phone'));
-        $form->mobile('phone_additional', __('Phone additional'));
-        $form->image('logo', __('Logo'))->name(time());
-        $form->text('email_address', __('Email address'));
-
-        $form->submitted(function ($form) {
-            // $form->model()->legals()->create([
-            //     'legal_form' => $form->input('legal_form'),
-            //     'legal_email' => $form->input('legal_email'),
-            //     'owner' => $form->input('owner'),
-            //     'inn' => $form->input('inn'),
-            //     'ogrn' => $form->input('ogrn'),
-            //     'okpo' => $form->input('okpo'),
-            //     'kpp' => $form->input('kpp'),
-            //     'registration_address' => $form->input('registration_address'),
-            // ]);
-        });
+        $form->text('name', __('Название'));
+        $form->text('description', __('Описание'));
+        $form->text('country', __('Страна'));
+        $form->text('state', __('Область'));
+        $form->text('city', __('Город'));
+        $form->text('street', __('Улица'));
+        $form->text('house', __('Здание'));
+        $form->mobile('phone', __('Телефон'));
+        $form->mobile('phone_additional', __('Дополнительный телефон'));
+        $form->image('logo', __('Логотип'))->uniqueName();
+        $form->text('email_address', __('Email адрес'));
+        $form->text('vk', 'Вконтакте');
+        $form->text('inst', 'Instagram');
 
         return $form;
     }

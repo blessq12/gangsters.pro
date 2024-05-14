@@ -1,6 +1,6 @@
 <footer>
     <div class="container">
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+        <div class="row row-cols-1 row-cols-md-2 {{ $company->vk || $company->inst ? 'row-cols-lg-4' : 'row-cols-lg-3'}} g-4">
             <div class="col">
                 <a href="{{ route('main.index') }}">
                     <div class="footer-logo">
@@ -81,10 +81,30 @@
                     </a>
                 </ul>
             </div>
-
-            <div class="col">
-                <h5>Соц сети</h5>
-            </div>
+            @if ($company->vk || $company->inst )
+                <div class="col">
+                    <h5>Соц сети</h5>
+                    <ul>
+                        @if ($company->vk)
+                            <a href="{{ $company->vk }}" target="_blank">
+                                <li>
+                                    <i class="fa fa-vk px-2"></i>
+                                    Группа Вконтакте
+                                </li>
+                            </a>
+                        @endif
+                        @if ($company->inst)
+                            <a href="{{ $company->inst }}" target="_blank">
+                                <li>
+                                    <i class="fa fa-instagram px-2"></i>
+                                    Профиль Instagram
+                                </li>
+                            </a>
+                        @endif
+                    </ul>
+                </div>
+            @endif
+            
         </div>
     </div>
     <div class="copyright">
