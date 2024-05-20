@@ -20,8 +20,8 @@ class Product extends Model
         'visible'
     ];
 
-    public function productImages()
+    public function imgs()
     {
-        return $this->hasMany(ProductImage::class);
+        return $this->hasMany(ProductImage::class, 'product_id');
     }
 }

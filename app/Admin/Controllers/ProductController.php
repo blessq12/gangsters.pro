@@ -31,13 +31,14 @@ class ProductController extends AdminController
         $grid = new Grid(new Product());
 
         $grid->column('id', __('Id'));
-        $grid->column('visible', __('Visible'));
-        $grid->column('product_category_id', __('Product category id'))->display(function ($category_id) {
+        $state = [];
+        $grid->column('visible', __('Доступность'));
+        $grid->column('product_category_id', __('Категория'))->display(function ($category_id) {
             return ProductCategory::find($category_id)->name;
         });
-        $grid->column('name', __('Name'));
-        $grid->column('weight', __('Weight'));
-        $grid->column('price', __('Price'));
+        $grid->column('name', __('Имя'))->editable();
+        $grid->column('weight', __('Вес(нетто)'))->editable();
+        $grid->column('price', __('Цена'))->editable();
 
 
         return $grid;
@@ -101,10 +102,14 @@ class ProductController extends AdminController
         $form->switch('visible', __('Visible'))->default(1);
         $form->select('product_category_id', __('Product category id'))->options($this->categories());
 
-        $form->multipleImage('productImages', __('Images'))
-            ->thumbnail(['small' => [150, null], 'medium' => [512, null], 'large' => [1024, null]])
+        $form->multipleImage('imgs', __('Изображения'))
             ->pathColumn('path')
             ->uniqueName()
+            ->thumbnail([
+                'sm' => [null, 256],
+                'md' => [null, 512],
+                'lg' => [null, 1024],
+            ])
             ->removable();
 
         $form->text('name', __('Name'))->default('Название не задано');
