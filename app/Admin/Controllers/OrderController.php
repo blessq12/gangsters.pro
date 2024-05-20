@@ -3,6 +3,7 @@
 namespace App\Admin\Controllers;
 
 use App\Models\Order;
+use App\Models\User;
 use Carbon\Carbon;
 use Encore\Admin\Controllers\AdminController;
 use Encore\Admin\Form;
@@ -28,25 +29,41 @@ class OrderController extends AdminController
         $grid = new Grid(new Order());
         $grid->model()->orderBy('id', 'desc');
 
-        $grid->column('id', __('Id'));
-        $grid->column('created_at', __('Created at'))->display(function ($val) {
+
+
+        $grid->column('id', __('ID'))->sortable();
+        $grid->column('created_at', __('Создан'))->display(function ($val) {
             return Carbon::parse($val)->format('d.m.Y');
         });
-        $grid->column('user_id', __('User type'))->display(function ($val) {
+        $grid->column('user_id', __('Тип заказа'))->display(function ($val) {
             return $val ?
-                "<span class='badge' style='background: #008d4c'>Авторизован</span>" :
-                "<span class='badge'>Не авторизован</span>";
+                "Авторизован" :
+                "Не авторизован";
+        })->label('success');
+
+        $grid->column('delivery', __('Доставка'))
+            ->display(function ($v) {
+                return 'Подробнее';
+            })
+            ->modal('Подробнее', function ($model) {
+                return view('components.front.adModal', [
+                    'order' => $model
+                ]);
+            });
+        $grid->column('adv', 'Подробности заказа')
+            ->display(function () {
+                return 'Открыть';
+            })
+            ->modal('Открыть', function ($model) {
+                return view('components.front.orderModal', [
+                    'order' => $model
+                ]);
+            });
+        // $grid->column('name', __('Имя'));
+        // $grid->column('tel', __('Номер телефона'));
+        $grid->column('total', __('Сумма'))->display(function ($val) {
+            return number_format($val, 2, '.', '') . ' руб.';
         });
-        $grid->column('delivery', __('Delivery'))->display(function ($del) {
-            return $del ?
-                "<span class='badge' style='background: #008d4c'>Доставка</span>" :
-                "<span class='badge'>Самовывоз</span>";
-        });
-        $grid->column('name', __('Name'));
-        $grid->column('tel', __('Tel'));
-        $grid->column('street', __('Street'));
-        $grid->column('house', __('House'));
-        $grid->column('total', __('Total'));
 
         return $grid;
     }
@@ -61,20 +78,48 @@ class OrderController extends AdminController
     {
         $show = new Show(Order::findOrFail($id));
 
-        $show->field('id', __('Id'));
-        $show->field('created_at', __('Created at'));
-        $show->field('updated_at', __('Updated at'));
-        $show->field('user_id', __('User id'));
-        $show->field('name', __('Name'));
-        $show->field('tel', __('Tel'));
-        $show->field('street', __('Street'));
-        $show->field('house', __('House'));
-        $show->field('building', __('Building'));
-        $show->field('staircase', __('Staircase'));
-        $show->field('floor', __('Floor'));
-        $show->field('apartment', __('Apartment'));
-        $show->field('total', __('Total'));
-        $show->field('delivery', __('Delivery'));
+        $show->field('id', __('ID заказа'));
+
+        $show->field('created_at', __('Создан'));
+        $show->field('updated_at', __('Обновлен'));
+        $show->divider();
+        $show->field('delivery', __('Доставка'))->as(function ($val) {
+            return $val ?
+                "<span class='badge' style='background: #008d4c'>Доставка</span>" :
+                "<span class='badge'>Самовывоз</span>";
+        })->unescape();
+        $show->field('user_id', __('Тип заказа'))->as(function ($val) {
+            $user = User::find($val);
+            if (!$val) {
+                return "<span class='badge' style='background: red'>Не авторизован</span>";
+            } else {
+                return "<span class='badge' style='background: green'>Авторизован</span>" . "<span style='margin-left: 20px'>Пользователь: ID: <b>{$user->id}</b>, Номер телефона: <b>{$user->tel}</b></span>";
+            }
+        })->unescape();
+        $show->field('name', __('Имя в заказе'));
+        $show->field('tel', __('Номер телефона'));
+        $show->field('street', __('Улица'))->as(function ($value) {
+            return $value ? $value : 'Не указано';
+        });
+        $show->field('house', __('Дом'))->as(function ($value) {
+            return $value ? $value : 'Не указано';
+        });
+        $show->field('building', __('Строение'))->as(function ($value) {
+            return $value ? $value : 'Не указано';
+        });
+        $show->field('staircase', __('Подъезд'))->as(function ($value) {
+            return $value ? $value : 'Не указано';
+        });
+        $show->field('floor', __('Этаж'))->as(function ($value) {
+            return $value ? $value : 'Не указано';
+        });
+        $show->field('apartment', __('Квартира'))->as(function ($value) {
+            return $value ? $value : 'Не указано';
+        });
+        $show->field('total', __('Общая сумма'))->as(function ($value) {
+            return $value . ' руб.';
+        });;
+
 
         return $show;
     }
@@ -88,16 +133,18 @@ class OrderController extends AdminController
     {
         $form = new Form(new Order());
 
-        $form->number('user_id', __('User id'));
-        $form->text('name', __('Name'));
-        $form->text('tel', __('Tel'));
-        $form->text('street', __('Street'));
-        $form->text('house', __('House'));
-        $form->text('building', __('Building'));
-        $form->text('staircase', __('Staircase'));
-        $form->text('floor', __('Floor'));
-        $form->text('apartment', __('Apartment'));
-        $form->text('total', __('Total'));
+        $form->display('user_id', 'ID Пользователя');
+
+        $form->divider();
+        $form->text('name', __('Имя'));
+        $form->text('tel', __('Номер телефона'));
+        $form->text('street', __('Улица'));
+        $form->text('house', __('Дом'));
+        $form->text('building', __('Строение'));
+        $form->text('staircase', __('Подъезд'));
+        $form->text('floor', __('Этаж'));
+        $form->text('apartment', __('Квартира'));
+        $form->text('total', __('Общая сумма'));
         $form->switch('delivery', __('Delivery'));
 
         return $form;
