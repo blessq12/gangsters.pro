@@ -8,6 +8,7 @@ use Encore\Admin\Controllers\AdminController;
 use Encore\Admin\Form;
 use Encore\Admin\Grid;
 use Encore\Admin\Show;
+use Illuminate\Support\Str;
 
 class ProductCategoryController extends AdminController
 {
@@ -34,8 +35,17 @@ class ProductCategoryController extends AdminController
         ];
         $grid->visible('Доступность')->switch($states);
         $grid->column('name', __('Название'))->editable();
-        $grid->column('uri', __('URI (Уникальный идентификатор)'));
-        $grid->column('created_at', __('Создан'));
+        // $grid->column('uri', __('URI (Уникальный идентификатор)'));
+        // $grid->column('created_at', __('Создан'));
+        $grid->column('product', 'Товары')
+            ->display(function () {
+                return 'Раскрыть (' . $this->products()->count() . ' шт.)';
+            })
+            ->expand(function ($model) {
+                return view('components.front.productCategory', [
+                    'category' => $model
+                ]);
+            });
         $grid->column('updated_at', __('Обновлен'))->display(function ($timestamp) {
             return Carbon::parse($timestamp)->format('Y/m/d H:i');
         });
@@ -57,12 +67,18 @@ class ProductCategoryController extends AdminController
     {
         $show = new Show(ProductCategory::findOrFail($id));
 
-        $show->field('id', __('Id'));
-        $show->field('uri', __('Uri'));
-        $show->field('visible', __('Visible'));
-        $show->field('name', __('Name'));
-        $show->field('created_at', __('Created at'));
-        $show->field('updated_at', __('Updated at'));
+        $show->field('id', __('ID'));
+        $show->field('uri', __('Идентификатор'));
+        $show->field('visible', __('Доступность'))->as(function ($val) {
+            return $val ? 'Категория доступна' : 'Категория недоступна';
+        })->label();
+        $show->field('name', __('Название категории'));
+        $show->field('created_at', __('Создан'))->as(function ($ts) {
+            return Carbon::parse($ts)->format('Y/m/d H:i');
+        });
+        $show->field('updated_at', __('Обновлен'))->as(function ($ts) {
+            return Carbon::parse($ts)->format('Y/m/d H:i');
+        });
 
         return $show;
     }
@@ -76,9 +92,9 @@ class ProductCategoryController extends AdminController
     {
         $form = new Form(new ProductCategory());
 
-        $form->text('uri', __('Uri'));
-        $form->switch('visible', __('Visible'))->default(1);
-        $form->text('name', __('Name'));
+        $form->display('uri', __('Идентификатор'))->value(Str::random(16));
+        $form->switch('visible', __('Доступность'))->default(false);
+        $form->text('name', __('Название категории'));
 
         return $form;
     }

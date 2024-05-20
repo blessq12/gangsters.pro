@@ -78,7 +78,7 @@ class StoryController extends AdminController
         $form->text('name', __('Заголовок'));
         $form->switch('visible', __('Доступен'));
         $form->image('image', __('Изображение'))
-            ->thumbnail('story', null, 512)
+            ->thumbnail('story', null, 256)
             ->uniqueName();
         return $form;
     }

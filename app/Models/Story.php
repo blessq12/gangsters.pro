@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Encore\Admin\Traits\Resizable;
 
 class Story extends Model
 {
-    use HasFactory;
+    use HasFactory, Resizable;
 
     protected $fillable = [
         'name',

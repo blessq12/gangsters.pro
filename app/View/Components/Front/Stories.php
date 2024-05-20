@@ -15,7 +15,7 @@ class Stories extends Component
      */
     public function __construct()
     {
-        $this->stories = Story::where('visible', true)->get();
+        $this->stories = $this->getStories();
     }
 
     /**
@@ -24,5 +24,14 @@ class Stories extends Component
     public function render(): View|Closure|string
     {
         return view('components.front.stories', ['stories' => $this->stories]);
+    }
+    private function getStories()
+    {
+        $stories = Story::where('visible', true)->get();
+        $stories->each(function ($story) {
+            $story->thumb = '/uploads/' . $story->thumbnail('story');
+            $story->image = '/uploads/' . $story->image;
+        });
+        return $stories;
     }
 }
