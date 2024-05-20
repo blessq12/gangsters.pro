@@ -37,6 +37,14 @@ export default {
                 v-show=" banners.indexOf(e) === current"
                 :style="'background: url( /uploads/' + e.image + ' )'"
             >
+
+            <div class="d-flex align-items-end position-absolute w-100 h-100 p-2 p-lg-4 text-content">
+                <div class="d-block">
+                    <h2 class="mb-0" v-if="e.header">{{ e.header }}</h2>
+                    <p class="mb-0" v-if="e.subheader">{{ e.subheader }}</p>
+                </div>
+            </div>
+
             </div>
         </transition-group>
         <div class="banner-nav">

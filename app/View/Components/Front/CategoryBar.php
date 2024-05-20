@@ -15,7 +15,10 @@ class CategoryBar extends Component
      */
     public function __construct()
     {
-        $this->categories = ProductCategory::all();
+        $this->categories = ProductCategory::where(
+            'visible',
+            1
+        )->get();
     }
 
     /**

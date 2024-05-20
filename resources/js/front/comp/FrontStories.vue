@@ -17,8 +17,11 @@ export default {
 
 <template>
     <ul class="story-list" v-if="stories.length">
-        <li v-for="story in stories" :key="story.id" class="bg-primary">
+        <li v-for="story in stories" :key="story.id" class="bg-primary d-block text-center">
             <div class="story-item rounded bg-image" :style="'background:url(/uploads/' + story.image + ')'" @click="show = !show">
+            </div>
+            <div class="story-footer py-2 text-light">
+                {{ story.name }}
             </div>
         </li>
     </ul>
