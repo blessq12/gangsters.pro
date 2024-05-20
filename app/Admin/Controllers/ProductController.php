@@ -8,6 +8,7 @@ use App\Models\ProductImage;
 use Encore\Admin\Controllers\AdminController;
 use Encore\Admin\Form;
 use Encore\Admin\Grid;
+use Encore\Admin\Grid\Filter;
 use Encore\Admin\Show;
 
 use function Laravel\Prompts\form;
@@ -30,12 +31,29 @@ class ProductController extends AdminController
     {
         $grid = new Grid(new Product());
 
-        $grid->column('id', __('Id'));
-        $state = [];
-        $grid->column('visible', __('Доступность'));
+        $grid->filter(function (Filter $filter) {
+            $filter->expand();
+            $filter->column(1 / 2, function ($filter) {
+                $filter->like('name', 'Название');
+            });
+            $filter->column(1 / 2, function ($filter) {
+                $filter->equal('product_category_id', 'Категория')->select(ProductCategory::all()->pluck('name', 'id'));
+            });
+        });
+
+        $grid->column('id', __('Id'))->sortable();
+        $states = [
+            'on' => ['text' => 'Да'],
+            'off' => ['text' => 'Нет'],
+        ];
+
+        $grid->visible('Доступность')->switch($states);
+        $grid->imgs('Изображения')->map(function ($image) {
+            return $image['path'];
+        })->image(null, 50, 50);
         $grid->column('product_category_id', __('Категория'))->display(function ($category_id) {
             return ProductCategory::find($category_id)->name;
-        });
+        })->sortable();
         $grid->column('name', __('Имя'))->editable();
         $grid->column('weight', __('Вес(нетто)'))->editable();
         $grid->column('price', __('Цена'))->editable();
@@ -55,38 +73,38 @@ class ProductController extends AdminController
         $show = new Show(Product::findOrFail($id));
 
         $show->field('id', __('Id'));
-        $show->field('visible', __('Visible'))->as(function ($val) {
+        $show->field('visible', __('Доступность'))->as(function ($val) {
             return $val ? 'Да' : 'Нет';
         });
-        $show->productImages()->as(function ($images) {
+        $show->imgs('ИИзображения')->as(function ($images) {
             return $images->map(function ($image) {
                 return $image->path;
             });
-        })->image();
-        $show->field('product_category_id', __('Product category id'))->as(function ($id) {
+        })->image(null, null, 80);
+        $show->field('product_category_id', __('Категория'))->as(function ($id) {
             return ProductCategory::find($id)->name;
         });
-        $show->field('name', __('Name'));
-        $show->field('hit', __('Hit'))->as(function ($val) {
+        $show->field('name', __('Название'));
+        $show->field('hit', __('Хит'))->as(function ($val) {
             return $val ? 'Да' : 'Нет';
         });;
-        $show->field('spicy', __('Spicy'))->as(function ($val) {
+        $show->field('spicy', __('Острый'))->as(function ($val) {
             return $val ? 'Да' : 'Нет';
         });;
-        $show->field('kidsAllow', __('KidsAllow'))->as(function ($val) {
+        $show->field('kidsAllow', __('Можно детям'))->as(function ($val) {
             return $val ? 'Да' : 'Нет';
         });;
-        $show->field('onion', __('Onion'))->as(function ($val) {
+        $show->field('onion', __('Есть лук'))->as(function ($val) {
             return $val ? 'Да' : 'Нет';
         });;
-        $show->field('garlic', __('Garlic'))->as(function ($val) {
+        $show->field('garlic', __('Есть чеснок'))->as(function ($val) {
             return $val ? 'Да' : 'Нет';
         });;
-        $show->field('consist', __('Consist'));
-        $show->field('weight', __('Weight (GR)'));
-        $show->field('price', __('Price (RUR)'));
-        $show->field('created_at', __('Created at'));
-        $show->field('updated_at', __('Updated at'));
+        $show->field('consist', __('Состав'));
+        $show->field('weight', __('Вес (нетто)'));
+        $show->field('price', __('Цена'));
+        $show->field('created_at', __('Создан'));
+        $show->field('updated_at', __('Обновлен'));
 
         return $show;
     }
@@ -99,8 +117,8 @@ class ProductController extends AdminController
     protected function form()
     {
         $form = new Form(new Product());
-        $form->switch('visible', __('Visible'))->default(1);
-        $form->select('product_category_id', __('Product category id'))->options($this->categories());
+        $form->switch('visible', __('Доступность'))->default(1);
+        $form->select('product_category_id', __('Категория'))->options($this->categories());
 
         $form->multipleImage('imgs', __('Изображения'))
             ->pathColumn('path')
@@ -112,19 +130,19 @@ class ProductController extends AdminController
             ])
             ->removable();
 
-        $form->text('name', __('Name'))->default('Название не задано');
+        $form->text('name', __('Название'))->default('Название не задано');
 
-        $form->switch('hit', __('Hit'));
-        $form->switch('spicy', __('Spicy'));
-        $form->switch('kidsAllow', __('KidsAllow'));
+        $form->switch('hit', __('Хит'));
+        $form->switch('spicy', __('Острый'));
+        $form->switch('kidsAllow', __('Можно детям'));
 
-        $form->switch('onion', __('Onion'));
-        $form->switch('garlic', __('Garlic'));
+        $form->switch('onion', __('Есть лук'));
+        $form->switch('garlic', __('Есть чеснок'));
 
 
-        $form->textarea('consist', __('Consist'));
-        $form->text('weight', __('Weight'));
-        $form->text('price', __('Price'));
+        $form->textarea('consist', __('Состав'));
+        $form->text('weight', __('Вес (нетто)'));
+        $form->text('price', __('Цена'));
 
         return $form;
     }

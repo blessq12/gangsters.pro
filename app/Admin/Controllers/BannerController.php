@@ -16,7 +16,7 @@ class BannerController extends AdminController
      *
      * @var string
      */
-    protected $title = 'Banner';
+    protected $title = 'Баннеры';
 
     /**
      * Make a grid builder.
@@ -27,16 +27,18 @@ class BannerController extends AdminController
     {
         $grid = new Grid(new Banner());
 
-        $grid->column('id', __('Id'));
-        $grid->column('header', __('Header'));
-        $grid->column('subheader', __('Subheader'));
-        $grid->column('image', __('Image'))->display(function ($image) {
-            return "<img src='/uploads/{$image}' width='auto' height='70' class='img-fluid'>";
-        });
-        $grid->column('created_at', __('Created at'))->display(function ($value) {
+        $grid->column('id', __('ID'));
+        $states = [
+            'on' => ['text' => 'Да'],
+            'off' => ['text' => 'Нет'],
+        ];
+        $grid->visible('Доступность')->switch($states);
+        $grid->column('header', __('Заголовок'))->editable();
+        $grid->column('subheader', __('Подзаголовок'))->editable();
+        $grid->column('image', __('Изображение'))->image(null, null, 50);
+        $grid->column('created_at', __('Создан'))->display(function ($value) {
             return Carbon::parse($value)->format('Y.m.d');
         });
-        $grid->column('visible', __('Visible'));
 
         return $grid;
     }
@@ -51,13 +53,19 @@ class BannerController extends AdminController
     {
         $show = new Show(Banner::findOrFail($id));
 
-        $show->field('id', __('Id'));
-        $show->field('header', __('Header'));
-        $show->field('subheader', __('Subheader'));
-        $show->field('image', __('Image'))->image();
-        $show->field('created_at', __('Created at'));
-        $show->field('updated_at', __('Updated at'));
-        $show->field('status', __('Status'));
+        $show->field('id', __('ID'));
+        $show->field('visible', __('Доступен'))->as(function ($value) {
+            return $value ?
+                'Да' :
+                'Нет';
+        });
+        $show->field('header', __('Заголовок'));
+        $show->field('subheader', __('Подзаголовок'));
+        $show->field('image', __('Изображение'))->image(null, null, 150);
+        $show->field('created_at', __('Создан'))->as(function ($ts) {
+            return Carbon::parse($ts)->format('Y/m/d H:i');
+        });
+        // $show->field('updated_at', __('Updated at'));
 
         return $show;
     }
@@ -71,11 +79,10 @@ class BannerController extends AdminController
     {
         $form = new Form(new Banner());
 
-        $form->text('header', __('Header'));
-        $form->textarea('subheader', __('Subheader'));
-        $form->image('image', __('Image'))->uniqueName();
-        $form->switch('visible', __('Visible'));
-
+        $form->switch('visible', __('Доступонсть'));
+        $form->text('header', __('Заголовок'));
+        $form->textarea('subheader', __('Подзаголовок'));
+        $form->image('image', __('Изображение'))->uniqueName();
         return $form;
     }
 }

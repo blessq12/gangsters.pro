@@ -3,6 +3,7 @@
 namespace App\Admin\Controllers;
 
 use App\Models\ProductCategory;
+use Carbon\Carbon;
 use Encore\Admin\Controllers\AdminController;
 use Encore\Admin\Form;
 use Encore\Admin\Grid;
@@ -26,12 +27,18 @@ class ProductCategoryController extends AdminController
     {
         $grid = new Grid(new ProductCategory());
 
-        $grid->column('id', __('Id'));
-        $grid->column('uri', __('Uri'));
-        $grid->column('visible', __('Visible'));
-        $grid->column('name', __('Name'));
-        $grid->column('created_at', __('Created at'));
-        $grid->column('updated_at', __('Updated at'));
+        $grid->column('id', __('ID'));
+        $states = [
+            'on' => ['text' => 'Да'],
+            'off' => ['text' => 'Нет'],
+        ];
+        $grid->visible('Доступность')->switch($states);
+        $grid->column('name', __('Название'))->editable();
+        $grid->column('uri', __('URI (Уникальный идентификатор)'));
+        $grid->column('created_at', __('Создан'));
+        $grid->column('updated_at', __('Обновлен'))->display(function ($timestamp) {
+            return Carbon::parse($timestamp)->format('Y/m/d H:i');
+        });
 
         $grid->filter(function ($filter) {
             $filter->by('id', __('Id'));

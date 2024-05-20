@@ -12,13 +12,9 @@ class ProductCategory extends Model
         'uri',
         'name'
     ];
-    public function image()
-    {
-        return $this->morphOne(Image::class, 'image');
-    }
 
     public function products()
     {
-        return $this->hasMany(Product::class);
+        return $this->hasMany(Product::class)->where('visible', true);
     }
 }
