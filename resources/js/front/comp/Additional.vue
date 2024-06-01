@@ -56,10 +56,11 @@ export default {
             <div class="wrap" v-if="appStore.additional" >
                 <div class="overlay" @click="appStore.additional=!appStore.additional"></div>
                 <div class="container position-relative" style="z-index: 10;">
+                    
                     <div class="row justify-content-center">
                         <div class="col col-lg-10">
                             <div class="additional-window">
-
+                                
                                 <div class="row mb-4">
                                     <div class="col">
                                         <h4 class="fw-semibold mb-0">{{ appStore.currentAdditional.name }}</h4>
@@ -79,10 +80,10 @@ export default {
                                             <li 
                                                 class="bg-image rounded"
                                                 style="min-height: 200px;"
-                                                v-for="img in appStore.currentAdditional.images"
-                                                :style="'background: url(' + img + ')'"
+                                                v-for="img in appStore.currentAdditional.thumbs"
+                                                :style="'background: url(' + img.large + ')'"
                                                 :key="img"
-                                                v-show="Array.from(appStore.currentAdditional.images).indexOf( img ) == imgIndex"
+                                                v-show="Array.from(appStore.currentAdditional.thumbs).indexOf( img ) == imgIndex"
                                             >
                                             </li>
                                         </transition-group>

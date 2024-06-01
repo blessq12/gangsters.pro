@@ -128,7 +128,8 @@ class ProductController extends AdminController
                 'md' => [null, 512],
                 'lg' => [null, 1024],
             ])
-            ->removable();
+            ->removable()
+            ->resize(1920, 1080); // Resize original image on upload
 
         $form->text('name', __('Название'))->default('Название не задано');
 
@@ -146,6 +147,8 @@ class ProductController extends AdminController
 
         return $form;
     }
+
+
     private function categories()
     {
         $categories = ProductCategory::all();
