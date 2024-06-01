@@ -10,4 +10,5 @@
     <x-front.catalog></x-front.catalog>
     <additional></additional>
     <modal></modal>
+    <x-front.bottom-cart></x-front.bottom-cart>
 @endsection
