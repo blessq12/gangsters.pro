@@ -18,8 +18,8 @@ export default {
 </script>
 
 <template>
-    <div class="category-bar position-sticky" style="top: 0;">
-        <ul>
+    <div class="category-bar">
+        <ul class="sticky-top">
             <li v-for="el in categories" :key="el.uri">
                 <button type="button" class="btn rounded" @click="current = el.uri" :class="{active: current == el.uri}">
                     {{ el.name }}

@@ -76,7 +76,6 @@ button.footer
     border: unset
     padding: 14px 18px
     white-space: nowrap
-    margin-right: 12px
     &:hover
         background: #2e2e2e
         color: #fff

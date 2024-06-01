@@ -62,8 +62,8 @@ export default {
                             В корзине
                         </button>
                         <div class="d-block">
-                            <span class="d-block price">{{ product.price }}</span>
-                            <span class="d-block weight">{{ product.weight }}</span>
+                            <span class="d-block price">{{ product.price ?? 'Не указано' }}</span>
+                            <span class="d-block weight">{{ product.weight ?? 'Не указано' }}</span>
                         </div>
                     </div>
                 </div>
