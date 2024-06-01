@@ -48,6 +48,8 @@ class MainController extends Controller
     {
         return view('front.privacy');
     }
+
+    // Функция для изменения размера изображений
     public function resize()
     {
         $images = ProductImage::all();
