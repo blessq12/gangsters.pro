@@ -43,26 +43,28 @@ export default {
                             <button type="button" class="btn btn-danger" @click="localStore.manageStore('fav', product)" v-else>
                                 <i class="fa fa-heart"></i>
                             </button>
-
+                            <button 
+                                type="button" 
+                                class="additional btn"
+                                @click="appStore.additional = !appStore.additional; appStore.currentAdditional = product"
+                            >i</button>
                         </div>
                     </div>
                     <div class="content">
                         <span>{{ product.name }}</span>
                     </div>
                     <div class="footer">
-                        
+
                         <button type="button" class="btn rounded" @click="localStore.manageStore('cart', product)" v-if="!localStore.checkExist('cart', product)">
                             + В корзину
                         </button>
                         <button type="button" class="btn rounded active" @click="localStore.manageStore('cart', product)" v-else>
                             В корзине
                         </button>
-
-                        <button 
-                            type="button" 
-                            class="additional btn"
-                            @click="appStore.additional = !appStore.additional; appStore.currentAdditional = product"
-                        >i</button>
+                        <div class="d-block">
+                            <span class="d-block price">{{ product.price }}</span>
+                            <span class="d-block weight">{{ product.weight }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
