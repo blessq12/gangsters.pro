@@ -6,12 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Mail\GreetingMessageWithPassword;
 use App\Models\Company;
 use App\Models\ProductCategory;
+use App\Models\ProductImage;
 use App\Models\User;
 use App\Models\UserRole;
 use Encore\Admin\Facades\Admin;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\View as ViewFacade;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Mail;
 
 class MainController extends Controller
@@ -45,5 +47,21 @@ class MainController extends Controller
     public function privacy(): View
     {
         return view('front.privacy');
+    }
+    public function resize()
+    {
+        $images = ProductImage::all();
+
+        foreach ($images as $image) {
+            $path = public_path('uploads/' . $image->path);
+            if (File::exists($path)) {
+                $img = \Image::make($path)->resize(1920, 1080, function ($constraint) {
+                    $constraint->aspectRatio();
+                })->encode('jpg', 85); // Down quality to 75%
+                $img->save($path);
+            }
+        }
+
+        return 'all images resized and saved';
     }
 }
