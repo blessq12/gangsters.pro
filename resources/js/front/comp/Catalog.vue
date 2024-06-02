@@ -46,30 +46,32 @@ export default {
                 }
             }
         },
-        // createObserver() {
-        //     this.observer = new IntersectionObserver((entries) => {
-        //         entries.forEach(entry => {
-        //             if (entry.isIntersecting) {
-        //                 this.currentCategory = entry.target.dataset.uri;
-        //             }
-        //         });
-        //     }, {
-        //         root: null,
-        //         rootMargin: '0px',
-        //         threshold: 0.5
-        //     });
+        createObserver() {
+            this.observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        
+                        this.currentCategory = entry.target.dataset.uri;
+                        
+                    }
+                });
+            }, {
+                root: null,
+                rootMargin: this.appStore.device === 'phone' ? '0px 0px 0px 80%' : '0px',
+                threshold: 1
+            });
 
-        //     this.goods.forEach(category => {
-        //         const categoryElement = this.$refs[category.uri][0];
-        //         if (categoryElement) {
-        //             this.observer.observe(categoryElement);
-        //         }
-        //     });
-        // }
+            this.goods.forEach( category => {
+                const categoryElement = this.$refs[category.uri + '-section'][0];
+                if (categoryElement) {
+                    this.observer.observe(categoryElement);
+                }
+            });
+        }
     },
     mounted() {
         this.currentCategory = this.goods[0].uri;
-        // this.createObserver();
+        this.createObserver();
     },
     beforeDestroy() {
         if (this.observer) {
@@ -85,7 +87,7 @@ export default {
 </script>
 
 <template>
-
+    <!-- category bar -->
     <div class="category-bar sticky-top">
         <div class="container">
 
@@ -108,9 +110,11 @@ export default {
             </ul>
         </div>
     </div>
-    
+    <!-- category bar -->
+
+    <!-- catalog -->
     <div class="container mt-5">
-        <div class="category" v-for="category in goods" :key="category.uri" :data-uri="category.uri" ref="category.uri">
+        <div class="category" v-for="category in goods" :key="category.uri" :data-uri="category.uri" :ref="category.uri + '-section'">
             <div class="scrooll-point" :ref="category.uri"></div>
             <div class="row mb-4">
                 <div class="col">
@@ -161,7 +165,7 @@ export default {
             </div>
         </div>
     </div>
-
+    <!-- end catalog -->
 </template>
 
 <style lang="sass" scoped>
