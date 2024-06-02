@@ -57,8 +57,8 @@ export default {
                 });
             }, {
                 root: null,
-                rootMargin: this.appStore.device === 'phone' ? '0px 0px 0px 80%' : '0px',
-                threshold: 1
+                rootMargin: this.appStore.device === 'phone' ? '0px 0px -50% 0px ' : '-20% 0px -20% 0px',
+                threshold: this.appStore.device === 'phone' ? 1 : 0.1,
             });
 
             this.goods.forEach( category => {

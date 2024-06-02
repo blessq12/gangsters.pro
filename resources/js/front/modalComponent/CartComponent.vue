@@ -612,7 +612,7 @@ export default {
                     
                 </div>
                 <div v-else>
-                    <div class="row align-items-center">
+                    <div class="row row-cols-1 row-cols-lg-2 align-items-center">
                 <div class="col text-center">
                     <img src="/images/placeholder/empty-storage-cart.png" alt="" class="img-fluid" style="max-height: 280px">
                 </div>
