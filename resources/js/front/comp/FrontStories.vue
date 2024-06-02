@@ -135,7 +135,6 @@ export default {
         padding: 12px
         position: absolute
         width: 100%
-
     .story-content
         display: flex
         justify-content: center

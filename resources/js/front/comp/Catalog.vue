@@ -2,12 +2,18 @@
 import { mapStores } from 'pinia';
 import { appStore } from '../../stores/appStorage';
 import { localStore } from '../../stores/localStore';
+
 export default {
     props: {
         goods: Object
     },
+    data() {
+        return {
+            currentCategory: null
+        };
+    },
     computed: {
-        ...mapStores( appStore, localStore )
+        ...mapStores(appStore, localStore)
     },
     methods: {
         showImage(prod) {
@@ -16,64 +22,150 @@ export default {
             } else {
                 return 'https://via.placeholder.com/512x512'
             }
+        },
+        scrollToCategory(uri) {
+            const categoryElement = this.$refs[uri];
+            if (categoryElement && categoryElement[0]) {
+                categoryElement[0].scrollIntoView({
+                    behavior: 'smooth'
+                });
+            }
+        },
+        scrollCategoryBarToCurrent() {
+            this.$nextTick(() => {
+                const currentButton = this.$refs[this.currentCategory + '-button'];
+                if (currentButton && currentButton[0]) {
+                    currentButton[0].scrollIntoView({
+                        behavior: 'smooth',
+                        inline: 'center'
+                    });
+                }
+            });
+        }
+    },
+    mounted() {
+        
+        this.$nextTick(() => {
+            this.goods.forEach(category => {
+                const element = this.$refs[category.uri][0];
+                if (element) {
+                    // Any additional logic if needed
+                }
+            });
+        });
+    },
+    beforeDestroy() {
+        // Any cleanup logic if needed
+    },
+    watch: {
+        currentCategory() {
+            console.log(this.currentCategory)
         }
     }
 }
 </script>
 
 <template>
-    <div class="category" v-for="category in goods" :key="category.uri">
-        <div class="row mb-4">
-            <div class="col">
-                <div class="section-title">
-                    <h2>
-                        {{ category.name }}
-                    </h2>
+
+    <div class="category-bar sticky-top">
+        <div class="container">
+
+            <ul>
+                <li v-for="el in goods" :key="el.uri">
+                    <button 
+                        type="button" 
+                        class="btn rounded btn-secondary" 
+                        @click="scrollToCategory(el.uri), currentCategory=el.uri" 
+                        :ref="el.uri + '-button'"
+                        :class="{ active: el.uri === currentCategory }"
+                        >
+                        {{ el.name }}
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="container mt-5">
+        <div class="category" v-for="category in goods" :key="category.uri" :data-uri="category.uri" ref="category.uri">
+            <div class="scrooll-point" :ref="category.uri"></div>
+            <div class="row mb-4">
+                <div class="col">
+                    <div class="section-title">
+                        <h2>
+                            {{ category.name }}
+                        </h2>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-3 mb-4 category-list">
-            <div class="col rounded" v-for="product in category.products" :key="product.id">
-                <div class="product">
-                    <div class="header bg-image rounded" :style="'background: url('+ showImage(product) +')'">
-                        <div class="badge">
-                            <button type="button" class="btn btn-light" @click="localStore.manageStore('fav', product)" v-if="!localStore.checkExist('fav', product)">
-                                <i class="fa fa-heart-o"></i>
-                            </button>
-                            <button type="button" class="btn btn-danger" @click="localStore.manageStore('fav', product)" v-else>
-                                <i class="fa fa-heart"></i>
-                            </button>
-                            <button 
-                                type="button" 
-                                class="additional btn"
-                                @click="appStore.additional = !appStore.additional; appStore.currentAdditional = product"
-                            >i</button>
+            <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-3 mb-4 category-list">
+                <div class="col rounded" v-for="product in category.products" :key="product.id">
+                    <div class="product">
+                        <div class="header bg-image rounded" :style="'background: url('+ showImage(product) +')'">
+                            <div class="badge">
+                                <button type="button" class="btn btn-light" @click="localStore.manageStore('fav', product)" v-if="!localStore.checkExist('fav', product)">
+                                    <i class="fa fa-heart-o"></i>
+                                </button>
+                                <button type="button" class="btn btn-danger" @click="localStore.manageStore('fav', product)" v-else>
+                                    <i class="fa fa-heart"></i>
+                                </button>
+                                <button 
+                                    type="button" 
+                                    class="additional btn"
+                                    @click="appStore.additional = !appStore.additional; appStore.currentAdditional = product"
+                                >i</button>
+                            </div>
                         </div>
-                    </div>
-                    <div class="content">
-                        <span>{{ product.name }}</span>
-                    </div>
-                    <div class="footer">
+                        <div class="content">
+                            <span>{{ product.name }}</span>
+                        </div>
+                        <div class="footer">
 
-                        <button type="button" class="btn rounded" @click="localStore.manageStore('cart', product)" v-if="!localStore.checkExist('cart', product)">
-                            + В корзину
-                        </button>
-                        <button type="button" class="btn rounded active" @click="localStore.manageStore('cart', product)" v-else>
-                            В корзине
-                        </button>
-                        <div class="d-block">
-                            <span class="d-block price">{{ product.price ?? 'Не указано' }}</span>
-                            <span class="d-block weight">{{ product.weight ?? 'Не указано' }}</span>
+                            <button type="button" class="btn rounded" @click="localStore.manageStore('cart', product)" v-if="!localStore.checkExist('cart', product)">
+                                + В корзину
+                            </button>
+                            <button type="button" class="btn rounded active" @click="localStore.manageStore('cart', product)" v-else>
+                                В корзине
+                            </button>
+                            <div class="d-block">
+                                <span class="d-block price">{{ product.price ?? 'Не указано' }}</span>
+                                <span class="d-block weight">{{ product.weight ?? 'Не указано' }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
 </template>
 
 <style lang="sass" scoped>
 .category
+    position: relative
+    .scrooll-point
+        position: absolute
+        top: -100px
+        left: 0
     .col
         max-width: 320px
+
+.category-bar
+    padding: 10px 0px
+    background: #fff
+    ul
+        display: flex
+        align-items: center
+        list-style: none
+        padding: 0
+        margin: 0
+        overflow: hidden
+        overflow-x: auto
+        scrollbar-width: none
+        -ms-overflow-style: none
+        &::-webkit-scrollbar
+            display: none
+        li
+            margin-right: 12px
+            
 </style>

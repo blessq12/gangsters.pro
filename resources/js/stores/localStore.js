@@ -40,18 +40,18 @@ export const localStore = defineStore('local', {
                 }
                 store.push(product)
                 if (storeName == 'cart'){
-                    toast.success( product.name + ' добавлен в корзину')
+                    // toast.success( product.name + ' добавлен в корзину')
                 }
                 if (storeName == 'fav'){
-                    toast.success( product.name + ' добавлен в избранное')
+                    // toast.success( product.name + ' добавлен в избранное')
                 }
             } else {
                 store.splice(store.findIndex(e => e.id == product.id), 1)
                 if (storeName == 'cart'){
-                    toast.warning( product.name + ' удалено из корзины')
+                    // toast.warning( product.name + ' удалено из корзины')
                 }
                 if (storeName == 'fav'){
-                    toast.warning( product.name + ' удалено из избранного')
+                    // toast.warning( product.name + ' удалено из избранного')
                 }
             }
 
