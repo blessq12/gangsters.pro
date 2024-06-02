@@ -87,7 +87,8 @@ class ApiClientAuthController extends Controller
         }
     }
 
-    public function resetPassword(Request $request){
+    public function resetPassword(Request $request)
+    {
 
         $user = User::where('email', $request->email)->first();
         $password = Str::random(16);
@@ -95,9 +96,9 @@ class ApiClientAuthController extends Controller
             return response([
                 'status' => false,
                 'message' => 'Пользователь с таким email не найден'
-            ],404);
+            ], 404);
         }
-        
+
         $user->password = Hash::make($password);
         $user->save();
 
@@ -109,7 +110,8 @@ class ApiClientAuthController extends Controller
         ]);
     }
 
-    public function updateUser(Request $request){
+    public function updateUser(Request $request)
+    {
         $user = auth('sanctum')->user();
         $user->update([
             'name' => $request->name,
@@ -118,7 +120,7 @@ class ApiClientAuthController extends Controller
             'dob' => Carbon::parse($request->dob),
         ]);
         return response([
-           'status' => true,
+            'status' => true,
             'user' => $user
         ], 200);
     }
