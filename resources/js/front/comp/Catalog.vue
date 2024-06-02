@@ -24,42 +24,28 @@ export default {
             }
         },
         scrollToCategory(uri) {
-            const categoryElement = this.$refs[uri];
-            if (categoryElement && categoryElement[0]) {
-                categoryElement[0].scrollIntoView({
+            const categoryElement = this.$refs[uri][0];
+            
+            if (categoryElement) {
+                categoryElement.scrollIntoView({
                     behavior: 'smooth'
                 });
             }
         },
         scrollCategoryBarToCurrent() {
-            this.$nextTick(() => {
-                const currentButton = this.$refs[this.currentCategory + '-button'];
-                if (currentButton && currentButton[0]) {
-                    currentButton[0].scrollIntoView({
-                        behavior: 'smooth',
-                        inline: 'center'
-                    });
-                }
-            });
+            let li = this.$refs[this.currentCategory + '-button'][0];
+            console.log(li)
         }
     },
     mounted() {
-        
-        this.$nextTick(() => {
-            this.goods.forEach(category => {
-                const element = this.$refs[category.uri][0];
-                if (element) {
-                    // Any additional logic if needed
-                }
-            });
-        });
+        this.currentCategory = this.goods[0].uri
     },
     beforeDestroy() {
         // Any cleanup logic if needed
     },
     watch: {
         currentCategory() {
-            console.log(this.currentCategory)
+            this.scrollCategoryBarToCurrent();
         }
     }
 }
@@ -70,13 +56,17 @@ export default {
     <div class="category-bar sticky-top">
         <div class="container">
 
-            <ul>
-                <li v-for="el in goods" :key="el.uri">
+            <ul id="ddddd">
+                <li 
+                    v-for="el in goods" 
+                    :key="el.uri" 
+                    :ref="el.uri + '-button'"
+                >
                     <button 
                         type="button" 
                         class="btn rounded btn-secondary" 
                         @click="scrollToCategory(el.uri), currentCategory=el.uri" 
-                        :ref="el.uri + '-button'"
+                        
                         :class="{ active: el.uri === currentCategory }"
                         >
                         {{ el.name }}
@@ -103,15 +93,16 @@ export default {
                     <div class="product">
                         <div class="header bg-image rounded" :style="'background: url('+ showImage(product) +')'">
                             <div class="badge">
-                                <button type="button" class="btn btn-light" @click="localStore.manageStore('fav', product)" v-if="!localStore.checkExist('fav', product)">
-                                    <i class="fa fa-heart-o"></i>
-                                </button>
-                                <button type="button" class="btn btn-danger" @click="localStore.manageStore('fav', product)" v-else>
-                                    <i class="fa fa-heart"></i>
-                                </button>
                                 <button 
                                     type="button" 
-                                    class="additional btn"
+                                    :class="['favorite', 'rounded', { active: localStore.checkExist('fav', product) }]" 
+                                    @click="localStore.manageStore('fav', product)"
+                                >
+                                    <i :class="localStore.checkExist('fav', product) ? 'fa fa-heart' : 'fa fa-heart-o'"></i>
+                                </button>
+                                <button
+                                    type="button" 
+                                    class="additional rounded"
                                     @click="appStore.additional = !appStore.additional; appStore.currentAdditional = product"
                                 >i</button>
                             </div>
@@ -141,6 +132,31 @@ export default {
 </template>
 
 <style lang="sass" scoped>
+.favorite
+    background: transparent
+    border: unset
+    padding: unset
+    margin: unset
+    background: $color-main
+    padding: 8px
+    margin-right: 8px
+    font-size: 1.2rem
+    &:hover    
+        background: darken($color-main, 10%)
+        color: #fff
+    &.active
+        color: red
+.additional
+    background: transparent
+    border: unset
+    padding: unset
+    margin: unset
+    background: $color-main
+    padding: 8px 16px
+    font-size: 1.2rem
+    &:hover    
+        background: darken($color-main, 10%)
+        color: #fff
 .category
     position: relative
     .scrooll-point
@@ -167,5 +183,4 @@ export default {
             display: none
         li
             margin-right: 12px
-            
 </style>

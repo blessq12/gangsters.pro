@@ -6,8 +6,21 @@ export const appStore = defineStore('app', {
         modal: false,
         modalName: null,
         currentAdditional: null,
+        device: null
     }),
-    actions: {},
+    actions: {
+        defineDevice() {
+            const userAgent = navigator.userAgent.toLowerCase();
+            if (userAgent.includes('mobi')) {
+                this.device = 'phone';
+            } else if (userAgent.includes('tablet')) {
+                this.device = 'tablet';
+            } else {
+                this.device = 'desktop';
+            }
+            return this.device;
+        }
+    },
     getters:{}
 })
 
