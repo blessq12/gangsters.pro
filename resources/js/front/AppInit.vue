@@ -9,7 +9,7 @@ export default {
         this.localStore.loadStorage()
         this.userStore.loadStore()
         this.appStore.defineDevice()
-        alert(this.appStore.device)
+        console.log('Device type: ' + this.appStore.device)
     },
     computed: {
         ...mapStores(

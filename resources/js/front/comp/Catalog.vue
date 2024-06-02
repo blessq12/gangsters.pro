@@ -9,7 +9,8 @@ export default {
     },
     data() {
         return {
-            currentCategory: null
+            currentCategory: null,
+            observer: null
         };
     },
     computed: {
@@ -34,14 +35,46 @@ export default {
         },
         scrollCategoryBarToCurrent() {
             let li = this.$refs[this.currentCategory + '-button'][0];
-            console.log(li)
-        }
+            
+            if (li) {
+                const parentUl = li.closest('ul');
+                if (parentUl) {
+                    parentUl.scrollTo({
+                        left: li.offsetLeft - parentUl.offsetLeft,
+                        behavior: 'smooth'
+                    });
+                }
+            }
+        },
+        // createObserver() {
+        //     this.observer = new IntersectionObserver((entries) => {
+        //         entries.forEach(entry => {
+        //             if (entry.isIntersecting) {
+        //                 this.currentCategory = entry.target.dataset.uri;
+        //             }
+        //         });
+        //     }, {
+        //         root: null,
+        //         rootMargin: '0px',
+        //         threshold: 0.5
+        //     });
+
+        //     this.goods.forEach(category => {
+        //         const categoryElement = this.$refs[category.uri][0];
+        //         if (categoryElement) {
+        //             this.observer.observe(categoryElement);
+        //         }
+        //     });
+        // }
     },
     mounted() {
-        this.currentCategory = this.goods[0].uri
+        this.currentCategory = this.goods[0].uri;
+        // this.createObserver();
     },
     beforeDestroy() {
-        // Any cleanup logic if needed
+        if (this.observer) {
+            this.observer.disconnect();
+        }
     },
     watch: {
         currentCategory() {
