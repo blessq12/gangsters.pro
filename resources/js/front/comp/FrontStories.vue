@@ -19,8 +19,10 @@ export default {
         show(newVal) {
             if (newVal) {
                 this.startTimer();
+                document.body.style.overflow = 'hidden';
             } else {
                 this.clearTimer();
+                document.body.style.overflow = 'auto';
             }
         }
     },
@@ -28,8 +30,8 @@ export default {
         startTimer() {
             this.clearTimer();
             this.progress = 0; // Reset progress
-            const interval = 150; // Update every 150ms
-            const duration = 15000; // 15 seconds
+            const interval = 100; // Update every 150ms
+            const duration = 10000; // 10 seconds
             const step = interval / duration * 100; // Calculate step size
 
             this.timer = setInterval(() => {
@@ -86,40 +88,63 @@ export default {
             mode="out-in"
         >
             <div class="wrap" v-if="show">
-                <div class="story-viewer" style="display: flex; justify-content: center; align-items: center; height: 100%;">
-                    <div class="story-content" @mousedown="pauseTimer" @mouseup="resumeTimer" @touchstart="pauseTimer" @touchend="resumeTimer">
-                        <img :src="currentStory.image" alt="Story Image" style="width: 100%; border-radius: 10px; position: relative;">
-                        <div class="progress-bar" style="position: absolute; top: 0; left: 0; width: 100%;">
-                            <div class="progress" :style="{ width: progress + '%' }"></div>
-                        </div>
+                
+                <div 
+                    class="story-content rounded bg-image" 
+                    @mousedown="pauseTimer" 
+                    @mouseup="resumeTimer" 
+                    @touchstart="pauseTimer"
+                    @touchend="resumeTimer"
+                    :style="{ backgroundImage: 'url(' + currentStory.image + ')' }"
+                >
+                <div class="d-flex align-items-center justify-content-between interactive">
+                    <div class="progress-bar">
+                        <div class="progress" :style="{ width: progress + '%' }"></div>
                     </div>
+                    <button class="btn-close" @click="show=!show"></button>
                 </div>
+                </div>
+                <div class="overlay" @click="show=!show"></div>
             </div>
         </transition>
     </teleport>
 </template>
 
 <style lang="sass" scoped>
+.progress-bar
+    width: 90%
+    height: 5px
+    background: rgba(255, 255, 255, 0.3)
+    border-radius: 5px
+    overflow: hidden
+    .progress
+        height: 100%
+        background: #fff
+        transition: all .3s
 .wrap
     position: fixed
+    display: flex
+    align-items: center
+    justify-content: center
     width: 100%
     height: 100%
     top: 0
     left: 0
-    background: rgba(0, 0, 0, .6)
+    padding: 12px
+    .interactive
+        padding: 12px
+        position: absolute
+        width: 100%
+
     .story-content
-        padding: 8px
-        @media (min-width: 768px)
-            padding: 24px
-        .progress-bar
-            width: 100%
-            height: 5px
-            background: rgba(255, 255, 255, 0.3)
-            border-radius: 5px
-            overflow: hidden
-            margin-top: 10px
-            .progress
-                height: 100%
-                background: #fff
-                transition: all .3s
+        display: flex
+        justify-content: center
+        height: 100vh
+        max-height: 95vh
+        width: 450px
+        overflow: hidden
+        position: relative
+        z-index: 11
+    .overlay
+        z-index: 9
 </style>
