@@ -140,7 +140,9 @@ export default {
         display: flex
         justify-content: center
         height: 100vh
-        max-height: 95vh
+        max-height: 85vh
+        @media(min-width: 768px)
+            max-height: 95%
         width: 450px
         overflow: hidden
         position: relative
