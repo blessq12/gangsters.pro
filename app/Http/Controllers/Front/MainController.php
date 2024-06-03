@@ -5,16 +5,16 @@ namespace App\Http\Controllers\Front;
 use App\Http\Controllers\Controller;
 use App\Mail\GreetingMessageWithPassword;
 use App\Models\Company;
+use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\ProductImage;
-use App\Models\User;
-use App\Models\UserRole;
 use Encore\Admin\Facades\Admin;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\View as ViewFacade;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class MainController extends Controller
 {
@@ -65,5 +65,16 @@ class MainController extends Controller
         }
 
         return 'all images resized and saved';
+    }
+    // Пакетное добавление артикулов для товаров
+    public function addSKU()
+    {
+        $goods = Product::all();
+        $goods->each(function ($item) {
+            $item->sku = Str::sku('');
+            $item->save();
+        });
+
+        return 'for all products added sku values';
     }
 }

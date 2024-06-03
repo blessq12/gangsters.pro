@@ -2,13 +2,17 @@
 
 namespace App\Models;
 
+// Traits
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use BinaryCats\Sku\Concerns\SkuOptions;
+
 use Illuminate\Database\Eloquent\Model;
 use PDO;
 
 class Product extends Model
 {
     use HasFactory;
+    // use \BinaryCats\Sku\HasSku;
     use \Encore\Admin\Traits\Resizable;
 
     protected $fillable = [
@@ -17,8 +21,20 @@ class Product extends Model
         'weight',
         'price',
         'product_category_id',
-        'visible'
+        'visible',
+        'sku'
     ];
+
+    public function skuOptions(): SkuOptions
+    {
+        return SkuOptions::make()
+            ->from(['name'])
+            ->target('sku')
+            ->using('_')
+            ->forceUnique(true)
+            ->generateOnCreate(true)
+            ->refreshOnUpdate(false);
+    }
 
     public function imgs()
     {

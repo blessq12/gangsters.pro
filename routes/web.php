@@ -25,6 +25,7 @@ Route::controller(MainController::class)->middleware('cors')->name('main.')->gro
     Route::get('/privacy', 'privacy')->name('privacy');
     Route::get('/purchase-and-delivery', 'purchaseAndDelivery')->name('purchaseAndDelivery');
     // Route::get('/resize', 'resize'); // метод для пакетного сжатия оригиналов изображений товаров
+    Route::get('/add-sku', 'addSKU'); // метод для пакетного сжатия оригиналов изображений товаров
 });
 
 Route::controller(CrmController::class)->middleware(['auth', 'can:admin'])->prefix('crm')->name('crm.')->group(function () {

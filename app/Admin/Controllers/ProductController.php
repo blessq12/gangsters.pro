@@ -41,23 +41,28 @@ class ProductController extends AdminController
             });
         });
 
-        $grid->column('id', __('Id'))->sortable();
-        $states = [
+        // $grid->column('id', __('Id'))->sortable();
+
+        $grid->visible('Доступность')->switch([
             'on' => ['text' => 'Да'],
             'off' => ['text' => 'Нет'],
-        ];
+        ]);
 
-        $grid->visible('Доступность')->switch($states);
-        $grid->imgs('Изображения')->map(function ($image) {
-            return $image['path'];
-        })->image(null, 50, 50);
+        $grid->column('sku', __('Артикул'))->display(function ($sku) {
+            return $sku ?? 'Нет артикула';
+        });
+
         $grid->column('product_category_id', __('Категория'))->display(function ($category_id) {
             return ProductCategory::find($category_id)->name;
         })->sortable();
+
+        $grid->imgs('Изображения')->display(function ($images) {
+            return $images[0]['path'] ?? null;
+        })->image(null, 50, 50);
+
         $grid->column('name', __('Имя'))->editable();
         $grid->column('weight', __('Вес(нетто)'))->editable();
         $grid->column('price', __('Цена'))->editable();
-
 
         return $grid;
     }
@@ -73,6 +78,7 @@ class ProductController extends AdminController
         $show = new Show(Product::findOrFail($id));
 
         $show->field('id', __('Id'));
+        $show->field('sku', 'Артикул');
         $show->field('visible', __('Доступность'))->as(function ($val) {
             return $val ? 'Да' : 'Нет';
         });
@@ -117,9 +123,15 @@ class ProductController extends AdminController
     protected function form()
     {
         $form = new Form(new Product());
-        $form->switch('visible', __('Доступность'))->default(1);
-        $form->select('product_category_id', __('Категория'))->options($this->categories());
 
+        $form->switch('visible', __('Доступность'))->default(1);
+        $form->text('sku', 'Артикул')->placeholder('Артикул присваивается автоматически')->readonly();
+        $form->select('product_category_id', __('Категория'))
+            ->options($this->categories())
+            ->rules('required|exists:product_categories,id', [
+                'required' => 'Категория обязательна для заполнения.',
+                'exists' => 'Выбранная категория не существует.',
+            ]);
         $form->multipleImage('imgs', __('Изображения'))
             ->pathColumn('path')
             ->uniqueName()
@@ -131,7 +143,9 @@ class ProductController extends AdminController
             ->removable()
             ->resize(1920, 1080); // Resize original image on upload
 
-        $form->text('name', __('Название'))->default('Название не задано');
+        $form->text('name', __('Название'))->placeholder('Название не задано')->rules('required', [
+            'required' => 'Название обязательно для заполнения.',
+        ]);
 
         $form->switch('hit', __('Хит'));
         $form->switch('spicy', __('Острый'));
@@ -140,10 +154,13 @@ class ProductController extends AdminController
         $form->switch('onion', __('Есть лук'));
         $form->switch('garlic', __('Есть чеснок'));
 
-
         $form->textarea('consist', __('Состав'));
-        $form->text('weight', __('Вес (нетто)'));
-        $form->text('price', __('Цена'));
+        $form->text('weight', __('Вес (нетто)'))->rules('required', [
+            'required' => 'Вес обязателен для заполнения.',
+        ]);
+        $form->text('price', __('Цена'))->rules('required', [
+            'required' => 'Цена обязательна для заполнения.',
+        ]);
 
         return $form;
     }
