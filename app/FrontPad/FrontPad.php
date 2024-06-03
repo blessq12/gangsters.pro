@@ -22,24 +22,18 @@ class FrontPad
 
     public function createOrder(Order $order)
     {
-        // $order = [
-        //     'secret' => $this->api_secret,
-        //     'product' => $order->items->map(function ($item) {
-        //         return $item->id;
-        //     }),
-        //     'product_kol' => $order->items->map(function ($item) {
-        //         return $item->qty;
-        //     })
-        // ];
-        // \Log::debug('Created new Order online');
+        $order = [];
 
-        // try {
-        //     $this->client->post($this->api_url . '?new_order');
-        //     \Log::debug('New order sended to frontPad successefully');
-        // } catch (\Throwable $th) {
-        //     \Log::debug('Error during execute creating new order (FrontPad). Error: ' . $th);
-        // }
-        return true;
+        $order['secret'] = $this->api_secret;
+        $order['product'] = [333333];
+        $order['product_kol'] = [1];
+
+        try {
+            $res = $this->client->post($this->api_url . '?new_order', ['form_params' => $order]);
+            \Log::debug('order created without server errors');
+        } catch (\Throwable $th) {
+            return 'Error during create new order on FrontPad. Error: ' . $th;
+        }
     }
 
     public function getProducts()

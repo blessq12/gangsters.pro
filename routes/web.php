@@ -26,7 +26,14 @@ Route::controller(MainController::class)->middleware('cors')->name('main.')->gro
     Route::get('/purchase-and-delivery', 'purchaseAndDelivery')->name('purchaseAndDelivery');
     // Route::get('/resize', 'resize'); // метод для пакетного сжатия оригиналов изображений товаров
     // Route::get('/add-sku', 'addSKU'); // пакетная регенерация артикулов товаров
-
+    Route::get('/test', function () {
+        $order = new \stdClass();
+        $order->secret = 'asdasdasdasfhjbsgkjsnfglskdfm;asdmf;a,fasmfsfnglksdmflksdg';
+        $order->product = [11231];
+        $order->product_kol = [1];
+        $order = (array) $order;
+        dd($order);
+    });
 });
 
 Route::controller(CrmController::class)->middleware(['auth', 'can:admin'])->prefix('crm')->name('crm.')->group(function () {
