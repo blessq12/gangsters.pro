@@ -20,13 +20,22 @@ class FrontPad
         $this->client = new Client();
     }
 
-    public function createOrder(Order $order)
+    public function createOrder(Order $siteOrder)
     {
-        $order = [];
+        $order = new \stdClass();
+        // required secret for pass data
+        $order->secret = $this->api_secret;
 
-        $order['secret'] = $this->api_secret;
-        $order['product'] = [333333];
-        $order['product_kol'] = [1];
+        // products with products qty
+        $order->product = [333333];
+        $order->product_kol = [3];
+
+        // client info 
+        $order->name = $siteOrder->name;
+        $order->phone = $siteOrder->tel;
+
+        // transform order object to array
+        $order = (array) $order;
 
         try {
             $res = $this->client->post($this->api_url . '?new_order', ['form_params' => $order]);
