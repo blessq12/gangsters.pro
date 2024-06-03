@@ -48,13 +48,15 @@ class ProductController extends AdminController
             'off' => ['text' => 'Нет'],
         ]);
 
+        $grid->column('product_category_id', __('Категория'))->display(function ($category_id) {
+            return ProductCategory::find($category_id)->name;
+        })->sortable();
+
         $grid->column('sku', __('Артикул'))->display(function ($sku) {
             return $sku ?? 'Нет артикула';
         });
 
-        $grid->column('product_category_id', __('Категория'))->display(function ($category_id) {
-            return ProductCategory::find($category_id)->name;
-        })->sortable();
+
 
         $grid->imgs('Изображения')->display(function ($images) {
             return $images[0]['path'] ?? null;
