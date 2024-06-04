@@ -23,6 +23,7 @@ class FrontPad
     public function createOrder(Order $siteOrder)
     {
         $siteOrder = Order::find($siteOrder->id);
+        $items = $siteOrder->items;
 
         \Log::debug('transform order: id = ' . $siteOrder->id);
         // required secret for pass data
@@ -32,10 +33,10 @@ class FrontPad
         $order['product'] = [];
         $order['product_kol'] = [];
 
-        foreach ($siteOrder->items as $item) {
+        foreach ($items as $item) {
             $order['product'][] = intval($item->sku);
         }
-        foreach ($siteOrder->items as $item) {
+        foreach ($items as $item) {
             $order['product_kol'][] = intval($item->qty);
         }
 

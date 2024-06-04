@@ -22,7 +22,7 @@ class OrderServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Order::saved(function (Order $order) {
+        Order::created(function (Order $order) {
             $fp = new FrontPad();
             $fp->createOrder($order);
         });
