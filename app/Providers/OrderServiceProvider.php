@@ -22,7 +22,6 @@ class OrderServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Order::created(function (Order $order) {
-            \Log::info('A new order has been created.', ['order_id' => $order->id]);
             $fp = new FrontPad();
             $fp->createOrder($order);
         });
