@@ -27,11 +27,11 @@ Route::controller(MainController::class)->middleware('cors')->name('main.')->gro
     Route::get('/purchase-and-delivery', 'purchaseAndDelivery')->name('purchaseAndDelivery');
     // Route::get('/resize', 'resize'); // метод для пакетного сжатия оригиналов изображений товаров
     // Route::get('/add-sku', 'addSKU'); // пакетная регенерация артикулов товаров
-    // Route::get('/test', function () {
-    //     $order = Order::latest()->first();
-    //     $fp = new \App\FrontPad\FrontPad();
-    //     dd($fp->createOrder($order));
-    // });
+    Route::get('/test', function () {
+        $order = Order::latest()->first();
+        $fp = new \App\FrontPad\FrontPad();
+        dd($fp->createOrder($order));
+    });
 });
 
 Route::controller(CrmController::class)->middleware(['auth', 'can:admin'])->prefix('crm')->name('crm.')->group(function () {
