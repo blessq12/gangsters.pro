@@ -22,6 +22,8 @@ class FrontPad
 
     public function createOrder(Order $siteOrder)
     {
+        $siteOrder = Order::find($siteOrder->id);
+
         \Log::debug('transform order: id = ' . $siteOrder->id);
         // required secret for pass data
         $order['secret'] = $this->api_secret;
@@ -44,14 +46,12 @@ class FrontPad
         $order['name'] = $siteOrder->name;
         $order['phone'] = $siteOrder->tel;
 
-        // try {
-        //     $res = $this->client->post($this->api_url . '?new_order', ['form_params' => $order]);
-        //     \Log::debug('order created without server errors');
-        // } catch (\Throwable $th) {
-        //     return 'Error during create new order on FrontPad. Error: ' . $th;
-        // }
-
-        return $order;
+        try {
+            $res = $this->client->post($this->api_url . '?new_order', ['form_params' => $order]);
+            \Log::debug('order created without server errors');
+        } catch (\Throwable $th) {
+            return 'Error during create new order on FrontPad. Error: ' . $th;
+        }
     }
 
     public function getProducts()
