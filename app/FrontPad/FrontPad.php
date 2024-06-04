@@ -31,10 +31,10 @@ class FrontPad
         $order['product_kol'] = [];
 
         foreach ($siteOrder->items as $item) {
-            $order['product'][] = $item->sku;
+            $order['product'][] = intval($item->sku);
         }
         foreach ($siteOrder->items as $item) {
-            $order['product_kol'][] = $item->qty;
+            $order['product_kol'][] = intval($item->qty);
         }
         // client info 
         $order['name'] = $siteOrder->name;
