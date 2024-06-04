@@ -22,26 +22,23 @@ class FrontPad
 
     public function createOrder(Order $siteOrder)
     {
-        $order = new \stdClass();
+
         // required secret for pass data
-        $order->secret = $this->api_secret;
+        $order['secret'] = $this->api_secret;
 
         // products with products qty
-        $order->product =
-            $siteOrder->items->map(function ($item) {
-                return $item->sku;
-            });
-        $order->product_kol =
-            $siteOrder->items->map(function ($item) {
-                return $item->qty;
-            });
+        $order['product'] = [];
+        $order['product_kol'] = [];
 
+        foreach ($siteOrder->items as $item) {
+            $order['product'][] = $item->sku;
+        }
+        foreach ($siteOrder->items as $item) {
+            $order['product_kol'][] = $item->qty;
+        }
         // client info 
-        $order->name = $siteOrder->name;
-        $order->phone = $siteOrder->tel;
-
-        // transform order object to array
-        $order = (array) $order;
+        $order['name'] = $siteOrder->name;
+        $order['phone'] = $siteOrder->tel;
 
         try {
             $res = $this->client->post($this->api_url . '?new_order', ['form_params' => $order]);
