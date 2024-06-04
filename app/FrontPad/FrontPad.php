@@ -42,13 +42,15 @@ class FrontPad
         // client info 
         $order['name'] = $siteOrder->name;
         $order['phone'] = $siteOrder->tel;
-        // return $order;
+
         try {
             $res = $this->client->post($this->api_url . '?new_order', ['form_params' => $order]);
             \Log::debug('order created without server errors');
         } catch (\Throwable $th) {
             return 'Error during create new order on FrontPad. Error: ' . $th;
         }
+
+        return $order;
     }
 
     public function getProducts()
