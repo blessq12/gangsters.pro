@@ -55,7 +55,7 @@ class OrderController extends Controller
 
         // отправка нового заказа в FrontPad
         // FrontPad::newOrder($order);
-
+        if (!$this->sendToFrontPad($order)) throw new \Exception('Ошибка при отправке данных в FrontPad');
         return response('Заказ успешно создан', 200);
     }
     /**
@@ -141,5 +141,11 @@ class OrderController extends Controller
         }
 
         return true;
+    }
+
+    public function sendToFrontPad(Order $order)
+    {
+        $frontPad = new \App\FrontPad\FrontPad();
+        $frontPad->createOrder($order);
     }
 }
