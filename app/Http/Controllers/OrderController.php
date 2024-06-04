@@ -26,6 +26,7 @@ class OrderController extends Controller
     {
 
         $order = new Order();
+
         if ($request->delivery) {
             $order->delivery = $request->delivery;
             $order->name = $request->order['name'];
@@ -133,6 +134,7 @@ class OrderController extends Controller
         foreach ($cart as $item) {
             $order->items()->create([
                 'product_id' => $item['id'],
+                'sku' => $item['sku'],
                 'qty' => $item['qty'],
                 'price' => $item['price'],
             ]);

@@ -111,7 +111,6 @@ export default {
         </div>
     </div>
     <!-- category bar -->
-
     <!-- catalog -->
     <div class="container mt-5">
         <div class="category" v-for="category in goods" :key="category.uri" :data-uri="category.uri" :ref="category.uri + '-section'">

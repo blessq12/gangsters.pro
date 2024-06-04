@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Crm\CrmController;
 use App\Http\Controllers\Front\MainController;
+use App\Models\Order;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Request;
 
@@ -27,12 +28,16 @@ Route::controller(MainController::class)->middleware('cors')->name('main.')->gro
     // Route::get('/resize', 'resize'); // метод для пакетного сжатия оригиналов изображений товаров
     // Route::get('/add-sku', 'addSKU'); // пакетная регенерация артикулов товаров
     Route::get('/test', function () {
-        $order = new \stdClass();
-        $order->secret = 'asdasdasdasfhjbsgkjsnfglskdfm;asdmf;a,fasmfsfnglksdmflksdg';
-        $order->product = [11231];
-        $order->product_kol = [1];
-        $order = (array) $order;
-        dd($order);
+        $order = Order::latest()->first();
+        $ord = [];
+        $ord['sectret'] = env('FRONTPAD_API_SECRET');
+        $ord['product'] = $order->items->map(function ($item) {
+            return $item->sku;
+        });
+        $ord['product_kol'] = $order->items->map(function ($item) {
+            return $item->qty;
+        });
+        dd($ord);
     });
 });
 

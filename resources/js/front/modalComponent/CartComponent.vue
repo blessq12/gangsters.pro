@@ -119,6 +119,7 @@ export default {
                             name: item.name,
                             price: item.price,
                             qty: item.qty,
+                            sku: item.sku
                         };
                     }),
                     order: data
@@ -132,6 +133,7 @@ export default {
                             name: item.name,
                             price: item.price,
                             qty: item.qty,
+                            sku: item.sku
                         };
                     }),
                     order: data

@@ -27,12 +27,14 @@ class FrontPad
         $order->secret = $this->api_secret;
 
         // products with products qty
-        $order->product = $siteOrder->items->map(function ($item) {
-            return $item->product->sku;
-        });
-        $order->product_kol = $siteOrder->items->map(function () {
-            return $item->qty;
-        });
+        $order->product =
+            $siteOrder->items->map(function ($item) {
+                return $item->sku;
+            });
+        $order->product_kol =
+            $siteOrder->items->map(function ($item) {
+                return $item->qty;
+            });
 
         // client info 
         $order->name = $siteOrder->name;
