@@ -36,10 +36,13 @@ class FrontPad
         foreach ($siteOrder->items as $item) {
             $order['product_kol'][] = intval($item->qty);
         }
+
+        $order['product'] = (array)$order['product'];
+        $order['product_kol'] = (array)$order['product_kol'];
         // client info 
         $order['name'] = $siteOrder->name;
         $order['phone'] = $siteOrder->tel;
-
+        // return $order;
         try {
             $res = $this->client->post($this->api_url . '?new_order', ['form_params' => $order]);
             \Log::debug('order created without server errors');
