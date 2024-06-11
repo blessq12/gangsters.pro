@@ -71,6 +71,7 @@ computed: {
     background: #fff
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1)
     padding: 12px 0
+    z-index: 10
 button.footer
     background: $color-main
     border: unset

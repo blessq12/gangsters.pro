@@ -76,11 +76,11 @@ export default {
             <button class="btn rounded btn-danger" @click="localStore.clearStore('fav')"> <i class="fa fa-trash"></i> Очистить избранное</button>
         </div>
         <div v-else>
-            <div class="row align-items-center">
+            <div class="row align-items-center row-cols-1">
                 <div class="col text-center">
                     <img src="/images/placeholder/empty-storage.png" alt="" class="img-fluid" style="max-height: 280px">
                 </div>
-                <div class="col">
+                <div class="col text-center">
                     <h5 class="fw-semibold">В избранном ничего нет</h5>
                     <p>
                         В избранном можно хранить понравившиеся позиции и добавлять их в корзину

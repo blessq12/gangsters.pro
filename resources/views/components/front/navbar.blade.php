@@ -33,33 +33,12 @@
                         <nav-button target="fav"></nav-button>
                     </li>
                     <li>
-                        <nav-button target="cart"></nav-button>
-                    </li>
-                    <li class="d-none d-lg-block">
                         <nav-button target="user"></nav-button>
-                    </li>
-                    <li class="d-block d-lg-none">
-                        <button type="button" class="btn btn-outline-primary" onclick="document.querySelector('.mobile-menu').classList.toggle('show')">
-                            <i class="fa fa-bars"></i>
-                        </button>
-                    </li>
-                </ul>
-            </div>
-            @endif
-            @if (!Request::is('/'))
-            <div class="col d-lg-none d-block">
-                <ul class="shop-links">
-                    <li class="d-block d-lg-none">
-                        <button type="button" class="btn btn-outline-primary" onclick="document.querySelector('.mobile-menu').classList.toggle('show')">
-                            <i class="fa fa-bars"></i>
-                        </button>
                     </li>
                 </ul>
             </div>
             @endif
         </div>
     </div>
-    <x-front.mobile-menu>
-
-    </x-front.mobile-menu>
+    <modal></modal>
 </nav>

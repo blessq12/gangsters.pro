@@ -155,6 +155,7 @@ export default {
     display: flex
     background: #fff
     overflow: auto
+    z-index: 11
     @media(min-width: 768px)
         background: unset
         align-items: center

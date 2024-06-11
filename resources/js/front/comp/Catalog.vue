@@ -88,7 +88,7 @@ export default {
 
 <template>
     <!-- category bar -->
-    <div class="category-bar sticky-top">
+    <div class="category-bar sticky-top" style="z-index: 1;">
         <div class="container">
 
             <ul id="ddddd">

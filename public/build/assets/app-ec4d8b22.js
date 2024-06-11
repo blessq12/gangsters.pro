@@ -1,1 +1,0 @@
-let t=document.querySelector(".mobile-menu"),s=new MutationObserver(function(e,r){e.forEach(o=>{o.target.classList.contains("show")?document.body.classList.add("overflow-hidden"):document.body.classList.remove("overflow-hidden")})});s.observe(t,{attributes:!0});

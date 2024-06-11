@@ -1,4 +1,7 @@
 <script>
+import { mapStores } from 'pinia'
+import { appStore } from '../../stores/appStorage';
+
 export default {
     props: {
         'stories' : Object
@@ -13,7 +16,8 @@ export default {
     computed: {
         storyImage(story){
             return '/uploads/' + story.image;
-        }
+        },
+        ...mapStores(appStore)
     },
     watch: {
         show(newVal) {
@@ -87,6 +91,13 @@ export default {
             leave-active-class="animate__animated animate__fadeOut"
             mode="out-in"
         >
+            <div class="overlay" v-if="appStore.modal"></div>
+        </transition>
+        <transition
+            enter-active-class="animate__animated animate__fadeIn"
+            leave-active-class="animate__animated animate__fadeOut"
+            mode="out-in"
+        >
             <div class="wrap" v-if="show">
                 
                 <div 
@@ -111,6 +122,9 @@ export default {
 </template>
 
 <style lang="sass" scoped>
+.overlay
+    background: rgba(0, 0, 0, .6)
+    position: fixed
 .progress-bar
     width: 90%
     height: 5px
@@ -131,6 +145,7 @@ export default {
     top: 0
     left: 0
     padding: 12px
+    z-index: 10
     .interactive
         padding: 12px
         position: absolute

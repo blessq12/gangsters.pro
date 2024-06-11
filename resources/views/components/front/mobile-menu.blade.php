@@ -1,18 +1,18 @@
-<div class="mobile-menu">
+<div class="mobile-menu show">
     <div class="container">
 
         <div class="row mb-4">
             <div class="col">
                 <div class="mobile-header">
-                    <div class="d-flex align-items-center justify-content-between text-light inner">
-                        <span class="fs-4 fw-bold">Мобильное меню</span>
-                        <i class="fa fa-times fa-2x" onclick="document.querySelector('.mobile-menu').classList.toggle('show')"></i>
+                    <div class="d-flex align-items-center justify-content-between inner">
+                        <h4 class="mb-0">Мобильное меню</h4>
+                        <button class="btn-close" onclick="document.querySelector('.mobile-menu').classList.toggle('show')"></button>
                     </div>
                 </div>
             </div>
         </div>
         <div class="row mb-4">
-            <div class="col text-light">
+            <div class="col">
                 <user-component></user-component>
             </div>
         </div>
