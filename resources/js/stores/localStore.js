@@ -99,6 +99,7 @@ export const localStore = defineStore('local', {
             try {
                 const response = await axios.post('/api/orders/create', data)
                 return true
+                // return response
             } catch (error) {
                 return false
             }

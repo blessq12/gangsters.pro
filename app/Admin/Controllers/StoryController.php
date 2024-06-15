@@ -32,10 +32,11 @@ class StoryController extends AdminController
             'on' => ['text' => 'Да'],
             'off' => ['text' => 'Нет'],
         ];
-        $grid->visible('Доступность')->switch($states);
+        // $grid->column('visible', 'Доступность')->switch($states);
+        $grid->column('non_hide', 'Не удалять')->switch($states);
         $grid->column('name', __('Заголовок'))->editable();
         $grid->column('image', __('Изображение'))->image(null, null, 50);
-        $grid->column('created_at', 'Создан')->display(function ($val) {
+        $grid->column('start_time', 'Опубликован')->display(function ($val) {
             return Carbon::parse($val)->format('Y/m/d H:i');
         });
 
@@ -76,13 +77,18 @@ class StoryController extends AdminController
         $form = new Form(new Story());
 
         $form->text('name', __('Заголовок'));
-        $form->switch('visible', __('Доступен'));
+        $form->hidden('visible', __('Доступен'))->value(true);
+        $form->switch('non_hide', __('Не скрывать'));
         $form->image('image', __('Изображение'))
             ->thumbnail('story', null, 256)
             ->uniqueName()
             ->fit(1080, 1920)
             ->encode('jpeg', 80)
             ->move('story/');
+        $form->hidden('start_time', 'start_time')->default(now());
+        $form->hidden('end_time', 'end_time')->default(now()->addDay(1));
+        $form->hidden('created_at', 'Создан');
+        $form->hidden('created_at', 'Обновлен');
         return $form;
     }
 }

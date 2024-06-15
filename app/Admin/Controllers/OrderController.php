@@ -41,28 +41,17 @@ class OrderController extends AdminController
                 "Не авторизован";
         })->label('success');
 
-        $grid->column('delivery', __('Доставка'))
+        $grid->column('additional', __('Подробности заказа'))
             ->display(function ($v) {
-                return 'Подробнее';
+                return 'Смотреть ';
             })
             ->modal('Подробнее', function ($model) {
                 return view('components.front.adModal', [
                     'order' => $model
                 ]);
             });
-        $grid->column('adv', 'Подробности заказа')
-            ->display(function () {
-                return 'Открыть';
-            })
-            ->modal('Открыть', function ($model) {
-                return view('components.front.orderModal', [
-                    'order' => $model
-                ]);
-            });
-        // $grid->column('name', __('Имя'));
-        // $grid->column('tel', __('Номер телефона'));
         $grid->column('total', __('Сумма'))->display(function ($val) {
-            return number_format($val, 2, '.', '') . ' руб.';
+            return '<b>' . number_format($val, 2, '.', '') . ' руб.</b>';
         });
 
         return $grid;

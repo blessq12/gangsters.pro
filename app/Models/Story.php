@@ -12,7 +12,11 @@ class Story extends Model
 
     protected $fillable = [
         'name',
-        'image'
+        'image',
+        'visible',
+        'non_hide',
+        'start_time',
+        'end_time',
     ];
     protected $hidden = [
         'created_at',

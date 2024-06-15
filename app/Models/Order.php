@@ -17,14 +17,20 @@ class Order extends Model
         'staircase',
         'floor',
         'apartment',
-        'total'
+        'total',
+        'delivery',
+        'user_id',
+        'patType',
+        'personQty',
+        'comment'
     ];
-    public function items(){
+    public function items()
+    {
         return $this->hasMany(OrderItem::class);
     }
 
-    public function user(){
+    public function user()
+    {
         return $this->belongsTo(User::class);
     }
-
 }

@@ -28,10 +28,26 @@ class Stories extends Component
     private function getStories()
     {
         $stories = Story::where('visible', true)->get();
+
         $stories->each(function ($story) {
             $story->thumb = '/uploads/' . $story->thumbnail('story');
             $story->image = '/uploads/' . $story->image;
         });
-        return $stories;
+        $result = [];
+        foreach ($stories as $story) {
+            if (
+                $story->start_time < now() &&
+                $story->end_time > now()
+            ) {
+                $result[] = $story;
+            } elseif (
+                $story->end_time < now()
+                && $story->non_hide
+            ) {
+                $result[] = $story;
+            }
+        }
+
+        return $result;
     }
 }

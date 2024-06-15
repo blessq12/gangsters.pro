@@ -20,7 +20,6 @@ export default {
     moment: moment,
     checkout: false,
     delivery: true,
-    payType: "cash",
     orderCreated: false,
     order: null,
     schema: object({
@@ -53,6 +52,9 @@ export default {
       staircase: null,
       floor: null,
       apartment: null,
+      personQty: 1,
+      comment: null,
+      payType: 'cash',
     },
     noDelForm: {
       name: null,
@@ -77,7 +79,6 @@ export default {
     validate(form) {
       const schema = form === "delivery" ? this.schema : this.noDelSchema;
       const formData = form === "delivery" ? this.formData : this.noDelForm;
-
       schema
         .validate(formData, { abortEarly: false })
         .then((res) => {
@@ -256,6 +257,29 @@ export default {
                   <div v-if="delivery">
                     <form ref="delivery">
                       <div class="form-group">
+                        <div class="row">
+                          <p class="mb-2">Способ оплаты</p>
+                          <div class="col">
+                            <div class="btn-group">
+                              <button
+                                type="button"
+                                :class="`btn ${formData.payType == 'cash' ? 'active' : ''}`"
+                                @click="formData.payType = 'cash'"
+                              >
+                                Наличные
+                              </button>
+                              <button
+                                type="button"
+                                :class="`btn ${formData.payType == 'card' ? 'active' : ''}`"
+                                @click="formData.payType = 'card'"
+                              >
+                                Картой курьеру
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="form-group">
                         <div class="row row-cols-1 g-2">
                           <div class="col">
                             <div class="d-flex" style="white-space: nowrap">
@@ -305,7 +329,7 @@ export default {
                         </div>
                       </div>
                       <div class="form-group">
-                        <div class="row row-cols-2 g-2">
+                        <div class="row row-cols-2 row-cols-lg-3 g-2">
                           <div class="col">
                             <div class="d-flex" style="white-space: nowrap">
                               <label for="name">Дом</label>
@@ -375,28 +399,38 @@ export default {
                               v-model="formData.apartment"
                             />
                           </div>
+                          <div class="col">
+                          <div class="d-flex" style="white-space: nowrap">
+                            <label for="personQty">Количество персон</label>
+                            <error-label :errorBag="validatorBag" name="personQty"></error-label>
+                          </div>
+                          <div class="input-group" style="max-height: 37px;">
+                            <button class="btn btn-outline-secondary" type="button" style="padding: 0 16px !important;" @click="formData.personQty--" :disabled="formData.personQty <= 1">-</button>
+                            <input
+                              type="text"
+                              name="personQty"
+                              id="personQty"
+                              class="form-control text-center"
+                              v-model="formData.personQty"
+                            />
+                            <button class="btn btn-outline-secondary" style="padding: 0 16px !important;" type="button" @click="formData.personQty++">+</button>
+                          </div>
+                          </div>
                         </div>
                       </div>
                       <div class="form-group">
                         <div class="row">
-                          <p class="mb-2">Способ оплаты</p>
                           <div class="col">
-                            <div class="btn-group">
-                              <button
-                                type="button"
-                                :class="`btn ${payType == 'cash' ? 'active' : ''}`"
-                                @click="payType = 'cash'"
-                              >
-                                Наличные
-                              </button>
-                              <button
-                                type="button"
-                                :class="`btn ${payType == 'card' ? 'active' : ''}`"
-                                @click="payType = 'card'"
-                              >
-                                Картой курьеру
-                              </button>
+                            <div class="d-flex" style="white-space: nowrap">
+                              <label for="name">Комментарий</label>
+                              <error-label :errorBag="validatorBag" name="comment"></error-label>
                             </div>
+                            <textarea
+                              name="comment"
+                              id="comment"
+                              class="form-control"
+                              v-model="formData.comment"
+                            ></textarea>
                           </div>
                         </div>
                       </div>
@@ -439,7 +473,7 @@ export default {
                         </div>
                       </div>
                     </form>
-                    <div style="position: relative; overflow: hidden">
+                    <!-- <div style="position: relative; overflow: hidden">
                       <a
                         href="https://yandex.ru/maps/org/gangster_s_sushi/82888444717/?utm_medium=mapframe&utm_source=maps"
                         style="color: #eee; font-size: 12px; position: absolute; top: 0px;"
@@ -460,7 +494,7 @@ export default {
                         allowfullscreen="true"
                         style="position: relative"
                       ></iframe>
-                    </div>
+                    </div> -->
                   </div>
                 </transition>
 

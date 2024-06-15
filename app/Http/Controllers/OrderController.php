@@ -37,6 +37,9 @@ class OrderController extends Controller
             $order->staircase = $request->order['staircase'];
             $order->floor = $request->order['floor'];
             $order->apartment = $request->order['apartment'];
+            $order->comment = $request->order['comment'] ?? null;
+            $order->personQty = $request->order['personQty'] ?? 1;
+            $order->payType = $request->order['payType'] ?? 'cash';
         } else {
             $order->delivery = $request->delivery;
             $order->name = $request->order['name'];
@@ -54,9 +57,11 @@ class OrderController extends Controller
         if (!$this->addCartItems($order, $request->cart)) throw new \Exception('Ошибка при добавлении товаров в заказ');
 
         // отправка нового заказа в FrontPad
-        // FrontPad::newOrder($order);
+
         if (!$this->sendToFrontPad($order)) throw new \Exception('Ошибка при отправке данных в FrontPad');
         return response('Заказ успешно создан', 200);
+
+        // return response()->json($order, 200);
     }
     /**
      * Display a listing of the resource.

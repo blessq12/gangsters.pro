@@ -46,6 +46,8 @@ class FrontPad
         // client info 
         $order['name'] = $siteOrder->name;
         $order['phone'] = $siteOrder->tel;
+        $order['person'] = $siteOrder->personQty;
+        $order['descr'] = $siteOrder->comment;
 
         try {
             $res = $this->client->post($this->api_url . '?new_order', ['form_params' => $order]);
