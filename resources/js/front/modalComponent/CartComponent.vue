@@ -59,6 +59,8 @@ export default {
     noDelForm: {
       name: null,
       tel: null,
+      personQty: 1,
+      comment: null,
     },
     noDelSchema: object({
       name: string()
@@ -437,8 +439,8 @@ export default {
                     </form>
                   </div>
                   <div v-else>
-                    <form ref="noDelivery">
-                      <div class="row mb-4">
+                    <form ref="noDelivery" class="mb-4">
+                      <div class="row">
                         <div class="col">
                           <div class="form-group">
                             <div class="d-flex">
@@ -472,8 +474,52 @@ export default {
                           </div>
                         </div>
                       </div>
+                      <div class="row">
+                        <div class="col">
+                          <div class="form-group">
+                            <div class="d-flex justify-content-between align-items-center">
+                              <label for="personQty">Количество персон</label>
+                              <error-label :errorBag="validatorBag" name="personQty"></error-label>
+                            </div>
+                            <div class="input-group">
+                              <button type="button" class="btn btn-outline-secondary" style="padding: 0 16px!important;" @click="noDelForm.personQty--" :disabled="noDelForm.personQty < 2">-</button>
+                              <input
+                                type="text"
+                                name="personQty"
+                                id="personQty"
+                                class="form-control text-center"
+                                v-model="noDelForm.personQty"
+                                min="1"
+                                max="10"
+                              />
+                              <button type="button" class="btn btn-outline-secondary" style="padding: 0 16px!important;" @click="noDelForm.personQty++">+</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="col">
+                          <div class="form-group">
+                            <div class="d-flex">
+                              <label for="comment">Комментарий</label>
+                              <error-label :errorBag="validatorBag" name="comment"></error-label>
+                            </div>
+                            <textarea
+                              name="comment"
+                              id="comment"
+                              class="form-control"
+                              v-model="noDelForm.comment"
+                            ></textarea>
+                          </div>
+                        </div>
+                      </div>
                     </form>
-                    <!-- <div style="position: relative; overflow: hidden">
+
+                    <button class="btn w-100 btn-primary" data-bs-toggle="collapse" data-bs-target="#map-collapse">
+                      Как к нам проехать
+                      <i class="fa fa-chevron-down"></i>
+                    </button>
+                    <div style="position: relative; overflow: hidden" id="map-collapse" class="collapse overflow-hidden mt-4 rounded">
                       <a
                         href="https://yandex.ru/maps/org/gangster_s_sushi/82888444717/?utm_medium=mapframe&utm_source=maps"
                         style="color: #eee; font-size: 12px; position: absolute; top: 0px;"
@@ -494,7 +540,10 @@ export default {
                         allowfullscreen="true"
                         style="position: relative"
                       ></iframe>
-                    </div> -->
+                    </div>
+                    
+                    
+
                   </div>
                 </transition>
 

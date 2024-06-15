@@ -44,6 +44,8 @@ class OrderController extends Controller
             $order->delivery = $request->delivery;
             $order->name = $request->order['name'];
             $order->tel = $request->order['tel'];
+            $order->comment = $request->order['comment'] ?? null;
+            $order->personQty = $request->order['personQty'] ?? 1;
         }
 
         if (auth('sanctum')->user()) {
