@@ -82,7 +82,11 @@ class BannerController extends AdminController
         $form->switch('visible', __('Доступонсть'));
         $form->text('header', __('Заголовок'));
         $form->textarea('subheader', __('Подзаголовок'));
-        $form->image('image', __('Изображение'))->uniqueName();
+        $form->image('image', __('Изображение'))
+            ->uniqueName()
+            ->move('banners')
+            ->resize(1920, 1080)
+            ->encode('jpg', 85);
         return $form;
     }
 }

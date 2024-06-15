@@ -26,13 +26,12 @@ class CompanyController extends AdminController
     {
         $grid = new Grid(new Company());
 
-        $grid->column('id', __('Id'));
-        $grid->column('name', __('Name'));
-        $grid->column('description', __('Description'));
-
-        $grid->column('phone', __('Phone'));
-        $grid->column('phone_additional', __('Phone additional'));
-        $grid->column('email_address', __('Email address'));
+        $grid->column('id', __('Идентификатор'));
+        $grid->column('name', __('Название'));
+        $grid->column('description', __('Описание'));
+        $grid->column('phone', __('Телефон'));
+        $grid->column('phone_additional', __('Дополнительный телефон'));
+        $grid->column('email_address', __('Электронная почта'));
 
         return $grid;
     }
@@ -47,21 +46,21 @@ class CompanyController extends AdminController
     {
         $show = new Show(Company::findOrFail($id));
 
-        $show->field('id', __('Id'));
-        $show->field('name', __('Name'));
-        $show->field('description', __('Description'));
-        $show->field('country', __('Country'));
-        $show->field('state', __('State'));
-        $show->field('city', __('City'));
-        $show->field('street', __('Street'));
-        $show->field('house', __('House'));
-        $show->field('phone', __('Phone'));
-        $show->field('phone_additional', __('Phone additional'));
-        $show->field('email_address', __('Email address'));
-        $show->field('vk', 'Вконтакте');
-        $show->field('inst', 'Instagram');
-        $show->field('logo', __('Logo'))->image();
-        $show->field('updated_at', __('Updated at'));
+        $show->field('id', __('Идентификатор'));
+        $show->field('name', __('Название'));
+        $show->field('description', __('Описание'));
+        $show->field('country', __('Страна'));
+        $show->field('state', __('Область'));
+        $show->field('city', __('Город'));
+        $show->field('street', __('Улица'));
+        $show->field('house', __('Дом'));
+        $show->field('phone', __('Телефон'));
+        $show->field('phone_additional', __('Дополнительный телефон'));
+        $show->field('email_address', __('Электронная почта'));
+        $show->field('vk', __('Вконтакте'));
+        $show->field('inst', __('Instagram'));
+        $show->field('logo', __('Логотип'))->image();
+        $show->field('updated_at', __('Обновлено'));
 
         return $show;
     }
