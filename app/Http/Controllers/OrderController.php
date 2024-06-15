@@ -58,7 +58,8 @@ class OrderController extends Controller
 
         // отправка нового заказа в FrontPad
 
-        if (!$this->sendToFrontPad($order)) throw new \Exception('Ошибка при отправке данных в FrontPad');
+        $this->sendToFrontPad($order);
+
         return response('Заказ успешно создан', 200);
 
         // return response()->json($order, 200);
