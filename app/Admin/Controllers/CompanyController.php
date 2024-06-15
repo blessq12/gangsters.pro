@@ -82,8 +82,8 @@ class CompanyController extends AdminController
         $form->text('city', __('Город'));
         $form->text('street', __('Улица'));
         $form->text('house', __('Здание'));
-        $form->mobile('phone', __('Телефон'));
-        $form->mobile('phone_additional', __('Дополнительный телефон'));
+        $form->text('phone', __('Телефон'))->inputmask(['mask' => '+7 (999) 999-99-99']);
+        $form->text('phone_additional', __('Дополнительный телефон'))->inputmask(['mask' => '+7 (999) 999-99-99']);
         $form->image('logo', __('Логотип'))->uniqueName();
         $form->text('email_address', __('Email адрес'));
         $form->text('vk', 'Вконтакте');
