@@ -49,6 +49,23 @@ class FrontPad
         $order['person'] = $siteOrder->personQty;
         $order['descr'] = $siteOrder->comment;
 
+        /**
+         * Delivery
+         * list of var [ 
+         *      street => улица
+         *      home => Дом
+         *      pod => Подъезд    
+         *      et => Этаж
+         *      apart => Квартира
+         *  ]
+         */
+
+        $order['street'] = $siteOrder->street ?? '';
+        $order['home'] = $siteOrder->house ?? '';
+        $order['pod'] = $siteOrder->staircase ?? '';
+        $order['et'] = $siteOrder->floor ?? '';
+        $order['apart'] = $siteOrder->apartment ?? '';
+
 
         try {
             $res = $this->client->post($this->api_url . '?new_order', ['form_params' => $order]);
