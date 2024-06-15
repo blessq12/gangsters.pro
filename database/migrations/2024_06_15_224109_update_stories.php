@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::table('stories', function (Blueprint $table) {
             $table->boolean('non_hide')->default(false);
-            $table->timestamp('start_time');
-            $table->timestamp('end_time');
+            $table->timestamp('start_time')->nullable();
+            $table->timestamp('end_time')->nullable();
         });
     }
 
