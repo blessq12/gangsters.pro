@@ -10,7 +10,6 @@ export default {
     data() {
         return {
             currentCategory: null,
-            observer: null
         };
     },
     computed: {
@@ -26,7 +25,6 @@ export default {
         },
         scrollToCategory(uri) {
             const categoryElement = this.$refs[uri][0];
-            
             if (categoryElement) {
                 categoryElement.scrollIntoView({
                     behavior: 'smooth'
@@ -35,7 +33,6 @@ export default {
         },
         scrollCategoryBarToCurrent() {
             let li = this.$refs[this.currentCategory + '-button'][0];
-            
             if (li) {
                 const parentUl = li.closest('ul');
                 if (parentUl) {
@@ -46,37 +43,26 @@ export default {
                 }
             }
         },
-        createObserver() {
-            this.observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        
-                        this.currentCategory = entry.target.dataset.uri;
-                        
+        categoryBarObserver() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach( e => {
+                    if (!e.isIntersecting) {
+                        this.$refs.favWrap.classList.add('show')
+                    } else {
+                        this.$refs.favWrap.classList.remove('show')
                     }
                 });
             }, {
-                root: null,
-                rootMargin: this.appStore.device === 'phone' ? '0px 0px -50% 0px ' : '-20% 0px -20% 0px',
-                threshold: this.appStore.device === 'phone' ? 1 : 0.1,
+                threshold: [1],
+                rootMargin: '0px 0px 200px 0px',
+                
             });
-
-            this.goods.forEach( category => {
-                const categoryElement = this.$refs[category.uri + '-section'][0];
-                if (categoryElement) {
-                    this.observer.observe(categoryElement);
-                }
-            });
+            observer.observe(this.$refs.categoryBar);
         }
     },
     mounted() {
         this.currentCategory = this.goods[0].uri;
-        this.createObserver();
-    },
-    beforeDestroy() {
-        if (this.observer) {
-            this.observer.disconnect();
-        }
+        this.categoryBarObserver();
     },
     watch: {
         currentCategory() {
@@ -88,9 +74,24 @@ export default {
 
 <template>
     <!-- category bar -->
-    <div class="category-bar sticky-top" style="z-index: 1;">
-        <div class="container">
-
+    <div class="category-bar " ref="categoryBar">
+        <div class="container d-flex">
+            <div class="fav-wrap" ref="favWrap">
+                <button 
+                type="button"
+                class="btn rounded btn-danger d-flex align-items-center h-100" 
+                @click="appStore.modal=true, appStore.modalName='fav'"
+                >
+                <i class="fa fa-heart" style="margin-right: 6px;"></i>
+                <transition
+                    enter-active-class="animate__animated animate__faster animate__fadeIn"
+                    leave-active-class="animate__animated animate__faster animate__fadeOut"
+                    mode="out-in"
+                >
+                    {{ localStore.fav.length }}
+                </transition>
+            </button>
+        </div>
             <ul id="ddddd">
                 <li 
                     v-for="el in goods" 
@@ -168,6 +169,13 @@ export default {
 </template>
 
 <style lang="sass" scoped>
+.fav-wrap
+    min-width: 0px 
+    width: 0px
+    overflow: hidden
+    transition: all 0.3s
+    &.show
+        min-width: 74px
 .favorite
     background: transparent
     border: unset
@@ -205,6 +213,9 @@ export default {
 .category-bar
     padding: 10px 0px
     background: #fff
+    position: sticky
+    top: -1px
+    z-index: 1
     ul
         display: flex
         align-items: center

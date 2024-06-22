@@ -30,9 +30,6 @@
             <div class="col">
                 <ul class="shop-links">
                     <li>
-                        <nav-button target="fav"></nav-button>
-                    </li>
-                    <li>
                         <nav-button target="user"></nav-button>
                     </li>
                 </ul>
