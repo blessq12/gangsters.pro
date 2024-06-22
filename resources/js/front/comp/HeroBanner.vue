@@ -19,6 +19,7 @@ export default {
       activeIndex: 0,
       slidesPerView: 1,
       spaceBetween: 10,
+      mobile: false
     };
   },
   mounted() {
@@ -34,11 +35,13 @@ export default {
     },
     updateSwiperSettings() {
       if (window.innerWidth >= 768) {
+        this.mobile = false;
         this.slidesPerView = 3;
         this.spaceBetween = 20;
       } else {
-        this.slidesPerView = 1;
-        this.spaceBetween = 10;
+        this.mobile = true;
+        this.slidesPerView = 2;
+        this.spaceBetween = 8;
       }
     }
   }
@@ -64,7 +67,9 @@ export default {
     >
       <swiper-slide v-for="(banner, index) in banners" :key="banner.id" :class="{ 'active-slide': index === activeIndex }">
         <div class="slide-container">
-          <img :src="'/uploads/' + banner.image" alt="Gangsters sushi Томск" class="img-fluid">
+          
+          <img v-if="!mobile" :src="'/uploads/' + banner.image" alt="Gangsters sushi Томск" class="img-fluid">
+          <img v-if="mobile" :src="'/uploads/' + banner.mini_banner" alt="Gangsters sushi Томск" class="img-fluid">
         </div>
       </swiper-slide>
     </swiper>
@@ -81,8 +86,12 @@ export default {
   display: flex
   justify-content: center
   align-items: center
+  overflow: hidden
 .mySwiper
-  min-width: 260%
+  min-width: 160%
+  padding: 0 10px
+  @media (min-width: 768px)
+    min-width: 260%
   .swiper-slide
     opacity: 0.4
     transition: opacity 0.3s ease

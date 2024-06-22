@@ -170,6 +170,8 @@ export default {
     padding-bottom: 48px
     margin: 0
     list-style: none
+    &::-webkit-scrollbar
+        display: none
     li
         height: 180px
         min-width: 120px

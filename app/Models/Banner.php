@@ -11,6 +11,7 @@ class Banner extends Model
     protected $fillable = [
         'header',
         'subheader',
-        'image'
+        'image',
+        'mini_banner'
     ];
 }

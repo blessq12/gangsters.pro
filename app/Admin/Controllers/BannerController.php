@@ -34,6 +34,7 @@ class BannerController extends AdminController
         ];
         $grid->visible('Доступность')->switch($states);
         $grid->column('image', __('Изображение'))->image(null, null, 50);
+        $grid->column('mini_banner', __('Мини баннер'))->image(null, null, 50);
         $grid->column('created_at', __('Создан'))->display(function ($value) {
             return Carbon::parse($value)->format('Y.m.d');
         });
@@ -58,6 +59,7 @@ class BannerController extends AdminController
                 'Нет';
         });
         $show->field('image', __('Изображение'))->image(null, null, 150);
+        $show->field('mini_banner', __('Мини баннер'))->image(null, null, 150);
         $show->field('created_at', __('Создан'))->as(function ($ts) {
             return Carbon::parse($ts)->format('Y/m/d H:i');
         });
@@ -80,6 +82,11 @@ class BannerController extends AdminController
             ->uniqueName()
             ->move('banners')
             ->fit(1290, 380)
+            ->encode('jpg', 85);
+        $form->image('mini_banner', __('Мини баннер'))
+            ->uniqueName()
+            ->move('mini_banners')
+            ->fit(400, 240)
             ->encode('jpg', 85);
         return $form;
     }
