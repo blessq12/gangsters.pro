@@ -117,7 +117,7 @@ export default {
                     </div>
                     <button class="btn-close" @click="show=!show"></button>
                 </div>
-                <img :src="currentStory.image" class="img-fluid rounded" style="max-width: 450px; width: 100%; height: auto;">
+                <img :src="currentStory.image" class="img-fluid rounded" style="max-width: 400px; width: 100%; height: 100%; max-height: 90vh;">
                 </div>
                 <div class="overlay" @click="show=!show"></div>
             </div>
