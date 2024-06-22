@@ -72,7 +72,9 @@ export default {
     
     <ul class="story-list pt-2" v-if="stories.length">
         <li v-for="story in stories" :key="story.id" class="d-block text-center" >
-            <div class="story-item rounded bg-image" :style="'background:url(' + story.thumb + ');'" @click="show = !show; currentStory = story">
+            <div class="story-wrap">
+                <div class="story-item rounded bg-image" :style="'background:url(' + story.thumb + ');'" @click="show = !show; currentStory = story">
+                </div>
             </div>
             <div class="story-footer">
                 <span>{{ story.name }}</span>
@@ -103,12 +105,11 @@ export default {
             <div class="wrap" v-if="show">
                 
                 <div 
-                    class="story-content rounded bg-image" 
+                    class="story-content" 
                     @mousedown="pauseTimer" 
                     @mouseup="resumeTimer" 
                     @touchstart="pauseTimer"
                     @touchend="resumeTimer"
-                    :style="{ backgroundImage: 'url(' + currentStory.image + ')' }"
                 >
                 <div class="d-flex align-items-center justify-content-between interactive">
                     <div class="progress-bar">
@@ -116,9 +117,11 @@ export default {
                     </div>
                     <button class="btn-close" @click="show=!show"></button>
                 </div>
+                <img :src="currentStory.image" class="img-fluid rounded" style="max-width: 450px; width: 100%; height: auto;">
                 </div>
                 <div class="overlay" @click="show=!show"></div>
             </div>
+            
         </transition>
     </teleport>
 </template>
@@ -153,43 +156,44 @@ export default {
         position: absolute
         width: 100%
     .story-content
-        display: flex
-        justify-content: center
-        height: 100vh
-        max-height: 85vh
-        @media(min-width: 768px)
-            max-height: 95%
-        width: 450px
-        overflow: hidden
+        width: fit-content
         position: relative
         z-index: 11
     .overlay
         z-index: 9
 .story-list
     display: flex
-    justify-content: start
     align-items: center
-    overflow: visible
+    overflow: hidden
+    overflow-x: scroll
+    padding: 5px 0
+    margin: 0
+    list-style: none
     li
+        height: 180px
+        min-width: 120px
+        width: 120px
+        margin-right: 8px
+        @media( min-width: 768px )
+            height: 200px
+            min-width: 140px
+            width: 140px
+            margin-right: 12px
         transition: all .3s
         &:hover
             transform: scale(1.02)
-    .story-item
-        position: relative
-        transition: transform .3s
-        &::before
-            content: ''
-            display: block
-            width: 105%
-            height: 105%
-            border-radius: 20px
+        .story-wrap
+            width: 100%
+            height: 100%
+            position: relative
+            padding: 3px 2px
             background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)
-            opacity: .6
-            position: absolute
-            top: 50%
-            left: 50%
-            transform: translate(-50%, -50%)
-            z-index: -1
+            border-radius: 18px
+            .story-item
+                height: 100%
+                width: 100%
+                position: relative
+                transition: transform .3s
 .story-footer
     position: relative
     z-index: 1
