@@ -70,18 +70,20 @@ export default {
 
 <template>
     
-    <ul class="story-list" v-if="stories.length">
-        <li v-for="story in stories" :key="story.id" class="bg-primary d-block text-center">
-            <div class="story-item rounded bg-image" :style="'background:url(' + story.thumb + ')'" @click="show = !show; currentStory = story">
+    <ul class="story-list pt-2" v-if="stories.length">
+        <li v-for="story in stories" :key="story.id" class="d-block text-center" >
+            <div class="story-item rounded bg-image" :style="'background:url(' + story.thumb + ');'" @click="show = !show; currentStory = story">
             </div>
-            <div class="story-footer py-2 text-light">
-                {{ story.name }}
+            <div class="story-footer">
+                <span>{{ story.name }}</span>
             </div>
         </li>
     </ul>
     <ul class="story-list" v-else>
-        <li v-for="e in 5" class="placeholder-glow">
+        <li v-for="e in 5" class="placeholder-glow d-block text-center">
             <div class="story-item rounded bg-image placeholder" style="width: 160px;height: 200px;">
+            </div>
+            <div class="story-footer-placeholder py-2 placeholder d-block rounded">
             </div>
         </li>
     </ul>
@@ -163,4 +165,51 @@ export default {
         z-index: 11
     .overlay
         z-index: 9
+.story-list
+    display: flex
+    justify-content: start
+    align-items: center
+    overflow: visible
+    li
+        transition: all .3s
+        &:hover
+            transform: scale(1.02)
+    .story-item
+        position: relative
+        transition: transform .3s
+        &::before
+            content: ''
+            display: block
+            width: 105%
+            height: 105%
+            border-radius: 20px
+            background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)
+            opacity: .6
+            position: absolute
+            top: 50%
+            left: 50%
+            transform: translate(-50%, -50%)
+            z-index: -1
+.story-footer
+    position: relative
+    z-index: 1
+    margin-top: 12px
+    span
+        font-weight: 600
+        text-transform: capitalize
+.story-footer-placeholder
+    position: relative
+    margin-top: 12px
+    height: 25px
+    &::before
+        content: ''
+        display: block
+        width: 100%
+        height: 100%
+        border-radius: 20px
+        background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)
+        position: absolute
+        top: 0
+        left: 0
+        z-index: -1
 </style>

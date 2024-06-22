@@ -33,8 +33,6 @@ class BannerController extends AdminController
             'off' => ['text' => 'Нет'],
         ];
         $grid->visible('Доступность')->switch($states);
-        $grid->column('header', __('Заголовок'))->editable();
-        $grid->column('subheader', __('Подзаголовок'))->editable();
         $grid->column('image', __('Изображение'))->image(null, null, 50);
         $grid->column('created_at', __('Создан'))->display(function ($value) {
             return Carbon::parse($value)->format('Y.m.d');
@@ -59,8 +57,6 @@ class BannerController extends AdminController
                 'Да' :
                 'Нет';
         });
-        $show->field('header', __('Заголовок'));
-        $show->field('subheader', __('Подзаголовок'));
         $show->field('image', __('Изображение'))->image(null, null, 150);
         $show->field('created_at', __('Создан'))->as(function ($ts) {
             return Carbon::parse($ts)->format('Y/m/d H:i');
@@ -80,8 +76,6 @@ class BannerController extends AdminController
         $form = new Form(new Banner());
 
         $form->switch('visible', __('Доступонсть'));
-        $form->text('header', __('Заголовок'));
-        $form->textarea('subheader', __('Подзаголовок'));
         $form->image('image', __('Изображение'))
             ->uniqueName()
             ->move('banners')
