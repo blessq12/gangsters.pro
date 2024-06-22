@@ -79,7 +79,7 @@ class BannerController extends AdminController
         $form->image('image', __('Изображение'))
             ->uniqueName()
             ->move('banners')
-            ->resize(1920, 1080)
+            ->fit(1290, 380)
             ->encode('jpg', 85);
         return $form;
     }

@@ -1,66 +1,56 @@
 <script>
+import { Swiper, SwiperSlide } from 'swiper/vue';
+import 'swiper/swiper-bundle.css';
+
 export default {
-    props: {
-        'banners' : Object
-    },
-    data: () => ({
-        current: 0,
-        direction: true
-    }),
-    watch: {
-        current(val, oldval) {
-            if (val > oldval) {
-                this.direction = true
-            } else {
-                this.direction = false
-            }
-            if (val < 0) {
-                this.current = this.banners.length - 1
-            } else if (val > this.banners.length - 1) {
-                this.current = 0
-            }
-        }
-    }
-}
+  components: {
+    Swiper,
+    SwiperSlide
+  },
+  props: {
+    banners: Object
+  }
+};
 </script>
 
 <template>
-    <div class="banner-wrap rounded" v-if="banners.length">
-        <transition-group
-            :enter-active-class="`animate__animated animate__slideIn${ direction ? 'Right' : 'Left' }`"
-            :leave-active-class="`animate__animated animate__slideOut${ direction ? 'Left' : 'Right' }`"
-        >
-            <div 
-                class="banner-item bg-image" 
-                v-for="e in banners" 
-                :key="e.id"
-                v-show=" banners.indexOf(e) === current"
-                :style="'background: url( /uploads/' + e.image + ' )'"
-            >
-
-            <div class="d-flex align-items-end position-absolute w-100 h-100 p-2 p-lg-4 text-content">
-                <div class="d-block">
-                    <h2 class="mb-0" v-if="e.header">{{ e.header }}</h2>
-                    <p class="mb-0" v-if="e.subheader">{{ e.subheader }}</p>
-                </div>
-            </div>
-
-            </div>
-        </transition-group>
-        <div class="banner-nav">
-            <button type="button" class="btn" @click="current--">
-                <i class="fa fa-arrow-left"></i>
-            </button>
-            <button type="button" class="btn" @click="current++">
-                <i class="fa fa-arrow-right"></i>
-            </button>
-        </div>
-    </div>
-    <div class="banner-wrap rounded placeholder-glow" v-else>
-        <div class="banner-item bg-image placeholder" style="height: 100%; width: 100%;"></div>
-    </div>
+  <div class="hero-banner">
+    <swiper :slides-per-view="1" :loop="true" :autoplay="true" pagination class="p-0">
+      <swiper-slide v-for="banner in banners" :key="banner.id" class="hero-banner-slide">
+        <img :src="'/uploads/'+banner.image" alt="" class="img-fluid">
+      </swiper-slide>
+      <div class="swiper-pagination"></div>
+    </swiper>
+  </div>
 </template>
 
-<style lang="sass" scoped>
+<style scoped lang="sass">
+.hero-banner
+  position: relative
+  min-height: unset
+  overflow: hidden
+  padding: 0
+.hero-banner-slide
+  padding: 0 3px
+  img
+    width: 100%
+    height: 100%
+    object-fit: cover
+    border-radius: 16px
+    overflow: hidden
+.overlay
+  position: absolute
+  top: 0
+  left: 0
+  width: 100%
+  height: 100%
+  background: rgba(0, 0, 0, 0.5)
 
+.content
+  position: absolute
+  bottom: 20%
+  left: 50%
+  transform: translateX(-50%)
+  text-align: center
+  color: #fff
 </style>
