@@ -1,56 +1,68 @@
 <script>
 import { Swiper, SwiperSlide } from 'swiper/vue';
-import 'swiper/swiper-bundle.css';
+import 'swiper/css';
+import 'swiper/css/pagination';
+import 'swiper/css/navigation';
+import { Pagination, Navigation, Autoplay } from 'swiper/modules';
 
 export default {
-  components: {
-    Swiper,
-    SwiperSlide
-  },
   props: {
     banners: Object
+  },
+  components: {
+    Swiper,
+    SwiperSlide,
+  },
+  data() {
+    return {
+      modules: [Pagination, Navigation, Autoplay],
+      activeIndex: 0,
+    };
+  },
+  methods: {
+    updateActiveIndex(swiper) {
+      this.activeIndex = swiper.activeIndex;
+    }
   }
 };
 </script>
 
 <template>
-  <div class="hero-banner">
-    <swiper :slides-per-view="1" :loop="true" :autoplay="true" pagination class="p-0">
-      <swiper-slide v-for="banner in banners" :key="banner.id" class="hero-banner-slide">
-        <img :src="'/uploads/'+banner.image" alt="" class="img-fluid">
-      </swiper-slide>
-      <div class="swiper-pagination"></div>
-    </swiper>
-  </div>
+  <swiper
+    :loop="banners.length > 1"
+    :slidesPerView="1"
+    :spaceBetween="10"
+    :centeredSlides="true"
+    navigation
+    :pagination="{
+      clickable: true,
+    }"
+    :autoplay="{
+      delay: 5000,
+    }"
+    :modules="modules"
+    class="mySwiper"
+    @slideChange="updateActiveIndex"
+  >
+    <swiper-slide v-for="(banner, index) in banners" :key="banner.id" :class="{ 'active-slide': index === activeIndex }">
+      <div class="slide-container">
+        <img :src="'/uploads/' + banner.image" alt="Gangsters sushi Томск" class="img-fluid">
+      </div>
+    </swiper-slide>
+  </swiper>
 </template>
 
 <style scoped lang="sass">
-.hero-banner
-  position: relative
-  min-height: unset
-  overflow: hidden
-  padding: 0
-.hero-banner-slide
-  padding: 0 3px
-  img
-    width: 100%
-    height: 100%
-    object-fit: cover
-    border-radius: 16px
-    overflow: hidden
-.overlay
-  position: absolute
-  top: 0
-  left: 0
-  width: 100%
-  height: 100%
-  background: rgba(0, 0, 0, 0.5)
-
-.content
-  position: absolute
-  bottom: 20%
-  left: 50%
-  transform: translateX(-50%)
-  text-align: center
-  color: #fff
+.mySwiper
+  .swiper-slide
+    opacity: 0.4
+    transition: opacity 0.3s ease
+    img
+      border-radius: 16px
+  .swiper-slide-active
+    opacity: 1
+    .slide-container
+      display: flex
+      justify-content: center
+      align-items: center
 </style>
