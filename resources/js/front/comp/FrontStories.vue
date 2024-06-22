@@ -166,7 +166,8 @@ export default {
     align-items: center
     overflow: hidden
     overflow-x: scroll
-    padding: 5px 0
+    padding: 0
+    padding-bottom: 48px
     margin: 0
     list-style: none
     li
