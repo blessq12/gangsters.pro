@@ -96,14 +96,40 @@
     "src": "resources/fonts/Roboto/Roboto-ThinItalic.woff2"
   },
   "resources/js/app.css": {
-    "file": "assets/app-d0e1e413.css",
+    "file": "assets/app-c3c477d4.css",
     "src": "resources/js/app.css"
   },
   "resources/js/app.js": {
-    "css": [
-      "assets/app-d0e1e413.css"
+    "assets": [
+      "assets/Roboto-Black-01991218.woff",
+      "assets/Roboto-Black-238948ad.woff2",
+      "assets/Roboto-BlackItalic-19c5d375.woff",
+      "assets/Roboto-BlackItalic-16536df8.woff2",
+      "assets/Roboto-Bold-28ab0599.woff",
+      "assets/Roboto-Bold-faaae16a.woff2",
+      "assets/Roboto-BoldItalic-9b27b87b.woff",
+      "assets/Roboto-BoldItalic-0de6758a.woff2",
+      "assets/Roboto-Italic-ee142980.woff",
+      "assets/Roboto-Italic-56e0b6cb.woff2",
+      "assets/Roboto-Light-8f867de5.woff",
+      "assets/Roboto-Light-caac02e6.woff2",
+      "assets/Roboto-LightItalic-8b9184eb.woff",
+      "assets/Roboto-LightItalic-cd4eaf0e.woff2",
+      "assets/Roboto-Medium-e353d2e7.woff",
+      "assets/Roboto-Medium-745b342f.woff2",
+      "assets/Roboto-MediumItalic-1779bd2a.woff",
+      "assets/Roboto-MediumItalic-6c38d6fa.woff2",
+      "assets/Roboto-Regular-80d11dfd.woff",
+      "assets/Roboto-Regular-ffecd64b.woff2",
+      "assets/Roboto-Thin-bc94c86f.woff",
+      "assets/Roboto-Thin-d3cf0f7d.woff2",
+      "assets/Roboto-ThinItalic-8c9733fa.woff",
+      "assets/Roboto-ThinItalic-63313fa9.woff2"
     ],
-    "file": "assets/app-f16c085b.js",
+    "css": [
+      "assets/app-c3c477d4.css"
+    ],
+    "file": "assets/app-bd5b8325.js",
     "isEntry": true,
     "src": "resources/js/app.js"
   },
@@ -118,12 +144,12 @@
     "src": "resources/sass/auth.sass"
   },
   "resources/sass/crm/app.sass": {
-    "file": "assets/app-cb7e507b.css",
+    "file": "assets/app-010dd6dd.css",
     "isEntry": true,
     "src": "resources/sass/crm/app.sass"
   },
   "resources/sass/front/app.sass": {
-    "file": "assets/app-12a2aa49.css",
+    "file": "assets/app-a9ad890d.css",
     "isEntry": true,
     "src": "resources/sass/front/app.sass"
   }
