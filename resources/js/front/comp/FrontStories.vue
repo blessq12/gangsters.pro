@@ -189,7 +189,7 @@ export default {
             width: 100%
             height: 100%
             position: relative
-            padding: 3px 2px
+            padding: 3px 3px
             background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)
             border-radius: 18px
             .story-item

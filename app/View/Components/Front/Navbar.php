@@ -32,7 +32,6 @@ class Navbar extends Component
     {
         return [
             (object) ['name' => 'О компании', 'route' => 'main.about'],
-            (object) ['name' => 'Вакансии', 'route' => 'main.vacancy'],
             (object) ['name' => 'Оплата и доставка', 'route' => 'main.purchaseAndDelivery'],
             (object) ['name' => 'Контакты', 'route' => 'main.contact'],
         ];

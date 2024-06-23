@@ -204,9 +204,18 @@ export default {
         .col
             max-width: unset
             padding: 12px
+            min-width: 320px
+            width: fit-content
+            @media(min-width: 768px)
+                min-width: 260px
+            @media(min-width: 992px)
+                min-width: 25%
+                width: 25%
             &:hover
                 background: rgba(212, 212, 212, 0.265)
     .product
+        display: block
+        
         .header
             min-height: 160px
             position: relative
@@ -302,8 +311,6 @@ export default {
         position: absolute
         top: -100px
         left: 0
-    .col
-        max-width: 320px
 
 .category-bar
     padding: 10px 0px

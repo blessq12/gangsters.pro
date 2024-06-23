@@ -36,7 +36,7 @@
                     @endif
                 </div>
             </div>
-            <div class="col d-none d-lg-block">
+            <div class="col d-none d-lg-block justify-content-center">
                 <ul class="nav-links" style="justify-content:{{!Request::is('/') ? 'end' : ''}}">
                     @if (!Request::is('/'))
                         <a href="{{ route('main.index') }}">
@@ -52,7 +52,19 @@
                 </ul>
             </div>
             @if (Request::is('/'))
-                <div class="col">
+                <div class="col d-flex justify-content-end">
+                    <div class="shedule d-none d-lg-flex">
+                    <div class="status {{ now()->format('H:i') > $currentDayShedule->close_time ? 'closed' : 'open' }}"></div>
+                    @if (now()->format('H:i') > $currentDayShedule->close_time)
+                        <span class="time">
+                            Закрыто до {{ \Carbon\Carbon::parse($currentDayShedule->nextDayOpenTime())->format('H:i') }}
+                        </span>
+                    @else
+                        <span class="time">
+                            Открыто до {{ \Carbon\Carbon::parse($currentDayShedule->close_time)->format('H:i') }}
+                        </span>
+                    @endif
+                </div>
                     <ul class="shop-links">
                         <li>
                             <nav-button 

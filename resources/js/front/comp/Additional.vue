@@ -1,23 +1,29 @@
 <script>
 import { mapStores } from 'pinia';
-import { appStore } from '../../stores/appStorage'
+import { appStore } from '../../stores/appStorage';
 import { localStore } from '../../stores/localStore';
+import 'swiper/css';
+import 'swiper/css/pagination';
+import 'swiper/css/navigation';
+import { Swiper, SwiperSlide } from 'swiper/vue';
+import { Pagination, Navigation, Autoplay } from 'swiper/modules';
 
 export default {
+    components: {
+        Swiper,
+        SwiperSlide
+    },
     computed: {
         ...mapStores(appStore, localStore)
     },
-    mounted() {
-        // Component is mounted
+    data() {
+        return {
+            prodAdditional: {},
+            prodImg: [],
+            imgIndex: 0,
+            modules: [Pagination, Navigation]
+        };
     },
-    updated() {
-        // Component is updated
-    },
-    data: () => ({
-        prodAdditional: {},
-        prodImg: [],
-        imgIndex: 0
-    }),
     watch: {
         'appStore.additional': {
             handler(val) {
@@ -29,11 +35,10 @@ export default {
                         kidsAllow: this.appStore.currentAdditional.kidsAllow,
                         garlic: this.appStore.currentAdditional.garlic,
                         onion: this.appStore.currentAdditional.onion,
-                    }
+                    };
                 } else {
-                    this.prodAdditional = {}
+                    this.prodAdditional = {};
                 }
-                
             }
         },
         imgIndex(val) {
@@ -45,7 +50,7 @@ export default {
             }
         }
     }
-}
+};
 </script>
 
 <template>
@@ -63,36 +68,21 @@ export default {
                                 <div class="row row-cols-1 row-cols-md-2">
                                     <div class="col mb-4 mb-lg-0" v-if="appStore.currentAdditional.images.length">
                                         <div class="images-wrap">
-                                            <transition-group
-                                                tag="ul"
-                                                class="images list-unstyled m-0 p-0"
-                                                enter-active-class="animate__animated animate__fadeIn"
-                                                leave-active-class="animate__animated animate__fadeOut"
+                                            <swiper
+                                                :modules="modules"
+                                                pagination
+                                                navigation
+                                                space-between="10"
+                                                slides-per-view="1"
+                                                :autoplay="{
+                                                    delay: 5000,
+                                                }"
+                                                :loop="appStore.currentAdditional.images.length > 1"
                                             >
-                                                <li 
-                                                    class="bg-image rounded"
-                                                    style="min-height: 200px;"
-                                                    v-for="img in appStore.currentAdditional.thumbs"
-                                                    :style="'background: url(' + img.large + ')'"
-                                                    :key="img"
-                                                    v-show="Array.from(appStore.currentAdditional.thumbs).indexOf(img) == imgIndex"
-                                                >
-                                                </li>
-                                            </transition-group>
-                                            <div class="nav-group h-100">
-                                                <button 
-                                                    class="h-100"
-                                                    @click="imgIndex -= 1"
-                                                >
-                                                    <i class="fa fa-chevron-left"></i>
-                                                </button>
-                                                <button 
-                                                    class="h-100"
-                                                    @click="imgIndex += 1"
-                                                >
-                                                    <i class="fa fa-chevron-right"></i>
-                                                </button>
-                                            </div>
+                                                <swiper-slide v-for="(image, index) in appStore.currentAdditional.images" :key="index" class="rounded overflow-hidden">
+                                                    <img :src="image" class="img-fluid w-100" />
+                                                </swiper-slide>
+                                            </swiper>
                                         </div>
                                     </div>
                                     <div class="col mb-4 mb-lg-0" v-else>
@@ -110,7 +100,7 @@ export default {
                                             </div>
                                         </div>
                                         <ul class="list-unstyled prod-additionals d-flex align-items-center">
-                                            <li v-for="(value, key, index) in prodAdditional" :key="key" style="margin-right: 6px;">
+                                            <li v-for="(value, key) in prodAdditional" :key="key" style="margin-right: 6px;">
                                                 <div class="disable" v-if="!value" style="background: url('/images/additionals/disabled.png');"></div>
                                                 <img :src="'/images/additionals/' + key + '.png'" alt="">
                                             </li>
@@ -124,27 +114,27 @@ export default {
                                         </div>
                                         <div class="row mt-4">
                                             <div class="col">
-                                                <button 
-                                                    class="btn btn-outline-primary rounded-pill"
-                                                    :class="{'active' : localStore.checkExist('cart', appStore.currentAdditional)}"
-                                                    @click="localStore.manageStore('cart', appStore.currentAdditional)"
-                                                >
-                                                    {{
-                                                        localStore.checkExist('cart', appStore.currentAdditional) ?
-                                                        'В корзине' :
-                                                        "В корзину "
-                                                    }}
-                                                    <i 
-                                                        class="fa mx-1"
-                                                        :class="{
-                                                            'fa-check': localStore.checkExist('cart', appStore.currentAdditional),
-                                                            'fa-plus' : !localStore.checkExist('cart', appStore.currentAdditional),
-                                                        }"
-                                                    ></i>
-                                                </button>
-                                                <button class="mx-2 btn btn-outline-primary rounded-pill"
-                                                    @click="localStore.manageStore('fav', appStore.currentAdditional)"
-                                                >В избранное</button>
+                                                <div class="footer-btns">
+                                                    <transition
+                                                        enter-active-class="animate__animated animate__fadeIn"
+                                                        leave-active-class="animate__animated animate__fadeOut"
+                                                        mode="out-in"
+                                                    >
+                                                        <button class="btn rounded cart" @click="localStore.manageStore('cart', appStore.currentAdditional)" v-if="!localStore.checkExist('cart', appStore.currentAdditional)">
+                                                            <i class="fa fa-shopping-cart" style="margin-right: 8px;"></i>
+                                                        В корзину
+                                                    </button>
+                                                    <div class="prod-qty" v-else>
+                                                        <button class="btn rounded" @click="localStore.manageQty(false, appStore.currentAdditional)">-</button>
+                                                        <input type="text" class="form-control" :value="appStore.currentAdditional.qty">
+                                                        <button class="btn rounded" @click="localStore.manageQty(true, appStore.currentAdditional)">+</button>
+                                                    </div>
+                                                    </transition>
+                                                    <button class="btn rounded fav" @click="localStore.manageStore('fav', appStore.currentAdditional)" :class="{'active' : localStore.checkExist('fav', appStore.currentAdditional)}">
+                                                        <i class="fa fa-heart-o" v-if="!localStore.checkExist('fav', appStore.currentAdditional)"></i>
+                                                        <i class="fa fa-heart" v-if="localStore.checkExist('fav', appStore.currentAdditional)" ></i>
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -159,6 +149,54 @@ export default {
 </template>
 
 <style lang="sass" scoped>
+.prod-qty
+    margin-right: 10px
+    display: flex
+    align-items: center
+    button
+        border: $color-main 1px solid
+        background: $color-main
+        color: #fff
+        margin-right: 8px
+        transition: all .3s
+        &:first-child
+            border-radius: 12px 0 0 12px !important
+            margin: 0
+        &:last-child
+            border-radius: 0 12px 12px 0 !important
+        &:hover
+            background: $color-main
+            color: #fff
+    .form-control
+        border-radius: 0
+        border-left: none
+        border-right: none
+        width: 80px
+        height: 100%
+        display: flex
+        align-items: center
+        justify-content: center
+        text-align: center
+.footer-btns
+    display: flex
+    button
+        border: #dedede 1px solid
+        margin-right: 8px
+        transition: all .3s
+        &:last-child
+            margin-right: 0
+        &.active
+            background: $color-main
+            border-color: $color-main
+            color: #fff
+            &.fav
+                background: red
+                color: #fff
+                border-color: red
+        &:hover
+            background: $color-main
+            border-color: $color-main
+            color: #fff
 .wrap
     display: flex
     background: #fff
