@@ -54,8 +54,9 @@
             @if (Request::is('/'))
                 <div class="col d-flex justify-content-end">
                     <div class="shedule d-none d-lg-flex">
-                    <div class="status {{ now()->format('H:i') > $currentDayShedule->close_time ? 'closed' : 'open' }}"></div>
-                    @if (now()->format('H:i') > $currentDayShedule->close_time)
+                        
+                    <div class="status {{ (now()->format('H:i') > $currentDayShedule->close_time || now()->format('H:i') < $currentDayShedule->open_time) ? 'closed' : 'open' }}"></div>
+                    @if (now()->format('H:i') > $currentDayShedule->close_time || now()->format('H:i') < $currentDayShedule->open_time)
                         <span class="time">
                             Закрыто до {{ \Carbon\Carbon::parse($currentDayShedule->nextDayOpenTime())->format('H:i') }}
                         </span>
