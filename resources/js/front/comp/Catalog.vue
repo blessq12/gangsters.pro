@@ -48,8 +48,10 @@ export default {
                 entries.forEach( e => {
                     if (!e.isIntersecting) {
                         this.$refs.favWrap.classList.add('show')
+                        this.$refs.categoryBar.classList.add('scrolled')
                     } else {
                         this.$refs.favWrap.classList.remove('show')
+                        this.$refs.categoryBar.classList.remove('scrolled')
                     }
                 });
             }, {
@@ -58,11 +60,29 @@ export default {
                 
             });
             observer.observe(this.$refs.categoryBar);
+        },
+        categoryObserver() {
+            const isMobile = window.innerWidth < 992;
+            const threshold = isMobile ? [0.5] : [0.1];
+            this.goods.forEach(category => {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            this.currentCategory = category.uri;
+                        }
+                    });
+                }, {
+                    threshold: threshold,
+                    rootMargin: '-100px 0px -300px 0px',
+                });
+                observer.observe(this.$refs[category.uri + '-section'][0]);
+            });
         }
     },
     mounted() {
         this.currentCategory = this.goods[0].uri;
         this.categoryBarObserver();
+        this.categoryObserver();
     },
     watch: {
         currentCategory() {
@@ -74,7 +94,7 @@ export default {
 
 <template>
     <!-- category bar -->
-    <div class="category-bar " ref="categoryBar">
+    <div class="category-bar scrolled" ref="categoryBar">
         <div class="container d-flex">
             <div class="fav-wrap" ref="favWrap">
                 <button 
@@ -136,6 +156,7 @@ export default {
                                     @click="localStore.manageStore('fav', product)"
                                 >
                                     <i :class="localStore.checkExist('fav', product) ? 'fa fa-heart' : 'fa fa-heart-o'"></i>
+                                    {{ localStore.checkExist('fav', product) ? '' : '+' }}
                                 </button>
                                 <button
                                     type="button" 
@@ -169,6 +190,64 @@ export default {
 </template>
 
 <style lang="sass" scoped>
+.category
+    .category-list
+        flex-wrap: nowrap
+        overflow: hidden
+        overflow-x: scroll
+        @media(min-width: 992px)
+            flex-wrap: wrap
+        &::-webkit-scrollbar
+            display: none
+        .col
+            padding: 12px
+            &:hover
+                background: rgba(212, 212, 212, 0.265)
+    .product
+        .header
+            min-height: 160px
+            position: relative
+            padding: 6px
+        .content
+            margin: 12px 0
+            min-height: 45px
+            span
+                font-weight: 400
+                font-size: 1.1rem
+                display: block
+                line-height: 1
+        .footer
+            display: flex
+            align-items: center
+            justify-content: space-between
+            button
+                background: #dedede
+                border: unset
+                padding: 14px 18px
+                white-space: nowrap
+                margin-right: 12px
+                &:hover
+                    background: #2e2e2e
+                    color: #fff
+                &.active
+                    background: $color-main
+                    color: #fff
+            span
+                &.price
+                    font-size: 1.1rem
+                    font-weight: 700
+                    margin-bottom: -4px
+                    &::after
+                       content: 'руб.'
+                       padding-left: 4px 
+                       font-weight: 200
+                &.weight
+                    font-size: .8rem
+                    font-weight: 500
+                    &::after
+                       content: 'гр.'
+                       padding-left: 4px
+                       font-weight: 200 
 .fav-wrap
     min-width: 0px 
     width: 0px
@@ -177,26 +256,28 @@ export default {
     &.show
         min-width: 74px
 .favorite
-    background: transparent
     border: unset
     padding: unset
     margin: unset
-    background: $color-main
+    background: #dedede
     padding: 8px
     margin-right: 8px
     font-size: 1.2rem
+    transition: all .3s
     &:hover    
         background: darken($color-main, 10%)
         color: #fff
     &.active
-        color: red
+        background: red
+        color: #fff
+        padding: 8px 15px
 .additional
     background: transparent
     border: unset
     padding: unset
     margin: unset
-    background: $color-main
-    padding: 8px 16px
+    background: #dedede
+    padding: 8px 22px
     font-size: 1.2rem
     &:hover    
         background: darken($color-main, 10%)
@@ -216,6 +297,21 @@ export default {
     position: sticky
     top: -1px
     z-index: 1
+    transition: all .3s
+    &.scrolled
+        background: linear-gradient(to top, $color-main, lighten($color-main, 10%))
+        color: #fff
+        ul
+            color: #fff
+            li
+                color: #fff
+                button
+                    background: transparent
+                    border-color: #fff !important
+                    border: 1px solid #fff
+                & .active
+                    background: #fff 
+                    color: $color-secondary
     ul
         display: flex
         align-items: center

@@ -68,12 +68,13 @@ computed: {
     position: fixed
     bottom: 0
     width: 100%
-    background: #fff
+    background: linear-gradient(to bottom, $color-main, lighten($color-main, 10%))
+    color: #fff
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1)
     padding: 12px 0
     z-index: 10
 button.footer
-    background: $color-main
+    background: #dedede
     border: unset
     padding: 14px 18px
     white-space: nowrap

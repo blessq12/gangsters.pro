@@ -1,6 +1,7 @@
 footer
     padding: 24px 0 0 0 
     background: $color-main
+    color: #fff
     .footer-logo
         display: flex
         align-items: center
@@ -17,7 +18,7 @@ footer
         font-size: 1.1rem
         font-weight: 400
         padding-bottom: 6px
-        border-bottom: 2px solid $color-secondary
+        border-bottom: 2px solid #fff
         width: 80%
         margin-bottom: 18px
     ul
@@ -26,7 +27,7 @@ footer
         margin: 0
         a
             text-decoration: none
-            color: $color-secondary    
+            color: #fff    
             margin-bottom: 6px
             display: block
             li
@@ -46,8 +47,8 @@ footer
     ul.links
         a
             text-decoration: none
-            color: $color-secondary
             display: flex
+            color: #fff
             &:hover
                 li
                     &::before
@@ -60,8 +61,8 @@ footer
                     display: inline-block
                     transition: all .3s
     .copyright
-        background: $color-secondary
+        background: lighten($color-main, 10%)
         margin-top: 24px
         a
-            color: $color-main
+            color: #fff
             font-size: .8rem

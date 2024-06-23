@@ -2,7 +2,7 @@
     <div class="container">
         <div class="row row-cols-1 row-cols-md-2 {{ $company->vk || $company->inst ? 'row-cols-lg-4' : 'row-cols-lg-3'}} g-4">
             <div class="col">
-                <a href="{{ route('main.index') }}">
+                <a href="{{ route('main.index') }}" class="text-light">
                     <div class="footer-logo">
                         <img src="/uploads/{{ $company->logo ? $company->logo : 'http://via.placeholder.com/50x50' }}" alt="{{ $company->name }}">
                         <span>
