@@ -96,10 +96,10 @@ export default {
     <!-- category bar -->
     <div class="category-bar scrolled" ref="categoryBar">
         <div class="container d-flex">
-            <div class="fav-wrap" ref="favWrap">
+            <div class="fav-wrap d-flex align-items-center" ref="favWrap">
                 <button 
                 type="button"
-                class="btn rounded btn-danger d-flex align-items-center h-100" 
+                class="btn rounded btn-danger d-flex align-items-center" 
                 @click="appStore.modal=true, appStore.modalName='fav'"
                 >
                 <i class="fa fa-heart" style="margin-right: 6px;"></i>

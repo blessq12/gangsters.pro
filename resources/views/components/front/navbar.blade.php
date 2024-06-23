@@ -30,7 +30,9 @@
             <div class="col">
                 <ul class="shop-links">
                     <li>
-                        <nav-button target="user"></nav-button>
+                        <nav-button 
+                            target="user"
+                        ></nav-button>
                     </li>
                 </ul>
             </div>

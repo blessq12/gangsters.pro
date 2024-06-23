@@ -4,8 +4,14 @@ import { appStore } from '../../stores/appStorage';
 import { localStore } from '../../stores/localStore';
 
 export default {
+    props: {
+        links: {
+            type: Object,
+            required: false
+        }
+    },
     mounted() {
-        // Lifecycle hook
+    
     },
     computed: {
         ...mapStores(appStore, localStore)
@@ -68,7 +74,8 @@ export default {
     .menu
         position: fixed
         width: 100%
-        border-radius: 12px 0 0 12px
+        @media(min-width: 768px)
+            border-radius: 12px 0 0 12px
         box-shadow: 0 0 55px rgba(255, 255, 255, 0.3)
         @media(min-width: 768px)
             width: 50%

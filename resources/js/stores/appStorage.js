@@ -6,7 +6,9 @@ export const appStore = defineStore('app', {
         modal: false,
         modalName: null,
         currentAdditional: null,
-        device: null
+        device: null,
+        links: null,
+        company: null
     }),
     actions: {
         defineDevice() {

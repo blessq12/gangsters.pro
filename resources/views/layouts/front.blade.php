@@ -13,8 +13,20 @@
     @vite('resources/js/front/app.js')
 </head>
 <body>
-    <div id="app">    
-        <app-init></app-init>
+    <div id="app">
+        @php
+            $links = [
+                (object) ['name' => 'Главная', 'route' => route('main.index')],
+                (object) ['name' => 'О нас', 'route' => route('main.about')],
+                (object) ['name' => 'Вакансии', 'route' => route('main.vacancy')],
+                (object) ['name' => 'Контакты', 'route' => route('main.contact')],
+                (object) ['name' => 'Оплата и доставка', 'route' => route('main.purchaseAndDelivery')],
+            ];
+        @endphp    
+        <app-init 
+            :links='@json($links)'
+            :company='@json(\App\Models\Company::first())'
+        ></app-init>
         <x-front.navbar></x-front.navbar>
         @hasSection('hero')
             @yield('hero')
