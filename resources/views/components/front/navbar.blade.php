@@ -71,8 +71,10 @@
                             <nav-button 
                                 target="user"
                             >
-                            <span class="d-none d-lg-block" style="margin-right: 6px">Меню</span>
-                            <i class="fa fa-bars"></i>
+                            <div class="d-flex">
+                                <span class="d-none d-lg-block" style="margin-right: 6px">Меню</span>
+                                <i class="fa fa-bars"></i>
+                            </div>
                             </nav-button>
                         </li>
                     </ul>
