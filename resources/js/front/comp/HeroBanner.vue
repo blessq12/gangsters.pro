@@ -89,9 +89,12 @@ export default {
   overflow: hidden
 .mySwiper
   min-width: 160%
-  padding: 0 10px
   @media (min-width: 768px)
-    min-width: 260%
+    min-width: 220%
+  @media(min-width: 992px)
+    min-width: 250%
+  @media (min-width: 1200px)
+    min-width: 160%
   .swiper-slide
     opacity: 0.4
     transition: opacity 0.3s ease

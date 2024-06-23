@@ -22,7 +22,7 @@
                     </div>
                 </a>
             </div>
-            <div class="col d-block d-lg-none d-flex justify-content-center">
+            <div class="col d-lg-none d-flex justify-content-center">
                 <div class="shedule">
                     <div class="status {{ now()->format('H:i') > $currentDayShedule->close_time ? 'closed' : 'open' }}"></div>
                     @if (now()->format('H:i') > $currentDayShedule->close_time)
@@ -71,7 +71,7 @@
                             <nav-button 
                                 target="user"
                             >
-                            Меню
+                            <span class="d-none d-lg-block" style="margin-right: 6px">Меню</span>
                             <i class="fa fa-bars"></i>
                             </nav-button>
                         </li>
