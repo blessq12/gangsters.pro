@@ -34,10 +34,22 @@ export default {
       this.activeIndex = swiper.activeIndex;
     },
     updateSwiperSettings() {
-      if (window.innerWidth >= 768) {
+      if (window.innerWidth >= 1200) {
+        this.mobile = false;
+        this.slidesPerView = 2;
+        this.spaceBetween = 30;
+      } else if (window.innerWidth >= 992) {
         this.mobile = false;
         this.slidesPerView = 3;
         this.spaceBetween = 20;
+      } else if (window.innerWidth >= 768) {
+        this.mobile = false;
+        this.slidesPerView = 3;
+        this.spaceBetween = 15;
+      } else if (window.innerWidth >= 576) {
+        this.mobile = false;
+        this.slidesPerView = 2;
+        this.spaceBetween = 15;
       } else {
         this.mobile = true;
         this.slidesPerView = 2;
