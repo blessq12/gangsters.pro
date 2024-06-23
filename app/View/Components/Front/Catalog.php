@@ -29,21 +29,17 @@ class Catalog extends Component
     public function getProducts()
     {
         $categories = ProductCategory::where('visible', true)->has('products')->get();
-        $products = $categories->each(fn ($category) => $category->products->each(
-            function ($product) {
-                $product->images = $product->imgs->map(function ($image) {
-                    return '/uploads/' . $image->path;
-                });
-                $product->thumbs = $product->imgs->map(function ($image) {
-                    return [
-                        'small' => '/uploads/' . $image->thumbnail('sm', 'path'),
-                        'medium' => '/uploads/' . $image->thumbnail('md', 'path'),
-                        'large' => '/uploads/' . $image->thumbnail('lg', 'path'),
-                    ];
-                });
-            }
-
-        ));
+        $categories->each(function ($category) {
+            $category->products->each(function ($product) {
+                $product->images = $product->imgs->map(fn ($image) => '/uploads/' . $image->path);
+                $product->thumbs = $product->imgs->map(fn ($image) => [
+                    'small' => '/uploads/' . $image->thumbnail('sm', 'path'),
+                    'medium' => '/uploads/' . $image->thumbnail('md', 'path'),
+                    'large' => '/uploads/' . $image->thumbnail('lg', 'path'),
+                ]);
+            });
+        });
+        $products = $categories;
         return $products;
     }
 }
