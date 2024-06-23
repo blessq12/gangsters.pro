@@ -297,14 +297,14 @@ export default {
         </div>
     </transition>
     
-<div class="col-12 d-block d-lg-none">
+<div class="col-12 d-block d-lg-none mb-4">
     <div class="row">
         <div class="col">
             <h5 class="border-bottom pb-2">Навигация</h5>
         </div>
     </div>
     <div class="row">
-        <nav>
+        <nav class="px-0" style="border-bottom: none;">
             <ul class="nav flex-column p-0 m-0">
                 <li class="nav-item" v-for="link in appStore.links" :key="link.name">
                     <a class="nav-link " :href="link.route">{{ link.name }}</a>
@@ -312,22 +312,33 @@ export default {
             </ul>
         </nav>
     </div>
-<div class="footer mt-4">
+</div>
+<div class="col">
     <div class="row">
         <div class="col">
-            <h5>Контактная информация</h5>
-        <ul class="list-unstyled">
-        <li>Телефон: <a :href="'tel:' + appStore.company.phone">{{ '+7 (' + appStore.company.phone.slice(1, 4) + ') ' + appStore.company.phone.slice(4, 7) + '-' + appStore.company.phone.slice(7, 9) + '-' + appStore.company.phone.slice(9) }}</a></li>
-        <li>Email: {{ appStore.company.email }}</li>
-        <li>Адрес: {{ appStore.company.city + ', ' + appStore.company.street + ' ' + appStore.company.house }}</li>
-        </ul>
+            <h5 class="border-bottom border-secondary pb-2" style="border-color: #dedede !important;">Контактная информация</h5>
+            <ul class="list-unstyled">
+                <li>Телефон: <a :href="'tel:' + appStore.company.phone">{{ '+7 (' + appStore.company.phone.slice(1, 4) + ') ' + appStore.company.phone.slice(4, 7) + '-' + appStore.company.phone.slice(7, 9) + '-' + appStore.company.phone.slice(9) }}</a></li>
+                <li>Email: {{ appStore.company.email }}</li>
+                <li>Адрес: {{ appStore.company.city + ', ' + appStore.company.street + ' ' + appStore.company.house }}</li>
+            </ul>
         </div>
     </div>
 </div>
-</div>
+    
 </template>
 
 <style lang="sass" scoped>
+nav
+    
+    ul
+        
+        li
+            
+            a
+                &::before
+                    content: '|'
+                    margin-right: 5px
 .btn-group
     button
         border: 0

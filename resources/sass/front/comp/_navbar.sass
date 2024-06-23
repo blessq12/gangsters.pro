@@ -1,5 +1,6 @@
 nav
     border-bottom: 1px solid #dedede
+    padding: 12px 0
     .nav-badge
         margin-right: 6px
     // background: $color-main
@@ -8,15 +9,48 @@ nav
     .nav-logo
         display: flex
         align-items: center
+        margin-bottom: 0
         img
-            margin-right: 12px
-            max-width: 70px
+            margin-right: 8px
+            max-width: 40px
+            @media(min-width: 768px)
+                max-width: 70px
+                margin-right: 12px
         span
-            font-weight: bold
-            max-width: 50px
+            font-weight: 800
+            font-size: 2rem
+            margin-bottom: 0
+            color: $color-main
+            @media(min-width: 768px)
+                font-weight: bold
+                max-width: 50px
+                display: block
+                line-height: 1.2
+                text-transform: uppercase
+    .shedule
+        display: flex
+        align-items: center
+        justify-content: center
+        list-style: none
+        margin: 0
+        padding: 0
+        border: 1px solid #dedede
+        border-radius: 16px
+        padding: 6px 12px
+        .status
+            min-width: 10px
+            min-height: 10px
+            border-radius: 50%
+            margin-right: 6px
+            &.open
+                background-color: green
+            &.closed
+                background-color: red
+        span.time
             display: block
-            line-height: 1.2
-            text-transform: uppercase
+            text-align: center
+            font-size: 0.6rem
+            font-weight: 400
     .nav-links
         display: flex
         align-items: center
@@ -48,3 +82,15 @@ nav
         padding: 0
         li
             margin-left: 6px
+            .menu-button
+                background: unset
+                color: unset
+                border: 1px solid $color-main
+                border-radius: 16px
+                padding: 8px 12px
+                transition: all .3s
+                &:hover
+                    background: $color-main
+                    color: #fff
+                
+                

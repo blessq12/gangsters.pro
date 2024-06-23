@@ -255,9 +255,12 @@ export default {
     border-bottom: 1px solid #dedede
     width: 100%
     h2
-        font-size: 2rem
-        font-weight: 700
+        font-size: 1.5rem
+        font-weight: 500
         margin-bottom: 12px
+        @media(min-width: 768px)
+            font-size: 2rem
+            font-weight: 700
 
 .fav-wrap
     min-width: 0px 

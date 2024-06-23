@@ -20,4 +20,15 @@ class WorkShedule extends Model
     {
         return $this->belongsTo(Company::class);
     }
+
+    public static function getCurrentDayShedule()
+    {
+        $currentDay = strtolower(now()->format('l'));
+        return self::where('day_eng', $currentDay)->first();
+    }
+
+    public function nextDayOpenTime()
+    {
+        return self::where('day_eng', now()->addDay()->format('l'))->first()->open_time;
+    }
 }

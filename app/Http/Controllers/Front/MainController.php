@@ -8,6 +8,7 @@ use App\Models\Company;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\ProductImage;
+use App\Models\WorkShedule;
 use Encore\Admin\Facades\Admin;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\View as ViewFacade;
@@ -21,6 +22,7 @@ class MainController extends Controller
     public function __construct()
     {
         ViewFacade::share('company', Company::first());
+        ViewFacade::share('currentDayShedule', WorkShedule::getCurrentDayShedule());
     }
 
     public function index()

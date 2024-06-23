@@ -5,11 +5,36 @@
                 <a href="{{ route('main.index') }}">
                     <div class="nav-logo">
                         <img src="/uploads/{{ $company->logo ? $company->logo : 'http://via.placeholder.com/50x50' }}" alt="{{ $company->name }}">
-                        <span>
+                        <span class="d-none d-lg-block">
                             {{ $company->name }}
+                        </span>
+                        <span class="d-lg-none">
+                            @php
+                                $name = $company->name;
+                                $name = explode(' ', $name);
+                                $result = '';
+                                foreach ($name as $word) {
+                                    $result .= strtoupper(substr($word, 0, 1));
+                                }
+                            @endphp
+                            {{ $result }}
                         </span>
                     </div>
                 </a>
+            </div>
+            <div class="col d-block d-lg-none d-flex justify-content-center">
+                <div class="shedule">
+                    <div class="status {{ now()->format('H:i') > $currentDayShedule->close_time ? 'closed' : 'open' }}"></div>
+                    @if (now()->format('H:i') > $currentDayShedule->close_time)
+                        <span class="time">
+                            Закрыто до {{ \Carbon\Carbon::parse($currentDayShedule->nextDayOpenTime())->format('H:i') }}
+                        </span>
+                    @else
+                        <span class="time">
+                            Открыто до {{ \Carbon\Carbon::parse($currentDayShedule->close_time)->format('H:i') }}
+                        </span>
+                    @endif
+                </div>
             </div>
             <div class="col d-none d-lg-block">
                 <ul class="nav-links" style="justify-content:{{!Request::is('/') ? 'end' : ''}}">
@@ -27,15 +52,18 @@
                 </ul>
             </div>
             @if (Request::is('/'))
-            <div class="col">
-                <ul class="shop-links">
-                    <li>
-                        <nav-button 
-                            target="user"
-                        ></nav-button>
-                    </li>
-                </ul>
-            </div>
+                <div class="col">
+                    <ul class="shop-links">
+                        <li>
+                            <nav-button 
+                                target="user"
+                            >
+                            Меню
+                            <i class="fa fa-bars"></i>
+                            </nav-button>
+                        </li>
+                    </ul>
+                </div>
             @endif
         </div>
     </div>
