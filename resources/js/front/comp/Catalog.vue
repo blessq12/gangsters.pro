@@ -191,6 +191,8 @@ export default {
 
 <style lang="sass" scoped>
 .category
+    .col
+        max-width: unset !important
     .category-list
         flex-wrap: nowrap
         overflow: hidden
@@ -200,6 +202,7 @@ export default {
         &::-webkit-scrollbar
             display: none
         .col
+            max-width: unset
             padding: 12px
             &:hover
                 background: rgba(212, 212, 212, 0.265)
@@ -248,6 +251,14 @@ export default {
                        content: 'гр.'
                        padding-left: 4px
                        font-weight: 200 
+.section-title
+    border-bottom: 1px solid #dedede
+    width: 100%
+    h2
+        font-size: 2rem
+        font-weight: 700
+        margin-bottom: 12px
+
 .fav-wrap
     min-width: 0px 
     width: 0px
@@ -299,24 +310,13 @@ export default {
     z-index: 1
     transition: all .3s
     &.scrolled
-        background: linear-gradient(to top, $color-main, lighten($color-main, 10%))
-        color: #fff
-        ul
-            color: #fff
-            li
-                color: #fff
-                button
-                    background: transparent
-                    border-color: #fff !important
-                    border: 1px solid #fff
-                & .active
-                    background: #fff 
-                    color: $color-secondary
+        border-bottom: 1px solid #dedede
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.4)
     ul
         display: flex
         align-items: center
         list-style: none
-        padding: 0
+        padding: 5px 0
         margin: 0
         overflow: hidden
         overflow-x: auto
@@ -326,4 +326,14 @@ export default {
             display: none
         li
             margin-right: 12px
+            button
+                background: transparent
+                border: 1px solid #dedede
+                color: $color-secondary
+                &:hover
+                    background: #dedede
+                    color: $color-main
+                &.active
+                    background: $color-main
+                    color: #fff
 </style>

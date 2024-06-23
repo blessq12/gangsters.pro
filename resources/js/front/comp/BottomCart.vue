@@ -65,12 +65,12 @@ computed: {
 
 <style scoped lang="sass">
 .bottom-cart 
+    border-top: 1px solid #dedede
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.4)
     position: fixed
     bottom: 0
     width: 100%
-    background: linear-gradient(to bottom, $color-main, lighten($color-main, 10%))
-    color: #fff
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1)
+    background: #fff
     padding: 12px 0
     z-index: 10
 button.footer

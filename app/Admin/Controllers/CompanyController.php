@@ -32,7 +32,9 @@ class CompanyController extends AdminController
         $grid->column('phone', __('Телефон'));
         $grid->column('phone_additional', __('Дополнительный телефон'));
         $grid->column('email_address', __('Электронная почта'));
-
+        $grid->column('work_shedule', __('График работы'))->display(function ($workShedule) {
+            return '<a href="' . admin_url('work-shedules') . '">Shedules</a>';
+        });
         return $grid;
     }
 

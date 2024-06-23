@@ -27,4 +27,9 @@ class Company extends Model
     {
         return $this->hasOne(CompanyLegal::class);
     }
+
+    public function workShedules()
+    {
+        return $this->hasMany(WorkShedule::class);
+    }
 }
