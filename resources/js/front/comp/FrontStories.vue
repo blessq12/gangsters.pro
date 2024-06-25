@@ -1,21 +1,24 @@
 <script>
-import { mapStores } from 'pinia'
+import { mapStores } from 'pinia';
 import { appStore } from '../../stores/appStorage';
 
 export default {
     props: {
-        'stories' : Object
+        stories: Object
     },
-    data: () => ({
-        show: false,
-        currentStory: null,
-        timer: null,
-        progress: 0, // Add progress data property
-        isPaused: false // Add isPaused data property
-    }),
+    data() {
+        return {
+            show: false,
+            currentStory: null,
+            timer: null,
+            progress: 0,
+            isPaused: false,
+            debugMode: false // Set this to true to prevent the timer for debugging
+        };
+    },
     computed: {
-        storyImage(story){
-            return '/uploads/' + story.image;
+        storyImage(story) {
+            return `/uploads/${story.image}`;
         },
         ...mapStores(appStore)
     },
@@ -32,11 +35,13 @@ export default {
     },
     methods: {
         startTimer() {
+            if (this.debugMode) return; // Prevent timer if in debug mode
+
             this.clearTimer();
-            this.progress = 0; // Reset progress
-            const interval = 100; // Update every 150ms
-            const duration = 10000; // 10 seconds
-            const step = interval / duration * 100; // Calculate step size
+            this.progress = 0;
+            const interval = 100;
+            const duration = 10000;
+            const step = (interval / duration) * 100;
 
             this.timer = setInterval(() => {
                 if (!this.isPaused) {
@@ -65,16 +70,14 @@ export default {
     beforeDestroy() {
         this.clearTimer();
     }
-}
+};
 </script>
 
 <template>
-    
     <ul class="story-list pt-2" v-if="stories.length">
-        <li v-for="story in stories" :key="story.id" class="d-block text-center" >
+        <li v-for="story in stories" :key="story.id" class="d-block text-center">
             <div class="story-wrap">
-                <div class="story-item rounded bg-image" :style="'background:url(' + story.thumb + ');'" @click="show = !show; currentStory = story">
-                </div>
+                <div class="story-item rounded bg-image" :style="'background:url(' + story.thumb + ');'" @click="show = !show; currentStory = story"></div>
             </div>
             <div class="story-footer">
                 <span>{{ story.name }}</span>
@@ -83,84 +86,91 @@ export default {
     </ul>
     <ul class="story-list" v-else>
         <li v-for="e in 5" class="placeholder-glow d-block text-center">
-            <div class="story-item rounded bg-image placeholder" style="width: 160px;height: 200px;">
-            </div>
-            <div class="story-footer-placeholder py-2 placeholder d-block rounded">
-            </div>
+            <div class="story-item rounded bg-image placeholder" style="width: 160px; height: 200px;"></div>
+            <div class="story-footer-placeholder py-2 placeholder d-block rounded"></div>
         </li>
     </ul>
     <teleport to="body">
-        <transition
-            enter-active-class="animate__animated animate__fadeIn"
-            leave-active-class="animate__animated animate__fadeOut"
-            mode="out-in"
-        >
+        <transition enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut" mode="out-in">
             <div class="overlay" v-if="appStore.modal"></div>
         </transition>
-        <transition
-            enter-active-class="animate__animated animate__fadeIn"
-            leave-active-class="animate__animated animate__fadeOut"
-            mode="out-in"
-        >
+        <transition enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut" mode="out-in">
             <div class="wrap" v-if="show">
-                
-                <div 
-                    class="story-content" 
-                    @mousedown="pauseTimer" 
-                    @mouseup="resumeTimer" 
-                    @touchstart="pauseTimer"
-                    @touchend="resumeTimer"
-                >
-                <div class="d-flex align-items-center justify-content-between interactive">
-                    <div class="progress-bar">
-                        <div class="progress" :style="{ width: progress + '%' }"></div>
+                <div class="story-content" @mousedown="pauseTimer" @mouseup="resumeTimer" @touchstart="pauseTimer" @touchend="resumeTimer">
+                    <div class="story-image position-relative overflow-hidden h-100" style="z-index: 11; max-width: 400px;">
+                        <img :src="currentStory?.image" class="h-100 w-100 rounded" style="object-fit: contain; position: relative;">
+                        <div class="control-bar">
+                            <div class="progress-bar">
+                                <div class="progress" :style="{ width: progress + '%' }"></div>
+                            </div>
+                            <div class="btn-holder">
+                                <button @click="show = false" class="">
+                                    &times;
+                                </button>
+                            </div>
+                        </div>
+
                     </div>
-                    <button class="btn-close" @click="show=!show"></button>
                 </div>
-                <img :src="currentStory.image" class="img-fluid rounded" style="max-width: 450px; width: 100%; height: 100%; max-height: 95vh;">
-                </div>
-                <div class="overlay" @click="show=!show"></div>
+                <div class="overlay" @click="show = !show"></div>
             </div>
-            
         </transition>
     </teleport>
 </template>
 
 <style lang="sass" scoped>
-.overlay
-    background: rgba(0, 0, 0, .6)
-    position: fixed
-.progress-bar
-    width: 90%
+.control-bar
+    display: flex
+    align-items: center
+    justify-content: center !important
+    position: absolute
+    top: 20px
+    left: 0
+    width: 100% !important
     height: 5px
-    background: rgba(255, 255, 255, 0.3)
-    border-radius: 5px
-    overflow: hidden
-    .progress
-        height: 100%
-        background: #fff
-        transition: all .3s
-.wrap
+.progress-bar
+    width: 80% !important
+.btn-holder
+    padding: 0 0 0 15px
+    display: flex
+    align-items: center
+    button
+        background-color: transparent
+        border: 1px solid #fff
+        border-radius: 50%
+        color: #fff
+        padding: 0
+        height: 30px
+        width: 30px
+        display: flex
+        align-items: center
+        justify-content: center
+        font-size: 1.5rem !important
+        font: inherit
+        cursor: pointer
+        outline: inherit
+.story-content
+    position: relative
+.overlay
+    background: rgba(0, 0, 0, 0.6)
     position: fixed
+    z-index: 10
+.story-image
+    img
+        max-width: 400px !important
+        width: 100%
+.wrap
     display: flex
     align-items: center
     justify-content: center
     width: 100%
     height: 100%
+    position: fixed
     top: 0
     left: 0
     padding: 12px
     z-index: 10
-    .interactive
-        padding: 12px
-        position: absolute
-        width: 100%
-    .story-content
-        width: fit-content
-        position: relative
-        z-index: 11
-    .overlay
-        z-index: 9
+
 .story-list
     display: flex
     align-items: center
@@ -170,22 +180,28 @@ export default {
     padding-bottom: 48px
     margin: 0
     list-style: none
+
     &::-webkit-scrollbar
         display: none
+
     li
         cursor: pointer
         height: 95px
         min-width: 160px
         width: 120px
         margin-right: 8px
-        @media( min-width: 768px )
+
+        @media (min-width: 768px)
             height: 120px
             min-width: 220px
             width: 140px
             margin-right: 12px
-        transition: all .3s
+
+        transition: all 0.3s
+
         &:hover
             transform: scale(1.02)
+
         .story-wrap
             width: 100%
             height: 100%
@@ -193,24 +209,29 @@ export default {
             padding: 3px 3px
             background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)
             border-radius: 18px
+
             .story-item
                 height: 100%
                 width: 100%
                 position: relative
-                transition: transform .3s
+                transition: transform 0.3s
+
 .story-footer
     position: relative
     z-index: 1
     margin-top: 6px
     text-align: start
     padding: 0 8px
+
     span
         font-weight: 600
         text-transform: capitalize
+
 .story-footer-placeholder
     position: relative
     margin-top: 12px
     height: 25px
+
     &::before
         content: ''
         display: block
@@ -222,4 +243,15 @@ export default {
         top: 0
         left: 0
         z-index: -1
+
+.progress-bar
+    top: 10px
+    left: 0
+    height: 5px
+    background-color: #ff0000
+    z-index: 12
+    width: 100%
+.progress
+    height: 100%
+    background-color: #ff0000
 </style>

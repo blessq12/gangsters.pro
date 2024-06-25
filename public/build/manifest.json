@@ -96,7 +96,7 @@
     "src": "resources/fonts/Roboto/Roboto-ThinItalic.woff2"
   },
   "resources/js/app.css": {
-    "file": "assets/app-59291fe6.css",
+    "file": "assets/app-e63f5e0d.css",
     "src": "resources/js/app.css"
   },
   "resources/js/app.js": {
@@ -127,9 +127,9 @@
       "assets/Roboto-ThinItalic-63313fa9.woff2"
     ],
     "css": [
-      "assets/app-59291fe6.css"
+      "assets/app-e63f5e0d.css"
     ],
-    "file": "assets/app-058ebc6d.js",
+    "file": "assets/app-0276d07a.js",
     "isEntry": true,
     "src": "resources/js/app.js"
   },
