@@ -130,18 +130,18 @@ export default {
     height: 5px
 .progress-bar
     width: 80% !important
+    background: rgba(255, 255, 255, 0.2)
+    height: 5px
 .btn-holder
     padding: 0 0 0 15px
     display: flex
     align-items: center
     button
         background-color: transparent
-        border: 1px solid #fff
+        border: 0
         border-radius: 50%
         color: #fff
         padding: 0
-        height: 30px
-        width: 30px
         display: flex
         align-items: center
         justify-content: center
@@ -244,14 +244,7 @@ export default {
         left: 0
         z-index: -1
 
-.progress-bar
-    top: 10px
-    left: 0
-    height: 5px
-    background-color: #ff0000
-    z-index: 12
-    width: 100%
 .progress
-    height: 100%
     background-color: #ff0000
+    transition: all .3s
 </style>
