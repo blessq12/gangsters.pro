@@ -85,15 +85,11 @@ export default {
         </div>
       </swiper-slide>
     </swiper>
-    <div class="swiper-pagination"></div>
-    <!-- <div class="swiper-navigation">
-      <div class="swiper-button-prev"></div>
-      <div class="swiper-button-next"></div>
-    </div> -->
   </div>
 </template>
 
 <style scoped lang="sass">
+
 .swiper-wrapper
   display: flex
   justify-content: center

@@ -173,13 +173,14 @@ export default {
     &::-webkit-scrollbar
         display: none
     li
-        height: 180px
-        min-width: 120px
+        cursor: pointer
+        height: 95px
+        min-width: 160px
         width: 120px
         margin-right: 8px
         @media( min-width: 768px )
-            height: 200px
-            min-width: 140px
+            height: 120px
+            min-width: 220px
             width: 140px
             margin-right: 12px
         transition: all .3s
@@ -200,7 +201,9 @@ export default {
 .story-footer
     position: relative
     z-index: 1
-    margin-top: 12px
+    margin-top: 6px
+    text-align: start
+    padding: 0 8px
     span
         font-weight: 600
         text-transform: capitalize
