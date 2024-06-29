@@ -26,7 +26,7 @@ export default {
         console.log(this.appStore.company)
     },
     data: () => ({
-        modalDebug: true
+        modalDebug: false
     }),
     computed: {
         ...mapStores(

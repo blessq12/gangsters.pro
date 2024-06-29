@@ -78,6 +78,13 @@ export default {
                 });
                 observer.observe(this.$refs[category.uri + '-section'][0]);
             });
+        },
+        hideTooltip(event) {
+            const tooltipTrigger = event.currentTarget;
+            const tooltipInstance = Tooltip.getInstance(tooltipTrigger);
+            if (tooltipInstance) {
+                tooltipInstance.hide();
+            }
         }
     },
     mounted() {
@@ -158,35 +165,27 @@ export default {
                                 <button 
                                     type="button" 
                                     :class="['favorite', 'rounded', { active: localStore.checkExist('fav', product) }]" 
-                                    @click="localStore.manageStore('fav', product)"
+                                    @click="localStore.manageStore('fav', product); hideTooltip($event)"
                                     data-bs-toggle="tooltip" 
                                     data-bs-placement="top" 
                                     :title="localStore.checkExist('fav', product) ? 'Удалить из избранного' : 'Добавить в избранное'"
                                 >
                                     <i :class="localStore.checkExist('fav', product) ? 'fa fa-heart' : 'fa fa-heart-o'"></i>
-                                    {{ localStore.checkExist('fav', product) ? '' : '+' }}
+                                    {{ localStore.checkExist('fav', product) ? 'Убрать' : 'Добавить' }}
                                 </button>
-                                <button
-                                    type="button" 
-                                    class="additional rounded"
-                                    @click="appStore.additional = !appStore.additional; appStore.currentAdditional = product"
-                                    data-bs-toggle="tooltip" 
-                                    data-bs-placement="top" 
-                                    title="Подробнее"
-                                >i</button>
                             </div>
                         </div>
                         <div class="content">
                             <span>{{ product.name }}</span>
                         </div>
                         <div class="footer">
-                            
+                            <div class="d-flex align-items-center justify-content-start">
                             <transition 
                                 enter-active-class="animate__animated animate__faster animate__fadeIn"
                                 leave-active-class="animate__animated animate__faster animate__fadeOut"
                                 mode="out-in"
                             >
-                                <button type="button" class="btn rounded btn-main" @click="localStore.manageStore('cart', product)" v-if="!localStore.checkExist('cart', product)">
+                                <button type="button" class="btn rounded btn-main m-0" @click="localStore.manageStore('cart', product)" v-if="!localStore.checkExist('cart', product)">
                                     <i class="fa fa-shopping-cart" style="margin-right: 6px;"></i> В корзину
                                 </button>
                                 <div class="prod-qty" v-else>
@@ -195,6 +194,15 @@ export default {
                                     <button class="btn rounded" @click="localStore.manageQty(true, product)">+</button>
                                 </div>
                             </transition>
+                            <button
+                                type="button" 
+                                class="additional"
+                                @click="appStore.additional = !appStore.additional; appStore.currentAdditional = product; hideTooltip($event)"
+                                data-bs-toggle="tooltip" 
+                                data-bs-placement="top" 
+                                title="Подробнее"
+                            >i</button>
+                            </div>
                             <div class="d-block">
                                 <span class="d-block price" data-bs-toggle="tooltip" data-bs-placement="top" title="Цена указана за набор">{{ product.price ?? 'Не указано' }}</span>
                                 <span class="d-block weight" data-bs-toggle="tooltip" data-bs-placement="top" title="Вес (масса нетто)">{{ product.weight ?? 'Не указано' }}</span>
@@ -209,8 +217,12 @@ export default {
 </template>
 
 <style lang="sass" scoped>
+.btn-main
+    background: $color-main !important
+    color: #fff
+    &:hover
+        background: darken($color-main, 60%)
 .prod-qty
-    margin-right: 10px
     display: flex
     align-items: center
     button
@@ -286,7 +298,7 @@ export default {
             margin: 12px 0
             min-height: 45px
             span
-                font-weight: 400
+                font-weight: 500
                 font-size: 1.1rem
                 display: block
                 line-height: 1
@@ -294,6 +306,43 @@ export default {
             display: flex
             align-items: center
             justify-content: space-between
+            .additional
+                display: flex
+                background: transparent
+                align-items: center
+                justify-content: center
+                border-top: 1px solid $color-main
+                border-bottom: 1px solid $color-main
+                border-right: 1px solid $color-main
+                border-radius: 0 16px 16px 0
+                position: relative
+                margin: unset !important
+                max-height: 47px
+                font-weight: 800
+                height: 100%
+                font-size: 1.3rem
+                transition: all .3s
+                &:hover
+                    background: transparent !important
+                    color: $color-main
+                &::before
+                    transition: all .3s
+                    position: absolute
+                    transform: scale(1.05)
+                    z-index: -1
+                    left: -50%
+                    height: 100%
+                    width: 100%
+                    background: transparent !important
+                    border-top: 1px solid $color-main
+                    border-bottom: 1px solid $color-main
+                    content: ''
+                    background: #dedede
+                    padding: unset
+                    margin: unset
+                    max-height: 47px
+                    height: 100%
+                
             button
                 background: #dedede
                 border: unset
@@ -341,32 +390,29 @@ export default {
     &.show
         min-width: 74px
 .favorite
-    border: unset
     padding: unset
     margin: unset
-    background: #dedede
-    padding: 8px
-    margin-right: 8px
-    font-size: 1.2rem
+    border: unset
+    font-size: .8rem
+    color: #fff
+    display: flex
+    align-items: center
+    justify-content: center
+    background: transparent
+    border: 1px solid red
+    padding: 8px 12px
     transition: all .3s
-    &:hover    
-        background: darken($color-main, 10%)
+    i
+        margin-right: 6px
+    &:hover
+        border-color: darken(red, 40%)
+        background: darken(red, 40%)
         color: #fff
     &.active
         background: red
         color: #fff
-        padding: 8px 15px
-.additional
-    background: transparent
-    border: unset
-    padding: unset
-    margin: unset
-    background: #dedede
-    padding: 8px 22px
-    font-size: 1.2rem
-    &:hover    
-        background: darken($color-main, 10%)
-        color: #fff
+        border-color: red
+
 .category
     position: relative
     .scrooll-point
