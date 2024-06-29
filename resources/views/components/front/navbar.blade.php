@@ -24,7 +24,7 @@
             </div>
             <div class="col d-lg-none d-flex justify-content-center">
                 <shedule
-                    class="d-lg-none"
+                    class="d-flex d-lg-none"
                     :shedule='@json($company->frontShedules())'
                 ></shedule>
             </div>

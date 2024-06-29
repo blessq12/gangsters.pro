@@ -104,7 +104,7 @@ export default {
 .wrap
     position: absolute
     top: 140%
-    left: -50%
+    left: calc(50% - 175px)
     width: 100%
     z-index: 100
     min-width: 350px
@@ -134,5 +134,6 @@ export default {
             background: red
     .time
         font-weight: 500
-        white-space: nowrap
+        @media(min-width: 768px)
+            white-space: nowrap
 </style>
