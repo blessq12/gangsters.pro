@@ -63,7 +63,7 @@ export default {
 </script>
 
 <template>
-    <div class="shedule position-relative" @mouseover="hover" @mouseleave="unHover()">
+    <div class="shedule position-relative" @mouseover="hover" @mouseleave="unHover()" @touchstart="hover" @touchend="unHover()">
         <div :class="['status', isOpen() ? 'open' : 'close']">
         </div>
         <div class="time">
@@ -81,7 +81,7 @@ export default {
             mode="out-in"
         >
             <div class="wrap" v-show="isHovered">
-                <div class="popup rounded" @mouseover="hover" @mouseleave="unHover()">
+                <div class="popup rounded" @mouseover="hover" @mouseleave="unHover()" @touchstart="hover" @touchend="unHover()">
                     <div class="popup-content">
                         <div class="popup-title">
                             Расписание работы
