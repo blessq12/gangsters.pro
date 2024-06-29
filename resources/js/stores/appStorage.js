@@ -8,7 +8,8 @@ export const appStore = defineStore('app', {
         currentAdditional: null,
         device: null,
         links: null,
-        company: null
+        company: null,
+        welcome: null
     }),
     actions: {
         defineDevice() {
@@ -21,6 +22,18 @@ export const appStore = defineStore('app', {
                 this.device = 'desktop';
             }
             return this.device;
+        },
+        welcomeCtaShow() {
+            const welcome = localStorage.getItem('welcome');
+
+            if (welcome === null) {
+                localStorage.setItem('welcome', 'true');
+                this.welcome = true;
+            }
+
+            if (welcome !== undefined && welcome !== null && (welcome === 'true' || welcome === 'false')) {
+                this.welcome = welcome === 'true';
+            }
         }
     },
     getters:{}

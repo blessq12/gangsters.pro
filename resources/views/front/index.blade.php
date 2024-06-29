@@ -4,6 +4,7 @@
 @section('desc', 'Самая сочная еда на любой повож и без повода вовсе')
 
 @section('content')
+    <gcoins></gcoins>
     <x-front.stories></x-front.stories>
     <x-front.banner></x-front.banner>
     <x-front.catalog></x-front.catalog>

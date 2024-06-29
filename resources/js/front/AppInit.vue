@@ -13,6 +13,7 @@ export default {
         this.localStore.loadStorage()
         this.userStore.loadStore()
         this.appStore.defineDevice()
+        this.appStore.welcomeCtaShow()
         if (this.modalDebug) {
             this.appStore.modal = true;
             this.appStore.modalName = 'user';
