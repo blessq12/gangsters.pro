@@ -12,7 +12,11 @@ export default {
     mounted() {
         this.localStore.loadStorage()
         this.userStore.loadStore()
-        this.appStore.defineDevice()  
+        this.appStore.defineDevice()
+        if (this.modalDebug) {
+            this.appStore.modal = true;
+            this.appStore.modalName = 'user';
+        }
         if (this.links && Object.keys(this.links).length > 0) {
             this.appStore.links = this.links;
         }
@@ -21,6 +25,9 @@ export default {
         }
         console.log(this.appStore.company)
     },
+    data: () => ({
+        modalDebug: true
+    }),
     computed: {
         ...mapStores(
             localStore,

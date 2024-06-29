@@ -2,6 +2,7 @@
 import { mapStores } from 'pinia';
 import { appStore } from '../../stores/appStorage';
 import { localStore } from '../../stores/localStore';
+import Tooltip from 'bootstrap/js/dist/tooltip';
 
 export default {
     props: {
@@ -83,6 +84,9 @@ export default {
         this.currentCategory = this.goods[0].uri;
         this.categoryBarObserver();
         this.categoryObserver();
+        new Tooltip(document.body, {
+            selector: "[data-bs-toggle='tooltip']",
+        });
     },
     watch: {
         currentCategory() {
@@ -147,6 +151,7 @@ export default {
             </div>
             <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-3 mb-4 category-list">
                 <div class="col rounded" v-for="product in category.products" :key="product.id">
+                    <div class="hover-over"></div>
                     <div class="product">
                         <div class="header bg-image rounded" :style="'background: url('+ showImage(product) +')'">
                             <div class="badge">
@@ -154,6 +159,9 @@ export default {
                                     type="button" 
                                     :class="['favorite', 'rounded', { active: localStore.checkExist('fav', product) }]" 
                                     @click="localStore.manageStore('fav', product)"
+                                    data-bs-toggle="tooltip" 
+                                    data-bs-placement="top" 
+                                    :title="localStore.checkExist('fav', product) ? 'Удалить из избранного' : 'Добавить в избранное'"
                                 >
                                     <i :class="localStore.checkExist('fav', product) ? 'fa fa-heart' : 'fa fa-heart-o'"></i>
                                     {{ localStore.checkExist('fav', product) ? '' : '+' }}
@@ -162,6 +170,9 @@ export default {
                                     type="button" 
                                     class="additional rounded"
                                     @click="appStore.additional = !appStore.additional; appStore.currentAdditional = product"
+                                    data-bs-toggle="tooltip" 
+                                    data-bs-placement="top" 
+                                    title="Подробнее"
                                 >i</button>
                             </div>
                         </div>
@@ -169,16 +180,24 @@ export default {
                             <span>{{ product.name }}</span>
                         </div>
                         <div class="footer">
-
-                            <button type="button" class="btn rounded" @click="localStore.manageStore('cart', product)" v-if="!localStore.checkExist('cart', product)">
-                                + В корзину
-                            </button>
-                            <button type="button" class="btn rounded active" @click="localStore.manageStore('cart', product)" v-else>
-                                В корзине
-                            </button>
+                            
+                            <transition 
+                                enter-active-class="animate__animated animate__faster animate__fadeIn"
+                                leave-active-class="animate__animated animate__faster animate__fadeOut"
+                                mode="out-in"
+                            >
+                                <button type="button" class="btn rounded btn-main" @click="localStore.manageStore('cart', product)" v-if="!localStore.checkExist('cart', product)">
+                                    <i class="fa fa-shopping-cart" style="margin-right: 6px;"></i> В корзину
+                                </button>
+                                <div class="prod-qty" v-else>
+                                    <button class="btn rounded" @click="localStore.manageQty(false, product)">-</button>
+                                    <input type="text" class="form-control" :value="localStore.getQty(product)">
+                                    <button class="btn rounded" @click="localStore.manageQty(true, product)">+</button>
+                                </div>
+                            </transition>
                             <div class="d-block">
-                                <span class="d-block price">{{ product.price ?? 'Не указано' }}</span>
-                                <span class="d-block weight">{{ product.weight ?? 'Не указано' }}</span>
+                                <span class="d-block price" data-bs-toggle="tooltip" data-bs-placement="top" title="Цена указана за набор">{{ product.price ?? 'Не указано' }}</span>
+                                <span class="d-block weight" data-bs-toggle="tooltip" data-bs-placement="top" title="Вес (масса нетто)">{{ product.weight ?? 'Не указано' }}</span>
                             </div>
                         </div>
                     </div>
@@ -190,6 +209,36 @@ export default {
 </template>
 
 <style lang="sass" scoped>
+.prod-qty
+    margin-right: 10px
+    display: flex
+    align-items: center
+    button
+        border: $color-main 1px solid
+        background: $color-main !important
+        margin-right: 0 !important
+        color: #fff
+        transition: all .3s
+        &:first-child
+            border-radius: 12px 0 0 12px !important
+            margin: 0
+        &:last-child
+            border-radius: 0 12px 12px 0 !important
+        &:hover
+            background: $color-main
+            color: #fff
+    .form-control
+        border-radius: 0
+        border-left: none
+        border-right: none
+        width: 80px
+        min-height: 48px
+        height: 100%
+        display: flex
+        align-items: center
+        justify-content: center
+        text-align: center
+
 .category
     .col
         max-width: unset !important
@@ -206,13 +255,26 @@ export default {
             padding: 12px
             min-width: 320px
             width: fit-content
+            position: relative
+            overflow: hidden
             @media(min-width: 768px)
                 min-width: 260px
             @media(min-width: 992px)
                 min-width: 25%
                 width: 25%
+            .hover-over
+                z-index: -1
+                opacity: 0
+                position: absolute
+                transition: all .7s ease-in-out
+                top: 0
+                left: 0
+                width: 100%
+                height: 100%
+                background: url('/images/placeholder/pattern-50.png') no-repeat center center / cover
             &:hover
-                background: rgba(212, 212, 212, 0.265)
+                .hover-over
+                    opacity: .4
     .product
         display: block
         

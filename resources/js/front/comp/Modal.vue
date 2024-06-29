@@ -48,7 +48,7 @@ export default {
                                 <h4 class="mb-0">
                                     <template v-if="appStore.modalName === 'cart'">Корзина</template>
                                     <template v-else-if="appStore.modalName === 'fav'">Избранное</template>
-                                    <template v-else-if="appStore.modalName === 'user'">Пользователь</template>
+                                    <template v-else-if="appStore.modalName === 'user'">Меню</template>
                                 </h4>
                                 <button class="btn-close" @click.stop="appStore.modal = false"></button>
                             </div>

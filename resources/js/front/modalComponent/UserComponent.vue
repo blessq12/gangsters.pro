@@ -126,8 +126,7 @@ export default {
 }
 </script>
 
-<template>
-
+<template>    
     <transition
         enter-active-class="animate__animated animate__fadeIn"
         leave-active-class="animate__animated animate__fadeOut"
@@ -180,10 +179,10 @@ export default {
                                 </div>
                             </div>
                             <div class="form-group mt-4 d-flex align-items-center">
-                                <button type="submit" class="btn rounded btn-light">
+                                <button type="submit" class="btn rounded">
                                     Отправить
                                 </button>
-                                <a href="" @click.prevent="resetPass(loginData.email)" class="text-md-dark text-light mx-3"> Забыли пароль?</a>
+                                <a href="" @click.prevent="resetPass(loginData.email)" class="text-md-dark text-light mx-3 text-primary"> Забыли пароль?</a>
                             </div>
                         </form>
                         <form @submit.prevent="validate('register')" v-else>
@@ -329,6 +328,16 @@ export default {
 </template>
 
 <style lang="sass" scoped>
+.btn-group
+    button
+        background: unset
+        color: $color-main
+        &:hover
+            background: $color-main
+            color: #fff
+        &.active
+            background: $color-main
+            color: #fff
 nav
     
     ul
@@ -340,16 +349,17 @@ nav
                     content: '|'
                     margin-right: 5px
 .btn-group
+    width: 100%
     button
-        border: 0
-        background: #fff
-    button:first-child
-        border-radius: 18px 0 0 18px !important
-    button:last-child
-        border-radius: 0 18px 18px 0 !important
+        padding: 6px 15px !important
+        border: 1px solid $color-main
+        &:first-child
+            border-radius: 16px 0 0 16px !important
+        &:last-child
+            border-radius: 0 16px 16px 0 !important
     .active
-        background: orange
-
+        background: $color-main
+        color: #fff
 .nav-link
     transition: color 0.3s ease
     &:hover

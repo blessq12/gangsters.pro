@@ -70,17 +70,19 @@ computed: {
     position: fixed
     bottom: 0
     width: 100%
-    background: #fff
+    color: #fff
+    background: $color-main
     padding: 12px 0
     z-index: 10
 button.footer
-    background: #dedede
-    border: unset
+    background: transparent
+    color: #fff
+    border: 1px solid #fff
     padding: 14px 18px
     white-space: nowrap
     &:hover
-        background: #2e2e2e
-        color: #fff
+        background: #fff
+        color: $color-main
     &.active
         background: orange
 </style>

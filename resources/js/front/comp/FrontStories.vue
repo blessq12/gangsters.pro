@@ -188,13 +188,11 @@ export default {
         cursor: pointer
         height: 95px
         min-width: 160px
-        width: 120px
         margin-right: 8px
 
         @media (min-width: 768px)
             height: 120px
             min-width: 220px
-            width: 140px
             margin-right: 12px
 
         transition: all 0.3s

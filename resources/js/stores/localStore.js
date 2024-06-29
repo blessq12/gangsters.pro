@@ -94,6 +94,10 @@ export const localStore = defineStore('local', {
             localStorage.setItem(storeName, JSON.stringify([]))
             toast.success( storeName == 'cart' ? 'Корзина очищена' : 'Избранное очищено' )
         },
+        getQty(product){
+            let index = this.cart.findIndex(e => e.id == product.id)
+            return this.cart[index].qty
+        },
         async createOrder(data)
         {
             try {
