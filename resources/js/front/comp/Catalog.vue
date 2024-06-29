@@ -160,8 +160,27 @@ export default {
                 <div class="col rounded" v-for="product in category.products" :key="product.id">
                     <div class="hover-over"></div>
                     <div class="product">
-                        <div class="header bg-image rounded" :style="'background: url('+ showImage(product) +')'">
-                            <div class="badge">
+                        <div class="header bg-image rounded position-relative" :style="'background: url('+ showImage(product) +')'">
+                            
+                            <transition
+                                enter-active-class="animate__animated animate__faster animate__fadeIn"
+                                leave-active-class="animate__animated animate__faster animate__fadeOut"
+                                mode="out-in"
+                            >
+                                <div class="counter" v-if="localStore.checkExist('cart', product)">
+                                    
+                                    <transition 
+                                        enter-active-class="animate__animated animate__faster animate__fadeIn"
+                                        leave-active-class="animate__animated animate__faster animate__fadeOut"
+                                        mode="out-in"
+                                    >
+                                        <span v-if="localStore.getQty(product) > 0" :key="localStore.getQty(product)">{{ localStore.getQty(product) }}</span>
+                                    </transition>
+                                    
+                                </div>
+                            </transition>
+                            
+                            <div class="badge position-relative" style="z-index: 1;">
                                 <button 
                                     type="button" 
                                     :class="['favorite', 'rounded', { active: localStore.checkExist('fav', product) }]" 
@@ -190,7 +209,6 @@ export default {
                                 </button>
                                 <div class="prod-qty" v-else>
                                     <button class="btn rounded" @click="localStore.manageQty(false, product)">-</button>
-                                    <input type="text" class="form-control" :value="localStore.getQty(product)">
                                     <button class="btn rounded" @click="localStore.manageQty(true, product)">+</button>
                                 </div>
                             </transition>
@@ -231,6 +249,15 @@ export default {
         margin-right: 0 !important
         color: #fff
         transition: all .3s
+        min-width: 60px
+        max-height: 47px
+        padding: unset
+        display: flex
+        align-items: center
+        justify-content: center
+        font-size: 1.3rem
+        &:hover
+            background: lighten($color-main, 30%) !important
         &:first-child
             border-radius: 12px 0 0 12px !important
             margin: 0
@@ -294,6 +321,23 @@ export default {
             min-height: 160px
             position: relative
             padding: 6px
+            .counter
+                position: absolute
+                top: 0
+                left: 0
+                display: flex
+                align-items: center
+                justify-content: center
+                width: 100%
+                height: 100%
+                z-index: 1
+                background: rgba(0, 0, 0, .4)
+                padding: 4px 8px
+                border-radius: 12px
+                span
+                    font-size: 5rem
+                    font-weight: 700
+                    color: #fff
         .content
             margin: 12px 0
             min-height: 45px
@@ -430,6 +474,7 @@ export default {
     &.scrolled
         border-bottom: 1px solid #dedede
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.4)
+        z-index: 2
     ul
         display: flex
         align-items: center
