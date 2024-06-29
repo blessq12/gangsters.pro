@@ -32,4 +32,15 @@ class Company extends Model
     {
         return $this->hasMany(WorkShedule::class);
     }
+    public function frontShedules()
+    {
+        $shedules = $this->workShedules()->get();
+
+        foreach ($shedules as $shedule) {
+            $shedule->open_time = \Carbon\Carbon::parse($shedule->open_time)->format('Y-m-d H:i:s');
+            $shedule->close_time = \Carbon\Carbon::parse($shedule->close_time)->format('Y-m-d H:i:s');
+        }
+
+        return $shedules;
+    }
 }

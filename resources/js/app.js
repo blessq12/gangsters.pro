@@ -1,4 +1,3 @@
-
 import './bootstrap';
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
@@ -7,9 +6,6 @@ import Toast from 'vue-toastification';
 import { useToast } from 'vue-toastification';
 import "vue-toastification/dist/index.css";
 import moment from 'moment';
-
-const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
 
 /**
  * Next, we will create a fresh Vue application instance. You may then begin

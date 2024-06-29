@@ -53,18 +53,9 @@
             </div>
             @if (Request::is('/'))
                 <div class="col d-flex justify-content-end">
-                    <div class="shedule d-none d-lg-flex">
-                        <div class="status {{ (now()->format('H:i') > $currentDayShedule->close_time || now()->format('H:i') < $currentDayShedule->open_time) ? 'closed' : 'open' }}"></div>
-                        @if (now()->format('H:i') > $currentDayShedule->close_time || now()->format('H:i') < $currentDayShedule->open_time)
-                            <span class="time">
-                                Закрыто до {{ \Carbon\Carbon::parse($currentDayShedule->nextDayOpenTime())->format('H:i') }}
-                            </span>
-                        @else
-                            <span class="time">
-                                Открыто до {{ \Carbon\Carbon::parse($currentDayShedule->close_time)->format('H:i') }}
-                            </span>
-                            @endif
-                    </div>
+                    <shedule
+                        :shedule='@json($company->frontShedules())'
+                    ></shedule>
                     <ul class="shop-links">
                         <li>
                             <nav-button 

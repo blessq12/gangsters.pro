@@ -23,7 +23,6 @@ export default {
         if (this.company) {
             this.appStore.company = this.company;
         }
-        console.log(this.appStore.company)
     },
     data: () => ({
         modalDebug: false
