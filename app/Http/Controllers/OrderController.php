@@ -90,4 +90,9 @@ class OrderController extends Controller
 
         return true;
     }
+
+    public function updateOrder(Request $request)
+    {
+        \Illuminate\Support\Facades\Log::info('Update Order Request: ' . json_encode($request->all()));
+    }
 }

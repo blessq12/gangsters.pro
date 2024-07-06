@@ -38,7 +38,8 @@ class FrontpadService
             'home' => $siteOrder->house ?? '',
             'pod' => $siteOrder->staircase ?? '',
             'et' => $siteOrder->floor ?? '',
-            'apart' => $siteOrder->apartment ?? ''
+            'apart' => $siteOrder->apartment ?? '',
+            'hook_url' => env('APP_URL') . '/api/order/update',
         ];
 
         foreach ($items as $item) {
@@ -49,6 +50,7 @@ class FrontpadService
         try {
             $response = $this->client->post($this->api_url . '?new_order', ['form_params' => $order]);
             Log::debug('Order created without server errors.');
+            Log::info("Order sent to FrontPad: " . json_encode($order));
         } catch (\Throwable $th) {
             Log::error("Error during create new order on FrontPad: {$th->getMessage()}");
             return 'Error during create new order on FrontPad. Error: ' . $th->getMessage();

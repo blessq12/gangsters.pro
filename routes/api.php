@@ -29,4 +29,5 @@ Route::controller(ApiClientAuthController::class)->prefix('auth')->group(functio
 
 Route::controller(OrderController::class)->prefix('orders')->group(function () {
     Route::post('create', 'createOrder');
+    Route::post('update', 'updateOrder');
 });

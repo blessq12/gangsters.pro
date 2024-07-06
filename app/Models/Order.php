@@ -7,6 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
 {
+    
+    /**
+     * Order statuses [1, 10, 11]
+     * 1 - Новый
+     * 10 - Списан
+     * 11 - Выполнен
+     */
+
     use HasFactory;
     protected $fillable = [
         'name',
