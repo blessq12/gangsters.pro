@@ -1,0 +1,80 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\Order;
+use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Log;
+
+class FrontpadService
+{
+    protected $api_secret;
+    protected $api_url;
+    protected $client;
+
+    public function __construct()
+    {
+        $this->api_secret = env('FRONTPAD_API_SECRET');
+        $this->api_url = env('FRONTPAD_API_URL');
+        $this->client = new Client();
+    }
+
+    public function createOrder(Order $siteOrder)
+    {
+        $siteOrder = Order::find($siteOrder->id);
+        $items = $siteOrder->items;
+
+        Log::debug("Creating order: id = {$siteOrder->id}");
+
+        $order = [
+            'secret' => $this->api_secret,
+            'product' => [],
+            'product_kol' => [],
+            'name' => $siteOrder->name,
+            'phone' => $siteOrder->tel,
+            'person' => $siteOrder->personQty,
+            'descr' => $siteOrder->comment,
+            'street' => $siteOrder->street ?? '',
+            'home' => $siteOrder->house ?? '',
+            'pod' => $siteOrder->staircase ?? '',
+            'et' => $siteOrder->floor ?? '',
+            'apart' => $siteOrder->apartment ?? ''
+        ];
+
+        foreach ($items as $item) {
+            $order['product'][] = intval($item->sku);
+            $order['product_kol'][] = intval($item->qty);
+        }
+
+        try {
+            $response = $this->client->post($this->api_url . '?new_order', ['form_params' => $order]);
+            Log::debug('Order created without server errors.');
+        } catch (\Throwable $th) {
+            Log::error("Error during create new order on FrontPad: {$th->getMessage()}");
+            return 'Error during create new order on FrontPad. Error: ' . $th->getMessage();
+        }
+    }
+
+    public function getProducts()
+    {
+        try {
+            $response = $this->client->post($this->api_url . '?get_products', ['form_params' => ['secret' => $this->api_secret]]);
+            $data = json_decode($response->getBody()->getContents());
+
+            $result = [];
+            foreach ($data->product_id as $k => $prod_id) {
+                $result[] = [
+                    'id' => $prod_id,
+                    'name' => $data->name[$k],
+                    'price' => $data->price[$k],
+                    'sale' => $data->sale[$k] ? true : false,
+                ];
+            }
+
+            return $result;
+        } catch (\Throwable $th) {
+            Log::error("Error fetching products from FrontPad: {$th->getMessage()}");
+            return [];
+        }
+    }
+}

@@ -170,6 +170,7 @@ return [
         App\Providers\RouteServiceProvider::class,
         App\Providers\OrderServiceProvider::class,
         Intervention\Image\ImageServiceProvider::class,
+        App\Providers\FrontPadServiceProvider::class,
     ])->toArray(),
 
     /*
@@ -184,6 +185,7 @@ return [
     */
 
     'aliases' => Facade::defaultAliases()->merge([
+        'Frontpad' => App\Facades\Frontpad::class,
         'Image' => Intervention\Image\Facades\Image::class,
     ])->toArray(),
 

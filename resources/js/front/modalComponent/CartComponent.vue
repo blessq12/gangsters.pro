@@ -106,8 +106,12 @@ export default {
         })),
         order: data,
       };
-      this.localStore.createOrder(req).then(() => {
+      this.localStore.createOrder(req)
+        .then(() => {
         this.orderCreated = true;
+      })
+      .catch((err) => {
+        console.log(err);
       });
     },
   },
