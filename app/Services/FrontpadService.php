@@ -40,6 +40,7 @@ class FrontpadService
             'et' => $siteOrder->floor ?? '',
             'apart' => $siteOrder->apartment ?? '',
             'hook_url' => env('APP_URL') . '/api/order/update',
+            'hook_status' => [1, 10, 11],
         ];
 
         foreach ($items as $item) {
