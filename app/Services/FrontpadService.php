@@ -49,12 +49,12 @@ class FrontpadService
 
         try {
             $response = $this->client->post($this->api_url . '?new_order', ['form_params' => $order]);
+            Log::info("Order sent to FrontPad: " . json_encode($order));
             $res = json_decode($response->getBody()->getContents());
             if ($res->result == 'success') {
                 $siteOrder->frontpad_id = $res->order_id;
                 $siteOrder->save();
             }
-            Log::info("Order sent to FrontPad: " . json_encode($order));
             Log::info("Response from FrontPad: " . $response->getBody()->getContents());
         } catch (\Throwable $th) {
             Log::error("Error during create new order on FrontPad: {$th->getMessage()}");
