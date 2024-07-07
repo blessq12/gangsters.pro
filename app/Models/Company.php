@@ -32,6 +32,12 @@ class Company extends Model
     {
         return $this->hasMany(WorkShedule::class);
     }
+
+    public function currentDayShedule()
+    {
+        return $this->workShedules()->where('day_eng', now()->format('l'))->first();
+    }
+
     public function frontShedules()
     {
         $shedules = $this->workShedules()->get();

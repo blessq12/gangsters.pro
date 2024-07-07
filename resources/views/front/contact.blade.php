@@ -18,6 +18,7 @@
         {{-- yandex map and testimonials --}}
         <div class="row mb-4">
             <div class="col-lg-8 mb-4 mb-lg-0">
+                <h4 class="mb-3" style="font-weight: 500;">Мы на карте</h4>
                 <div style="position: relative; overflow: hidden;" class="rounded">
                     <a href="https://yandex.ru/maps/org/gangster_s_sushi/82888444717/?utm_medium=mapframe&utm_source=maps" style="color: #EEE; font-size: 12px; position: absolute; top: 0;">
                         Gangster's sushi
@@ -29,6 +30,7 @@
                 </div>
             </div>
             <div class="col col-lg-4">
+                <h4 class="mb-3" style="font-weight: 500;">Отзывы</h4>
                 <div style="width: 100%; height: 400px; overflow: hidden; position: relative;">
                     <iframe style="width: 100%; height: 100%; border: 1px solid #e6e6e6; border-radius: 8px; box-sizing: border-box;" src="https://yandex.ru/maps-reviews-widget/82888444717?comments"></iframe>
                     <a href="https://yandex.ru/maps/org/gangster_s_sushi/82888444717/" target="_blank" style="box-sizing: border-box; text-decoration: none; color: #b3b3b3; font-size: 10px; font-family: YS Text, sans-serif; position: absolute; bottom: 8px; width: 100%; text-align: center; left: 0; overflow: hidden; text-overflow: ellipsis; display: block; max-height: 14px; white-space: nowrap; padding: 0 16px;">

@@ -1,0 +1,23 @@
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css')
+
+#about-blocks 
+    .card
+        background: linear-gradient(135deg, $color-main, darken($color-main, 15%))
+        color: white
+        position: relative
+        height: 100%
+        display: flex
+        flex-direction: column
+        transition: transform 0.3s ease
+        &:hover
+            transform: translateY(-10px)
+        &:before
+            content: "\f0a8"  // Unicode for pistol icon in Font Awesome
+            font-family: 'FontAwesome'
+            position: absolute
+            transform: rotate(45deg)
+            top: -60px
+            left: -25px
+            font-size: 100px
+            color: white
+            opacity: 0.1
