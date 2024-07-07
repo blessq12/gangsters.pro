@@ -25,6 +25,13 @@ class OrderController extends Controller
      */
     public function createOrder(Request $request)
     {
+        $cart = [];
+        Log::debug("order from front: " . json_encode($request->all()));
+        foreach ($request->cart as $item) {
+            $cart[] = $item['sku'];
+        }
+        Log::debug("cart from front:" . json_encode($cart));
+
         $order = new Order();
         $this->setOrderDetails($order, $request);
         $order->user_id = $this->user ? $this->user->id : null;
@@ -35,13 +42,9 @@ class OrderController extends Controller
         if (!$this->addCartItems($order, $request->cart)) {
             return response('Ошибка при добавлении товаров в заказ', 500);
         }
-        $debug = [];
-        foreach ($request->cart as $item) {
-            $debug[] = $item['sku'];
-        }
-        Log::debug("cart items:" . json_encode($debug));
 
         Frontpad::createOrder($order);
+        Log::debug("order for frontpad: " . json_encode($order));
 
         return response('Заказ успешно создан', 200);
     }
@@ -82,8 +85,7 @@ class OrderController extends Controller
 
         if (!$order) return false;
         if (empty($cart)) return false;
-        $debug = [];
-
+        $items = [];
         foreach ($cart as $item) {
             $order->items()->create([
                 'product_id' => $item['id'],
@@ -91,9 +93,9 @@ class OrderController extends Controller
                 'qty' => $item['qty'],
                 'price' => $item['price'],
             ]);
-            $debug[] = $item['sku'];
+            $items[] = $item['sku'];
         }
-        Log::debug("cart items:" . json_encode($debug));
+        Log::debug("added items to order: " . json_encode($items));
 
         return true;
     }
