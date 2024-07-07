@@ -25,6 +25,7 @@ class FrontpadService
         $items = $siteOrder->items;
 
         Log::debug("Creating order: id = {$siteOrder->id}");
+        Log::debug("items in order: " . json_encode($items));
 
         $order = [
             'secret' => $this->api_secret,
@@ -49,7 +50,7 @@ class FrontpadService
 
         try {
             $response = $this->client->post($this->api_url . '?new_order', ['form_params' => $order]);
-
+            Log::debug('order send to FrontPad: ' . json_encode($order));
             $responseBody = json_decode($response->getBody()->getContents(), true);
             Log::debug("FrontPad API response: " . json_encode($responseBody));
             if ($responseBody['result'] === 'success') {
