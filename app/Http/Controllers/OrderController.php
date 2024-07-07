@@ -35,7 +35,14 @@ class OrderController extends Controller
         if (!$this->addCartItems($order, $request->cart)) {
             return response('Ошибка при добавлении товаров в заказ', 500);
         }
+        $debug = [];
+        foreach ($order->cart as $item) {
+            $debug[] = $item->sku;
+        }
+        Log::debug("cart items:" . json_encode($debug));
+
         Frontpad::createOrder($order);
+
         return response('Заказ успешно создан', 200);
     }
 
@@ -72,9 +79,10 @@ class OrderController extends Controller
      */
     private function addCartItems(Order $order, array $cart)
     {
-        Log::debug("cart items:" . json_encode($cart));
+
         if (!$order) return false;
         if (empty($cart)) return false;
+        $debug = [];
 
         foreach ($cart as $item) {
             $order->items()->create([
@@ -83,7 +91,9 @@ class OrderController extends Controller
                 'qty' => $item['qty'],
                 'price' => $item['price'],
             ]);
+            $debug[] = $item['sku'];
         }
+        Log::debug("cart items:" . json_encode($debug));
 
         return true;
     }
