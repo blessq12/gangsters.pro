@@ -49,6 +49,11 @@ class FrontpadService
 
         try {
             $response = $this->client->post($this->api_url . '?new_order', ['form_params' => $order]);
+            $res = json_decode($response->getBody()->getContents());
+            if ($res->result == 'success') {
+                $siteOrder->frontpad_id = $res->order_id;
+                $siteOrder->save();
+            }
             Log::info("Order sent to FrontPad: " . json_encode($order));
             Log::info("Response from FrontPad: " . $response->getBody()->getContents());
         } catch (\Throwable $th) {
@@ -78,5 +83,20 @@ class FrontpadService
             Log::error("Error fetching products from FrontPad: {$th->getMessage()}");
             return [];
         }
+    }
+
+    public function updateOrder(Order $siteOrder)
+    {
+        $siteOrder = Order::where('frontpad_id', $siteOrder->id)->first();
+
+        if (!$siteOrder) {
+            Log::error("Order not found: id = {$siteOrder->id}");
+            return;
+        }
+
+        $siteOrder->status = $siteOrder->status;
+        $siteOrder->save();
+
+        Log::info("Order updated: id = {$siteOrder->id}, status = {$siteOrder->status}");
     }
 }

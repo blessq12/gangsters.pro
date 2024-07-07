@@ -93,6 +93,12 @@ class OrderController extends Controller
 
     public function updateOrder(Request $request)
     {
-        \Illuminate\Support\Facades\Log::info('Update Order Request: ' . json_encode($request->all()));
+        $order = Order::find($request->order_id);
+
+        if (!$order) {
+            return response('Order not found', 404);
+        }
+
+        Frontpad::updateOrder($order);
     }
 }
