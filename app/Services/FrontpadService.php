@@ -87,9 +87,9 @@ class FrontpadService
     public function updateOrder(Order $siteOrder)
     {
         $siteOrder = Order::where('frontpad_id', $siteOrder->id)->first();
-
+        Log::info("Site Order found: " . json_encode($siteOrder));
         if (!$siteOrder) {
-            Log::error("Order not found: id = {$siteOrder->id}");
+            Log::error("Order not found: id = " . $siteOrder->id);
             return;
         }
 
