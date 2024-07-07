@@ -36,8 +36,8 @@ class OrderController extends Controller
             return response('Ошибка при добавлении товаров в заказ', 500);
         }
         $debug = [];
-        foreach ($order->cart as $item) {
-            $debug[] = $item->sku;
+        foreach ($request->cart as $item) {
+            $debug[] = $item['sku'];
         }
         Log::debug("cart items:" . json_encode($debug));
 
