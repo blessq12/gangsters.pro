@@ -6,6 +6,7 @@ import Toast from 'vue-toastification';
 import { useToast } from 'vue-toastification';
 import "vue-toastification/dist/index.css";
 import moment from 'moment';
+import VueLazyload from 'vue-lazyload';
 
 /**
  * Next, we will create a fresh Vue application instance. You may then begin
@@ -17,6 +18,16 @@ const app = createApp({});
 
 const options = {
 }
+app.use(VueLazyload, {
+    lazyComponent: true,
+    preLoad: 1.3,
+    attempt: 1,
+    observer: true,
+    observerOptions: {
+        rootMargin: '0px',
+        threshold: 0.1,
+    }
+});
 app.use( Toast , options)
 app.use(createPinia());
 app.directive('maska', vMaska);

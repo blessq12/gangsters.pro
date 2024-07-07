@@ -160,7 +160,7 @@ export default {
                 <div class="col rounded" v-for="product in category.products" :key="product.id">
                     <div class="hover-over"></div>
                     <div class="product">
-                        <div class="header bg-image rounded position-relative" :style="'background: url('+ showImage(product) +')'">
+                        <div class="header bg-image rounded position-relative overflow-hidden" v-lazy:background-image="showImage(product)">
                             
                             <transition
                                 enter-active-class="animate__animated animate__faster animate__fadeIn"
