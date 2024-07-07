@@ -27,18 +27,14 @@ class OrderController extends Controller
     {
         $order = new Order();
         $this->setOrderDetails($order, $request);
-
         $order->user_id = $this->user ? $this->user->id : null;
         $order->total = $this->cartTotal($request->cart);
-
         if (!$order->save()) {
             return response('Ошибка при создании заказа', 500);
         }
-
         if (!$this->addCartItems($order, $request->cart)) {
             return response('Ошибка при добавлении товаров в заказ', 500);
         }
-
         Frontpad::createOrder($order);
         return response('Заказ успешно создан', 200);
     }
@@ -76,7 +72,7 @@ class OrderController extends Controller
      */
     private function addCartItems(Order $order, array $cart)
     {
-
+        Log::debug("cart items:" . json_encode($cart));
         if (!$order) return false;
         if (empty($cart)) return false;
 

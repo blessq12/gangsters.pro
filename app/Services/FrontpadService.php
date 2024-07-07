@@ -90,16 +90,13 @@ class FrontpadService
 
     public function updateOrder(Order $siteOrder, $status)
     {
-        Log::info("Site Order found: " . json_encode($siteOrder));
-
+        Log::info("Site Order: " . json_encode($siteOrder->id));
         if (!$siteOrder) {
             Log::error("Order not found: id = " . $siteOrder->id);
             return;
         }
-
         $siteOrder->status = $status;
         $siteOrder->save();
-
         Log::info("Order updated: id = {$siteOrder->id}, status = {$siteOrder->status}");
     }
 }
