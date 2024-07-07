@@ -51,10 +51,7 @@ class FrontpadService
             $response = $this->client->post($this->api_url . '?new_order', ['form_params' => $order]);
             Log::info("Response from FrontPad: " . $response->getBody()->getContents());
             $res = json_decode($response->getBody()->getContents(), false);
-            if ($res->result == 'success') {
-                $siteOrder->frontpad_id = $res->order_id;
-                $siteOrder->save();
-            }
+            Log::info("json decoded result: " . $res . "; type: " . gettype($res));
         } catch (\Throwable $th) {
             Log::error("Error during create new order on FrontPad: {$th->getMessage()}");
             return 'Error during create new order on FrontPad. Error: ' . $th->getMessage();
