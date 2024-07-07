@@ -2,7 +2,7 @@
     @if ($overlay)
         <div class="overlay"></div>
     @endif
-    <div class="container">
+    <div class="container position-relative">
         <div class="row">
             <div class="col">
                 <div class="content">

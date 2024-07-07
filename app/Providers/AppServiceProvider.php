@@ -24,17 +24,8 @@ class AppServiceProvider extends ServiceProvider
     {
         // $this->loadViewsFrom('','');
         Paginator::useBootstrapFive();
-        View::composer(['errors::*', 'error.*'], function($view){
+        View::composer(['errors::*', 'error.*'], function ($view) {
             $view->with('company', Company::first());
         });
-        View::share('crmLinks', [
-            (object)['name' => 'Кампания', 'route' => 'crm.companies.index', 'url' => '/crm/companies'],
-            (object)['name' => 'Заказы', 'route' => 'crm.orders.index', 'url' => '/crm/orders'],
-            (object)['name' => 'Пользователи', 'route' => 'crm.users.index', 'url' => '/crm/users'],
-            (object)['name' => 'Вакансии', 'route' => 'crm.vacancies.index', 'url' => '/crm/vacancies'],
-            (object)['name' => 'Товары', 'route' => 'crm.products.index', 'url' => '/crm/products/'],
-            (object)['name' => 'Истории', 'route' => 'crm.stories.index', 'url' => '/crm/stories'],
-            (object)['name' => 'Баннеры', 'route' => 'crm.banners.index', 'url' => '/crm/banners'],
-        ]);
     }
 }

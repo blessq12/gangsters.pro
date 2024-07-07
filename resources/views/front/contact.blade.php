@@ -7,7 +7,7 @@
     <x-front.hero-banner
         title="Контакты"
         description="Контактная информация и режим работы"
-        :overlay="true"
+        :overlay="false"
     ></x-front.hero-banner>
 @endsection
 

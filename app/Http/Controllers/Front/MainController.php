@@ -22,16 +22,15 @@ class MainController extends Controller
     {
         ViewFacade::share('company', Company::first());
         ViewFacade::share('currentDayShedule', WorkShedule::getCurrentDayShedule());
+        ViewFacade::share('links', [
+            (object) ['name' => 'Оплата и доставка', 'route' => 'main.purchaseAndDelivery'],
+            (object) ['name' => 'Контакты', 'route' => 'main.contact'],
+        ]);
     }
 
     public function index()
     {
         return view('front.index');
-    }
-
-    public function about()
-    {
-        return view('front.about');
     }
 
     public function vacancy()
