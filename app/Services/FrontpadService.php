@@ -50,7 +50,7 @@ class FrontpadService
         try {
             $response = $this->client->post($this->api_url . '?new_order', ['form_params' => $order]);
             Log::info("Response from FrontPad: " . $response->getBody()->getContents());
-            $res = json_decode($response->getBody()->getContents());
+            $res = json_decode($response->getBody()->getContents(), false);
             if ($res->result == 'success') {
                 $siteOrder->frontpad_id = $res->order_id;
                 $siteOrder->save();
