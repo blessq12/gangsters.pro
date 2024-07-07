@@ -1,4 +1,4 @@
-<nav>
+<nav class="{{ !Request::is('/') ? 'position-sticky bg-light' : '' }}" style="{{ !Request::is('/') ? 'top: 0; z-index: 1000;' : '' }}">
     <div class="container">
         <div class="row align-items-center">
             <div class="col">

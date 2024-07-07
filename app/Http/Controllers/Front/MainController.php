@@ -23,6 +23,7 @@ class MainController extends Controller
         ViewFacade::share('company', Company::first());
         ViewFacade::share('currentDayShedule', WorkShedule::getCurrentDayShedule());
         ViewFacade::share('links', [
+            (object) ['name' => 'О компании', 'route' => 'main.about'],
             (object) ['name' => 'Оплата и доставка', 'route' => 'main.purchaseAndDelivery'],
             (object) ['name' => 'Контакты', 'route' => 'main.contact'],
         ]);
@@ -38,9 +39,30 @@ class MainController extends Controller
         return view('front.vacancy');
     }
 
+    public function about()
+    {
+        return view('front.about');
+    }
+
     public function contact()
     {
-        return view('front.contact');
+        $company = Company::first();
+        $legals = $company->legals()->first()->toArray();
+        $legals = [
+            'ИНН' => $legals['inn'],
+            'ОГРН' => $legals['ogrn'],
+            'ОКПО' => $legals['okpo'],
+            'КПП' => $legals['kpp'],
+            'Директор' => $legals['owner'],
+            'Электронная почта' => $legals['legal_email'],
+            'Форма собственности' => $legals['legal_form'],
+        ];
+        return view(
+            'front.contact',
+            [
+                'legals' => $legals,
+            ]
+        );
     }
 
     public function purchaseAndDelivery(): View
