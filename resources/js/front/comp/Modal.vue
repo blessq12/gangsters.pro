@@ -45,12 +45,37 @@ export default {
                     <div class="container">
                         <div class="row mb-4">
                             <div class="col d-flex align-items-center justify-content-between">
-                                <h4 class="mb-0">
-                                    <template v-if="appStore.modalName === 'cart'">Корзина</template>
-                                    <template v-else-if="appStore.modalName === 'fav'">Избранное</template>
-                                    <template v-else-if="appStore.modalName === 'user'">Меню</template>
-                                </h4>
+                                <h4 class="mb-0">Меню</h4>
                                 <button class="btn-close" @click.stop="appStore.modal = false"></button>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <ul class="list-unstyled  p-0 d-flex nav-icons">
+                                    <li @click="appStore.modalName = 'cart'" :class="{ 'active': appStore.modalName === 'cart' }">
+                                        <div class="counter" v-if="localStore.cart.length > 0">
+                                            <span>{{ localStore.cart.length }}</span>
+                                        </div>
+                                        <i class="fa fa-shopping-cart"></i>
+                                        <span>Корзина</span>
+                                    </li>
+                                    <li @click="appStore.modalName = 'fav'" :class="{ 'active': appStore.modalName === 'fav' }">
+                                        <div class="counter" v-if="localStore.fav.length > 0">
+                                            <span>{{ localStore.fav.length }}</span>
+                                        </div>
+                                        <i class="fa fa-heart"></i>
+                                        <span>Избранное</span>
+                                    </li>
+                                    <li @click="appStore.modalName = 'user'" :class="{ 'active': appStore.modalName === 'user' }">
+                                        <i class="fa fa-user" ></i>
+                                        <span>Профиль</span>
+                                    </li>
+                                    
+                                    <li @click="appStore.modalName = 'menu'" :class="{ 'active': appStore.modalName === 'menu' }">
+                                        <i class="fa fa-list-ul"></i>
+                                        <span>Меню</span>
+                                    </li>
+                                </ul>
                             </div>
                         </div>
                         <div class="row overflow-auto" style="height: 90vh;">
@@ -66,7 +91,49 @@ export default {
 </template>
 
 <style lang="sass" scoped>
-
+.nav-icons
+    margin-bottom: 24px !important
+    overflow-x: scroll
+    white-space: nowrap
+    &::-webkit-scrollbar
+        display: none
+    li
+        position: relative
+        display: flex
+        flex-direction: column
+        align-items: center
+        cursor: pointer
+        color: #6e6e6e
+        margin: 0px 3px
+        padding: 6px 12px
+        border-radius: 6px
+        transition: all .3s 
+        .counter
+            position: absolute
+            top: 0
+            right: 0
+            width: 20px
+            height: 20px
+            display: flex
+            align-items: center
+            justify-content: center
+            background: red
+            border-radius: 50%
+            span
+                color: #fff
+                font-size: 14px
+        i
+            font-size: 25px
+        span
+            font-size: 14px
+            font-weight: 500
+        &.active
+            background: $color-main
+            color: white
+            &:hover
+                color: white
+        &:hover
+            color: $color-main
 .wrap
     display: flex
     align-items: center

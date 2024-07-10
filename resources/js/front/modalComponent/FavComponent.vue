@@ -22,33 +22,7 @@ export default {
                 leave-active-class="animate__animated animate__fadeOut"
             >
                 <li v-for="item in localStore.fav" :key="item.id">
-                        <div class="fav-card">
-                            <div class="image bg-image rounded" 
-                            :style="'background: url(' + (item.thumbs.length ? item.thumbs[0].small : '/images/placeholder/phldr-512.png') + ');'"
-                            >
-                        </div>
-                        <div class="d-block">
-                            <div class="content">
-                                <span>{{ item.name }}</span>
-                                <p class="mb-0"><b>Цена: </b>{{ item.price }} руб.</p>
-                            </div>
-                            <div class="footer">
-                                
-                                <button 
-                                type="button" 
-                                class="btn btn-sm btn-primary rounded-pill"
-                                :class="{'btn-primary' : !localStore.checkExist('cart', item), 'btn-success' : localStore.checkExist('cart', item)}"
-                                @click="localStore.manageStore('cart', item)"
-                                >
-                                <i class="fa fa-shopping-cart px-3"></i>
-                            </button>
-                            
-                            <button type="button" class="btn btn-sm btn-danger rounded-pill " @click="localStore.manageStore('fav', item)">
-                                <i class="fa fa-trash px-2"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                    <ProductComponentSmall :product="item" :is-favorite="true" />
                 </li>
             </transition-group>
             <div class="cart-footer border-top pt-4 pb-2">
@@ -92,5 +66,7 @@ export default {
 </template>
 
 <style lang="sass" scoped>
-
+.fav-list
+    li
+        margin-bottom: 0
 </style>

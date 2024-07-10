@@ -5,6 +5,8 @@ import { appStore } from '../../stores/appStorage'
 import { mapStores } from 'pinia'
 import moment from 'moment'
 import { useToast } from 'vue-toastification'
+import { Tooltip } from 'bootstrap/js/dist/tooltip'
+
 const toast = useToast()
 
 export default {
@@ -182,10 +184,17 @@ export default {
                                 <button type="submit" class="btn rounded">
                                     Отправить
                                 </button>
-                                <a href="" @click.prevent="resetPass(loginData.email)" class="text-md-dark text-light mx-3 text-primary"> Забыли пароль?</a>
+                                <a 
+                                    href="" 
+                                    @click.prevent="resetPass(loginData.email)" 
+                                    class="text-md-dark text-light mx-3 text-primary"
+                                    data-bs-toggle="tooltip"
+                                    data-bs-placement="top"
+                                    data-bs-original-title="На ваш email отправлен код для восстановления пароля"
+                                > Забыли пароль?</a>
                             </div>
                         </form>
-                        <form @submit.prevent="validate('register')" v-else>
+                        <form @submit.prevent="validate('register')" v-else autocomplete="off">
                             <div class="form-group">
                                 <div class="d-flex mb-2">
                                     <label for="name">Имя</label>
@@ -294,40 +303,13 @@ export default {
                 </div>
             </div>
         </div>
-    </transition>
-    
-<div class="col-12 d-block d-lg-none mb-4">
-    <div class="row">
-        <div class="col">
-            <h5 class="border-bottom pb-2">Навигация</h5>
-        </div>
-    </div>
-    <div class="row">
-        <nav class="px-0" style="border-bottom: none;">
-            <ul class="nav flex-column p-0 m-0">
-                <li class="nav-item" v-for="link in appStore.links" :key="link.name">
-                    <a class="nav-link " :href="link.route">{{ link.name }}</a>
-                </li>
-            </ul>
-        </nav>
-    </div>
-</div>
-<div class="col">
-    <div class="row">
-        <div class="col">
-            <h5 class="border-bottom border-secondary pb-2" style="border-color: #dedede !important;">Контактная информация</h5>
-            <ul class="list-unstyled">
-                <li>Телефон: <a :href="'tel:' + appStore.company.phone">{{ '+7 (' + appStore.company.phone.slice(1, 4) + ') ' + appStore.company.phone.slice(4, 7) + '-' + appStore.company.phone.slice(7, 9) + '-' + appStore.company.phone.slice(9) }}</a></li>
-                <li>Email: {{ appStore.company.email }}</li>
-                <li>Адрес: {{ appStore.company.city + ', ' + appStore.company.street + ' ' + appStore.company.house }}</li>
-            </ul>
-        </div>
-    </div>
-</div>
-    
+    </transition>    
 </template>
 
 <style lang="sass" scoped>
+.btn
+    background: $color-main
+    color: #fff
 .btn-group
     button
         background: unset

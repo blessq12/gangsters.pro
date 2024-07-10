@@ -159,37 +159,7 @@ export default {
                   class="cart-list"
                 >
                   <li v-for="item in localStore.cart" :key="item.id">
-                    <div class="fav-card">
-                      <div
-                        class="image bg-image rounded"
-                        :style="'background: url(' + (item.thumbs.length ? item.thumbs[0].small : '/images/placeholder/phldr-512.png') + ');'"
-                      ></div>
-                      <div class="d-blo">
-                        <div class="content">
-                          <span class="d-block">{{ item.name }}</span>
-                          <p class="mb-0"><b>Цена: </b>{{ item.price }} руб.</p>
-                        </div>
-                        <div class="footer">
-                          <div class="qty">
-                            <button
-                              type="button"
-                              class="btn"
-                              @click="localStore.manageQty(false, item)"
-                            >
-                              <i class="fa fa-minus"></i>
-                            </button>
-                            <span>{{ item.qty ? item.qty : "Нет" }}</span>
-                            <button
-                              type="button"
-                              class="btn"
-                              @click="localStore.manageQty(true, item)"
-                            >
-                              <i class="fa fa-plus"></i>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                    <ProductComponentSmall :product="item" :is-favorite="false" />
                   </li>
                 </transition-group>
                 <div class="cart-footer border-top pt-4 pb-2">
@@ -600,6 +570,9 @@ export default {
 </template>
 
 <style lang="sass" scoped>
+.cart-list
+  li
+    margin-bottom: 0
 .btn-group
   button
     border-color: #ffc107
