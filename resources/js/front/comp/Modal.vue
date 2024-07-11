@@ -51,7 +51,7 @@ export default {
                         </div>
                         <div class="row">
                             <div class="col">
-                                <ul class="list-unstyled  p-0 d-flex nav-icons">
+                                <ul class="list-unstyled  p-0 d-flex nav-icons border-bottom">
                                     <li @click="appStore.modalName = 'cart'" :class="{ 'active': appStore.modalName === 'cart' }">
                                         <div class="counter" v-if="localStore.cart.length > 0">
                                             <span>{{ localStore.cart.length }}</span>
@@ -78,8 +78,8 @@ export default {
                                 </ul>
                             </div>
                         </div>
-                        <div class="row overflow-auto" style="height: 90vh;">
-                            <div class="col pb-5">
+                        <div class="row overflow-auto" style="max-height: 100vh;">
+                            <div class="col pb-5" style="margin-bottom: 200px;">
                                 <component :is="appStore.modalName + '-component'"></component>
                             </div>
                         </div>
@@ -95,6 +95,7 @@ export default {
     margin-bottom: 24px !important
     overflow-x: scroll
     white-space: nowrap
+    padding: 6px 0 !important
     &::-webkit-scrollbar
         display: none
     li
@@ -104,10 +105,15 @@ export default {
         align-items: center
         cursor: pointer
         color: #6e6e6e
-        margin: 0px 3px
+        margin-right: 6px
+        width: 100px
+        @media(min-width: 992px)
+            margin-right: 12px
         padding: 6px 12px
         border-radius: 6px
         transition: all .3s 
+        @media(min-width: 992px)
+            padding: 6px 24px
         .counter
             position: absolute
             top: 0
@@ -124,6 +130,9 @@ export default {
                 font-size: 14px
         i
             font-size: 25px
+            @media(min-width: 992px)
+                font-size: 35px
+                margin-bottom: 6px !important
         span
             font-size: 14px
             font-weight: 500

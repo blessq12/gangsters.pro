@@ -49,7 +49,7 @@
                         class="d-none d-lg-flex"
                         :shedule='@json($company->frontShedules())'
                     ></shedule>
-                    <ul class="shop-links d-lg-none">
+                    <ul class="shop-links d-lg-block">
                         <li>
                             <nav-button 
                                 target="user"

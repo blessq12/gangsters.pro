@@ -107,7 +107,7 @@ export default {
     <!-- category bar -->
     <div class="category-bar scrolled" ref="categoryBar">
         <div class="container d-flex">
-            <div class="fav-wrap d-flex align-items-center" ref="favWrap">
+            <div class="fav-wrap d-flex align-items-center" ref="favWrap" :style="{ marginRight: localStore.fav.length > 9 ? '8px' : '0' }">
                 <button 
                 type="button"
                 class="btn rounded btn-danger d-flex align-items-center" 
@@ -144,7 +144,7 @@ export default {
     </div>
     <!-- category bar -->
     <!-- catalog -->
-    <div class="container mt-5">
+    <div class="container mt-5" id="catalog-container">
         <div class="category" v-for="category in goods" :key="category.uri" :data-uri="category.uri" :ref="category.uri + '-section'">
             <div class="scrooll-point" :ref="category.uri"></div>
             <div class="row mb-4">
@@ -235,6 +235,10 @@ export default {
 </template>
 
 <style lang="sass" scoped>
+#catalog-container
+    margin-bottom: 50px
+    @media(min-width: 992px)
+        margin-bottom: 150px
 .btn-main
     background: $color-main !important
     color: #fff
@@ -427,7 +431,7 @@ export default {
             font-weight: 700
 
 .fav-wrap
-    min-width: 0px 
+    min-width: 0px
     width: 0px
     overflow: hidden
     transition: all 0.3s

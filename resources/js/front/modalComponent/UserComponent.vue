@@ -38,7 +38,7 @@ export default {
             password: string().required('Обязательное поле').min(6, "Минимум 6 символов")
         }),
         registerSchema: object({
-            name: string().required('Обязательное поле').min(3, "Минимум 3 символа").max(255, 'Максимум 255 символов'),
+            name: string().required('Обязатель��ое поле').min(3, "Минимум 3 символа").max(255, 'Максимум 255 символов'),
             tel: string().required('Обязательное поле').min(18, 'Номер 18 символов').max(18, 'Номер 18 символов'),
             email: string().required('Обязательное поле').email('Невалидный email адрес').max(255, 'Максимум 255 символов')
         }),
@@ -57,22 +57,26 @@ export default {
         }),
         loginErrorBag: {},
         registerErrorBag: {},
-        editErrorBag: {}
+        editErrorBag: {},
     }),
     methods: {
         validate(form) {
             if (form == 'login') {
                 this.loginSchema.validate(this.loginData, { abortEarly: false })
-                    .then( res => {
+                    .then(res => {
                         this.loginErrorBag = {}
                         this.userStore.auth(res)
                         this.loginData.password = null
                     })
-                    .catch( err => {
+                    .catch(err => {
                         this.loginErrorBag = {}
-                        err.inner.forEach( e => { 
+                        err.inner.forEach(e => { 
                             this.loginErrorBag[e.path] = e.message
-                     })})
+                        })
+                    })
+                    .finally(() => {
+                        this.loading = false; // Stop loading
+                    });
             }
             if (form == 'register') {
                 this.registerSchema.validate(this.registerData, { abortEarly: false })
@@ -87,7 +91,7 @@ export default {
                     })
                     .catch(err => {
                         this.registerErrorBag = {}
-                        err.inner.forEach( e => {
+                        err.inner.forEach(e => {
                             this.registerErrorBag[e.path] = e.message
                         })
                     })
@@ -100,7 +104,7 @@ export default {
                     })
                     .catch(err => {
                         this.editErrorBag = {}
-                        err.inner.forEach( e => {
+                        err.inner.forEach(e => {
                             this.editErrorBag[e.path] = e.message
                         })
                     })
@@ -181,8 +185,12 @@ export default {
                                 </div>
                             </div>
                             <div class="form-group mt-4 d-flex align-items-center">
-                                <button type="submit" class="btn rounded">
-                                    Отправить
+                                <button class="btn rounded" type="button" disabled v-if="userStore.loading">
+                                    <span class="spinner-border spinner-border-sm" aria-hidden="true" style="margin-right: 6px;"></span>
+                                    <span role="status">Загрузка...</span>
+                                </button>
+                                <button type="submit" class="btn rounded" :disabled="loading" v-else>
+                                    <span >Отправить</span>
                                 </button>
                                 <a 
                                     href="" 
@@ -194,7 +202,7 @@ export default {
                                 > Забыли пароль?</a>
                             </div>
                         </form>
-                        <form @submit.prevent="validate('register')" v-else autocomplete="off">
+                        <form @submit.prevent="validate('register')" v-else>
                             <div class="form-group">
                                 <div class="d-flex mb-2">
                                     <label for="name">Имя</label>
@@ -217,8 +225,12 @@ export default {
                                 <input type="text" name="email" id="email" class="form-control" v-model="registerData.email">
                             </div>
                             <div class="form-group mt-4">
-                                <button type="submit" class="btn rounded btn-light">
-                                    Отправить
+                                <button class="btn rounded" type="button" disabled v-if="userStore.loading">
+                                    <span class="spinner-border spinner-border-sm" aria-hidden="true" style="margin-right: 6px;"></span>
+                                    <span role="status">Загрузка...</span>
+                                </button>
+                                <button type="submit" class="btn rounded btn-light" :disabled="loading" v-else>
+                                    <span>Отправить</span>
                                 </button>
                             </div>
                         </form>
@@ -227,89 +239,51 @@ export default {
             </div>
         </div>
         <div v-else>
-            <div class="row">
+            <div class="row mb-3">
                 <div class="col">
-                    <div class="d-flex align-items-center mb-4">
+                    <div class="d-flex align-items-center justify-content-between ">
                         <h5 class="mb-0">Привет, {{ userStore.userData.name }}</h5>
-                        <a href="javascript:void(0)" @click="userStore.logout()" class="text-danger mx-4" style="font-size: 12px;"> <i class="fa fa-sign-out"></i>Выйти</a>
+                        <button class="btn btn-danger btn-sm rounded logout" type="button" @click="userStore.logout()" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-original-title="Выйти из аккаунта" style="background-color: #dc3545;">
+                            <span style="margin-right: 6px;">Выйти</span>
+                            <i class="fa fa-sign-out"></i>
+                        </button>
                     </div>
-
-                    <p>На данный момент на счету {{ userStore.userData.coins }} койнов. Продолжать совершать заказы, чтобы накопить больше</p>
                 </div>
             </div>
             <div class="row">
-                <div class="col-12 mb-4">
-                    <button type="button" class="btn btn-secondary w-100" data-bs-toggle="collapse" data-bs-target="#edit">
-                        Редактировать профиль
-                    </button>
-                    <div class="collapse mt-2 py-2" id="edit">
-                            <form @submit.prevent="validate('edit')">
-                                <div class="mb-2 row row-cols-1 row-cols-md-2">
-                                    <div class="col">
-                                        <div class="form-group">
-                                            <div class="d-flex">
-                                                <label for="name">Имя</label>
-                                                <error-label :errorBag="editErrorBag" name="name"></error-label>
-                                            </div>
-                                            <input type="text" name="name" id="name" class="form-control" v-model="editForm.name">
-                                        </div>  
-                                    </div>
-                                    <div class="col">
-                                        <div class="form-group">
-                                            <div class="d-flex">
-                                                <label for="tel">Телефон</label>
-                                                <error-label :errorBag="editErrorBag" name="tel"></error-label>
-                                            </div>
-                                            <input type="text" name="tel" id="tel" class="form-control" v-maska data-maska="+7 (###) ###-##-##" v-model="editForm.tel">
-                                        </div>  
-                                    </div>
-                                    <div class="col">
-                                        <div class="form-group">
-                                            <div class="d-flex">
-                                                <label for="email">Email</label>
-                                                <error-label :errorBag="editErrorBag" name="email"></error-label>
-                                            </div>
-                                            <input type="text" name="email" id="email" class="form-control" v-model="editForm.email" disabled>
-                                        </div>  
-                                    </div>
-                                    <div class="col">
-                                        <div class="form-group">
-                                            <div class="d-flex">
-                                                <label for="dob">Дата рождения</label>
-                                                <error-label :errorBag="editErrorBag" name="dob"></error-label>
-                                            </div>
-                                            <input type="date" name="dob" id="dob" class="form-control"  v-model="editForm.dob">
-                                        </div>  
-                                    </div>
-                                </div>
-                                <div class="row">
-                                     <div class="col">
-                                        <div class="form-group">
-                                            <button type="submit" class="btn btn-light rounded">Сохранить</button>
-                                        </div>  
-                                    </div>
-                                </div>
-                            </form>
-                    
+                <div class="col d-flex align-items-center">
+                    <div class="coin" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-original-title="Количество койнов на счету">
+                        <img src="/images/coin.png" alt="Кол-во койнов">
+                        <span>Койнов: {{ userStore.userData.coins }}</span>
                     </div>
-                </div>
-                <div class="col-12">
-                    <button type="button" class="btn btn-secondary w-100" data-bs-toggle="collapse" data-bs-target="#orders">
-                        Мои заказы
-                    </button>
-                    <div class="collapse mt-2" id="orders">
-                        <p>Нет ни одного заказа в истории</p>
-                    </div>
+                    <p class="mb-0">
+                        Копи койны и оплачивай ими покупки!
+                    </p>
                 </div>
             </div>
         </div>
     </transition>    
 </template>
 
-<style lang="sass" scoped>
+<style lang="sass" scoped>    
+.coin
+    background: $color-main
+    margin-right: 12px
+    width: fit-content
+    color: #fff
+    padding: 6px 15px
+    border-radius: 16px
+    display: flex
+    align-items: center
+    img
+        width: 20px
+        height: 20px
+        margin-right: 8px
+    span
+        font-weight: 500
 .btn
     background: $color-main
-    color: #fff
+    color: #fff    
 .btn-group
     button
         background: unset

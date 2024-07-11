@@ -29,40 +29,40 @@ export default {
             <h4>Контакты</h4>
         </div>
         <div class="col">
-            <ul class="row list-unstyled p-0 m-0 contact-list">
-                <li class="col-6">
+            <div class="row row-cols-1 row-cols-lg-2 contact-list">
+                <div class="col">
                     <a href="tel:{{ appStore.company.phone }}">
-                    <div class="contact-item">
-                        <i class="fa fa-phone"></i>
+                        <div class="contact-item">
+                            <i class="fa fa-phone"></i>
                             <span>{{ appStore.company.phone }}</span>
                         </div>
                     </a>
-                </li>
-                <li class="col-6">
+                </div>
+                <div class="col">
                     <a href="tel:{{ appStore.company.phone_additional }}">
-                    <div class="contact-item">
+                        <div class="contact-item">
                         <i class="fa fa-phone"></i>
                             <span>{{ appStore.company.phone_additional }}</span>
                         </div>
                     </a>
-                </li>
-                <li class="col-6">
+                </div>
+                <div class="col">
                     <a href="mailto:{{ appStore.company.email_address }}">
-                    <div class="contact-item">
-                        <i class="fa fa-envelope"></i>
+                        <div class="contact-item">
+                            <i class="fa fa-envelope"></i>
                             <span>{{ appStore.company.email_address }}</span>
                         </div>
                     </a>
-                </li>
-                <li class="col-6">
+                </div>
+                <div class="col">
                     <a href="https://maps.app.goo.gl/vQJ1J111111111111" target="_blank">
-                    <div class="contact-item">
+                        <div class="contact-item">
                             <i class="fa fa-map-marker"></i>
                             <span>{{ appStore.company.street + ' ' + appStore.company.house }}</span>
                         </div>
                     </a>
-                </li>
-            </ul>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -84,7 +84,7 @@ export default {
             background: $color-main
             color: #fff
 .contact-list
-    li
+    .col
         .contact-item
             display: flex
             border-radius: 16px

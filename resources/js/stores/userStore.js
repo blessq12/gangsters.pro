@@ -7,7 +7,8 @@ export const userStore = defineStore('user', {
     state: () => ({
         authStatus: false,
         userData: null,
-        authErrorBag: {}
+        authErrorBag: {},
+        loading: false
     }),
     actions: {
         loadStore() {
@@ -28,6 +29,7 @@ export const userStore = defineStore('user', {
             }
         },
         auth(cred) {
+            this.loading = true
             axios.post( '/api/auth/login', cred )
                 .then(res => {
                     toast.success('Успешная авторизация')
@@ -40,8 +42,12 @@ export const userStore = defineStore('user', {
                 .catch(err => {
                     err.response.data.errors.forEach( e => toast.error(e.message) )
                 })
+                .finally(() => {
+                    this.loading = false
+                })
         },
-        register(cred) {
+        register(cred) {    
+            this.loading = true
             axios.post( '/api/auth/register', cred )
                 .then(res => { 
                     toast.success('Успешная регистрация')
@@ -56,6 +62,9 @@ export const userStore = defineStore('user', {
                         toast.error(`${value}`)
                     }
                  })
+                .finally(() => {
+                    this.loading = false
+                })
         },
         logout(){
             this.authStatus = false

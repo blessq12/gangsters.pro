@@ -59,6 +59,9 @@ export default {
         margin-right: 8px
         min-width: 55px
         min-height: 30px
+        @media(min-width: 992px)
+            min-width: 65px
+            min-height: 35px
         display: flex
         align-items: center
         justify-content: center
@@ -76,6 +79,10 @@ export default {
         min-height: 100px
         min-width: 100px
         margin-right: 8px
+        @media(min-width: 992px)
+            min-height: 120px
+            min-width: 120px
+            margin-right: 12px
     .count
         position: absolute
         top: 0
@@ -90,6 +97,9 @@ export default {
         span
             font-size: 34px
             font-weight: 500
+            @media(min-width: 992px)
+                font-size: 55px
+                font-weight: 700
     img
         max-height: 75px
     .content
@@ -97,6 +107,9 @@ export default {
             display: block
             font-size: 16px
             font-weight: 500
+            @media(min-width: 992px)
+                font-size: 18px
+                font-weight: 600
         .qty
             display: flex
             align-items: center
@@ -111,6 +124,9 @@ export default {
                 outline: none
                 min-width: 40px
                 min-height: 30px
+                @media(min-width: 992px)
+                    min-width: 55px
+                    min-height: 35px
                 background: lighten($color-main, 10%)
                 color: #fff
                 font-size: 16px
