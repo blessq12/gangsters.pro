@@ -96,7 +96,7 @@ class FrontpadService
         }
         if ($this->setting->use_coin_system) {
             if ($siteOrder->user && $status == 10) {
-                $user = User::find($siteOrder->user_id);
+                $user = \App\Models\User::find($siteOrder->user_id);
                 Log::info("Order {$siteOrder->id} is auth by {$user->email}");
                 $user->coins += $siteOrder->total / 100 * $this->setting->coin_system_percent;
                 Log::info("User {$user->email} get {$user->coins} coins");
