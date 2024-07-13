@@ -43,7 +43,7 @@ export default {
             <div class="wrap" v-if="appStore.modal" @click.self="appStore.modal = false">
                 <div class="menu py-4 px-2">
                     <div class="container">
-                        <div class="row mb-4">
+                        <div class="row mb-2">
                             <div class="col d-flex align-items-center justify-content-between">
                                 <h4 class="mb-0">Меню</h4>
                                 <button class="btn-close" @click.stop="appStore.modal = false"></button>

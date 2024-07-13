@@ -8,7 +8,8 @@ export const userStore = defineStore('user', {
         authStatus: false,
         userData: null,
         authErrorBag: {},
-        loading: false
+        loading: false,
+        orders:[]
     }),
     actions: {
         loadStore() {
@@ -93,6 +94,9 @@ export const userStore = defineStore('user', {
             .catch( err => { 
                 toast.error(err.response.data.message)
              })
+        },
+        getLastOrders(){
+            return axios.get('/api/orders/' + this.userData.id + '/get')
         }
     },
     getters:{}

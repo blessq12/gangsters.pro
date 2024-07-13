@@ -15,6 +15,9 @@ class Order extends Model
      *    10 - Выполнен
      */
 
+    protected $casts = [
+        'created_at' => 'datetime',
+    ];
     use HasFactory;
     protected $fillable = [
         'name',

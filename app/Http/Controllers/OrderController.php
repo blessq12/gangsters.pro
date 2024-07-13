@@ -110,4 +110,18 @@ class OrderController extends Controller
         }
         Frontpad::updateOrder($order, $request->status);
     }
+    public function getLastOrders($id)
+    {
+        $orders = Order::where('user_id', $id)->orderBy('created_at', 'desc')->take(10)->get();
+        $orders->each(function ($order) {
+            $order->status_text = match ($order->status) {
+                1 => 'Новый',
+                10 => 'Оплачен',
+                11 => 'Отменен',
+            };
+            $order->created = $order->created_at->format('d.m.Y H:i');
+            $order->items = json_decode($order->items);
+        });
+        return response()->json($orders, 200);
+    }
 }
