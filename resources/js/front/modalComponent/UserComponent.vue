@@ -69,6 +69,21 @@ export default {
                 if (!this.userStore.orders.length) {
                     this.getLastOrders();
                 }
+            } else {
+                this.userStore.orders = []
+            }
+        },
+        'userStore.authStatus': function(newVal) {
+            if (!newVal) {
+                this.editFormShow = false
+                this.editForm = {
+                    name: null,
+                    tel: null,
+                    email: null,
+                    dob: null
+                }
+            } else {
+                this.loadEditForm()
             }
         }
     },
@@ -387,6 +402,13 @@ export default {
                                                 <th>Дата</th>
                                             </tr>
                                         </thead>
+                                        <tbody v-if="userStore.orders.length == 0">
+                                            <tr>
+                                                <td colspan="5" class="text-center">
+                                                    Заказов еще нет
+                                                </td>
+                                            </tr>
+                                        </tbody>
                                         <tbody v-if="!orderLoader">
                                             <tr v-for="order in userStore.orders">
                                                 <td>{{ order.id }}</td>

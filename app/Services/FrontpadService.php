@@ -98,7 +98,7 @@ class FrontpadService
             if ($siteOrder->user && $status == 10) {
                 $user = \App\Models\User::find($siteOrder->user_id);
                 Log::info("Order {$siteOrder->id} is auth by {$user->email}");
-                $user->coins += $siteOrder->total / 100 * $this->setting->coin_system_percent;
+                $user->coins += round($siteOrder->total / 100 * $this->setting->coin_system_percent);
                 Log::info("User {$user->email} get {$user->coins} coins");
                 $user->save();
             }
