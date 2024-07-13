@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Order;
+use App\Models\Setting;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
 
@@ -17,6 +18,7 @@ class FrontpadService
         $this->api_secret = env('FRONTPAD_API_SECRET');
         $this->api_url = env('FRONTPAD_API_URL');
         $this->client = new Client();
+        $this->setting = \App\Models\Setting::first();
     }
 
     public function createOrder(Order $siteOrder)
@@ -92,11 +94,14 @@ class FrontpadService
             Log::error("Order not found: id = " . $siteOrder->id);
             return;
         }
-
-        if ($siteOrder->user && $status == 10) {
-            Log::info("Order {$siteOrder->id} is auth by {$siteOrder->user->email}");
-            $siteOrder->user->coins += $siteOrder->total * 1.1; // 10 percent discount to coin
-            $siteOrder->user->save();
+        if ($this->setting->use_coin_system) {
+            if ($siteOrder->user && $status == 10) {
+                $user = User::find($siteOrder->user_id);
+                Log::info("Order {$siteOrder->id} is auth by {$user->email}");
+                $user->coins += $siteOrder->total / 100 * $this->setting->coin_system_percent;
+                Log::info("User {$user->email} get {$user->coins} coins");
+                $user->save();
+            }
         }
 
         $siteOrder->status = $status;
