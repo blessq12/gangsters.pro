@@ -190,7 +190,7 @@ export default {
                     </li>
                   </ul>
                 </div>
-                <button class="btn rounded btn-secondary" @click="checkout = !checkout">
+                <button class="btn rounded btn-main" @click="checkout = !checkout">
                   Оформление
                 </button>
                 <button class="btn rounded btn-danger mx-2" @click="localStore.clearStore('cart')">
@@ -198,29 +198,26 @@ export default {
                 </button>
               </div>
               <div v-else>
-                <button
-                  type="btn"
-                  aria-label="Назад"
-                  class="btn p-0"
-                  @click="checkout = !checkout"
-                >
+                <button class="btn rounded btn-main btn-sm mb-4" @click="checkout = !checkout">
                   <i class="fa fa-arrow-left" style="margin-right: 6px"></i>
                   Назад в корзину
                 </button>
 
-                <div class="btn-group d-block mb-4">
+                <div class="btn-group rounded d-block mb-4">
                   <button
                     type="button"
-                    :class="`btn ${delivery ? 'active' : ''}`"
+                    :class="`btn btn-main ${delivery ? 'active' : ''}`"
                     @click="delivery = true"
                   >
+                    <i class="fa fa-truck"></i>
                     Доставка
                   </button>
                   <button
                     type="button"
-                    :class="`btn ${!delivery ? 'active' : ''}`"
+                    :class="`btn btn-main ${!delivery ? 'active' : ''}`"
                     @click="delivery = false"
                   >
+                    <i class="fa fa-shopping-cart"></i>
                     Самовывоз
                   </button>
                 </div>
@@ -381,15 +378,15 @@ export default {
                             <error-label :errorBag="validatorBag" name="personQty"></error-label>
                           </div>
                           <div class="input-group" style="max-height: 37px;">
-                            <button class="btn btn-outline-secondary" type="button" style="padding: 0 16px !important;" @click="formData.personQty--" :disabled="formData.personQty <= 1">-</button>
+                            <button class="btn btn-qty" type="button" style="padding: 0 16px !important;" @click="formData.personQty--" :disabled="formData.personQty <= 1">-</button>
                             <input
                               type="text"
                               name="personQty"
                               id="personQty"
-                              class="form-control text-center"
+                              class="form-control text-center fw-bold"
                               v-model="formData.personQty"
                             />
-                            <button class="btn btn-outline-secondary" style="padding: 0 16px !important;" type="button" @click="formData.personQty++">+</button>
+                            <button class="btn btn-qty" style="padding: 0 16px !important;" type="button" @click="formData.personQty++">+</button>
                           </div>
                           </div>
                         </div>
@@ -413,6 +410,32 @@ export default {
                     </form>
                   </div>
                   <div v-else>
+                    <button class="btn w-100 btn-main btn-sm rounded mb-3" data-bs-toggle="collapse" data-bs-target="#map-collapse">
+                      Как к нам проехать
+                      <i class="fa fa-chevron-down"></i>
+                    </button>
+                    <div style="position: relative; overflow: hidden" id="map-collapse" class="collapse overflow-hidden mt-4 rounded">
+                      <a
+                        href="https://yandex.ru/maps/org/gangster_s_sushi/82888444717/?utm_medium=mapframe&utm_source=maps"
+                        style="color: #eee; font-size: 12px; position: absolute; top: 0px;"
+                      >
+                        Gangster's sushi
+                      </a>
+                      <a
+                        href="https://yandex.ru/maps/67/tomsk/category/food_and_lunch_delivery/184108273/?utm_medium=mapframe&utm_source=maps"
+                        style="color: #eee; font-size: 12px; position: absolute; top: 14px;"
+                      >
+                        Доставка еды и обедов в Томске
+                      </a>
+                      <iframe
+                        src="https://yandex.ru/map-widget/v1/?ll=84.986330%2C56.513423&mode=search&oid=82888444717&ol=biz&z=16.61"
+                        width="100%"
+                        height="400"
+                        frameborder="0"
+                        allowfullscreen="true"
+                        style="position: relative"
+                      ></iframe>
+                    </div>
                     <form ref="noDelivery" class="mb-4">
                       <div class="row">
                         <div class="col">
@@ -456,17 +479,17 @@ export default {
                               <error-label :errorBag="validatorBag" name="personQty"></error-label>
                             </div>
                             <div class="input-group">
-                              <button type="button" class="btn btn-outline-secondary" style="padding: 0 16px!important;" @click="noDelForm.personQty--" :disabled="noDelForm.personQty < 2">-</button>
+                              <button type="button" class="btn btn-qty" style="padding: 0 16px!important;" @click="noDelForm.personQty--" :disabled="noDelForm.personQty < 2">-</button>
                               <input
                                 type="text"
                                 name="personQty"
                                 id="personQty"
-                                class="form-control text-center"
+                                class="form-control text-center fw-bold"
                                 v-model="noDelForm.personQty"
                                 min="1"
                                 max="10"
                               />
-                              <button type="button" class="btn btn-outline-secondary" style="padding: 0 16px!important;" @click="noDelForm.personQty++">+</button>
+                              <button type="button" class="btn btn-qty" style="padding: 0 16px!important;" @click="noDelForm.personQty++">+</button>
                             </div>
                           </div>
                         </div>
@@ -488,42 +511,12 @@ export default {
                         </div>
                       </div>
                     </form>
-
-                    <button class="btn w-100 btn-primary" data-bs-toggle="collapse" data-bs-target="#map-collapse">
-                      Как к нам проехать
-                      <i class="fa fa-chevron-down"></i>
-                    </button>
-                    <div style="position: relative; overflow: hidden" id="map-collapse" class="collapse overflow-hidden mt-4 rounded">
-                      <a
-                        href="https://yandex.ru/maps/org/gangster_s_sushi/82888444717/?utm_medium=mapframe&utm_source=maps"
-                        style="color: #eee; font-size: 12px; position: absolute; top: 0px;"
-                      >
-                        Gangster's sushi
-                      </a>
-                      <a
-                        href="https://yandex.ru/maps/67/tomsk/category/food_and_lunch_delivery/184108273/?utm_medium=mapframe&utm_source=maps"
-                        style="color: #eee; font-size: 12px; position: absolute; top: 14px;"
-                      >
-                        Доставка еды и обедов в Томске
-                      </a>
-                      <iframe
-                        src="https://yandex.ru/map-widget/v1/?ll=84.986330%2C56.513423&mode=search&oid=82888444717&ol=biz&z=16.61"
-                        width="100%"
-                        height="400"
-                        frameborder="0"
-                        allowfullscreen="true"
-                        style="position: relative"
-                      ></iframe>
-                    </div>
-                    
-                    
-
                   </div>
                 </transition>
 
                 <button
                   type="button"
-                  class="btn rounded btn-warning mt-4"
+                  class="btn rounded btn-main mt-2"
                   @click="delivery ? validate('delivery') : validate('noDelivery')"
                 >
                   Заказать
@@ -570,6 +563,27 @@ export default {
 </template>
 
 <style lang="sass" scoped>
+.btn-qty
+  background: lighten($color-main, 10%)
+  border: unset
+  color: #fff
+  padding: 0 16px !important
+.btn-group
+  border-radius: 16px !important
+  overflow: hidden
+  width: fit-content
+  .btn
+    background: lighten($color-main, 40%)
+    border: unset
+    color: #fff
+    padding: 8 16px !important
+    &.active
+      background: $color-main
+      color: #fff
+.btn-main
+  background: $color-main
+  border: unset
+  color: #fff
 .cart-list
   li
     margin-bottom: 0
