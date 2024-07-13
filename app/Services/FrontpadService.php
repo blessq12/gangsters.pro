@@ -92,6 +92,11 @@ class FrontpadService
             Log::error("Order not found: id = " . $siteOrder->id);
             return;
         }
+
+        if ($siteOrder->user) {
+            Log::info("Order {$siteOrder->id} is auth by {$siteOrder->user->email}");
+        }
+
         $siteOrder->status = $status;
         $siteOrder->save();
         Log::info("Order updated: id = {$siteOrder->id}, status = {$siteOrder->status}");

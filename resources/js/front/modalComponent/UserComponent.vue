@@ -375,7 +375,7 @@ export default {
                         leave-active-class="animate__animated animate__slideOutUp"
                         mode="out-in"
                     >
-                            <div class="row row-cols-1 row-cols-lg-2" v-if="lastOrdersShow">
+                            <div class="row" v-if="lastOrdersShow">
                                 <div class="col">
                                     <table class="table table-striped table-hover overflow-auto">
                                         <thead>
