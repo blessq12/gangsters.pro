@@ -15,6 +15,10 @@ class Order extends Model
      *    10 - Выполнен
      */
 
+    const STATUS_NEW = 1;
+    const STATUS_PAID = 10;
+    const STATUS_CANCELLED = 11;
+
     protected $casts = [
         'created_at' => 'datetime',
     ];
