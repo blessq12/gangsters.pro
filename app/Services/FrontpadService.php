@@ -95,7 +95,7 @@ class FrontpadService
 
         if ($siteOrder->user && $status == 10) {
             Log::info("Order {$siteOrder->id} is auth by {$siteOrder->user->email}");
-            $siteOrder->user->coin += $siteOrder->total * 1.1; // 10 percent discount to coin
+            $siteOrder->user->coins += $siteOrder->total * 1.1; // 10 percent discount to coin
             $siteOrder->user->save();
         }
 
