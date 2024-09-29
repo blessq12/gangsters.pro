@@ -1,8 +1,16 @@
 <script>
 import { mapStores } from "pinia";
 import { localStore } from "../../stores/localStore";
+import { userStore } from "../../stores/userStore";
+import { appStore } from "../../stores/appStorage";
 
 export default {
+    mounted() {
+        //
+        if (this.userStore.authStatus) {
+            this.cart = true
+        }
+    },
     data: () => ({
         cart: false,
         cartContent: false,
@@ -13,7 +21,13 @@ export default {
         }
     }),
     computed: {
-        ...mapStores(localStore)
+        ...mapStores(localStore, userStore, appStore)
+    },
+    methods: {
+        openModal(name) {
+            this.appStore.modal = true
+            this.appStore.modalName = name
+        }
     },
     watch: {
         cart(val) {
@@ -43,18 +57,23 @@ export default {
         <div class="row h-100 align-items-end">
             <div class="col">
                 <div class="d-flex align-items-center justify-content-start">
-                    <div class="icon visible" :style="{background: cart ? `url(${images.cart})` : `url(${images.coin})`}">
-                        
-                    </div>
+                    <div 
+                        class="icon visible cursor-pointer" 
+                        :style="{
+                            background: cart ? `url(${images.cart})` : `url(${images.coin})`
+                        }"
+                        @click="cart ? openModal('cart') : openModal('user')"
+                    ></div>
                     <div class="content invisible fs-4" :class="{ 'hide': contentHide }">
                         <div class="cart" v-if="cartContent">
-                            <span class="d-block">Сумма: {{ localStore.cartTotal }}</span>
-                            <span class="d-block">Количество: {{ localStore.cartQty }}</span>
+                            <span class="d-block">Сумма: {{ localStore.cartTotal }} руб.</span>
+                            <span class="d-block">Количество: {{ localStore.cartQty }} шт.</span>
                         </div>
-                        <div class="coin" v-else>
+                        <div class="coin" v-else v-if="!userStore.authStatus">
                             <span class="fw-medium">Получайте кэшбэк с Gangster Coin!</span>
                             <span class="d-block">
-                                Зарегистрируйтесь и зарабатывать<br> кэшбэк с каждой покупки!
+                                Зарегистрируйтесь и зарабатывать<br> 
+                                кэшбэк с каждой покупки!
                             </span>
                         </div>
                     </div>
