@@ -62,6 +62,7 @@ export default {
         loginErrorBag: {},
         registerErrorBag: {},
         editErrorBag: {},
+        loading: false
     }),
     watch: {
         lastOrdersShow(newVal) {
@@ -409,7 +410,7 @@ export default {
                                                 </td>
                                             </tr>
                                         </tbody>
-                                        <tbody v-if="!orderLoader">
+                                        <tbody v-if="!orderLoader">c 
                                             <tr v-for="order in userStore.orders">
                                                 <td>{{ order.id }}</td>
                                                 <td v-html="getStatusBadge(order.status)"></td>
