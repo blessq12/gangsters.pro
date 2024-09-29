@@ -54,7 +54,7 @@ export default {
                         <div class="coin" v-else>
                             <span class="fw-medium">Получайте кэшбэк с Gangster Coin!</span>
                             <span class="d-block">
-                                Зарегистрируйтесь и начните зарабатывать<br> кэшбэк с каждой покупки!
+                                Зарегистрируйтесь и зарабатывать<br> кэшбэк с каждой покупки!
                             </span>
                         </div>
                     </div>
@@ -68,14 +68,20 @@ export default {
 <style scoped lang="sass">
 .cart, .coin
     background: #fff
-    padding: 10px 25px
+    padding: 5px 12px
     visibility: visible
     width: fit-content
+    background: linear-gradient(to bottom, lighten($color-main, 10%), $color-main)
+    color: #fff
+    border-radius: $default-radius
+    border: 1px solid darken($color-main, 15%)
+    @media (min-width: 768px)
+        padding: 10px 25px
     span
         display: block
         font-weight:300
         line-height: 1
-        font-size: clamp(18px, 3.2vw, 22px)
+        font-size: clamp(14px, 3.2vw, 16px)
         margin-bottom: 4px
 .wrapper
     top: 0
@@ -84,11 +90,14 @@ export default {
     height: 100%
     z-index: 20
 .icon
-    width: 100px
-    height: 100px
+    width: 80px
+    height: 80px
     background-position: center !important
     background-size: contain !important
     background-repeat: no-repeat !important
+    @media (min-width: 768px)
+        width: 100px
+        height: 100px
 .content
     width: 100%
     word-wrap: no-break
