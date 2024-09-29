@@ -21,7 +21,7 @@ export default {
             if (prod.images.length) {
                 return prod.thumbs[0].medium
             } else {
-                return 'https://via.placeholder.com/512x512'
+                return '/images/placeholder/no-image.jpg'
             }
         },
         scrollToCategory(uri) {

@@ -22,6 +22,8 @@ app.use(VueLazyload, {
     lazyComponent: true,
     preLoad: 1.3,
     attempt: 1,
+    error: '/images/placeholder/no-image.jpg',
+    loading: '/images/placeholder/loading.gif',
     observer: true,
     observerOptions: {
         rootMargin: '0px',
