@@ -1,1 +1,0 @@
-<bottom-cart></bottom-cart>
