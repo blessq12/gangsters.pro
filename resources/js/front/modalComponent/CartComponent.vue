@@ -169,9 +169,9 @@ export default {
               <i class="fa fa-arrow-left" style="margin-right: 6px"></i> Назад в корзину
             </button>
 
-            <div class="row row-cols-1 row-cols-md-2 mb-4 mb-lg-0">
+            <div class="row row-cols-1 mb-4">
               <!-- First button group for delivery options -->
-              <div class="btn-group rounded d-block col mb-3 mb-md-3">
+              <div class="btn-group rounded d-block col mb-3 mb-lg-0">
                 <button type="button" :class="`btn btn-main ${delivery ? 'active' : ''}`" @click="delivery = true">
                   <i class="fa fa-truck"></i> Доставка
                 </button>

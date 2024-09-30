@@ -56,7 +56,6 @@ export default {
             } else {
                 clearTimeout(this.hoverTimeout);
             }
-            console.log(value);
         }
     }
 }

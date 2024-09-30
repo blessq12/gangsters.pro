@@ -11,15 +11,31 @@ export default {
         }
     },
     mounted() {
-    
+        
     },
+    data: () => ({
+        currentItem: null
+    }),
     computed: {
         ...mapStores(appStore, localStore)
     },
+    methods: {
+        scrollToActiveItem() {
+            if (this.currentItem) {
+                const bo = this.$refs.backoverlay;
+                const activeItem = this.$refs[this.currentItem];
+                bo.style.left = activeItem.offsetLeft + 'px';
+            }
+        }
+    },
     watch: {
-        'appStore.modal': function(val) {
+        'appStore.modal': function (val) {
             const bodyClassList = document.body.classList;
             val ? bodyClassList.add('overflow-hidden') : bodyClassList.remove('overflow-hidden');
+        },   
+        'appStore.modalName': function (val) {
+            this.currentItem = val;
+            this.scrollToActiveItem();
         }
     }
 }
@@ -51,27 +67,28 @@ export default {
                         </div>
                         <div class="row">
                             <div class="col">
-                                <ul class="list-unstyled  p-0 d-flex nav-icons border-bottom">
-                                    <li @click="appStore.modalName = 'cart'" :class="{ 'active': appStore.modalName === 'cart' }">
+                                <ul class="list-unstyled  p-0 d-flex nav-icons border-bottom" ref="menuItems">
+                                    <div class="backoverlay" ref="backoverlay"></div>
+                                    <li @click="appStore.modalName = 'cart'" :class="{ 'active': appStore.modalName === 'cart' }" ref="cart">
                                         <div class="counter" v-if="localStore.cart.length > 0">
                                             <span>{{ localStore.cart.length }}</span>
                                         </div>
                                         <i class="fa fa-shopping-cart"></i>
                                         <span>Корзина</span>
                                     </li>
-                                    <li @click="appStore.modalName = 'fav'" :class="{ 'active': appStore.modalName === 'fav' }">
+                                    <li @click="appStore.modalName = 'fav'" :class="{ 'active': appStore.modalName === 'fav' }" ref="fav">
                                         <div class="counter" v-if="localStore.fav.length > 0">
                                             <span>{{ localStore.fav.length }}</span>
                                         </div>
                                         <i class="fa fa-heart"></i>
                                         <span>Избранное</span>
                                     </li>
-                                    <li @click="appStore.modalName = 'user'" :class="{ 'active': appStore.modalName === 'user' }">
+                                    <li @click="appStore.modalName = 'user'" :class="{ 'active': appStore.modalName === 'user' }" ref="user">
                                         <i class="fa fa-user" ></i>
                                         <span>Профиль</span>
                                     </li>
                                     
-                                    <li @click="appStore.modalName = 'menu'" :class="{ 'active': appStore.modalName === 'menu' }">
+                                    <li @click="appStore.modalName = 'menu'" :class="{ 'active': appStore.modalName === 'menu' }" ref="menu">
                                         <i class="fa fa-list-ul"></i>
                                         <span>Меню</span>
                                     </li>
@@ -91,58 +108,6 @@ export default {
 </template>
 
 <style lang="sass" scoped>
-.nav-icons
-    margin-bottom: 24px !important
-    overflow-x: scroll
-    white-space: nowrap
-    padding: 6px 0 !important
-    &::-webkit-scrollbar
-        display: none
-    li
-        position: relative
-        display: flex
-        flex-direction: column
-        align-items: center
-        cursor: pointer
-        color: #6e6e6e
-        margin-right: 6px
-        width: 100px
-        @media(min-width: 992px)
-            margin-right: 12px
-        padding: 6px 12px
-        border-radius: 6px
-        transition: all .3s 
-        @media(min-width: 992px)
-            padding: 6px 24px
-        .counter
-            position: absolute
-            top: 0
-            right: 0
-            width: 20px
-            height: 20px
-            display: flex
-            align-items: center
-            justify-content: center
-            background: red
-            border-radius: 50%
-            span
-                color: #fff
-                font-size: 14px
-        i
-            font-size: 25px
-            @media(min-width: 992px)
-                font-size: 35px
-                margin-bottom: 6px !important
-        span
-            font-size: 14px
-            font-weight: 500
-        &.active
-            background: $color-main
-            color: white
-            &:hover
-                color: white
-        &:hover
-            color: $color-main
 .wrap
     display: flex
     align-items: center
@@ -162,4 +127,54 @@ export default {
             left: unset
             right: 0 !important
         background: white
+// menu styles
+.menu
+    .nav-icons
+        border-bottom: 1px solid $color-main
+        overflow: auto
+        position: relative
+        .backoverlay
+            position: absolute
+            top: 0
+            left: 0px
+            height: 100%
+            width: 100%
+            max-width: 100px
+            border-radius: 16px
+            @media(min-width: 768px)
+                max-width: 125px
+            background: $color-main
+            transition: all 0.3s
+        li
+            flex: 1
+            display: flex
+            align-items: center
+            justify-content: center
+            flex-direction: column
+            gap: 5px
+            padding: 10px
+            color: $color-main
+            position: relative
+            cursor: pointer
+            max-width: 100px
+            @media(min-width: 768px)
+                max-width: 125px
+            &.active
+                color: white
+            i
+                font-size: 20px
+            .counter
+                position: absolute
+                top: 7px
+                right: 7px
+                width: 20px
+                height: 20px
+                border-radius: 50%
+                background: red
+                color: white
+                display: flex
+                align-items: center
+                justify-content: center
+                font-size: 12px
+            
 </style>
