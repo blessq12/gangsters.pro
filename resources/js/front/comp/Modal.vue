@@ -11,7 +11,6 @@ export default {
         }
     },
     mounted() {
-        
     },
     data: () => ({
         currentItem: null
@@ -31,11 +30,15 @@ export default {
     watch: {
         'appStore.modal': function (val) {
             const bodyClassList = document.body.classList;
+            val ? this.currentItem = this.appStore.modalName : null;
+            val ? setTimeout(() => { this.scrollToActiveItem();}, 200) : null;
             val ? bodyClassList.add('overflow-hidden') : bodyClassList.remove('overflow-hidden');
-        },   
+        },
         'appStore.modalName': function (val) {
             this.currentItem = val;
-            this.scrollToActiveItem();
+            setTimeout(() => {
+                this.scrollToActiveItem();
+            }, 50);
         }
     }
 }
@@ -67,7 +70,7 @@ export default {
                         </div>
                         <div class="row">
                             <div class="col">
-                                <ul class="list-unstyled  p-0 d-flex nav-icons border-bottom" ref="menuItems">
+                                <ul class="list-unstyled  p-0 d-flex nav-icons border-bottom pb-2" ref="menuItems">
                                     <div class="backoverlay" ref="backoverlay"></div>
                                     <li @click="appStore.modalName = 'cart'" :class="{ 'active': appStore.modalName === 'cart' }" ref="cart">
                                         <div class="counter" v-if="localStore.cart.length > 0">
