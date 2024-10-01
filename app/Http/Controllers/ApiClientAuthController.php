@@ -106,7 +106,7 @@ class ApiClientAuthController extends Controller
 
         return response([
             'status' => true,
-            'message' => 'Письмо с новым паролем отправлено на ваше почту'
+            'message' => 'Письмо с новым паролем отправлено на вашу почту'
         ]);
     }
 

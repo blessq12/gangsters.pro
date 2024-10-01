@@ -18,9 +18,12 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::controller(ApiClientAuthController::class)->prefix('auth')->group(function () {
+    // auth
     Route::post('/login', 'clientLogin');
     Route::post('/register', 'clientRegister');
-    Route::post('/reset-password', 'resetPassword');
+    // forgot password
+    Route::post('forgot-password', 'resetPassword');
+
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/user', 'getUser');
         Route::patch('/update-user', 'updateUser');

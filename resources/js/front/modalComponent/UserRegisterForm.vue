@@ -17,15 +17,30 @@ export default {
     <form @submit.prevent="validate('register')">
         <div class="form-group">
             <label for="name">Имя</label>
-            <input type="text" name="name" id="name" class="form-control" v-model="data.name">
+            <div class="input-group">
+                <input type="text" name="name" id="name" class="form-control" v-model="data.name">
+                <span class="input-group-text fw-bold">
+                    <i class="fa fa-user"></i>
+                </span>
+            </div>
         </div>
         <div class="form-group">
             <label for="tel">Номер телефона</label>
-            <input type="text" name="tel" id="tel" class="form-control" v-maska data-maska="+7 (###) ###-##-##" placeholder="+7 " v-model="data.tel">
+            <div class="input-group">
+                <input type="text" name="tel" id="tel" class="form-control" v-maska data-maska="+7 (###) ###-##-##" placeholder="+7 " v-model="data.tel">
+                <span class="input-group-text fw-bold">
+                    <i class="fa fa-phone"></i>
+                </span>
+            </div>
         </div>
         <div class="form-group">
             <label for="email">Email адрес</label>
-            <input type="text" name="email" id="email" class="form-control" v-model="data.email">
+            <div class="input-group">
+                <input type="text" name="email" id="email" class="form-control" v-model="data.email">
+                <span class="input-group-text fw-bold">
+                    <i class="fa fa-envelope"></i>
+                </span>
+            </div>
         </div>
         <div class="form-group mt-4">
             <button type="submit" class="btn rounded w-50">
@@ -36,6 +51,9 @@ export default {
 </template>
 
 <style lang="sass" scoped>
+.input-group-text 
+    background-color: $color-main
+    color: #fff
 .btn
     background: $color-main 
     color: #fff 

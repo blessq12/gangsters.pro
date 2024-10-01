@@ -8,7 +8,7 @@ export default {
         validate: {
             type: Function,
             required: true
-        }
+        },
     },
     data() {
         return {
@@ -22,7 +22,10 @@ export default {
     <form @submit.prevent="validate('login')">
         <div class="form-group">
             <label for="email">Email адрес</label>
-            <input type="text" name="email" id="email"  class="form-control"  placeholder="example@gangsters.pro" v-model="data.email">
+            <div class="input-group">
+                <input type="text" name="email" id="email"  class="form-control"  placeholder="example@gangsters.pro" v-model="data.email">
+                <span class="input-group-text fw-bold">@</span>
+            </div>
         </div>
         <div class="form-group">
             <label for="password">Пароль</label>
@@ -41,13 +44,16 @@ export default {
                 </button>
             </div>
             <div class="col text-start">
-                <a href="javascript:void(0)" class="text-muted">Забыли пароль?</a>
+                <span class="text-muted d-block cursor-pointer" @click="$emit('forgot')" >Забыли пароль?</span>
             </div>
         </div>
     </form>
 </template>
 
 <style scoped lang="sass">
+.input-group-text 
+    background-color: $color-main
+    color: #fff
 .btn
     background: $color-main 
     color: #fff 

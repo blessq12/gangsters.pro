@@ -57,14 +57,16 @@ export default {
             })
         },
         validate(form) {
-            let schema = form == 'login' ? this.loginSchema : this.registerSchema
-            let data = form == 'login' ? this.loginData : this.registerData
+            let schema = form == 'login' ? this.loginSchema : this.registerSchema,
+                data = form == 'login' ? this.loginData : this.registerData,
+                url = form == 'login' ? '/api/auth/login' : '/api/auth/register',
+                action = form == 'login' ? userStore.auth : userStore.register
 
             schema.validate(data, { abortEarly: false })
                 .then(res => {
                     this.errors = []
                     this.updateInputs()
-                    console.log(res)
+                    action(data)
                 })
                 .catch(err => {
                     this.errors = err.inner.map(error => ({
@@ -82,6 +84,9 @@ export default {
                     input.classList.remove('is-invalid');
                 }
             });
+        },
+        changeForm(form) {
+            console.log(form)
         }
     }
 }
@@ -110,12 +115,14 @@ export default {
             <!-- end form switch -->
 
             <!-- form components panel -->
-            <div class="row">
+            <div class="row" style="min-height: 50vh;">
                 <div class="col">
-                    <transition
+
+                    <transition-group
                         enter-active-class="animate__animated animate__fadeIn"
                         leave-active-class="animate__animated animate__fadeOut"
-                        mode="out-in"
+                        class="position-relative h-100"
+                        tag="div"
                     >
                         <user-login-form 
                             @validate="validate('login')"
@@ -123,15 +130,26 @@ export default {
                             :schema="loginSchema"
                             :validate="validate"
                             v-if="form == 'login'" 
+                            key="login"
+                            @forgot="form = 'forgot'"
+                            class="position-absolute w-100"
                         />
                         <user-register-form 
                             @validate="validate('register')"
                             :data="registerData"
                             :schema="registerSchema"
                             :validate="validate"
-                            v-else
+                            :form="form"
+                            v-if="form == 'register'"
+                            key="register"
+                            class="position-absolute w-100"
                         />
-                    </transition>
+                        <forgot-password
+                            v-if="form == 'forgot'"
+                            key="forgot"
+                            class="position-absolute w-100"
+                        />
+                    </transition-group>
                     
                 </div>
             </div>
