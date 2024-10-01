@@ -9,44 +9,35 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class GreetingMessageWithPassword extends Mailable
+class CreateOrderMail extends Mailable
 {
     use Queueable, SerializesModels;
 
     /**
      * Create a new message instance.
      */
-
-    public function __construct(
-        public object $data,
-        public string $password
-    ) {
+    public function __construct()
+    {
         //
     }
 
     /**
      * Get the message envelope.
      */
-
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Регистрация на сайте gangsters.pro',
+            subject: 'Create Order Mail',
         );
     }
 
     /**
      * Get the message content definition.
      */
-
     public function content(): Content
     {
         return new Content(
-            view: 'mail.greeting',
-            with: [
-                'name' => 'Andrew',
-                'domain' => 'code70@'
-            ]
+            view: 'view.name',
         );
     }
 

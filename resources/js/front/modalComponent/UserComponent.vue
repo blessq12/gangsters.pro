@@ -25,6 +25,7 @@ export default {
         errors:{
             handler(newVal) {
                 this.updateInputs()
+                console.log(newVal)
             },
             deep: true
         },
@@ -40,7 +41,9 @@ export default {
             return {
                 name: '',
                 tel: '',
-                email: ''
+                email: '',
+                password: '',
+                password_confirmation: ''
             }
         },
         getLoginSchema() {
@@ -53,7 +56,9 @@ export default {
             return object({
                 name: string().required('Обязательное поле').min(3, "Минимум 3 символа").max(255, 'Максимум 255 символов'),
                 tel: string().required('Обязательное поле').min(18, 'Номер 18 символов').max(18, 'Номер 18 символов'),
-                email: string().required('Обязательное поле').email('Некорректный email').max(255, 'Максимум 255 символов')
+                email: string().required('Обязательное поле').email('Некорректный email').max(255, 'Максимум 255 символов'),
+                password: string().required('Обязательное поле').min(6, "Минимум 6 символов").max(255, 'Максимум 255 символов'),
+                password_confirmation: string().required('Обязательное поле').min(6, "Минимум 6 символов").max(255, 'Максимум 255 символов')
             })
         },
         validate(form) {
@@ -69,16 +74,16 @@ export default {
                     action(data)
                 })
                 .catch(err => {
-                    this.errors = err.inner.map(error => ({
-                        path: error.path, 
-                        message: error.message
-                    }));
+                    this.errors = []
+                    err.inner.forEach(e => (
+                        this.errors[e.path] = e.message
+                    ));
                 })
         },
         updateInputs() {
             let inputs = document.querySelectorAll('form input');
             inputs.forEach(input => {
-                if (this.errors.some(error => error.path === input.name)) {
+                if (this.errors[input.name]) {
                     input.classList.add('is-invalid');
                 } else {
                     input.classList.remove('is-invalid');

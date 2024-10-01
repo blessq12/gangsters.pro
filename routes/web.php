@@ -6,6 +6,8 @@ use App\Http\Controllers\Front\MainController;
 use App\Models\Order;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Request;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\RegisterMail;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,17 +27,16 @@ Route::controller(MainController::class)->middleware('cors')->name('main.')->gro
     Route::get('/contact', 'contact')->name('contact');
     Route::get('/privacy', 'privacy')->name('privacy');
     Route::get('/purchase-and-delivery', 'purchaseAndDelivery')->name('purchaseAndDelivery');
-    // Route::get('/resize', 'resize'); // метод для пакетного сжатия оригиналов изображений товаров
-    // Route::get('/add-sku', 'addSKU'); // пакетная регенерация артикулов товаров
-    // Route::get('/test', function () {
-    //     $order = Order::latest()->first();
-    //     $fp = new \App\FrontPad\FrontPad();
-    //     dd($fp->createOrder($order));
-    // });
+    Route::get('/mail', function () {
+        Mail::to('korobkov26011992@gmail.com')->send(new RegisterMail());
+    });
+    Route::get('template', function () {
+        $mailiable = new RegisterMail();
+        return $mailiable->render();
+    });
 });
 
-Route::controller(CrmController::class)->middleware(['auth', 'can:admin'])->prefix('crm')->name('crm.')->group(function () {
-});
+Route::controller(CrmController::class)->middleware(['auth', 'can:admin'])->prefix('crm')->name('crm.')->group(function () {});
 
 Route::controller(AuthController::class)->prefix('auth')->name('auth.')->group(function () {
     Route::middleware('guest')->group(function () {

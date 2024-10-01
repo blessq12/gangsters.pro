@@ -9,16 +9,14 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class ResetPassword extends Mailable
+class PasswordRecoveryMail extends Mailable
 {
     use Queueable, SerializesModels;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(
-        public string $password
-    )
+    public function __construct()
     {
         //
     }
@@ -29,7 +27,7 @@ class ResetPassword extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Восстановление пароля на сайте gangsters.pro',
+            subject: 'Password Recovery Mail',
         );
     }
 
@@ -39,7 +37,7 @@ class ResetPassword extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'mail.resetPassword',
+            view: 'view.name',
         );
     }
 

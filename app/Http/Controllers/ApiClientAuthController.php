@@ -54,21 +54,10 @@ class ApiClientAuthController extends Controller
     }
     public function clientRegister(ApiRegisterRequest $request)
     {
-        $password = Str::random(16);
         $validated = $request->validated();
-        $user = new User($validated);
-        $user->password = Hash::make($password);
-
-        if ($user->save()) {
-            Mail::to($user->email)->send(new GreetingMessageWithPassword($user, $password));
-        }
-
-        $token = $user->createToken('gangsta');
-
         return response([
             'status' => true,
-            'user' => User::find($user->id),
-            'token' => $token->plainTextToken
+            'data' => $validated
         ]);
     }
 

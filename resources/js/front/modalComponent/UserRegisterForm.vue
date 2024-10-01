@@ -24,24 +24,50 @@ export default {
                 </span>
             </div>
         </div>
+
+        <div class="row">
+            <div class="col-6">
+                <div class="form-group">
+                    <label for="tel">Номер телефона</label>
+                    <div class="input-group">
+                        <input type="text" name="tel" id="tel" class="form-control" v-maska data-maska="+7 (###) ###-##-##" placeholder="+7 " v-model="data.tel">
+                        <span class="input-group-text fw-bold">
+                            <i class="fa fa-phone"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="form-group">
+                    <label for="email">Email адрес</label>
+                    <div class="input-group">
+                        <input type="text" name="email" id="email" class="form-control" v-model="data.email">
+                        <span class="input-group-text fw-bold">
+                            <i class="fa fa-envelope"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="form-group">
-            <label for="tel">Номер телефона</label>
+            <label for="password">Пароль</label>
             <div class="input-group">
-                <input type="text" name="tel" id="tel" class="form-control" v-maska data-maska="+7 (###) ###-##-##" placeholder="+7 " v-model="data.tel">
+                <input type="password" name="password" id="password" class="form-control" v-model="data.password">
                 <span class="input-group-text fw-bold">
-                    <i class="fa fa-phone"></i>
+                    <i class="fa fa-lock"></i>
                 </span>
             </div>
         </div>
         <div class="form-group">
-            <label for="email">Email адрес</label>
+            <label for="password_confirmation">Повторите пароль</label>
             <div class="input-group">
-                <input type="text" name="email" id="email" class="form-control" v-model="data.email">
+                <input type="password" name="password_confirmation" id="password_confirmation" class="form-control" v-model="data.password_confirmation">
                 <span class="input-group-text fw-bold">
-                    <i class="fa fa-envelope"></i>
+                    <i class="fa fa-lock"></i>
                 </span>
             </div>
         </div>
+        
         <div class="form-group mt-4">
             <button type="submit" class="btn rounded w-50">
                 <span>Отправить</span>

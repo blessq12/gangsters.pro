@@ -74,31 +74,4 @@ class MainController extends Controller
     {
         return view('front.privacy');
     }
-
-    // public function resize()
-    // {
-    //     $images = ProductImage::all();
-    //     foreach ($images as $image) {
-    //         $path = public_path('uploads/' . $image->path);
-    //         if (File::exists($path)) {
-    //             $img = Image::make($path)->resize(1920, 1080, function ($constraint) {
-    //                 $constraint->aspectRatio();
-    //             })->encode('jpg', 85);
-    //             $img->save($path);
-    //         }
-    //     }
-
-    //     return 'all images resized and saved';
-    // }
-
-    // public function addSKU()
-    // {
-    //     $products = Product::all();
-    //     $products->each(function ($product) {
-    //         $product->sku = Str::sku('');
-    //         $product->save();
-    //     });
-
-    //     return 'for all products added sku values';
-    // }
 }
