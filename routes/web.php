@@ -27,13 +27,6 @@ Route::controller(MainController::class)->middleware('cors')->name('main.')->gro
     Route::get('/contact', 'contact')->name('contact');
     Route::get('/privacy', 'privacy')->name('privacy');
     Route::get('/purchase-and-delivery', 'purchaseAndDelivery')->name('purchaseAndDelivery');
-    Route::get('/mail', function () {
-        Mail::to('korobkov26011992@gmail.com')->send(new RegisterMail());
-    });
-    Route::get('template', function () {
-        $mailiable = new RegisterMail();
-        return $mailiable->render();
-    });
 });
 
 Route::controller(CrmController::class)->middleware(['auth', 'can:admin'])->prefix('crm')->name('crm.')->group(function () {});

@@ -55,10 +55,23 @@ class ApiClientAuthController extends Controller
     public function clientRegister(ApiRegisterRequest $request)
     {
         $validated = $request->validated();
+
+        $user = User::create($validated);
+
+        if (!$user->save()) {
+            return response([
+                'status' => false,
+                'errors' => $user->errors()
+            ], 400);
+        }
+
+        Mail::to($user->email)->send(new RegisterMail($user));
+
         return response([
             'status' => true,
-            'data' => $validated
-        ]);
+            'user' => $user,
+            'token' => $user->createToken('gangsta')->plainTextToken
+        ], 200);
     }
 
     public function getUser(Request $request)

@@ -9,6 +9,11 @@ export default {
             type: Function,
             required: true
         }
+    },
+    data() {
+        return {
+            showPassword: false
+        }
     }
 }
 </script>
@@ -25,34 +30,32 @@ export default {
             </div>
         </div>
 
-        <div class="row">
-            <div class="col-6">
-                <div class="form-group">
-                    <label for="tel">Номер телефона</label>
-                    <div class="input-group">
-                        <input type="text" name="tel" id="tel" class="form-control" v-maska data-maska="+7 (###) ###-##-##" placeholder="+7 " v-model="data.tel">
-                        <span class="input-group-text fw-bold">
-                            <i class="fa fa-phone"></i>
-                        </span>
-                    </div>
-                </div>
-            </div>
-            <div class="col-6">
-                <div class="form-group">
-                    <label for="email">Email адрес</label>
-                    <div class="input-group">
-                        <input type="text" name="email" id="email" class="form-control" v-model="data.email">
-                        <span class="input-group-text fw-bold">
-                            <i class="fa fa-envelope"></i>
-                        </span>
-                    </div>
-                </div>
+        <div class="form-group">
+            <label for="tel">Номер телефона</label>
+            <div class="input-group">
+                <input type="text" name="tel" id="tel" class="form-control" v-maska data-maska="+7 (###) ###-##-##" placeholder="+7 " v-model="data.tel">
+                <span class="input-group-text fw-bold">
+                    <i class="fa fa-phone"></i>
+                </span>
             </div>
         </div>
         <div class="form-group">
-            <label for="password">Пароль</label>
+            <label for="email">Email адрес</label>
             <div class="input-group">
-                <input type="password" name="password" id="password" class="form-control" v-model="data.password">
+                <input type="text" name="email" id="email" class="form-control" v-model="data.email">
+                <span class="input-group-text fw-bold">
+                    <i class="fa fa-envelope"></i>
+                </span>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="password">
+                Пароль
+                <small class="text-muted mb-0 d-inline-block ms-1">Пароль должен содержать минимум 6 символов</small>
+            </label>
+            <div class="input-group">
+                <input :type="showPassword ? 'text' : 'password'" name="password" id="password" class="form-control" v-model="data.password">
                 <span class="input-group-text fw-bold">
                     <i class="fa fa-lock"></i>
                 </span>
@@ -61,10 +64,19 @@ export default {
         <div class="form-group">
             <label for="password_confirmation">Повторите пароль</label>
             <div class="input-group">
-                <input type="password" name="password_confirmation" id="password_confirmation" class="form-control" v-model="data.password_confirmation">
+                <input :type="showPassword ? 'text' : 'password'" name="password_confirmation" id="password_confirmation" class="form-control" v-model="data.password_confirmation">
                 <span class="input-group-text fw-bold">
                     <i class="fa fa-lock"></i>
                 </span>
+            </div>
+        </div>
+        <div class="d-flex align-items-center justify-content-between">
+            <span class="d-block text-danger" v-if="data.password !== data.password_confirmation">
+                Пароли не совпадают
+            </span>
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="showPassword" v-model="showPassword">
+                <label for="showPassword" class="form-check-label">Показать пароль</label>
             </div>
         </div>
         

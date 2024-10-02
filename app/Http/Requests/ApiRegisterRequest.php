@@ -34,7 +34,9 @@ class ApiRegisterRequest extends FormRequest
         return [
             'name' => 'min:3|required|max:255',
             'tel' => 'required|unique:users|min:18|max:18',
-            'email' => 'required|email|unique:users|max:255'
+            'email' => 'required|email|unique:users|max:255',
+            'password' => 'required|min:6|max:255',
+            'password_confirmation' => 'required|min:6|max:255|same:password'
         ];
     }
     public function messages(): array
@@ -52,7 +54,16 @@ class ApiRegisterRequest extends FormRequest
             'email.required' => 'Поле Email обязательное',
             'email.email' => 'Email не является валидным',
             'email.unique' => 'Этот Email уже зарегистрирован',
-            'email.max' => 'Поле Email максиимум 255 символов'
+            'email.max' => 'Поле Email максиимум 255 символов',
+
+            'password.required' => 'Поле пароль обязательное',
+            'password.min' => 'Поле пароль минимум 6 символов',
+            'password.max' => 'Поле пароль максимум 255 символов',
+
+            'password_confirmation.required' => 'Поле пароль обязательное',
+            'password_confirmation.min' => 'Поле пароль минимум 6 символов',
+            'password_confirmation.max' => 'Поле пароль максимум 255 символов',
+            'password_confirmation.same' => 'Поле пароль должно совпадать с паролем',
         ];
     }
 }

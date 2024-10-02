@@ -8,7 +8,6 @@ export const userStore = defineStore('user', {
         authStatus: false,
         userData: null,
         authErrorBag: {},
-        loading: false,
         orders:[]
     }),
     actions: {
@@ -29,29 +28,10 @@ export const userStore = defineStore('user', {
                     } )
             }
         },
-        auth(cred) {
-            this.loading = true
-            axios.post( '/api/auth/login', cred )
-                .then(res => {
-                    toast.success('Успешная авторизация')
-                    this.authStatus = true
-                    this.userData = res.data.user
-                    localStorage.setItem('token', res.data.token)
-                    axios.defaults.headers['Accept'] = 'application/json'
-                    axios.defaults.headers['Authorization'] = 'Bearer ' + res.data.token
-                })
-                .catch(err => {
-                    err.response.data.errors.forEach( e => toast.error(e.message) )
-                })
-                .finally(() => {
-                    this.loading = false
-                })
-        },
-        register(cred) {    
-            this.loading = true
-            axios.post( '/api/auth/register', cred )
+        auth(action, cred) {    
+            let url = action == 'login' ? '/api/auth/login' : '/api/auth/register'
+            axios.post( url, cred )
                 .then(res => { 
-                    toast.success('Успешная регистрация')
                     this.authStatus = true
                     this.userData = res.data.user
                     localStorage.setItem('token', res.data.token)
@@ -59,13 +39,8 @@ export const userStore = defineStore('user', {
                     axios.defaults.headers['Authorization'] = 'Bearer-' + res.data.token
                  })
                 .catch (err => { 
-                    for (const [key, value] of Object.entries(err.response.data.errors)) {
-                        toast.error(`${value}`)
-                    }
+                    console.log(err.response.data)
                  })
-                .finally(() => {
-                    this.loading = false
-                })
         },
         logout(){
             this.authStatus = false

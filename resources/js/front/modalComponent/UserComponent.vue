@@ -25,7 +25,6 @@ export default {
         errors:{
             handler(newVal) {
                 this.updateInputs()
-                console.log(newVal)
             },
             deep: true
         },
@@ -63,21 +62,23 @@ export default {
         },
         validate(form) {
             let schema = form == 'login' ? this.loginSchema : this.registerSchema,
-                data = form == 'login' ? this.loginData : this.registerData,
-                url = form == 'login' ? '/api/auth/login' : '/api/auth/register',
-                action = form == 'login' ? userStore.auth : userStore.register
+                data = form == 'login' ? this.loginData : this.registerData
 
             schema.validate(data, { abortEarly: false })
                 .then(res => {
                     this.errors = []
                     this.updateInputs()
-                    action(data)
+                    this.userStore.auth(form, data)
                 })
                 .catch(err => {
                     this.errors = []
-                    err.inner.forEach(e => (
-                        this.errors[e.path] = e.message
+                    if (err.inner) {
+                        err.inner.forEach(e => (
+                            this.errors[e.path] = e.message
                     ));
+                    } else {
+                        console.error("Validation error:", err); // Log the error if inner is undefined
+                    }
                 })
         },
         updateInputs() {
