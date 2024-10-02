@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\OrderController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Carbon\Carbon;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,12 +27,31 @@ Route::controller(ApiClientAuthController::class)->prefix('auth')->group(functio
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/user', 'getUser');
+        Route::get('/get-user-data', function () {
+            $user = auth('sanctum')->user();
+            $user->dob = Carbon::parse($user->dob)->format('d-m-Y');
+            return response()->json([
+                'user' => $user,
+            ]);
+        });
         Route::patch('/update-user', 'updateUser');
     });
 });
 
 Route::controller(OrderController::class)->prefix('orders')->group(function () {
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('/get-my-orders', function () {
+            $orders = auth('sanctum')->user()->orders;
+            $orders->each(function ($order) {
+                $order->created = Carbon::parse($order->created_at)->format('d.m.Y H:i');
+                $order->status_text = \App\Models\Order::GET_STATUS[$order->status];
+            });
+            return response()->json($orders);
+        });
+        Route::get('/get-my-coins', function () {
+            return response()->json(auth('sanctum')->user()->coins);
+        });
+    });
     Route::post('create', 'createOrder');
     Route::post('update', 'updateOrder');
-    Route::get('{id}/get', 'getLastOrders');
 });

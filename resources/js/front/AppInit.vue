@@ -3,6 +3,8 @@ import { mapStores } from 'pinia';
 import { localStore } from '../stores/localStore';
 import { userStore } from '../stores/userStore';
 import { appStore } from '../stores/appStorage';
+import { useToast } from 'vue-toastification'
+const toast = useToast()
 
 export default {
     props:{
@@ -13,17 +15,20 @@ export default {
         this.localStore.loadStorage()
         this.userStore.loadStore()
         this.appStore.defineDevice()
-        this.appStore.welcomeCtaShow()
+
         if (this.modalDebug) {
             this.appStore.modal = true;
             this.appStore.modalName = 'user';
         }
+
         if (this.links && Object.keys(this.links).length > 0) {
             this.appStore.links = this.links;
         }
+
         if (this.company) {
             this.appStore.company = this.company;
         }
+
     },
     data: () => ({
         modalDebug: false
@@ -34,6 +39,18 @@ export default {
             userStore,
             appStore
         )
+    },
+    watch: {
+        'userStore.authStatus': {
+            handler(val) {
+                if (val) {
+                    toast.info('Вы успешно авторизовались')
+                } else {
+                    toast.warning('Вы вышли из аккаунта')
+                }
+            },
+            immediate: true,
+        }
     }
 }
 </script>

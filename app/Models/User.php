@@ -47,10 +47,15 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    public function role()
+    public function orders()
     {
-        $role_id = UserRole::where('user_id', $this->id)->first();
-        $role = Role::find($role_id)->first();
-        return $role;
+        return $this->hasMany(Order::class)
+            ->select(['id', 'status', 'created_at', 'total'])
+            ->take(50)
+            ->orderBy('created_at', 'desc');
+    }
+    public function coins()
+    {
+        return $this->coins;
     }
 }

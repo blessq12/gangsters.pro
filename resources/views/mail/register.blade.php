@@ -99,10 +99,8 @@
                         <div class="card-body">
                             <p class="fw-bold">Здесь вся информация о твоем аккаунте, которым ты можешь поделиться с друзьями, чтобы заработать больше Gangsters Coin</p>
                             <ul class="list-unstyled p-0 m-0">
-                                <li><b>Логин:</b> demo_user</li>
-                                <li><b>Пароль:</b> demo_password</li>
-                                <li><b>Номер телефона:</b> +1234567890</li>
-                                <li><b>Email:</b> demo@example.com</li>
+                                <li><b>Номер телефона:</b> {{ $user->tel }}</li>
+                                <li><b>Email:</b> {{ $user->email }}</li>
                             </ul>
                         </div>
                     </div>

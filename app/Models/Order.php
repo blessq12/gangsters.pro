@@ -18,6 +18,12 @@ class Order extends Model
     const STATUS_NEW = 1;
     const STATUS_PAID = 10;
     const STATUS_CANCELLED = 11;
+    const GET_STATUS = [
+        1 => 'Новый',
+        10 => 'Выполнен',
+        11 => 'Списан'
+    ];
+
 
     protected $casts = [
         'created_at' => 'datetime',

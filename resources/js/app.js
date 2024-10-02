@@ -7,7 +7,6 @@ import { useToast } from 'vue-toastification';
 import "vue-toastification/dist/index.css";
 import moment from 'moment';
 import VueLazyload from 'vue-lazyload';
-
 /**
  * Next, we will create a fresh Vue application instance. You may then begin
  * registering components with the application instance so they are ready
@@ -30,7 +29,17 @@ app.use(VueLazyload, {
         threshold: 0.1,
     }
 });
-app.use( Toast , options)
+app.use(Toast, {
+    position: 'top-right',
+    timeout: 5000,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    draggablePercent: 0.6,
+    showCloseButtonOnHover: false,
+    hideProgressBar: true,
+    closeButton: 'button',
+})
 app.use(createPinia());
 app.directive('maska', vMaska);
 

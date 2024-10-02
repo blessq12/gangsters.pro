@@ -118,10 +118,12 @@ class ApiClientAuthController extends Controller
         $user = auth('sanctum')->user();
         $user->update([
             'name' => $request->name,
-            'email' => $request->email,
             'tel' => $request->tel,
             'dob' => Carbon::parse($request->dob),
         ]);
+        // Format dob to 'd-m-Y' before returning
+        $user->dob = Carbon::parse($user->dob)->format('d-m-Y');
+        // Return the response with the formatted dob
         return response([
             'status' => true,
             'user' => $user

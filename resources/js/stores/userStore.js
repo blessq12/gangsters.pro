@@ -18,7 +18,6 @@ export const userStore = defineStore('user', {
                 axios.defaults.headers['Accept'] = 'application/json'
                 axios.post('/api/auth/user')
                     .then(res => { 
-                        toast.success('Учетная запись загружена')
                         this.authStatus = true
                         this.userData = res.data.user
                     } )
@@ -36,7 +35,7 @@ export const userStore = defineStore('user', {
                     this.userData = res.data.user
                     localStorage.setItem('token', res.data.token)
                     axios.defaults.headers['Accept'] = 'application/json'
-                    axios.defaults.headers['Authorization'] = 'Bearer-' + res.data.token
+                    axios.defaults.headers['Authorization'] = 'Bearer ' + res.data.token
                  })
                 .catch (err => { 
                     console.log(err.response.data)
@@ -47,7 +46,6 @@ export const userStore = defineStore('user', {
             this.userData = null
             localStorage.removeItem('token')
             axios.defaults.headers['Authorization'] = ''
-            toast.success('Вы вышли из аккаунта')
         },
         updateUser(data){
             axios.patch( '/api/auth/update-user', data )
@@ -69,9 +67,6 @@ export const userStore = defineStore('user', {
             .catch( err => { 
                 toast.error(err.response.data.message)
              })
-        },
-        getLastOrders(){
-            return axios.get('/api/orders/' + this.userData.id + '/get')
         }
     },
     getters:{}
