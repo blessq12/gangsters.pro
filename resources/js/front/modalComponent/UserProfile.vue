@@ -34,8 +34,8 @@ export default {
     </div>
     <div class="content p-2">
         <div class="row">
-            <div class="col-12 mb-4">
-                <ul class="btn-group p-0">
+            <div class="col-12 mb-2 mb-lg-4">
+                <ul class="btn-group">
                     <button class="btn list-group-item" :class="{ active: activeTab == 'personal_data' }" @click="activeTab = 'personal_data'">Личные данные</button>
                     <button class="btn list-group-item" :class="{ active: activeTab == 'orders' }" @click="activeTab = 'orders'">Заказы</button>
                     <button class="btn list-group-item" :class="{ active: activeTab == 'gcoins' }" @click="activeTab = 'gcoins'">G-Coins</button>
@@ -144,8 +144,16 @@ export default {
     border: none
     outline: none
     cursor: pointer
+.btn-group
+    overflow-x: scroll !important
+    white-space: nowrap !important
+    width: 100% !important
+    padding: 0
+    &::-webkit-scrollbar
+        display: none
 .list-group-item
     cursor: pointer
+    white-space: nowrap
     &.active
         background: $color-main
         color: #fff
