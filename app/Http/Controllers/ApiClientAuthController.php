@@ -77,10 +77,12 @@ class ApiClientAuthController extends Controller
 
     public function getUser(Request $request)
     {
-        if (auth('sanctum')->user()) {
+        $user = auth('sanctum')->user();
+        $user->dob = Carbon::parse($user->dob)->format('d-m-Y');
+        if ($user) {
             return response([
                 'status' => true,
-                'user' => auth('sanctum')->user()
+                'user' => $user
             ], 200);
         } else {
             return response([

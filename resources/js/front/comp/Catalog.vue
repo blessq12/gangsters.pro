@@ -17,13 +17,6 @@ export default {
         ...mapStores(appStore, localStore)
     },
     methods: {
-        showImage(prod) {
-            if (prod.images.length) {
-                return prod.thumbs[0].medium
-            } else {
-                return '/images/placeholder/no-image.jpg'
-            }
-        },
         scrollToCategory(uri) {
             const categoryElement = this.$refs[uri][0];
             if (categoryElement) {
@@ -157,10 +150,11 @@ export default {
                 </div>
             </div>
             <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-3 mb-4 category-list">
-                <div class="col rounded" v-for="product in category.products" :key="product.id">
+                <ProductCard v-for="product in category.products" :key="product.id" :product="product" />
+                <!-- <div class="col rounded" v-for="product in category.products" :key="product.id">
                     <div class="hover-over"></div>
                     <div class="product">
-                        <div class="header bg-image rounded position-relative overflow-hidden" v-lazy:background-image="showImage(product)">
+                        <div class="header bg-image rounded position-relative overflow-hidden" v-lazy:background-image="'http://via.placeholder.com/300x200'">
                             
                             <transition
                                 enter-active-class="animate__animated animate__faster animate__fadeIn"
@@ -194,6 +188,7 @@ export default {
                                 </button>
                             </div>
                         </div>
+                        
                         <div class="content">
                             <span>{{ product.name }}</span>
                         </div>
@@ -227,7 +222,7 @@ export default {
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> -->
             </div>
         </div>
     </div>

@@ -15,6 +15,13 @@ class ProductImage extends Model
         'name',
         'path'
     ];
+    protected $hidden = [
+        'created_at',
+        'updated_at',
+        'name',
+        'id',
+        'product_id'
+    ];
 
     public function product()
     {

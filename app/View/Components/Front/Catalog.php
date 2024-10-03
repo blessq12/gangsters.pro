@@ -31,12 +31,8 @@ class Catalog extends Component
         $categories = ProductCategory::where('visible', true)->has('products')->get();
         $categories->each(function ($category) {
             $category->products->each(function ($product) {
-                $product->images = $product->imgs->map(fn ($image) => '/uploads/' . $image->path);
-                $product->thumbs = $product->imgs->map(fn ($image) => [
-                    'small' => '/uploads/' . $image->thumbnail('sm', 'path'),
-                    'medium' => '/uploads/' . $image->thumbnail('md', 'path'),
-                    'large' => '/uploads/' . $image->thumbnail('lg', 'path'),
-                ]);
+                $product->thumbnails = $product->thumbs ? $product->thumbs : null;
+                $product->images = $product->images ? $product->images : null;
             });
         });
         $products = $categories;

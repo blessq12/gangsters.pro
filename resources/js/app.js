@@ -21,7 +21,7 @@ app.use(VueLazyload, {
     lazyComponent: true,
     preLoad: 1.5,
     attempt: 1,
-    error: '/images/placeholder/no-image.jpg',
+    error: 'http://via.placeholder.com/300x200',
     loading: '/images/placeholder/loading.gif',
     observer: true,
     observerOptions: {
