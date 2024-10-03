@@ -2,135 +2,59 @@
 import { mapStores } from 'pinia';
 import { appStore } from '../../stores/appStorage';
 import { localStore } from '../../stores/localStore';
-import Tooltip from 'bootstrap/js/dist/tooltip';
+
 
 export default {
     props: {
-        goods: Object
+        goods: Object,
+        required: true
     },
     data() {
         return {
-            currentCategory: null,
+            currentCategory: this.goods[0].uri,
+            scrollPoint: null,
+            categoryRefs: [] // Add this line to initialize the array
         };
     },
     computed: {
         ...mapStores(appStore, localStore)
     },
     methods: {
-        scrollToCategory(uri) {
-            const categoryElement = this.$refs[uri][0];
-            if (categoryElement) {
-                categoryElement.scrollIntoView({
-                    behavior: 'smooth'
-                });
-            }
-        },
-        scrollCategoryBarToCurrent() {
-            let li = this.$refs[this.currentCategory + '-button'][0];
-            if (li) {
-                const parentUl = li.closest('ul');
-                if (parentUl) {
-                    parentUl.scrollTo({
-                        left: li.offsetLeft - parentUl.offsetLeft,
+        scrollToCategory(category) {
+            this.$nextTick(() => {
+                const element = document.querySelector(`[data-category="${category}"]`); // Get the reference directly
+                if (element) { // Check if the element exists
+                    const targetPosition = element.getBoundingClientRect().top + window.scrollY; // Calculate target position
+                    window.scrollTo({
+                        top: targetPosition - 100, // Adjust for any offset if needed
                         behavior: 'smooth'
                     });
                 }
-            }
-        },
-        categoryBarObserver() {
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach( e => {
-                    if (!e.isIntersecting) {
-                        this.$refs.favWrap.classList.add('show')
-                        this.$refs.categoryBar.classList.add('scrolled')
-                    } else {
-                        this.$refs.favWrap.classList.remove('show')
-                        this.$refs.categoryBar.classList.remove('scrolled')
-                    }
-                });
-            }, {
-                threshold: [1],
-                rootMargin: '0px 0px 200px 0px',
-                
-            });
-            observer.observe(this.$refs.categoryBar);
-        },
-        categoryObserver() {
-            const isMobile = window.innerWidth < 992;
-            const threshold = isMobile ? [0.5] : [0.1];
-            this.goods.forEach(category => {
-                const observer = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            this.currentCategory = category.uri;
-                        }
-                    });
-                }, {
-                    threshold: threshold,
-                    rootMargin: '-100px 0px -300px 0px',
-                });
-                observer.observe(this.$refs[category.uri + '-section'][0]);
             });
         },
-        hideTooltip(event) {
-            const tooltipTrigger = event.currentTarget;
-            const tooltipInstance = Tooltip.getInstance(tooltipTrigger);
-            if (tooltipInstance) {
-                tooltipInstance.hide();
-            }
+        positionObserver() {
+            //
+            console.log(this.$refs)
         }
     },
     mounted() {
-        this.currentCategory = this.goods[0].uri;
-        this.categoryBarObserver();
-        this.categoryObserver();
-        new Tooltip(document.body, {
-            selector: "[data-bs-toggle='tooltip']",
-        });
+        this.positionObserver();
     },
     watch: {
-        currentCategory() {
-            this.scrollCategoryBarToCurrent();
-        }
+      //
     }
 }
 </script>
 
 <template>
     <!-- category bar -->
-    <div class="category-bar scrolled" ref="categoryBar">
+    <div class="category-bar">
         <div class="container d-flex">
-            <div class="fav-wrap d-flex align-items-center" ref="favWrap" :style="{ marginRight: localStore.fav.length > 9 ? '8px' : '0' }">
-                <button 
-                type="button"
-                class="btn rounded btn-danger d-flex align-items-center" 
-                @click="appStore.modal=true, appStore.modalName='fav'"
-                >
-                <i class="fa fa-heart" style="margin-right: 6px;"></i>
-                <transition
-                    enter-active-class="animate__animated animate__faster animate__fadeIn"
-                    leave-active-class="animate__animated animate__faster animate__fadeOut"
-                    mode="out-in"
-                >
-                    {{ localStore.fav.length }}
-                </transition>
-            </button>
-        </div>
-            <ul id="ddddd">
-                <li 
-                    v-for="el in goods" 
-                    :key="el.uri" 
-                    :ref="el.uri + '-button'"
-                >
-                    <button 
-                        type="button" 
-                        class="btn rounded btn-secondary" 
-                        @click="scrollToCategory(el.uri), currentCategory=el.uri" 
-                        
-                        :class="{ active: el.uri === currentCategory }"
-                        >
+            <ul class="position-relative">
+                <li v-for="el in goods" :key="el.uri">
+                    <a @click="scrollToCategory(el.uri)" class="btn rounded btn-secondary" :class="{ active: el.uri === currentCategory }" >
                         {{ el.name }}
-                    </button>
+                    </a>
                 </li>
             </ul>
         </div>
@@ -139,14 +63,12 @@ export default {
 
     <!-- catalog -->
     <div class="container mt-5" id="catalog-container">
-        <div class="category" v-for="category in goods" :key="category.uri" :data-uri="category.uri" :ref="category.uri + '-section'">
-            <div class="scrooll-point" :ref="category.uri"></div>
+        <div class="category" v-for="category in goods" :key="category.uri" :ref="category.uri">
+            <div class="scroll-point" :data-category="category.uri"></div>
             <div class="row mb-4">
                 <div class="col">
                     <div class="section-title">
-                        <h2>
-                            {{ category.name }}
-                        </h2>
+                        <h2>{{ category.name }}</h2>
                     </div>
                 </div>
             </div>
@@ -159,6 +81,7 @@ export default {
 </template>
 
 <style lang="sass" scoped>
+
 #catalog-container
     margin-bottom: 50px
     @media(min-width: 992px)
@@ -227,7 +150,7 @@ export default {
     background: #fff
     position: sticky
     top: -1px
-    z-index: 1
+    z-index: 11
     transition: all .3s
     &.scrolled
         border-bottom: 1px solid #dedede
@@ -247,8 +170,9 @@ export default {
             display: none
         li
             margin-right: 12px
-            button
+            a
                 background: transparent
+                white-space: nowrap
                 border: 1px solid #dedede
                 color: $color-secondary
                 &:hover
