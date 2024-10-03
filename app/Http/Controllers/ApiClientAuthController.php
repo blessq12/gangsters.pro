@@ -44,13 +44,11 @@ class ApiClientAuthController extends Controller
             ], 401);
         }
         $user = Auth::user();
-        $user->tokens()->delete();
-        $token = $user->createToken('gangsta');
 
         return response([
             'status' => true,
-            'user' => $user,
-            'token' => $token->plainTextToken
+            'user' => $user->only(['name', 'email', 'tel', 'dob']),
+            'token' => $user->tokens()->first()->token
         ]);
     }
     public function clientRegister(ApiRegisterRequest $request)
