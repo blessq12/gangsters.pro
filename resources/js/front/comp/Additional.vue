@@ -52,7 +52,7 @@ export default {
       </div>
       <div class="modal-body pb-4">
         <div class="row">
-            <div class="col-12 col-lg-6" v-if="product && product.images && product.images.length > 0">
+            <div class="col-12 col-lg-6 mb-4 mb-lg-0" v-if="product && product.images && product.images.length > 0">
                 <swiper
                     :modules="[Pagination, Navigation, Autoplay]"
                     :pagination="{ clickable: true }"
@@ -61,15 +61,14 @@ export default {
                 >
                     <swiper-slide v-for="image in product.images" :key="image">
                         <img 
-                            :src="image" 
+                            v-lazy="image"
                             :alt="product.name"
                             class="w-100 img-fluid rounded"
-                            
                         >
                     </swiper-slide>
                 </swiper>
             </div>
-            <div class="col-12 col-lg-6" v-else>
+            <div class="col-12 col-lg-6 mb-4 mb-lg-0" v-else>
                 <img 
                     src="/images/placeholder/product-image-empty-1024x1024.jpg" 
                     alt=""
@@ -80,16 +79,12 @@ export default {
                 <div class="row">
                     <div class="col-12">
                         <p>
-                            <b>Состав: </b>
+                            <span class="fs-5 d-block fw-bold ">Состав: </span>
                             {{ product.consist }}
                         </p>
-                        <ul class="list-unstyled d-flex flex-row gap-3">
-                            <li> <b>Цена: </b> {{ product.price }} </li>
-                            <li> <b>Вес: </b> {{ product.weight }} </li>
-                        </ul>
                     </div>
                     <div class="col-12 mb-4">
-                        <p>Дополнительная информация</p>
+                        <p class="fs-5 mb-2 fw-bold">Дополнительная информация</p>
                         <ul class="list-unstyled p-0 m-0">
                             <li><b>Острый: </b>{{ product.spicy ? 'Да' : 'Нет' }}</li>
                             <li><b>Хит: </b>{{ product.hit ? 'Да' : 'Нет' }}</li>
@@ -98,36 +93,101 @@ export default {
                             <li><b>Можно для детей: </b>{{ product.kidsAllow ? 'Да' : 'Нет' }}</li>
                         </ul>
                     </div>
-                    <div class="col-12 d-flex flex-row gap-3">
-                        <button class="btn btn-primary btn-sm rounded">
-                            В корзину
-                            <i class="fa fa-shopping-cart ms-2"></i>
-                        </button>
-                        <button class="btn btn-outline-primary btn-sm rounded">
-                            В избранное
-                            <i class="fa fa-heart ms-2"></i>
+                    <div class="col-12 mb-2">
+                        <ul class="list-unstyled d-flex flex-row gap-3 fs-4">
+                            <li> <b>Цена: </b> {{ product.price }} руб.</li>
+                            <li> <b>Вес: </b> {{ product.weight }} гр.</li>
+                        </ul>
+                    </div>
+                    <div class="col-12 d-flex flex-row gap-2">
+                        <transition
+                            enter-active-class="animate__animated animate__fadeIn"
+                            leave-active-class="animate__animated animate__fadeOut" 
+                            mode="out-in"
+                        >
+                            <button 
+                                class="btn btn-main btn-sm rounded" 
+                                v-if="!localStore.checkExist('cart', product)"
+                                @click="localStore.manageStore('cart', product)"
+                            >
+                                <i class="fa fa-shopping-cart" style="margin-right: 6px;"></i>
+                                В корзину
+                            </button>
+
+                            <!-- qty manage -->
+                            <div class="prod-qty" v-else>
+                                <button class="btn rounded" @click="localStore.manageQty(false, product)">-</button>
+                                <span>{{ localStore.getQty(product) }}</span>
+                                <button class="btn rounded" @click="localStore.manageQty(true, product)">+</button>
+                            </div>
+                            <!-- end qty manage -->
+                        </transition>
+                        <button 
+                            class="btn btn-sm rounded" 
+                            :class="{
+                                'btn-outline-danger': !localStore.checkExist('fav', product),
+                                'btn-danger': localStore.checkExist('fav', product)
+                            }"
+                            @click="localStore.manageStore('fav', product)"
+
+                        >
+                            <i 
+                                class="fa"
+                                :class="{
+                                    'fa-heart': localStore.checkExist('fav', product),
+                                    'fa-heart-o': !localStore.checkExist('fav', product)
+                                }"
+                            ></i>
                         </button>
                     </div>
                 </div>
             </div>
         </div>
       </div>
-      <!-- <div class="modal-footer border-0">
-        <button 
-            @click="appStore.currentAdditional = null" 
-            type="button" 
-            class="btn-close-modal rounded" 
-            data-bs-dismiss="modal"
-        >
-            Закрыть
-        </button>
-      </div> -->
     </div>
   </div>
 </div>
 </template>
 
 <style scoped lang="sass">
+.prod-qty
+    display: flex
+    align-items: center
+    height: 46px
+    span
+        display: flex
+        align-items: center
+        justify-content: center
+        min-width: 60px
+        height: 100%
+        border: $color-main 1px solid
+        margin-right: 0 !important
+        color: $color-main
+        transition: all .3s
+    button
+        border: $color-main 1px solid
+        background: $color-main !important
+        margin-right: 0 !important
+        color: #fff
+        transition: all .3s
+        min-width: 40px
+        height: 100%
+        padding: unset
+        display: flex
+        align-items: center
+        justify-content: center
+        font-size: 1.3rem
+        &:hover
+            background: lighten($color-main, 30%) !important
+        &:first-child
+            border-radius: 12px 0 0 12px !important
+            margin: 0
+        &:last-child
+            border-radius: 0 12px 12px 0 !important
+        &:hover
+            background: $color-main
+            color: #fff
+
 .btn-close-modal
     background: #fff
     color: #000

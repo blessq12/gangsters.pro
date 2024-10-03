@@ -30,7 +30,10 @@ export default {
     <div class="col rounded">
         <div class="hover-over"></div>
         <div class="product">
-            <div class="header bg-image rounded position-relative overflow-hidden" v-lazy:background-image="getThumbs">
+            <div 
+                class="header bg-image rounded position-relative overflow-hidden" 
+                v-lazy:background-image="getThumbs"
+            >
                 <transition
                     enter-active-class="animate__animated animate__faster animate__fadeIn"
                     leave-active-class="animate__animated animate__faster animate__fadeOut"
