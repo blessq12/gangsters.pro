@@ -59,23 +59,18 @@ export default {
         >
             <div class="col" v-if="company">
                 <h5 class="mb-3 border-bottom pb-2">Контакты</h5>
-                <div class="row py-2 align-items-center">
-                    <div class="col-12 d-flex">
-                        <img 
-                            :src="'/uploads/' + company.logo"
-                            :alt="company.name" 
-                            class="img-fluid"
-                            style="max-width: 120px;"
-                        >
-                        <div class="d-block ms-3">
-                            <div class="company-name fs-4 fw-bold">{{ company.name }} - {{ company.city }}</div>
-                            <div class="company-description">{{ company.description }}</div>
+                <div class="row align-items-center">
+                    <div class="row row-cols-1">
+                        <div class="col">
+                            <div class="d-block">
+                                <div class="company-name fs-4 fw-bold">{{ company.name }} - {{ company.city }}</div>
+                                <div class="company-description">{{ company.description }}</div>
+                            </div>
                         </div>
-                        
                     </div>
                     <div class="col mt-4">
-                            <div class="row">
-                                <div class="col">
+                            <div class="row row-cols-1 row-cols-lg-2">
+                                <div class="col mb-2 mb-lg-0">
                                     <div class="card">
                                         <a :href="'tel:' + company.phone" class="company-phone ms-3">
                                             <div class="card-body d-flex align-items-center justify-content-center">
@@ -107,11 +102,7 @@ export default {
                 <h5 class="mb-3 border-bottom pb-2 placeholder rounded">Контакты</h5>
                 <div class="row py-2 align-items-center">
                     <div class="col-12 d-flex">
-                        <img 
-                            class="rounded-circle placeholder"
-                            style="min-width: 120px; min-height: 120px;"
-                        >
-                        <div class="d-block ms-3">
+                        <div class="d-block">
                             <div class="company-name fs-4 fw-bold placeholder mb-2 rounded">
                                 Lorem ipsum dolor sit
                             </div>
@@ -128,7 +119,6 @@ export default {
                                         
                                             <div class="card-body d-flex align-items-center justify-content-center">
                                                 <i class="fa fa-phone" style="font-size: 24px; margin-right: 12px;"></i>
-                                                
                                             </div>
                                         
                                     </div>
