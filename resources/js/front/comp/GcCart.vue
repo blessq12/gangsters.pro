@@ -10,6 +10,10 @@ export default {
         if (this.userStore.authStatus) {
             this.cart = true
         }
+        window.addEventListener('scroll', this.updateScrollTop); // Add this line
+    },
+    beforeDestroy() {
+        window.removeEventListener('scroll', this.updateScrollTop); // Clean up the event listener
     },
     data: () => ({
         cart: false,
@@ -18,15 +22,29 @@ export default {
         images: {
             cart: '/images/cart-icon.png',
             coin: '/images/coin-icon.png'
-        }
+        },
+        scrolled: false,
+        scrollTop: 0,
     }),
     computed: {
-        ...mapStores(localStore, userStore, appStore)
+        ...mapStores(localStore, userStore, appStore),
+        scrollHeight() {
+            return window.scrollY
+        }
     },
     methods: {
         openModal(name) {
             this.appStore.modal = true
             this.appStore.modalName = name
+        },
+        updateScrollTop() {
+            this.scrollTop = window.scrollY; 
+        },
+        scrltop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            })
         }
     },
     watch: {
@@ -46,36 +64,64 @@ export default {
                 }
             },
             deep: true
+        },
+        scrollTop(newVal) {
+            if (newVal > 800) {
+                this.scrolled = true
+            } else {
+                this.scrolled = false
+            }
         }
     }
 }
 </script>
 
 <template>
+    
 <div class="wrapper position-fixed invisible">
     <div class="container py-4 py-lg-5 h-100">
         <div class="row h-100 align-items-end">
             <div class="col">
-                <div class="d-flex align-items-center justify-content-start">
-                    <div 
-                        class="icon visible cursor-pointer" 
-                        :style="{
-                            background: cart ? `url(${images.cart})` : `url(${images.coin})`
-                        }"
-                        @click="cart ? openModal('cart') : openModal('user')"
-                    ></div>
-                    <div class="content invisible fs-4" :class="{ 'hide': contentHide }">
-                        <div class="cart" v-if="cartContent">
-                            <span class="d-block">Сумма: {{ localStore.cartTotal }} руб.</span>
-                            <span class="d-block">Количество: {{ localStore.cartQty }} шт.</span>
+                <div class="row align-items-center">
+                    <div class="col">
+                        <div class="d-flex align-items-center justify-content-start">
+                            <div 
+                                class="icon visible cursor-pointer" 
+                                :style="{
+                                    background: cart ? `url(${images.cart})` : `url(${images.coin})`
+                                }"
+                                @click="cart ? openModal('cart') : openModal('user')"
+                            ></div>
+                            <div class="content invisible fs-4" :class="{ 'hide': contentHide }">
+                                <div class="cart" v-if="cartContent">
+                                    <span class="d-block">Сумма: {{ localStore.cartTotal }} руб.</span>
+                                    <span class="d-block">Количество: {{ localStore.cartQty }} шт.</span>
+                                </div>
+                                <div class="coin" v-else v-if="!userStore.authStatus">
+                                    <span class="fw-medium">Получайте кэшбэк с Gangster Coin!</span>
+                                    <span class="d-block">
+                                        Зарегистрируйтесь и зарабатывать<br> 
+                                        кэшбэк с каждой покупки!
+                                    </span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="coin" v-else v-if="!userStore.authStatus">
-                            <span class="fw-medium">Получайте кэшбэк с Gangster Coin!</span>
-                            <span class="d-block">
-                                Зарегистрируйтесь и зарабатывать<br> 
-                                кэшбэк с каждой покупки!
-                            </span>
-                        </div>
+                    </div>
+                    <div class="col text-end">
+                        <transition
+                            enter-active-class="animate__animated animate__fadeIn"
+                            leave-active-class="animate__animated animate__fadeOut"
+                        >
+                            <button 
+                                class="btn btn-main visible" 
+                                v-if="scrolled" 
+                                title="Наверх"
+                                @click="scrltop"
+                            >
+                                <i class="fa fa-arrow-up"></i>
+                                <p class="m-0 d-none d-md-block">Наверх</p>
+                            </button>
+                        </transition>
                     </div>
                 </div>
             </div>
