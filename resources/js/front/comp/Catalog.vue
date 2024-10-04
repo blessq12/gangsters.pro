@@ -70,10 +70,26 @@ export default {
         },
         leftScrollCategory() {
             const categoryList = document.querySelector('#category-list');
-            const categoryButton = document.querySelector(`#categoryButton-${this.currentCategory}`)
+            const categoryButton = document.querySelector(`#categoryButton-${this.currentCategory}`);
             
             const scrollAmount = categoryButton.offsetLeft; 
-            categoryList.scrollLeft = scrollAmount;
+            // Smooth scrolling effect
+            const startScrollLeft = categoryList.scrollLeft;
+            const distance = scrollAmount - startScrollLeft;
+            const duration = 300; // Duration in milliseconds
+            let startTime = null;
+
+            const animation = (currentTime) => {
+                if (!startTime) startTime = currentTime;
+                const timeElapsed = currentTime - startTime;
+                const progress = Math.min(timeElapsed / duration, 1);
+                categoryList.scrollLeft = startScrollLeft + distance * progress;
+                if (timeElapsed < duration) {
+                    requestAnimationFrame(animation);
+                }
+            };
+
+            requestAnimationFrame(animation); 
         }
     },
     mounted() {
