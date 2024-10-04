@@ -26,7 +26,11 @@ Route::controller(ApiClientAuthController::class)->prefix('auth')->group(functio
     Route::post('forgot-password', 'resetPassword');
 
     Route::middleware('auth:sanctum')->group(function () {
-        Route::post('/user', 'getUser');
+        Route::get('get-user', function () {
+            return response()->json([
+                'user' => auth('sanctum')->user(),
+            ]);
+        });
         Route::get('/get-user-data', function () {
             $user = auth('sanctum')->user();
             $user->dob = Carbon::parse($user->dob)->format('d-m-Y');
@@ -34,6 +38,7 @@ Route::controller(ApiClientAuthController::class)->prefix('auth')->group(functio
                 'user' => $user,
             ]);
         });
+
         Route::patch('/update-user', 'updateUser');
     });
 });

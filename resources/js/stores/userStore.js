@@ -12,19 +12,21 @@ export const userStore = defineStore('user', {
     }),
     actions: {
         loadStore() {
-            let userToken = localStorage.getItem('token')
-            if (userToken !== null) {
-                axios.defaults.headers['Authorization'] = 'Bearer ' + userToken
-                axios.defaults.headers['Accept'] = 'application/json'
-                axios.post('/api/auth/user')
-                    .then(res => { 
-                        this.authStatus = true
-                        this.userData = res.data.user
+            if (localStorage.getItem('token')) {
+            axios.defaults.headers['Accept'] = 'application/json'
+            axios.defaults.headers['Authorization'] = 'Bearer ' + localStorage.getItem('token')
+            axios.get('/api/auth/get-user')
+                .then(res => { 
+                    this.authStatus = true
+                    this.userData = res.data.user
                     } )
-                    .catch(err => {
-                        toast.error(err.response.data.message + '\nНеобходима повторная авторизация')
-                        localStorage.removeItem('token')
-                    } )
+                .catch(err => {
+                    toast.error(err.response.data.message + '\nНеобходима повторная авторизация')
+                    localStorage.removeItem('token')
+                })
+            } else {
+                this.authStatus = false
+                this.userData = null
             }
         },
         auth(action, cred) {    
@@ -34,6 +36,7 @@ export const userStore = defineStore('user', {
                     this.authStatus = true
                     this.userData = res.data.user
                     localStorage.setItem('token', res.data.token)
+                    console.log(res.data.token)
                     axios.defaults.headers['Accept'] = 'application/json'
                     axios.defaults.headers['Authorization'] = 'Bearer ' + res.data.token
                  })

@@ -43,12 +43,15 @@ class ApiClientAuthController extends Controller
                 ]
             ], 401);
         }
+
         $user = Auth::user();
+        $user->tokens()->delete();
+        $token = $user->createToken('gangsta')->plainTextToken;
 
         return response([
             'status' => true,
             'user' => $user->only(['name', 'email', 'tel', 'dob']),
-            'token' => $user->tokens()->first()->token
+            'token' => $token
         ]);
     }
     public function clientRegister(ApiRegisterRequest $request)
@@ -68,26 +71,9 @@ class ApiClientAuthController extends Controller
 
         return response([
             'status' => true,
-            'user' => $user,
+            'user' => $user->only(['name', 'email', 'tel', 'dob']),
             'token' => $user->createToken('gangsta')->plainTextToken
         ], 200);
-    }
-
-    public function getUser(Request $request)
-    {
-        $user = auth('sanctum')->user();
-        $user->dob = Carbon::parse($user->dob)->format('d-m-Y');
-        if ($user) {
-            return response([
-                'status' => true,
-                'user' => $user
-            ], 200);
-        } else {
-            return response([
-                'status' => false,
-                'message' => 'Пользователь с таким токеном не найден'
-            ], 401);
-        }
     }
 
     public function resetPassword(Request $request)

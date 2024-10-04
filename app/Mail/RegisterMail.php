@@ -9,6 +9,7 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use App\Models\Company;
+use App\Models\User;
 
 class RegisterMail extends Mailable
 {
