@@ -13,7 +13,7 @@ export default {
         return {
             currentCategory: this.goods[0].uri,
             scrollPoint: null,
-            categoryRefs: [] // Add this line to initialize the array
+            intersectedCategory: null
         };
     },
     computed: {
@@ -34,36 +34,69 @@ export default {
         },
         positionObserver() {
             //
-            console.log(this.$refs)
+            const options = {
+                threshold: 0.9
+            }
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        this.currentCategory = entry.target.dataset.category
+                    }
+                })
+            }, options)
+            this.$refs.category.forEach((category) => {
+                observer.observe(category)
+            })
+        },
+        categooryBarObserver() {
+
+            const categoryBarContainer = document.querySelector('#category-bar-container')
+            const categoryBar = document.querySelector('.category-bar')
+
+            const options = {
+                threshold: 1
+            }
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (!entry.isIntersecting) {
+                        categoryBar.classList.add('scrolled')
+                    }else {
+                        categoryBar.classList.remove('scrolled')
+                    }
+                })
+            }, options)
+            observer.observe(categoryBar)
         }
     },
     mounted() {
         this.positionObserver();
+        this.categooryBarObserver();
     },
     watch: {
-      //
+        //
     }
 }
 </script>
 
 <template>
     <!-- category bar -->
-    <div class="category-bar">
-        <div class="container d-flex">
+        <div class="category-bar">
+            <div class="container d-flex" id="category-bar-container">
             <ul class="position-relative">
                 <li v-for="el in goods" :key="el.uri">
                     <a @click="scrollToCategory(el.uri)" class="btn rounded btn-secondary" :class="{ active: el.uri === currentCategory }" >
                         {{ el.name }}
                     </a>
                 </li>
-            </ul>
+                </ul>
+            </div>
         </div>
-    </div>
-    <!-- category bar -->
+    <!-- end category bar -->
 
     <!-- catalog -->
     <div class="container mt-5" id="catalog-container">
-        <div class="category" v-for="category in goods" :key="category.uri" :ref="category.uri">
+        <div class="category" v-for="category in goods" :key="category.uri" :data-category="category.uri" ref="category">
             <div class="scroll-point" :data-category="category.uri"></div>
             <div class="row mb-4">
                 <div class="col">
@@ -73,7 +106,7 @@ export default {
                 </div>
             </div>
             <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-3 mb-4 category-list">
-                <ProductCard v-for="product in category.products" :key="product.id" :product="product" />
+                <ProductCard v-for="product in category.products" :key="product.id" :product="product"/>
             </div>
         </div>
     </div>
