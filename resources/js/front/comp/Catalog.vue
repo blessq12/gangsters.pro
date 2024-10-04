@@ -67,6 +67,13 @@ export default {
                 })
             }, options)
             observer.observe(categoryBar)
+        },
+        leftScrollCategory() {
+            const categoryList = document.querySelector('#category-list');
+            const categoryButton = document.querySelector(`#categoryButton-${this.currentCategory}`)
+            
+            const scrollAmount = categoryButton.offsetLeft; 
+            categoryList.scrollLeft = scrollAmount;
         }
     },
     mounted() {
@@ -74,7 +81,9 @@ export default {
         this.categooryBarObserver();
     },
     watch: {
-        //
+        currentCategory(newVal) {
+            this.leftScrollCategory()
+        }
     }
 }
 </script>
@@ -83,9 +92,14 @@ export default {
     <!-- category bar -->
         <div class="category-bar">
             <div class="container d-flex" id="category-bar-container">
-            <ul class="position-relative">
+            <ul class="position-relative" id="category-list">
                 <li v-for="el in goods" :key="el.uri">
-                    <a @click="scrollToCategory(el.uri)" class="btn rounded btn-secondary" :class="{ active: el.uri === currentCategory }" >
+                    <a 
+                        :id="'categoryButton-' + el.uri"
+                        @click="scrollToCategory(el.uri)" 
+                        class="btn rounded btn-secondary" 
+                        :class="{ active: el.uri === currentCategory }"
+                    >
                         {{ el.name }}
                     </a>
                 </li>
