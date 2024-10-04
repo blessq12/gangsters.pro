@@ -1,102 +1,105 @@
 <script>
+import axios from 'axios';
 import moment from 'moment'
 export default {
-    props: {
-        shedule: Array
+    mounted() {
+        // get shedule from api
+        this.getShedule();
+    },
+    updated() {
+        //
     },
     data() {
         return {
-            isHovered: false,
-            hoverTimeout: null
+            shedule: [],
+            moment: moment,
+            openShedule: false,
         };
     },
     computed: {
         
     },
     methods: {
-        moment(date) {
-            return moment(date);
-        },
-        getDay() {
-            let day = moment().format('dddd');
-            return day.toLowerCase();
-        },
-        todayShedule() {
-            return this.shedule.find(item => item.day_eng === this.getDay());
-        },
-        tomorrowShedule() {
-            let tomorrow = moment().add(1, 'days').format('dddd');
-            return this.shedule.find(item => item.day_eng === tomorrow.toLowerCase());
+        async getShedule() { 
+            let response = await axios.get('/api/get-shedule');
+            this.shedule = response.data;
         },
         isOpen() {
-            let now = moment();
-            let open = this.moment(this.todayShedule().open_time);
-            let close = this.moment(this.todayShedule().close_time);
-            return now.isBetween(open, close);
+            let shedule = this.todayShedule();
+            if (shedule && moment().isBefore(moment(shedule.close_time, 'HH:mm'))) {
+                return true;
+            }
+
+            return false;
         },
-        unHover() {
-            this.hoverTimeout = setTimeout(() => {
-                this.isHovered = false;
-            }, 1000); // Delay of 1 second
+        todayShedule() {
+            if (this.shedule.length > 0) {
+                return this.shedule.find(item => item.day_eng === this.moment().format('dddd').toLowerCase());
+            }
+            return null;
         },
-        hover() {
-            clearTimeout(this.hoverTimeout);
-            this.isHovered = true;
+        tomorrowShedule() {
+            let tomorrow = this.moment().add(1, 'day').format('dddd').toLowerCase();
+            
+            if (this.shedule.length > 0) {
+                return this.shedule.find(item => item.day_eng === tomorrow);
+            }
+            return null;
         }
-    },
-    mounted() {
-        this.day = this.shedule.find(item => item.day_eng === this.now);
+        
     },
     watch: {
-        isHovered(value) {
-            if (!value) {
-                this.hoverTimeout = setTimeout(() => {
-                    this.isHovered = false;
-                }, 1000); // Delay of 1 second
-            } else {
-                clearTimeout(this.hoverTimeout);
-            }
-        }
+        //
     }
 }
 </script>
 
 <template>
-    <div class="shedule position-relative" @mouseover="hover" @mouseleave="unHover()" @touchstart="hover" @touchend="unHover()">
-        <div :class="['status', isOpen() ? 'open' : 'close']">
-        </div>
-        <div class="time">
-            <span v-if="isOpen()">
-                Открыто до {{ moment(todayShedule().close_time).format('HH:mm') }}
-            </span>
-            <span v-else>
-                Закрыто до {{ moment(tomorrowShedule().open_time).format('HH:mm') }}
-            </span>
-        </div>
+    <transition 
+        enter-active-class="animate__animated animate__fadeInDown"
+        leave-active-class="animate__animated animate__fadeOutUp"
+        mode="out-in"
+    >
+        <div class="shedule position-relative" v-if="this.shedule.length > 0" @click="openShedule = !openShedule">
+            <div :class="['status', isOpen() ? 'open' : 'close']">
+            </div>
+            <div class="time">
+                <span v-if="isOpen()">
+                    Открыто до {{ todayShedule().close_time }}
+                </span>
+                <span v-else>
+                    Закрыто до {{ tomorrowShedule().open_time }}
+                </span>
+            </div>
 
-        <transition 
-            enter-active-class="animate__animated animate__fadeInDown"
-            leave-active-class="animate__animated animate__fadeOutUp"
-            mode="out-in"
-        >
-            <div class="wrap" v-show="isHovered">
-                <div class="popup rounded" @mouseover="hover" @mouseleave="unHover()" @touchstart="hover" @touchend="unHover()">
-                    <div class="popup-content">
-                        <div class="popup-title">
-                            Расписание работы
-                        </div>
-                        <ul class="list-unstyled m-0 p-0">
-                            <li v-for="item in shedule" class="d-flex justify-content-between align-items-center">
-                                <span>{{ item.day }}</span>
-                                <span>{{ moment(item.open_time, 'HH:mm:ss').format('HH:mm') }} - {{ moment(item.close_time, 'HH:mm:ss').format('HH:mm') }}</span>
-                            </li>
-                        </ul>
+            <transition 
+                enter-active-class="animate__animated animate__fadeInDown"
+                leave-active-class="animate__animated animate__fadeOutUp"
+                mode="out-in"
+            >
+                <div class="wrap" v-if="openShedule">
+                    <div class="popup rounded">
+                        <div class="popup-content">
+                            <div class="popup-title">
+                                Расписание работы
+                            </div>
+                            <ul class="list-unstyled m-0 p-0">
+                                <li 
+                                    v-for="item in shedule" 
+                                    class="d-flex justify-content-between align-items-center"
+                                    :class="item.day_eng === todayShedule().day_eng ? 'today' : ''"
+                                >
+                                    <span> {{ item.day }} </span>
+                                    <span> {{ item.open_time }} - {{ item.close_time }} </span>
+                                </li>
+                            </ul>
+                    </div>
                 </div>
-            </div>
-            </div>
-        </transition>
-        
-    </div>
+                </div>
+            </transition>
+            
+        </div>
+    </transition>
 </template>
 
 <style scoped lang="sass">
@@ -116,6 +119,15 @@ export default {
             font-size: 16px
             font-weight: 500
             margin-bottom: 10px
+        ul
+            li
+                padding: 10px
+                border-bottom: 1px solid #f0f0f0
+                &:last-child
+                    border-bottom: none
+                &.today
+                    background: lighten($color-main, 40%)
+                    color: #fff
 .shedule
     display: flex
     align-items: center

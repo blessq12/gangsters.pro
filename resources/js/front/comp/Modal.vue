@@ -23,6 +23,7 @@ export default {
             if (this.currentItem) {
                 const bo = this.$refs.backoverlay;
                 const activeItem = this.$refs[this.currentItem];
+                bo.style.maxWidth = activeItem.offsetWidth + 'px';
                 bo.style.left = activeItem.offsetLeft + 'px';
             }
         }
@@ -136,6 +137,7 @@ export default {
         border-bottom: 1px solid $color-main
         overflow: auto
         position: relative
+        gap: 10px
         .backoverlay
             position: absolute
             top: 0

@@ -92,7 +92,7 @@ export default {
             });
         },
         changeForm(form) {
-            console.log(form)
+            //
         }
     }
 }
@@ -121,14 +121,28 @@ export default {
             <!-- end form switch -->
 
             <!-- form components panel -->
-            <div class="row" style="min-height: 50vh;">
+            <div class="row row-cols-1" >
                 <div class="col">
+
+                    <div class="card card-coin mb-4 border-0">
+                        <div class="card-body p-0">
+                            <small>
+                                <h5 class="card-title">Получайте кэшбэк с Gangster Coin!</h5>
+                                <p class="card-text">
+                                    <strong>Присоединяйтесь к нашей программе кэшбека!</strong> <br />
+                                    Чтобы начать получать кэшбэк, вам необходимо зарегистрироваться и совершать заказы. <br />
+                                    Не упустите возможность экономить на своих покупках!
+                                </p>
+                            </small>
+                        </div>
+                    </div>
 
                     <transition-group
                         enter-active-class="animate__animated animate__fadeIn"
                         leave-active-class="animate__animated animate__fadeOut"
-                        class="position-relative h-100"
+                        class="position-relative h-100 d-block"
                         tag="div"
+                        style="min-height: 50vh;"
                     >
                         <user-login-form 
                             @validate="validate('login')"
@@ -158,8 +172,12 @@ export default {
                     </transition-group>
                     
                 </div>
+                
+                    
+                
             </div>
             <!-- end form components panel -->
+           
         </div>
         <div v-else>
             <user-profile/>
@@ -169,5 +187,7 @@ export default {
 </template>
 
 <style lang="sass">
-
+.card-coin
+    color: $color-main
+    border-radius: 16px
 </style>

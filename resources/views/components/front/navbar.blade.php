@@ -23,10 +23,7 @@
                 </a>
             </div>
             <div class="col d-lg-none d-flex justify-content-center">
-                    <shedule
-                        class="d-flex d-lg-none"
-                        :shedule='@json($company->frontShedules())'
-                    ></shedule>
+                    <shedule class="d-flex d-lg-none"></shedule>
             </div>
             <div class="col d-none d-lg-block justify-content-center">
                 <ul class="nav-links" style="justify-content:{{!Request::is('/') ? 'end' : ''}}">
@@ -43,12 +40,9 @@
                     
                 </ul>
             </div>
-            @if (true)
+            @if (Request::is('/'))
                 <div class="col d-flex justify-content-end">
-                    <shedule
-                        class="d-none d-lg-flex"
-                        :shedule='@json($company->frontShedules())'
-                    ></shedule>
+                    <shedule class="d-none d-lg-flex"></shedule>
                     <ul class="shop-links d-lg-block">
                         <li>
                             <nav-button 

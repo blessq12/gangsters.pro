@@ -20,15 +20,10 @@ class MainController extends Controller
     {
         ViewFacade::share('company', Company::first());
         ViewFacade::share('currentDayShedule', WorkShedule::getCurrentDayShedule());
-        ViewFacade::share('links', [
-            (object) ['name' => 'О компании', 'route' => 'main.about'],
-            (object) ['name' => 'Оплата и доставка', 'route' => 'main.purchaseAndDelivery'],
-            (object) ['name' => 'Контакты', 'route' => 'main.contact'],
-        ]);
     }
 
     public function index()
-    {
+    {;
         return view('front.index');
     }
 
@@ -71,5 +66,10 @@ class MainController extends Controller
     public function privacy(): View
     {
         return view('front.privacy');
+    }
+
+    public function loyalty(): View
+    {
+        return view('front.loyalty');
     }
 }

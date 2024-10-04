@@ -26,17 +26,6 @@ Route::controller(MainController::class)->middleware('cors')->name('main.')->gro
     Route::get('/vacancy', 'vacancy')->name('vacancy');
     Route::get('/contact', 'contact')->name('contact');
     Route::get('/privacy', 'privacy')->name('privacy');
+    Route::get('/loyalty', 'loyalty')->name('loyalty');
     Route::get('/purchase-and-delivery', 'purchaseAndDelivery')->name('purchaseAndDelivery');
-});
-
-Route::controller(CrmController::class)->middleware(['auth', 'can:admin'])->prefix('crm')->name('crm.')->group(function () {});
-
-Route::controller(AuthController::class)->prefix('auth')->name('auth.')->group(function () {
-    Route::middleware('guest')->group(function () {
-        Route::get('/login', 'loginPage')->name('login-page');
-        Route::post('/login', 'userLogin')->name('user-login');
-        Route::get('/register', 'registerPage')->name('register-page');
-        Route::post('/register', 'userRegister')->name('user-register');
-    });
-    Route::get('/logout', 'userLogout')->name('user-logout')->middleware('auth');
 });

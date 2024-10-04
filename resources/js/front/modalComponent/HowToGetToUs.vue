@@ -27,7 +27,7 @@ export default {
                         </div>
                         <!-- end ya maps -->
 
-                        <a href="https://yandex.ru/maps/67/tomsk/?ll=84.986330%2C56.513423&mode=routes&rtext=~56.513356%2C84.986301&rtt=auto&ruri=~ymapsbm1%3A%2F%2Forg%3Foid%3D82888444717&z=16.61" target="_blank" class="btn btn-primary w-50 rounded">
+                        <a href="https://yandex.ru/maps/67/tomsk/?ll=84.986330%2C56.513423&mode=routes&rtext=~56.513356%2C84.986301&rtt=auto&ruri=~ymapsbm1%3A%2F%2Forg%3Foid%3D82888444717&z=16.61" target="_blank" class="btn btn-primary w-75 rounded">
                             <span>Маршрут на Яндекс.Картах</span>
                             <i class="fa fa-map-marker px-2"></i>
                         </a>

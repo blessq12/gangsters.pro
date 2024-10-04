@@ -14,18 +14,13 @@
 </head>
 <body>
     <div id="app">    
-        <app-init 
-            :links='@json($links)'
-            :company='@json(\App\Models\Company::first())'
-        ></app-init>
-        <x-front.navbar
-            :links="$links"
-        ></x-front.navbar>
+        <app-init></app-init>
+        <x-front.navbar/>
         @hasSection('hero')
             @yield('hero')
         @endif
         @yield('content')
-        <x-front.footer></x-front.footer>
+        <x-front.footer/>
     </div>
 </body>
 </html>

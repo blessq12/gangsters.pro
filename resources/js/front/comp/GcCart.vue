@@ -97,13 +97,6 @@ export default {
                                     <span class="d-block">Сумма: {{ localStore.cartTotal }} руб.</span>
                                     <span class="d-block">Количество: {{ localStore.cartQty }} шт.</span>
                                 </div>
-                                <div class="coin" v-else v-if="!userStore.authStatus">
-                                    <span class="fw-medium">Получайте кэшбэк с Gangster Coin!</span>
-                                    <span class="d-block">
-                                        Зарегистрируйтесь и зарабатывать<br> 
-                                        кэшбэк с каждой покупки!
-                                    </span>
-                                </div>
                             </div>
                         </div>
                     </div>

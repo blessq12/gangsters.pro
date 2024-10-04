@@ -6,6 +6,7 @@ use App\Http\Controllers\OrderController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Carbon\Carbon;
+use App\Http\Controllers\Api\RawController as Raw;
 
 /*
 |--------------------------------------------------------------------------
@@ -59,4 +60,10 @@ Route::controller(OrderController::class)->prefix('orders')->group(function () {
     });
     Route::post('create', 'createOrder');
     Route::post('update', 'updateOrder');
+});
+
+Route::controller(Raw::class)->group(function () {
+    Route::get('/get-routes', 'getLinks');
+    Route::get('/get-company', 'getCompany');
+    Route::get('/get-shedule', 'getShedule');
 });
