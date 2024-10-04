@@ -79,7 +79,6 @@ export const localStore = defineStore('local', {
             }
             if (this.cart[index].qty < 1) {
                 this.cart.splice(index, 1)    
-                toast.warning( product.name + ' удалено из корзины')
             }
             localStorage.setItem('cart', JSON.stringify(this.cart))
         },

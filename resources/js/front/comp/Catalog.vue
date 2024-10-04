@@ -150,7 +150,7 @@ export default {
     background: #fff
     position: sticky
     top: -1px
-    z-index: 11
+    z-index: 5
     transition: all .3s
     &.scrolled
         border-bottom: 1px solid #dedede

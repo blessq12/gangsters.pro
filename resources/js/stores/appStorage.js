@@ -23,18 +23,6 @@ export const appStore = defineStore('app', {
             }
             return this.device;
         },
-        welcomeCtaShow() {
-            const welcome = localStorage.getItem('welcome');
-
-            if (welcome === null) {
-                localStorage.setItem('welcome', 'true');
-                this.welcome = true;
-            }
-
-            if (welcome !== undefined && welcome !== null && (welcome === 'true' || welcome === 'false')) {
-                this.welcome = welcome === 'true';
-            }
-        }
     },
     getters:{}
 })

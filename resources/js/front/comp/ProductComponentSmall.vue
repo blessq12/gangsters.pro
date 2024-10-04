@@ -7,17 +7,35 @@ export default {
         product: Object,
         isFavorite: Boolean
     },
+    data() {
+        return {
+            //
+        }
+    },
+    mounted() {
+        //    
+    },
     methods: {
+        //
     },
     computed: {
-        ...mapStores(localStore)
+        ...mapStores(localStore),
+        getThumbs() {
+            if (this.product.thumbnails.length && this.product.thumbnails !== undefined) {
+                return this.product.thumbnails[0].small
+            }
+            return false
+        }
     }
 }
 </script>
 
 <template>
     <div class="product">
-        <div class="image bg-image rounded overflow-hidden position-relative" :style="product.thumbs.length ? { backgroundImage: `url(${product.thumbs[0].small})` } : {backgroundImage: 'url(//via.placeholder.com/150)'}">
+        <div 
+            class="image bg-image rounded overflow-hidden position-relative" 
+            v-lazy:background-image="getThumbs"
+        >
             <div class="count" v-if="!isFavorite">
                 <span>{{ product.qty }}</span>
             </div>

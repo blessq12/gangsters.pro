@@ -33,6 +33,9 @@ export default {
             <div 
                 class="header bg-image rounded position-relative overflow-hidden" 
                 v-lazy:background-image="getThumbs"
+                data-bs-toggle="modal" 
+                data-bs-target="#additional"
+                @click="appStore.currentAdditional = product"
             >
                 <transition
                     enter-active-class="animate__animated animate__faster animate__fadeIn"
@@ -51,19 +54,6 @@ export default {
                         </transition>
                     </div>
                 </transition>
-                <div class="badge position-relative" style="z-index: 1;">
-                    <button 
-                        type="button" 
-                        :class="['favorite', 'rounded', { active: localStore.checkExist('fav', product) }]" 
-                        @click="localStore.manageStore('fav', product)"
-                        data-bs-toggle="tooltip" 
-                        data-bs-placement="top" 
-                        :title="localStore.checkExist('fav', product) ? 'Удалить из избранного' : 'Добавить в избранное'"
-                    >
-                        <i :class="localStore.checkExist('fav', product) ? 'fa fa-heart' : 'fa fa-heart-o'"></i>
-                        {{ localStore.checkExist('fav', product) ? 'Убрать' : 'Добавить' }}
-                    </button>
-                </div>
             </div>
             <div class="content">
                 <span>{{ product.name }}</span>
@@ -86,10 +76,11 @@ export default {
                     <button
                         type="button" 
                         class="additional"
-                        data-bs-toggle="modal" 
-                        data-bs-target="#additional"
-                        @click="appStore.currentAdditional = product"
-                    >i</button>
+                        @click="localStore.manageStore('fav', product)"
+                        :class="{ 'in-fav': localStore.checkExist('fav', product) }"
+                    >
+                        <i :class="localStore.checkExist('fav', product) ? 'fa fa-heart' : 'fa fa-heart-o'"></i>
+                    </button>
                 </div>
                 <div class="d-block">
                     <span class="d-block price" data-bs-toggle="tooltip" data-bs-placement="top" title="Цена указана за набор">
@@ -216,6 +207,7 @@ export default {
       min-height: 160px
       position: relative
       padding: 6px
+      cursor: pointer
 
       .counter
         position: absolute
@@ -267,10 +259,20 @@ export default {
         height: 100%
         font-size: 1.3rem
         transition: all 0.3s
+        color: red
+        &.in-fav
+            background: red
+            color: #fff
+            border-color: red
+            &::before
+                background: red !important
 
         &:hover
-          background: transparent !important
-          color: $color-main
+          background: red
+          color: #fff
+          border-color: red
+          &::before
+            background: red !important
 
         &::before
           transition: all 0.3s
@@ -293,7 +295,7 @@ export default {
       button
         background: #dedede
         border: unset
-        padding: 14px 18px
+        padding: 14px 12px
         white-space: nowrap
         margin-right: 12px
 
