@@ -100,7 +100,7 @@ export default {
                             </div>
                         </div>
                         <div class="row overflow-auto" style="max-height: 100vh;">
-                            <div class="col pb-5" style="margin-bottom: 200px;">
+                            <div class="col pb-5" style="min-height: 150vh;">
                                 <component :is="appStore.modalName + '-component'"></component>
                             </div>
                         </div>

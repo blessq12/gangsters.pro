@@ -123,7 +123,6 @@ export default {
             <!-- form components panel -->
             <div class="row row-cols-1" >
                 <div class="col">
-
                     <div class="card card-coin mb-4 border-0">
                         <div class="card-body p-0">
                             <small>
@@ -170,7 +169,6 @@ export default {
                             class="position-absolute w-100"
                         />
                     </transition-group>
-                    
                 </div>
                 
                     
