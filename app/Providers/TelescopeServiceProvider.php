@@ -16,19 +16,19 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
     {
         Telescope::night();
 
-        $allowed = $this->app->environment('local') || request()->input('secret') === env('TELESCOPE_SECRET') ? true : false;
+        // $allowed = $this->app->environment('local') || request()->input('secret') === env('TELESCOPE_SECRET') ? true : false;
 
 
-        $this->hideSensitiveRequestDetails();
+        // $this->hideSensitiveRequestDetails();
 
-        Telescope::filter(function (IncomingEntry $entry) use ($allowed) {
-            return $allowed ||
-                $entry->isReportableException() ||
-                $entry->isFailedRequest() ||
-                $entry->isFailedJob() ||
-                $entry->isScheduledTask() ||
-                $entry->hasMonitoredTag();
-        });
+        // Telescope::filter(function (IncomingEntry $entry) use ($allowed) {
+        //     return $allowed ||
+        //         $entry->isReportableException() ||
+        //         $entry->isFailedRequest() ||
+        //         $entry->isFailedJob() ||
+        //         $entry->isScheduledTask() ||
+        //         $entry->hasMonitoredTag();
+        // });
     }
 
     /**
