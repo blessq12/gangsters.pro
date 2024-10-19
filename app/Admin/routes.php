@@ -20,7 +20,6 @@ Route::group([
     $router->resource('users', ClientController::class);
     $router->resource('orders', OrderController::class);
     $router->resource('stories', StoryController::class);
-    $router->resource('banners', BannerController::class);
     $router->resource('vacancies', VacancyController::class);
     $router->resource('work-shedules', SheduleController::class);
 });

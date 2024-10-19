@@ -44,22 +44,36 @@ export default {
             <span>{{ product.name }}</span>
             <p class="mb-1"><b>Цена: </b>{{ product.price }} руб.</p>
             <div v-if="!isFavorite">
-                <div class="qty rounded">
-                    <button @click="localStore.manageQty( false, product )">-</button>
-                    <button @click="localStore.manageQty( true, product )">+</button>
+                <div class="cart-qty rounded">
+                    <div class="btn-group">
+                        <button @click="localStore.manageQty( false, product )" class="btn btn-primary">
+                            <i class="fa fa-minus"></i>
+                        </button>
+                        <button @click="localStore.manageQty( true, product )" class="btn btn-primary">
+                            <i class="fa fa-plus"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
-            <div v-else class="fav-btns">
-                <transition
-                    enter-active-class="animate__animated animate__faster animate__fadeIn"
-                    leave-active-class="animate__animated animate__faster animate__fadeOut"
-                    mode="out-in"
-                >
-                    <button class="from-cart rounded" @click="localStore.manageStore( 'cart',product )" v-if="localStore.checkExist('cart', product)"><i class="fa fa-minus"></i></button>
-                    <button class="to-cart rounded" @click="localStore.manageStore( 'cart',product )" v-else><i class="fa fa-cart-plus"></i></button>
-                </transition>
-
-                <button class="trash rounded" @click="localStore.manageStore( 'fav',product )"><i class="fa fa-trash"></i></button>
+            <div v-else>
+                <div class="btn-group">
+                    <transition
+                        enter-active-class="animate__animated animate__faster animate__fadeIn"
+                        leave-active-class="animate__animated animate__faster animate__fadeOut"
+                        mode="out-in"
+                    >
+                        <button class="btn from-cart" @click="localStore.manageStore('cart', product)" v-if="localStore.checkExist('cart', product)" >
+                            <i class="fa fa-minus"></i>
+                        </button>
+                        <button class="btn to-cart" @click="localStore.manageStore('cart', product)" v-else>
+                            <i class="fa fa-plus "></i>
+                            
+                        </button>
+                    </transition>
+                    <button class="btn trash" @click="localStore.manageStore('fav', product)">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -68,27 +82,32 @@ export default {
 
 
 <style scoped lang="sass">
-.fav-btns
-    display: flex
+.btn-group
     button
-        color: #fff
-        border: unset
-        padding: 0 !important
-        margin-right: 8px
-        min-width: 55px
-        min-height: 30px
-        @media(min-width: 992px)
-            min-width: 65px
-            min-height: 35px
-        display: flex
-        align-items: center
-        justify-content: center
-    button.to-cart
-        background: green
-    button.from-cart
-        background: lighten($color-main, 10%)
-    button.trash
-        background: red
+        background: lighten($color-main, 20%)
+        padding: 8px 40px !important
+        &:hover
+            background: darken($color-main, 10%)
+    .btn
+        &.to-cart
+            background: #28a745
+            &:hover
+                background: darken(#28a745, 10%) !important
+        &.from-cart
+            background: #dc3545
+            &:hover
+                background: darken(#dc3545, 10%)
+        &.trash
+            background: lighten(#dc3545, 50%)
+            border-color: #dc3545 !important
+            border: 1px solid #dc3545
+            border-left: none
+            color: #dc3545
+            &:hover
+                background: lighten(#dc3545, 20%)
+                border-color: darken(#dc3545, 10%)
+                color: #fff
+
 .product 
     display: flex
     align-items: center
@@ -128,7 +147,7 @@ export default {
             @media(min-width: 992px)
                 font-size: 18px
                 font-weight: 600
-        .qty
+        .cart-qty
             display: flex
             align-items: center
             justify-content: start
@@ -137,7 +156,7 @@ export default {
             button
                 margin: 0
                 padding: 0
-                background: none
+                // background: none
                 border: none
                 outline: none
                 min-width: 40px
@@ -145,11 +164,10 @@ export default {
                 @media(min-width: 992px)
                     min-width: 55px
                     min-height: 35px
-                background: lighten($color-main, 10%)
+                // background: lighten($color-main, 10%)
                 color: #fff
                 font-size: 16px
                 font-weight: 500
                 transition: all .3s
-                &:hover 
-                    background: darken($color-main, 10%)
+                
 </style>

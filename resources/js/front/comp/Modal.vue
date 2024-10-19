@@ -63,15 +63,15 @@ export default {
             <div class="wrap" v-if="appStore.modal" @click.self="appStore.modal = false">
                 <div class="menu py-4 px-2">
                     <div class="container">
-                        <div class="row mb-2">
+                        <div class="row mb-4">
                             <div class="col d-flex align-items-center justify-content-between">
                                 <h4 class="mb-0">Меню</h4>
                                 <button class="btn-close" @click.stop="appStore.modal = false"></button>
                             </div>
                         </div>
-                        <div class="row">
+                        <div class="row mb-2">
                             <div class="col">
-                                <ul class="list-unstyled  p-0 d-flex nav-icons border-bottom pb-2" ref="menuItems">
+                                <ul class="list-unstyled  p-0 d-flex nav-icons" ref="menuItems">
                                     <div class="backoverlay" ref="backoverlay"></div>
                                     <li @click="appStore.modalName = 'cart'" :class="{ 'active': appStore.modalName === 'cart' }" ref="cart">
                                         <div class="counter" v-if="localStore.cart.length > 0">
@@ -134,7 +134,6 @@ export default {
 // menu styles
 .menu
     .nav-icons
-        border-bottom: 1px solid $color-main
         overflow: auto
         position: relative
         gap: 10px

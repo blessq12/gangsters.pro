@@ -6,8 +6,8 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="description" content="@yield('desc')">
     <title>@yield('title')</title>
-    @include('inc/cdn')
     @include('inc/favicon')
+    @include('inc/cdn')
     @vite('resources/sass/front/app.sass')
     @vite('resources/js/app.js')
     @vite('resources/js/front/app.js')

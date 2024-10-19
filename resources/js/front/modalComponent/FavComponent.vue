@@ -52,7 +52,7 @@ export default {
         <div v-else>
             <div class="row align-items-center row-cols-1">
                 <div class="col text-center">
-                    <img src="/images/placeholder/empty-storage.png" alt="" class="img-fluid" style="max-height: 280px">
+                    <img src="/images/placeholder/empty-fav.png" alt="" class="img-fluid" style="max-height: 280px">
                 </div>
                 <div class="col text-center">
                     <h5 class="fw-semibold">В избранном ничего нет</h5>

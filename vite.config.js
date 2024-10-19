@@ -15,10 +15,7 @@ export default defineConfig({
         laravel({
             input: [
                 "resources/sass/front/app.sass",
-                "resources/sass/crm/app.sass",
-                "resources/sass/auth.sass",
                 "resources/js/app.js",
-                "resources/js/front/app.js",
             ],
             refresh: true,
         }),

@@ -73,13 +73,15 @@ export default {
                             <button class="btn rounded" @click="localStore.manageQty(true, product)">+</button>
                         </div>
                     </transition>
-                    <button
-                        type="button" 
-                        class="additional"
-                        @click="localStore.manageStore('fav', product)"
-                        :class="{ 'in-fav': localStore.checkExist('fav', product) }"
-                    >
-                        <i :class="localStore.checkExist('fav', product) ? 'fa fa-heart' : 'fa fa-heart-o'"></i>
+                    <button class="bg-transparent border-0 p-0 m-0 text-danger mx-2" @click="localStore.manageStore('fav', product)">
+                        <transition
+                            enter-active-class="animate__animated animate__faster animate__fadeInDown"
+                            leave-active-class="animate__animated animate__faster animate__fadeOutUp"
+                            mode="out-in"
+                        >
+                            <i class="fa fa-2x fa-heart" v-if="localStore.checkExist('fav', product)"></i>
+                            <i class="fa fa-2x fa-heart-o" v-else></i>
+                        </transition>
                     </button>
                 </div>
                 <div class="d-block">
@@ -243,54 +245,7 @@ export default {
       align-items: center
       justify-content: space-between
 
-      .additional
-        display: flex
-        background: transparent
-        align-items: center
-        justify-content: center
-        border-top: 1px solid $color-main
-        border-bottom: 1px solid $color-main
-        border-right: 1px solid $color-main
-        border-radius: 0 16px 16px 0
-        position: relative
-        margin: unset !important
-        max-height: 47px
-        font-weight: 800
-        height: 100%
-        font-size: 1.3rem
-        transition: all 0.3s
-        color: red
-        &.in-fav
-            background: red
-            color: #fff
-            border-color: red
-            &::before
-                background: red !important
-
-        &:hover
-          background: red
-          color: #fff
-          border-color: red
-          &::before
-            background: red !important
-
-        &::before
-          transition: all 0.3s
-          position: absolute
-          transform: scale(1.05)
-          z-index: -1
-          left: -50%
-          height: 100%
-          width: 100%
-          background: transparent !important
-          border-top: 1px solid $color-main
-          border-bottom: 1px solid $color-main
-          content: ''
-          background: #dedede
-          padding: unset
-          margin: unset
-          max-height: 47px
-          height: 100%
+      
 
       button
         background: #dedede

@@ -140,87 +140,93 @@ export default {
     <div v-if="!orderCreated">
       <transition enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut" mode="out-in">
         <div v-if="localStore.cart.length">
-          <!-- cart content checkout or cart -->
-          <div v-if="!checkout">
-            <transition-group enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut" move-class="move" tag="ul" class="cart-list">
-              <li v-for="item in localStore.cart" :key="item.id">
-                <ProductComponentSmall :product="item" :is-favorite="false" />
-              </li>
-            </transition-group>
-            <div class="cart-footer border-top pt-4 pb-2">
-              <ul class="list-unstyled">
-                <li>
-                  <b>Стоимость: </b>
-                  <span v-if="localStore.cartTotal">{{ localStore.cartTotal + " рублей" }}</span>
+          <transition
+            enter-active-class="animate__animated animate__fadeIn"
+            leave-active-class="animate__animated animate__fadeOut"
+            mode="out-in"
+          >
+            <!-- cart content checkout or cart -->
+            <div v-if="!checkout">
+              <transition-group enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut" move-class="move" tag="ul" class="cart-list">
+                <li v-for="item in localStore.cart" :key="item.id">
+                  <ProductComponentSmall :product="item" :is-favorite="false" />
                 </li>
-                <li>
-                  <b>Наборов: </b>
-                  <span v-if="localStore.cartQty">{{ localStore.cartQty + " шт" }}</span>
-                </li>
-              </ul>
+              </transition-group>
+              <div class="cart-footer border-top pt-4 pb-2">
+                <ul class="list-unstyled">
+                  <li>
+                    <b>Стоимость: </b>
+                    <span v-if="localStore.cartTotal">{{ localStore.cartTotal + " рублей" }}</span>
+                  </li>
+                  <li>
+                    <b>Наборов: </b>
+                    <span v-if="localStore.cartQty">{{ localStore.cartQty + " шт" }}</span>
+                  </li>
+                </ul>
+              </div>
+              <button class="btn rounded btn-main" @click="checkout = !checkout">Оформление</button>
+              <button class="btn rounded btn-danger mx-2" @click="localStore.clearStore('cart')">
+                <i class="fa fa-trash"></i> Очистить
+              </button>
             </div>
-            <button class="btn rounded btn-main" @click="checkout = !checkout">Оформление</button>
-            <button class="btn rounded btn-danger mx-2" @click="localStore.clearStore('cart')">
-              <i class="fa fa-trash"></i> Очистить
-            </button>
-          </div>
-          <div v-else>
-            <button class="btn rounded btn-main btn-sm mb-4" @click="checkout = !checkout">
-              <i class="fa fa-arrow-left" style="margin-right: 6px"></i> Назад в корзину
-            </button>
+            <div v-else>
+              <button class="btn rounded btn-main btn-sm mb-4" @click="checkout = !checkout">
+                <i class="fa fa-arrow-left" style="margin-right: 6px"></i> Назад в корзину
+              </button>
 
-            <div class="row row-cols-1 mb-4">
-              <!-- First button group for delivery options -->
-              <div class="btn-group rounded d-block col mb-3 mb-lg-0">
-                <button type="button" :class="`btn btn-main ${delivery ? 'active' : ''}`" @click="delivery = true">
-                  <i class="fa fa-truck"></i> Доставка
-                </button>
-                <button type="button" :class="`btn btn-main ${!delivery ? 'active' : ''}`" @click="delivery = false">
-                  <i class="fa fa-shopping-cart"></i> Самовывоз
-                </button>
+              <div class="row row-cols-1 mb-4">
+                <!-- First button group for delivery options -->
+                <div class="btn-group rounded d-block col mb-3 mb-lg-0">
+                  <button type="button" :class="`btn btn-main ${delivery ? 'active' : ''}`" @click="delivery = true">
+                    <i class="fa fa-truck"></i> Доставка
+                  </button>
+                  <button type="button" :class="`btn btn-main ${!delivery ? 'active' : ''}`" @click="delivery = false">
+                    <i class="fa fa-shopping-cart"></i> Самовывоз
+                  </button>
+                </div>
+                <!-- Second button group for payment options -->
+                <div class="btn-group rounded d-block col">
+                  <button type="button" :class="`btn ${formData.payType == 'cash' ? 'active' : ''}`" @click="formData.payType = 'cash'">Наличные</button>
+                  <button type="button" :class="`btn ${formData.payType == 'card' ? 'active' : ''}`" @click="formData.payType = 'card'">Картой курьеру</button>
+                </div>
               </div>
-              <!-- Second button group for payment options -->
-              <div class="btn-group rounded d-block col">
-                <button type="button" :class="`btn ${formData.payType == 'cash' ? 'active' : ''}`" @click="formData.payType = 'cash'">Наличные</button>
-                <button type="button" :class="`btn ${formData.payType == 'card' ? 'active' : ''}`" @click="formData.payType = 'card'">Картой курьеру</button>
-              </div>
+              
+              <!-- delivery or not section -->
+              <transition enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut" mode="out-in">
+                <div v-if="delivery">
+                  <delivery-form
+                    :form-data="formData"
+                    :schema="schema"
+                    :validator-bag="validatorBag"
+                    :validate="validate"
+                    @validate="validate('delivery')"
+                  />
+                </div>
+                <div v-else>
+
+                  <!-- how to get to us -->
+                  <how-to-get-to-us />
+                  <!-- end how to get to us -->
+
+                  <no-delivery-form
+                    :noDelForm="noDelForm"
+                    :schema="noDelSchema"
+                    :validator-bag="validatorBag"
+                    :validate="validate"
+                    @validate="validate('noDelivery')"
+                  />
+                </div>
+              </transition>
+              <!-- end delivery or not section -->
+              <button type="button" class="btn rounded btn-main mt-2" @click="delivery ? validate('delivery') : validate('noDelivery')">Заказать</button>
             </div>
-            
-            <!-- delivery or not section -->
-            <transition enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut" mode="out-in">
-              <div v-if="delivery">
-                <delivery-form
-                  :form-data="formData"
-                  :schema="schema"
-                  :validator-bag="validatorBag"
-                  :validate="validate"
-                  @validate="validate('delivery')"
-                />
-              </div>
-              <div v-else>
-
-                <!-- how to get to us -->
-                 <how-to-get-to-us />
-                <!-- end how to get to us -->
-
-                <no-delivery-form
-                  :noDelForm="noDelForm"
-                  :schema="noDelSchema"
-                  :validator-bag="validatorBag"
-                  :validate="validate"
-                  @validate="validate('noDelivery')"
-                />
-              </div>
-            </transition>
-            <!-- end delivery or not section -->
-            <button type="button" class="btn rounded btn-main mt-2" @click="delivery ? validate('delivery') : validate('noDelivery')">Заказать</button>
-          </div>
-          <!-- /end cart content checkout or cart -->
+            <!-- /end cart content checkout or cart -->
+          </transition>
         </div>
         <div v-else>
           <div class="row row-cols-1 align-items-center">
             <div class="col text-center">
-              <img src="/images/placeholder/empty-storage-cart.png" alt="" class="img-fluid" style="max-height: 280px" />
+              <img src="/images/placeholder/empty-cart.png" alt="" class="img-fluid" style="max-height: 280px" />
             </div>
             <div class="col text-center">
               <h5 class="fw-semibold">Твоя корзина пуста</h5>
@@ -240,7 +246,6 @@ export default {
         </div>
       </div>
     </div>
-    <!-- /end transition between order create state -->
   </transition>
 </template>
 

@@ -65,10 +65,10 @@ export default {
             </div>
             <div class="time">
                 <span v-if="isOpen()">
-                    Открыто до {{ todayShedule().close_time }}
+                    Открыто
                 </span>
                 <span v-else>
-                    Закрыто до {{ tomorrowShedule().open_time }}
+                    Закрыто
                 </span>
             </div>
 
@@ -78,7 +78,7 @@ export default {
                 mode="out-in"
             >
                 <div class="wrap" v-if="openShedule">
-                    <div class="popup rounded">
+                    <div class="popup rounded shadow">
                         <div class="popup-content">
                             <div class="popup-title">
                                 Расписание работы
@@ -87,7 +87,7 @@ export default {
                                 <li 
                                     v-for="item in shedule" 
                                     class="d-flex justify-content-between align-items-center"
-                                    :class="item.day_eng === todayShedule().day_eng ? 'today' : ''"
+                                    :class="item.day_eng === todayShedule().day_eng ? 'today rounded' : ''"
                                 >
                                     <span> {{ item.day }} </span>
                                     <span> {{ item.open_time }} - {{ item.close_time }} </span>
@@ -128,6 +128,7 @@ export default {
                 &.today
                     background: lighten($color-main, 40%)
                     color: #fff
+
 .shedule
     display: flex
     align-items: center
