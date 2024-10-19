@@ -16,7 +16,8 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
     {
         Telescope::night();
 
-        $allowed = $this->app->environment('local') ? true : false;
+        $allowed = $this->app->environment('local') || request()->input('secret') === env('TELESCOPE_SECRET') ? true : false;
+
 
         $this->hideSensitiveRequestDetails();
 
@@ -35,9 +36,10 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
      */
     protected function hideSensitiveRequestDetails(): void
     {
-        if ($this->app->environment('local')) {
+        if ($this->app->environment('local') || request()->input('secret') === env('TELESCOPE_SECRET')) {
             return;
         }
+
 
         Telescope::hideRequestParameters(['_token']);
 

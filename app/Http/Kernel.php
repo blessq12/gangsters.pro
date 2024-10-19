@@ -56,7 +56,6 @@ class Kernel extends HttpKernel
     protected $middlewareAliases = [
         'cors'                  => \App\Http\Middleware\CorsMiddleware::class,
 
-        'telescope.authorize'   => \App\Http\Middleware\CustomTelescopeAuthorize::class,
         'auth'                  => \App\Http\Middleware\Authenticate::class,
         'auth.basic'            => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
         'auth.session'          => \Illuminate\Session\Middleware\AuthenticateSession::class,

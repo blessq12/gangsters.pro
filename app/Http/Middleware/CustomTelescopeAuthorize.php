@@ -17,12 +17,12 @@ class CustomTelescopeAuthorize extends TelescopeAuthorize
      */
     public function handle($request, $next)
     {
-        // Check if the request has the correct secret
-        if ($request->input('secret') === env('TELESCOPE_SECRET')) {
-            return $next($request); // Allow access if the secret matches
-        }
+        return $next($request);
+        // if ($request->input('secret') === env('TELESCOPE_SECRET')) {
+        //     return $next($request);
+        // }
 
-        // Call the parent handle method for other authorization checks
-        return parent::handle($request, $next);
+        // // Call the parent handle method for other authorization checks
+        // return parent::handle($request, $next);
     }
 }
