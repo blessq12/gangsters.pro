@@ -54,8 +54,4 @@ class User extends Authenticatable
             ->take(50)
             ->orderBy('created_at', 'desc');
     }
-    public function coins()
-    {
-        return $this->coins;
-    }
 }

@@ -20,6 +20,7 @@ use App\Mail\RegisterMail;
 |
 */
 
+
 Route::controller(MainController::class)->middleware('cors')->name('main.')->group(function () {
     Route::get('/', 'index')->name('index');
     Route::get('/about', 'about')->name('about');
