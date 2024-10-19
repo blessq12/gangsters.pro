@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\RegisterMail;
-
+use App\Http\Middleware\TelescopeOverride;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -21,7 +21,9 @@ use App\Mail\RegisterMail;
 */
 
 
-Route::controller(MainController::class)->middleware('cors')->name('main.')->group(function () {
+Route::controller(MainController::class)->middleware([
+    'cors',
+])->name('main.')->group(function () {
     Route::get('/', 'index')->name('index');
     Route::get('/about', 'about')->name('about');
     Route::get('/vacancy', 'vacancy')->name('vacancy');

@@ -2,6 +2,7 @@
 
 use Laravel\Telescope\Http\Middleware\Authorize;
 use Laravel\Telescope\Watchers;
+use App\Http\Middleware\CustomTelescopeAuthorize;
 
 return [
 
@@ -93,7 +94,8 @@ return [
 
     'middleware' => [
         'web',
-        Authorize::class,
+        // Authorize::class,
+        CustomTelescopeAuthorize::class,
     ],
 
     /*
