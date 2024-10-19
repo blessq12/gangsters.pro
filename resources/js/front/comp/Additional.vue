@@ -5,6 +5,11 @@ import { localStore } from '../../stores/localStore';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { Pagination, Navigation, Autoplay } from 'swiper/modules';
 
+import 'swiper/css';
+import 'swiper/css/pagination';
+import 'swiper/css/navigation';
+import 'swiper/css/autoplay';
+
 export default {
     setup(){
         return {
@@ -51,19 +56,25 @@ export default {
         ></button>
       </div>
       <div class="modal-body pb-4">
-        <div class="row">
+        <div class="row align-items-center">
             <div class="col-12 col-lg-6 mb-4 mb-lg-0" v-if="product && product.images && product.images.length > 0">
                 <swiper
                     :modules="[Pagination, Navigation, Autoplay]"
                     :pagination="{ clickable: true }"
                     :navigation="true"
                     :autoplay="true"
+                    :loop="true"
+                    :slides-per-view="1"
                 >
-                    <swiper-slide v-for="image in product.images" :key="image">
+                    <swiper-slide 
+                        v-for="image in product.images" 
+                        :key="image" 
+                        class="swiper-slide h-100"
+                    >
                         <img 
                             v-lazy="image"
                             :alt="product.name"
-                            class="w-100 img-fluid rounded"
+                            class="w-100 img-fluid rounded h-100"
                         >
                     </swiper-slide>
                 </swiper>
