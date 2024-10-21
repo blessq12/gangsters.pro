@@ -41,7 +41,7 @@
         </div>
         {{-- end yandex map and testimonials --}}
 
-        <div class="row py-4 mb-4">
+        <div class="row row-cols-1 row-cols-lg-3 mb-4 gap-4">
             <div class="col">
                 <div class="card">
                     <div class="card-body">

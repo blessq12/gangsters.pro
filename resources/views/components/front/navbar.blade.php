@@ -54,6 +54,15 @@
                         </li>
                     </ul>
                 </div>
+            @else 
+                <div class="col d-flex justify-content-end d-block d-lg-none">
+                    <shedule class="d-none d-lg-flex"></shedule>
+                    <ul class="shop-links d-lg-block">
+                        <li>
+                            <secondary-menu-button></secondary-menu-button>
+                        </li>
+                    </ul>
+                </div>
             @endif
         </div>
     </div>

@@ -16,9 +16,13 @@ export default {
         currentItem: null
     }),
     computed: {
-        ...mapStores(appStore, localStore)
+        ...mapStores(appStore, localStore),
+        rootPage() {
+            return window.location.pathname == '/';
+        }
     },
     methods: {
+        //
         scrollToActiveItem() {
             if (this.currentItem) {
                 const bo = this.$refs.backoverlay;
@@ -30,16 +34,20 @@ export default {
     },
     watch: {
         'appStore.modal': function (val) {
-            const bodyClassList = document.body.classList;
-            val ? this.currentItem = this.appStore.modalName : null;
-            val ? setTimeout(() => { this.scrollToActiveItem();}, 200) : null;
-            val ? bodyClassList.add('overflow-hidden') : bodyClassList.remove('overflow-hidden');
+            if (this.rootPage) {
+                const bodyClassList = document.body.classList;
+                val ? this.currentItem = this.appStore.modalName : null;
+                val ? setTimeout(() => { this.scrollToActiveItem();}, 200) : null;
+                val ? bodyClassList.add('overflow-hidden') : bodyClassList.remove('overflow-hidden');
+            }
         },
         'appStore.modalName': function (val) {
-            this.currentItem = val;
-            setTimeout(() => {
-                this.scrollToActiveItem();
-            }, 50);
+            if (this.rootPage) {
+                this.currentItem = val;
+                setTimeout(() => {
+                    this.scrollToActiveItem();
+                }, 50);
+            }
         }
     }
 }
@@ -71,31 +79,35 @@ export default {
                         </div>
                         <div class="row mb-2">
                             <div class="col">
-                                <ul class="list-unstyled  p-0 d-flex nav-icons" ref="menuItems">
+
+                                <ul class="list-unstyled  p-0 d-flex nav-icons" ref="menuItems" v-if="rootPage">
                                     <div class="backoverlay" ref="backoverlay"></div>
-                                    <li @click="appStore.modalName = 'cart'" :class="{ 'active': appStore.modalName === 'cart' }" ref="cart">
-                                        <div class="counter" v-if="localStore.cart.length > 0">
-                                            <span>{{ localStore.cart.length }}</span>
-                                        </div>
-                                        <i class="fa fa-shopping-cart"></i>
-                                        <span>Корзина</span>
-                                    </li>
-                                    <li @click="appStore.modalName = 'fav'" :class="{ 'active': appStore.modalName === 'fav' }" ref="fav">
-                                        <div class="counter" v-if="localStore.fav.length > 0">
-                                            <span>{{ localStore.fav.length }}</span>
-                                        </div>
-                                        <i class="fa fa-heart"></i>
-                                        <span>Избранное</span>
-                                    </li>
-                                    <li @click="appStore.modalName = 'user'" :class="{ 'active': appStore.modalName === 'user' }" ref="user">
-                                        <i class="fa fa-user" ></i>
-                                        <span>Профиль</span>
-                                    </li>
                                     
+                                        <li @click="appStore.modalName = 'cart'" :class="{ 'active': appStore.modalName === 'cart' }" ref="cart">
+                                            <div class="counter" v-if="localStore.cart.length > 0">
+                                                <span>{{ localStore.cart.length }}</span>
+                                            </div>
+                                            <i class="fa fa-shopping-cart"></i>
+                                            <span>Корзина</span>
+                                        </li>
+                                        <li @click="appStore.modalName = 'fav'" :class="{ 'active': appStore.modalName === 'fav' }" ref="fav">
+                                            <div class="counter" v-if="localStore.fav.length > 0">
+                                                <span>{{ localStore.fav.length }}</span>
+                                            </div>
+                                            <i class="fa fa-heart"></i>
+                                            <span>Избранное</span>
+                                        </li>
+                                        <li @click="appStore.modalName = 'user'" :class="{ 'active': appStore.modalName === 'user' }" ref="user">
+                                            <i class="fa fa-user" ></i>
+                                            <span>Профиль</span>
+                                        </li>
                                     <li @click="appStore.modalName = 'menu'" :class="{ 'active': appStore.modalName === 'menu' }" ref="menu">
                                         <i class="fa fa-list-ul"></i>
                                         <span>Меню</span>
                                     </li>
+                                </ul>
+                                <ul class="list-unstyled  p-0 d-flex nav-icons" ref="menuItems" v-else>
+                                    
                                 </ul>
                             </div>
                         </div>
