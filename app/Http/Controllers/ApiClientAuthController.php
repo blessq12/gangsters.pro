@@ -22,26 +22,19 @@ class ApiClientAuthController extends Controller
             return response()->json(
                 [
                     'status' => false,
-                    'errors' => [
-                        (object) [
-                            'name' => 'account',
-                            'message' => 'Нет учетной записи с этой почтой'
-                        ]
-                    ]
+                    'message' => 'Нет учетной записи с этой почтой'
                 ],
                 401
             );
         }
         if (!Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
-            return response([
-                'status' => false,
-                'errors' => [
-                    (object) [
-                        'name' => 'account',
-                        'message' => 'Неверный пароль'
-                    ]
-                ]
-            ], 401);
+            return response(
+                [
+                    'status' => false,
+                    'message' => 'Неверный пароль'
+                ],
+                401
+            );
         }
 
         $user = Auth::user();
