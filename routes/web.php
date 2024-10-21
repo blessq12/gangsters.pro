@@ -31,4 +31,6 @@ Route::controller(MainController::class)->middleware([
     Route::get('/privacy', 'privacy')->name('privacy');
     Route::get('/loyalty', 'loyalty')->name('loyalty');
     Route::get('/purchase-and-delivery', 'purchaseAndDelivery')->name('purchaseAndDelivery');
+
+    Route::get('/reset-password', 'resetPassword')->name('resetPassword');
 });

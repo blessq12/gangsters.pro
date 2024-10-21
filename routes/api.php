@@ -39,9 +39,12 @@ Route::controller(ApiClientAuthController::class)->prefix('auth')->group(functio
                 'user' => $user,
             ]);
         });
-
         Route::patch('/update-user', 'updateUser');
     });
+});
+
+Route::controller(ApiClientAuthController::class)->prefix('auth')->group(function () {
+    Route::post('/change-password', 'changePassword');
 });
 
 Route::controller(OrderController::class)->prefix('orders')->group(function () {

@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Hash;
 // 
 use Illuminate\Support\Facades\Mail;
 use App\Mail\RegisterMail;
+use Illuminate\Support\Facades\Validator;
 
 class ApiClientAuthController extends Controller
 {
@@ -74,7 +75,7 @@ class ApiClientAuthController extends Controller
     {
 
         $user = User::where('email', $request->email)->first();
-        $password = Str::random(16);
+
         if (!$user) {
             return response([
                 'status' => false,
@@ -82,15 +83,15 @@ class ApiClientAuthController extends Controller
             ], 404);
         }
 
-        $user->password = Hash::make($password);
+        $user->token_to_reset_password = Str::random(18);
         $user->save();
 
-        Mail::to($user->email)->send(new ResetPassword($password));
+        Mail::to($user->email)->send(new \App\Mail\RequestToResetPassword($user->name, $user->token_to_reset_password));
 
         return response([
             'status' => true,
-            'message' => 'Письмо с новым паролем отправлено на вашу почту'
-        ]);
+            'message' => 'Ссылка для сброса пароля отправлена на вашу почту',
+        ], 200);
     }
 
     public function updateUser(Request $request)
@@ -107,6 +108,48 @@ class ApiClientAuthController extends Controller
         return response([
             'status' => true,
             'user' => $user
+        ], 200);
+    }
+
+    public function changePassword(Request $request)
+    {
+        $validated = Validator::make($request->all(), [
+            'password' => 'required|string|min:6',
+        ], [
+            'password.required' => 'Пароль обязателен',
+            'password.string' => 'Пароль должен быть строкой',
+            'password.min' => 'Пароль должен быть длиннее 6 символов',
+        ]);
+
+        if ($validated->fails()) {
+            return response([
+                'status' => false,
+                'message' => $validated->errors()->first()
+            ], 400);
+        }
+
+        $user = User::where('token_to_reset_password', $request->token)->first();
+
+        if (!$user) {
+            return response([
+                'status' => false,
+                'message' => 'Неверный токен'
+            ], 400);
+        }
+
+        $user->password = Hash::make($request->password);
+        $user->token_to_reset_password = null;
+
+        if (!$user->save()) {
+            return response([
+                'status' => false,
+                'message' => 'Не удалось изменить пароль'
+            ], 500);
+        }
+
+        return response([
+            'status' => true,
+            'message' => 'Пароль успешно изменен'
         ], 200);
     }
 }

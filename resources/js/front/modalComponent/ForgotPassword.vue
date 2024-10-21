@@ -33,6 +33,7 @@ export default {
                             this.issetEmail = false
                             this.finish = true
                             this.message = err.response.data.message
+                            console.log(err.response.data)
                         })
                         .finally(() => {
                             this.isLoading = false

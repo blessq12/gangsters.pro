@@ -9,6 +9,8 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\View as ViewFacade;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Str;
+use App\Models\User;
+use Illuminate\Http\Request;
 
 use App\Facades\Frontpad;
 use Intervention\Image\Facades\Image;
@@ -71,5 +73,16 @@ class MainController extends Controller
     public function loyalty(): View
     {
         return view('front.loyalty');
+    }
+
+    public function resetPassword(Request $request)
+    {
+        if (User::where('token_to_reset_password', $request->token)->exists()) {
+            return view('front.reset-password', [
+                'token' => $request->token
+            ]);
+        }
+
+        return redirect()->route('main.index')->with('error', 'Ссылка для сброса пароля недействительна');
     }
 }
