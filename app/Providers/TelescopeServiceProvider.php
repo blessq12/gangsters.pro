@@ -14,40 +14,7 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
      */
     public function register(): void
     {
-        Telescope::night();
-
-        // $allowed = $this->app->environment('local') || request()->input('secret') === env('TELESCOPE_SECRET') ? true : false;
-
-
-        // $this->hideSensitiveRequestDetails();
-
-        // Telescope::filter(function (IncomingEntry $entry) use ($allowed) {
-        //     return $allowed ||
-        //         $entry->isReportableException() ||
-        //         $entry->isFailedRequest() ||
-        //         $entry->isFailedJob() ||
-        //         $entry->isScheduledTask() ||
-        //         $entry->hasMonitoredTag();
-        // });
-    }
-
-    /**
-     * Prevent sensitive request details from being logged by Telescope.
-     */
-    protected function hideSensitiveRequestDetails(): void
-    {
-        if ($this->app->environment('local') || request()->input('secret') === env('TELESCOPE_SECRET')) {
-            return;
-        }
-
-
-        Telescope::hideRequestParameters(['_token']);
-
-        Telescope::hideRequestHeaders([
-            'cookie',
-            'x-csrf-token',
-            'x-xsrf-token',
-        ]);
+        $this->registerWatchers();
     }
 
     /**
@@ -61,6 +28,15 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
             return in_array($user->email, [
                 //
             ]);
+        });
+    }
+
+    protected function registerWatchers()
+    {
+        Telescope::night();
+
+        Telescope::filter(function (IncomingEntry $entry) {
+            return true; // Allow all entries
         });
     }
 }

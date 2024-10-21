@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\RegisterMail;
 use App\Http\Middleware\TelescopeOverride;
+use Illuminate\Support\Facades\Log;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -19,7 +20,6 @@ use App\Http\Middleware\TelescopeOverride;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-
 
 Route::controller(MainController::class)->middleware([
     'cors',

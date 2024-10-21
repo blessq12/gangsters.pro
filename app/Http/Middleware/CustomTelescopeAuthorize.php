@@ -18,8 +18,5 @@ class CustomTelescopeAuthorize extends TelescopeAuthorize
     public function handle($request, $next)
     {
         return env('TELESCOPE_ALLOWED') ? $next($request) : abort(403, 'Unauthorized');
-
-        // // Call the parent handle method for other authorization checks
-        // return parent::handle($request, $next);
     }
 }
