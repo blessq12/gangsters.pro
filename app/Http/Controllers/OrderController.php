@@ -105,8 +105,7 @@ class OrderController extends Controller
         Log::info("Update Order Request: " . json_encode($request->all()));
         $order = Order::where('frontpad_id', $request->order_id)->first();
         if (!$order) {
-            Log::error("Order not found: id = {$request->order_id}");
-            return response()->json(['message' => 'Order not found'], 404);
+            return response('', 200);
         }
         Frontpad::updateOrder($order, $request->status);
     }
