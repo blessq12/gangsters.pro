@@ -102,14 +102,13 @@ class OrderController extends Controller
 
     public function updateOrder(Request $request)
     {
-        return response('', 200);
-        // Log::info("Update Order Request: " . json_encode($request->all()));
-        // $order = Order::where('frontpad_id', $request->order_id)->first();
-        // if (!$order) {
-        //     Log::error("Order not found: id = {$request->order_id}");
-        //     return response()->json(['message' => 'Order not found'], 404);
-        // }
-        // Frontpad::updateOrder($order, $request->status);
+        Log::info("Update Order Request: " . json_encode($request->all()));
+        $order = Order::where('frontpad_id', $request->order_id)->first();
+        if (!$order) {
+            Log::error("Order not found: id = {$request->order_id}");
+            return response()->json(['message' => 'Order not found'], 404);
+        }
+        Frontpad::updateOrder($order, $request->status);
     }
     public function getLastOrders($id)
     {
