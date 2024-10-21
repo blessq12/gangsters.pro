@@ -12,6 +12,7 @@ class FrontpadService
     protected $api_secret;
     protected $api_url;
     protected $client;
+    protected $appUrl;
 
     public function __construct()
     {
@@ -19,6 +20,7 @@ class FrontpadService
         $this->api_url = env('FRONTPAD_API_URL');
         $this->client = new Client();
         $this->setting = \App\Models\Setting::first();
+        $this->appUrl = env('APP_URL');
     }
 
     public function createOrder(Order $siteOrder)
@@ -42,6 +44,7 @@ class FrontpadService
             'pod' => $siteOrder->staircase ?? '',
             'et' => $siteOrder->floor ?? '',
             'apart' => $siteOrder->apartment ?? '',
+            'hook_url' => $this->appUrl . '/api/orders/update',
             'hook_status' => [1, 10, 11],
         ];
 
