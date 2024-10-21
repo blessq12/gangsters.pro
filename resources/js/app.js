@@ -64,3 +64,12 @@ Object.entries(import.meta.glob('./**/*.vue', { eager: true })).forEach(([path, 
 app.mount('#app');
 
 new MaskInput("[data-maska]")
+
+document.querySelectorAll('input, textarea').forEach(function(input) {
+    input.addEventListener('focus', function() {
+        document.body.style.zoom = '1'; // Prevent zoom
+    });
+    input.addEventListener('blur', function() {
+        document.body.style.zoom = ''; // Reset zoom
+    });
+});
