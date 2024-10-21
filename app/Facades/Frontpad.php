@@ -17,6 +17,6 @@ class Frontpad extends Facade
 
     protected static function getFacadeAccessor()
     {
-        return 'frontpad'; // The service container binding key
+        return 'frontpad';
     }
 }

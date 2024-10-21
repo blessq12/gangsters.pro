@@ -13,6 +13,7 @@ class FrontpadService
     protected $api_url;
     protected $client;
     protected $appUrl;
+    protected $setting;
 
     public function __construct()
     {
