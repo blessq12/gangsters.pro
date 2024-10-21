@@ -45,7 +45,7 @@ class FrontpadService
             'pod' => $siteOrder->staircase ?? '',
             'et' => $siteOrder->floor ?? '',
             'apart' => $siteOrder->apartment ?? '',
-            'hook_url' => $this->appUrl . '/api/orders/update',
+            // 'hook_url' => $this->appUrl . '/api/orders/update',
             'hook_status' => [1, 10, 11],
         ];
 
