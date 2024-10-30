@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class Image extends Model
 {
     use HasFactory;
+    use \Encore\Admin\Traits\Resizable;
+
     protected $hidden = [
         'image_type',
         'created_at',

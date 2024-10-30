@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use \Encore\Admin\Traits\Resizable;
 
+
 class ProductImage extends Model
 {
     use HasFactory, Resizable;
@@ -15,16 +16,10 @@ class ProductImage extends Model
         'name',
         'path'
     ];
-    protected $hidden = [
-        'created_at',
-        'updated_at',
-        'name',
-        'id',
-        'product_id'
-    ];
+    protected $hidden = [];
 
     public function product()
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(Product::class, 'product_id', 'id');
     }
 }

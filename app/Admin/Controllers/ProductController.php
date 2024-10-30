@@ -138,13 +138,11 @@ class ProductController extends AdminController
             ->pathColumn('path')
             ->uniqueName()
             ->thumbnail([
-                'sm' => [null, 256],
-                'md' => [null, 512],
-                'lg' => [null, 1024],
+                'small' => [null, 256],
+                'medium' => [null, 512],
+                'large' => [null, 1024],
             ])
-            ->removable()
-            ->resize(1920, 1080); // Resize original image on upload
-
+            ->removable();
         $form->text('name', __('Название'))->placeholder('Название не задано')->rules('required', [
             'required' => 'Название обязательно для заполнения.',
         ]);
