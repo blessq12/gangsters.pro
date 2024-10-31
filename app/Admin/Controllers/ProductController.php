@@ -142,7 +142,12 @@ class ProductController extends AdminController
                 'medium' => [null, 512],
                 'large' => [null, 1024],
             ])
+            ->fit(1024, 1024, function ($constraint) {
+                $constraint->upsize();
+                $constraint->aspectRatio();
+            })
             ->removable();
+
         $form->text('name', __('Название'))->placeholder('Название не задано')->rules('required', [
             'required' => 'Название обязательно для заполнения.',
         ]);
