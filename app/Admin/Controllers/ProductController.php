@@ -142,7 +142,7 @@ class ProductController extends AdminController
                 'md' => [null, 512],
                 'lg' => [null, 1024],
             ])
-            ->fit(1920, 1080, function ($constraint) {
+            ->resize(1920, 1080, function ($constraint) {
                 $constraint->upsize();
                 $constraint->aspectRatio();
             })
