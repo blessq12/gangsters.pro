@@ -138,9 +138,9 @@ class ProductController extends AdminController
             ->pathColumn('path')
             ->uniqueName()
             ->thumbnail([
-                'small' => [null, 256],
-                'medium' => [null, 512],
-                'large' => [null, 1024],
+                'sm' => [null, 256],
+                'md' => [null, 512],
+                'lg' => [null, 1024],
             ])
             ->fit(1024, 1024, function ($constraint) {
                 $constraint->upsize();
