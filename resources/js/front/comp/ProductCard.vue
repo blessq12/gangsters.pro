@@ -37,6 +37,13 @@ export default {
                 data-bs-target="#additional"
                 @click="appStore.currentAdditional = product"
             >
+                <div class="additionals gap-1 d-flex flex-wrap">
+                    <span class="badge bg-danger" v-if="product.hit">Хит</span>
+                    <span class="badge bg-warning" v-if="product.spicy">Острый</span>
+                    <span class="badge bg-warning" v-if="product.kidsAllow">Для детей</span>
+                    <span class="badge bg-warning" v-if="product.onion">С луком</span>
+                    <span class="badge bg-warning" v-if="product.garlic">С чесноком</span>
+                </div>
                 <transition
                     enter-active-class="animate__animated animate__faster animate__fadeIn"
                     leave-active-class="animate__animated animate__faster animate__fadeOut"

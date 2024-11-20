@@ -74,7 +74,7 @@ export default {
                         <img 
                             v-lazy="image"
                             :alt="product.name"
-                            class="w-100 img-fluid rounded h-100"
+                            class="w-100 img-fluid rounded"
                         >
                     </swiper-slide>
                 </swiper>
@@ -96,13 +96,13 @@ export default {
                     </div>
                     <div class="col-12 mb-4">
                         <p class="fs-5 mb-2 fw-bold">Дополнительная информация</p>
-                        <ul class="list-unstyled p-0 m-0">
-                            <li><b>Острый: </b>{{ product.spicy ? 'Да' : 'Нет' }}</li>
-                            <li><b>Хит: </b>{{ product.hit ? 'Да' : 'Нет' }}</li>
-                            <li><b>Лук: </b>{{ product.onion ? 'Да' : 'Нет' }}</li>
-                            <li><b>Чеснок: </b>{{ product.garic ? 'Да' : 'Нет' }}</li>
-                            <li><b>Можно для детей: </b>{{ product.kidsAllow ? 'Да' : 'Нет' }}</li>
-                        </ul>
+                        <div class="d-flex gap-1">
+                            <span class="badge bg-danger" v-if="product.hit">Хит</span>
+                            <span class="badge bg-warning" v-if="product.spicy">Острый</span>
+                            <span class="badge bg-warning" v-if="product.kidsAllow">Для детей</span>
+                            <span class="badge bg-warning" v-if="product.onion">С луком</span>
+                            <span class="badge bg-warning" v-if="product.garlic">С чесноком</span>
+                        </div>
                     </div>
                     <div class="col-12 mb-2">
                         <ul class="list-unstyled d-flex flex-row gap-3 fs-4">

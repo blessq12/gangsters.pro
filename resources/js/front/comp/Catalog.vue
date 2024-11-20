@@ -35,7 +35,7 @@ export default {
         positionObserver() {
             //
             const options = {
-                threshold: 0.9
+                threshold: 0.1
             }
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach((entry) => {
@@ -76,7 +76,7 @@ export default {
             // Smooth scrolling effect
             const startScrollLeft = categoryList.scrollLeft;
             const distance = scrollAmount - startScrollLeft;
-            const duration = 300; // Duration in milliseconds
+            const duration = 300;
             let startTime = null;
 
             const animation = (currentTime) => {
