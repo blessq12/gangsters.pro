@@ -15,7 +15,7 @@ export default {
 </script>
 
 <template>
-    <button @click="appStore.modal = true; appStore.modalName=target" class="menu-button btn">
+    <button @click="appStore.modal = true; appStore.modalName=target" class="btn-outline-dark rounded btn-sm btn">
         <slot></slot>
     </button>
 </template>

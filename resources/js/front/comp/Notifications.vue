@@ -1,6 +1,6 @@
 <template>
   <div class="notification-wrapper">
-    <button class="btn rounded btn-outline-dark" @click="toggleNotifications">
+    <button class="btn rounded btn-outline-dark btn-sm" @click="toggleNotifications">
       <i ref="bellButton" class="fa fa-bell"></i>
       <span v-if="unreadCount" class="badge">{{ unreadCount }}</span>
     </button>
