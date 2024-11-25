@@ -188,6 +188,7 @@ return [
     'aliases' => Facade::defaultAliases()->merge([
         'Frontpad' => App\Facades\Frontpad::class,
         'Image' => Intervention\Image\Facades\Image::class,
+        'Notification' => App\Facades\NotificationFacade::class,
     ])->toArray(),
 
 ];

@@ -54,4 +54,10 @@ class User extends Authenticatable
             ->take(50)
             ->orderBy('created_at', 'desc');
     }
+
+    public function sessionIdentifier()
+    {
+        // Предполагаем, что у пользователя может быть только один активный идентификатор сессии
+        return $this->hasOne(SessionIdentifier::class, 'user_id', 'id');
+    }
 }
