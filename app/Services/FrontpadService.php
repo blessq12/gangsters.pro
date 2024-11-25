@@ -54,8 +54,8 @@ class FrontpadService
             $order['product_kol'][] = intval($item->qty);
         }
 
-        Log::debug('create order frontpad facade ' . json_encode($order));
-        Log::debug('create order frontpad facade ' . json_encode($items));
+        Log::debug('order frontpad facade ' . json_encode($order));
+        Log::debug('order items frontpad facade ' . json_encode($items));
         
 
         try {
