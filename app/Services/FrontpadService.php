@@ -55,6 +55,8 @@ class FrontpadService
         }
 
         Log::debug('create order frontpad facade ' . json_encode($order));
+        Log::debug('create order frontpad facade ' . json_encode($items));
+        
 
         try {
             $response = $this->client->post($this->api_url . '?new_order', ['form_params' => $order]);
