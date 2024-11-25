@@ -54,7 +54,7 @@ class ProductController extends AdminController
 
         $grid->column('sku', __('Артикул'))->display(function ($sku) {
             return $sku ?? 'Нет артикула';
-        });
+        })->editable();
 
 
 
