@@ -54,6 +54,8 @@ class FrontpadService
             $order['product_kol'][] = intval($item->qty);
         }
 
+        Log::debug('create order frontpad facade ' . json_encode($order));
+
         try {
             $response = $this->client->post($this->api_url . '?new_order', ['form_params' => $order]);
             $responseBody = json_decode($response->getBody()->getContents(), true);
