@@ -70,7 +70,7 @@ export default {
         >    
             <div class="wrap" v-if="appStore.modal" @click.self="appStore.modal = false">
                 <div class="menu py-4 px-2">
-                    <div class="container">
+                    <div class="container h-100 d-flex flex-column">
                         <div class="row mb-4">
                             <div class="col d-flex align-items-center justify-content-between">
                                 <h4 class="mb-0">Меню</h4>
@@ -79,41 +79,39 @@ export default {
                         </div>
                         <div class="row mb-2">
                             <div class="col">
-
-                                <ul class="list-unstyled  p-0 d-flex nav-icons" ref="menuItems" v-if="rootPage">
+                                <ul class="list-unstyled p-0 d-flex nav-icons" ref="menuItems" v-if="rootPage">
                                     <div class="backoverlay" ref="backoverlay"></div>
-                                    
-                                        <li @click="appStore.modalName = 'cart'" :class="{ 'active': appStore.modalName === 'cart' }" ref="cart">
-                                            <div class="counter" v-if="localStore.cart.length > 0">
-                                                <span>{{ localStore.cart.length }}</span>
-                                            </div>
-                                            <i class="fa fa-shopping-cart"></i>
-                                            <span>Корзина</span>
-                                        </li>
-                                        <li @click="appStore.modalName = 'fav'" :class="{ 'active': appStore.modalName === 'fav' }" ref="fav">
-                                            <div class="counter" v-if="localStore.fav.length > 0">
-                                                <span>{{ localStore.fav.length }}</span>
-                                            </div>
-                                            <i class="fa fa-heart"></i>
-                                            <span>Избранное</span>
-                                        </li>
-                                        <li @click="appStore.modalName = 'user'" :class="{ 'active': appStore.modalName === 'user' }" ref="user">
-                                            <i class="fa fa-user" ></i>
-                                            <span>Профиль</span>
-                                        </li>
+                                    <li @click="appStore.modalName = 'cart'" :class="{ 'active': appStore.modalName === 'cart' }" ref="cart">
+                                        <div class="counter" v-if="localStore.cart.length > 0">
+                                            <span>{{ localStore.cart.length }}</span>
+                                        </div>
+                                        <i class="fa fa-shopping-cart"></i>
+                                        <span>Корзина</span>
+                                    </li>
+                                    <li @click="appStore.modalName = 'fav'" :class="{ 'active': appStore.modalName === 'fav' }" ref="fav">
+                                        <div class="counter" v-if="localStore.fav.length > 0">
+                                            <span>{{ localStore.fav.length }}</span>
+                                        </div>
+                                        <i class="fa fa-heart"></i>
+                                        <span>Избранное</span>
+                                    </li>
+                                    <li @click="appStore.modalName = 'user'" :class="{ 'active': appStore.modalName === 'user' }" ref="user">
+                                        <i class="fa fa-user"></i>
+                                        <span>Профиль</span>
+                                    </li>
                                     <li @click="appStore.modalName = 'menu'" :class="{ 'active': appStore.modalName === 'menu' }" ref="menu">
                                         <i class="fa fa-list-ul"></i>
                                         <span>Меню</span>
                                     </li>
                                 </ul>
-                                <ul class="list-unstyled  p-0 d-flex nav-icons" ref="menuItems" v-else>
-                                    
-                                </ul>
+                                <ul class="list-unstyled p-0 d-flex nav-icons" ref="menuItems" v-else></ul>
                             </div>
                         </div>
-                        <div class="row overflow-auto" style="max-height: 100vh;">
-                            <div class="col pb-5" style="min-height: 150vh;">
-                                <component :is="appStore.modalName + '-component'"></component>
+                        <div class="row flex-grow-1 overflow-hidden">
+                            <div class="col h-100">
+                                <div class="content-scroll">
+                                    <component :is="appStore.modalName + '-component'"></component>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -125,6 +123,11 @@ export default {
 
 <style lang="sass" scoped>
 .wrap
+    position: fixed
+    top: 0
+    right: 0
+    bottom: 0
+    left: 0
     display: flex
     align-items: center
     z-index: 10
@@ -133,17 +136,22 @@ export default {
         width: 100%
         @media(min-width: 768px)
             border-radius: 12px 0 0 12px
-        box-shadow: 0 0 55px rgba(255, 255, 255, 0.3)
-        @media(min-width: 768px)
             width: 50%
+            right: 0 !important
+            left: unset
+        box-shadow: 0 0 55px rgba(255, 255, 255, 0.3)
         height: 100%
         top: 0
         left: 0
-        @media(min-width: 768px)
-            left: unset
-            right: 0 !important
         background: white
-// menu styles
+        display: flex
+        flex-direction: column
+
+.content-scroll
+    height: 100%
+    overflow-y: auto
+    padding-bottom: 2rem
+
 .menu
     .nav-icons
         overflow: auto
@@ -192,5 +200,4 @@ export default {
                 align-items: center
                 justify-content: center
                 font-size: 12px
-            
 </style>

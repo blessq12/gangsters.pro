@@ -146,13 +146,13 @@ export default {
             mode="out-in"
           >
             <!-- cart content checkout or cart -->
-            <div v-if="!checkout">
+            <div v-if="!checkout" class="cart-content overflow-auto">
               <transition-group enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut" move-class="move" tag="ul" class="cart-list">
                 <li v-for="item in localStore.cart" :key="item.id">
                   <ProductComponentSmall :product="item" :is-favorite="false" />
                 </li>
               </transition-group>
-              <div class="cart-footer border-top pt-4 pb-2">
+              <div class="cart-footer border-top">
                 <ul class="list-unstyled">
                   <li>
                     <b>Стоимость: </b>
@@ -169,6 +169,7 @@ export default {
                 <i class="fa fa-trash"></i> Очистить
               </button>
             </div>
+
             <div v-else>
               <button class="btn rounded btn-main btn-sm mb-4" @click="checkout = !checkout">
                 <i class="fa fa-arrow-left" style="margin-right: 6px"></i> Назад в корзину
@@ -278,14 +279,46 @@ export default {
   background: $color-main
   border: unset
   color: #fff
-.cart-list
-  li
+.cart-content
+  height: 100%
+  display: flex
+  flex-direction: column
+
+  .cart-list
+    flex: 1
+    overflow-y: auto
+    padding: 1rem
     margin-bottom: 0
-.btn-group
-  button
-    border-color: #ffc107
-    &.active
-      background: #ffc107
+
+  .cart-footer
+    background: #fff
+    padding: 1rem
+    border-top: 1px solid #dee2e6
+    
+  .btn
+    margin-bottom: 1rem
 .move
   position: absolute
+
+.cart-content
+  position: relative
+  max-height: 100%
+  display: flex
+  flex-direction: column
+
+  .cart-list
+    flex: 1
+    overflow-y: auto
+    padding: 1rem
+    margin-bottom: 0
+
+  .cart-footer
+    position: sticky
+    bottom: 0
+    background: #fff
+    padding: 1rem
+    border-top: 1px solid #dee2e6
+    
+  .btn
+    margin-bottom: 1rem
 </style>

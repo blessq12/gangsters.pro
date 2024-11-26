@@ -15,7 +15,7 @@ export default {
 </script>
 
 <template>
-    <button @click="appStore.modal = true; appStore.modalName=target" class="btn-outline-dark rounded btn-sm btn">
+    <button @click="appStore.modal = true; appStore.modalName=target" class="btn-outline-dark rounded btn-sm btn d-flex align-items-center gap-1">
         <slot></slot>
     </button>
 </template>

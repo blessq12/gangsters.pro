@@ -21,10 +21,10 @@ export default {
     computed: {
         ...mapStores(localStore),
         getThumbs() {
-            if (this.product.thumbnails.length && this.product.thumbnails !== undefined) {
-                return this.product.thumbnails[0].small
+            if (this.product.thumbnails && this.product.thumbnails.length && this.product.thumbnails !== undefined) {
+                return this.product.thumbnails[0].small;
             }
-            return false
+            return '/images/placeholder/product-image-empty-128x128.jpg';
         }
     }
 }
@@ -35,6 +35,7 @@ export default {
         <div 
             class="image bg-image rounded overflow-hidden position-relative" 
             v-lazy:background-image="getThumbs"
+            @error="$event.target.style.backgroundImage = 'url(/images/placeholder/product-image-empty-128x128.jpg)'"
         >
             <div class="count" v-if="!isFavorite">
                 <span>{{ product.qty }}</span>
