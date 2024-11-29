@@ -26,11 +26,8 @@ class FrontpadService
 
     public function createOrder(Order $siteOrder)
     {
-        Log::debug("Frontpad Facade input order: " . json_encode($siteOrder));
         $siteOrder = Order::find($siteOrder->id);
         $items = $siteOrder->items;
-
-        Log::debug('create order frontpad facade ' . json_encode($siteOrder));
 
         $order = [
             'secret' => $this->api_secret,
@@ -50,22 +47,15 @@ class FrontpadService
         ];
 
         foreach ($items as $item) {
-            Log::debug("Processing item SKU: {$item->sku}, Quantity: {$item->qty}");
             $order['product'][] = intval($item->sku);
             $order['product_kol'][] = intval($item->qty);
         }
-
-        Log::debug('order frontpad facade ' . json_encode($order));
-        Log::debug('order items frontpad facade ' . json_encode($items));
-        
-        Log::debug('Request URL: ' . $this->api_url . '?new_order');
-        Log::debug('Request payload: ' . json_encode($order));
 
         try {
             $response = $this->client->post($this->api_url . '?new_order', ['form_params' => $order]);
             $responseBody = json_decode($response->getBody()->getContents(), true);
             Log::debug('FrontPad API Response: ' . json_encode($responseBody));
-            
+
             if ($responseBody['result'] === 'success') {
                 $siteOrder->frontpad_id = $responseBody['order_id'];
                 $siteOrder->save();

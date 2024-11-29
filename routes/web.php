@@ -35,8 +35,3 @@ Route::controller(MainController::class)->middleware([
 
     Route::get('/reset-password', 'resetPassword')->name('resetPassword');
 });
-
-Route::get('get-prod', function () {
-    $frontpad = new App\Services\FrontpadService();
-    dd($frontpad->getProducts());
-});
