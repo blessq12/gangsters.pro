@@ -50,6 +50,7 @@ class FrontpadService
         ];
 
         foreach ($items as $item) {
+            Log::debug("Processing item SKU: {$item->sku}, Quantity: {$item->qty}");
             $order['product'][] = intval($item->sku);
             $order['product_kol'][] = intval($item->qty);
         }
@@ -57,13 +58,18 @@ class FrontpadService
         Log::debug('order frontpad facade ' . json_encode($order));
         Log::debug('order items frontpad facade ' . json_encode($items));
         
+        Log::debug('Request URL: ' . $this->api_url . '?new_order');
+        Log::debug('Request payload: ' . json_encode($order));
 
         try {
             $response = $this->client->post($this->api_url . '?new_order', ['form_params' => $order]);
             $responseBody = json_decode($response->getBody()->getContents(), true);
+            Log::debug('FrontPad API Response: ' . json_encode($responseBody));
+            
             if ($responseBody['result'] === 'success') {
                 $siteOrder->frontpad_id = $responseBody['order_id'];
                 $siteOrder->save();
+                Log::info("Order successfully created in FrontPad. Order ID: {$responseBody['order_id']}, SKUs: " . implode(', ', $order['product']));
             } else {
                 Log::error("Failed to create order on FrontPad: " . json_encode($responseBody));
             }
