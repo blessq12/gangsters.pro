@@ -1,5 +1,6 @@
 <?php
 
+use App\Facades\Frontpad;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Crm\CrmController;
 use App\Http\Controllers\Front\MainController;
@@ -33,4 +34,9 @@ Route::controller(MainController::class)->middleware([
     Route::get('/purchase-and-delivery', 'purchaseAndDelivery')->name('purchaseAndDelivery');
 
     Route::get('/reset-password', 'resetPassword')->name('resetPassword');
+});
+
+Route::get('get-prod', function () {
+    $frontpad = new App\Services\FrontpadService();
+    dd($frontpad->getProducts());
 });
