@@ -8,6 +8,7 @@
         title="О компании"
         description="Информация о нашей компании"
         :overlay="true"
+        banner='/images/hero-bg.webp'
     ></x-front.hero-banner>
 @endsection
 

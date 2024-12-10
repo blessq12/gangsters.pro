@@ -22,11 +22,11 @@ export default {
     watch: {
         'userStore.authStatus': {
             handler(val) {
-                if (val) {
-                    toast.info('Вы успешно авторизовались')
-                } else {
-                    toast.warning('Вы вышли из аккаунта')
-                }
+                // if (val) {
+                //     toast.info('Вы успешно авторизовались')
+                // } else {
+                //     toast.warning('Вы вышли из аккаунта')
+                // }
             },
             immediate: true,
         }

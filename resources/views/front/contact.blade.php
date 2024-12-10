@@ -8,7 +8,7 @@
         title="Контакты"
         description="Контактная информация и режим работы"
         :overlay="true"
-        banner='https://avatars.mds.yandex.net/get-altay/9833397/2a000001888d229695e50f5c88db8ab1417d/XXXL'
+        banner='/images/hero-bg.webp'
     />
 @endsection
 
@@ -80,10 +80,6 @@
                             <li class="d-flex align-items-center justify-content-between">
                                 <span class="name">Телефон</span>
                                 <a href="tel:{{ $company->phone }}"><span class="value fw-bold">{{ $company->phone }}</span></a>
-                            </li>
-                            <li class="d-flex align-items-center justify-content-between">
-                                <span class="name">Дополнительный телефон</span>
-                                <a href="tel:{{ $company->phone_additional }}"><span class="value fw-bold">{{ $company->phone_additional }}</span></a>
                             </li>
                             <li class="d-flex align-items-center justify-content-between">
                                 <span class="name">Адрес</span>

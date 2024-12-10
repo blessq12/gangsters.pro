@@ -25,12 +25,20 @@ export default {
             this.shedule = response.data;
         },
         isOpen() {
-            let shedule = this.todayShedule();
-            if (shedule && moment().isBefore(moment(shedule.close_time, 'HH:mm'))) {
-                return true;
+            let schedule = this.todayShedule();
+            if (!schedule) return false;
+            
+            const now = moment();
+            const openTime = moment(schedule.open_time, 'HH:mm');
+            const closeTime = moment(schedule.close_time, 'HH:mm');
+            if (closeTime.isBefore(openTime)) {
+                closeTime.add(1, 'day');
+                if (now.isBefore(moment('24:00', 'HH:mm'))) {
+                    return now.isSameOrAfter(openTime);
+                }
+                return now.isBefore(closeTime);
             }
-
-            return false;
+            return now.isBetween(openTime, closeTime, undefined, '[]');
         },
         todayShedule() {
             if (this.shedule.length > 0) {
@@ -40,13 +48,11 @@ export default {
         },
         tomorrowShedule() {
             let tomorrow = this.moment().add(1, 'day').format('dddd').toLowerCase();
-            
             if (this.shedule.length > 0) {
                 return this.shedule.find(item => item.day_eng === tomorrow);
             }
             return null;
         }
-        
     },
     watch: {
         //
