@@ -10,7 +10,7 @@
                                 Заказы за сегодня</div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800 d-flex">
                                 <i class="fa fa-shopping-cart text-gray-300" style="margin-right: 8px;"></i>
-                                {{ $todayOrders->count() }}
+                                {{ $totalTodayOrders }}
                             </div>
                         </div>
                     </div>
@@ -28,7 +28,7 @@
                             </div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800 d-flex">
                                 <i class="fa fa-users text-gray-300" style="margin-right: 8px;"></i>
-                                {{ $todayUsers->count() }}
+                                {{ $totalTodayUsers }}
                             </div>
                         </div>
                     </div>
@@ -64,6 +64,27 @@
                             <div class="h5 mb-0 font-weight-bold text-gray-800 d-flex">
                                 <i class="fa fa-user text-gray-300" style="margin-right: 8px;"></i>
                                 {{ $usersCount }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Суммарная стоимость заказов за день -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Сумма заказов за сегодня
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800 d-flex">
+                                <i class="fa fa-money-bill-wave text-gray-300" style="margin-right: 8px;"></i>
+                                {{ $totalTodayRevenue }} руб.
                             </div>
                         </div>
                     </div>

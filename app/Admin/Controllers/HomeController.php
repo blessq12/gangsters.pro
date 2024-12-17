@@ -28,13 +28,23 @@ class HomeController extends Controller
         // Общее количество пользователей
         $usersCount = User::count();
 
+        // Сводная статистика по дню
+        $totalTodayOrders = $todayOrders->count();
+        $totalTodayUsers = $todayUsers->count();
+
+        // Суммарная стоимость заказов за день
+        $totalTodayRevenue = $todayOrders->sum('total');
+
         return $content
             ->title('Дашборд')
             ->body(view('admin.dashboard', [
                 'todayOrders' => $todayOrders,
                 'todayUsers' => $todayUsers,
                 'productsCount' => $productsCount,
-                'usersCount' => $usersCount
+                'usersCount' => $usersCount,
+                'totalTodayOrders' => $totalTodayOrders,
+                'totalTodayUsers' => $totalTodayUsers,
+                'totalTodayRevenue' => $totalTodayRevenue
             ]));
     }
 }
