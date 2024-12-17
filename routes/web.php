@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Log;
 */
 
 Route::controller(MainController::class)->middleware([
-    'cors',
+    // 'cors',
 ])->name('main.')->group(function () {
     Route::get('/', 'index')->name('index');
     Route::get('/about', 'about')->name('about');
