@@ -4,28 +4,34 @@ import { userStore } from "../../stores/userStore";
 import { appStore } from "../../stores/appStorage";
 import { mapStores } from "pinia";
 import { object, string } from "yup";
+import { useToast } from "vue-toastification";
 import moment from "moment";
 
+
 export default {
+  created(){
+  },
   mounted() {
     this.initializeFormData();
   },
-  data() {
-    return {
-      moment,
-      checkout: false,
-    delivery: true,
-    orderCreated: false,
-    order: null,
-    schema: this.createSchema(),
-    formData: this.createFormData(),
-    noDelForm: this.createNoDelForm(),
-    noDelSchema: this.createNoDelSchema(),
-      validatorBag: {},
-    }
-  },
   computed: {
     ...mapStores(localStore, userStore, appStore),
+  },
+  data() {
+    return {
+      toast: useToast(),
+      moment,
+      checkout: false,
+      delivery: true,
+      orderCreated: false,
+      order: null,
+      schema: this.createSchema(),
+      formData: this.createFormData(),
+      noDelForm: this.createNoDelForm(),
+      noDelSchema: this.createNoDelSchema(),
+      validatorBag: {},
+      checkPerformed: false
+    }
   },
   methods: {
     initializeFormData() {
@@ -145,7 +151,6 @@ export default {
             leave-active-class="animate__animated animate__fadeOut"
             mode="out-in"
           >
-            <!-- cart content checkout or cart -->
             <div v-if="!checkout" class="cart-content overflow-auto">
               <transition-group enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut" move-class="move" tag="ul" class="cart-list">
                 <li v-for="item in localStore.cart" :key="item.id">

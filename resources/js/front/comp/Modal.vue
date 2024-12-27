@@ -11,6 +11,7 @@ export default {
         }
     },
     mounted() {
+        //
     },
     data: () => ({
         currentItem: null
@@ -33,21 +34,21 @@ export default {
         }
     },
     watch: {
-        'appStore.modal': function (val) {
-            if (this.rootPage) {
-                const bodyClassList = document.body.classList;
-                val ? this.currentItem = this.appStore.modalName : null;
-                val ? setTimeout(() => { this.scrollToActiveItem();}, 200) : null;
-                val ? bodyClassList.add('overflow-hidden') : bodyClassList.remove('overflow-hidden');
-            }
-        },
-        'appStore.modalName': function (val) {
-            if (this.rootPage) {
-                this.currentItem = val;
-                setTimeout(() => {
-                    this.scrollToActiveItem();
-                }, 50);
-            }
+        'appStore': {
+            handler(newVal) {
+                if (this.rootPage) {
+                    const bodyClassList = document.body.classList;
+                    
+                    if (newVal.modal) {
+                        this.currentItem = newVal.modalName;
+                        bodyClassList.add('overflow-hidden');
+                        this.$nextTick(() => { this.scrollToActiveItem() });
+                    } else {
+                        bodyClassList.remove('overflow-hidden');
+                    }
+                }
+            },
+            deep: true
         }
     }
 }

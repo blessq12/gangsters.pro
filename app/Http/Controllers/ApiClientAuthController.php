@@ -11,6 +11,7 @@ use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use App\Models\SessionIdentifier;
 // 
 use Illuminate\Support\Facades\Mail;
 use App\Mail\RegisterMail;
@@ -18,6 +19,14 @@ use Illuminate\Support\Facades\Validator;
 
 class ApiClientAuthController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth:sanctum', ['only' => [
+            'updateUser',
+            'getUser',
+            'getUserData'
+        ]]);
+    }
     public function clientLogin(Request $request)
     {
         if (!User::where('email', $request->email)->exists()) {
@@ -151,5 +160,40 @@ class ApiClientAuthController extends Controller
             'status' => true,
             'message' => 'Пароль успешно изменен'
         ], 200);
+    }
+
+    public function getUser()
+    {
+        $user = auth('sanctum')->user();
+        if (!$user) {
+            return response()->json(['error' => 'User not authenticated'], 401);
+        }
+        // Check for existing notification identifier
+        $identifier = SessionIdentifier::where('user_id', $user->id)->first();
+
+        if (!$identifier) {
+            // Create a temporary identifier
+            $tempIdentifier = Str::uuid()->toString();
+            SessionIdentifier::create([
+                'user_id' => $user->id,
+                'session_id' => $tempIdentifier,
+            ]);
+            $identifier = SessionIdentifier::where('user_id', $user->id)->first();
+        }
+
+        $user->dob = Carbon::parse($user->dob)->format('d-m-Y');
+        return response()->json([
+            'user' => $user,
+            'notificationId' => $identifier->session_id,
+        ]);
+    }
+
+    public function getUserData()
+    {
+        $user = auth('sanctum')->user();
+        $user->dob = Carbon::parse($user->dob)->format('d-m-Y');
+        return response()->json([
+            'user' => $user,
+        ]);
     }
 }

@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Log;
 use App\Facades\Frontpad;
 use App\Models\Order;
+use App\Models\Product;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class OrderController extends Controller
 {
@@ -14,9 +16,29 @@ class OrderController extends Controller
 
     public function __construct()
     {
+        $this->middleware('auth:sanctum', ['only' => [
+            'getMyOrders',
+            'getMyCoins'
+        ]]);
+
         if (auth('sanctum')->user()) {
             $this->user = auth('sanctum')->user();
         }
+    }
+
+    public function getMyOrders()
+    {
+        $orders = auth('sanctum')->user()->orders;
+        $orders->each(function ($order) {
+            $order->created = Carbon::parse($order->created_at)->format('d.m.Y H:i');
+            $order->status_text = Order::GET_STATUS[$order->status];
+        });
+        return response()->json($orders);
+    }
+    public function getMyCoins()
+    {
+        $coins = auth('sanctum')->user()->coins;
+        return response()->json($coins);
     }
 
     /**
@@ -122,5 +144,25 @@ class OrderController extends Controller
             $order->items = json_decode($order->items);
         });
         return response()->json($orders, 200);
+    }
+
+    public function checkAvalibility(Request $request)
+    {
+        $productIds = $request->ids;
+        if (!$productIds) throw new \Exception('No products provided', 422);
+        $unavailableIds = [];
+
+        foreach ($productIds as $id) {
+            $product = Product::find($id);
+            if (!$product || !$product->visible) {
+                $unavailableIds[] = $id;
+            }
+        }
+
+        if (!empty($unavailableIds)) {
+            return response()->json($unavailableIds, 422);
+        }
+
+        return response()->json([], 200);
     }
 }
