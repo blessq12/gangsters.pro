@@ -15,7 +15,7 @@ class TelegramBotController extends Controller
      */
     public function getCompany(): JsonResponse
     {
-        $company = Company::with(['legal'])->first();
+        $company = Company::with(['legals', 'workShedules'])->first();
 
         return response()->json([
             'success' => true,
