@@ -29,6 +29,7 @@ class TelegramBotController extends Controller
     public function getProductCategories(): JsonResponse
     {
         $categories = ProductCategory::where('visible', true)
+            ->has('products')
             ->get();
 
         return response()->json([
