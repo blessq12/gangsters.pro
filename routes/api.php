@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Carbon\Carbon;
 use App\Http\Controllers\Api\RawController as Raw;
+use App\Http\Controllers\TelegramBotController;
 use App\Models\SessionIdentifier;
 use Illuminate\Support\Str;
 
@@ -69,4 +70,11 @@ Route::controller(Raw::class)->group(function () {
     Route::get('/get-routes', 'getLinks');
     Route::get('/get-company', 'getCompany');
     Route::get('/get-shedule', 'getShedule');
+});
+
+Route::controller(TelegramBotController::class)->prefix('telegram')->group(function () {
+    Route::get('/get-company', 'getCompany');
+    // Продуктовка
+    Route::get('/get-product-categories', 'getProductCategories');
+    Route::get('/get-products', 'getProducts');
 });
