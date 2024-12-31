@@ -72,5 +72,7 @@ export default {
     }
 }
 </script>
-<template></template>
+<template>
+    <weekend-schedule></weekend-schedule>
+</template>
 <style lang="sass" scoped></style>
