@@ -73,6 +73,6 @@ export default {
 }
 </script>
 <template>
-    <weekend-schedule></weekend-schedule>
+    
 </template>
 <style lang="sass" scoped></style>
