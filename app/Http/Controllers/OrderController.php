@@ -43,7 +43,7 @@ class OrderController extends Controller
 
     /**
      * @param Request $request
-     * 
+     *
      */
     public function createOrder(Request $request)
     {
@@ -81,8 +81,7 @@ class OrderController extends Controller
 
         if ($request->delivery) {
             $order->street = $request->order['street'];
-            $order->house = $request->order['house'];
-            $order->building = $request->order['building'];
+            $order->house = $request->order['house'] . ' ' . $request->order['building'] ?? '';
             $order->staircase = $request->order['staircase'];
             $order->floor = $request->order['floor'];
             $order->apartment = $request->order['apartment'];
