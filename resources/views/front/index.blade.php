@@ -14,7 +14,6 @@
         </div>
     @endif
     <x-front.stories></x-front.stories>
-    <service-advertisment></service-advertisment>
     <banner></banner>
     <x-front.catalog></x-front.catalog>
     <additional></additional>
