@@ -45,8 +45,8 @@ export default {
         <div class="gs-story-item rounded bg-image" style="background:url('/images/service.jpg');" @click="show = !show; currentStory = story"></div>
     </div>
     <div class="gs-story-footer d-block lh-1">
-        <span class="d-block fw-bold">GANGSTER’S SERVIS</span>
-        <small class="d-block">Автокомплекс</small>
+        <span class="d-block fw-bold" style="font-size: 13px;">GANGSTER’S SERVIS</span>
+        <small class="d-block" style="font-size: 11px;">Автокомплекс</small>
     </div>
 
     <teleport to="body">
