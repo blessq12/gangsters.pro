@@ -74,7 +74,7 @@ export default {
 </script>
 
 <template>
-    <ul class="story-list pt-2" v-if="stories.length">
+    <ul class="story-list pt-2" v-if="!stories.length">
         <li class="d-block text-center">
             <service-advertisment></service-advertisment>
         </li>

@@ -45,7 +45,7 @@ export default {
         <div class="gs-story-item rounded bg-image" style="background:url('/images/service.jpg');" @click="show = !show; currentStory = story"></div>
     </div>
     <div class="gs-story-footer d-block lh-1">
-        <span class="d-block fw-bold" style="font-size: 13px;">GANGSTER’S SERVIS</span>
+        <span class="d-block fw-bold" style="font-size: 13px;">GANGSTER’S SERVICE</span>
         <small class="d-block" style="font-size: 11px;">Автокомплекс</small>
     </div>
 
@@ -55,14 +55,11 @@ export default {
         <div class="gs-modal-content">
             <button class="gs-close-button" @click="closeModal">×</button>
 
-            <h2 class="gs-modal-title">GANGSTER'S SERVIS</h2>
+            <h2 class="gs-modal-title">GANGSTER'S SERVICE</h2>
 
-            <div class="gs-contacts-section">
-                <div class="gs-phone-numbers">
-                    <a v-for="phone in contacts.phone" :key="phone" :href="'tel:' + phone">📞 {{ phone }}</a>
-                </div>
-                <div class="gs-address">📍 {{ contacts.address }}</div>
-                <a :href="contacts.vk" target="_blank" class="gs-vk-link">VK группа</a>
+            <div class="gs-contacts-section flex-column d-flex align-items-center justify-content-center">
+                <img src="/images/logo.png" alt="" class="img-fluid" style="max-width: 250px;">
+                <a :href="contacts.vk" target="_blank" class="gs-vk-link" style="width: fit-content;">VK группа</a>
             </div>
 
             <div class="gs-services-grid">
