@@ -75,6 +75,9 @@ export default {
 
 <template>
     <ul class="story-list pt-2" v-if="stories.length">
+        <li class="d-block text-center">
+            <service-advertisment></service-advertisment>
+        </li>
         <li v-for="story in stories" :key="story.id" class="d-block text-center">
             <div class="story-wrap">
                 <div class="story-item rounded bg-image" :style="'background:url(' + story.thumb + ');'" @click="show = !show; currentStory = story"></div>

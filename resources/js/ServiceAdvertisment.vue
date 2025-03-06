@@ -1,292 +1,257 @@
 <script>
-import gsap from 'gsap'
-
 export default {
     data() {
         return {
+            isOpen: false,
             services: [
-                {
-                    title: 'Диагностика и ремонт',
-                    icon: 'bi-tools',
-                    items: [
-                        'Всевозможные диагностики автомобиля',
-                        'Работы любой сложности',
-                        'Автоэлектрик',
-                        'Опрессовка дымом'
-                    ]
-                },
-                {
-                    title: 'Специализированные услуги',
-                    icon: 'bi-gear-wide-connected',
-                    items: [
-                        'Настройка ЭБУ Subaru (чип-тюнинг)',
-                        'Диагностика и мойка форсунок',
-                        'Новейший стенд развал/схождение 3D',
-                        'Заправка автокондиционеров'
-                    ]
-                },
-                {
-                    title: 'Запчасти и комплектующие',
-                    icon: 'bi-car-front',
-                    items: [
-                        'Оригинальные запчасти и заменители',
-                        'Турбокомпрессоры Arashi Dynamics',
-                        'Сварочные работы в аргонной среде',
-                        'Проточка тормозных дисков'
-                    ]
-                }
+                { title: 'Оригинальные запчасти и заменители', icon: '🔧' },
+                { title: 'Турбокомпрессоры Arashi Dynamics', icon: '🚀' },
+                { title: 'Всевозможные диагностики автомобиля', icon: '🔍' },
+                { title: 'Работы любой сложности', icon: '⚙️' },
+                { title: 'Автоэлектрик', icon: '⚡' },
+                { title: 'Настройка ЭБУ Subaru (чип-тюнинг)', icon: '💻' },
+                { title: 'Диагностика и мойка форсунок', icon: '💧' },
+                { title: 'Проточка тормозных дисков', icon: '🛠️' },
+                { title: 'Развал/схождение 3D', icon: '📐' },
+                { title: 'Заправка автокондиционеров', icon: '❄️' },
+                { title: 'Сварочные работы', icon: '🔥' },
+                { title: 'Опрессовка дымом', icon: '💨' },
+                { title: 'Шиномонтаж', icon: '🚗' },
+                { title: 'Автомойка', icon: '🚿' }
             ],
-            currentServiceIndex: 0,
-            contactInfo: {
-                phones: ['32-86-86', '8-983-232-86-86'],
-                address: 'г. Томск, ул. Шевченко 55 стр 5'
+            contacts: {
+                phone: ['32-86-86', '8-983-232-86-86'],
+                address: 'г. Томск, ул. Шевченко 55 стр 5',
+                vk: 'https://vk.com/gangsters_service'
             }
         }
     },
-    mounted() {
-        this.initAnimations()
-        this.startRotation()
-    },
     methods: {
-        initAnimations() {
-            gsap.from('.brand-section', {
-                x: -100,
-                opacity: 0,
-                duration: 1,
-                ease: 'power3.out'
-            })
-
-            this.animateServiceItem(this.currentServiceIndex)
+        openModal() {
+            this.isOpen = true
+            document.body.style.overflow = 'hidden'
         },
-        startRotation() {
-            this.rotationInterval = setInterval(() => {
-                this.switchService((this.currentServiceIndex + 1) % this.services.length)
-            }, 5000)
-        },
-        stopRotation() {
-            clearInterval(this.rotationInterval)
-        },
-        switchService(index) {
-            const timeline = gsap.timeline()
-
-            timeline.to('.service-content', {
-                y: 30,
-                opacity: 0,
-                duration: 0.3,
-                onComplete: () => {
-                    this.currentServiceIndex = index
-                }
-            })
-
-            timeline.call(() => this.animateServiceItem(index))
-        },
-        animateServiceItem(index) {
-            gsap.fromTo('.service-content',
-                { y: -30, opacity: 0 },
-                {
-                    y: 0,
-                    opacity: 1,
-                    duration: 0.5,
-                    ease: 'power2.out'
-                }
-            )
-
-            gsap.fromTo('.service-item',
-                { y: 20, opacity: 0 },
-                {
-                    y: 0,
-                    opacity: 1,
-                    duration: 0.3,
-                    stagger: 0.1,
-                    ease: 'power2.out'
-                }
-            )
+        closeModal() {
+            this.isOpen = false
+            document.body.style.overflow = 'auto'
         }
-    },
-    beforeUnmount() {
-        this.stopRotation()
     }
 }
 </script>
 
 <template>
-    <div class="service-banner overflow-hidden mb-4 container">
-        <div class="row">
-            <!-- Секция бренда -->
-            <div class="col-lg-4 brand-section p-4">
-                <div class="brand-content">
-                    <div class="d-flex align-items-center gap-3 mb-4">
-                        <div class="logo-circle">
-                            <span class="text-uppercase">G</span>
-                        </div>
-                        <h2 class="h3 fw-bold mb-0">GANGSTER'S SERVIS</h2>
-                    </div>
 
-                    <div class="contact-info mb-4">
-                        <div class="d-flex align-items-center gap-2 mb-2">
-                            <i class="bi bi-telephone-fill"></i>
-                            <a href="tel:32-86-86" class="text-decoration-none">32-86-86</a>,
-                            <a href="tel:8-983-232-86-86" class="text-decoration-none">8-983-232-86-86</a>
-                        </div>
-                        <div class="d-flex align-items-center gap-2">
-                            <i class="bi bi-geo-alt-fill"></i>
-                            <span>{{ contactInfo.address }}</span>
-                        </div>
-                    </div>
+    <div class="gs-story-wrap" @click="openModal">
+        <div class="gs-story-item rounded bg-image" style="background:url('/images/service.jpg');" @click="show = !show; currentStory = story"></div>
+    </div>
+    <div class="gs-story-footer">
+        <span>GANGSTER’S SERVIS</span>
+    </div>
 
-                    <div class="features">
-                        <div class="feature-item d-flex align-items-center gap-2 mb-3">
-                            <i class="bi bi-check-circle-fill"></i>
-                            <span>Сертифицированные специалисты</span>
-                        </div>
-                        <div class="feature-item d-flex align-items-center gap-2 mb-3">
-                            <i class="bi bi-shield-check"></i>
-                            <span>Гарантия на все работы</span>
-                        </div>
-                        <div class="feature-item d-flex align-items-center gap-2">
-                            <i class="bi bi-stars"></i>
-                            <span>Современное оборудование</span>
-                        </div>
-                    </div>
+    <teleport to="body">
+    <transition name="gs-modal">
+    <div class="gs-modal-overlay" v-if="isOpen" @click.self="closeModal">
+        <div class="gs-modal-content">
+            <button class="gs-close-button" @click="closeModal">×</button>
+
+            <h2 class="gs-modal-title">GANGSTER'S SERVIS</h2>
+
+            <div class="gs-contacts-section">
+                <div class="gs-phone-numbers">
+                    <a v-for="phone in contacts.phone" :key="phone" :href="'tel:' + phone">📞 {{ phone }}</a>
                 </div>
+                <div class="gs-address">📍 {{ contacts.address }}</div>
+                <a :href="contacts.vk" target="_blank" class="gs-vk-link">VK группа</a>
             </div>
 
-            <!-- Секция услуг -->
-            <div class="col-lg-8 services-section p-4">
-                <div class="services-slider h-100">
-                    <div class="service-content text-center">
-                        <div class="service-icon mb-4">
-                            <i :class="services[currentServiceIndex].icon" class="display-1"></i>
-                        </div>
-                        <h3 class="service-title h3 mb-4">
-                            {{ services[currentServiceIndex].title }}
-                        </h3>
-                        <div class="service-items row g-3 justify-content-center">
-                            <div v-for="(item, idx) in services[currentServiceIndex].items"
-                                 :key="idx"
-                                 class="col-md-6 service-item">
-                                <div class="service-card p-3 rounded">
-                                    <i class="bi bi-arrow-right-circle me-2"></i>
-                                    {{ item }}
-                                </div>
-                            </div>
-                        </div>
+            <div class="gs-services-grid">
+                <transition-group name="gs-service-item">
+                    <div v-for="(service, index) in services"
+                         :key="index"
+                         class="gs-service-item"
+                         :style="{ animationDelay: index * 0.1 + 's' }">
+                        <span class="gs-service-icon">{{ service.icon }}</span>
+                        <span class="gs-service-title">{{ service.title }}</span>
                     </div>
-
-                    <div class="service-navigation mt-4">
-                        <div class="d-flex justify-content-center gap-2">
-                            <button v-for="(_, index) in services"
-                                    :key="index"
-                                    class="nav-btn"
-                                    :class="{ active: index === currentServiceIndex }"
-                                    @click="switchService(index)">
-                                {{ index + 1 }}
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                </transition-group>
             </div>
         </div>
     </div>
+    </transition>
+</teleport>
+
 </template>
 
-<style lang="scss" scoped>
-.service-banner {
-    background: #1C1C1C;
-    border: 1px solid #2C2C2C;
-    border-radius: 0.5rem;
-    color: #fff;
-}
+<style lang="sass" scoped>
+.gs-story-wrap
+    width: 100%
+    height: 100%
+    position: relative
+    padding: 3px 3px
+    background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)
+    border-radius: 18px
+    cursor: pointer
 
-.brand-section {
-    background: #232323;
-    border-right: 1px solid #2C2C2C;
+    .gs-story-item
+        height: 100%
+        width: 100%
+        position: relative
+        transition: transform 0.3s
+        border-radius: 15px
+        background-size: cover !important
+        background-position: center !important
 
-    @media (max-width: 991.98px) {
-        border-right: none;
-        border-bottom: 1px solid #2C2C2C;
-    }
-}
+        &:hover
+            transform: scale(0.98)
 
-.logo-circle {
-    width: 40px;
-    height: 40px;
-    background: #198754;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    font-weight: bold;
-    color: #fff;
-}
+.gs-story-footer
+    position: relative
+    z-index: 1
+    margin-top: 6px
+    text-align: start
+    padding: 0 8px
+    span
+        font-weight: 600
+        text-transform: capitalize
 
-.contact-info {
-    i {
-        color: #198754;
-    }
+.gs-modal-overlay
+    position: fixed
+    top: 0
+    left: 0
+    width: 100%
+    height: 100%
+    background: rgba(0, 0, 0, 0.8)
+    display: flex
+    justify-content: center
+    align-items: center
+    z-index: 1000
 
-    a {
-        color: #fff;
+.gs-modal-content
+    background: white
+    border-radius: 20px
+    padding: 30px
+    max-width: 800px
+    width: 90%
+    max-height: 90vh
+    overflow-y: auto
+    position: relative
 
-        &:hover {
-            color: #198754;
-        }
-    }
-}
+    &::-webkit-scrollbar
+        width: 8px
+    &::-webkit-scrollbar-track
+        background: #f1f1f1
+        border-radius: 4px
+    &::-webkit-scrollbar-thumb
+        background: #888
+        border-radius: 4px
 
-.features {
-    i {
-        color: #198754;
-    }
-}
+.gs-close-button
+    position: absolute
+    top: 15px
+    right: 15px
+    border: none
+    background: none
+    font-size: 24px
+    cursor: pointer
+    color: #333
+    padding: 5px 10px
+    border-radius: 50%
+    transition: background 0.3s
 
-.service-icon {
-    i {
-        color: #198754;
-        filter: drop-shadow(0 0 15px rgba(25, 135, 84, 0.2));
-    }
-}
+    &:hover
+        background: #f0f0f0
 
-.service-card {
-    background: #232323;
-    border: 1px solid #2C2C2C;
-    transition: all 0.3s ease;
+.gs-modal-title
+    text-align: center
+    color: #333
+    font-size: 28px
+    margin-bottom: 20px
 
-    i {
-        color: #198754;
-    }
+.gs-contacts-section
+    text-align: center
+    margin-bottom: 30px
+    padding: 15px
+    background: #f8f9fa
+    border-radius: 10px
 
-    &:hover {
-        transform: translateY(-5px);
-        border-color: #198754;
-        box-shadow: 0 5px 15px rgba(25, 135, 84, 0.1);
-    }
-}
+    .gs-phone-numbers
+        margin-bottom: 10px
+        a
+            display: block
+            color: #007bff
+            text-decoration: none
+            margin: 5px 0
+            font-size: 18px
+            &:hover
+                text-decoration: underline
 
-.nav-btn {
-    width: 32px;
-    height: 32px;
-    border: 1px solid #2C2C2C;
-    background: transparent;
-    color: #fff;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-    padding: 0;
-    font-size: 14px;
+    .gs-address
+        color: #666
+        margin: 10px 0
 
-    &:hover {
-        border-color: #198754;
-        color: #198754;
-    }
+    .gs-vk-link
+        display: inline-block
+        margin-top: 10px
+        padding: 8px 15px
+        background: #4a76a8
+        color: white
+        text-decoration: none
+        border-radius: 5px
+        transition: background 0.3s
+        &:hover
+            background: #3d6898
 
-    &.active {
-        background: #198754;
-        border-color: #198754;
-        color: #fff;
-    }
-}
+.gs-services-grid
+    display: grid
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr))
+    gap: 15px
+    padding: 10px
+
+.gs-service-item
+    background: #f8f9fa
+    padding: 15px
+    border-radius: 10px
+    display: flex
+    align-items: center
+    transition: transform 0.3s, box-shadow 0.3s
+    animation: fadeInUp 0.5s ease forwards
+    opacity: 0
+
+    &:hover
+        transform: translateY(-5px)
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1)
+
+    .gs-service-icon
+        font-size: 24px
+        margin-right: 15px
+
+    .gs-service-title
+        color: #333
+        font-size: 16px
+
+// Анимации
+.gs-modal-enter-active, .gs-modal-leave-active
+    transition: opacity 0.3s
+
+.gs-modal-enter-from, .gs-modal-leave-to
+    opacity: 0
+
+@keyframes fadeInUp
+    from
+        opacity: 0
+        transform: translateY(20px)
+    to
+        opacity: 1
+        transform: translateY(0)
+
+.gs-service-item-enter-active
+    transition: all 0.3s ease-out
+
+.gs-service-item-leave-active
+    transition: all 0.3s ease-in
+
+.gs-service-item-enter-from,
+.gs-service-item-leave-to
+    opacity: 0
+    transform: translateY(30px)
 </style>
