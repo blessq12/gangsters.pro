@@ -4,12 +4,12 @@ export default {
         return {
             isOpen: false,
             services: [
-                { title: 'Оригинальные запчасти и заменители', icon: '🔧' },
-                { title: 'Турбокомпрессоры Arashi Dynamics', icon: '🚀' },
+                { title: 'Ремонт автомобилей любой сложности', icon: '🔧' },
+                { title: 'Автозапчасти в наличии и под заказ', icon: '🚀' },
                 { title: 'Всевозможные диагностики автомобиля', icon: '🔍' },
                 { title: 'Работы любой сложности', icon: '⚙️' },
                 { title: 'Автоэлектрик', icon: '⚡' },
-                { title: 'Настройка ЭБУ Subaru (чип-тюнинг)', icon: '💻' },
+                { title: 'Эндоскопия двигателя', icon: '💻' },
                 { title: 'Диагностика и мойка форсунок', icon: '💧' },
                 { title: 'Проточка тормозных дисков', icon: '🛠️' },
                 { title: 'Развал/схождение 3D', icon: '📐' },
@@ -17,7 +17,7 @@ export default {
                 { title: 'Сварочные работы', icon: '🔥' },
                 { title: 'Опрессовка дымом', icon: '💨' },
                 { title: 'Шиномонтаж', icon: '🚗' },
-                { title: 'Автомойка', icon: '🚿' }
+                { title: 'Мойка днища автомобиля на подъемнике', icon: '🚿' }
             ],
             contacts: {
                 phone: ['32-86-86', '8-983-232-86-86'],
@@ -44,8 +44,9 @@ export default {
     <div class="gs-story-wrap" @click="openModal">
         <div class="gs-story-item rounded bg-image" style="background:url('/images/service.jpg');" @click="show = !show; currentStory = story"></div>
     </div>
-    <div class="gs-story-footer">
-        <span>GANGSTER’S SERVIS</span>
+    <div class="gs-story-footer d-block lh-1">
+        <span class="d-block fw-bold">GANGSTER’S SERVIS</span>
+        <small class="d-block">Автокомплекс</small>
     </div>
 
     <teleport to="body">
@@ -110,9 +111,6 @@ export default {
     margin-top: 6px
     text-align: start
     padding: 0 8px
-    span
-        font-weight: 600
-        text-transform: capitalize
 
 .gs-modal-overlay
     position: fixed
