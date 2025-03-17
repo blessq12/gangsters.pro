@@ -36,7 +36,7 @@ class FrontpadService
             'name' => $siteOrder->name,
             'phone' => $siteOrder->tel,
             'person' => $siteOrder->personQty,
-            'descr' => $siteOrder->comment,
+            'descr' => mb_strlen($siteOrder->comment) > 80 ? mb_substr($siteOrder->comment, 0, 80) . '...' : $siteOrder->comment,
             'street' => $siteOrder->street ?? '',
             'home' => $siteOrder->house ?? '',
             'pod' => $siteOrder->staircase ?? '',
