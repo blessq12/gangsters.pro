@@ -26,8 +26,3 @@ Route::controller(MainController::class)->middleware([
     Route::get('/purchase-and-delivery', 'purchaseAndDelivery')->name('purchaseAndDelivery');
     Route::get('/reset-password', 'resetPassword')->name('resetPassword');
 });
-
-
-Route::get('/metrika', function () {
-    return \App\Facades\YaMetrika::getTodayStatistic();
-});

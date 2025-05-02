@@ -6,6 +6,7 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use App\Facades\TelegramMessage;
 use App\Facades\YaMetrika;
+use Illuminate\Support\Facades\Log;
 
 
 class Kernel extends ConsoleKernel
@@ -31,6 +32,10 @@ class Kernel extends ConsoleKernel
                 '👥 Социальные: ' . $statistic->sources['social'],
             ], 'analytics');
         })->everyThreeHours();
+
+        $schedule->call(function () {
+            Log::info('Hello, world!');
+        })->everyFiveSeconds();
     }
 
     /**
