@@ -6,7 +6,7 @@
                     <div class="position-relative">
                         <img
                             ref="bannerImage"
-                            :src="'/Uploads/' + banner.image"
+                            :src="'/uploads/' + banner.image"
                             :alt="banner.title ?? 'Баннер'"
                             class="img-fluid w-100 rounded-3 object-cover"
                         />
