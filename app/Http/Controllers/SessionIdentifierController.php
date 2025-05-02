@@ -10,10 +10,9 @@ class SessionIdentifierController extends Controller
 {
     public function create()
     {
-        $user = auth('sanctum')->user(); // Use Sanctum to get the authenticated user
+        $user = auth('sanctum')->user();
         $userId = $user ? $user->id : null;
 
-        // Check if a session identifier already exists for this user
         if ($userId) {
             $existingSession = SessionIdentifier::where('user_id', $userId)->first();
             if ($existingSession) {
@@ -21,7 +20,6 @@ class SessionIdentifierController extends Controller
             }
         }
 
-        // Create a new session identifier if none exists
         $sessionId = Str::uuid()->toString();
         $sessionIdentifier = SessionIdentifier::create([
             'session_id' => $sessionId,

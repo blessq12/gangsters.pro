@@ -7,13 +7,8 @@ use App\Models\Company;
 use App\Models\WorkShedule;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\View as ViewFacade;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Str;
 use App\Models\User;
 use Illuminate\Http\Request;
-
-use App\Facades\Frontpad;
-use Intervention\Image\Facades\Image;
 
 
 class MainController extends Controller
@@ -52,12 +47,7 @@ class MainController extends Controller
             'Электронная почта' => $legals['legal_email'],
             'Форма собственности' => $legals['legal_form'],
         ];
-        return view(
-            'front.contact',
-            [
-                'legals' => $legals,
-            ]
-        );
+        return view('front.contact', ['legals' => $legals,]);
     }
 
     public function purchaseAndDelivery(): View
@@ -78,9 +68,7 @@ class MainController extends Controller
     public function resetPassword(Request $request)
     {
         if (User::where('token_to_reset_password', $request->token)->exists()) {
-            return view('front.reset-password', [
-                'token' => $request->token
-            ]);
+            return view('front.reset-password', ['token' => $request->token]);
         }
 
         return redirect()->route('main.index')->with('error', 'Ссылка для сброса пароля недействительна');

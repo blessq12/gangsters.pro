@@ -31,4 +31,13 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'yandex' => [
+        'token' => env('YANDEX_TOKEN'),
+        'counters' => explode(',', env('YANDEX_COUNTERS')),
+    ],
+    'telegram' => [
+        'token' => env('TELEGRAM_TOKEN'),
+        'chat_id' => env('TELEGRAM_CHAT_ID'),
+    ],
+
 ];

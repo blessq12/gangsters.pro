@@ -1,16 +1,8 @@
 <?php
 
-use App\Facades\Frontpad;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\Crm\CrmController;
 use App\Http\Controllers\Front\MainController;
-use App\Models\Order;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Request;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\RegisterMail;
-use App\Http\Middleware\TelescopeOverride;
-use Illuminate\Support\Facades\Log;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -32,6 +24,5 @@ Route::controller(MainController::class)->middleware([
     Route::get('/privacy', 'privacy')->name('privacy');
     Route::get('/loyalty', 'loyalty')->name('loyalty');
     Route::get('/purchase-and-delivery', 'purchaseAndDelivery')->name('purchaseAndDelivery');
-
     Route::get('/reset-password', 'resetPassword')->name('resetPassword');
 });

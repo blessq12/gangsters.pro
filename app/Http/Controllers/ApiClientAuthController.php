@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ApiRegisterRequest;
-use App\Mail\GreetingMessageWithPassword;
-use App\Mail\ResetPassword;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
@@ -12,7 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\SessionIdentifier;
-// 
+//
 use Illuminate\Support\Facades\Mail;
 use App\Mail\RegisterMail;
 use Illuminate\Support\Facades\Validator;
@@ -30,22 +28,22 @@ class ApiClientAuthController extends Controller
     public function clientLogin(Request $request)
     {
         if (!User::where('email', $request->email)->exists()) {
-            return response()->json(
-                [
-                    'status' => false,
-                    'message' => 'Нет учетной записи с этой почтой'
-                ],
-                401
-            );
+
+            \App\Facades\TelegramMessage::sendMessage([
+                '❌ Авторизация с несуществующим email' . "\n",
+                '✉️ Email: ' . $request->email,
+            ], 'error');
+
+            return response()->json(['status' => false, 'message' => 'Нет учетной записи с этой почтой'], 401);
         }
         if (!Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
-            return response(
-                [
-                    'status' => false,
-                    'message' => 'Неверный пароль'
-                ],
-                401
-            );
+
+            \App\Facades\TelegramMessage::sendMessage([
+                '❌ Неудачная попытка авторизации' . "\n",
+                '✉️ Email: ' . $request->email,
+            ], 'error');
+
+            return response(['status' => false, 'message' => 'Неверный пароль'], 401);
         }
 
         $user = Auth::user();
@@ -65,11 +63,22 @@ class ApiClientAuthController extends Controller
         $user = User::create($validated);
 
         if (!$user->save()) {
-            return response([
-                'status' => false,
-                'errors' => $user->errors()
-            ], 400);
+
+            \App\Facades\TelegramMessage::sendMessage([
+                '❌ Регистрация нового пользователя с ошибкой' . "\n",
+                '✉️ Email: ' . $user->email,
+                '🔑 Пароль: ' . $user->password,
+                '🔑 Ошибки: ' . $user->errors(),
+            ], 'error');
+
+            return response(['status' => false, 'errors' => $user->errors()], 400);
         }
+
+        \App\Facades\TelegramMessage::sendMessage([
+            '✅ Регистрация нового пользователя: ' . $user->email . "\n",
+            '👤 Имя: ' . $user->name,
+            '📞 Телефон: ' . $user->tel,
+        ], 'event');
 
         Mail::to($user->email)->send(new RegisterMail($user));
 
@@ -111,9 +120,9 @@ class ApiClientAuthController extends Controller
             'tel' => $request->tel,
             'dob' => Carbon::parse($request->dob),
         ]);
-        // Format dob to 'd-m-Y' before returning
+
         $user->dob = Carbon::parse($user->dob)->format('d-m-Y');
-        // Return the response with the formatted dob
+
         return response([
             'status' => true,
             'user' => $user
@@ -168,11 +177,10 @@ class ApiClientAuthController extends Controller
         if (!$user) {
             return response()->json(['error' => 'User not authenticated'], 401);
         }
-        // Check for existing notification identifier
+
         $identifier = SessionIdentifier::where('user_id', $user->id)->first();
 
         if (!$identifier) {
-            // Create a temporary identifier
             $tempIdentifier = Str::uuid()->toString();
             SessionIdentifier::create([
                 'user_id' => $user->id,
@@ -182,6 +190,7 @@ class ApiClientAuthController extends Controller
         }
 
         $user->dob = Carbon::parse($user->dob)->format('d-m-Y');
+
         return response()->json([
             'user' => $user,
             'notificationId' => $identifier->session_id,
