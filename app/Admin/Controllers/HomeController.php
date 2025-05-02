@@ -16,24 +16,14 @@ class HomeController extends Controller
 {
     public function index(Content $content)
     {
-        // Получаем заказы за сегодня
         $todayOrders = Order::whereDate('created_at', Carbon::today())->get();
-
-        // Получаем новых пользователей за сегодня
         $todayUsers = User::whereDate('created_at', Carbon::today())->get();
-
-        // Общее количество товаров
         $productsCount = Product::count();
-
-        // Общее количество пользователей
         $usersCount = User::count();
-
-        // Сводная статистика по дню
         $totalTodayOrders = $todayOrders->count();
         $totalTodayUsers = $todayUsers->count();
-
-        // Суммарная стоимость заказов за день
         $totalTodayRevenue = $todayOrders->sum('total');
+        $yaMetrika =  \App\Facades\YaMetrika::getTodayStatistic() ?? null;
 
         return $content
             ->title('Дашборд')
@@ -44,7 +34,8 @@ class HomeController extends Controller
                 'usersCount' => $usersCount,
                 'totalTodayOrders' => $totalTodayOrders,
                 'totalTodayUsers' => $totalTodayUsers,
-                'totalTodayRevenue' => $totalTodayRevenue
+                'totalTodayRevenue' => $totalTodayRevenue,
+                'yaMetrika' => $yaMetrika
             ]));
     }
 }
