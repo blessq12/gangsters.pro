@@ -1,10 +1,10 @@
 <script>
-import { mapStores } from 'pinia';
-    import { appStore } from '../../stores/appStorage.js';
+import { mapStores } from "pinia";
+import { appStore } from "../../stores/appStorage.js";
 
 export default {
     computed: {
-        ...mapStores(appStore)
+        ...mapStores(appStore),
     },
     mounted() {
         //
@@ -16,20 +16,18 @@ export default {
                 this.appStore.modal = false;
             } else {
                 this.appStore.modal = true;
-                this.appStore.modalName = 'menu';
+                this.appStore.modalName = "menu";
             }
-        }
-    }
-}
+        },
+    },
+};
 </script>
 
 <template>
     <button class="menu-button" @click="toggleMenu">
         Меню
-        <i class="fa fa-bars"></i>
+        <i class="mdi mdi-menu"></i>
     </button>
 </template>
 
-<style scoped lang="scss">
-
-</style>
+<style scoped lang="scss"></style>

@@ -40,17 +40,17 @@ Route::controller(ApiClientAuthController::class)->prefix('auth')->group(functio
 // Order routes
 Route::controller(OrderController::class)->prefix('orders')->group(function () {
 
-    // авторизованные маршруты
+
     Route::get('/get-my-orders', 'getMyOrders');
     Route::get('/get-my-coins', 'getMyCoins');
 
     Route::post('create', 'createOrder');
     Route::post('update', 'updateOrder');
-    // Проверка товаров перед созданием заказа
+
     Route::post('check-avalibility', 'checkAvalibility');
 });
 
-// Session Identifier routes
+
 Route::controller(SessionIdentifierController::class)->group(function () {
     Route::post('/session-identifiers', 'create');
     Route::post('/session-identifiers/public', 'createPublicSession');
@@ -58,14 +58,13 @@ Route::controller(SessionIdentifierController::class)->group(function () {
     Route::post('/session-identifiers/update-user-id', 'updateUserId')->middleware('auth:sanctum');
 });
 
-// Notification routes
+
 Route::controller(NotificationController::class)->group(function () {
     Route::get('/notifications', 'index');
     Route::patch('/notifications/{notification}/read', 'markAsRead');
     Route::post('/notifications/broadcast', 'createForAllUsers');
 });
 
-// Raw routes
 Route::controller(Raw::class)->group(function () {
     Route::get('/get-routes', 'getLinks');
     Route::get('/get-company', 'getCompany');

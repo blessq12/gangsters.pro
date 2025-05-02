@@ -1,13 +1,11 @@
 <script>
 import axios from "axios";
+import gsap from "gsap";
 import moment from "moment";
+
 export default {
     mounted() {
-        // get shedule from api
         this.getShedule();
-    },
-    updated() {
-        //
     },
     data() {
         return {
@@ -58,97 +56,94 @@ export default {
             }
             return null;
         },
-    },
-    watch: {
-        //
+        toggleSchedule() {
+            const popup = this.$refs.popup;
+
+            if (this.openShedule) {
+                gsap.to(popup, {
+                    duration: 0.3,
+                    opacity: 0,
+                    y: -10,
+                    onComplete: () => {
+                        this.openShedule = false;
+                        gsap.set(popup, { clearProps: "all" });
+                    },
+                });
+            } else {
+                this.openShedule = true;
+                gsap.set(popup, { opacity: 0, y: -10 });
+                gsap.to(popup, {
+                    duration: 0.3,
+                    opacity: 1,
+                    y: 0,
+                });
+            }
+        },
     },
 };
 </script>
 
 <template>
-    <transition
-        enter-active-class="animate__animated animate__fadeInDown"
-        leave-active-class="animate__animated animate__fadeOutUp"
-        mode="out-in"
-    >
+    <div v-if="shedule.length > 0" class="relative">
         <div
-            class="shedule position-relative"
-            v-if="this.shedule.length > 0"
-            @click="openShedule = !openShedule"
+            @click="toggleSchedule"
+            class="flex items-center space-x-2 cursor-pointer min-h-[42px] hover:bg-gray-50 rounded-lg px-3 transition-colors duration-200"
         >
-            <div :class="['status', isOpen() ? 'open' : 'close']"></div>
-            <div class="time">
-                <span v-if="isOpen()"> Открыто </span>
-                <span v-else> Закрыто </span>
-            </div>
-
-            <transition
-                enter-active-class="animate__animated animate__fadeInDown"
-                leave-active-class="animate__animated animate__fadeOutUp"
-                mode="out-in"
+            <div
+                :class="[
+                    'w-2.5 h-2.5 rounded-full',
+                    isOpen() ? 'bg-green-500' : 'bg-red-500',
+                ]"
+            />
+            <div
+                class="font-light text-sm sm:text-base md:whitespace-nowrap flex items-center space-x-2"
             >
-                <div class="wrap" v-if="openShedule">
-                    <div class="popup rounded shadow">
-                        <div class="popup-content">
-                            <div class="popup-title">Расписание работы</div>
-                            <ul class="list-unstyled m-0 p-0">
-                                <li
-                                    v-for="item in shedule"
-                                    class="d-flex justify-content-between align-items-center"
-                                    :class="
-                                        item.day_eng === todayShedule().day_eng
-                                            ? 'today rounded'
-                                            : ''
-                                    "
-                                >
-                                    <span> {{ item.day }} </span>
-                                    <span>
-                                        {{ item.open_time }} -
-                                        {{ item.close_time }}
-                                    </span>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </transition>
+                <span class="hidden md:block">{{
+                    isOpen() ? "Открыто" : "Закрыто"
+                }}</span>
+                <i class="block md:hidden mdi mdi-clock-outline"></i>
+                <i
+                    class="mdi mdi-chevron-down transition-transform duration-200"
+                    :class="[openShedule ? 'transform rotate-180' : '']"
+                ></i>
+            </div>
         </div>
-    </transition>
+
+        <div
+            v-show="openShedule"
+            ref="popup"
+            class="absolute top-full mt-2 left-1/2 -translate-x-1/2 min-w-[320px] max-w-[calc(100vw-2rem)] z-50 md:w-full md:left-0 md:transform-none"
+        >
+            <div class="bg-white rounded-lg shadow-lg p-4 mx-auto">
+                <div class="text-lg font-medium mb-3">Расписание работы</div>
+                <ul class="divide-y divide-gray-100">
+                    <li
+                        v-for="item in shedule"
+                        :key="item.day_eng"
+                        :class="[
+                            'flex justify-between items-center p-3 text-sm ',
+                            item.day_eng === todayShedule()?.day_eng
+                                ? 'bg-blue-500 text-white rounded-lg'
+                                : '',
+                        ]"
+                    >
+                        <span>{{ item.day }}</span>
+                        <span
+                            >{{ item.open_time }} - {{ item.close_time }}</span
+                        >
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
 </template>
 
 <style scoped lang="sass">
-.wrap
-    position: absolute
-    top: 140%
-    left: calc(50% - 175px)
-    width: 100%
-    z-index: 100
-    min-width: 350px
-    height: 100%
-    .popup
-        background: #fff
-        padding: 14px
-
-        .popup-title
-            font-size: 16px
-            font-weight: 500
-            margin-bottom: 10px
-        ul
-            li
-                padding: 10px
-                border-bottom: 1px solid #f0f0f0
-                &:last-child
-                    border-bottom: none
-                &.today
-
-                    color: #fff
-
 .shedule
     display: flex
     align-items: center
     min-height: 42px
     cursor: pointer
-    // &:hover
     .status
         width: 10px
         height: 10px

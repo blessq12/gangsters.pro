@@ -13,7 +13,7 @@ class RawController extends Controller
     }
     public function getLinks()
     {
-        $routes = ['about', 'purchaseAndDelivery', 'contact', 'vacancy', 'privacy', 'loyalty'];
+        $routes = ['about', 'purchaseAndDelivery', 'contact'];
         $output = [];
         foreach ($routes as $route) {
             $output[] = [
@@ -21,9 +21,6 @@ class RawController extends Controller
                     'about' => 'О компании',
                     'purchaseAndDelivery' => 'Оплата и доставка',
                     'contact' => 'Контакты',
-                    'vacancy' => 'Вакансии',
-                    'privacy' => 'Политика конфиденциальности',
-                    'loyalty' => 'Политика лояльности',
                 },
                 'url' => route('main.' . $route),
             ];

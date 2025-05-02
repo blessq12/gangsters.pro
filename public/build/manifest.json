@@ -1,141 +1,33 @@
 {
-  "resources/fonts/Roboto/Roboto-Black.woff": {
-    "file": "assets/Roboto-Black-01991218.woff",
-    "src": "resources/fonts/Roboto/Roboto-Black.woff"
+  "node_modules/@mdi/font/fonts/materialdesignicons-webfont.eot": {
+    "file": "assets/materialdesignicons-webfont-CSr8KVlo.eot",
+    "src": "node_modules/@mdi/font/fonts/materialdesignicons-webfont.eot"
   },
-  "resources/fonts/Roboto/Roboto-Black.woff2": {
-    "file": "assets/Roboto-Black-238948ad.woff2",
-    "src": "resources/fonts/Roboto/Roboto-Black.woff2"
+  "node_modules/@mdi/font/fonts/materialdesignicons-webfont.ttf": {
+    "file": "assets/materialdesignicons-webfont-B7mPwVP_.ttf",
+    "src": "node_modules/@mdi/font/fonts/materialdesignicons-webfont.ttf"
   },
-  "resources/fonts/Roboto/Roboto-BlackItalic.woff": {
-    "file": "assets/Roboto-BlackItalic-19c5d375.woff",
-    "src": "resources/fonts/Roboto/Roboto-BlackItalic.woff"
+  "node_modules/@mdi/font/fonts/materialdesignicons-webfont.woff": {
+    "file": "assets/materialdesignicons-webfont-PXm3-2wK.woff",
+    "src": "node_modules/@mdi/font/fonts/materialdesignicons-webfont.woff"
   },
-  "resources/fonts/Roboto/Roboto-BlackItalic.woff2": {
-    "file": "assets/Roboto-BlackItalic-16536df8.woff2",
-    "src": "resources/fonts/Roboto/Roboto-BlackItalic.woff2"
-  },
-  "resources/fonts/Roboto/Roboto-Bold.woff": {
-    "file": "assets/Roboto-Bold-28ab0599.woff",
-    "src": "resources/fonts/Roboto/Roboto-Bold.woff"
-  },
-  "resources/fonts/Roboto/Roboto-Bold.woff2": {
-    "file": "assets/Roboto-Bold-faaae16a.woff2",
-    "src": "resources/fonts/Roboto/Roboto-Bold.woff2"
-  },
-  "resources/fonts/Roboto/Roboto-BoldItalic.woff": {
-    "file": "assets/Roboto-BoldItalic-9b27b87b.woff",
-    "src": "resources/fonts/Roboto/Roboto-BoldItalic.woff"
-  },
-  "resources/fonts/Roboto/Roboto-BoldItalic.woff2": {
-    "file": "assets/Roboto-BoldItalic-0de6758a.woff2",
-    "src": "resources/fonts/Roboto/Roboto-BoldItalic.woff2"
-  },
-  "resources/fonts/Roboto/Roboto-Italic.woff": {
-    "file": "assets/Roboto-Italic-ee142980.woff",
-    "src": "resources/fonts/Roboto/Roboto-Italic.woff"
-  },
-  "resources/fonts/Roboto/Roboto-Italic.woff2": {
-    "file": "assets/Roboto-Italic-56e0b6cb.woff2",
-    "src": "resources/fonts/Roboto/Roboto-Italic.woff2"
-  },
-  "resources/fonts/Roboto/Roboto-Light.woff": {
-    "file": "assets/Roboto-Light-8f867de5.woff",
-    "src": "resources/fonts/Roboto/Roboto-Light.woff"
-  },
-  "resources/fonts/Roboto/Roboto-Light.woff2": {
-    "file": "assets/Roboto-Light-caac02e6.woff2",
-    "src": "resources/fonts/Roboto/Roboto-Light.woff2"
-  },
-  "resources/fonts/Roboto/Roboto-LightItalic.woff": {
-    "file": "assets/Roboto-LightItalic-8b9184eb.woff",
-    "src": "resources/fonts/Roboto/Roboto-LightItalic.woff"
-  },
-  "resources/fonts/Roboto/Roboto-LightItalic.woff2": {
-    "file": "assets/Roboto-LightItalic-cd4eaf0e.woff2",
-    "src": "resources/fonts/Roboto/Roboto-LightItalic.woff2"
-  },
-  "resources/fonts/Roboto/Roboto-Medium.woff": {
-    "file": "assets/Roboto-Medium-e353d2e7.woff",
-    "src": "resources/fonts/Roboto/Roboto-Medium.woff"
-  },
-  "resources/fonts/Roboto/Roboto-Medium.woff2": {
-    "file": "assets/Roboto-Medium-745b342f.woff2",
-    "src": "resources/fonts/Roboto/Roboto-Medium.woff2"
-  },
-  "resources/fonts/Roboto/Roboto-MediumItalic.woff": {
-    "file": "assets/Roboto-MediumItalic-1779bd2a.woff",
-    "src": "resources/fonts/Roboto/Roboto-MediumItalic.woff"
-  },
-  "resources/fonts/Roboto/Roboto-MediumItalic.woff2": {
-    "file": "assets/Roboto-MediumItalic-6c38d6fa.woff2",
-    "src": "resources/fonts/Roboto/Roboto-MediumItalic.woff2"
-  },
-  "resources/fonts/Roboto/Roboto-Regular.woff": {
-    "file": "assets/Roboto-Regular-80d11dfd.woff",
-    "src": "resources/fonts/Roboto/Roboto-Regular.woff"
-  },
-  "resources/fonts/Roboto/Roboto-Regular.woff2": {
-    "file": "assets/Roboto-Regular-ffecd64b.woff2",
-    "src": "resources/fonts/Roboto/Roboto-Regular.woff2"
-  },
-  "resources/fonts/Roboto/Roboto-Thin.woff": {
-    "file": "assets/Roboto-Thin-bc94c86f.woff",
-    "src": "resources/fonts/Roboto/Roboto-Thin.woff"
-  },
-  "resources/fonts/Roboto/Roboto-Thin.woff2": {
-    "file": "assets/Roboto-Thin-d3cf0f7d.woff2",
-    "src": "resources/fonts/Roboto/Roboto-Thin.woff2"
-  },
-  "resources/fonts/Roboto/Roboto-ThinItalic.woff": {
-    "file": "assets/Roboto-ThinItalic-8c9733fa.woff",
-    "src": "resources/fonts/Roboto/Roboto-ThinItalic.woff"
-  },
-  "resources/fonts/Roboto/Roboto-ThinItalic.woff2": {
-    "file": "assets/Roboto-ThinItalic-63313fa9.woff2",
-    "src": "resources/fonts/Roboto/Roboto-ThinItalic.woff2"
-  },
-  "resources/js/app.css": {
-    "file": "assets/app-4f1f1fe2.css",
-    "src": "resources/js/app.css"
+  "node_modules/@mdi/font/fonts/materialdesignicons-webfont.woff2": {
+    "file": "assets/materialdesignicons-webfont-Dp5v-WZN.woff2",
+    "src": "node_modules/@mdi/font/fonts/materialdesignicons-webfont.woff2"
   },
   "resources/js/app.js": {
-    "assets": [
-      "assets/Roboto-Black-01991218.woff",
-      "assets/Roboto-Black-238948ad.woff2",
-      "assets/Roboto-BlackItalic-19c5d375.woff",
-      "assets/Roboto-BlackItalic-16536df8.woff2",
-      "assets/Roboto-Bold-28ab0599.woff",
-      "assets/Roboto-Bold-faaae16a.woff2",
-      "assets/Roboto-BoldItalic-9b27b87b.woff",
-      "assets/Roboto-BoldItalic-0de6758a.woff2",
-      "assets/Roboto-Italic-ee142980.woff",
-      "assets/Roboto-Italic-56e0b6cb.woff2",
-      "assets/Roboto-Light-8f867de5.woff",
-      "assets/Roboto-Light-caac02e6.woff2",
-      "assets/Roboto-LightItalic-8b9184eb.woff",
-      "assets/Roboto-LightItalic-cd4eaf0e.woff2",
-      "assets/Roboto-Medium-e353d2e7.woff",
-      "assets/Roboto-Medium-745b342f.woff2",
-      "assets/Roboto-MediumItalic-1779bd2a.woff",
-      "assets/Roboto-MediumItalic-6c38d6fa.woff2",
-      "assets/Roboto-Regular-80d11dfd.woff",
-      "assets/Roboto-Regular-ffecd64b.woff2",
-      "assets/Roboto-Thin-bc94c86f.woff",
-      "assets/Roboto-Thin-d3cf0f7d.woff2",
-      "assets/Roboto-ThinItalic-8c9733fa.woff",
-      "assets/Roboto-ThinItalic-63313fa9.woff2"
-    ],
+    "file": "assets/app-BlpNypZt.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true,
     "css": [
-      "assets/app-4f1f1fe2.css"
+      "assets/app-BSt6eQEl.css"
     ],
-    "file": "assets/app-b4fd23b5.js",
-    "isEntry": true,
-    "src": "resources/js/app.js"
-  },
-  "resources/sass/front/app.sass": {
-    "file": "assets/app-9fd8fd01.css",
-    "isEntry": true,
-    "src": "resources/sass/front/app.sass"
+    "assets": [
+      "assets/materialdesignicons-webfont-CSr8KVlo.eot",
+      "assets/materialdesignicons-webfont-Dp5v-WZN.woff2",
+      "assets/materialdesignicons-webfont-PXm3-2wK.woff",
+      "assets/materialdesignicons-webfont-B7mPwVP_.ttf"
+    ]
   }
 }

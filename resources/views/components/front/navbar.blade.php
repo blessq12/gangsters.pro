@@ -9,10 +9,10 @@
                             alt="{{ $company->name }}"
                             class="h-12 w-auto rounded-lg shadow-sm group-hover:shadow-md transition-all duration-300">
                         <span
-                            class="hidden lg:block ml-3 font-semibold text-gray-800 group-hover:text-blue-600 transition-colors duration-300">
+                            class="hidden text-sm lg:block ml-3 font-semibold text-gray-900 group-hover:text-blue-700 transition-colors duration-300">
                             {{ $company->name }}
                         </span>
-                        <span class="lg:hidden font-semibold text-gray-800 ml-2">
+                        <span class="lg:hidden font-semibold text-gray-900 ml-2 text-sm">
                             @php
                                 $name = $company->name;
                                 $name = explode(' ', $name);
@@ -34,16 +34,16 @@
                     @if (!Request::is('/'))
                         <a href="{{ route('main.index') }}">
                             <li
-                                class="relative py-2 text-gray-700 hover:text-blue-600 transition-colors duration-300 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-blue-600 after:transition-all hover:after:w-full">
+                                class="relative py-2 text-sm text-gray-900 hover:text-blue-700 transition-colors duration-300 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-blue-700 after:transition-all hover:after:w-full text-sm sm:text-base">
                                 {{ __('Главная') }}
                             </li>
                         </a>
                     @endif
                     @foreach ($links as $link)
                         <a href="{{ route($link->route) }}"
-                            class="{{ Route::currentRouteName() === $link->route ? 'text-blue-600' : 'text-gray-700' }}">
+                            class="{{ Route::currentRouteName() === $link->route ? 'text-blue-700' : 'text-gray-900' }}">
                             <li
-                                class="relative py-2 transition-colors duration-300 hover:text-blue-600 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-blue-600 after:transition-all hover:after:w-full {{ Route::currentRouteName() === $link->route ? 'after:w-full' : '' }}">
+                                class="relative py-2 transition-colors duration-300 hover:text-blue-700 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-blue-700 after:transition-all hover:after:w-full {{ Route::currentRouteName() === $link->route ? 'after:w-full' : '' }} text-sm sm:text-base">
                                 {{ __($link->name) }}
                             </li>
                         </a>
@@ -51,18 +51,14 @@
                 </ul>
             </div>
             @if (Request::is('/'))
-                <div class="flex items-center justify-end">
-                    <shedule class="hidden lg:flex"></shedule>
-                    <ul class="flex items-center space-x-4 ml-8">
+                <div class="flex items-center justify-end gap-4">
+                    <shedule class="hidden lg:flex text-sm "></shedule>
+                    <ul class="flex items-center">
                         <li>
                             <nav-button target="user"
-                                class="group flex items-center space-x-2 px-4 py-2 rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition-all duration-300">
-                                <span
-                                    class="hidden lg:block text-gray-700 group-hover:text-blue-600 transition-colors duration-300">
-                                    Меню
-                                </span>
+                                class="group flex items-center px-4 py-2 rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition-all duration-300 text-sm sm:text-base">
                                 <i
-                                    class="fa fa-bars text-gray-700 group-hover:text-blue-600 transition-colors duration-300"></i>
+                                    class="mdi mdi-menu text-gray-700 group-hover:text-blue-600 transition-colors duration-300"></i>
                             </nav-button>
                         </li>
                     </ul>

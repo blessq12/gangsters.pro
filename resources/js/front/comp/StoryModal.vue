@@ -1,65 +1,9 @@
-<template>
-    <teleport to="body">
-        <div
-            ref="modalOverlay"
-            class="fixed inset-0 bg-black/90 z-10"
-            :style="{ opacity: 0 }"
-        ></div>
-        <div
-            class="fixed inset-0 flex items-center justify-center p-2 z-[9999]"
-        >
-            <div
-                ref="storyContent"
-                @mousedown="$emit('pause')"
-                @mouseup="$emit('resume')"
-                @touchstart="$emit('pause')"
-                @touchend="$emit('resume')"
-                class="relative z-[10000] w-[90vw] max-h-max overflow-hidden rounded portrait:w-[90vw] portrait:h-[calc(90vw*1.778)] portrait:max-h-[90vh] landscape:w-[calc(90vh*0.5625)] landscape:max-w-[90vw] landscape:h-[90vh]"
-                :style="{ opacity: 0 }"
-            >
-                <div class="max-h-[700px]">
-                    <div
-                        class="absolute top-0 left-0 right-0 p-4 flex items-center gap-3 bg-gradient-to-b from-black/50 to-transparent z-[10001]"
-                    >
-                        <div
-                            class="flex-grow h-1 bg-white/30 rounded-full overflow-hidden"
-                        >
-                            <div
-                                class="h-full bg-white rounded-full transition-[width] duration-100"
-                                :style="{ width: progress + '%' }"
-                            ></div>
-                        </div>
-                        <button
-                            @click="$emit('close')"
-                            class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors"
-                        >
-                            <i class="fa fa-times text-white"></i>
-                        </button>
-                    </div>
-                    <div
-                        class="flex-1 w-full h-full flex items-center justify-center overflow-hidden"
-                    >
-                        <img
-                            :src="story?.image"
-                            class="max-w-full max-h-full object-contain block"
-                            :alt="story?.name"
-                        />
-                    </div>
-                </div>
-            </div>
-            <div
-                class="fixed inset-0 bg-black/90 z-10"
-                @click="$emit('close')"
-            ></div>
-        </div>
-    </teleport>
-</template>
-
 <script>
 import gsap from "gsap";
 
 export default {
     name: "StoryModal",
+    emits: ["close", "pause", "resume"],
     props: {
         story: {
             type: Object,
@@ -123,3 +67,58 @@ export default {
     },
 };
 </script>
+
+<template>
+    <teleport to="body">
+        <div
+            ref="modalOverlay"
+            class="fixed inset-0 bg-black/20 backdrop-blur-sm"
+            :style="{ opacity: 0, zIndex: 51 }"
+        ></div>
+        <div
+            class="fixed inset-0 flex items-center justify-center p-4 z-[9999]"
+        >
+            <div
+                ref="storyContent"
+                @mousedown="$emit('pause')"
+                @mouseup="$emit('resume')"
+                @touchstart="$emit('pause')"
+                @touchend="$emit('resume')"
+                class="relative z-[10000] w-full h-full max-w-[90vw] max-h-[90vh] overflow-hidden rounded flex items-center justify-center"
+                :style="{ opacity: 0 }"
+            >
+                <div
+                    class="relative w-fit-content h-full flex items-center justify-center"
+                >
+                    <div
+                        class="absolute top-0 left-0 right-0 p-4 flex items-center gap-3 bg-gradient-to-b from-black/50 to-transparent z-[10001]"
+                    >
+                        <div
+                            class="flex-grow h-1 bg-white/30 rounded-full overflow-hidden"
+                        >
+                            <div
+                                class="h-full bg-white rounded-full transition-[width] duration-100"
+                                :style="{ width: progress + '%' }"
+                            ></div>
+                        </div>
+                        <button
+                            @click="$emit('close')"
+                            class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors"
+                        >
+                            <i class="mdi mdi-close text-white"></i>
+                        </button>
+                    </div>
+                    <img
+                        :src="story?.image"
+                        class="max-w-full max-h-full w-auto h-auto object-contain"
+                        :alt="story?.name"
+                    />
+                </div>
+            </div>
+            <div
+                class="fixed inset-0 bg-black/90 z-10"
+                @click="$emit('close')"
+            ></div>
+        </div>
+    </teleport>
+</template>

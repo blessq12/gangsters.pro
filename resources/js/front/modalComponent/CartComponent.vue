@@ -35,13 +35,15 @@ export default {
     },
     methods: {
         initializeAnimations() {
-            gsap.from(this.$refs.cartList, {
-                y: 20,
-                opacity: 0,
-                duration: 0.5,
-                stagger: 0.1,
-                ease: "power3.out",
-            });
+            if (this.localStore.cart.length) {
+                gsap.from(this.$refs.cartList, {
+                    y: 20,
+                    opacity: 0,
+                    duration: 0.5,
+                    stagger: 0.1,
+                    ease: "power3.out",
+                });
+            }
         },
         initializeFormData() {
             if (this.userStore.authStatus) {
@@ -234,7 +236,7 @@ export default {
                             </div>
                         </div>
 
-                        <div class="flex gap-3">
+                        <div class="flex flex-col sm:flex-row gap-2">
                             <button
                                 class="flex-1 btn bg-primary-600 hover:bg-primary-700 text-gray-800 rounded-xl py-4 px-6 transition-colors duration-200 font-semibold shadow-md hover:shadow-lg"
                                 @click="checkout = !checkout"
@@ -256,7 +258,7 @@ export default {
                             class="inline-flex items-center text-gray-600 hover:text-gray-800 transition-colors font-medium"
                             @click="checkout = !checkout"
                         >
-                            <i class="fa fa-arrow-left mr-2"></i>
+                            <i class="mdi mdi-arrow-left mr-2"></i>
                             Назад в корзину
                         </button>
 
@@ -265,23 +267,23 @@ export default {
                                 <button
                                     :class="`btn rounded-xl py-4 px-6 transition-colors duration-200 font-semibold shadow-md hover:shadow-lg ${
                                         delivery
-                                            ? 'bg-primary-600 text-white'
+                                            ? 'bg-black text-white'
                                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                     }`"
                                     @click="delivery = true"
                                 >
-                                    <i class="fa fa-truck mr-2"></i>
+                                    <i class="mdi mdi-truck mr-2"></i>
                                     Доставка
                                 </button>
                                 <button
                                     :class="`btn rounded-xl py-4 px-6 transition-colors duration-200 font-semibold shadow-md hover:shadow-lg ${
                                         !delivery
-                                            ? 'bg-primary-600 text-white'
+                                            ? 'bg-black text-white'
                                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                     }`"
                                     @click="delivery = false"
                                 >
-                                    <i class="fa fa-shopping-cart mr-2"></i>
+                                    <i class="mdi mdi-shopping mr-2"></i>
                                     Самовывоз
                                 </button>
                             </div>
@@ -290,21 +292,23 @@ export default {
                                 <button
                                     :class="`btn rounded-xl py-4 px-6 transition-colors duration-200 font-semibold shadow-md hover:shadow-lg ${
                                         formData.payType === 'cash'
-                                            ? 'bg-primary-600 text-white'
+                                            ? 'bg-black text-white'
                                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                     }`"
                                     @click="formData.payType = 'cash'"
                                 >
+                                    <i class="mdi mdi-cash-multiple mr-2"></i>
                                     Наличные
                                 </button>
                                 <button
                                     :class="`btn rounded-xl py-4 px-6 transition-colors duration-200 font-semibold shadow-md hover:shadow-lg ${
                                         formData.payType === 'card'
-                                            ? 'bg-primary-600 text-white'
+                                            ? 'bg-black text-white'
                                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                     }`"
                                     @click="formData.payType = 'card'"
                                 >
+                                    <i class="mdi mdi-credit-card mr-2"></i>
                                     Картой курьеру
                                 </button>
                             </div>
@@ -331,7 +335,7 @@ export default {
                         </div>
 
                         <button
-                            class="w-full btn bg-primary-600 hover:bg-primary-700 text-white rounded-xl py-4 transition-colors duration-200 font-semibold shadow-md hover:shadow-lg"
+                            class="w-full btn bg-green-500 hover:bg-green-600 text-white rounded-xl py-4 transition-colors duration-200 font-semibold shadow-md hover:shadow-lg"
                             @click="
                                 delivery
                                     ? validate('delivery')
@@ -342,17 +346,17 @@ export default {
                         </button>
                     </div>
                 </div>
-                <div v-else class="text-center space-y-8 py-8">
+                <div v-else class="text-center">
                     <img
                         src="/images/placeholder/empty-cart.png"
                         alt="Пустая корзина"
                         class="mx-auto max-h-[320px]"
                     />
                     <div class="space-y-3">
-                        <h5 class="text-2xl font-bold text-gray-800">
+                        <h5 class="text-3xl font-bold text-gray-800">
                             Твоя корзина пуста
                         </h5>
-                        <p class="text-gray-600 text-lg">
+                        <p class="text-gray-500 text-sm max-w-[300px] mx-auto">
                             Чтобы оформить заказ - необходимо добавить товары в
                             корзину
                         </p>

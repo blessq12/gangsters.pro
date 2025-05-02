@@ -1,90 +1,223 @@
 <script>
 export default {
-  props: {
-    formData: {
-      type: Object,
-      required: true,
+    props: {
+        formData: {
+            type: Object,
+            required: true,
+        },
+        validatorBag: {
+            type: Object,
+            required: true,
+        },
+        validate: {
+            type: Function,
+            required: true,
+        },
+        schema: {
+            type: Object,
+            required: true,
+        },
     },
-    validatorBag: {
-      type: Object,
-      required: true,
-    },
-    validate: {
-      type: Function,
-      required: true,
-    },
-    schema: {
-      type: Object,
-      required: true,
-    },
-  },
 };
 </script>
 
 <template>
-  <form ref="delivery">
-    <div class="form-group">
-      <div class="row row-cols-1 g-2">
-        <div class="col">
-          <label for="name">Ваше Имя</label>
-          <input type="text" name="name" id="name" class="form-control" v-model="formData.name" />
+    <form ref="delivery" class="bg-white rounded-lg shadow-md p-4 space-y-6">
+        <!-- Персональные данные -->
+        <div class="space-y-4">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                Личные данные
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-2">
+                    <label
+                        for="name"
+                        class="block text-sm font-medium text-gray-700"
+                        >Ваше Имя</label
+                    >
+                    <input
+                        type="text"
+                        name="name"
+                        id="name"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        v-model="formData.name"
+                        placeholder="Введите ваше имя"
+                    />
+                </div>
+                <div class="space-y-2">
+                    <label
+                        for="tel"
+                        class="block text-sm font-medium text-gray-700"
+                        >Номер телефона</label
+                    >
+                    <input
+                        type="text"
+                        name="tel"
+                        id="tel"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        v-maska
+                        data-maska="+7 (###) ###-##-##"
+                        v-model="formData.tel"
+                        placeholder="+7 (___) ___-__-__"
+                    />
+                </div>
+            </div>
         </div>
-        <div class="col">
-          <label for="tel">Номер телефона</label>
-          <input type="text" name="tel" id="tel" class="form-control" v-maska data-maska="+7 (###) ###-##-##" v-model="formData.tel" />
+
+        <!-- Адрес доставки -->
+        <div class="space-y-4">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                Адрес доставки
+            </h3>
+            <div class="space-y-4">
+                <div>
+                    <label
+                        for="street"
+                        class="block text-sm font-medium text-gray-700"
+                        >Улица</label
+                    >
+                    <input
+                        type="text"
+                        name="street"
+                        id="street"
+                        class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        v-model="formData.street"
+                        placeholder="Введите название улицы"
+                    />
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div>
+                        <label
+                            for="house"
+                            class="block text-sm font-medium text-gray-700"
+                            >Дом</label
+                        >
+                        <input
+                            type="text"
+                            name="house"
+                            id="house"
+                            class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                            v-model="formData.house"
+                            placeholder="№"
+                        />
+                    </div>
+                    <div>
+                        <label
+                            for="building"
+                            class="block text-sm font-medium text-gray-700"
+                            >Строение</label
+                        >
+                        <input
+                            type="text"
+                            name="building"
+                            id="building"
+                            class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                            v-model="formData.building"
+                            placeholder="Корпус"
+                        />
+                    </div>
+                    <div>
+                        <label
+                            for="apartment"
+                            class="block text-sm font-medium text-gray-700"
+                            >Квартира</label
+                        >
+                        <input
+                            type="text"
+                            name="apartment"
+                            id="apartment"
+                            class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                            v-model="formData.apartment"
+                            placeholder="№"
+                        />
+                    </div>
+                    <div>
+                        <label
+                            for="staircase"
+                            class="block text-sm font-medium text-gray-700"
+                            >Подъезд</label
+                        >
+                        <input
+                            type="text"
+                            name="staircase"
+                            id="staircase"
+                            class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                            v-model="formData.staircase"
+                            v-maska
+                            data-maska="#####"
+                            placeholder="№"
+                        />
+                    </div>
+                    <div>
+                        <label
+                            for="floor"
+                            class="block text-sm font-medium text-gray-700"
+                            >Этаж</label
+                        >
+                        <input
+                            type="text"
+                            name="floor"
+                            id="floor"
+                            class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                            v-model="formData.floor"
+                            v-maska
+                            data-maska="#####"
+                            placeholder="№"
+                        />
+                    </div>
+                </div>
+                <div>
+                    <label
+                        for="personQty"
+                        class="block text-sm font-medium text-gray-700"
+                        >Количество персон</label
+                    >
+                    <div class="flex items-center space-x-2">
+                        <button
+                            type="button"
+                            class="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50 disabled:bg-gray-400 transition duration-200"
+                            @click="formData.personQty--"
+                            :disabled="formData.personQty < 2"
+                        >
+                            -
+                        </button>
+                        <input
+                            type="text"
+                            name="personQty"
+                            id="personQty"
+                            class="w-20 px-4 py-2 text-center rounded-lg border border-gray-300 font-bold"
+                            v-model="formData.personQty"
+                            min="1"
+                            max="10"
+                        />
+                        <button
+                            type="button"
+                            class="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition duration-200"
+                            @click="formData.personQty++"
+                        >
+                            +
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-    <div class="form-group">
-      <div class="row g-2">
-        <div class="col-12">
-          <label for="street">Улица</label>
-          <input type="text" name="street" id="street" class="form-control" v-model="formData.street" />
+
+        <!-- Комментарий -->
+        <div class="space-y-2">
+            <label for="comment" class="block text-sm font-medium text-gray-700"
+                >Комментарий к заказу</label
+            >
+            <textarea
+                name="comment"
+                id="comment"
+                rows="3"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                v-model="formData.comment"
+                placeholder="Дополнительные пожелания к заказу"
+            ></textarea>
         </div>
-      </div>
-    </div>
-    <div class="form-group">
-      <div class="row row-cols-2 row-cols-lg-3 g-2">
-        <div class="col">
-          <label for="house">Дом</label>
-          <input type="text" name="house" id="house" class="form-control" v-model="formData.house" />
-        </div>
-        <div class="col">
-          <label for="building">Строение</label>
-          <input type="text" name="building" id="building" class="form-control" v-model="formData.building" />
-        </div>
-        <div class="col">
-          <label for="staircase">Подъезд</label>
-          <input type="text" name="staircase" id="staircase" class="form-control" v-model="formData.staircase" v-maska data-maska="#####" />
-        </div>
-        <div class="col">
-          <label for="floor">Этаж</label>
-          <input type="text" name="floor" id="floor" class="form-control" v-model="formData.floor" v-maska data-maska="#####" />
-        </div>
-        <div class="col">
-          <label for="apartment">Квартира</label>
-          <input type="text" name="apartment" id="apartment" class="form-control" v-model="formData.apartment" />
-        </div>
-        <div class="col">
-          <label for="personQty">Количество персон</label>
-          <div class="input-group" style="max-height: 37px;">
-            <button class="btn btn-qty" type="button" style="padding: 0 16px !important;" @click="formData.personQty--" :disabled="formData.personQty <= 1">-</button>
-            <input type="text" name="personQty" id="personQty" class="form-control text-center fw-bold" v-model="formData.personQty" />
-            <button class="btn btn-qty" style="padding: 0 16px !important;" type="button" @click="formData.personQty++">+</button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="form-group">
-      <div class="row">
-        <div class="col">
-          <label for="comment">Комментарий</label>
-          <textarea name="comment" id="comment" class="form-control" v-model="formData.comment"></textarea>
-        </div>
-      </div>
-    </div>
-  </form>
+    </form>
 </template>
 
-<style scoped lang="sass">
-</style>
+<style scoped lang="sass"></style>

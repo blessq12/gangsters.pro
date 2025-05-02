@@ -19,10 +19,8 @@ Route::controller(MainController::class)->middleware([
 ])->name('main.')->group(function () {
     Route::get('/', 'index')->name('index');
     Route::get('/about', 'about')->name('about');
-    Route::get('/vacancy', 'vacancy')->name('vacancy');
     Route::get('/contact', 'contact')->name('contact');
     Route::get('/privacy', 'privacy')->name('privacy');
-    Route::get('/loyalty', 'loyalty')->name('loyalty');
     Route::get('/purchase-and-delivery', 'purchaseAndDelivery')->name('purchaseAndDelivery');
     Route::get('/reset-password', 'resetPassword')->name('resetPassword');
 });

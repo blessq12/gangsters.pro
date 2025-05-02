@@ -1,25 +1,28 @@
 <script>
-import { mapStores } from 'pinia';
-import { appStore } from '../../stores/appStorage.js'
-import { localStore } from '../../stores/localStore';
+import { mapStores } from "pinia";
+import { appStore } from "../../stores/appStorage.js";
+import { localStore } from "../../stores/localStore";
 export default {
-    mounted() {
-    },
+    mounted() {},
     props: {
-        target: String
+        target: String,
     },
     computed: {
-        ...mapStores( appStore , localStore )
-    }
-}
+        ...mapStores(appStore, localStore),
+    },
+};
 </script>
 
 <template>
-    <button @click="appStore.modal = true; appStore.modalName=target" class="btn-outline-dark rounded btn-sm btn d-flex align-items-center gap-1">
+    <button
+        @click="
+            appStore.modal = true;
+            appStore.modalName = target;
+        "
+        class="d-flex align-items-center gap-1"
+    >
         <slot></slot>
     </button>
 </template>
 
-<style lang="sass" scoped>
-
-</style>
+<style lang="sass" scoped></style>

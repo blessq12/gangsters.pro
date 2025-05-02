@@ -1,4 +1,5 @@
 <script>
+import gsap from "gsap";
 import { mapStores } from "pinia";
 import { appStore } from "../../stores/appStorage";
 import { localStore } from "../../stores/localStore";
@@ -6,23 +7,44 @@ import { userStore } from "../../stores/userStore";
 
 export default {
     mounted() {
-        //
         if (this.userStore.authStatus) {
             this.cart = true;
         }
-        window.addEventListener("scroll", this.updateScrollTop); // Add this line
+        window.addEventListener("scroll", this.updateScrollTop);
+        this.updateScrollTop();
+
+        // Инициализация GSAP анимаций
+        gsap.set(this.$refs.topButton, {
+            yPercent: 100,
+            opacity: 0,
+            display: "none",
+        });
+
+        // Создаем timeline для повторяющейся анимации корзины
+        this.cartTimeline = gsap
+            .timeline({ paused: true })
+            .to(this.$refs.cartIcon, {
+                scale: 1.2,
+                duration: 0.2,
+                ease: "back.out(1.7)",
+            })
+            .to(this.$refs.cartIcon, {
+                scale: 1,
+                duration: 0.15,
+                ease: "back.in(1.7)",
+            });
     },
     beforeDestroy() {
-        window.removeEventListener("scroll", this.updateScrollTop); // Clean up the event listener
+        window.removeEventListener("scroll", this.updateScrollTop);
+        if (this.cartTimeline) {
+            this.cartTimeline.kill();
+        }
     },
     data: () => ({
         cart: false,
         cartContent: false,
         contentHide: false,
-        images: {
-            cart: "/images/cart-icon.png",
-            coin: "/images/coin-icon.png",
-        },
+        cartTimeline: null,
         scrolled: false,
         scrollTop: 0,
     }),
@@ -34,16 +56,58 @@ export default {
     },
     methods: {
         openModal(name) {
+            // Воспроизводим анимацию при клике
+            if (this.cartTimeline) {
+                this.cartTimeline.restart();
+            }
             this.appStore.modal = true;
             this.appStore.modalName = name;
         },
         updateScrollTop() {
-            this.scrollTop = window.scrollY;
+            requestAnimationFrame(() => {
+                this.scrollTop = window.pageYOffset;
+            });
         },
         scrltop() {
-            window.scrollTo({
-                top: 0,
-                behavior: "smooth",
+            // Анимированный скролл наверх с GSAP
+            gsap.to(window, {
+                duration: 1,
+                scrollTo: 0,
+                ease: "power2.inOut",
+            });
+        },
+        animateCartContent(show) {
+            const content = this.$refs.cartContent;
+            if (show) {
+                gsap.fromTo(
+                    content,
+                    { width: 0, opacity: 0 },
+                    {
+                        width: "auto",
+                        opacity: 1,
+                        duration: 0.3,
+                        ease: "power2.inOut",
+                    }
+                );
+            } else {
+                gsap.to(content, {
+                    width: 0,
+                    opacity: 0,
+                    duration: 0.3,
+                    ease: "power2.inOut",
+                });
+            }
+        },
+        animateToTop(show) {
+            const button = this.$refs.topButton;
+            if (!button) return;
+
+            gsap.to(button, {
+                yPercent: show ? 0 : 100,
+                opacity: show ? 1 : 0,
+                duration: 0.5,
+                ease: show ? "back.out(1.7)" : "power2.in",
+                display: show ? "block" : "none",
             });
         },
     },
@@ -52,132 +116,113 @@ export default {
             this.contentHide = true;
             setTimeout(() => {
                 this.contentHide = false;
-                this.cartContent = val ? true : false;
-            }, 500);
+                this.cartContent = val;
+                this.animateCartContent(val);
+            }, 100);
         },
         "localStore.cart": {
-            handler(newVal, oldVal) {
-                if (newVal.length > 0) {
-                    this.cart = true;
-                } else {
-                    this.cart = false;
+            handler(newVal) {
+                this.cart = newVal.length > 0;
+                if (newVal.length > 0 && this.cartTimeline) {
+                    this.cartTimeline.restart();
                 }
             },
             deep: true,
         },
-        scrollTop(newVal) {
-            if (newVal > 800) {
-                this.scrolled = true;
-            } else {
-                this.scrolled = false;
-            }
+        scrollTop: {
+            handler(newVal) {
+                if (newVal > 800 && !this.scrolled) {
+                    this.scrolled = true;
+                    this.animateToTop(true);
+                } else if (newVal <= 800 && this.scrolled) {
+                    this.scrolled = false;
+                    this.animateToTop(false);
+                }
+            },
+            immediate: true,
         },
     },
 };
 </script>
 
 <template>
-    <div class="wrapper position-fixed invisible">
-        <div class="container py-4 py-lg-5 h-100">
-            <div class="row h-100 align-items-end">
-                <div class="col">
-                    <div class="row align-items-center">
-                        <div class="col">
-                            <div
-                                class="d-flex align-items-center justify-content-start"
-                            >
-                                <div
-                                    class="icon visible cursor-pointer"
-                                    :style="{
-                                        background: cart
-                                            ? `url(${images.cart})`
-                                            : `url(${images.coin})`,
-                                    }"
-                                    @click="
-                                        cart
-                                            ? openModal('cart')
-                                            : openModal('user')
-                                    "
-                                ></div>
-                                <div
-                                    class="content invisible fs-4"
-                                    :class="{ hide: contentHide }"
-                                >
-                                    <div class="cart" v-if="cartContent">
-                                        <span class="d-block"
-                                            >Сумма:
-                                            {{ localStore.cartTotal }}
-                                            руб.</span
-                                        >
-                                        <span class="d-block"
-                                            >Количество:
-                                            {{ localStore.cartQty }} шт.</span
-                                        >
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col text-end">
-                            <transition
-                                enter-active-class="animate__animated animate__fadeIn"
-                                leave-active-class="animate__animated animate__fadeOut"
-                            >
-                                <button
-                                    class="btn btn-main visible"
-                                    v-if="scrolled"
-                                    title="Наверх"
-                                    @click="scrltop"
-                                >
-                                    <i class="fa fa-arrow-up"></i>
-                                    <p class="m-0 d-none d-md-block">Наверх</p>
-                                </button>
-                            </transition>
-                        </div>
-                    </div>
+    <div class="fixed bottom-8 left-8 z-[51] flex flex-col gap-6">
+        <!-- Корзина -->
+        <div class="group relative">
+            <div
+                class="relative overflow-hidden bg-white rounded-lg shadow-lg p-4 transition-all duration-300 ease-out transform hover:scale-105 hover:shadow-2xl cursor-pointer"
+                :class="{
+                    'ring-2 ring-green-400 bg-gradient-to-br from-green-50 to-white':
+                        cart,
+                }"
+                @click="openModal('cart')"
+            >
+                <div class="relative z-10 flex items-center justify-center">
+                    <i
+                        ref="cartIcon"
+                        class="mdi mdi-cart text-3xl"
+                        :class="cart ? 'text-green-500' : 'text-gray-600'"
+                    ></i>
+                </div>
+                <div
+                    class="absolute inset-0 bg-gradient-to-tr from-green-100 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                ></div>
+            </div>
+
+            <div
+                class="absolute left-full ml-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-x-0 translate-x-2"
+            >
+                <div
+                    class="bg-gray-800 text-white px-4 py-2 rounded-md text-sm whitespace-nowrap shadow-xl"
+                >
+                    {{ cart ? "Перейти в корзину" : "Корзина пуста" }}
+                    <div
+                        class="absolute left-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-gray-800 transform rotate-45 -translate-x-1"
+                    ></div>
                 </div>
             </div>
         </div>
+
+        <!-- Кнопка наверх -->
+        <button
+            ref="topButton"
+            @click="scrltop"
+            class="fixed bottom-8 right-8 bg-white rounded-lg p-4 shadow-lg transition-all duration-300 hover:shadow-2xl group"
+            :class="{
+                'translate-y-0 opacity-100': scrolled,
+                'translate-y-20 opacity-0': !scrolled,
+            }"
+        >
+            <div class="relative overflow-hidden">
+                <div
+                    class="flex flex-col items-center justify-center gap-1 relative z-10"
+                >
+                    <i
+                        class="mdi mdi-arrow-up text-2xl text-green-500 transition-transform duration-300 group-hover:-translate-y-1"
+                    ></i>
+                    <span
+                        class="text-sm font-medium text-gray-600 hidden md:block transition-all duration-300 group-hover:text-green-500"
+                        >Наверх</span
+                    >
+                </div>
+                <div
+                    class="absolute inset-0 bg-gradient-to-t from-green-50 via-white to-white transform scale-y-0 group-hover:scale-y-100 transition-transform duration-300 origin-bottom"
+                ></div>
+            </div>
+        </button>
     </div>
 </template>
 
-<style scoped lang="sass">
-.cart, .coin
-    background: #fff
-    padding: 5px 12px
-    visibility: visible
-    width: fit-content
+<style scoped>
+@import "@mdi/font/css/materialdesignicons.css";
 
-    color: #fff
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.3s ease;
+}
 
-    @media (min-width: 768px)
-        padding: 10px 25px
-    span
-        display: block
-        font-weight:300
-        line-height: 1
-        font-size: clamp(14px, 3.2vw, 16px)
-        margin-bottom: 4px
-.wrapper
-    top: 0
-    left: 0
-    width: 100%
-    height: 100%
-    z-index: 9
-.icon
-    width: 80px
-    height: 80px
-    background-position: center !important
-    background-size: contain !important
-    background-repeat: no-repeat !important
-    @media (min-width: 768px)
-        width: 100px
-        height: 100px
-.content
-    width: 100%
-    word-wrap: no-break
-    white-space: nowrap
-    overflow: hidden
-    transition: all .3s
-    &.hide
-        width: 0
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
 </style>

@@ -127,9 +127,11 @@ export default {
                 let inputs = this.$refs.form.querySelectorAll("input");
                 inputs.forEach((input) => {
                     if (this.errors[input.id]) {
-                        input.classList.add("is-invalid");
+                        input.classList.add("border-red-500");
+                        input.classList.remove("border-gray-300");
                     } else {
-                        input.classList.remove("is-invalid");
+                        input.classList.remove("border-red-500");
+                        input.classList.add("border-gray-300");
                     }
                 });
             },
@@ -140,226 +142,252 @@ export default {
 </script>
 
 <template>
-    <div class="header p-2">
-        <div class="row align-items-center">
-            <div class="col">
-                <h4 class="mb-0">Привет, {{ userStore.userData.name }}</h4>
-            </div>
-            <div class="col text-end">
-                <button class="btn-exit" @click="userStore.logout">
+    <div class="bg-white rounded-lg shadow">
+        <div class="p-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <h4 class="text-xl font-semibold">
+                    Привет, {{ userStore.userData.name }}
+                </h4>
+                <button
+                    class="flex items-center px-4 py-2 text-sm text-gray-700 hover:text-gray-900 focus:outline-none"
+                    @click="userStore.logout"
+                >
                     Выйти
-                    <i class="fa fa-sign-out ms-1"></i>
+                    <i class="mdi mdi-logout ml-2"></i>
                 </button>
             </div>
         </div>
-    </div>
-    <div class="content p-2">
-        <div class="row mb-4">
-            <div class="col-12 mb-2 mb-lg-4">
-                <ul class="btn-group">
+
+        <div class="p-4">
+            <div class="space-y-6">
+                <div class="flex flex-nowrap overflow-x-auto scrollbar-hide">
                     <button
-                        class="btn list-group-item"
-                        :class="{ active: activeTab == 'personal_data' }"
-                        @click="activeTab = 'personal_data'"
+                        v-for="(tab, name) in {
+                            personal_data: 'Личные данные',
+                            orders: 'Заказы',
+                            gcoins: 'G-Coins',
+                            addresses: 'Мои адреса',
+                        }"
+                        :key="name"
+                        :class="`px-4 py-2 text-sm font-medium rounded-lg mr-2 whitespace-nowrap ${
+                            activeTab === name
+                                ? 'bg-primary-600 text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        } ${
+                            name === 'addresses'
+                                ? 'opacity-50 cursor-not-allowed'
+                                : ''
+                        }`"
+                        @click="activeTab = name"
+                        :disabled="name === 'addresses'"
                     >
-                        Личные данные
+                        <span class="flex items-center">
+                            <i
+                                :class="`mdi ${
+                                    name === 'personal_data'
+                                        ? 'mdi-account'
+                                        : name === 'orders'
+                                        ? 'mdi-shopping'
+                                        : name === 'gcoins'
+                                        ? 'mdi-coin'
+                                        : 'mdi-map-marker'
+                                } mr-2`"
+                            ></i>
+                            {{ tab }}
+                        </span>
                     </button>
-                    <button
-                        class="btn list-group-item"
-                        :class="{ active: activeTab == 'orders' }"
-                        @click="activeTab = 'orders'"
-                    >
-                        Заказы
-                    </button>
-                    <button
-                        class="btn list-group-item"
-                        :class="{ active: activeTab == 'gcoins' }"
-                        @click="activeTab = 'gcoins'"
-                    >
-                        G-Coins
-                    </button>
-                    <button class="btn list-group-item" disabled>
-                        Мои адреса
-                    </button>
-                </ul>
-            </div>
-            <div class="col-12">
-                <div class="card" v-if="activeTab == 'personal_data'">
-                    <div class="card-body" v-if="!editMode">
-                        <h5 class="card-title mb-3">Мои данные</h5>
-                        <p class="card-text">
-                            <b>Имя:</b> {{ userStore.userData.name }}
-                        </p>
-                        <p class="card-text">
-                            <b>Дата рождения:</b>
-                            {{
-                                userStore.userData.dob
-                                    ? userStore.userData.dob
-                                    : "Не указано"
-                            }}
-                        </p>
-                        <p class="card-text">
-                            <b>Телефон:</b> {{ userStore.userData.tel }}
-                        </p>
-                        <p class="card-text">
-                            <b>Email:</b> {{ userStore.userData.email }}
-                        </p>
-                        <button
-                            class="btn-exit fw-light"
-                            @click="editMode = true"
-                        >
-                            Изменить данные
-                        </button>
-                    </div>
-                    <div class="card-body" v-else>
-                        <h5 class="card-title mb-3">Изменение данных</h5>
-                        <form @submit.prevent="update" ref="form">
-                            <div class="mb-3">
-                                <label for="name" class="form-label">Имя</label>
-                                <input
-                                    type="text"
-                                    class="form-control"
-                                    id="name"
-                                    v-model="formData.name"
-                                />
-                            </div>
-                            <div class="mb-3">
-                                <label for="dob" class="form-label"
-                                    >Дата рождения</label
-                                >
-                                <input
-                                    type="text"
-                                    class="form-control"
-                                    id="dob"
-                                    v-maska
-                                    data-maska="##-##-####"
-                                    v-model="formData.dob"
-                                    placeholder="01-01-1990"
-                                />
-                            </div>
-                            <div class="mb-3">
-                                <label for="tel" class="form-label"
-                                    >Телефон</label
-                                >
-                                <input
-                                    type="tel"
-                                    class="form-control"
-                                    id="tel"
-                                    v-maska
-                                    data-maska="+7 (###) ###-##-##"
-                                    v-model="formData.tel"
-                                />
-                            </div>
-                            <div class="mb-3">
-                                <button class="btn-exit fw-light" type="submit">
-                                    Сохранить
-                                </button>
-                                <button
-                                    class="btn-exit fw-light ms-2"
-                                    type="button"
-                                    @click="editMode = false"
-                                >
-                                    Отменить
-                                </button>
-                            </div>
-                        </form>
-                    </div>
                 </div>
-                <div class="card" v-if="activeTab == 'orders'">
-                    <div class="card-body" v-if="orders.length > 0">
-                        <h5 class="card-title mb-3">Мои заказы</h5>
-                        <div class="table-responsive">
-                            <table class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Дата</th>
-                                        <th>Статус</th>
-                                        <th>Сумма</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="order in orders">
-                                        <td>{{ order.id }}</td>
-                                        <td>{{ order.created }}</td>
-                                        <td>{{ order.status_text }}</td>
-                                        <td>{{ order.total }} руб.</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+
+                <div
+                    v-if="activeTab === 'personal_data'"
+                    class="bg-white rounded-lg border border-gray-200"
+                >
+                    <div class="p-4">
+                        <div v-if="!editMode">
+                            <div class="flex items-center justify-between mb-4">
+                                <h5 class="text-lg font-semibold">
+                                    Мои данные
+                                </h5>
+                                <button
+                                    class="text-sm text-gray-600 hover:text-gray-900 flex items-center"
+                                    @click="editMode = true"
+                                >
+                                    <i class="mdi mdi-pencil mr-1"></i>
+                                    Изменить данные
+                                </button>
+                            </div>
+                            <div class="space-y-3">
+                                <p class="flex items-center">
+                                    <i
+                                        class="mdi mdi-account text-gray-400 mr-2"
+                                    ></i>
+                                    <span class="font-medium mr-2">Имя:</span>
+                                    {{ userStore.userData.name }}
+                                </p>
+                                <p class="flex items-center">
+                                    <i
+                                        class="mdi mdi-calendar text-gray-400 mr-2"
+                                    ></i>
+                                    <span class="font-medium mr-2"
+                                        >Дата рождения:</span
+                                    >
+                                    {{ userStore.userData.dob || "Не указано" }}
+                                </p>
+                                <p class="flex items-center">
+                                    <i
+                                        class="mdi mdi-phone text-gray-400 mr-2"
+                                    ></i>
+                                    <span class="font-medium mr-2"
+                                        >Телефон:</span
+                                    >
+                                    {{ userStore.userData.tel }}
+                                </p>
+                                <p class="flex items-center">
+                                    <i
+                                        class="mdi mdi-email text-gray-400 mr-2"
+                                    ></i>
+                                    <span class="font-medium mr-2">Email:</span>
+                                    {{ userStore.userData.email }}
+                                </p>
+                            </div>
+                        </div>
+                        <div v-else>
+                            <h5 class="text-lg font-semibold mb-4">
+                                Изменение данных
+                            </h5>
+                            <form
+                                @submit.prevent="update"
+                                ref="form"
+                                class="space-y-4"
+                            >
+                                <div class="space-y-2">
+                                    <label
+                                        for="name"
+                                        class="block text-sm font-medium text-gray-700"
+                                        >Имя</label
+                                    >
+                                    <div class="relative rounded-lg">
+                                        <div
+                                            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+                                        >
+                                            <i
+                                                class="mdi mdi-account text-gray-400"
+                                            ></i>
+                                        </div>
+                                        <input
+                                            type="text"
+                                            id="name"
+                                            class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                                            v-model="formData.name"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div class="space-y-2">
+                                    <label
+                                        for="dob"
+                                        class="block text-sm font-medium text-gray-700"
+                                        >Дата рождения</label
+                                    >
+                                    <div class="relative rounded-lg">
+                                        <div
+                                            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+                                        >
+                                            <i
+                                                class="mdi mdi-calendar text-gray-400"
+                                            ></i>
+                                        </div>
+                                        <input
+                                            type="text"
+                                            id="dob"
+                                            class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                                            v-maska
+                                            data-maska="##-##-####"
+                                            v-model="formData.dob"
+                                            placeholder="01-01-1990"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div class="space-y-2">
+                                    <label
+                                        for="tel"
+                                        class="block text-sm font-medium text-gray-700"
+                                        >Телефон</label
+                                    >
+                                    <div class="relative rounded-lg">
+                                        <div
+                                            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+                                        >
+                                            <i
+                                                class="mdi mdi-phone text-gray-400"
+                                            ></i>
+                                        </div>
+                                        <input
+                                            type="tel"
+                                            id="tel"
+                                            class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                                            v-maska
+                                            data-maska="+7 (###) ###-##-##"
+                                            v-model="formData.tel"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center space-x-4 pt-4">
+                                    <button
+                                        type="submit"
+                                        class="flex-1 flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                                    >
+                                        <i
+                                            class="mdi mdi-content-save mr-2"
+                                        ></i>
+                                        Сохранить
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 focus:outline-none"
+                                        @click="editMode = false"
+                                    >
+                                        Отмена
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
-                    <div class="card-body" v-else>
-                        <h5 class="card-title mb-3">Мои заказы</h5>
-                        <p class="card-text">У вас нет заказов</p>
-                    </div>
                 </div>
-                <div class="card" v-if="activeTab == 'gcoins'">
-                    <div class="card-body">
-                        <h5 class="card-title mb-3">Мои G-Coins</h5>
-                        <p class="card-text">
-                            У вас <b>{{ coins }}</b> G-Coins
-                        </p>
-                        <p class="card-text text-muted mb-4">
-                            У нас есть система кешбека, которая позволяет вам
-                            зарабатывать деньги с каждой покупки. Каждый раз,
-                            когда вы совершаете покупку, определенный процент от
-                            суммы будет начислен на ваш кешбек-аккаунт. Вы
-                            можете использовать накопленный кешбек для частичной
-                            оплаты вашего следующего заказа, что делает ваши
-                            покупки еще более выгодными. Не упустите возможность
-                            сэкономить!
-                        </p>
-                        <a href="/loyalty" class="btn-exit fw-light"
-                            >Полная информация о кешбеке</a
-                        >
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="row" v-if="userStore.userData.dob == null">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-body" style="background: #f5f5f5">
-                        <h5 class="card-title mb-3">Укажи дату рождения</h5>
-                        <p class="card-text">
-                            Это необходимо для корректной работы системы
-                            кешбека. Чтобы мы могли отправлять акции и скидки
-                            именно тебе.
-                        </p>
+
+                <div
+                    v-if="userStore.userData.dob == null"
+                    class="bg-gray-50 rounded-lg p-4"
+                >
+                    <div class="flex items-start space-x-4">
+                        <i
+                            class="mdi mdi-information text-primary-600 text-xl"
+                        ></i>
+                        <div>
+                            <h5 class="text-lg font-semibold mb-2">
+                                Укажи дату рождения
+                            </h5>
+                            <p class="text-gray-600">
+                                Это необходимо для корректной работы системы
+                                кешбека. Чтобы мы могли отправлять акции и
+                                скидки именно тебе.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="footer"></div>
 </template>
 
-<style scoped lang="sass">
-.btn-exit
-    background: #dedede
-    color: #fff
-    border-radius: 10px
-    padding: 10px 16px
-    font-size: 16px
-    font-weight: 500
-    border: none
-    outline: none
-    cursor: pointer
-.btn-group
-    overflow-x: scroll !important
-    white-space: nowrap !important
-    width: 100% !important
-    @media (min-width: 992px)
-        width: fit-content !important
-    padding: 0
-    &::-webkit-scrollbar
-        display: none
-.list-group-item
-    cursor: pointer
-    white-space: nowrap
-    &.active
-        background: #dedede
-        color: #fff
-        border-color: #dedede
+<style scoped>
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
 </style>

@@ -15,14 +15,16 @@ export default {
             { opacity: 0, y: 20, scale: 1.05 },
             { opacity: 1, y: 0, scale: 1, duration: 1.5, ease: "expo.out" }
         );
-        gsap.from([this.$refs.bannerTitle, this.$refs.bannerDescription], {
-            opacity: 0,
-            x: -30,
-            stagger: 0.4,
-            duration: 1,
-            ease: "power4.out",
-            delay: 0.3,
-        });
+        if (this.banner.title || this.banner.description) {
+            gsap.from([this.$refs.bannerTitle, this.$refs.bannerDescription], {
+                opacity: 0,
+                x: -30,
+                stagger: 0.4,
+                duration: 1,
+                ease: "power4.out",
+                delay: 0.3,
+            });
+        }
         this.$refs.bannerImage.addEventListener("mouseenter", () => {
             gsap.to(this.$refs.bannerImage, {
                 scale: 1.02,
@@ -54,20 +56,20 @@ export default {
                 >
                     <div
                         v-if="banner.title || banner.description"
-                        class="absolute inset-0 bg-gradient-to-br from-black/20 to-black/40 flex items-center rounded-xl backdrop-blur-xs"
+                        class="absolute inset-0 bg-gradient-to-br from-black/40 to-black/60 flex items-center rounded-xl backdrop-blur-xs"
                     >
                         <div
                             class="p-6 md:p-10 text-white backdrop-blur-md bg-white/10 rounded-xl transform transition-transform duration-300 hover:-translate-y-1 mx-4 md:mx-8"
                         >
                             <h1
                                 ref="bannerTitle"
-                                class="text-4xl md:text-6xl font-bold mb-4 uppercase tracking-wide"
+                                class="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold mb-4 uppercase tracking-wide text-white/95"
                             >
                                 {{ banner.title }}
                             </h1>
                             <p
                                 ref="bannerDescription"
-                                class="text-lg md:text-xl font-medium opacity-90"
+                                class="text-base sm:text-lg md:text-xl font-medium text-white/90"
                             >
                                 {{ banner.description }}
                             </p>

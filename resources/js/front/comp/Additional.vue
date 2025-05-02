@@ -102,7 +102,7 @@ export default {
 <template>
     <teleport to="body">
         <div
-            class="fixed inset-0 z-50 min-h-screen w-full overflow-y-auto backdrop-blur-sm bg-black/10 flex justify-center items-center p-4 transition-all duration-300"
+            class="fixed inset-0 z-[52] min-h-screen w-full overflow-y-auto backdrop-blur-sm bg-black/10 flex justify-center items-center p-4 transition-all duration-300"
             v-show="appStore.currentAdditional"
             id="additional"
             tabindex="-1"

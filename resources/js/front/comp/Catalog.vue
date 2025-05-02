@@ -160,7 +160,7 @@ export default {
                 <div>
                     <div class="w-full">
                         <h2
-                            class="text-3xl md:text-4xl font-bold mb-4 text-neutral-900"
+                            class="text-2xl md:text-4xl font-semibold mb-2 text-neutral-900"
                         >
                             {{ category.name }}
                         </h2>
@@ -168,13 +168,19 @@ export default {
                     </div>
                 </div>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                <ProductCard
-                    v-for="product in category.products"
-                    :key="product.id"
-                    :product="product"
-                    class="transform transition-all duration-300 hover:scale-[1.02] hover:shadow-xl rounded-xl bg-white relative overflow-hidden group"
-                />
+            <div
+                class="overflow-x-auto pb-4 -mx-4 sm:mx-0 sm:overflow-x-visible"
+            >
+                <div
+                    class="grid grid-flow-col auto-cols-[220px] xs:auto-cols-[240px] sm:grid-flow-row sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4"
+                >
+                    <ProductCard
+                        v-for="product in category.products"
+                        :key="product.id"
+                        :product="product"
+                        class="transform transition-all duration-300 hover:scale-[1.02] hover:shadow-xl rounded-xl bg-white relative overflow-hidden group"
+                    />
+                </div>
             </div>
         </div>
     </div>
@@ -188,21 +194,5 @@ export default {
 }
 .scrollbar-hide::-webkit-scrollbar {
     display: none;
-}
-
-/* Добавляем плавные анимации */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.category {
-    animation: fadeIn 0.6s ease-out;
 }
 </style>

@@ -7,7 +7,7 @@ import { userStore } from "../../stores/userStore";
 
 export default {
     mounted() {
-        this.initializeAnimations();
+        // this.initializeAnimations();
     },
     computed: {
         ...mapStores(userStore, appStore),
@@ -23,21 +23,6 @@ export default {
         };
     },
     methods: {
-        initializeAnimations() {
-            gsap.from(".card-coin", {
-                y: -20,
-                opacity: 0,
-                duration: 0.5,
-                ease: "power3.out",
-            });
-            gsap.from(".auth-forms", {
-                y: 20,
-                opacity: 0,
-                duration: 0.5,
-                delay: 0.2,
-                ease: "power3.out",
-            });
-        },
         getLoginData() {
             return {
                 email: "",
@@ -114,9 +99,11 @@ export default {
             let inputs = document.querySelectorAll("form input");
             inputs.forEach((input) => {
                 if (this.errors[input.name]) {
-                    input.classList.add("is-invalid");
+                    input.classList.add("border-red-500");
+                    input.classList.remove("border-gray-300");
                 } else {
-                    input.classList.remove("is-invalid");
+                    input.classList.remove("border-red-500");
+                    input.classList.add("border-gray-300");
                 }
             });
         },
@@ -150,77 +137,63 @@ export default {
 </script>
 
 <template>
-    <div class="user-wrapper p-4">
+    <div class="p-4 bg-gray-50">
         <div v-if="!userStore.authStatus" class="space-y-6">
-            <div class="btn-group w-full grid grid-cols-2 gap-2">
+            <div class="grid grid-cols-2 gap-2">
                 <button
                     :class="`rounded-xl py-3 transition-colors ${
                         form === 'login'
-                            ? 'bg-primary-600 text-white'
+                            ? 'bg-black text-white'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`"
                     @click="changeForm('login')"
                 >
-                    Авторизация
+                    <span class="flex items-center justify-center gap-2">
+                        <i class="mdi mdi-login"></i>
+                        Авторизация
+                    </span>
                 </button>
                 <button
                     :class="`rounded-xl py-3 transition-colors ${
                         form === 'register'
-                            ? 'bg-primary-600 text-white'
+                            ? 'bg-black text-white'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`"
                     @click="changeForm('register')"
                 >
-                    Регистрация
+                    <span class="flex items-center justify-center gap-2">
+                        <i class="mdi mdi-account-plus"></i>
+                        Регистрация
+                    </span>
                 </button>
             </div>
 
-            <div
-                class="card-coin bg-gradient-to-r from-primary-600 to-primary-700 rounded-xl p-6"
-            >
-                <h5 class="text-xl font-semibold mb-4">
-                    Получайте кэшбэк с Gangster Coin!
-                </h5>
-                <div class="space-y-2 text-black">
-                    <p class="font-medium">
-                        Присоединяйтесь к нашей программе кэшбека!
-                    </p>
-                    <p>
-                        Чтобы начать получать кэшбэк, вам необходимо
-                        зарегистрироваться и совершать заказы.
-                    </p>
-                    <p>Не упустите возможность экономить на своих покупках!</p>
-                </div>
-            </div>
-
-            <div class="auth-forms">
-                <div class="relative w-full">
-                    <user-login-form
-                        v-if="form === 'login'"
-                        key="login"
-                        @validate="validate('login')"
-                        :data="loginData"
-                        :schema="loginSchema"
-                        :validate="validate"
-                        @forgot="form = 'forgot'"
-                        class="w-full"
-                    />
-                    <user-register-form
-                        v-if="form === 'register'"
-                        key="register"
-                        @validate="validate('register')"
-                        :data="registerData"
-                        :schema="registerSchema"
-                        :validate="validate"
-                        :form="form"
-                        class="w-full"
-                    />
-                    <forgot-password
-                        v-if="form === 'forgot'"
-                        key="forgot"
-                        class="w-full"
-                    />
-                </div>
+            <div class="auth-form relative pb-12">
+                <user-login-form
+                    v-if="form === 'login'"
+                    key="login"
+                    @validate="validate('login')"
+                    :data="loginData"
+                    :schema="loginSchema"
+                    :validate="validate"
+                    @forgot="form = 'forgot'"
+                    class="w-full"
+                />
+                <user-register-form
+                    v-if="form === 'register'"
+                    key="register"
+                    @validate="validate('register')"
+                    :data="registerData"
+                    :schema="registerSchema"
+                    :validate="validate"
+                    :form="form"
+                    class="w-full"
+                />
+                <forgot-password
+                    v-if="form === 'forgot'"
+                    key="forgot"
+                    class="w-full"
+                />
             </div>
         </div>
         <div v-else>

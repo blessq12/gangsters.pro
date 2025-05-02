@@ -4,94 +4,108 @@
 @section('desc', '')
 
 @section('hero')
-    <x-front.hero-banner
-        title="Контакты"
-        description="Контактная информация и режим работы"
-        :overlay="true"
-        banner='/images/hero-bg.webp'
-    />
+    <x-front.hero-banner title="Контакты" description="Контактная информация и режим работы" :overlay="true"
+        banner='/images/hero-bg.webp' />
 @endsection
 
 @section('content')
-    <div class="container py-5">
-
-        {{-- yandex map and testimonials --}}
-        <div class="row mb-4">
-            <div class="col-lg-8 mb-4 mb-lg-0">
-                <h4 class="mb-3" style="font-weight: 500;">Мы на карте</h4>
-                <div style="position: relative; overflow: hidden;" class="rounded">
-                    <a href="https://yandex.ru/maps/org/gangster_s_sushi/82888444717/?utm_medium=mapframe&utm_source=maps" style="color: #EEE; font-size: 12px; position: absolute; top: 0;">
-                        Gangster's sushi
-                    </a>
-                    <a href="https://yandex.ru/maps/67/tomsk/category/food_and_lunch_delivery/184108273/?utm_medium=mapframe&utm_source=maps" style="color: #EEE; font-size: 12px; position: absolute; top: 14px;">
-                        Ресторан доставки в Томске
-                    </a>
-                    <iframe src="https://yandex.ru/map-widget/v1/?ll=84.986330%2C56.513423&mode=search&oid=82888444717&ol=biz&z=16.65" width="100%" height="400" frameborder="1" allowfullscreen="true" style="position: relative;"></iframe>
+    <div class="container mx-auto px-4 py-12">
+        {{-- карта и отзывы --}}
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
+            <div class="lg:col-span-8">
+                <div class="flex items-center gap-2 mb-4">
+                    <i class="mdi mdi-map-marker text-2xl text-primary-600"></i>
+                    <h4 class="text-xl font-medium">Мы на карте</h4>
+                </div>
+                <div class="rounded-xl overflow-hidden shadow-lg">
+                    <iframe
+                        src="https://yandex.ru/map-widget/v1/?ll=84.986330%2C56.513423&mode=search&oid=82888444717&ol=biz&z=16.65"
+                        width="100%" height="400" frameborder="0" allowfullscreen="true" class="w-full"></iframe>
                 </div>
             </div>
-            <div class="col col-lg-4">
-                <h4 class="mb-3" style="font-weight: 500;">Отзывы</h4>
-                <div style="width: 100%; height: 400px; overflow: hidden; position: relative;">
-                    <iframe style="width: 100%; height: 100%; border: 1px solid #e6e6e6; border-radius: 8px; box-sizing: border-box;" src="https://yandex.ru/maps-reviews-widget/82888444717?comments"></iframe>
-                    <a href="https://yandex.ru/maps/org/gangster_s_sushi/82888444717/" target="_blank" style="box-sizing: border-box; text-decoration: none; color: #b3b3b3; font-size: 10px; font-family: YS Text, sans-serif; position: absolute; bottom: 8px; width: 100%; text-align: center; left: 0; overflow: hidden; text-overflow: ellipsis; display: block; max-height: 14px; white-space: nowrap; padding: 0 16px;">
-                        Gangster's sushi на карте Томска — Яндекс Карты
-                    </a>
+            <div class="lg:col-span-4">
+                <div class="flex items-center gap-2 mb-4">
+                    <i class="mdi mdi-star text-2xl text-primary-600"></i>
+                    <h4 class="text-xl font-medium">Отзывы</h4>
+                </div>
+                <div class="rounded-xl overflow-hidden shadow-lg h-[400px]">
+                    <iframe class="w-full h-full border border-gray-200"
+                        src="https://yandex.ru/maps-reviews-widget/82888444717?comments">
+                    </iframe>
                 </div>
             </div>
         </div>
-        {{-- end yandex map and testimonials --}}
 
-        <div class="row row-cols-1 row-cols-lg-3 mb-4 gap-4">
-            <div class="col">
-                <div class="card">
-                    <div class="card-body">
-                        <h4 class="mb-3" style="font-weight: 500;">График работы</h4>
-                        <ul class="list-unstyled p-0 m-0 work-shedule-list">
-                        @foreach ($company->workShedules as $day)
-                            <li class="d-flex align-items-center justify-content-between">
-                                <span class="day">{{ $day->day }}</span>
-                                <span class="time fw-bold">c {{ \Carbon\Carbon::parse($day->open_time)->format('H:i') }} до {{ \Carbon\Carbon::parse($day->close_time)->format('H:i') }}</span>
-                            </li>
-                        @endforeach
-                        </ul>
-                    </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {{-- График работы --}}
+            <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+                <div class="flex items-center gap-2 mb-6">
+                    <i class="mdi mdi-clock-outline text-2xl text-primary-600"></i>
+                    <h4 class="text-xl font-medium">График работы</h4>
                 </div>
+                <ul class="space-y-3">
+                    @foreach ($company->workShedules as $day)
+                        <li class="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+                            <span class="text-gray-600">{{ $day->day }}</span>
+                            <span class="font-medium">{{ \Carbon\Carbon::parse($day->open_time)->format('H:i') }}
+                                - {{ \Carbon\Carbon::parse($day->close_time)->format('H:i') }}</span>
+                        </li>
+                    @endforeach
+                </ul>
             </div>
-            <div class="col">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h4 class="mb-3" style="font-weight: 500;">Данные организации</h4>
-                        <ul class="list-unstyled p-0 m-0">
-                            @foreach ($legals as $k => $v)
-                            <li class="d-flex align-items-center justify-content-between">
-                                <span class="name">{{ $k }}</span>
-                                <span class="value fw-bold">{{ $v }}</span>
-                            </li>
-                            @endforeach
-                        </ul>
-                    </div>
+
+            {{-- Данные организации --}}
+            <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+                <div class="flex items-center gap-2 mb-6">
+                    <i class="mdi mdi-office-building text-2xl text-primary-600"></i>
+                    <h4 class="text-xl font-medium">Данные организации</h4>
                 </div>
+                <ul class="space-y-3">
+                    @foreach ($legals as $k => $v)
+                        <li class="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+                            <span class="text-gray-600">{{ $k }}</span>
+                            <span class="font-medium">{{ $v }}</span>
+                        </li>
+                    @endforeach
+                </ul>
             </div>
-            <div class="col">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h4 class="mb-3" style="font-weight: 500;">Контактная информация</h4>
-                        <ul class="list-unstyled p-0 m-0">
-                            <li class="d-flex align-items-center justify-content-between">
-                                <span class="name">Телефон</span>
-                                <a href="tel:{{ $company->phone }}"><span class="value fw-bold">{{ $company->phone }}</span></a>
-                            </li>
-                            <li class="d-flex align-items-center justify-content-between">
-                                <span class="name">Адрес</span>
-                                <span class="value fw-bold">{{ $company->city }}, {{ $company->street }}, {{ $company->house }}, {{ $company->building }}</span>
-                            </li>
-                            <li class="d-flex align-items-center justify-content-between">
-                                <span class="name">Электронная почта</span>
-                                <a href="mailto:{{ $company->email_address }}"><span class="value fw-bold">{{ $company->email_address }}</span></a>
-                            </li>
-                        </ul>
-                    </div>
+
+            {{-- Контактная информация --}}
+            <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+                <div class="flex items-center gap-2 mb-6">
+                    <i class="mdi mdi-card-account-phone text-2xl text-primary-600"></i>
+                    <h4 class="text-xl font-medium">Контактная информация</h4>
                 </div>
+                <ul class="space-y-4">
+                    <li class="flex items-center gap-3">
+                        <i class="mdi mdi-phone text-xl text-primary-600"></i>
+                        <div class="flex flex-col">
+                            <span class="text-sm text-gray-600">Телефон</span>
+                            <a href="tel:{{ $company->phone }}"
+                                class="font-medium hover:text-primary-600 transition-colors">
+                                {{ $company->phone }}
+                            </a>
+                        </div>
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <i class="mdi mdi-map-marker text-xl text-primary-600"></i>
+                        <div class="flex flex-col">
+                            <span class="text-sm text-gray-600">Адрес</span>
+                            <span class="font-medium">{{ $company->city }}, {{ $company->street }}, {{ $company->house }},
+                                {{ $company->building }}</span>
+                        </div>
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <i class="mdi mdi-email text-xl text-primary-600"></i>
+                        <div class="flex flex-col">
+                            <span class="text-sm text-gray-600">Электронная почта</span>
+                            <a href="mailto:{{ $company->email_address }}"
+                                class="font-medium hover:text-primary-600 transition-colors">
+                                {{ $company->email_address }}
+                            </a>
+                        </div>
+                    </li>
+                </ul>
             </div>
         </div>
     </div>

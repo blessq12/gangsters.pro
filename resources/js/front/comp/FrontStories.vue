@@ -162,4 +162,26 @@ export default defineComponent({
         display: none;
     }
 }
+
+/* Адаптивная типография для малых экранов */
+@media (max-width: 640px) {
+    h1 {
+        font-size: 1.125rem; /* 18px */
+        line-height: 1.5;
+    }
+
+    p {
+        font-size: 0.875rem; /* 14px */
+        line-height: 1.4;
+    }
+}
+
+/* Улучшенный контраст текста */
+.text-white {
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.text-neutral-900 {
+    color: rgba(23, 23, 23, 1);
+}
 </style>

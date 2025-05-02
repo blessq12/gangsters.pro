@@ -164,11 +164,11 @@ export default {
 <template>
     <teleport to="body">
         <div
-            class="modal-overlay fixed inset-0 bg-black/30 backdrop-blur-sm z-10 transition-opacity duration-300"
+            class="modal-overlay fixed inset-0 bg-black/30 backdrop-blur-sm z-[52] transition-opacity duration-300"
             v-show="appStore.modal"
         ></div>
         <div
-            class="fixed inset-0 z-50 min-h-screen w-full overflow-y-auto"
+            class="fixed inset-0 z-[53] min-h-screen w-full overflow-y-auto"
             v-show="appStore.modal"
             @click.self="appStore.modal = false"
         >
@@ -186,95 +186,107 @@ export default {
                             class="rounded-full p-2 hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
                             @click.stop="appStore.modal = false"
                         >
-                            <i class="mdi mdi-close text-xl text-gray-600"></i>
+                            <i
+                                class="mdi mdi-close text-md md:text-2xl text-gray-600"
+                            ></i>
                         </button>
                     </div>
 
                     <nav
-                        class="modal-navigation grid grid-cols-4 gap-4 p-6 border-b border-gray-100"
+                        class="modal-navigation grid grid-cols-4 gap-2 sm:gap-4 p-3 sm:p-6 border-b border-gray-200"
                         v-if="rootPage"
                     >
                         <div
-                            class="nav-background absolute bg-primary-500/10 transition-all duration-300 rounded-xl"
+                            class="nav-background absolute bg-primary-600/15 transition-all duration-300 rounded-xl"
                             ref="backoverlay"
                         ></div>
 
                         <div
-                            class="nav-item flex flex-col items-center justify-center p-4 rounded-xl cursor-pointer transition-all duration-200 hover:bg-primary-50"
+                            class="nav-item relative flex flex-col items-center justify-center p-2 sm:p-4 rounded-xl cursor-pointer transition-all duration-200 hover:bg-primary-100"
                             @click="appStore.modalName = 'cart'"
                             :class="{
-                                'text-primary-600 bg-primary-50':
+                                'text-primary-700 bg-primary-100 shadow-sm':
                                     appStore.modalName === 'cart',
                             }"
                             ref="cart"
                         >
                             <div class="nav-icon relative">
-                                <i class="mdi mdi-cart text-2xl"></i>
+                                <i class="mdi mdi-cart text-xl sm:text-2xl"></i>
                                 <div
-                                    class="absolute -top-2 -right-2 min-w-[20px] h-5 flex items-center justify-center bg-red-500 text-white text-xs font-medium rounded-full px-1"
+                                    class="absolute -top-2 -right-2 min-w-[18px] sm:min-w-[20px] h-4 sm:h-5 flex items-center justify-center bg-red-600 text-white text-xs font-medium rounded-full px-1"
                                     v-if="localStore.cart.length > 0"
                                 >
                                     {{ localStore.cart.length }}
                                 </div>
                             </div>
-                            <span class="mt-2 text-sm font-medium"
+                            <span
+                                class="mt-1 sm:mt-2 text-xs sm:text-sm font-medium"
                                 >Корзина</span
                             >
                         </div>
 
                         <div
-                            class="nav-item flex flex-col items-center justify-center p-4 rounded-xl cursor-pointer transition-all duration-200 hover:bg-primary-50"
+                            class="nav-item relative flex flex-col items-center justify-center p-2 sm:p-4 rounded-xl cursor-pointer transition-all duration-200 hover:bg-primary-100"
                             @click="appStore.modalName = 'fav'"
                             :class="{
-                                'text-primary-600 bg-primary-50':
+                                'text-primary-700 bg-primary-100 shadow-sm':
                                     appStore.modalName === 'fav',
                             }"
                             ref="fav"
                         >
                             <div class="nav-icon relative">
-                                <i class="mdi mdi-heart text-2xl"></i>
+                                <i
+                                    class="mdi mdi-heart text-xl sm:text-2xl"
+                                ></i>
                                 <div
-                                    class="absolute -top-2 -right-2 min-w-[20px] h-5 flex items-center justify-center bg-red-500 text-white text-xs font-medium rounded-full px-1"
+                                    class="absolute -top-2 -right-2 min-w-[18px] sm:min-w-[20px] h-4 sm:h-5 flex items-center justify-center bg-red-600 text-white text-xs font-medium rounded-full px-1"
                                     v-if="localStore.fav.length > 0"
                                 >
                                     {{ localStore.fav.length }}
                                 </div>
                             </div>
-                            <span class="mt-2 text-sm font-medium"
+                            <span
+                                class="mt-1 sm:mt-2 text-xs sm:text-sm font-medium"
                                 >Избранное</span
                             >
                         </div>
 
                         <div
-                            class="nav-item flex flex-col items-center justify-center p-4 rounded-xl cursor-pointer transition-all duration-200 hover:bg-primary-50"
+                            class="nav-item relative flex flex-col items-center justify-center p-2 sm:p-4 rounded-xl cursor-pointer transition-all duration-200 hover:bg-primary-100"
                             @click="appStore.modalName = 'user'"
                             :class="{
-                                'text-primary-600 bg-primary-50':
+                                'text-primary-700 bg-primary-100 shadow-sm':
                                     appStore.modalName === 'user',
                             }"
                             ref="user"
                         >
                             <div class="nav-icon">
-                                <i class="mdi mdi-account text-2xl"></i>
+                                <i
+                                    class="mdi mdi-account text-xl sm:text-2xl"
+                                ></i>
                             </div>
-                            <span class="mt-2 text-sm font-medium"
+                            <span
+                                class="mt-1 sm:mt-2 text-xs sm:text-sm font-medium"
                                 >Профиль</span
                             >
                         </div>
 
                         <div
-                            class="nav-item flex flex-col items-center justify-center p-4 rounded-xl cursor-pointer transition-all duration-200 hover:bg-primary-50"
+                            class="nav-item relative flex flex-col items-center justify-center p-2 sm:p-4 rounded-xl cursor-pointer transition-all duration-200 hover:bg-primary-100"
                             @click="appStore.modalName = 'menu'"
                             :class="{
-                                'text-primary-600 bg-primary-50':
+                                'text-primary-700 bg-primary-100 shadow-sm':
                                     appStore.modalName === 'menu',
                             }"
                             ref="menu"
                         >
                             <div class="nav-icon">
-                                <i class="mdi mdi-menu text-2xl"></i>
+                                <i class="mdi mdi-menu text-xl sm:text-2xl"></i>
                             </div>
-                            <span class="mt-2 text-sm font-medium">Меню</span>
+                            <span
+                                class="mt-1 sm:mt-2 text-xs sm:text-sm font-medium"
+                                >Меню</span
+                            >
                         </div>
                     </nav>
 

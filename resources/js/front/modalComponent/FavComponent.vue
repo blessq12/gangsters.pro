@@ -12,13 +12,15 @@ export default {
     },
     methods: {
         initializeAnimations() {
-            gsap.from(this.$refs.favList, {
-                y: 20,
-                opacity: 0,
-                duration: 0.5,
-                stagger: 0.1,
-                ease: "power3.out",
-            });
+            if (this.localStore.fav.length) {
+                gsap.from(this.$refs.favList, {
+                    y: 20,
+                    opacity: 0,
+                    duration: 0.5,
+                    stagger: 0.1,
+                    ease: "power3.out",
+                });
+            }
         },
     },
 };
@@ -81,17 +83,17 @@ export default {
                     Очистить избранное
                 </button>
             </div>
-            <div v-else class="text-center space-y-6">
+            <div v-else class="text-center">
                 <img
                     src="/images/placeholder/empty-fav.png"
                     alt="Пустой список избранного"
                     class="mx-auto max-h-[280px]"
                 />
                 <div class="space-y-2">
-                    <h5 class="text-xl font-semibold text-gray-800">
+                    <h5 class="text-3xl font-semibold text-gray-800">
                         В избранном ничего нет
                     </h5>
-                    <p class="text-gray-600">
+                    <p class="text-gray-500 text-sm max-w-[300px] mx-auto">
                         В избранном можно хранить понравившиеся позиции и
                         добавлять их в корзину
                     </p>

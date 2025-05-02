@@ -19,115 +19,153 @@ export default {
 </script>
 
 <template>
-    <form @submit.prevent="validate('register')">
-        <div class="form-group">
-            <label for="name">Имя</label>
-            <div class="input-group">
+    <form @submit.prevent="validate('register')" class="space-y-4">
+        <div class="space-y-2">
+            <label for="name" class="block text-sm font-medium text-gray-700"
+                >Имя</label
+            >
+            <div class="relative rounded-lg">
+                <div
+                    class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+                >
+                    <i class="mdi mdi-account text-gray-400"></i>
+                </div>
                 <input
                     type="text"
                     name="name"
                     id="name"
-                    class="form-control"
+                    class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
                     v-model="data.name"
                 />
-                <span class="input-group-text fw-bold">
-                    <i class="fa fa-user"></i>
-                </span>
             </div>
         </div>
 
-        <div class="form-group">
-            <label for="tel">Номер телефона</label>
-            <div class="input-group">
+        <div class="space-y-2">
+            <label for="tel" class="block text-sm font-medium text-gray-700"
+                >Номер телефона</label
+            >
+            <div class="relative rounded-lg">
+                <div
+                    class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+                >
+                    <i class="mdi mdi-phone text-gray-400"></i>
+                </div>
                 <input
                     type="text"
                     name="tel"
                     id="tel"
-                    class="form-control"
+                    class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
                     v-maska
                     data-maska="+7 (###) ###-##-##"
                     placeholder="+7 "
                     v-model="data.tel"
                 />
-                <span class="input-group-text fw-bold">
-                    <i class="fa fa-phone"></i>
-                </span>
             </div>
         </div>
-        <div class="form-group">
-            <label for="email">Email адрес</label>
-            <div class="input-group">
+
+        <div class="space-y-2">
+            <label for="email" class="block text-sm font-medium text-gray-700"
+                >Email адрес</label
+            >
+            <div class="relative rounded-lg">
+                <div
+                    class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+                >
+                    <i class="mdi mdi-email text-gray-400"></i>
+                </div>
                 <input
                     type="text"
                     name="email"
                     id="email"
-                    class="form-control"
+                    class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
                     v-model="data.email"
                 />
-                <span class="input-group-text fw-bold">
-                    <i class="fa fa-envelope"></i>
-                </span>
             </div>
         </div>
 
-        <div class="form-group">
-            <label for="password">
+        <div class="space-y-2">
+            <label
+                for="password"
+                class="block text-sm font-medium text-gray-700"
+            >
                 Пароль
-                <small class="text-muted mb-0 d-inline-block ms-1"
-                    >Пароль должен содержать минимум 6 символов</small
+                <span class="text-sm text-gray-500 ml-1"
+                    >Минимум 6 символов</span
                 >
             </label>
-            <div class="input-group">
+            <div class="relative rounded-lg">
+                <div
+                    class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+                >
+                    <i class="mdi mdi-lock text-gray-400"></i>
+                </div>
                 <input
                     :type="showPassword ? 'text' : 'password'"
                     name="password"
                     id="password"
-                    class="form-control"
+                    class="block w-full pl-10 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
                     v-model="data.password"
                 />
-                <span class="input-group-text fw-bold">
-                    <i class="fa fa-lock"></i>
-                </span>
+                <button
+                    type="button"
+                    class="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    @click="showPassword = !showPassword"
+                >
+                    <i
+                        :class="`mdi ${
+                            showPassword ? 'mdi-eye-off' : 'mdi-eye'
+                        } text-gray-400 hover:text-gray-600`"
+                    ></i>
+                </button>
             </div>
         </div>
-        <div class="form-group">
-            <label for="password_confirmation">Повторите пароль</label>
-            <div class="input-group">
+
+        <div class="space-y-2">
+            <label
+                for="password_confirmation"
+                class="block text-sm font-medium text-gray-700"
+                >Повторите пароль</label
+            >
+            <div class="relative rounded-lg">
+                <div
+                    class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+                >
+                    <i class="mdi mdi-lock-check text-gray-400"></i>
+                </div>
                 <input
                     :type="showPassword ? 'text' : 'password'"
                     name="password_confirmation"
                     id="password_confirmation"
-                    class="form-control"
+                    class="block w-full pl-10 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
                     v-model="data.password_confirmation"
                 />
-                <span class="input-group-text fw-bold">
-                    <i class="fa fa-lock"></i>
-                </span>
-            </div>
-        </div>
-        <div class="d-flex align-items-center justify-content-between">
-            <span
-                class="d-block text-danger"
-                v-if="data.password !== data.password_confirmation"
-            >
-                Пароли не совпадают
-            </span>
-            <div class="form-check">
-                <input
-                    type="checkbox"
-                    class="form-check-input"
-                    id="showPassword"
-                    v-model="showPassword"
-                />
-                <label for="showPassword" class="form-check-label"
-                    >Показать пароль</label
-                >
             </div>
         </div>
 
-        <div class="form-group mt-4">
-            <button type="submit" class="btn rounded w-50">
-                <span>Отправить</span>
+        <div class="flex items-center justify-between">
+            <p
+                class="text-sm text-red-600"
+                v-if="data.password !== data.password_confirmation"
+            >
+                Пароли не совпадают
+            </p>
+            <label class="inline-flex items-center">
+                <input
+                    type="checkbox"
+                    class="form-checkbox h-4 w-4 text-primary-600 transition duration-150 ease-in-out"
+                    v-model="showPassword"
+                />
+                <span class="ml-2 text-sm text-gray-600">Показать пароль</span>
+            </label>
+        </div>
+
+        <div class="mt-6">
+            <button
+                type="submit"
+                class="w-full flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-black hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            >
+                <i class="mdi mdi-account-plus mr-2"></i>
+                Зарегистрироваться
             </button>
         </div>
     </form>
