@@ -1,61 +1,78 @@
 <script>
-import { localStore } from '../../stores/localStore';
-import { appStore } from '../../stores/appStorage';
-import { mapStores } from 'pinia';
+import { mapStores } from "pinia";
+import { appStore } from "../../stores/appStorage";
+import { localStore } from "../../stores/localStore";
 
 export default {
     data() {
         return {
-            thumbs: this.product['thumbnails'],
-            images: this.product['images']
-        }
+            thumbs: this.product["thumbnails"],
+            images: this.product["images"],
+        };
     },
     computed: {
         ...mapStores(localStore, appStore),
 
         getThumbs() {
-            if (this.thumbs) return this.thumbs.length > 0 && this.thumbs !== undefined ? this.thumbs[0]['small'] : '/images/placeholder/product-image-empty-512x512.jpg';
-        }
+            if (this.thumbs)
+                return this.thumbs.length > 0 && this.thumbs !== undefined
+                    ? this.thumbs[0]["small"]
+                    : "/images/placeholder/product-image-empty-512x512.jpg";
+        },
     },
     props: {
         product: {
             type: Object,
-            required: true
-        }
+            required: true,
+        },
     },
-}
+};
 </script>
 
 <template>
     <div class="col rounded">
         <div class="hover-over"></div>
         <div class="product">
-            <div 
-                class="header bg-image rounded position-relative overflow-hidden" 
+            <div
+                class="header bg-image rounded position-relative overflow-hidden"
                 v-lazy:background-image="getThumbs"
-                data-bs-toggle="modal" 
+                data-bs-toggle="modal"
                 data-bs-target="#additional"
                 @click="appStore.currentAdditional = product"
             >
                 <div class="additionals gap-1 d-flex flex-wrap">
                     <span class="badge bg-danger" v-if="product.hit">Хит</span>
-                    <span class="badge bg-warning" v-if="product.spicy">Острый</span>
-                    <span class="badge bg-warning" v-if="product.kidsAllow">Для детей</span>
-                    <span class="badge bg-warning" v-if="product.onion">С луком</span>
-                    <span class="badge bg-warning" v-if="product.garlic">С чесноком</span>
+                    <span class="badge bg-warning" v-if="product.spicy"
+                        >Острый</span
+                    >
+                    <span class="badge bg-warning" v-if="product.kidsAllow"
+                        >Для детей</span
+                    >
+                    <span class="badge bg-warning" v-if="product.onion"
+                        >С луком</span
+                    >
+                    <span class="badge bg-warning" v-if="product.garlic"
+                        >С чесноком</span
+                    >
                 </div>
                 <transition
                     enter-active-class="animate__animated animate__faster animate__fadeIn"
                     leave-active-class="animate__animated animate__faster animate__fadeOut"
                     mode="out-in"
                 >
-                    <div class="counter" v-if="localStore.checkExist('cart', product)">
-                        <transition 
+                    <div
+                        class="counter"
+                        v-if="localStore.checkExist('cart', product)"
+                    >
+                        <transition
                             enter-active-class="animate__animated animate__faster animate__fadeIn"
                             leave-active-class="animate__animated animate__faster animate__fadeOut"
                             mode="out-in"
                         >
-                            <span v-if="localStore.getQty(product) > 0" :key="localStore.getQty(product)">
+                            <span
+                                v-if="localStore.getQty(product) > 0"
+                                :key="localStore.getQty(product)"
+                            >
                                 {{ localStore.getQty(product) }}
                             </span>
                         </transition>
@@ -67,36 +84,71 @@ export default {
             </div>
             <div class="footer">
                 <div class="d-flex align-items-center justify-content-start">
-                    <transition 
+                    <transition
                         enter-active-class="animate__animated animate__faster animate__fadeIn"
                         leave-active-class="animate__animated animate__faster animate__fadeOut"
                         mode="out-in"
                     >
-                        <button type="button" class="btn rounded btn-main m-0" @click="localStore.manageStore('cart', product)" v-if="!localStore.checkExist('cart', product)">
-                            <i class="fa fa-shopping-cart" style="margin-right: 6px;"></i> В корзину
+                        <button
+                            type="button"
+                            class="btn rounded btn-main m-0"
+                            @click="localStore.manageStore('cart', product)"
+                            v-if="!localStore.checkExist('cart', product)"
+                        >
+                            <i
+                                class="fa fa-shopping-cart"
+                                style="margin-right: 6px"
+                            ></i>
+                            В корзину
                         </button>
                         <div class="prod-qty" v-else>
-                            <button class="btn rounded" @click="localStore.manageQty(false, product)">-</button>
-                            <button class="btn rounded" @click="localStore.manageQty(true, product)">+</button>
+                            <button
+                                class="btn rounded"
+                                @click="localStore.manageQty(false, product)"
+                            >
+                                -
+                            </button>
+                            <button
+                                class="btn rounded"
+                                @click="localStore.manageQty(true, product)"
+                            >
+                                +
+                            </button>
                         </div>
                     </transition>
-                    <button class="bg-transparent border-0 p-0 m-0 text-danger mx-2" @click="localStore.manageStore('fav', product)">
+                    <button
+                        class="bg-transparent border-0 p-0 m-0 text-danger mx-2"
+                        @click="localStore.manageStore('fav', product)"
+                    >
                         <transition
                             enter-active-class="animate__animated animate__faster animate__fadeInDown"
                             leave-active-class="animate__animated animate__faster animate__fadeOutUp"
                             mode="out-in"
                         >
-                            <i class="fa fa-2x fa-heart" v-if="localStore.checkExist('fav', product)"></i>
+                            <i
+                                class="fa fa-2x fa-heart"
+                                v-if="localStore.checkExist('fav', product)"
+                            ></i>
                             <i class="fa fa-2x fa-heart-o" v-else></i>
                         </transition>
                     </button>
                 </div>
                 <div class="d-block">
-                    <span class="d-block price" data-bs-toggle="tooltip" data-bs-placement="top" title="Цена указана за набор">
-                        {{ product.price ?? 'Не указано' }}
+                    <span
+                        class="d-block price"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        title="Цена указана за набор"
+                    >
+                        {{ product.price ?? "Не указано" }}
                     </span>
-                    <span class="d-block weight" data-bs-toggle="tooltip" data-bs-placement="top" title="Вес (масса нетто)">
-                        {{ product.weight ?? 'Не указано' }}
+                    <span
+                        class="d-block weight"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        title="Вес (масса нетто)"
+                    >
+                        {{ product.weight ?? "Не указано" }}
                     </span>
                 </div>
             </div>
@@ -252,7 +304,7 @@ export default {
       align-items: center
       justify-content: space-between
 
-      
+
 
       button
         background: #dedede

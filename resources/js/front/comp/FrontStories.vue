@@ -1,10 +1,11 @@
 <script>
-import { mapStores } from 'pinia';
-import { appStore } from '../../stores/appStorage';
+import gsap from "gsap";
+import { mapStores } from "pinia";
+import { appStore } from "../../stores/appStorage";
 
 export default {
     props: {
-        stories: Object
+        stories: Array,
     },
     data() {
         return {
@@ -13,74 +14,195 @@ export default {
             timer: null,
             progress: 0,
             isPaused: false,
-            debugMode: false // Set this to true to prevent the timer for debugging
+            debugMode: false,
+            viewedStories: [],
         };
     },
     computed: {
         storyImage(story) {
             return `/uploads/${story.image}`;
         },
-        ...mapStores(appStore)
+        sortedStories() {
+            return [...this.stories].sort((a, b) => {
+                const aViewed = this.viewedStories.includes(a.id);
+                const bViewed = this.viewedStories.includes(b.id);
+                return aViewed - bViewed;
+            });
+        },
+        ...mapStores(appStore),
     },
     watch: {
         show(newVal) {
             if (newVal) {
                 this.startTimer();
-                document.body.style.overflow = 'hidden';
+                document.body.style.overflow = "hidden";
+                if (this.currentStory) {
+                    this.viewedStories = [
+                        ...new Set([
+                            ...this.viewedStories,
+                            this.currentStory.id,
+                        ]),
+                    ];
+                    localStorage.setItem(
+                        "viewedStories",
+                        JSON.stringify(this.viewedStories)
+                    );
+                }
+
+                this.$nextTick(() => {
+                    gsap.fromTo(
+                        this.$refs.storyContent,
+                        { y: 100, opacity: 0 },
+                        { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }
+                    );
+                });
             } else {
                 this.clearTimer();
-                document.body.style.overflow = 'auto';
+                document.body.style.overflow = "auto";
             }
-        }
+        },
+        currentStory(newStory) {
+            if (newStory) this.adjustModalSize();
+        },
+        stories: {
+            handler() {
+                this.$nextTick(() => {
+                    gsap.from(".story-item", {
+                        scale: 0.8,
+                        opacity: 0,
+                        stagger: 0.1,
+                        duration: 0.5,
+                        ease: "back.out(1.7)",
+                    });
+                });
+            },
+            immediate: true,
+        },
     },
     methods: {
         startTimer() {
-            if (this.debugMode) return; // Prevent timer if in debug mode
+            if (this.debugMode) return;
 
             this.clearTimer();
             this.progress = 0;
-            const interval = 100;
             const duration = 10000;
-            const step = (interval / duration) * 100;
 
-            this.timer = setInterval(() => {
-                if (!this.isPaused) {
-                    this.progress += step;
-                    if (this.progress >= 100) {
-                        this.show = false;
-                        this.currentStory = null;
-                        this.clearTimer();
-                    }
-                }
-            }, interval);
+            gsap.to(this, {
+                progress: 100,
+                duration: duration / 1000,
+                ease: "linear",
+                onUpdate: () => {
+                    if (this.isPaused)
+                        gsap.to(this, { progress: this.progress });
+                },
+                onComplete: () => {
+                    this.show = false;
+                    this.currentStory = null;
+                    this.clearTimer();
+                },
+            });
         },
         clearTimer() {
-            if (this.timer) {
-                clearInterval(this.timer);
-                this.timer = null;
-            }
+            gsap.killTweensOf(this);
         },
         pauseTimer() {
             this.isPaused = true;
         },
         resumeTimer() {
             this.isPaused = false;
+        },
+        onHoverStory(index) {
+            gsap.to(`.story-item-${index}`, {
+                scale: 1.05,
+                boxShadow: "0 8px 16px rgba(0,0,0,0.1)",
+                duration: 0.3,
+                ease: "power2.out",
+            });
+        },
+        onLeaveStory(index) {
+            gsap.to(`.story-item-${index}`, {
+                scale: 1,
+                boxShadow: "none",
+                duration: 0.3,
+                ease: "power2.out",
+            });
+        },
+        adjustModalSize() {
+            if (!this.currentStory) return;
+            const img = new Image();
+            img.src = this.currentStory.image;
+            img.onload = () => {
+                const aspectRatio = img.width / img.height;
+                const modal = this.$refs.storyContent;
+                if (aspectRatio > 1) {
+                    modal.style.width = `min(90vw, ${90 * aspectRatio}vh)`;
+                    modal.style.height = "90vh";
+                } else {
+                    modal.style.width = "90vw";
+                    modal.style.height = `min(90vh, ${90 / aspectRatio}vw)`;
+                }
+            };
+        },
+    },
+    mounted() {
+        const saved = localStorage.getItem("viewedStories");
+        if (saved) {
+            this.viewedStories = JSON.parse(saved);
         }
+
+        this.$nextTick(() => {
+            gsap.from(this.$refs.storyItems, {
+                scale: 0.8,
+                opacity: 0,
+                stagger: 0.1,
+                duration: 0.8,
+                ease: "back.out(1.7)",
+            });
+        });
     },
     beforeDestroy() {
         this.clearTimer();
-    }
+    },
 };
 </script>
 
 <template>
-    <ul class="story-list pt-2" v-if="stories.length">
-        <li class="d-block text-center">
-            <service-advertisment></service-advertisment>
-        </li>
-        <li v-for="story in stories" :key="story.id" class="d-block text-center">
-            <div class="story-wrap">
-                <div class="story-item rounded bg-image" :style="'background:url(' + story.thumb + ');'" @click="show = !show; currentStory = story"></div>
+    <ul
+        class="story-list pt-2 Управление списками историй"
+        v-if="sortedStories.length"
+    >
+        <li
+            v-for="(story, index) in sortedStories"
+            :key="story.id"
+            class="d-block text-center"
+            @mouseenter="onHoverStory(index)"
+            @mouseleave="onLeaveStory(index)"
+            ref="storyItems"
+        >
+            <div
+                :class="[
+                    'story-wrap',
+                    { viewed: viewedStories.includes(story.id) },
+                ]"
+            >
+                <div
+                    :class="[
+                        'story-item',
+                        'rounded',
+                        'bg-image',
+                        `story-item-${index}`,
+                    ]"
+                    :style="'background-image: url(' + story.thumb + ');'"
+                    @click="
+                        show = !show;
+                        currentStory = story;
+                    "
+                >
+                    <i
+                        v-if="viewedStories.includes(story.id)"
+                        class="fa fa-eye viewed-icon"
+                    ></i>
+                </div>
             </div>
             <div class="story-footer">
                 <span>{{ story.name }}</span>
@@ -89,30 +211,57 @@ export default {
     </ul>
     <ul class="story-list" v-else>
         <li v-for="e in 5" class="placeholder-glow d-block text-center">
-            <div class="story-item rounded bg-image placeholder" style="width: 160px; height: 200px;"></div>
-            <div class="story-footer-placeholder py-2 placeholder d-block rounded"></div>
+            <div
+                class="story-item rounded bg-image placeholder"
+                style="width: 120px; height: 200px"
+            ></div>
+            <div
+                class="story-footer-placeholder py-2 placeholder d-block rounded"
+            ></div>
         </li>
     </ul>
     <teleport to="body">
-        <transition enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut" mode="out-in">
+        <transition
+            enter-active-class="animate__animated animate__fadeIn"
+            leave-active-class="animate__animated animate__fadeOut"
+            mode="out-in"
+        >
             <div class="overlay" v-if="appStore.modal"></div>
         </transition>
-        <transition enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut" mode="out-in">
-            <div class="wrap" v-if="show">
-                <div class="story-content" @mousedown="pauseTimer" @mouseup="resumeTimer" @touchstart="pauseTimer" @touchend="resumeTimer">
-                    <div class="story-image position-relative overflow-hidden h-100" style="z-index: 11; max-width: 400px;">
-                        <img :src="currentStory?.image" class="h-100 w-100 rounded" style="object-fit: contain; position: relative;">
+        <transition
+            enter-active-class="animate__animated animate__fadeIn"
+            leave-active-class="animate__animated animate__fadeOut"
+            mode="out-in"
+        >
+            <div class="wrap p-2" v-if="show">
+                <div
+                    ref="storyContent"
+                    @mousedown="pauseTimer"
+                    @mouseup="resumeTimer"
+                    @touchstart="pauseTimer"
+                    @touchend="resumeTimer"
+                    class="story-modal w-auto overflow-hidden rounded"
+                    style="max-height: max-content"
+                >
+                    <div class="story-container" style="max-height: 700px">
                         <div class="control-bar">
                             <div class="progress-bar">
-                                <div class="progress" :style="{ width: progress + '%' }"></div>
+                                <div
+                                    class="progress"
+                                    :style="{ width: progress + '%' }"
+                                ></div>
                             </div>
-                            <div class="btn-holder">
-                                <button @click="show = false" class="">
-                                    &times;
-                                </button>
-                            </div>
+                            <button @click="show = false" class="btn-close">
+                                <i class="fa fa-times"></i>
+                            </button>
                         </div>
-
+                        <div class="story-image-container">
+                            <img
+                                :src="currentStory?.image"
+                                class="story-image"
+                                :alt="currentStory?.name"
+                            />
+                        </div>
                     </div>
                 </div>
                 <div class="overlay" @click="show = !show"></div>
@@ -121,131 +270,212 @@ export default {
     </teleport>
 </template>
 
-<style lang="sass" scoped>
-.control-bar
-    display: flex
-    align-items: center
-    justify-content: center !important
-    position: absolute
-    top: 20px
-    left: 0
-    width: 100% !important
-    height: 5px
-.progress-bar
-    width: 80% !important
-    background: rgba(255, 255, 255, 0.2)
-    height: 5px
-.btn-holder
-    padding: 0 0 0 15px
-    display: flex
-    align-items: center
-    button
-        background-color: transparent
-        border: 0
-        border-radius: 50%
-        color: #fff
-        padding: 0
-        display: flex
-        align-items: center
-        justify-content: center
-        font-size: 1.5rem !important
-        font: inherit
-        cursor: pointer
-        outline: inherit
-.story-content
-    position: relative
-.overlay
-    background: rgba(0, 0, 0, 0.6)
-    position: fixed
-    z-index: 10
-.story-image
-    img
-        max-width: 400px !important
-        width: 100%
-.wrap
-    display: flex
-    align-items: center
-    justify-content: center
-    width: 100%
-    height: 100%
-    position: fixed
-    top: 0
-    left: 0
-    padding: 12px
-    z-index: 10
+<style lang="scss" scoped>
+.wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9999;
+    padding: 0;
+}
 
-.story-list
-    display: flex
-    align-items: center
-    overflow: hidden
-    overflow-x: scroll
-    padding: 0
-    padding-bottom: 48px
-    margin: 0
-    list-style: none
+.story-modal {
+    position: relative;
+    z-index: 10000;
+    width: min(90vw, calc(100vh - 60px) * 0.5625);
+    height: min(calc(90vw * 1.778), 90vh);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
-    &::-webkit-scrollbar
-        display: none
+.story-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    background: transparent;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
 
-    li
-        cursor: pointer
-        height: 95px
-        min-width: 160px
-        margin-right: 8px
+.control-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), transparent);
+    z-index: 10001;
+}
 
-        @media (min-width: 768px)
-            height: 120px
-            min-width: 220px
-            margin-right: 12px
+.progress-bar {
+    flex-grow: 1;
+    background: rgba(255, 255, 255, 0.3);
+    height: 4px;
+    border-radius: 2px;
+    overflow: hidden;
+}
 
-        transition: all 0.3s
+.progress {
+    background: #fff;
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.1s linear;
+}
 
-        &:hover
-            transform: scale(1.02)
+.btn-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: #fff;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.3s;
 
-        .story-wrap
-            width: 100%
-            height: 100%
-            position: relative
-            padding: 3px 3px
-            background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)
-            border-radius: 18px
+    &:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+}
 
-            .story-item
-                height: 100%
-                width: 100%
-                position: relative
-                transition: transform 0.3s
+.story-image-container {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
 
-.story-footer
-    position: relative
-    z-index: 1
-    margin-top: 6px
-    text-align: start
-    padding: 0 8px
+.story-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    display: block;
+}
 
-    span
-        font-weight: 600
-        text-transform: capitalize
+.overlay {
+    background: rgba(0, 0, 0, 0.9);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9998;
+}
 
-.story-footer-placeholder
-    position: relative
-    margin-top: 12px
-    height: 25px
+.story-list {
+    display: flex;
+    align-items: center;
+    overflow-x: auto;
+    padding: 0 0 48px 0;
+    margin: 0;
+    list-style: none;
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
 
-    &::before
-        content: ''
-        display: block
-        width: 100%
-        height: 100%
-        border-radius: 20px
-        background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)
-        position: absolute
-        top: 0
-        left: 0
-        z-index: -1
+.story-list li {
+    cursor: pointer;
+    min-width: 120px;
+    height: 160px;
+    margin-right: 10px;
+    @media (min-width: 768px) {
+        min-width: 140px;
+        height: 240px;
+        margin-right: 14px;
+    }
+}
 
-.progress
-    background-color: #ff0000
-    transition: all .3s
+.story-wrap {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    padding: 4px;
+    background: linear-gradient(45deg, #ff9a9e, #fad0c4, #fad0c4, #ff9a9e);
+    border-radius: 16px;
+    transition: transform 0.3s;
+    &.viewed {
+        background: linear-gradient(45deg, #ccc, #eee);
+        opacity: 0.8;
+    }
+}
+
+.story-item {
+    height: 100%;
+    width: 100%;
+    position: relative;
+    border-radius: 12px;
+    background-size: cover;
+    background-position: center;
+}
+
+.viewed-icon {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    padding: 6px;
+    font-size: 0.9rem;
+}
+
+.story-footer {
+    margin-top: 8px;
+    text-align: center;
+    padding: 0 8px;
+    span {
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: #333;
+        text-transform: capitalize;
+    }
+}
+
+.story-footer-placeholder {
+    position: relative;
+    margin-top: 12px;
+    height: 25px;
+    &::before {
+        content: "";
+        display: block;
+        width: 100%;
+        height: 100%;
+        border-radius: 20px;
+        background: linear-gradient(45deg, #f09433, #e6683c, #dc2743);
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: -1;
+    }
+}
+
+@media (orientation: portrait) {
+    .story-modal {
+        width: 90vw;
+        height: min(calc(90vw * 1.778), 90vh);
+    }
+}
+
+@media (orientation: landscape) {
+    .story-modal {
+        width: min(90vw, calc(90vh * 0.5625));
+        height: 90vh;
+    }
+}
 </style>

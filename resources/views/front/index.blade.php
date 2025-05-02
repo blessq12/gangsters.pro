@@ -16,7 +16,7 @@
         </div>
     @endif
     <x-front.stories></x-front.stories>
-    <banner></banner>
+    <banner :banner='@json($banner)'></banner>
     <x-front.catalog></x-front.catalog>
     <additional></additional>
     <modal></modal>

@@ -14,6 +14,7 @@ Route::group([
     $router->get('/', 'HomeController@index')->name('home');
 
     $router->resource('settings', SettingController::class);
+    $router->resource('banners', BannerController::class);
     $router->resource('companies', CompanyController::class);
     $router->resource('product-categories', ProductCategoryController::class);
     $router->resource('products', ProductController::class);

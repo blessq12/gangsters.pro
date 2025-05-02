@@ -6,7 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use BinaryCats\Sku\Concerns\SkuOptions;
 use Illuminate\Database\Eloquent\Model;
-use PDO;
+
 
 class Product extends Model
 {
