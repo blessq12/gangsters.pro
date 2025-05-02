@@ -29,5 +29,10 @@
       "assets/materialdesignicons-webfont-PXm3-2wK.woff",
       "assets/materialdesignicons-webfont-B7mPwVP_.ttf"
     ]
+  },
+  "resources/sass/style.css": {
+    "file": "assets/style-UkQb7fGw.css",
+    "src": "resources/sass/style.css",
+    "isEntry": true
   }
 }
