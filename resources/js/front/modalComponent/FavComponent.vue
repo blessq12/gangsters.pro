@@ -1,72 +1,109 @@
 <script>
-import { mapStores } from 'pinia';
-import { localStore } from '../../stores/localStore';
+import gsap from "gsap";
+import { mapStores } from "pinia";
+import { localStore } from "../../stores/localStore";
+
 export default {
+    mounted() {
+        this.initializeAnimations();
+    },
     computed: {
-        ...mapStores( localStore )
-    }
-}
+        ...mapStores(localStore),
+    },
+    methods: {
+        initializeAnimations() {
+            gsap.from(this.$refs.favList, {
+                y: 20,
+                opacity: 0,
+                duration: 0.5,
+                stagger: 0.1,
+                ease: "power3.out",
+            });
+        },
+    },
+};
 </script>
 
 <template>
-    <transition
-        enter-active-class="animate__animated animate__fadeIn"
-        leave-active-class="animate__animated animate__fadeOut"
-        mode="out-in"
-    >
-        <div v-if="localStore.fav.length">
-            <transition-group
-                tag="ul"
-                class="fav-list"
-                enter-active-class="animate__animated animate__fadeIn"
-                leave-active-class="animate__animated animate__fadeOut"
-            >
-                <li v-for="item in localStore.fav" :key="item.id">
-                    <ProductComponentSmall :product="item" :is-favorite="true" />
-                </li>
-            </transition-group>
-            <div class="cart-footer border-top pt-4 pb-2">
-                <ul class="list-unstyled">
-                    <li> <b>Стоимость: </b> 
-                        <transition
-                            enter-active-class="animate__animated animate__fadeIn"
-                            leave-active-class="animate__animated animate__fadeOut"
-                            mode="out-in"
-                        >
-                            <span v-if="localStore.favTotal" :key="localStore.favTotal">{{ localStore.favTotal + ' рублей' }}</span>
-                        </transition>    
+    <div class="fav-wrapper py-6 rounded-2xl">
+        <transition
+            enter-active-class="animate__animated animate__fadeIn"
+            leave-active-class="animate__animated animate__fadeOut"
+            mode="out-in"
+        >
+            <div v-if="localStore.fav.length" class="space-y-4">
+                <transition-group
+                    tag="ul"
+                    class="fav-list space-y-3"
+                    enter-active-class="animate__animated animate__fadeInUp"
+                    leave-active-class="animate__animated animate__fadeOutDown"
+                    move-class="transition-all duration-300"
+                >
+                    <li
+                        v-for="item in localStore.fav"
+                        :key="item.id"
+                        class="bg-white rounded-xl shadow-sm p-4"
+                        ref="favList"
+                    >
+                        <ProductComponentSmall
+                            :product="item"
+                            :is-favorite="true"
+                        />
                     </li>
-                    <li> <b>Наборов: </b> 
-                        <transition
-                            enter-active-class="animate__animated animate__fadeIn"
-                            leave-active-class="animate__animated animate__fadeOut"
-                            mode="out-in"
-                        >
-                            <span v-if="localStore.fav.length" :key="localStore.fav.length">{{ localStore.fav.length + ' шт' }}</span>
-                        </transition>    
-                    </li>
-                </ul>
-            </div>                
-            <button class="btn rounded btn-danger" @click="localStore.clearStore('fav')"> <i class="fa fa-trash"></i> Очистить избранное</button>
-        </div>
-        <div v-else>
-            <div class="row align-items-center row-cols-1">
-                <div class="col text-center">
-                    <img src="/images/placeholder/empty-fav.png" alt="" class="img-fluid" style="max-height: 280px">
+                </transition-group>
+
+                <div
+                    class="fav-footer bg-white rounded-xl shadow-sm p-4 space-y-2"
+                >
+                    <div
+                        class="flex justify-between items-center text-gray-700"
+                    >
+                        <span class="font-medium">Стоимость:</span>
+                        <span class="font-semibold text-primary-600">
+                            {{ localStore.favTotal }} ₽
+                        </span>
+                    </div>
+                    <div
+                        class="flex justify-between items-center text-gray-700"
+                    >
+                        <span class="font-medium">Наборов:</span>
+                        <span class="font-semibold">
+                            {{ localStore.fav.length }} шт
+                        </span>
+                    </div>
                 </div>
-                <div class="col text-center">
-                    <h5 class="fw-semibold">В избранном ничего нет</h5>
-                    <p>
-                        В избранном можно хранить понравившиеся позиции и добавлять их в корзину
+
+                <button
+                    class="w-full btn bg-red-500 hover:bg-red-600 text-white rounded-xl py-3 transition-colors"
+                    @click="localStore.clearStore('fav')"
+                >
+                    <i class="mdi mdi-trash-can mr-2"></i>
+                    Очистить избранное
+                </button>
+            </div>
+            <div v-else class="text-center space-y-6">
+                <img
+                    src="/images/placeholder/empty-fav.png"
+                    alt="Пустой список избранного"
+                    class="mx-auto max-h-[280px]"
+                />
+                <div class="space-y-2">
+                    <h5 class="text-xl font-semibold text-gray-800">
+                        В избранном ничего нет
+                    </h5>
+                    <p class="text-gray-600">
+                        В избранном можно хранить понравившиеся позиции и
+                        добавлять их в корзину
                     </p>
                 </div>
             </div>
-        </div>
-    </transition>
+        </transition>
+    </div>
 </template>
 
 <style lang="sass" scoped>
 .fav-list
     li
-        margin-bottom: 0
+        transform-origin: center
+        will-change: transform, opacity
 </style>

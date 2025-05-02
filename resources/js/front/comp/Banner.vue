@@ -1,38 +1,3 @@
-<template>
-    <div class="banner position-relative overflow-hidden">
-        <div class="container">
-            <div class="row">
-                <div class="col-12">
-                    <div class="position-relative">
-                        <img
-                            ref="bannerImage"
-                            :src="'/uploads/' + banner.image"
-                            :alt="banner.title ?? 'Баннер'"
-                            class="img-fluid w-100 rounded-3 object-cover"
-                        />
-                        <div
-                            class="overlay rounded-3 d-flex align-items-center"
-                            v-if="banner.title || banner.description"
-                        >
-                            <div class="text-content p-4 p-md-5 text-white">
-                                <h1
-                                    ref="bannerTitle"
-                                    class="display-4 fw-bold mb-3 text-uppercase"
-                                >
-                                    {{ banner.title }}
-                                </h1>
-                                <p ref="bannerDescription" class="lead mb-0">
-                                    {{ banner.description }}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</template>
-
 <script>
 import gsap from "gsap";
 
@@ -76,51 +41,40 @@ export default {
 };
 </script>
 
-<style scoped>
-.banner {
-    margin-top: 1rem;
-    border-radius: 0.75rem;
-    overflow: hidden;
-}
-
-.overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-        145deg,
-        rgba(0, 0, 0, 0.2) 0%,
-        rgba(0, 0, 0, 0.4) 100%
-    );
-    transition: background 0.4s ease;
-}
-
-.text-content {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 0.75rem;
-    backdrop-filter: blur(8px);
-    transition: transform 0.3s ease;
-}
-
-.text-content:hover {
-    transform: translateY(-5px);
-}
-
-.banner img {
-    transition: transform 0.6s ease;
-}
-
-@media (max-width: 768px) {
-    .text-content {
-        padding: 1.5rem;
-    }
-    h1 {
-        font-size: 1.75rem;
-    }
-    p {
-        font-size: 0.95rem;
-    }
-}
-</style>
+<template>
+    <div class="relative overflow-hidden mt-4 rounded-xl">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
+            <div class="w-full">
+                <div
+                    ref="bannerImage"
+                    class="relative bg-cover bg-center bg-no-repeat w-full rounded-xl overflow-hidden transition-transform duration-500 min-h-[300px]"
+                    :style="{
+                        backgroundImage: `url('/uploads/${banner.image}')`,
+                    }"
+                >
+                    <div
+                        v-if="banner.title || banner.description"
+                        class="absolute inset-0 bg-gradient-to-br from-black/20 to-black/40 flex items-center rounded-xl backdrop-blur-xs"
+                    >
+                        <div
+                            class="p-6 md:p-10 text-white backdrop-blur-md bg-white/10 rounded-xl transform transition-transform duration-300 hover:-translate-y-1 mx-4 md:mx-8"
+                        >
+                            <h1
+                                ref="bannerTitle"
+                                class="text-4xl md:text-6xl font-bold mb-4 uppercase tracking-wide"
+                            >
+                                {{ banner.title }}
+                            </h1>
+                            <p
+                                ref="bannerDescription"
+                                class="text-lg md:text-xl font-medium opacity-90"
+                            >
+                                {{ banner.description }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

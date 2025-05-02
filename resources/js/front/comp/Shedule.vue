@@ -1,6 +1,6 @@
 <script>
-import axios from 'axios';
-import moment from 'moment'
+import axios from "axios";
+import moment from "moment";
 export default {
     mounted() {
         // get shedule from api
@@ -16,69 +16,73 @@ export default {
             openShedule: false,
         };
     },
-    computed: {
-        
-    },
+    computed: {},
     methods: {
-        async getShedule() { 
-            let response = await axios.get('/api/get-shedule');
+        async getShedule() {
+            let response = await axios.get("/api/get-shedule");
             this.shedule = response.data;
         },
         isOpen() {
             let schedule = this.todayShedule();
             if (!schedule) return false;
-            
+
             const now = moment();
-            const openTime = moment(schedule.open_time, 'HH:mm');
-            const closeTime = moment(schedule.close_time, 'HH:mm');
+            const openTime = moment(schedule.open_time, "HH:mm");
+            const closeTime = moment(schedule.close_time, "HH:mm");
             if (closeTime.isBefore(openTime)) {
-                closeTime.add(1, 'day');
-                if (now.isBefore(moment('24:00', 'HH:mm'))) {
+                closeTime.add(1, "day");
+                if (now.isBefore(moment("24:00", "HH:mm"))) {
                     return now.isSameOrAfter(openTime);
                 }
                 return now.isBefore(closeTime);
             }
-            return now.isBetween(openTime, closeTime, undefined, '[]');
+            return now.isBetween(openTime, closeTime, undefined, "[]");
         },
         todayShedule() {
             if (this.shedule.length > 0) {
-                return this.shedule.find(item => item.day_eng === this.moment().format('dddd').toLowerCase());
+                return this.shedule.find(
+                    (item) =>
+                        item.day_eng ===
+                        this.moment().format("dddd").toLowerCase()
+                );
             }
             return null;
         },
         tomorrowShedule() {
-            let tomorrow = this.moment().add(1, 'day').format('dddd').toLowerCase();
+            let tomorrow = this.moment()
+                .add(1, "day")
+                .format("dddd")
+                .toLowerCase();
             if (this.shedule.length > 0) {
-                return this.shedule.find(item => item.day_eng === tomorrow);
+                return this.shedule.find((item) => item.day_eng === tomorrow);
             }
             return null;
-        }
+        },
     },
     watch: {
         //
-    }
-}
+    },
+};
 </script>
 
 <template>
-    <transition 
+    <transition
         enter-active-class="animate__animated animate__fadeInDown"
         leave-active-class="animate__animated animate__fadeOutUp"
         mode="out-in"
     >
-        <div class="shedule position-relative" v-if="this.shedule.length > 0" @click="openShedule = !openShedule">
-            <div :class="['status', isOpen() ? 'open' : 'close']">
-            </div>
+        <div
+            class="shedule position-relative"
+            v-if="this.shedule.length > 0"
+            @click="openShedule = !openShedule"
+        >
+            <div :class="['status', isOpen() ? 'open' : 'close']"></div>
             <div class="time">
-                <span v-if="isOpen()">
-                    Открыто
-                </span>
-                <span v-else>
-                    Закрыто
-                </span>
+                <span v-if="isOpen()"> Открыто </span>
+                <span v-else> Закрыто </span>
             </div>
 
-            <transition 
+            <transition
                 enter-active-class="animate__animated animate__fadeInDown"
                 leave-active-class="animate__animated animate__fadeOutUp"
                 mode="out-in"
@@ -86,24 +90,28 @@ export default {
                 <div class="wrap" v-if="openShedule">
                     <div class="popup rounded shadow">
                         <div class="popup-content">
-                            <div class="popup-title">
-                                Расписание работы
-                            </div>
+                            <div class="popup-title">Расписание работы</div>
                             <ul class="list-unstyled m-0 p-0">
-                                <li 
-                                    v-for="item in shedule" 
+                                <li
+                                    v-for="item in shedule"
                                     class="d-flex justify-content-between align-items-center"
-                                    :class="item.day_eng === todayShedule().day_eng ? 'today rounded' : ''"
+                                    :class="
+                                        item.day_eng === todayShedule().day_eng
+                                            ? 'today rounded'
+                                            : ''
+                                    "
                                 >
                                     <span> {{ item.day }} </span>
-                                    <span> {{ item.open_time }} - {{ item.close_time }} </span>
+                                    <span>
+                                        {{ item.open_time }} -
+                                        {{ item.close_time }}
+                                    </span>
                                 </li>
                             </ul>
+                        </div>
                     </div>
                 </div>
-                </div>
             </transition>
-            
         </div>
     </transition>
 </template>
@@ -120,7 +128,7 @@ export default {
     .popup
         background: #fff
         padding: 14px
-        border: 1px solid $color-main
+
         .popup-title
             font-size: 16px
             font-weight: 500
@@ -132,7 +140,7 @@ export default {
                 &:last-child
                     border-bottom: none
                 &.today
-                    background: lighten($color-main, 40%)
+
                     color: #fff
 
 .shedule

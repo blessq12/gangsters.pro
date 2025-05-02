@@ -7,7 +7,7 @@
 
 @section('content')
     @if (session('error'))
-        <div class="container pt-4">
+        <div class="mx-auto max-w-7xl px-4 md:px-6 py-4">
             <div class="row">
                 <div class="col">
                     <div class="alert alert-danger">{{ session('error') }}</div>
@@ -20,6 +20,5 @@
     <x-front.catalog></x-front.catalog>
     <additional></additional>
     <modal></modal>
-    {{-- gangsters cart --}}
     <gc-cart></gc-cart>
 @endsection

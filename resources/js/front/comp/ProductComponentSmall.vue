@@ -1,19 +1,19 @@
 <script>
-import { localStore } from '../../stores/localStore'
-import { mapStores } from 'pinia'
+import { mapStores } from "pinia";
+import { localStore } from "../../stores/localStore";
 
 export default {
     props: {
         product: Object,
-        isFavorite: Boolean
+        isFavorite: Boolean,
     },
     data() {
         return {
             //
-        }
+        };
     },
     mounted() {
-        //    
+        //
     },
     methods: {
         //
@@ -21,154 +21,95 @@ export default {
     computed: {
         ...mapStores(localStore),
         getThumbs() {
-            if (this.product.thumbnails && this.product.thumbnails.length && this.product.thumbnails !== undefined) {
+            if (
+                this.product.thumbnails &&
+                this.product.thumbnails.length &&
+                this.product.thumbnails !== undefined
+            ) {
                 return this.product.thumbnails[0].small;
             }
-            return '/images/placeholder/product-image-empty-128x128.jpg';
-        }
-    }
-}
+            return "/images/placeholder/product-image-empty-128x128.jpg";
+        },
+    },
+};
 </script>
 
 <template>
-    <div class="product">
-        <div 
-            class="image bg-image rounded overflow-hidden position-relative" 
+    <div class="flex items-center mb-2">
+        <div
+            class="min-h-[100px] min-w-[100px] lg:min-h-[120px] lg:min-w-[120px] mr-2 lg:mr-3 bg-image position-center bg-cover rounded overflow-hidden relative"
             v-lazy:background-image="getThumbs"
-            @error="$event.target.style.backgroundImage = 'url(/images/placeholder/product-image-empty-128x128.jpg)'"
+            @error="
+                $event.target.style.backgroundImage =
+                    'url(/images/placeholder/product-image-empty-128x128.jpg)'
+            "
         >
-            <div class="count" v-if="!isFavorite">
-                <span>{{ product.qty }}</span>
+            <div
+                class="absolute inset-0 bg-black/20 flex items-center justify-center"
+                v-if="!isFavorite"
+            >
+                <span
+                    class="text-3xl lg:text-5xl font-medium lg:font-bold text-white"
+                    >{{ product.qty }}</span
+                >
             </div>
         </div>
         <div class="content">
-            <span>{{ product.name }}</span>
+            <span
+                class="block text-base lg:text-lg font-medium lg:font-semibold"
+                >{{ product.name }}</span
+            >
             <p class="mb-1"><b>Цена: </b>{{ product.price }} руб.</p>
             <div v-if="!isFavorite">
-                <div class="cart-qty rounded">
-                    <div class="btn-group">
-                        <button @click="localStore.manageQty( false, product )" class="btn btn-primary">
-                            <i class="fa fa-minus"></i>
+                <div
+                    class="flex items-center justify-start overflow-hidden w-fit rounded"
+                >
+                    <div class="flex items-center gap-2 py-2">
+                        <button
+                            @click="localStore.manageQty(false, product)"
+                            class="cursor-pointer bg-red-200 hover:bg-red-300 rounded-xl py-2 px-4 transition-colors duration-200 font-semibold shadow-md"
+                        >
+                            <i class="mdi mdi-minus text-red-700"></i>
                         </button>
-                        <button @click="localStore.manageQty( true, product )" class="btn btn-primary">
-                            <i class="fa fa-plus"></i>
+                        <button
+                            @click="localStore.manageQty(true, product)"
+                            class="cursor-pointer bg-green-200 hover:bg-green-300 rounded-xl py-2 px-4 transition-colors duration-200 font-semibold shadow-md"
+                        >
+                            <i class="mdi mdi-plus text-green-700"></i>
                         </button>
                     </div>
                 </div>
             </div>
             <div v-else>
-                <div class="btn-group">
+                <div class="flex items-center gap-2 py-2">
                     <transition
                         enter-active-class="animate__animated animate__faster animate__fadeIn"
                         leave-active-class="animate__animated animate__faster animate__fadeOut"
                         mode="out-in"
                     >
-                        <button class="btn from-cart" @click="localStore.manageStore('cart', product)" v-if="localStore.checkExist('cart', product)" >
-                            <i class="fa fa-minus"></i>
+                        <button
+                            class="cursor-pointer bg-red-200 hover:bg-red-300 rounded-xl py-2 px-4 transition-colors duration-200 font-semibold shadow-md"
+                            @click="localStore.manageStore('cart', product)"
+                            v-if="localStore.checkExist('cart', product)"
+                        >
+                            <i class="mdi mdi-cart-remove text-red-700"></i>
                         </button>
-                        <button class="btn to-cart" @click="localStore.manageStore('cart', product)" v-else>
-                            <i class="fa fa-plus "></i>
-                            
+                        <button
+                            class="cursor-pointer bg-green-200 hover:bg-green-300 rounded-xl py-2 px-4 transition-colors duration-200 font-semibold shadow-md"
+                            @click="localStore.manageStore('cart', product)"
+                            v-else
+                        >
+                            <i class="mdi mdi-cart-plus text-green-700"></i>
                         </button>
                     </transition>
-                    <button class="btn trash" @click="localStore.manageStore('fav', product)">
-                        <i class="fa fa-trash"></i>
+                    <button
+                        class="cursor-pointer bg-red-200 hover:bg-red-300 rounded-xl py-2 px-4 transition-colors duration-200 font-semibold shadow-md hover:shadow-lg"
+                        @click="localStore.manageStore('fav', product)"
+                    >
+                        <i class="mdi mdi-trash-can"></i>
                     </button>
                 </div>
             </div>
         </div>
     </div>
 </template>
-
-
-
-<style scoped lang="sass">
-.btn-group
-    button
-        background: lighten($color-main, 20%)
-        padding: 8px 40px !important
-        &:hover
-            background: darken($color-main, 10%)
-    .btn
-        &.to-cart
-            background: #28a745
-            &:hover
-                background: darken(#28a745, 10%) !important
-        &.from-cart
-            background: #dc3545
-            &:hover
-                background: darken(#dc3545, 10%)
-        &.trash
-            background: lighten(#dc3545, 50%)
-            border-color: #dc3545 !important
-            border: 1px solid #dc3545
-            border-left: none
-            color: #dc3545
-            &:hover
-                background: lighten(#dc3545, 20%)
-                border-color: darken(#dc3545, 10%)
-                color: #fff
-
-.product 
-    display: flex
-    align-items: center
-    margin-bottom: 8px
-    .image
-        min-height: 100px
-        min-width: 100px
-        margin-right: 8px
-        @media(min-width: 992px)
-            min-height: 120px
-            min-width: 120px
-            margin-right: 12px
-    .count
-        position: absolute
-        top: 0
-        right: 0
-        width: 100%
-        height: 100%
-        background: rgba(0, 0, 0, .2)
-        color: #fff
-        display: flex
-        align-items: center
-        justify-content: center
-        span
-            font-size: 34px
-            font-weight: 500
-            @media(min-width: 992px)
-                font-size: 55px
-                font-weight: 700
-    img
-        max-height: 75px
-    .content
-        span
-            display: block
-            font-size: 16px
-            font-weight: 500
-            @media(min-width: 992px)
-                font-size: 18px
-                font-weight: 600
-        .cart-qty
-            display: flex
-            align-items: center
-            justify-content: start
-            overflow: hidden
-            width: fit-content
-            button
-                margin: 0
-                padding: 0
-                // background: none
-                border: none
-                outline: none
-                min-width: 40px
-                min-height: 30px
-                @media(min-width: 992px)
-                    min-width: 55px
-                    min-height: 35px
-                // background: lighten($color-main, 10%)
-                color: #fff
-                font-size: 16px
-                font-weight: 500
-                transition: all .3s
-                
-</style>

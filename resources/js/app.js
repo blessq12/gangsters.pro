@@ -1,12 +1,12 @@
-import './bootstrap';
-import { createApp } from 'vue';
-import { createPinia } from 'pinia';
-import { MaskInput, vMaska } from 'maska';
-import Toast from 'vue-toastification';
-import { useToast } from 'vue-toastification';
+import "@mdi/font/css/materialdesignicons.min.css";
+import { MaskInput, vMaska } from "maska";
+import { createPinia } from "pinia";
+import { createApp } from "vue";
+import VueLazyload from "vue-lazyload";
+import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
-import moment from 'moment';
-import VueLazyload from 'vue-lazyload';
+import "./bootstrap";
+
 /**
  * Next, we will create a fresh Vue application instance. You may then begin
  * registering components with the application instance so they are ready
@@ -15,22 +15,21 @@ import VueLazyload from 'vue-lazyload';
 
 const app = createApp({});
 
-const options = {
-}
+const options = {};
 app.use(VueLazyload, {
     lazyComponent: true,
     preLoad: 1.5,
     attempt: 1,
-    error: 'http://via.placeholder.com/300x200?text=error',
-    loading: '/images/placeholder/loading.gif',
+    error: "http://via.placeholder.com/300x200?text=error",
+    loading: "/images/placeholder/loading.gif",
     observer: true,
     observerOptions: {
-        rootMargin: '0px',
+        rootMargin: "0px",
         threshold: 0.1,
-    }
+    },
 });
 app.use(Toast, {
-    position: 'top-right',
+    position: "top-right",
     timeout: 5000,
     closeOnClick: true,
     pauseOnHover: true,
@@ -38,12 +37,10 @@ app.use(Toast, {
     draggablePercent: 0.6,
     showCloseButtonOnHover: false,
     hideProgressBar: true,
-    closeButton: 'button',
-})
+    closeButton: "button",
+});
 app.use(createPinia());
-app.directive('maska', vMaska);
-
-
+app.directive("maska", vMaska);
 
 /**
  * The following block of code may be used to automatically register your
@@ -51,9 +48,17 @@ app.directive('maska', vMaska);
  * components and automatically register them with their "basename".
  */
 
-Object.entries(import.meta.glob('./**/*.vue', { eager: true })).forEach(([path, definition]) => {
-    app.component(path.split('/').pop().replace(/\.\w+$/, ''), definition.default);
-});
+Object.entries(import.meta.glob("./**/*.vue", { eager: true })).forEach(
+    ([path, definition]) => {
+        app.component(
+            path
+                .split("/")
+                .pop()
+                .replace(/\.\w+$/, ""),
+            definition.default
+        );
+    }
+);
 
 /**
  * Finally, we will attach the application instance to a HTML element with
@@ -61,15 +66,15 @@ Object.entries(import.meta.glob('./**/*.vue', { eager: true })).forEach(([path, 
  * scaffolding. Otherwise, you will need to add an element yourself.
  */
 
-app.mount('#app');
+app.mount("#app");
 
-new MaskInput("[data-maska]")
+new MaskInput("[data-maska]");
 
-document.querySelectorAll('input, textarea').forEach(function(input) {
-    input.addEventListener('focus', function() {
-        document.body.style.zoom = '1'; // Prevent zoom
+document.querySelectorAll("input, textarea").forEach(function (input) {
+    input.addEventListener("focus", function () {
+        document.body.style.zoom = "1"; // Prevent zoom
     });
-    input.addEventListener('blur', function() {
-        document.body.style.zoom = ''; // Reset zoom
+    input.addEventListener("blur", function () {
+        document.body.style.zoom = ""; // Reset zoom
     });
 });

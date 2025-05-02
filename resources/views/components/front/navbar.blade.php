@@ -1,14 +1,18 @@
-<nav class="{{ !Request::is('/') ? 'position-sticky bg-light' : '' }}" style="{{ !Request::is('/') ? 'top: 0; z-index: 1000;' : '' }} box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.5);">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col">
-                <a href="{{ route('main.index') }}">
-                    <div class="nav-logo">
-                        <img src="/uploads/{{ $company->logo ? $company->logo : 'http://via.placeholder.com/50x50' }}" alt="{{ $company->name }}">
-                        <span class="d-none d-lg-block">
+<nav
+    class="{{ !Request::is('/') ? 'sticky top-0 bg-white/95 backdrop-blur-sm z-[1000] transition-all duration-300' : '' }} shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-20">
+            <div class="flex-shrink-0 transition-transform duration-300 hover:scale-105">
+                <a href="{{ route('main.index') }}" class="group">
+                    <div class="flex items-center">
+                        <img src="/uploads/{{ $company->logo ? $company->logo : 'http://via.placeholder.com/50x50' }}"
+                            alt="{{ $company->name }}"
+                            class="h-12 w-auto rounded-lg shadow-sm group-hover:shadow-md transition-all duration-300">
+                        <span
+                            class="hidden lg:block ml-3 font-semibold text-gray-800 group-hover:text-blue-600 transition-colors duration-300">
                             {{ $company->name }}
                         </span>
-                        <span class="d-lg-none">
+                        <span class="lg:hidden font-semibold text-gray-800 ml-2">
                             @php
                                 $name = $company->name;
                                 $name = explode(' ', $name);
@@ -22,47 +26,54 @@
                     </div>
                 </a>
             </div>
-            <div class="col d-lg-none d-flex justify-content-center">
-                    <shedule class="d-flex d-lg-none"></shedule>
+            <div class="lg:hidden flex justify-center">
+                <shedule class="flex lg:hidden"></shedule>
             </div>
-            <div class="col d-none d-lg-block justify-content-center">
-                <ul class="nav-links" style="justify-content:{{!Request::is('/') ? 'end' : ''}}">
+            <div class="hidden lg:block">
+                <ul class="flex space-x-6 {{ !Request::is('/') ? 'justify-end' : '' }}">
                     @if (!Request::is('/'))
                         <a href="{{ route('main.index') }}">
-                            <li>{{ __('Главная') }}</li>
+                            <li
+                                class="relative py-2 text-gray-700 hover:text-blue-600 transition-colors duration-300 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-blue-600 after:transition-all hover:after:w-full">
+                                {{ __('Главная') }}
+                            </li>
                         </a>
                     @endif
                     @foreach ($links as $link)
-                    <a href="{{ route($link->route) }}" class="{{ Route::currentRouteName() === $link->route ? 'active' : '' }}">
-                        <li>{{ __($link->name) }}</li>
-                    </a>
+                        <a href="{{ route($link->route) }}"
+                            class="{{ Route::currentRouteName() === $link->route ? 'text-blue-600' : 'text-gray-700' }}">
+                            <li
+                                class="relative py-2 transition-colors duration-300 hover:text-blue-600 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-blue-600 after:transition-all hover:after:w-full {{ Route::currentRouteName() === $link->route ? 'after:w-full' : '' }}">
+                                {{ __($link->name) }}
+                            </li>
+                        </a>
                     @endforeach
-                    
                 </ul>
             </div>
             @if (Request::is('/'))
-                <div class="col d-flex justify-content-end">
-                    <shedule class="d-none d-lg-flex"></shedule>
-                    <ul class="shop-links d-lg-flex gap-2 ms-8">
+                <div class="flex items-center justify-end">
+                    <shedule class="hidden lg:flex"></shedule>
+                    <ul class="flex items-center space-x-4 ml-8">
                         <li>
-                            <notifications></notifications>
-                        </li>
-                        <li>
-                            <nav-button 
-                                target="user"
-                            >
-                                <span class="d-none d-lg-flex">Меню</span>
-                                <i class="fa fa-bars"></i>
+                            <nav-button target="user"
+                                class="group flex items-center space-x-2 px-4 py-2 rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition-all duration-300">
+                                <span
+                                    class="hidden lg:block text-gray-700 group-hover:text-blue-600 transition-colors duration-300">
+                                    Меню
+                                </span>
+                                <i
+                                    class="fa fa-bars text-gray-700 group-hover:text-blue-600 transition-colors duration-300"></i>
                             </nav-button>
                         </li>
                     </ul>
                 </div>
-            @else 
-                <div class="col d-flex justify-content-end d-block d-lg-none">
-                    <shedule class="d-none d-lg-flex"></shedule>
-                    <ul class="shop-links d-lg-block">
+            @else
+                <div class="lg:hidden flex items-center justify-end">
+                    <shedule class="hidden lg:flex"></shedule>
+                    <ul>
                         <li>
-                            <secondary-menu-button></secondary-menu-button>
+                            <secondary-menu-button
+                                class="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-300"></secondary-menu-button>
                         </li>
                     </ul>
                 </div>

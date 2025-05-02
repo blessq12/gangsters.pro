@@ -30,314 +30,183 @@ export default {
 </script>
 
 <template>
-    <div class="col rounded">
-        <div class="hover-over"></div>
-        <div class="product">
-            <div
-                class="header bg-image rounded position-relative overflow-hidden"
-                v-lazy:background-image="getThumbs"
+    <div class="product-card group">
+        <div class="relative aspect-square rounded-xl overflow-hidden mb-4">
+            <img
+                :src="getThumbs"
+                :alt="product.name"
+                class="w-full h-full object-cover transition-all duration-300 group-hover:scale-105"
+                @click="appStore.currentAdditional = product"
                 data-bs-toggle="modal"
                 data-bs-target="#additional"
-                @click="appStore.currentAdditional = product"
+            />
+
+            <!-- Badges -->
+            <div class="absolute top-3 left-3 z-10 flex flex-wrap gap-1.5">
+                <span
+                    v-if="product.hit"
+                    class="inline-flex items-center px-2 py-0.5 text-xs font-medium text-white bg-red-500 rounded"
+                >
+                    <i class="mdi mdi-fire mr-1"></i>
+                    Хит
+                </span>
+                <span
+                    v-if="product.spicy"
+                    class="inline-flex items-center px-2 py-0.5 text-xs font-medium text-white bg-amber-500 rounded"
+                >
+                    <i class="mdi mdi-pepper-hot mr-1"></i>
+                    Острый
+                </span>
+                <span
+                    v-if="product.kidsAllow"
+                    class="inline-flex items-center px-2 py-0.5 text-xs font-medium text-white bg-emerald-500 rounded"
+                >
+                    <i class="mdi mdi-baby-face-outline mr-1"></i>
+                    Для детей
+                </span>
+                <span
+                    v-if="product.onion"
+                    class="inline-flex items-center px-2 py-0.5 text-xs font-medium text-white bg-purple-500 rounded"
+                >
+                    <i class="mdi mdi-sprout mr-1"></i>
+                    С луком
+                </span>
+                <span
+                    v-if="product.garlic"
+                    class="inline-flex items-center px-2 py-0.5 text-xs font-medium text-white bg-indigo-500 rounded"
+                >
+                    <i class="mdi mdi-flower-tulip mr-1"></i>
+                    С чесноком
+                </span>
+            </div>
+
+            <!-- Favorite Button -->
+            <button
+                class="favorite-btn"
+                @click="localStore.manageStore('fav', product)"
             >
-                <div class="additionals gap-1 d-flex flex-wrap">
-                    <span class="badge bg-danger" v-if="product.hit">Хит</span>
-                    <span class="badge bg-warning" v-if="product.spicy"
-                        >Острый</span
-                    >
-                    <span class="badge bg-warning" v-if="product.kidsAllow"
-                        >Для детей</span
-                    >
-                    <span class="badge bg-warning" v-if="product.onion"
-                        >С луком</span
-                    >
-                    <span class="badge bg-warning" v-if="product.garlic"
-                        >С чесноком</span
-                    >
+                <transition
+                    enter-active-class="animate__animated animate__faster animate__bounceIn"
+                    leave-active-class="animate__animated animate__faster animate__bounceOut"
+                >
+                    <i
+                        class="mdi"
+                        :class="[
+                            localStore.checkExist('fav', product)
+                                ? 'mdi-heart text-red-500'
+                                : 'mdi-heart-outline text-neutral-600',
+                        ]"
+                    ></i>
+                </transition>
+            </button>
+
+            <!-- Quantity Badge -->
+            <transition
+                enter-active-class="animate__animated animate__faster animate__zoomIn"
+                leave-active-class="animate__animated animate__faster animate__zoomOut"
+            >
+                <div
+                    v-if="localStore.checkExist('cart', product)"
+                    class="quantity-badge"
+                >
+                    <span class="text-2xl font-bold">{{
+                        localStore.getQty(product)
+                    }}</span>
                 </div>
+            </transition>
+        </div>
+
+        <div class="px-4 pb-4 space-y-3">
+            <h3
+                class="text-lg font-semibold text-neutral-900 leading-tight group-hover:text-neutral-700 transition-colors"
+            >
+                {{ product.name }}
+            </h3>
+
+            <div class="flex items-end justify-between">
+                <div>
+                    <div class="text-2xl font-bold text-neutral-900">
+                        {{ product.price }} ₽
+                    </div>
+                    <div class="text-sm text-neutral-500 flex items-center">
+                        <i class="mdi mdi-scale mr-1"></i>
+                        {{ product.weight }} г
+                    </div>
+                </div>
+
                 <transition
                     enter-active-class="animate__animated animate__faster animate__fadeIn"
                     leave-active-class="animate__animated animate__faster animate__fadeOut"
-                    mode="out-in"
                 >
-                    <div
-                        class="counter"
-                        v-if="localStore.checkExist('cart', product)"
+                    <button
+                        v-if="!localStore.checkExist('cart', product)"
+                        class="btn-add-to-cart"
+                        @click="localStore.manageStore('cart', product)"
                     >
-                        <transition
-                            enter-active-class="animate__animated animate__faster animate__fadeIn"
-                            leave-active-class="animate__animated animate__faster animate__fadeOut"
-                            mode="out-in"
+                        <i class="mdi mdi-cart-plus mr-2"></i>
+                        В корзину
+                    </button>
+                    <div v-else class="quantity-controls">
+                        <button
+                            class="quantity-btn"
+                            @click="localStore.manageQty(false, product)"
                         >
-                            <span
-                                v-if="localStore.getQty(product) > 0"
-                                :key="localStore.getQty(product)"
-                            >
-                                {{ localStore.getQty(product) }}
-                            </span>
-                        </transition>
+                            <i class="mdi mdi-minus"></i>
+                        </button>
+                        <button
+                            class="quantity-btn"
+                            @click="localStore.manageQty(true, product)"
+                        >
+                            <i class="mdi mdi-plus"></i>
+                        </button>
                     </div>
                 </transition>
-            </div>
-            <div class="content">
-                <span>{{ product.name }}</span>
-            </div>
-            <div class="footer">
-                <div class="d-flex align-items-center justify-content-start">
-                    <transition
-                        enter-active-class="animate__animated animate__faster animate__fadeIn"
-                        leave-active-class="animate__animated animate__faster animate__fadeOut"
-                        mode="out-in"
-                    >
-                        <button
-                            type="button"
-                            class="btn rounded btn-main m-0"
-                            @click="localStore.manageStore('cart', product)"
-                            v-if="!localStore.checkExist('cart', product)"
-                        >
-                            <i
-                                class="fa fa-shopping-cart"
-                                style="margin-right: 6px"
-                            ></i>
-                            В корзину
-                        </button>
-                        <div class="prod-qty" v-else>
-                            <button
-                                class="btn rounded"
-                                @click="localStore.manageQty(false, product)"
-                            >
-                                -
-                            </button>
-                            <button
-                                class="btn rounded"
-                                @click="localStore.manageQty(true, product)"
-                            >
-                                +
-                            </button>
-                        </div>
-                    </transition>
-                    <button
-                        class="bg-transparent border-0 p-0 m-0 text-danger mx-2"
-                        @click="localStore.manageStore('fav', product)"
-                    >
-                        <transition
-                            enter-active-class="animate__animated animate__faster animate__fadeInDown"
-                            leave-active-class="animate__animated animate__faster animate__fadeOutUp"
-                            mode="out-in"
-                        >
-                            <i
-                                class="fa fa-2x fa-heart"
-                                v-if="localStore.checkExist('fav', product)"
-                            ></i>
-                            <i class="fa fa-2x fa-heart-o" v-else></i>
-                        </transition>
-                    </button>
-                </div>
-                <div class="d-block">
-                    <span
-                        class="d-block price"
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="top"
-                        title="Цена указана за набор"
-                    >
-                        {{ product.price ?? "Не указано" }}
-                    </span>
-                    <span
-                        class="d-block weight"
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="top"
-                        title="Вес (масса нетто)"
-                    >
-                        {{ product.weight ?? "Не указано" }}
-                    </span>
-                </div>
             </div>
         </div>
     </div>
 </template>
 
-<style lang="sass" scoped>
-.fav-wrap
-    min-width: 0px
-    width: 0px
-    overflow: hidden
-    transition: all 0.3s
-    &.show
-        min-width: 74px
-.favorite
-    padding: unset
-    margin: unset
-    border: unset
-    font-size: .8rem
-    color: #fff
-    display: flex
-    align-items: center
-    justify-content: center
-    background: transparent
-    border: 1px solid red
-    padding: 8px 12px
-    transition: all .3s
-    i
-        margin-right: 6px
-    &:hover
-        border-color: darken(red, 40%)
-        background: darken(red, 40%)
-        color: #fff
-    &.active
-        background: red
-        color: #fff
-        border-color: red
+<style lang="scss" scoped>
+.product-card {
+    @apply bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300;
+}
 
-.btn-main
-    background: $color-main !important
-    color: #fff
-    &:hover
-        background: darken($color-main, 60%)
-.prod-qty
-    display: flex
-    align-items: center
-    button
-        border: $color-main 1px solid
-        background: $color-main !important
-        margin-right: 0 !important
-        color: #fff
-        transition: all .3s
-        min-width: 60px
-        max-height: 47px
-        padding: unset
-        display: flex
-        align-items: center
-        justify-content: center
-        font-size: 1.3rem
-        &:hover
-            background: lighten($color-main, 30%) !important
-        &:first-child
-            border-radius: 12px 0 0 12px !important
-            margin: 0
-        &:last-child
-            border-radius: 0 12px 12px 0 !important
-        &:hover
-            background: $color-main
-            color: #fff
-    .form-control
-        border-radius: 0
-        border-left: none
-        border-right: none
-        width: 80px
-        min-height: 48px
-        height: 100%
-        display: flex
-        align-items: center
-        justify-content: center
-        text-align: center
+.favorite-btn {
+    @apply absolute top-3 right-3 w-10 h-10 rounded-full bg-white/90
+    backdrop-blur-sm shadow-sm flex items-center justify-center
+    transition-all duration-300 hover:bg-white hover:scale-110;
 
-.col
-    max-width: unset
-    padding: 12px
-    min-width: 320px
-    width: fit-content
-    position: relative
-    overflow: hidden
+    i {
+        @apply text-2xl transition-colors duration-300;
+    }
+}
 
-    @media (min-width: 768px)
-      min-width: 260px
+.quantity-badge {
+    @apply absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2
+    bg-black/80 backdrop-blur-sm rounded-full w-16 h-16
+    flex items-center justify-center shadow-lg text-white;
+}
 
-    @media (min-width: 992px)
-      min-width: 25%
-      width: 25%
+.btn-add-to-cart {
+    @apply px-4 py-2.5 bg-gradient-to-r from-neutral-900 to-neutral-800
+    text-white text-sm font-medium rounded-xl
+    transition-all duration-300 hover:from-neutral-800 hover:to-neutral-700
+    flex items-center shadow-sm hover:shadow hover:scale-105;
+}
 
-    .hover-over
-      z-index: -1
-      opacity: 0
-      position: absolute
-      transition: all 0.7s ease-in-out
-      top: 0
-      left: 0
-      width: 100%
-      height: 100%
-      background: url('/images/placeholder/pattern-50.png') no-repeat center center / cover
+.quantity-controls {
+    @apply flex gap-2;
+}
 
-    &:hover
-      .hover-over
-        opacity: 0.4
+.quantity-btn {
+    @apply w-10 h-10 flex items-center justify-center
+    bg-gradient-to-r from-neutral-100 to-neutral-50
+    text-neutral-900 rounded-xl transition-all duration-300
+    hover:from-neutral-200 hover:to-neutral-100 hover:scale-105
+    shadow-sm hover:shadow;
 
-    .product
-        display: block
-
-    .header
-      min-height: 160px
-      position: relative
-      padding: 6px
-      cursor: pointer
-
-      .counter
-        position: absolute
-        top: 0
-        left: 0
-        display: flex
-        align-items: center
-        justify-content: center
-        width: 100%
-        height: 100%
-        z-index: 1
-        background: rgba(0, 0, 0, 0.4)
-        padding: 4px 8px
-        border-radius: 12px
-
-        span
-          font-size: 5rem
-          font-weight: 700
-          color: #fff
-
-    .content
-      margin: 12px 0
-      min-height: 45px
-
-      span
-        font-weight: 500
-        font-size: 1.1rem
-        display: block
-        line-height: 1
-
-    .footer
-      display: flex
-      align-items: center
-      justify-content: space-between
-
-
-
-      button
-        background: #dedede
-        border: unset
-        padding: 14px 12px
-        white-space: nowrap
-        margin-right: 12px
-
-        &:hover
-          background: #2e2e2e
-          color: #fff
-
-        &.active
-          background: $color-main
-          color: #fff
-
-      span
-        &.price
-          font-size: 1.1rem
-          font-weight: 700
-          margin-bottom: -4px
-
-          &::after
-            content: 'руб.'
-            padding-left: 4px
-            font-weight: 200
-
-        &.weight
-          font-size: 0.8rem
-          font-weight: 500
-
-          &::after
-            content: 'гр.'
-            padding-left: 4px
-            font-weight: 200
+    i {
+        @apply text-xl;
+    }
+}
 </style>

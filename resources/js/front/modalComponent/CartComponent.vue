@@ -1,329 +1,389 @@
 <script>
+import gsap from "gsap";
+import moment from "moment";
+import { mapStores } from "pinia";
+import { useToast } from "vue-toastification";
+import { object, string } from "yup";
+import { appStore } from "../../stores/appStorage";
 import { localStore } from "../../stores/localStore";
 import { userStore } from "../../stores/userStore";
-import { appStore } from "../../stores/appStorage";
-import { mapStores } from "pinia";
-import { object, string } from "yup";
-import { useToast } from "vue-toastification";
-import moment from "moment";
-
 
 export default {
-  created(){
-  },
-  mounted() {
-    this.initializeFormData();
-  },
-  computed: {
-    ...mapStores(localStore, userStore, appStore),
-  },
-  data() {
-    return {
-      toast: useToast(),
-      moment,
-      checkout: false,
-      delivery: true,
-      orderCreated: false,
-      order: null,
-      schema: this.createSchema(),
-      formData: this.createFormData(),
-      noDelForm: this.createNoDelForm(),
-      noDelSchema: this.createNoDelSchema(),
-      validatorBag: {},
-      checkPerformed: false
-    }
-  },
-  methods: {
-    initializeFormData() {
-      if (this.userStore.authStatus) {
-        const { name, tel } = this.userStore.userData;
-        this.formData.name = name;
-        this.formData.tel = tel;
-        this.noDelForm.name = name;
-        this.noDelForm.tel = tel;
-      }
+    created() {},
+    mounted() {
+        this.initializeFormData();
+        this.initializeAnimations();
     },
-    createSchema() {
-      return object({
-        name: string().required("Обязательно").min(3, "Не менее 3 символов").max(255, "Не более 255 символов"),
-        tel: string().required("Обязательно").min(18, "Некорректный номер").max(18, "Некорректный номер"),
-        street: string().required("Обязательно").min(3, "Не менее 3 символов").max(255, "Не более 255 символов"),
-        house: string().required("Обязательно").max(255, "Не более 255 символов"),
-        building: string().nullable(),
-        staircase: string().nullable(),
-        floor: string().nullable(),
-        apartment: string().required("Обязательно"),
-      });
+    computed: {
+        ...mapStores(localStore, userStore, appStore),
     },
-    createFormData() {
-      return {
-        name: null,
-        tel: null,
-        street: null,
-        house: null,
-        building: null,
-        staircase: null,
-        floor: null,
-        apartment: null,
-        personQty: 1,
-        comment: null,
-        payType: 'cash',
-      };
+    data() {
+        return {
+            toast: useToast(),
+            moment,
+            checkout: false,
+            delivery: true,
+            orderCreated: false,
+            order: null,
+            schema: this.createSchema(),
+            formData: this.createFormData(),
+            noDelForm: this.createNoDelForm(),
+            noDelSchema: this.createNoDelSchema(),
+            validatorBag: {},
+            checkPerformed: false,
+        };
     },
-    createNoDelForm() {
-      return {
-        name: '',
-        tel: '',
-        personQty: 1,
-        comment: null,
-      };
+    methods: {
+        initializeAnimations() {
+            gsap.from(this.$refs.cartList, {
+                y: 20,
+                opacity: 0,
+                duration: 0.5,
+                stagger: 0.1,
+                ease: "power3.out",
+            });
+        },
+        initializeFormData() {
+            if (this.userStore.authStatus) {
+                const { name, tel } = this.userStore.userData;
+                this.formData.name = name;
+                this.formData.tel = tel;
+                this.noDelForm.name = name;
+                this.noDelForm.tel = tel;
+            }
+        },
+        createSchema() {
+            return object({
+                name: string()
+                    .required("Обязательно")
+                    .min(3, "Не менее 3 символов")
+                    .max(255, "Не более 255 символов"),
+                tel: string()
+                    .required("Обязательно")
+                    .min(18, "Некорректный номер")
+                    .max(18, "Некорректный номер"),
+                street: string()
+                    .required("Обязательно")
+                    .min(3, "Не менее 3 символов")
+                    .max(255, "Не более 255 символов"),
+                house: string()
+                    .required("Обязательно")
+                    .max(255, "Не более 255 символов"),
+                building: string().nullable(),
+                staircase: string().nullable(),
+                floor: string().nullable(),
+                apartment: string().required("Обязательно"),
+            });
+        },
+        createFormData() {
+            return {
+                name: null,
+                tel: null,
+                street: null,
+                house: null,
+                building: null,
+                staircase: null,
+                floor: null,
+                apartment: null,
+                personQty: 1,
+                comment: null,
+                payType: "cash",
+            };
+        },
+        createNoDelForm() {
+            return {
+                name: "",
+                tel: "",
+                personQty: 1,
+                comment: null,
+            };
+        },
+        createNoDelSchema() {
+            return object({
+                name: string()
+                    .required("Обязательно")
+                    .min(3, "Не менее 3 символов")
+                    .max(255, "Не более 255 символов"),
+                tel: string()
+                    .required("Обязательно")
+                    .min(18, "Некорректный номер")
+                    .max(18, "Некорректный номер"),
+            });
+        },
+        validate(form) {
+            const schema = form === "delivery" ? this.schema : this.noDelSchema;
+            const formData =
+                form === "delivery" ? this.formData : this.noDelForm;
+            schema
+                .validate(formData, { abortEarly: false })
+                .then((res) => {
+                    this.updateInputs();
+                    this.validatorBag = {};
+                    this.createOrder(res, form === "delivery");
+                })
+                .catch((err) => {
+                    this.validatorBag = {};
+                    err.inner.forEach((e) => {
+                        this.validatorBag[e.path] = e.message;
+                    });
+                    this.updateInputs();
+                });
+        },
+        createOrder(data, delivery) {
+            const req = {
+                delivery,
+                cart: this.localStore.cart.map(
+                    ({ id, name, price, qty, sku }) => ({
+                        id,
+                        name,
+                        price,
+                        qty,
+                        sku,
+                    })
+                ),
+                order: data,
+            };
+            this.localStore
+                .createOrder(req)
+                .then(() => {
+                    this.orderCreated = true;
+                })
+                .catch(console.log);
+        },
+        updateInputs() {
+            let inputs = document.querySelectorAll(".form-control");
+            inputs.forEach((input) => {
+                if (this.validatorBag[input.name]) {
+                    input.classList.add("is-invalid");
+                } else {
+                    input.classList.remove("is-invalid");
+                }
+            });
+        },
     },
-    createNoDelSchema() {
-      return object({
-        name: string().required("Обязательно").min(3, "Не менее 3 символов").max(255, "Не более 255 символов"),
-        tel: string().required("Обязательно").min(18, "Некорректный номер").max(18, "Некорректный номер"),
-      });
+    watch: {
+        orderCreated(val) {
+            if (val) {
+                this.localStore.clearStore("cart");
+                this.checkout = false;
+                setTimeout(() => {
+                    this.appStore.modal = false;
+                    this.appStore.modalName = null;
+                    this.orderCreated = false;
+                }, 6000);
+            }
+        },
     },
-    validate(form) {
-      const schema = form === "delivery" ? this.schema : this.noDelSchema;
-      const formData = form === "delivery" ? this.formData : this.noDelForm;
-      schema.validate(formData, { abortEarly: false })
-        .then((res) => {
-          this.updateInputs()
-          this.validatorBag = {};
-          this.createOrder(res, form === "delivery");
-        })
-        .catch((err) => {
-          this.validatorBag = {};
-          err.inner.forEach((e) => {
-            this.validatorBag[e.path] = e.message;
-          });
-          this.updateInputs()
-        });
-    },
-    createOrder(data, delivery) {
-      const req = {
-        delivery,
-        cart: this.localStore.cart.map(({ id, name, price, qty, sku }) => ({ id, name, price, qty, sku })),
-        order: data,
-      };
-      this.localStore.createOrder(req)
-        .then(() => {
-          this.orderCreated = true;
-        })
-        .catch(console.log);
-    },
-    updateInputs() {
-      let inputs = document.querySelectorAll('.form-control')
-      inputs.forEach(input => {
-        if (this.validatorBag[input.name]) {
-          input.classList.add('is-invalid')
-        } else {
-          input.classList.remove('is-invalid')
-        }
-      })
-    }
-  },
-  watch: {
-    orderCreated(val) {
-      if (val) {
-        this.localStore.clearStore("cart");
-        this.checkout = false;
-        setTimeout(() => {
-          this.appStore.modal = false;
-          this.appStore.modalName = null;
-          this.orderCreated = false;
-        }, 6000);
-      }
-    },
-  },
 };
 </script>
 
 <template>
-  <transition enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut" mode="out-in">
-    <!-- transition betwee order create state -->
-    <div v-if="!orderCreated">
-      <transition enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut" mode="out-in">
-        <div v-if="localStore.cart.length">
-          <transition
+    <div class="cart-wrapper py-6 rounded-2xl">
+        <transition
             enter-active-class="animate__animated animate__fadeIn"
             leave-active-class="animate__animated animate__fadeOut"
             mode="out-in"
-          >
-            <div v-if="!checkout" class="cart-content overflow-auto">
-              <transition-group enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut" move-class="move" tag="ul" class="cart-list">
-                <li v-for="item in localStore.cart" :key="item.id">
-                  <ProductComponentSmall :product="item" :is-favorite="false" />
-                </li>
-              </transition-group>
-              <div class="cart-footer border-top">
-                <ul class="list-unstyled">
-                  <li>
-                    <b>Стоимость: </b>
-                    <span v-if="localStore.cartTotal">{{ localStore.cartTotal + " рублей" }}</span>
-                  </li>
-                  <li>
-                    <b>Наборов: </b>
-                    <span v-if="localStore.cartQty">{{ localStore.cartQty + " шт" }}</span>
-                  </li>
-                </ul>
-              </div>
-              <button class="btn rounded btn-main" @click="checkout = !checkout">Оформление</button>
-              <button class="btn rounded btn-danger mx-2" @click="localStore.clearStore('cart')">
-                <i class="fa fa-trash"></i> Очистить
-              </button>
-            </div>
+        >
+            <div v-if="!orderCreated" class="space-y-6">
+                <div v-if="localStore.cart.length">
+                    <div v-if="!checkout" class="space-y-6">
+                        <transition-group
+                            tag="ul"
+                            class="cart-list space-y-4"
+                            enter-active-class="animate__animated animate__fadeInUp"
+                            leave-active-class="animate__animated animate__fadeOutDown"
+                            move-class="transition-all duration-300"
+                        >
+                            <li
+                                v-for="item in localStore.cart"
+                                :key="item.id"
+                                class="bg-white rounded-xl shadow-md p-4"
+                                ref="cartList"
+                            >
+                                <ProductComponentSmall
+                                    :product="item"
+                                    :is-favorite="false"
+                                />
+                            </li>
+                        </transition-group>
 
-            <div v-else>
-              <button class="btn rounded btn-main btn-sm mb-4" @click="checkout = !checkout">
-                <i class="fa fa-arrow-left" style="margin-right: 6px"></i> Назад в корзину
-              </button>
+                        <div
+                            class="bg-white rounded-xl shadow-md p-5 space-y-3"
+                        >
+                            <div
+                                class="flex justify-between items-center text-gray-700"
+                            >
+                                <span class="text-lg font-medium"
+                                    >Стоимость:</span
+                                >
+                                <span
+                                    class="text-xl font-bold text-primary-600"
+                                >
+                                    {{ localStore.cartTotal }} ₽
+                                </span>
+                            </div>
+                            <div
+                                class="flex justify-between items-center text-gray-700"
+                            >
+                                <span class="text-lg font-medium"
+                                    >Наборов:</span
+                                >
+                                <span class="text-xl font-bold">
+                                    {{ localStore.cartQty }} шт
+                                </span>
+                            </div>
+                        </div>
 
-              <div class="row row-cols-1 mb-4">
-                <!-- First button group for delivery options -->
-                <div class="btn-group rounded d-block col mb-3 mb-lg-0">
-                  <button type="button" :class="`btn btn-main ${delivery ? 'active' : ''}`" @click="delivery = true">
-                    <i class="fa fa-truck"></i> Доставка
-                  </button>
-                  <button type="button" :class="`btn btn-main ${!delivery ? 'active' : ''}`" @click="delivery = false">
-                    <i class="fa fa-shopping-cart"></i> Самовывоз
-                  </button>
-                </div>
-                <!-- Second button group for payment options -->
-                <div class="btn-group rounded d-block col">
-                  <button type="button" :class="`btn ${formData.payType == 'cash' ? 'active' : ''}`" @click="formData.payType = 'cash'">Наличные</button>
-                  <button type="button" :class="`btn ${formData.payType == 'card' ? 'active' : ''}`" @click="formData.payType = 'card'">Картой курьеру</button>
-                </div>
-              </div>
-              
-              <!-- delivery or not section -->
-              <transition enter-active-class="animate__animated animate__fadeIn" leave-active-class="animate__animated animate__fadeOut" mode="out-in">
-                <div v-if="delivery">
-                  <delivery-form
-                    :form-data="formData"
-                    :schema="schema"
-                    :validator-bag="validatorBag"
-                    :validate="validate"
-                    @validate="validate('delivery')"
-                  />
-                </div>
-                <div v-else>
+                        <div class="flex gap-3">
+                            <button
+                                class="flex-1 btn bg-primary-600 hover:bg-primary-700 text-gray-800 rounded-xl py-4 px-6 transition-colors duration-200 font-semibold shadow-md hover:shadow-lg"
+                                @click="checkout = !checkout"
+                            >
+                                Оформление
+                            </button>
+                            <button
+                                class="btn bg-red-500 hover:bg-red-600 text-white rounded-xl py-4 px-6 transition-colors duration-200 font-semibold shadow-md hover:shadow-lg"
+                                @click="localStore.clearStore('cart')"
+                            >
+                                <i class="fa fa-trash mr-2"></i>
+                                Очистить
+                            </button>
+                        </div>
+                    </div>
 
-                  <!-- how to get to us -->
-                  <how-to-get-to-us />
-                  <!-- end how to get to us -->
+                    <div v-else class="space-y-6">
+                        <button
+                            class="inline-flex items-center text-gray-600 hover:text-gray-800 transition-colors font-medium"
+                            @click="checkout = !checkout"
+                        >
+                            <i class="fa fa-arrow-left mr-2"></i>
+                            Назад в корзину
+                        </button>
 
-                  <no-delivery-form
-                    :noDelForm="noDelForm"
-                    :schema="noDelSchema"
-                    :validator-bag="validatorBag"
-                    :validate="validate"
-                    @validate="validate('noDelivery')"
-                  />
+                        <div class="space-y-6">
+                            <div class="grid grid-cols-2 gap-3">
+                                <button
+                                    :class="`btn rounded-xl py-4 px-6 transition-colors duration-200 font-semibold shadow-md hover:shadow-lg ${
+                                        delivery
+                                            ? 'bg-primary-600 text-white'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    }`"
+                                    @click="delivery = true"
+                                >
+                                    <i class="fa fa-truck mr-2"></i>
+                                    Доставка
+                                </button>
+                                <button
+                                    :class="`btn rounded-xl py-4 px-6 transition-colors duration-200 font-semibold shadow-md hover:shadow-lg ${
+                                        !delivery
+                                            ? 'bg-primary-600 text-white'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    }`"
+                                    @click="delivery = false"
+                                >
+                                    <i class="fa fa-shopping-cart mr-2"></i>
+                                    Самовывоз
+                                </button>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <button
+                                    :class="`btn rounded-xl py-4 px-6 transition-colors duration-200 font-semibold shadow-md hover:shadow-lg ${
+                                        formData.payType === 'cash'
+                                            ? 'bg-primary-600 text-white'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    }`"
+                                    @click="formData.payType = 'cash'"
+                                >
+                                    Наличные
+                                </button>
+                                <button
+                                    :class="`btn rounded-xl py-4 px-6 transition-colors duration-200 font-semibold shadow-md hover:shadow-lg ${
+                                        formData.payType === 'card'
+                                            ? 'bg-primary-600 text-white'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    }`"
+                                    @click="formData.payType = 'card'"
+                                >
+                                    Картой курьеру
+                                </button>
+                            </div>
+                        </div>
+
+                        <div v-if="delivery">
+                            <delivery-form
+                                :form-data="formData"
+                                :schema="schema"
+                                :validator-bag="validatorBag"
+                                :validate="validate"
+                                @validate="validate('delivery')"
+                            />
+                        </div>
+                        <div v-else class="space-y-6">
+                            <how-to-get-to-us />
+                            <no-delivery-form
+                                :noDelForm="noDelForm"
+                                :schema="noDelSchema"
+                                :validator-bag="validatorBag"
+                                :validate="validate"
+                                @validate="validate('noDelivery')"
+                            />
+                        </div>
+
+                        <button
+                            class="w-full btn bg-primary-600 hover:bg-primary-700 text-white rounded-xl py-4 transition-colors duration-200 font-semibold shadow-md hover:shadow-lg"
+                            @click="
+                                delivery
+                                    ? validate('delivery')
+                                    : validate('noDelivery')
+                            "
+                        >
+                            Заказать
+                        </button>
+                    </div>
                 </div>
-              </transition>
-              <!-- end delivery or not section -->
-              <button type="button" class="btn rounded btn-main mt-2" @click="delivery ? validate('delivery') : validate('noDelivery')">Заказать</button>
+                <div v-else class="text-center space-y-8 py-8">
+                    <img
+                        src="/images/placeholder/empty-cart.png"
+                        alt="Пустая корзина"
+                        class="mx-auto max-h-[320px]"
+                    />
+                    <div class="space-y-3">
+                        <h5 class="text-2xl font-bold text-gray-800">
+                            Твоя корзина пуста
+                        </h5>
+                        <p class="text-gray-600 text-lg">
+                            Чтобы оформить заказ - необходимо добавить товары в
+                            корзину
+                        </p>
+                    </div>
+                </div>
             </div>
-            <!-- /end cart content checkout or cart -->
-          </transition>
-        </div>
-        <div v-else>
-          <div class="row row-cols-1 align-items-center">
-            <div class="col text-center">
-              <img src="/images/placeholder/empty-cart.png" alt="" class="img-fluid" style="max-height: 280px" />
+            <div v-else class="text-center space-y-8 py-8">
+                <img
+                    src="//via.placeholder.com/512x512"
+                    alt="Заказ оформлен"
+                    class="mx-auto max-w-[240px]"
+                />
+                <h5 class="text-2xl font-bold text-gray-800">
+                    Заказ успешно оформлен! Ожидайте звонка менеджера.
+                </h5>
             </div>
-            <div class="col text-center">
-              <h5 class="fw-semibold">Твоя корзина пуста</h5>
-              <p>Чтобы оформить заказ - необходимо добавить товары в корзину</p>
-            </div>
-          </div>
-        </div>
-      </transition>
+        </transition>
     </div>
-    <div v-else>
-      <div class="row">
-        <div class="col">
-          <div class="text-center">
-            <img src="//via.placeholder.com/512x512" alt="" class="img-flluid mb-3" style="max-width: 200px" />
-            <h5>Заказ успешно оформлен! Ожидайте звонка менеджера.</h5>
-          </div>
-        </div>
-      </div>
-    </div>
-  </transition>
 </template>
 
-<style lang="sass">
-.btn-group
-  button:first-child
-    border-top-left-radius: 16px !important
-    border-bottom-left-radius: 16px !important
-  button:last-child
-    border-top-right-radius: 16px !important
-    border-bottom-right-radius: 16px !important
-.btn-qty
-  background: lighten($color-main, 10%)
-  border: unset
-  color: #fff
-  padding: 0 16px !important
-.btn-group
-  border-radius: 16px !important
-  overflow: hidden
-  width: fit-content
-  .btn
-    background: lighten($color-main, 40%)
-    border: unset
-    color: #fff
-    padding: 8 16px !important
-    &.active
-      background: $color-main
-      color: #fff
-.btn-main
-  background: $color-main
-  border: unset
-  color: #fff
-.cart-content
-  height: 100%
-  display: flex
-  flex-direction: column
+<style lang="sass" scoped>
+.cart-list
+    li
+        transform-origin: center
+        will-change: transform, opacity
 
-  .cart-list
-    flex: 1
-    overflow-y: auto
-    padding: 1rem
-    margin-bottom: 0
+.v-enter-active,
+.v-leave-active
+    transition: opacity 0.3s ease
 
-  .cart-footer
-    background: #fff
-    padding: 1rem
-    border-top: 1px solid #dee2e6
-    
-  .btn
-    margin-bottom: 1rem
-.move
-  position: absolute
-
-.cart-content
-  position: relative
-  max-height: 100%
-  display: flex
-  flex-direction: column
-
-  .cart-list
-    flex: 1
-    overflow-y: auto
-    padding: 1rem
-    margin-bottom: 0
-
-  .cart-footer
-    position: sticky
-    bottom: 0
-    background: #fff
-    padding: 1rem
-    border-top: 1px solid #dee2e6
-    
-  .btn
-    margin-bottom: 1rem
+.v-enter-from,
+.v-leave-to
+    opacity: 0
 </style>
