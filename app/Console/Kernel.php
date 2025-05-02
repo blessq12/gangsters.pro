@@ -32,10 +32,6 @@ class Kernel extends ConsoleKernel
                 '👥 Социальные: ' . $statistic->sources['social'],
             ], 'analytics');
         })->everyThreeHours();
-
-        $schedule->call(function () {
-            Log::info('Hello, world!');
-        })->everyFiveSeconds();
     }
 
     /**
