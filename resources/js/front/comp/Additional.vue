@@ -114,7 +114,6 @@ export default {
                 id="additional-content"
                 class="w-full max-w-5xl bg-transparent rounded-2xl shadow-2xl overflow-hidden relative h-[90vh] md:h-[80vh]"
             >
-                <!-- Слайдер изображений как фон -->
                 <div class="absolute inset-0 z-0">
                     <div
                         v-if="
@@ -182,9 +181,8 @@ export default {
                     </div>
 
                     <div
-                        class="p-4 md:p-6 bg-black/20 backdrop-blur-xs space-y-4"
+                        class="p-4 md:p-6 md:bg-black/20 md:backdrop-blur-xs space-y-4"
                     >
-                        <!-- Навигация слайдера -->
                         <div
                             v-if="
                                 product &&
@@ -225,12 +223,11 @@ export default {
                             </button>
                         </div>
 
-                        <!-- Основная информация -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="space-y-4">
                                 <!-- Состав -->
                                 <div
-                                    class="bg-white/10 p-4 rounded-xl backdrop-blur-sm"
+                                    class="bg-black/30 md:bg-white/10 p-4 rounded-xl backdrop-blur-sm"
                                 >
                                     <h5
                                         class="text-base md:text-lg font-bold mb-2 text-white"
@@ -246,7 +243,7 @@ export default {
 
                                 <!-- Цена и вес -->
                                 <div
-                                    class="flex flex-wrap gap-4 text-base md:text-lg bg-white/10 p-4 rounded-xl backdrop-blur-sm"
+                                    class="flex flex-wrap gap-4 text-base md:text-lg bg-black/30 md:bg-white/10 p-4 rounded-xl backdrop-blur-sm"
                                 >
                                     <div>
                                         <span class="font-bold text-white"
@@ -271,7 +268,7 @@ export default {
                             <div class="space-y-4">
                                 <!-- Дополнительная информация -->
                                 <div
-                                    class="bg-white/10 p-4 rounded-xl backdrop-blur-sm"
+                                    class="bg-black/30 md:bg-white/10 p-4 rounded-xl backdrop-blur-sm"
                                 >
                                     <div class="flex flex-wrap gap-2">
                                         <span
@@ -331,7 +328,7 @@ export default {
 
                                         <div
                                             v-else
-                                            class="flex-1 flex items-center bg-white/10 rounded-xl overflow-hidden shadow-lg backdrop-blur-sm"
+                                            class="flex-1 flex items-center bg-black/30 md:bg-white/10 rounded-xl overflow-hidden shadow-lg backdrop-blur-sm"
                                         >
                                             <button
                                                 class="px-4 py-3 hover:bg-white/20 transition-colors text-xl text-white font-bold"
@@ -370,7 +367,7 @@ export default {
                                     <button
                                         class="p-3 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg backdrop-blur-sm"
                                         :class="{
-                                            'bg-white/10 text-red-400 hover:bg-white/20':
+                                            'bg-black/30 md:bg-white/10 text-red-400 hover:bg-white/20':
                                                 !localStore.checkExist(
                                                     'fav',
                                                     product
