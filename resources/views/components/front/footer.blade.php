@@ -139,11 +139,11 @@
                 <div class="flex flex-wrap items-center gap-x-2 gap-y-2">
                     <p class="flex items-center space-x-2">
                         <i class="mdi mdi-identifier text-xs text-blue-400"></i>
-                        <span>ИНН: 7017000000</span>
+                        <span>ИНН: {{ $company->legals->inn }}</span>
                     </p>
                     <p class="flex items-center space-x-2">
                         <i class="mdi mdi-card-account-details-outline text-xs text-blue-400"></i>
-                        <span>ОГРН: 1177031000000</span>
+                        <span>ОГРН: {{ $company->legals->ogrn }}</span>
                     </p>
                 </div>
                 <div class="flex flex-wrap items-center gap-4">

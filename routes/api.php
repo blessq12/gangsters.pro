@@ -31,7 +31,6 @@ Route::controller(ApiClientAuthController::class)->prefix('auth')->group(functio
     Route::post('/register', 'clientRegister');
     Route::post('forgot-password', 'resetPassword');
     Route::post('/change-password', 'changePassword');
-    // авторизованные маршруты
     Route::get('/get-user', 'getUser');
     Route::get('/get-user-data', 'getUserData');
     Route::patch('/update-user', 'updateUser');
@@ -56,13 +55,6 @@ Route::controller(SessionIdentifierController::class)->group(function () {
     Route::post('/session-identifiers/public', 'createPublicSession');
     Route::post('/session-identifiers/assign-user', 'assignUserId');
     Route::post('/session-identifiers/update-user-id', 'updateUserId')->middleware('auth:sanctum');
-});
-
-
-Route::controller(NotificationController::class)->group(function () {
-    Route::get('/notifications', 'index');
-    Route::patch('/notifications/{notification}/read', 'markAsRead');
-    Route::post('/notifications/broadcast', 'createForAllUsers');
 });
 
 Route::controller(Raw::class)->group(function () {

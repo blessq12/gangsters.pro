@@ -29,16 +29,17 @@ class ClientController extends AdminController
 
         $grid->column('id', __('ID'));
         $grid->column('name', __('Имя'))->editable();
-        $grid->column('email', __('Email адрес'))->editable();
-        $grid->column('tel', __('Номер телефона'))->editable();
-        $grid->column('coins', __('Койны'))->editable();
+        $grid->column('email', __('Email адрес'));
+        $grid->column('tel', __('Номер телефона'));
+        $grid->column('coins', __('Койны'))->sortable();
         $grid->column('created_at', __('Создан'))->display(function ($ts) {
             return Carbon::parse($ts)->format('Y/m/d H:i');
         });
 
         $grid->filter(function ($filter) {
-            $filter->like('name', __('Name'));
-            $filter->equal('tel', __('Tel'));
+            $filter->like('name', __('Имя'));
+            $filter->like('email', __('Email адрес'));
+            $filter->like('tel', __('Номер телефона'));
         });
 
         return $grid;

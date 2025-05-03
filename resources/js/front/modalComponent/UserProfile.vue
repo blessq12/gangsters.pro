@@ -171,7 +171,7 @@ export default {
                         :key="name"
                         :class="`px-4 py-2 text-sm font-medium rounded-lg mr-2 whitespace-nowrap ${
                             activeTab === name
-                                ? 'bg-primary-600 text-white'
+                                ? 'bg-gray-600 text-white'
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                         } ${
                             name === 'addresses'
@@ -356,7 +356,41 @@ export default {
                         </div>
                     </div>
                 </div>
-
+                <div
+                    v-if="activeTab === 'orders'"
+                    class="bg-white rounded-lg border border-gray-200"
+                >
+                    <div class="p-4">
+                        <div class="flex items-center justify-between mb-4">
+                            <h5 class="text-lg font-semibold">Мои заказы</h5>
+                            <button
+                                class="text-sm text-gray-600 p-2 rounded-lg bg-blue-100 hover:text-gray-900 flex items-center justify-center hover:bg-blue-200 cursor-pointer"
+                                @click=""
+                            >
+                                <i class="mdi mdi-refresh mr-1"></i>
+                            </button>
+                        </div>
+                        <div class="space-y-4">
+                            <div v-if="orders.length == 0">
+                                <p class="text-gray-600">
+                                    У вас пока нет заказов
+                                </p>
+                            </div>
+                            <div
+                                v-else
+                                v-for="order in orders"
+                                :key="order.id"
+                                class="bg-gray-100 p-4 rounded-lg"
+                            >
+                                <div class="flex items-center justify-between">
+                                    <p class="text-gray-600">
+                                        Заказ №{{ order.id }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div
                     v-if="userStore.userData.dob == null"
                     class="bg-gray-50 rounded-lg p-4"

@@ -174,26 +174,15 @@ class ApiClientAuthController extends Controller
     public function getUser()
     {
         $user = auth('sanctum')->user();
+
         if (!$user) {
             return response()->json(['error' => 'User not authenticated'], 401);
-        }
-
-        $identifier = SessionIdentifier::where('user_id', $user->id)->first();
-
-        if (!$identifier) {
-            $tempIdentifier = Str::uuid()->toString();
-            SessionIdentifier::create([
-                'user_id' => $user->id,
-                'session_id' => $tempIdentifier,
-            ]);
-            $identifier = SessionIdentifier::where('user_id', $user->id)->first();
         }
 
         $user->dob = Carbon::parse($user->dob)->format('d-m-Y');
 
         return response()->json([
             'user' => $user,
-            'notificationId' => $identifier->session_id,
         ]);
     }
 
