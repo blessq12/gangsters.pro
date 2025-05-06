@@ -36,16 +36,11 @@ Route::controller(ApiClientAuthController::class)->prefix('auth')->group(functio
     Route::patch('/update-user', 'updateUser');
 });
 
-// Order routes
 Route::controller(OrderController::class)->prefix('orders')->group(function () {
-
-
     Route::get('/get-my-orders', 'getMyOrders');
     Route::get('/get-my-coins', 'getMyCoins');
-
     Route::post('create', 'createOrder');
     Route::post('update', 'updateOrder');
-
     Route::post('check-avalibility', 'checkAvalibility');
 });
 
@@ -65,7 +60,29 @@ Route::controller(Raw::class)->group(function () {
 
 Route::controller(TelegramBotController::class)->prefix('telegram')->group(function () {
     Route::get('/get-company', 'getCompany');
-    // Продуктовка
     Route::get('/get-product-categories', 'getProductCategories');
     Route::get('/get-products', 'getProducts');
 });
+
+Route::controller(\App\Http\Controllers\Api\YandexFoodController::class)
+    ->prefix('yandex-food')
+    ->middleware('setJson')
+    ->group(function () {
+        // Auth
+        Route::post('/security/oauth/token', 'login');
+
+        // Menu
+        Route::get('/menu/{id}/composition', 'getMenuComposition');
+        Route::get('/menu/{id}/availability', 'getMenuAvailability');
+        Route::get('/menu/{id}/promos', 'getMenuPromos');
+
+        // Orders
+        Route::post('/order', 'createOrder');
+        Route::get('/order/{id}', 'getOrderById');
+        Route::get('/order/{id}/status', 'getOrderStatus');
+        Route::put('/order/{id}/', 'updateOrder');
+        Route::delete('/order/{id}/', 'deleteOrder');
+
+        //RestaurantList
+        Route::get('/restaurants', 'getRestaurants');
+    });
