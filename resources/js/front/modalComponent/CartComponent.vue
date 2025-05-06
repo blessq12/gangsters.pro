@@ -57,24 +57,24 @@ export default {
         createSchema() {
             return object({
                 name: string()
-                    .required("Обязательно")
+                    .required("Имя обязательно")
                     .min(3, "Не менее 3 символов")
                     .max(255, "Не более 255 символов"),
                 tel: string()
-                    .required("Обязательно")
+                    .required("Телефон обязателен")
                     .min(18, "Некорректный номер")
                     .max(18, "Некорректный номер"),
                 street: string()
-                    .required("Обязательно")
+                    .required("Улица обязательна")
                     .min(3, "Не менее 3 символов")
                     .max(255, "Не более 255 символов"),
                 house: string()
-                    .required("Обязательно")
+                    .required("Дом обязателен")
                     .max(255, "Не более 255 символов"),
                 building: string().nullable(),
                 staircase: string().nullable(),
                 floor: string().nullable(),
-                apartment: string().required("Обязательно"),
+                apartment: string().required("Квартира обязательна"),
             });
         },
         createFormData() {
@@ -126,6 +126,7 @@ export default {
                 .catch((err) => {
                     this.validatorBag = {};
                     err.inner.forEach((e) => {
+                        this.toast.error("Заполните необходимые поля");
                         this.validatorBag[e.path] = e.message;
                     });
                     this.updateInputs();
@@ -156,14 +157,20 @@ export default {
             let inputs = document.querySelectorAll(".form-control");
             inputs.forEach((input) => {
                 if (this.validatorBag[input.name]) {
-                    input.classList.add("is-invalid");
+                    input.classList.add("border-red-500");
                 } else {
-                    input.classList.remove("is-invalid");
+                    input.classList.remove("border-red-500");
                 }
             });
         },
     },
     watch: {
+        validatorBag: {
+            handler(val) {
+                console.log(val);
+            },
+            deep: true,
+        },
         orderCreated(val) {
             if (val) {
                 this.localStore.clearStore("cart");

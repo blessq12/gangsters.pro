@@ -18,6 +18,7 @@ export default {
             required: true,
         },
     },
+    expose: [],
 };
 </script>
 
@@ -39,7 +40,7 @@ export default {
                         type="text"
                         name="name"
                         id="name"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors form-control"
                         v-model="formData.name"
                         placeholder="Введите ваше имя"
                     />
@@ -54,7 +55,7 @@ export default {
                         type="text"
                         name="tel"
                         id="tel"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors form-control"
                         v-maska
                         data-maska="+7 (###) ###-##-##"
                         v-model="formData.tel"
@@ -80,7 +81,7 @@ export default {
                         type="text"
                         name="street"
                         id="street"
-                        class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors form-control"
                         v-model="formData.street"
                         placeholder="Введите название улицы"
                     />
@@ -97,7 +98,7 @@ export default {
                             type="text"
                             name="house"
                             id="house"
-                            class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                            class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors form-control"
                             v-model="formData.house"
                             placeholder="№"
                         />
@@ -112,7 +113,7 @@ export default {
                             type="text"
                             name="building"
                             id="building"
-                            class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                            class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors form-control"
                             v-model="formData.building"
                             placeholder="Корпус"
                         />
@@ -127,7 +128,7 @@ export default {
                             type="text"
                             name="apartment"
                             id="apartment"
-                            class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                            class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors form-control"
                             v-model="formData.apartment"
                             placeholder="№"
                         />
@@ -142,7 +143,7 @@ export default {
                             type="text"
                             name="staircase"
                             id="staircase"
-                            class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                            class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors form-control"
                             v-model="formData.staircase"
                             v-maska
                             data-maska="#####"
@@ -159,7 +160,7 @@ export default {
                             type="text"
                             name="floor"
                             id="floor"
-                            class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                            class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors form-control"
                             v-model="formData.floor"
                             v-maska
                             data-maska="#####"
@@ -212,7 +213,7 @@ export default {
                 name="comment"
                 id="comment"
                 rows="3"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors form-control"
                 v-model="formData.comment"
                 placeholder="Дополнительные пожелания к заказу"
             ></textarea>

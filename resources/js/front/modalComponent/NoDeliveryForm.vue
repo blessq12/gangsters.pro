@@ -34,7 +34,7 @@ export default {
                     type="text"
                     name="name"
                     id="name"
-                    class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 form-control"
                     v-model="noDelForm.name"
                 />
             </div>
@@ -47,7 +47,7 @@ export default {
                     name="tel"
                     id="tel"
                     placeholder="+7 (___) ___-__-__"
-                    class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 form-control"
                     v-model="noDelForm.tel"
                     v-maska
                     data-maska="+7 (###) ###-##-##"
@@ -64,7 +64,7 @@ export default {
             <div class="flex items-center space-x-2">
                 <button
                     type="button"
-                    class="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50 disabled:bg-gray-400 transition duration-200"
+                    class="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50 disabled:bg-gray-400 transition duration-200 form-control"
                     @click="noDelForm.personQty--"
                     :disabled="noDelForm.personQty < 2"
                 >
@@ -81,7 +81,7 @@ export default {
                 />
                 <button
                     type="button"
-                    class="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition duration-200"
+                    class="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition duration-200 form-control"
                     @click="noDelForm.personQty++"
                 >
                     +
@@ -96,7 +96,7 @@ export default {
             <textarea
                 name="comment"
                 id="comment"
-                class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 min-h-[100px]"
+                class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 min-h-[100px] form-control"
                 v-model="noDelForm.comment"
             ></textarea>
         </div>
