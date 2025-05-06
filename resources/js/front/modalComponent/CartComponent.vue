@@ -125,8 +125,8 @@ export default {
                 })
                 .catch((err) => {
                     this.validatorBag = {};
+                    this.toast.error("Заполните необходимые поля");
                     err.inner.forEach((e) => {
-                        this.toast.error("Заполните необходимые поля");
                         this.validatorBag[e.path] = e.message;
                     });
                     this.updateInputs();

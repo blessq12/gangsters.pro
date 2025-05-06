@@ -172,7 +172,7 @@ export default {
                 class="overflow-x-auto pb-4 -mx-4 sm:mx-0 sm:overflow-x-visible"
             >
                 <div
-                    class="grid grid-flow-col auto-cols-[240px] xs:auto-cols-[240px] sm:grid-flow-row sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 px-4"
+                    class="grid grid-flow-col auto-cols-[240px] xs:auto-cols-[240px] sm:grid-flow-row sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 px-4 md:px-0"
                 >
                     <ProductCard
                         v-for="product in category.products"
