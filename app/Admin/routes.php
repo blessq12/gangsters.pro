@@ -13,6 +13,8 @@ Route::group([
 
     $router->get('/', 'HomeController@index')->name('home');
 
+    $router->get('/catalog', 'CatalogController@index');
+
     $router->resource('settings', SettingController::class);
     $router->resource('banners', BannerController::class);
     $router->resource('companies', CompanyController::class);

@@ -75,4 +75,12 @@ class MainController extends Controller
 
         return redirect()->route('main.index')->with('error', 'Ссылка для сброса пароля недействительна');
     }
+
+    public function attachCategoriesToProducts()
+    {
+        $products = \App\Models\Product::all();
+        foreach ($products as $product) {
+            $product->categories()->attach($product->product_category_id);
+        }
+    }
 }

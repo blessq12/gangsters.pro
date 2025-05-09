@@ -86,3 +86,49 @@ Route::controller(\App\Http\Controllers\Api\YandexFoodController::class)
         //RestaurantList
         Route::get('/restaurants', 'getRestaurants');
     });
+
+Route::post('/update-sort', function (Request $request) {
+
+    $type = $request->type;
+    $items = $request->items;
+    $categoryId = $request->category_id;
+
+    if ($type === 'category') {
+        foreach ($items as $item) {
+            \App\Models\ProductCategory::where('id', $item['id'])->update(['order' => $item['order']]);
+        }
+    } elseif ($type === 'pivot') {
+        foreach ($items as $item) {
+            \Illuminate\Support\Facades\DB::table('category_product')
+                ->where('category_id', $categoryId)
+                ->where('product_id', $item['id'])
+                ->update(['order' => $item['order']]);
+        }
+    }
+
+    return response()->json(['message' => 'Порядок сохранён']);
+});
+
+Route::post('/update-category-order', function (Request $request) {
+    $order = $request->input('order');
+
+    foreach ($order as $item) {
+        \App\Models\ProductCategory::where('id', $item['id'])->update(['order' => $item['order']]);
+    }
+
+    return response()->json(['success' => true]);
+});
+
+Route::post('/update-product-order', function (Request $request) {
+    $order = $request->input('order');
+    $categoryId = $request->input('category_id');
+
+    foreach ($order as $item) {
+        \Illuminate\Support\Facades\DB::table('category_product')
+            ->where('product_id', $item['id'])
+            ->where('category_id', $categoryId)
+            ->update(['order' => $item['order']]);
+    }
+
+    return response()->json(['success' => true]);
+});

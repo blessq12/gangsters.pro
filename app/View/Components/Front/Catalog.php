@@ -28,8 +28,9 @@ class Catalog extends Component
 
     public function getProducts()
     {
-        $categories = ProductCategory::where('visible', true)->has('products')->get();
+        $categories = ProductCategory::where('visible', true)->has('products')->orderBy('order')->get();
         $categories->each(function ($category) {
+            $category->products = $category->products()->orderBy('category_product.order')->get();
             $category->products->each(function ($product) {
                 $product->thumbnails = $product->thumbs ? $product->thumbs : null;
                 $product->images = $product->images ? $product->images : null;

@@ -1,7 +1,3 @@
 <section>
-    
-        <catalog
-            :goods='@json($goods)'
-        ></catalog>
-    
+    <catalog :goods='@json($goods)'></catalog>
 </section>

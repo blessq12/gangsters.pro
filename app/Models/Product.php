@@ -23,6 +23,15 @@ class Product extends Model
         'sku'
     ];
 
+    public static function boot()
+    {
+        parent::boot();
+        static::created(function ($product) {
+            $product->order = Product::max('order') + 1;
+            $product->save();
+        });
+    }
+
     public function skuOptions(): SkuOptions
     {
         return SkuOptions::make()
@@ -65,5 +74,11 @@ class Product extends Model
     public function getImagesAttribute()
     {
         return $this->images();
+    }
+
+    public function categories()
+    {
+        return $this->belongsToMany(ProductCategory::class, 'category_product', 'product_id', 'category_id')
+            ->withPivot('order');
     }
 }

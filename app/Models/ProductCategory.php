@@ -15,10 +15,9 @@ class ProductCategory extends Model
 
     public function products()
     {
-        return $this->hasMany(Product::class)->where([
-            ['visible', true],
-            ['price', '!=', null],
-            ['weight', '!=', null]
-        ]);
+        return $this->belongsToMany(Product::class, 'category_product', 'category_id', 'product_id')
+            ->where('visible', true)->where('price', '!=', null)
+            ->where('weight', '!=', null)
+            ->withPivot('order');
     }
 }
