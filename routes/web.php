@@ -23,4 +23,5 @@ Route::controller(MainController::class)->middleware([
     Route::get('/privacy', 'privacy')->name('privacy');
     Route::get('/purchase-and-delivery', 'purchaseAndDelivery')->name('purchaseAndDelivery');
     Route::get('/reset-password', 'resetPassword')->name('resetPassword');
+    Route::get('/attach-categories-to-products', 'attachCategoriesToProducts');
 });

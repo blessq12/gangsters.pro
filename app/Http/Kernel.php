@@ -15,7 +15,7 @@ class Kernel extends HttpKernel
      */
     protected $middleware = [
         // \App\Http\Middleware\TrustHosts::class,
-        \App\Http\Middleware\SetResponseJson::class,
+
         \App\Http\Middleware\CorsMiddleware::class,
         \App\Http\Middleware\TrustProxies::class,
         \Illuminate\Http\Middleware\HandleCors::class,
@@ -56,8 +56,8 @@ class Kernel extends HttpKernel
      */
     protected $middlewareAliases = [
         'cors'                  => \App\Http\Middleware\CorsMiddleware::class,
-        'setJson'               => \App\Http\Middleware\SetResponseJson::class,
 
+        'yandexAuth'            => \App\Http\Middleware\YandexAuth::class,
         'auth'                  => \App\Http\Middleware\Authenticate::class,
         'auth.basic'            => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
         'auth.session'          => \Illuminate\Session\Middleware\AuthenticateSession::class,

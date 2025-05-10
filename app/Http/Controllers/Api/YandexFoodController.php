@@ -16,14 +16,27 @@ class YandexFoodController extends Controller
         YandexFoodOrderService $orderService,
         YandexFoodMenuService $menuService
     ) {
-        $this->middleware('setJson');
         $this->orderService = $orderService;
         $this->menuService = $menuService;
+        $this->middleware('yandexAuth')->except('login');
     }
 
     public function login(Request $request)
     {
-        return 'login';
+        $clientId = $request->input('client_id');
+        $clientSecret = $request->input('client_secret');
+        if (!$clientId || !$clientSecret) {
+            return response()->json([
+                "code" => 100,
+                "description" => "Client ID and Client Secret are required"
+            ], 400);
+        }
+
+        $token = $this->orderService->getToken($clientId, $clientSecret);
+
+        return response()->json([
+            "access_token" => $token
+        ], 200);
     }
 
     public function getMenu(string $id)
@@ -33,46 +46,55 @@ class YandexFoodController extends Controller
 
     public function getMenuComposition(string $id)
     {
-        // Логика для получения состава меню
+        return $this->menuService->getMenuComposition($id);
     }
 
     public function getMenuAvailability(string $id)
     {
-        // Логика для получения доступности меню
+        return $this->menuService->getMenuAvailability($id);
     }
 
     public function getMenuPromos(string $id)
     {
-        // Логика для получения акций меню
+        return $this->menuService->getMenuPromos($id);
     }
 
     public function createOrder(Request $request)
     {
-        // Логика для создания заказа
+        return $this->orderService->createOrder($request->all());
     }
 
     public function getOrderById(string $id)
     {
-        // Логика для получения заказа по ID
+        return $this->orderService->getOrderById($id);
     }
 
     public function getOrderStatus(string $id)
     {
-        // Логика для получения статуса заказа
+        return $this->orderService->getOrderStatus($id);
     }
 
     public function updateOrder(Request $request, string $id)
     {
-        // Логика для обновления заказа
+        return $this->orderService->updateOrder($request, $id);
     }
 
     public function deleteOrder(string $id)
     {
-        // Логика для удаления заказа
+        return $this->orderService->deleteOrder($id);
     }
 
     public function getRestaurants()
     {
-        // Логика для получения списка ресторанов
+        return response()->json([
+            "places" => [
+                [
+                    "id" => "1",
+                    "title" => \App\Models\Company::first()->name,
+                    "address" => \App\Models\Company::first()->city . ", " . \App\Models\Company::first()->street . ", " . \App\Models\Company::first()->house
+                ]
+            ]
+
+        ], 200);
     }
 }
