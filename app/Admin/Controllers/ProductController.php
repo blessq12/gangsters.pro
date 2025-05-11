@@ -32,39 +32,31 @@ class ProductController extends AdminController
         $grid = new Grid(new Product());
 
         $grid->filter(function (Filter $filter) {
-            $filter->expand();
-            $filter->column(1 / 2, function ($filter) {
-                $filter->like('name', 'Название');
-            });
-            $filter->column(1 / 2, function ($filter) {
-                $filter->equal('product_category_id', 'Категория')->select(ProductCategory::all()->pluck('name', 'id'));
-            });
+            $filter->like('name', 'Название');
+            $filter->equal('price', 'Цена');
+            $filter->like('sku', 'Артикул');
+            $filter->like('weight', 'Вес');
         });
 
-        // $grid->column('id', __('Id'))->sortable();
-
+        $grid->column('id', __('Id'))->sortable();
         $grid->visible('Доступность')->switch([
             'on' => ['text' => 'Да'],
             'off' => ['text' => 'Нет'],
         ]);
-
-        $grid->column('product_category_id', __('Категория'))->display(function ($category_id) {
-            return ProductCategory::find($category_id)->name;
-        })->sortable();
-
+        $grid->column('categories', __('Категория'))->display(function () {
+            return $this->categories()->pluck('name')->implode(', ');
+        });
         $grid->column('sku', __('Артикул'))->display(function ($sku) {
             return $sku ?? 'Нет артикула';
         })->editable();
-
-
 
         $grid->imgs('Изображения')->display(function ($images) {
             return $images[0]['path'] ?? null;
         })->image(null, 50, 50);
 
-        $grid->column('name', __('Имя'))->editable();
-        $grid->column('weight', __('Вес(нетто)'))->editable();
-        $grid->column('price', __('Цена'))->editable();
+        $grid->column('name', __('Имя'))->editable()->sortable();
+        $grid->column('weight', __('Вес(нетто)'))->editable()->sortable();
+        $grid->column('price', __('Цена'))->editable()->sortable();
 
         return $grid;
     }
@@ -89,9 +81,7 @@ class ProductController extends AdminController
                 return $image->path;
             });
         })->image(null, null, 80);
-        $show->field('product_category_id', __('Категория'))->as(function ($id) {
-            return ProductCategory::find($id)->name;
-        });
+
         $show->field('name', __('Название'));
         $show->field('hit', __('Хит'))->as(function ($val) {
             return $val ? 'Да' : 'Нет';
@@ -128,12 +118,7 @@ class ProductController extends AdminController
 
         $form->switch('visible', __('Доступность'))->default(1);
         $form->text('sku', 'Артикул')->placeholder('Артикул присваивается автоматически')->readonly();
-        $form->select('product_category_id', __('Категория'))
-            ->options($this->categories())
-            ->rules('required|exists:product_categories,id', [
-                'required' => 'Категория обязательна для заполнения.',
-                'exists' => 'Выбранная категория не существует.',
-            ]);
+
         $form->multipleImage('imgs', __('Изображения'))
             ->pathColumn('path')
             ->uniqueName()
@@ -168,16 +153,5 @@ class ProductController extends AdminController
         ]);
 
         return $form;
-    }
-
-
-    private function categories()
-    {
-        $categories = ProductCategory::all();
-        $result = [];
-        foreach ($categories as $category) {
-            $result[$category->id] = $category->name;
-        }
-        return $result;
     }
 }

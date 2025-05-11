@@ -87,4 +87,7 @@ Route::controller(\App\Http\Controllers\Api\YandexFoodController::class)
 Route::controller(\App\Http\Controllers\Api\GoodsSort::class)->group(function () {
     Route::post('/update-category-order', 'updateCategoryOrder');
     Route::post('/update-product-order', 'updateProductOrder');
+    Route::get('/available-products', 'getAvailableProducts');
+    Route::post('/add-product-to-category', 'addProductToCategory');
+    Route::post('/remove-product-from-category', 'removeProductFromCategory');
 });

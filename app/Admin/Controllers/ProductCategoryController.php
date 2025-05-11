@@ -39,12 +39,7 @@ class ProductCategoryController extends AdminController
         // $grid->column('created_at', __('Создан'));
         $grid->column('product', 'Товары')
             ->display(function () {
-                return 'Раскрыть (' . $this->products()->count() . ' шт.)';
-            })
-            ->expand(function ($model) {
-                return view('components.front.productCategory', [
-                    'category' => $model
-                ]);
+                return $this->products()->count() . ' шт.';
             });
         $grid->column('updated_at', __('Обновлен'))->display(function ($timestamp) {
             return Carbon::parse($timestamp)->format('Y/m/d H:i');
