@@ -23,8 +23,9 @@ class YandexFoodController extends Controller
 
     public function login(Request $request)
     {
-        $clientId = $request->input('client_id');
-        $clientSecret = $request->input('client_secret');
+        $clientId = $request->client_id;
+        $clientSecret = $request->client_secret;
+
         if (!$clientId || !$clientSecret) {
             return response()->json([
                 "code" => 100,
@@ -32,10 +33,22 @@ class YandexFoodController extends Controller
             ], 400);
         }
 
-        $token = $this->orderService->getToken($clientId, $clientSecret);
+        if ($clientId !== env('YANDEX_CLIENT_ID') || $clientSecret !== env('YANDEX_CLIENT_SECRET')) {
+            return response()->json([
+                "code" => 100,
+                "description" => "Invalid client ID or client secret"
+            ], 400);
+        }
+
+        if (empty(env('YANDEX_CLIENT_ID')) || empty(env('YANDEX_CLIENT_SECRET'))) {
+            return response()->json([
+                "code" => 100,
+                "description" => "Client ID or Client Secret are not set in app config"
+            ], 400);
+        }
 
         return response()->json([
-            "access_token" => $token
+            "access_token" => env('YANDEX_EDA_AUTH_TOKEN')
         ], 200);
     }
 

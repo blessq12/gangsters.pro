@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Order extends Model
 {
-
+    use SoftDeletes;
     /**
      * Order statuses [1, 10, 11]
      *    1 - Новый
@@ -27,11 +28,14 @@ class Order extends Model
 
     protected $casts = [
         'created_at' => 'datetime',
+        'promos' => 'array',
     ];
     use HasFactory;
     protected $fillable = [
+        'discriminator',
         'name',
         'tel',
+        'full_address',
         'street',
         'house',
         'building',
@@ -43,7 +47,18 @@ class Order extends Model
         'user_id',
         'patType',
         'personQty',
-        'comment'
+        'comment',
+        'eatsId',
+        'restaurantId',
+        'latitude',
+        'longitude',
+        'deliveryDate',
+        'deliveryType',
+        'itemsCost',
+        'deliveryFee',
+        'change',
+        'promos',
+        'deliveryAddress'
     ];
     public function items()
     {
