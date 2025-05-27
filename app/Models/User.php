@@ -37,6 +37,8 @@ class User extends Authenticatable
         'created_at'
     ];
 
+    protected $with = ['addresses', 'orders'];
+
     /**
      * The attributes that should be cast.
      *
@@ -57,7 +59,11 @@ class User extends Authenticatable
 
     public function sessionIdentifier()
     {
-        // Предполагаем, что у пользователя может быть только один активный идентификатор сессии
         return $this->hasOne(SessionIdentifier::class, 'user_id', 'id');
+    }
+
+    public function addresses()
+    {
+        return $this->hasMany(UserAddress::class)->orderBy('created_at', 'desc');
     }
 }

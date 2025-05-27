@@ -18,6 +18,7 @@ export default {
     },
     data() {
         return {
+            addAddress: false,
             activeTab: "personal_data",
             editMode: false,
             orders: [],
@@ -55,6 +56,24 @@ export default {
                 tel: string().required(),
             }),
             errors: [],
+            newAddress: {
+                street: "",
+                house: "",
+                building: "",
+                staircase: "",
+                floor: "",
+                apartment: "",
+            },
+            newAddressErrors: [],
+            newAddressLoading: false,
+            newAddressSchema: object({
+                street: string().required(),
+                house: string().required(),
+                building: string().optional(),
+                staircase: string().optional(),
+                floor: string().optional(),
+                apartment: string().required(),
+            }),
         };
     },
     methods: {
@@ -107,6 +126,44 @@ export default {
                     });
                 });
         },
+        submitAddress() {
+            this.newAddressLoading = true;
+            this.newAddressErrors = [];
+            this.newAddressSchema
+                .validate(this.newAddress, { abortEarly: false })
+                .then((res) => {
+                    axios
+                        .post("/api/auth/add-address", this.newAddress)
+                        .then((res) => {
+                            this.addAddress = false;
+                            this.getUserData();
+                            this.userStore.loadStore();
+                            this.$toast.success("Адрес успешно добавлен");
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                            toast.error("Ошибка при добавлении адреса");
+                        });
+                    this.newAddressLoading = false;
+                })
+                .catch((err) => {
+                    this.newAddressErrors = [];
+                    err.inner.forEach((el) => {
+                        this.newAddressErrors[el.path] = el.message;
+                    });
+                    this.newAddressLoading = false;
+                })
+                .finally(() => {
+                    this.newAddressLoading = false;
+                });
+        },
+        deleteAddress(id) {
+            axios.delete(`/api/auth/delete-address/${id}`).then((res) => {
+                this.getUserData();
+                this.userStore.loadStore();
+                this.$toast.success("Адрес успешно удален");
+            });
+        },
     },
     watch: {
         activeTab(val) {
@@ -137,12 +194,28 @@ export default {
             },
             deep: true,
         },
+        newAddressErrors: {
+            handler(val) {
+                let inputs =
+                    this.$refs.newAddressForm.querySelectorAll("input");
+                inputs.forEach((input) => {
+                    if (this.newAddressErrors[input.id]) {
+                        input.classList.add("border-red-500");
+                        input.classList.remove("border-gray-300");
+                    } else {
+                        input.classList.remove("border-red-500");
+                        input.classList.add("border-gray-300");
+                    }
+                });
+            },
+            deep: true,
+        },
     },
 };
 </script>
 
 <template>
-    <div class="bg-white rounded-lg shadow">
+    <div class="bg-gray-50 rounded-lg shadow">
         <div class="p-4 border-b border-gray-200">
             <div class="flex items-center justify-between">
                 <h4 class="text-xl font-semibold">
@@ -172,14 +245,10 @@ export default {
                         :class="`px-4 py-2 text-sm font-medium rounded-lg mr-2 whitespace-nowrap ${
                             activeTab === name
                                 ? 'bg-gray-600 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        } ${
-                            name === 'addresses'
-                                ? 'opacity-50 cursor-not-allowed'
-                                : ''
-                        }`"
+                                : 'bg-gray-200 text-gray-700 hover:bg-gray-200'
+                        }
+                        `"
                         @click="activeTab = name"
-                        :disabled="name === 'addresses'"
                     >
                         <span class="flex items-center">
                             <i
@@ -388,6 +457,185 @@ export default {
                                     </p>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+                <div
+                    v-if="activeTab === 'addresses'"
+                    class="bg-white rounded-lg border border-gray-200"
+                >
+                    <div class="p-4">
+                        <div class="mb-4">
+                            <div class="flex justify-between">
+                                <h5 class="text-lg font-semibold">
+                                    Мои адреса
+                                    <i
+                                        class="mdi mdi-map-marker text-gray-400 mr-2"
+                                    ></i>
+                                </h5>
+                                <button
+                                    class="text-sm text-gray-600 hover:text-gray-900 flex items-center justify-center bg-blue-100 p-2 rounded-lg"
+                                    @click="addAddress = !addAddress"
+                                    :class="`${
+                                        userStore.userData.addresses.length >= 3
+                                            ? 'bg-gray-300 cursor-not-allowed'
+                                            : 'bg-blue-100 hover:bg-blue-200 cursor-pointer'
+                                    }`"
+                                    :disabled="
+                                        userStore.userData.addresses.length >= 3
+                                    "
+                                >
+                                    <i class="mdi mdi-plus mr-1"></i>
+                                </button>
+                            </div>
+                            <p class="text-sm text-gray-600 w-full">
+                                Вы можете добавить до 3 адресов доставки.
+                            </p>
+                        </div>
+                        <div
+                            v-if="addAddress"
+                            class="bg-gray-50 p-4 rounded-lg mt-4 mb-4"
+                        >
+                            <div class="flex items-center justify-between mb-2">
+                                <h5 class="text-lg font-semibold">
+                                    Добавление адреса
+                                </h5>
+                            </div>
+                            <form
+                                @submit.prevent="submitAddress"
+                                ref="newAddressForm"
+                                class="space-y-4"
+                            >
+                                <div class="space-y-2">
+                                    <label
+                                        for="street"
+                                        class="block text-sm font-medium text-gray-700"
+                                        >Улица</label
+                                    >
+                                    <input
+                                        type="text"
+                                        id="street"
+                                        v-model="newAddress.street"
+                                        placeholder="Например, ул. Ленина"
+                                        class="block w-full px-2 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                                    />
+                                </div>
+
+                                <div class="grid grid-cols-3 gap-2">
+                                    <div class="space-y-2">
+                                        <label
+                                            for="house"
+                                            class="block text-sm font-medium text-gray-700"
+                                            >Дом</label
+                                        >
+                                        <input
+                                            type="text"
+                                            id="house"
+                                            v-model="newAddress.house"
+                                            placeholder="№"
+                                            class="block w-full px-2 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                                        />
+                                    </div>
+                                    <div class="space-y-2">
+                                        <label
+                                            for="building"
+                                            class="block text-sm font-medium text-gray-700"
+                                            >Строение</label
+                                        >
+                                        <input
+                                            type="text"
+                                            id="building"
+                                            v-model="newAddress.building"
+                                            placeholder="Корпус"
+                                            class="block w-full px-2 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                                        />
+                                    </div>
+                                    <div class="space-y-2">
+                                        <label
+                                            for="staircase"
+                                            class="block text-sm font-medium text-gray-700"
+                                            >Подьезд</label
+                                        >
+                                        <input
+                                            type="text"
+                                            id="staircase"
+                                            v-model="newAddress.staircase"
+                                            placeholder="№"
+                                            class="block w-full px-2 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                                        />
+                                    </div>
+                                    <div class="space-y-2">
+                                        <label
+                                            for="floor"
+                                            class="block text-sm font-medium text-gray-700"
+                                            >Этаж</label
+                                        >
+                                        <input
+                                            type="text"
+                                            id="floor"
+                                            v-model="newAddress.floor"
+                                            placeholder="№"
+                                            class="block w-full px-2 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                                        />
+                                    </div>
+                                    <div class="space-y-2">
+                                        <label
+                                            for="apartment"
+                                            class="block text-sm font-medium text-gray-700"
+                                            >Квартира</label
+                                        >
+                                        <input
+                                            type="text"
+                                            id="apartment"
+                                            v-model="newAddress.apartment"
+                                            placeholder="№"
+                                            class="block w-full px-2 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                                        />
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-4 pt-4">
+                                    <button
+                                        type="submit"
+                                        class="bg-green-500 text-white px-4 py-2 rounded-lg cursor-pointer"
+                                    >
+                                        <i
+                                            class="mdi mdi-content-save mr-2"
+                                        ></i>
+                                        Сохранить
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="space-y-4">
+                            <ul
+                                class="space-y-4"
+                                v-if="userStore.userData.addresses.length > 0"
+                            >
+                                <li
+                                    v-for="address in userStore.userData
+                                        .addresses"
+                                    :key="address.id"
+                                    class="bg-gray-100 p-4 rounded-lg cursor-pointer hover:bg-gray-200 transition-all duration-300 flex items-center justify-between"
+                                >
+                                    <p class="text-gray-600">
+                                        {{ address.street }}
+                                        д. {{ address.house }} стр.
+                                        {{ address.building }} п.
+                                        {{ address.staircase }} эт.
+                                        {{ address.floor }} кв.
+                                        {{ address.apartment }}
+                                    </p>
+                                    <button
+                                        class="text-gray-600 hover:text-gray-900"
+                                        @click="deleteAddress(address.id)"
+                                    >
+                                        <i class="mdi mdi-delete"></i>
+                                    </button>
+                                </li>
+                            </ul>
+                            <p v-else class="text-gray-600">
+                                У вас пока нет адресов доставки
+                            </p>
                         </div>
                     </div>
                 </div>

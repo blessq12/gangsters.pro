@@ -1,17 +1,11 @@
 <?php
 
 use App\Http\Controllers\ApiClientAuthController;
-use App\Http\Controllers\AuthController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\SessionIdentifierController;
-use App\Http\Controllers\NotificationController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use Carbon\Carbon;
 use App\Http\Controllers\Api\RawController as Raw;
 use App\Http\Controllers\TelegramBotController;
-use App\Models\SessionIdentifier;
-use Illuminate\Support\Str;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,6 +28,8 @@ Route::controller(ApiClientAuthController::class)->prefix('auth')->group(functio
     Route::get('/get-user', 'getUser');
     Route::get('/get-user-data', 'getUserData');
     Route::patch('/update-user', 'updateUser');
+    Route::post('/add-address', 'addAddress');
+    Route::delete('/delete-address/{id}', 'deleteAddress');
 });
 
 Route::controller(OrderController::class)->prefix('orders')->group(function () {

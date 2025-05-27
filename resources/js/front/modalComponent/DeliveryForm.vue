@@ -24,7 +24,6 @@ export default {
 
 <template>
     <form ref="delivery" class="bg-white rounded-lg shadow-md p-4 space-y-6">
-        <!-- Персональные данные -->
         <div class="space-y-4">
             <h3 class="text-lg font-semibold text-gray-800 mb-4">
                 Личные данные
@@ -65,7 +64,6 @@ export default {
             </div>
         </div>
 
-        <!-- Адрес доставки -->
         <div class="space-y-4">
             <h3 class="text-lg font-semibold text-gray-800 mb-4">
                 Адрес доставки
@@ -169,6 +167,29 @@ export default {
                     </div>
                 </div>
                 <div>
+                    <div class="bg-green-500/10 px-3 py-2 rounded-lg">
+                        <div class="flex items-center space-x-2">
+                            <input
+                                type="checkbox"
+                                name="saveAddress"
+                                id="saveAddress"
+                                class="mt-1 px-4 py-2 w-5 h-5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors form-control"
+                                v-model="formData.saveAddress"
+                                :checked="formData.saveAddress"
+                            />
+                            <label
+                                for="saveAddress"
+                                class="block text-sm font-medium text-gray-700"
+                                >Сохранить адрес</label
+                            >
+                        </div>
+
+                        <p class="text-xs mt-1">
+                            Сохранить адрес в профиле для следующих заказов
+                        </p>
+                    </div>
+                </div>
+                <div>
                     <label
                         for="personQty"
                         class="block text-sm font-medium text-gray-700"
@@ -204,7 +225,6 @@ export default {
             </div>
         </div>
 
-        <!-- Комментарий -->
         <div class="space-y-2">
             <label for="comment" class="block text-sm font-medium text-gray-700"
                 >Комментарий к заказу</label

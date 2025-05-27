@@ -137,7 +137,7 @@ export default {
 </script>
 
 <template>
-    <div class="p-4 bg-gray-50">
+    <div class="">
         <div v-if="!userStore.authStatus" class="space-y-6">
             <div class="grid grid-cols-2 gap-2">
                 <button

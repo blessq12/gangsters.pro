@@ -48,11 +48,9 @@ class OrderController extends Controller
     public function createOrder(Request $request)
     {
         $cart = [];
-        Log::debug("order from front: " . json_encode($request->all()));
         foreach ($request->cart as $item) {
             $cart[] = $item['sku'];
         }
-        Log::debug("cart from front:" . json_encode($cart));
 
         $order = new Order();
         $this->setOrderDetails($order, $request);
@@ -66,7 +64,6 @@ class OrderController extends Controller
         }
 
         Frontpad::createOrder($order);
-        Log::debug("order for frontpad: " . json_encode($order));
 
         return response('Заказ успешно создан', 200);
     }
@@ -85,6 +82,18 @@ class OrderController extends Controller
             $order->staircase = $request->order['staircase'];
             $order->floor = $request->order['floor'];
             $order->apartment = $request->order['apartment'];
+
+            if ($request->order['saveAddress']) {
+                $this->user->addresses()->updateOrInsert([
+                    'user_id' => $this->user->id,
+                    'street' => $request->order['street'],
+                    'house' => $request->order['house'],
+                    'building' => $request->order['building'],
+                    'staircase' => $request->order['staircase'],
+                    'floor' => $request->order['floor'],
+                    'apartment' => $request->order['apartment'],
+                ]);
+            }
         }
     }
 

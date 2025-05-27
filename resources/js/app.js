@@ -3,7 +3,7 @@ import { MaskInput, vMaska } from "maska";
 import { createPinia } from "pinia";
 import { createApp } from "vue";
 import VueLazyload from "vue-lazyload";
-import Toast from "vue-toastification";
+import { useToast } from "vue-toastification";
 import "vue-toastification/dist/index.css";
 import "./bootstrap";
 
@@ -14,8 +14,16 @@ import "./bootstrap";
  */
 
 const app = createApp({});
+const toast = useToast({
+    position: "top-right",
+    timeout: 5000,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    draggablePercent: 0.6,
+    showCloseButtonOnHover: false,
+});
 
-const options = {};
 app.use(VueLazyload, {
     lazyComponent: true,
     preLoad: 1.5,
@@ -28,17 +36,8 @@ app.use(VueLazyload, {
         threshold: 0.1,
     },
 });
-app.use(Toast, {
-    position: "top-right",
-    timeout: 5000,
-    closeOnClick: true,
-    pauseOnHover: true,
-    draggable: true,
-    draggablePercent: 0.6,
-    showCloseButtonOnHover: false,
-    hideProgressBar: true,
-    closeButton: "button",
-});
+app.config.globalProperties.$toast = toast;
+
 app.use(createPinia());
 app.directive("maska", vMaska);
 

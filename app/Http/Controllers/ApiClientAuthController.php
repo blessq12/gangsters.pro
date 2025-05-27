@@ -9,7 +9,6 @@ use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use App\Models\SessionIdentifier;
 //
 use Illuminate\Support\Facades\Mail;
 use App\Mail\RegisterMail;
@@ -193,5 +192,21 @@ class ApiClientAuthController extends Controller
         return response()->json([
             'user' => $user,
         ]);
+    }
+
+    public function addAddress(Request $request)
+    {
+        $user = auth('sanctum')->user();
+        $user->addresses()->create(
+            $request->all()
+        );
+        return response()->json(['message' => 'Address added successfully']);
+    }
+
+    public function deleteAddress($id)
+    {
+        $user = auth('sanctum')->user();
+        $user->addresses()->where('id', $id)->delete();
+        return response()->json(['message' => 'Address deleted successfully']);
     }
 }

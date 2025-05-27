@@ -53,6 +53,22 @@ export default {
                 this.noDelForm.name = name;
                 this.noDelForm.tel = tel;
             }
+            if (this.userStore.userData.addresses.length > 0) {
+                this.formData.street =
+                    this.userStore.userData.addresses[0].street;
+                this.formData.house =
+                    this.userStore.userData.addresses[0].house;
+                this.formData.building =
+                    this.userStore.userData.addresses[0].building;
+                this.formData.staircase =
+                    this.userStore.userData.addresses[0].staircase;
+                this.formData.floor =
+                    this.userStore.userData.addresses[0].floor;
+                this.formData.apartment =
+                    this.userStore.userData.addresses[0].apartment;
+
+                this.formData.saveAddress = false;
+            }
         },
         createSchema() {
             return object({
@@ -90,6 +106,7 @@ export default {
                 personQty: 1,
                 comment: null,
                 payType: "cash",
+                saveAddress: true,
             };
         },
         createNoDelForm() {
@@ -150,6 +167,7 @@ export default {
                 .createOrder(req)
                 .then(() => {
                     this.orderCreated = true;
+                    this.userStore.loadStore();
                 })
                 .catch(console.log);
         },
