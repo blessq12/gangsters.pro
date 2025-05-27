@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Order extends Model
 {
     use SoftDeletes;
+    use HasFactory;
     /**
      * Order statuses [1, 10, 11]
      *    1 - Новый
@@ -30,7 +31,7 @@ class Order extends Model
         'created_at' => 'datetime',
         'promos' => 'array',
     ];
-    use HasFactory;
+
     protected $fillable = [
         'discriminator',
         'name',
@@ -60,6 +61,9 @@ class Order extends Model
         'promos',
         'deliveryAddress'
     ];
+
+    protected $with = ['items'];
+
     public function items()
     {
         return $this->hasMany(OrderItem::class);

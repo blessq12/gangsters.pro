@@ -51,16 +51,9 @@ class User extends Authenticatable
 
     public function orders()
     {
-        return $this->hasMany(Order::class)
-            ->select(['id', 'status', 'created_at', 'total'])
-            ->take(50)
-            ->orderBy('created_at', 'desc');
+        return $this->hasMany(Order::class);
     }
 
-    public function sessionIdentifier()
-    {
-        return $this->hasOne(SessionIdentifier::class, 'user_id', 'id');
-    }
 
     public function addresses()
     {

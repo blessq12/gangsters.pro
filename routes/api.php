@@ -87,3 +87,9 @@ Route::controller(\App\Http\Controllers\Api\GoodsSort::class)->group(function ()
     Route::post('/add-product-to-category', 'addProductToCategory');
     Route::post('/remove-product-from-category', 'removeProductFromCategory');
 });
+
+Route::get('get-user-orders', function () {
+    $user = \App\Models\User::find(619);
+    $orders = $user->orders;
+    return response()->json($orders);
+});

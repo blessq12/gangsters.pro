@@ -451,10 +451,38 @@ export default {
                                 :key="order.id"
                                 class="bg-gray-100 p-4 rounded-lg"
                             >
-                                <div class="flex items-center justify-between">
-                                    <p class="text-gray-600">
-                                        Заказ №{{ order.id }}
-                                    </p>
+                                <div
+                                    class="flex items-center justify-between relative"
+                                >
+                                    <div class="block">
+                                        <p class="text-gray-600">
+                                            Заказ №{{ order.id }}
+                                        </p>
+                                        <p class="text-gray-600">
+                                            {{
+                                                order.status == 1
+                                                    ? "Новый"
+                                                    : order.status == 10
+                                                    ? "В работе"
+                                                    : "Выполнен"
+                                            }}
+                                        </p>
+                                    </div>
+                                    <div class="block">
+                                        <p class="text-xs text-end">
+                                            Дата:
+                                            {{
+                                                new Date(order.created_at)
+                                                    .toLocaleDateString()
+                                                    .split(".")
+                                                    .reverse()
+                                                    .join(".")
+                                            }}
+                                        </p>
+                                        <p class="text-gray-600 text-end">
+                                            {{ order.total }} ₽
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
