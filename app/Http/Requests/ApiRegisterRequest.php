@@ -45,21 +45,17 @@ class ApiRegisterRequest extends FormRequest
             'name.required' => 'Поле имя обязательное',
             'name.min' => 'Поле имя минимум 3 символа',
             'name.max' => 'Поле имя максимум 255 символов',
-
             'tel.required' => 'Поле телефон обязательное',
             'tel.unique' => 'Этот номер телефона уже зарегистрирован',
             'tel.min' => 'Поле телефон должно содержать 18 символов',
             'tel.max' => 'Поле телефон должно содержать 18 символов',
-
             'email.required' => 'Поле Email обязательное',
             'email.email' => 'Email не является валидным',
             'email.unique' => 'Этот Email уже зарегистрирован',
             'email.max' => 'Поле Email максиимум 255 символов',
-
             'password.required' => 'Поле пароль обязательное',
             'password.min' => 'Поле пароль минимум 6 символов',
             'password.max' => 'Поле пароль максимум 255 символов',
-
             'password_confirmation.required' => 'Поле пароль обязательное',
             'password_confirmation.min' => 'Поле пароль минимум 6 символов',
             'password_confirmation.max' => 'Поле пароль максимум 255 символов',

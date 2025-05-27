@@ -55,22 +55,25 @@ class ApiClientAuthController extends Controller
             'token' => $token
         ]);
     }
-    public function clientRegister(ApiRegisterRequest $request)
+    public function clientRegister(Request $request)
     {
-        $validated = $request->validated();
+        if (User::where('email', $request->email)->exists()) {
+            return response(['status' => false, 'message' => 'Пользователь с такой почтой уже существует'], 400);
+        }
+        if (User::where('tel', $request->tel)->exists()) {
+            return response(['status' => false, 'message' => 'Пользователь с таким номером телефона уже существует'], 400);
+        }
 
-        $user = User::create($validated);
+        $user = User::create($request->all());
 
         if (!$user->save()) {
-
             \App\Facades\TelegramMessage::sendMessage([
                 '❌ Регистрация нового пользователя с ошибкой' . "\n",
                 '✉️ Email: ' . $user->email,
                 '🔑 Пароль: ' . $user->password,
                 '🔑 Ошибки: ' . $user->errors(),
             ], 'error');
-
-            return response(['status' => false, 'errors' => $user->errors()], 400);
+            return response(['status' => false, 'errors' => $user->errors(), 'message' => 'Не удалось зарегистрировать пользователя'], 400);
         }
 
         \App\Facades\TelegramMessage::sendMessage([

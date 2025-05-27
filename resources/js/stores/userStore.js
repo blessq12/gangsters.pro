@@ -1,7 +1,15 @@
 import axios from "axios";
 import { defineStore } from "pinia";
 import { useToast } from "vue-toastification";
-const toast = useToast();
+const toast = useToast({
+    position: "top-right",
+    timeout: 5000,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    draggablePercent: 0.6,
+    showCloseButtonOnHover: false,
+});
 
 export const userStore = defineStore("user", {
     state: () => ({
