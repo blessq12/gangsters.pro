@@ -57,8 +57,8 @@ export default {
             }
 
             if (
-                this.userStore.userData.addresses.length > 0 &&
-                this.userStore.authStatus
+                this.userStore.authStatus &&
+                this.userStore.userData.addresses.length > 0
             ) {
                 this.formData.street =
                     this.userStore.userData.addresses[0].street;

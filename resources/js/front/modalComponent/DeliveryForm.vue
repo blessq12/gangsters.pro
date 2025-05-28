@@ -1,5 +1,10 @@
 <script>
+import { mapStores } from "pinia";
+import { userStore } from "../../stores/userStore";
 export default {
+    computed: {
+        ...mapStores(userStore),
+    },
     props: {
         formData: {
             type: Object,
