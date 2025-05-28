@@ -166,7 +166,7 @@ export default {
                         />
                     </div>
                 </div>
-                <div>
+                <div v-if="userStore.authStatus">
                     <div class="bg-green-500/10 px-3 py-2 rounded-lg">
                         <div class="flex items-center space-x-2">
                             <input
