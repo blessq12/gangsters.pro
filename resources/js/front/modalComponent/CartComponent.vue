@@ -52,8 +52,14 @@ export default {
                 this.formData.tel = tel;
                 this.noDelForm.name = name;
                 this.noDelForm.tel = tel;
+            } else {
+                this.formData.saveAddress = false;
             }
-            if (this.userStore.userData.addresses.length > 0) {
+
+            if (
+                this.userStore.userData.addresses.length > 0 &&
+                this.userStore.authStatus
+            ) {
                 this.formData.street =
                     this.userStore.userData.addresses[0].street;
                 this.formData.house =
