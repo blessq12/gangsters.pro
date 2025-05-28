@@ -91,6 +91,10 @@ class ProductCategoryController extends AdminController
         $form->switch('visible', __('Доступность'))->default(false);
         $form->text('name', __('Название категории'));
 
+        $form->saving(function (Form $form) {
+            $form->model()->uri = Str::slug($form->model()->name);
+        });
+
         return $form;
     }
 }
