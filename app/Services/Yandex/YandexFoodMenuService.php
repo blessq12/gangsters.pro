@@ -52,7 +52,9 @@ class YandexFoodMenuService
                             'url' => $image,
                         ];
                     }) ?? [],
-                    'additional_descriptions' => $product->additional_descriptions ?? [],
+                    'additional_descriptions' => !empty($product->additional_descriptions)
+                        ? $product->additional_descriptions
+                        : new \stdClass(),
                 ];
             }
         }
