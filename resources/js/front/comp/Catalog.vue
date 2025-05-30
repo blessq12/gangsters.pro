@@ -24,20 +24,18 @@ export default {
             this.$nextTick(() => {
                 const element = document.querySelector(
                     `[data-category="${category}"]`
-                ); // Get the reference directly
+                );
                 if (element) {
-                    // Check if the element exists
                     const targetPosition =
-                        element.getBoundingClientRect().top + window.scrollY; // Calculate target position
+                        element.getBoundingClientRect().top + window.scrollY;
                     window.scrollTo({
-                        top: targetPosition - 100, // Adjust for any offset if needed
+                        top: targetPosition - 100,
                         behavior: "smooth",
                     });
                 }
             });
         },
         positionObserver() {
-            //
             const options = {
                 threshold: 0.1,
             };
@@ -78,7 +76,6 @@ export default {
             );
 
             const scrollAmount = categoryButton.offsetLeft;
-            // Smooth scrolling effect
             const startScrollLeft = categoryList.scrollLeft;
             const distance = scrollAmount - startScrollLeft;
             const duration = 300;
@@ -110,6 +107,7 @@ export default {
 </script>
 
 <template>
+    <Search />
     <div
         class="sticky top-0 z-50 bg-white/95 backdrop-blur-xl transition-all duration-300"
         :class="{ 'border-b border-neutral-100 shadow-sm': isScrolled }"

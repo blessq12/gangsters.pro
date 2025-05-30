@@ -18,9 +18,8 @@ use App\Http\Controllers\TelegramBotController;
 |
 */
 
-// Auth routes
-Route::controller(ApiClientAuthController::class)->prefix('auth')->group(function () {
 
+Route::controller(ApiClientAuthController::class)->prefix('auth')->group(function () {
     Route::post('/login', 'clientLogin');
     Route::post('/register', 'clientRegister');
     Route::post('forgot-password', 'resetPassword');
@@ -88,8 +87,6 @@ Route::controller(\App\Http\Controllers\Api\GoodsSort::class)->group(function ()
     Route::post('/remove-product-from-category', 'removeProductFromCategory');
 });
 
-Route::get('get-user-orders', function () {
-    $user = \App\Models\User::find(619);
-    $orders = $user->orders;
-    return response()->json($orders);
+Route::controller(\App\Http\Controllers\Api\SearchController::class)->group(function () {
+    Route::get('/goods/search', 'searchGoods');
 });
