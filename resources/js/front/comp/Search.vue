@@ -178,12 +178,20 @@ export default {
                             <div class="text-sm text-gray-500 truncate">
                                 {{ item.consist }}
                             </div>
-                            <div class="text-sm font-medium mt-1">
-                                {{ item.price }} ₽
+                            <div
+                                class="text-sm font-medium mt-1 flex items-center gap-2"
+                            >
+                                <span class="text-gray-600 text-xs">
+                                    {{ item.price }} ₽
+                                </span>
+                                <span class="text-gray-500 text-xs">
+                                    {{ item.weight }} гр
+                                </span>
                             </div>
                         </div>
                         <div
                             class="flex-1 min-w-0 flex items-center justify-end gap-2"
+                            @click.stop
                         >
                             <button
                                 v-if="!localStore.checkExist('cart', item)"
