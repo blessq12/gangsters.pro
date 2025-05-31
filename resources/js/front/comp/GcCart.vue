@@ -13,14 +13,12 @@ export default {
         window.addEventListener("scroll", this.updateScrollTop);
         this.updateScrollTop();
 
-        // Инициализация GSAP анимаций
         gsap.set(this.$refs.topButton, {
             yPercent: 100,
             opacity: 0,
             display: "none",
         });
 
-        // Создаем timeline для повторяющейся анимации корзины
         this.cartTimeline = gsap
             .timeline({ paused: true })
             .to(this.$refs.cartIcon, {
@@ -56,7 +54,6 @@ export default {
     },
     methods: {
         openModal(name) {
-            // Воспроизводим анимацию при клике
             if (this.cartTimeline) {
                 this.cartTimeline.restart();
             }
@@ -68,12 +65,10 @@ export default {
                 this.scrollTop = window.pageYOffset;
             });
         },
-        scrltop() {
-            // Анимированный скролл наверх с GSAP
-            gsap.to(window, {
-                duration: 1,
-                scrollTo: 0,
-                ease: "power2.inOut",
+        scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth",
             });
         },
         animateCartContent(show) {
@@ -147,7 +142,6 @@ export default {
 
 <template>
     <div class="fixed bottom-8 left-8 z-[51] flex flex-col gap-6">
-        <!-- Корзина -->
         <div class="group relative">
             <div
                 class="relative overflow-hidden bg-white rounded-lg shadow-lg p-4 transition-all duration-300 ease-out transform hover:scale-105 hover:shadow-2xl cursor-pointer"
@@ -183,10 +177,9 @@ export default {
             </div>
         </div>
 
-        <!-- Кнопка наверх -->
         <button
             ref="topButton"
-            @click="scrltop"
+            @click="scrollToTop()"
             class="fixed bottom-8 right-8 bg-white rounded-lg p-4 shadow-lg transition-all duration-300 hover:shadow-2xl group"
             :class="{
                 'translate-y-0 opacity-100': scrolled,

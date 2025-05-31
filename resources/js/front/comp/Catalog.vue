@@ -107,7 +107,6 @@ export default {
 </script>
 
 <template>
-    <Search />
     <div
         class="sticky top-0 z-50 bg-white/95 backdrop-blur-xl transition-all duration-300"
         :class="{ 'border-b border-neutral-100 shadow-sm': isScrolled }"
@@ -120,6 +119,9 @@ export default {
                 class="flex items-center overflow-x-auto scrollbar-hide space-x-3 py-6"
                 id="category-list"
             >
+                <li>
+                    <Search />
+                </li>
                 <li v-for="el in goods" :key="el.uri">
                     <a
                         :id="'categoryButton-' + el.uri"
@@ -185,7 +187,6 @@ export default {
 </template>
 
 <style>
-/* Добавляем утилитарный класс для скрытия скроллбара */
 .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;

@@ -9,6 +9,7 @@ export const appStore = defineStore("app", {
         device: null,
         links: null,
         company: null,
+        hideSearch: false,
     }),
     actions: {
         defineDevice() {

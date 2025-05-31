@@ -35,6 +35,9 @@ export default {
     },
     methods: {
         closeModal() {
+            if (this.appStore.hideSearch) {
+                this.appStore.hideSearch = false;
+            }
             gsap.to("#additional-content", {
                 opacity: 0,
                 y: 20,

@@ -17,7 +17,6 @@
                 :class="[
                     'h-full w-full relative rounded-xl bg-cover bg-center',
                     `story-item-${index}`,
-                    { 'grayscale brightness-90': isViewed },
                 ]"
                 :style="'background-image: url(' + story.thumb + ');'"
                 @click="$emit('select', story)"

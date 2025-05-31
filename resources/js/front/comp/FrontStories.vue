@@ -163,7 +163,6 @@ export default defineComponent({
     }
 }
 
-/* Адаптивная типография для малых экранов */
 @media (max-width: 640px) {
     h1 {
         font-size: 1.125rem; /* 18px */
