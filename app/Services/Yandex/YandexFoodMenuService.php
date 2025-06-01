@@ -2,6 +2,10 @@
 
 namespace App\Services\Yandex;
 
+use Carbon\Carbon;
+use App\Models\Product;
+use App\Models\ProductCategory;
+
 class YandexFoodMenuService
 {
     public function getMenu(string $id)
@@ -11,64 +15,69 @@ class YandexFoodMenuService
 
     public function getMenuComposition(string $id)
     {
-        $categories = \App\Models\ProductCategory::with('products')->where('visible', 1)->get();
+        $categories = ProductCategory::with(['products', 'products.imgs'])->where('visible', 1)->get();
 
         $categories = $categories->filter(function ($category) {
             return $category->products()->count() > 0;
         });
-        $items = [];
 
         $categoriesOutput = $categories->map(function ($category) {
             return [
-                'id' => $category->id,
+                'id' => (string) $category->id,
                 'name' => $category->name,
-                'images' => '',
-                'parent_id' => null,
-                'schedules' => [],
-                'sortOrder' => $category->order,
+                'parentId' => null,
+                'sortOrder' => $category->order ?? 100,
+                'images' => [],
             ];
         });
 
+        $items = [];
+
         foreach ($categories as $category) {
             foreach ($category->products as $product) {
+                if ($product->price <= 0) continue;
+
                 $items[] = [
-                    'id' => $product->id,
-                    'categoryId' => $product->categories()->first()->id,
+                    'id' => (string) $product->id,
+                    'categoryId' => (string) $product->categories()->first()->id,
                     'name' => $product->name,
-                    'description' => $product->description ?? '',
-                    'price' => $product->price ?? 0,
-                    'vat' => $product->vat ?? 0,
-                    'isCatchweight' => $product->isCatchweight ?? false,
-                    'measure' => $product->weight,
-                    'weightQuantum' => $product->weightQuantum ?? 0,
+                    'description' => $product->consist ?? '',
+                    'price' => (float) $product->price,
+                    'vat' => (int) ($product->vat ?? 0),
+                    'isCatchweight' => false,
+                    'measure' => (int) ($product->weight ?? 0),
+                    'weightQuantum' => null,
                     'measureUnit' => 'г',
-                    'excise' => $product->excise ?? '',
-                    'nutrients' => $product->nutrients ?? [],
-                    'sortOrder' => $product->sortOrder ?? 0,
-                    'modifierGroups' => $product->modifierGroups ?? [],
-                    'images' => $product->images->map(function ($image) {
+                    'sortOrder' => (int) ($product->order ?? 100),
+                    'modifierGroups' => [],
+                    'images' => $product->imgs ? $product->imgs->map(function ($image) {
                         return [
-                            'hash' => sha1_file(public_path($image)),
-                            'url' => $image,
+                            'hash' => sha1_file(public_path('uploads/' . $image->path)),
+                            'url' => '/uploads/' . $image->path,
                         ];
-                    }) ?? [],
-                    'additional_descriptions' => (object) [],
+                    })->toArray() : [],
                 ];
             }
         }
 
         return [
-            'schedules' => [],
             'categories' => $categoriesOutput,
             'items' => $items,
-            'lastChange' => \Carbon\Carbon::now()->setTimezone('UTC')->format('Y-m-d\TH:i:s.uP'),
+            'lastChange' => Carbon::now()->setTimezone('UTC')->format('Y-m-d\TH:i:s.uP'),
         ];
     }
 
     public function getMenuAvailability(string $id)
     {
+        $unavailableProducts = Product::where('visible', 0)->get();
+
         return [
-            'items' => [],
+            'items' => $unavailableProducts->map(function ($product) {
+                return [
+                    'id' => (string) $product->id,
+                    'quantity' => 0,
+                ];
+            })->toArray(),
             'modifiers' => [],
         ];
     }
