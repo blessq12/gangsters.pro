@@ -36,6 +36,8 @@
             @close="closeStory"
             @pause="pauseTimer"
             @resume="resumeTimer"
+            @prev="prevStory"
+            @next="nextStory"
         />
     </div>
 </template>
@@ -77,6 +79,13 @@ export default defineComponent({
                 const bViewed = this.viewedStories.includes(b.id);
                 return aViewed - bViewed;
             });
+        },
+        currentStoryIndex() {
+            return this.currentStory
+                ? this.sortedStories.findIndex(
+                      (story) => story.id === this.currentStory.id
+                  )
+                : -1;
         },
         ...mapStores(appStore),
     },
@@ -142,6 +151,24 @@ export default defineComponent({
                 duration: 0.8,
                 ease: "back.out(1.7)",
             });
+        },
+        prevStory() {
+            const prevIndex = this.currentStoryIndex - 1;
+            if (prevIndex >= 0) {
+                this.currentStory = this.sortedStories[prevIndex];
+                this.markStoryAsViewed(this.currentStory.id);
+                this.startTimer();
+            }
+        },
+        nextStory() {
+            const nextIndex = this.currentStoryIndex + 1;
+            if (nextIndex < this.sortedStories.length) {
+                this.currentStory = this.sortedStories[nextIndex];
+                this.markStoryAsViewed(this.currentStory.id);
+                this.startTimer();
+            } else {
+                this.closeStory();
+            }
         },
     },
     mounted() {

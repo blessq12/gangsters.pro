@@ -3,7 +3,7 @@ import gsap from "gsap";
 
 export default {
     name: "StoryModal",
-    emits: ["close", "pause", "resume"],
+    emits: ["close", "pause", "resume", "prev", "next"],
     props: {
         story: {
             type: Object,
@@ -30,6 +30,12 @@ export default {
                     modal.style.height = `min(90vh, ${90 / aspectRatio}vw)`;
                 }
             };
+        },
+        prevStory() {
+            this.$emit("prev");
+        },
+        nextStory() {
+            this.$emit("next");
         },
     },
     watch: {
@@ -84,12 +90,28 @@ export default {
                 @mouseup="$emit('resume')"
                 @touchstart="$emit('pause')"
                 @touchend="$emit('resume')"
-                class="relative z-[10000] w-full h-full max-w-[90vw] max-h-[90vh] overflow-hidden rounded flex items-center justify-center"
+                class="relative z-[10000] w-full h-full max-w-[90vw] max-h-[90vh] overflow-hidden rounded flex items-center justify-center invisible"
                 :style="{ opacity: 0 }"
             >
                 <div
-                    class="relative w-fit-content h-full flex items-center justify-center"
+                    class="relative w-fit-content h-full flex items-center justify-center visible overflow-hidden"
                 >
+                    <div
+                        class="cursor-pointer absolute left-0 top-0 h-full w-1/8 px-4 flex items-center justify-center bg-gradient-to-r from-black/50 to-transparent"
+                        @click="prevStory"
+                    >
+                        <div
+                            class="mdi mdi-chevron-left text-white text-5xl"
+                        ></div>
+                    </div>
+                    <div
+                        class="cursor-pointer absolute right-0 top-0 h-full w-1/8 px-4 flex items-center justify-center bg-gradient-to-l from-black/50 to-transparent"
+                        @click="nextStory"
+                    >
+                        <div
+                            class="mdi mdi-chevron-right text-white text-5xl"
+                        ></div>
+                    </div>
                     <div
                         class="absolute top-0 left-0 right-0 p-4 flex items-center gap-3 bg-gradient-to-b from-black/50 to-transparent z-[10001]"
                     >
