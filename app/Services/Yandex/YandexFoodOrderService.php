@@ -11,68 +11,82 @@ class YandexFoodOrderService
 {
     public function createOrder(array $data)
     {
-        $discriminator = $data['discriminator'];
-        $eatsId = $data['eatsId'];
-        $restaurantId = $data['restaurantId'];
+        \Log::info('YandexFoodOrderService::createOrder', ['data' => json_encode($data)]);
 
-        $clientName = $data['deliveryInfo']['clientName'];
-        $phoneNumber = $data['deliveryInfo']['phoneNumber'];
-        $deliveryDate = $data['deliveryInfo']['deliveryDate'];
-        $deliveryAddress = $data['deliveryInfo']['deliveryAddress']['full'];
-        $latitude = $data['deliveryInfo']['deliveryAddress']['latitude'];
-        $longitude = $data['deliveryInfo']['deliveryAddress']['longitude'];
+        try {
+            $discriminator = $data['discriminator'];
+            $eatsId = $data['eatsId'];
+            $restaurantId = $data['restaurantId'];
 
-        $paymentType = $data['paymentInfo']['paymentType'];
-        $itemsCost = $data['paymentInfo']['itemsCost'];
-        $deliveryFee = $data['paymentInfo']['deliveryFee'];
-        $total = $data['paymentInfo']['total'];
-        $change = $data['paymentInfo']['change'];
+            $clientName = $data['deliveryInfo']['clientName'];
+            $phoneNumber = $data['deliveryInfo']['phoneNumber'];
+            $deliveryDate = $data['deliveryInfo']['deliveryDate'];
+            $deliveryAddress = $data['deliveryInfo']['deliveryAddress']['full'];
+            $latitude = $data['deliveryInfo']['deliveryAddress']['latitude'];
+            $longitude = $data['deliveryInfo']['deliveryAddress']['longitude'];
 
-        $items = $data['items'];
-        $persons = $data['persons'];
-        $comment = $data['comment'];
-        $promos = $data['promos'];
+            $paymentType = $data['paymentInfo']['paymentType'];
+            $itemsCost = $data['paymentInfo']['itemsCost'];
+            $deliveryFee = $data['paymentInfo']['deliveryFee'];
+            $total = $data['paymentInfo']['total'];
+            $change = $data['paymentInfo']['change'];
 
-        $order = new Order();
-        $order->eatsId = $eatsId;
-        $order->name = $clientName;
-        $order->tel = $phoneNumber;
-        $order->full_address = $deliveryAddress;
-        $order->restaurantId = $restaurantId;
-        $order->personQty = $persons;
-        $order->comment = $comment;
-        $order->latitude = $latitude;
-        $order->longitude = $longitude;
-        $order->deliveryDate = $deliveryDate;
-        $order->deliveryType = $discriminator;
-        $order->itemsCost = $itemsCost;
-        $order->deliveryFee = $deliveryFee;
-        $order->total = $total;
-        $order->change = $change;
-        $order->promos = $promos;
-        $order->discriminator = $discriminator;
+            $items = $data['items'];
+            $persons = $data['persons'];
+            $comment = $data['comment'];
+            $promos = $data['promos'];
 
-        if (!$order->save()) {
+            $order = new Order();
+            $order->eatsId = $eatsId;
+            $order->name = $clientName;
+            $order->tel = $phoneNumber;
+            $order->full_address = $deliveryAddress;
+            $order->restaurantId = $restaurantId;
+            $order->personQty = $persons;
+            $order->comment = $comment;
+            $order->latitude = $latitude;
+            $order->longitude = $longitude;
+            $order->deliveryDate = $deliveryDate;
+            $order->deliveryType = $discriminator;
+            $order->itemsCost = $itemsCost;
+            $order->deliveryFee = $deliveryFee;
+            $order->total = $total;
+            $order->change = $change;
+            $order->promos = $promos;
+            $order->discriminator = $discriminator;
+
+            if (!$order->save()) {
+                return response()->json([
+                    "code" => 100,
+                    "description" => "Не удалось создать заказ"
+                ], 400);
+            }
+
+            foreach ($items as $item) {
+                $orderItem = new OrderItem();
+                $orderItem->order_id = $order->id;
+                $orderItem->product_id = $item['id'];
+                $orderItem->qty = $item['quantity'];
+                $orderItem->price = $item['price'];
+                $orderItem->sku = \App\Models\Product::where('id', $item['id'])->first()->sku;
+                $orderItem->save();
+            }
+
+            return response()->json([
+                'result' => 'OK',
+                'orderId' => $order->id,
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::error('YandexFoodOrderService::createOrder', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
             return response()->json([
                 "code" => 100,
                 "description" => "Не удалось создать заказ"
             ], 400);
         }
-
-        foreach ($items as $item) {
-            $orderItem = new OrderItem();
-            $orderItem->order_id = $order->id;
-            $orderItem->product_id = $item['id'];
-            $orderItem->qty = $item['quantity'];
-            $orderItem->price = $item['price'];
-            $orderItem->sku = \App\Models\Product::where('id', $item['id'])->first()->sku;
-            $orderItem->save();
-        }
-
-        return response()->json([
-            'result' => 'OK',
-            'orderId' => $order->id,
-        ], 200);
     }
 
     public function getOrderById(string $id)

@@ -267,19 +267,24 @@ export default {
                             </div>
                         </div>
 
-                        <div class="flex flex-col sm:flex-row gap-2">
+                        <div
+                            class="flex flex-row sm:flex-row gap-2 sticky bottom-0 bg-white p-4 rounded-xl shadow-md"
+                        >
                             <button
-                                class="flex-1 btn bg-primary-600 hover:bg-primary-700 text-gray-800 rounded-xl py-4 px-6 transition-colors duration-200 font-semibold shadow-md hover:shadow-lg"
+                                class="flex-1 btn bg-green-500 hover:bg-green-600 text-white rounded-xl py-2 px-4 md:py-4 md:px-6 transition-colors duration-200 font-semibold shadow-md hover:shadow-lg"
                                 @click="checkout = !checkout"
                             >
+                                <i class="mdi mdi-cart-arrow-right md:me-2"></i>
                                 Оформление
                             </button>
                             <button
-                                class="btn bg-red-500 hover:bg-red-600 text-white rounded-xl py-4 px-6 transition-colors duration-200 font-semibold shadow-md hover:shadow-lg"
+                                class="flex bg-red-500 hover:bg-red-600 text-white rounded-xl py-2 px-4 md:py-4 md:px-6 transition-colors duration-200 font-semibold shadow-md hover:shadow-lg"
                                 @click="localStore.clearStore('cart')"
                             >
-                                <i class="fa fa-trash mr-2"></i>
-                                Очистить
+                                <i
+                                    class="mdi mdi-trash-can-outline md:me-2"
+                                ></i>
+                                <div class="hidden md:block">Очистить</div>
                             </button>
                         </div>
                     </div>
