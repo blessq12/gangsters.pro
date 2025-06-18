@@ -7,12 +7,14 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Facades\Frontpad;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class YandexFoodOrderService
 {
     public function createOrder(array $data)
     {
-        \Log::info('YandexFoodOrderService::createOrder', ['data' => json_encode($data)]);
+        Log::info('YandexFoodOrderService::createOrder', ['data' => json_encode($data)]);
 
         try {
             $discriminator = $data['discriminator'];
@@ -21,7 +23,7 @@ class YandexFoodOrderService
 
             $clientName = $data['deliveryInfo']['clientName'];
             $phoneNumber = $data['deliveryInfo']['phoneNumber'];
-            $deliveryDate = $data['deliveryInfo']['deliveryDate'];
+            $deliveryDate = Carbon::parse($data['deliveryInfo']['deliveryDate'])->format('Y-m-d H:i:s');
             $deliveryAddress = $data['deliveryInfo']['deliveryAddress']['full'];
             $latitude = $data['deliveryInfo']['deliveryAddress']['latitude'];
             $longitude = $data['deliveryInfo']['deliveryAddress']['longitude'];
@@ -35,7 +37,7 @@ class YandexFoodOrderService
             $items = $data['items'];
             $persons = $data['persons'];
             $comment = $data['comment'];
-            $promos = $data['promos'];
+            $promos = json_encode($data['promos']);
 
             $order = new Order();
             $order->eatsId = $eatsId;
@@ -69,7 +71,12 @@ class YandexFoodOrderService
                 $orderItem->product_id = $item['id'];
                 $orderItem->qty = $item['quantity'];
                 $orderItem->price = $item['price'];
-                $orderItem->sku = \App\Models\Product::where('id', $item['id'])->first()->sku;
+                $orderItem->sku = Product::where('id', $item['id'])->first()->sku;
+
+                if (isset($item['modifications'])) {
+                    $orderItem->modifications = json_encode($item['modifications']);
+                }
+
                 $orderItem->save();
             }
 
@@ -80,7 +87,7 @@ class YandexFoodOrderService
                 'orderId' => $order->id,
             ], 200);
         } catch (\Exception $e) {
-            \Log::error('YandexFoodOrderService::createOrder', [
+            Log::error('YandexFoodOrderService::createOrder', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
