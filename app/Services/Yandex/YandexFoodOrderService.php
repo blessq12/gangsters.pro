@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use App\Facades\Frontpad;
 
 class YandexFoodOrderService
 {
@@ -71,6 +72,8 @@ class YandexFoodOrderService
                 $orderItem->sku = \App\Models\Product::where('id', $item['id'])->first()->sku;
                 $orderItem->save();
             }
+
+            Frontpad::createOrder($order);
 
             return response()->json([
                 'result' => 'OK',
