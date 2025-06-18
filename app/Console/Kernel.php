@@ -17,20 +17,27 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         $schedule->call(function () {
-            $statistic = YaMetrika::getTodayStatistic();
-            TelegramMessage::sendMessage([
-                '🗓️ Статистика на: ' . $statistic->date . "\n",
-                '👥 Посетителей: ' . $statistic->visits,
-                '👤 Пользователей: ' . $statistic->users,
-                '👀 Просмотров: ' . $statistic->pageviews,
-                '🕒 Среднее время на сайте(минуты): ' . $statistic->avg_time_on_site,
-                '🔍 Глубина просмотра: ' . $statistic->page_depth,
-                '↪️ Процент отказа: ' . $statistic->bounce_rate,
-                '<b>Источники:</b> ' . "\n",
-                '➡️ Прямые: ' . $statistic->sources['direct'],
-                '🔍 Поиск: ' . $statistic->sources['search'],
-                '👥 Социальные: ' . $statistic->sources['social'],
-            ], 'analytics');
+            try {
+                $statistic = YaMetrika::getTodayStatistic();
+                TelegramMessage::sendMessage([
+                    '🗓️ Статистика на: ' . $statistic->date . "\n",
+                    '👥 Посетителей: ' . $statistic->visits,
+                    '👤 Пользователей: ' . $statistic->users,
+                    '👀 Просмотров: ' . $statistic->pageviews,
+                    '🕒 Среднее время на сайте(минуты): ' . $statistic->avg_time_on_site,
+                    '🔍 Глубина просмотра: ' . $statistic->page_depth,
+                    '↪️ Процент отказа: ' . $statistic->bounce_rate,
+                    '<b>Источники:</b> ' . "\n",
+                    '➡️ Прямые: ' . $statistic->sources['direct'],
+                    '🔍 Поиск: ' . $statistic->sources['search'],
+                    '👥 Социальные: ' . $statistic->sources['social'],
+                ], 'analytics');
+            } catch (\Exception $e) {
+                \Log::error('Kernel::schedule', [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
+            }
         })->everyThreeHours();
     }
 
