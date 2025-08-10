@@ -142,14 +142,24 @@ export default {
             const schema = form === "delivery" ? this.schema : this.noDelSchema;
             const formData =
                 form === "delivery" ? this.formData : this.noDelForm;
+
+            console.log("=== VALIDATION DEBUG ===");
+            console.log("Form type:", form);
+            console.log("Schema:", schema);
+            console.log("FormData before validation:", formData);
+            console.log("payType before validation:", formData.payType);
+
             schema
                 .validate(formData, { abortEarly: false })
                 .then((res) => {
+                    console.log("Validation result:", res);
+                    console.log("payType after validation:", res.payType);
                     this.updateInputs();
                     this.validatorBag = {};
                     this.createOrder(res, form === "delivery");
                 })
                 .catch((err) => {
+                    console.log("Validation error:", err);
                     this.validatorBag = {};
                     this.toast.error("Заполните необходимые поля");
                     err.inner.forEach((e) => {
@@ -339,22 +349,34 @@ export default {
                             <div class="grid grid-cols-2 gap-3">
                                 <button
                                     :class="`btn rounded-xl py-4 px-6 transition-colors duration-200 font-semibold shadow-md hover:shadow-lg ${
-                                        formData.payType === 'cash'
+                                        delivery
+                                            ? formData.payType === 'cash'
+                                            : noDelForm.payType === 'cash'
                                             ? 'bg-black text-white'
                                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                     }`"
-                                    @click="formData.payType = 'cash'"
+                                    @click="
+                                        delivery
+                                            ? (formData.payType = 'cash')
+                                            : (noDelForm.payType = 'cash')
+                                    "
                                 >
                                     <i class="mdi mdi-cash-multiple mr-2"></i>
                                     Наличные
                                 </button>
                                 <button
                                     :class="`btn rounded-xl py-4 px-6 transition-colors duration-200 font-semibold shadow-md hover:shadow-lg ${
-                                        formData.payType === 'card'
+                                        delivery
+                                            ? formData.payType === 'card'
+                                            : noDelForm.payType === 'card'
                                             ? 'bg-black text-white'
                                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                     }`"
-                                    @click="formData.payType = 'card'"
+                                    @click="
+                                        delivery
+                                            ? (formData.payType = 'card')
+                                            : (noDelForm.payType = 'card')
+                                    "
                                 >
                                     <i class="mdi mdi-credit-card mr-2"></i>
                                     Картой курьеру
