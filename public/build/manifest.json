@@ -16,7 +16,7 @@
     "src": "node_modules/@mdi/font/fonts/materialdesignicons-webfont.woff2"
   },
   "resources/js/app.js": {
-    "file": "assets/app-GsWWevuh.js",
+    "file": "assets/app-KVuw3IwC.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -31,7 +31,7 @@
     ]
   },
   "resources/sass/style.css": {
-    "file": "assets/style-CM_ccSKJ.css",
+    "file": "assets/style-4T11aje1.css",
     "src": "resources/sass/style.css",
     "isEntry": true
   }

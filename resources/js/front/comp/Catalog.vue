@@ -141,6 +141,8 @@ export default {
         </div>
     </div>
 
+    <PrizeRow></PrizeRow>
+
     <div
         class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 mb-12 lg:mb-36"
         id="catalog-container"
