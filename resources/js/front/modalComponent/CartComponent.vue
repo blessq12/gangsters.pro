@@ -97,7 +97,9 @@ export default {
                 staircase: string().nullable(),
                 floor: string().nullable(),
                 apartment: string().required("Квартира обязательна"),
-                payType: string().required("Тип оплаты обязателен"),
+                payType: string()
+                    .required("Тип оплаты обязателен")
+                    .default("cash"),
             });
         },
         createFormData() {
@@ -135,7 +137,9 @@ export default {
                     .required("Обязательно")
                     .min(18, "Некорректный номер")
                     .max(18, "Некорректный номер"),
-                payType: string().required("Тип оплаты обязателен"),
+                payType: string()
+                    .required("Тип оплаты обязателен")
+                    .default("cash"),
             });
         },
         validate(form) {
