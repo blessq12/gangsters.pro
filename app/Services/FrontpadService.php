@@ -54,7 +54,7 @@ class FrontpadService
             'mail' => $siteOrder->email ?? '',  // Если опция сохранения клиентов активна
             'descr' => mb_strlen($siteOrder->comment) > 100 ? mb_substr($siteOrder->comment, 0, 100) : $siteOrder->comment,
             'name' => $siteOrder->name ?? '',
-            'pay' => $paymentMapping[$siteOrder->payType ?? 'cash'] ?? 1,  // Код типа оплаты: 1=наличные, 2=карта
+            'pay' => $paymentMapping[$siteOrder->payType ?? 'cash'],  // Код типа оплаты: 1=наличные, 2=карта
             'certificate' => $siteOrder->certificate ?? '',
             'person' => min((int)$siteOrder->personQty ?? 1, 99),  // До 2 знаков
             'tags' => $siteOrder->tags ?? [],  // Массив кодов
