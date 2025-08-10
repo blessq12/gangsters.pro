@@ -54,19 +54,13 @@ return [
     'channels' => [
         'stack' => [
             'driver' => 'stack',
-            'channels' => ['single', 'telescope'],
+            'channels' => ['single'],
             'ignore_exceptions' => false,
         ],
 
         'single' => [
             'driver' => 'single',
             'path' => storage_path('logs/laravel.log'),
-            'level' => 'debug',
-        ],
-
-        'telescope' => [
-            'driver' => 'monolog',
-            'handler' => \Monolog\Handler\NullHandler::class,
             'level' => 'debug',
         ],
     ],
