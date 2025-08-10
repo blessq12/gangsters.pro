@@ -78,6 +78,10 @@ class FrontpadService
         }
 
         try {
+            // Логируем что отправляем в Frontpad
+            Log::info('FrontPad API Request Data:', $order);
+            Log::info('Order payType from DB:', ['payType' => $siteOrder->payType]);
+
             $response = $this->client->post($this->api_url . '?new_order', ['form_params' => $order]);
             $responseBody = json_decode($response->getBody()->getContents(), true);
             Log::debug('FrontPad API Response: ' . json_encode($responseBody));

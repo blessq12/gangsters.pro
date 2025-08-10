@@ -47,6 +47,13 @@ class OrderController extends Controller
      */
     public function createOrder(Request $request)
     {
+        // Логируем что приходит с фронта
+        Log::info('Order request from frontend:', [
+            'order_data' => $request->order ?? [],
+            'delivery' => $request->delivery,
+            'cart_count' => count($request->cart ?? [])
+        ]);
+
         $cart = [];
         foreach ($request->cart as $item) {
             $cart[] = $item['sku'];
@@ -70,12 +77,21 @@ class OrderController extends Controller
 
     private function setOrderDetails(Order $order, Request $request)
     {
+        // Логируем что сохраняем в заказ
+        Log::info('Setting order details:', [
+            'payType_from_request' => $request->order['payType'] ?? 'not_set',
+            'payType_default' => 'cash'
+        ]);
+
         $order->delivery = $request->delivery;
         $order->name = $request->order['name'];
         $order->tel = $request->order['tel'];
         $order->comment = $request->order['comment'] ?? null;
         $order->personQty = $request->order['personQty'] ?? 1;
         $order->payType = $request->order['payType'] ?? 'cash';
+
+        // Логируем финальное значение
+        Log::info('Final order payType:', ['payType' => $order->payType]);
 
         if ($request->delivery) {
             $order->street = $request->order['street'];

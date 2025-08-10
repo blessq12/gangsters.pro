@@ -159,6 +159,12 @@ export default {
                 });
         },
         createOrder(data, delivery) {
+            // Логируем что отправляем на бэкенд
+            console.log("=== ORDER CREATION DEBUG ===");
+            console.log("Form data:", this.formData);
+            console.log("Validated data:", data);
+            console.log("Delivery:", delivery);
+
             const req = {
                 delivery,
                 cart: this.localStore.cart.map(
@@ -172,6 +178,9 @@ export default {
                 ),
                 order: data,
             };
+
+            console.log("Final request:", req);
+            console.log("=== END DEBUG ===");
             this.localStore
                 .createOrder(req)
                 .then(() => {
