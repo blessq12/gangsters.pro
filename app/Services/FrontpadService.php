@@ -33,22 +33,42 @@ class FrontpadService
             'secret' => $this->api_secret,
             'product' => [],
             'product_kol' => [],
-            'name' => $siteOrder->name,
-            'phone' => $siteOrder->tel,
-            'person' => $siteOrder->personQty,
-            'descr' => mb_strlen($siteOrder->comment) > 80 ? mb_substr($siteOrder->comment, 0, 80) . '...' : $siteOrder->comment,
+            'product_mod' => [],  // Для модификаторов
+            'product_price' => [],  // Если нужно устанавливать цены
+            'score' => $siteOrder->score ?? 0,  // Баллы для оплаты
+            'sale' => $siteOrder->sale_percent ?? 0,  // Скидка %
+            'sale_amount' => $siteOrder->sale_amount ?? 0,  // Скидка суммой (только один тип)
+            'card' => $siteOrder->card ?? '',
             'street' => $siteOrder->street ?? '',
             'home' => $siteOrder->house ?? '',
             'pod' => $siteOrder->staircase ?? '',
             'et' => $siteOrder->floor ?? '',
             'apart' => $siteOrder->apartment ?? '',
-            // 'hook_url' => $this->appUrl . '/api/orders/update',
-            'hook_status' => [1, 10, 11],
+            'phone' => $siteOrder->tel ?? '',
+            'mail' => $siteOrder->email ?? '',  // Если опция сохранения клиентов активна
+            'descr' => mb_strlen($siteOrder->comment) > 100 ? mb_substr($siteOrder->comment, 0, 100) : $siteOrder->comment,
+            'name' => $siteOrder->name ?? '',
+            'pay' => $siteOrder->payType ?? 'cash',  // Тип оплаты: cash/card
+            'certificate' => $siteOrder->certificate ?? '',
+            'person' => min((int)$siteOrder->personQty ?? 1, 99),  // До 2 знаков
+            'tags' => $siteOrder->tags ?? [],  // Массив кодов
+            'hook_status' => $siteOrder->hook_status ?? [1, 10, 11],  // Массив до 5
+            'hook_url' => $this->appUrl . '/api/orders/update',  // Для вебхука
+            'channel' => $siteOrder->channel ?? '',  // Канал продаж
+            'datetime' => $siteOrder->datetime ?? '',  // Формат YYYY-MM-DD HH:MM:SS
+            'affiliate' => $siteOrder->affiliate ?? '',  // Филиал
+            'point' => $siteOrder->point ?? '',  // Точка продаж
         ];
 
-        foreach ($items as $item) {
-            $order['product'][] = intval($item->sku);
-            $order['product_kol'][] = intval($item->qty);
+        foreach ($items as $key => $item) {
+            $order['product'][$key] = intval($item->sku);
+            $order['product_kol'][$key] = intval($item->qty);
+            if (isset($item->parent_id)) {  // Предполагаем, что mod имеет parent_id; доработай если иначе
+                $order['product_mod'][$key] = $item->parent_id;
+            }
+            if (isset($item->custom_price)) {  // Если цена устанавливается
+                $order['product_price'][$key] = $item->custom_price;
+            }
         }
 
         try {
@@ -59,13 +79,16 @@ class FrontpadService
             if ($responseBody['result'] === 'success') {
                 $siteOrder->frontpad_id = $responseBody['order_id'];
                 $siteOrder->save();
-                Log::info("Order successfully created in FrontPad. Order ID: {$responseBody['order_id']}, SKUs: " . implode(', ', $order['product']));
+                Log::info("Order created in FrontPad. ID: {$responseBody['order_id']}, Number: " . ($responseBody['order_number'] ?? 'N/A'));
+                if (isset($responseBody['warnings'])) {
+                    Log::warning("Warnings in order creation: " . json_encode($responseBody['warnings']));
+                }
             } else {
-                Log::error("Failed to create order on FrontPad: " . json_encode($responseBody));
+                Log::error("Failed to create order: " . json_encode($responseBody));
             }
         } catch (\Throwable $th) {
-            Log::error("Error during create new order on FrontPad: {$th->getMessage()}");
-            return 'Error during create new order on FrontPad. Error: ' . $th->getMessage();
+            Log::error("Error creating order: {$th->getMessage()}");
+            return 'Error: ' . $th->getMessage();
         }
     }
 
@@ -73,21 +96,26 @@ class FrontpadService
     {
         try {
             $response = $this->client->post($this->api_url . '?get_products', ['form_params' => ['secret' => $this->api_secret]]);
-            $data = json_decode($response->getBody()->getContents());
+            $data = json_decode($response->getBody()->getContents(), true);
+
+            if ($data['result'] !== 'success') {
+                Log::error("Error getting products: " . json_encode($data));
+                return [];
+            }
 
             $result = [];
-            foreach ($data->product_id as $k => $prod_id) {
+            foreach ($data['product_id'] as $k => $prod_id) {
                 $result[] = [
                     'id' => $prod_id,
-                    'name' => $data->name[$k],
-                    'price' => $data->price[$k],
-                    'sale' => $data->sale[$k] ? true : false,
+                    'name' => $data['name'][$k],
+                    'price' => $data['price'][$k],
+                    'sale' => (bool)($data['sale'][$k] ?? 0),  // 1=true, 0=false
                 ];
             }
 
             return $result;
         } catch (\Throwable $th) {
-            Log::error("Error fetching products from FrontPad: {$th->getMessage()}");
+            Log::error("Error fetching products: {$th->getMessage()}");
             return [];
         }
     }
@@ -98,14 +126,12 @@ class FrontpadService
             Log::error("Order not found: id = " . $siteOrder->id);
             return;
         }
-        if ($this->setting->use_coin_system) {
-            if ($siteOrder->user && $status == 10) {
-                $user = \App\Models\User::find($siteOrder->user_id);
-                Log::info("Order {$siteOrder->id} is auth by {$user->email}");
-                $user->coins += round($siteOrder->total / 100 * $this->setting->coin_system_percent);
-                Log::info("User {$user->email} get {$user->coins} coins");
-                $user->save();
-            }
+        if ($this->setting->use_coin_system && $status == 10 && $siteOrder->user) {
+            $user = \App\Models\User::find($siteOrder->user_id);
+            Log::info("Order {$siteOrder->id} auth by {$user->email}");
+            $user->coins += round($siteOrder->total / 100 * $this->setting->coin_system_percent);
+            Log::info("User {$user->email} got {$user->coins} coins");
+            $user->save();
         }
 
         $siteOrder->status = $status;

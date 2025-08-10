@@ -46,7 +46,7 @@ class Order extends Model
         'total',
         'delivery',
         'user_id',
-        'patType',
+        'payType',
         'personQty',
         'comment',
         'eatsId',

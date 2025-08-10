@@ -75,6 +75,7 @@ class OrderController extends Controller
         $order->tel = $request->order['tel'];
         $order->comment = $request->order['comment'] ?? null;
         $order->personQty = $request->order['personQty'] ?? 1;
+        $order->payType = $request->order['payType'] ?? 'cash';
 
         if ($request->delivery) {
             $order->street = $request->order['street'];
