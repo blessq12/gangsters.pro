@@ -148,7 +148,7 @@ export default {
                 class="absolute inset-0 flex items-center justify-center"
             >
                 <div
-                    class="animate-pulse rounded-full px-3 py-1 text-xs font-bold text-green-700"
+                    class="animate-pulse rounded-full px-3 py-1 text-xs font-bold text-white"
                 >
                     🎉 1 набор роллов в подарок!
                 </div>
