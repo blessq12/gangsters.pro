@@ -141,7 +141,7 @@ export default {
                 <div
                     class="animate-pulse rounded-full px-3 py-1 text-xs font-bold text-white"
                 >
-                    🎉 1 ролл в подарок!
+                    🎉 Ролл в подарок!
                 </div>
             </div>
 
@@ -152,7 +152,7 @@ export default {
                 <div
                     class="animate-bounce rounded-full px-3 py-1 text-xs font-bold text-white"
                 >
-                    🏆 2 ролла в подарок!
+                    🏆 Ролл "Филадельфия" в подарок!
                 </div>
             </div>
         </div>
