@@ -15,19 +15,16 @@ class RemoteAccessMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // HTTP/2 нормализует заголовки в маленькие буквы
-        $secret = $request->header('remote_control_secret');
+        // Пробуем разные способы передачи секрета
+        $secret = $request->header('remote_control_secret')
+            ?? $request->header('authorization')
+            ?? $request->get('secret');
+
         $expectedSecret = env('REMOTE_CONTROL_SECRET');
 
-        // Временная отладка
         if ($secret !== $expectedSecret) {
             return response()->json([
-                'message' => 'Unauthorized',
-                'debug' => [
-                    'received' => $secret,
-                    'expected' => $expectedSecret,
-                    'headers' => $request->headers->all()
-                ]
+                'message' => 'Unauthorized'
             ], 401);
         }
 
