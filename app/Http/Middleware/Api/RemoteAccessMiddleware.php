@@ -15,8 +15,11 @@ class RemoteAccessMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
+        $secret = $request->header('REMOTE_CONTROL_SECRET') 
+                ?? $request->header('remote_control_secret')
+                ?? $request->header('Remote-Control-Secret');
 
-        if ($request->header('REMOTE_CONTROL_SECRET') !== env('REMOTE_CONTROL_SECRET')) {
+        if ($secret !== env('REMOTE_CONTROL_SECRET')) {
             return response()->json([
                 'message' => 'Unauthorized'
             ], 401);
