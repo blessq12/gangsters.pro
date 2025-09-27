@@ -196,8 +196,6 @@ class RemoteController extends Controller
 
         try {
             $query = $model::query();
-
-            // Загружаем связи если указаны
             if (!empty($with)) {
                 $query->with($with);
             }

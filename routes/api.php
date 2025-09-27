@@ -98,4 +98,10 @@ Route::controller(\App\Http\Controllers\Api\RemoteController::class)
     ->group(function () {
         Route::get('check-access', 'checkAccess');
         Route::get('schema', 'getSchema');
+
+        Route::get('{table}', 'getRecords');
+        Route::get('{table}/{id}', 'getRecord');
+        Route::post('{table}', 'createRecord');
+        Route::put('{table}/{id}', 'updateRecord');
+        Route::delete('{table}/{id}', 'deleteRecord');
     });
