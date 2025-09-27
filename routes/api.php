@@ -90,3 +90,12 @@ Route::controller(\App\Http\Controllers\Api\GoodsSort::class)->group(function ()
 Route::controller(\App\Http\Controllers\Api\SearchController::class)->group(function () {
     Route::get('/goods/search', 'searchGoods');
 });
+
+
+Route::controller(\App\Http\Controllers\Api\RemoteController::class)
+    ->prefix('remote')
+    ->middleware('remoteAccess')
+    ->group(function () {
+        Route::get('check-access', 'checkAccess');
+        Route::get('schema', 'getSchema');
+    });
