@@ -16,10 +16,10 @@ class RemoteAccessMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         // Пробуем разные способы передачи секрета
-        $secret = $request->header('x-api-key') 
-                ?? $request->header('X-API-Key')
-                ?? $request->header('x-remote-secret')
+        $secret = $request->header('X-API-Key') 
+                ?? $request->header('x-api-key')
                 ?? $request->header('X-Remote-Secret')
+                ?? $request->header('x-remote-secret')
                 ?? $request->get('secret');
 
         $expectedSecret = env('REMOTE_CONTROL_SECRET');
