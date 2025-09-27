@@ -15,9 +15,8 @@ class RemoteAccessMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $secret = $request->header('REMOTE_CONTROL_SECRET') 
-                ?? $request->header('remote_control_secret')
-                ?? $request->header('Remote-Control-Secret');
+        // HTTP/2 нормализует заголовки в маленькие буквы
+        $secret = $request->header('remote_control_secret');
 
         if ($secret !== env('REMOTE_CONTROL_SECRET')) {
             return response()->json([
