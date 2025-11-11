@@ -15,8 +15,8 @@ export default {
         progressPercentage() {
             const total = this.localStore.cartTotal;
             if (total <= 0) return 0;
-            if (total >= 2700) return 100;
-            return (total / 2700) * 100;
+            if (total >= 1800) return 100;
+            return (total / 1800) * 100;
         },
         barColor() {
             const total = this.localStore.cartTotal;
@@ -97,7 +97,7 @@ export default {
                         'scale-125 animate-bounce':
                             localStore.cartTotal >= 1800,
                     }"
-                    :style="{ left: (1800 / 2700) * 100 + '%' }"
+                    :style="{ left: '100%' }"
                 >
                     <div class="text-lg">
                         <span
@@ -108,15 +108,6 @@ export default {
                         <span v-else class="text-green-500">🎁</span>
                     </div>
                 </div>
-
-                <div
-                    class="absolute -top-6 transform -translate-x-1/2 transition-all duration-300"
-                    :class="{
-                        'scale-125 animate-bounce':
-                            localStore.cartTotal >= 2700,
-                    }"
-                    :style="{ left: '100%' }"
-                ></div>
             </div>
 
             <div
@@ -133,26 +124,13 @@ export default {
             </div>
 
             <div
-                v-if="
-                    localStore.cartTotal >= 1800 && localStore.cartTotal < 2700
-                "
-                class="absolute inset-0 flex items-center justify-center"
-            >
-                <div
-                    class="animate-pulse rounded-full px-3 py-1 text-xs font-bold text-white"
-                >
-                    🎉 Ролл в подарок!
-                </div>
-            </div>
-
-            <div
-                v-if="localStore.cartTotal >= 2700"
+                v-if="localStore.cartTotal >= 1800"
                 class="absolute inset-0 flex items-center justify-center"
             >
                 <div
                     class="animate-bounce rounded-full px-3 py-1 text-xs font-bold text-white"
                 >
-                    🏆 Ролл "Филадельфия" в подарок!
+                    🎉 Ролл в подарок!
                 </div>
             </div>
         </div>
