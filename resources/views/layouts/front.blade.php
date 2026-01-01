@@ -21,6 +21,7 @@
             @yield('hero')
         @endif
         @yield('content')
+        <holiday-schedule></holiday-schedule>
         <x-front.footer />
     </div>
     <!-- Yandex.Metrika counter -->
