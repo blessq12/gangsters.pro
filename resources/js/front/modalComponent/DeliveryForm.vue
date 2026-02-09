@@ -23,6 +23,17 @@ export default {
             required: true,
         },
     },
+    watch: {
+        "formData.tel"(newVal) {
+            if (newVal && typeof newVal === "string") {
+                // Проверяем, если первая цифра после +7 ( это 7 или 8, удаляем её
+                if (newVal.startsWith("+7 (7") || newVal.startsWith("+7 (8")) {
+                    // Удаляем первую цифру после +7 (
+                    this.formData.tel = newVal.replace(/^\+7 \(([78])/, "+7 (");
+                }
+            }
+        },
+    },
     expose: [],
 };
 </script>
