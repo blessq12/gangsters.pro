@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\Front\MainController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,14 +13,4 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::controller(MainController::class)->middleware([
-    // 'cors',
-])->name('main.')->group(function () {
-    Route::get('/', 'index')->name('index');
-    Route::get('/about', 'about')->name('about');
-    Route::get('/contact', 'contact')->name('contact');
-    Route::get('/privacy', 'privacy')->name('privacy');
-    Route::get('/purchase-and-delivery', 'purchaseAndDelivery')->name('purchaseAndDelivery');
-    Route::get('/reset-password', 'resetPassword')->name('resetPassword');
-    Route::get('/attach-categories-to-products', 'attachCategoriesToProducts');
-});
+Route::view('/{any?}', 'app')->where('any', '.*');

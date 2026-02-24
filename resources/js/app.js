@@ -6,6 +6,8 @@ import VueLazyload from "vue-lazyload";
 import { useToast } from "vue-toastification";
 import "vue-toastification/dist/index.css";
 import "./bootstrap";
+import router from "./router";
+import App from "./App.vue";
 
 /**
  * Next, we will create a fresh Vue application instance. You may then begin
@@ -13,7 +15,7 @@ import "./bootstrap";
  * to use in your application's views. An example is included for you.
  */
 
-const app = createApp({});
+const app = createApp(App);
 const toast = useToast({
     position: "top-right",
     timeout: 5000,
@@ -39,6 +41,7 @@ app.use(VueLazyload, {
 app.config.globalProperties.$toast = toast;
 
 app.use(createPinia());
+app.use(router);
 app.directive("maska", vMaska);
 
 /**
