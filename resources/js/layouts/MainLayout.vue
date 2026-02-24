@@ -1,9 +1,5 @@
 <script setup>
 import { onMounted, ref } from "vue";
-import AppFooter from "../components/layout/AppFooter.vue";
-import AppNavbar from "../components/layout/AppNavbar.vue";
-import MobileMenu from "../components/layout/MobileMenu.vue";
-import BaseModal from "../components/ui/BaseModal.vue";
 import { useThemeStore } from "../stores/themeStore";
 import { playIntroScene, playPageEnter, playPageLeave } from "../animations/animationManager";
 
@@ -64,7 +60,9 @@ onMounted(() => {
                         @enter="(el, done) => playPageEnter(el, done)"
                         @leave="(el, done) => playPageLeave(el, done)"
                     >
-                        <component :is="Component" :key="route.fullPath" />
+                        <div :key="route.fullPath">
+                            <component :is="Component" />
+                        </div>
                     </Transition>
                 </router-view>
             </div>

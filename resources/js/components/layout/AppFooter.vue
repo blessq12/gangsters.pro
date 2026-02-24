@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from "vue";
 import { useEnterSlide } from "../../composables/animations/useEnterSlide";
-import BaseModal from "../ui/BaseModal.vue";
 
 const year = new Date().getFullYear();
 

@@ -1,15 +1,16 @@
-<script setup>
-</script>
-
 <template>
+    <SecondaryBanner
+        title="О компании"
+        description="Узнайте больше о философии, ценностях и истории Gangsters."
+        :breadcrumbs="['Главная', 'О компании']"
+    />
+
     <section class="page about-page">
-        <div class="container">
-            <h1>О компании</h1>
-            <p>Здесь позже опишем историю, ценности и фишки Gangsters.</p>
-        </div>
+        <p>
+            Здесь позже опишем историю, ценности и фишки Gangsters.
+        </p>
     </section>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>
 
