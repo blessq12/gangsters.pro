@@ -40,7 +40,7 @@ const handleSelect = (value) => {
                     class="whitespace-nowrap rounded-full border px-5 py-2 text-xs sm:text-sm md:text-[0.9rem] transition-colors backdrop-blur bg-[rgba(0,0,0,0.75)]"
                     :class="
                         modelValue === null
-                            ? 'border-amber-400/70 text-amber-100 shadow-[0_0_20px_rgba(251,191,36,0.7)]'
+                            ? 'border-amber-400/70 text-amber-100 shadow-[0_0_14px_rgba(251,191,36,0.45)]'
                             : 'border-white/10 text-slate-300 hover:border-amber-400/50 hover:text-amber-200'
                     "
                     @click="handleSelect(null)"
@@ -55,7 +55,7 @@ const handleSelect = (value) => {
                     class="whitespace-nowrap rounded-full border px-5 py-2 text-xs sm:text-sm md:text-[0.9rem] transition-colors backdrop-blur bg-[rgba(0,0,0,0.75)]"
                     :class="
                         modelValue === (category.id ?? category.uri)
-                            ? 'border-amber-400/70 text-amber-100 shadow-[0_0_20px_rgba(251,191,36,0.7)]'
+                            ? 'border-amber-400/70 text-amber-100 shadow-[0_0_14px_rgba(251,191,36,0.45)]'
                             : 'border-white/10 text-slate-300 hover:border-amber-400/50 hover:text-amber-200'
                     "
                     @click="handleSelect(category.id ?? category.uri)"

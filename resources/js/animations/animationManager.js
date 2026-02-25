@@ -187,6 +187,37 @@ export function playFloatLoop({ elements, options = {} }) {
     };
 }
 
+export function playBottomBarShow(bar) {
+    if (!bar) return;
+
+    gsap.fromTo(
+        bar,
+        { y: 40, opacity: 0 },
+        {
+            y: 0,
+            opacity: 1,
+            duration: 0.35,
+            ease: "power2.out",
+        },
+    );
+}
+
+export function playBottomBarHide(bar, onComplete) {
+    if (!bar) {
+        if (onComplete) onComplete();
+        return;
+    }
+
+    gsap.to(bar, {
+        y: 40,
+        opacity: 0,
+        duration: 0.25,
+        ease: "power2.in",
+        onComplete,
+    });
+}
+
+
 export function playCatalogItemsEnter(container) {
     if (!container) return;
 
@@ -205,5 +236,40 @@ export function playCatalogItemsEnter(container) {
         },
     );
 }
+
+export function playDockContentShow(panel, onComplete) {
+    if (!panel) {
+        if (onComplete) onComplete();
+        return;
+    }
+
+    gsap.fromTo(
+        panel,
+        { opacity: 0, y: 10 },
+        {
+            opacity: 1,
+            y: 0,
+            duration: 0.25,
+            ease: "power2.out",
+            onComplete,
+        },
+    );
+}
+
+export function playDockContentHide(panel, onComplete) {
+    if (!panel) {
+        if (onComplete) onComplete();
+        return;
+    }
+
+    gsap.to(panel, {
+        opacity: 0,
+        y: 10,
+        duration: 0.2,
+        ease: "power2.in",
+        onComplete,
+    });
+}
+
 
 

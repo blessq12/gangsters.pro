@@ -1,15 +1,53 @@
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted, onUnmounted, ref, watch } from "vue";
+import { useRoute } from "vue-router";
 import { useThemeStore } from "../stores/themeStore";
+import { useUserStore } from "../stores/userStore";
 import { playIntroScene, playPageEnter, playPageLeave } from "../animations/animationManager";
 
 const themeStore = useThemeStore();
+const userStore = useUserStore();
+const route = useRoute();
+
 themeStore.initTheme();
+userStore.initFromStorage();
+
+// На время интро нижний бар всегда скрыт, чтобы он не подсвечивался под оверлеем
+userStore.showBottomNav = false;
 
 const introOverlayRef = ref(null);
 const introLogoRef = ref(null);
 const mainRef = ref(null);
 const showIntro = ref(true);
+const bottomBarReady = ref(false);
+
+const BOTTOM_THRESHOLD = 80;
+const isHome = () => route.name === "home";
+
+function updateBottomBarFromScroll() {
+    if (typeof window === "undefined") return;
+    if (!bottomBarReady.value) return;
+
+    if (!isHome()) {
+        userStore.setShowBottomNav(false);
+        return;
+    }
+
+    const atBottom =
+        window.scrollY + window.innerHeight >=
+        document.documentElement.scrollHeight - BOTTOM_THRESHOLD;
+
+    userStore.setShowBottomNav(!atBottom);
+}
+
+watch(
+    () => route.name,
+    (name) => {
+        if (name !== "home") {
+            userStore.setShowBottomNav(false);
+        }
+    },
+);
 
 onMounted(() => {
     playIntroScene({
@@ -18,8 +56,23 @@ onMounted(() => {
         main: mainRef.value,
         onComplete: () => {
             showIntro.value = false;
+            // Шаг появления нижнего бара — только на главной, после интро (delay ~0.8)
+            const stepDelay = 600;
+            setTimeout(() => {
+                bottomBarReady.value = true;
+                if (isHome()) {
+                    userStore.setShowBottomNav(true);
+                    updateBottomBarFromScroll();
+                }
+            }, stepDelay);
         },
     });
+
+    window.addEventListener("scroll", updateBottomBarFromScroll, { passive: true });
+});
+
+onUnmounted(() => {
+    window.removeEventListener("scroll", updateBottomBarFromScroll);
 });
 </script>
 
@@ -69,6 +122,8 @@ onMounted(() => {
         </main>
 
         <AppFooter />
+
+        <AppBottomBar />
 
         <!-- глобальная модалка-прослойка, позже привяжем стейт -->
         <BaseModal />
