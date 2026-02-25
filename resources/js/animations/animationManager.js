@@ -142,3 +142,68 @@ export function playBannerSticks({ left, right }) {
         );
     }
 }
+
+export function playFloatLoop({ elements, options = {} }) {
+    const targets = (elements || []).filter(Boolean);
+    if (!targets.length) {
+        return {
+            kill() {},
+        };
+    }
+
+    const {
+        y = 12,
+        x = 0,
+        duration = 3,
+        delay = 0,
+        stagger = 0.18,
+        ease = "sine.inOut",
+    } = options;
+
+    const tweens = targets.map((el, index) => {
+        const directionX = index % 2 === 0 ? 1 : -1;
+        const randomFactor = 0.7 + Math.random() * 0.6;
+
+        const localY = y * randomFactor;
+        const localX = x * randomFactor * directionX;
+        const localDuration = duration * (0.8 + Math.random() * 0.6);
+        const localDelay = delay + index * stagger + Math.random() * 0.4;
+
+        return gsap.to(el, {
+            y: localY,
+            x: localX,
+            duration: localDuration,
+            delay: localDelay,
+            ease,
+            yoyo: true,
+            repeat: -1,
+        });
+    });
+
+    return {
+        kill() {
+            tweens.forEach((tween) => tween.kill());
+        },
+    };
+}
+
+export function playCatalogItemsEnter(container) {
+    if (!container) return;
+
+    const items = container.querySelectorAll(".catalog-item");
+    if (!items.length) return;
+
+    gsap.fromTo(
+        items,
+        { opacity: 0, y: 16 },
+        {
+            opacity: 1,
+            y: 0,
+            duration: 0.4,
+            ease: "power2.out",
+            stagger: 0.035,
+        },
+    );
+}
+
+

@@ -43,6 +43,7 @@ watch(
             });
         }
     },
+    { immediate: true },
 );
 </script>
 
@@ -96,6 +97,7 @@ watch(
 .base-modal {
     position: fixed;
     inset: 0;
+    z-index: 9999;
     display: flex;
     align-items: center;
     justify-content: center;

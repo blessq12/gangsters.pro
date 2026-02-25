@@ -17,45 +17,58 @@ useEnterSlide(containerRef, {
 </script>
 
 <template>
-    <footer class="mt-8 pb-4">
+    <footer class="mt-10 pb-6">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div
                 ref="containerRef"
-                class="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-[rgba(255,255,255,0.03)] px-4 sm:px-6 lg:px-8 py-4 flex-wrap text-sm"
+                class="flex items-center justify-between gap-4 rounded-2xl border border-amber-400/30 bg-[rgba(255,255,255,0.035)] px-4 sm:px-6 lg:px-8 py-4 flex-wrap text-sm shadow-[0_0_22px_rgba(0,0,0,0.65)] backdrop-blur"
             >
-                <div class="flex flex-wrap gap-3">
-                    <RouterLink :to="{ name: 'about' }">О компании</RouterLink>
-                    <RouterLink :to="{ name: 'delivery' }">
+                <div class="flex flex-wrap gap-3 text-slate-200/85">
+                    <RouterLink
+                        :to="{ name: 'about' }"
+                        class="hover:text-amber-300 transition-colors duration-200"
+                    >
+                        О компании
+                    </RouterLink>
+                    <RouterLink
+                        :to="{ name: 'delivery' }"
+                        class="hover:text-amber-300 transition-colors duration-200"
+                    >
                         Оплата и доставка
                     </RouterLink>
-                    <RouterLink :to="{ name: 'contacts' }">
+                    <RouterLink
+                        :to="{ name: 'contacts' }"
+                        class="hover:text-amber-300 transition-colors duration-200"
+                    >
                         Контакты
                     </RouterLink>
                 </div>
-                <div class="flex flex-wrap gap-3">
+                <div class="flex flex-wrap gap-3 text-slate-300/85">
                     <button
                         type="button"
-                        class="text-slate-300/80 hover:text-amber-300 transition-colors"
+                        class="hover:text-amber-300 transition-colors duration-200"
                         @click="showPrivacy = true"
                     >
                         Политика конфиденциальности
                     </button>
                     <button
                         type="button"
-                        class="text-slate-300/80 hover:text-amber-300 transition-colors"
+                        class="hover:text-amber-300 transition-colors duration-200"
                         @click="showRules = true"
                     >
                         Правила использования
                     </button>
                     <button
                         type="button"
-                        class="text-slate-300/80 hover:text-amber-300 transition-colors"
+                        class="hover:text-amber-300 transition-colors duration-200"
                         @click="showAgreement = true"
                     >
                         Пользовательское соглашение
                     </button>
                 </div>
-                <p class="opacity-70">© Gangsters, {{ year }}</p>
+                <p class="opacity-70 text-slate-300/80 text-xs sm:text-sm">
+                    © Gangsters, {{ year }}
+                </p>
             </div>
         </div>
 

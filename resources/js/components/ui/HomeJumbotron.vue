@@ -40,7 +40,7 @@ const handleSwiperInit = (swiper) => {
             ></div>
         </div>
 
-        <div class="relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <Swiper
                 :loop="true"
                 :looped-slides="slides.length"
