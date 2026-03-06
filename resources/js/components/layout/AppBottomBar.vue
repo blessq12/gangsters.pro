@@ -57,9 +57,7 @@ const handleDockClick = (id) => {
     userStore.setDockActive(id);
 };
 
-const getBadge = (id) => {
-    return userStore.dockBadges?.[id] ?? 0;
-};
+const getBadge = (id) => userStore.resolvedDockBadges?.[id] ?? 0;
 
 const handleEnter = (el, done) => {
     playBottomBarShow(el);

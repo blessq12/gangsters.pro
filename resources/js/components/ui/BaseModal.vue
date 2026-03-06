@@ -1,5 +1,5 @@
 <script setup>
-import { nextTick, ref, watch } from "vue";
+import { nextTick, onBeforeUnmount, ref, watch } from "vue";
 import { playModalClose, playModalOpen } from "../../animations/animationManager";
 
 const props = defineProps({
@@ -18,6 +18,16 @@ const emit = defineEmits(["update:modelValue"]);
 const isVisible = ref(false);
 const backdropRef = ref(null);
 const cardRef = ref(null);
+let savedOverflow = "";
+
+const lockBodyScroll = () => {
+    savedOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+};
+
+const unlockBodyScroll = () => {
+    document.body.style.overflow = savedOverflow || "";
+};
 
 const close = () => {
     emit("update:modelValue", false);
@@ -28,6 +38,7 @@ watch(
     async (val) => {
         if (val) {
             isVisible.value = true;
+            lockBodyScroll();
             await nextTick();
             playModalOpen({
                 backdrop: backdropRef.value,
@@ -39,12 +50,15 @@ watch(
                 card: cardRef.value,
                 onComplete: () => {
                     isVisible.value = false;
+                    unlockBodyScroll();
                 },
             });
         }
     },
     { immediate: true },
 );
+
+onBeforeUnmount(unlockBodyScroll);
 </script>
 
 <template>

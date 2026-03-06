@@ -1,8 +1,10 @@
 <script setup>
 import { ref } from "vue";
 import { useEnterSlide } from "../../composables/animations/useEnterSlide";
+import { getLegalTexts } from "../../content/legalTexts";
 
 const year = new Date().getFullYear();
+const legal = getLegalTexts();
 
 const showPrivacy = ref(false);
 const showRules = ref(false);
@@ -49,21 +51,21 @@ useEnterSlide(containerRef, {
                         class="hover:text-amber-300 transition-colors duration-200"
                         @click="showPrivacy = true"
                     >
-                        Политика конфиденциальности
+                        {{ legal.privacy.title }}
                     </button>
                     <button
                         type="button"
                         class="hover:text-amber-300 transition-colors duration-200"
                         @click="showRules = true"
                     >
-                        Правила использования
+                        {{ legal.rules.title }}
                     </button>
                     <button
                         type="button"
                         class="hover:text-amber-300 transition-colors duration-200"
                         @click="showAgreement = true"
                     >
-                        Пользовательское соглашение
+                        {{ legal.agreement.title }}
                     </button>
                 </div>
                 <p class="opacity-70 text-slate-300/80 text-xs sm:text-sm">
@@ -73,24 +75,30 @@ useEnterSlide(containerRef, {
         </div>
 
         <BaseModal v-model="showPrivacy">
-            <template #header>Политика конфиденциальности</template>
-            <p class="text-sm text-slate-200/90">
-                Здесь позже появится полный текст политики конфиденциальности.
-            </p>
+            <template #header>{{ legal.privacy.title }}</template>
+            <div class="space-y-3 text-sm text-slate-200/90">
+                <p v-for="(para, i) in legal.privacy.content" :key="i">
+                    {{ para }}
+                </p>
+            </div>
         </BaseModal>
 
         <BaseModal v-model="showRules">
-            <template #header>Правила использования</template>
-            <p class="text-sm text-slate-200/90">
-                Здесь позже появятся правила использования сервиса.
-            </p>
+            <template #header>{{ legal.rules.title }}</template>
+            <div class="space-y-3 text-sm text-slate-200/90">
+                <p v-for="(para, i) in legal.rules.content" :key="i">
+                    {{ para }}
+                </p>
+            </div>
         </BaseModal>
 
         <BaseModal v-model="showAgreement">
-            <template #header>Пользовательское соглашение</template>
-            <p class="text-sm text-slate-200/90">
-                Здесь позже появится текст пользовательского соглашения.
-            </p>
+            <template #header>{{ legal.agreement.title }}</template>
+            <div class="space-y-3 text-sm text-slate-200/90">
+                <p v-for="(para, i) in legal.agreement.content" :key="i">
+                    {{ para }}
+                </p>
+            </div>
         </BaseModal>
     </footer>
 </template>

@@ -67,13 +67,13 @@ const handleDec = () => {
 
 const handleToggleFavorite = () => {
     if (!productId.value) return;
-    userStore.toggleFavorite(productId.value);
+    userStore.toggleFavorite(props.product);
 };
 </script>
 
 <template>
     <article
-        class="group flex h-full flex-col overflow-hidden rounded-3xl bg-[rgba(255,255,255,0.02)] shadow-[0_18px_45px_rgba(0,0,0,0.85)] transition-colors transition-transform duration-300 hover:-translate-y-1 hover:bg-[rgba(255,255,255,0.03)]"
+        class="group flex h-full flex-col overflow-hidden rounded-3xl bg-[rgba(255,255,255,0.02)] shadow-[0_18px_45px_rgba(0,0,0,0.85)] transition duration-300 hover:-translate-y-1 hover:bg-[rgba(255,255,255,0.03)]"
     >
         <div
             class="relative w-full overflow-hidden aspect-[4/3] sm:aspect-[5/4] lg:h-full lg:aspect-auto"

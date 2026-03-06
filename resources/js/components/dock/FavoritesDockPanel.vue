@@ -1,7 +1,18 @@
 <script setup>
+import { computed } from "vue";
 import { useUserStore } from "../../stores/userStore";
 
 const userStore = useUserStore();
+
+const favoriteItems = computed(() => userStore.favorites);
+
+const handleAddToCart = (item) => {
+    if (!item?.productSnapshot?.id) return;
+    userStore.addToCart(item.productSnapshot, 1);
+};
+
+const formatPrice = (value) =>
+    new Intl.NumberFormat("ru-RU").format(Number(value) || 0);
 </script>
 
 <template>
@@ -13,28 +24,47 @@ const userStore = useUserStore();
                 Избранное
             </p>
 
-            <ul class="space-y-2 text-xs sm:text-sm text-slate-200">
+            <div
+                v-if="!favoriteItems.length"
+                class="rounded-2xl bg-[rgba(255,255,255,0.03)] px-4 py-5 text-sm text-slate-300"
+            >
+                Избранное пока пустое. Ткни сердечко на карточке, и позиция появится тут.
+            </div>
+
+            <ul
+                v-else
+                class="space-y-2 text-xs sm:text-sm text-slate-200"
+            >
                 <li
+                    v-for="item in favoriteItems"
+                    :key="item.productId"
                     class="flex items-center justify-between gap-3 rounded-2xl bg-[rgba(255,255,255,0.03)] px-3 py-2"
                 >
-                    <span class="truncate">Филадельфия классика</span>
-                    <button
-                        type="button"
-                        class="shrink-0 text-[11px] text-amber-300 hover:text-amber-200"
-                    >
-                        В корзину
-                    </button>
-                </li>
-                <li
-                    class="flex items-center justify-between gap-3 rounded-2xl bg-[rgba(255,255,255,0.03)] px-3 py-2"
-                >
-                    <span class="truncate">Сет «Ночной дозор»</span>
-                    <button
-                        type="button"
-                        class="shrink-0 text-[11px] text-amber-300 hover:text-amber-200"
-                    >
-                        В корзину
-                    </button>
+                    <div class="min-w-0">
+                        <p class="truncate font-medium text-slate-100">
+                            {{ item.productSnapshot?.name || `Товар #${item.productId}` }}
+                        </p>
+                        <p class="mt-0.5 text-[11px] text-slate-400">
+                            {{ formatPrice(item.productSnapshot?.price) }} ₽
+                        </p>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <button
+                            type="button"
+                            class="shrink-0 text-[11px] text-amber-300 transition-colors hover:text-amber-200"
+                            @click="handleAddToCart(item)"
+                        >
+                            В корзину
+                        </button>
+                        <button
+                            type="button"
+                            class="shrink-0 text-[11px] text-slate-400 transition-colors hover:text-red-400"
+                            @click="userStore.removeFavorite(item.productId)"
+                        >
+                            Убрать
+                        </button>
+                    </div>
                 </li>
             </ul>
         </div>

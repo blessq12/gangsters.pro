@@ -1,6 +1,95 @@
 import { defineStore } from "pinia";
 
 const USER_KEY = "gangsters_user";
+const DEFAULT_DOCK_BADGES = {
+    profile: 1,
+    cart: 0,
+    favorites: 0,
+    delivery: 2,
+    notifications: 4,
+};
+
+function normalizeProductSnapshot(product) {
+    if (!product || typeof product !== "object") {
+        return null;
+    }
+
+    return {
+        id: product.id ?? null,
+        name: product.name || "",
+        price: Number(product.price) || 0,
+        weight: product.weight ?? null,
+    };
+}
+
+function normalizeCartItems(items) {
+    if (!Array.isArray(items)) {
+        return [];
+    }
+
+    return items
+        .map((item) => {
+            if (!item || typeof item !== "object") {
+                return null;
+            }
+
+            const productId = item.productId ?? item.productSnapshot?.id ?? null;
+            const qty = Number(item.qty) || 0;
+
+            if (!productId || qty <= 0) {
+                return null;
+            }
+
+            const snapshot = normalizeProductSnapshot({
+                id: productId,
+                ...(item.productSnapshot || {}),
+            });
+
+            return {
+                productId,
+                qty,
+                productSnapshot: snapshot,
+            };
+        })
+        .filter(Boolean);
+}
+
+function normalizeFavorites(items) {
+    if (!Array.isArray(items)) {
+        return [];
+    }
+
+    return items
+        .map((item) => {
+            if (typeof item === "number" || typeof item === "string") {
+                return {
+                    productId: item,
+                    productSnapshot: normalizeProductSnapshot({
+                        id: item,
+                        name: `Товар #${item}`,
+                    }),
+                };
+            }
+
+            if (!item || typeof item !== "object") {
+                return null;
+            }
+
+            const productId = item.productId ?? item.productSnapshot?.id ?? item.id ?? null;
+            if (!productId) {
+                return null;
+            }
+
+            return {
+                productId,
+                productSnapshot: normalizeProductSnapshot({
+                    id: productId,
+                    ...(item.productSnapshot || item),
+                }),
+            };
+        })
+        .filter(Boolean);
+}
 
 export const useUserStore = defineStore("user", {
     state: () => ({
@@ -23,13 +112,7 @@ export const useUserStore = defineStore("user", {
         // Dock: активный элемент нижнего бара
         dockActiveId: null,
         // Dock: счётчики для иконок
-        dockBadges: {
-            profile: 1,
-            cart: 3,
-            favorites: 5,
-            delivery: 2,
-            notifications: 4,
-        },
+        dockBadges: { ...DEFAULT_DOCK_BADGES },
         // Корзина и избранное
         cartItems: [],
         favorites: [],
@@ -50,7 +133,23 @@ export const useUserStore = defineStore("user", {
             const item = state.cartItems.find((i) => i.productId === id);
             return item ? item.qty : 0;
         },
-        isFavorite: (state) => (id) => state.favorites.includes(id),
+        isFavorite: (state) => (id) =>
+            state.favorites.some((item) => item.productId === id),
+        cartTotalItems(state) {
+            return state.cartItems.reduce((sum, item) => sum + item.qty, 0);
+        },
+        cartTotalAmount(state) {
+            return state.cartItems.reduce((sum, item) => {
+                return sum + (Number(item.productSnapshot?.price) || 0) * item.qty;
+            }, 0);
+        },
+        resolvedDockBadges(state) {
+            return {
+                ...state.dockBadges,
+                cart: this.cartTotalItems,
+                favorites: state.favorites.length,
+            };
+        },
     },
     actions: {
         initFromStorage() {
@@ -103,11 +202,11 @@ export const useUserStore = defineStore("user", {
                 }
 
                 if (Array.isArray(parsed.cartItems)) {
-                    this.cartItems = parsed.cartItems;
+                    this.cartItems = normalizeCartItems(parsed.cartItems);
                 }
 
                 if (Array.isArray(parsed.favorites)) {
-                    this.favorites = parsed.favorites;
+                    this.favorites = normalizeFavorites(parsed.favorites);
                 }
 
                 if (typeof parsed.showBottomNav === "boolean") {
@@ -226,6 +325,7 @@ export const useUserStore = defineStore("user", {
             this.catalogSelectedCategoryId = null;
             this.catalogSelectedProduct = null;
             this.dockActiveId = null;
+            this.dockBadges = { ...DEFAULT_DOCK_BADGES };
             this.cartItems = [];
             this.favorites = [];
             this.showBottomNav = false;
@@ -238,19 +338,17 @@ export const useUserStore = defineStore("user", {
         addToCart(product, qty = 1) {
             if (!product || !product.id) return;
             const id = product.id;
+            const safeQty = Math.max(1, Number(qty) || 1);
+            const snapshot = normalizeProductSnapshot(product);
             const existing = this.cartItems.find((i) => i.productId === id);
             if (existing) {
-                existing.qty += qty;
+                existing.qty += safeQty;
+                existing.productSnapshot = snapshot || existing.productSnapshot;
             } else {
                 this.cartItems.push({
                     productId: id,
-                    qty,
-                    productSnapshot: {
-                        id: product.id,
-                        name: product.name,
-                        price: product.price,
-                        weight: product.weight,
-                    },
+                    qty: safeQty,
+                    productSnapshot: snapshot,
                 });
             }
             this.persist();
@@ -271,14 +369,38 @@ export const useUserStore = defineStore("user", {
             }
             this.persist();
         },
+        removeFromCart(productId) {
+            this.cartItems = this.cartItems.filter((item) => item.productId !== productId);
+            this.persist();
+        },
         // Избранное
-        toggleFavorite(productId) {
+        toggleFavorite(product) {
+            const productId =
+                typeof product === "object" ? product?.id : product;
+
             if (!productId) return;
-            if (this.favorites.includes(productId)) {
-                this.favorites = this.favorites.filter((id) => id !== productId);
+
+            const existingIndex = this.favorites.findIndex(
+                (item) => item.productId === productId,
+            );
+
+            if (existingIndex !== -1) {
+                this.favorites.splice(existingIndex, 1);
             } else {
-                this.favorites.push(productId);
+                this.favorites.push({
+                    productId,
+                    productSnapshot:
+                        normalizeProductSnapshot(product) ||
+                        normalizeProductSnapshot({
+                            id: productId,
+                            name: `Товар #${productId}`,
+                        }),
+                });
             }
+            this.persist();
+        },
+        removeFavorite(productId) {
+            this.favorites = this.favorites.filter((item) => item.productId !== productId);
             this.persist();
         },
         setMobileMenuOpen(value) {
