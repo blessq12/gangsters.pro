@@ -53,7 +53,7 @@ const mapUrl =
                         </p>
                     </div>
 
-                    <div class="grid gap-2 sm:grid-cols-3 sm:gap-3">
+                    <div class="hidden gap-2 sm:grid-cols-3 sm:gap-3 md:grid">
                         <div
                             class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3 backdrop-blur"
                         >
@@ -113,7 +113,7 @@ const mapUrl =
                     <p class="mt-2 text-slate-400">
                         Кухня: {{ kitchenAddress }}
                     </p>
-                    <div class="mt-4 grid gap-2 sm:grid-cols-2">
+                    <div class="mt-4 hidden gap-2 sm:grid sm:grid-cols-2">
                         <div class="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
                             <p class="text-[11px] uppercase tracking-[0.2em] text-slate-400">
                                 Время
@@ -133,7 +133,7 @@ const mapUrl =
                     </div>
                 </div>
 
-                <div class="grid gap-3">
+                <div class="hidden gap-3 sm:grid">
                     <div
                         class="rounded-[1.75rem] border border-white/10 bg-[rgba(255,255,255,0.03)] px-4 py-4"
                     >

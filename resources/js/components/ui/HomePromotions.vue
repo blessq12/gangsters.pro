@@ -56,7 +56,7 @@ const openPromo = (promo) => {
             Актуальные акции
         </h2>
 
-        <div class="grid gap-4 sm:grid-cols-3">
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
             <article
                 v-for="(promo, index) in promos"
                 :key="index"

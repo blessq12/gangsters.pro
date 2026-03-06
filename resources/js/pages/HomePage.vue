@@ -36,7 +36,7 @@ const toggleBottomBar = () => {
         <HomePromotions />
 
         <section>
-            <header class="mb-4 flex items-end justify-between gap-3">
+            <header class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                     <h2 class="text-xl sm:text-2xl font-semibold text-slate-50">
                         Меню

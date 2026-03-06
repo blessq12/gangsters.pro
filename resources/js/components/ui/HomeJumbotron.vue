@@ -1,5 +1,6 @@
 <script setup>
 import "swiper/css";
+import { ref } from "vue";
 import { Swiper, SwiperSlide } from "swiper/vue";
 
 const slides = [
@@ -20,39 +21,46 @@ const slides = [
     },
 ];
 
+const swiperRef = ref(null);
+
 const handleSwiperInit = (swiper) => {
     if (!swiper) return;
+    swiperRef.value = swiper;
     // переключаемся на слайд назад, чтобы сразу видеть соседние
     swiper.slidePrev(0);
 };
 </script>
 
 <template>
-    <section class="mt-12 mb-18 relative">
+    <section
+        class="relative mt-8 mb-12 w-screen max-w-none overflow-hidden sm:mt-12 sm:mb-18 [margin-left:calc(50%-50vw)]"
+    >
         <div
-            class="pointer-events-none absolute inset-0 opacity-40 mix-blend-screen"
+            class="pointer-events-none absolute inset-0 opacity-50 mix-blend-screen"
         >
             <div
-                class="absolute -top-24 -left-10 h-56 w-56 rounded-full bg-amber-500/15 blur-3xl"
+                class="absolute -left-10 top-8 h-36 w-36 rounded-full bg-amber-500/15 blur-3xl sm:-left-16 sm:top-0 sm:h-56 sm:w-56"
             ></div>
             <div
-                class="absolute -bottom-24 right-0 h-64 w-64 rounded-full bg-rose-500/10 blur-3xl"
+                class="absolute -right-8 bottom-0 h-44 w-44 rounded-full bg-rose-500/10 blur-3xl sm:right-0 sm:h-64 sm:w-64"
             ></div>
         </div>
 
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="relative px-4 sm:px-6 lg:px-8">
             <Swiper
                 :loop="true"
                 :looped-slides="slides.length"
                 :loop-additional-slides="slides.length"
                 :autoplay="{ delay: 4500 }"
                 :speed="700"
-                :space-between="24"
+                :space-between="12"
                 :centered-slides="true"
+                :watch-slides-progress="true"
+                :slide-to-clicked-slide="true"
                 :breakpoints="{
-                    0: { slidesPerView: 1.1 },
-                    768: { slidesPerView: 1.3 },
-                    1024: { slidesPerView: 1.6 },
+                    0: { slidesPerView: 1.18, spaceBetween: 12 },
+                    768: { slidesPerView: 1.35 },
+                    1024: { slidesPerView: 1.55 },
                 }"
                 class="!overflow-visible"
                 @swiper="handleSwiperInit"
@@ -60,41 +68,50 @@ const handleSwiperInit = (swiper) => {
                 <SwiperSlide
                     v-for="(slide, index) in slides"
                     :key="index"
-                    v-slot="{ isActive }"
                 >
-                    <div
-                        class="relative rounded-2xl overflow-hidden bg-slate-900/60 border border-white/10 transition-transform transition-opacity duration-500 ease-out"
-                        :class="
-                            isActive
-                                ? 'scale-[1.15] opacity-100'
-                                : 'scale-90 opacity-60'
-                        "
-                    >
-                        <div class="aspect-[16/9] w-full">
-                            <img
-                                :src="slide.image"
-                                :alt="slide.title"
-                                class="h-full w-full object-cover"
-                            />
-                        </div>
+                    <div class="px-1 py-3 sm:py-5">
                         <div
-                            class="absolute inset-x-0 bottom-0 px-4 sm:px-6 py-4 bg-gradient-to-t from-black/70 via-black/20 to-transparent"
+                            class="home-jumbotron-card relative rounded-2xl overflow-hidden border bg-slate-900/60"
                         >
-                            <p
-                                class="text-xs sm:text-sm uppercase tracking-[0.3em] text-slate-300/80 mb-1"
+                            <div class="aspect-[5/4] w-full sm:aspect-[16/9]">
+                                <img
+                                    :src="slide.image"
+                                    :alt="slide.title"
+                                    class="h-full w-full object-cover"
+                                />
+                            </div>
+                            <div
+                                class="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/85"
+                            ></div>
+                            <div
+                                class="absolute left-3 top-3 inline-flex rounded-full border border-white/10 bg-[rgba(0,0,0,0.42)] px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.2em] text-slate-100 backdrop-blur sm:left-4 sm:top-4 sm:text-[11px]"
                             >
                                 Gangsters
-                            </p>
-                            <h1
-                                class="text-lg sm:text-2xl font-semibold text-amber-300"
+                            </div>
+                            <div
+                                class="absolute right-3 top-3 inline-flex rounded-full border border-amber-400/20 bg-[rgba(0,0,0,0.38)] px-2.5 py-1 text-[10px] font-semibold text-amber-200 backdrop-blur sm:right-4 sm:top-4 sm:text-[11px]"
                             >
-                                {{ slide.title }}
-                            </h1>
-                            <p
-                                class="mt-1 text-xs sm:text-sm text-slate-200/90"
+                                {{ String(index + 1).padStart(2, "0") }}/{{ String(slides.length).padStart(2, "0") }}
+                            </div>
+                            <div
+                                class="absolute inset-x-3 bottom-3 rounded-2xl border border-white/10 bg-[rgba(0,0,0,0.32)] px-4 py-3 backdrop-blur-xl sm:inset-x-0 sm:bottom-0 sm:rounded-none sm:border-0 sm:bg-transparent sm:px-6 sm:py-4 sm:backdrop-blur-0"
                             >
-                                {{ slide.description }}
-                            </p>
+                                <p
+                                    class="mb-1 text-[10px] uppercase tracking-[0.26em] text-slate-300/80 sm:text-sm sm:tracking-[0.3em]"
+                                >
+                                    Главное предложение
+                                </p>
+                                <h1
+                                    class="text-xl font-semibold leading-tight text-amber-300 sm:text-2xl"
+                                >
+                                    {{ slide.title }}
+                                </h1>
+                                <p
+                                    class="mt-1 max-w-[18rem] text-xs leading-relaxed text-slate-200/90 sm:max-w-none sm:text-sm"
+                                >
+                                    {{ slide.description }}
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </SwiperSlide>
@@ -103,4 +120,53 @@ const handleSwiperInit = (swiper) => {
     </section>
 </template>
 
-<style scoped></style>
+<style scoped>
+:deep(.swiper-slide .home-jumbotron-card) {
+    transform: scale(0.72);
+    opacity: 0;
+    border-color: transparent;
+    transition:
+        transform 500ms ease,
+        opacity 500ms ease,
+        border-color 500ms ease,
+        box-shadow 500ms ease;
+}
+
+:deep(.swiper-slide-prev .home-jumbotron-card),
+:deep(.swiper-slide-next .home-jumbotron-card) {
+    transform: scale(0.82);
+    opacity: 0.55;
+    cursor: pointer;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+:deep(.swiper-slide-prev .home-jumbotron-card:hover),
+:deep(.swiper-slide-next .home-jumbotron-card:hover) {
+    opacity: 0.7;
+}
+
+:deep(.swiper-slide-active .home-jumbotron-card) {
+    transform: scale(1.05);
+    opacity: 1;
+    border-color: rgba(251, 191, 36, 0.35);
+    box-shadow: 0 24px 50px rgba(0, 0, 0, 0.45);
+    z-index: 10;
+}
+
+@media (max-width: 767px) {
+    :deep(.swiper-slide .home-jumbotron-card) {
+        transform: scale(0.82);
+    }
+
+    :deep(.swiper-slide-prev .home-jumbotron-card),
+    :deep(.swiper-slide-next .home-jumbotron-card) {
+        transform: scale(0.9);
+        opacity: 0.58;
+    }
+
+    :deep(.swiper-slide-active .home-jumbotron-card) {
+        transform: scale(1.02);
+        box-shadow: 0 20px 42px rgba(0, 0, 0, 0.42);
+    }
+}
+</style>
