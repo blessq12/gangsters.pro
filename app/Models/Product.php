@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\Model;
 class Product extends Model
 {
     use HasFactory;
-    use \Encore\Admin\Traits\Resizable;
 
     protected $fillable = [
         'name',
@@ -80,10 +79,5 @@ class Product extends Model
     {
         return $this->belongsToMany(ProductCategory::class, 'category_product', 'product_id', 'category_id')
             ->withPivot('order');
-    }
-
-    public function modifierGroups()
-    {
-        return $this->belongsToMany(ModifierGroup::class, 'product_modifier_groups', 'product_id', 'group_id');
     }
 }

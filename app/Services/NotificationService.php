@@ -3,62 +3,35 @@
 namespace App\Services;
 
 use App\Models\Notification;
-use App\Models\SessionIdentifier;
 
 class NotificationService
 {
     /**
-     * Sends a notification to a specific session.
-     *
-     * @param string $sessionId The session identifier.
-     * @param string $message The notification message.
-     * @param string|null $icon The optional icon for the notification.
-     * @param string $type The type of notification (default is 'info').
+     * Sends a mass notification (no specific user).
      */
-    public function sendNotification($message, $icon = null, $type = 'info')
+    public function sendNotification(string $message, ?string $icon = null, string $type = 'info'): void
     {
-        
         Notification::create([
             'message' => $message,
             'icon' => $icon,
             'type' => $type,
-            'is_mass' => true
+            'is_mass' => true,
         ]);
-        
     }
 
     /**
-     * Sends a personal notification to a specific user.
-     *
-     * @param string|null $sessionId The optional session identifier.
-     * @param string|null $userId The optional user identifier.
-     * @param string $message The notification message.
-     * @param string|null $icon The optional icon for the notification.
-     * @param string $type The type of notification (default is 'info').
+     * Sends a personal notification to a user.
      */
-    public function sendPersonalNotification($sessionId, $userId = null, $message, $icon = null, $type = 'info')
+    public function sendPersonalNotification(?int $userId, string $message, ?string $icon = null, string $type = 'info'): void
     {
-        if ($sessionId) {
-            // Create notification using session ID
-            $userId = SessionIdentifier::where('session_id', $sessionId)->first()->user_id ?? null;
-            Notification::create([
-                'session_id' => $sessionId,
-                'user_id' => $userId,
-                'message' => $message,
-                'icon' => $icon,
-                'type' => $type,
-            ]);
-        } elseif ($userId) {
-            // Create notification using user ID
-            Notification::create([
-                'session_id' => null, // or handle session ID if needed
-                'user_id' => $userId,
-                'message' => $message,
-                'icon' => $icon,
-                'type' => $type,
-            ]);
-        } else {
-            throw new \Exception('Either session ID or user ID must be provided');
+        if ($userId === null) {
+            throw new \InvalidArgumentException('User ID is required for personal notification');
         }
+        Notification::create([
+            'user_id' => $userId,
+            'message' => $message,
+            'icon' => $icon,
+            'type' => $type,
+        ]);
     }
 }

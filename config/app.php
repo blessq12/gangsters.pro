@@ -167,6 +167,7 @@ return [
         App\Providers\ProductProvider::class,
         App\Providers\AuthServiceProvider::class,
         App\Providers\EventServiceProvider::class,
+        App\Providers\Filament\AdminPanelProvider::class,
         App\Providers\RouteServiceProvider::class,
         App\Providers\OrderServiceProvider::class,
         Intervention\Image\ImageServiceProvider::class,

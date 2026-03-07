@@ -4,12 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use \Encore\Admin\Traits\Resizable;
-
-
 class ProductImage extends Model
 {
-    use HasFactory, Resizable;
+    use HasFactory;
 
     protected $fillable = [
         'product_id',
