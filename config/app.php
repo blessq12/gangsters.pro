@@ -172,6 +172,7 @@ return [
         App\Providers\OrderServiceProvider::class,
         Intervention\Image\ImageServiceProvider::class,
         App\Providers\FrontPadServiceProvider::class,
+        App\Providers\ClientServiceProvider::class,
     ])->toArray(),
 
     /*
