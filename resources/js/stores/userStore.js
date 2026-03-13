@@ -103,8 +103,6 @@ export const useUserStore = defineStore("user", {
         },
         // Токен авторизации клиента
         token: null,
-        // Дополнительные данные
-        bonuses: 0,
         // Выбранный адрес доставки
         selectedAddressId: null,
         // Список адресов клиента
@@ -177,10 +175,6 @@ export const useUserStore = defineStore("user", {
                     this.setToken(parsed.token);
                 }
 
-                if (typeof parsed.bonuses === "number") {
-                    this.bonuses = parsed.bonuses;
-                }
-
                 if (Array.isArray(parsed.addresses)) {
                     this.addresses = parsed.addresses;
                 }
@@ -234,7 +228,6 @@ export const useUserStore = defineStore("user", {
             const payload = {
                 profile: this.profile,
                 token: this.token,
-                bonuses: this.bonuses,
                 addresses: this.addresses,
                 selectedAddressId: this.selectedAddressId,
                 catalogSelectedCategoryId: this.catalogSelectedCategoryId,
@@ -267,10 +260,6 @@ export const useUserStore = defineStore("user", {
                 ...this.profile,
                 ...(partial || {}),
             };
-            this.persist();
-        },
-        setBonuses(value) {
-            this.bonuses = Number.isFinite(value) ? value : 0;
             this.persist();
         },
         setAddresses(addresses) {
@@ -340,7 +329,6 @@ export const useUserStore = defineStore("user", {
                 phone: "",
                 email: "",
             };
-            this.bonuses = 0;
             this.addresses = [];
             this.selectedAddressId = null;
             this.catalogSelectedCategoryId = null;
