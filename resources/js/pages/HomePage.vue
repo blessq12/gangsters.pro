@@ -1,24 +1,31 @@
 <script setup>
-import { computed, ref } from "vue";
-import { mockCategories, mockProducts } from "../mocks/catalogMock";
+import { computed, onMounted } from "vue";
 import { useUserStore } from "../stores/userStore";
-
-const categories = mockCategories;
-const allProducts = mockProducts;
-
-const selectedCategoryId = ref(null);
-
-const filteredProducts = computed(() => {
-    if (!selectedCategoryId.value) {
-        return allProducts;
-    }
-
-    return allProducts.filter(
-        (product) => product.categoryId === selectedCategoryId.value,
-    );
-});
+import { useCatalogStore } from "../stores/catalogStore";
 
 const userStore = useUserStore();
+const catalogStore = useCatalogStore();
+
+onMounted(() => {
+    if (!catalogStore.hasLoaded && !catalogStore.loading) {
+        catalogStore.fetchCatalog();
+    }
+});
+
+const categories = computed(() =>
+    catalogStore.categories.map((entry) => ({
+        id: entry.category.id,
+        name: entry.category.name,
+        uri: entry.category.slug,
+    })),
+);
+
+const selectedCategoryId = computed({
+    get: () => catalogStore.selectedCategoryId,
+    set: (value) => catalogStore.setSelectedCategoryId(value),
+});
+
+const filteredProducts = computed(() => catalogStore.filteredProducts);
 
 const bottomBarLabel = computed(() =>
     userStore.showBottomNav ? "Скрыть панель" : "Показать панель",
@@ -65,7 +72,10 @@ const toggleBottomBar = () => {
                 :categories="categories"
             />
 
-            <CatalogProducts :products="filteredProducts" />
+            <CatalogProducts
+                :products="filteredProducts"
+                :loading="catalogStore.loading"
+            />
         </section>
     </div>
 </template>
