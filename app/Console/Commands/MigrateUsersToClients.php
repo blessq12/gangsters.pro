@@ -60,13 +60,19 @@ class MigrateUsersToClients extends Command
                 $conflictPhone = $phoneFormatted && array_key_exists($phoneFormatted, $existingClientsByPhone);
 
                 if ($conflictEmail || $conflictPhone) {
+                    $reasons = [];
+                    if ($conflictEmail) {
+                        $reasons[] = sprintf('дублирующий email=%s', $email);
+                    }
+                    if ($conflictPhone) {
+                        $reasons[] = sprintf('дублирующий телефон=%s', $phoneFormatted);
+                    }
+
                     $this->warn(sprintf(
-                        'Пропуск пользователя #%d (%s): клиент с таким %s уже существует.',
+                        'Пропуск пользователя users#%d (%s): %s',
                         $user->id,
                         $user->email ?? $user->name,
-                        $conflictEmail && $conflictPhone
-                            ? 'email и телефоном'
-                            : ($conflictEmail ? 'email' : 'телефоном')
+                        implode('; ', $reasons)
                     ));
                     $skipped++;
                     continue;

@@ -34,17 +34,23 @@ class ClientResource extends Resource
         return $schema->components([
             TextInput::make('name')
                 ->label('Имя')
-                ->required(),
+                ->required()
+                ->maxLength(255)
+                ->columnSpanFull(),
             TextInput::make('phone')
                 ->label('Телефон')
-                ->required(),
+                ->placeholder('+7 (900) 123-45-67')
+                ->required()
+                ->columnSpanFull(),
             TextInput::make('email')
                 ->label('Email')
                 ->email()
-                ->nullable(),
+                ->nullable()
+                ->columnSpanFull(),
             DatePicker::make('birth_date')
                 ->label('Дата рождения')
-                ->nullable(),
+                ->nullable()
+                ->columnSpanFull(),
             Select::make('status')
                 ->label('Статус')
                 ->options([
@@ -52,11 +58,14 @@ class ClientResource extends Resource
                     'blocked' => 'Заблокирован',
                 ])
                 ->required()
-                ->default('active'),
+                ->default('active')
+                ->columnSpanFull(),
             Toggle::make('consent_personal_data')
-                ->label('Согласие на обработку данных'),
+                ->label('Согласие на обработку данных')
+                ->columnSpanFull(),
             Toggle::make('consent_marketing')
-                ->label('Согласие на маркетинг'),
+                ->label('Согласие на маркетинг')
+                ->columnSpanFull(),
         ]);
     }
 
@@ -75,6 +84,9 @@ class ClientResource extends Resource
                 TextColumn::make('email')
                     ->label('Email')
                     ->searchable(),
+                TextColumn::make('birth_date')
+                    ->label('Дата рождения')
+                    ->date('d.m.Y'),
                 TextColumn::make('status')
                     ->label('Статус')
                     ->badge(),
@@ -85,7 +97,8 @@ class ClientResource extends Resource
                     ->label('Маркетинг')
                     ->boolean(),
                 TextColumn::make('created_at')
-                    ->dateTime()
+                    ->label('Создан')
+                    ->dateTime('d.m.Y H:i')
                     ->sortable(),
             ]);
     }
