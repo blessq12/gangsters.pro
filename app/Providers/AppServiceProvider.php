@@ -3,7 +3,6 @@
 namespace App\Providers;
 
 use App\Models\Company;
-use App\Services\NotificationService;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
@@ -16,10 +15,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton('notification.service', function ($app) {
-            return new NotificationService();
-        });
-
         $this->app->singleton(YaMetrikaService::class, function ($app) {
             return new YaMetrikaService();
         });
