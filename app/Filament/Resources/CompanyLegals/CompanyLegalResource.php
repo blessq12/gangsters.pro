@@ -9,6 +9,7 @@ use App\Filament\Resources\CompanyLegals\Schemas\CompanyLegalForm;
 use App\Filament\Resources\CompanyLegals\Tables\CompanyLegalsTable;
 use App\Models\CompanyLegal;
 use BackedEnum;
+use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -19,6 +20,10 @@ class CompanyLegalResource extends Resource
     protected static ?string $model = CompanyLegal::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+
+    protected static ?string $navigationLabel = 'Юр. данные компании';
+
+    protected static string|UnitEnum|null $navigationGroup = 'Настройки';
 
     public static function form(Schema $schema): Schema
     {

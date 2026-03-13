@@ -10,6 +10,8 @@ class EditProductCategory extends EditRecord
 {
     protected static string $resource = ProductCategoryResource::class;
 
+    protected static ?string $title = 'Редактирование категории';
+
     protected function getHeaderActions(): array
     {
         return [

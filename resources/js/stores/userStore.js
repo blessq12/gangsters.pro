@@ -3,11 +3,11 @@ import axios from "axios";
 
 const USER_KEY = "gangsters_user";
 const DEFAULT_DOCK_BADGES = {
-    profile: 1,
+    profile: 0,
     cart: 0,
     favorites: 0,
-    delivery: 2,
-    notifications: 4,
+    delivery: 0,
+    notifications: 0,
 };
 
 function normalizeProductSnapshot(product) {
@@ -147,6 +147,8 @@ export const useUserStore = defineStore("user", {
         resolvedDockBadges(state) {
             return {
                 ...state.dockBadges,
+                profile: 0,
+                delivery: 0,
                 cart: this.cartTotalItems,
                 favorites: state.favorites.length,
             };
@@ -201,6 +203,8 @@ export const useUserStore = defineStore("user", {
                         ...parsed.dockBadges,
                     };
                 }
+                // Бейдж профиля больше не используем
+                this.dockBadges.profile = 0;
 
                 if (Array.isArray(parsed.cartItems)) {
                     this.cartItems = normalizeCartItems(parsed.cartItems);

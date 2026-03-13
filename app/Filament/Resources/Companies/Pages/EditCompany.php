@@ -10,6 +10,8 @@ class EditCompany extends EditRecord
 {
     protected static string $resource = CompanyResource::class;
 
+    protected static ?string $title = 'Редактирование компании';
+
     protected function getHeaderActions(): array
     {
         return [

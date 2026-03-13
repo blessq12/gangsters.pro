@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             CompanyLegalSeeder::class,
             ProductCategorySeeder::class,
             ProductSeeder::class,
+            PRDDemoCatalogSeeder::class,
         ]);
     }
 }

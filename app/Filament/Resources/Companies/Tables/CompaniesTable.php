@@ -15,24 +15,34 @@ class CompaniesTable
         return $table
             ->columns([
                 TextColumn::make('name')
+                    ->label('Компания')
                     ->searchable(),
                 TextColumn::make('description')
+                    ->label('Описание')
                     ->searchable(),
                 TextColumn::make('country')
+                    ->label('Страна')
                     ->searchable(),
                 TextColumn::make('state')
+                    ->label('Регион')
                     ->searchable(),
                 TextColumn::make('city')
+                    ->label('Город')
                     ->searchable(),
                 TextColumn::make('street')
+                    ->label('Улица')
                     ->searchable(),
                 TextColumn::make('house')
+                    ->label('Дом')
                     ->searchable(),
                 TextColumn::make('phone')
+                    ->label('Телефон')
                     ->searchable(),
                 TextColumn::make('phone_additional')
+                    ->label('Доп. телефон')
                     ->searchable(),
                 TextColumn::make('email_address')
+                    ->label('Email')
                     ->searchable(),
                 TextColumn::make('created_at')
                     ->dateTime()

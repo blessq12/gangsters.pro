@@ -15,11 +15,9 @@ class ProductCategoriesTable
     {
         return $table
             ->columns([
-                TextColumn::make('uri')
-                    ->searchable(),
-                IconColumn::make('visible')
-                    ->boolean(),
                 TextColumn::make('name')
+                    ->searchable(),
+                TextColumn::make('slug')
                     ->searchable(),
                 TextColumn::make('created_at')
                     ->dateTime()

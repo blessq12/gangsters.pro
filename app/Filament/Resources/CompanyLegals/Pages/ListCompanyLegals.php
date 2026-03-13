@@ -10,6 +10,8 @@ class ListCompanyLegals extends ListRecords
 {
     protected static string $resource = CompanyLegalResource::class;
 
+    protected static ?string $title = 'Юр. данные компании';
+
     protected function getHeaderActions(): array
     {
         return [

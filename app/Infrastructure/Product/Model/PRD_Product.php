@@ -1,0 +1,54 @@
+<?php
+
+namespace App\Infrastructure\Product\Model;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class PRD_Product extends Model
+{
+    use HasFactory;
+
+    protected $table = 'PRD_products';
+
+    protected $fillable = [
+        'name',
+        'slug',
+        'description',
+        'status',
+        'calories',
+        'proteins',
+        'fats',
+        'carbs',
+        'nutrition_basis',
+    ];
+
+    protected $casts = [
+        'calories' => 'float',
+        'proteins' => 'float',
+        'fats' => 'float',
+        'carbs' => 'float',
+    ];
+
+    public function images(): HasMany
+    {
+        return $this->hasMany(PRD_ProductImage::class, 'product_id');
+    }
+
+    public function ingredients(): HasMany
+    {
+        return $this->hasMany(PRD_ProductIngredient::class, 'product_id');
+    }
+
+    public function tags(): HasMany
+    {
+        return $this->hasMany(PRD_ProductTag::class, 'product_id');
+    }
+
+    public function prices(): HasMany
+    {
+        return $this->hasMany(PRD_ProductPrice::class, 'product_id');
+    }
+}
+

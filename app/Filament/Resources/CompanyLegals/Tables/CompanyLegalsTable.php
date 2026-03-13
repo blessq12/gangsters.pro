@@ -15,23 +15,32 @@ class CompanyLegalsTable
         return $table
             ->columns([
                 TextColumn::make('company_id')
+                    ->label('Компания (ID)')
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('legal_form')
+                    ->label('Орг. форма')
                     ->searchable(),
                 TextColumn::make('legal_email')
+                    ->label('Юр. Email')
                     ->searchable(),
                 TextColumn::make('owner')
+                    ->label('Владелец')
                     ->searchable(),
                 TextColumn::make('inn')
+                    ->label('ИНН')
                     ->searchable(),
                 TextColumn::make('ogrn')
+                    ->label('ОГРН')
                     ->searchable(),
                 TextColumn::make('okpo')
+                    ->label('ОКПО')
                     ->searchable(),
                 TextColumn::make('kpp')
+                    ->label('КПП')
                     ->searchable(),
                 TextColumn::make('registration_address')
+                    ->label('Юридический адрес')
                     ->searchable(),
                 TextColumn::make('created_at')
                     ->dateTime()

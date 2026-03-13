@@ -10,6 +10,8 @@ class EditCompanyLegal extends EditRecord
 {
     protected static string $resource = CompanyLegalResource::class;
 
+    protected static ?string $title = 'Редактирование юр. данных';
+
     protected function getHeaderActions(): array
     {
         return [

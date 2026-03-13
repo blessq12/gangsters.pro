@@ -5,11 +5,15 @@ namespace App\Filament\Resources\Products;
 use App\Filament\Resources\Products\Pages\CreateProduct;
 use App\Filament\Resources\Products\Pages\EditProduct;
 use App\Filament\Resources\Products\Pages\ListProducts;
+use App\Filament\Resources\Products\RelationManagers\ProductImagesRelationManager;
+use App\Filament\Resources\Products\RelationManagers\ProductIngredientsRelationManager;
+use App\Filament\Resources\Products\RelationManagers\ProductTagsRelationManager;
+use App\Filament\Resources\Products\RelationManagers\ProductPricesRelationManager;
 use App\Filament\Resources\Products\Schemas\ProductForm;
 use App\Filament\Resources\Products\Tables\ProductsTable;
-use App\Filament\Resources\Products\RelationManagers\ImgsRelationManager;
-use App\Models\Product;
+use App\Infrastructure\Product\Model\PRD_Product;
 use BackedEnum;
+use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -17,9 +21,13 @@ use Filament\Tables\Table;
 
 class ProductResource extends Resource
 {
-    protected static ?string $model = Product::class;
+    protected static ?string $model = PRD_Product::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+
+    protected static ?string $navigationLabel = 'Товары';
+
+    protected static string|UnitEnum|null $navigationGroup = 'Каталог';
 
     public static function form(Schema $schema): Schema
     {
@@ -34,7 +42,10 @@ class ProductResource extends Resource
     public static function getRelations(): array
     {
         return [
-            ImgsRelationManager::class,
+            ProductImagesRelationManager::class,
+            ProductIngredientsRelationManager::class,
+            ProductTagsRelationManager::class,
+            ProductPricesRelationManager::class,
         ];
     }
 

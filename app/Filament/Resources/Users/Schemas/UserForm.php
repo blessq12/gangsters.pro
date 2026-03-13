@@ -13,22 +13,29 @@ class UserForm
         return $schema
             ->components([
                 TextInput::make('name')
+                    ->label('Имя')
                     ->required(),
                 TextInput::make('email')
-                    ->label('Email address')
+                    ->label('Email')
                     ->email()
                     ->required(),
                 TextInput::make('tel')
+                    ->label('Телефон')
                     ->tel(),
                 TextInput::make('coins')
+                    ->label('Монеты')
                     ->required()
                     ->default('0'),
-                DateTimePicker::make('email_verified_at'),
+                DateTimePicker::make('email_verified_at')
+                    ->label('Email подтверждён'),
                 TextInput::make('password')
+                    ->label('Пароль')
                     ->password()
                     ->required(),
-                TextInput::make('dob'),
+                TextInput::make('dob')
+                    ->label('Дата рождения'),
                 TextInput::make('token_to_reset_password')
+                    ->label('Токен сброса пароля')
                     ->password(),
             ]);
     }

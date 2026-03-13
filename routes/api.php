@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\ClientController;
 use App\Http\Controllers\Api\YandexFoodController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\CatalogController;
 use App\Http\Controllers\OrderController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\RawController as Raw;
@@ -49,6 +50,9 @@ Route::prefix('product')->controller(ProductController::class)->group(function (
     Route::get('/categories', 'categories');
     Route::get('/products', 'products');
 });
+
+// Весь каталог: категории с товарами
+Route::get('/catalog', [CatalogController::class, 'tree']);
 
 Route::controller(Raw::class)->group(function () {
     Route::get('/get-routes', 'getLinks');

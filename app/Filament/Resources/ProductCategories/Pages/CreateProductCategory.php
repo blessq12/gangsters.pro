@@ -8,4 +8,6 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateProductCategory extends CreateRecord
 {
     protected static string $resource = ProductCategoryResource::class;
+
+    protected static ?string $title = 'Новая категория';
 }

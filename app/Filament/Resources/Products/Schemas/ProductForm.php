@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources\Products\Schemas;
 
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
 
 class ProductForm
@@ -13,35 +13,35 @@ class ProductForm
     {
         return $schema
             ->components([
-                Toggle::make('visible')
-                    ->required(),
                 TextInput::make('name')
                     ->required()
-                    ->default('Название не задано'),
-                Toggle::make('hit')
+                    ->label('Название'),
+                TextInput::make('slug')
+                    ->label('Slug')
                     ->required(),
-                Toggle::make('spicy')
-                    ->required(),
-                Toggle::make('kidsAllow')
-                    ->required(),
-                Toggle::make('onion')
-                    ->required(),
-                Toggle::make('garlic')
-                    ->required(),
-                Textarea::make('consist')
+                Select::make('status')
+                    ->label('Статус')
+                    ->options([
+                        'active' => 'Активен',
+                        'archived' => 'Архив',
+                    ])
+                    ->required()
+                    ->default('active'),
+                Textarea::make('description')
+                    ->label('Описание')
                     ->columnSpanFull(),
-                TextInput::make('weight'),
-                TextInput::make('price'),
-                TextInput::make('vat')
-                    ->required()
+                TextInput::make('calories')
                     ->numeric()
-                    ->default(0),
-                TextInput::make('sku')
-                    ->label('SKU'),
-                TextInput::make('order')
-                    ->required()
+                    ->label('Ккал на 100г'),
+                TextInput::make('proteins')
                     ->numeric()
-                    ->default(0),
+                    ->label('Белки на 100г'),
+                TextInput::make('fats')
+                    ->numeric()
+                    ->label('Жиры на 100г'),
+                TextInput::make('carbs')
+                    ->numeric()
+                    ->label('Углеводы на 100г'),
             ]);
     }
 }

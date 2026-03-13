@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\ProductCategories\Schemas;
 
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
 
 class ProductCategoryForm
@@ -12,16 +11,17 @@ class ProductCategoryForm
     {
         return $schema
             ->components([
-                TextInput::make('uri')
-                    ->required(),
-                Toggle::make('visible')
-                    ->required(),
                 TextInput::make('name')
-                    ->required(),
+                    ->required()
+                    ->label('Название'),
+                TextInput::make('slug')
+                    ->required()
+                    ->label('Slug'),
                 TextInput::make('order')
                     ->required()
                     ->numeric()
-                    ->default(0),
+                    ->default(0)
+                    ->label('Порядок'),
             ]);
     }
 }
