@@ -2,7 +2,6 @@ import ProfileDockPanel from "../components/dock/ProfileDockPanel.vue";
 import CartDockPanel from "../components/dock/CartDockPanel.vue";
 import FavoritesDockPanel from "../components/dock/FavoritesDockPanel.vue";
 import DeliveryDockPanel from "../components/dock/DeliveryDockPanel.vue";
-import NotificationsDockPanel from "../components/dock/NotificationsDockPanel.vue";
 
 export const dockItems = [
     {
@@ -28,12 +27,6 @@ export const dockItems = [
         label: "Доставка",
         iconClass: "mdi-truck-delivery-outline",
         content: DeliveryDockPanel,
-    },
-    {
-        id: "notifications",
-        label: "Уведомления",
-        iconClass: "mdi-bell-outline",
-        content: NotificationsDockPanel,
     },
 ];
 
