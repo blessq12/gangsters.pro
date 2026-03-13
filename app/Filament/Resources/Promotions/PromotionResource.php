@@ -1,0 +1,93 @@
+<?php
+
+namespace App\Filament\Resources\Promotions;
+
+use App\Filament\Resources\Promotions\Pages\CreatePromotion;
+use App\Filament\Resources\Promotions\Pages\EditPromotion;
+use App\Filament\Resources\Promotions\Pages\ListPromotions;
+use App\Models\Promotion;
+use BackedEnum;
+use UnitEnum;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\TextArea;
+use Filament\Forms\Components\TextInput;
+use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
+use Filament\Tables;
+use Filament\Tables\Table;
+
+class PromotionResource extends Resource
+{
+    protected static ?string $model = Promotion::class;
+
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSparkles;
+
+    protected static ?string $navigationLabel = 'Акции';
+
+    protected static string|UnitEnum|null $navigationGroup = 'Система';
+
+    public static function form(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                TextInput::make('title')
+                    ->label('Заголовок')
+                    ->required()
+                    ->maxLength(255)
+                    ->columnSpanFull(),
+                TextArea::make('description')
+                    ->label('Текст акции')
+                    ->rows(4)
+                    ->maxLength(1024)
+                    ->columnSpanFull(),
+                FileUpload::make('image')
+                    ->label('Картинка')
+                    ->image()
+                    ->disk('media')
+                    ->directory('promotions')
+                    ->required()
+                    ->columnSpanFull(),
+            ]);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                Tables\Columns\TextColumn::make('title')
+                    ->label('Заголовок')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\ImageColumn::make('image')
+                    ->label('Картинка')
+                    ->disk('media')
+                    ->square(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Создана')
+                    ->dateTime('d.m.Y H:i')
+                    ->sortable(),
+            ])
+            ->recordActions([
+                EditAction::make(),
+            ])
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                ]),
+            ]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => ListPromotions::route('/'),
+            'create' => CreatePromotion::route('/create'),
+            'edit' => EditPromotion::route('/{record}/edit'),
+        ];
+    }
+}
+

@@ -9,9 +9,8 @@ const userStore = useUserStore();
 const form = ref({
     name: "",
     phone: "",
-    email: "",
-    birth_date: "",
     password: "",
+    confirmPassword: "",
     consent_personal_data: true,
     consent_marketing: false,
 });
@@ -47,6 +46,10 @@ async function submit() {
         error.value = "Придумайте пароль";
         return;
     }
+    if (form.value.password !== form.value.confirmPassword) {
+        error.value = "Пароль и подтверждение не совпадают";
+        return;
+    }
     if (!form.value.consent_personal_data) {
         error.value = "Нужно согласиться на обработку персональных данных";
         return;
@@ -56,7 +59,11 @@ async function submit() {
 
     try {
         await userStore.registerClient({
-            ...form.value,
+            name: form.value.name,
+            phone: form.value.phone,
+            password: form.value.password,
+            consent_personal_data: form.value.consent_personal_data,
+            consent_marketing: form.value.consent_marketing,
         });
 
         emit("registered");
@@ -108,35 +115,24 @@ async function submit() {
 
             <div>
                 <label class="block text-xs font-medium text-slate-300 mb-1">
-                    Email (опционально)
-                </label>
-                <input
-                    v-model="form.email"
-                    type="email"
-                    placeholder="you@example.com"
-                    class="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
-                />
-            </div>
-
-            <div>
-                <label class="block text-xs font-medium text-slate-300 mb-1">
-                    Дата рождения (опционально)
-                </label>
-                <input
-                    v-model="form.birth_date"
-                    type="date"
-                    class="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
-                />
-            </div>
-
-            <div>
-                <label class="block text-xs font-medium text-slate-300 mb-1">
                     Пароль
                 </label>
                 <input
                     v-model="form.password"
                     type="password"
                     placeholder="минимум 6 символов"
+                    class="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                />
+            </div>
+
+            <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1">
+                    Подтверждение пароля
+                </label>
+                <input
+                    v-model="form.confirmPassword"
+                    type="password"
+                    placeholder="введите пароль ещё раз"
                     class="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
                 />
             </div>

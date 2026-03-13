@@ -257,7 +257,20 @@ export const useUserStore = defineStore("user", {
         },
         clearAuth() {
             this.setToken(null);
-            this.clear();
+            this.profile = {
+                id: null,
+                name: "",
+                phone: "",
+                email: "",
+            };
+            this.addresses = [];
+            this.selectedAddressId = null;
+            this.catalogSelectedCategoryId = null;
+            this.catalogSelectedProduct = null;
+            this.dockBadges = { ...DEFAULT_DOCK_BADGES };
+            this.cartItems = [];
+            this.favorites = [];
+            this.persist();
         },
         setProfile(partial) {
             this.profile = {

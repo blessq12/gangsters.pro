@@ -8,7 +8,6 @@ const userStore = useUserStore();
 
 const form = ref({
     phone: "",
-    email: "",
     password: "",
 });
 
@@ -31,8 +30,8 @@ const error = ref("");
 async function submit() {
     error.value = "";
 
-    if (!form.value.phone && !form.value.email) {
-        error.value = "Укажите телефон или email";
+    if (!form.value.phone) {
+        error.value = "Введите номер телефона";
         return;
     }
 
@@ -46,7 +45,6 @@ async function submit() {
     try {
         await userStore.loginClient({
             phone: form.value.phone || null,
-            email: form.value.email || null,
             password: form.value.password,
         });
 
@@ -67,7 +65,7 @@ async function submit() {
         <h3 class="text-base font-semibold text-slate-50">Вход в аккаунт</h3>
 
         <p class="text-xs text-slate-400">
-            Введите телефон или email и пароль, чтобы войти.
+            Введите телефон и пароль, чтобы войти.
         </p>
 
         <div class="space-y-3">
@@ -81,18 +79,6 @@ async function submit() {
                     data-maska="+7 (###) ###-##-##"
                     type="tel"
                     placeholder="+7 (___) ___-__-__"
-                    class="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
-                />
-            </div>
-
-            <div>
-                <label class="block text-xs font-medium text-slate-300 mb-1">
-                    Или email
-                </label>
-                <input
-                    v-model="form.email"
-                    type="email"
-                    placeholder="you@example.com"
                     class="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
                 />
             </div>

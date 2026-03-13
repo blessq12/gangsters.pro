@@ -20,6 +20,8 @@ const hasAddresses = computed(
     () => Array.isArray(userStore.addresses) && userStore.addresses.length > 0,
 );
 
+const isAddOpen = ref(false);
+
 async function addAddress() {
     error.value = "";
 
@@ -125,73 +127,87 @@ function useAddress(id) {
             запомним.
         </p>
 
-        <form
-            class="mt-3 space-y-2 border-t border-white/5 pt-2 text-xs"
-            @submit.prevent="addAddress"
-        >
-            <p class="text-[11px] font-medium uppercase tracking-wide text-slate-400">
-                Новый адрес
-            </p>
-
-            <div class="grid grid-cols-2 gap-2">
-                <input
-                    v-model="form.title"
-                    type="text"
-                    placeholder="Название (дом, работа)"
-                    class="col-span-2 rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
-                />
-                <input
-                    v-model="form.street"
-                    type="text"
-                    placeholder="Улица"
-                    class="col-span-2 rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
-                />
-                <input
-                    v-model="form.house"
-                    type="text"
-                    placeholder="Дом"
-                    class="rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
-                />
-                <input
-                    v-model="form.apartment"
-                    type="text"
-                    placeholder="Квартира"
-                    class="rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
-                />
-            </div>
-
-            <textarea
-                v-model="form.comment"
-                rows="2"
-                placeholder="Комментарий для курьера (подъезд, код, ориентир)"
-                class="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
-            />
-
-            <label class="flex items-center gap-2 text-[11px] text-slate-300">
-                <input
-                    v-model="form.make_default"
-                    type="checkbox"
-                    class="h-3.5 w-3.5 rounded border-white/20 bg-black/60 text-amber-400 focus:ring-amber-400/60"
-                />
-                <span>Сделать основным адресом</span>
-            </label>
-
-            <p
-                v-if="error"
-                class="text-[11px] text-red-400"
-            >
-                {{ error }}
-            </p>
-
+        <div class="mt-3 border-t border-white/5 pt-2 text-xs">
             <button
-                type="submit"
-                :disabled="loading"
-                class="inline-flex w-full items-center justify-center rounded-xl bg-amber-400 px-3 py-1.5 text-[11px] font-semibold text-black shadow-[0_0_14px_rgba(251,191,36,0.7)] transition hover:bg-amber-300 disabled:opacity-60 disabled:shadow-none"
+                type="button"
+                class="flex w-full items-center justify-between rounded-xl bg-white/5 px-3 py-2 text-[11px] font-medium text-slate-100 hover:bg-white/10"
+                @click="isAddOpen = !isAddOpen"
             >
-                <span v-if="!loading">Сохранить адрес</span>
-                <span v-else>Сохраняем…</span>
+                <span>Добавить новый адрес</span>
+                <span
+                    class="text-[11px] text-slate-400"
+                >
+                    {{ isAddOpen ? "Скрыть" : "Развернуть" }}
+                </span>
             </button>
-        </form>
+
+            <Transition name="fade">
+                <form
+                    v-if="isAddOpen"
+                    class="mt-3 space-y-2 text-xs"
+                    @submit.prevent="addAddress"
+                >
+                    <div class="grid grid-cols-2 gap-2">
+                        <input
+                            v-model="form.title"
+                            type="text"
+                            placeholder="Название (дом, работа)"
+                            class="col-span-2 rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                        />
+                        <input
+                            v-model="form.street"
+                            type="text"
+                            placeholder="Улица"
+                            class="col-span-2 rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                        />
+                        <input
+                            v-model="form.house"
+                            type="text"
+                            placeholder="Дом"
+                            class="rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                        />
+                        <input
+                            v-model="form.apartment"
+                            type="text"
+                            placeholder="Квартира"
+                            class="rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                        />
+                    </div>
+
+                    <textarea
+                        v-model="form.comment"
+                        rows="2"
+                        placeholder="Комментарий для курьера (подъезд, код, ориентир)"
+                        class="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                    />
+
+                    <label class="flex items-center gap-2 text-[11px] text-slate-300">
+                        <input
+                            v-model="form.make_default"
+                            type="checkbox"
+                            class="h-3.5 w-3.5 rounded border-white/20 bg-black/60 text-amber-400 focus:ring-amber-400/60"
+                        />
+                        <span>Сделать основным адресом</span>
+                    </label>
+
+                    <p
+                        v-if="error"
+                        class="text-[11px] text-red-400"
+                    >
+                        {{ error }}
+                    </p>
+
+                    <button
+                        type="submit"
+                        :disabled="loading"
+                        class="inline-flex w-full items-center justify-center rounded-xl bg-amber-400 px-3 py-1.5 text-[11px] font-semibold text-black shadow-[0_0_14px_rgba(251,191,36,0.7)] transition hover:bg-amber-300 disabled:opacity-60 disabled:shadow-none"
+                    >
+                        <span v-if="!loading">Сохранить адрес</span>
+                        <span v-else>Сохраняем…</span>
+                    </button>
+                </form>
+            </Transition>
+        </div>
     </div>
 </template>
 

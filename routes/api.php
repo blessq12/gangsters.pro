@@ -1,12 +1,14 @@
 <?php
 
-use App\Http\Controllers\Api\ClientController;
-use App\Http\Controllers\Api\YandexFoodController;
-use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\CatalogController;
+use App\Http\Controllers\Api\ClientController;
+use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\PromotionController;
+use App\Http\Controllers\Api\RawController as Raw;
+use App\Http\Controllers\Api\YandexFoodController;
 use App\Http\Controllers\OrderController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\RawController as Raw;
 use App\Application\Client\Command\LoginClientUseCase;
 use App\Application\Client\Command\RegisterClientUseCase;
 use App\Application\Client\DTO\LoginDTO;
@@ -74,6 +76,12 @@ Route::controller(YandexFoodController::class)
         Route::delete('/order/{id}/', 'deleteOrder');
         Route::get('/restaurants', 'getRestaurants');
     });
+
+// Системные данные (баннеры, акции и т.п.)
+Route::prefix('system')->group(function () {
+    Route::get('/banners', [BannerController::class, 'index']);
+    Route::get('/promotions', [PromotionController::class, 'index']);
+});
 
 // Тестовые/вторичные маршруты для нового домена клиента (регистрация, логин, профиль).
 Route::prefix('test-client')->group(function () {

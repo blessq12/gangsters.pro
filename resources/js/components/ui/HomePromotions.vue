@@ -1,30 +1,19 @@
 <script setup>
-import { ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useFloatLoop } from "../../composables/animations/useFloatLoop";
+import { useSystemStore } from "../../stores/systemStore";
 
-const promos = [
-    {
-        title: 'Комбо "Гангстерский вечер"',
-        description:
-            "Большой сет роллов, горячее блюдо и напитки по спеццене для шумной компании.",
-        tag: "-20%",
-        image: "/images/promos/promo1.png",
-    },
-    {
-        title: "2 по цене 1",
-        description:
-            "Выбранные роллы во вторник и четверг: второй сет в подарок.",
-        tag: "1+1",
-        image: "/images/promos/promo2.png",
-    },
-    {
-        title: "Бесплатная доставка",
-        description:
-            "При заказе от 1500 ₽ доставка в пределах города за наш счёт.",
-        tag: "FREE",
-        image: "/images/promos/promo3.png",
-    },
-];
+const systemStore = useSystemStore();
+
+const promos = computed(() =>
+    (systemStore.promotions || []).map((promo) => ({
+        title: promo.title || "",
+        description: promo.description || "",
+        image: promo.image || "",
+    })),
+);
+
+const isLoading = computed(() => systemStore.loadingPromotions);
 
 const showModal = ref(false);
 const activePromo = ref(null);
@@ -48,6 +37,12 @@ const openPromo = (promo) => {
     activePromo.value = promo;
     showModal.value = true;
 };
+
+onMounted(() => {
+    if (!systemStore.promotions.length) {
+        systemStore.fetchPromotions();
+    }
+});
 </script>
 
 <template>
@@ -57,21 +52,35 @@ const openPromo = (promo) => {
         </h2>
 
         <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
-            <article
-                v-for="(promo, index) in promos"
-                :key="index"
-                :ref="(el) => registerPromo(el, index)"
-                class="group rounded-2xl relative cursor-pointer"
-                @click="openPromo(promo)"
-            >
-                <div class="aspect-[16/9] w-full overflow-hidden">
-                    <img
-                        :src="promo.image"
-                        :alt="promo.title"
-                        class="h-full w-full object-cover grayscale group-hover:grayscale-0 transition-transform duration-500 ease-out group-hover:scale-105"
-                    />
+            <template v-if="isLoading">
+                <div
+                    v-for="index in 3"
+                    :key="index"
+                    class="aspect-[16/9] w-full rounded-2xl border border-white/10 bg-slate-800/60 animate-pulse"
+                ></div>
+            </template>
+            <template v-else-if="promos.length">
+                <article
+                    v-for="(promo, index) in promos"
+                    :key="index"
+                    :ref="(el) => registerPromo(el, index)"
+                    class="group rounded-2xl relative cursor-pointer"
+                    @click="openPromo(promo)"
+                >
+                    <div class="aspect-[16/9] w-full overflow-hidden">
+                        <img
+                            :src="promo.image"
+                            :alt="promo.title"
+                            class="h-full w-full object-cover grayscale group-hover:grayscale-0 transition-transform duration-500 ease-out group-hover:scale-105"
+                        />
+                    </div>
+                </article>
+            </template>
+            <template v-else>
+                <div class="col-span-2 sm:col-span-3 py-4 text-center text-xs text-slate-500">
+                    Акции скоро появятся.
                 </div>
-            </article>
+            </template>
         </div>
 
         <BaseModal v-model="showModal" v-if="activePromo">

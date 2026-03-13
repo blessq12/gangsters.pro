@@ -1,25 +1,20 @@
 <script setup>
 import "swiper/css";
-import { ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { Swiper, SwiperSlide } from "swiper/vue";
+import { useSystemStore } from "../../stores/systemStore";
 
-const slides = [
-    {
-        title: "Gangsters Sushi",
-        description: "Гангстерски щедрые роллы и суши.",
-        image: "/images/banners/banner1.jpeg",
-    },
-    {
-        title: "Мексиканская кухня",
-        description: "Тако, буррито и другие горячие комбо.",
-        image: "/images/banners/banner2.jpeg",
-    },
-    {
-        title: "Ночные заказы",
-        description: "Когда город спит — кухня Gangsters не отдыхает.",
-        image: "/images/banners/banner3.jpeg",
-    },
-];
+const systemStore = useSystemStore();
+
+const slides = computed(() =>
+    (systemStore.banners || []).map((banner) => ({
+        title: banner.title || "",
+        description: banner.description || "",
+        image: banner.image || "",
+    })),
+);
+
+const isLoading = computed(() => systemStore.loadingBanners);
 
 const swiperRef = ref(null);
 
@@ -29,6 +24,12 @@ const handleSwiperInit = (swiper) => {
     // переключаемся на слайд назад, чтобы сразу видеть соседние
     swiper.slidePrev(0);
 };
+
+onMounted(() => {
+    if (!systemStore.banners.length) {
+        systemStore.fetchBanners();
+    }
+});
 </script>
 
 <template>
@@ -47,7 +48,17 @@ const handleSwiperInit = (swiper) => {
         </div>
 
         <div class="relative px-4 sm:px-6 lg:px-8">
+            <div
+                v-if="isLoading"
+                class="mx-auto max-w-5xl px-1 py-6 sm:py-8"
+            >
+                <div
+                    class="h-64 sm:h-80 w-full rounded-2xl border border-white/10 bg-slate-800/60 animate-pulse"
+                ></div>
+            </div>
+
             <Swiper
+                v-else-if="slides.length"
                 :loop="true"
                 :looped-slides="slides.length"
                 :loop-additional-slides="slides.length"
@@ -116,6 +127,13 @@ const handleSwiperInit = (swiper) => {
                     </div>
                 </SwiperSlide>
             </Swiper>
+
+            <div
+                v-else
+                class="mx-auto max-w-4xl py-8 text-center text-xs text-slate-500"
+            >
+                Баннеры скоро появятся.
+            </div>
         </div>
     </section>
 </template>

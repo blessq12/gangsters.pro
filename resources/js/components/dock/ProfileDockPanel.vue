@@ -28,6 +28,10 @@ function handleUpdated() {
     activeTab.value = "view";
 }
 
+function handleLoggedOut() {
+    activeTab.value = "login";
+}
+
 function switchToEdit() {
     activeTab.value = "edit";
 }
@@ -123,7 +127,10 @@ function switchToView() {
                 @registered="handleRegistered"
             />
 
-            <ClientProfileView v-else-if="activeTab === 'view'" />
+            <ClientProfileView
+                v-else-if="activeTab === 'view'"
+                @logout="handleLoggedOut"
+            />
 
             <ClientProfileEditForm
                 v-else-if="activeTab === 'edit'"
