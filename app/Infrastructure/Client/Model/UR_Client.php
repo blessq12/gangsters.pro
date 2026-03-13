@@ -37,7 +37,8 @@ class UR_Client extends Authenticatable
 
     public function addresses(): HasMany
     {
-        return $this->hasMany(UR_ClientAddress::class, 'client_id');
+        // Для админки нам нужны и удалённые адреса, поэтому withTrashed().
+        return $this->hasMany(UR_ClientAddress::class, 'client_id')->withTrashed();
     }
 
     /**

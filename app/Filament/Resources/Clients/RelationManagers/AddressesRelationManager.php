@@ -32,6 +32,10 @@ class AddressesRelationManager extends RelationManager
                 TextColumn::make('comment')
                     ->label('Комментарий')
                     ->limit(80),
+                IconColumn::make('deleted_at')
+                    ->label('Удалён')
+                    ->boolean()
+                    ->getStateUsing(fn ($record) => (bool) $record->deleted_at),
                 IconColumn::make('id')
                     ->label('По умолчанию')
                     ->boolean()
