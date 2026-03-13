@@ -93,7 +93,8 @@ class ClientResource extends Resource
     public static function getRelations(): array
     {
         return [
-            // адреса клиента можно подвязать отдельным RelationManager позже
+            \App\Filament\Resources\Clients\RelationManagers\OrdersRelationManager::class,
+            \App\Filament\Resources\Clients\RelationManagers\AddressesRelationManager::class,
         ];
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\Client\Model;
 
+use App\Models\Order;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -37,6 +38,15 @@ class UR_Client extends Authenticatable
     public function addresses(): HasMany
     {
         return $this->hasMany(UR_ClientAddress::class, 'client_id');
+    }
+
+    /**
+     * Заглушка-связь заказов клиента по legacy-полю user_id.
+     * Позже можно будет перевесить на doman-specific связь.
+     */
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class, 'user_id');
     }
 }
 

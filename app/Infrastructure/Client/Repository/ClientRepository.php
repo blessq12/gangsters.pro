@@ -144,7 +144,10 @@ class ClientRepository implements ClientRepositoryContract
             }
         }
 
-        $clientModel->load('addresses');
+        // Перезагружаем только не удалённые адреса
+        $clientModel->load(['addresses' => function ($query) {
+            $query->whereNull('deleted_at');
+        }]);
 
         return $this->mapToEntity($clientModel);
     }
