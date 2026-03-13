@@ -22,8 +22,10 @@ class ClientRepository implements ClientRepositoryContract
 
     public function findByPhone(string $phone): ?ClientEntity
     {
+        $formatted = $this->formatPhoneForStorage($phone);
+
         $model = UR_Client::with('addresses')
-            ->where('phone', $phone)
+            ->where('phone', $formatted)
             ->first();
 
         return $model ? $this->mapToEntity($model) : null;
@@ -40,7 +42,9 @@ class ClientRepository implements ClientRepositoryContract
 
     public function existsByPhone(string $phone): bool
     {
-        return UR_Client::where('phone', $phone)->exists();
+        $formatted = $this->formatPhoneForStorage($phone);
+
+        return UR_Client::where('phone', $formatted)->exists();
     }
 
     public function existsByEmail(string $email): bool
@@ -55,7 +59,7 @@ class ClientRepository implements ClientRepositoryContract
             : new UR_Client();
 
         $model->name = $client->name();
-        $model->phone = (string) $client->phone();
+        $model->phone = $this->formatPhoneForStorage((string) $client->phone());
         $model->email = $client->email() ? (string) $client->email() : null;
         $model->birth_date = $client->birthDate()?->format('Y-m-d');
         $model->password = $client->passwordHash();
@@ -180,6 +184,35 @@ class ClientRepository implements ClientRepositoryContract
         $model->password_reset_token = null;
         $model->password_reset_requested_at = null;
         $model->save();
+    }
+
+    /**
+     * Приводим телефон к формату, в котором он хранится в БД:
+     * российский формат +7 (XXX) XXX-XX-XX.
+     */
+    private function formatPhoneForStorage(string $phone): string
+    {
+        $digits = preg_replace('/\D+/', '', $phone) ?? '';
+
+        if ($digits === '') {
+            return $phone;
+        }
+
+        // Отрезаем ведущую 7/8, если номер приходит в формате 7XXXXXXXXXX / 8XXXXXXXXXX.
+        if (strlen($digits) === 11 && in_array($digits[0], ['7', '8'], true)) {
+            $digits = substr($digits, 1);
+        }
+
+        if (strlen($digits) !== 10) {
+            return $phone;
+        }
+
+        $code = substr($digits, 0, 3);
+        $part1 = substr($digits, 3, 3);
+        $part2 = substr($digits, 6, 2);
+        $part3 = substr($digits, 8, 2);
+
+        return sprintf('+7 (%s) %s-%s-%s', $code, $part1, $part2, $part3);
     }
 
     private function mapToEntity(UR_Client $model): ClientEntity

@@ -82,7 +82,13 @@ final class InMemoryClientRepository implements ClientRepository
 
     private function normalizePhone(string $phone): string
     {
-        return preg_replace('/\D+/', '', $phone) ?? $phone;
+        $digits = preg_replace('/\D+/', '', $phone) ?? $phone;
+
+        if ($digits !== null && strlen($digits) === 11 && in_array($digits[0], ['7', '8'], true)) {
+            $digits = substr($digits, 1);
+        }
+
+        return $digits;
     }
 
     public function delete(Client $client): void
