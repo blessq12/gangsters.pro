@@ -69,6 +69,14 @@ class ClientRepository implements ClientRepositoryContract
 
         // TODO: синхронизация адресов будет добавлена позже,
         // когда появится отдельный репозиторий для адресов.
+
+        // Синхронизируем сгенерированный ID модели обратно в доменную сущность.
+        if ($client->id() === null) {
+            $ref = new \ReflectionClass($client);
+            $prop = $ref->getProperty('id');
+            $prop->setAccessible(true);
+            $prop->setValue($client, $model->id);
+        }
     }
 
     public function delete(ClientEntity $client): void

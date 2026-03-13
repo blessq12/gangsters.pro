@@ -18,9 +18,10 @@ use App\Application\Client\DTO\RequestPasswordResetDTO;
 use App\Application\Client\DTO\UpdateClientDTO;
 use App\Application\Client\Presenter\ClientPresenter;
 use App\Application\Client\Query\GetClientDataUseCase;
-use App\Http\Controllers\ApiClientAuthController;
 use App\Http\Controllers\Controller;
+use App\Infrastructure\Client\Model\UR_Client;
 use Illuminate\Http\Request;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class ClientController extends Controller
 {
@@ -144,7 +145,14 @@ class ClientController extends Controller
 
     public function profile(Request $request)
     {
-        $authClient = $request->user();
+        $authClient = $this->resolveClientFromToken($request);
+
+        if (!$authClient) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthenticated',
+            ], 401);
+        }
 
         $client = $this->getClientData->execute($authClient->id);
 
@@ -155,7 +163,14 @@ class ClientController extends Controller
 
     public function updateProfile(Request $request)
     {
-        $authClient = $request->user();
+        $authClient = $this->resolveClientFromToken($request);
+
+        if (!$authClient) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthenticated',
+            ], 401);
+        }
 
         $data = $request->validate([
             'name' => ['sometimes', 'string', 'max:255'],
@@ -184,7 +199,14 @@ class ClientController extends Controller
 
     public function addAddress(Request $request)
     {
-        $authClient = $request->user();
+        $authClient = $this->resolveClientFromToken($request);
+
+        if (!$authClient) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthenticated',
+            ], 401);
+        }
 
         $data = $request->validate([
             'type' => ['sometimes', 'string', 'in:default,additional'],
@@ -224,7 +246,14 @@ class ClientController extends Controller
 
     public function deleteAddress(Request $request, int $id)
     {
-        $authClient = $request->user();
+        $authClient = $this->resolveClientFromToken($request);
+
+        if (!$authClient) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthenticated',
+            ], 401);
+        }
 
         $dto = new DeleteClientAddressDTO(
             clientId: $authClient->id,
@@ -236,5 +265,29 @@ class ClientController extends Controller
         return response()->json([
             'client' => $this->presenter->present($client),
         ]);
+    }
+
+    private function resolveClientFromToken(Request $request): ?UR_Client
+    {
+        $token = $request->bearerToken();
+
+        if (!$token) {
+            return null;
+        }
+
+        /** @var PersonalAccessToken|null $accessToken */
+        $accessToken = PersonalAccessToken::findToken($token);
+
+        if (!$accessToken) {
+            return null;
+        }
+
+        $tokenable = $accessToken->tokenable;
+
+        if (!$tokenable instanceof UR_Client) {
+            return null;
+        }
+
+        return $tokenable;
     }
 }

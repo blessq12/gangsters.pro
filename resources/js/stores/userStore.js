@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import axios from "axios";
 
 const USER_KEY = "gangsters_user";
 const DEFAULT_DOCK_BADGES = {
@@ -100,6 +101,8 @@ export const useUserStore = defineStore("user", {
             phone: "",
             email: "",
         },
+        // Токен авторизации клиента
+        token: null,
         // Дополнительные данные
         bonuses: 0,
         // Выбранный адрес доставки
@@ -170,6 +173,10 @@ export const useUserStore = defineStore("user", {
                     };
                 }
 
+                if (parsed.token) {
+                    this.setToken(parsed.token);
+                }
+
                 if (typeof parsed.bonuses === "number") {
                     this.bonuses = parsed.bonuses;
                 }
@@ -226,6 +233,7 @@ export const useUserStore = defineStore("user", {
 
             const payload = {
                 profile: this.profile,
+                token: this.token,
                 bonuses: this.bonuses,
                 addresses: this.addresses,
                 selectedAddressId: this.selectedAddressId,
@@ -240,6 +248,19 @@ export const useUserStore = defineStore("user", {
             };
 
             window.localStorage.setItem(USER_KEY, JSON.stringify(payload));
+        },
+        setToken(token) {
+            this.token = token || null;
+            if (this.token) {
+                axios.defaults.headers.common["Authorization"] = `Bearer ${this.token}`;
+            } else {
+                delete axios.defaults.headers.common["Authorization"];
+            }
+            this.persist();
+        },
+        clearAuth() {
+            this.setToken(null);
+            this.clear();
         },
         setProfile(partial) {
             this.profile = {
@@ -333,6 +354,144 @@ export const useUserStore = defineStore("user", {
             if (typeof window !== "undefined") {
                 window.localStorage.removeItem(USER_KEY);
             }
+        },
+        // --- API-кейсы клиента ---
+        async registerClient(payload) {
+            const response = await axios.post("/api/client/register", payload);
+            const data = response.data;
+
+            if (data?.client) {
+                this.setProfile({
+                    id: data.client.id ?? null,
+                    name: data.client.name ?? "",
+                    phone: data.client.phone ?? "",
+                    email: data.client.email ?? "",
+                });
+                if (Array.isArray(data.client.addresses)) {
+                    this.setAddresses(data.client.addresses);
+                }
+            }
+
+            if (data?.token) {
+                this.setToken(data.token);
+            }
+
+            return data;
+        },
+        async loginClient(credentials) {
+            const response = await axios.post("/api/client/login", credentials);
+            const data = response.data;
+
+            if (data?.client) {
+                this.setProfile({
+                    id: data.client.id ?? null,
+                    name: data.client.name ?? "",
+                    phone: data.client.phone ?? "",
+                    email: data.client.email ?? "",
+                });
+                if (Array.isArray(data.client.addresses)) {
+                    this.setAddresses(data.client.addresses);
+                }
+            }
+
+            if (data?.token) {
+                this.setToken(data.token);
+            }
+
+            return data;
+        },
+        async fetchClientProfile() {
+            if (!this.token) return null;
+
+            const response = await axios.get("/api/client/profile", {
+                headers: {
+                    Authorization: `Bearer ${this.token}`,
+                },
+            });
+            const data = response.data;
+
+            if (data?.client) {
+                this.setProfile({
+                    id: data.client.id ?? null,
+                    name: data.client.name ?? "",
+                    phone: data.client.phone ?? "",
+                    email: data.client.email ?? "",
+                });
+                if (Array.isArray(data.client.addresses)) {
+                    this.setAddresses(data.client.addresses);
+                }
+            }
+
+            return data;
+        },
+        async updateClientProfile(payload) {
+            const response = await axios.patch("/api/client/profile", payload, {
+                headers: {
+                    Authorization: `Bearer ${this.token}`,
+                },
+            });
+            const data = response.data;
+
+            if (data?.client) {
+                this.setProfile({
+                    id: data.client.id ?? null,
+                    name: data.client.name ?? "",
+                    phone: data.client.phone ?? "",
+                    email: data.client.email ?? "",
+                });
+                if (Array.isArray(data.client.addresses)) {
+                    this.setAddresses(data.client.addresses);
+                }
+            }
+
+            return data;
+        },
+        async addClientAddress(payload) {
+            const response = await axios.post("/api/client/addresses", payload, {
+                headers: {
+                    Authorization: `Bearer ${this.token}`,
+                },
+            });
+            const data = response.data;
+
+            if (data?.client && Array.isArray(data.client.addresses)) {
+                this.setAddresses(data.client.addresses);
+                if (data.client.default_address_id) {
+                    this.selectAddress(data.client.default_address_id);
+                }
+            }
+
+            return data;
+        },
+        async deleteClientAddress(addressId) {
+            const response = await axios.delete(`/api/client/addresses/${addressId}`, {
+                headers: {
+                    Authorization: `Bearer ${this.token}`,
+                },
+            });
+            const data = response.data;
+
+            if (data?.client && Array.isArray(data.client.addresses)) {
+                this.setAddresses(data.client.addresses);
+                if (data.client.default_address_id) {
+                    this.selectAddress(data.client.default_address_id);
+                }
+            }
+
+            return data;
+        },
+        async requestPasswordReset(email) {
+            const response = await axios.post("/api/client/forgot-password", {
+                email,
+            });
+            return response.data;
+        },
+        async changePasswordWithToken({ token, password }) {
+            const response = await axios.post("/api/client/change-password", {
+                token,
+                password,
+            });
+            return response.data;
         },
         // Корзина
         addToCart(product, qty = 1) {

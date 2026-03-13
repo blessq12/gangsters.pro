@@ -1,38 +1,143 @@
 <script setup>
+import { computed, ref } from "vue";
 import { useUserStore } from "../../stores/userStore";
+import ClientLoginForm from "../client/ClientLoginForm.vue";
+import ClientRegisterForm from "../client/ClientRegisterForm.vue";
+import ClientProfileView from "../client/ClientProfileView.vue";
+import ClientProfileEditForm from "../client/ClientProfileEditForm.vue";
 
 const userStore = useUserStore();
+
+const activeTab = ref("login"); // login | register | view | edit
+
+const isAuthenticated = computed(() => !!userStore.token && !!userStore.profile.id);
+
+if (isAuthenticated.value) {
+    activeTab.value = "view";
+}
+
+function handleLoggedIn() {
+    activeTab.value = "view";
+}
+
+function handleRegistered() {
+    activeTab.value = "view";
+}
+
+function handleUpdated() {
+    activeTab.value = "view";
+}
+
+function switchToEdit() {
+    activeTab.value = "edit";
+}
+
+function switchToView() {
+    activeTab.value = "view";
+}
 </script>
 
 <template>
     <div
         class="rounded-3xl border border-amber-400/30 bg-[rgba(0,0,0,0.88)] px-4 sm:px-6 lg:px-8 py-4 shadow-[0_0_26px_rgba(0,0,0,0.85)] backdrop-blur"
     >
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
-            <div
-                class="flex h-14 w-14 items-center justify-center rounded-full border border-amber-400/40 bg-black/70 text-lg font-semibold text-amber-200 shadow-[0_0_20px_rgba(251,191,36,0.6)]"
-            >
-                G
+        <div class="flex items-center justify-between gap-3 mb-3">
+            <div class="flex items-center gap-2">
+                <div
+                    class="flex h-10 w-10 items-center justify-center rounded-full border border-amber-400/40 bg-black/70 text-sm font-semibold text-amber-200 shadow-[0_0_16px_rgba(251,191,36,0.6)]"
+                >
+                    {{ userStore.profile.name?.[0] || "G" }}
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-slate-50">
+                        {{ userStore.profile.name || "Гость Gangsters" }}
+                    </p>
+                    <p class="text-[11px] text-slate-400">
+                        {{ isAuthenticated ? "Вы авторизованы" : "Войдите или зарегистрируйтесь" }}
+                    </p>
+                </div>
             </div>
-            <div class="min-w-0 flex-1 space-y-1">
-                <p class="text-sm sm:text-base font-semibold text-slate-50">
-                    {{ userStore.profile.name || "Гость Gangsters" }}
-                </p>
-                <p class="text-xs sm:text-sm text-slate-300/85">
-                    {{ userStore.profile.phone || "+7 (___) ___‑__‑__" }}
-                </p>
-                <p class="text-xs text-slate-400">
-                    {{ userStore.profile.email || "email не указан" }}
-                </p>
-            </div>
-            <div
-                class="mt-3 sm:mt-0 flex flex-col items-end gap-1 text-right text-xs sm:text-sm"
-            >
+
+            <div class="flex items-center gap-1 text-right text-[11px]">
                 <span class="text-slate-300/80">Бонусы</span>
-                <span class="text-lg font-semibold text-amber-300">
-                    {{ userStore.bonuses || 120 }}
+                <span class="text-sm font-semibold text-amber-300">
+                    {{ userStore.bonuses || 0 }}
                 </span>
             </div>
+        </div>
+
+        <div class="mb-3 flex gap-2 text-[11px] font-medium">
+            <button
+                v-if="!isAuthenticated"
+                type="button"
+                class="rounded-full px-3 py-1 transition"
+                :class="
+                    activeTab === 'login'
+                        ? 'bg-amber-400 text-black shadow-[0_0_14px_rgba(251,191,36,0.7)]'
+                        : 'bg-white/5 text-slate-200 hover:bg-white/10'
+                "
+                @click="activeTab = 'login'"
+            >
+                Вход
+            </button>
+            <button
+                v-if="!isAuthenticated"
+                type="button"
+                class="rounded-full px-3 py-1 transition"
+                :class="
+                    activeTab === 'register'
+                        ? 'bg-amber-400 text-black shadow-[0_0_14px_rgba(251,191,36,0.7)]'
+                        : 'bg-white/5 text-slate-200 hover:bg-white/10'
+                "
+                @click="activeTab = 'register'"
+            >
+                Регистрация
+            </button>
+            <button
+                v-if="isAuthenticated"
+                type="button"
+                class="rounded-full px-3 py-1 transition"
+                :class="
+                    activeTab === 'view'
+                        ? 'bg-amber-400 text-black shadow-[0_0_14px_rgba(251,191,36,0.7)]'
+                        : 'bg-white/5 text-slate-200 hover:bg-white/10'
+                "
+                @click="switchToView"
+            >
+                Профиль
+            </button>
+            <button
+                v-if="isAuthenticated"
+                type="button"
+                class="rounded-full px-3 py-1 transition"
+                :class="
+                    activeTab === 'edit'
+                        ? 'bg-amber-400 text-black shadow-[0_0_14px_rgba(251,191,36,0.7)]'
+                        : 'bg-white/5 text-slate-200 hover:bg-white/10'
+                "
+                @click="switchToEdit"
+            >
+                Редактировать
+            </button>
+        </div>
+
+        <div class="space-y-3">
+            <ClientLoginForm
+                v-if="activeTab === 'login'"
+                @logged-in="handleLoggedIn"
+            />
+
+            <ClientRegisterForm
+                v-else-if="activeTab === 'register'"
+                @registered="handleRegistered"
+            />
+
+            <ClientProfileView v-else-if="activeTab === 'view'" />
+
+            <ClientProfileEditForm
+                v-else-if="activeTab === 'edit'"
+                @updated="handleUpdated"
+            />
         </div>
     </div>
 </template>
