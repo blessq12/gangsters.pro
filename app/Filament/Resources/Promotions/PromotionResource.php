@@ -12,7 +12,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\TextArea;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -39,7 +39,7 @@ class PromotionResource extends Resource
                     ->required()
                     ->maxLength(255)
                     ->columnSpanFull(),
-                TextArea::make('description')
+                Textarea::make('description')
                     ->label('Текст акции')
                     ->rows(4)
                     ->maxLength(1024)
