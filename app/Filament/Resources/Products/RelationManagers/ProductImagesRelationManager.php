@@ -2,9 +2,11 @@
 
 namespace App\Filament\Resources\Products\RelationManagers;
 
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Actions\CreateAction;
@@ -23,31 +25,27 @@ class ProductImagesRelationManager extends RelationManager
             TextInput::make('sort_order')
                 ->numeric()
                 ->default(0),
-            TextInput::make('thumb_path')
-                ->label('Thumb path')
-                ->required(),
-            TextInput::make('medium_path')
-                ->label('Medium path')
-                ->required(),
-            TextInput::make('large_path')
-                ->label('Large path')
-                ->required(),
+            FileUpload::make('thumb_path')
+                ->label('Изображение')
+                ->image()
+                ->disk('media')
+                ->directory('products')
+                ->required()
+                ->columnSpanFull(),
         ]);
     }
 
     public function table(Table $table): Table
     {
         return $table
+            ->defaultSort('sort_order')
+            ->reorderable('sort_order')
             ->recordTitleAttribute('thumb_path')
             ->columns([
-                TextColumn::make('sort_order')
-                    ->sortable(),
-                TextColumn::make('thumb_path')
-                    ->label('Thumb'),
-                TextColumn::make('medium_path')
-                    ->label('Medium'),
-                TextColumn::make('large_path')
-                    ->label('Large'),
+                ImageColumn::make('thumb_path')
+                    ->label('Изображение')
+                    ->disk('media')
+                    ->square(),
             ])
             ->headerActions([
                 CreateAction::make(),

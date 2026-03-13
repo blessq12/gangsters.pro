@@ -14,6 +14,8 @@ class ProductCategoriesTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->defaultSort('sort_order')
+            ->reorderable('sort_order')
             ->columns([
                 TextColumn::make('name')
                     ->searchable(),
@@ -27,7 +29,7 @@ class ProductCategoriesTable
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('order')
+                TextColumn::make('sort_order')
                     ->numeric()
                     ->sortable(),
             ])

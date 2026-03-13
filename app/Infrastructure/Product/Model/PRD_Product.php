@@ -33,7 +33,8 @@ class PRD_Product extends Model
 
     public function images(): HasMany
     {
-        return $this->hasMany(PRD_ProductImage::class, 'product_id');
+        return $this->hasMany(PRD_ProductImage::class, 'product_id')
+            ->orderBy('sort_order');
     }
 
     public function ingredients(): HasMany

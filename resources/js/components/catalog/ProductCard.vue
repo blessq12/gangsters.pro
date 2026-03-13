@@ -9,18 +9,12 @@ const props = defineProps({
     },
 });
 
+console.debug("[Catalog] product payload", props.product);
+
 const primaryThumb = computed(() => {
     const p = props.product || {};
 
-    // thumbs: [{ small, medium, large }]
-    if (Array.isArray(p.thumbs) && p.thumbs.length) {
-        const t = p.thumbs[0];
-        if (t && typeof t === "object") {
-            return t.medium || t.large || t.small || null;
-        }
-    }
-
-    // images: ["/uploads/..."]
+    // images: ["/storage/..."]
     if (Array.isArray(p.images) && p.images.length) {
         return p.images[0];
     }

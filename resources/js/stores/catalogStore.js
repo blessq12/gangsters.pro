@@ -31,13 +31,34 @@ function normalizeProduct(apiProduct) {
                     (v) => v && typeof v === "object" && v.size === size && v.path,
                 );
 
+            // в приоритете — реально загруженные нами картинки из products/
+            const uploaded = variants.find(
+                (v) =>
+                    v &&
+                    typeof v === "object" &&
+                    typeof v.path === "string" &&
+                    v.path.startsWith("products/"),
+            );
+
             const medium = bySize("medium");
             const large = bySize("large");
             const thumb = bySize("thumb");
-            const chosen = medium || large || thumb || variants[0];
+            const chosen = uploaded || medium || large || thumb || variants[0];
 
             if (chosen && chosen.path) {
-                imageUrl = chosen.path;
+                let url = String(chosen.path);
+
+                if (url.startsWith("products/") || url.startsWith("uploads/")) {
+                    url = `/storage/${url}`;
+                } else if (url.startsWith("/")) {
+                    // типа /images/demo/... — это уже публичный путь из public/
+                    // оставляем как есть
+                } else {
+                    // на всякий случай всё остальное считаем относительным путём в /storage
+                    url = `/storage/${url.replace(/^\/+/, "")}`;
+                }
+
+                imageUrl = url;
             }
         }
     }
