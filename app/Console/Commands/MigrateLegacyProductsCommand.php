@@ -160,10 +160,23 @@ class MigrateLegacyProductsCommand extends Command
 
     private function resolveImagePath(string $path, string $uploadsPath): ?string
     {
-        $path = ltrim($path, '/\\');
+        $path = ltrim($path, "/\\");
+
+        if ($path === '') {
+            return null;
+        }
+
+        if (str_starts_with($path, 'uploads/')) {
+            $path = substr($path, strlen('uploads/'));
+        }
+
+        $publicBase = dirname($uploadsPath);
+
         $candidates = [
             $uploadsPath . '/' . $path,
             $uploadsPath . '/' . ltrim($path, '/'),
+            $publicBase . '/' . $path,
+            $publicBase . '/' . ltrim($path, '/'),
         ];
         foreach ($candidates as $full) {
             if (is_file($full)) {
