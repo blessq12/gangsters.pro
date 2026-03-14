@@ -16,9 +16,6 @@ class ProductForm
                 TextInput::make('name')
                     ->required()
                     ->label('Название'),
-                TextInput::make('slug')
-                    ->label('ЧПУ')
-                    ->required(),
                 TextInput::make('articul')
                     ->label('Артикул')
                     ->maxLength(255),

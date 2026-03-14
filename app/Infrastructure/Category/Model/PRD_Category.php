@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\Category\Model;
 
+use App\Services\Slug\TransliteratingSlugGenerator;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,9 +13,21 @@ class PRD_Category extends Model
 
     protected $table = 'PRD_categories';
 
+    protected static function booted(): void
+    {
+        static::saving(function (self $model): void {
+            if ($model->isDirty('name') || $model->slug === null || $model->slug === '') {
+                $model->slug = app(TransliteratingSlugGenerator::class)->uniqueFrom(
+                    $model->name,
+                    self::class,
+                    $model->id
+                );
+            }
+        });
+    }
+
     protected $fillable = [
         'name',
-        'slug',
         'sort_order',
         'is_active',
     ];

@@ -16,6 +16,7 @@ use App\Infrastructure\Product\Model\PRD_ProductImage;
 use App\Infrastructure\Product\Model\PRD_ProductIngredient;
 use App\Infrastructure\Product\Model\PRD_ProductPrice;
 use App\Infrastructure\Product\Model\PRD_ProductTag;
+use App\Services\Slug\TransliteratingSlugGenerator;
 use DateTimeImmutable;
 
 class ProductRepository implements ProductRepositoryContract
@@ -52,7 +53,11 @@ class ProductRepository implements ProductRepositoryContract
             : new PRD_Product();
 
         $model->name = $product->name();
-        $model->slug = \Str::slug($product->name() . '-' . ($product->id() ?? 'new'));
+        $model->slug = app(TransliteratingSlugGenerator::class)->uniqueFrom(
+            $product->name(),
+            PRD_Product::class,
+            $product->id()
+        );
         $model->articul = $product->articul();
         $model->description = $product->description();
 

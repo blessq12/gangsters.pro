@@ -18,9 +18,18 @@ class ProductCategoriesTable
             ->reorderable('sort_order')
             ->columns([
                 TextColumn::make('name')
+                    ->label('Название')
                     ->searchable(),
                 TextColumn::make('slug')
+                    ->label('ЧПУ')
                     ->searchable(),
+                IconColumn::make('is_active')
+                    ->label('На сайте')
+                    ->boolean(),
+                TextColumn::make('sort_order')
+                    ->label('Порядок')
+                    ->numeric()
+                    ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -29,9 +38,6 @@ class ProductCategoriesTable
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('sort_order')
-                    ->numeric()
-                    ->sortable(),
             ])
             ->filters([
                 //

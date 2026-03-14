@@ -33,7 +33,10 @@ final class GetCatalogTreeUseCase
                 continue;
             }
 
-            $result['categories'][] = $this->buildCategoryNode($category);
+            $node = $this->buildCategoryNode($category);
+            if (!empty($node['products'])) {
+                $result['categories'][] = $node;
+            }
         }
 
         return $result;
