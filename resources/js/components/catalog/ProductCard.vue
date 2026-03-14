@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from "vue";
+import { computed, ref, onMounted, onUnmounted } from "vue";
 import { useUserStore } from "../../stores/userStore";
 
 const props = defineProps({
@@ -7,6 +7,54 @@ const props = defineProps({
         type: Object,
         required: true,
     },
+});
+
+const showNutritionTooltip = ref(false);
+const nutritionTriggerRef = ref(null);
+
+const nutrition = computed(() => {
+    const n = props.product?.nutrition ?? props.product?.raw?.nutrition;
+    if (!n || typeof n !== "object") return null;
+    const cal = Number(n.calories);
+    const pro = Number(n.proteins);
+    const fat = Number(n.fats);
+    const carb = Number(n.carbs);
+    if (!cal && !pro && !fat && !carb) return null;
+    return { calories: cal, proteins: pro, fats: fat, carbs: carb };
+});
+
+const nutritionText = computed(() => {
+    const n = nutrition.value;
+    if (!n) return "";
+    const parts = [];
+    if (n.calories) parts.push(`К: ${n.calories}`);
+    if (n.proteins) parts.push(`Б: ${n.proteins}`);
+    if (n.fats) parts.push(`Ж: ${n.fats}`);
+    if (n.carbs) parts.push(`У: ${n.carbs}`);
+    return parts.length ? parts.join(" · ") + " (на 100 г)" : "";
+});
+
+function toggleNutritionTooltip() {
+    showNutritionTooltip.value = !showNutritionTooltip.value;
+}
+
+function closeNutritionTooltip() {
+    showNutritionTooltip.value = false;
+}
+
+let clickOutsideHandler = null;
+onMounted(() => {
+    clickOutsideHandler = (e) => {
+        if (!showNutritionTooltip.value) return;
+        if (nutritionTriggerRef.value?.contains(e.target)) return;
+        closeNutritionTooltip();
+    };
+    document.addEventListener("click", clickOutsideHandler);
+});
+onUnmounted(() => {
+    if (clickOutsideHandler) {
+        document.removeEventListener("click", clickOutsideHandler);
+    }
 });
 
 const primaryThumb = computed(() => {
@@ -98,10 +146,36 @@ const handleToggleFavorite = () => {
             </div>
 
             <div
-                v-if="product.price"
-                class="absolute right-2.5 top-2.5 inline-flex items-center rounded-full bg-amber-400 px-2.5 py-1 text-[11px] font-semibold text-black shadow-[0_0_20px_rgba(251,191,36,0.7)] sm:right-3 sm:top-3 sm:px-3 sm:py-1.5 sm:text-xs"
+                ref="nutritionTriggerRef"
+                class="absolute right-2.5 top-2.5 flex items-center gap-1.5 sm:right-3 sm:top-3"
+                @mouseleave="closeNutritionTooltip"
             >
-                {{ product.price }} ₽
+                <template v-if="nutritionText">
+                    <div class="relative">
+                        <button
+                            type="button"
+                            class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/20 bg-black/60 text-slate-200 backdrop-blur transition-colors hover:border-amber-400/60 hover:text-amber-200 sm:h-6 sm:w-6"
+                            aria-label="КБЖУ на 100 г"
+                            @click.stop="toggleNutritionTooltip"
+                            @mouseenter="showNutritionTooltip = true"
+                        >
+                            <i class="mdi mdi-information-outline text-sm sm:text-xs" />
+                        </button>
+                        <div
+                            v-show="showNutritionTooltip"
+                            role="tooltip"
+                            class="absolute right-0 top-full z-10 mt-1.5 min-w-[140px] rounded-xl border border-white/10 bg-[rgba(0,0,0,0.92)] px-3 py-2 text-[11px] text-slate-100 shadow-xl backdrop-blur sm:min-w-[160px] sm:text-xs"
+                        >
+                            {{ nutritionText }}
+                        </div>
+                    </div>
+                </template>
+                <div
+                    v-if="product.price"
+                    class="inline-flex items-center rounded-full bg-amber-400 px-2.5 py-1 text-[11px] font-semibold text-black shadow-[0_0_20px_rgba(251,191,36,0.7)] sm:px-3 sm:py-1.5 sm:text-xs"
+                >
+                    {{ product.price }} ₽
+                </div>
             </div>
 
             <div

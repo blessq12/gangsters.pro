@@ -63,6 +63,17 @@ function normalizeProduct(apiProduct) {
     const consist =
         typeof apiProduct.description === "string" ? apiProduct.description : "";
 
+    const nutrition =
+        apiProduct.nutrition && typeof apiProduct.nutrition === "object"
+            ? {
+                  calories: Number(apiProduct.nutrition.calories) || 0,
+                  proteins: Number(apiProduct.nutrition.proteins) || 0,
+                  fats: Number(apiProduct.nutrition.fats) || 0,
+                  carbs: Number(apiProduct.nutrition.carbs) || 0,
+                  basis: apiProduct.nutrition.basis || "per_100g",
+              }
+            : null;
+
     return {
         id,
         name: apiProduct.name || "",
@@ -71,6 +82,7 @@ function normalizeProduct(apiProduct) {
         consist,
         images,
         imageSrcset,
+        nutrition,
         raw: apiProduct,
     };
 }
