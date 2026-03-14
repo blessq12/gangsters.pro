@@ -20,6 +20,23 @@ class ProductPricesRelationManager extends RelationManager
 {
     protected static string $relationship = 'prices';
 
+    protected static ?string $title = 'Цены';
+
+    public static function getTitle(\Illuminate\Database\Eloquent\Model $ownerRecord, string $pageClass): string
+    {
+        return 'Цены';
+    }
+
+    public static function getModelLabel(): string
+    {
+        return 'Цена';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Цены';
+    }
+
     public function form(Schema $schema): Schema
     {
         return $schema->components([
@@ -42,6 +59,7 @@ class ProductPricesRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->heading('Цены')
             ->recordTitleAttribute('amount')
             ->columns([
                 TextColumn::make('amount')

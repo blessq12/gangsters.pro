@@ -17,6 +17,23 @@ class ProductTagsRelationManager extends RelationManager
 {
     protected static string $relationship = 'tags';
 
+    protected static ?string $title = 'Теги';
+
+    public static function getTitle(\Illuminate\Database\Eloquent\Model $ownerRecord, string $pageClass): string
+    {
+        return 'Теги';
+    }
+
+    public static function getModelLabel(): string
+    {
+        return 'Тег';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Теги';
+    }
+
     public function form(Schema $schema): Schema
     {
         return $schema->components([
@@ -29,6 +46,7 @@ class ProductTagsRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->heading('Теги')
             ->recordTitleAttribute('code')
             ->columns([
                 TextColumn::make('code')

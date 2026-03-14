@@ -15,19 +15,25 @@ class ProductsTable
         return $table
             ->columns([
                 TextColumn::make('name')
+                    ->label('Название')
                     ->searchable(),
                 TextColumn::make('slug')
+                    ->label('ЧПУ')
                     ->searchable(),
                 TextColumn::make('status')
+                    ->label('Статус')
                     ->badge(),
                 TextColumn::make('calories')
+                    ->label('Ккал')
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('created_at')
+                    ->label('Создан')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
+                    ->label('Обновлён')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

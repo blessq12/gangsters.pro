@@ -19,6 +19,23 @@ class ProductIngredientsRelationManager extends RelationManager
 {
     protected static string $relationship = 'ingredients';
 
+    protected static ?string $title = 'Ингредиенты';
+
+    public static function getTitle(\Illuminate\Database\Eloquent\Model $ownerRecord, string $pageClass): string
+    {
+        return 'Ингредиенты';
+    }
+
+    public static function getModelLabel(): string
+    {
+        return 'Ингредиент';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Ингредиенты';
+    }
+
     public function form(Schema $schema): Schema
     {
         return $schema->components([
@@ -39,6 +56,7 @@ class ProductIngredientsRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->heading('Ингредиенты')
             ->recordTitleAttribute('name')
             ->columns([
                 TextColumn::make('name')

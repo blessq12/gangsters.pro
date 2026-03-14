@@ -17,7 +17,7 @@ class ProductForm
                     ->required()
                     ->label('Название'),
                 TextInput::make('slug')
-                    ->label('Slug')
+                    ->label('ЧПУ')
                     ->required(),
                 Select::make('status')
                     ->label('Статус')

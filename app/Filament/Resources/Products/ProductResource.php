@@ -29,6 +29,16 @@ class ProductResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = 'Каталог';
 
+    public static function getModelLabel(): string
+    {
+        return 'Товар';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Товары';
+    }
+
     public static function form(Schema $schema): Schema
     {
         return ProductForm::configure($schema);
