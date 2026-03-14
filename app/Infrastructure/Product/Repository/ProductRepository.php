@@ -53,6 +53,7 @@ class ProductRepository implements ProductRepositoryContract
 
         $model->name = $product->name();
         $model->slug = \Str::slug($product->name() . '-' . ($product->id() ?? 'new'));
+        $model->articul = $product->articul();
         $model->description = $product->description();
 
         $nutrition = $product->nutrition();
@@ -204,6 +205,7 @@ class ProductRepository implements ProductRepositoryContract
 
         $this->setProperty($product, 'id', $model->id);
         $this->setProperty($product, 'name', $model->name);
+        $this->setProperty($product, 'articul', $model->articul);
         $this->setProperty($product, 'description', $model->description ?? '');
         $this->setProperty($product, 'nutrition', $nutrition);
         $this->setProperty($product, 'images', $images);

@@ -20,6 +20,9 @@ class ProductsTable
                 TextColumn::make('slug')
                     ->label('ЧПУ')
                     ->searchable(),
+                TextColumn::make('articul')
+                    ->label('Артикул')
+                    ->searchable(),
                 TextColumn::make('status')
                     ->label('Статус')
                     ->badge(),

@@ -21,6 +21,7 @@ final class Product
     private function __construct(
         private ?int $id,
         private string $name,
+        private ?string $articul,
         private string $description,
         private Nutrition $nutrition,
         private array $images,
@@ -48,12 +49,14 @@ final class Product
         array $ingredients = [],
         array $tags = [],
         array $prices = [],
+        ?string $articul = null,
     ): self {
         $now = new DateTimeImmutable();
 
         return new self(
             id: null,
             name: $name,
+            articul: $articul,
             description: $description,
             nutrition: $nutrition,
             images: $images,
@@ -75,6 +78,11 @@ final class Product
     public function name(): string
     {
         return $this->name;
+    }
+
+    public function articul(): ?string
+    {
+        return $this->articul;
     }
 
     public function description(): string
@@ -148,6 +156,12 @@ final class Product
     public function changeDescription(string $description): void
     {
         $this->description = $description;
+        $this->touch();
+    }
+
+    public function setArticul(?string $articul): void
+    {
+        $this->articul = $articul;
         $this->touch();
     }
 

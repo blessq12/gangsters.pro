@@ -47,6 +47,7 @@ class PRDDemoCatalogSeeder extends Seeder
         $california = PRD_Product::create(array_merge([
             'name' => 'Калифорния',
             'slug' => Str::slug('Калифорния'),
+            'articul' => 'CAL-001',
             'description' => 'Ролл Калифорния с крабом и огурцом.',
             'status' => 'active',
         ], $nutritionBase));
@@ -54,6 +55,7 @@ class PRDDemoCatalogSeeder extends Seeder
         $philadelphia = PRD_Product::create(array_merge([
             'name' => 'Филадельфия',
             'slug' => Str::slug('Филадельфия'),
+            'articul' => 'PHL-001',
             'description' => 'Классический ролл Филадельфия с лососем и сливочным сыром.',
             'status' => 'active',
         ], $nutritionBase));
@@ -61,6 +63,7 @@ class PRDDemoCatalogSeeder extends Seeder
         $setPopular = PRD_Product::create(array_merge([
             'name' => 'Сет “Популярный”',
             'slug' => Str::slug('Сет Популярный'),
+            'articul' => 'SET-001',
             'description' => 'Набор из топовых роллов для компании.',
             'status' => 'active',
         ], $nutritionBase));

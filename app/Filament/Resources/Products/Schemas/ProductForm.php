@@ -19,6 +19,9 @@ class ProductForm
                 TextInput::make('slug')
                     ->label('ЧПУ')
                     ->required(),
+                TextInput::make('articul')
+                    ->label('Артикул')
+                    ->maxLength(255),
                 Select::make('status')
                     ->label('Статус')
                     ->options([

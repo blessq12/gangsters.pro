@@ -15,6 +15,7 @@ class PRD_Product extends Model
     protected $fillable = [
         'name',
         'slug',
+        'articul',
         'description',
         'status',
         'calories',
