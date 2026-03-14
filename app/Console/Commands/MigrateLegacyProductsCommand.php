@@ -9,8 +9,8 @@ use App\Domain\Product\VO\Price;
 use App\Infrastructure\Product\Model\PRD_Product;
 use App\Infrastructure\Product\Model\PRD_ProductImage;
 use App\Infrastructure\Product\Repository\ProductRepository;
+use App\Console\Commands\ResolvesLegacyImagePath;
 use App\Models\Product;
-use App\Models\ProductImage;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -18,6 +18,8 @@ use Illuminate\Support\Str;
 
 class MigrateLegacyProductsCommand extends Command
 {
+    use ResolvesLegacyImagePath;
+
     protected $signature = 'products:migrate-legacy-products
                             {--dry-run : Не записывать в БД и не копировать файлы}
                             {--limit= : Максимум товаров для переноса}
@@ -156,47 +158,6 @@ class MigrateLegacyProductsCommand extends Command
 
         $this->info(sprintf('Готово. Перенесено товаров: %d. Пропущено изображений: %d.', $migrated, $imagesSkipped));
         return self::SUCCESS;
-    }
-
-    private function resolveImagePath(string $path, string $uploadsPath): ?string
-    {
-        $path = ltrim($path, "/\\");
-
-        if ($path === '') {
-            return null;
-        }
-
-        if (str_starts_with($path, 'uploads/')) {
-            $path = substr($path, strlen('uploads/'));
-        }
-
-        $publicBase = dirname($uploadsPath);
-
-        $candidates = [
-            $uploadsPath . '/' . $path,
-            $uploadsPath . '/' . ltrim($path, '/'),
-            $publicBase . '/' . $path,
-            $publicBase . '/' . ltrim($path, '/'),
-        ];
-        foreach ($candidates as $full) {
-            if (is_file($full)) {
-                return $full;
-            }
-        }
-        $info = pathinfo($path);
-        $dir = $info['dirname'] ?? '';
-        $filename = $info['filename'] ?? '';
-        $ext = $info['extension'] ?? 'jpg';
-        if ($filename !== '') {
-            foreach (['-lg', '-large', '-md', '-medium', '-sm', '-small', ''] as $suffix) {
-                $try = $dir ? $uploadsPath . '/' . $dir . '/' . $filename . $suffix . '.' . $ext : $uploadsPath . '/' . $filename . $suffix . '.' . $ext;
-                $try = str_replace('//', '/', $try);
-                if (is_file($try)) {
-                    return $try;
-                }
-            }
-        }
-        return null;
     }
 
     private function getMappingPath(): string
