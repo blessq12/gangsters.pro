@@ -21,7 +21,20 @@ function normalizeProduct(apiProduct) {
         }
     }
 
+    function toPublicUrl(path) {
+        if (!path || typeof path !== "string") return null;
+        let url = String(path);
+        if (url.startsWith("products/") || url.startsWith("uploads/")) {
+            url = `/storage/${url}`;
+        } else if (!url.startsWith("/")) {
+            url = `/storage/${url.replace(/^\/+/, "")}`;
+        }
+        return url;
+    }
+
     let imageUrl = null;
+    /** @type {{ url: string, width: number }[]} для srcset (thumb 300, medium 800, large 1200) */
+    let imageSrcset = [];
     if (Array.isArray(apiProduct.images) && apiProduct.images.length) {
         const firstImage = apiProduct.images[0];
         if (firstImage && Array.isArray(firstImage.variants)) {
@@ -30,35 +43,17 @@ function normalizeProduct(apiProduct) {
                 variants.find(
                     (v) => v && typeof v === "object" && v.size === size && v.path,
                 );
-
-            // в приоритете — реально загруженные нами картинки из products/
-            const uploaded = variants.find(
-                (v) =>
-                    v &&
-                    typeof v === "object" &&
-                    typeof v.path === "string" &&
-                    v.path.startsWith("products/"),
-            );
-
+            const thumb = bySize("thumb");
             const medium = bySize("medium");
             const large = bySize("large");
-            const thumb = bySize("thumb");
-            const chosen = uploaded || medium || large || thumb || variants[0];
-
-            if (chosen && chosen.path) {
-                let url = String(chosen.path);
-
-                if (url.startsWith("products/") || url.startsWith("uploads/")) {
-                    url = `/storage/${url}`;
-                } else if (url.startsWith("/")) {
-                    // типа /images/demo/... — это уже публичный путь из public/
-                    // оставляем как есть
-                } else {
-                    // на всякий случай всё остальное считаем относительным путём в /storage
-                    url = `/storage/${url.replace(/^\/+/, "")}`;
-                }
-
-                imageUrl = url;
+            const order = [thumb, medium, large].filter(Boolean);
+            if (order.length) {
+                imageSrcset = order.map((v) => ({
+                    url: toPublicUrl(v.path),
+                    width: Number(v.width) || (v.size === "thumb" ? 300 : v.size === "medium" ? 800 : 1200),
+                })).filter((e) => e.url);
+                const fallback = order[order.length - 1];
+                imageUrl = toPublicUrl(fallback.path);
             }
         }
     }
@@ -75,6 +70,7 @@ function normalizeProduct(apiProduct) {
         weight: null,
         consist,
         images,
+        imageSrcset,
         raw: apiProduct,
     };
 }

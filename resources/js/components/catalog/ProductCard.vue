@@ -9,28 +9,25 @@ const props = defineProps({
     },
 });
 
-console.debug("[Catalog] product payload", props.product);
-
 const primaryThumb = computed(() => {
     const p = props.product || {};
-
-    // images: ["/storage/..."]
     if (Array.isArray(p.images) && p.images.length) {
         return p.images[0];
     }
-
     return null;
 });
 
-const backgroundStyle = computed(() => {
-    if (!primaryThumb.value) {
-        return {};
-    }
-
-    return {
-        backgroundImage: `url(${primaryThumb.value})`,
-    };
+const imageSrcset = computed(() => {
+    const list = props.product?.imageSrcset;
+    if (!Array.isArray(list) || list.length === 0) return null;
+    return list
+        .map(({ url, width }) => (url && width ? `${url} ${width}w` : null))
+        .filter(Boolean)
+        .join(", ");
 });
+
+const imageSizes =
+    "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw";
 
 const userStore = useUserStore();
 
@@ -72,15 +69,19 @@ const handleToggleFavorite = () => {
         <div
             class="relative w-full overflow-hidden aspect-[4/3] sm:aspect-[5/4] lg:h-full lg:aspect-auto"
         >
-            <div
-                class="absolute inset-0 bg-cover bg-center transition-transform duration-500 ease-out group-hover:scale-105"
-                :style="backgroundStyle"
-                :class="!primaryThumb ? 'bg-slate-900/70' : ''"
-            ></div>
-
+            <img
+                v-if="primaryThumb"
+                :src="primaryThumb"
+                :srcset="imageSrcset || undefined"
+                :sizes="imageSrcset ? imageSizes : undefined"
+                alt=""
+                class="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105"
+                loading="lazy"
+                fetchpriority="low"
+            />
             <div
                 v-if="!primaryThumb"
-                class="absolute inset-0 flex items-center justify-center text-xs text-slate-400"
+                class="absolute inset-0 flex items-center justify-center bg-slate-900/70 text-xs text-slate-400"
             >
                 Нет фото
             </div>
