@@ -27,12 +27,12 @@ const handleSelect = (value) => {
 </script>
 
 <template>
-    <div class="relative mb-10">
+    <div class="relative mb-10 w-full min-w-0 max-w-full">
         <div
-            class="rounded-2xl border border-amber-400/30 bg-[rgba(255,255,255,0.035)] px-4 sm:px-6 lg:px-8 py-3.5 shadow-[0_0_22px_rgba(0,0,0,0.65)] backdrop-blur"
+            class="min-w-0 max-w-full rounded-2xl border border-amber-400/30 bg-[rgba(255,255,255,0.035)] px-4 sm:px-6 lg:px-8 py-3.5 shadow-[0_0_22px_rgba(0,0,0,0.65)] backdrop-blur"
         >
             <div
-                class="flex items-center gap-3 overflow-x-auto lg:overflow-visible pb-1.5 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent"
+                class="flex flex-wrap items-center gap-3 pb-1.5"
             >
                 <button
                     v-if="showAll"

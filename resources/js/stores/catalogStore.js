@@ -92,13 +92,19 @@ export const useCatalogStore = defineStore("catalog", {
             return state.categories.flatMap((entry) => entry.products || []);
         },
         filteredProducts(state) {
-            if (!state.selectedCategoryId) {
+            if (state.selectedCategoryId == null || state.selectedCategoryId === "") {
                 return this.flatProducts;
             }
 
-            const entry = state.categories.find(
-                (c) => c.category.id === state.selectedCategoryId,
-            );
+            const selected = state.selectedCategoryId;
+            const entry = state.categories.find((c) => {
+                const id = c.category.id;
+                const slug = c.category.slug;
+                return (
+                    id != null && Number(selected) === Number(id) ||
+                    (slug && String(selected) === String(slug))
+                );
+            });
             if (!entry) {
                 return [];
             }
@@ -122,7 +128,7 @@ export const useCatalogStore = defineStore("catalog", {
                     ? payload.categories
                     : [];
 
-                this.categories = rawCategories.map((item) => {
+                const mapped = rawCategories.map((item) => {
                     const category = item.category || {};
                     const products = Array.isArray(item.products)
                         ? item.products
@@ -142,6 +148,10 @@ export const useCatalogStore = defineStore("catalog", {
                             .filter(Boolean),
                     };
                 });
+                this.categories = mapped.sort(
+                    (a, b) =>
+                        (a.category.sort_order ?? 0) - (b.category.sort_order ?? 0),
+                );
 
                 this.hasLoaded = true;
             } catch (e) {
