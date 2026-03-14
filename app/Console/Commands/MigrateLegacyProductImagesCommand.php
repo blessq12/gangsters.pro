@@ -79,6 +79,8 @@ class MigrateLegacyProductImagesCommand extends Command
         $migratedProducts = 0;
         $migratedImages = 0;
         $skippedImages = 0;
+        $verbose = $this->getOutput()->isVerbose();
+        $loggedMissing = [];
 
         DB::beginTransaction();
         try {
@@ -100,6 +102,10 @@ class MigrateLegacyProductImagesCommand extends Command
                 foreach ($imgs as $index => $oldImage) {
                     $sourcePath = $this->resolveImagePath($oldImage->path, $uploadsPath);
                     if ($sourcePath === null || !is_file($sourcePath)) {
+                        if ($verbose && count($loggedMissing) < 5 && !isset($loggedMissing[$oldImage->path])) {
+                            $loggedMissing[$oldImage->path] = true;
+                            $this->line(sprintf('  Не найден файл: path="%s" (product_images.id=%s)', $oldImage->path, $oldImage->id));
+                        }
                         $skippedImages++;
                         continue;
                     }
