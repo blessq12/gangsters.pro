@@ -1,6 +1,7 @@
 <script setup>
-import { computed, ref, onMounted, onUnmounted } from "vue";
+import { computed, ref, onMounted, onUnmounted, nextTick } from "vue";
 import { useUserStore } from "../../stores/userStore";
+import { playTooltipOpen, playTooltipClose } from "../../animations/animationManager";
 
 const props = defineProps({
     product: {
@@ -11,6 +12,7 @@ const props = defineProps({
 
 const showNutritionTooltip = ref(false);
 const nutritionTriggerRef = ref(null);
+const nutritionTooltipRef = ref(null);
 
 const nutrition = computed(() => {
     const n = props.product?.nutrition ?? props.product?.raw?.nutrition;
@@ -23,23 +25,32 @@ const nutrition = computed(() => {
     return { calories: cal, proteins: pro, fats: fat, carbs: carb };
 });
 
-const nutritionText = computed(() => {
-    const n = nutrition.value;
-    if (!n) return "";
-    const parts = [];
-    if (n.calories) parts.push(`К: ${n.calories}`);
-    if (n.proteins) parts.push(`Б: ${n.proteins}`);
-    if (n.fats) parts.push(`Ж: ${n.fats}`);
-    if (n.carbs) parts.push(`У: ${n.carbs}`);
-    return parts.length ? parts.join(" · ") + " (на 100 г)" : "";
-});
+const hasNutrition = computed(() => Boolean(nutrition.value));
 
 function toggleNutritionTooltip() {
-    showNutritionTooltip.value = !showNutritionTooltip.value;
+    if (showNutritionTooltip.value) {
+        playTooltipClose(nutritionTooltipRef.value, () => {
+            showNutritionTooltip.value = false;
+        });
+    } else {
+        showNutritionTooltip.value = true;
+        nextTick(() => {
+            playTooltipOpen(nutritionTooltipRef.value);
+        });
+    }
 }
 
 function closeNutritionTooltip() {
-    showNutritionTooltip.value = false;
+    if (!showNutritionTooltip.value) return;
+    playTooltipClose(nutritionTooltipRef.value, () => {
+        showNutritionTooltip.value = false;
+    });
+}
+
+function openNutritionTooltip() {
+    if (showNutritionTooltip.value) return;
+    showNutritionTooltip.value = true;
+    nextTick(() => playTooltipOpen(nutritionTooltipRef.value));
 }
 
 let clickOutsideHandler = null;
@@ -150,23 +161,58 @@ const handleToggleFavorite = () => {
                 class="absolute right-2.5 top-2.5 flex items-center gap-1.5 sm:right-3 sm:top-3"
                 @mouseleave="closeNutritionTooltip"
             >
-                <template v-if="nutritionText">
+                <template v-if="hasNutrition">
                     <div class="relative">
                         <button
                             type="button"
                             class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/20 bg-black/60 text-slate-200 backdrop-blur transition-colors hover:border-amber-400/60 hover:text-amber-200 sm:h-6 sm:w-6"
-                            aria-label="КБЖУ на 100 г"
+                            aria-label="Пищевая ценность на 100 г"
                             @click.stop="toggleNutritionTooltip"
-                            @mouseenter="showNutritionTooltip = true"
+                            @mouseenter="openNutritionTooltip"
                         >
                             <i class="mdi mdi-information-outline text-sm sm:text-xs" />
                         </button>
                         <div
                             v-show="showNutritionTooltip"
+                            ref="nutritionTooltipRef"
                             role="tooltip"
-                            class="absolute right-0 top-full z-10 mt-1.5 min-w-[140px] rounded-xl border border-white/10 bg-[rgba(0,0,0,0.92)] px-3 py-2 text-[11px] text-slate-100 shadow-xl backdrop-blur sm:min-w-[160px] sm:text-xs"
+                            class="absolute right-0 top-full z-10 mt-1.5 min-w-[180px] rounded-xl border border-white/10 bg-[rgba(0,0,0,0.94)] px-3 py-2.5 shadow-xl backdrop-blur sm:min-w-[200px]"
                         >
-                            {{ nutritionText }}
+                            <div class="space-y-1.5 text-[11px] text-slate-100 sm:text-xs">
+                                <template v-if="nutrition">
+                                    <p
+                                        v-if="nutrition.calories"
+                                        class="flex justify-between gap-4"
+                                    >
+                                        <span class="text-slate-300">Калории</span>
+                                        <span class="font-medium">{{ nutrition.calories }} ккал</span>
+                                    </p>
+                                    <p
+                                        v-if="nutrition.proteins"
+                                        class="flex justify-between gap-4"
+                                    >
+                                        <span class="text-slate-300">Белки</span>
+                                        <span class="font-medium">{{ nutrition.proteins }} г</span>
+                                    </p>
+                                    <p
+                                        v-if="nutrition.fats"
+                                        class="flex justify-between gap-4"
+                                    >
+                                        <span class="text-slate-300">Жиры</span>
+                                        <span class="font-medium">{{ nutrition.fats }} г</span>
+                                    </p>
+                                    <p
+                                        v-if="nutrition.carbs"
+                                        class="flex justify-between gap-4"
+                                    >
+                                        <span class="text-slate-300">Углеводы</span>
+                                        <span class="font-medium">{{ nutrition.carbs }} г</span>
+                                    </p>
+                                </template>
+                                <p class="mt-1.5 border-t border-white/10 pt-1.5 text-[10px] text-slate-400 sm:text-[11px]">
+                                    на 100 г
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </template>

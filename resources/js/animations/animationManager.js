@@ -87,6 +87,36 @@ export function playModalClose({ backdrop, card, onComplete }) {
     );
 }
 
+export function playTooltipOpen(el) {
+    if (!el) return;
+    gsap.fromTo(
+        el,
+        { opacity: 0, y: -6, scale: 0.96 },
+        {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            duration: 0.2,
+            ease: "power2.out",
+        },
+    );
+}
+
+export function playTooltipClose(el, onComplete) {
+    if (!el) {
+        if (onComplete) onComplete();
+        return;
+    }
+    gsap.to(el, {
+        opacity: 0,
+        y: -4,
+        scale: 0.98,
+        duration: 0.15,
+        ease: "power2.in",
+        onComplete,
+    });
+}
+
 export function playPageEnter(el, done) {
     gsap.fromTo(
         el,
