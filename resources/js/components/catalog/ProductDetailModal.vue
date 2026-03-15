@@ -1,7 +1,9 @@
 <script setup>
-import { computed } from "vue";
-import BaseModal from "../ui/BaseModal.vue";
+import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
 import { useUserStore } from "../../stores/userStore";
+import { playModalClose, playModalOpen, playProductDetailInfoEnter } from "../../animations/animationManager";
+import ProductGallerySlider from "./ProductGallerySlider.vue";
+import ProductDetailInfo from "./ProductDetailInfo.vue";
 
 const props = defineProps({
     modelValue: {
@@ -17,12 +19,87 @@ const props = defineProps({
 const emit = defineEmits(["update:modelValue"]);
 
 const userStore = useUserStore();
+const isVisible = ref(false);
+const backdropRef = ref(null);
+const panelRef = ref(null);
+const infoRef = ref(null);
+let savedOverflow = "";
 
-const primaryImage = computed(() => {
+const lockBodyScroll = () => {
+    savedOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+};
+
+const unlockBodyScroll = () => {
+    document.body.style.overflow = savedOverflow || "";
+};
+
+const close = () => {
+    emit("update:modelValue", false);
+};
+
+watch(
+    () => props.modelValue,
+    async (val) => {
+        if (val) {
+            isVisible.value = true;
+            lockBodyScroll();
+            await nextTick();
+            playModalOpen({
+                backdrop: backdropRef.value,
+                card: panelRef.value,
+            });
+            if (infoRef.value) {
+                playProductDetailInfoEnter(infoRef.value, { delay: 0.4 });
+            }
+        } else if (isVisible.value) {
+            playModalClose({
+                backdrop: backdropRef.value,
+                card: panelRef.value,
+                onComplete: () => {
+                    isVisible.value = false;
+                    unlockBodyScroll();
+                },
+            });
+        }
+    },
+    { immediate: true },
+);
+
+onBeforeUnmount(unlockBodyScroll);
+
+function toPublicUrl(path) {
+    if (!path || typeof path !== "string") return null;
+    let url = String(path);
+    if (url.startsWith("products/") || url.startsWith("uploads/")) {
+        url = `/storage/${url}`;
+    } else if (!url.startsWith("/")) {
+        url = `/storage/${url.replace(/^\/+/, "")}`;
+    }
+    return url;
+}
+
+const galleryImages = computed(() => {
     const p = props.product;
-    if (!p) return null;
-    if (Array.isArray(p.images) && p.images.length) return p.images[0];
-    return null;
+    if (!p) return [];
+    const rawImages = p.raw?.images;
+    if (Array.isArray(rawImages) && rawImages.length) {
+        return rawImages
+            .map((img) => {
+                const variants = img?.variants || [];
+                const bySize = (s) => variants.find((v) => v?.size === s && v?.path);
+                const v = bySize("large") || bySize("medium") || bySize("thumb") || variants[0];
+                const url = v ? toPublicUrl(v.path) : null;
+                return url ? { url } : null;
+            })
+            .filter(Boolean);
+    }
+    if (Array.isArray(p.images) && p.images.length) {
+        return p.images
+            .map((url) => (typeof url === "string" ? { url } : url?.url ? { url: url.url } : null))
+            .filter(Boolean);
+    }
+    return [];
 });
 
 const productId = computed(() => props.product?.id ?? null);
@@ -30,6 +107,15 @@ const productId = computed(() => props.product?.id ?? null);
 const qtyInCart = computed(() =>
     productId.value ? userStore.cartQuantityByProduct(productId.value) : 0,
 );
+
+const isFav = computed(() =>
+    productId.value ? userStore.isFavorite(productId.value) : false,
+);
+
+const handleToggleFavorite = () => {
+    if (!productId.value) return;
+    userStore.toggleFavorite(props.product);
+};
 
 const handleAddToCart = () => {
     if (!productId.value) return;
@@ -48,78 +134,190 @@ const handleDecrement = () => {
 </script>
 
 <template>
-    <BaseModal :model-value="modelValue" @update:model-value="emit('update:modelValue', $event)">
-        <template v-if="product" #header>
-            {{ product.name }}
-        </template>
+    <Teleport to="body">
+        <div v-if="isVisible" class="product-detail-modal">
+            <div
+                ref="backdropRef"
+                class="product-detail-modal__backdrop"
+                aria-hidden="true"
+                @click="close"
+            />
 
-        <template v-if="product">
-            <div class="space-y-4">
-                <div
-                    class="aspect-[4/3] w-full overflow-hidden rounded-xl bg-slate-800/50"
-                >
-                    <img
-                        v-if="primaryImage"
-                        :src="primaryImage"
-                        :alt="product.name"
-                        class="h-full w-full object-cover object-center"
-                    />
+            <div class="product-detail-modal__content">
+                <div class="product-detail-modal__wrapper">
                     <div
-                        v-else
-                        class="flex h-full items-center justify-center text-sm text-slate-500"
-                    >
-                        Нет фото
-                    </div>
-                </div>
-
-                <p
-                    v-if="product.consist"
-                    class="text-slate-300 leading-relaxed"
-                >
-                    {{ product.consist }}
-                </p>
-
-                <div class="flex items-center justify-between gap-4 border-t border-white/10 pt-4">
-                    <span class="text-lg font-semibold text-amber-400">
-                        {{ product.price }} ₽
-                    </span>
-                    <div v-if="qtyInCart === 0" class="flex-1 max-w-[200px]">
-                        <button
-                            type="button"
-                            class="w-full rounded-full bg-amber-400 px-4 py-2.5 text-sm font-semibold text-black transition-colors hover:bg-amber-300"
-                            @click="handleAddToCart"
-                        >
-                            В корзину
-                        </button>
-                    </div>
-                    <div
-                        v-else
-                        class="inline-flex items-center gap-2 rounded-full border border-amber-400/60 bg-black/50 px-3 py-2"
+                        ref="panelRef"
+                        class="product-detail-modal__panel"
                     >
                         <button
                             type="button"
-                            class="flex h-8 w-8 items-center justify-center rounded-full text-slate-200 hover:bg-white/10"
-                            @click="handleDecrement"
+                            class="product-detail-modal__close"
+                            aria-label="Закрыть"
+                            @click="close"
                         >
-                            –
+                            <i class="mdi mdi-close" />
                         </button>
-                        <span class="min-w-[2ch] text-center font-semibold text-slate-100">
-                            {{ qtyInCart }} шт
-                        </span>
-                        <button
-                            type="button"
-                            class="flex h-8 w-8 items-center justify-center rounded-full text-slate-200 hover:bg-white/10"
-                            @click="handleIncrement"
-                        >
-                            +
-                        </button>
+
+                        <template v-if="product">
+                            <div class="product-detail-modal__body">
+                                <div class="product-detail-modal__media">
+                                    <ProductGallerySlider
+                                        :images="galleryImages"
+                                        :alt="product.name"
+                                    />
+                                </div>
+                                <div
+                                    ref="infoRef"
+                                    class="product-detail-modal__info"
+                                >
+                                    <ProductDetailInfo
+                                        :product="product"
+                                        :qty-in-cart="qtyInCart"
+                                        :is-fav="isFav"
+                                        @add-to-cart="handleAddToCart"
+                                        @increment="handleIncrement"
+                                        @decrement="handleDecrement"
+                                        @toggle-favorite="handleToggleFavorite"
+                                    />
+                                </div>
+                            </div>
+                        </template>
+
+                        <template v-else>
+                            <p class="product-detail-modal__empty">
+                                Нет данных о товаре.
+                            </p>
+                        </template>
                     </div>
                 </div>
             </div>
-        </template>
-
-        <template v-else>
-            <p class="text-slate-400">Нет данных о товаре.</p>
-        </template>
-    </BaseModal>
+        </div>
+    </Teleport>
 </template>
+
+<style scoped>
+.product-detail-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.product-detail-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.product-detail-modal__content {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-height: 100vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+}
+
+.product-detail-modal__wrapper {
+    margin: auto;
+    width: 100%;
+    max-width: 56rem;
+}
+
+.product-detail-modal__panel {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    max-height: 85vh;
+    border-radius: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.3);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9);
+    overflow: hidden;
+}
+
+.product-detail-modal__close {
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(0, 0, 0, 0.5);
+    color: #94a3b8;
+    font-size: 1.25rem;
+    transition: color 0.2s, border-color 0.2s;
+}
+
+.product-detail-modal__close:hover {
+    color: #fcd34d;
+    border-color: rgba(251, 191, 36, 0.5);
+}
+
+.product-detail-modal__body {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+}
+
+.product-detail-modal__media {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+}
+
+.product-detail-modal__media::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+        to top,
+        rgba(0, 0, 0, 0.95) 0%,
+        rgba(0, 0, 0, 0.4) 25%,
+        transparent 50%
+    );
+}
+
+.product-detail-modal__media :deep(.product-gallery) {
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+}
+
+.product-detail-modal__info {
+    position: absolute;
+    left: 0.75rem;
+    right: 0.75rem;
+    bottom: 0.75rem;
+    z-index: 2;
+    min-width: 0;
+    max-height: 38%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.product-detail-modal__empty {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 2rem;
+    font-size: 0.875rem;
+    color: #94a3b8;
+    z-index: 1;
+}
+</style>

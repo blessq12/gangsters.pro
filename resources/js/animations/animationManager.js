@@ -302,4 +302,22 @@ export function playDockContentHide(panel, onComplete) {
 }
 
 
+export function playProductDetailInfoEnter(panel, options = {}) {
+    if (!panel) return;
+
+    const { delay = 0.4 } = options;
+
+    gsap.fromTo(
+        panel,
+        { opacity: 0, y: 30 },
+        {
+            opacity: 1,
+            y: 0,
+            duration: 0.35,
+            delay,
+            ease: "power2.out",
+        },
+    );
+}
+
 
