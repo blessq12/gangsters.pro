@@ -16,7 +16,12 @@ const props = defineProps({
     },
 });
 
-const emit = defineEmits(["add-to-cart", "increment", "decrement", "toggle-favorite"]);
+const emit = defineEmits([
+    "add-to-cart",
+    "increment",
+    "decrement",
+    "toggle-favorite",
+]);
 
 const nutrition = computed(() => {
     const n = props.product?.nutrition ?? props.product?.raw?.nutrition;
@@ -77,12 +82,11 @@ function handleToggleFavorite() {
             <div class="product-detail-info__head">
                 <div class="product-detail-info__title-wrap">
                     <h2 class="product-detail-info__title">
-                        {{ product.name || product.raw?.name || 'Без названия' }}
+                        {{
+                            product.name || product.raw?.name || "Без названия"
+                        }}
                     </h2>
-                    <p
-                        v-if="product.consist"
-                        class="product-detail-info__desc"
-                    >
+                    <p v-if="product.consist" class="product-detail-info__desc">
                         {{ product.consist }}
                     </p>
                 </div>
@@ -93,7 +97,12 @@ function handleToggleFavorite() {
                     aria-label="Избранное"
                     @click="handleToggleFavorite"
                 >
-                    <i :class="['mdi', isFav ? 'mdi-heart' : 'mdi-heart-outline']" />
+                    <i
+                        :class="[
+                            'mdi',
+                            isFav ? 'mdi-heart' : 'mdi-heart-outline',
+                        ]"
+                    />
                 </button>
             </div>
 
@@ -102,30 +111,57 @@ function handleToggleFavorite() {
             </div>
 
             <div v-if="hasNutrition" class="product-detail-info__nutrition">
-                <p class="product-detail-info__nutrition-title">Пищевая ценность на 100 г</p>
+                <p class="product-detail-info__nutrition-title">
+                    Пищевая ценность на 100 г
+                </p>
                 <div class="product-detail-info__nutrition-grid">
-                    <span class="product-detail-info__nutrition-label">Калории</span>
-                    <span class="product-detail-info__nutrition-value">{{ nutrition.calories }} ккал</span>
-                    <span class="product-detail-info__nutrition-label">Белки</span>
-                    <span class="product-detail-info__nutrition-value">{{ nutrition.proteins }} г</span>
-                    <span class="product-detail-info__nutrition-label">Жиры</span>
-                    <span class="product-detail-info__nutrition-value">{{ nutrition.fats }} г</span>
-                    <span class="product-detail-info__nutrition-label">Углеводы</span>
-                    <span class="product-detail-info__nutrition-value">{{ nutrition.carbs }} г</span>
+                    <span class="product-detail-info__nutrition-label"
+                        >Калории</span
+                    >
+                    <span class="product-detail-info__nutrition-value"
+                        >{{ nutrition.calories }} ккал</span
+                    >
+                    <span class="product-detail-info__nutrition-label"
+                        >Белки</span
+                    >
+                    <span class="product-detail-info__nutrition-value"
+                        >{{ nutrition.proteins }} г</span
+                    >
+                    <span class="product-detail-info__nutrition-label"
+                        >Жиры</span
+                    >
+                    <span class="product-detail-info__nutrition-value"
+                        >{{ nutrition.fats }} г</span
+                    >
+                    <span class="product-detail-info__nutrition-label"
+                        >Углеводы</span
+                    >
+                    <span class="product-detail-info__nutrition-value"
+                        >{{ nutrition.carbs }} г</span
+                    >
                 </div>
             </div>
 
-            <div v-if="ingredients.length" class="product-detail-info__ingredients">
+            <div
+                v-if="ingredients.length"
+                class="product-detail-info__ingredients"
+            >
                 <p class="product-detail-info__ingredients-title">Состав</p>
                 <ul class="product-detail-info__ingredients-list">
                     <li
                         v-for="(ing, idx) in ingredients"
                         :key="idx"
                         class="product-detail-info__ingredient"
-                        :class="{ 'product-detail-info__ingredient--allergen': ing.isAllergen }"
+                        :class="{
+                            'product-detail-info__ingredient--allergen':
+                                ing.isAllergen,
+                        }"
                     >
                         <span>{{ ing.name }}</span>
-                        <span v-if="ing.amount" class="product-detail-info__ingredient-amount">
+                        <span
+                            v-if="ing.amount"
+                            class="product-detail-info__ingredient-amount"
+                        >
                             {{ ing.amount }}{{ ing.unit }}
                         </span>
                     </li>
@@ -146,7 +182,10 @@ function handleToggleFavorite() {
                 <span class="product-detail-info__price">
                     {{ product.price ?? 0 }} ₽
                 </span>
-                <div v-if="qtyInCart === 0" class="product-detail-info__cart-wrap">
+                <div
+                    v-if="qtyInCart === 0"
+                    class="product-detail-info__cart-wrap"
+                >
                     <button
                         type="button"
                         class="product-detail-info__btn-cart"
@@ -163,7 +202,9 @@ function handleToggleFavorite() {
                     >
                         –
                     </button>
-                    <span class="product-detail-info__qty-num">{{ qtyInCart }} шт</span>
+                    <span class="product-detail-info__qty-num"
+                        >{{ qtyInCart }} шт</span
+                    >
                     <button
                         type="button"
                         class="product-detail-info__qty-btn"
@@ -186,17 +227,18 @@ function handleToggleFavorite() {
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
+    border-radius: 1rem;
 }
 
 .product-detail-info__card {
     border-radius: 1rem;
     border: 1px solid rgba(251, 191, 36, 0.3);
-    background: rgba(0, 0, 0, 0.75);
+    background: rgba(0, 0, 0, 0.4);
     padding: 0.75rem 1rem;
-    backdrop-blur: 10px;
+    backdrop-filter: blur(10px);
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.9);
     max-height: 100%;
-    overflow-y: auto;
+    overflow: hidden;
 }
 
 .product-detail-info__head {
@@ -242,7 +284,9 @@ function handleToggleFavorite() {
     background: rgba(0, 0, 0, 0.6);
     color: #e2e8f0;
     font-size: 1.25rem;
-    transition: border-color 0.2s, color 0.2s;
+    transition:
+        border-color 0.2s,
+        color 0.2s;
 }
 
 .product-detail-info__fav:hover {
@@ -387,7 +431,9 @@ function handleToggleFavorite() {
     font-weight: 600;
     color: #000;
     box-shadow: 0 0 12px rgba(251, 191, 36, 0.45);
-    transition: background-color 0.2s, transform 0.15s;
+    transition:
+        background-color 0.2s,
+        transform 0.15s;
 }
 
 .product-detail-info__btn-cart:hover {
