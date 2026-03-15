@@ -2,10 +2,8 @@
 
 namespace App\Providers;
 
-use App\FrontPad\FrontPad;
-use App\Models\Order;
-use App\Models\OrderItem;
-use Illuminate\Support\Facades\Log;
+use App\Domain\Order\Repositories\OrderRepositoryInterface as OrderRepositoryContract;
+use App\Infrastructure\Order\Repository\OrderRepository as EloquentOrderRepository;
 use Illuminate\Support\ServiceProvider;
 
 class OrderServiceProvider extends ServiceProvider
@@ -15,6 +13,7 @@ class OrderServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->bind(OrderRepositoryContract::class, EloquentOrderRepository::class);
     }
 
     /**
@@ -22,9 +21,5 @@ class OrderServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // OrderItem::created(function (Order $order) {
-        //     $fp = new FrontPad();
-        //     $fp->createOrder($order);
-        // });
     }
 }
