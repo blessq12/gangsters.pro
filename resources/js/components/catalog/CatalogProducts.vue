@@ -17,6 +17,8 @@ const props = defineProps({
     },
 });
 
+const emit = defineEmits(["productImageClick"]);
+
 const gridRef = ref(null);
 
 const animateGrid = async () => {
@@ -54,7 +56,10 @@ watch(
                 :key="product.id || product.sku"
                 class="catalog-item"
             >
-                <ProductCard :product="product" />
+                <ProductCard
+                    :product="product"
+                    @image-click="emit('productImageClick', $event)"
+                />
             </div>
         </div>
     </div>

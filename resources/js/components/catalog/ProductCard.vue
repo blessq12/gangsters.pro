@@ -10,6 +10,8 @@ const props = defineProps({
     },
 });
 
+const emit = defineEmits(["imageClick"]);
+
 const showNutritionTooltip = ref(false);
 const nutritionTriggerRef = ref(null);
 const nutritionTooltipRef = ref(null);
@@ -150,15 +152,21 @@ const handleToggleFavorite = () => {
             ></div>
 
             <div
+                class="absolute inset-0 z-[1] cursor-pointer"
+                aria-label="Открыть карточку товара"
+                @click.stop="emit('imageClick', product)"
+            ></div>
+
+            <div
                 v-if="product.weight"
-                class="absolute left-2.5 top-2.5 inline-flex items-center rounded-full border border-white/10 bg-[rgba(0,0,0,0.75)] px-2 py-1 text-[10px] font-medium text-slate-100 backdrop-blur sm:left-3 sm:top-3 sm:px-2.5 sm:text-[11px]"
+                class="absolute left-2.5 top-2.5 z-10 inline-flex items-center rounded-full border border-white/10 bg-[rgba(0,0,0,0.75)] px-2 py-1 text-[10px] font-medium text-slate-100 backdrop-blur sm:left-3 sm:top-3 sm:px-2.5 sm:text-[11px]"
             >
                 {{ product.weight }} г
             </div>
 
             <div
                 ref="nutritionTriggerRef"
-                class="absolute right-2.5 top-2.5 flex items-center gap-1.5 sm:right-3 sm:top-3"
+                class="absolute right-2.5 top-2.5 z-10 flex items-center gap-1.5 sm:right-3 sm:top-3"
                 @mouseleave="closeNutritionTooltip"
             >
                 <template v-if="hasNutrition">
@@ -225,7 +233,7 @@ const handleToggleFavorite = () => {
             </div>
 
             <div
-                class="absolute inset-x-2.5 bottom-2.5 rounded-2xl border border-amber-400/30 bg-[rgba(255,255,255,0.04)] px-3 py-2.5 backdrop-blur shadow-[0_0_20px_rgba(0,0,0,0.9)] sm:inset-x-3 sm:bottom-3 sm:px-3.5"
+                class="absolute inset-x-2.5 bottom-2.5 z-10 rounded-2xl border border-amber-400/30 bg-[rgba(255,255,255,0.04)] px-3 py-2.5 backdrop-blur shadow-[0_0_20px_rgba(0,0,0,0.9)] sm:inset-x-3 sm:bottom-3 sm:px-3.5"
             >
                 <div class="flex items-start gap-2">
                     <div class="min-w-0 flex-1 space-y-1">

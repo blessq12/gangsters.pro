@@ -1,10 +1,18 @@
 <script setup>
-import { computed, onMounted } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useUserStore } from "../stores/userStore";
 import { useCatalogStore } from "../stores/catalogStore";
 
 const userStore = useUserStore();
 const catalogStore = useCatalogStore();
+
+const showProductDetailModal = ref(false);
+const selectedProduct = ref(null);
+
+function openProductDetail(product) {
+    selectedProduct.value = product;
+    showProductDetailModal.value = true;
+}
 
 onMounted(() => {
     if (!catalogStore.hasLoaded && !catalogStore.loading) {
@@ -75,9 +83,15 @@ const toggleBottomBar = () => {
             <CatalogProducts
                 :products="filteredProducts"
                 :loading="catalogStore.loading"
+                @product-image-click="openProductDetail"
             />
         </section>
     </div>
+
+    <ProductDetailModal
+        v-model="showProductDetailModal"
+        :product="selectedProduct"
+    />
 </template>
 
 <style scoped></style>
