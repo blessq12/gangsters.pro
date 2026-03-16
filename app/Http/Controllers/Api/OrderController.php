@@ -32,20 +32,22 @@ class OrderController extends Controller
     public function store(Request $request, CreateOrderUseCase $useCase): JsonResponse
     {
         $payload = $request->validate([
+            'client_id' => ['nullable', 'integer'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.product_id' => ['required', 'integer'],
             'items.*.quantity' => ['required', 'integer', 'min:1'],
             'delivery_method' => ['required', 'string', Rule::enum(DeliveryMethod::class)],
-            'delivery_address' => ['nullable', 'array'],
+            'delivery_address' => ['nullable', 'array', 'required_if:delivery_method,courier'],
             'delivery_comment' => ['nullable', 'string'],
             'payment_method' => ['required', 'string', Rule::enum(PaymentMethod::class)],
         ]);
 
         /** @var UR_Client|null $client */
         $client = Auth::user();
+        $clientId = $client?->id ?? ($payload['client_id'] ?? null);
 
         $dto = new CreateOrderDTO(
-            clientId: $client?->id,
+            clientId: $clientId,
             items: array_map(
                 fn (array $row) => [
                     'product_id' => (int) $row['product_id'],

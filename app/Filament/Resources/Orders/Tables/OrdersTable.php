@@ -46,15 +46,30 @@ class OrdersTable
                 TextColumn::make('subtotal')
                     ->label('Подытог')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->formatStateUsing(
+                        fn ($state): string => $state !== null
+                            ? number_format(((int) $state) / 100, 2, ',', ' ') . ' ₽'
+                            : '—'
+                    ),
                 TextColumn::make('discount_total')
                     ->label('Скидка')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->formatStateUsing(
+                        fn ($state): string => $state !== null && (int) $state !== 0
+                            ? number_format(((int) $state) / 100, 2, ',', ' ') . ' ₽'
+                            : '0 ₽'
+                    ),
                 TextColumn::make('total')
                     ->label('Сумма')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->formatStateUsing(
+                        fn ($state): string => $state !== null
+                            ? number_format(((int) $state) / 100, 2, ',', ' ') . ' ₽'
+                            : '—'
+                    ),
                 TextColumn::make('delivery_method')
                     ->label('Доставка')
                     ->formatStateUsing(

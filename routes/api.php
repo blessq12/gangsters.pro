@@ -40,10 +40,13 @@ Route::prefix('client')->controller(ClientController::class)->group(function () 
     Route::delete('/addresses/{id}', 'deleteAddress');
 });
 
-Route::prefix('order')->controller(OrderController::class)->group(function () {
-    Route::middleware('auth:sanctum')->get('/', 'index');
-    Route::post('/', 'store');
-});
+Route::middleware('auth:sanctum')
+    ->prefix('order')
+    ->controller(OrderController::class)
+    ->group(function () {
+        Route::get('/', 'index');
+        Route::post('/', 'store');
+    });
 
 Route::prefix('product')->controller(ProductController::class)->group(function () {
     Route::get('/categories', 'categories');

@@ -27,7 +27,11 @@ class ProductResource extends Resource
 
     protected static ?string $navigationLabel = 'Товары';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Каталог';
+    // Группа: блок каталога и товаров
+    protected static string|UnitEnum|null $navigationGroup = 'Каталог и товары';
+
+    // Сортировка в навигации внутри блока каталога
+    protected static ?int $navigationSort = 20;
 
     public static function getModelLabel(): string
     {

@@ -45,20 +45,32 @@ class OrderForm
                             ->columns(3)
                             ->schema([
                                 TextInput::make('subtotal')
-                                    ->label('Подытог (коп)')
-                                    ->numeric()
+                                    ->label('Подытог, ₽')
                                     ->disabled()
-                                    ->dehydrated(false),
+                                    ->dehydrated(false)
+                                    ->formatStateUsing(
+                                        fn ($state): ?string => $state !== null
+                                            ? number_format(((int) $state) / 100, 2, ',', ' ')
+                                            : null
+                                    ),
                                 TextInput::make('total')
-                                    ->label('Итого (коп)')
-                                    ->numeric()
+                                    ->label('Итого, ₽')
                                     ->disabled()
-                                    ->dehydrated(false),
+                                    ->dehydrated(false)
+                                    ->formatStateUsing(
+                                        fn ($state): ?string => $state !== null
+                                            ? number_format(((int) $state) / 100, 2, ',', ' ')
+                                            : null
+                                    ),
                                 TextInput::make('discount_total')
-                                    ->label('Скидка (коп)')
-                                    ->numeric()
+                                    ->label('Скидка, ₽')
                                     ->disabled()
-                                    ->dehydrated(false),
+                                    ->dehydrated(false)
+                                    ->formatStateUsing(
+                                        fn ($state): ?string => $state !== null && (int) $state !== 0
+                                            ? number_format(((int) $state) / 100, 2, ',', ' ')
+                                            : '0'
+                                    ),
                             ]),
                     ]),
                 Section::make('Клиент')

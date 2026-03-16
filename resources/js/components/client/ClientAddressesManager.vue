@@ -8,6 +8,7 @@ const form = ref({
     title: "",
     street: "",
     house: "",
+    entrance: "",
     apartment: "",
     comment: "",
     make_default: false,
@@ -37,6 +38,7 @@ async function addAddress() {
             title: form.value.title || null,
             street: form.value.street,
             house: form.value.house,
+            entrance: form.value.entrance || null,
             apartment: form.value.apartment || null,
             comment: form.value.comment || null,
             make_default: form.value.make_default,
@@ -46,6 +48,7 @@ async function addAddress() {
             title: "",
             street: "",
             house: "",
+            entrance: "",
             apartment: "",
             comment: "",
             make_default: false,
@@ -91,6 +94,9 @@ function useAddress(id) {
                         </p>
                         <p class="mt-1 text-slate-300">
                             {{ address.street }}, д. {{ address.house }}
+                            <span v-if="address.entrance">
+                                , подъезд {{ address.entrance }}
+                            </span>
                             <span v-if="address.apartment">
                                 , кв. {{ address.apartment }}
                             </span>
@@ -164,6 +170,12 @@ function useAddress(id) {
                             v-model="form.house"
                             type="text"
                             placeholder="Дом"
+                            class="rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                        />
+                        <input
+                            v-model="form.entrance"
+                            type="text"
+                            placeholder="Подъезд"
                             class="rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
                         />
                         <input

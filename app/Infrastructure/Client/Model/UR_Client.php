@@ -42,12 +42,11 @@ class UR_Client extends Authenticatable
     }
 
     /**
-     * Заглушка-связь заказов клиента по legacy-полю user_id.
-     * Позже можно будет перевесить на doman-specific связь.
+     * Связь с доменными заказами клиента (ORD_orders).
      */
     public function orders(): HasMany
     {
-        return $this->hasMany(Order::class, 'user_id');
+        return $this->hasMany(\App\Infrastructure\Order\Model\ORD_Order::class, 'client_id');
     }
 }
 

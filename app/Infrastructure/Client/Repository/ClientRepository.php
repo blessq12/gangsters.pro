@@ -15,7 +15,9 @@ class ClientRepository implements ClientRepositoryContract
 {
     public function findById(int $id): ?ClientEntity
     {
-        $model = UR_Client::with('addresses')->find($id);
+        $model = UR_Client::with(['addresses' => function ($query) {
+            $query->whereNull('deleted_at');
+        }])->find($id);
 
         return $model ? $this->mapToEntity($model) : null;
     }
@@ -24,7 +26,9 @@ class ClientRepository implements ClientRepositoryContract
     {
         $formatted = $this->formatPhoneForStorage($phone);
 
-        $model = UR_Client::with('addresses')
+        $model = UR_Client::with(['addresses' => function ($query) {
+            $query->whereNull('deleted_at');
+        }])
             ->where('phone', $formatted)
             ->first();
 
@@ -33,7 +37,9 @@ class ClientRepository implements ClientRepositoryContract
 
     public function findByEmail(string $email): ?ClientEntity
     {
-        $model = UR_Client::with('addresses')
+        $model = UR_Client::with(['addresses' => function ($query) {
+            $query->whereNull('deleted_at');
+        }])
             ->where('email', $email)
             ->first();
 
@@ -111,7 +117,10 @@ class ClientRepository implements ClientRepositoryContract
             $clientModel->save();
         }
 
-        $clientModel->load('addresses');
+        // Загружаем только не удалённые адреса (актуальный список для фронта).
+        $clientModel->load(['addresses' => function ($query) {
+            $query->whereNull('deleted_at');
+        }]);
 
         return $this->mapToEntity($clientModel);
     }

@@ -28,7 +28,11 @@ class PromotionResource extends Resource
 
     protected static ?string $navigationLabel = 'Акции';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Система';
+    // Группа: блок контента и промо
+    protected static string|UnitEnum|null $navigationGroup = 'Контент и промо';
+
+    // Сортировка в навигации внутри блока контента
+    protected static ?int $navigationSort = 41;
 
     public static function form(Schema $schema): Schema
     {

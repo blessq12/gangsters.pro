@@ -23,7 +23,11 @@ class CompanyLegalResource extends Resource
 
     protected static ?string $navigationLabel = 'Юр. данные компании';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Настройки';
+    // Группа: данные о компании
+    protected static string|UnitEnum|null $navigationGroup = 'Компания';
+
+    // Сортировка в навигации внутри блока компании
+    protected static ?int $navigationSort = 51;
 
     public static function form(Schema $schema): Schema
     {

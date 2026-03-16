@@ -27,7 +27,11 @@ class ClientResource extends Resource
 
     protected static ?string $navigationLabel = 'Клиенты';
 
+    // Группа: блок пользователей
     protected static string|UnitEnum|null $navigationGroup = 'Пользователи';
+
+    // Сортировка в навигации внутри блока пользователей
+    protected static ?int $navigationSort = 30;
 
     public static function form(Schema $schema): Schema
     {

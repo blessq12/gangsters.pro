@@ -24,7 +24,11 @@ class ProductCategoryResource extends Resource
 
     protected static ?string $navigationLabel = 'Категории';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Каталог';
+    // Группа: блок каталога и товаров
+    protected static string|UnitEnum|null $navigationGroup = 'Каталог и товары';
+
+    // Сортировка в навигации внутри блока каталога
+    protected static ?int $navigationSort = 19;
 
     public static function form(Schema $schema): Schema
     {

@@ -24,7 +24,11 @@ class OrderResource extends Resource
 
     protected static ?string $navigationLabel = 'Заказы';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Операции';
+    // Группа: блок заказов
+    protected static string|UnitEnum|null $navigationGroup = 'Заказы';
+
+    // Сортировка в навигации: блок заказов идёт первым
+    protected static ?int $navigationSort = 10;
 
     protected static ?string $modelLabel = 'заказ';
 

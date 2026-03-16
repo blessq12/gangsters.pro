@@ -11,6 +11,12 @@ class AddressesRelationManager extends RelationManager
 {
     protected static string $relationship = 'addresses';
 
+    protected static ?string $title = 'Адреса доставки';
+
+    protected static ?string $modelLabel = 'адрес';
+
+    protected static ?string $pluralModelLabel = 'адреса';
+
     public function table(Table $table): Table
     {
         return $table

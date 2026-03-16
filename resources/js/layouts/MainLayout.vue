@@ -50,6 +50,14 @@ watch(
 );
 
 onMounted(() => {
+    // После инициализации из localStorage подтягиваем актуальный профиль с бэка,
+    // если есть токен, чтобы сразу получить свежие адреса и другие данные.
+    if (userStore.token) {
+        userStore.fetchClientProfile().catch((e) => {
+            console.error("Failed to fetch client profile on mount", e);
+        });
+    }
+
     playIntroScene({
         introOverlay: introOverlayRef.value,
         introLogo: introLogoRef.value,

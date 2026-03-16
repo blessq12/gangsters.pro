@@ -6,12 +6,14 @@ use App\Application\Order\DTO\CreateOrderDTO;
 use App\Application\Order\OrderBaseUseCase;
 use App\Application\Order\Presenter\OrderPresenter;
 use App\Domain\Client\Entity\Client;
+use App\Domain\Order\Enums\PaymentStatus;
 use App\Domain\Order\Repositories\OrderRepositoryInterface;
 use App\Domain\Order\ValueObjects\CustomerSnapshot;
+use App\Domain\Order\ValueObjects\DeliveryInfo;
+use App\Domain\Order\ValueObjects\PaymentInfo;
 use App\Domain\Product\Entity\Product;
 use App\Domain\Product\VO\CustomerStatus as ProductCustomerStatus;
 use LogicException;
-use Illuminate\Support\Str;
 
 final class CreateOrderUseCase extends OrderBaseUseCase
 {
@@ -57,12 +59,26 @@ final class CreateOrderUseCase extends OrderBaseUseCase
         }
         $itemsData = $this->buildItemsData($dto->items);
 
-        $orderId = (string) Str::uuid();
+        $deliveryInfo = new DeliveryInfo(
+            method: $dto->deliveryMethod,
+            address: $dto->deliveryAddress,
+            comment: $dto->deliveryComment,
+        );
+
+        $paymentInfo = new PaymentInfo(
+            method: $dto->paymentMethod,
+            status: PaymentStatus::Unpaid->value,
+        );
+
+        // Генерируем короткий номер заказа вида ORD-XXXXXX
+        $orderId = 'ORD-' . random_int(100000, 999999);
         $order = $this->orderFactory->create(
             $orderId,
             $dto->clientId ?? 0,
             $customerSnapshot,
             $itemsData,
+            $deliveryInfo,
+            $paymentInfo,
         );
 
         $this->orders->save($order);

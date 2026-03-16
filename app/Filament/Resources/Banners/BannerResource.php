@@ -27,7 +27,11 @@ class BannerResource extends Resource
 
     protected static ?string $navigationLabel = 'Баннеры';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Система';
+    // Группа: блок контента и промо
+    protected static string|UnitEnum|null $navigationGroup = 'Контент и промо';
+
+    // Сортировка в навигации внутри блока контента
+    protected static ?int $navigationSort = 40;
 
     public static function form(Schema $schema): Schema
     {

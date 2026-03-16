@@ -5,6 +5,8 @@ namespace App\Domain\Order\Factories;
 use App\Domain\Order\Entities\Order;
 use App\Domain\Order\Entities\OrderItem;
 use App\Domain\Order\ValueObjects\CustomerSnapshot;
+use App\Domain\Order\ValueObjects\DeliveryInfo;
+use App\Domain\Order\ValueObjects\PaymentInfo;
 use App\Domain\Order\ValueObjects\OrderStatus;
 use App\Domain\Order\ValueObjects\ProductSnapshot;
 
@@ -27,6 +29,8 @@ class OrderFactory
         int $clientId,
         CustomerSnapshot $customer,
         array $itemsData,
+        ?DeliveryInfo $deliveryInfo = null,
+        ?PaymentInfo $paymentInfo = null,
     ): Order {
         $items = [];
 
@@ -77,8 +81,8 @@ class OrderFactory
             subtotal: $subtotal,
             discountTotal: $discountTotal,
             total: $total,
-            deliveryInfo: null,
-            paymentInfo: null,
+            deliveryInfo: $deliveryInfo,
+            paymentInfo: $paymentInfo,
             items: $items,
             createdAt: $createdAt,
             updatedAt: $createdAt,

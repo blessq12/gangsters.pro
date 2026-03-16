@@ -80,19 +80,39 @@ class ItemsRelationManager extends RelationManager
                 TextColumn::make('unit_price')
                     ->label('Цена за ед.')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->formatStateUsing(
+                        fn ($state): string => $state !== null
+                            ? number_format(((int) $state) / 100, 2, ',', ' ') . ' ₽'
+                            : '—'
+                    ),
                 TextColumn::make('row_subtotal')
                     ->label('Подытог')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->formatStateUsing(
+                        fn ($state): string => $state !== null
+                            ? number_format(((int) $state) / 100, 2, ',', ' ') . ' ₽'
+                            : '—'
+                    ),
                 TextColumn::make('row_discount')
                     ->label('Скидка')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->formatStateUsing(
+                        fn ($state): string => $state !== null && (int) $state !== 0
+                            ? number_format(((int) $state) / 100, 2, ',', ' ') . ' ₽'
+                            : '0 ₽'
+                    ),
                 TextColumn::make('row_total')
                     ->label('Итого')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->formatStateUsing(
+                        fn ($state): string => $state !== null
+                            ? number_format(((int) $state) / 100, 2, ',', ' ') . ' ₽'
+                            : '—'
+                    ),
             ])
             ->headerActions([
                 CreateAction::make()
