@@ -102,12 +102,8 @@ class ClientRepository implements ClientRepositoryContract
         $addressModel->title = $address->title();
         $addressModel->street = $address->street();
         $addressModel->house = $address->house();
-        $addressModel->liter = $address->liter();
-        $addressModel->staircase = $address->staircase();
+        $addressModel->entrance = $address->entrance();
         $addressModel->apartment = $address->apartment();
-        $addressModel->entrance_code = $address->entranceCode();
-        $addressModel->floor = $address->floor();
-        $addressModel->comment = $address->comment();
         $addressModel->save();
 
         if ($makeDefault) {
@@ -277,18 +273,15 @@ class ClientRepository implements ClientRepositoryContract
         /** @var ClientAddressEntity $address */
         $address = $ref->newInstanceWithoutConstructor();
 
+        $entrance = $model->entrance ?? $model->staircase ?? null;
         $this->setAddressProperty($address, 'id', $model->id);
         $this->setAddressProperty($address, 'clientId', $model->client_id);
         $this->setAddressProperty($address, 'type', $model->type);
         $this->setAddressProperty($address, 'title', $model->title);
         $this->setAddressProperty($address, 'street', $model->street);
         $this->setAddressProperty($address, 'house', $model->house);
-        $this->setAddressProperty($address, 'liter', $model->liter);
-        $this->setAddressProperty($address, 'staircase', $model->staircase);
+        $this->setAddressProperty($address, 'entrance', $entrance);
         $this->setAddressProperty($address, 'apartment', $model->apartment);
-        $this->setAddressProperty($address, 'entranceCode', $model->entrance_code);
-        $this->setAddressProperty($address, 'floor', $model->floor);
-        $this->setAddressProperty($address, 'comment', $model->comment);
         $this->setAddressProperty($address, 'createdAt', new DateTimeImmutable($model->created_at));
         $this->setAddressProperty($address, 'updatedAt', new DateTimeImmutable($model->updated_at));
 

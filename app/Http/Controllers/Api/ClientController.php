@@ -213,12 +213,8 @@ class ClientController extends Controller
             'title' => ['nullable', 'string', 'max:255'],
             'street' => ['required', 'string', 'max:255'],
             'house' => ['required', 'string', 'max:255'],
-            'liter' => ['nullable', 'string', 'max:50'],
-            'staircase' => ['nullable', 'string', 'max:50'],
+            'entrance' => ['nullable', 'string', 'max:50'],
             'apartment' => ['nullable', 'string', 'max:50'],
-            'entrance_code' => ['nullable', 'string', 'max:50'],
-            'floor' => ['nullable', 'string', 'max:50'],
-            'comment' => ['nullable', 'string', 'max:1000'],
             'make_default' => ['sometimes', 'boolean'],
         ]);
 
@@ -228,12 +224,8 @@ class ClientController extends Controller
             title: $data['title'] ?? null,
             street: $data['street'],
             house: $data['house'],
-            liter: $data['liter'] ?? null,
-            staircase: $data['staircase'] ?? null,
+            entrance: $data['entrance'] ?? null,
             apartment: $data['apartment'] ?? null,
-            entranceCode: $data['entrance_code'] ?? null,
-            floor: $data['floor'] ?? null,
-            comment: $data['comment'] ?? null,
             makeDefault: array_key_exists('make_default', $data) ? (bool) $data['make_default'] : false,
         );
 

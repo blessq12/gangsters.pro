@@ -34,19 +34,36 @@ final class CreateOrderUseCase extends OrderBaseUseCase
             throw new LogicException('Order must contain at least one item.');
         }
 
-        $client = $this->clients->findById($dto->clientId);
-        if ($client === null) {
-            throw new LogicException('Client not found.');
-        }
-        if (!$client->isActive()) {
-            throw new LogicException('Client is blocked or deleted.');
-        }
+        $client = null;
+        $customerSnapshot = null;
 
-        $customerSnapshot = $this->buildCustomerSnapshot($client);
+        if ($dto->clientId !== null) {
+            $client = $this->clients->findById($dto->clientId);
+            if ($client === null) {
+                throw new LogicException('Client not found.');
+            }
+            if (!$client->isActive()) {
+                throw new LogicException('Client is blocked or deleted.');
+            }
+
+            $customerSnapshot = $this->buildCustomerSnapshot($client);
+        } else {
+            $customerSnapshot = new CustomerSnapshot(
+                name: 'Гость',
+                phone: '',
+                email: null,
+                address: null,
+            );
+        }
         $itemsData = $this->buildItemsData($dto->items);
 
         $orderId = (string) Str::uuid();
-        $order = $this->orderFactory->create($orderId, $dto->clientId, $customerSnapshot, $itemsData);
+        $order = $this->orderFactory->create(
+            $orderId,
+            $dto->clientId ?? 0,
+            $customerSnapshot,
+            $itemsData,
+        );
 
         $this->orders->save($order);
 
@@ -65,9 +82,8 @@ final class CreateOrderUseCase extends OrderBaseUseCase
                 $address = [
                     'street' => $addr->street(),
                     'house' => $addr->house(),
-                    'liter' => $addr->liter(),
+                    'entrance' => $addr->entrance(),
                     'apartment' => $addr->apartment(),
-                    'comment' => $addr->comment(),
                 ];
             }
         }

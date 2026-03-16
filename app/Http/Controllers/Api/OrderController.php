@@ -1,0 +1,70 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Application\Order\Command\CreateOrderUseCase;
+use App\Application\Order\DTO\CreateOrderDTO;
+use App\Application\Order\Query\GetClientOrdersUseCase;
+use App\Domain\Order\Enums\DeliveryMethod;
+use App\Domain\Order\Enums\PaymentMethod;
+use App\Infrastructure\Client\Model\UR_Client;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
+use LogicException;
+
+class OrderController extends Controller
+{
+    public function __construct()
+    {
+    }
+
+    public function index(GetClientOrdersUseCase $useCase): JsonResponse
+    {
+        /** @var UR_Client $client */
+        $client = Auth::user();
+
+        return response()->json($useCase->execute($client->id));
+    }
+
+    public function store(Request $request, CreateOrderUseCase $useCase): JsonResponse
+    {
+        $payload = $request->validate([
+            'items' => ['required', 'array', 'min:1'],
+            'items.*.product_id' => ['required', 'integer'],
+            'items.*.quantity' => ['required', 'integer', 'min:1'],
+            'delivery_method' => ['required', 'string', Rule::enum(DeliveryMethod::class)],
+            'delivery_address' => ['nullable', 'array'],
+            'delivery_comment' => ['nullable', 'string'],
+            'payment_method' => ['required', 'string', Rule::enum(PaymentMethod::class)],
+        ]);
+
+        /** @var UR_Client|null $client */
+        $client = Auth::user();
+
+        $dto = new CreateOrderDTO(
+            clientId: $client?->id,
+            items: array_map(
+                fn (array $row) => [
+                    'product_id' => (int) $row['product_id'],
+                    'quantity' => (int) $row['quantity'],
+                ],
+                $payload['items'],
+            ),
+            deliveryMethod: $payload['delivery_method'],
+            deliveryAddress: $payload['delivery_address'] ?? null,
+            deliveryComment: $payload['delivery_comment'] ?? null,
+            paymentMethod: $payload['payment_method'],
+        );
+
+        try {
+            $order = $useCase->execute($dto);
+        } catch (LogicException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        return response()->json($order, 201);
+    }
+}

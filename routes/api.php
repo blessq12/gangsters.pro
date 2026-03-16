@@ -4,10 +4,10 @@ use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\CatalogController;
 use App\Http\Controllers\Api\ClientController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PromotionController;
 use App\Http\Controllers\Api\RawController as Raw;
 use App\Http\Controllers\Api\YandexFoodController;
-use App\Http\Controllers\OrderController;
 use Illuminate\Support\Facades\Route;
 use App\Application\Client\Command\LoginClientUseCase;
 use App\Application\Client\Command\RegisterClientUseCase;
@@ -41,11 +41,8 @@ Route::prefix('client')->controller(ClientController::class)->group(function () 
 });
 
 Route::prefix('order')->controller(OrderController::class)->group(function () {
-    Route::get('/my-orders', 'getMyOrders');
-    Route::get('/my-coins', 'getMyCoins');
-    Route::post('/', 'createOrder');
-    Route::post('/update', 'updateOrder');
-    Route::post('/check-availability', 'checkAvalibility');
+    Route::middleware('auth:sanctum')->get('/', 'index');
+    Route::post('/', 'store');
 });
 
 Route::prefix('product')->controller(ProductController::class)->group(function () {

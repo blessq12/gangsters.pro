@@ -24,6 +24,21 @@ class OrderRepository implements OrderRepositoryInterface
         return $this->mapToEntity($model);
     }
 
+    /**
+     * @return OrderEntity[]
+     */
+    public function findByClientId(int $clientId): array
+    {
+        $models = ORD_Order::with('items')
+            ->where('client_id', $clientId)
+            ->orderByDesc('created_at')
+            ->get();
+
+        return $models
+            ->map(fn (ORD_Order $model) => $this->mapToEntity($model))
+            ->all();
+    }
+
     public function save(OrderEntity $order): void
     {
         /** @var ORD_Order $model */
@@ -49,7 +64,6 @@ class OrderRepository implements OrderRepositoryInterface
 
         $payment = $order->getPaymentInfo();
         $model->payment_method = $payment?->method;
-        $model->payment_external_id = $payment?->externalPaymentId;
         $model->payment_status = $payment?->status;
 
         $model->save();
@@ -99,7 +113,6 @@ class OrderRepository implements OrderRepositoryInterface
         $payment = $model->payment_method !== null
             ? new PaymentInfo(
                 method: $model->payment_method,
-                externalPaymentId: $model->payment_external_id,
                 status: $model->payment_status,
             )
             : null;

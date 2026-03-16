@@ -73,7 +73,7 @@ class OrderFactory
             id: $id,
             clientId: $clientId,
             customer: $customer,
-            status: OrderStatus::draft(),
+            status: OrderStatus::new(),
             subtotal: $subtotal,
             discountTotal: $discountTotal,
             total: $total,

@@ -99,21 +99,27 @@ class Order
         $this->assertInvariant();
     }
 
-    public function confirm(): void
+    public function setStatus(OrderStatus $status): void
     {
-        $this->status = OrderStatus::confirmed();
+        $this->status = $status;
         $this->assertInvariant();
     }
 
-    public function pay(): void
+    public function markPreparing(): void
     {
-        $this->status = OrderStatus::paid();
+        $this->status = OrderStatus::preparing();
         $this->assertInvariant();
     }
 
-    public function cancel(): void
+    public function markInTransit(): void
     {
-        $this->status = OrderStatus::canceled();
+        $this->status = OrderStatus::inTransit();
+        $this->assertInvariant();
+    }
+
+    public function markDelivered(): void
+    {
+        $this->status = OrderStatus::delivered();
         $this->assertInvariant();
     }
 

@@ -37,12 +37,8 @@ final class ClientPresenter
             'title' => $address->title(),
             'street' => $address->street(),
             'house' => $address->house(),
-            'liter' => $address->liter(),
-            'staircase' => $address->staircase(),
+            'entrance' => $address->entrance(),
             'apartment' => $address->apartment(),
-            'entrance_code' => $address->entranceCode(),
-            'floor' => $address->floor(),
-            'comment' => $address->comment(),
             'created_at' => $address->createdAt()->format(DATE_ATOM),
             'updated_at' => $address->updatedAt()->format(DATE_ATOM),
         ];

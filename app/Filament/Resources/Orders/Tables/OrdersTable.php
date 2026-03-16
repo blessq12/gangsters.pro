@@ -2,14 +2,13 @@
 
 namespace App\Filament\Resources\Orders\Tables;
 
+use App\Domain\Order\Enums\DeliveryMethod;
+use App\Domain\Order\Enums\PaymentMethod;
+use App\Domain\Order\Enums\PaymentStatus;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Actions\ForceDeleteBulkAction;
-use Filament\Actions\RestoreBulkAction;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 
 class OrdersTable
@@ -18,112 +17,73 @@ class OrdersTable
     {
         return $table
             ->columns([
-                TextColumn::make('eatsId')
-                    ->label('ID заказа (внешний)')
-                    ->searchable(),
-                TextColumn::make('restaurantId')
-                    ->label('ID ресторана')
-                    ->searchable(),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('user_id')
-                    ->label('ID пользователя')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('name')
-                    ->label('Имя клиента')
-                    ->searchable(),
-                TextColumn::make('tel')
-                    ->label('Телефон')
-                    ->searchable(),
-                TextColumn::make('street')
-                    ->label('Улица')
-                    ->searchable(),
-                TextColumn::make('house')
-                    ->label('Дом')
-                    ->searchable(),
-                TextColumn::make('building')
-                    ->label('Корпус')
-                    ->searchable(),
-                TextColumn::make('staircase')
-                    ->label('Подъезд')
-                    ->searchable(),
-                TextColumn::make('floor')
-                    ->label('Этаж')
-                    ->searchable(),
-                TextColumn::make('apartment')
-                    ->label('Квартира')
-                    ->searchable(),
-                TextColumn::make('full_address')
-                    ->label('Полный адрес')
-                    ->searchable(),
-                TextColumn::make('latitude')
-                    ->label('Широта')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('longitude')
-                    ->label('Долгота')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('deliveryDate')
-                    ->label('Дата/время доставки')
-                    ->dateTime()
-                    ->sortable(),
-                TextColumn::make('deliveryType')
-                    ->label('Тип доставки')
-                    ->searchable(),
-                TextColumn::make('total')
-                    ->label('Сумма заказа')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('itemsCost')
-                    ->label('Сумма товаров')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('deliveryFee')
-                    ->label('Доставка')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('change')
-                    ->label('Сдача')
-                    ->numeric()
-                    ->sortable(),
-                IconColumn::make('delivery')
-                    ->label('Доставка')
-                    ->boolean(),
-                TextColumn::make('comment')
-                    ->label('Комментарий')
-                    ->searchable(),
-                TextColumn::make('personQty')
-                    ->label('Кол-во персон')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('payType')
-                    ->label('Тип оплаты')
-                    ->searchable(),
+                TextColumn::make('id')
+                    ->label('ID')
+                    ->searchable()
+                    ->copyable(),
                 TextColumn::make('status')
                     ->label('Статус')
+                    ->badge()
+                    ->sortable()
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'new' => 'Новый',
+                        'preparing' => 'Готовится',
+                        'in_transit' => 'В пути',
+                        'delivered' => 'Доставлен',
+                        default => $state,
+                    }),
+                TextColumn::make('customer_name')
+                    ->label('Имя')
+                    ->searchable(),
+                TextColumn::make('customer_phone')
+                    ->label('Телефон')
+                    ->searchable(),
+                TextColumn::make('client_id')
+                    ->label('ID клиента')
                     ->numeric()
-                    ->sortable(),
-                TextColumn::make('frontpad_id')
-                    ->label('ID во Frontpad')
-                    ->searchable(),
-                TextColumn::make('discriminator')
-                    ->label('Дискриминатор')
-                    ->searchable(),
-                TextColumn::make('deleted_at')
-                    ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-            ])
-            ->filters([
-                TrashedFilter::make(),
+                TextColumn::make('subtotal')
+                    ->label('Подытог')
+                    ->numeric()
+                    ->sortable(),
+                TextColumn::make('discount_total')
+                    ->label('Скидка')
+                    ->numeric()
+                    ->sortable(),
+                TextColumn::make('total')
+                    ->label('Сумма')
+                    ->numeric()
+                    ->sortable(),
+                TextColumn::make('delivery_method')
+                    ->label('Доставка')
+                    ->formatStateUsing(
+                        fn (?string $state): string => $state !== null && ($enum = DeliveryMethod::tryFrom($state)) !== null
+                            ? $enum->label()
+                            : (string) $state
+                    )
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('payment_method')
+                    ->label('Оплата')
+                    ->formatStateUsing(
+                        fn (?string $state): string => $state !== null && ($enum = PaymentMethod::tryFrom($state)) !== null
+                            ? $enum->label()
+                            : (string) $state
+                    )
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('payment_status')
+                    ->label('Статус оплаты')
+                    ->badge()
+                    ->formatStateUsing(
+                        fn (?string $state): string => $state !== null && ($enum = PaymentStatus::tryFrom($state)) !== null
+                            ? $enum->label()
+                            : (string) $state
+                    )
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('created_at')
+                    ->label('Создан')
+                    ->dateTime('d.m.Y H:i')
+                    ->sortable(),
             ])
             ->recordActions([
                 EditAction::make(),
@@ -131,8 +91,6 @@ class OrdersTable
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
-                    ForceDeleteBulkAction::make(),
-                    RestoreBulkAction::make(),
                 ]),
             ]);
     }

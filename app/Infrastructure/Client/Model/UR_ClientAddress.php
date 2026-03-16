@@ -20,12 +20,8 @@ class UR_ClientAddress extends Model
         'title',
         'street',
         'house',
-        'liter',
-        'staircase',
+        'entrance',
         'apartment',
-        'entrance_code',
-        'floor',
-        'comment',
     ];
 
     public function client(): BelongsTo

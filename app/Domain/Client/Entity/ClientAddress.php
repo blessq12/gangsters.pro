@@ -9,16 +9,12 @@ final class ClientAddress
     private function __construct(
         private ?int $id,
         private int $clientId,
-        private string $type, // default | additional
+        private string $type,
         private ?string $title,
         private string $street,
         private string $house,
-        private ?string $liter,
-        private ?string $staircase,
+        private ?string $entrance,
         private ?string $apartment,
-        private ?string $entranceCode,
-        private ?string $floor,
-        private ?string $comment,
         private DateTimeImmutable $createdAt,
         private DateTimeImmutable $updatedAt,
     ) {
@@ -30,12 +26,8 @@ final class ClientAddress
         ?string $title,
         string $street,
         string $house,
-        ?string $liter,
-        ?string $staircase,
+        ?string $entrance,
         ?string $apartment,
-        ?string $entranceCode,
-        ?string $floor,
-        ?string $comment,
     ): self {
         $now = new DateTimeImmutable();
 
@@ -46,12 +38,8 @@ final class ClientAddress
             title: $title,
             street: $street,
             house: $house,
-            liter: $liter,
-            staircase: $staircase,
+            entrance: $entrance,
             apartment: $apartment,
-            entranceCode: $entranceCode,
-            floor: $floor,
-            comment: $comment,
             createdAt: $now,
             updatedAt: $now,
         );
@@ -87,34 +75,14 @@ final class ClientAddress
         return $this->house;
     }
 
-    public function liter(): ?string
+    public function entrance(): ?string
     {
-        return $this->liter;
-    }
-
-    public function staircase(): ?string
-    {
-        return $this->staircase;
+        return $this->entrance;
     }
 
     public function apartment(): ?string
     {
         return $this->apartment;
-    }
-
-    public function entranceCode(): ?string
-    {
-        return $this->entranceCode;
-    }
-
-    public function floor(): ?string
-    {
-        return $this->floor;
-    }
-
-    public function comment(): ?string
-    {
-        return $this->comment;
     }
 
     public function createdAt(): DateTimeImmutable
@@ -131,22 +99,14 @@ final class ClientAddress
         ?string $title,
         string $street,
         string $house,
-        ?string $liter,
-        ?string $staircase,
+        ?string $entrance,
         ?string $apartment,
-        ?string $entranceCode,
-        ?string $floor,
-        ?string $comment,
     ): void {
         $this->title = $title;
         $this->street = $street;
         $this->house = $house;
-        $this->liter = $liter;
-        $this->staircase = $staircase;
+        $this->entrance = $entrance;
         $this->apartment = $apartment;
-        $this->entranceCode = $entranceCode;
-        $this->floor = $floor;
-        $this->comment = $comment;
         $this->touch();
     }
 
@@ -155,4 +115,3 @@ final class ClientAddress
         $this->updatedAt = new DateTimeImmutable();
     }
 }
-

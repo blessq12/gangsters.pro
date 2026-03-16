@@ -26,12 +26,12 @@ class AddressesRelationManager extends RelationManager
                 TextColumn::make('house')
                     ->label('Дом')
                     ->searchable(),
+                TextColumn::make('entrance')
+                    ->label('Подъезд')
+                    ->searchable(),
                 TextColumn::make('apartment')
                     ->label('Квартира')
                     ->searchable(),
-                TextColumn::make('comment')
-                    ->label('Комментарий')
-                    ->limit(80),
                 IconColumn::make('deleted_at')
                     ->label('Удалён')
                     ->boolean()

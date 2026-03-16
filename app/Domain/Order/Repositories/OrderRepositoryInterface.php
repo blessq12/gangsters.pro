@@ -8,6 +8,11 @@ interface OrderRepositoryInterface
 {
     public function getById(string $id): Order;
 
+    /**
+     * @return Order[]
+     */
+    public function findByClientId(int $clientId): array;
+
     public function save(Order $order): void;
 }
 

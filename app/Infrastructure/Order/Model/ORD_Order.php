@@ -33,7 +33,6 @@ class ORD_Order extends Model
         'delivery_address',
         'delivery_comment',
         'payment_method',
-        'payment_external_id',
         'payment_status',
     ];
 

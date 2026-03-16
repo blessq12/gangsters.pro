@@ -24,12 +24,8 @@ final class AddClientAddressUseCase extends ClientBaseUseCase
             title: $dto->title,
             street: $dto->street,
             house: $dto->house,
-            liter: $dto->liter,
-            staircase: $dto->staircase,
+            entrance: $dto->entrance,
             apartment: $dto->apartment,
-            entranceCode: $dto->entranceCode,
-            floor: $dto->floor,
-            comment: $dto->comment,
         );
 
         return $this->clients->addAddress($client->id(), $address, $dto->makeDefault);

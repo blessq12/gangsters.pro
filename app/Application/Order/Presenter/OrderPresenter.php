@@ -83,7 +83,6 @@ final class OrderPresenter
     {
         return [
             'method' => $payment->method,
-            'external_payment_id' => $payment->externalPaymentId,
             'status' => $payment->status,
         ];
     }

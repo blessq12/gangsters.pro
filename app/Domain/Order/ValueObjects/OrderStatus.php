@@ -14,29 +14,24 @@ final class OrderStatus
         return new self($value);
     }
 
-    public static function draft(): self
+    public static function new(): self
     {
-        return new self('draft');
+        return new self('new');
     }
 
-    public static function confirmed(): self
+    public static function preparing(): self
     {
-        return new self('confirmed');
+        return new self('preparing');
     }
 
-    public static function paid(): self
+    public static function inTransit(): self
     {
-        return new self('paid');
+        return new self('in_transit');
     }
 
-    public static function shipped(): self
+    public static function delivered(): self
     {
-        return new self('shipped');
-    }
-
-    public static function canceled(): self
-    {
-        return new self('canceled');
+        return new self('delivered');
     }
 }
 

@@ -10,14 +10,9 @@ final class AddClientAddressDTO
         public readonly ?string $title,
         public readonly string $street,
         public readonly string $house,
-        public readonly ?string $liter,
-        public readonly ?string $staircase,
+        public readonly ?string $entrance,
         public readonly ?string $apartment,
-        public readonly ?string $entranceCode,
-        public readonly ?string $floor,
-        public readonly ?string $comment,
         public readonly bool $makeDefault,
     ) {
     }
 }
-
