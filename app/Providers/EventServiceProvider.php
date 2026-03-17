@@ -18,6 +18,9 @@ class EventServiceProvider extends ServiceProvider
         Registered::class => [
             SendEmailVerificationNotification::class,
         ],
+        \App\Events\OrderCreatedEvent::class => [
+            // \App\Infrastructure\Order\Listeners\PushOrderToFrontpad::class, // интеграция с Frontpad (пока выключена)
+        ],
     ];
 
     /**
