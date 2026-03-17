@@ -4,22 +4,11 @@ namespace App\Application\Client\Command;
 
 use App\Application\Client\ClientBaseUseCase;
 use App\Application\Client\DTO\AddClientAddressDTO;
-use App\Application\Client\Presenter\ClientPresenter;
 use App\Domain\Client\Entity\ClientAddress;
 use LogicException;
 
 final class AddClientAddressUseCase extends ClientBaseUseCase
 {
-    public function __construct(
-        ClientRepository $clients,
-        Hasher $hasher,
-        ClientAuthContext $authContext,
-        ClientTokenService $tokens,
-        private readonly ClientPresenter $presenter,
-    ) {
-        parent::__construct($clients, $hasher, $authContext, $tokens);
-    }
-
     public function execute(AddClientAddressDTO $dto): array
     {
         $clientId = $this->authContext->currentClientId();

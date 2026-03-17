@@ -4,24 +4,11 @@ namespace App\Application\Client\Command;
 
 use App\Application\Client\ClientBaseUseCase;
 use App\Application\Client\DTO\UpdateClientDTO;
-use App\Application\Client\Presenter\ClientPresenter;
-use App\Domain\Client\VO\Email;
-use App\Domain\Client\VO\PhoneNumber;
 use DateTimeImmutable;
 use LogicException;
 
 final class UpdateClientUseCase extends ClientBaseUseCase
 {
-    public function __construct(
-        ClientRepository $clients,
-        Hasher $hasher,
-        ClientAuthContext $authContext,
-        ClientTokenService $tokens,
-        private readonly ClientPresenter $presenter,
-    ) {
-        parent::__construct($clients, $hasher, $authContext, $tokens);
-    }
-
     public function execute(UpdateClientDTO $dto): array
     {
         $clientId = $this->authContext->currentClientId();
@@ -37,7 +24,7 @@ final class UpdateClientUseCase extends ClientBaseUseCase
                 throw new LogicException('Client with this phone already exists');
             }
 
-            $client->changeContacts(new PhoneNumber($dto->phone), $client->email());
+            $this->factory->changeContactsFromPrimitives($client, $dto->phone, null);
         }
 
         if ($dto->email !== null && ($client->email() === null || (string) $client->email() !== mb_strtolower(trim($dto->email)))) {
@@ -45,7 +32,7 @@ final class UpdateClientUseCase extends ClientBaseUseCase
                 throw new LogicException('Client with this email already exists');
             }
 
-            $client->changeContacts($client->phone(), new Email($dto->email));
+            $this->factory->changeContactsFromPrimitives($client, null, $dto->email);
         }
 
         if ($dto->name !== null) {

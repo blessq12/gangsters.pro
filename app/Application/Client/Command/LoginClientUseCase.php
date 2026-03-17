@@ -4,20 +4,10 @@ namespace App\Application\Client\Command;
 
 use App\Application\Client\ClientBaseUseCase;
 use App\Application\Client\DTO\LoginDTO;
-use App\Application\Client\Presenter\ClientPresenter;
 use LogicException;
 
 final class LoginClientUseCase extends ClientBaseUseCase
 {
-    public function __construct(
-        ClientRepository $clients,
-        Hasher $hasher,
-        ClientAuthContext $authContext,
-        ClientTokenService $tokens,
-        private readonly ClientPresenter $presenter,
-    ) {
-        parent::__construct($clients, $hasher, $authContext, $tokens);
-    }
     public function execute(LoginDTO $dto): array
     {
         $identifier = $dto->phone ?? $dto->email;
