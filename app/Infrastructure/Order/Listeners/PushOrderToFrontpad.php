@@ -2,7 +2,7 @@
 
 namespace App\Infrastructure\Order\Listeners;
 
-use App\Events\OrderCreatedEvent;
+use App\Domain\Order\Events\OrderCreated;
 use App\Domain\Order\Integrations\FrontpadOrderGateway;
 
 final class PushOrderToFrontpad
@@ -12,9 +12,10 @@ final class PushOrderToFrontpad
     ) {
     }
 
-    public function handle(OrderCreatedEvent $event): void
+    public function handle(OrderCreated $event): void
     {
-        $this->gateway->pushOrder($event->order);
+        // В будущем здесь можно включить реальный пуш в Frontpad:
+        // $this->gateway->pushOrder($event->order());
     }
 }
 

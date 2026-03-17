@@ -4,8 +4,8 @@ namespace App\Application\Client;
 
 use App\Domain\Client\Repository\ClientRepository;
 use App\Domain\Client\Factory\ClientFactory;
-use App\Domain\Shared\Auth\ClientAuthContext;
-use App\Domain\Shared\Auth\ClientTokenService;
+use App\Shared\Auth\ClientAuthContext;
+use App\Shared\Auth\ClientTokenService;
 use App\Application\Client\Presenter\ClientPresenter;
 use Illuminate\Contracts\Hashing\Hasher;
 

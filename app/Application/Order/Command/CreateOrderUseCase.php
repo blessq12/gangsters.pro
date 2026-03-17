@@ -8,7 +8,7 @@ use App\Domain\Order\Enums\PaymentStatus;
 use App\Domain\Order\ValueObjects\CustomerSnapshot;
 use App\Domain\Order\ValueObjects\DeliveryInfo;
 use App\Domain\Order\ValueObjects\PaymentInfo;
-use App\Events\OrderCreatedEvent;
+use App\Domain\Order\Events\OrderCreated;
 use LogicException;
 
 final class CreateOrderUseCase extends OrderBaseUseCase
@@ -69,8 +69,7 @@ final class CreateOrderUseCase extends OrderBaseUseCase
         );
 
         $this->orders->save($order);
-
-        event(new OrderCreatedEvent($order));
+        $this->events->publish(new OrderCreated($order));
 
         return $this->presenter->present($order);
     }

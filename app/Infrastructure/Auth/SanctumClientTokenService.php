@@ -2,7 +2,7 @@
 
 namespace App\Infrastructure\Auth;
 
-use App\Domain\Shared\Auth\ClientTokenService;
+use App\Shared\Auth\ClientTokenService;
 use App\Infrastructure\Client\Model\UR_Client;
 use Laravel\Sanctum\PersonalAccessToken;
 

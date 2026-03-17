@@ -2,7 +2,7 @@
 
 namespace App\Infrastructure\Auth;
 
-use App\Domain\Shared\Auth\ClientAuthContext;
+use App\Shared\Auth\ClientAuthContext;
 use App\Infrastructure\Client\Model\UR_Client;
 use Illuminate\Contracts\Auth\Factory as AuthManager;
 use LogicException;

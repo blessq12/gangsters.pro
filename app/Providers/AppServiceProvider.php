@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Models\Company;
+use App\Shared\Events\DomainEventBus;
+use App\Infrastructure\Shared\Events\LaravelDomainEventBus;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
@@ -15,6 +17,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->bind(DomainEventBus::class, LaravelDomainEventBus::class);
         $this->app->singleton(YaMetrikaService::class, function ($app) {
             return new YaMetrikaService();
         });

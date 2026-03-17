@@ -3,7 +3,8 @@
 namespace App\Application\Order;
 
 use App\Domain\Client\Repository\ClientRepository;
-use App\Domain\Shared\Auth\ClientAuthContext;
+use App\Shared\Auth\ClientAuthContext;
+use App\Shared\Events\DomainEventBus;
 use App\Domain\Order\Factories\OrderFactory;
 use App\Domain\Order\Factories\CustomerSnapshotFactory;
 use App\Domain\Order\Factories\OrderItemsFactory;
@@ -22,6 +23,7 @@ abstract class OrderBaseUseCase
         protected readonly CustomerSnapshotFactory $customerFactory,
         protected readonly OrderItemsFactory $itemsFactory,
         protected readonly OrderPresenter $presenter,
+        protected readonly DomainEventBus $events,
     ) {
     }
 }

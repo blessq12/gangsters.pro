@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Domain\Shared\Auth;
+namespace App\Shared\Auth;
 
 interface ClientAuthContext
 {

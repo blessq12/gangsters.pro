@@ -2,8 +2,8 @@
 
 namespace App\Providers;
 
-use App\Domain\Shared\Auth\ClientAuthContext;
-use App\Domain\Shared\Auth\ClientTokenService;
+use App\Shared\Auth\ClientAuthContext;
+use App\Shared\Auth\ClientTokenService;
 use App\Infrastructure\Auth\SanctumClientAuthContext;
 use App\Infrastructure\Auth\SanctumClientTokenService;
 use Illuminate\Support\Facades\Gate;
