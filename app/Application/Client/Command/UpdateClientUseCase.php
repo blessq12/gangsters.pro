@@ -4,7 +4,7 @@ namespace App\Application\Client\Command;
 
 use App\Application\Client\ClientBaseUseCase;
 use App\Application\Client\DTO\UpdateClientDTO;
-use App\Domain\Client\Entity\Client;
+use App\Application\Client\Presenter\ClientPresenter;
 use App\Domain\Client\VO\Email;
 use App\Domain\Client\VO\PhoneNumber;
 use DateTimeImmutable;
@@ -12,8 +12,20 @@ use LogicException;
 
 final class UpdateClientUseCase extends ClientBaseUseCase
 {
-    public function execute(int $clientId, UpdateClientDTO $dto): Client
+    public function __construct(
+        ClientRepository $clients,
+        Hasher $hasher,
+        ClientAuthContext $authContext,
+        ClientTokenService $tokens,
+        private readonly ClientPresenter $presenter,
+    ) {
+        parent::__construct($clients, $hasher, $authContext, $tokens);
+    }
+
+    public function execute(UpdateClientDTO $dto): array
     {
+        $clientId = $this->authContext->currentClientId();
+
         $client = $this->clients->findById($clientId);
 
         if ($client === null) {
@@ -53,7 +65,9 @@ final class UpdateClientUseCase extends ClientBaseUseCase
 
         $this->clients->save($client);
 
-        return $client;
+        return [
+            'client' => $this->presenter->present($client),
+        ];
     }
 }
 

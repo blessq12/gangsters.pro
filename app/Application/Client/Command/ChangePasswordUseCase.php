@@ -4,12 +4,11 @@ namespace App\Application\Client\Command;
 
 use App\Application\Client\ClientBaseUseCase;
 use App\Application\Client\DTO\ChangePasswordDTO;
-use App\Domain\Client\Entity\Client;
 use LogicException;
 
 final class ChangePasswordUseCase extends ClientBaseUseCase
 {
-    public function execute(ChangePasswordDTO $dto): Client
+    public function execute(ChangePasswordDTO $dto): array
     {
         $client = $this->clients->findByPasswordResetToken($dto->token);
 
@@ -22,7 +21,9 @@ final class ChangePasswordUseCase extends ClientBaseUseCase
         $this->clients->save($client);
         $this->clients->clearPasswordResetToken($client);
 
-        return $client;
+        return [
+            'client' => $client,
+        ];
     }
 }
 

@@ -4,22 +4,34 @@ namespace App\Application\Client\Command;
 
 use App\Application\Client\ClientBaseUseCase;
 use App\Application\Client\DTO\AddClientAddressDTO;
-use App\Domain\Client\Entity\Client;
+use App\Application\Client\Presenter\ClientPresenter;
 use App\Domain\Client\Entity\ClientAddress;
 use LogicException;
 
 final class AddClientAddressUseCase extends ClientBaseUseCase
 {
-    public function execute(AddClientAddressDTO $dto): Client
+    public function __construct(
+        ClientRepository $clients,
+        Hasher $hasher,
+        ClientAuthContext $authContext,
+        ClientTokenService $tokens,
+        private readonly ClientPresenter $presenter,
+    ) {
+        parent::__construct($clients, $hasher, $authContext, $tokens);
+    }
+
+    public function execute(AddClientAddressDTO $dto): array
     {
-        $client = $this->clients->findById($dto->clientId);
+        $clientId = $this->authContext->currentClientId();
+
+        $client = $this->clients->findById($clientId);
 
         if ($client === null) {
             throw new LogicException('Client not found');
         }
 
         $address = ClientAddress::create(
-            clientId: $dto->clientId,
+            clientId: $clientId,
             type: $dto->type,
             title: $dto->title,
             street: $dto->street,
@@ -28,7 +40,11 @@ final class AddClientAddressUseCase extends ClientBaseUseCase
             apartment: $dto->apartment,
         );
 
-        return $this->clients->addAddress($client->id(), $address, $dto->makeDefault);
+        $client = $this->clients->addAddress($client->id(), $address, $dto->makeDefault);
+
+        return [
+            'client' => $this->presenter->present($client),
+        ];
     }
 }
 

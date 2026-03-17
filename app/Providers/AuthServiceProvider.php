@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Domain\Shared\Auth\ClientAuthContext;
+use App\Domain\Shared\Auth\ClientTokenService;
+use App\Infrastructure\Auth\SanctumClientAuthContext;
+use App\Infrastructure\Auth\SanctumClientTokenService;
 use Illuminate\Support\Facades\Gate;
 use App\Models\User;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
@@ -22,6 +26,9 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $this->app->bind(ClientAuthContext::class, SanctumClientAuthContext::class);
+        $this->app->bind(ClientTokenService::class, SanctumClientTokenService::class);
+
         Gate::define('admin', function(User $user){
             return $user->admin;
         });

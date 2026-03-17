@@ -4,7 +4,7 @@ namespace App\Application\Client\Command;
 
 use App\Application\Client\ClientBaseUseCase;
 use App\Application\Client\DTO\RegisterDTO;
-use App\Domain\Client\Entity\Client;
+use App\Application\Client\Presenter\ClientPresenter;
 use App\Domain\Client\VO\Email;
 use App\Domain\Client\VO\PhoneNumber;
 use DateTimeImmutable;
@@ -12,7 +12,16 @@ use LogicException;
 
 final class RegisterClientUseCase extends ClientBaseUseCase
 {
-    public function execute(RegisterDTO $dto): Client
+    public function __construct(
+        ClientRepository $clients,
+        Hasher $hasher,
+        ClientAuthContext $authContext,
+        ClientTokenService $tokens,
+        private readonly ClientPresenter $presenter,
+    ) {
+        parent::__construct($clients, $hasher, $authContext, $tokens);
+    }
+    public function execute(RegisterDTO $dto): array
     {
         if ($this->clients->existsByPhone($dto->phone)) {
             throw new LogicException('Client with this phone already exists');
@@ -42,7 +51,12 @@ final class RegisterClientUseCase extends ClientBaseUseCase
 
         $this->clients->save($client);
 
-        return $client;
+        $token = $this->tokens->issueTokenForClient($client->id());
+
+        return [
+            'client' => $this->presenter->present($client),
+            'token' => $token,
+        ];
     }
 }
 

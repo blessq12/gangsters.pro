@@ -16,12 +16,9 @@ use App\Application\Client\DTO\LoginDTO;
 use App\Application\Client\DTO\RegisterDTO;
 use App\Application\Client\DTO\RequestPasswordResetDTO;
 use App\Application\Client\DTO\UpdateClientDTO;
-use App\Application\Client\Presenter\ClientPresenter;
 use App\Application\Client\Query\GetClientDataUseCase;
 use App\Http\Controllers\Controller;
-use App\Infrastructure\Client\Model\UR_Client;
 use Illuminate\Http\Request;
-use Laravel\Sanctum\PersonalAccessToken;
 
 class ClientController extends Controller
 {
@@ -34,7 +31,6 @@ class ClientController extends Controller
         private readonly DeleteClientAddressUseCase $deleteClientAddress,
         private readonly RequestPasswordResetUseCase $requestPasswordReset,
         private readonly ChangePasswordUseCase $changePassword,
-        private readonly ClientPresenter $presenter,
     )
     {
         $this->middleware('auth:sanctum')->only([
@@ -67,15 +63,9 @@ class ClientController extends Controller
             consentMarketing: (bool) $data['consent_marketing'],
         );
 
-        $client = $this->registerClient->execute($dto);
+        $result = $this->registerClient->execute($dto);
 
-        $model = \App\Infrastructure\Client\Model\UR_Client::findOrFail($client->id());
-        $token = $model->createToken('client')->plainTextToken;
-
-        return response()->json([
-            'client' => $this->presenter->present($client),
-            'token' => $token,
-        ]);
+        return response()->json($result);
     }
 
     public function login(Request $request)
@@ -92,15 +82,9 @@ class ClientController extends Controller
             password: $data['password'],
         );
 
-        $client = $this->loginClient->execute($dto);
+        $result = $this->loginClient->execute($dto);
 
-        $model = \App\Infrastructure\Client\Model\UR_Client::findOrFail($client->id());
-        $token = $model->createToken('client')->plainTextToken;
-
-        return response()->json([
-            'client' => $this->presenter->present($client),
-            'token' => $token,
-        ]);
+        return response()->json($result);
     }
 
     public function forgotPassword(Request $request)
@@ -135,43 +119,23 @@ class ClientController extends Controller
             password: $data['password'],
         );
 
-        $client = $this->changePassword->execute($dto);
+        $result = $this->changePassword->execute($dto);
 
         return response()->json([
             'status' => true,
-            'client' => $this->presenter->present($client),
+            'client' => $result['client'],
         ]);
     }
 
-    public function profile(Request $request)
+    public function profile()
     {
-        $authClient = $this->resolveClientFromToken($request);
+        $result = $this->getClientData->execute();
 
-        if (!$authClient) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Unauthenticated',
-            ], 401);
-        }
-
-        $client = $this->getClientData->execute($authClient->id);
-
-        return response()->json([
-            'client' => $this->presenter->present($client),
-        ]);
+        return response()->json($result);
     }
 
     public function updateProfile(Request $request)
     {
-        $authClient = $this->resolveClientFromToken($request);
-
-        if (!$authClient) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Unauthenticated',
-            ], 401);
-        }
-
         $data = $request->validate([
             'name' => ['sometimes', 'string', 'max:255'],
             'phone' => ['sometimes', 'string', 'max:255'],
@@ -190,24 +154,13 @@ class ClientController extends Controller
             consentMarketing: array_key_exists('consent_marketing', $data) ? (bool) $data['consent_marketing'] : null,
         );
 
-        $client = $this->updateClient->execute($authClient->id, $dto);
+        $result = $this->updateClient->execute($dto);
 
-        return response()->json([
-            'client' => $this->presenter->present($client),
-        ]);
+        return response()->json($result);
     }
 
     public function addAddress(Request $request)
     {
-        $authClient = $this->resolveClientFromToken($request);
-
-        if (!$authClient) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Unauthenticated',
-            ], 401);
-        }
-
         $data = $request->validate([
             'type' => ['sometimes', 'string', 'in:default,additional'],
             'title' => ['nullable', 'string', 'max:255'],
@@ -219,7 +172,6 @@ class ClientController extends Controller
         ]);
 
         $dto = new AddClientAddressDTO(
-            clientId: $authClient->id,
             type: $data['type'] ?? 'additional',
             title: $data['title'] ?? null,
             street: $data['street'],
@@ -229,57 +181,19 @@ class ClientController extends Controller
             makeDefault: array_key_exists('make_default', $data) ? (bool) $data['make_default'] : false,
         );
 
-        $client = $this->addClientAddress->execute($dto);
+        $result = $this->addClientAddress->execute($dto);
 
-        return response()->json([
-            'client' => $this->presenter->present($client),
-        ]);
+        return response()->json($result);
     }
 
     public function deleteAddress(Request $request, int $id)
     {
-        $authClient = $this->resolveClientFromToken($request);
-
-        if (!$authClient) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Unauthenticated',
-            ], 401);
-        }
-
         $dto = new DeleteClientAddressDTO(
-            clientId: $authClient->id,
             addressId: $id,
         );
 
-        $client = $this->deleteClientAddress->execute($dto);
+        $result = $this->deleteClientAddress->execute($dto);
 
-        return response()->json([
-            'client' => $this->presenter->present($client),
-        ]);
-    }
-
-    private function resolveClientFromToken(Request $request): ?UR_Client
-    {
-        $token = $request->bearerToken();
-
-        if (!$token) {
-            return null;
-        }
-
-        /** @var PersonalAccessToken|null $accessToken */
-        $accessToken = PersonalAccessToken::findToken($token);
-
-        if (!$accessToken) {
-            return null;
-        }
-
-        $tokenable = $accessToken->tokenable;
-
-        if (!$tokenable instanceof UR_Client) {
-            return null;
-        }
-
-        return $tokenable;
+        return response()->json($result);
     }
 }
