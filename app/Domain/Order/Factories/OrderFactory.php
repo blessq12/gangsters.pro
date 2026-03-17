@@ -9,9 +9,15 @@ use App\Domain\Order\ValueObjects\DeliveryInfo;
 use App\Domain\Order\ValueObjects\PaymentInfo;
 use App\Domain\Order\ValueObjects\OrderStatus;
 use App\Domain\Order\ValueObjects\ProductSnapshot;
+use App\Domain\Order\Services\OrderIdGenerator;
 
 class OrderFactory
 {
+    public function __construct(
+        private readonly OrderIdGenerator $idGenerator,
+    ) {
+    }
+
     /**
      * @param array<int, array{
      *     productOriginalId: int|null,
@@ -25,7 +31,6 @@ class OrderFactory
      * }> $itemsData
      */
     public function create(
-        string $id,
         int $clientId,
         CustomerSnapshot $customer,
         array $itemsData,
@@ -33,6 +38,8 @@ class OrderFactory
         ?PaymentInfo $paymentInfo = null,
     ): Order {
         $items = [];
+
+        $id = $this->idGenerator->generate();
 
         foreach ($itemsData as $index => $row) {
             $productSnapshot = new ProductSnapshot(

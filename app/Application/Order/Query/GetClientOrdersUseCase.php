@@ -2,23 +2,18 @@
 
 namespace App\Application\Order\Query;
 
-use App\Application\Order\Presenter\OrderPresenter;
-use App\Domain\Order\Repositories\OrderRepositoryInterface;
+use App\Application\Order\OrderBaseUseCase;
 
-final class GetClientOrdersUseCase
+final class GetClientOrdersUseCase extends OrderBaseUseCase
 {
-    public function __construct(
-        private readonly OrderRepositoryInterface $orders,
-        private readonly OrderPresenter $presenter,
-    ) {
-    }
-
     /**
      * @return array<int, array<string, mixed>>
      */
-    public function execute(int $clientId): array
+    public function execute(?int $clientId = null): array
     {
-        $orders = $this->orders->findByClientId($clientId);
+        $id = $clientId ?? $this->authContext->currentClientId();
+
+        $orders = $this->orders->findByClientId($id);
 
         return array_map(
             fn ($order) => $this->presenter->present($order),

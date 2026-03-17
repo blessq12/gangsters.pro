@@ -7,11 +7,9 @@ use App\Application\Order\DTO\CreateOrderDTO;
 use App\Application\Order\Query\GetClientOrdersUseCase;
 use App\Domain\Order\Enums\DeliveryMethod;
 use App\Domain\Order\Enums\PaymentMethod;
-use App\Infrastructure\Client\Model\UR_Client;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use LogicException;
 
@@ -23,10 +21,9 @@ class OrderController extends Controller
 
     public function index(GetClientOrdersUseCase $useCase): JsonResponse
     {
-        /** @var UR_Client $client */
-        $client = Auth::user();
+        $result = $useCase->execute();
 
-        return response()->json($useCase->execute($client->id));
+        return response()->json($result);
     }
 
     public function store(Request $request, CreateOrderUseCase $useCase): JsonResponse
@@ -42,12 +39,8 @@ class OrderController extends Controller
             'payment_method' => ['required', 'string', Rule::enum(PaymentMethod::class)],
         ]);
 
-        /** @var UR_Client|null $client */
-        $client = Auth::user();
-        $clientId = $client?->id ?? ($payload['client_id'] ?? null);
-
         $dto = new CreateOrderDTO(
-            clientId: $clientId,
+            clientId: $payload['client_id'] ?? null,
             items: array_map(
                 fn (array $row) => [
                     'product_id' => (int) $row['product_id'],

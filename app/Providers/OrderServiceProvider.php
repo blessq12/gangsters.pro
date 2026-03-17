@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use App\Domain\Order\Repositories\OrderRepositoryInterface as OrderRepositoryContract;
+use App\Domain\Order\Services\OrderIdGenerator;
 use App\Infrastructure\Order\Repository\OrderRepository as EloquentOrderRepository;
+use App\Infrastructure\Order\Service\RandomOrderIdGenerator;
 use Illuminate\Support\ServiceProvider;
 
 class OrderServiceProvider extends ServiceProvider
@@ -14,6 +16,7 @@ class OrderServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(OrderRepositoryContract::class, EloquentOrderRepository::class);
+        $this->app->bind(OrderIdGenerator::class, RandomOrderIdGenerator::class);
     }
 
     /**
