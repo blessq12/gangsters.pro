@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import axios from "axios";
+import { buildCreateOrderPayloadDto } from "../api/orderContracts";
 
 const ORDER_STORAGE_KEY = "gangsters_order_draft";
 
@@ -238,39 +239,14 @@ export const useOrderStore = defineStore("order", {
             }
         },
         buildCreateOrderPayload(client, selectedAddress) {
-            const items = this.cartItems.map((item) => ({
-                product_id: item.productId,
-                quantity: item.qty,
-            }));
-
-            let deliveryAddress = this.deliveryInfo.address || null;
-
-            if (selectedAddress && typeof selectedAddress === "object") {
-                const entrance =
-                    selectedAddress.entrance ??
-                    selectedAddress.entrance_code ??
-                    null;
-
-                deliveryAddress = {
-                    street: selectedAddress.street ?? deliveryAddress?.street ?? null,
-                    house: selectedAddress.house ?? deliveryAddress?.house ?? null,
-                    entrance: entrance ?? deliveryAddress?.entrance ?? null,
-                    apartment:
-                        selectedAddress.apartment ??
-                        deliveryAddress?.apartment ??
-                        null,
-                };
-            }
-
-            return {
-                client_id: client?.id ?? null,
-                items,
-                delivery_method: this.deliveryInfo.method,
-                delivery_address: deliveryAddress,
-                delivery_comment:
-                    this.deliveryInfo.comment || this.customerComment || null,
-                payment_method: this.paymentInfo.method,
-            };
+            return buildCreateOrderPayloadDto({
+                client,
+                selectedAddress,
+                cartItems: this.cartItems,
+                deliveryInfo: this.deliveryInfo,
+                paymentInfo: this.paymentInfo,
+                customerComment: this.customerComment,
+            });
         },
         async createOrder(client, selectedAddress) {
             this.loading.create = true;

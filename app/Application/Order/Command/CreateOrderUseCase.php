@@ -5,6 +5,7 @@ namespace App\Application\Order\Command;
 use App\Application\Order\DTO\CreateOrderDTO;
 use App\Application\Order\OrderBaseUseCase;
 use App\Domain\Order\Enums\PaymentStatus;
+use App\Domain\Order\ValueObjects\CustomerSnapshot;
 use App\Domain\Order\ValueObjects\DeliveryInfo;
 use App\Domain\Order\ValueObjects\PaymentInfo;
 use LogicException;
@@ -50,9 +51,17 @@ final class CreateOrderUseCase extends OrderBaseUseCase
             status: PaymentStatus::Unpaid->value,
         );
 
+        // Адрес в слепке клиента должен совпадать с адресом доставки заказа.
+        $customerSnapshotForOrder = new CustomerSnapshot(
+            name: $customerSnapshot->name,
+            phone: $customerSnapshot->phone,
+            email: $customerSnapshot->email,
+            address: $deliveryInfo->address,
+        );
+
         $order = $this->orderFactory->create(
             $dto->clientId ?? 0,
-            $customerSnapshot,
+            $customerSnapshotForOrder,
             $itemsData,
             $deliveryInfo,
             $paymentInfo,

@@ -1,5 +1,11 @@
 import { defineStore } from "pinia";
 import axios from "axios";
+import {
+    buildRegisterClientPayload,
+    buildLoginClientPayload,
+    buildUpdateClientProfilePayload,
+    buildClientAddressPayload,
+} from "../api/clientContracts";
 
 const USER_KEY = "gangsters_user";
 const DEFAULT_DOCK_BADGES = {
@@ -92,6 +98,7 @@ function normalizeFavorites(items) {
         .filter(Boolean);
 }
 
+// --- Payload builders for API contracts ---
 export const useUserStore = defineStore("user", {
     state: () => ({
         // Основная информация о клиенте
@@ -362,7 +369,8 @@ export const useUserStore = defineStore("user", {
         },
         // --- API-кейсы клиента ---
         async registerClient(payload) {
-            const response = await axios.post("/api/client/register", payload);
+            const body = buildRegisterClientPayload(payload);
+            const response = await axios.post("/api/client/register", body);
             const data = response.data;
 
             if (data?.client) {
@@ -384,7 +392,8 @@ export const useUserStore = defineStore("user", {
             return data;
         },
         async loginClient(credentials) {
-            const response = await axios.post("/api/client/login", credentials);
+            const body = buildLoginClientPayload(credentials);
+            const response = await axios.post("/api/client/login", body);
             const data = response.data;
 
             if (data?.client) {
@@ -430,7 +439,8 @@ export const useUserStore = defineStore("user", {
             return data;
         },
         async updateClientProfile(payload) {
-            const response = await axios.patch("/api/client/profile", payload, {
+            const body = buildUpdateClientProfilePayload(payload);
+            const response = await axios.patch("/api/client/profile", body, {
                 headers: {
                     Authorization: `Bearer ${this.token}`,
                 },
@@ -452,7 +462,8 @@ export const useUserStore = defineStore("user", {
             return data;
         },
         async addClientAddress(payload) {
-            const response = await axios.post("/api/client/addresses", payload, {
+            const body = buildClientAddressPayload(payload);
+            const response = await axios.post("/api/client/addresses", body, {
                 headers: {
                     Authorization: `Bearer ${this.token}`,
                 },
