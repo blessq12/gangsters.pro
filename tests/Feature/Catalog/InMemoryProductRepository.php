@@ -36,6 +36,14 @@ final class InMemoryProductRepository implements ProductRepository
         return [];
     }
 
+    public function findNonActive(): array
+    {
+        return array_values(array_filter(
+            $this->products,
+            static fn (Product $p) => $p->status() !== Product::STATUS_ACTIVE,
+        ));
+    }
+
     public function save(Product $product): void
     {
         $id = $product->id() ?? $this->autoIncrement++;

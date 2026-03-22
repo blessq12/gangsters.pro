@@ -97,21 +97,25 @@ class YandexFoodTempController extends Controller
             new YandexCreateOrderRequestDto($request->all()),
         );
 
-        return response()->json($body);
+        $status = isset($body['code']) ? 400 : 200;
+
+        return response()->json($body, $status);
     }
 
     public function getOrderById(string $id): JsonResponse
     {
         $body = $this->orderById->execute(new YandexOrderIdRequestDto($id));
+        $status = isset($body['code']) ? 400 : 200;
 
-        return response()->json($body);
+        return response()->json($body, $status);
     }
 
     public function getOrderStatus(string $id): JsonResponse
     {
         $body = $this->orderStatus->execute(new YandexOrderIdRequestDto($id));
+        $status = isset($body['code']) ? 400 : 200;
 
-        return response()->json($body);
+        return response()->json($body, $status);
     }
 
     public function updateOrder(Request $request, string $id): JsonResponse
@@ -119,17 +123,23 @@ class YandexFoodTempController extends Controller
         $body = $this->updateOrderUseCase->execute(
             new YandexUpdateOrderRequestDto($id, $request->all()),
         );
+        $status = isset($body['code']) ? 400 : 200;
 
-        return response()->json($body);
+        return response()->json($body, $status);
     }
 
-    public function deleteOrder(string $id): JsonResponse
+    public function deleteOrder(Request $request, string $id): JsonResponse
     {
         $body = $this->deleteOrderUseCase->execute(
-            new YandexDeleteOrderRequestDto($id, $id),
+            new YandexDeleteOrderRequestDto(
+                $id,
+                $id,
+                $request->input('eatsId'),
+            ),
         );
+        $status = isset($body['code']) ? 400 : 200;
 
-        return response()->json($body);
+        return response()->json($body, $status);
     }
 
     public function getRestaurants(): JsonResponse

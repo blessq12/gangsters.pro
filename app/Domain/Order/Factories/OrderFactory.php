@@ -95,5 +95,86 @@ class OrderFactory
             updatedAt: $createdAt,
         );
     }
+
+    /**
+     * Пересборка заказа с сохранением id и даты создания (обновление состава/шапки).
+     *
+     * @param array<int, array{
+     *     productOriginalId: int|null,
+     *     name: string,
+     *     sku: string,
+     *     listPrice: int,
+     *     finalPrice: int,
+     *     quantity: int,
+     *     attributes?: array,
+     *     media?: array
+     * }> $itemsData
+     */
+    public function rebuildOrder(
+        string $id,
+        int $clientId,
+        CustomerSnapshot $customer,
+        OrderStatus $status,
+        array $itemsData,
+        ?DeliveryInfo $deliveryInfo,
+        ?PaymentInfo $paymentInfo,
+        \DateTimeImmutable $createdAt,
+    ): Order {
+        $items = [];
+
+        foreach ($itemsData as $index => $row) {
+            $productSnapshot = new ProductSnapshot(
+                $row['name'],
+                $row['sku'],
+                $row['listPrice'],
+                $row['finalPrice'],
+                $row['attributes'] ?? [],
+                $row['media'] ?? [],
+            );
+
+            $quantity = $row['quantity'];
+            $unitPrice = $row['finalPrice'];
+            $rowSubtotal = $unitPrice * $quantity;
+            $rowDiscount = ($row['listPrice'] - $row['finalPrice']) * $quantity;
+            $rowTotal = $rowSubtotal - $rowDiscount;
+
+            $items[] = new OrderItem(
+                id: (string) ($index + 1),
+                orderId: $id,
+                productOriginalId: $row['productOriginalId'],
+                product: $productSnapshot,
+                quantity: $quantity,
+                unitPrice: $unitPrice,
+                rowSubtotal: $rowSubtotal,
+                rowDiscount: $rowDiscount,
+                rowTotal: $rowTotal,
+            );
+        }
+
+        $subtotal = 0;
+        $discountTotal = 0;
+        foreach ($items as $item) {
+            $subtotal += $item->getRowSubtotal();
+            $discountTotal += $item->getRowDiscount();
+        }
+        $total = $subtotal - $discountTotal;
+
+        $updatedAt = new \DateTimeImmutable();
+
+        return new Order(
+            id: $id,
+            clientId: $clientId,
+            customer: $customer,
+            status: $status,
+            subtotal: $subtotal,
+            discountTotal: $discountTotal,
+            total: $total,
+            deliveryInfo: $deliveryInfo,
+            paymentInfo: $paymentInfo,
+            items: $items,
+            createdAt: $createdAt,
+            updatedAt: $updatedAt,
+        );
+    }
 }
 

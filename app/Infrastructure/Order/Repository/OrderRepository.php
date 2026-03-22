@@ -93,6 +93,12 @@ class OrderRepository implements OrderRepositoryInterface
         }
     }
 
+    public function delete(string $id): void
+    {
+        ORD_OrderItem::where('order_id', $id)->delete();
+        ORD_Order::where('id', $id)->delete();
+    }
+
     private function mapToEntity(ORD_Order $model): OrderEntity
     {
         $customer = new CustomerSnapshot(

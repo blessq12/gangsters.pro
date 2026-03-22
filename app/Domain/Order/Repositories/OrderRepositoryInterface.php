@@ -14,5 +14,7 @@ interface OrderRepositoryInterface
     public function findByClientId(int $clientId): array;
 
     public function save(Order $order): void;
+
+    public function delete(string $id): void;
 }
 

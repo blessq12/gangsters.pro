@@ -19,6 +19,13 @@ interface ProductRepository
      */
     public function findByCategoryId(int $categoryId): array;
 
+    /**
+     * Товары, недоступные для продажи в меню (в БД — не {@see Product::STATUS_ACTIVE}).
+     *
+     * @return Product[]
+     */
+    public function findNonActive(): array;
+
     public function save(Product $product): void;
 
     public function delete(Product $product): void;

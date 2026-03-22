@@ -7,6 +7,7 @@ final readonly class YandexDeleteOrderRequestDto
     public function __construct(
         public string $orderId,
         public string $routeId,
+        public ?string $eatsId = null,
     ) {
     }
 }

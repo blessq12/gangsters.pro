@@ -46,6 +46,17 @@ class ProductRepository implements ProductRepositoryContract
         return [];
     }
 
+    public function findNonActive(): array
+    {
+        $models = PRD_Product::with(['images', 'ingredients', 'tags', 'prices'])
+            ->where('status', '!=', ProductEntity::STATUS_ACTIVE)
+            ->get();
+
+        return $models
+            ->map(fn (PRD_Product $model) => $this->mapToEntity($model))
+            ->all();
+    }
+
     public function save(ProductEntity $product): void
     {
         $model = $product->id()

@@ -8,10 +8,14 @@ use App\Application\YandexFood\YandexFoodBaseUseCase;
 final class GetYandexFoodMenuPromosUseCase extends YandexFoodBaseUseCase
 {
     /**
-     * @return array<string, mixed>
+     * Как {@see \App\Services\Yandex\YandexFoodMenuService::getMenuPromos()}.
+     *
+     * @return array{promoItems: array<int, mixed>}
      */
     public function execute(YandexMenuPromosRequestDto $dto): array
     {
-        return [];
+        return [
+            'promoItems' => [],
+        ];
     }
 }
