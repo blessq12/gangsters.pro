@@ -50,12 +50,12 @@ class YandexFoodMenuService
                     'measureUnit' => 'г',
                     'sortOrder' => (int) ($product->order ?? 100),
                     'modifierGroups' => [],
-                    'images' => $product->imgs ? $product->imgs->map(function ($image) {
-                        return [
-                            'hash' => sha1_file(public_path('uploads/' . $image->path)),
-                            'url' => '/uploads/' . $image->path,
-                        ];
-                    })->toArray() : [],
+                    // 'images' => $product->imgs ? $product->imgs->map(function ($image) {
+                    //     return [
+                    //         'hash' => sha1_file(public_path('uploads/' . $image->path)),
+                    //         'url' => '/uploads/' . $image->path,
+                    //     ];
+                    // })->toArray() : [],
                 ];
             }
         }
