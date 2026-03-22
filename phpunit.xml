@@ -26,8 +26,5 @@
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
-        <env name="YANDEX_EDA_AUTH_TOKEN" value="parity-test-yandex-token"/>
-        <env name="YANDEX_CLIENT_ID" value="parity-test-client-id"/>
-        <env name="YANDEX_CLIENT_SECRET" value="parity-test-client-secret"/>
     </php>
 </phpunit>

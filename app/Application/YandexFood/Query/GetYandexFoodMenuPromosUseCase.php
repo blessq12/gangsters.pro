@@ -8,7 +8,7 @@ use App\Application\YandexFood\YandexFoodBaseUseCase;
 final class GetYandexFoodMenuPromosUseCase extends YandexFoodBaseUseCase
 {
     /**
-     * Как {@see \App\Services\Yandex\YandexFoodMenuService::getMenuPromos()}.
+     * Пустой promoItems — как в прежнем легаси-ответе promos.
      *
      * @return array{promoItems: array<int, mixed>}
      */

@@ -7,7 +7,7 @@ use App\Application\YandexFood\YandexFoodBaseUseCase;
 use App\Domain\Product\Entity\Product;
 
 /**
- * Аналог {@see \App\Services\Yandex\YandexFoodMenuService::getMenuAvailability()}:
+ * Формат ответа — как у прежнего легаси-эндпоинта availability (items + modifiers).
  * список позиций с quantity = 0 для товаров вне статуса active (в легаси — visible = 0).
  */
 final class GetYandexFoodMenuAvailabilityUseCase extends YandexFoodBaseUseCase

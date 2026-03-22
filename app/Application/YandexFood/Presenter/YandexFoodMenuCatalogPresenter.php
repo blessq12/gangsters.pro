@@ -8,7 +8,7 @@ use App\Domain\Product\VO\CustomerStatus;
 use Carbon\Carbon;
 
 /**
- * Формат ответа как у {@see \App\Services\Yandex\YandexFoodMenuService::getMenuComposition()}.
+ * Формат ответа — как у прежнего легаси-эндпоинта composition (категории + items + lastChange).
  */
 final class YandexFoodMenuCatalogPresenter
 {

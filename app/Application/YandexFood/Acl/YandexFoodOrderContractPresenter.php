@@ -6,13 +6,12 @@ use App\Domain\Order\Entities\Order;
 use App\Domain\Order\Entities\OrderItem;
 
 /**
- * ACL: доменный {@see Order} → тело ответа как у {@see \App\Services\Yandex\YandexFoodOrderService}
- * / {@see \App\Http\Controllers\Api\YandexFoodController} (JSON-ключи и форма, без JsonResponse).
+ * ACL: доменный {@see Order} → тело ответа в форме контракта JSON API Яндекс Еда (как было в легаси-слое).
  */
 final class YandexFoodOrderContractPresenter
 {
     /**
-     * @see \App\Services\Yandex\YandexFoodOrderService::createOrder() успех
+     * Успешное создание заказа (result + orderId).
      *
      * @return array{result: string, orderId: string}
      */
@@ -25,7 +24,7 @@ final class YandexFoodOrderContractPresenter
     }
 
     /**
-     * @see \App\Services\Yandex\YandexFoodOrderService::getOrderById() успех
+     * Успешная выдача заказа по id (result + order).
      *
      * @return array{result: string, order: array<string, mixed>}
      */
@@ -38,7 +37,7 @@ final class YandexFoodOrderContractPresenter
     }
 
     /**
-     * @see \App\Services\Yandex\YandexFoodOrderService::getOrderStatus()
+     * Статус заказа для внешнего API (status, comment, updatedAt).
      *
      * @return array{status: string, comment: string, updatedAt: string}
      */
@@ -52,7 +51,7 @@ final class YandexFoodOrderContractPresenter
     }
 
     /**
-     * @see \App\Services\Yandex\YandexFoodOrderService::updateOrder() успех
+     * Успешное обновление заказа (result + orderId).
      *
      * @return array{result: string, orderId: string}
      */
@@ -65,7 +64,7 @@ final class YandexFoodOrderContractPresenter
     }
 
     /**
-     * @see \App\Services\Yandex\YandexFoodOrderService::deleteOrder() успех
+     * Успешное удаление заказа (result + orderId).
      *
      * @return array{result: string, orderId: string}
      */
