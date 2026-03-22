@@ -22,7 +22,7 @@ final class ChangePasswordUseCase extends ClientBaseUseCase
         $this->clients->clearPasswordResetToken($client);
 
         return [
-            'client' => $client,
+            'client' => $this->presenter->present($client),
         ];
     }
 }
