@@ -2,11 +2,14 @@
 
 namespace App\Application\YandexFood;
 
+use App\Domain\Order\Repositories\OrderRepositoryInterface;
+use App\Domain\Product\Repository\ProductRepository;
 
-/**
- * Фасад входа в сценарии YandexFood на слое приложения (общий для разных транспортов).
- */
-final class YandexFoodBaseUseCase
+abstract class YandexFoodBaseUseCase
 {
-    public function __construct() {}
+    public function __construct(
+        protected readonly OrderRepositoryInterface $orders,
+        protected readonly ProductRepository $products,
+    ) {
+    }
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ClientController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PromotionController;
 use App\Http\Controllers\Api\YandexFoodController;
+use App\Http\Controllers\Api\YandexFoodTempController;
 use Illuminate\Support\Facades\Route;
 // Импорты ниже относятся только к другим доменам (order, product, system, интеграции).
 
@@ -53,6 +54,22 @@ Route::controller(YandexFoodController::class)
         Route::delete('/order/{id}/', 'deleteOrder');
         Route::get('/restaurants', 'getRestaurants');
     });
+
+Route::controller(YandexFoodTempController::class)
+    ->prefix('yandex-food-temp')
+    ->group(function () {
+        Route::post('/security/oauth/token', 'login');
+        Route::get('/menu/{id}/composition', 'getMenuComposition');
+        Route::get('/menu/{id}/availability', 'getMenuAvailability');
+        Route::get('/menu/{id}/promos', 'getMenuPromos');
+        Route::post('/order', 'createOrder');
+        Route::get('/order/{id}', 'getOrderById');
+        Route::get('/order/{id}/status', 'getOrderStatus');
+        Route::put('/order/{id}/', 'updateOrder');
+        Route::delete('/order/{id}/', 'deleteOrder');
+        Route::get('/restaurants', 'getRestaurants');
+    });
+
 
 // Системные данные (баннеры, акции и т.п.)
 Route::prefix('system')->group(function () {
