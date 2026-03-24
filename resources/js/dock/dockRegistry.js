@@ -1,32 +1,36 @@
-import ProfileDockPanel from "../components/dock/ProfileDockPanel.vue";
-import CartDockPanel from "../components/dock/CartDockPanel.vue";
-import FavoritesDockPanel from "../components/dock/FavoritesDockPanel.vue";
-import DeliveryDockPanel from "../components/dock/DeliveryDockPanel.vue";
+import { defineAsyncComponent } from "vue";
 
 export const dockItems = [
     {
         id: "profile",
         label: "Профиль",
         iconClass: "mdi-account-circle-outline",
-        content: ProfileDockPanel,
+        content: defineAsyncComponent(() =>
+            import("../components/dock/ProfileDockPanel.vue"),
+        ),
     },
     {
         id: "cart",
         label: "Корзина",
         iconClass: "mdi-cart-outline",
-        content: CartDockPanel,
+        content: defineAsyncComponent(() =>
+            import("../components/dock/CartDockPanel.vue"),
+        ),
     },
     {
         id: "favorites",
         label: "Избранное",
         iconClass: "mdi-heart-outline",
-        content: FavoritesDockPanel,
+        content: defineAsyncComponent(() =>
+            import("../components/dock/FavoritesDockPanel.vue"),
+        ),
     },
     {
         id: "delivery",
         label: "Доставка",
         iconClass: "mdi-truck-delivery-outline",
-        content: DeliveryDockPanel,
+        content: defineAsyncComponent(() =>
+            import("../components/dock/DeliveryDockPanel.vue"),
+        ),
     },
 ];
-

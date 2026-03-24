@@ -1,0 +1,1 @@
+function s(e){var r;const n=(e==null?void 0:e.nutrition)??((r=e==null?void 0:e.raw)==null?void 0:r.nutrition);return!n||typeof n!="object"?null:{calories:Number(n.calories)||0,proteins:Number(n.proteins)||0,fats:Number(n.fats)||0,carbs:Number(n.carbs)||0}}function t(e){const n=s(e);return!!(n&&(n.calories||n.proteins||n.fats||n.carbs))}export{s as g,t as h};

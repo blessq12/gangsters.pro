@@ -87,6 +87,8 @@ export const useCatalogStore = defineStore("catalog", {
         selectedCategoryId: null,
         selectedProduct: null,
         hasLoaded: false,
+        /** Поиск по названию в уже загруженном дереве (клиентский фильтр). */
+        productSearchQuery: "",
     }),
     getters: {
         flatProducts(state) {
@@ -111,6 +113,21 @@ export const useCatalogStore = defineStore("catalog", {
             }
 
             return entry.products || [];
+        },
+        /**
+         * Лента меню: при вводе в поиск — все товары дерева по подстроке в name;
+         * без поиска — как раньше (все или выбранная категория).
+         */
+        menuProducts() {
+            const q = this.productSearchQuery.trim().toLowerCase();
+            if (q.length > 0) {
+                return this.flatProducts.filter((p) =>
+                    String(p.name || "")
+                        .toLowerCase()
+                        .includes(q),
+                );
+            }
+            return this.filteredProducts;
         },
         categoryTabs(state) {
             return state.categories.map((entry) => ({
@@ -160,6 +177,10 @@ export const useCatalogStore = defineStore("catalog", {
         setSelectedProduct(product) {
             this.selectedProduct = product ?? null;
             this.persist();
+        },
+        setProductSearchQuery(query) {
+            this.productSearchQuery =
+                query == null ? "" : String(query);
         },
 
         async fetchCatalog() {

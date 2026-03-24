@@ -1,7 +1,7 @@
 import "@mdi/font/css/materialdesignicons.min.css";
 import { MaskInput, vMaska } from "maska";
 import { createPinia } from "pinia";
-import { createApp } from "vue";
+import { createApp, defineAsyncComponent } from "vue";
 import VueLazyload from "vue-lazyload";
 import { useToast } from "vue-toastification";
 import "vue-toastification/dist/index.css";
@@ -50,17 +50,18 @@ app.directive("maska", vMaska);
  * components and automatically register them with their "basename".
  */
 
-Object.entries(import.meta.glob("./**/*.vue", { eager: true })).forEach(
-    ([path, definition]) => {
-        app.component(
-            path
-                .split("/")
-                .pop()
-                .replace(/\.\w+$/, ""),
-            definition.default
-        );
-    }
-);
+const vueModules = {
+    ...import.meta.glob("./components/**/*.vue"),
+    ...import.meta.glob("./layouts/SecondaryPageLayout.vue"),
+};
+
+Object.entries(vueModules).forEach(([path, loader]) => {
+    const name = path
+        .split("/")
+        .pop()
+        .replace(/\.\w+$/, "");
+    app.component(name, defineAsyncComponent(loader));
+});
 
 /**
  * Finally, we will attach the application instance to a HTML element with

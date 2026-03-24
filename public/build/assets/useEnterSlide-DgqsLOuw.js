@@ -1,0 +1,1 @@
+import{j as n}from"./vue-core-BpasoeSx.js";import{g as s}from"./gsap-D3jsOSc0.js";function d(o,e={}){n(()=>{if(!o.value)return;const{y:r=40,opacity:t=0,duration:a=.6,delay:u=0,ease:i="power3.out"}=e;s.from(o.value,{y:r,opacity:t,duration:a,delay:u,ease:i})})}export{d as u};
