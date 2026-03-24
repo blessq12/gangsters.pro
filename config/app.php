@@ -174,6 +174,7 @@ return [
         App\Providers\FrontPadServiceProvider::class,
         App\Providers\ClientServiceProvider::class,
         App\Providers\ProductDomainServiceProvider::class,
+        App\Providers\SystemContentServiceProvider::class,
     ])->toArray(),
 
     /*

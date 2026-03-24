@@ -5,7 +5,7 @@ namespace App\Filament\Resources\Banners;
 use App\Filament\Resources\Banners\Pages\CreateBanner;
 use App\Filament\Resources\Banners\Pages\EditBanner;
 use App\Filament\Resources\Banners\Pages\ListBanners;
-use App\Models\Banner;
+use App\Infrastructure\SystemContent\Model\SYS_Banner;
 use BackedEnum;
 use UnitEnum;
 use Filament\Actions\BulkActionGroup;
@@ -21,7 +21,7 @@ use Filament\Tables\Table;
 
 class BannerResource extends Resource
 {
-    protected static ?string $model = Banner::class;
+    protected static ?string $model = SYS_Banner::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPhoto;
 

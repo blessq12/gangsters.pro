@@ -1,10 +1,9 @@
 <?php
 
-use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\CatalogController;
 use App\Http\Controllers\Api\ClientController;
 use App\Http\Controllers\Api\OrderController;
-use App\Http\Controllers\Api\PromotionController;
+use App\Http\Controllers\Api\SystemContentController;
 use App\Http\Controllers\Api\YandexFoodController;
 use Illuminate\Support\Facades\Route;
 // Импорты ниже относятся только к другим доменам (order, product, system, интеграции).
@@ -54,9 +53,10 @@ Route::controller(YandexFoodController::class)
         Route::get('/restaurants', 'getRestaurants');
     });
 
-
 // Системные данные (баннеры, акции и т.п.)
-Route::prefix('system')->group(function () {
-    Route::get('/banners', [BannerController::class, 'index']);
-    Route::get('/promotions', [PromotionController::class, 'index']);
-});
+Route::controller(SystemContentController::class)
+    ->prefix('system')
+    ->group(function () {
+        Route::get('/banners', 'banners');
+        Route::get('/promotions', 'promotions');
+    });

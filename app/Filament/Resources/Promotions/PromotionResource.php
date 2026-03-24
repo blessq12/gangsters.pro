@@ -5,7 +5,7 @@ namespace App\Filament\Resources\Promotions;
 use App\Filament\Resources\Promotions\Pages\CreatePromotion;
 use App\Filament\Resources\Promotions\Pages\EditPromotion;
 use App\Filament\Resources\Promotions\Pages\ListPromotions;
-use App\Models\Promotion;
+use App\Infrastructure\SystemContent\Model\SYS_Promotion;
 use BackedEnum;
 use UnitEnum;
 use Filament\Actions\BulkActionGroup;
@@ -22,7 +22,7 @@ use Filament\Tables\Table;
 
 class PromotionResource extends Resource
 {
-    protected static ?string $model = Promotion::class;
+    protected static ?string $model = SYS_Promotion::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSparkles;
 

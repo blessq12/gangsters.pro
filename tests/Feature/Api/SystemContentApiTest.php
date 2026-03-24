@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\Api;
 
-use App\Models\Banner;
-use App\Models\Promotion;
+use App\Infrastructure\SystemContent\Model\SYS_Banner;
+use App\Infrastructure\SystemContent\Model\SYS_Promotion;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -22,11 +22,11 @@ final class SystemContentApiTest extends ApiTestCase
     protected function tearDown(): void
     {
         if ($this->bannerId !== null) {
-            Banner::query()->whereKey($this->bannerId)->delete();
+            SYS_Banner::query()->whereKey($this->bannerId)->delete();
             $this->bannerId = null;
         }
         if ($this->promotionId !== null) {
-            Promotion::query()->whereKey($this->promotionId)->delete();
+            SYS_Promotion::query()->whereKey($this->promotionId)->delete();
             $this->promotionId = null;
         }
 
@@ -39,7 +39,7 @@ final class SystemContentApiTest extends ApiTestCase
         $path = $dir.'/banner.png';
         Storage::disk('media')->put($path, $this->minimalPng());
 
-        $banner = Banner::query()->create([
+        $banner = SYS_Banner::query()->create([
             'title' => 'PHPUnit banner',
             'description' => 'Описание',
             'image' => $path,
@@ -78,7 +78,7 @@ final class SystemContentApiTest extends ApiTestCase
         $path = $dir.'/promo.png';
         Storage::disk('media')->put($path, $this->minimalPng());
 
-        $promo = Promotion::query()->create([
+        $promo = SYS_Promotion::query()->create([
             'title' => 'PHPUnit promo',
             'description' => 'Текст акции',
             'image' => $path,
