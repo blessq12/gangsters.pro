@@ -28,7 +28,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // $this->loadViewsFrom('','');
         Paginator::useBootstrapFive();
         View::composer(['errors::*', 'error.*'], function ($view) {
             $view->with('company', SYS_Company::query()->first());
