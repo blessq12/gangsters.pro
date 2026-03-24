@@ -15,16 +15,39 @@ final class SYS_Company extends Model
 
     protected $fillable = [
         'name',
+        'brand_name',
         'description',
+        'tagline',
         'country',
         'state',
         'city',
         'street',
         'house',
+        'address_comment',
         'phone',
         'phone_additional',
+        'support_phone',
+        'whatsapp_phone',
         'email_address',
+        'public_email',
+        'telegram',
+        'site_url',
+        'work_hours',
+        'delivery_hours',
+        'work_schedule',
+        'social_links',
+        'min_order_amount_kopecks',
+        'delivery_fee_kopecks',
+        'average_delivery_time_minutes',
+        'city_coverage',
+        'vk',
+        'inst',
         'logo',
+    ];
+
+    protected $casts = [
+        'work_schedule' => 'array',
+        'social_links' => 'array',
     ];
 
     public function legal(): HasOne

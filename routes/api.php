@@ -60,4 +60,5 @@ Route::controller(SystemContentController::class)
         Route::get('/promotions', 'promotions');
         Route::get('/company', 'company');
         Route::get('/company-legal', 'companyLegal');
+        Route::get('/documents', 'documents');
     });
