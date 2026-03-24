@@ -4,8 +4,8 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Infrastructure\SystemContent\Model\SYS_Company;
 use Illuminate\Support\Facades\DB;
-use App\Models\Company;
 use Carbon\Carbon;
 
 class WorkSheduleSeeder extends Seeder
@@ -15,7 +15,11 @@ class WorkSheduleSeeder extends Seeder
      */
     public function run(): void
     {
-        $companyId = Company::first()->id;
+        $companyId = SYS_Company::query()->first()?->id;
+
+        if ($companyId === null) {
+            return;
+        }
 
         DB::table('work_shedules')->insert([
             [

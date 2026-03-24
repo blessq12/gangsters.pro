@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Models\Company;
+use App\Infrastructure\SystemContent\Model\SYS_Company;
 use App\Shared\Events\DomainEventBus;
 use App\Infrastructure\Shared\Events\LaravelDomainEventBus;
 use Illuminate\Pagination\Paginator;
@@ -31,7 +31,7 @@ class AppServiceProvider extends ServiceProvider
         // $this->loadViewsFrom('','');
         Paginator::useBootstrapFive();
         View::composer(['errors::*', 'error.*'], function ($view) {
-            $view->with('company', Company::first());
+            $view->with('company', SYS_Company::query()->first());
         });
     }
 }

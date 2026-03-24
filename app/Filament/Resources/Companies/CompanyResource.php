@@ -7,7 +7,7 @@ use App\Filament\Resources\Companies\Pages\EditCompany;
 use App\Filament\Resources\Companies\Pages\ListCompanies;
 use App\Filament\Resources\Companies\Schemas\CompanyForm;
 use App\Filament\Resources\Companies\Tables\CompaniesTable;
-use App\Models\Company;
+use App\Infrastructure\SystemContent\Model\SYS_Company;
 use BackedEnum;
 use UnitEnum;
 use Filament\Resources\Resource;
@@ -17,7 +17,7 @@ use Filament\Tables\Table;
 
 class CompanyResource extends Resource
 {
-    protected static ?string $model = Company::class;
+    protected static ?string $model = SYS_Company::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 

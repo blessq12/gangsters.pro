@@ -18,6 +18,7 @@ use App\Application\YandexFood\Query\GetYandexFoodMenuPromosUseCase;
 use App\Application\YandexFood\Query\GetYandexFoodOrderByIdUseCase;
 use App\Application\YandexFood\Query\GetYandexFoodOrderStatusUseCase;
 use App\Http\Controllers\Controller;
+use App\Infrastructure\SystemContent\Model\SYS_Company;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -144,12 +145,14 @@ class YandexFoodController extends Controller
 
     public function getRestaurants(): JsonResponse
     {
+        $company = SYS_Company::query()->first();
+
         return response()->json([
             'places' => [
                 [
                     'id' => '1',
-                    'title' => \App\Models\Company::first()->name,
-                    'address' => \App\Models\Company::first()->city . ', ' . \App\Models\Company::first()->street . ', ' . \App\Models\Company::first()->house,
+                    'title' => $company?->name ?? '',
+                    'address' => trim(($company?->city ?? '').', '.($company?->street ?? '').', '.($company?->house ?? ''), ', '),
                 ],
             ],
 

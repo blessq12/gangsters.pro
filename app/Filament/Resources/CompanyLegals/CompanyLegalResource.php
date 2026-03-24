@@ -7,7 +7,7 @@ use App\Filament\Resources\CompanyLegals\Pages\EditCompanyLegal;
 use App\Filament\Resources\CompanyLegals\Pages\ListCompanyLegals;
 use App\Filament\Resources\CompanyLegals\Schemas\CompanyLegalForm;
 use App\Filament\Resources\CompanyLegals\Tables\CompanyLegalsTable;
-use App\Models\CompanyLegal;
+use App\Infrastructure\SystemContent\Model\SYS_CompanyLegal;
 use BackedEnum;
 use UnitEnum;
 use Filament\Resources\Resource;
@@ -17,7 +17,7 @@ use Filament\Tables\Table;
 
 class CompanyLegalResource extends Resource
 {
-    protected static ?string $model = CompanyLegal::class;
+    protected static ?string $model = SYS_CompanyLegal::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 

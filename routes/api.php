@@ -6,7 +6,6 @@ use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\SystemContentController;
 use App\Http\Controllers\Api\YandexFoodController;
 use Illuminate\Support\Facades\Route;
-// Импорты ниже относятся только к другим доменам (order, product, system, интеграции).
 
 /*
 |--------------------------------------------------------------------------
@@ -59,4 +58,6 @@ Route::controller(SystemContentController::class)
     ->group(function () {
         Route::get('/banners', 'banners');
         Route::get('/promotions', 'promotions');
+        Route::get('/company', 'company');
+        Route::get('/company-legal', 'companyLegal');
     });
