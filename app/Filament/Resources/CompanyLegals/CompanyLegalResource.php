@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\CompanyLegals;
 
-use App\Filament\Resources\CompanyLegals\Pages\CreateCompanyLegal;
 use App\Filament\Resources\CompanyLegals\Pages\EditCompanyLegal;
 use App\Filament\Resources\CompanyLegals\Pages\ListCompanyLegals;
 use App\Filament\Resources\CompanyLegals\Schemas\CompanyLegalForm;
@@ -50,7 +49,6 @@ class CompanyLegalResource extends Resource
     {
         return [
             'index' => ListCompanyLegals::route('/'),
-            'create' => CreateCompanyLegal::route('/create'),
             'edit' => EditCompanyLegal::route('/{record}/edit'),
         ];
     }

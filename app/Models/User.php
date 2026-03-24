@@ -39,8 +39,6 @@ class User extends Authenticatable implements FilamentUser
         'created_at'
     ];
 
-    protected $with = ['addresses', 'orders'];
-
     /**
      * The attributes that should be cast.
      *
@@ -51,16 +49,6 @@ class User extends Authenticatable implements FilamentUser
         'password' => 'hashed',
     ];
 
-    public function orders()
-    {
-        return $this->hasMany(Order::class);
-    }
-
-
-    public function addresses()
-    {
-        return $this->hasMany(UserAddress::class)->orderBy('created_at', 'desc');
-    }
 
     public function canAccessPanel(Panel $panel): bool
     {

@@ -30,5 +30,6 @@ interface ClientRepository
     public function findByPasswordResetToken(string $token): ?Client;
 
     public function clearPasswordResetToken(Client $client): void;
-}
 
+    public function getSummaryById(int $clientId): ?array;
+}

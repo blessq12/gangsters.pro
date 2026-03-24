@@ -18,6 +18,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables;
+use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Table;
 
 class PromotionResource extends Resource
@@ -76,8 +77,8 @@ class PromotionResource extends Resource
                     ->sortable(),
             ])
             ->recordActions([
-                EditAction::make(),
-            ])
+                EditAction::make()->iconButton(),
+            ], position: RecordActionsPosition::BeforeCells)
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),

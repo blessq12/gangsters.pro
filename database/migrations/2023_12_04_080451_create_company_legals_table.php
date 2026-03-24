@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\Company;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -14,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('company_legals', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(Company::class);
+            $table->foreignId('company_id')->constrained('companies');
             $table->string('legal_form');
             $table->string('legal_email');
             $table->string('owner');

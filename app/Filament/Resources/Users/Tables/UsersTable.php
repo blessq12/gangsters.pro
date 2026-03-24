@@ -6,6 +6,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Table;
 
 class UsersTable
@@ -23,13 +24,6 @@ class UsersTable
                 TextColumn::make('tel')
                     ->label('Телефон')
                     ->searchable(),
-                TextColumn::make('coins')
-                    ->label('Монеты')
-                    ->searchable(),
-                TextColumn::make('email_verified_at')
-                    ->label('Email подтверждён')
-                    ->dateTime()
-                    ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -46,8 +40,8 @@ class UsersTable
                 //
             ])
             ->recordActions([
-                EditAction::make(),
-            ])
+                EditAction::make()->iconButton(),
+            ], position: RecordActionsPosition::BeforeCells)
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),

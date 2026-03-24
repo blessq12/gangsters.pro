@@ -7,6 +7,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Table;
 
 class ProductCategoriesTable
@@ -26,10 +27,7 @@ class ProductCategoriesTable
                 IconColumn::make('is_active')
                     ->label('На сайте')
                     ->boolean(),
-                TextColumn::make('sort_order')
-                    ->label('Порядок')
-                    ->numeric()
-                    ->sortable(),
+
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -43,8 +41,8 @@ class ProductCategoriesTable
                 //
             ])
             ->recordActions([
-                EditAction::make(),
-            ])
+                EditAction::make()->iconButton(),
+            ], position: RecordActionsPosition::BeforeCells)
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),

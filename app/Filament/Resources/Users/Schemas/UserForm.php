@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Users\Schemas;
 
-use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 
@@ -11,32 +10,27 @@ class UserForm
     public static function configure(Schema $schema): Schema
     {
         return $schema
+            ->columns(2)
             ->components([
                 TextInput::make('name')
                     ->label('Имя')
-                    ->required(),
+                    ->required()
+                    ->maxLength(255),
                 TextInput::make('email')
                     ->label('Email')
                     ->email()
-                    ->required(),
+                    ->required()
+                    ->maxLength(255),
                 TextInput::make('tel')
                     ->label('Телефон')
-                    ->tel(),
-                TextInput::make('coins')
-                    ->label('Монеты')
-                    ->required()
-                    ->default('0'),
-                DateTimePicker::make('email_verified_at')
-                    ->label('Email подтверждён'),
-                TextInput::make('password')
-                    ->label('Пароль')
-                    ->password()
-                    ->required(),
+                    ->mask('+7 (999) 999-99-99')
+                    ->rule('regex:/^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/')
+                    ->validationMessages([
+                        'regex' => 'Телефон должен быть в формате +7 (XXX) XXX-XX-XX.',
+                    ])
+                    ->maxLength(255),
                 TextInput::make('dob')
                     ->label('Дата рождения'),
-                TextInput::make('token_to_reset_password')
-                    ->label('Токен сброса пароля')
-                    ->password(),
             ]);
     }
 }

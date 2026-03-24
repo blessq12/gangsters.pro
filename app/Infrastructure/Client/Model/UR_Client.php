@@ -2,7 +2,6 @@
 
 namespace App\Infrastructure\Client\Model;
 
-use App\Models\Order;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
