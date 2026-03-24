@@ -6,21 +6,15 @@ use App\Domain\Client\Entity\Client;
 use App\Domain\Client\VO\Email;
 use App\Domain\Client\VO\PhoneNumber;
 use DateTimeImmutable;
-use Illuminate\Contracts\Hashing\Hasher;
 
 final class ClientFactory
 {
-    public function __construct(
-        private readonly Hasher $hasher,
-    ) {
-    }
-
     public function createNew(
         string $name,
         string $phone,
         ?string $email,
         ?string $birthDate,
-        ?string $rawPassword,
+        ?string $passwordHash,
         bool $consentPersonalData,
         bool $consentMarketing,
     ): Client {
@@ -30,9 +24,6 @@ final class ClientFactory
 
         $emailVo = $email !== null ? new Email($email) : null;
         $phoneVo = new PhoneNumber($phone);
-        $passwordHash = $rawPassword !== null
-            ? $this->hasher->make($rawPassword)
-            : null;
 
         return Client::register(
             name: $name,

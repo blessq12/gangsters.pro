@@ -97,13 +97,11 @@ class ClientController extends Controller
             email: $data['email'],
         );
 
-        $token = $this->requestPasswordReset->execute($dto);
+        $this->requestPasswordReset->execute($dto);
 
-        // На бою сюда можно будет повесить отправку письма.
         return response()->json([
             'status' => true,
-            'message' => 'Password reset token generated',
-            'token' => $token,
+            'message' => 'Password reset instructions sent',
         ]);
     }
 

@@ -2,6 +2,8 @@
 
 namespace Tests\Feature\Api;
 
+use Illuminate\Support\Facades\DB;
+
 final class ClientApiTest extends ApiTestCase
 {
     protected function setUp(): void
@@ -146,7 +148,7 @@ final class ClientApiTest extends ApiTestCase
             ->assertJsonValidationErrors(['email']);
     }
 
-    public function test_forgot_password_200_returns_token_in_json(): void
+    public function test_forgot_password_200_returns_generic_message(): void
     {
         $email = $this->uniqueEmail();
         $this->registerClientViaApi('secret12', ['email' => $email]);
@@ -155,8 +157,7 @@ final class ClientApiTest extends ApiTestCase
 
         $response->assertOk();
         $response->assertJsonPath('status', true);
-        $response->assertJsonStructure(['status', 'message', 'token']);
-        $this->assertNotEmpty($response->json('token'));
+        $response->assertJsonPath('message', 'Password reset instructions sent');
     }
 
     public function test_forgot_password_validation_422(): void
@@ -166,11 +167,12 @@ final class ClientApiTest extends ApiTestCase
             ->assertJsonValidationErrors(['email']);
     }
 
-    public function test_forgot_password_422_unknown_email(): void
+    public function test_forgot_password_200_unknown_email(): void
     {
         $this->postJson('/api/client/forgot-password', ['email' => $this->uniqueEmail()])
-            ->assertStatus(422)
-            ->assertJsonPath('message', 'Client not found');
+            ->assertOk()
+            ->assertJsonPath('status', true)
+            ->assertJsonPath('message', 'Password reset instructions sent');
     }
 
     public function test_change_password_200_and_client_contract(): void
@@ -178,9 +180,11 @@ final class ClientApiTest extends ApiTestCase
         $email = $this->uniqueEmail();
         $this->registerClientViaApi('old-pass-11', ['email' => $email]);
 
-        $token = $this->postJson('/api/client/forgot-password', ['email' => $email])
-            ->assertOk()
-            ->json('token');
+        $this->postJson('/api/client/forgot-password', ['email' => $email])->assertOk();
+        $token = DB::table('UR_clients')
+            ->where('email', $email)
+            ->value('password_reset_token');
+        $this->assertNotEmpty($token);
 
         $response = $this->postJson('/api/client/change-password', [
             'token' => $token,
@@ -198,6 +202,27 @@ final class ClientApiTest extends ApiTestCase
     {
         $this->postJson('/api/client/change-password', [
             'token' => 'deadbeef-not-a-token',
+            'password' => 'newsecret12',
+        ])
+            ->assertStatus(422)
+            ->assertJsonPath('message', 'Invalid token');
+    }
+
+    public function test_change_password_422_when_token_expired(): void
+    {
+        $email = $this->uniqueEmail();
+        $this->registerClientViaApi('old-pass-11', ['email' => $email]);
+        $this->postJson('/api/client/forgot-password', ['email' => $email])->assertOk();
+
+        $token = DB::table('UR_clients')->where('email', $email)->value('password_reset_token');
+        $this->assertNotEmpty($token);
+
+        DB::table('UR_clients')
+            ->where('email', $email)
+            ->update(['password_reset_requested_at' => now()->subHours(2)]);
+
+        $this->postJson('/api/client/change-password', [
+            'token' => $token,
             'password' => 'newsecret12',
         ])
             ->assertStatus(422)

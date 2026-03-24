@@ -70,6 +70,51 @@ final class Product
         );
     }
 
+    /**
+     * @param ProductImage[]      $images
+     * @param ProductIngredient[] $ingredients
+     * @param ProductTag[]        $tags
+     * @param Price[]             $prices
+     */
+    public static function reconstitute(
+        int $id,
+        string $name,
+        ?string $articul,
+        string $description,
+        Nutrition $nutrition,
+        array $images,
+        array $ingredients,
+        array $tags,
+        array $prices,
+        string $status,
+        DateTimeImmutable $createdAt,
+        DateTimeImmutable $updatedAt,
+        ?DateTimeImmutable $archivedAt,
+    ): self {
+        return new self(
+            id: $id,
+            name: $name,
+            articul: $articul,
+            description: $description,
+            nutrition: $nutrition,
+            images: $images,
+            ingredients: $ingredients,
+            tags: $tags,
+            prices: $prices,
+            status: $status,
+            createdAt: $createdAt,
+            updatedAt: $updatedAt,
+            archivedAt: $archivedAt,
+        );
+    }
+
+    public function assignPersistedId(int $id): void
+    {
+        if ($this->id === null) {
+            $this->id = $id;
+        }
+    }
+
     public function id(): ?int
     {
         return $this->id;

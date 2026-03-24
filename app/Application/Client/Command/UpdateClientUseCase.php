@@ -2,10 +2,11 @@
 
 namespace App\Application\Client\Command;
 
+use App\Application\Common\Exceptions\ApiException;
 use App\Application\Client\ClientBaseUseCase;
 use App\Application\Client\DTO\UpdateClientDTO;
+use App\Domain\Client\Events\ClientProfileUpdated;
 use DateTimeImmutable;
-use LogicException;
 
 final class UpdateClientUseCase extends ClientBaseUseCase
 {
@@ -16,12 +17,12 @@ final class UpdateClientUseCase extends ClientBaseUseCase
         $client = $this->clients->findById($clientId);
 
         if ($client === null) {
-            throw new LogicException('Client not found');
+            throw new ApiException('Client not found');
         }
 
         if ($dto->phone !== null && (string) $client->phone() !== preg_replace('/\D+/', '', $dto->phone)) {
             if ($this->clients->existsByPhone($dto->phone)) {
-                throw new LogicException('Client with this phone already exists');
+                throw new ApiException('Client with this phone already exists');
             }
 
             $this->factory->changeContactsFromPrimitives($client, $dto->phone, null);
@@ -29,7 +30,7 @@ final class UpdateClientUseCase extends ClientBaseUseCase
 
         if ($dto->email !== null && ($client->email() === null || (string) $client->email() !== mb_strtolower(trim($dto->email)))) {
             if ($this->clients->existsByEmail($dto->email)) {
-                throw new LogicException('Client with this email already exists');
+                throw new ApiException('Client with this email already exists');
             }
 
             $this->factory->changeContactsFromPrimitives($client, null, $dto->email);
@@ -51,6 +52,7 @@ final class UpdateClientUseCase extends ClientBaseUseCase
         }
 
         $this->clients->save($client);
+        $this->events->publish(new ClientProfileUpdated($client));
 
         return [
             'client' => $this->presenter->present($client),

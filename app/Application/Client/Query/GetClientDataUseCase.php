@@ -2,8 +2,8 @@
 
 namespace App\Application\Client\Query;
 
+use App\Application\Common\Exceptions\ApiException;
 use App\Application\Client\ClientBaseUseCase;
-use LogicException;
 
 final class GetClientDataUseCase extends ClientBaseUseCase
 {
@@ -14,7 +14,7 @@ final class GetClientDataUseCase extends ClientBaseUseCase
         $client = $this->clients->findById($id);
 
         if ($client === null) {
-            throw new LogicException('Client not found');
+            throw new ApiException('Client not found');
         }
 
         return [

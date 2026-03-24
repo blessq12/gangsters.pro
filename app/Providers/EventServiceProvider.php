@@ -21,17 +21,14 @@ class EventServiceProvider extends ServiceProvider
         \App\Domain\Order\Events\OrderCreated::class => [
             // \App\Infrastructure\Order\Listeners\PushOrderToFrontpad::class, // интеграция с Frontpad (пока выключена)
         ],
-        \App\Domain\Product\Events\ProductCreated::class => [
-            \App\Infrastructure\Product\Listeners\OnProductCreated::class,
-        ],
-        \App\Domain\Product\Events\ProductUpdated::class => [
-            \App\Infrastructure\Product\Listeners\OnProductUpdated::class,
-        ],
-        \App\Domain\Product\Events\ProductArchived::class => [
-            \App\Infrastructure\Product\Listeners\OnProductArchived::class,
-        ],
         \App\Domain\Client\Events\ClientRegistered::class => [
             \App\Infrastructure\Client\Listeners\OnClientRegistered::class,
+        ],
+        \App\Domain\Client\Events\ClientLoginFailed::class => [
+            \App\Infrastructure\Client\Listeners\OnClientLoginFailed::class,
+        ],
+        \App\Domain\Client\Events\ClientUnauthorizedAccessDetected::class => [
+            \App\Infrastructure\Client\Listeners\OnClientUnauthorizedAccessDetected::class,
         ],
         \App\Domain\Client\Events\ClientProfileUpdated::class => [
             \App\Infrastructure\Client\Listeners\OnClientProfileUpdated::class,

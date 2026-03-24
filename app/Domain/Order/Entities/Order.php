@@ -2,6 +2,7 @@
 
 namespace App\Domain\Order\Entities;
 
+use App\Domain\Order\Exceptions\OrderInvariantViolation;
 use App\Domain\Order\ValueObjects\CustomerSnapshot;
 use App\Domain\Order\ValueObjects\DeliveryInfo;
 use App\Domain\Order\ValueObjects\PaymentInfo;
@@ -141,15 +142,15 @@ class Order
     private function assertInvariant(): void
     {
         if ($this->subtotal < 0 || $this->discountTotal < 0 || $this->total < 0) {
-            throw new \LogicException('Order monetary values must be non-negative.');
+            throw new OrderInvariantViolation('Order monetary values must be non-negative.');
         }
 
         if ($this->total !== $this->subtotal - $this->discountTotal) {
-            throw new \LogicException('Order totals are inconsistent.');
+            throw new OrderInvariantViolation('Order totals are inconsistent.');
         }
 
         if (\count($this->items) === 0) {
-            throw new \LogicException('Order must contain at least one item.');
+            throw new OrderInvariantViolation('Order must contain at least one item.');
         }
     }
 }

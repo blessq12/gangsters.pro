@@ -6,6 +6,7 @@ use App\Domain\Client\Repository\ClientRepository;
 use App\Domain\Client\Factory\ClientFactory;
 use App\Shared\Auth\ClientAuthContext;
 use App\Shared\Auth\ClientTokenService;
+use App\Shared\Events\DomainEventBus;
 use App\Application\Client\Presenter\ClientPresenter;
 use Illuminate\Contracts\Hashing\Hasher;
 
@@ -18,6 +19,7 @@ abstract class ClientBaseUseCase
         protected readonly ClientAuthContext $authContext,
         protected readonly ClientTokenService $tokens,
         protected readonly ClientPresenter $presenter,
+        protected readonly DomainEventBus $events,
     ) {
     }
 }

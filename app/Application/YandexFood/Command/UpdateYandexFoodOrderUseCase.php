@@ -2,6 +2,7 @@
 
 namespace App\Application\YandexFood\Command;
 
+use App\Application\Common\Exceptions\ApiException;
 use App\Application\YandexFood\Acl\YandexFoodOrderContractPresenter;
 use App\Application\YandexFood\Acl\YandexFoodOrderPayloadHelper;
 use App\Application\YandexFood\DTO\YandexUpdateOrderRequestDto;
@@ -21,7 +22,6 @@ use App\Domain\Product\Repository\ProductRepository;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Log;
-use LogicException;
 use Throwable;
 
 final class UpdateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
@@ -79,7 +79,7 @@ final class UpdateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
             $this->orders->save($order);
 
             return $this->yandexOrderContract->presentUpdateSuccess($order);
-        } catch (LogicException $e) {
+        } catch (ApiException $e) {
             Log::warning('UpdateYandexFoodOrderUseCase', ['message' => $e->getMessage()]);
 
             return YandexFoodOrderPayloadHelper::failure(self::FAIL);
@@ -214,10 +214,10 @@ final class UpdateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
         if ($clientId !== null) {
             $client = $this->clients->findById($clientId);
             if ($client === null) {
-                throw new LogicException('Client not found.');
+                throw new ApiException('Client not found.');
             }
             if (!$client->isActive()) {
-                throw new LogicException('Client is blocked or deleted.');
+                throw new ApiException('Client is blocked or deleted.');
             }
 
             return $this->customerFactory->fromClient($client);

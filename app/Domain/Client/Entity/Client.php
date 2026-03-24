@@ -61,6 +61,50 @@ final class Client
         );
     }
 
+    /**
+     * @param ClientAddress[] $addresses
+     */
+    public static function reconstitute(
+        int $id,
+        string $name,
+        PhoneNumber $phone,
+        ?Email $email,
+        ?DateTimeImmutable $birthDate,
+        ?string $passwordHash,
+        string $status,
+        bool $consentPersonalData,
+        bool $consentMarketing,
+        ?int $defaultAddressId,
+        array $addresses,
+        DateTimeImmutable $createdAt,
+        DateTimeImmutable $updatedAt,
+        ?DateTimeImmutable $deletedAt,
+    ): self {
+        return new self(
+            id: $id,
+            name: $name,
+            phone: $phone,
+            email: $email,
+            birthDate: $birthDate,
+            passwordHash: $passwordHash,
+            status: $status,
+            consentPersonalData: $consentPersonalData,
+            consentMarketing: $consentMarketing,
+            defaultAddressId: $defaultAddressId,
+            addresses: $addresses,
+            createdAt: $createdAt,
+            updatedAt: $updatedAt,
+            deletedAt: $deletedAt,
+        );
+    }
+
+    public function assignPersistedId(int $id): void
+    {
+        if ($this->id === null) {
+            $this->id = $id;
+        }
+    }
+
     public function id(): ?int
     {
         return $this->id;

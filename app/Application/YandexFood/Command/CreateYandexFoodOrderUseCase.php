@@ -2,6 +2,7 @@
 
 namespace App\Application\YandexFood\Command;
 
+use App\Application\Common\Exceptions\ApiException;
 use App\Application\YandexFood\Acl\YandexFoodOrderContractPresenter;
 use App\Application\YandexFood\Acl\YandexFoodOrderPayloadHelper;
 use App\Application\YandexFood\DTO\YandexCreateOrderRequestDto;
@@ -21,7 +22,6 @@ use App\Domain\Product\Repository\ProductRepository;
 use App\Shared\Events\DomainEventBus;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
-use LogicException;
 use Throwable;
 
 /**
@@ -144,7 +144,7 @@ final class CreateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
             $this->events->publish(new OrderCreated($order));
 
             return $this->yandexOrderContract->presentCreateSuccess($order);
-        } catch (LogicException $e) {
+        } catch (ApiException $e) {
             Log::warning('CreateYandexFoodOrderUseCase', ['message' => $e->getMessage()]);
 
             return YandexFoodOrderPayloadHelper::failure('Не удалось создать заказ');
@@ -163,10 +163,10 @@ final class CreateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
         if ($clientId !== null) {
             $client = $this->clients->findById($clientId);
             if ($client === null) {
-                throw new LogicException('Client not found.');
+                throw new ApiException('Client not found.');
             }
             if (!$client->isActive()) {
-                throw new LogicException('Client is blocked or deleted.');
+                throw new ApiException('Client is blocked or deleted.');
             }
 
             return $this->customerFactory->fromClient($client);

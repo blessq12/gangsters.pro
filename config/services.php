@@ -38,6 +38,12 @@ return [
     'telegram' => [
         'token' => env('TELEGRAM_TOKEN'),
         'chat_id' => env('TELEGRAM_CHAT_ID'),
+        'parse_mode' => env('TELEGRAM_PARSE_MODE', 'HTML'),
+        'topics' => [
+            'analytics' => env('TELEGRAM_TOPIC_ANALYTICS', 3),
+            'error' => env('TELEGRAM_TOPIC_ERROR', 2),
+            'event' => env('TELEGRAM_TOPIC_EVENT', 58),
+        ],
     ],
 
 ];

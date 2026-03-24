@@ -52,10 +52,10 @@ class OrderFactory
             );
 
             $quantity = $row['quantity'];
-            $unitPrice = $row['finalPrice'];
+            $unitPrice = $row['listPrice'];
             $rowSubtotal = $unitPrice * $quantity;
             $rowDiscount = ($row['listPrice'] - $row['finalPrice']) * $quantity;
-            $rowTotal = $rowSubtotal - $rowDiscount;
+            $rowTotal = $row['finalPrice'] * $quantity;
 
             $items[] = new OrderItem(
                 id: (string) ($index + 1),
@@ -133,10 +133,10 @@ class OrderFactory
             );
 
             $quantity = $row['quantity'];
-            $unitPrice = $row['finalPrice'];
+            $unitPrice = $row['listPrice'];
             $rowSubtotal = $unitPrice * $quantity;
             $rowDiscount = ($row['listPrice'] - $row['finalPrice']) * $quantity;
-            $rowTotal = $rowSubtotal - $rowDiscount;
+            $rowTotal = $row['finalPrice'] * $quantity;
 
             $items[] = new OrderItem(
                 id: (string) ($index + 1),

@@ -32,7 +32,6 @@ final class OrderApiTest extends ApiTestCase
         $this->postJson(
             '/api/order',
             [
-                'client_id' => $session['client']['id'],
                 'items' => [['product_id' => $productId, 'quantity' => 1]],
                 'delivery_method' => 'pickup',
                 'payment_method' => 'cash',
@@ -111,7 +110,6 @@ final class OrderApiTest extends ApiTestCase
         $response = $this->postJson(
             '/api/order',
             [
-                'client_id' => $session['client']['id'],
                 'items' => [['product_id' => $productId, 'quantity' => 2]],
                 'delivery_method' => 'pickup',
                 'payment_method' => 'card',
@@ -124,7 +122,7 @@ final class OrderApiTest extends ApiTestCase
         $this->assertSame($session['client']['id'], $response->json('client_id'));
     }
 
-    public function test_store_201_courier_guest_snapshot_client_id_zero(): void
+    public function test_store_201_courier_uses_authenticated_client(): void
     {
         $session = $this->registerClientViaApi();
         $productId = $this->firstProductIdFromCatalog();
@@ -135,7 +133,6 @@ final class OrderApiTest extends ApiTestCase
         $response = $this->postJson(
             '/api/order',
             [
-                'client_id' => null,
                 'items' => [['product_id' => $productId, 'quantity' => 1]],
                 'delivery_method' => 'courier',
                 'delivery_address' => [
@@ -152,7 +149,7 @@ final class OrderApiTest extends ApiTestCase
 
         $response->assertCreated();
         $this->assertOrderPresenterContract($response->json());
-        $this->assertSame(0, $response->json('client_id'));
+        $this->assertSame($session['client']['id'], $response->json('client_id'));
     }
 
     public function test_store_422_unknown_product(): void
@@ -162,7 +159,6 @@ final class OrderApiTest extends ApiTestCase
         $this->postJson(
             '/api/order',
             [
-                'client_id' => $session['client']['id'],
                 'items' => [['product_id' => 999999999, 'quantity' => 1]],
                 'delivery_method' => 'pickup',
                 'payment_method' => 'cash',
@@ -173,7 +169,7 @@ final class OrderApiTest extends ApiTestCase
             ->assertJsonPath('message', 'Product not found: 999999999');
     }
 
-    public function test_store_422_client_not_found(): void
+    public function test_store_ignores_spoofed_client_id_and_uses_auth_client(): void
     {
         $session = $this->registerClientViaApi();
         $productId = $this->firstProductIdFromCatalog();
@@ -181,7 +177,7 @@ final class OrderApiTest extends ApiTestCase
             $this->markTestSkipped('Нет товаров в каталоге.');
         }
 
-        $this->postJson(
+        $response = $this->postJson(
             '/api/order',
             [
                 'client_id' => 999999999,
@@ -190,8 +186,9 @@ final class OrderApiTest extends ApiTestCase
                 'payment_method' => 'cash',
             ],
             $this->bearerSanctum($session['token']),
-        )
-            ->assertStatus(422)
-            ->assertJsonPath('message', 'Client not found.');
+        );
+
+        $response->assertCreated();
+        $this->assertSame($session['client']['id'], $response->json('client_id'));
     }
 }

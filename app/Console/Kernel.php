@@ -2,9 +2,9 @@
 
 namespace App\Console;
 
+use App\Shared\Notifications\ThreadedMessageChannel;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
-use App\Facades\TelegramMessage;
 use App\Facades\YaMetrika;
 use Illuminate\Support\Facades\Log;
 
@@ -19,7 +19,9 @@ class Kernel extends ConsoleKernel
         $schedule->call(function () {
             try {
                 $statistic = YaMetrika::getTodayStatistic();
-                TelegramMessage::sendMessage([
+                /** @var ThreadedMessageChannel $notifications */
+                $notifications = app(ThreadedMessageChannel::class);
+                $notifications->sendToTopic([
                     '🗓️ Статистика на: ' . $statistic->date . "\n",
                     '👥 Посетителей: ' . $statistic->visits,
                     '👤 Пользователей: ' . $statistic->users,
@@ -33,7 +35,7 @@ class Kernel extends ConsoleKernel
                     '👥 Социальные: ' . $statistic->sources['social'],
                 ], 'analytics');
             } catch (\Exception $e) {
-                \Log::error('Kernel::schedule', [
+                Log::error('Kernel::schedule', [
                     'error' => $e->getMessage(),
                     'trace' => $e->getTraceAsString(),
                 ]);

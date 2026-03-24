@@ -2,6 +2,7 @@
 
 namespace App\Domain\Order\Entities;
 
+use App\Domain\Order\Exceptions\OrderInvariantViolation;
 use App\Domain\Order\ValueObjects\ProductSnapshot;
 
 class OrderItem
@@ -68,19 +69,19 @@ class OrderItem
     private function assertInvariant(): void
     {
         if ($this->quantity <= 0) {
-            throw new \LogicException('Order item quantity must be greater than zero.');
+            throw new OrderInvariantViolation('Order item quantity must be greater than zero.');
         }
 
         if ($this->unitPrice < 0 || $this->rowSubtotal < 0 || $this->rowDiscount < 0 || $this->rowTotal < 0) {
-            throw new \LogicException('Order item monetary values must be non-negative.');
+            throw new OrderInvariantViolation('Order item monetary values must be non-negative.');
         }
 
         if ($this->rowSubtotal !== $this->unitPrice * $this->quantity) {
-            throw new \LogicException('Order item subtotal is inconsistent.');
+            throw new OrderInvariantViolation('Order item subtotal is inconsistent.');
         }
 
         if ($this->rowTotal !== $this->rowSubtotal - $this->rowDiscount) {
-            throw new \LogicException('Order item total is inconsistent.');
+            throw new OrderInvariantViolation('Order item total is inconsistent.');
         }
     }
 }

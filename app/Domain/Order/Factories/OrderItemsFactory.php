@@ -2,12 +2,12 @@
 
 namespace App\Domain\Order\Factories;
 
+use App\Application\Common\Exceptions\ApiException;
 use App\Domain\Order\Entities\OrderItem;
 use App\Domain\Order\ValueObjects\ProductSnapshot;
 use App\Domain\Product\Entity\Product;
 use App\Domain\Product\Repository\ProductRepository;
 use App\Domain\Product\VO\CustomerStatus as ProductCustomerStatus;
-use LogicException;
 
 final class OrderItemsFactory
 {
@@ -52,10 +52,10 @@ final class OrderItemsFactory
             /** @var Product|null $product */
             $product = $productsById[$productId] ?? null;
             if ($product === null) {
-                throw new LogicException("Product not found: {$productId}");
+                throw new ApiException("Product not found: {$productId}");
             }
             if ($product->status() !== Product::STATUS_ACTIVE) {
-                throw new LogicException("Product is not available: {$productId}");
+                throw new ApiException("Product is not available: {$productId}");
             }
 
             $priceVO = $product->priceForStatus($customerStatus);
@@ -63,7 +63,7 @@ final class OrderItemsFactory
                 $priceVO = $product->prices()[0];
             }
             if ($priceVO === null) {
-                throw new LogicException("Product has no price: {$productId}");
+                throw new ApiException("Product has no price: {$productId}");
             }
 
             $amount = $priceVO->amount();

@@ -174,6 +174,7 @@ return [
         App\Providers\ClientServiceProvider::class,
         App\Providers\ProductDomainServiceProvider::class,
         App\Providers\SystemContentServiceProvider::class,
+        App\Providers\NotificationServiceProvider::class,
     ])->toArray(),
 
     /*

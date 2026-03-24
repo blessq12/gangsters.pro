@@ -112,4 +112,7 @@ return [
 
     'password_timeout' => 10800,
 
+    // TTL для reset token клиентов (минуты).
+    'password_reset_token_ttl_minutes' => (int) env('CLIENT_PASSWORD_RESET_TOKEN_TTL_MINUTES', 30),
+
 ];

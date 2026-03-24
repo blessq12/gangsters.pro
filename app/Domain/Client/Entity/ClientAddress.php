@@ -45,6 +45,32 @@ final class ClientAddress
         );
     }
 
+    public static function reconstitute(
+        int $id,
+        int $clientId,
+        string $type,
+        ?string $title,
+        string $street,
+        string $house,
+        ?string $entrance,
+        ?string $apartment,
+        DateTimeImmutable $createdAt,
+        DateTimeImmutable $updatedAt,
+    ): self {
+        return new self(
+            id: $id,
+            clientId: $clientId,
+            type: $type,
+            title: $title,
+            street: $street,
+            house: $house,
+            entrance: $entrance,
+            apartment: $apartment,
+            createdAt: $createdAt,
+            updatedAt: $updatedAt,
+        );
+    }
+
     public function id(): ?int
     {
         return $this->id;

@@ -2,8 +2,13 @@
 
 namespace App\Exceptions;
 
+use App\Application\Common\Exceptions\ApiException;
+use App\Application\Common\Exceptions\UnauthorizedException;
+use App\Domain\Client\Events\ClientUnauthorizedAccessDetected;
+use App\Domain\Order\Exceptions\OrderInvariantViolation;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
-use LogicException;
+use Illuminate\Support\Facades\Event;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -31,12 +36,40 @@ class Handler extends ExceptionHandler
 
     public function render($request, Throwable $e)
     {
-        if ($e instanceof LogicException && $request->is('api/*')) {
+        if ($request->is('api/client/*') && $this->isClientUnauthorized($e)) {
+            Event::dispatch(new ClientUnauthorizedAccessDetected(
+                path: '/'.$request->path(),
+                method: $request->method(),
+                ip: (string) ($request->ip() ?? 'n/a'),
+                userAgent: $request->userAgent(),
+            ));
+        }
+
+        if ($e instanceof ApiException && $request->is('api/*')) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], $e->statusCode());
+        }
+
+        if ($e instanceof OrderInvariantViolation && $request->is('api/*')) {
             return response()->json([
                 'message' => $e->getMessage(),
             ], 422);
         }
 
         return parent::render($request, $e);
+    }
+
+    private function isClientUnauthorized(Throwable $e): bool
+    {
+        if ($e instanceof AuthenticationException) {
+            return true;
+        }
+
+        if ($e instanceof UnauthorizedException) {
+            return true;
+        }
+
+        return false;
     }
 }

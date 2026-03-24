@@ -4,6 +4,7 @@ namespace App\Domain\Client\Repository;
 
 use App\Domain\Client\Entity\Client;
 use App\Domain\Client\Entity\ClientAddress;
+use DateTimeImmutable;
 
 interface ClientRepository
 {
@@ -29,7 +30,7 @@ interface ClientRepository
 
     public function findByPasswordResetToken(string $token): ?Client;
 
-    public function clearPasswordResetToken(Client $client): void;
+    public function findByPasswordResetTokenRequestedAfter(string $token, DateTimeImmutable $requestedAfter): ?Client;
 
-    public function getSummaryById(int $clientId): ?array;
+    public function clearPasswordResetToken(Client $client): void;
 }

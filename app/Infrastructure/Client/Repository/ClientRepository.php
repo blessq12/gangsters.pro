@@ -9,7 +9,6 @@ use App\Domain\Client\VO\Email;
 use App\Domain\Client\VO\PhoneNumber;
 use App\Infrastructure\Client\Model\UR_Client;
 use App\Infrastructure\Client\Model\UR_ClientAddress;
-use App\Infrastructure\Order\Model\ORD_Order;
 use DateTimeImmutable;
 
 class ClientRepository implements ClientRepositoryContract
@@ -83,10 +82,7 @@ class ClientRepository implements ClientRepositoryContract
 
         // Синхронизируем сгенерированный ID модели обратно в доменную сущность.
         if ($client->id() === null) {
-            $ref = new \ReflectionClass($client);
-            $prop = $ref->getProperty('id');
-            $prop->setAccessible(true);
-            $prop->setValue($client, $model->id);
+            $client->assignPersistedId((int) $model->id);
         }
     }
 
@@ -178,6 +174,15 @@ class ClientRepository implements ClientRepositoryContract
         return $clientModel ? $this->mapToEntity($clientModel) : null;
     }
 
+    public function findByPasswordResetTokenRequestedAfter(string $token, DateTimeImmutable $requestedAfter): ?ClientEntity
+    {
+        $clientModel = UR_Client::where('password_reset_token', $token)
+            ->where('password_reset_requested_at', '>=', $requestedAfter->format('Y-m-d H:i:s'))
+            ->first();
+
+        return $clientModel ? $this->mapToEntity($clientModel) : null;
+    }
+
     public function clearPasswordResetToken(ClientEntity $client): void
     {
         if ($client->id() === null) {
@@ -193,41 +198,6 @@ class ClientRepository implements ClientRepositoryContract
         $model->password_reset_token = null;
         $model->password_reset_requested_at = null;
         $model->save();
-    }
-
-    public function getSummaryById(int $clientId): ?array
-    {
-        $clientModel = UR_Client::withCount([
-            'addresses' => fn ($query) => $query->whereNull('deleted_at'),
-        ])->find($clientId);
-
-        if ($clientModel === null) {
-            return null;
-        }
-
-        $ordersQuery = ORD_Order::query()->where('client_id', $clientId);
-        $ordersCount = (int) $ordersQuery->count();
-        $paidOrdersCount = (int) ORD_Order::query()
-            ->where('client_id', $clientId)
-            ->where('payment_status', 'paid')
-            ->count();
-        $ordersTotal = (int) ORD_Order::query()
-            ->where('client_id', $clientId)
-            ->sum('total');
-        $lastOrderAt = ORD_Order::query()
-            ->where('client_id', $clientId)
-            ->latest('created_at')
-            ->value('created_at');
-
-        return [
-            'client_id' => (int) $clientModel->id,
-            'orders_count' => $ordersCount,
-            'paid_orders_count' => $paidOrdersCount,
-            'orders_total' => $ordersTotal,
-            'average_order_total' => $ordersCount > 0 ? (int) floor($ordersTotal / $ordersCount) : 0,
-            'last_order_at' => $lastOrderAt ? (new DateTimeImmutable((string) $lastOrderAt))->format(DATE_ATOM) : null,
-            'addresses_count' => (int) ($clientModel->addresses_count ?? 0),
-        ];
     }
 
     /**
@@ -271,73 +241,43 @@ class ClientRepository implements ClientRepositoryContract
             ? new DateTimeImmutable($model->deleted_at)
             : null;
 
-        // Восстанавливаем сущность через рефлексию, чтобы не ломать инварианты конструктора.
-        $ref = new \ReflectionClass(ClientEntity::class);
-        /** @var ClientEntity $client */
-        $client = $ref->newInstanceWithoutConstructor();
-
-        $this->setProperty($client, 'id', $model->id);
-        $this->setProperty($client, 'name', $model->name);
-        $this->setProperty($client, 'phone', new PhoneNumber($model->phone));
-        $this->setProperty($client, 'email', $email);
-        $this->setProperty($client, 'birthDate', $birthDate);
-        $this->setProperty($client, 'passwordHash', $model->password);
-        $this->setProperty($client, 'status', $model->status);
-        $this->setProperty($client, 'consentPersonalData', (bool) $model->consent_personal_data);
-        $this->setProperty($client, 'consentMarketing', (bool) $model->consent_marketing);
-        $this->setProperty($client, 'defaultAddressId', $model->default_address_id);
-        $this->setProperty(
-            $client,
-            'addresses',
+        return ClientEntity::reconstitute(
+            id: (int) $model->id,
+            name: $model->name,
+            phone: new PhoneNumber($model->phone),
+            email: $email,
+            birthDate: $birthDate,
+            passwordHash: $model->password,
+            status: $model->status,
+            consentPersonalData: (bool) $model->consent_personal_data,
+            consentMarketing: (bool) $model->consent_marketing,
+            defaultAddressId: $model->default_address_id,
+            addresses:
             $model->addresses
                 ->map(fn ($addressModel) => $this->mapAddressToEntity($addressModel))
-                ->all()
+                ->all(),
+            createdAt: $createdAt,
+            updatedAt: $updatedAt,
+            deletedAt: $deletedAt,
         );
-        $this->setProperty($client, 'createdAt', $createdAt);
-        $this->setProperty($client, 'updatedAt', $updatedAt);
-        $this->setProperty($client, 'deletedAt', $deletedAt);
-
-        return $client;
-    }
-
-    /**
-     * @param ClientEntity $client
-     * @param string $property
-     * @param mixed $value
-     */
-    private function setProperty(ClientEntity $client, string $property, mixed $value): void
-    {
-        $ref = new \ReflectionProperty(ClientEntity::class, $property);
-        $ref->setAccessible(true);
-        $ref->setValue($client, $value);
     }
 
     private function mapAddressToEntity($model): ClientAddressEntity
     {
-        $ref = new \ReflectionClass(ClientAddressEntity::class);
-        /** @var ClientAddressEntity $address */
-        $address = $ref->newInstanceWithoutConstructor();
-
         $entrance = $model->entrance ?? $model->staircase ?? null;
-        $this->setAddressProperty($address, 'id', $model->id);
-        $this->setAddressProperty($address, 'clientId', $model->client_id);
-        $this->setAddressProperty($address, 'type', $model->type);
-        $this->setAddressProperty($address, 'title', $model->title);
-        $this->setAddressProperty($address, 'street', $model->street);
-        $this->setAddressProperty($address, 'house', $model->house);
-        $this->setAddressProperty($address, 'entrance', $entrance);
-        $this->setAddressProperty($address, 'apartment', $model->apartment);
-        $this->setAddressProperty($address, 'createdAt', new DateTimeImmutable($model->created_at));
-        $this->setAddressProperty($address, 'updatedAt', new DateTimeImmutable($model->updated_at));
 
-        return $address;
-    }
-
-    private function setAddressProperty(ClientAddressEntity $address, string $property, mixed $value): void
-    {
-        $ref = new \ReflectionProperty(ClientAddressEntity::class, $property);
-        $ref->setAccessible(true);
-        $ref->setValue($address, $value);
+        return ClientAddressEntity::reconstitute(
+            id: (int) $model->id,
+            clientId: (int) $model->client_id,
+            type: $model->type,
+            title: $model->title,
+            street: $model->street,
+            house: $model->house,
+            entrance: $entrance,
+            apartment: $model->apartment,
+            createdAt: new DateTimeImmutable($model->created_at),
+            updatedAt: new DateTimeImmutable($model->updated_at),
+        );
     }
 }
 

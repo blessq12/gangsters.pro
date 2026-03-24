@@ -2,11 +2,11 @@
 
 namespace App\Filament\Resources\Clients;
 
+use App\Application\Client\Query\ClientSummaryReader;
 use App\Filament\Resources\Clients\Pages\CreateClient;
 use App\Filament\Resources\Clients\Pages\EditClient;
 use App\Filament\Resources\Clients\Pages\ListClients;
 use App\Filament\Resources\Clients\Pages\ViewClient;
-use App\Domain\Client\Repository\ClientRepository as ClientRepositoryContract;
 use App\Infrastructure\Client\Model\UR_Client;
 use BackedEnum;
 use UnitEnum;
@@ -175,46 +175,46 @@ class ClientResource extends Resource
                     TextEntry::make('summary.orders_count')
                         ->label('Количество заказов')
                         ->state(function (UR_Client $record): int {
-                            /** @var ClientRepositoryContract $clients */
-                            $clients = app(ClientRepositoryContract::class);
-                            return (int) ($clients->getSummaryById((int) $record->id)['orders_count'] ?? 0);
+                            /** @var ClientSummaryReader $summary */
+                            $summary = app(ClientSummaryReader::class);
+                            return (int) ($summary->getSummaryById((int) $record->id)['orders_count'] ?? 0);
                         }),
                     TextEntry::make('summary.paid_orders_count')
                         ->label('Оплаченных заказов')
                         ->state(function (UR_Client $record): int {
-                            /** @var ClientRepositoryContract $clients */
-                            $clients = app(ClientRepositoryContract::class);
-                            return (int) ($clients->getSummaryById((int) $record->id)['paid_orders_count'] ?? 0);
+                            /** @var ClientSummaryReader $summary */
+                            $summary = app(ClientSummaryReader::class);
+                            return (int) ($summary->getSummaryById((int) $record->id)['paid_orders_count'] ?? 0);
                         }),
                     TextEntry::make('summary.orders_total')
                         ->label('Сумма заказов')
                         ->state(function (UR_Client $record): string {
-                            /** @var ClientRepositoryContract $clients */
-                            $clients = app(ClientRepositoryContract::class);
-                            $totalKopecks = (int) ($clients->getSummaryById((int) $record->id)['orders_total'] ?? 0);
+                            /** @var ClientSummaryReader $summary */
+                            $summary = app(ClientSummaryReader::class);
+                            $totalKopecks = (int) ($summary->getSummaryById((int) $record->id)['orders_total'] ?? 0);
                             return number_format($totalKopecks / 100, 2, ',', ' ') . ' ₽';
                         }),
                     TextEntry::make('summary.average_order_total')
                         ->label('Средний чек')
                         ->state(function (UR_Client $record): string {
-                            /** @var ClientRepositoryContract $clients */
-                            $clients = app(ClientRepositoryContract::class);
-                            $avgKopecks = (int) ($clients->getSummaryById((int) $record->id)['average_order_total'] ?? 0);
+                            /** @var ClientSummaryReader $summary */
+                            $summary = app(ClientSummaryReader::class);
+                            $avgKopecks = (int) ($summary->getSummaryById((int) $record->id)['average_order_total'] ?? 0);
                             return number_format($avgKopecks / 100, 2, ',', ' ') . ' ₽';
                         }),
                     TextEntry::make('summary.addresses_count')
                         ->label('Количество адресов')
                         ->state(function (UR_Client $record): int {
-                            /** @var ClientRepositoryContract $clients */
-                            $clients = app(ClientRepositoryContract::class);
-                            return (int) ($clients->getSummaryById((int) $record->id)['addresses_count'] ?? 0);
+                            /** @var ClientSummaryReader $summary */
+                            $summary = app(ClientSummaryReader::class);
+                            return (int) ($summary->getSummaryById((int) $record->id)['addresses_count'] ?? 0);
                         }),
                     TextEntry::make('summary.last_order_at')
                         ->label('Последний заказ')
                         ->state(function (UR_Client $record): string {
-                            /** @var ClientRepositoryContract $clients */
-                            $clients = app(ClientRepositoryContract::class);
-                            $value = $clients->getSummaryById((int) $record->id)['last_order_at'] ?? null;
+                            /** @var ClientSummaryReader $summary */
+                            $summary = app(ClientSummaryReader::class);
+                            $value = $summary->getSummaryById((int) $record->id)['last_order_at'] ?? null;
                             if (!is_string($value) || $value === '') {
                                 return 'Нет заказов';
                             }

@@ -9,7 +9,6 @@ final class CreateOrderDTO
      * @param array<string, mixed>|null $deliveryAddress
      */
     public function __construct(
-        public readonly ?int $clientId,
         public readonly array $items,
         public readonly string $deliveryMethod,
         public readonly ?array $deliveryAddress,

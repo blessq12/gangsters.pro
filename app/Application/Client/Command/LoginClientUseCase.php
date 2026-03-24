@@ -2,9 +2,10 @@
 
 namespace App\Application\Client\Command;
 
+use App\Application\Common\Exceptions\ApiException;
 use App\Application\Client\ClientBaseUseCase;
 use App\Application\Client\DTO\LoginDTO;
-use LogicException;
+use App\Domain\Client\Events\ClientLoginFailed;
 
 final class LoginClientUseCase extends ClientBaseUseCase
 {
@@ -13,7 +14,7 @@ final class LoginClientUseCase extends ClientBaseUseCase
         $identifier = $dto->phone ?? $dto->email;
 
         if ($identifier === null || $identifier === '') {
-            throw new LogicException('Phone or email is required');
+            throw new ApiException('Phone or email is required');
         }
 
         $client = null;
@@ -25,17 +26,20 @@ final class LoginClientUseCase extends ClientBaseUseCase
         }
 
         if ($client === null) {
-            throw new LogicException('Invalid credentials');
+            $this->events->publish(new ClientLoginFailed($identifier, 'not_found'));
+            throw new ApiException('Invalid credentials');
         }
 
         $hash = $client->passwordHash();
 
         if ($hash === null || !$this->hasher->check($dto->password, $hash)) {
-            throw new LogicException('Invalid credentials');
+            $this->events->publish(new ClientLoginFailed($identifier, 'wrong_password'));
+            throw new ApiException('Invalid credentials');
         }
 
         if (!$client->isActive()) {
-            throw new LogicException('Client is blocked or deleted');
+            $this->events->publish(new ClientLoginFailed($identifier, 'blocked'));
+            throw new ApiException('Client is blocked or deleted');
         }
 
         $token = $this->tokens->issueTokenForClient($client->id());

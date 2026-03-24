@@ -86,10 +86,7 @@ class ProductRepository implements ProductRepositoryContract
 
         // Синхронизируем ID обратно в доменную сущность
         if ($product->id() === null) {
-            $ref = new \ReflectionClass($product);
-            $prop = $ref->getProperty('id');
-            $prop->setAccessible(true);
-            $prop->setValue($product, $model->id);
+            $product->assignPersistedId((int) $model->id);
         }
 
         // Для MVP: полная пересборка коллекций
@@ -215,25 +212,21 @@ class ProductRepository implements ProductRepositoryContract
             ? new DateTimeImmutable($model->archived_at)
             : null;
 
-        $ref = new \ReflectionClass(ProductEntity::class);
-        /** @var ProductEntity $product */
-        $product = $ref->newInstanceWithoutConstructor();
-
-        $this->setProperty($product, 'id', $model->id);
-        $this->setProperty($product, 'name', $model->name);
-        $this->setProperty($product, 'articul', $model->articul);
-        $this->setProperty($product, 'description', $model->description ?? '');
-        $this->setProperty($product, 'nutrition', $nutrition);
-        $this->setProperty($product, 'images', $images);
-        $this->setProperty($product, 'ingredients', $ingredients);
-        $this->setProperty($product, 'tags', $tags);
-        $this->setProperty($product, 'prices', $prices);
-        $this->setProperty($product, 'status', $model->status);
-        $this->setProperty($product, 'createdAt', $createdAt);
-        $this->setProperty($product, 'updatedAt', $updatedAt);
-        $this->setProperty($product, 'archivedAt', $archivedAt);
-
-        return $product;
+        return ProductEntity::reconstitute(
+            id: (int) $model->id,
+            name: $model->name,
+            articul: $model->articul,
+            description: $model->description ?? '',
+            nutrition: $nutrition,
+            images: $images,
+            ingredients: $ingredients,
+            tags: $tags,
+            prices: $prices,
+            status: $model->status,
+            createdAt: $createdAt,
+            updatedAt: $updatedAt,
+            archivedAt: $archivedAt,
+        );
     }
 
     private function mapImageToEntity(PRD_ProductImage $model): ProductImage
@@ -268,11 +261,5 @@ class ProductRepository implements ProductRepositoryContract
         );
     }
 
-    private function setProperty(ProductEntity $product, string $property, mixed $value): void
-    {
-        $ref = new \ReflectionProperty(ProductEntity::class, $property);
-        $ref->setAccessible(true);
-        $ref->setValue($product, $value);
-    }
 }
 
