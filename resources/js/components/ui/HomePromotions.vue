@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref } from "vue";
+import { computed, ref } from "vue";
 import { useFloatLoop } from "../../composables/animations/useFloatLoop";
 import { useSystemStore } from "../../stores/systemStore";
 
@@ -38,11 +38,6 @@ const openPromo = (promo) => {
     showModal.value = true;
 };
 
-onMounted(() => {
-    if (!systemStore.promotions.length) {
-        systemStore.fetchPromotions();
-    }
-});
 </script>
 
 <template>

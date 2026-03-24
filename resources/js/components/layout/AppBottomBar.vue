@@ -1,63 +1,24 @@
 <script setup>
-import { computed, ref } from "vue";
-import { useUserStore } from "../../stores/userStore";
+import { useUiStore } from "../../stores/uiStore";
+import { useCartStore } from "../../stores/cartStore";
 import {
     playBottomBarShow,
     playBottomBarHide,
     playDockContentShow,
     playDockContentHide,
 } from "../../animations/animationManager";
-import { dockItems } from "../../dock/dockRegistry";
+import { useBottomDockState } from "../../composables/ui/useBottomDockState";
 
-const userStore = useUserStore();
-const barRef = ref(null);
-const panelRef = ref(null);
-
-const hasProduct = computed(
-    () => !!userStore.catalogSelectedProduct && !!userStore.catalogSelectedProduct.name,
-);
-
-const activeDockItem = computed(() =>
-    dockItems.find((item) => item.id === userStore.dockActiveId) || null,
-);
-
-const title = computed(() => {
-    if (activeDockItem.value) {
-        return activeDockItem.value.label;
-    }
-
-    if (hasProduct.value) {
-        return userStore.catalogSelectedProduct.name;
-    }
-
-    return "Выберите блюдо из меню, чтобы собрать заказ.";
+const uiStore = useUiStore();
+const cartStore = useCartStore();
+const { activeDockItem, getBadge, dockItems } = useBottomDockState({
+    uiStore,
+    cartStore,
 });
-
-const subtitle = computed(() => {
-    if (activeDockItem.value) {
-        return "Нажмите ещё раз по иконке дока, чтобы свернуть панель.";
-    }
-
-    const p = userStore.catalogSelectedProduct;
-    if (!p) return "Когда выберешь позицию, сможешь оформить заказ здесь.";
-
-    const parts = [];
-    if (p.weight) parts.push(`${p.weight} г`);
-    if (p.price) parts.push(`${p.price} ₽`);
-    return parts.length ? parts.join(" • ") : "Проверь состав и нажми оформить.";
-});
-
-const handleCheckout = () => {
-    // Пока только подсвечиваем, что панель живая.
-    // Позже сюда прикрутим переход в корзину / оформление.
-    userStore.setShowBottomNav(true);
-};
 
 const handleDockClick = (id) => {
-    userStore.setDockActive(id);
+    uiStore.setDockActive(id);
 };
-
-const getBadge = (id) => userStore.resolvedDockBadges?.[id] ?? 0;
 
 const handleEnter = (el, done) => {
     playBottomBarShow(el);
@@ -79,8 +40,7 @@ const handleLeave = (el, done) => {
             @leave="handleLeave"
         >
             <div
-                v-if="userStore.showBottomNav"
-                ref="barRef"
+                v-if="uiStore.showBottomNav"
                 class="pointer-events-auto mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"
             >
                 <!-- Контент панели дока над самим баром -->
@@ -93,7 +53,6 @@ const handleLeave = (el, done) => {
                     <div
                         v-if="activeDockItem"
                         :key="activeDockItem.id"
-                        ref="panelRef"
                         class="mb-3 mx-auto w-full max-w-4xl"
                     >
                         <component :is="activeDockItem.content" />
@@ -115,7 +74,7 @@ const handleLeave = (el, done) => {
                             <span
                                 class="relative flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border transition-colors"
                                 :class="
-                                    userStore.dockActiveId === item.id
+                                    uiStore.dockActiveId === item.id
                                         ? 'border-amber-400/70 bg-black/80 text-amber-200 shadow-[0_0_18px_rgba(251,191,36,0.7)]'
                                         : 'border-white/20 bg-black/70 text-slate-200 group-hover:border-amber-400/50 group-hover:text-amber-200'
                                 "
@@ -131,7 +90,7 @@ const handleLeave = (el, done) => {
                             <span
                                 class="hidden lg:block"
                                 :class="
-                                    userStore.dockActiveId === item.id
+                                    uiStore.dockActiveId === item.id
                                         ? 'text-amber-200'
                                         : 'text-slate-300 group-hover:text-amber-200'
                                 "

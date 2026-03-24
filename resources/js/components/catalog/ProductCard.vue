@@ -1,7 +1,11 @@
 <script setup>
 import { computed, ref, onMounted, onUnmounted, nextTick } from "vue";
-import { useUserStore } from "../../stores/userStore";
+import { useCartStore } from "../../stores/cartStore";
 import { playTooltipOpen, playTooltipClose } from "../../animations/animationManager";
+import {
+    getProductNutritionNumbers,
+    hasProductNutrition,
+} from "../../utils/catalog/productNutrition";
 
 const props = defineProps({
     product: {
@@ -16,18 +20,11 @@ const showNutritionTooltip = ref(false);
 const nutritionTriggerRef = ref(null);
 const nutritionTooltipRef = ref(null);
 
-const nutrition = computed(() => {
-    const n = props.product?.nutrition ?? props.product?.raw?.nutrition;
-    if (!n || typeof n !== "object") return null;
-    const cal = Number(n.calories);
-    const pro = Number(n.proteins);
-    const fat = Number(n.fats);
-    const carb = Number(n.carbs);
-    if (!cal && !pro && !fat && !carb) return null;
-    return { calories: cal, proteins: pro, fats: fat, carbs: carb };
-});
+const nutrition = computed(() =>
+    getProductNutritionNumbers(props.product),
+);
 
-const hasNutrition = computed(() => Boolean(nutrition.value));
+const hasNutrition = computed(() => hasProductNutrition(props.product));
 
 function toggleNutritionTooltip() {
     if (showNutritionTooltip.value) {
@@ -90,36 +87,36 @@ const imageSrcset = computed(() => {
 const imageSizes =
     "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw";
 
-const userStore = useUserStore();
+const cartStore = useCartStore();
 
 const productId = computed(() => props.product.id);
 
 const qtyInCart = computed(() =>
-    productId.value ? userStore.cartQuantityByProduct(productId.value) : 0,
+    productId.value ? cartStore.cartQuantityByProduct(productId.value) : 0,
 );
 
 const isFav = computed(() =>
-    productId.value ? userStore.isFavorite(productId.value) : false,
+    productId.value ? cartStore.isFavorite(productId.value) : false,
 );
 
 const handleAddToCart = () => {
     if (!productId.value) return;
-    userStore.addToCart(props.product, 1);
+    cartStore.addToCart(props.product, 1);
 };
 
 const handleInc = () => {
     if (!productId.value) return;
-    userStore.incrementCart(productId.value);
+    cartStore.incrementCart(productId.value);
 };
 
 const handleDec = () => {
     if (!productId.value) return;
-    userStore.decrementCart(productId.value);
+    cartStore.decrementCart(productId.value);
 };
 
 const handleToggleFavorite = () => {
     if (!productId.value) return;
-    userStore.toggleFavorite(props.product);
+    cartStore.toggleFavorite(props.product);
 };
 </script>
 

@@ -1,9 +1,8 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
-import { useUserStore } from "../../stores/userStore";
+import { useCartStore } from "../../stores/cartStore";
 import { playModalClose, playModalOpen, playProductDetailInfoEnter } from "../../animations/animationManager";
-import ProductGallerySlider from "./ProductGallerySlider.vue";
-import ProductDetailInfo from "./ProductDetailInfo.vue";
+import { buildProductGallerySlides } from "../../utils/catalog/productMedia";
 
 const props = defineProps({
     modelValue: {
@@ -18,7 +17,7 @@ const props = defineProps({
 
 const emit = defineEmits(["update:modelValue"]);
 
-const userStore = useUserStore();
+const cartStore = useCartStore();
 const isVisible = ref(false);
 const backdropRef = ref(null);
 const panelRef = ref(null);
@@ -68,68 +67,38 @@ watch(
 
 onBeforeUnmount(unlockBodyScroll);
 
-function toPublicUrl(path) {
-    if (!path || typeof path !== "string") return null;
-    let url = String(path);
-    if (url.startsWith("products/") || url.startsWith("uploads/")) {
-        url = `/storage/${url}`;
-    } else if (!url.startsWith("/")) {
-        url = `/storage/${url.replace(/^\/+/, "")}`;
-    }
-    return url;
-}
-
-const galleryImages = computed(() => {
-    const p = props.product;
-    if (!p) return [];
-    const rawImages = p.raw?.images;
-    if (Array.isArray(rawImages) && rawImages.length) {
-        return rawImages
-            .map((img) => {
-                const variants = img?.variants || [];
-                const bySize = (s) => variants.find((v) => v?.size === s && v?.path);
-                const v = bySize("large") || bySize("medium") || bySize("thumb") || variants[0];
-                const url = v ? toPublicUrl(v.path) : null;
-                return url ? { url } : null;
-            })
-            .filter(Boolean);
-    }
-    if (Array.isArray(p.images) && p.images.length) {
-        return p.images
-            .map((url) => (typeof url === "string" ? { url } : url?.url ? { url: url.url } : null))
-            .filter(Boolean);
-    }
-    return [];
-});
+const galleryImages = computed(() =>
+    buildProductGallerySlides(props.product),
+);
 
 const productId = computed(() => props.product?.id ?? null);
 
 const qtyInCart = computed(() =>
-    productId.value ? userStore.cartQuantityByProduct(productId.value) : 0,
+    productId.value ? cartStore.cartQuantityByProduct(productId.value) : 0,
 );
 
 const isFav = computed(() =>
-    productId.value ? userStore.isFavorite(productId.value) : false,
+    productId.value ? cartStore.isFavorite(productId.value) : false,
 );
 
 const handleToggleFavorite = () => {
     if (!productId.value) return;
-    userStore.toggleFavorite(props.product);
+    cartStore.toggleFavorite(props.product);
 };
 
 const handleAddToCart = () => {
     if (!productId.value) return;
-    userStore.addToCart(props.product, 1);
+    cartStore.addToCart(props.product, 1);
 };
 
 const handleIncrement = () => {
     if (!productId.value) return;
-    userStore.incrementCart(productId.value);
+    cartStore.incrementCart(productId.value);
 };
 
 const handleDecrement = () => {
     if (!productId.value) return;
-    userStore.decrementCart(productId.value);
+    cartStore.decrementCart(productId.value);
 };
 </script>
 

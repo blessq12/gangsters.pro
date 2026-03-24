@@ -1,5 +1,8 @@
 import { defineStore } from "pinia";
-import axios from "axios";
+import { fetchCatalogRequest } from "../api/catalogApi";
+import { toCatalogStorageUrl } from "../utils/catalog/productMedia";
+
+const CATALOG_STORAGE_KEY = "gangsters_catalog";
 
 function normalizeProduct(apiProduct) {
     if (!apiProduct || typeof apiProduct !== "object") {
@@ -21,17 +24,6 @@ function normalizeProduct(apiProduct) {
         }
     }
 
-    function toPublicUrl(path) {
-        if (!path || typeof path !== "string") return null;
-        let url = String(path);
-        if (url.startsWith("products/") || url.startsWith("uploads/")) {
-            url = `/storage/${url}`;
-        } else if (!url.startsWith("/")) {
-            url = `/storage/${url.replace(/^\/+/, "")}`;
-        }
-        return url;
-    }
-
     let imageUrl = null;
     /** @type {{ url: string, width: number }[]} для srcset (thumb 300, medium 800, large 1200) */
     let imageSrcset = [];
@@ -49,11 +41,11 @@ function normalizeProduct(apiProduct) {
             const order = [thumb, medium, large].filter(Boolean);
             if (order.length) {
                 imageSrcset = order.map((v) => ({
-                    url: toPublicUrl(v.path),
+                    url: toCatalogStorageUrl(v.path),
                     width: Number(v.width) || (v.size === "thumb" ? 300 : v.size === "medium" ? 800 : 1200),
                 })).filter((e) => e.url);
                 const fallback = order[order.length - 1];
-                imageUrl = toPublicUrl(fallback.path);
+                imageUrl = toCatalogStorageUrl(fallback.path);
             }
         }
     }
@@ -93,6 +85,7 @@ export const useCatalogStore = defineStore("catalog", {
         loading: false,
         error: null,
         selectedCategoryId: null,
+        selectedProduct: null,
         hasLoaded: false,
     }),
     getters: {
@@ -119,10 +112,54 @@ export const useCatalogStore = defineStore("catalog", {
 
             return entry.products || [];
         },
+        categoryTabs(state) {
+            return state.categories.map((entry) => ({
+                id: entry.category.id,
+                name: entry.category.name,
+                uri: entry.category.slug,
+            }));
+        },
     },
     actions: {
+        initFromStorage() {
+            if (typeof window === "undefined") return;
+
+            try {
+                const raw = window.localStorage.getItem(CATALOG_STORAGE_KEY);
+                if (!raw) return;
+
+                const parsed = JSON.parse(raw);
+                if (!parsed || typeof parsed !== "object") return;
+
+                if ("selectedCategoryId" in parsed) {
+                    this.selectedCategoryId = parsed.selectedCategoryId ?? null;
+                }
+
+                if ("selectedProduct" in parsed) {
+                    this.selectedProduct = parsed.selectedProduct ?? null;
+                }
+            } catch (e) {
+                console.error("Failed to init catalog store from localStorage", e);
+            }
+        },
+        persist() {
+            if (typeof window === "undefined") return;
+
+            window.localStorage.setItem(
+                CATALOG_STORAGE_KEY,
+                JSON.stringify({
+                    selectedCategoryId: this.selectedCategoryId,
+                    selectedProduct: this.selectedProduct,
+                }),
+            );
+        },
         setSelectedCategoryId(categoryId) {
             this.selectedCategoryId = categoryId ?? null;
+            this.persist();
+        },
+        setSelectedProduct(product) {
+            this.selectedProduct = product ?? null;
+            this.persist();
         },
 
         async fetchCatalog() {
@@ -130,8 +167,7 @@ export const useCatalogStore = defineStore("catalog", {
             this.error = null;
 
             try {
-                const response = await axios.get("/api/catalog");
-                const payload = response.data || {};
+                const payload = await fetchCatalogRequest();
                 const rawCategories = Array.isArray(payload.categories)
                     ? payload.categories
                     : [];

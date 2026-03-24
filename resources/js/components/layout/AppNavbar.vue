@@ -2,10 +2,10 @@
 import { ref } from "vue";
 import { useRoute } from "vue-router";
 import { useEnterSlide } from "../../composables/animations/useEnterSlide";
-import { useUserStore } from "../../stores/userStore";
+import { useUiStore } from "../../stores/uiStore";
 
 const route = useRoute();
-const userStore = useUserStore();
+const uiStore = useUiStore();
 
 const containerRef = ref(null);
 
@@ -17,7 +17,7 @@ useEnterSlide(containerRef, {
 });
 
 const toggleMobileMenu = () => {
-    userStore.toggleMobileMenu();
+    uiStore.toggleMobileMenu();
 };
 
 // true = работаем (зелёный), false = закрыты (красный). Позже брать из API/стора.
@@ -96,7 +96,7 @@ const isStoreOpen = ref(true);
                         type="button"
                         class="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/70 text-slate-200 transition-colors md:hidden"
                         :class="
-                            userStore.isMobileMenuOpen
+                            uiStore.isMobileMenuOpen
                                 ? 'border-amber-400/70 text-amber-200'
                                 : 'hover:border-amber-400/50 hover:text-amber-200'
                         "
@@ -105,7 +105,7 @@ const isStoreOpen = ref(true);
                         <i
                             :class="[
                                 'mdi text-lg',
-                                userStore.isMobileMenuOpen ? 'mdi-close' : 'mdi-menu',
+                                uiStore.isMobileMenuOpen ? 'mdi-close' : 'mdi-menu',
                             ]"
                         />
                     </button>

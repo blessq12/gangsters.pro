@@ -1,6 +1,6 @@
 <script setup>
 import "swiper/css";
-import { computed, onMounted, ref } from "vue";
+import { computed, ref } from "vue";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { useSystemStore } from "../../stores/systemStore";
 
@@ -25,11 +25,6 @@ const handleSwiperInit = (swiper) => {
     swiper.slidePrev(0);
 };
 
-onMounted(() => {
-    if (!systemStore.banners.length) {
-        systemStore.fetchBanners();
-    }
-});
 </script>
 
 <template>

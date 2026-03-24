@@ -1,32 +1,27 @@
 <script setup>
-import { computed, onMounted, ref } from "vue";
-import { useUserStore } from "../stores/userStore";
+import { computed, onMounted, ref, watch } from "vue";
 import { useCatalogStore } from "../stores/catalogStore";
 
-const userStore = useUserStore();
 const catalogStore = useCatalogStore();
 
 const showProductDetailModal = ref(false);
-const selectedProduct = ref(null);
 
 function openProductDetail(product) {
-    selectedProduct.value = product;
+    catalogStore.setSelectedProduct(product);
     showProductDetailModal.value = true;
 }
+
+watch(showProductDetailModal, (isOpen) => {
+    if (!isOpen) {
+        catalogStore.setSelectedProduct(null);
+    }
+});
 
 onMounted(() => {
     if (!catalogStore.hasLoaded && !catalogStore.loading) {
         catalogStore.fetchCatalog();
     }
 });
-
-const categories = computed(() =>
-    catalogStore.categories.map((entry) => ({
-        id: entry.category.id,
-        name: entry.category.name,
-        uri: entry.category.slug,
-    })),
-);
 
 const selectedCategoryId = computed({
     get: () => catalogStore.selectedCategoryId,
@@ -35,13 +30,6 @@ const selectedCategoryId = computed({
 
 const filteredProducts = computed(() => catalogStore.filteredProducts);
 
-const bottomBarLabel = computed(() =>
-    userStore.showBottomNav ? "Скрыть панель" : "Показать панель",
-);
-
-const toggleBottomBar = () => {
-    userStore.toggleBottomNav();
-};
 </script>
 
 <template>
@@ -61,23 +49,11 @@ const toggleBottomBar = () => {
                     </p>
                 </div>
 
-                <button
-                    type="button"
-                    class="hidden sm:inline-flex items-center rounded-full border px-4 py-1.5 text-xs sm:text-sm transition-colors backdrop-blur"
-                    :class="
-                        userStore.showBottomNav
-                            ? 'border-amber-400/60 text-amber-200 bg-[rgba(0,0,0,0.75)]'
-                            : 'border-white/15 text-slate-300 bg-[rgba(0,0,0,0.55)] hover:border-amber-400/50 hover:text-amber-200'
-                    "
-                    @click="toggleBottomBar"
-                >
-                    {{ bottomBarLabel }}
-                </button>
             </header>
 
             <CatalogCategories
                 v-model="selectedCategoryId"
-                :categories="categories"
+                :categories="catalogStore.categoryTabs"
             />
 
             <CatalogProducts
@@ -90,7 +66,7 @@ const toggleBottomBar = () => {
 
     <ProductDetailModal
         v-model="showProductDetailModal"
-        :product="selectedProduct"
+        :product="catalogStore.selectedProduct"
     />
 </template>
 

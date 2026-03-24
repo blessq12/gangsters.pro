@@ -1,54 +1,11 @@
 import { defineStore } from "pinia";
-import axios from "axios";
 import { buildCreateOrderPayloadDto } from "../api/orderContracts";
+import { createOrderRequest, fetchOrdersRequest } from "../api/orderApi";
 
 const ORDER_STORAGE_KEY = "gangsters_order_draft";
 
-function normalizeCartItem(item) {
-    if (!item || typeof item !== "object") {
-        return null;
-    }
-
-    const productId =
-        item.productId ??
-        item.product_id ??
-        item.productSnapshot?.id ??
-        item.product?.id ??
-        null;
-
-    const qty = Number(item.qty ?? item.quantity ?? 0) || 0;
-
-    if (!productId || qty <= 0) {
-        return null;
-    }
-
-    const snapshotSource = item.productSnapshot || item.product || {};
-
-    return {
-        productId,
-        qty,
-        productSnapshot: {
-            id: snapshotSource.id ?? productId,
-            name: snapshotSource.name || "",
-            price: Number(snapshotSource.price) || 0,
-            weight: snapshotSource.weight ?? null,
-        },
-    };
-}
-
-function normalizeCartItems(items) {
-    if (!Array.isArray(items)) {
-        return [];
-    }
-
-    return items
-        .map((item) => normalizeCartItem(item))
-        .filter(Boolean);
-}
-
 export const useOrderStore = defineStore("order", {
     state: () => ({
-        cartItems: [],
         deliveryInfo: {
             method: "courier",
             address: null,
@@ -72,14 +29,6 @@ export const useOrderStore = defineStore("order", {
         },
     }),
     getters: {
-        cartTotalItems(state) {
-            return state.cartItems.reduce((sum, item) => sum + item.qty, 0);
-        },
-        cartTotalAmount(state) {
-            return state.cartItems.reduce((sum, item) => {
-                return sum + (Number(item.productSnapshot?.price) || 0) * item.qty;
-            }, 0);
-        },
     },
     actions: {
         initFromStorage() {
@@ -91,10 +40,6 @@ export const useOrderStore = defineStore("order", {
 
                 const parsed = JSON.parse(raw);
                 if (!parsed || typeof parsed !== "object") return;
-
-                if (Array.isArray(parsed.cartItems)) {
-                    this.cartItems = normalizeCartItems(parsed.cartItems);
-                }
 
                 if (parsed.deliveryInfo && typeof parsed.deliveryInfo === "object") {
                     this.deliveryInfo = {
@@ -121,7 +66,6 @@ export const useOrderStore = defineStore("order", {
             if (typeof window === "undefined") return;
 
             const payload = {
-                cartItems: this.cartItems,
                 deliveryInfo: this.deliveryInfo,
                 paymentInfo: this.paymentInfo,
                 customerComment: this.customerComment,
@@ -130,7 +74,6 @@ export const useOrderStore = defineStore("order", {
             window.localStorage.setItem(ORDER_STORAGE_KEY, JSON.stringify(payload));
         },
         clearDraft() {
-            this.cartItems = [];
             this.deliveryInfo = {
                 method: null,
                 address: null,
@@ -146,54 +89,6 @@ export const useOrderStore = defineStore("order", {
             if (typeof window !== "undefined") {
                 window.localStorage.removeItem(ORDER_STORAGE_KEY);
             }
-        },
-        setCartItems(items) {
-            this.cartItems = normalizeCartItems(items);
-            this.persistDraft();
-        },
-        addToCart(product, qty = 1) {
-            if (!product || !product.id) return;
-
-            const id = product.id;
-            const safeQty = Math.max(1, Number(qty) || 1);
-
-            const existing = this.cartItems.find((i) => i.productId === id);
-            const snapshot = {
-                id: product.id,
-                name: product.name || "",
-                price: Number(product.price) || 0,
-                weight: product.weight ?? null,
-            };
-
-            if (existing) {
-                existing.qty += safeQty;
-                existing.productSnapshot = snapshot;
-            } else {
-                this.cartItems.push({
-                    productId: id,
-                    qty: safeQty,
-                    productSnapshot: snapshot,
-                });
-            }
-
-            this.persistDraft();
-        },
-        updateCartItemQty(productId, qty) {
-            const item = this.cartItems.find((i) => i.productId === productId);
-            if (!item) return;
-
-            const safeQty = Number(qty) || 0;
-            if (safeQty <= 0) {
-                this.cartItems = this.cartItems.filter((i) => i.productId !== productId);
-            } else {
-                item.qty = safeQty;
-            }
-
-            this.persistDraft();
-        },
-        removeFromCart(productId) {
-            this.cartItems = this.cartItems.filter((i) => i.productId !== productId);
-            this.persistDraft();
         },
         setDeliveryInfo(payload) {
             this.deliveryInfo = {
@@ -221,8 +116,7 @@ export const useOrderStore = defineStore("order", {
             this.error.list = null;
 
             try {
-                const response = await axios.get("/api/order");
-                const data = response.data;
+                const data = await fetchOrdersRequest();
 
                 const orders = Array.isArray(data?.data ?? data) ? data.data ?? data : [];
                 this.setOrders(orders);
@@ -238,17 +132,17 @@ export const useOrderStore = defineStore("order", {
                 this.loading.list = false;
             }
         },
-        buildCreateOrderPayload(client, selectedAddress) {
+        buildCreateOrderPayload(client, selectedAddress, cartItems) {
             return buildCreateOrderPayloadDto({
                 client,
                 selectedAddress,
-                cartItems: this.cartItems,
+                cartItems: Array.isArray(cartItems) ? cartItems : [],
                 deliveryInfo: this.deliveryInfo,
                 paymentInfo: this.paymentInfo,
                 customerComment: this.customerComment,
             });
         },
-        async createOrder(client, selectedAddress) {
+        async createOrder(client, selectedAddress, cartItems) {
             this.loading.create = true;
             this.error.create = null;
 
@@ -256,9 +150,9 @@ export const useOrderStore = defineStore("order", {
                 const payload = this.buildCreateOrderPayload(
                     client,
                     selectedAddress,
+                    cartItems,
                 );
-                const response = await axios.post("/api/order", payload);
-                const data = response.data;
+                const data = await createOrderRequest(payload);
 
                 const createdOrder = data?.data ?? data ?? null;
                 this.lastCreatedOrder = createdOrder;

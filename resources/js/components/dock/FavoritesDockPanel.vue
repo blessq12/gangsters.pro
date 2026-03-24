@@ -1,14 +1,14 @@
 <script setup>
 import { computed } from "vue";
-import { useUserStore } from "../../stores/userStore";
+import { useCartStore } from "../../stores/cartStore";
 
-const userStore = useUserStore();
+const cartStore = useCartStore();
 
-const favoriteItems = computed(() => userStore.favorites);
+const favoriteItems = computed(() => cartStore.favorites);
 
 const handleAddToCart = (item) => {
     if (!item?.productSnapshot?.id) return;
-    userStore.addToCart(item.productSnapshot, 1);
+    cartStore.addToCart(item.productSnapshot, 1);
 };
 
 const formatPrice = (value) =>
@@ -60,7 +60,7 @@ const formatPrice = (value) =>
                         <button
                             type="button"
                             class="shrink-0 text-[11px] text-slate-400 transition-colors hover:text-red-400"
-                            @click="userStore.removeFavorite(item.productId)"
+                            @click="cartStore.removeFavorite(item.productId)"
                         >
                             Убрать
                         </button>

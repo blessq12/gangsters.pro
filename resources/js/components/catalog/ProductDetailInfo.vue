@@ -1,5 +1,9 @@
 <script setup>
 import { computed } from "vue";
+import {
+    getProductNutritionNumbers,
+    hasProductNutrition,
+} from "../../utils/catalog/productNutrition";
 
 const props = defineProps({
     product: {
@@ -23,21 +27,13 @@ const emit = defineEmits([
     "toggle-favorite",
 ]);
 
-const nutrition = computed(() => {
-    const n = props.product?.nutrition ?? props.product?.raw?.nutrition;
-    if (!n || typeof n !== "object") return null;
-    return {
-        calories: Number(n.calories) || 0,
-        proteins: Number(n.proteins) || 0,
-        fats: Number(n.fats) || 0,
-        carbs: Number(n.carbs) || 0,
-    };
-});
+const nutrition = computed(() =>
+    getProductNutritionNumbers(props.product),
+);
 
-const hasNutrition = computed(() => {
-    const n = nutrition.value;
-    return n && (n.calories || n.proteins || n.fats || n.carbs);
-});
+const hasNutrition = computed(() =>
+    hasProductNutrition(props.product),
+);
 
 const ingredients = computed(() => {
     const raw = props.product?.raw?.ingredients;

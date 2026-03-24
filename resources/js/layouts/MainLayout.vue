@@ -3,17 +3,28 @@ import { onMounted, onUnmounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useThemeStore } from "../stores/themeStore";
 import { useUserStore } from "../stores/userStore";
+import { useCartStore } from "../stores/cartStore";
+import { useUiStore } from "../stores/uiStore";
+import { useCatalogStore } from "../stores/catalogStore";
+import { useSystemStore } from "../stores/systemStore";
 import { playIntroScene, playPageEnter, playPageLeave } from "../animations/animationManager";
 
 const themeStore = useThemeStore();
 const userStore = useUserStore();
+const cartStore = useCartStore();
+const uiStore = useUiStore();
+const catalogStore = useCatalogStore();
+const systemStore = useSystemStore();
 const route = useRoute();
 
 themeStore.initTheme();
 userStore.initFromStorage();
+cartStore.initFromStorage();
+uiStore.initFromStorage();
+catalogStore.initFromStorage();
 
 // На время интро нижний бар всегда скрыт, чтобы он не подсвечивался под оверлеем
-userStore.showBottomNav = false;
+uiStore.setShowBottomNav(false);
 
 const introOverlayRef = ref(null);
 const introLogoRef = ref(null);
@@ -29,7 +40,7 @@ function updateBottomBarFromScroll() {
     if (!bottomBarReady.value) return;
 
     if (!isHome()) {
-        userStore.setShowBottomNav(false);
+        uiStore.setShowBottomNav(false);
         return;
     }
 
@@ -37,14 +48,14 @@ function updateBottomBarFromScroll() {
         window.scrollY + window.innerHeight >=
         document.documentElement.scrollHeight - BOTTOM_THRESHOLD;
 
-    userStore.setShowBottomNav(!atBottom);
+    uiStore.setShowBottomNav(!atBottom);
 }
 
 watch(
     () => route.name,
     (name) => {
         if (name !== "home") {
-            userStore.setShowBottomNav(false);
+            uiStore.setShowBottomNav(false);
         }
     },
 );
@@ -58,6 +69,8 @@ onMounted(() => {
         });
     }
 
+    void systemStore.fetchAll();
+
     playIntroScene({
         introOverlay: introOverlayRef.value,
         introLogo: introLogoRef.value,
@@ -69,7 +82,7 @@ onMounted(() => {
             setTimeout(() => {
                 bottomBarReady.value = true;
                 if (isHome()) {
-                    userStore.setShowBottomNav(true);
+                    uiStore.setShowBottomNav(true);
                     updateBottomBarFromScroll();
                 }
             }, stepDelay);

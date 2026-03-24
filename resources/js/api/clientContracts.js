@@ -1,5 +1,3 @@
-import axios from "axios";
-
 export function buildRegisterClientPayload(data = {}) {
     return {
         name: data.name ?? "",

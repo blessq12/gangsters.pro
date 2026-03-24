@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref } from "vue";
 import { useUserStore } from "../../stores/userStore";
+import { mapApiError } from "../../utils/api/mapApiError";
 
 const userStore = useUserStore();
 
@@ -55,9 +56,10 @@ async function addAddress() {
         };
     } catch (e) {
         console.error(e);
-        error.value =
-            e?.response?.data?.message ||
-            "Не удалось сохранить адрес. Попробуй ещё раз.";
+        error.value = mapApiError(
+            e,
+            "Не удалось сохранить адрес. Попробуй ещё раз.",
+        );
     } finally {
         loading.value = false;
     }
@@ -68,9 +70,10 @@ async function removeAddress(id) {
         await userStore.deleteClientAddress(id);
     } catch (e) {
         console.error(e);
-        error.value =
-            e?.response?.data?.message ||
-            "Не удалось удалить адрес. Попробуй ещё раз.";
+        error.value = mapApiError(
+            e,
+            "Не удалось удалить адрес. Попробуй ещё раз.",
+        );
     }
 }
 

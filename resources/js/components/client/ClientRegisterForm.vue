@@ -1,6 +1,8 @@
 <script setup>
-import { computed, ref } from "vue";
+import { ref } from "vue";
 import { useUserStore } from "../../stores/userStore";
+import { useRuPhoneModel } from "../../composables/client/useRuPhoneModel";
+import { mapApiError } from "../../utils/api/mapApiError";
 
 const emit = defineEmits(["registered"]);
 
@@ -15,18 +17,7 @@ const form = ref({
     consent_marketing: false,
 });
 
-const phone = computed({
-    get() {
-        return form.value.phone;
-    },
-    set(value) {
-        let digits = String(value || "").replace(/\D/g, "");
-        if (digits.length && (digits[0] === "7" || digits[0] === "8")) {
-            digits = digits.slice(1);
-        }
-        form.value.phone = digits;
-    },
-});
+const phone = useRuPhoneModel(form, "phone");
 
 const loading = ref(false);
 const error = ref("");
@@ -69,9 +60,10 @@ async function submit() {
         emit("registered");
     } catch (e) {
         console.error(e);
-        error.value =
-            e?.response?.data?.message ||
-            "Не удалось завершить регистрацию. Попробуйте ещё раз.";
+        error.value = mapApiError(
+            e,
+            "Не удалось завершить регистрацию. Попробуйте ещё раз.",
+        );
     } finally {
         loading.value = false;
     }

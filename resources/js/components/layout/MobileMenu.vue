@@ -1,13 +1,13 @@
 <script setup>
-import { useUserStore } from "../../stores/userStore";
+import { useUiStore } from "../../stores/uiStore";
 
-const userStore = useUserStore();
+const uiStore = useUiStore();
 </script>
 
 <template>
     <Transition name="mobile-menu-fade">
         <div
-            v-if="userStore.isMobileMenuOpen"
+            v-if="uiStore.isMobileMenuOpen"
             class="pointer-events-none fixed inset-x-0 top-20 z-30 md:hidden"
         >
             <div class="pointer-events-auto mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -17,28 +17,28 @@ const userStore = useUserStore();
                     <RouterLink
                         :to="{ name: 'home' }"
                         class="block rounded-xl px-3 py-2 hover:bg-white/5"
-                        @click="userStore.setMobileMenuOpen(false)"
+                        @click="uiStore.setMobileMenuOpen(false)"
                     >
                         Главная
                     </RouterLink>
                     <RouterLink
                         :to="{ name: 'about' }"
                         class="block rounded-xl px-3 py-2 hover:bg-white/5"
-                        @click="userStore.setMobileMenuOpen(false)"
+                        @click="uiStore.setMobileMenuOpen(false)"
                     >
                         О компании
                     </RouterLink>
                     <RouterLink
                         :to="{ name: 'delivery' }"
                         class="block rounded-xl px-3 py-2 hover:bg-white/5"
-                        @click="userStore.setMobileMenuOpen(false)"
+                        @click="uiStore.setMobileMenuOpen(false)"
                     >
                         Оплата и доставка
                     </RouterLink>
                     <RouterLink
                         :to="{ name: 'contacts' }"
                         class="block rounded-xl px-3 py-2 hover:bg-white/5"
-                        @click="userStore.setMobileMenuOpen(false)"
+                        @click="uiStore.setMobileMenuOpen(false)"
                     >
                         Контакты
                     </RouterLink>

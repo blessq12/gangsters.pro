@@ -1,44 +1,19 @@
 <script setup>
-import { computed, ref } from "vue";
 import { useUserStore } from "../../stores/userStore";
-import ClientLoginForm from "../client/ClientLoginForm.vue";
-import ClientRegisterForm from "../client/ClientRegisterForm.vue";
-import ClientProfileView from "../client/ClientProfileView.vue";
-import ClientProfileEditForm from "../client/ClientProfileEditForm.vue";
+import { useProfileDockTabs } from "../../composables/dock/useProfileDockTabs";
 
 const userStore = useUserStore();
 
-const activeTab = ref("login"); // login | register | view | edit
-
-const isAuthenticated = computed(() => !!userStore.token && !!userStore.profile.id);
-
-if (isAuthenticated.value) {
-    activeTab.value = "view";
-}
-
-function handleLoggedIn() {
-    activeTab.value = "view";
-}
-
-function handleRegistered() {
-    activeTab.value = "view";
-}
-
-function handleUpdated() {
-    activeTab.value = "view";
-}
-
-function handleLoggedOut() {
-    activeTab.value = "login";
-}
-
-function switchToEdit() {
-    activeTab.value = "edit";
-}
-
-function switchToView() {
-    activeTab.value = "view";
-}
+const {
+    activeTab,
+    isAuthenticated,
+    handleLoggedIn,
+    handleRegistered,
+    handleUpdated,
+    handleLoggedOut,
+    switchToEdit,
+    switchToView,
+} = useProfileDockTabs(userStore);
 </script>
 
 <template>
@@ -141,4 +116,3 @@ function switchToView() {
 </template>
 
 <style scoped></style>
-

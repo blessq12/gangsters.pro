@@ -1,10 +1,19 @@
 <script setup>
-import { ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useEnterSlide } from "../../composables/animations/useEnterSlide";
 import { getLegalTexts } from "../../content/legalTexts";
+import { useSystemStore } from "../../stores/systemStore";
+import { hasDocumentBody } from "../../utils/system/documentBody";
+
+const FOOTER_DOC_KEYS = {
+    privacy: "privacy_policy",
+    rules: "terms_of_use",
+    agreement: "user_agreement",
+};
 
 const year = new Date().getFullYear();
-const legal = getLegalTexts();
+const fallbackLegal = getLegalTexts();
+const systemStore = useSystemStore();
 
 const showPrivacy = ref(false);
 const showRules = ref(false);
@@ -15,6 +24,45 @@ const containerRef = ref(null);
 useEnterSlide(containerRef, {
     y: 40,
     delay: 1.2,
+});
+
+function resolveFooterDoc(key, fallbackBlock) {
+    const doc = systemStore.documents.find((d) => d.key === key);
+    const title =
+        doc?.title && String(doc.title).trim()
+            ? String(doc.title).trim()
+            : fallbackBlock.title;
+    if (doc && hasDocumentBody(doc.content)) {
+        return {
+            title,
+            useHtml: true,
+            html: doc.content,
+        };
+    }
+    return {
+        title,
+        useHtml: false,
+        paragraphs: fallbackBlock.content,
+    };
+}
+
+const privacyDoc = computed(() =>
+    resolveFooterDoc(FOOTER_DOC_KEYS.privacy, fallbackLegal.privacy),
+);
+const rulesDoc = computed(() =>
+    resolveFooterDoc(FOOTER_DOC_KEYS.rules, fallbackLegal.rules),
+);
+const agreementDoc = computed(() =>
+    resolveFooterDoc(FOOTER_DOC_KEYS.agreement, fallbackLegal.agreement),
+);
+
+const legalHtmlClass =
+    "legal-doc text-sm text-slate-200/90 [&_p]:mb-3 [&_p:last-child]:mb-0 [&_ul]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:mb-3 [&_ol]:list-decimal [&_ol]:pl-5 [&_a]:text-amber-300 [&_a]:underline-offset-2 hover:[&_a]:underline [&_strong]:text-slate-100";
+
+onMounted(() => {
+    if (!systemStore.documents.length && !systemStore.loadingDocuments) {
+        void systemStore.fetchDocuments();
+    }
 });
 </script>
 
@@ -51,21 +99,21 @@ useEnterSlide(containerRef, {
                         class="hover:text-amber-300 transition-colors duration-200"
                         @click="showPrivacy = true"
                     >
-                        {{ legal.privacy.title }}
+                        {{ privacyDoc.title }}
                     </button>
                     <button
                         type="button"
                         class="hover:text-amber-300 transition-colors duration-200"
                         @click="showRules = true"
                     >
-                        {{ legal.rules.title }}
+                        {{ rulesDoc.title }}
                     </button>
                     <button
                         type="button"
                         class="hover:text-amber-300 transition-colors duration-200"
                         @click="showAgreement = true"
                     >
-                        {{ legal.agreement.title }}
+                        {{ agreementDoc.title }}
                     </button>
                 </div>
                 <p class="opacity-70 text-slate-300/80 text-xs sm:text-sm">
@@ -75,27 +123,60 @@ useEnterSlide(containerRef, {
         </div>
 
         <BaseModal v-model="showPrivacy">
-            <template #header>{{ legal.privacy.title }}</template>
-            <div class="space-y-3 text-sm text-slate-200/90">
-                <p v-for="(para, i) in legal.privacy.content" :key="i">
+            <template #header>{{ privacyDoc.title }}</template>
+            <div
+                v-if="privacyDoc.useHtml"
+                :class="legalHtmlClass"
+                v-html="privacyDoc.html"
+            />
+            <div
+                v-else
+                class="space-y-3 text-sm text-slate-200/90"
+            >
+                <p
+                    v-for="(para, i) in privacyDoc.paragraphs"
+                    :key="i"
+                >
                     {{ para }}
                 </p>
             </div>
         </BaseModal>
 
         <BaseModal v-model="showRules">
-            <template #header>{{ legal.rules.title }}</template>
-            <div class="space-y-3 text-sm text-slate-200/90">
-                <p v-for="(para, i) in legal.rules.content" :key="i">
+            <template #header>{{ rulesDoc.title }}</template>
+            <div
+                v-if="rulesDoc.useHtml"
+                :class="legalHtmlClass"
+                v-html="rulesDoc.html"
+            />
+            <div
+                v-else
+                class="space-y-3 text-sm text-slate-200/90"
+            >
+                <p
+                    v-for="(para, i) in rulesDoc.paragraphs"
+                    :key="i"
+                >
                     {{ para }}
                 </p>
             </div>
         </BaseModal>
 
         <BaseModal v-model="showAgreement">
-            <template #header>{{ legal.agreement.title }}</template>
-            <div class="space-y-3 text-sm text-slate-200/90">
-                <p v-for="(para, i) in legal.agreement.content" :key="i">
+            <template #header>{{ agreementDoc.title }}</template>
+            <div
+                v-if="agreementDoc.useHtml"
+                :class="legalHtmlClass"
+                v-html="agreementDoc.html"
+            />
+            <div
+                v-else
+                class="space-y-3 text-sm text-slate-200/90"
+            >
+                <p
+                    v-for="(para, i) in agreementDoc.paragraphs"
+                    :key="i"
+                >
                     {{ para }}
                 </p>
             </div>
