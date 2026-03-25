@@ -46,7 +46,7 @@ const openPromo = (promo) => {
             Актуальные акции
         </h2>
 
-        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+        <div class="grid grid-cols-3 gap-3 sm:gap-4">
             <template v-if="isLoading">
                 <div
                     v-for="index in 3"
