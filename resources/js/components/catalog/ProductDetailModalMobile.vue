@@ -32,6 +32,47 @@ const panelRef = ref(null);
 const infoRef = ref(null);
 let savedOverflow = "";
 
+const touchStart = ref({
+    x: 0,
+    y: 0,
+});
+
+const SWIPE_CLOSE_MIN_DISTANCE_PX = 80;
+const SWIPE_CLOSE_MAX_X_RATIO = 0.5; // dx не должен быть слишком большим относительно dy
+
+function onTouchStart(e) {
+    // Сохраняем стартовые координаты только если модалка реально открыта
+    if (!props.modelValue) return;
+    const t = e?.touches?.[0];
+    if (!t) return;
+
+    touchStart.value = { x: t.clientX, y: t.clientY };
+}
+
+function onTouchEnd(e) {
+    if (!props.modelValue) return;
+    const t = e?.changedTouches?.[0];
+    if (!t) return;
+
+    const dx = t.clientX - touchStart.value.x;
+    const dy = t.clientY - touchStart.value.y; // вниз => dy > 0
+
+    const absDy = Math.abs(dy);
+    const absDx = Math.abs(dx);
+
+    if (dy <= SWIPE_CLOSE_MIN_DISTANCE_PX) return; // только свайп вниз
+    if (absDx >= absDy * SWIPE_CLOSE_MAX_X_RATIO) return; // слишком "кривой" свайп
+
+    // Чтобы не закрывать модалку во время прокрутки контента:
+    // если пользователь скроллит info-блок — не закрываем.
+    const scroller = infoRef.value;
+    if (scroller && typeof scroller.scrollTop === "number" && scroller.scrollTop > 0) {
+        return;
+    }
+
+    close();
+}
+
 const lockBodyScroll = () => {
     savedOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -125,6 +166,8 @@ function handleDecrement() {
                     <div
                         ref="panelRef"
                         class="product-detail-modal__panel"
+                        @touchstart.passive="onTouchStart"
+                        @touchend="onTouchEnd"
                     >
                         <button
                             type="button"
