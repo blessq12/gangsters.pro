@@ -104,7 +104,7 @@ const catalogEmptyMessage = computed(() =>
         </section>
     </div>
 
-    <ProductDetailModal
+    <ProductDetailModalMobile
         v-model="showProductDetailModal"
         :product="catalogStore.selectedProduct"
     />

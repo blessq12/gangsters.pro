@@ -49,9 +49,9 @@ const catalogEmptyMessage = computed(() =>
         <HomePromotions />
 
         <section>
-            <header class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <header class="mb-4 flex flex-col gap-3">
                 <div>
-                    <h2 class="text-xl sm:text-2xl font-semibold text-slate-50">
+                    <h2 class="text-xl font-semibold text-slate-50">
                         Меню
                     </h2>
                     <p class="text-sm text-slate-400">
@@ -59,7 +59,7 @@ const catalogEmptyMessage = computed(() =>
                     </p>
                 </div>
 
-                <div class="w-full sm:max-w-xs sm:shrink-0">
+                <div class="w-full max-w-xs shrink-0">
                     <label class="sr-only" for="catalog-search">Поиск в меню</label>
                     <div class="relative">
                         <i
@@ -87,12 +87,12 @@ const catalogEmptyMessage = computed(() =>
                 </div>
             </header>
 
-            <CatalogCategories
+            <CatalogCategoriesDesktop
                 v-model="selectedCategoryId"
                 :categories="catalogStore.categoryTabs"
             />
 
-            <CatalogProducts
+            <CatalogProductsDesktop
                 :products="menuProducts"
                 :loading="catalogStore.loading"
                 :empty-message="catalogEmptyMessage"

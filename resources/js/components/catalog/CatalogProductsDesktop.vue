@@ -66,7 +66,7 @@ watch(
                 :key="product.id || product.sku"
                 class="catalog-item"
             >
-                <ProductCardMobile
+                <ProductCard
                     :product="product"
                     @image-click="emit('productImageClick', $event)"
                 />
@@ -78,12 +78,26 @@ watch(
 <style scoped>
 .catalog-grid {
     display: grid;
-    grid-template-columns: repeat(1, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1rem;
+    grid-auto-rows: minmax(260px, auto);
+    grid-auto-flow: dense;
 }
 
 .catalog-item {
     height: 100%;
+}
+
+/* Паттерн: немного хаоса через nth-child,
+   но стабильный и предсказуемый */
+.catalog-item:nth-child(9n + 1),
+.catalog-item:nth-child(9n + 5) {
+    grid-column: span 2;
+}
+
+.catalog-item:nth-child(9n + 3),
+.catalog-item:nth-child(9n + 8) {
+    grid-row: span 2;
 }
 </style>
 
