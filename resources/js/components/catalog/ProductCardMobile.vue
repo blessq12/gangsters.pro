@@ -196,7 +196,7 @@ function handleDec() {
                 <div class="space-y-1">
                     <div class="flex items-center justify-between gap-2">
                         <p
-                            class="min-w-0 flex-1 text-[11px] font-semibold text-slate-50 line-clamp-1"
+                            class="min-w-0 flex-1 text-[13px] font-semibold text-slate-50 line-clamp-1"
                             :title="product.name"
                         >
                             {{ product.name }}
@@ -277,7 +277,7 @@ function handleDec() {
 
                     <p
                         v-if="product.consist"
-                        class="text-[10px] leading-snug text-slate-400 line-clamp-2"
+                        class="text-[11px] leading-snug text-slate-400 line-clamp-2"
                         :title="product.consist"
                     >
                         {{ product.consist }}
@@ -286,7 +286,7 @@ function handleDec() {
                     <div class="flex items-center justify-between gap-2">
                         <div
                             v-if="product.price"
-                            class="inline-flex items-center rounded-full bg-amber-400 px-2.5 py-1 text-[11px] font-semibold text-black shadow-[0_0_20px_rgba(251,191,36,0.7)]"
+                            class="inline-flex items-center rounded-full bg-amber-400 px-2.5 py-1 text-[13px] font-semibold text-black shadow-[0_0_20px_rgba(251,191,36,0.7)]"
                         >
                             {{ product.price }} ₽
                         </div>

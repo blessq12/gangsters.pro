@@ -29,16 +29,16 @@ const handleSelect = (value) => {
 <template>
     <div class="relative mb-10 w-full min-w-0 max-w-full">
         <div
-            class="min-w-0 max-w-full rounded-2xl border border-amber-400/30 bg-[rgba(255,255,255,0.035)] px-4 py-3.5 shadow-[0_0_22px_rgba(0,0,0,0.65)] backdrop-blur"
+            class="min-w-0 max-w-full rounded-2xl border border-amber-400/30 bg-[rgba(255,255,255,0.035)] px-4 py-4 shadow-[0_0_22px_rgba(0,0,0,0.65)] backdrop-blur"
         >
-            <div class="flex items-center gap-2 pb-1.5 overflow-x-auto">
+            <div class="cats-scroll flex items-center gap-2 py-2 overflow-x-auto">
                 <button
                     v-if="showAll"
                     type="button"
                     class="whitespace-nowrap rounded-full border px-4 py-2 text-xs transition-colors backdrop-blur bg-[rgba(0,0,0,0.75)]"
                     :class="
                         modelValue === null
-                            ? 'border-amber-400/70 text-amber-100 shadow-[0_0_14px_rgba(251,191,36,0.45)]'
+                            ? 'border-amber-400/70 text-amber-100 shadow-[0_0_10px_rgba(251,191,36,0.4)]'
                             : 'border-white/10 text-slate-300 hover:border-amber-400/50 hover:text-amber-200'
                     "
                     @click="handleSelect(null)"
@@ -53,7 +53,7 @@ const handleSelect = (value) => {
                     class="whitespace-nowrap rounded-full border px-4 py-2 text-xs transition-colors backdrop-blur bg-[rgba(0,0,0,0.75)]"
                     :class="
                         modelValue === (category.id ?? category.uri)
-                            ? 'border-amber-400/70 text-amber-100 shadow-[0_0_14px_rgba(251,191,36,0.45)]'
+                            ? 'border-amber-400/70 text-amber-100 shadow-[0_0_10px_rgba(251,191,36,0.4)]'
                             : 'border-white/10 text-slate-300 hover:border-amber-400/50 hover:text-amber-200'
                     "
                     @click="handleSelect(category.id ?? category.uri)"
@@ -65,5 +65,16 @@ const handleSelect = (value) => {
     </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.cats-scroll {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+
+.cats-scroll::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none; /* Chrome/Safari */
+}
+</style>
 

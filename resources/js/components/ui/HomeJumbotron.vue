@@ -10,7 +10,7 @@ const slides = computed(() =>
     (systemStore.banners || []).map((banner) => ({
         title: banner.title || "",
         description: banner.description || "",
-        image: banner.image || "",
+        image: banner.image_desktop || banner.image || banner.image_mobile || "",
     })),
 );
 
@@ -29,7 +29,7 @@ const handleSwiperInit = (swiper) => {
 
 <template>
     <section
-        class="relative mt-8 mb-12 w-screen max-w-none overflow-hidden sm:mt-12 sm:mb-18 [margin-left:calc(50%-50vw)]"
+        class="relative mt-8 mb-12 w-screen max-w-none overflow-hidden sm:mt-12 sm:mb-18 [margin-left:calc(50%-50vw)] [margin-right:calc(50%-50vw)]"
     >
         <div
             class="pointer-events-none absolute inset-0 opacity-50 mix-blend-screen"

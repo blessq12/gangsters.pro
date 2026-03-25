@@ -38,12 +38,21 @@ class BannerResource extends Resource
     {
         return $schema
             ->components([
-                FileUpload::make('image')
-                    ->label('Картинка')
+                FileUpload::make('image_mobile')
+                    ->label('Картинка (мобилка)')
                     ->image()
                     ->disk('media')
                     ->directory('banners')
                     ->required()
+                    ->helperText('Соотношение сторон: 3/4 (вертикально). Рекоменд. размеры: 900×1200 или 1200×1600.')
+                    ->columnSpanFull(),
+                FileUpload::make('image_desktop')
+                    ->label('Картинка (десктоп)')
+                    ->image()
+                    ->disk('media')
+                    ->directory('banners')
+                    ->required()
+                    ->helperText('Соотношение сторон: 4/3 (горизонтально). Рекоменд. размеры: 1200×900 или 1600×1200.')
                     ->columnSpanFull(),
                 TextInput::make('title')
                     ->label('Заголовок')
@@ -60,8 +69,12 @@ class BannerResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('image')
-                    ->label('Картинка')
+                Tables\Columns\ImageColumn::make('image_mobile')
+                    ->label('Мобилка')
+                    ->disk('media')
+                    ->square(),
+                Tables\Columns\ImageColumn::make('image_desktop')
+                    ->label('Десктоп')
                     ->disk('media')
                     ->square(),
                 Tables\Columns\TextColumn::make('title')

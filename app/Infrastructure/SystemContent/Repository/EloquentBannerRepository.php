@@ -19,6 +19,8 @@ final class EloquentBannerRepository implements BannerRepository
                     title: $banner->title,
                     description: $banner->description,
                     imagePath: $banner->image,
+                    imageMobilePath: $banner->image_mobile ?? null,
+                    imageDesktopPath: $banner->image_desktop ?? null,
                 ),
             )
             ->all();

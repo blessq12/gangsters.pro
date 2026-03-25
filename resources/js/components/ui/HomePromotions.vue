@@ -46,36 +46,82 @@ const openPromo = (promo) => {
             Актуальные акции
         </h2>
 
-        <div class="grid grid-cols-3 gap-3 sm:gap-4">
-            <template v-if="isLoading">
-                <div
-                    v-for="index in 3"
-                    :key="index"
-                    class="aspect-[16/9] w-full rounded-2xl border border-white/10 bg-slate-800/60 animate-pulse"
-                ></div>
-            </template>
-            <template v-else-if="promos.length">
-                <article
-                    v-for="(promo, index) in promos"
-                    :key="index"
-                    :ref="(el) => registerPromo(el, index)"
-                    class="group rounded-2xl relative cursor-pointer"
-                    @click="openPromo(promo)"
-                >
-                    <div class="aspect-[16/9] w-full overflow-hidden">
-                        <img
-                            :src="promo.image"
-                            :alt="promo.title"
-                            class="h-full w-full object-cover grayscale group-hover:grayscale-0 transition-transform duration-500 ease-out group-hover:scale-105"
-                        />
+        <!-- Mobile: горизонтальный скролл (больше размер карточек) -->
+        <div class="md:hidden">
+            <div
+                class="promos-scroll flex gap-3 overflow-x-auto px-1 pb-2 snap-x snap-mandatory"
+            >
+                <template v-if="isLoading">
+                    <div
+                        v-for="index in 4"
+                        :key="index"
+                        class="snap-start flex-none w-[18rem] rounded-2xl border border-white/10 bg-slate-800/60 animate-pulse"
+                    >
+                        <div class="aspect-[16/9] w-full rounded-2xl" />
                     </div>
-                </article>
-            </template>
-            <template v-else>
-                <div class="col-span-2 sm:col-span-3 py-4 text-center text-xs text-slate-500">
-                    Акции скоро появятся.
-                </div>
-            </template>
+                </template>
+
+                <template v-else-if="promos.length">
+                    <article
+                        v-for="(promo, index) in promos"
+                        :key="index"
+                        :ref="(el) => registerPromo(el, index)"
+                        class="snap-start group flex-none w-[18rem] rounded-2xl relative cursor-pointer"
+                        @click="openPromo(promo)"
+                    >
+                        <div class="aspect-[16/9] w-full overflow-hidden rounded-2xl">
+                            <img
+                                :src="promo.image"
+                                :alt="promo.title"
+                                class="h-full w-full object-cover grayscale group-hover:grayscale-0 transition-transform duration-500 ease-out group-hover:scale-105"
+                            />
+                        </div>
+                    </article>
+                </template>
+
+                <template v-else>
+                    <div class="py-4 text-center text-xs text-slate-500">
+                        Акции скоро появятся.
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Desktop: 4 в строке, выравнивание по центру -->
+        <div class="hidden md:block">
+            <div class="mx-auto grid grid-cols-4 gap-4 justify-items-center">
+                <template v-if="isLoading">
+                    <div
+                        v-for="index in 4"
+                        :key="index"
+                        class="aspect-[16/9] w-full max-w-xs rounded-2xl border border-white/10 bg-slate-800/60 animate-pulse"
+                    ></div>
+                </template>
+
+                <template v-else-if="promos.length">
+                    <article
+                        v-for="(promo, index) in promos"
+                        :key="index"
+                        :ref="(el) => registerPromo(el, index)"
+                        class="group rounded-2xl relative cursor-pointer w-full max-w-xs"
+                        @click="openPromo(promo)"
+                    >
+                        <div class="aspect-[16/9] w-full overflow-hidden rounded-2xl">
+                            <img
+                                :src="promo.image"
+                                :alt="promo.title"
+                                class="h-full w-full object-cover grayscale group-hover:grayscale-0 transition-transform duration-500 ease-out group-hover:scale-105"
+                            />
+                        </div>
+                    </article>
+                </template>
+
+                <template v-else>
+                    <div class="col-span-4 py-4 text-center text-xs text-slate-500">
+                        Акции скоро появятся.
+                    </div>
+                </template>
+            </div>
         </div>
 
         <BaseModal v-model="showModal" v-if="activePromo">
@@ -96,4 +142,15 @@ const openPromo = (promo) => {
     </section>
 </template>
 
-<style scoped></style>
+<style scoped>
+.promos-scroll {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+
+.promos-scroll::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none; /* Chrome/Safari */
+}
+</style>

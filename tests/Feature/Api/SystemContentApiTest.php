@@ -5,6 +5,7 @@ namespace Tests\Feature\Api;
 use App\Infrastructure\SystemContent\Model\SYS_Banner;
 use App\Infrastructure\SystemContent\Model\SYS_Promotion;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 final class SystemContentApiTest extends ApiTestCase
@@ -43,6 +44,8 @@ final class SystemContentApiTest extends ApiTestCase
             'title' => 'PHPUnit banner',
             'description' => 'Описание',
             'image' => $path,
+            ...(Schema::hasColumn('banners', 'image_mobile') ? ['image_mobile' => $path] : []),
+            ...(Schema::hasColumn('banners', 'image_desktop') ? ['image_desktop' => $path] : []),
         ]);
         $this->bannerId = $banner->id;
 
@@ -67,6 +70,17 @@ final class SystemContentApiTest extends ApiTestCase
         $this->assertArrayHasKey('image', $found);
         $this->assertIsString($found['image']);
         $this->assertStringContainsString($path, $found['image']);
+
+        if (Schema::hasColumn('banners', 'image_mobile')) {
+            $this->assertArrayHasKey('image_mobile', $found);
+            $this->assertIsString($found['image_mobile']);
+            $this->assertStringContainsString($path, $found['image_mobile']);
+        }
+        if (Schema::hasColumn('banners', 'image_desktop')) {
+            $this->assertArrayHasKey('image_desktop', $found);
+            $this->assertIsString($found['image_desktop']);
+            $this->assertStringContainsString($path, $found['image_desktop']);
+        }
 
         Storage::disk('media')->delete($path);
         Storage::disk('media')->deleteDirectory($dir);

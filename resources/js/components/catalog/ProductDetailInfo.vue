@@ -427,7 +427,7 @@ function handleToggleFavorite() {
 
 .product-detail-info__title {
     margin: 0;
-    font-size: 1rem;
+    font-size: 0.8125rem; /* 13px */
     font-weight: 600;
     line-height: 1.25;
     color: #f8fafc;
@@ -435,7 +435,7 @@ function handleToggleFavorite() {
 
 .product-detail-info__desc {
     margin: 0.25rem 0 0;
-    font-size: 0.8125rem;
+    font-size: 0.6875rem; /* 11px */
     line-height: 1.35;
     color: rgba(203, 213, 225, 0.85);
     display: -webkit-box;
@@ -479,7 +479,7 @@ function handleToggleFavorite() {
     border-radius: 9999px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     background: rgba(0, 0, 0, 0.75);
-    font-size: 0.75rem;
+    font-size: 0.6875rem; /* 11px */
     font-weight: 500;
     color: #f1f5f9;
 }

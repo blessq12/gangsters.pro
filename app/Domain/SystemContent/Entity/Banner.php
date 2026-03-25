@@ -9,6 +9,8 @@ final class Banner
         private readonly ?string $title,
         private readonly ?string $description,
         private readonly ?string $imagePath,
+        private readonly ?string $imageMobilePath = null,
+        private readonly ?string $imageDesktopPath = null,
     ) {
     }
 
@@ -30,6 +32,16 @@ final class Banner
     public function imagePath(): ?string
     {
         return $this->imagePath;
+    }
+
+    public function imageMobilePath(): ?string
+    {
+        return $this->imageMobilePath;
+    }
+
+    public function imageDesktopPath(): ?string
+    {
+        return $this->imageDesktopPath;
     }
 }
 
