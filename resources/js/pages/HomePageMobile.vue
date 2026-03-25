@@ -8,15 +8,27 @@ import CatalogProductsMobile from "../components/catalog/CatalogProductsMobile.v
 const catalogStore = useCatalogStore();
 
 const showProductDetailModal = ref(false);
+const productDetailFocusSection = ref(null);
 
-function openProductDetail(product) {
+function openProductDetail(payload) {
+    const product =
+        payload && typeof payload === "object" && "product" in payload
+            ? payload.product
+            : payload;
+    const focusSection =
+        payload && typeof payload === "object" && "focusSection" in payload
+            ? payload.focusSection
+            : null;
+
     catalogStore.setSelectedProduct(product);
+    productDetailFocusSection.value = focusSection ?? null;
     showProductDetailModal.value = true;
 }
 
 watch(showProductDetailModal, (isOpen) => {
     if (!isOpen) {
         catalogStore.setSelectedProduct(null);
+        productDetailFocusSection.value = null;
     }
 });
 
@@ -107,6 +119,7 @@ const catalogEmptyMessage = computed(() =>
     <ProductDetailModalMobile
         v-model="showProductDetailModal"
         :product="catalogStore.selectedProduct"
+        :focus-section="productDetailFocusSection"
     />
 </template>
 

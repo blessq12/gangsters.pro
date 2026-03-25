@@ -1,5 +1,12 @@
 <script setup>
-import { computed } from "vue";
+import {
+    computed,
+    nextTick,
+    onMounted,
+    onUnmounted,
+    ref,
+    watch,
+} from "vue";
 import {
     getProductNutritionNumbers,
     hasProductNutrition,
@@ -17,6 +24,10 @@ const props = defineProps({
     isFav: {
         type: Boolean,
         default: false,
+    },
+    focusSection: {
+        type: String,
+        default: null,
     },
 });
 
@@ -48,11 +59,153 @@ const ingredients = computed(() => {
         }));
 });
 
+const ingredientsText = computed(() => {
+    // Компактное представление "как на карточке": просто имена через запятую
+    return ingredients.value
+        .map((i) => i?.name)
+        .filter(Boolean)
+        .join(", ");
+});
+
 const tags = computed(() => {
     const raw = props.product?.raw?.tags;
     if (!Array.isArray(raw)) return [];
     return raw.map((t) => t?.code).filter(Boolean);
 });
+
+const activeTooltip = ref(null); // 'nutrition' | 'ingredients' | null
+const tooltipPosition = ref({ left: 0, top: 0 });
+const tooltipRef = ref(null);
+
+const nutritionBtnRef = ref(null);
+const ingredientsBtnRef = ref(null);
+
+const tooltipWidthClass = computed(() =>
+    activeTooltip.value === "ingredients"
+        ? "w-[260px]"
+        : "w-[240px]",
+);
+
+function getAnchorEl(type) {
+    if (type === "nutrition") return nutritionBtnRef.value;
+    if (type === "ingredients") return ingredientsBtnRef.value;
+    return null;
+}
+
+function closeTooltip() {
+    activeTooltip.value = null;
+}
+
+function computeTooltipPosition() {
+    const type = activeTooltip.value;
+    if (!type) return;
+
+    const anchorEl = getAnchorEl(type);
+    const anchorRect = anchorEl?.getBoundingClientRect();
+    const tipRect = tooltipRef.value?.getBoundingClientRect();
+
+    if (!anchorRect || !tipRect) return;
+
+    const margin = 8;
+
+    // Прижимаем тултип справа к кнопке
+    let left = anchorRect.right - tipRect.width;
+    left = Math.max(
+        margin,
+        Math.min(left, window.innerWidth - tipRect.width - margin),
+    );
+
+    // Открываем наверх
+    let top = anchorRect.top - tipRect.height - margin;
+    top = Math.max(margin, top);
+
+    tooltipPosition.value = { left, top };
+}
+
+async function openTooltip(type) {
+    if (type === "nutrition" && !hasNutrition.value) return;
+    if (type === "ingredients" && !ingredients.value.length) return;
+
+    activeTooltip.value = type;
+    await nextTick();
+    computeTooltipPosition();
+}
+
+function toggleNutritionTooltip() {
+    if (activeTooltip.value === "nutrition") {
+        closeTooltip();
+        return;
+    }
+    openTooltip("nutrition");
+}
+
+function toggleIngredientsTooltip() {
+    if (activeTooltip.value === "ingredients") {
+        closeTooltip();
+        return;
+    }
+    openTooltip("ingredients");
+}
+
+let outsideClickHandler = null;
+onMounted(() => {
+    outsideClickHandler = (e) => {
+        if (!activeTooltip.value) return;
+
+        const tipEl = tooltipRef.value;
+        const nutritionEl = nutritionBtnRef.value;
+        const ingredientsEl = ingredientsBtnRef.value;
+
+        if (
+            tipEl?.contains(e.target) ||
+            nutritionEl?.contains(e.target) ||
+            ingredientsEl?.contains(e.target)
+        ) {
+            return;
+        }
+
+        closeTooltip();
+    };
+
+    document.addEventListener("click", outsideClickHandler);
+});
+
+onUnmounted(() => {
+    if (outsideClickHandler) {
+        document.removeEventListener("click", outsideClickHandler);
+    }
+    closeTooltip();
+});
+
+watch(
+    () => props.focusSection,
+    async (val) => {
+        if (!val) {
+            closeTooltip();
+            return;
+        }
+
+        await nextTick();
+
+        if (val === "nutrition" && hasNutrition.value) {
+            nutritionBtnRef.value?.scrollIntoView({
+                block: "center",
+            });
+            await nextTick();
+            openTooltip("nutrition");
+            return;
+        }
+
+        if (val === "ingredients" && ingredients.value.length) {
+            ingredientsBtnRef.value?.scrollIntoView({
+                block: "center",
+            });
+            await nextTick();
+            openTooltip("ingredients");
+        }
+    },
+    { immediate: true },
+);
 
 function handleAddToCart() {
     emit("add-to-cart");
@@ -72,169 +225,192 @@ function handleToggleFavorite() {
 </script>
 
 <template>
-    <div v-if="product" class="product-detail-info">
-        <!-- Островок как у карточки: рамка, фон, скругление -->
-        <div class="product-detail-info__card">
-            <div class="product-detail-info__head">
-                <div class="product-detail-info__title-wrap">
-                    <h2 class="product-detail-info__title">
-                        {{
-                            product.name || product.raw?.name || "Без названия"
-                        }}
-                    </h2>
-                    <p v-if="product.consist" class="product-detail-info__desc">
-                        {{ product.consist }}
-                    </p>
-                </div>
+    <div
+        v-if="product"
+        class="product-detail-info__card"
+    >
+        <div class="product-detail-info__head">
+            <div class="product-detail-info__title-wrap">
+                <h2 class="product-detail-info__title">
+                    {{
+                        product.name || product.raw?.name || "Без названия"
+                    }}
+                </h2>
+                <p
+                    v-if="product.consist"
+                    class="product-detail-info__desc"
+                >
+                    {{ product.consist }}
+                </p>
+            </div>
+            <button
+                type="button"
+                class="product-detail-info__fav"
+                :class="{ 'product-detail-info__fav--active': isFav }"
+                aria-label="Избранное"
+                @click="handleToggleFavorite"
+            >
+                <i
+                    :class="[
+                        'mdi',
+                        isFav ? 'mdi-heart' : 'mdi-heart-outline',
+                    ]"
+                />
+            </button>
+        </div>
+
+        <div
+            v-if="product.weight"
+            class="product-detail-info__weight"
+        >
+            {{ product.weight }} г
+        </div>
+
+        <!-- Иконки тултипов (контент тултипа рендерим через Teleport) -->
+        <div class="mb-2 flex items-center gap-2">
+            <button
+                v-if="hasNutrition"
+                type="button"
+                ref="nutritionBtnRef"
+                class="flex h-9 w-9 items-center justify-center rounded-full border border-amber-400/40 bg-black/55 text-amber-200 transition-colors hover:border-amber-400/70 hover:text-amber-200"
+                aria-label="Показать КБЖУ"
+                @click.stop="toggleNutritionTooltip"
+            >
+                    <i class="mdi mdi-fire-circle text-lg" />
+            </button>
+
+            <button
+                v-if="ingredients.length"
+                type="button"
+                ref="ingredientsBtnRef"
+                class="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-black/55 text-slate-200 transition-colors hover:border-amber-400/50 hover:text-amber-200"
+                aria-label="Показать состав"
+                @click.stop="toggleIngredientsTooltip"
+            >
+                    <i class="mdi mdi-information-outline text-lg" />
+            </button>
+        </div>
+
+        <div
+            v-if="tags.length"
+            class="product-detail-info__tags"
+        >
+            <span
+                v-for="code in tags"
+                :key="code"
+                class="product-detail-info__tag"
+            >
+                {{ code }}
+            </span>
+        </div>
+
+        <div class="product-detail-info__actions">
+            <span class="product-detail-info__price">
+                {{ product.price ?? 0 }} ₽
+            </span>
+            <div
+                v-if="qtyInCart === 0"
+                class="product-detail-info__cart-wrap"
+            >
                 <button
                     type="button"
-                    class="product-detail-info__fav"
-                    :class="{ 'product-detail-info__fav--active': isFav }"
-                    aria-label="Избранное"
-                    @click="handleToggleFavorite"
+                    class="product-detail-info__btn-cart"
+                    @click="handleAddToCart"
                 >
-                    <i
-                        :class="[
-                            'mdi',
-                            isFav ? 'mdi-heart' : 'mdi-heart-outline',
-                        ]"
-                    />
+                    В корзину
                 </button>
             </div>
-
-            <div v-if="product.weight" class="product-detail-info__weight">
-                {{ product.weight }} г
-            </div>
-
-            <div v-if="hasNutrition" class="product-detail-info__nutrition">
-                <p class="product-detail-info__nutrition-title">
-                    Пищевая ценность на 100 г
-                </p>
-                <div class="product-detail-info__nutrition-grid">
-                    <span class="product-detail-info__nutrition-label"
-                        >Калории</span
-                    >
-                    <span class="product-detail-info__nutrition-value"
-                        >{{ nutrition.calories }} ккал</span
-                    >
-                    <span class="product-detail-info__nutrition-label"
-                        >Белки</span
-                    >
-                    <span class="product-detail-info__nutrition-value"
-                        >{{ nutrition.proteins }} г</span
-                    >
-                    <span class="product-detail-info__nutrition-label"
-                        >Жиры</span
-                    >
-                    <span class="product-detail-info__nutrition-value"
-                        >{{ nutrition.fats }} г</span
-                    >
-                    <span class="product-detail-info__nutrition-label"
-                        >Углеводы</span
-                    >
-                    <span class="product-detail-info__nutrition-value"
-                        >{{ nutrition.carbs }} г</span
-                    >
-                </div>
-            </div>
-
-            <div
-                v-if="ingredients.length"
-                class="product-detail-info__ingredients"
-            >
-                <p class="product-detail-info__ingredients-title">Состав</p>
-                <ul class="product-detail-info__ingredients-list">
-                    <li
-                        v-for="(ing, idx) in ingredients"
-                        :key="idx"
-                        class="product-detail-info__ingredient"
-                        :class="{
-                            'product-detail-info__ingredient--allergen':
-                                ing.isAllergen,
-                        }"
-                    >
-                        <span>{{ ing.name }}</span>
-                        <span
-                            v-if="ing.amount"
-                            class="product-detail-info__ingredient-amount"
-                        >
-                            {{ ing.amount }}{{ ing.unit }}
-                        </span>
-                    </li>
-                </ul>
-            </div>
-
-            <div v-if="tags.length" class="product-detail-info__tags">
-                <span
-                    v-for="code in tags"
-                    :key="code"
-                    class="product-detail-info__tag"
+            <div v-else class="product-detail-info__qty">
+                <button
+                    type="button"
+                    class="product-detail-info__qty-btn"
+                    @click="handleDecrement"
                 >
-                    {{ code }}
+                    –
+                </button>
+                <span class="product-detail-info__qty-num">
+                    {{ qtyInCart }} шт
                 </span>
-            </div>
-
-            <div class="product-detail-info__actions">
-                <span class="product-detail-info__price">
-                    {{ product.price ?? 0 }} ₽
-                </span>
-                <div
-                    v-if="qtyInCart === 0"
-                    class="product-detail-info__cart-wrap"
+                <button
+                    type="button"
+                    class="product-detail-info__qty-btn"
+                    @click="handleIncrement"
                 >
-                    <button
-                        type="button"
-                        class="product-detail-info__btn-cart"
-                        @click="handleAddToCart"
-                    >
-                        В корзину
-                    </button>
-                </div>
-                <div v-else class="product-detail-info__qty">
-                    <button
-                        type="button"
-                        class="product-detail-info__qty-btn"
-                        @click="handleDecrement"
-                    >
-                        –
-                    </button>
-                    <span class="product-detail-info__qty-num"
-                        >{{ qtyInCart }} шт</span
-                    >
-                    <button
-                        type="button"
-                        class="product-detail-info__qty-btn"
-                        @click="handleIncrement"
-                    >
-                        +
-                    </button>
-                </div>
+                    +
+                </button>
             </div>
         </div>
     </div>
+
+    <Teleport to="body">
+        <div
+            v-if="activeTooltip"
+            ref="tooltipRef"
+            class="fixed z-[10000] rounded-xl border border-white/10 bg-[rgba(0,0,0,0.95)] px-3 py-2.5 shadow-xl backdrop-blur max-h-44 overflow-y-auto"
+            :class="tooltipWidthClass"
+            :style="{
+                left: `${tooltipPosition.left}px`,
+                top: `${tooltipPosition.top}px`,
+            }"
+            role="dialog"
+        >
+            <template v-if="activeTooltip === 'nutrition'">
+                <div class="space-y-2 text-[11px] text-slate-100">
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="text-slate-300">Калории</span>
+                        <span class="font-medium">
+                            {{ nutrition.calories }} ккал
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="text-slate-300">Белки</span>
+                        <span class="font-medium">
+                            {{ nutrition.proteins }} г
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="text-slate-300">Жиры</span>
+                        <span class="font-medium">
+                            {{ nutrition.fats }} г
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="text-slate-300">Углеводы</span>
+                        <span class="font-medium">
+                            {{ nutrition.carbs }} г
+                        </span>
+                    </div>
+                </div>
+            </template>
+
+            <template v-else-if="activeTooltip === 'ingredients'">
+                <div class="space-y-2 text-[11px] text-slate-100">
+                    <div class="text-[10px] font-medium text-slate-300">
+                        Состав
+                    </div>
+                    <div class="break-words text-slate-200/90">
+                        {{ ingredientsText }}
+                    </div>
+                </div>
+            </template>
+        </div>
+    </Teleport>
 </template>
 
 <style scoped>
-.product-detail-info {
-    padding: 0;
-    height: 100%;
-    max-height: 100%;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    border-radius: 1rem;
-}
-
 .product-detail-info__card {
     border-radius: 1rem;
     border: 1px solid rgba(251, 191, 36, 0.3);
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.62);
     padding: 0.75rem 1rem;
     backdrop-filter: blur(10px);
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.9);
     max-height: 100%;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    height: 100%;
 }
 
 .product-detail-info__head {

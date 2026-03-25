@@ -4,6 +4,22 @@ import { toCatalogStorageUrl } from "../utils/catalog/productMedia";
 
 const CATALOG_STORAGE_KEY = "gangsters_catalog";
 
+function extractWeightGrams(text) {
+    if (!text || typeof text !== "string") return null;
+
+    // Heuristics: ищем в описании/названии паттерны типа "300 г", "250г", "1.5 g".
+    // В базе веса нет, поэтому делаем мягкое извлечение для UX.
+    const raw = text.replace(",", ".").toLowerCase();
+    const match = raw.match(/(\d+(?:\.\d+)?)\s*(г|гр|грамм|g)\b/iu);
+    if (!match) return null;
+
+    const grams = Number(match[1]);
+    if (!Number.isFinite(grams) || grams <= 0) return null;
+
+    // Округляем к целым, так как на UI показываем "г".
+    return Math.round(grams);
+}
+
 function normalizeProduct(apiProduct) {
     if (!apiProduct || typeof apiProduct !== "object") {
         return null;
@@ -55,6 +71,10 @@ function normalizeProduct(apiProduct) {
     const consist =
         typeof apiProduct.description === "string" ? apiProduct.description : "";
 
+    const derivedWeight =
+        extractWeightGrams(apiProduct.weight ?? apiProduct.description) ||
+        extractWeightGrams(apiProduct.name);
+
     const nutrition =
         apiProduct.nutrition && typeof apiProduct.nutrition === "object"
             ? {
@@ -70,7 +90,7 @@ function normalizeProduct(apiProduct) {
         id,
         name: apiProduct.name || "",
         price,
-        weight: null,
+        weight: derivedWeight,
         consist,
         images,
         imageSrcset,

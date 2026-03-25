@@ -3,7 +3,6 @@ import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
 import {
     playModalClose,
     playModalOpen,
-    playProductDetailInfoEnter,
 } from "../../animations/animationManager";
 import { useCartStore } from "../../stores/cartStore";
 import { buildProductGallerySlides } from "../../utils/catalog/productMedia";
@@ -12,6 +11,10 @@ const props = defineProps({
     modelValue: {
         type: Boolean,
         default: false,
+    },
+    focusSection: {
+        type: String,
+        default: null,
     },
     product: {
         type: Object,
@@ -53,9 +56,6 @@ watch(
                 backdrop: backdropRef.value,
                 card: panelRef.value,
             });
-            if (infoRef.value) {
-                playProductDetailInfoEnter(infoRef.value, { delay: 0.25 });
-            }
         } else if (isVisible.value) {
             playModalClose({
                 backdrop: backdropRef.value,
@@ -147,17 +147,20 @@ function handleDecrement() {
                                 ref="infoRef"
                                 class="product-detail-modal__info"
                             >
-                                <div class="product-detail-modal__info-surface">
-                                    <ProductDetailInfo
-                                        :product="product"
-                                        :qty-in-cart="qtyInCart"
-                                        :is-fav="isFav"
-                                        @add-to-cart="handleAddToCart"
-                                        @increment="handleIncrement"
-                                        @decrement="handleDecrement"
-                                        @toggle-favorite="handleToggleFavorite"
-                                    />
-                                </div>
+                                <div
+                                    class="product-detail-modal__info-bg-gradient"
+                                    aria-hidden="true"
+                                />
+                                <ProductDetailInfo
+                                    :product="product"
+                                    :qty-in-cart="qtyInCart"
+                                    :is-fav="isFav"
+                                    :focus-section="props.focusSection"
+                                    @add-to-cart="handleAddToCart"
+                                    @increment="handleIncrement"
+                                    @decrement="handleDecrement"
+                                    @toggle-favorite="handleToggleFavorite"
+                                />
                             </div>
                         </template>
 
@@ -273,19 +276,26 @@ function handleDecrement() {
 .product-detail-modal__info {
     flex: 1 1 auto;
     overflow: auto;
-    padding: 1rem 1rem 1.15rem;
+    padding: 0.75rem 0.9rem 0.95rem;
     position: relative;
     z-index: 3;
-    background: rgba(0, 0, 0, 0.18);
-}
-
-.product-detail-modal__info-surface {
-    width: 100%;
+    background: rgba(0, 0, 0, 0.92);
     border-radius: 1.25rem;
     border: 1px solid rgba(255, 255, 255, 0.07);
-    background: rgba(0, 0, 0, 0.42);
     backdrop-filter: blur(10px);
-    padding: 0.75rem 0.9rem 0.95rem;
+}
+
+.product-detail-modal__info-bg-gradient {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: linear-gradient(
+        180deg,
+        rgba(0, 0, 0, 0) 0%,
+        rgba(0, 0, 0, 0.74) 45%,
+        rgba(0, 0, 0, 0.92) 100%
+    );
 }
 
 .product-detail-modal__empty {
@@ -299,10 +309,15 @@ function handleDecrement() {
 .product-detail-modal__info :deep(.product-detail-info) {
     justify-content: flex-start !important;
     overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
 }
 
 .product-detail-modal__info :deep(.product-detail-info__card) {
     max-height: none !important;
+    overflow: visible !important;
+    position: relative;
+    z-index: 1;
 }
 </style>
 

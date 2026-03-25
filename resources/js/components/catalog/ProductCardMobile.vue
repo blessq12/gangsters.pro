@@ -1,7 +1,6 @@
 <script setup>
-import { computed, nextTick, onMounted, onUnmounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import { useCartStore } from "../../stores/cartStore";
-import { playTooltipOpen, playTooltipClose } from "../../animations/animationManager";
 import {
     getProductNutritionNumbers,
     hasProductNutrition,
@@ -59,48 +58,55 @@ const ingredients = computed(() => {
 
 const hasIngredients = computed(() => ingredients.value.length > 0);
 
-const showNutritionTooltip = ref(false);
-const nutritionTriggerRef = ref(null);
-const nutritionTooltipRef = ref(null);
+const ingredientsText = computed(() => {
+    // Просто перечисляем состав через запятую для компактного тултипа
+    return ingredients.value
+        .map((i) => i?.name)
+        .filter(Boolean)
+        .join(", ");
+});
+
+const openTooltip = ref(null); // 'nutrition' | 'ingredients' | null
+const nutritionWrapRef = ref(null);
+const ingredientsWrapRef = ref(null);
 
 function toggleNutritionTooltip() {
-    if (showNutritionTooltip.value) {
-        playTooltipClose(nutritionTooltipRef.value, () => {
-            showNutritionTooltip.value = false;
-        });
-    } else {
-        showNutritionTooltip.value = true;
-        nextTick(() => playTooltipOpen(nutritionTooltipRef.value));
-    }
+    openTooltip.value =
+        openTooltip.value === "nutrition" ? null : "nutrition";
 }
 
-function closeNutritionTooltip() {
-    if (!showNutritionTooltip.value) return;
-    playTooltipClose(nutritionTooltipRef.value, () => {
-        showNutritionTooltip.value = false;
-    });
+function toggleIngredientsTooltip() {
+    openTooltip.value =
+        openTooltip.value === "ingredients" ? null : "ingredients";
 }
 
-function openNutritionTooltip() {
-    if (showNutritionTooltip.value) return;
-    showNutritionTooltip.value = true;
-    nextTick(() => playTooltipOpen(nutritionTooltipRef.value));
+function closeTooltip() {
+    openTooltip.value = null;
 }
 
-let clickOutsideHandler = null;
+let outsideClickHandler = null;
 onMounted(() => {
-    clickOutsideHandler = (e) => {
-        if (!showNutritionTooltip.value) return;
-        if (nutritionTriggerRef.value?.contains(e.target)) return;
-        closeNutritionTooltip();
+    outsideClickHandler = (e) => {
+        if (!openTooltip.value) return;
+
+        if (
+            nutritionWrapRef.value?.contains(e.target) ||
+            ingredientsWrapRef.value?.contains(e.target)
+        ) {
+            return;
+        }
+
+        closeTooltip();
     };
-    document.addEventListener("click", clickOutsideHandler);
+
+    document.addEventListener("click", outsideClickHandler);
 });
 
 onUnmounted(() => {
-    if (clickOutsideHandler) {
-        document.removeEventListener("click", clickOutsideHandler);
+    if (outsideClickHandler) {
+        document.removeEventListener("click", outsideClickHandler);
     }
+    closeTooltip();
 });
 
 function handleToggleFavorite() {
@@ -123,10 +129,6 @@ function handleDec() {
     cartStore.decrementCart(productId.value);
 }
 
-function openMobileDetail() {
-    closeNutritionTooltip();
-    emit("imageClick", props.product);
-}
 </script>
 
 <template>
@@ -160,7 +162,7 @@ function openMobileDetail() {
             <div
                 class="absolute inset-0 z-[1] cursor-pointer"
                 aria-label="Открыть карточку товара"
-                @click.stop="emit('imageClick', product)"
+                @click.stop="emit('imageClick', { product, focusSection: null })"
             />
 
             <!-- Упрощенный UI: акцент на фото + короткие чипы -->
@@ -187,87 +189,109 @@ function openMobileDetail() {
                 />
             </button>
 
-            <!-- Тултип КБЖУ + кнопки “посмотреть” -->
-            <div
-                v-if="hasNutrition"
-                ref="nutritionTriggerRef"
-                class="absolute right-2.5 top-12 z-10"
-                @mouseleave="closeNutritionTooltip"
-            >
-                <div class="relative">
-                    <button
-                        type="button"
-                        class="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/55 text-slate-200 transition-colors hover:border-amber-400/60 hover:text-amber-200"
-                        aria-label="Пищевая ценность на 100 г"
-                        @click.stop="toggleNutritionTooltip"
-                        @mouseenter="openNutritionTooltip"
-                    >
-                        <i class="mdi mdi-information-outline text-lg" />
-                    </button>
-
-                    <div
-                        v-show="showNutritionTooltip"
-                        ref="nutritionTooltipRef"
-                        role="tooltip"
-                        class="absolute right-0 top-full z-50 mt-2 w-[220px] rounded-xl border border-white/10 bg-[rgba(0,0,0,0.95)] px-3 py-2.5 shadow-xl backdrop-blur"
-                    >
-                        <div class="space-y-1.5 text-[11px] text-slate-100">
-                            <div class="flex justify-between gap-4">
-                                <span class="text-slate-300">Калории</span>
-                                <span class="font-medium">{{ nutrition.calories }} ккал</span>
-                            </div>
-                            <div class="flex justify-between gap-4">
-                                <span class="text-slate-300">Белки</span>
-                                <span class="font-medium">{{ nutrition.proteins }} г</span>
-                            </div>
-                            <div class="flex justify-between gap-4">
-                                <span class="text-slate-300">Жиры</span>
-                                <span class="font-medium">{{ nutrition.fats }} г</span>
-                            </div>
-                            <div class="flex justify-between gap-4">
-                                <span class="text-slate-300">Углеводы</span>
-                                <span class="font-medium">{{ nutrition.carbs }} г</span>
-                            </div>
-                        </div>
-
-                        <!-- Кнопки под тултипом: открывают модалку -->
-                        <div class="mt-2 flex items-center gap-2">
-                            <button
-                                v-if="hasNutrition"
-                                type="button"
-                                class="flex h-9 flex-1 items-center justify-center rounded-full border border-amber-400/40 bg-black/70 text-amber-200 transition hover:border-amber-400/70"
-                                aria-label="Открыть КБЖУ"
-                                @click.stop="openMobileDetail"
-                            >
-                                <i class="mdi mdi-information-outline" />
-                            </button>
-                            <button
-                                v-if="hasIngredients"
-                                type="button"
-                                class="flex h-9 flex-1 items-center justify-center rounded-full border border-white/10 bg-black/70 text-slate-200 transition hover:border-amber-400/50"
-                                aria-label="Открыть состав"
-                                @click.stop="openMobileDetail"
-                            >
-                                <i class="mdi mdi-information-outline" />
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- Управление корзиной -->
             <div
                 class="absolute inset-x-2 bottom-2 z-10 rounded-2xl border border-amber-400/25 bg-[rgba(255,255,255,0.04)] px-2.5 py-2 backdrop-blur shadow-[0_0_20px_rgba(0,0,0,0.9)]"
             >
-                <div class="flex items-center justify-between gap-2">
-                    <div
-                        v-if="product.price"
-                        class="inline-flex items-center rounded-full bg-amber-400 px-2.5 py-1 text-[11px] font-semibold text-black shadow-[0_0_20px_rgba(251,191,36,0.7)]"
-                    >
-                        {{ product.price }} ₽
+                <div class="space-y-1">
+                    <div class="flex items-center justify-between gap-2">
+                        <p
+                            class="min-w-0 flex-1 text-[11px] font-semibold text-slate-50 line-clamp-1"
+                            :title="product.name"
+                        >
+                            {{ product.name }}
+                        </p>
+
+                        <div class="flex items-center gap-1">
+                            <div
+                                v-if="hasNutrition"
+                                ref="nutritionWrapRef"
+                                class="relative flex-shrink-0"
+                            >
+                                <button
+                                    type="button"
+                                    class="flex h-8 w-8 items-center justify-center rounded-full border border-amber-400/40 bg-black/55 text-amber-200 transition-colors hover:border-amber-400/70 hover:text-amber-200"
+                                    aria-label="Показать КБЖУ"
+                                    @click.stop="toggleNutritionTooltip"
+                                >
+                                    <i class="mdi mdi-fire-circle text-base" />
+                                </button>
+
+                                <div
+                                    v-if="openTooltip === 'nutrition'"
+                                    class="absolute right-0 bottom-full z-50 mb-1 w-[180px] rounded-lg border border-white/10 bg-[rgba(0,0,0,0.95)] px-2 py-2 shadow-xl backdrop-blur"
+                                    role="dialog"
+                                >
+                                    <div class="space-y-1 text-[10px] text-slate-100">
+                                        <div class="flex items-center justify-between gap-2">
+                                            <span class="text-slate-300">Калории</span>
+                                            <span class="font-medium">{{ nutrition.calories }}</span>
+                                        </div>
+                                        <div class="flex items-center justify-between gap-2">
+                                            <span class="text-slate-300">Белки</span>
+                                            <span class="font-medium">{{ nutrition.proteins }} г</span>
+                                        </div>
+                                        <div class="flex items-center justify-between gap-2">
+                                            <span class="text-slate-300">Жиры</span>
+                                            <span class="font-medium">{{ nutrition.fats }} г</span>
+                                        </div>
+                                        <div class="flex items-center justify-between gap-2">
+                                            <span class="text-slate-300">Углеводы</span>
+                                            <span class="font-medium">{{ nutrition.carbs }} г</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div
+                                v-if="hasIngredients"
+                                ref="ingredientsWrapRef"
+                                class="relative flex-shrink-0"
+                            >
+                                <button
+                                    type="button"
+                                    class="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-black/55 text-slate-200 transition-colors hover:border-amber-400/50 hover:text-amber-200"
+                                    aria-label="Показать состав"
+                                    @click.stop="toggleIngredientsTooltip"
+                                >
+                                    <i class="mdi mdi-information-outline text-base" />
+                                </button>
+
+                                <div
+                                    v-if="openTooltip === 'ingredients'"
+                                    class="absolute right-0 bottom-full z-50 mb-1 w-[200px] max-h-36 overflow-y-auto rounded-lg border border-white/10 bg-[rgba(0,0,0,0.95)] px-2 py-2 shadow-xl backdrop-blur"
+                                    role="dialog"
+                                >
+                                    <div class="space-y-1 text-[10px] text-slate-100">
+                                        <div class="text-[10px] font-medium text-slate-300">
+                                            Состав
+                                        </div>
+                                        <div class="text-slate-200/90">
+                                            {{ ingredientsText }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="flex items-center gap-2">
+                    <p
+                        v-if="product.consist"
+                        class="text-[10px] leading-snug text-slate-400 line-clamp-2"
+                        :title="product.consist"
+                    >
+                        {{ product.consist }}
+                    </p>
+
+                    <div class="flex items-center justify-between gap-2">
+                        <div
+                            v-if="product.price"
+                            class="inline-flex items-center rounded-full bg-amber-400 px-2.5 py-1 text-[11px] font-semibold text-black shadow-[0_0_20px_rgba(251,191,36,0.7)]"
+                        >
+                            {{ product.price }} ₽
+                        </div>
+
+                        <div class="flex items-center gap-2">
                     <button
                         v-if="qtyInCart === 0"
                         type="button"
@@ -304,6 +328,7 @@ function openMobileDetail() {
                             <i class="mdi mdi-plus text-xl" />
                         </button>
                     </template>
+                        </div>
                     </div>
                 </div>
             </div>
