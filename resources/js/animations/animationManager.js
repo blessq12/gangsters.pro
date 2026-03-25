@@ -217,6 +217,38 @@ export function playFloatLoop({ elements, options = {} }) {
     };
 }
 
+/**
+ * Мягкое пульсирующее свечение логотипа в мобильной шапке (amber).
+ * @param {HTMLElement|null|undefined} logoEl
+ * @returns {{ kill: () => void }}
+ */
+export function playMobileNavbarLogoGlow(logoEl) {
+    if (!logoEl) {
+        return { kill() {} };
+    }
+
+    const tween = gsap.fromTo(
+        logoEl,
+        {
+            filter: "drop-shadow(0 0 3px rgba(251,191,36,0.22)) drop-shadow(0 0 1px rgba(251,191,36,0.12))",
+        },
+        {
+            filter: "drop-shadow(0 0 8px rgba(251,191,36,0.55)) drop-shadow(0 0 3px rgba(253,230,138,0.28))",
+            duration: 2.1,
+            ease: "power2.inOut",
+            yoyo: true,
+            repeat: -1,
+        },
+    );
+
+    return {
+        kill() {
+            tween.kill();
+            gsap.set(logoEl, { clearProps: "filter" });
+        },
+    };
+}
+
 export function playBottomBarShow(bar) {
     if (!bar) return;
 

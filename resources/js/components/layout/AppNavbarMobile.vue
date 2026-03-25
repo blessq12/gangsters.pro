@@ -1,27 +1,48 @@
 <script setup>
-import { ref } from "vue";
-import { useRoute } from "vue-router";
+import { ref, onMounted, onUnmounted, nextTick } from "vue";
+import { playMobileNavbarLogoGlow } from "../../animations/animationManager";
 import { useEnterSlide } from "../../composables/animations/useEnterSlide";
+import { useCompanyOpenStatus } from "../../composables/system/useCompanyOpenStatus";
 import { useUiStore } from "../../stores/uiStore";
+import { useSystemStore } from "../../stores/systemStore";
 
-const route = useRoute();
 const uiStore = useUiStore();
+const systemStore = useSystemStore();
 
 const containerRef = ref(null);
+const logoGlowRef = ref(null);
 
-const isActive = (name) => route.name === name;
+/** @type {{ kill: () => void } | null} */
+let logoGlowControl = null;
 
 useEnterSlide(containerRef, {
     y: -40,
     delay: 0.8,
 });
 
+const { openNow } = useCompanyOpenStatus(() => systemStore.company);
+
+onMounted(() => {
+    if (!systemStore.company && !systemStore.loadingCompany) {
+        void systemStore.fetchCompany();
+    }
+
+    void nextTick().then(() => {
+        if (logoGlowRef.value) {
+            logoGlowControl?.kill();
+            logoGlowControl = playMobileNavbarLogoGlow(logoGlowRef.value);
+        }
+    });
+});
+
+onUnmounted(() => {
+    logoGlowControl?.kill();
+    logoGlowControl = null;
+});
+
 const toggleMobileMenu = () => {
     uiStore.toggleMobileMenu();
 };
-
-// true = работаем (зелёный), false = закрыты (красный)
-const isStoreOpen = ref(true);
 </script>
 
 <template>
@@ -29,17 +50,21 @@ const isStoreOpen = ref(true);
         <div class="mx-auto max-w-7xl px-4">
             <div
                 ref="containerRef"
-                class="flex items-center justify-between gap-4 rounded-2xl border border-amber-400/40 bg-[rgba(255,255,255,0.04)]/80 px-4 py-3.5 shadow-[0_0_25px_rgba(0,0,0,0.7)] backdrop-blur"
+                class="flex items-center justify-between gap-4 rounded-2xl border border-amber-400/40 bg-[rgba(255,255,255,0.06)] px-4 py-3.5 shadow-[0_0_25px_rgba(0,0,0,0.7)]"
             >
-                <div class="flex items-center gap-3">
+                <div
+                    class="flex w-10 shrink-0 items-center justify-start"
+                    :title="openNow ? 'Открыто' : 'Закрыто'"
+                >
                     <span
-                        class="h-3 w-3 shrink-0 rounded-full"
+                        class="h-3 w-3 rounded-full"
                         :class="
-                            isStoreOpen
+                            openNow
                                 ? 'bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.7)]'
                                 : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.7)]'
                         "
-                        :title="isStoreOpen ? 'Работаем' : 'Закрыты'"
+                        role="img"
+                        :aria-label="openNow ? 'Открыто' : 'Закрыто'"
                     />
                 </div>
 
@@ -49,9 +74,10 @@ const isStoreOpen = ref(true);
                         class="inline-flex items-center justify-center group"
                     >
                         <img
+                            ref="logoGlowRef"
                             src="/images/logo-text.png"
                             alt="Gangsters"
-                            class="h-9 min-h-9 w-auto min-w-[7rem] max-w-full mx-auto object-contain drop-shadow-[0_0_15px_rgba(251,191,36,0.45)] group-hover:scale-105 group-hover:drop-shadow-[0_0_22px_rgba(251,191,36,0.7)] transition-transform duration-200"
+                            class="h-9 min-h-9 w-auto min-w-[7rem] max-w-full mx-auto object-contain transition-transform duration-200 group-hover:scale-105"
                         />
                     </RouterLink>
                 </div>
