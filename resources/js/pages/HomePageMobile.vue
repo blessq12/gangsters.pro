@@ -58,7 +58,7 @@ const catalogEmptyMessage = computed(() =>
 </script>
 
 <template>
-    <HomeJumbotron />
+    <HomeJumbotronMobile />
 
     <div class="home-page mt-4 space-y-8">
         <HomePromotions />

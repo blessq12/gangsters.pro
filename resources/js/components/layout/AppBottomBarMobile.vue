@@ -64,25 +64,25 @@ const handleLeave = (el, done) => {
 
                 <!-- Сам нижний остров -->
                 <div
-                    class="mx-auto flex max-w-3xl items-center justify-center gap-4 rounded-2xl border border-amber-400/30 bg-[rgba(255,255,255,0.035)] px-4 sm:px-6 py-3 shadow-[0_0_26px_rgba(0,0,0,0.85)] backdrop-blur"
+                    class="mx-auto flex max-w-3xl items-center justify-center gap-4 rounded-2xl border border-amber-400/30 bg-[rgba(255,255,255,0.035)] px-5 sm:px-6 py-4 shadow-[0_0_26px_rgba(0,0,0,0.85)] backdrop-blur"
                 >
                     <div class="flex items-center gap-3 sm:gap-4">
                         <button
                             v-for="item in dockItems"
                             :key="item.id"
                             type="button"
-                            class="group flex flex-col items-center gap-1 text-[11px] sm:text-xs transition-colors"
+                            class="group flex flex-col items-center gap-1.5 text-xs sm:text-xs transition-colors"
                             @click="handleDockClick(item.id)"
                         >
                             <span
-                                class="relative flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border transition-colors"
+                                class="relative flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full border transition-colors"
                                 :class="
                                     uiStore.dockActiveId === item.id
                                         ? 'border-amber-400/70 bg-black/80 text-amber-200 shadow-[0_0_18px_rgba(251,191,36,0.7)]'
                                         : 'border-white/20 bg-black/70 text-slate-200 group-hover:border-amber-400/50 group-hover:text-amber-200'
                                 "
                             >
-                                <i :class="['mdi', item.iconClass, 'text-base sm:text-lg']" />
+                                <i :class="['mdi', item.iconClass, 'text-lg sm:text-xl']" />
                                 <span
                                     v-if="getBadge(item.id) > 0"
                                     class="absolute -top-1.5 -right-1.5 flex min-h-[1.1rem] min-w-[1.1rem] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white shadow-[0_0_8px_rgba(239,68,68,0.65)]"
