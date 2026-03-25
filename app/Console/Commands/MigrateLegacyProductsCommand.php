@@ -91,7 +91,7 @@ class MigrateLegacyProductsCommand extends Command
 
                 $product = ProductEntity::create(
                     name: $old->name ?? 'Без названия',
-                    description: (string) ($old->consist ?? ''),
+                    description: (string) ($old->description ?? $old->consist ?? ''),
                     nutrition: $nutrition,
                     images: [],
                     ingredients: [],

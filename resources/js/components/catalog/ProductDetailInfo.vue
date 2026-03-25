@@ -236,12 +236,6 @@ function handleToggleFavorite() {
                         product.name || product.raw?.name || "Без названия"
                     }}
                 </h2>
-                <p
-                    v-if="product.consist"
-                    class="product-detail-info__desc"
-                >
-                    {{ product.consist }}
-                </p>
             </div>
             <button
                 type="button"
@@ -431,17 +425,6 @@ function handleToggleFavorite() {
     font-weight: 600;
     line-height: 1.25;
     color: #f8fafc;
-}
-
-.product-detail-info__desc {
-    margin: 0.25rem 0 0;
-    font-size: 0.6875rem; /* 11px */
-    line-height: 1.35;
-    color: rgba(203, 213, 225, 0.85);
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
 }
 
 .product-detail-info__fav {

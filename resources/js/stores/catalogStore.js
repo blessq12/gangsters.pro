@@ -68,9 +68,6 @@ function normalizeProduct(apiProduct) {
 
     const images = imageUrl ? [imageUrl] : [];
 
-    const consist =
-        typeof apiProduct.description === "string" ? apiProduct.description : "";
-
     const derivedWeight =
         extractWeightGrams(apiProduct.weight ?? apiProduct.description) ||
         extractWeightGrams(apiProduct.name);
@@ -91,7 +88,6 @@ function normalizeProduct(apiProduct) {
         name: apiProduct.name || "",
         price,
         weight: derivedWeight,
-        consist,
         images,
         imageSrcset,
         nutrition,

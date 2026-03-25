@@ -16,7 +16,7 @@ final class ProductsExplodeConsistToIngredientsCommand extends Command
                             {--force : Перезаписать состав даже если уже есть ингредиенты}
                             {--separator= : Переопределить разделитель (regex). По умолчанию: /[,\n;]+/}';
 
-    protected $description = 'Заполнить PRD_product_ingredients из текстового состава (PRD_products.description, исторически из products.consist)';
+    protected $description = 'Заполнить PRD_product_ingredients из поля PRD_products.description (разбор текста на ингредиенты)';
 
     public function handle(ProductRepository $repo): int
     {
@@ -61,7 +61,7 @@ final class ProductsExplodeConsistToIngredientsCommand extends Command
             foreach ($products as $model) {
                 $id = (int) $model->id;
                 $text = (string) ($model->description ?? '');
-                $names = $this->explodeConsist($text, $separator);
+                $names = $this->explodeDescriptionToNames($text, $separator);
 
                 if ($names === []) {
                     $skipped++;
@@ -120,7 +120,7 @@ final class ProductsExplodeConsistToIngredientsCommand extends Command
     /**
      * @return string[] уникальные имена ингредиентов
      */
-    private function explodeConsist(string $text, string $separatorRegex): array
+    private function explodeDescriptionToNames(string $text, string $separatorRegex): array
     {
         $raw = $this->toUtf8(trim($text));
         if ($raw === '') return [];

@@ -239,12 +239,6 @@ const handleToggleFavorite = () => {
                         >
                             {{ product.name }}
                         </h3>
-                        <p
-                            v-if="product.consist"
-                            class="text-[11px] text-slate-300/85 leading-snug line-clamp-2 sm:text-xs sm:line-clamp-3"
-                        >
-                            {{ product.consist }}
-                        </p>
                     </div>
                     <button
                         type="button"
