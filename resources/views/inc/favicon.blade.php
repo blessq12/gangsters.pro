@@ -7,5 +7,6 @@
 <link rel="shortcut icon" href="/images/favicon/favicon.ico">
 <meta name="msapplication-TileColor" content="#9da4b3">
 <meta name="msapplication-config" content="/images/favicon/browserconfig.xml">
-<meta name="theme-color" content="#ffffff">
+{{-- Safari browser UI / address bar color (sync with app background via themeStore) --}}
+<meta name="theme-color" content="#1f1f23">
 {{-- end favicon --}}
