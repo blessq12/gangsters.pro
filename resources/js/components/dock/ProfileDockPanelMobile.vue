@@ -33,7 +33,7 @@ const tabClass = (name) => [
 
 <template>
     <div
-        class="rounded-3xl border border-amber-400/30 bg-[rgba(0,0,0,0.88)] px-4 sm:px-6 lg:px-8 py-4 shadow-[0_0_26px_rgba(0,0,0,0.85)] backdrop-blur"
+        class="rounded-3xl border border-amber-400/30 bg-[rgba(0,0,0,0.88)] px-4 py-4 shadow-[0_0_26px_rgba(0,0,0,0.85)] backdrop-blur"
     >
         <div class="flex items-center gap-2 mb-3">
             <div
@@ -146,3 +146,4 @@ const tabClass = (name) => [
 </template>
 
 <style scoped></style>
+

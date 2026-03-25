@@ -9,10 +9,14 @@ const DEFAULT_DOCK_BADGES = {
     notifications: 0,
 };
 
+const DESKTOP_MEDIA_QUERY = "(min-width: 768px)"; // Tailwind `md`
+let deviceListenerAttached = false;
+
 export const useUiStore = defineStore("ui", {
     state: () => ({
         showBottomNav: false,
         isMobileMenuOpen: false,
+        deviceMode: "mobile",
         dockActiveId: null,
         dockBadges: { ...DEFAULT_DOCK_BADGES },
     }),
@@ -94,6 +98,33 @@ export const useUiStore = defineStore("ui", {
         toggleMobileMenu() {
             this.isMobileMenuOpen = !this.isMobileMenuOpen;
             this.persist();
+        },
+        /**
+         * Определяем вертикаль (mobile/desktop) на старте и при ресайзе.
+         * Важно: boundary синхронизируем с Tailwind `md` (768px).
+         */
+        initDeviceMode() {
+            if (typeof window === "undefined") return;
+            const mq = window.matchMedia(DESKTOP_MEDIA_QUERY);
+
+            const apply = () => {
+                this.deviceMode = mq.matches ? "desktop" : "mobile";
+            };
+
+            apply();
+
+            if (deviceListenerAttached) return;
+            deviceListenerAttached = true;
+
+            // Safari/старые браузеры: используем addListener как fallback.
+            if (typeof mq.addEventListener === "function") {
+                mq.addEventListener("change", apply);
+                return;
+            }
+
+            if (typeof mq.addListener === "function") {
+                mq.addListener(apply);
+            }
         },
         setDockBadges(partial) {
             if (!partial || typeof partial !== "object") return;

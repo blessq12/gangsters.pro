@@ -33,16 +33,16 @@ const tabClass = (name) => [
 
 <template>
     <div
-        class="rounded-3xl border border-amber-400/30 bg-[rgba(0,0,0,0.88)] px-4 sm:px-6 lg:px-8 py-4 shadow-[0_0_26px_rgba(0,0,0,0.85)] backdrop-blur"
+        class="rounded-3xl border border-amber-400/30 bg-[rgba(0,0,0,0.88)] px-6 py-6 shadow-[0_0_26px_rgba(0,0,0,0.85)] backdrop-blur"
     >
-        <div class="flex items-center gap-2 mb-3">
+        <div class="flex items-center gap-2 mb-4">
             <div
-                class="flex h-10 w-10 items-center justify-center rounded-full border border-amber-400/40 bg-black/70 text-sm font-semibold text-amber-200 shadow-[0_0_16px_rgba(251,191,36,0.6)]"
+                class="flex h-11 w-11 items-center justify-center rounded-full border border-amber-400/40 bg-black/70 text-sm font-semibold text-amber-200 shadow-[0_0_16px_rgba(251,191,36,0.6)]"
             >
                 {{ userStore.profile.name?.[0] || "G" }}
             </div>
             <div>
-                <p class="text-xs font-semibold text-slate-50">
+                <p class="text-sm font-semibold text-slate-50">
                     {{ userStore.profile.name || "Гость Gangsters" }}
                 </p>
                 <p class="text-[11px] text-slate-400">
@@ -54,7 +54,7 @@ const tabClass = (name) => [
         <!-- Гость: один ряд -->
         <div
             v-if="!isAuthenticated"
-            class="mb-3 flex flex-wrap gap-2 text-[11px] font-medium"
+            class="mb-4 flex flex-wrap gap-2 text-[11px] font-medium"
         >
             <button
                 type="button"
@@ -72,10 +72,10 @@ const tabClass = (name) => [
             </button>
         </div>
 
-        <!-- Авторизован: один ряд, без вложенных табов внутри контента -->
+        <!-- Авторизован: один ряд -->
         <div
             v-else
-            class="mb-3 flex flex-wrap gap-2 text-[11px] font-medium"
+            class="mb-4 flex flex-wrap gap-2 text-[11px] font-medium"
         >
             <button
                 type="button"
@@ -146,3 +146,4 @@ const tabClass = (name) => [
 </template>
 
 <style scoped></style>
+

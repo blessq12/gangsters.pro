@@ -29,6 +29,37 @@ export const useOrderStore = defineStore("order", {
         },
     }),
     getters: {
+        /**
+         * Сводка по всем заказам клиента из загруженного списка API (любой статус).
+         */
+        clientOrderStats(state) {
+            const list = Array.isArray(state.orders) ? state.orders : [];
+            let totalKopecks = 0;
+            let lastOrderAt = null;
+
+            for (const o of list) {
+                const t = Number(o.total);
+                if (!Number.isNaN(t)) {
+                    totalKopecks += t;
+                }
+                const ca = o.created_at;
+                if (ca) {
+                    const cur = new Date(ca).getTime();
+                    if (!lastOrderAt || cur > new Date(lastOrderAt).getTime()) {
+                        lastOrderAt = ca;
+                    }
+                }
+            }
+
+            const count = list.length;
+
+            return {
+                count,
+                totalKopecks,
+                lastOrderAt,
+                averageKopecks: count ? Math.round(totalKopecks / count) : 0,
+            };
+        },
     },
     actions: {
         initFromStorage() {

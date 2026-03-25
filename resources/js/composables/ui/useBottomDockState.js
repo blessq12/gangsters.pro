@@ -1,9 +1,9 @@
 import { computed } from "vue";
-import { dockItems } from "../../dock/dockRegistry";
 
-export function useBottomDockState({ uiStore, cartStore }) {
+export function useBottomDockState({ uiStore, cartStore, dockItems }) {
+    const safeDockItems = Array.isArray(dockItems) ? dockItems : [];
     const activeDockItem = computed(() =>
-        dockItems.find((item) => item.id === uiStore.dockActiveId) || null,
+        safeDockItems.find((item) => item.id === uiStore.dockActiveId) || null,
     );
 
     const resolvedDockBadges = computed(() =>
@@ -15,7 +15,7 @@ export function useBottomDockState({ uiStore, cartStore }) {
     return {
         activeDockItem,
         getBadge,
-        dockItems,
+        dockItems: safeDockItems,
     };
 }
 
