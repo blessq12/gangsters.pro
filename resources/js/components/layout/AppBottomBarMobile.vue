@@ -1,4 +1,5 @@
 <script setup>
+import { ref } from "vue";
 import { useUiStore } from "../../stores/uiStore";
 import { useCartStore } from "../../stores/cartStore";
 import {
@@ -18,6 +19,75 @@ const { activeDockItem, getBadge, dockItems } = useBottomDockState({
     cartStore,
     dockItems: dockItemsMobile,
 });
+
+const dockPanelOuterRef = ref(null);
+const touchStart = ref({ x: 0, y: 0 });
+let touchStartTargetEl = null;
+
+const SWIPE_CLOSE_MIN_DISTANCE_PX = 80;
+const SWIPE_CLOSE_MAX_X_RATIO = 0.5;
+
+function elementFromTouchTarget(target) {
+    if (!target) return null;
+    return target.nodeType === Node.TEXT_NODE ? target.parentElement : target;
+}
+
+function isScrollableY(el) {
+    if (!el || !(el instanceof HTMLElement)) return false;
+    const style = window.getComputedStyle(el);
+    const oy = style.overflowY;
+    if (oy !== "auto" && oy !== "scroll") return false;
+    return el.scrollHeight > el.clientHeight + 1;
+}
+
+/**
+ * Ближайший вертикально прокручиваемый предок от точки жеста внутри панели.
+ */
+function findScrollableAncestorFrom(startEl, boundary) {
+    if (!boundary || !startEl) return null;
+    let node = elementFromTouchTarget(startEl);
+    while (node && node !== boundary) {
+        if (node instanceof HTMLElement && isScrollableY(node)) {
+            return node;
+        }
+        node = node.parentElement;
+    }
+    if (boundary instanceof HTMLElement && isScrollableY(boundary)) {
+        return boundary;
+    }
+    return null;
+}
+
+function onDockPanelTouchStart(e) {
+    if (!uiStore.dockActiveId) return;
+    const t = e?.touches?.[0];
+    if (!t) return;
+    touchStart.value = { x: t.clientX, y: t.clientY };
+    touchStartTargetEl = e.target;
+}
+
+function onDockPanelTouchEnd(e) {
+    if (!uiStore.dockActiveId) return;
+    const t = e?.changedTouches?.[0];
+    if (!t) return;
+
+    const dx = t.clientX - touchStart.value.x;
+    const dy = t.clientY - touchStart.value.y;
+    const absDy = Math.abs(dy);
+    const absDx = Math.abs(dx);
+
+    if (dy <= SWIPE_CLOSE_MIN_DISTANCE_PX) return;
+    if (absDx >= absDy * SWIPE_CLOSE_MAX_X_RATIO) return;
+
+    const boundary = dockPanelOuterRef.value;
+    const scroller = findScrollableAncestorFrom(touchStartTargetEl, boundary);
+    if (scroller && scroller.scrollTop > 0) {
+        return;
+    }
+
+    touchStartTargetEl = null;
+    uiStore.closeDockPanel();
+}
 
 const handleDockClick = (id) => {
     uiStore.setDockActive(id);
@@ -55,8 +125,11 @@ const handleLeave = (el, done) => {
                 >
                     <div
                         v-if="activeDockItem"
+                        ref="dockPanelOuterRef"
                         :key="activeDockItem.id"
                         class="mb-3 mx-auto w-full max-w-4xl"
+                        @touchstart.passive="onDockPanelTouchStart"
+                        @touchend="onDockPanelTouchEnd"
                     >
                         <component :is="activeDockItem.content" />
                     </div>

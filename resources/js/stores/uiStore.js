@@ -91,6 +91,12 @@ export const useUiStore = defineStore("ui", {
             }
             this.persist();
         },
+        /** Закрыть только панель дока; нижний бар (табы) не трогаем. */
+        closeDockPanel() {
+            if (this.dockActiveId === null) return;
+            this.dockActiveId = null;
+            this.persist();
+        },
         setMobileMenuOpen(value) {
             this.isMobileMenuOpen = Boolean(value);
             this.persist();
