@@ -67,15 +67,79 @@ const ingredientsText = computed(() => {
 });
 
 const openTooltip = ref(null); // 'nutrition' | 'ingredients' | null
-const nutritionWrapRef = ref(null);
-const ingredientsWrapRef = ref(null);
+const actionsClusterRef = ref(null);
+
+const liveMessage = ref("");
+let liveMessageTimer = null;
+const justAddedToCart = ref(false);
+const justToggledFav = ref(false);
+const justChangedQty = ref(false);
+const justPressedNutrition = ref(false);
+const justPressedIngredients = ref(false);
+let justAddedTimer = null;
+let justFavTimer = null;
+let justQtyTimer = null;
+let justNutritionTimer = null;
+let justIngredientsTimer = null;
+
+function setLiveMessage(message) {
+    liveMessage.value = message;
+    if (liveMessageTimer) clearTimeout(liveMessageTimer);
+    liveMessageTimer = setTimeout(() => {
+        liveMessage.value = "";
+    }, 900);
+}
+
+const FEEDBACK_ANIM_MS = 780;
+
+function pulseAddedToCart() {
+    justAddedToCart.value = true;
+    if (justAddedTimer) clearTimeout(justAddedTimer);
+    justAddedTimer = setTimeout(() => {
+        justAddedToCart.value = false;
+    }, FEEDBACK_ANIM_MS);
+}
+
+function pulseFav() {
+    justToggledFav.value = true;
+    if (justFavTimer) clearTimeout(justFavTimer);
+    justFavTimer = setTimeout(() => {
+        justToggledFav.value = false;
+    }, FEEDBACK_ANIM_MS);
+}
+
+function pulseQty() {
+    justChangedQty.value = true;
+    if (justQtyTimer) clearTimeout(justQtyTimer);
+    justQtyTimer = setTimeout(() => {
+        justChangedQty.value = false;
+    }, FEEDBACK_ANIM_MS);
+}
+
+function pulseNutritionBtn() {
+    justPressedNutrition.value = true;
+    if (justNutritionTimer) clearTimeout(justNutritionTimer);
+    justNutritionTimer = setTimeout(() => {
+        justPressedNutrition.value = false;
+    }, 420);
+}
+
+function pulseIngredientsBtn() {
+    justPressedIngredients.value = true;
+    if (justIngredientsTimer) clearTimeout(justIngredientsTimer);
+    justIngredientsTimer = setTimeout(() => {
+        justPressedIngredients.value = false;
+    }, 420);
+}
 
 function toggleNutritionTooltip() {
+    pulseNutritionBtn();
     openTooltip.value =
         openTooltip.value === "nutrition" ? null : "nutrition";
 }
 
 function toggleIngredientsTooltip() {
+    pulseIngredientsBtn();
     openTooltip.value =
         openTooltip.value === "ingredients" ? null : "ingredients";
 }
@@ -89,10 +153,7 @@ onMounted(() => {
     outsideClickHandler = (e) => {
         if (!openTooltip.value) return;
 
-        if (
-            nutritionWrapRef.value?.contains(e.target) ||
-            ingredientsWrapRef.value?.contains(e.target)
-        ) {
+        if (actionsClusterRef.value?.contains(e.target)) {
             return;
         }
 
@@ -107,26 +168,42 @@ onUnmounted(() => {
         document.removeEventListener("click", outsideClickHandler);
     }
     closeTooltip();
+
+    if (liveMessageTimer) clearTimeout(liveMessageTimer);
+    if (justAddedTimer) clearTimeout(justAddedTimer);
+    if (justFavTimer) clearTimeout(justFavTimer);
+    if (justQtyTimer) clearTimeout(justQtyTimer);
+    if (justNutritionTimer) clearTimeout(justNutritionTimer);
+    if (justIngredientsTimer) clearTimeout(justIngredientsTimer);
 });
 
 function handleToggleFavorite() {
     if (!productId.value) return;
+    const wasFav = isFav.value;
     cartStore.toggleFavorite(props.product);
+    pulseFav();
+    setLiveMessage(wasFav ? "Убрано из избранного" : "Добавлено в избранное");
 }
 
 function handleAddToCart() {
     if (!productId.value) return;
     cartStore.addToCart(props.product, 1);
+    pulseAddedToCart();
+    setLiveMessage("Добавлено в корзину");
 }
 
-function handleInc() {
+function handleIncrement() {
     if (!productId.value) return;
     cartStore.incrementCart(productId.value);
+    pulseQty();
+    setLiveMessage("Количество увеличено");
 }
 
-function handleDec() {
+function handleDecrement() {
     if (!productId.value) return;
     cartStore.decrementCart(productId.value);
+    pulseQty();
+    setLiveMessage("Количество уменьшено");
 }
 
 </script>
@@ -135,6 +212,7 @@ function handleDec() {
     <article
         class="group flex h-full flex-col overflow-hidden rounded-2xl bg-[rgba(255,255,255,0.02)] shadow-[0_18px_45px_rgba(0,0,0,0.85)] transition duration-300 hover:-translate-y-1 hover:bg-[rgba(255,255,255,0.03)]"
     >
+        <span class="sr-only" aria-live="polite">{{ liveMessage }}</span>
         <div
             class="relative w-full overflow-hidden aspect-[4/3]"
         >
@@ -165,170 +243,176 @@ function handleDec() {
                 @click.stop="emit('imageClick', { product, focusSection: null })"
             />
 
-            <!-- Упрощенный UI: акцент на фото + короткие чипы -->
             <div
                 v-if="product.weight"
-                class="absolute left-2.5 top-2.5 z-10 inline-flex items-center rounded-full border border-white/10 bg-[rgba(0,0,0,0.75)] px-2 py-1 text-[10px] font-medium text-slate-100 backdrop-blur"
+                class="absolute left-3 top-3 z-10"
             >
-                {{ product.weight }} г
+                <div
+                    class="inline-flex items-center rounded-full border border-white/10 bg-[rgba(0,0,0,0.75)] px-2.5 py-1 text-[10px] font-medium text-slate-100 backdrop-blur"
+                >
+                    {{ product.weight }} г
+                </div>
             </div>
 
             <!-- Только иконки/кнопки: без “острова” с текстом -->
             <button
                 type="button"
-                class="absolute right-2.5 top-2.5 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/55 text-slate-200 transition-colors hover:border-amber-400/60 hover:text-amber-200"
-                :class="isFav ? 'border-amber-400/60 text-amber-200' : ''"
+                class="absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/55 text-slate-200 transition-[transform,box-shadow,border-color,color] duration-300 ease-out hover:border-amber-400/60 hover:text-amber-200"
+                :class="[
+                    isFav ? 'border-amber-400/60 text-amber-200' : '',
+                    justToggledFav ? 'scale-[1.06]' : 'scale-100',
+                ]"
                 aria-label="Избранное"
                 @click.stop="handleToggleFavorite"
             >
+                <span
+                    class="pc-feedback-ring pointer-events-none absolute inset-0 rounded-full ring-2 ring-amber-400/45"
+                    :class="{ 'pc-feedback-ring--active': justToggledFav }"
+                    aria-hidden="true"
+                />
                 <i
                     :class="[
-                        'mdi',
+                        'mdi text-xl transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]',
                         isFav ? 'mdi-heart' : 'mdi-heart-outline',
+                        justToggledFav ? 'scale-110' : 'scale-100',
                     ]"
                 />
             </button>
 
-            <!-- Управление корзиной -->
-            <div
-                class="absolute inset-x-2 bottom-2 z-10 rounded-2xl border border-amber-400/25 bg-[rgba(255,255,255,0.04)] px-2.5 py-2 backdrop-blur shadow-[0_0_20px_rgba(0,0,0,0.9)]"
-            >
-                <div class="space-y-1">
-                    <div class="flex items-center justify-between gap-2">
-                        <p
-                            class="min-w-0 flex-1 text-[13px] font-semibold text-slate-50 line-clamp-1"
-                            :title="product.name"
+            <div class="absolute inset-x-3 bottom-3 z-10 flex flex-col gap-2.5">
+                <div class="w-2/3 min-w-0 pointer-events-none">
+                    <p
+                        class="rounded-xl bg-black/35 px-2.5 py-2 text-[13px] font-semibold leading-snug text-slate-50 line-clamp-3 shadow-[0_0_24px_rgba(0,0,0,0.7)] backdrop-blur"
+                        :title="product.name"
+                    >
+                        {{ product.name }}
+                    </p>
+                </div>
+
+                <div class="flex w-full shrink-0 items-center gap-3">
+                    <div
+                        ref="actionsClusterRef"
+                        class="relative flex w-fit min-w-0 items-center gap-2.5 rounded-2xl border border-white/10 bg-black/35 px-3 py-1.5 shadow-[0_0_24px_rgba(0,0,0,0.7)] backdrop-blur"
+                    >
+                        <div
+                            v-if="openTooltip === 'nutrition'"
+                            class="absolute left-0 bottom-full z-50 mb-2 w-[190px] rounded-xl border border-white/10 bg-[rgba(0,0,0,0.95)] px-2.5 py-2.5 shadow-xl backdrop-blur"
+                            role="dialog"
                         >
-                            {{ product.name }}
-                        </p>
-
-                        <div class="flex items-center gap-1">
-                            <div
-                                v-if="hasNutrition"
-                                ref="nutritionWrapRef"
-                                class="relative flex-shrink-0"
-                            >
-                                <button
-                                    type="button"
-                                    class="flex h-8 w-8 items-center justify-center rounded-full border border-amber-400/40 bg-black/55 text-amber-200 transition-colors hover:border-amber-400/70 hover:text-amber-200"
-                                    aria-label="Показать КБЖУ"
-                                    @click.stop="toggleNutritionTooltip"
-                                >
-                                    <i class="mdi mdi-fire-circle text-base" />
-                                </button>
-
-                                <div
-                                    v-if="openTooltip === 'nutrition'"
-                                    class="absolute right-0 bottom-full z-50 mb-1 w-[180px] rounded-lg border border-white/10 bg-[rgba(0,0,0,0.95)] px-2 py-2 shadow-xl backdrop-blur"
-                                    role="dialog"
-                                >
-                                    <div class="space-y-1 text-[10px] text-slate-100">
-                                        <div class="flex items-center justify-between gap-2">
-                                            <span class="text-slate-300">Калории</span>
-                                            <span class="font-medium">{{ nutrition.calories }}</span>
-                                        </div>
-                                        <div class="flex items-center justify-between gap-2">
-                                            <span class="text-slate-300">Белки</span>
-                                            <span class="font-medium">{{ nutrition.proteins }} г</span>
-                                        </div>
-                                        <div class="flex items-center justify-between gap-2">
-                                            <span class="text-slate-300">Жиры</span>
-                                            <span class="font-medium">{{ nutrition.fats }} г</span>
-                                        </div>
-                                        <div class="flex items-center justify-between gap-2">
-                                            <span class="text-slate-300">Углеводы</span>
-                                            <span class="font-medium">{{ nutrition.carbs }} г</span>
-                                        </div>
-                                    </div>
+                            <div class="space-y-1 text-[11px] text-slate-100">
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="text-slate-300">Калории</span>
+                                    <span class="font-medium">{{ nutrition.calories }}</span>
+                                </div>
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="text-slate-300">Белки</span>
+                                    <span class="font-medium">{{ nutrition.proteins }} г</span>
+                                </div>
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="text-slate-300">Жиры</span>
+                                    <span class="font-medium">{{ nutrition.fats }} г</span>
+                                </div>
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="text-slate-300">Углеводы</span>
+                                    <span class="font-medium">{{ nutrition.carbs }} г</span>
                                 </div>
                             </div>
+                        </div>
 
+                        <div
+                            v-if="openTooltip === 'ingredients'"
+                            class="absolute left-0 bottom-full z-50 mb-2 w-[210px] max-h-44 overflow-y-auto rounded-xl border border-white/10 bg-[rgba(0,0,0,0.95)] px-2.5 py-2.5 shadow-xl backdrop-blur"
+                            role="dialog"
+                        >
+                            <div class="space-y-1 text-[11px] text-slate-100">
+                                <div class="text-[10px] font-medium text-slate-300">
+                                    Состав
+                                </div>
+                                <div class="text-slate-200/90">
+                                    {{ ingredientsText }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div v-if="hasNutrition">
+                            <button
+                                type="button"
+                                class="flex h-10 w-10 items-center justify-center rounded-full border border-amber-400/40 bg-black/55 text-amber-200 transition-transform duration-300 ease-out hover:border-amber-400/70 hover:text-amber-200"
+                                :class="justPressedNutrition ? 'scale-110' : 'scale-100'"
+                                aria-label="Показать КБЖУ"
+                                @click.stop="toggleNutritionTooltip"
+                            >
+                                <i class="mdi mdi-fire-circle text-xl" />
+                            </button>
+                        </div>
+
+                        <div v-if="hasIngredients">
+                            <button
+                                type="button"
+                                class="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-black/55 text-slate-200 transition-transform duration-300 ease-out hover:border-amber-400/50 hover:text-amber-200"
+                                :class="justPressedIngredients ? 'scale-110' : 'scale-100'"
+                                aria-label="Показать состав"
+                                @click.stop="toggleIngredientsTooltip"
+                            >
+                                <i class="mdi mdi-information-outline text-xl" />
+                            </button>
+                        </div>
+
+                        <div class="flex h-10 shrink-0 items-center">
+                            <template v-if="qtyInCart === 0">
+                                <button
+                                    type="button"
+                                    class="relative flex h-10 w-10 items-center justify-center rounded-full bg-amber-400 text-black transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
+                                    :class="justAddedToCart ? 'scale-[1.06]' : 'scale-100'"
+                                    aria-label="Добавить в корзину"
+                                    @click.stop="handleAddToCart"
+                                >
+                                    <span
+                                        class="pc-feedback-ring pc-feedback-ring--cart pointer-events-none absolute -inset-1 rounded-full ring-2 ring-amber-300/55"
+                                        :class="{ 'pc-feedback-ring--active': justAddedToCart }"
+                                        aria-hidden="true"
+                                    />
+                                    <i
+                                        :class="[
+                                            'mdi mdi-cart-outline text-xl transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]',
+                                            justAddedToCart ? 'scale-110' : 'scale-100',
+                                        ]"
+                                    />
+                                </button>
+                            </template>
                             <div
-                                v-if="hasIngredients"
-                                ref="ingredientsWrapRef"
-                                class="relative flex-shrink-0"
+                                v-else
+                                class="flex h-10 items-center gap-0.5 rounded-full border border-amber-400/50 bg-black/60 px-0.5 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
+                                :class="justChangedQty ? 'scale-[1.04]' : 'scale-100'"
                             >
                                 <button
                                     type="button"
-                                    class="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-black/55 text-slate-200 transition-colors hover:border-amber-400/50 hover:text-amber-200"
-                                    aria-label="Показать состав"
-                                    @click.stop="toggleIngredientsTooltip"
+                                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-black/50 text-base font-semibold leading-none text-slate-100 transition-colors hover:bg-black/70"
+                                    aria-label="Уменьшить количество"
+                                    @click.stop="handleDecrement"
                                 >
-                                    <i class="mdi mdi-information-outline text-base" />
+                                    –
                                 </button>
-
-                                <div
-                                    v-if="openTooltip === 'ingredients'"
-                                    class="absolute right-0 bottom-full z-50 mb-1 w-[200px] max-h-36 overflow-y-auto rounded-lg border border-white/10 bg-[rgba(0,0,0,0.95)] px-2 py-2 shadow-xl backdrop-blur"
-                                    role="dialog"
+                                <span class="min-w-[1.5rem] px-0.5 text-center text-[12px] font-semibold tabular-nums text-amber-200">
+                                    {{ qtyInCart }}
+                                </span>
+                                <button
+                                    type="button"
+                                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-black/50 text-base font-semibold leading-none text-slate-100 transition-colors hover:bg-black/70"
+                                    aria-label="Увеличить количество"
+                                    @click.stop="handleIncrement"
                                 >
-                                    <div class="space-y-1 text-[10px] text-slate-100">
-                                        <div class="text-[10px] font-medium text-slate-300">
-                                            Состав
-                                        </div>
-                                        <div class="text-slate-200/90">
-                                            {{ ingredientsText }}
-                                        </div>
-                                    </div>
-                                </div>
+                                    +
+                                </button>
                             </div>
                         </div>
                     </div>
 
-                    <p
-                        v-if="product.consist"
-                        class="text-[11px] leading-snug text-slate-400 line-clamp-2"
-                        :title="product.consist"
+                    <div
+                        v-if="product.price != null"
+                        class="ml-auto flex min-h-10 shrink-0 items-center whitespace-nowrap rounded-lg bg-amber-400 px-3 py-1.5 text-[12px] font-semibold text-black"
                     >
-                        {{ product.consist }}
-                    </p>
-
-                    <div class="flex items-center justify-between gap-2">
-                        <div
-                            v-if="product.price"
-                            class="inline-flex items-center rounded-full bg-amber-400 px-2.5 py-1 text-[13px] font-semibold text-black shadow-[0_0_20px_rgba(251,191,36,0.7)]"
-                        >
-                            {{ product.price }} ₽
-                        </div>
-
-                        <div class="flex items-center gap-2">
-                    <button
-                        v-if="qtyInCart === 0"
-                        type="button"
-                        class="flex h-10 w-10 items-center justify-center rounded-full bg-amber-400 text-black shadow-[0_0_12px_rgba(251,191,36,0.45)] transition-transform hover:scale-[1.02]"
-                        aria-label="В корзину"
-                        @click.stop="handleAddToCart"
-                    >
-                        <i class="mdi mdi-cart-outline text-xl" />
-                    </button>
-
-                    <template v-else>
-                        <button
-                            type="button"
-                            class="flex h-10 w-10 items-center justify-center rounded-full border border-amber-400/50 bg-black/60 text-amber-200 transition-colors hover:border-amber-400/70"
-                            aria-label="Уменьшить количество"
-                            @click.stop="handleDec"
-                        >
-                            <i class="mdi mdi-minus text-xl" />
-                        </button>
-
-                        <span
-                            class="min-w-[2.5ch] text-center font-semibold text-sm text-slate-100 tabular-nums"
-                            aria-label="Количество в корзине"
-                        >
-                            {{ qtyInCart }}
-                        </span>
-
-                        <button
-                            type="button"
-                            class="flex h-10 w-10 items-center justify-center rounded-full border border-amber-400/50 bg-black/60 text-amber-200 transition-colors hover:border-amber-400/70"
-                            aria-label="Увеличить количество"
-                            @click.stop="handleInc"
-                        >
-                            <i class="mdi mdi-plus text-xl" />
-                        </button>
-                    </template>
-                        </div>
+                        {{ product.price }}&nbsp;₽
                     </div>
                 </div>
             </div>
@@ -336,5 +420,56 @@ function handleDec() {
     </article>
 </template>
 
-<style scoped></style>
+<style scoped>
+/* Плавное «сияние» без резкого mount/unmount */
+.pc-feedback-ring {
+    opacity: 0;
+    box-shadow: none;
+    transform: scale(0.92);
+}
+
+.pc-feedback-ring--active {
+    animation: pc-feedback-ring 0.75s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.pc-feedback-ring--cart.pc-feedback-ring--active {
+    animation: pc-feedback-ring-cart 0.78s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes pc-feedback-ring {
+    0% {
+        opacity: 0;
+        transform: scale(0.88);
+        box-shadow: 0 0 0 0 rgba(251, 191, 36, 0);
+    }
+    45% {
+        opacity: 1;
+        transform: scale(1);
+        box-shadow: 0 0 22px rgba(251, 191, 36, 0.45);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(1.05);
+        box-shadow: 0 0 0 0 rgba(251, 191, 36, 0);
+    }
+}
+
+@keyframes pc-feedback-ring-cart {
+    0% {
+        opacity: 0;
+        transform: scale(0.85);
+        box-shadow: 0 0 0 0 rgba(251, 191, 36, 0);
+    }
+    42% {
+        opacity: 1;
+        transform: scale(1);
+        box-shadow: 0 0 28px rgba(251, 191, 36, 0.55);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(1.08);
+        box-shadow: 0 0 0 0 rgba(251, 191, 36, 0);
+    }
+}
+</style>
 
