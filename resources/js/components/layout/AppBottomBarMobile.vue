@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { ref, watch, onBeforeUnmount } from "vue";
 import { useUiStore } from "../../stores/uiStore";
 import { useCartStore } from "../../stores/cartStore";
 import {
@@ -10,6 +10,10 @@ import {
 } from "../../animations/animationManager";
 import { useBottomDockState } from "../../composables/ui/useBottomDockState";
 import { dockItems as dockItemsMobile } from "../../dock/dockRegistryMobile";
+import {
+    pushBodyScrollLock,
+    popBodyScrollLock,
+} from "../../utils/system/bodyScrollLock";
 
 const uiStore = useUiStore();
 const cartStore = useCartStore();
@@ -92,6 +96,24 @@ function onDockPanelTouchEnd(e) {
 const handleDockClick = (id) => {
     uiStore.setDockActive(id);
 };
+
+watch(
+    () => uiStore.dockActiveId,
+    (id, prevId) => {
+        if (prevId && !id) {
+            popBodyScrollLock();
+        } else if (!prevId && id) {
+            pushBodyScrollLock();
+        }
+    },
+    { immediate: true },
+);
+
+onBeforeUnmount(() => {
+    if (uiStore.dockActiveId) {
+        popBodyScrollLock();
+    }
+});
 
 const handleEnter = (el, done) => {
     playBottomBarShow(el);

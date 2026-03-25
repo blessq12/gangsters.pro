@@ -1,6 +1,10 @@
 <script setup>
 import { nextTick, onBeforeUnmount, ref, watch } from "vue";
 import { playModalClose, playModalOpen } from "../../animations/animationManager";
+import {
+    pushBodyScrollLock,
+    popBodyScrollLock,
+} from "../../utils/system/bodyScrollLock";
 
 const props = defineProps({
     modelValue: {
@@ -18,15 +22,17 @@ const emit = defineEmits(["update:modelValue"]);
 const isVisible = ref(false);
 const backdropRef = ref(null);
 const cardRef = ref(null);
-let savedOverflow = "";
+let bodyScrollLocksHeld = 0;
 
 const lockBodyScroll = () => {
-    savedOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    pushBodyScrollLock();
+    bodyScrollLocksHeld += 1;
 };
 
 const unlockBodyScroll = () => {
-    document.body.style.overflow = savedOverflow || "";
+    if (bodyScrollLocksHeld === 0) return;
+    popBodyScrollLock();
+    bodyScrollLocksHeld -= 1;
 };
 
 const close = () => {
@@ -58,7 +64,12 @@ watch(
     { immediate: true },
 );
 
-onBeforeUnmount(unlockBodyScroll);
+onBeforeUnmount(() => {
+    while (bodyScrollLocksHeld > 0) {
+        popBodyScrollLock();
+        bodyScrollLocksHeld -= 1;
+    }
+});
 </script>
 
 <template>

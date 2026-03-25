@@ -10,6 +10,10 @@ import {
     getProductNutritionNumbers,
     hasProductNutrition,
 } from "../../utils/catalog/productNutrition";
+import {
+    pushBodyScrollLock,
+    popBodyScrollLock,
+} from "../../utils/system/bodyScrollLock";
 
 const props = defineProps({
     modelValue: {
@@ -34,7 +38,7 @@ const isVisible = ref(false);
 const backdropRef = ref(null);
 const panelRef = ref(null);
 const scrollRef = ref(null);
-let savedOverflow = "";
+let bodyScrollLocksHeld = 0;
 
 const touchStart = ref({ x: 0, y: 0 });
 
@@ -70,12 +74,14 @@ function onTouchEnd(e) {
 }
 
 const lockBodyScroll = () => {
-    savedOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    pushBodyScrollLock();
+    bodyScrollLocksHeld += 1;
 };
 
 const unlockBodyScroll = () => {
-    document.body.style.overflow = savedOverflow || "";
+    if (bodyScrollLocksHeld === 0) return;
+    popBodyScrollLock();
+    bodyScrollLocksHeld -= 1;
 };
 
 const close = () => {
@@ -107,7 +113,12 @@ watch(
     { immediate: true },
 );
 
-onBeforeUnmount(unlockBodyScroll);
+onBeforeUnmount(() => {
+    while (bodyScrollLocksHeld > 0) {
+        popBodyScrollLock();
+        bodyScrollLocksHeld -= 1;
+    }
+});
 
 const galleryImages = computed(() =>
     buildProductGallerySlides(props.product),

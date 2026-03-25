@@ -3,6 +3,10 @@ import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
 import { useCartStore } from "../../stores/cartStore";
 import { playModalClose, playModalOpen, playProductDetailInfoEnter } from "../../animations/animationManager";
 import { buildProductGallerySlides } from "../../utils/catalog/productMedia";
+import {
+    pushBodyScrollLock,
+    popBodyScrollLock,
+} from "../../utils/system/bodyScrollLock";
 
 const props = defineProps({
     modelValue: {
@@ -22,15 +26,17 @@ const isVisible = ref(false);
 const backdropRef = ref(null);
 const panelRef = ref(null);
 const infoRef = ref(null);
-let savedOverflow = "";
+let bodyScrollLocksHeld = 0;
 
 const lockBodyScroll = () => {
-    savedOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    pushBodyScrollLock();
+    bodyScrollLocksHeld += 1;
 };
 
 const unlockBodyScroll = () => {
-    document.body.style.overflow = savedOverflow || "";
+    if (bodyScrollLocksHeld === 0) return;
+    popBodyScrollLock();
+    bodyScrollLocksHeld -= 1;
 };
 
 const close = () => {
@@ -65,7 +71,12 @@ watch(
     { immediate: true },
 );
 
-onBeforeUnmount(unlockBodyScroll);
+onBeforeUnmount(() => {
+    while (bodyScrollLocksHeld > 0) {
+        popBodyScrollLock();
+        bodyScrollLocksHeld -= 1;
+    }
+});
 
 const galleryImages = computed(() =>
     buildProductGallerySlides(props.product),
