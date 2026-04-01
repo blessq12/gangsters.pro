@@ -41,8 +41,8 @@
     "file": "assets/orderDisplay-BaaOedr7.js",
     "name": "orderDisplay"
   },
-  "_orderStore-B5U9Y_5J.js": {
-    "file": "assets/orderStore-B5U9Y_5J.js",
+  "_orderStore-CbxCy36-.js": {
+    "file": "assets/orderStore-CbxCy36-.js",
     "name": "orderStore",
     "imports": [
       "_pinia-D1mtu06R.js",
@@ -77,13 +77,13 @@
       "_vue-core-BpasoeSx.js"
     ]
   },
-  "_useCheckoutFlow-tIqyJlWu.js": {
-    "file": "assets/useCheckoutFlow-tIqyJlWu.js",
+  "_useCheckoutFlow-mBv6i5mY.js": {
+    "file": "assets/useCheckoutFlow-mBv6i5mY.js",
     "name": "useCheckoutFlow",
     "imports": [
       "_vue-core-BpasoeSx.js",
       "resources/js/app.js",
-      "_orderStore-B5U9Y_5J.js",
+      "_orderStore-CbxCy36-.js",
       "_formatRuPhone-LGdjeFIT.js"
     ]
   },
@@ -95,16 +95,16 @@
       "_gsap-D3jsOSc0.js"
     ]
   },
-  "_useFloatLoop-n9PEsI75.js": {
-    "file": "assets/useFloatLoop-n9PEsI75.js",
+  "_useFloatLoop-CRh0IjVN.js": {
+    "file": "assets/useFloatLoop-CRh0IjVN.js",
     "name": "useFloatLoop",
     "imports": [
       "_vue-core-BpasoeSx.js",
       "resources/js/app.js"
     ]
   },
-  "_useProductActions-DjgY82Cb.js": {
-    "file": "assets/useProductActions-DjgY82Cb.js",
+  "_useProductActions-J8O7ysgd.js": {
+    "file": "assets/useProductActions-J8O7ysgd.js",
     "name": "useProductActions",
     "imports": [
       "_vue-core-BpasoeSx.js",
@@ -201,12 +201,12 @@
     "src": "node_modules/@mdi/font/fonts/materialdesignicons-webfont.woff2"
   },
   "resources/css/style.css": {
-    "file": "assets/style-M9Bz5EjU.css",
+    "file": "assets/style-DM9wus6Z.css",
     "src": "resources/css/style.css",
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-DWJ62wq_.js",
+    "file": "assets/app-C0SHJGMi.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -275,6 +275,7 @@
       "resources/js/components/layout/MobileMenu.vue",
       "resources/js/components/ui/BaseModal.vue",
       "resources/js/components/ui/HomeJumbotron.vue",
+      "resources/js/components/ui/HomeJumbotronBase.vue",
       "resources/js/components/ui/HomeJumbotronMobile.vue",
       "resources/js/components/ui/HomePromotions.vue",
       "resources/js/components/ui/HomePromotionsDesktop.vue",
@@ -297,7 +298,7 @@
     ]
   },
   "resources/js/components/catalog/CatalogCategoriesBase.vue": {
-    "file": "assets/CatalogCategoriesBase-BBZgu48s.js",
+    "file": "assets/CatalogCategoriesBase-DxiI6FZA.js",
     "name": "CatalogCategoriesBase",
     "src": "resources/js/components/catalog/CatalogCategoriesBase.vue",
     "isDynamicEntry": true,
@@ -336,7 +337,7 @@
     ]
   },
   "resources/js/components/catalog/CatalogProducts.vue": {
-    "file": "assets/CatalogProducts-CVqBaV91.js",
+    "file": "assets/CatalogProducts-5RkXfr9x.js",
     "name": "CatalogProducts",
     "src": "resources/js/components/catalog/CatalogProducts.vue",
     "isDynamicEntry": true,
@@ -357,7 +358,7 @@
     ]
   },
   "resources/js/components/catalog/CatalogProductsBase.vue": {
-    "file": "assets/CatalogProductsBase-BsV7wmc-.js",
+    "file": "assets/CatalogProductsBase-DXI__QYH.js",
     "name": "CatalogProductsBase",
     "src": "resources/js/components/catalog/CatalogProductsBase.vue",
     "isDynamicEntry": true,
@@ -396,14 +397,14 @@
     ]
   },
   "resources/js/components/catalog/ProductCard.vue": {
-    "file": "assets/ProductCard-B_Ens0_U.js",
+    "file": "assets/ProductCard-JY79OIVh.js",
     "name": "ProductCard",
     "src": "resources/js/components/catalog/ProductCard.vue",
     "isDynamicEntry": true,
     "imports": [
       "_vue-core-BpasoeSx.js",
       "resources/js/app.js",
-      "_useProductActions-DjgY82Cb.js",
+      "_useProductActions-J8O7ysgd.js",
       "_useProductMeta-BJrWfRH-.js",
       "_vendor-misc--3MWDXay.js",
       "_maska-DUW60oUS.js",
@@ -416,14 +417,14 @@
     ]
   },
   "resources/js/components/catalog/ProductCardMobile.vue": {
-    "file": "assets/ProductCardMobile-BYfx69_l.js",
+    "file": "assets/ProductCardMobile-DSZciT-l.js",
     "name": "ProductCardMobile",
     "src": "resources/js/components/catalog/ProductCardMobile.vue",
     "isDynamicEntry": true,
     "imports": [
       "_vue-core-BpasoeSx.js",
       "resources/js/app.js",
-      "_useProductActions-DjgY82Cb.js",
+      "_useProductActions-J8O7ysgd.js",
       "_useProductMeta-BJrWfRH-.js",
       "_vendor-misc--3MWDXay.js",
       "_maska-DUW60oUS.js",
@@ -439,7 +440,7 @@
     ]
   },
   "resources/js/components/catalog/ProductDetailInfo.vue": {
-    "file": "assets/ProductDetailInfo-IXUE6VB2.js",
+    "file": "assets/ProductDetailInfo-74yknmnK.js",
     "name": "ProductDetailInfo",
     "src": "resources/js/components/catalog/ProductDetailInfo.vue",
     "isDynamicEntry": true,
@@ -470,7 +471,7 @@
     ]
   },
   "resources/js/components/catalog/ProductDetailModalBase.vue": {
-    "file": "assets/ProductDetailModalBase-DXjg_Wtm.js",
+    "file": "assets/ProductDetailModalBase-BPXHNQXH.js",
     "name": "ProductDetailModalBase",
     "src": "resources/js/components/catalog/ProductDetailModalBase.vue",
     "isDynamicEntry": true,
@@ -478,7 +479,7 @@
       "_vue-core-BpasoeSx.js",
       "resources/js/app.js",
       "_bodyScrollLock-BP2vPCYo.js",
-      "_useProductActions-DjgY82Cb.js",
+      "_useProductActions-J8O7ysgd.js",
       "_vendor-misc--3MWDXay.js",
       "_maska-DUW60oUS.js",
       "_pinia-D1mtu06R.js",
@@ -502,7 +503,7 @@
     ]
   },
   "resources/js/components/catalog/ProductGallerySlider.vue": {
-    "file": "assets/ProductGallerySlider-CkTmPYoK.js",
+    "file": "assets/ProductGallerySlider-BXMun0bO.js",
     "name": "ProductGallerySlider",
     "src": "resources/js/components/catalog/ProductGallerySlider.vue",
     "isDynamicEntry": true,
@@ -554,7 +555,7 @@
     ]
   },
   "resources/js/components/checkout/CheckoutDeliveryStep.vue": {
-    "file": "assets/CheckoutDeliveryStep-BpB8mF-9.js",
+    "file": "assets/CheckoutDeliveryStep-Dc_IWfK9.js",
     "name": "CheckoutDeliveryStep",
     "src": "resources/js/components/checkout/CheckoutDeliveryStep.vue",
     "isDynamicEntry": true,
@@ -596,7 +597,7 @@
     ]
   },
   "resources/js/components/client/ClientAddressesManager.vue": {
-    "file": "assets/ClientAddressesManager--OfNkn2L.js",
+    "file": "assets/ClientAddressesManager-CRlzPE5T.js",
     "name": "ClientAddressesManager",
     "src": "resources/js/components/client/ClientAddressesManager.vue",
     "isDynamicEntry": true,
@@ -614,7 +615,7 @@
     ]
   },
   "resources/js/components/client/ClientLoginForm.vue": {
-    "file": "assets/ClientLoginForm-7Bdi_sI3.js",
+    "file": "assets/ClientLoginForm-0Y2OwgUc.js",
     "name": "ClientLoginForm",
     "src": "resources/js/components/client/ClientLoginForm.vue",
     "isDynamicEntry": true,
@@ -633,13 +634,13 @@
     ]
   },
   "resources/js/components/client/ClientOrderHistory.vue": {
-    "file": "assets/ClientOrderHistory-c598RaPp.js",
+    "file": "assets/ClientOrderHistory-Bh3NPOyP.js",
     "name": "ClientOrderHistory",
     "src": "resources/js/components/client/ClientOrderHistory.vue",
     "isDynamicEntry": true,
     "imports": [
       "_vue-core-BpasoeSx.js",
-      "_orderStore-B5U9Y_5J.js",
+      "_orderStore-CbxCy36-.js",
       "_orderDisplay-BaaOedr7.js",
       "_pinia-D1mtu06R.js",
       "resources/js/app.js",
@@ -653,7 +654,7 @@
     ]
   },
   "resources/js/components/client/ClientProfileEditForm.vue": {
-    "file": "assets/ClientProfileEditForm-5PVX1_lw.js",
+    "file": "assets/ClientProfileEditForm-D0qqHp5J.js",
     "name": "ClientProfileEditForm",
     "src": "resources/js/components/client/ClientProfileEditForm.vue",
     "isDynamicEntry": true,
@@ -672,14 +673,14 @@
     ]
   },
   "resources/js/components/client/ClientProfileView.vue": {
-    "file": "assets/ClientProfileView-B9cPWPgW.js",
+    "file": "assets/ClientProfileView-DNeKX4zP.js",
     "name": "ClientProfileView",
     "src": "resources/js/components/client/ClientProfileView.vue",
     "isDynamicEntry": true,
     "imports": [
       "_vue-core-BpasoeSx.js",
       "resources/js/app.js",
-      "_orderStore-B5U9Y_5J.js",
+      "_orderStore-CbxCy36-.js",
       "_orderDisplay-BaaOedr7.js",
       "_vendor-misc--3MWDXay.js",
       "_maska-DUW60oUS.js",
@@ -692,7 +693,7 @@
     ]
   },
   "resources/js/components/client/ClientRegisterForm.vue": {
-    "file": "assets/ClientRegisterForm-BTqjVSSD.js",
+    "file": "assets/ClientRegisterForm-DbKuE3zO.js",
     "name": "ClientRegisterForm",
     "src": "resources/js/components/client/ClientRegisterForm.vue",
     "isDynamicEntry": true,
@@ -711,13 +712,13 @@
     ]
   },
   "resources/js/components/dock/CartDockPanel.vue": {
-    "file": "assets/CartDockPanel-wwe1ROJh.js",
+    "file": "assets/CartDockPanel-8SqKlQB9.js",
     "name": "CartDockPanel",
     "src": "resources/js/components/dock/CartDockPanel.vue",
     "isDynamicEntry": true,
     "imports": [
       "_vue-core-BpasoeSx.js",
-      "_useCheckoutFlow-tIqyJlWu.js",
+      "_useCheckoutFlow-mBv6i5mY.js",
       "_checkoutFlowContext-WpL02C1Z.js",
       "resources/js/app.js",
       "_vendor-misc--3MWDXay.js",
@@ -728,18 +729,18 @@
       "_axios-xsH4HHeE.js",
       "_vue-router-CwoV_7I4.js",
       "_gsap-D3jsOSc0.js",
-      "_orderStore-B5U9Y_5J.js",
+      "_orderStore-CbxCy36-.js",
       "_formatRuPhone-LGdjeFIT.js"
     ]
   },
   "resources/js/components/dock/CartDockPanelDesktop.vue": {
-    "file": "assets/CartDockPanelDesktop-oHfnFfxG.js",
+    "file": "assets/CartDockPanelDesktop-BPZLtqHH.js",
     "name": "CartDockPanelDesktop",
     "src": "resources/js/components/dock/CartDockPanelDesktop.vue",
     "isDynamicEntry": true,
     "imports": [
       "_vue-core-BpasoeSx.js",
-      "_useCheckoutFlow-tIqyJlWu.js",
+      "_useCheckoutFlow-mBv6i5mY.js",
       "_checkoutFlowContext-WpL02C1Z.js",
       "resources/js/app.js",
       "_vendor-misc--3MWDXay.js",
@@ -750,18 +751,18 @@
       "_axios-xsH4HHeE.js",
       "_vue-router-CwoV_7I4.js",
       "_gsap-D3jsOSc0.js",
-      "_orderStore-B5U9Y_5J.js",
+      "_orderStore-CbxCy36-.js",
       "_formatRuPhone-LGdjeFIT.js"
     ]
   },
   "resources/js/components/dock/CartDockPanelMobile.vue": {
-    "file": "assets/CartDockPanelMobile-Cr9jFvgU.js",
+    "file": "assets/CartDockPanelMobile-D1Gb_x7O.js",
     "name": "CartDockPanelMobile",
     "src": "resources/js/components/dock/CartDockPanelMobile.vue",
     "isDynamicEntry": true,
     "imports": [
       "_vue-core-BpasoeSx.js",
-      "_useCheckoutFlow-tIqyJlWu.js",
+      "_useCheckoutFlow-mBv6i5mY.js",
       "_checkoutFlowContext-WpL02C1Z.js",
       "resources/js/app.js",
       "_vendor-misc--3MWDXay.js",
@@ -772,12 +773,12 @@
       "_axios-xsH4HHeE.js",
       "_vue-router-CwoV_7I4.js",
       "_gsap-D3jsOSc0.js",
-      "_orderStore-B5U9Y_5J.js",
+      "_orderStore-CbxCy36-.js",
       "_formatRuPhone-LGdjeFIT.js"
     ]
   },
   "resources/js/components/dock/DeliveryDockPanel.vue": {
-    "file": "assets/DeliveryDockPanel-BSi5GxGh.js",
+    "file": "assets/DeliveryDockPanel-wqBFyuZV.js",
     "name": "DeliveryDockPanel",
     "src": "resources/js/components/dock/DeliveryDockPanel.vue",
     "isDynamicEntry": true,
@@ -795,7 +796,7 @@
     ]
   },
   "resources/js/components/dock/DeliveryDockPanelDesktop.vue": {
-    "file": "assets/DeliveryDockPanelDesktop-D4fGHzQX.js",
+    "file": "assets/DeliveryDockPanelDesktop-BoqJL5kW.js",
     "name": "DeliveryDockPanelDesktop",
     "src": "resources/js/components/dock/DeliveryDockPanelDesktop.vue",
     "isDynamicEntry": true,
@@ -813,7 +814,7 @@
     ]
   },
   "resources/js/components/dock/DeliveryDockPanelMobile.vue": {
-    "file": "assets/DeliveryDockPanelMobile-BUYP1djQ.js",
+    "file": "assets/DeliveryDockPanelMobile-BkXydHXE.js",
     "name": "DeliveryDockPanelMobile",
     "src": "resources/js/components/dock/DeliveryDockPanelMobile.vue",
     "isDynamicEntry": true,
@@ -831,7 +832,7 @@
     ]
   },
   "resources/js/components/dock/FavoritesDockPanel.vue": {
-    "file": "assets/FavoritesDockPanel-D2utHuqr.js",
+    "file": "assets/FavoritesDockPanel-4fUt2-Sb.js",
     "name": "FavoritesDockPanel",
     "src": "resources/js/components/dock/FavoritesDockPanel.vue",
     "isDynamicEntry": true,
@@ -849,7 +850,7 @@
     ]
   },
   "resources/js/components/dock/FavoritesDockPanelDesktop.vue": {
-    "file": "assets/FavoritesDockPanelDesktop-rAy54oy8.js",
+    "file": "assets/FavoritesDockPanelDesktop-DMkM8-S5.js",
     "name": "FavoritesDockPanelDesktop",
     "src": "resources/js/components/dock/FavoritesDockPanelDesktop.vue",
     "isDynamicEntry": true,
@@ -867,7 +868,7 @@
     ]
   },
   "resources/js/components/dock/FavoritesDockPanelMobile.vue": {
-    "file": "assets/FavoritesDockPanelMobile-D0JQVXWw.js",
+    "file": "assets/FavoritesDockPanelMobile-B71FsTZ2.js",
     "name": "FavoritesDockPanelMobile",
     "src": "resources/js/components/dock/FavoritesDockPanelMobile.vue",
     "isDynamicEntry": true,
@@ -885,7 +886,7 @@
     ]
   },
   "resources/js/components/dock/ProfileDockPanel.vue": {
-    "file": "assets/ProfileDockPanel-BpvY7kj4.js",
+    "file": "assets/ProfileDockPanel-BUSMFKr2.js",
     "name": "ProfileDockPanel",
     "src": "resources/js/components/dock/ProfileDockPanel.vue",
     "isDynamicEntry": true,
@@ -904,7 +905,7 @@
     ]
   },
   "resources/js/components/dock/ProfileDockPanelDesktop.vue": {
-    "file": "assets/ProfileDockPanelDesktop-CNKKr8DE.js",
+    "file": "assets/ProfileDockPanelDesktop-CAwjZ-WY.js",
     "name": "ProfileDockPanelDesktop",
     "src": "resources/js/components/dock/ProfileDockPanelDesktop.vue",
     "isDynamicEntry": true,
@@ -923,7 +924,7 @@
     ]
   },
   "resources/js/components/dock/ProfileDockPanelMobile.vue": {
-    "file": "assets/ProfileDockPanelMobile-BoovTQsA.js",
+    "file": "assets/ProfileDockPanelMobile-CJTg4t7q.js",
     "name": "ProfileDockPanelMobile",
     "src": "resources/js/components/dock/ProfileDockPanelMobile.vue",
     "isDynamicEntry": true,
@@ -942,7 +943,7 @@
     ]
   },
   "resources/js/components/layout/AppBottomBar.vue": {
-    "file": "assets/AppBottomBar-Diu_5LvC.js",
+    "file": "assets/AppBottomBar-PWoS8XfX.js",
     "name": "AppBottomBar",
     "src": "resources/js/components/layout/AppBottomBar.vue",
     "isDynamicEntry": true,
@@ -961,7 +962,7 @@
     ]
   },
   "resources/js/components/layout/AppBottomBarDesktop.vue": {
-    "file": "assets/AppBottomBarDesktop-DgCw-ofk.js",
+    "file": "assets/AppBottomBarDesktop-CecgHeh3.js",
     "name": "AppBottomBarDesktop",
     "src": "resources/js/components/layout/AppBottomBarDesktop.vue",
     "isDynamicEntry": true,
@@ -986,7 +987,7 @@
     ]
   },
   "resources/js/components/layout/AppBottomBarMobile.vue": {
-    "file": "assets/AppBottomBarMobile-BX8shtfV.js",
+    "file": "assets/AppBottomBarMobile-CXNF3PNf.js",
     "name": "AppBottomBarMobile",
     "src": "resources/js/components/layout/AppBottomBarMobile.vue",
     "isDynamicEntry": true,
@@ -1012,7 +1013,7 @@
     ]
   },
   "resources/js/components/layout/AppFooter.vue": {
-    "file": "assets/AppFooter-DHSkUBFP.js",
+    "file": "assets/AppFooter-Cuq2u_m6.js",
     "name": "AppFooter",
     "src": "resources/js/components/layout/AppFooter.vue",
     "isDynamicEntry": true,
@@ -1031,7 +1032,7 @@
     ]
   },
   "resources/js/components/layout/AppNavbar.vue": {
-    "file": "assets/AppNavbar-Cd5ftGH4.js",
+    "file": "assets/AppNavbar-Bl84Wpi7.js",
     "name": "AppNavbar",
     "src": "resources/js/components/layout/AppNavbar.vue",
     "isDynamicEntry": true,
@@ -1062,7 +1063,7 @@
     ]
   },
   "resources/js/components/layout/AppNavbarMobile.vue": {
-    "file": "assets/AppNavbarMobile-DrLUuwj2.js",
+    "file": "assets/AppNavbarMobile-BEuUHzjH.js",
     "name": "AppNavbarMobile",
     "src": "resources/js/components/layout/AppNavbarMobile.vue",
     "isDynamicEntry": true,
@@ -1082,7 +1083,7 @@
     ]
   },
   "resources/js/components/layout/MobileMenu.vue": {
-    "file": "assets/MobileMenu-DNsLD4oP.js",
+    "file": "assets/MobileMenu-CtHAktB6.js",
     "name": "MobileMenu",
     "src": "resources/js/components/layout/MobileMenu.vue",
     "isDynamicEntry": true,
@@ -1106,7 +1107,7 @@
     ]
   },
   "resources/js/components/ui/BaseModal.vue": {
-    "file": "assets/BaseModal-Cu4Q77bn.js",
+    "file": "assets/BaseModal-ik55fZyT.js",
     "name": "BaseModal",
     "src": "resources/js/components/ui/BaseModal.vue",
     "isDynamicEntry": true,
@@ -1128,12 +1129,30 @@
     ]
   },
   "resources/js/components/ui/HomeJumbotron.vue": {
-    "file": "assets/HomeJumbotron-B6JXDr2U.js",
+    "file": "assets/HomeJumbotron-BCgBZPZc.js",
     "name": "HomeJumbotron",
     "src": "resources/js/components/ui/HomeJumbotron.vue",
     "isDynamicEntry": true,
     "imports": [
       "_vue-core-BpasoeSx.js",
+      "resources/js/app.js",
+      "_vendor-misc--3MWDXay.js",
+      "_maska-DUW60oUS.js",
+      "_pinia-D1mtu06R.js",
+      "_vue-lazyload-D4Rr0_lA.js",
+      "_vue-toastification-CVjr7yKM.js",
+      "_axios-xsH4HHeE.js",
+      "_vue-router-CwoV_7I4.js",
+      "_gsap-D3jsOSc0.js"
+    ]
+  },
+  "resources/js/components/ui/HomeJumbotronBase.vue": {
+    "file": "assets/HomeJumbotronBase-oOOXiBuT.js",
+    "name": "HomeJumbotronBase",
+    "src": "resources/js/components/ui/HomeJumbotronBase.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_vue-core-BpasoeSx.js",
       "_swiper-C4vUfczV.js",
       "resources/js/app.js",
       "_vendor-misc--3MWDXay.js",
@@ -1146,17 +1165,16 @@
       "_gsap-D3jsOSc0.js"
     ],
     "css": [
-      "assets/HomeJumbotron-Bq0fDoF6.css"
+      "assets/HomeJumbotronBase-BrmOcz_i.css"
     ]
   },
   "resources/js/components/ui/HomeJumbotronMobile.vue": {
-    "file": "assets/HomeJumbotronMobile-BxDiy7K0.js",
+    "file": "assets/HomeJumbotronMobile-Ck1-BTVf.js",
     "name": "HomeJumbotronMobile",
     "src": "resources/js/components/ui/HomeJumbotronMobile.vue",
     "isDynamicEntry": true,
     "imports": [
       "_vue-core-BpasoeSx.js",
-      "_swiper-C4vUfczV.js",
       "resources/js/app.js",
       "_vendor-misc--3MWDXay.js",
       "_maska-DUW60oUS.js",
@@ -1166,19 +1184,16 @@
       "_axios-xsH4HHeE.js",
       "_vue-router-CwoV_7I4.js",
       "_gsap-D3jsOSc0.js"
-    ],
-    "css": [
-      "assets/HomeJumbotronMobile-D04OaSK9.css"
     ]
   },
   "resources/js/components/ui/HomePromotions.vue": {
-    "file": "assets/HomePromotions-BboIFF7z.js",
+    "file": "assets/HomePromotions-DcotFQJd.js",
     "name": "HomePromotions",
     "src": "resources/js/components/ui/HomePromotions.vue",
     "isDynamicEntry": true,
     "imports": [
       "_vue-core-BpasoeSx.js",
-      "_useFloatLoop-n9PEsI75.js",
+      "_useFloatLoop-CRh0IjVN.js",
       "resources/js/app.js",
       "_vendor-misc--3MWDXay.js",
       "_maska-DUW60oUS.js",
@@ -1194,13 +1209,13 @@
     ]
   },
   "resources/js/components/ui/HomePromotionsDesktop.vue": {
-    "file": "assets/HomePromotionsDesktop-Cy4PTIM9.js",
+    "file": "assets/HomePromotionsDesktop-hHQupG-X.js",
     "name": "HomePromotionsDesktop",
     "src": "resources/js/components/ui/HomePromotionsDesktop.vue",
     "isDynamicEntry": true,
     "imports": [
       "_vue-core-BpasoeSx.js",
-      "_useFloatLoop-n9PEsI75.js",
+      "_useFloatLoop-CRh0IjVN.js",
       "resources/js/app.js",
       "_vendor-misc--3MWDXay.js",
       "_maska-DUW60oUS.js",
@@ -1213,7 +1228,7 @@
     ]
   },
   "resources/js/components/ui/HomePromotionsMobile.vue": {
-    "file": "assets/HomePromotionsMobile-DLxQqFZ8.js",
+    "file": "assets/HomePromotionsMobile-7e02OsVh.js",
     "name": "HomePromotionsMobile",
     "src": "resources/js/components/ui/HomePromotionsMobile.vue",
     "isDynamicEntry": true,
@@ -1235,7 +1250,7 @@
     ]
   },
   "resources/js/components/ui/SecondaryBanner.vue": {
-    "file": "assets/SecondaryBanner-CDrhb6cd.js",
+    "file": "assets/SecondaryBanner-CQdKkXMd.js",
     "name": "SecondaryBanner",
     "src": "resources/js/components/ui/SecondaryBanner.vue",
     "isDynamicEntry": true,
@@ -1262,7 +1277,7 @@
     ]
   },
   "resources/js/layouts/SecondaryPageLayout.vue": {
-    "file": "assets/SecondaryPageLayout-CBxv97Id.js",
+    "file": "assets/SecondaryPageLayout-D_urR6QG.js",
     "name": "SecondaryPageLayout",
     "src": "resources/js/layouts/SecondaryPageLayout.vue",
     "isDynamicEntry": true,
@@ -1280,7 +1295,7 @@
     ]
   },
   "resources/js/pages/AboutPage.vue": {
-    "file": "assets/AboutPage-83uqdJyq.js",
+    "file": "assets/AboutPage-D5HLWikY.js",
     "name": "AboutPage",
     "src": "resources/js/pages/AboutPage.vue",
     "isDynamicEntry": true,
@@ -1298,7 +1313,7 @@
     ]
   },
   "resources/js/pages/ContactsPage.vue": {
-    "file": "assets/ContactsPage-D5Na5wEv.js",
+    "file": "assets/ContactsPage-BubrcyJZ.js",
     "name": "ContactsPage",
     "src": "resources/js/pages/ContactsPage.vue",
     "isDynamicEntry": true,
@@ -1319,7 +1334,7 @@
     ]
   },
   "resources/js/pages/DeliveryPage.vue": {
-    "file": "assets/DeliveryPage-B6e7UgvC.js",
+    "file": "assets/DeliveryPage-CrSJ5ulo.js",
     "name": "DeliveryPage",
     "src": "resources/js/pages/DeliveryPage.vue",
     "isDynamicEntry": true,
@@ -1337,7 +1352,7 @@
     ]
   },
   "resources/js/pages/HomePage.vue": {
-    "file": "assets/HomePage-CMUymAdx.js",
+    "file": "assets/HomePage-DTEoTOPT.js",
     "name": "HomePage",
     "src": "resources/js/pages/HomePage.vue",
     "isDynamicEntry": true,

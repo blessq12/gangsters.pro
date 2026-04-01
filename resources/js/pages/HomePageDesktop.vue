@@ -22,9 +22,9 @@ const {
         <HomePromotionsDesktop />
 
         <section>
-            <header class="mb-4 flex flex-col gap-3">
-                <div>
-                    <h2 class="text-xl font-semibold text-slate-50">
+            <header class="mb-4 flex items-end justify-between gap-4">
+                <div class="block">
+                    <h2 class="text-xl font-semibold leading-tight text-slate-50">
                         Меню
                     </h2>
                     <p class="text-sm text-slate-400">
