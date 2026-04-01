@@ -5,6 +5,8 @@ namespace App\Providers;
 use App\Application\Security\UnauthorizedClientAccessNotifier;
 use App\Infrastructure\Security\EventUnauthorizedClientAccessNotifier;
 use App\Infrastructure\SystemContent\Model\SYS_Company;
+use App\Services\Order\Complimentary\PerOrderByCategoryPolicy;
+use App\Services\Order\ComplimentaryItemsResolver;
 use App\Shared\Events\DomainEventBus;
 use App\Infrastructure\Shared\Events\LaravelDomainEventBus;
 use Illuminate\Pagination\Paginator;
@@ -21,6 +23,11 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(DomainEventBus::class, LaravelDomainEventBus::class);
         $this->app->bind(UnauthorizedClientAccessNotifier::class, EventUnauthorizedClientAccessNotifier::class);
+        $this->app->singleton(ComplimentaryItemsResolver::class, function ($app) {
+            return new ComplimentaryItemsResolver([
+                $app->make(PerOrderByCategoryPolicy::class),
+            ]);
+        });
         $this->app->singleton(YaMetrikaService::class, function ($app) {
             return new YaMetrikaService();
         });

@@ -1,4 +1,4 @@
-import { computed, ref } from "vue";
+import { computed, onBeforeUnmount, ref, watch } from "vue";
 import { useUserStore } from "../../stores/userStore";
 import { useCartStore } from "../../stores/cartStore";
 import { useOrderStore } from "../../stores/orderStore";
@@ -36,6 +36,7 @@ export function useCheckoutFlow() {
     const paymentStepError = ref("");
 
     const hasCartItems = computed(() => cartItems.value.length > 0);
+    let complimentaryPreviewTimer = null;
 
     const formatPrice = (value) =>
         new Intl.NumberFormat("ru-RU").format(Number(value) || 0);
@@ -183,12 +184,48 @@ export function useCheckoutFlow() {
         }
     }
 
+    function scheduleComplimentaryPreview() {
+        if (complimentaryPreviewTimer) {
+            clearTimeout(complimentaryPreviewTimer);
+        }
+
+        complimentaryPreviewTimer = setTimeout(async () => {
+            if (!cartItems.value.length) {
+                orderStore.complimentaryPreviewItems = [];
+                return;
+            }
+
+            try {
+                await orderStore.fetchComplimentaryPreview(cartItems.value);
+            } catch (e) {
+                // Ошибка уже отражается в orderStore.error.complimentaryPreview.
+            }
+        }, 250);
+    }
+
+    watch(
+        cartItems,
+        () => {
+            scheduleComplimentaryPreview();
+        },
+        { deep: true, immediate: true },
+    );
+
+    onBeforeUnmount(() => {
+        if (complimentaryPreviewTimer) {
+            clearTimeout(complimentaryPreviewTimer);
+        }
+    });
+
     return {
         userStore,
         cartStore,
         orderStore,
         cartItems,
         totalAmount,
+        complimentaryPreviewItems: computed(
+            () => orderStore.complimentaryPreviewItems,
+        ),
         isAuthenticated,
         hasCartItems,
         activeStep,

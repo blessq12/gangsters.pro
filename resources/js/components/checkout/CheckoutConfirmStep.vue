@@ -5,6 +5,7 @@ const {
     userStore,
     orderStore,
     cartItems,
+    complimentaryPreviewItems,
     totalAmount,
     formatPrice,
     formatPhone,
@@ -38,6 +39,24 @@ const {
                     </span>
                 </li>
             </ul>
+            <div
+                v-if="complimentaryPreviewItems.length"
+                class="mt-2 rounded-xl border border-emerald-400/30 bg-emerald-950/20 px-2 py-2"
+            >
+                <p class="text-[10px] font-semibold uppercase tracking-[0.12em] text-emerald-300">
+                    Бесплатно добавим
+                </p>
+                <ul class="mt-1 space-y-1 text-[11px] text-emerald-100">
+                    <li
+                        v-for="item in complimentaryPreviewItems"
+                        :key="`confirm-complimentary-${item.product_id}-${item.rule_id}`"
+                        class="flex items-center justify-between gap-2"
+                    >
+                        <span class="truncate">{{ item.name }}</span>
+                    <span class="shrink-0">{{ item.quantity }} шт · 0 ₽</span>
+                    </li>
+                </ul>
+            </div>
             <div class="mt-2 flex items-center justify-between border-t border-white/5 pt-2 text-xs">
                 <span class="text-slate-300/85">Итого</span>
                 <span class="font-semibold text-amber-300">

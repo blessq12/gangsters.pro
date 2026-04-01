@@ -2,8 +2,10 @@
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
 
 const {
+    orderStore,
     cartStore,
     cartItems,
+    complimentaryPreviewItems,
     totalAmount,
     formatPrice,
     handleStartCheckout,
@@ -79,6 +81,32 @@ const {
             <span class="font-semibold text-amber-300">
                 {{ formatPrice(totalAmount) }} ₽
             </span>
+        </div>
+
+        <div
+            v-if="complimentaryPreviewItems.length"
+            class="mt-3 rounded-2xl border border-emerald-400/30 bg-emerald-950/20 px-3 py-2"
+        >
+            <p class="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-300">
+                Добавится бесплатно
+            </p>
+            <ul class="mt-2 space-y-1 text-xs text-emerald-100">
+                <li
+                    v-for="item in complimentaryPreviewItems"
+                    :key="`complimentary-${item.product_id}-${item.rule_id}`"
+                    class="flex items-center justify-between gap-2"
+                >
+                    <span class="truncate">{{ item.name }}</span>
+                    <span class="shrink-0">{{ item.quantity }} шт · 0 ₽</span>
+                </li>
+            </ul>
+        </div>
+
+        <div
+            v-if="orderStore.error.complimentaryPreview"
+            class="mt-3 rounded-2xl border border-red-500/40 bg-red-950/40 px-3 py-2 text-[11px] text-red-200"
+        >
+            {{ orderStore.error.complimentaryPreview }}
         </div>
 
         <div

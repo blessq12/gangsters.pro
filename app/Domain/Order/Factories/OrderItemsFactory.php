@@ -3,15 +3,15 @@
 namespace App\Domain\Order\Factories;
 
 use App\Application\Common\Exceptions\ApiException;
-use App\Domain\Order\Entities\OrderItem;
-use App\Domain\Order\ValueObjects\ProductSnapshot;
 use App\Domain\Product\Entity\Product;
 use App\Domain\Product\Repository\ProductRepository;
+use App\Services\Order\ComplimentaryItemsResolver;
 
 final class OrderItemsFactory
 {
     public function __construct(
         private readonly ProductRepository $products,
+        private readonly ComplimentaryItemsResolver $complimentaryItemsResolver,
     ) {
     }
 
@@ -71,6 +71,10 @@ final class OrderItemsFactory
                 'attributes' => [],
                 'media' => $this->productImagesToMedia($product->images()),
             ];
+        }
+
+        foreach ($this->complimentaryItemsResolver->resolveForOrderItemsData($items) as $complimentaryItem) {
+            $result[] = $complimentaryItem;
         }
 
         return $result;

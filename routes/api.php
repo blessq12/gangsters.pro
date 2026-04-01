@@ -35,6 +35,8 @@ Route::middleware('auth:sanctum')
         Route::post('/', 'store');
     });
 
+Route::post('/order/complimentary-preview', [OrderController::class, 'complimentaryPreview']);
+
 Route::get('/catalog', [CatalogController::class, 'tree']);
 
 Route::controller(YandexFoodController::class)

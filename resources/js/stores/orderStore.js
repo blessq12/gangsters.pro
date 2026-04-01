@@ -1,6 +1,10 @@
 import { defineStore } from "pinia";
 import { buildCreateOrderPayloadDto } from "../api/orderContracts";
-import { createOrderRequest, fetchOrdersRequest } from "../api/orderApi";
+import {
+    createOrderRequest,
+    fetchOrdersRequest,
+    previewComplimentaryItemsRequest,
+} from "../api/orderApi";
 
 const ORDER_STORAGE_KEY = "gangsters_order_draft";
 
@@ -19,13 +23,16 @@ export const useOrderStore = defineStore("order", {
         customerComment: "",
         orders: [],
         lastCreatedOrder: null,
+        complimentaryPreviewItems: [],
         loading: {
             create: false,
             list: false,
+            complimentaryPreview: false,
         },
         error: {
             create: null,
             list: null,
+            complimentaryPreview: null,
         },
     }),
     getters: {
@@ -203,6 +210,40 @@ export const useOrderStore = defineStore("order", {
                 throw e;
             } finally {
                 this.loading.create = false;
+            }
+        },
+        async fetchComplimentaryPreview(cartItems) {
+            this.loading.complimentaryPreview = true;
+            this.error.complimentaryPreview = null;
+
+            try {
+                const safeItems = Array.isArray(cartItems)
+                    ? cartItems.map((item) => ({
+                          product_id: Number(item.productId),
+                          quantity: Number(item.qty),
+                      }))
+                    : [];
+
+                if (!safeItems.length) {
+                    this.complimentaryPreviewItems = [];
+                    return [];
+                }
+
+                const data = await previewComplimentaryItemsRequest({
+                    items: safeItems,
+                });
+
+                const items = Array.isArray(data?.items) ? data.items : [];
+                this.complimentaryPreviewItems = items;
+                return items;
+            } catch (e) {
+                this.complimentaryPreviewItems = [];
+                this.error.complimentaryPreview =
+                    e?.response?.data?.message ||
+                    "Не удалось получить сопутствующие товары.";
+                throw e;
+            } finally {
+                this.loading.complimentaryPreview = false;
             }
         },
     },

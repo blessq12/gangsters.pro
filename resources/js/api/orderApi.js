@@ -10,3 +10,11 @@ export async function createOrderRequest(payload) {
     return response.data;
 }
 
+export async function previewComplimentaryItemsRequest(payload) {
+    const response = await httpClient.post(
+        "/api/order/complimentary-preview",
+        payload,
+    );
+    return response.data;
+}
+
