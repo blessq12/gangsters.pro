@@ -12,7 +12,7 @@ const { cartStore, activeStep } = flow;
     <div
         class="rounded-3xl border border-amber-400/30 bg-[rgba(0,0,0,0.88)] px-4 sm:px-6 lg:px-8 py-4 shadow-[0_0_26px_rgba(0,0,0,0.85)] backdrop-blur"
     >
-        <div class="flex flex-col gap-3">
+        <div class="flex flex-col gap-3 lg:gap-4">
             <div class="flex items-center justify-between gap-3">
                 <p class="text-sm sm:text-base font-semibold text-slate-50">
                     Корзина

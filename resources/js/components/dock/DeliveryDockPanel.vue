@@ -94,13 +94,15 @@ const mapUrl =
                 <iframe
                     :src="mapUrl"
                     title="Карта доставки Gangsters"
-                    class="h-56 w-full border-0 sm:h-64 lg:h-72"
+                    class="h-56 w-full border-0 sm:h-64 lg:h-72 xl:h-80"
                     loading="lazy"
                     referrerpolicy="no-referrer-when-downgrade"
                 />
             </div>
 
-            <div class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.9fr)]">
+            <div
+                class="grid gap-3 lg:gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.9fr)] xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.9fr)]"
+            >
                 <div
                     class="rounded-[1.75rem] border border-white/10 bg-[rgba(255,255,255,0.03)] px-4 py-4 sm:px-5"
                 >
@@ -133,7 +135,7 @@ const mapUrl =
                     </div>
                 </div>
 
-                <div class="hidden gap-3 sm:grid">
+                <div class="hidden gap-3 sm:grid lg:gap-4">
                     <div
                         class="rounded-[1.75rem] border border-white/10 bg-[rgba(255,255,255,0.03)] px-4 py-4"
                     >

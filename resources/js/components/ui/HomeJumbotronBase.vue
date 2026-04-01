@@ -95,13 +95,13 @@ const goNext = () => {
         <div :class="isMobile ? 'relative px-3 sm:px-4 overflow-x-hidden' : 'relative px-4 sm:px-6 lg:px-8'">
             <div
                 v-if="isLoading"
-                :class="isMobile ? 'mx-auto max-w-[95vw] px-1 py-6 sm:py-7' : 'mx-auto max-w-5xl px-1 py-6 sm:py-8'"
+                :class="isMobile ? 'flex justify-center px-1 py-6 sm:py-7' : 'flex justify-center px-1 py-6 sm:py-8'"
             >
                 <div
                     :class="
                         isMobile
-                            ? 'h-88 w-full rounded-2xl border border-white/10 bg-slate-800/60 animate-pulse'
-                            : 'h-64 sm:h-80 w-full rounded-2xl border border-white/10 bg-slate-800/60 animate-pulse'
+                            ? 'home-jumbotron-aspect-slot rounded-2xl border border-white/10 bg-slate-800/60 animate-pulse'
+                            : 'home-jumbotron-aspect-slot rounded-2xl border border-white/10 bg-slate-800/60 animate-pulse'
                     "
                 ></div>
             </div>
@@ -118,17 +118,26 @@ const goNext = () => {
                 :watch-slides-progress="true"
                 :slide-to-clicked-slide="true"
                 :breakpoints="swiperBreakpoints"
+                :observer="true"
+                :observe-parents="true"
+                :resize-observer="true"
                 class="!overflow-visible"
                 @swiper="handleSwiperInit"
             >
                 <SwiperSlide v-for="(slide, index) in slides" :key="index">
-                    <div :class="isMobile ? 'px-0.5 py-3' : 'px-0.5 py-3 sm:py-4'">
-                        <div class="home-jumbotron-card relative rounded-2xl overflow-hidden border bg-slate-900/60">
-                            <div :class="isMobile ? 'home-jumbotron-media aspect-[9/16] w-full' : 'home-jumbotron-media aspect-[16/9] w-full'">
+                    <div :class="isMobile ? 'flex min-w-0 justify-center px-0.5 py-2' : 'flex min-w-0 justify-center px-0.5 py-3 sm:py-4'">
+                        <div
+                            class="home-jumbotron-card relative w-full max-w-full overflow-hidden rounded-2xl border bg-slate-900/60"
+                        >
+                            <div class="home-jumbotron-media home-jumbotron-aspect-slot relative">
                                 <img
                                     :src="slide.image"
                                     :alt="slide.title"
-                                    class="h-full w-full object-cover"
+                                    class="absolute inset-0 h-full w-full object-cover"
+                                    :width="isMobile ? 900 : 1920"
+                                    :height="isMobile ? 1200 : 1080"
+                                    :loading="index === 0 ? 'eager' : 'lazy'"
+                                    decoding="async"
                                 />
                             </div>
                             <div
@@ -225,6 +234,57 @@ const goNext = () => {
 </template>
 
 <style scoped>
+/*
+ * Карточка всегда w-full от слайда — иначе fit-content + min(100%,…) даёт цикл и ширина 0.
+ * Медиа: min(100%, …) от карточки; десктоп = витрина под 1920×1080 (16:9), мобила = 3:4.
+ */
+.home-jumbotron--mobile .home-jumbotron-card {
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Мобила: арт 3:4 */
+.home-jumbotron--mobile .home-jumbotron-aspect-slot {
+    --jh-m-h: min(78dvh, 900px);
+    width: min(100%, calc(var(--jh-m-h) * 3 / 4));
+    max-height: var(--jh-m-h);
+    aspect-ratio: 3 / 4;
+    max-width: 100%;
+    margin-inline: auto;
+}
+
+@media (orientation: landscape) {
+    .home-jumbotron--mobile .home-jumbotron-aspect-slot {
+        --jh-ml-h: min(88dvh, 520px);
+        width: min(100%, calc(var(--jh-ml-h) * 16 / 9));
+        max-height: var(--jh-ml-h);
+        aspect-ratio: 16 / 9;
+    }
+}
+
+.home-jumbotron--desktop .home-jumbotron-card {
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Десктоп: витрина под 1920×1080 (16:9) */
+.home-jumbotron--desktop .home-jumbotron-aspect-slot {
+    --jh-d-h: min(75dvh, 1080px);
+    width: min(100%, 1920px, calc(var(--jh-d-h) * 16 / 9));
+    max-height: var(--jh-d-h);
+    aspect-ratio: 16 / 9;
+    max-width: 100%;
+    margin-inline: auto;
+}
+
+.home-jumbotron--desktop :deep(.swiper-slide) {
+    min-width: 0;
+}
+
+.home-jumbotron--mobile :deep(.swiper-slide) {
+    min-width: 0;
+}
+
 .home-jumbotron--desktop :deep(.swiper-slide .home-jumbotron-card) {
     transform: scale(0.86);
     opacity: 0;
@@ -301,8 +361,8 @@ const goNext = () => {
 }
 
 .home-jumbotron--mobile :deep(.swiper-slide) {
-    padding-top: 18px !important;
-    padding-bottom: 18px !important;
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
     box-sizing: border-box;
 }
 
@@ -331,7 +391,7 @@ const goNext = () => {
 }
 
 .home-jumbotron--mobile :deep(.swiper-slide-active .home-jumbotron-card) {
-    transform: scale(1.1);
+    transform: scale(1.01);
     opacity: 1;
     border-color: rgba(251, 191, 36, 0.35);
     box-shadow: 0 24px 50px rgba(0, 0, 0, 0.45);

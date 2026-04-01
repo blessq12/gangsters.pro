@@ -35,7 +35,8 @@ const mainRef = ref(null);
 const showIntro = ref(true);
 const bottomBarReady = ref(false);
 
-const BOTTOM_THRESHOLD = 80;
+/** Скрываем док у верха главной, чтобы не перекрывать баннеры/герой */
+const TOP_BANNER_THRESHOLD = 240;
 const isHome = () => route.name === "home";
 
 function updateBottomBarFromScroll() {
@@ -47,11 +48,8 @@ function updateBottomBarFromScroll() {
         return;
     }
 
-    const atBottom =
-        window.scrollY + window.innerHeight >=
-        document.documentElement.scrollHeight - BOTTOM_THRESHOLD;
-
-    uiStore.setShowBottomNav(!atBottom);
+    const atTop = window.scrollY < TOP_BANNER_THRESHOLD;
+    uiStore.setShowBottomNav(!atTop);
 }
 
 watch(
@@ -59,6 +57,10 @@ watch(
     (name) => {
         if (name !== "home") {
             uiStore.setShowBottomNav(false);
+            return;
+        }
+        if (bottomBarReady.value) {
+            updateBottomBarFromScroll();
         }
     },
 );
@@ -82,10 +84,7 @@ onMounted(() => {
             const stepDelay = 600;
             setTimeout(() => {
                 bottomBarReady.value = true;
-                if (isHome()) {
-                    uiStore.setShowBottomNav(true);
-                    updateBottomBarFromScroll();
-                }
+                updateBottomBarFromScroll();
             }, stepDelay);
         },
     });

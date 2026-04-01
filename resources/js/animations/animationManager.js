@@ -247,8 +247,28 @@ export function playMobileNavbarLogoPulse(logoEl) {
     };
 }
 
-export function playBottomBarShow(bar) {
+/** @typedef {'mobile' | 'desktop'} DockAnimVariant */
+
+/**
+ * @param {HTMLElement|null|undefined} bar
+ * @param {DockAnimVariant} [variant]
+ */
+export function playBottomBarShow(bar, variant = "mobile") {
     if (!bar) return;
+
+    if (variant === "desktop") {
+        gsap.fromTo(
+            bar,
+            { x: -40, opacity: 0 },
+            {
+                x: 0,
+                opacity: 1,
+                duration: 0.32,
+                ease: "power2.out",
+            },
+        );
+        return;
+    }
 
     gsap.fromTo(
         bar,
@@ -262,9 +282,25 @@ export function playBottomBarShow(bar) {
     );
 }
 
-export function playBottomBarHide(bar, onComplete) {
+/**
+ * @param {HTMLElement|null|undefined} bar
+ * @param {() => void} [onComplete]
+ * @param {DockAnimVariant} [variant]
+ */
+export function playBottomBarHide(bar, onComplete, variant = "mobile") {
     if (!bar) {
         if (onComplete) onComplete();
+        return;
+    }
+
+    if (variant === "desktop") {
+        gsap.to(bar, {
+            x: -36,
+            opacity: 0,
+            duration: 0.22,
+            ease: "power2.in",
+            onComplete,
+        });
         return;
     }
 
@@ -297,9 +333,29 @@ export function playCatalogItemsEnter(container) {
     );
 }
 
-export function playDockContentShow(panel, onComplete) {
+/**
+ * @param {HTMLElement|null|undefined} panel
+ * @param {() => void} [onComplete]
+ * @param {DockAnimVariant} [variant]
+ */
+export function playDockContentShow(panel, onComplete, variant = "mobile") {
     if (!panel) {
         if (onComplete) onComplete();
+        return;
+    }
+
+    if (variant === "desktop") {
+        gsap.fromTo(
+            panel,
+            { opacity: 0, x: -16 },
+            {
+                opacity: 1,
+                x: 0,
+                duration: 0.24,
+                ease: "power2.out",
+                onComplete,
+            },
+        );
         return;
     }
 
@@ -316,9 +372,25 @@ export function playDockContentShow(panel, onComplete) {
     );
 }
 
-export function playDockContentHide(panel, onComplete) {
+/**
+ * @param {HTMLElement|null|undefined} panel
+ * @param {() => void} [onComplete]
+ * @param {DockAnimVariant} [variant]
+ */
+export function playDockContentHide(panel, onComplete, variant = "mobile") {
     if (!panel) {
         if (onComplete) onComplete();
+        return;
+    }
+
+    if (variant === "desktop") {
+        gsap.to(panel, {
+            opacity: 0,
+            x: -12,
+            duration: 0.18,
+            ease: "power2.in",
+            onComplete,
+        });
         return;
     }
 
