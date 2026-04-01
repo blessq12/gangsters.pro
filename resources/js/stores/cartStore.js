@@ -49,43 +49,6 @@ function normalizeCartItems(items) {
         .filter(Boolean);
 }
 
-function normalizeFavorites(items) {
-    if (!Array.isArray(items)) {
-        return [];
-    }
-
-    return items
-        .map((item) => {
-            if (typeof item === "number" || typeof item === "string") {
-                return {
-                    productId: item,
-                    productSnapshot: normalizeProductSnapshot({
-                        id: item,
-                        name: `Товар #${item}`,
-                    }),
-                };
-            }
-
-            if (!item || typeof item !== "object") {
-                return null;
-            }
-
-            const productId = item.productId ?? item.productSnapshot?.id ?? item.id ?? null;
-            if (!productId) {
-                return null;
-            }
-
-            return {
-                productId,
-                productSnapshot: normalizeProductSnapshot({
-                    id: productId,
-                    ...(item.productSnapshot || item),
-                }),
-            };
-        })
-        .filter(Boolean);
-}
-
 function stripCartFieldsFromUserPayload() {
     if (typeof window === "undefined") return;
 
@@ -96,10 +59,9 @@ function stripCartFieldsFromUserPayload() {
         const parsed = JSON.parse(raw);
         if (!parsed || typeof parsed !== "object") return;
 
-        if (!("cartItems" in parsed) && !("favorites" in parsed)) return;
+        if (!("cartItems" in parsed)) return;
 
         delete parsed.cartItems;
-        delete parsed.favorites;
         window.localStorage.setItem(USER_LEGACY_KEY, JSON.stringify(parsed));
     } catch (e) {
         console.error("Failed to strip legacy cart fields from user storage", e);
@@ -109,15 +71,12 @@ function stripCartFieldsFromUserPayload() {
 export const useCartStore = defineStore("cart", {
     state: () => ({
         cartItems: [],
-        favorites: [],
     }),
     getters: {
         cartQuantityByProduct: (state) => (id) => {
             const item = state.cartItems.find((i) => i.productId === id);
             return item ? item.qty : 0;
         },
-        isFavorite: (state) => (id) =>
-            state.favorites.some((item) => item.productId === id),
         cartTotalItems(state) {
             return state.cartItems.reduce((sum, item) => sum + item.qty, 0);
         },
@@ -141,9 +100,6 @@ export const useCartStore = defineStore("cart", {
                         if (Array.isArray(parsed.cartItems)) {
                             this.cartItems = normalizeCartItems(parsed.cartItems);
                         }
-                        if (Array.isArray(parsed.favorites)) {
-                            this.favorites = normalizeFavorites(parsed.favorites);
-                        }
                         loadedFromCartKey = true;
                     }
                 }
@@ -155,16 +111,9 @@ export const useCartStore = defineStore("cart", {
                         const hasLegacyCart =
                             Array.isArray(userParsed.cartItems) &&
                             userParsed.cartItems.length > 0;
-                        const hasLegacyFav =
-                            Array.isArray(userParsed.favorites) &&
-                            userParsed.favorites.length > 0;
-
-                        if (!loadedFromCartKey && (hasLegacyCart || hasLegacyFav)) {
+                        if (!loadedFromCartKey && hasLegacyCart) {
                             if (Array.isArray(userParsed.cartItems)) {
                                 this.cartItems = normalizeCartItems(userParsed.cartItems);
-                            }
-                            if (Array.isArray(userParsed.favorites)) {
-                                this.favorites = normalizeFavorites(userParsed.favorites);
                             }
                             this.persist();
                         }
@@ -183,13 +132,11 @@ export const useCartStore = defineStore("cart", {
                 CART_STORAGE_KEY,
                 JSON.stringify({
                     cartItems: this.cartItems,
-                    favorites: this.favorites,
                 }),
             );
         },
         clear() {
             this.cartItems = [];
-            this.favorites = [];
             if (typeof window !== "undefined") {
                 window.localStorage.removeItem(CART_STORAGE_KEY);
             }
@@ -230,35 +177,6 @@ export const useCartStore = defineStore("cart", {
         },
         removeFromCart(productId) {
             this.cartItems = this.cartItems.filter((item) => item.productId !== productId);
-            this.persist();
-        },
-        toggleFavorite(product) {
-            const productId =
-                typeof product === "object" ? product?.id : product;
-
-            if (!productId) return;
-
-            const existingIndex = this.favorites.findIndex(
-                (item) => item.productId === productId,
-            );
-
-            if (existingIndex !== -1) {
-                this.favorites.splice(existingIndex, 1);
-            } else {
-                this.favorites.push({
-                    productId,
-                    productSnapshot:
-                        normalizeProductSnapshot(product) ||
-                        normalizeProductSnapshot({
-                            id: productId,
-                            name: `Товар #${productId}`,
-                        }),
-                });
-            }
-            this.persist();
-        },
-        removeFavorite(productId) {
-            this.favorites = this.favorites.filter((item) => item.productId !== productId);
             this.persist();
         },
     },

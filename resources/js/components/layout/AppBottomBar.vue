@@ -1,6 +1,7 @@
 <script setup>
 import { useUiStore } from "../../stores/uiStore";
 import { useCartStore } from "../../stores/cartStore";
+import { useFavoritesStore } from "../../stores/favoritesStore";
 import {
     playBottomBarShow,
     playBottomBarHide,
@@ -11,9 +12,11 @@ import { useBottomDockState } from "../../composables/ui/useBottomDockState";
 
 const uiStore = useUiStore();
 const cartStore = useCartStore();
+const favoritesStore = useFavoritesStore();
 const { activeDockItem, getBadge, dockItems } = useBottomDockState({
     uiStore,
     cartStore,
+    favoritesStore,
 });
 
 const handleDockClick = (id) => {

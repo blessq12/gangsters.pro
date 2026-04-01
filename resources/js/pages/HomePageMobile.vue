@@ -1,67 +1,27 @@
 <script setup>
-import { computed, onMounted, ref, watch } from "vue";
-import { useCatalogStore } from "../stores/catalogStore";
-
 import CatalogCategoriesMobile from "../components/catalog/CatalogCategoriesMobile.vue";
 import CatalogProductsMobile from "../components/catalog/CatalogProductsMobile.vue";
+import { useCatalogPageModel } from "../composables/catalog/useCatalogPageModel";
 
-const catalogStore = useCatalogStore();
-
-const showProductDetailModal = ref(false);
-const productDetailFocusSection = ref(null);
-
-function openProductDetail(payload) {
-    const product =
-        payload && typeof payload === "object" && "product" in payload
-            ? payload.product
-            : payload;
-    const focusSection =
-        payload && typeof payload === "object" && "focusSection" in payload
-            ? payload.focusSection
-            : null;
-
-    catalogStore.setSelectedProduct(product);
-    productDetailFocusSection.value = focusSection ?? null;
-    showProductDetailModal.value = true;
-}
-
-watch(showProductDetailModal, (isOpen) => {
-    if (!isOpen) {
-        catalogStore.setSelectedProduct(null);
-        productDetailFocusSection.value = null;
-    }
-});
-
-onMounted(() => {
-    if (!catalogStore.hasLoaded && !catalogStore.loading) {
-        catalogStore.fetchCatalog();
-    }
-});
-
-const selectedCategoryId = computed({
-    get: () => catalogStore.selectedCategoryId,
-    set: (value) => catalogStore.setSelectedCategoryId(value),
-});
-
-const productSearchQuery = computed({
-    get: () => catalogStore.productSearchQuery,
-    set: (value) => catalogStore.setProductSearchQuery(value),
-});
-
-const menuProducts = computed(() => catalogStore.menuProducts);
-
-const catalogEmptyMessage = computed(() =>
-    catalogStore.productSearchQuery.trim()
-        ? "Ничего не нашли по этому запросу. Попробуй другое слово или сбрось поиск."
-        : "Тут пока тихо. Выберите другую категорию.",
-);
+const {
+    showProductDetailModal,
+    openProductDetail,
+    selectedCategoryId,
+    productSearchQuery,
+    menuProducts,
+    categoryTabs,
+    selectedProduct,
+    loading,
+    catalogEmptyMessage,
+    clearSearch,
+} = useCatalogPageModel();
 </script>
 
 <template>
     <HomeJumbotronMobile />
 
     <div class="home-page mt-4 space-y-8">
-        <HomePromotions />
+        <HomePromotionsMobile />
 
         <section>
             <header class="mb-4 flex flex-col gap-3">
@@ -94,7 +54,7 @@ const catalogEmptyMessage = computed(() =>
                             type="button"
                             class="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 transition hover:bg-white/10 hover:text-slate-200"
                             aria-label="Очистить поиск"
-                            @click="catalogStore.setProductSearchQuery('')"
+                            @click="clearSearch"
                         >
                             <i class="mdi mdi-close text-lg" />
                         </button>
@@ -104,12 +64,12 @@ const catalogEmptyMessage = computed(() =>
 
             <CatalogCategoriesMobile
                 v-model="selectedCategoryId"
-                :categories="catalogStore.categoryTabs"
+                :categories="categoryTabs"
             />
 
             <CatalogProductsMobile
                 :products="menuProducts"
-                :loading="catalogStore.loading"
+                :loading="loading"
                 :empty-message="catalogEmptyMessage"
                 @product-image-click="openProductDetail"
             />
@@ -118,8 +78,7 @@ const catalogEmptyMessage = computed(() =>
 
     <ProductDetailModalMobile
         v-model="showProductDetailModal"
-        :product="catalogStore.selectedProduct"
-        :focus-section="productDetailFocusSection"
+        :product="selectedProduct"
     />
 </template>
 

@@ -1,11 +1,8 @@
 <script setup>
 import { computed, ref, onMounted, onUnmounted, nextTick } from "vue";
-import { useCartStore } from "../../stores/cartStore";
 import { playTooltipOpen, playTooltipClose } from "../../animations/animationManager";
-import {
-    getProductNutritionNumbers,
-    hasProductNutrition,
-} from "../../utils/catalog/productNutrition";
+import { useProductActions } from "../../composables/catalog/useProductActions";
+import { useProductMeta } from "../../composables/catalog/useProductMeta";
 
 const props = defineProps({
     product: {
@@ -20,11 +17,7 @@ const showNutritionTooltip = ref(false);
 const nutritionTriggerRef = ref(null);
 const nutritionTooltipRef = ref(null);
 
-const nutrition = computed(() =>
-    getProductNutritionNumbers(props.product),
-);
-
-const hasNutrition = computed(() => hasProductNutrition(props.product));
+const { nutrition, hasNutrition } = useProductMeta(computed(() => props.product));
 
 function toggleNutritionTooltip() {
     if (showNutritionTooltip.value) {
@@ -87,36 +80,23 @@ const imageSrcset = computed(() => {
 const imageSizes =
     "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw";
 
-const cartStore = useCartStore();
-
-const productId = computed(() => props.product.id);
-
-const qtyInCart = computed(() =>
-    productId.value ? cartStore.cartQuantityByProduct(productId.value) : 0,
-);
-
-const isFav = computed(() =>
-    productId.value ? cartStore.isFavorite(productId.value) : false,
-);
+const { qtyInCart, isFav, addToCart, incrementCart, decrementCart, toggleFavorite } =
+    useProductActions(computed(() => props.product));
 
 const handleAddToCart = () => {
-    if (!productId.value) return;
-    cartStore.addToCart(props.product, 1);
+    addToCart(1);
 };
 
 const handleInc = () => {
-    if (!productId.value) return;
-    cartStore.incrementCart(productId.value);
+    incrementCart();
 };
 
 const handleDec = () => {
-    if (!productId.value) return;
-    cartStore.decrementCart(productId.value);
+    decrementCart();
 };
 
 const handleToggleFavorite = () => {
-    if (!productId.value) return;
-    cartStore.toggleFavorite(props.product);
+    toggleFavorite();
 };
 </script>
 

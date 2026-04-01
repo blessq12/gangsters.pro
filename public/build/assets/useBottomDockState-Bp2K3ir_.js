@@ -1,1 +1,0 @@
-import{f as d}from"./vue-core-BpasoeSx.js";function l({uiStore:t,cartStore:o,dockItems:s}){const a=Array.isArray(s)?s:[],n=d(()=>a.find(e=>e.id===t.dockActiveId)||null),r=d(()=>t.resolvedDockBadges(o.cartTotalItems,o.favorites.length));return{activeDockItem:n,getBadge:e=>{var c;return((c=r.value)==null?void 0:c[e])??0},dockItems:a}}export{l as u};

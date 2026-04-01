@@ -1,52 +1,25 @@
 <script setup>
-import { computed, onMounted, ref, watch } from "vue";
-import { useCatalogStore } from "../stores/catalogStore";
+import { useCatalogPageModel } from "../composables/catalog/useCatalogPageModel";
 
-const catalogStore = useCatalogStore();
-
-const showProductDetailModal = ref(false);
-
-function openProductDetail(product) {
-    catalogStore.setSelectedProduct(product);
-    showProductDetailModal.value = true;
-}
-
-watch(showProductDetailModal, (isOpen) => {
-    if (!isOpen) {
-        catalogStore.setSelectedProduct(null);
-    }
-});
-
-onMounted(() => {
-    if (!catalogStore.hasLoaded && !catalogStore.loading) {
-        catalogStore.fetchCatalog();
-    }
-});
-
-const selectedCategoryId = computed({
-    get: () => catalogStore.selectedCategoryId,
-    set: (value) => catalogStore.setSelectedCategoryId(value),
-});
-
-const productSearchQuery = computed({
-    get: () => catalogStore.productSearchQuery,
-    set: (value) => catalogStore.setProductSearchQuery(value),
-});
-
-const menuProducts = computed(() => catalogStore.menuProducts);
-
-const catalogEmptyMessage = computed(() =>
-    catalogStore.productSearchQuery.trim()
-        ? "Ничего не нашли по этому запросу. Попробуй другое слово или сбрось поиск."
-        : "Тут пока тихо. Выберите другую категорию.",
-);
+const {
+    showProductDetailModal,
+    openProductDetail,
+    selectedCategoryId,
+    productSearchQuery,
+    menuProducts,
+    categoryTabs,
+    selectedProduct,
+    loading,
+    catalogEmptyMessage,
+    clearSearch,
+} = useCatalogPageModel();
 </script>
 
 <template>
     <HomeJumbotron />
 
     <div class="home-page mt-4 space-y-10">
-        <HomePromotions />
+        <HomePromotionsDesktop />
 
         <section>
             <header class="mb-4 flex flex-col gap-3">
@@ -79,7 +52,7 @@ const catalogEmptyMessage = computed(() =>
                             type="button"
                             class="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 transition hover:bg-white/10 hover:text-slate-200"
                             aria-label="Очистить поиск"
-                            @click="catalogStore.setProductSearchQuery('')"
+                            @click="clearSearch"
                         >
                             <i class="mdi mdi-close text-lg" />
                         </button>
@@ -89,12 +62,12 @@ const catalogEmptyMessage = computed(() =>
 
             <CatalogCategoriesDesktop
                 v-model="selectedCategoryId"
-                :categories="catalogStore.categoryTabs"
+                :categories="categoryTabs"
             />
 
             <CatalogProductsDesktop
                 :products="menuProducts"
-                :loading="catalogStore.loading"
+                :loading="loading"
                 :empty-message="catalogEmptyMessage"
                 @product-image-click="openProductDetail"
             />
@@ -103,7 +76,7 @@ const catalogEmptyMessage = computed(() =>
 
     <ProductDetailModal
         v-model="showProductDetailModal"
-        :product="catalogStore.selectedProduct"
+        :product="selectedProduct"
     />
 </template>
 

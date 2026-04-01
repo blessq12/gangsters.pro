@@ -1,10 +1,12 @@
 <script setup>
 import { computed } from "vue";
 import { useCartStore } from "../../stores/cartStore";
+import { useFavoritesStore } from "../../stores/favoritesStore";
 
 const cartStore = useCartStore();
+const favoritesStore = useFavoritesStore();
 
-const favoriteItems = computed(() => cartStore.favorites);
+const favoriteItems = computed(() => favoritesStore.favorites);
 
 const handleAddToCart = (item) => {
     if (!item?.productSnapshot?.id) return;
@@ -60,7 +62,7 @@ const formatPrice = (value) =>
                         <button
                             type="button"
                             class="shrink-0 text-[11px] text-slate-400 transition-colors hover:text-red-400"
-                            @click="cartStore.removeFavorite(item.productId)"
+                            @click="favoritesStore.removeFavorite(item.productId)"
                         >
                             Убрать
                         </button>

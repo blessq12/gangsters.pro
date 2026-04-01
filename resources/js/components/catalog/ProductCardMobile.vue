@@ -1,10 +1,8 @@
 <script setup>
-import { computed, onMounted, onUnmounted, ref } from "vue";
-import { useCartStore } from "../../stores/cartStore";
-import {
-    getProductNutritionNumbers,
-    hasProductNutrition,
-} from "../../utils/catalog/productNutrition";
+import { computed, nextTick, onMounted, onUnmounted, ref } from "vue";
+import { playTooltipClose, playTooltipOpen } from "../../animations/animationManager";
+import { useProductActions } from "../../composables/catalog/useProductActions";
+import { useProductMeta } from "../../composables/catalog/useProductMeta";
 
 const props = defineProps({
     product: {
@@ -35,39 +33,16 @@ const imageSrcset = computed(() => {
 const imageSizes =
     "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw";
 
-const cartStore = useCartStore();
+const { qtyInCart, isFav, addToCart, incrementCart, decrementCart, toggleFavorite } =
+    useProductActions(computed(() => props.product));
 
-const productId = computed(() => props.product.id);
-
-const qtyInCart = computed(() =>
-    productId.value ? cartStore.cartQuantityByProduct(productId.value) : 0,
-);
-
-const isFav = computed(() =>
-    productId.value ? cartStore.isFavorite(productId.value) : false,
-);
-
-const nutrition = computed(() => getProductNutritionNumbers(props.product));
-const hasNutrition = computed(() => hasProductNutrition(props.product));
-
-const ingredients = computed(() => {
-    const raw = props.product?.raw?.ingredients;
-    if (!Array.isArray(raw)) return [];
-    return raw.filter((i) => i && (i.name || i.amount));
-});
-
-const hasIngredients = computed(() => ingredients.value.length > 0);
-
-const ingredientsText = computed(() => {
-    // Просто перечисляем состав через запятую для компактного тултипа
-    return ingredients.value
-        .map((i) => i?.name)
-        .filter(Boolean)
-        .join(", ");
-});
+const { nutrition, hasNutrition, hasIngredients, ingredientsText } =
+    useProductMeta(computed(() => props.product));
 
 const openTooltip = ref(null); // 'nutrition' | 'ingredients' | null
 const actionsClusterRef = ref(null);
+const nutritionTooltipRef = ref(null);
+const ingredientsTooltipRef = ref(null);
 
 const liveMessage = ref("");
 let liveMessageTimer = null;
@@ -134,18 +109,36 @@ function pulseIngredientsBtn() {
 
 function toggleNutritionTooltip() {
     pulseNutritionBtn();
-    openTooltip.value =
-        openTooltip.value === "nutrition" ? null : "nutrition";
+    if (openTooltip.value === "nutrition") {
+        closeTooltip();
+        return;
+    }
+    openTooltip.value = "nutrition";
+    nextTick(() => playTooltipOpen(nutritionTooltipRef.value));
 }
 
 function toggleIngredientsTooltip() {
     pulseIngredientsBtn();
-    openTooltip.value =
-        openTooltip.value === "ingredients" ? null : "ingredients";
+    if (openTooltip.value === "ingredients") {
+        closeTooltip();
+        return;
+    }
+    openTooltip.value = "ingredients";
+    nextTick(() => playTooltipOpen(ingredientsTooltipRef.value));
 }
 
 function closeTooltip() {
-    openTooltip.value = null;
+    const current =
+        openTooltip.value === "nutrition"
+            ? nutritionTooltipRef.value
+            : ingredientsTooltipRef.value;
+    if (!current) {
+        openTooltip.value = null;
+        return;
+    }
+    playTooltipClose(current, () => {
+        openTooltip.value = null;
+    });
 }
 
 let outsideClickHandler = null;
@@ -178,30 +171,26 @@ onUnmounted(() => {
 });
 
 function handleToggleFavorite() {
-    if (!productId.value) return;
     const wasFav = isFav.value;
-    cartStore.toggleFavorite(props.product);
+    toggleFavorite();
     pulseFav();
     setLiveMessage(wasFav ? "Убрано из избранного" : "Добавлено в избранное");
 }
 
 function handleAddToCart() {
-    if (!productId.value) return;
-    cartStore.addToCart(props.product, 1);
+    addToCart(1);
     pulseAddedToCart();
     setLiveMessage("Добавлено в корзину");
 }
 
 function handleIncrement() {
-    if (!productId.value) return;
-    cartStore.incrementCart(productId.value);
+    incrementCart();
     pulseQty();
     setLiveMessage("Количество увеличено");
 }
 
 function handleDecrement() {
-    if (!productId.value) return;
-    cartStore.decrementCart(productId.value);
+    decrementCart();
     pulseQty();
     setLiveMessage("Количество уменьшено");
 }
@@ -214,7 +203,7 @@ function handleDecrement() {
     >
         <span class="sr-only" aria-live="polite">{{ liveMessage }}</span>
         <div
-            class="relative w-full overflow-hidden aspect-[4/3]"
+            class="relative w-full overflow-hidden aspect-[4/3] lg:h-full lg:aspect-auto"
         >
             <img
                 v-if="primaryThumb"
@@ -240,7 +229,7 @@ function handleDecrement() {
             <div
                 class="absolute inset-0 z-[1] cursor-pointer"
                 aria-label="Открыть карточку товара"
-                @click.stop="emit('imageClick', { product, focusSection: null })"
+                @click.stop="emit('imageClick', product)"
             />
 
             <div
@@ -296,6 +285,7 @@ function handleDecrement() {
                     >
                         <div
                             v-if="openTooltip === 'nutrition'"
+                            ref="nutritionTooltipRef"
                             class="absolute left-0 bottom-full z-50 mb-2 w-[190px] rounded-xl border border-white/10 bg-[rgba(0,0,0,0.95)] px-2.5 py-2.5 shadow-xl backdrop-blur"
                             role="dialog"
                         >
@@ -321,6 +311,7 @@ function handleDecrement() {
 
                         <div
                             v-if="openTooltip === 'ingredients'"
+                            ref="ingredientsTooltipRef"
                             class="absolute left-0 bottom-full z-50 mb-2 w-[210px] max-h-44 overflow-y-auto rounded-xl border border-white/10 bg-[rgba(0,0,0,0.95)] px-2.5 py-2.5 shadow-xl backdrop-blur"
                             role="dialog"
                         >

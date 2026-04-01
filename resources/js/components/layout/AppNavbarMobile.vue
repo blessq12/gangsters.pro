@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick } from "vue";
-import { playMobileNavbarLogoGlow } from "../../animations/animationManager";
+import { playMobileNavbarLogoPulse } from "../../animations/animationManager";
 import { useEnterSlide } from "../../composables/animations/useEnterSlide";
 import { useCompanyOpenStatus } from "../../composables/system/useCompanyOpenStatus";
 import { useUiStore } from "../../stores/uiStore";
@@ -10,10 +10,10 @@ const uiStore = useUiStore();
 const systemStore = useSystemStore();
 
 const containerRef = ref(null);
-const logoGlowRef = ref(null);
+const logoPulseRef = ref(null);
 
 /** @type {{ kill: () => void } | null} */
-let logoGlowControl = null;
+let logoPulseControl = null;
 
 useEnterSlide(containerRef, {
     y: -40,
@@ -28,16 +28,16 @@ onMounted(() => {
     }
 
     void nextTick().then(() => {
-        if (logoGlowRef.value) {
-            logoGlowControl?.kill();
-            logoGlowControl = playMobileNavbarLogoGlow(logoGlowRef.value);
+        if (logoPulseRef.value) {
+            logoPulseControl?.kill();
+            logoPulseControl = playMobileNavbarLogoPulse(logoPulseRef.value);
         }
     });
 });
 
 onUnmounted(() => {
-    logoGlowControl?.kill();
-    logoGlowControl = null;
+    logoPulseControl?.kill();
+    logoPulseControl = null;
 });
 
 const toggleMobileMenu = () => {
@@ -73,12 +73,16 @@ const toggleMobileMenu = () => {
                         :to="{ name: 'home' }"
                         class="inline-flex items-center justify-center group"
                     >
-                        <img
-                            ref="logoGlowRef"
-                            src="/images/logo-text.png"
-                            alt="Gangsters"
-                            class="h-9 min-h-9 w-auto min-w-[7rem] max-w-full mx-auto object-contain transition-transform duration-200 group-hover:scale-105"
-                        />
+                        <span
+                            ref="logoPulseRef"
+                            class="inline-flex origin-center will-change-transform"
+                        >
+                            <img
+                                src="/images/logo-text.png"
+                                alt="Gangsters"
+                                class="h-9 min-h-9 w-auto min-w-[7rem] max-w-full mx-auto object-contain transition-transform duration-200 group-hover:scale-105"
+                            />
+                        </span>
                     </RouterLink>
                 </div>
 

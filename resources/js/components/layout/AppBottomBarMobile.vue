@@ -2,6 +2,7 @@
 import { ref, watch, onBeforeUnmount } from "vue";
 import { useUiStore } from "../../stores/uiStore";
 import { useCartStore } from "../../stores/cartStore";
+import { useFavoritesStore } from "../../stores/favoritesStore";
 import {
     playBottomBarShow,
     playBottomBarHide,
@@ -17,10 +18,12 @@ import {
 
 const uiStore = useUiStore();
 const cartStore = useCartStore();
+const favoritesStore = useFavoritesStore();
 
 const { activeDockItem, getBadge, dockItems } = useBottomDockState({
     uiStore,
     cartStore,
+    favoritesStore,
     dockItems: dockItemsMobile,
 });
 

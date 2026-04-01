@@ -218,22 +218,20 @@ export function playFloatLoop({ elements, options = {} }) {
 }
 
 /**
- * Мягкое пульсирующее свечение логотипа в мобильной шапке (amber).
+ * Циклический лёгкий пульс масштаба логотипа в мобильной шапке.
  * @param {HTMLElement|null|undefined} logoEl
  * @returns {{ kill: () => void }}
  */
-export function playMobileNavbarLogoGlow(logoEl) {
+export function playMobileNavbarLogoPulse(logoEl) {
     if (!logoEl) {
         return { kill() {} };
     }
 
     const tween = gsap.fromTo(
         logoEl,
+        { scale: 1 },
         {
-            filter: "drop-shadow(0 0 3px rgba(251,191,36,0.22)) drop-shadow(0 0 1px rgba(251,191,36,0.12))",
-        },
-        {
-            filter: "drop-shadow(0 0 8px rgba(251,191,36,0.55)) drop-shadow(0 0 3px rgba(253,230,138,0.28))",
+            scale: 1.06,
             duration: 2.1,
             ease: "power2.inOut",
             yoyo: true,
@@ -244,7 +242,7 @@ export function playMobileNavbarLogoGlow(logoEl) {
     return {
         kill() {
             tween.kill();
-            gsap.set(logoEl, { clearProps: "filter" });
+            gsap.set(logoEl, { clearProps: "transform" });
         },
     };
 }

@@ -1,0 +1,160 @@
+import { defineStore } from "pinia";
+
+const FAVORITES_STORAGE_KEY = "gangsters_favorites";
+const CART_STORAGE_KEY = "gangsters_cart";
+const USER_LEGACY_KEY = "gangsters_user";
+
+function normalizeProductSnapshot(product) {
+    if (!product || typeof product !== "object") {
+        return null;
+    }
+
+    return {
+        id: product.id ?? null,
+        name: product.name || "",
+        price: Number(product.price) || 0,
+        weight: product.weight ?? null,
+    };
+}
+
+function normalizeFavorites(items) {
+    if (!Array.isArray(items)) return [];
+
+    return items
+        .map((item) => {
+            if (typeof item === "number" || typeof item === "string") {
+                return {
+                    productId: item,
+                    productSnapshot: normalizeProductSnapshot({
+                        id: item,
+                        name: `Товар #${item}`,
+                    }),
+                };
+            }
+            if (!item || typeof item !== "object") return null;
+
+            const productId = item.productId ?? item.productSnapshot?.id ?? item.id ?? null;
+            if (!productId) return null;
+
+            return {
+                productId,
+                productSnapshot: normalizeProductSnapshot({
+                    id: productId,
+                    ...(item.productSnapshot || item),
+                }),
+            };
+        })
+        .filter(Boolean);
+}
+
+function stripFavoritesFromUserPayload() {
+    if (typeof window === "undefined") return;
+    try {
+        const raw = window.localStorage.getItem(USER_LEGACY_KEY);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== "object" || !("favorites" in parsed)) return;
+
+        delete parsed.favorites;
+        window.localStorage.setItem(USER_LEGACY_KEY, JSON.stringify(parsed));
+    } catch (e) {
+        console.error("Failed to strip favorites from user storage", e);
+    }
+}
+
+export const useFavoritesStore = defineStore("favorites", {
+    state: () => ({
+        items: [],
+    }),
+    getters: {
+        favorites(state) {
+            return state.items;
+        },
+        count(state) {
+            return state.items.length;
+        },
+        isFavorite: (state) => (id) =>
+            state.items.some((item) => item.productId === id),
+    },
+    actions: {
+        initFromStorage() {
+            if (typeof window === "undefined") return;
+
+            try {
+                const raw = window.localStorage.getItem(FAVORITES_STORAGE_KEY);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (parsed && typeof parsed === "object" && Array.isArray(parsed.items)) {
+                        this.items = normalizeFavorites(parsed.items);
+                        return;
+                    }
+                }
+
+                // Миграция из gangsters_cart.favorites
+                const cartRaw = window.localStorage.getItem(CART_STORAGE_KEY);
+                if (cartRaw) {
+                    const cartParsed = JSON.parse(cartRaw);
+                    if (cartParsed && typeof cartParsed === "object" && Array.isArray(cartParsed.favorites)) {
+                        this.items = normalizeFavorites(cartParsed.favorites);
+                        this.persist();
+                    }
+                }
+
+                // Legacy: gangsters_user.favorites
+                const userRaw = window.localStorage.getItem(USER_LEGACY_KEY);
+                if (userRaw) {
+                    const userParsed = JSON.parse(userRaw);
+                    if (userParsed && typeof userParsed === "object" && Array.isArray(userParsed.favorites)) {
+                        if (!this.items.length) {
+                            this.items = normalizeFavorites(userParsed.favorites);
+                            this.persist();
+                        }
+                        stripFavoritesFromUserPayload();
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to init favorites store from localStorage", e);
+            }
+        },
+        persist() {
+            if (typeof window === "undefined") return;
+            window.localStorage.setItem(
+                FAVORITES_STORAGE_KEY,
+                JSON.stringify({
+                    items: this.items,
+                }),
+            );
+        },
+        toggleFavorite(product) {
+            const productId = typeof product === "object" ? product?.id : product;
+            if (!productId) return;
+
+            const existingIndex = this.items.findIndex((item) => item.productId === productId);
+            if (existingIndex !== -1) {
+                this.items.splice(existingIndex, 1);
+            } else {
+                this.items.push({
+                    productId,
+                    productSnapshot:
+                        normalizeProductSnapshot(product) ||
+                        normalizeProductSnapshot({
+                            id: productId,
+                            name: `Товар #${productId}`,
+                        }),
+                });
+            }
+            this.persist();
+        },
+        removeFavorite(productId) {
+            this.items = this.items.filter((item) => item.productId !== productId);
+            this.persist();
+        },
+        clear() {
+            this.items = [];
+            if (typeof window !== "undefined") {
+                window.localStorage.removeItem(FAVORITES_STORAGE_KEY);
+            }
+        },
+    },
+});
+
