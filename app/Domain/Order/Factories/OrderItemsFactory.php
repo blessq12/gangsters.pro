@@ -7,7 +7,6 @@ use App\Domain\Order\Entities\OrderItem;
 use App\Domain\Order\ValueObjects\ProductSnapshot;
 use App\Domain\Product\Entity\Product;
 use App\Domain\Product\Repository\ProductRepository;
-use App\Domain\Product\VO\CustomerStatus as ProductCustomerStatus;
 
 final class OrderItemsFactory
 {
@@ -42,7 +41,6 @@ final class OrderItemsFactory
             }
         }
 
-        $customerStatus = new ProductCustomerStatus('regular');
         $result = [];
 
         foreach ($items as $row) {
@@ -58,22 +56,17 @@ final class OrderItemsFactory
                 throw new ApiException("Product is not available: {$productId}");
             }
 
-            $priceVO = $product->priceForStatus($customerStatus);
-            if ($priceVO === null && \count($product->prices()) > 0) {
-                $priceVO = $product->prices()[0];
-            }
-            if ($priceVO === null) {
+            $price = $product->price();
+            if ($price === null || $price <= 0) {
                 throw new ApiException("Product has no price: {$productId}");
             }
-
-            $amount = $priceVO->amount();
 
             $result[] = [
                 'productOriginalId' => $product->id(),
                 'name' => $product->name(),
                 'sku' => $product->articul() ?? (string) $product->id(),
-                'listPrice' => $amount,
-                'finalPrice' => $amount,
+                'listPrice' => $price,
+                'finalPrice' => $price,
                 'quantity' => $quantity,
                 'attributes' => [],
                 'media' => $this->productImagesToMedia($product->images()),

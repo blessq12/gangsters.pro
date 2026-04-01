@@ -30,6 +30,10 @@ class ProductForm
                 Textarea::make('description')
                     ->label('Описание')
                     ->columnSpanFull(),
+                TextInput::make('price')
+                    ->label('Цена (в рублях)')
+                    ->numeric()
+                    ->minValue(0),
                 TextInput::make('calories')
                     ->numeric()
                     ->label('Ккал на 100г'),
@@ -42,6 +46,30 @@ class ProductForm
                 TextInput::make('carbs')
                     ->numeric()
                     ->label('Углеводы на 100г'),
+                Select::make('tags')
+                    ->label('Теги')
+                    ->relationship('tags', 'label')
+                    ->multiple()
+                    ->preload()
+                    ->searchable()
+                    ->createOptionForm([
+                        TextInput::make('label')
+                            ->label('Текст бейджа')
+                            ->required()
+                            ->maxLength(255),
+                        Select::make('color')
+                            ->label('Цвет бейджа')
+                            ->required()
+                            ->default('amber')
+                            ->options([
+                                'amber' => 'Янтарный',
+                                'red' => 'Красный',
+                                'green' => 'Зеленый',
+                                'slate' => 'Серо-сланцевый',
+                                'sky' => 'Небесно-голубой',
+                                'violet' => 'Фиолетовый',
+                            ]),
+                    ]),
             ]);
     }
 }

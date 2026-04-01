@@ -7,7 +7,6 @@ use App\Domain\Product\Entity\ProductImage;
 use App\Domain\Product\Entity\ProductIngredient;
 use App\Domain\Product\VO\ImageVariant;
 use App\Domain\Product\VO\Nutrition;
-use App\Domain\Product\VO\Price;
 use App\Domain\Product\VO\ProductTag;
 
 final class ProductPresenter
@@ -32,10 +31,7 @@ final class ProductPresenter
                 fn (ProductTag $tag) => $this->presentTag($tag),
                 $product->tags(),
             ),
-            'prices' => array_map(
-                fn (Price $price) => $this->presentPrice($price),
-                $product->prices(),
-            ),
+            'price' => $product->price(),
             'created_at' => $product->createdAt()->format(DATE_ATOM),
             'updated_at' => $product->updatedAt()->format(DATE_ATOM),
             'archived_at' => $product->archivedAt()?->format(DATE_ATOM),
@@ -90,16 +86,10 @@ final class ProductPresenter
     {
         return [
             'code' => $tag->code(),
+            'label' => $tag->label(),
+            'color' => $tag->color(),
         ];
     }
 
-    private function presentPrice(Price $price): array
-    {
-        return [
-            'amount' => $price->amount(),
-            'customer_status' => $price->customerStatus()->code(),
-            'is_default' => $price->isDefault(),
-        ];
-    }
 }
 

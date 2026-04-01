@@ -11,6 +11,7 @@ export const useCatalogStore = defineStore("catalog", {
         selectedCategoryId: null,
         selectedProduct: null,
         hasLoaded: false,
+        selectedTag: null,
         /** Поиск по названию в уже загруженном дереве (клиентский фильтр). */
         productSearchQuery: "",
     }),
@@ -44,14 +45,23 @@ export const useCatalogStore = defineStore("catalog", {
          */
         menuProducts() {
             const q = this.productSearchQuery.trim().toLowerCase();
+            const selectedTag = this.selectedTag;
+            const byTag = (product) => {
+                if (!selectedTag) return true;
+                const tags = Array.isArray(product.tags) ? product.tags : [];
+                return tags.some((tag) => String(tag?.code) === String(selectedTag));
+            };
+
             if (q.length > 0) {
-                return this.flatProducts.filter((p) =>
-                    String(p.name || "")
+                return this.flatProducts.filter((p) => {
+                    const byQuery = String(p.name || "")
                         .toLowerCase()
-                        .includes(q),
-                );
+                        .includes(q);
+
+                    return byQuery && byTag(p);
+                });
             }
-            return this.filteredProducts;
+            return this.filteredProducts.filter(byTag);
         },
         categoryTabs(state) {
             return state.categories.map((entry) => ({
@@ -59,6 +69,23 @@ export const useCatalogStore = defineStore("catalog", {
                 name: entry.category.name,
                 uri: entry.category.slug,
             }));
+        },
+        tagTabs() {
+            const map = new Map();
+            this.flatProducts.forEach((product) => {
+                const tags = Array.isArray(product.tags) ? product.tags : [];
+                tags.forEach((tag) => {
+                    const code = String(tag?.code || "").trim();
+                    if (!code || map.has(code)) return;
+
+                    map.set(code, {
+                        id: code,
+                        name: String(tag?.label || code),
+                    });
+                });
+            });
+
+            return Array.from(map.values());
         },
     },
     actions: {
@@ -75,6 +102,9 @@ export const useCatalogStore = defineStore("catalog", {
                 if ("selectedCategoryId" in parsed) {
                     this.selectedCategoryId = parsed.selectedCategoryId ?? null;
                 }
+                if ("selectedTag" in parsed) {
+                    this.selectedTag = parsed.selectedTag ?? null;
+                }
 
             } catch (e) {
                 console.error("Failed to init catalog store from localStorage", e);
@@ -87,11 +117,16 @@ export const useCatalogStore = defineStore("catalog", {
                 CATALOG_STORAGE_KEY,
                 JSON.stringify({
                     selectedCategoryId: this.selectedCategoryId,
+                    selectedTag: this.selectedTag,
                 }),
             );
         },
         setSelectedCategoryId(categoryId) {
             this.selectedCategoryId = categoryId ?? null;
+            this.persist();
+        },
+        setSelectedTag(tagCode) {
+            this.selectedTag = tagCode ?? null;
             this.persist();
         },
         setSelectedProduct(product) {

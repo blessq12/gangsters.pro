@@ -4,7 +4,6 @@ namespace App\Application\YandexFood\Presenter;
 
 use App\Domain\Category\Entity\Category;
 use App\Domain\Product\Entity\Product;
-use App\Domain\Product\VO\CustomerStatus;
 use Carbon\Carbon;
 
 /**
@@ -12,13 +11,6 @@ use Carbon\Carbon;
  */
 final class YandexFoodMenuCatalogPresenter
 {
-    private const PRICE_CUSTOMER_STATUS_CODE = 'regular';
-
-    public static function priceCustomerStatus(): CustomerStatus
-    {
-        return new CustomerStatus(self::PRICE_CUSTOMER_STATUS_CODE);
-    }
-
     /**
      * @param  list<array{category: Category, lines: list<array{product: Product, sortOrder: int}>}>  $blocks
      * @return array{categories: list<array<string, mixed>>, items: list<array<string, mixed>>, lastChange: string}
@@ -65,8 +57,7 @@ final class YandexFoodMenuCatalogPresenter
      */
     private function presentMenuItem(Product $product, string $categoryId, int $sortOrder): array
     {
-        $price = $product->priceForStatus(self::priceCustomerStatus());
-        $priceRub = $price !== null ? $price->amount() / 100.0 : 0.0;
+        $priceRub = $product->price() !== null ? (float) $product->price() : 0.0;
 
         return [
             'id' => (string) $product->id(),

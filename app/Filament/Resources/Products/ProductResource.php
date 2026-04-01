@@ -7,8 +7,6 @@ use App\Filament\Resources\Products\Pages\EditProduct;
 use App\Filament\Resources\Products\Pages\ListProducts;
 use App\Filament\Resources\Products\RelationManagers\ProductImagesRelationManager;
 use App\Filament\Resources\Products\RelationManagers\ProductIngredientsRelationManager;
-use App\Filament\Resources\Products\RelationManagers\ProductTagsRelationManager;
-use App\Filament\Resources\Products\RelationManagers\ProductPricesRelationManager;
 use App\Filament\Resources\Products\Schemas\ProductForm;
 use App\Filament\Resources\Products\Tables\ProductsTable;
 use App\Infrastructure\Product\Model\PRD_Product;
@@ -58,8 +56,6 @@ class ProductResource extends Resource
         return [
             ProductImagesRelationManager::class,
             ProductIngredientsRelationManager::class,
-            ProductTagsRelationManager::class,
-            ProductPricesRelationManager::class,
         ];
     }
 

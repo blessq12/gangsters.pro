@@ -31,9 +31,14 @@ export function useCatalogPageModel() {
         get: () => catalogStore.productSearchQuery,
         set: (value) => catalogStore.setProductSearchQuery(value),
     });
+    const selectedTag = computed({
+        get: () => catalogStore.selectedTag,
+        set: (value) => catalogStore.setSelectedTag(value),
+    });
 
     const menuProducts = computed(() => catalogStore.menuProducts);
     const categoryTabs = computed(() => catalogStore.categoryTabs);
+    const tagTabs = computed(() => catalogStore.tagTabs);
     const selectedProduct = computed(() => catalogStore.selectedProduct);
     const loading = computed(() => catalogStore.loading);
 
@@ -49,9 +54,11 @@ export function useCatalogPageModel() {
         showProductDetailModal,
         openProductDetail,
         selectedCategoryId,
+        selectedTag,
         productSearchQuery,
         menuProducts,
         categoryTabs,
+        tagTabs,
         selectedProduct,
         loading,
         catalogEmptyMessage,

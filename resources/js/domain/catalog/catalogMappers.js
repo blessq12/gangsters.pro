@@ -12,21 +12,31 @@ function extractWeightGrams(text) {
     return Math.round(grams);
 }
 
+function normalizeProductTags(rawTags) {
+    if (!Array.isArray(rawTags)) return [];
+
+    return rawTags
+        .map((tag) => {
+            const code = String(tag?.code || "").trim();
+            if (!code) return null;
+
+            return {
+                code,
+                label: String(tag?.label || code).trim(),
+                color: String(tag?.color || "amber").trim(),
+            };
+        })
+        .filter(Boolean);
+}
+
 export function normalizeCatalogProduct(apiProduct) {
     if (!apiProduct || typeof apiProduct !== "object") return null;
 
     const id = apiProduct.id ?? null;
     if (!id) return null;
 
-    let price = 0;
-    if (Array.isArray(apiProduct.prices) && apiProduct.prices.length) {
-        const defaultPrice =
-            apiProduct.prices.find((p) => p && p.is_default) || apiProduct.prices[0];
-        if (defaultPrice && typeof defaultPrice.amount !== "undefined") {
-            const rawAmount = Number(defaultPrice.amount) || 0;
-            price = Math.round(rawAmount / 100);
-        }
-    }
+    const rawPrice = Number(apiProduct.price);
+    const price = Number.isFinite(rawPrice) ? Math.round(rawPrice) : 0;
 
     let imageUrl = null;
     let imageSrcset = [];
@@ -78,6 +88,7 @@ export function normalizeCatalogProduct(apiProduct) {
         name: apiProduct.name || "",
         price,
         weight: derivedWeight,
+        tags: normalizeProductTags(apiProduct.tags),
         images: imageUrl ? [imageUrl] : [],
         imageSrcset,
         nutrition,

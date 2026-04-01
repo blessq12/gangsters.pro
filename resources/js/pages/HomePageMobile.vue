@@ -7,9 +7,11 @@ const {
     showProductDetailModal,
     openProductDetail,
     selectedCategoryId,
+    selectedTag,
     productSearchQuery,
     menuProducts,
     categoryTabs,
+    tagTabs,
     selectedProduct,
     loading,
     catalogEmptyMessage,
@@ -65,6 +67,11 @@ const {
             <CatalogCategoriesMobile
                 v-model="selectedCategoryId"
                 :categories="categoryTabs"
+            />
+            <CatalogCategoriesMobile
+                v-model="selectedTag"
+                :categories="tagTabs"
+                all-label="Все теги"
             />
 
             <CatalogProductsMobile

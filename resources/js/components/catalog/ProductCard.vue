@@ -18,6 +18,36 @@ const nutritionTriggerRef = ref(null);
 const nutritionTooltipRef = ref(null);
 
 const { nutrition, hasNutrition } = useProductMeta(computed(() => props.product));
+const badgeTags = computed(() => {
+    const tags =
+        (Array.isArray(props.product?.tags) && props.product.tags) ||
+        (Array.isArray(props.product?.raw?.tags) && props.product.raw.tags) ||
+        (Array.isArray(props.product?.raw?.product_tags) && props.product.raw.product_tags) ||
+        [];
+    if (!Array.isArray(tags)) return [];
+
+    return tags
+        .map((tag) => {
+            const code = String(tag?.code || "").trim();
+            if (!code) return null;
+            return {
+                code,
+                label: String(tag?.label || code).trim(),
+                color: String(tag?.color || "amber").trim().toLowerCase(),
+            };
+        })
+        .filter(Boolean)
+        .slice(0, 3);
+});
+
+function tagColorClass(color) {
+    if (color === "red") return "border-red-400/50 bg-red-500/20 text-red-100";
+    if (color === "green") return "border-green-400/50 bg-green-500/20 text-green-100";
+    if (color === "slate") return "border-slate-400/50 bg-slate-500/20 text-slate-100";
+    if (color === "sky") return "border-sky-400/50 bg-sky-500/20 text-sky-100";
+    if (color === "violet") return "border-violet-400/50 bg-violet-500/20 text-violet-100";
+    return "border-amber-400/60 bg-amber-500/20 text-amber-100";
+}
 
 function toggleNutritionTooltip() {
     if (showNutritionTooltip.value) {
@@ -129,17 +159,34 @@ const handleToggleFavorite = () => {
             ></div>
 
             <div
+                class="absolute left-2.5 top-2.5 z-10 flex max-w-[70%] flex-col gap-1 sm:left-3 sm:top-3"
+            >
+                <div
+                    v-if="product.weight"
+                    class="inline-flex w-fit items-center rounded-full border border-white/10 bg-[rgba(0,0,0,0.75)] px-2 py-1 text-[10px] font-medium text-slate-100 backdrop-blur sm:px-2.5 sm:text-[11px]"
+                >
+                    {{ product.weight }} г
+                </div>
+                <div
+                    v-if="badgeTags.length"
+                    class="flex flex-wrap gap-1"
+                >
+                    <span
+                        v-for="tag in badgeTags"
+                        :key="tag.code"
+                        class="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium backdrop-blur"
+                        :class="tagColorClass(tag.color)"
+                    >
+                        {{ tag.label }}
+                    </span>
+                </div>
+            </div>
+
+            <div
                 class="absolute inset-0 z-[1] cursor-pointer"
                 aria-label="Открыть карточку товара"
                 @click.stop="emit('imageClick', product)"
             ></div>
-
-            <div
-                v-if="product.weight"
-                class="absolute left-2.5 top-2.5 z-10 inline-flex items-center rounded-full border border-white/10 bg-[rgba(0,0,0,0.75)] px-2 py-1 text-[10px] font-medium text-slate-100 backdrop-blur sm:left-3 sm:top-3 sm:px-2.5 sm:text-[11px]"
-            >
-                {{ product.weight }} г
-            </div>
 
             <div
                 ref="nutritionTriggerRef"

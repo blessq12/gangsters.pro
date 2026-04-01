@@ -6,32 +6,42 @@ use App\Domain\Product\Entity\Product as ProductEntity;
 use App\Domain\Product\Entity\ProductImage;
 use App\Domain\Product\Entity\ProductIngredient;
 use App\Domain\Product\Repository\ProductRepository as ProductRepositoryContract;
-use App\Domain\Product\VO\CustomerStatus;
 use App\Domain\Product\VO\ImageVariant;
 use App\Domain\Product\VO\Nutrition;
-use App\Domain\Product\VO\Price;
 use App\Domain\Product\VO\ProductTag;
 use App\Infrastructure\Product\Model\PRD_Product;
 use App\Infrastructure\Product\Model\PRD_ProductImage;
 use App\Infrastructure\Product\Model\PRD_ProductIngredient;
-use App\Infrastructure\Product\Model\PRD_ProductPrice;
-use App\Infrastructure\Product\Model\PRD_ProductTag;
+use App\Infrastructure\Product\Model\PRD_Tag;
 use App\Services\Slug\TransliteratingSlugGenerator;
 use DateTimeImmutable;
+use Illuminate\Support\Str;
 
 class ProductRepository implements ProductRepositoryContract
 {
     public function findById(int $id): ?ProductEntity
     {
-        $model = PRD_Product::with(['images', 'ingredients', 'tags', 'prices'])->find($id);
+        $model = PRD_Product::with(['images', 'ingredients', 'tags'])->find($id);
 
         return $model ? $this->mapToEntity($model) : null;
     }
 
     public function findByIds(array $ids): array
     {
-        $models = PRD_Product::with(['images', 'ingredients', 'tags', 'prices'])
+        $models = PRD_Product::with(['images', 'ingredients', 'tags'])
             ->whereIn('id', $ids)
+            ->get();
+
+        return $models
+            ->map(fn (PRD_Product $model) => $this->mapToEntity($model))
+            ->all();
+    }
+
+    public function findActiveByIds(array $ids): array
+    {
+        $models = PRD_Product::with(['images', 'ingredients', 'tags'])
+            ->whereIn('id', $ids)
+            ->where('status', ProductEntity::STATUS_ACTIVE)
             ->get();
 
         return $models
@@ -48,7 +58,7 @@ class ProductRepository implements ProductRepositoryContract
 
     public function findNonActive(): array
     {
-        $models = PRD_Product::with(['images', 'ingredients', 'tags', 'prices'])
+        $models = PRD_Product::with(['images', 'ingredients', 'tags'])
             ->where('status', '!=', ProductEntity::STATUS_ACTIVE)
             ->get();
 
@@ -71,6 +81,7 @@ class ProductRepository implements ProductRepositoryContract
         );
         $model->articul = $product->articul();
         $model->description = $product->description();
+        $model->price = $product->price();
 
         $nutrition = $product->nutrition();
         $model->calories = $nutrition->calories();
@@ -92,8 +103,6 @@ class ProductRepository implements ProductRepositoryContract
         // Для MVP: полная пересборка коллекций
         $model->images()->delete();
         $model->ingredients()->delete();
-        $model->tags()->delete();
-        $model->prices()->delete();
 
         foreach ($product->images() as $image) {
             $this->saveImage($model, $image);
@@ -103,13 +112,7 @@ class ProductRepository implements ProductRepositoryContract
             $this->saveIngredient($model, $ingredient);
         }
 
-        foreach ($product->tags() as $tag) {
-            $this->saveTag($model, $tag);
-        }
-
-        foreach ($product->prices() as $price) {
-            $this->savePrice($model, $price);
-        }
+        $this->syncTags($model, $product->tags());
     }
 
     public function delete(ProductEntity $product): void
@@ -158,22 +161,33 @@ class ProductRepository implements ProductRepositoryContract
         $model->save();
     }
 
-    private function saveTag(PRD_Product $productModel, ProductTag $tag): void
+    /**
+     * @param ProductTag[] $tags
+     */
+    private function syncTags(PRD_Product $productModel, array $tags): void
     {
-        /** @var PRD_ProductTag $model */
-        $model = $productModel->tags()->make();
-        $model->code = $tag->code();
-        $model->save();
-    }
+        $tagIds = [];
+        foreach ($tags as $tag) {
+            $normalizedCode = Str::slug($tag->code(), '-');
 
-    private function savePrice(PRD_Product $productModel, Price $price): void
-    {
-        /** @var PRD_ProductPrice $model */
-        $model = $productModel->prices()->make();
-        $model->amount = $price->amount();
-        $model->customer_status = $price->customerStatus()->code();
-        $model->is_default = $price->isDefault();
-        $model->save();
+            if ($normalizedCode === '') {
+                continue;
+            }
+
+            $record = PRD_Tag::query()->firstOrCreate(
+                ['code' => $normalizedCode],
+                [
+                    'label' => $tag->label(),
+                    'color' => $tag->color(),
+                    'is_active' => true,
+                    'sort_order' => 0,
+                ],
+            );
+
+            $tagIds[] = (int) $record->id;
+        }
+
+        $productModel->tags()->sync(array_values(array_unique($tagIds)));
     }
 
     private function mapToEntity(PRD_Product $model): ProductEntity
@@ -195,14 +209,10 @@ class ProductRepository implements ProductRepositoryContract
             ->all();
 
         $tags = $model->tags
-            ->map(fn (PRD_ProductTag $tagModel) => new ProductTag($tagModel->code))
-            ->all();
-
-        $prices = $model->prices
-            ->map(fn (PRD_ProductPrice $priceModel) => new Price(
-                amount: (int) $priceModel->amount,
-                customerStatus: new CustomerStatus($priceModel->customer_status),
-                isDefault: (bool) $priceModel->is_default,
+            ->map(fn (PRD_Tag $tagModel) => new ProductTag(
+                code: $tagModel->code,
+                label: $tagModel->label,
+                color: $tagModel->color,
             ))
             ->all();
 
@@ -221,7 +231,7 @@ class ProductRepository implements ProductRepositoryContract
             images: $images,
             ingredients: $ingredients,
             tags: $tags,
-            prices: $prices,
+            price: $model->price !== null ? (int) $model->price : null,
             status: $model->status,
             createdAt: $createdAt,
             updatedAt: $updatedAt,

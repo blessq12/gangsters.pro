@@ -3,9 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Domain\Product\Entity\Product as ProductEntity;
-use App\Domain\Product\VO\CustomerStatus;
 use App\Domain\Product\VO\Nutrition;
-use App\Domain\Product\VO\Price;
 use App\Infrastructure\Product\Model\PRD_Product;
 use App\Infrastructure\Product\Model\PRD_ProductImage;
 use App\Infrastructure\Product\Repository\ProductRepository;
@@ -83,12 +81,8 @@ class MigrateLegacyProductsCommand extends Command
                     continue;
                 }
 
-                $priceAmount = (int) round((float) ($old->price ?? 0) * 100);
+                $price = (int) round((float) ($old->price ?? 0));
                 $nutrition = new Nutrition(0, 0, 0, 0, 'per_100g');
-                $prices = $priceAmount > 0
-                    ? [new Price($priceAmount, new CustomerStatus('regular'), true)]
-                    : [];
-
                 $product = ProductEntity::create(
                     name: $old->name ?? 'Без названия',
                     description: (string) ($old->description ?? $old->consist ?? ''),
@@ -96,7 +90,7 @@ class MigrateLegacyProductsCommand extends Command
                     images: [],
                     ingredients: [],
                     tags: [],
-                    prices: $prices,
+                    price: $price > 0 ? $price : null,
                     articul: $old->sku ? (string) $old->sku : null,
                 );
 

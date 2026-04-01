@@ -64,12 +64,12 @@ final class GetCatalogTreeUseCase
             ];
         }
 
-        $products = $this->products->findByIds($productIds);
+        $products = $this->products->findActiveByIds($productIds);
 
         // Индексируем продукты по id для восстановления порядка
         $productsById = [];
         foreach ($products as $product) {
-            if ($product instanceof Product && $product->status() === Product::STATUS_ACTIVE) {
+            if ($product instanceof Product) {
                 $productsById[$product->id()] = $product;
             }
         }

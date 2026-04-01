@@ -4,7 +4,6 @@ namespace App\Domain\Product\Entity;
 
 use App\Domain\Product\VO\Nutrition;
 use App\Domain\Product\VO\ProductTag;
-use App\Domain\Product\VO\Price;
 use DateTimeImmutable;
 
 final class Product
@@ -16,7 +15,6 @@ final class Product
      * @param ProductImage[]      $images
      * @param ProductIngredient[] $ingredients
      * @param ProductTag[]        $tags
-     * @param Price[]             $prices
      */
     private function __construct(
         private ?int $id,
@@ -27,7 +25,7 @@ final class Product
         private array $images,
         private array $ingredients,
         private array $tags,
-        private array $prices,
+        private ?int $price,
         private string $status,
         private DateTimeImmutable $createdAt,
         private DateTimeImmutable $updatedAt,
@@ -39,7 +37,6 @@ final class Product
      * @param ProductImage[]      $images
      * @param ProductIngredient[] $ingredients
      * @param ProductTag[]        $tags
-     * @param Price[]             $prices
      */
     public static function create(
         string $name,
@@ -48,7 +45,7 @@ final class Product
         array $images = [],
         array $ingredients = [],
         array $tags = [],
-        array $prices = [],
+        ?int $price = null,
         ?string $articul = null,
     ): self {
         $now = new DateTimeImmutable();
@@ -62,7 +59,7 @@ final class Product
             images: $images,
             ingredients: $ingredients,
             tags: $tags,
-            prices: $prices,
+            price: $price,
             status: self::STATUS_ACTIVE,
             createdAt: $now,
             updatedAt: $now,
@@ -74,7 +71,6 @@ final class Product
      * @param ProductImage[]      $images
      * @param ProductIngredient[] $ingredients
      * @param ProductTag[]        $tags
-     * @param Price[]             $prices
      */
     public static function reconstitute(
         int $id,
@@ -85,7 +81,7 @@ final class Product
         array $images,
         array $ingredients,
         array $tags,
-        array $prices,
+        ?int $price,
         string $status,
         DateTimeImmutable $createdAt,
         DateTimeImmutable $updatedAt,
@@ -100,7 +96,7 @@ final class Product
             images: $images,
             ingredients: $ingredients,
             tags: $tags,
-            prices: $prices,
+            price: $price,
             status: $status,
             createdAt: $createdAt,
             updatedAt: $updatedAt,
@@ -164,12 +160,9 @@ final class Product
         return $this->tags;
     }
 
-    /**
-     * @return Price[]
-     */
-    public function prices(): array
+    public function price(): ?int
     {
-        return $this->prices;
+        return $this->price;
     }
 
     public function status(): string
@@ -243,32 +236,10 @@ final class Product
         $this->touch();
     }
 
-    /**
-     * @param Price[] $prices
-     */
-    public function setPrices(array $prices): void
+    public function setPrice(?int $price): void
     {
-        $this->prices = $prices;
+        $this->price = $price;
         $this->touch();
-    }
-
-    public function priceForStatus(\App\Domain\Product\VO\CustomerStatus $status): ?Price
-    {
-        $code = $status->code();
-
-        foreach ($this->prices as $price) {
-            if ($price->customerStatus()->code() === $code) {
-                return $price;
-            }
-        }
-
-        foreach ($this->prices as $price) {
-            if ($price->isDefault()) {
-                return $price;
-            }
-        }
-
-        return null;
     }
 
     public function archive(): void

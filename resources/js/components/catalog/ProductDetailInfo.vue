@@ -35,10 +35,32 @@ const { nutrition, hasNutrition, ingredients, ingredientsText } =
     useProductMeta(computed(() => props.product));
 
 const tags = computed(() => {
-    const raw = props.product?.raw?.tags;
-    if (!Array.isArray(raw)) return [];
-    return raw.map((t) => t?.code).filter(Boolean);
+    const source = Array.isArray(props.product?.tags)
+        ? props.product.tags
+        : props.product?.raw?.tags;
+    if (!Array.isArray(source)) return [];
+    return source
+        .map((tag) => {
+            const code = String(tag?.code || "").trim();
+            if (!code) return null;
+
+            return {
+                code,
+                label: String(tag?.label || code).trim(),
+                color: String(tag?.color || "amber").trim().toLowerCase(),
+            };
+        })
+        .filter(Boolean);
 });
+
+function tagColorClass(color) {
+    if (color === "red") return "border-red-400/50 bg-red-500/20 text-red-100";
+    if (color === "green") return "border-green-400/50 bg-green-500/20 text-green-100";
+    if (color === "slate") return "border-slate-400/50 bg-slate-500/20 text-slate-100";
+    if (color === "sky") return "border-sky-400/50 bg-sky-500/20 text-sky-100";
+    if (color === "violet") return "border-violet-400/50 bg-violet-500/20 text-violet-100";
+    return "border-amber-400/60 bg-amber-500/20 text-amber-100";
+}
 
 const activeTooltip = ref(null); // 'nutrition' | 'ingredients' | null
 const tooltipPosition = ref({ left: 0, top: 0 });
@@ -183,6 +205,19 @@ function handleToggleFavorite() {
             >
                 {{ product.name || product.raw?.name || "Без названия" }}
             </h2>
+            <div
+                v-if="tags.length"
+                class="mt-2 flex flex-wrap gap-1.5"
+            >
+                <span
+                    v-for="tag in tags"
+                    :key="tag.code"
+                    class="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium backdrop-blur"
+                    :class="tagColorClass(tag.color)"
+                >
+                    {{ tag.label }}
+                </span>
+            </div>
         </div>
 
         <div class="flex w-full shrink-0 items-center gap-3">

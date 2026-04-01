@@ -15,6 +15,12 @@ interface ProductRepository
     public function findByIds(array $ids): array;
 
     /**
+     * @param int[] $ids
+     * @return Product[]
+     */
+    public function findActiveByIds(array $ids): array;
+
+    /**
      * @return Product[]
      */
     public function findByCategoryId(int $categoryId): array;

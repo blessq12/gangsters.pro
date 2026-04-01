@@ -65,16 +65,15 @@ final class GetYandexFoodMenuCompositionUseCase extends YandexFoodBaseUseCase
             return null;
         }
 
-        $products = $this->products->findByIds($productIds);
+        $products = $this->products->findActiveByIds($productIds);
 
         $productsById = [];
         foreach ($products as $product) {
-            if ($product instanceof Product && $product->status() === Product::STATUS_ACTIVE) {
+            if ($product instanceof Product) {
                 $productsById[$product->id()] = $product;
             }
         }
 
-        $status = YandexFoodMenuCatalogPresenter::priceCustomerStatus();
         $lines = [];
 
         foreach ($links as $link) {
@@ -84,8 +83,8 @@ final class GetYandexFoodMenuCompositionUseCase extends YandexFoodBaseUseCase
             }
 
             $product = $productsById[$id];
-            $price = $product->priceForStatus($status);
-            if ($price === null || $price->amount() <= 0) {
+            $price = $product->price();
+            if ($price === null || $price <= 0) {
                 continue;
             }
 

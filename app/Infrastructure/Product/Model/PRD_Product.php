@@ -5,6 +5,7 @@ namespace App\Infrastructure\Product\Model;
 use App\Services\Slug\TransliteratingSlugGenerator;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PRD_Product extends Model
@@ -30,6 +31,7 @@ class PRD_Product extends Model
         'name',
         'articul',
         'description',
+        'price',
         'status',
         'calories',
         'proteins',
@@ -43,6 +45,7 @@ class PRD_Product extends Model
         'proteins' => 'float',
         'fats' => 'float',
         'carbs' => 'float',
+        'price' => 'integer',
     ];
 
     public function images(): HasMany
@@ -56,14 +59,15 @@ class PRD_Product extends Model
         return $this->hasMany(PRD_ProductIngredient::class, 'product_id');
     }
 
-    public function tags(): HasMany
+    public function tags(): BelongsToMany
     {
-        return $this->hasMany(PRD_ProductTag::class, 'product_id');
+        return $this->belongsToMany(
+            PRD_Tag::class,
+            'PRD_product_tag',
+            'product_id',
+            'tag_id',
+        )->withTimestamps()->orderBy('sort_order');
     }
 
-    public function prices(): HasMany
-    {
-        return $this->hasMany(PRD_ProductPrice::class, 'product_id');
-    }
 }
 
