@@ -225,6 +225,15 @@ function handleDecrement() {
     setLiveMessage("Количество уменьшено");
 }
 
+function handlePriceClick() {
+    // UX: клик по цене действует как "добавить/увеличить"
+    if (qtyInCart.value === 0) {
+        handleAddToCart();
+        return;
+    }
+    handleIncrement();
+}
+
 </script>
 
 <template>
@@ -442,12 +451,15 @@ function handleDecrement() {
                         </div>
                     </div>
 
-                    <div
+                    <button
                         v-if="product.price != null"
-                        class="ml-auto flex min-h-10 shrink-0 items-center whitespace-nowrap rounded-lg bg-amber-400 px-3 py-1.5 text-[12px] font-semibold text-black"
+                        type="button"
+                        class="ml-auto flex min-h-10 shrink-0 items-center whitespace-nowrap rounded-lg bg-amber-400 px-3 py-1.5 text-[12px] font-semibold text-black transition-transform duration-200 hover:scale-[1.03] cursor-pointer"
+                        @click.stop="handlePriceClick"
+                        :aria-label="qtyInCart === 0 ? 'Добавить в корзину' : 'Увеличить количество'"
                     >
                         {{ product.price }}&nbsp;₽
-                    </div>
+                    </button>
                 </div>
             </div>
         </div>

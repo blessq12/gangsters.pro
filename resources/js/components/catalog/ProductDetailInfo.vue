@@ -180,6 +180,15 @@ function handleAddToCart() {
     emit("add-to-cart");
 }
 
+function handlePriceClick() {
+    // UX: клик по цене добавляет товар или увеличивает количество.
+    if (props.qtyInCart === 0) {
+        handleAddToCart();
+        return;
+    }
+    emit("increment");
+}
+
 function handleIncrement() {
     emit("increment");
 }
@@ -291,12 +300,15 @@ function handleToggleFavorite() {
                 </div>
             </div>
 
-            <div
+            <button
                 v-if="product.price != null"
-                class="ml-auto flex min-h-10 shrink-0 items-center whitespace-nowrap rounded-lg bg-amber-400 px-3 py-1.5 text-[12px] font-semibold text-black"
+                class="ml-auto flex min-h-10 shrink-0 items-center whitespace-nowrap rounded-lg bg-amber-400 px-3 py-1.5 text-[12px] font-semibold text-black transition-transform duration-200 hover:scale-[1.03] cursor-pointer"
+                @click.stop="handlePriceClick"
+                type="button"
+                :aria-label="qtyInCart === 0 ? 'Добавить в корзину' : 'Увеличить количество'"
             >
                 {{ product.price }}&nbsp;₽
-            </div>
+            </button>
         </div>
     </div>
 
