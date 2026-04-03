@@ -8,6 +8,7 @@ import {
 import { buildProductGallerySlides } from "../../utils/catalog/productMedia";
 import { pushBodyScrollLock, popBodyScrollLock } from "../../utils/system/bodyScrollLock";
 import { useProductActions } from "../../composables/catalog/useProductActions";
+import { useSwipeDownToClose } from "../../composables/ui/useSwipeDownToClose";
 
 const props = defineProps({
     modelValue: {
@@ -49,6 +50,14 @@ const unlockBodyScroll = () => {
 const close = () => {
     emit("update:modelValue", false);
 };
+
+const swipeEnabled = computed(() => isMobile.value && props.modelValue);
+const { onTouchStart: onPanelSwipeStart, onTouchEnd: onPanelSwipeEnd } =
+    useSwipeDownToClose({
+        boundaryRef: panelRef,
+        enabled: swipeEnabled,
+        onClose: close,
+    });
 
 watch(
     () => props.modelValue,
@@ -109,6 +118,8 @@ const { qtyInCart, isFav, addToCart, incrementCart, decrementCart, toggleFavorit
                     <div
                         ref="panelRef"
                         class="product-detail-modal__panel"
+                        @touchstart.passive="onPanelSwipeStart"
+                        @touchend="onPanelSwipeEnd"
                     >
                         <button
                             type="button"
