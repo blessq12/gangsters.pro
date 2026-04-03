@@ -11,6 +11,7 @@ const userStore = useUserStore();
 const form = ref({
     name: "",
     phone: "",
+    email: "",
     password: "",
     confirmPassword: "",
     consent_personal_data: true,
@@ -33,6 +34,15 @@ async function submit() {
         error.value = "Введите номер телефона";
         return;
     }
+    const emailTrim = (form.value.email || "").trim();
+    if (!emailTrim) {
+        error.value = "Введите электронную почту";
+        return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrim)) {
+        error.value = "Некорректный формат email";
+        return;
+    }
     if (!form.value.password) {
         error.value = "Придумайте пароль";
         return;
@@ -52,6 +62,7 @@ async function submit() {
         await userStore.registerClient({
             name: form.value.name,
             phone: form.value.phone,
+            email: emailTrim,
             password: form.value.password,
             consent_personal_data: form.value.consent_personal_data,
             consent_marketing: form.value.consent_marketing,
@@ -101,6 +112,19 @@ async function submit() {
                     data-maska="+7 (###) ###-##-##"
                     type="tel"
                     placeholder="+7 (___) ___-__-__"
+                    class="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                />
+            </div>
+
+            <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1">
+                    Email
+                </label>
+                <input
+                    v-model="form.email"
+                    type="email"
+                    autocomplete="email"
+                    placeholder="you@example.com"
                     class="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
                 />
             </div>

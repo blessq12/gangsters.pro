@@ -13,7 +13,8 @@ abstract class ApiTestCase extends TestCase
     {
         parent::setUp();
 
-        $this->app->bind(FrontpadOrderGateway::class, fn () => new class implements FrontpadOrderGateway {
+        $this->app->bind(FrontpadOrderGateway::class, fn () => new class implements FrontpadOrderGateway
+        {
             public function pushOrder(Order $order): void {}
         });
     }
@@ -69,7 +70,7 @@ abstract class ApiTestCase extends TestCase
         return array_merge([
             'name' => 'Api Test User',
             'phone' => $phone,
-            'email' => null,
+            'email' => $this->uniqueEmail(),
             'birth_date' => null,
             'password' => $password,
             'consent_personal_data' => true,
@@ -97,6 +98,7 @@ abstract class ApiTestCase extends TestCase
             'client' => $data['client'],
             'phone' => $phone,
             'password' => $password,
+            'email' => $data['client']['email'] ?? '',
         ];
     }
 

@@ -2,9 +2,9 @@
 
 namespace App\Application\Client\Command;
 
-use App\Application\Common\Exceptions\ApiException;
 use App\Application\Client\ClientBaseUseCase;
 use App\Application\Client\DTO\RegisterDTO;
+use App\Application\Common\Exceptions\ApiException;
 use App\Domain\Client\Events\ClientRegistered;
 
 final class RegisterClientUseCase extends ClientBaseUseCase
@@ -15,7 +15,7 @@ final class RegisterClientUseCase extends ClientBaseUseCase
             throw new ApiException('Client with this phone already exists');
         }
 
-        if ($dto->email !== null && $this->clients->existsByEmail($dto->email)) {
+        if ($this->clients->existsByEmail($dto->email)) {
             throw new ApiException('Client with this email already exists');
         }
 
@@ -40,4 +40,3 @@ final class RegisterClientUseCase extends ClientBaseUseCase
         ];
     }
 }
-

@@ -21,6 +21,11 @@ const routes = [
         name: "contacts",
         component: () => import("../pages/ContactsPage.vue"),
     },
+    {
+        path: "/reset-password",
+        name: "client-reset-password",
+        component: () => import("../pages/ClientResetPasswordPage.vue"),
+    },
 ];
 
 const router = createRouter({

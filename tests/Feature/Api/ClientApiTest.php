@@ -2,7 +2,9 @@
 
 namespace Tests\Feature\Api;
 
+use App\Mail\ClientPasswordResetMail;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 final class ClientApiTest extends ApiTestCase
 {
@@ -34,6 +36,16 @@ final class ClientApiTest extends ApiTestCase
             ->assertJsonValidationErrors(['name']);
     }
 
+    public function test_register_validation_422_when_email_missing(): void
+    {
+        $payload = $this->registerPayload($this->uniquePhone());
+        unset($payload['email']);
+
+        $this->postJson('/api/client/register', $payload)
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['email']);
+    }
+
     public function test_register_validation_422_when_consent_missing(): void
     {
         $payload = $this->registerPayload($this->uniquePhone());
@@ -47,11 +59,22 @@ final class ClientApiTest extends ApiTestCase
     public function test_register_duplicate_phone_returns_422(): void
     {
         $phone = $this->uniquePhone();
-        $this->postJson('/api/client/register', $this->registerPayload($phone))->assertOk();
+        $email = $this->uniqueEmail();
+        $this->postJson('/api/client/register', $this->registerPayload($phone, 'secret12', ['email' => $email]))->assertOk();
 
-        $this->postJson('/api/client/register', $this->registerPayload($phone))
+        $this->postJson('/api/client/register', $this->registerPayload($phone, 'secret12', ['email' => $this->uniqueEmail()]))
             ->assertStatus(422)
             ->assertJsonPath('message', 'Client with this phone already exists');
+    }
+
+    public function test_register_duplicate_email_returns_422(): void
+    {
+        $email = $this->uniqueEmail();
+        $this->postJson('/api/client/register', $this->registerPayload($this->uniquePhone(), 'secret12', ['email' => $email]))->assertOk();
+
+        $this->postJson('/api/client/register', $this->registerPayload($this->uniquePhone(), 'secret12', ['email' => $email]))
+            ->assertStatus(422)
+            ->assertJsonPath('message', 'Client with this email already exists');
     }
 
     public function test_login_returns_token_and_client_contract(): void
@@ -83,7 +106,36 @@ final class ClientApiTest extends ApiTestCase
             'password' => 'x',
         ])
             ->assertStatus(422)
-            ->assertJsonPath('message', 'Phone or email is required');
+            ->assertJsonValidationErrors(['phone']);
+    }
+
+    public function test_login_422_when_phone_and_email_both_provided(): void
+    {
+        $session = $this->registerClientViaApi('my-password-99');
+
+        $this->postJson('/api/client/login', [
+            'phone' => $session['phone'],
+            'email' => $session['email'],
+            'password' => $session['password'],
+        ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['phone', 'email']);
+    }
+
+    public function test_login_with_email_returns_token(): void
+    {
+        $session = $this->registerClientViaApi('my-password-99');
+
+        $response = $this->postJson('/api/client/login', [
+            'email' => $session['email'],
+            'password' => $session['password'],
+        ]);
+
+        $response->assertOk();
+        $data = $response->json();
+        $this->assertArrayHasKey('token', $data);
+        $this->assertArrayHasKey('client', $data);
+        $this->assertClientPresenterContract($data['client']);
     }
 
     public function test_login_422_invalid_credentials(): void
@@ -150,6 +202,8 @@ final class ClientApiTest extends ApiTestCase
 
     public function test_forgot_password_200_returns_generic_message(): void
     {
+        Mail::fake();
+
         $email = $this->uniqueEmail();
         $this->registerClientViaApi('secret12', ['email' => $email]);
 
@@ -158,6 +212,14 @@ final class ClientApiTest extends ApiTestCase
         $response->assertOk();
         $response->assertJsonPath('status', true);
         $response->assertJsonPath('message', 'Password reset instructions sent');
+
+        $token = DB::table('UR_clients')->where('email', $email)->value('password_reset_token');
+        $this->assertNotEmpty($token);
+
+        Mail::assertSent(ClientPasswordResetMail::class, function (ClientPasswordResetMail $mail) use ($email, $token) {
+            return $mail->hasTo($email)
+                && str_contains($mail->resetUrl, rawurlencode($token));
+        });
     }
 
     public function test_forgot_password_validation_422(): void
@@ -169,14 +231,20 @@ final class ClientApiTest extends ApiTestCase
 
     public function test_forgot_password_200_unknown_email(): void
     {
+        Mail::fake();
+
         $this->postJson('/api/client/forgot-password', ['email' => $this->uniqueEmail()])
             ->assertOk()
             ->assertJsonPath('status', true)
             ->assertJsonPath('message', 'Password reset instructions sent');
+
+        Mail::assertNothingSent();
     }
 
     public function test_change_password_200_and_client_contract(): void
     {
+        Mail::fake();
+
         $email = $this->uniqueEmail();
         $this->registerClientViaApi('old-pass-11', ['email' => $email]);
 
@@ -210,6 +278,8 @@ final class ClientApiTest extends ApiTestCase
 
     public function test_change_password_422_when_token_expired(): void
     {
+        Mail::fake();
+
         $email = $this->uniqueEmail();
         $this->registerClientViaApi('old-pass-11', ['email' => $email]);
         $this->postJson('/api/client/forgot-password', ['email' => $email])->assertOk();

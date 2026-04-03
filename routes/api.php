@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('client')->controller(ClientController::class)->group(function () {
     Route::post('/register', 'register');
     Route::post('/login', 'login');
-    Route::post('/forgot-password', 'forgotPassword');
+    Route::post('/forgot-password', 'forgotPassword')->middleware('throttle:5,1');
     Route::post('/change-password', 'changePassword');
     Route::get('/profile', 'profile');
     Route::patch('/profile', 'updateProfile');

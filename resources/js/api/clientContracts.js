@@ -2,7 +2,7 @@ export function buildRegisterClientPayload(data = {}) {
     return {
         name: data.name ?? "",
         phone: data.phone ?? "",
-        email: data.email ?? null,
+        email: data.email ?? "",
         birth_date: data.birth_date ?? null,
         password: data.password ?? null,
         consent_personal_data: Boolean(data.consent_personal_data),
@@ -10,6 +10,7 @@ export function buildRegisterClientPayload(data = {}) {
     };
 }
 
+/** Передай ровно один идентификатор: phone или email (второй — null). */
 export function buildLoginClientPayload(data = {}) {
     return {
         phone: data.phone ?? null,

@@ -31,8 +31,7 @@ class ClientController extends Controller
         private readonly DeleteClientAddressUseCase $deleteClientAddress,
         private readonly RequestPasswordResetUseCase $requestPasswordReset,
         private readonly ChangePasswordUseCase $changePassword,
-    )
-    {
+    ) {
         $this->middleware('auth:sanctum')->only([
             'profile',
             'updateProfile',
@@ -46,7 +45,7 @@ class ClientController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['required', 'string', 'max:255'],
-            'email' => ['nullable', 'string', 'email', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255'],
             'birth_date' => ['nullable', 'date'],
             'password' => ['nullable', 'string', 'min:6'],
             'consent_personal_data' => ['required', 'boolean'],
@@ -56,7 +55,7 @@ class ClientController extends Controller
         $dto = new RegisterDTO(
             name: $data['name'],
             phone: $data['phone'],
-            email: $data['email'] ?? null,
+            email: $data['email'],
             birthDate: $data['birth_date'] ?? null,
             password: $data['password'] ?? null,
             consentPersonalData: (bool) $data['consent_personal_data'],
@@ -70,11 +69,22 @@ class ClientController extends Controller
 
     public function login(Request $request)
     {
-        $data = $request->validate([
+        $data = validator($request->all(), [
             'phone' => ['nullable', 'string'],
             'email' => ['nullable', 'string', 'email'],
             'password' => ['required', 'string'],
-        ]);
+        ])->after(function ($validator) {
+            $d = $validator->getData();
+            $hasPhone = filled($d['phone'] ?? null);
+            $hasEmail = filled($d['email'] ?? null);
+            if (! $hasPhone && ! $hasEmail) {
+                $validator->errors()->add('phone', 'Phone or email is required');
+            }
+            if ($hasPhone && $hasEmail) {
+                $validator->errors()->add('phone', 'Provide only phone or email.');
+                $validator->errors()->add('email', 'Provide only phone or email.');
+            }
+        })->validate();
 
         $dto = new LoginDTO(
             phone: $data['phone'] ?? null,
@@ -137,7 +147,7 @@ class ClientController extends Controller
         $data = $request->validate([
             'name' => ['sometimes', 'string', 'max:255'],
             'phone' => ['sometimes', 'string', 'max:255'],
-            'email' => ['sometimes', 'nullable', 'string', 'email', 'max:255'],
+            'email' => ['sometimes', 'string', 'email', 'max:255'],
             'birth_date' => ['sometimes', 'nullable', 'date'],
             'consent_personal_data' => ['sometimes', 'boolean'],
             'consent_marketing' => ['sometimes', 'boolean'],
