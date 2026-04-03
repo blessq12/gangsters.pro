@@ -45,6 +45,13 @@ const {
 
 const animVariant = computed(() => (props.variant === "desktop" ? "desktop" : "mobile"));
 
+const chromeVisible = computed(() => {
+    if (!isMobile.value) {
+        return uiStore.showBottomNav;
+    }
+    return uiStore.showBottomNav && !uiStore.mobileDockSuppressedByScroll;
+});
+
 function handleDockClick(id) {
     uiStore.setDockActive(id);
 }
@@ -79,7 +86,7 @@ function handlePanelLeave(el, done) {
             @leave="handleChromeLeave"
         >
             <div
-                v-if="uiStore.showBottomNav"
+                v-if="chromeVisible"
                 class="pointer-events-auto mx-auto max-w-7xl px-4 sm:px-6"
             >
                 <Transition

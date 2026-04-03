@@ -15,6 +15,8 @@ let deviceListenerAttached = false;
 export const useUiStore = defineStore("ui", {
     state: () => ({
         showBottomNav: false,
+        /** Только mobile: временно скрыть хром дока при скролле (не в localStorage). */
+        mobileDockSuppressedByScroll: false,
         isMobileMenuOpen: false,
         deviceMode: "mobile",
         dockActiveId: null,
@@ -76,6 +78,9 @@ export const useUiStore = defineStore("ui", {
                 }),
             );
         },
+        setMobileDockScrollSuppressed(value) {
+            this.mobileDockSuppressedByScroll = Boolean(value);
+        },
         setShowBottomNav(value) {
             this.showBottomNav = Boolean(value);
             this.persist();
@@ -88,6 +93,7 @@ export const useUiStore = defineStore("ui", {
             this.dockActiveId = this.dockActiveId === id ? null : id;
             if (this.dockActiveId) {
                 this.showBottomNav = true;
+                this.mobileDockSuppressedByScroll = false;
             }
             this.persist();
         },
@@ -147,6 +153,7 @@ export const useUiStore = defineStore("ui", {
         },
         clear() {
             this.showBottomNav = false;
+            this.mobileDockSuppressedByScroll = false;
             this.isMobileMenuOpen = false;
             this.dockActiveId = null;
             this.dockBadges = { ...DEFAULT_DOCK_BADGES };

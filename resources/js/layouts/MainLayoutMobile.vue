@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, onUnmounted, ref, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useThemeStore } from "../stores/themeStore";
 import { useUserStore } from "../stores/userStore";
@@ -9,6 +9,7 @@ import { useUiStore } from "../stores/uiStore";
 import { useCatalogStore } from "../stores/catalogStore";
 import { useSystemStore } from "../stores/systemStore";
 import { playIntroScene, playPageEnter, playPageLeave } from "../animations/animationManager";
+import { useMobileDockScrollSuppression } from "../composables/ui/useMobileDockScrollSuppression";
 
 const themeStore = useThemeStore();
 const userStore = useUserStore();
@@ -35,30 +36,23 @@ const mainRef = ref(null);
 const showIntro = ref(true);
 const bottomBarReady = ref(false);
 
-const BOTTOM_THRESHOLD = 80;
 const isHome = () => route.name === "home";
 
-function updateBottomBarFromScroll() {
-    if (typeof window === "undefined") return;
-    if (!bottomBarReady.value) return;
-
-    if (!isHome()) {
-        uiStore.setShowBottomNav(false);
-        return;
-    }
-
-    const atBottom =
-        window.scrollY + window.innerHeight >=
-        document.documentElement.scrollHeight - BOTTOM_THRESHOLD;
-
-    uiStore.setShowBottomNav(!atBottom);
-}
+useMobileDockScrollSuppression({
+    uiStore,
+    bottomBarReady,
+    isHome,
+});
 
 watch(
     () => route.name,
     (name) => {
         if (name !== "home") {
             uiStore.setShowBottomNav(false);
+            return;
+        }
+        if (bottomBarReady.value) {
+            uiStore.setShowBottomNav(true);
         }
     },
 );
@@ -84,17 +78,10 @@ onMounted(() => {
                 bottomBarReady.value = true;
                 if (isHome()) {
                     uiStore.setShowBottomNav(true);
-                    updateBottomBarFromScroll();
                 }
             }, stepDelay);
         },
     });
-
-    window.addEventListener("scroll", updateBottomBarFromScroll, { passive: true });
-});
-
-onUnmounted(() => {
-    window.removeEventListener("scroll", updateBottomBarFromScroll);
 });
 </script>
 
