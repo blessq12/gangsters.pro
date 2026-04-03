@@ -17,6 +17,7 @@ const layoutComponent = computed(() =>
 
 <template>
     <component :is="layoutComponent" />
+    <ScrollToTopButton />
 </template>
 
 <style scoped>

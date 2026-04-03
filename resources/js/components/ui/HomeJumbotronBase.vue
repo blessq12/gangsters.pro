@@ -71,7 +71,7 @@ const goNext = () => {
     <section
         :class="
             isMobile
-                ? 'home-jumbotron home-jumbotron--mobile relative mt-6 mb-14 w-screen max-w-none overflow-x-hidden overflow-y-visible [margin-left:calc(50%-50vw)] [margin-right:calc(50%-50vw)]'
+                ? 'home-jumbotron home-jumbotron--mobile relative mt-6 mb-14 w-screen max-w-none overflow-x-clip [margin-left:calc(50%-50vw)] [margin-right:calc(50%-50vw)]'
                 : 'home-jumbotron home-jumbotron--desktop relative mt-8 mb-12 w-screen max-w-none overflow-hidden sm:mt-12 sm:mb-18 [margin-left:calc(50%-50vw)] [margin-right:calc(50%-50vw)]'
         "
     >
@@ -92,7 +92,7 @@ const goNext = () => {
             ></div>
         </div>
 
-        <div :class="isMobile ? 'relative px-3 sm:px-4 overflow-x-hidden' : 'relative px-4 sm:px-6 lg:px-8'">
+        <div :class="isMobile ? 'relative px-3 sm:px-4 overflow-x-clip' : 'relative px-4 sm:px-6 lg:px-8'">
             <div
                 v-if="isLoading"
                 :class="isMobile ? 'flex justify-center px-1 py-6 sm:py-7' : 'flex justify-center px-1 py-6 sm:py-8'"
@@ -168,15 +168,6 @@ const goNext = () => {
                                         : 'absolute inset-x-3 bottom-3 rounded-2xl border border-white/10 bg-[rgba(0,0,0,0.32)] px-4 py-3 backdrop-blur-xl sm:inset-x-0 sm:bottom-0 sm:rounded-none sm:border-0 sm:bg-transparent sm:px-6 sm:py-4 sm:backdrop-blur-0'
                                 "
                             >
-                                <p
-                                    :class="
-                                        isMobile
-                                            ? 'mb-1 text-[10px] uppercase tracking-[0.26em] text-slate-300/80'
-                                            : 'mb-1 text-[10px] uppercase tracking-[0.26em] text-slate-300/80 sm:text-sm sm:tracking-[0.3em]'
-                                    "
-                                >
-                                    Главное предложение
-                                </p>
                                 <h1
                                     :class="
                                         isMobile
@@ -243,9 +234,9 @@ const goNext = () => {
     max-width: 100%;
 }
 
-/* Мобила: арт 3:4 */
+/* Мобила: арт 3:4 (выше слот — запас под scale активного слайда) */
 .home-jumbotron--mobile .home-jumbotron-aspect-slot {
-    --jh-m-h: min(78dvh, 900px);
+    --jh-m-h: min(88dvh, 960px);
     width: min(100%, calc(var(--jh-m-h) * 3 / 4));
     max-height: var(--jh-m-h);
     aspect-ratio: 3 / 4;
@@ -361,13 +352,13 @@ const goNext = () => {
 }
 
 .home-jumbotron--mobile :deep(.swiper-slide) {
-    padding-top: 10px !important;
-    padding-bottom: 10px !important;
+    padding-top: clamp(18px, 5dvh, 36px) !important;
+    padding-bottom: clamp(18px, 5dvh, 36px) !important;
     box-sizing: border-box;
 }
 
 .home-jumbotron--mobile :deep(.swiper-slide .home-jumbotron-card) {
-    transform: scale(0.86);
+    transform: scale(0.78);
     opacity: 0;
     border-color: transparent;
     transition:
@@ -379,7 +370,7 @@ const goNext = () => {
 
 .home-jumbotron--mobile :deep(.swiper-slide-prev .home-jumbotron-card),
 .home-jumbotron--mobile :deep(.swiper-slide-next .home-jumbotron-card) {
-    transform: scale(0.96);
+    transform: scale(0.86);
     opacity: 0.58;
     cursor: pointer;
     border-color: rgba(255, 255, 255, 0.1);
@@ -391,7 +382,7 @@ const goNext = () => {
 }
 
 .home-jumbotron--mobile :deep(.swiper-slide-active .home-jumbotron-card) {
-    transform: scale(1.01);
+    transform: scale(1.14);
     opacity: 1;
     border-color: rgba(251, 191, 36, 0.35);
     box-shadow: 0 24px 50px rgba(0, 0, 0, 0.45);
