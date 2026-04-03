@@ -3,6 +3,8 @@
 namespace Tests\Feature\Api;
 
 use App\Mail\ClientPasswordResetMail;
+use App\Mail\ClientProfileUpdatedMail;
+use App\Mail\ClientWelcomeMail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
@@ -16,6 +18,8 @@ final class ClientApiTest extends ApiTestCase
 
     public function test_register_returns_client_and_token_matching_presenter_contract(): void
     {
+        Mail::fake();
+
         $phone = $this->uniquePhone();
         $response = $this->postJson('/api/client/register', $this->registerPayload($phone));
 
@@ -24,6 +28,11 @@ final class ClientApiTest extends ApiTestCase
         $this->assertArrayHasKey('client', $data);
         $this->assertArrayHasKey('token', $data);
         $this->assertClientPresenterContract($data['client']);
+
+        Mail::assertSent(ClientWelcomeMail::class, function (ClientWelcomeMail $mail) use ($data) {
+            return $mail->hasTo($data['client']['email'])
+                && $mail->name === $data['client']['name'];
+        });
     }
 
     public function test_register_validation_422_when_name_missing(): void
@@ -173,6 +182,8 @@ final class ClientApiTest extends ApiTestCase
 
     public function test_update_profile_200(): void
     {
+        Mail::fake();
+
         $session = $this->registerClientViaApi();
         $response = $this->patchJson(
             '/api/client/profile',
@@ -185,6 +196,11 @@ final class ClientApiTest extends ApiTestCase
         $this->assertArrayHasKey('client', $data);
         $this->assertSame('Updated Api Name', $data['client']['name']);
         $this->assertClientPresenterContract($data['client']);
+
+        Mail::assertSent(ClientProfileUpdatedMail::class, function (ClientProfileUpdatedMail $mail) use ($data) {
+            return $mail->hasTo($data['client']['email'])
+                && ($mail->client['name'] ?? null) === 'Updated Api Name';
+        });
     }
 
     public function test_update_profile_validation_422_invalid_email(): void

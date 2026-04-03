@@ -2,7 +2,9 @@
 
 namespace Tests\Feature\Api;
 
+use App\Mail\ClientOrderConfirmationMail;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 final class OrderApiTest extends ApiTestCase
 {
@@ -125,6 +127,35 @@ final class OrderApiTest extends ApiTestCase
         $response->assertCreated();
         $this->assertOrderPresenterContract($response->json());
         $this->assertSame($session['client']['id'], $response->json('client_id'));
+    }
+
+    public function test_store_201_sends_order_confirmation_email(): void
+    {
+        Mail::fake();
+
+        $session = $this->registerClientViaApi();
+        $productId = $this->firstProductIdFromCatalog();
+        if ($productId === null) {
+            $this->markTestSkipped('Нет товаров в каталоге.');
+        }
+
+        $response = $this->postJson(
+            '/api/order',
+            [
+                'items' => [['product_id' => $productId, 'quantity' => 1]],
+                'delivery_method' => 'pickup',
+                'payment_method' => 'cash',
+            ],
+            $this->bearerSanctum($session['token']),
+        );
+
+        $response->assertCreated();
+        $orderId = $response->json('id');
+
+        Mail::assertSent(ClientOrderConfirmationMail::class, function (ClientOrderConfirmationMail $mail) use ($session, $orderId) {
+            return $mail->hasTo($session['email'])
+                && ($mail->order['id'] ?? null) === $orderId;
+        });
     }
 
     public function test_store_201_courier_uses_authenticated_client(): void

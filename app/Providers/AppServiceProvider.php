@@ -2,9 +2,9 @@
 
 namespace App\Providers;
 
-use App\Application\Client\Ports\ClientPasswordResetMailer;
+use App\Application\Notifications\Ports\ClientOutboundNotifier;
 use App\Application\Security\UnauthorizedClientAccessNotifier;
-use App\Infrastructure\Client\Mail\LaravelClientPasswordResetMailer;
+use App\Infrastructure\Notifications\Client\LaravelMailClientOutboundNotifier;
 use App\Infrastructure\Security\EventUnauthorizedClientAccessNotifier;
 use App\Infrastructure\Shared\Events\LaravelDomainEventBus;
 use App\Infrastructure\SystemContent\Model\SYS_Company;
@@ -23,7 +23,22 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->bind(ClientPasswordResetMailer::class, LaravelClientPasswordResetMailer::class);
+        // Пока только почта. TG/SMS — заглушки без реальной доставки; композит закомментирован.
+        // Раскомментируй при готовых адаптерах:
+        // use App\Infrastructure\Notifications\Client\CompositeClientOutboundNotifier;
+        // use App\Infrastructure\Notifications\Client\StubSmsClientOutboundNotifier;
+        // use App\Infrastructure\Notifications\Client\StubTelegramClientOutboundNotifier;
+        // $this->app->singleton(LaravelMailClientOutboundNotifier::class);
+        // $this->app->singleton(StubTelegramClientOutboundNotifier::class);
+        // $this->app->singleton(StubSmsClientOutboundNotifier::class);
+        // $this->app->bind(ClientOutboundNotifier::class, function ($app) {
+        //     return new CompositeClientOutboundNotifier(
+        //         $app->make(LaravelMailClientOutboundNotifier::class),
+        //         $app->make(StubTelegramClientOutboundNotifier::class),
+        //         $app->make(StubSmsClientOutboundNotifier::class),
+        //     );
+        // });
+        $this->app->bind(ClientOutboundNotifier::class, LaravelMailClientOutboundNotifier::class);
         $this->app->bind(DomainEventBus::class, LaravelDomainEventBus::class);
         $this->app->bind(UnauthorizedClientAccessNotifier::class, EventUnauthorizedClientAccessNotifier::class);
         $this->app->singleton(ComplimentaryItemsResolver::class, function ($app) {

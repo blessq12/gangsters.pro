@@ -20,9 +20,11 @@ class EventServiceProvider extends ServiceProvider
         ],
         \App\Domain\Order\Events\OrderCreated::class => [
             // \App\Infrastructure\Order\Listeners\PushOrderToFrontpad::class, // интеграция с Frontpad (пока выключена)
+            \App\Infrastructure\Notifications\Client\OnOrderCreatedClientEmail::class,
         ],
         \App\Domain\Client\Events\ClientRegistered::class => [
             \App\Infrastructure\Client\Listeners\OnClientRegistered::class,
+            \App\Infrastructure\Notifications\Client\OnClientRegisteredClientEmail::class,
         ],
         \App\Domain\Client\Events\ClientLoginFailed::class => [
             \App\Infrastructure\Client\Listeners\OnClientLoginFailed::class,
@@ -32,6 +34,7 @@ class EventServiceProvider extends ServiceProvider
         ],
         \App\Domain\Client\Events\ClientProfileUpdated::class => [
             \App\Infrastructure\Client\Listeners\OnClientProfileUpdated::class,
+            \App\Infrastructure\Notifications\Client\OnClientProfileUpdatedClientEmail::class,
         ],
         \App\Domain\Client\Events\ClientAddressAdded::class => [
             \App\Infrastructure\Client\Listeners\OnClientAddressAdded::class,
@@ -41,6 +44,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         \App\Domain\Client\Events\ClientPasswordChanged::class => [
             \App\Infrastructure\Client\Listeners\OnClientPasswordChanged::class,
+        ],
+        \App\Domain\Client\Events\ClientPasswordResetRequested::class => [
+            \App\Infrastructure\Notifications\Client\OnClientPasswordResetRequested::class,
         ],
     ];
 
