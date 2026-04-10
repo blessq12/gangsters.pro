@@ -31,7 +31,7 @@ class OrderFactory
      * }> $itemsData
      */
     public function create(
-        int $clientId,
+        ?int $clientId,
         CustomerSnapshot $customer,
         array $itemsData,
         ?DeliveryInfo $deliveryInfo = null,
@@ -112,7 +112,7 @@ class OrderFactory
      */
     public function rebuildOrder(
         string $id,
-        int $clientId,
+        ?int $clientId,
         CustomerSnapshot $customer,
         OrderStatus $status,
         array $itemsData,

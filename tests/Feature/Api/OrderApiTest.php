@@ -54,7 +54,7 @@ final class OrderApiTest extends ApiTestCase
         $this->assertOrderPresenterContract($list[0]);
     }
 
-    public function test_store_401_without_token(): void
+    public function test_store_422_guest_without_contact(): void
     {
         $productId = $this->firstProductIdFromCatalog();
         if ($productId === null) {
@@ -65,7 +65,55 @@ final class OrderApiTest extends ApiTestCase
             'items' => [['product_id' => $productId, 'quantity' => 1]],
             'delivery_method' => 'pickup',
             'payment_method' => 'cash',
-        ])->assertUnauthorized();
+        ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['customer_name', 'customer_phone']);
+    }
+
+    public function test_store_201_guest_pickup_without_client_id(): void
+    {
+        $productId = $this->firstProductIdFromCatalog();
+        if ($productId === null) {
+            $this->markTestSkipped('Нет товаров в каталоге.');
+        }
+
+        $guestPhone = '+79'.str_pad((string) random_int(0, 999999999), 9, '0', STR_PAD_LEFT);
+
+        $response = $this->postJson('/api/order', [
+            'items' => [['product_id' => $productId, 'quantity' => 1]],
+            'delivery_method' => 'pickup',
+            'payment_method' => 'card',
+            'customer_name' => 'Гость API',
+            'customer_phone' => $guestPhone,
+        ]);
+
+        $response->assertCreated();
+        $this->assertOrderPresenterContract($response->json());
+        $this->assertNull($response->json('client_id'));
+        $this->assertSame('Гость API', $response->json('customer.name'));
+    }
+
+    public function test_store_422_authenticated_prohibits_guest_contact_fields(): void
+    {
+        $session = $this->registerClientViaApi();
+        $productId = $this->firstProductIdFromCatalog();
+        if ($productId === null) {
+            $this->markTestSkipped('Нет товаров в каталоге.');
+        }
+
+        $this->postJson(
+            '/api/order',
+            [
+                'items' => [['product_id' => $productId, 'quantity' => 1]],
+                'delivery_method' => 'pickup',
+                'payment_method' => 'cash',
+                'customer_name' => 'Spoof',
+                'customer_phone' => '+79990000000',
+            ],
+            $this->bearerSanctum($session['token']),
+        )
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['customer_name', 'customer_phone']);
     }
 
     public function test_store_validation_422_empty_items(): void
@@ -285,6 +333,9 @@ final class OrderApiTest extends ApiTestCase
 
     public function test_single_rule_with_multiple_categories_does_not_duplicate_complimentary_item(): void
     {
+        DB::table('complimentary_item_rule_categories')->delete();
+        DB::table('complimentary_item_rules')->delete();
+
         $pairs = DB::table('PRD_category_product')
             ->select(['category_id', 'product_id'])
             ->distinct()

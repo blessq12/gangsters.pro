@@ -58,6 +58,33 @@ final class OrderFactoryTest extends TestCase
         $this->assertSame(1600, $items[0]->getRowTotal());
     }
 
+    public function test_create_allows_null_client_id_for_guest(): void
+    {
+        $factory = new OrderFactory(new class implements OrderIdGenerator {
+            public function generate(): string
+            {
+                return 'ORD-GUEST-1';
+            }
+        });
+
+        $order = $factory->create(
+            clientId: null,
+            customer: new CustomerSnapshot('Гость', '+79991112233', null, null),
+            itemsData: [
+                [
+                    'productOriginalId' => 1,
+                    'name' => 'Item',
+                    'sku' => 'X',
+                    'listPrice' => 100,
+                    'finalPrice' => 100,
+                    'quantity' => 1,
+                ],
+            ],
+        );
+
+        $this->assertNull($order->getClientId());
+    }
+
     public function test_rebuild_order_keeps_identity_and_recalculates_totals(): void
     {
         $factory = new OrderFactory(new class implements OrderIdGenerator {

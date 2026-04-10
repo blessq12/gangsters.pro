@@ -12,7 +12,7 @@ final class OrderResponseDTO
      */
     public function __construct(
         public readonly string $id,
-        public readonly int $clientId,
+        public readonly ?int $clientId,
         public readonly array $customer,
         public readonly string $status,
         public readonly int $subtotal,

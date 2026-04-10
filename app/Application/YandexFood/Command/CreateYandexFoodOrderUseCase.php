@@ -133,7 +133,7 @@ final class CreateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
             $itemsData = $this->itemsFactory->buildItemsData($lineInputs);
 
             $order = $this->orderFactory->create(
-                clientId: $clientId ?? 0,
+                clientId: $clientId,
                 customer: $customerSnapshotForOrder,
                 itemsData: $itemsData,
                 deliveryInfo: $deliveryInfo,

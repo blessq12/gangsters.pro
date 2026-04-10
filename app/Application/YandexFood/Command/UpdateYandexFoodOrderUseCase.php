@@ -129,7 +129,9 @@ final class UpdateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
             'delivery_at' => $deliveryDate,
         ];
 
-        $clientId = YandexFoodOrderPayloadHelper::resolveClientId($p) ?? ($existing->getClientId() !== 0 ? $existing->getClientId() : null);
+        $existingClientId = $existing->getClientId();
+        $clientId = YandexFoodOrderPayloadHelper::resolveClientId($p)
+            ?? ($existingClientId !== null && $existingClientId !== 0 ? $existingClientId : null);
         $customerSnapshot = $this->buildCustomerSnapshot($clientId, $clientName, $phoneNumber);
 
         $deliveryInfo = new DeliveryInfo(
@@ -162,7 +164,7 @@ final class UpdateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
 
         return $this->orderFactory->rebuildOrder(
             id: $orderId,
-            clientId: $clientId ?? 0,
+            clientId: $clientId,
             customer: $customerSnapshotForOrder,
             status: $existing->getStatus(),
             itemsData: $itemsData,

@@ -16,22 +16,35 @@ final class CreateOrderUseCase extends OrderBaseUseCase
     /**
      * @return array<string, mixed>
      */
-    public function execute(CreateOrderDTO $dto): array
+    public function execute(CreateOrderDTO $dto, ?int $authenticatedClientId): array
     {
         if (\count($dto->items) === 0) {
             throw new ApiException('Order must contain at least one item.');
         }
 
-        $clientId = $this->authContext->currentClientId();
-        $client = $this->clients->findById($clientId);
-        if ($client === null) {
-            throw new ApiException('Client not found.');
+        if ($authenticatedClientId !== null) {
+            $client = $this->clients->findById($authenticatedClientId);
+            if ($client === null) {
+                throw new ApiException('Client not found.');
+            }
+            if (!$client->isActive()) {
+                throw new ApiException('Client is blocked or deleted.');
+            }
+            $customerSnapshot = $this->customerFactory->fromClient($client);
+            $clientId = $authenticatedClientId;
+        } else {
+            $name = $dto->guestCustomerName ?? '';
+            $phone = $dto->guestCustomerPhone ?? '';
+            if (trim($name) === '' || trim($phone) === '') {
+                throw new ApiException('Guest order requires customer name and phone.');
+            }
+            $customerSnapshot = $this->customerFactory->fromGuestContact(
+                $name,
+                $phone,
+                $dto->guestCustomerEmail,
+            );
+            $clientId = null;
         }
-        if (!$client->isActive()) {
-            throw new ApiException('Client is blocked or deleted.');
-        }
-
-        $customerSnapshot = $this->customerFactory->fromClient($client);
 
         $itemsData = $this->itemsFactory->buildItemsData($dto->items);
 
@@ -46,7 +59,6 @@ final class CreateOrderUseCase extends OrderBaseUseCase
             status: PaymentStatus::Unpaid->value,
         );
 
-        // Адрес в слепке клиента должен совпадать с адресом доставки заказа.
         $customerSnapshotForOrder = new CustomerSnapshot(
             name: $customerSnapshot->name,
             phone: $customerSnapshot->phone,

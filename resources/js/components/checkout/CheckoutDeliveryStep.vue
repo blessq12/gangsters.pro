@@ -1,5 +1,12 @@
 <script setup>
+import { ref, watch } from "vue";
+import { useRuPhoneModel } from "../../composables/client/useRuPhoneModel";
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
+import {
+    normalizeRuPhoneDigits,
+    RU_PHONE_MASKA_PATTERN,
+    RU_PHONE_MASKA_TOKENS_ATTR,
+} from "../../validation/ruPhone";
 
 const {
     userStore,
@@ -9,10 +16,38 @@ const {
     newAddressError,
     isNewAddressOpen,
     deliveryStepError,
+    isGuestCheckout,
     goToCart,
     goToPayment,
     handleCreateAddress,
 } = useCheckoutFlowContext();
+
+const guestPhoneForm = ref({
+    phone: normalizeRuPhoneDigits(orderStore.guestContact.phone),
+});
+
+const { phoneMask } = useRuPhoneModel(guestPhoneForm, "phone");
+
+watch(
+    () => guestPhoneForm.value.phone,
+    (digits) => {
+        const n = normalizeRuPhoneDigits(digits);
+        const cur = normalizeRuPhoneDigits(orderStore.guestContact.phone);
+        if (n !== cur) {
+            orderStore.setGuestContact({ phone: n });
+        }
+    },
+);
+
+watch(
+    () => orderStore.guestContact.phone,
+    (p) => {
+        const n = normalizeRuPhoneDigits(p);
+        if (n !== guestPhoneForm.value.phone) {
+            guestPhoneForm.value.phone = n;
+        }
+    },
+);
 </script>
 
 <template>
@@ -44,7 +79,98 @@ const {
         </div>
 
         <div
-            v-if="orderStore.deliveryInfo.method !== 'pickup'"
+            v-if="isGuestCheckout"
+            class="space-y-2 rounded-2xl border border-white/10 bg-black/30 px-3 py-3"
+        >
+            <p class="text-xs font-semibold text-slate-100">
+                Контакт
+            </p>
+            <input
+                :value="orderStore.guestContact.name"
+                type="text"
+                placeholder="Имя"
+                class="w-full rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                @input="
+                    orderStore.setGuestContact({ name: $event.target.value })
+                "
+            />
+            <input
+                v-model="phoneMask.masked"
+                v-maska="phoneMask"
+                :data-maska="RU_PHONE_MASKA_PATTERN"
+                :data-maska-tokens="RU_PHONE_MASKA_TOKENS_ATTR"
+                type="tel"
+                placeholder="+7 (___) ___-__-__"
+                class="w-full rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+            />
+            <input
+                :value="orderStore.guestContact.email"
+                type="email"
+                placeholder="Email (необязательно)"
+                class="w-full rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                @input="
+                    orderStore.setGuestContact({ email: $event.target.value })
+                "
+            />
+        </div>
+
+        <div
+            v-if="orderStore.deliveryInfo.method !== 'pickup' && isGuestCheckout"
+            class="space-y-2"
+        >
+            <p class="text-xs font-semibold text-slate-100">
+                Адрес курьера
+            </p>
+            <div class="grid grid-cols-2 gap-2">
+                <input
+                    :value="orderStore.deliveryInfo.address?.street ?? ''"
+                    type="text"
+                    placeholder="Улица"
+                    class="col-span-2 rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                    @input="
+                        orderStore.patchDeliveryAddress({
+                            street: $event.target.value,
+                        })
+                    "
+                />
+                <input
+                    :value="orderStore.deliveryInfo.address?.house ?? ''"
+                    type="text"
+                    placeholder="Дом"
+                    class="rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                    @input="
+                        orderStore.patchDeliveryAddress({
+                            house: $event.target.value,
+                        })
+                    "
+                />
+                <input
+                    :value="orderStore.deliveryInfo.address?.entrance ?? ''"
+                    type="text"
+                    placeholder="Подъезд"
+                    class="rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                    @input="
+                        orderStore.patchDeliveryAddress({
+                            entrance: $event.target.value,
+                        })
+                    "
+                />
+                <input
+                    :value="orderStore.deliveryInfo.address?.apartment ?? ''"
+                    type="text"
+                    placeholder="Квартира"
+                    class="col-span-2 rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                    @input="
+                        orderStore.patchDeliveryAddress({
+                            apartment: $event.target.value,
+                        })
+                    "
+                />
+            </div>
+        </div>
+
+        <div
+            v-if="orderStore.deliveryInfo.method !== 'pickup' && !isGuestCheckout"
             class="space-y-2"
         >
             <p class="text-xs font-semibold text-slate-100">
@@ -111,7 +237,7 @@ const {
         </p>
 
         <div
-            v-if="orderStore.deliveryInfo.method !== 'pickup'"
+            v-if="orderStore.deliveryInfo.method !== 'pickup' && !isGuestCheckout"
             class="space-y-2 border-t border-white/5 pt-3"
         >
             <button

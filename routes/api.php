@@ -27,13 +27,11 @@ Route::prefix('client')->controller(ClientController::class)->group(function () 
     Route::delete('/addresses/{id}', 'deleteAddress');
 });
 
+Route::middleware(['attempt.sanctum', 'throttle:guest-order'])
+    ->post('/order', [OrderController::class, 'store']);
+
 Route::middleware('auth:sanctum')
-    ->prefix('order')
-    ->controller(OrderController::class)
-    ->group(function () {
-        Route::get('/', 'index');
-        Route::post('/', 'store');
-    });
+    ->get('/order', [OrderController::class, 'index']);
 
 Route::post('/order/complimentary-preview', [OrderController::class, 'complimentaryPreview']);
 

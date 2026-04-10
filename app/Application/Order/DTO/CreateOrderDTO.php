@@ -14,6 +14,9 @@ final class CreateOrderDTO
         public readonly ?array $deliveryAddress,
         public readonly ?string $deliveryComment,
         public readonly string $paymentMethod,
+        public readonly ?string $guestCustomerName = null,
+        public readonly ?string $guestCustomerPhone = null,
+        public readonly ?string $guestCustomerEmail = null,
     ) {
     }
 }

@@ -8,7 +8,9 @@ const {
     complimentaryPreviewItems,
     totalAmount,
     formatPrice,
+    isAuthenticated,
     handleStartCheckout,
+    handleContinueAsGuest,
 } = useCheckoutFlowContext();
 </script>
 
@@ -111,15 +113,33 @@ const {
 
         <div
             v-if="cartItems.length"
-            class="mt-3"
+            class="mt-3 flex flex-col gap-2"
         >
-            <button
-                type="button"
-                class="inline-flex w-full items-center justify-center rounded-full bg-amber-400 px-4 py-2 text-xs font-semibold text-black shadow-[0_0_18px_rgba(251,191,36,0.7)] transition hover:bg-amber-300"
-                @click="handleStartCheckout"
-            >
-                Перейти к оформлению
-            </button>
+            <template v-if="isAuthenticated">
+                <button
+                    type="button"
+                    class="inline-flex w-full items-center justify-center rounded-full bg-amber-400 px-4 py-2 text-xs font-semibold text-black shadow-[0_0_18px_rgba(251,191,36,0.7)] transition hover:bg-amber-300"
+                    @click="handleStartCheckout"
+                >
+                    Перейти к оформлению
+                </button>
+            </template>
+            <template v-else>
+                <button
+                    type="button"
+                    class="inline-flex w-full items-center justify-center rounded-full bg-amber-400 px-4 py-2 text-xs font-semibold text-black shadow-[0_0_18px_rgba(251,191,36,0.7)] transition hover:bg-amber-300"
+                    @click="handleStartCheckout"
+                >
+                    Войти или зарегистрироваться
+                </button>
+                <button
+                    type="button"
+                    class="inline-flex w-full items-center justify-center rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-medium text-slate-100 transition hover:bg-white/10"
+                    @click="handleContinueAsGuest"
+                >
+                    Продолжить без регистрации
+                </button>
+            </template>
         </div>
     </div>
 </template>

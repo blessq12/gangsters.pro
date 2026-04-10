@@ -9,6 +9,7 @@ const {
     totalAmount,
     formatPrice,
     formatPhone,
+    isGuestCheckout,
     goToPayment,
     handleConfirmOrder,
 } = useCheckoutFlowContext();
@@ -69,20 +70,38 @@ const {
             <p class="text-[11px] font-semibold text-slate-300">
                 Данные клиента
             </p>
-            <p class="text-xs text-slate-200">
-                {{ userStore.profile.name || "Без имени" }},
-                {{
-                    userStore.profile.phone
-                        ? formatPhone(userStore.profile.phone)
-                        : "без телефона"
-                }}
-            </p>
-            <p
-                v-if="userStore.profile.email"
-                class="text-[11px] text-slate-400"
-            >
-                {{ userStore.profile.email }}
-            </p>
+            <template v-if="isGuestCheckout">
+                <p class="text-xs text-slate-200">
+                    {{ orderStore.guestContact.name || "Без имени" }},
+                    {{
+                        orderStore.guestContact.phone
+                            ? formatPhone(orderStore.guestContact.phone)
+                            : "без телефона"
+                    }}
+                </p>
+                <p
+                    v-if="orderStore.guestContact.email"
+                    class="text-[11px] text-slate-400"
+                >
+                    {{ orderStore.guestContact.email }}
+                </p>
+            </template>
+            <template v-else>
+                <p class="text-xs text-slate-200">
+                    {{ userStore.profile.name || "Без имени" }},
+                    {{
+                        userStore.profile.phone
+                            ? formatPhone(userStore.profile.phone)
+                            : "без телефона"
+                    }}
+                </p>
+                <p
+                    v-if="userStore.profile.email"
+                    class="text-[11px] text-slate-400"
+                >
+                    {{ userStore.profile.email }}
+                </p>
+            </template>
         </div>
 
         <div class="space-y-1 rounded-2xl bg-[rgba(255,255,255,0.02)] px-3 py-3">
@@ -95,7 +114,20 @@ const {
                     Самовывоз (адрес точки выдачи пришлём в подтверждении)
                 </template>
                 <template v-else>
-                    <span v-if="userStore.selectedAddress">
+                    <span v-if="isGuestCheckout && orderStore.deliveryInfo.address">
+                        {{
+                            [
+                                orderStore.deliveryInfo.address.street,
+                                orderStore.deliveryInfo.address.house &&
+                                    `д. ${orderStore.deliveryInfo.address.house}`,
+                                orderStore.deliveryInfo.address.apartment &&
+                                    `кв. ${orderStore.deliveryInfo.address.apartment}`,
+                            ]
+                                .filter(Boolean)
+                                .join(", ")
+                        }}
+                    </span>
+                    <span v-else-if="userStore.selectedAddress">
                         {{
                             [
                                 userStore.selectedAddress.street,

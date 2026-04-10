@@ -1,0 +1,1 @@
+import{i as e,s as r}from"./vue-core-bYqEXXJ1.js";const t=Symbol("checkoutFlow");function n(o){r(t,o)}function u(){const o=e(t);if(!o)throw new Error("useCheckoutFlowContext: ожидается provideCheckoutFlow() в CartDockPanel");return o}export{n as p,u};

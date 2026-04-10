@@ -157,7 +157,7 @@ class OrderRepository implements OrderRepositoryInterface
 
         return new OrderEntity(
             id: $model->id,
-            clientId: (int) $model->client_id,
+            clientId: $model->client_id !== null ? (int) $model->client_id : null,
             customer: $customer,
             status: OrderStatus::from($model->status),
             subtotal: (int) $model->subtotal,

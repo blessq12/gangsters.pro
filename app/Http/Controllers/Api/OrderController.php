@@ -6,13 +6,11 @@ use App\Application\Order\Command\CreateOrderUseCase;
 use App\Application\Order\DTO\CreateOrderDTO;
 use App\Application\Order\Query\GetClientOrdersUseCase;
 use App\Application\Order\Query\PreviewComplimentaryItemsUseCase;
-use App\Domain\Order\Enums\DeliveryMethod;
-use App\Domain\Order\Enums\PaymentMethod;
 use App\Http\Requests\Order\ComplimentaryPreviewRequest;
+use App\Http\Requests\Order\StoreOrderRequest;
+use App\Infrastructure\Client\Model\UR_Client;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Illuminate\Validation\Rule;
 
 class OrderController extends Controller
 {
@@ -27,17 +25,13 @@ class OrderController extends Controller
         return response()->json($result);
     }
 
-    public function store(Request $request, CreateOrderUseCase $useCase): JsonResponse
+    public function store(StoreOrderRequest $request, CreateOrderUseCase $useCase): JsonResponse
     {
-        $payload = $request->validate([
-            'items' => ['required', 'array', 'min:1'],
-            'items.*.product_id' => ['required', 'integer'],
-            'items.*.quantity' => ['required', 'integer', 'min:1'],
-            'delivery_method' => ['required', 'string', Rule::enum(DeliveryMethod::class)],
-            'delivery_address' => ['nullable', 'array', 'required_if:delivery_method,courier'],
-            'delivery_comment' => ['nullable', 'string'],
-            'payment_method' => ['required', 'string', Rule::enum(PaymentMethod::class)],
-        ]);
+        $payload = $request->validated();
+
+        $guestName = $payload['customer_name'] ?? null;
+        $guestPhone = $payload['customer_phone'] ?? null;
+        $guestEmail = $payload['customer_email'] ?? null;
 
         $dto = new CreateOrderDTO(
             items: array_map(
@@ -51,9 +45,15 @@ class OrderController extends Controller
             deliveryAddress: $payload['delivery_address'] ?? null,
             deliveryComment: $payload['delivery_comment'] ?? null,
             paymentMethod: $payload['payment_method'],
+            guestCustomerName: is_string($guestName) ? $guestName : null,
+            guestCustomerPhone: is_string($guestPhone) ? $guestPhone : null,
+            guestCustomerEmail: is_string($guestEmail) ? $guestEmail : null,
         );
 
-        $order = $useCase->execute($dto);
+        $user = $request->user('sanctum');
+        $authenticatedClientId = $user instanceof UR_Client ? (int) $user->id : null;
+
+        $order = $useCase->execute($dto, $authenticatedClientId);
 
         return response()->json($order, 201);
     }

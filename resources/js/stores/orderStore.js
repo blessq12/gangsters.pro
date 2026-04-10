@@ -21,6 +21,11 @@ export const useOrderStore = defineStore("order", {
             changeFrom: null,
         },
         customerComment: "",
+        guestContact: {
+            name: "",
+            phone: "",
+            email: "",
+        },
         orders: [],
         lastCreatedOrder: null,
         complimentaryPreviewItems: [],
@@ -96,6 +101,23 @@ export const useOrderStore = defineStore("order", {
                 if (typeof parsed.customerComment === "string") {
                     this.customerComment = parsed.customerComment;
                 }
+
+                if (parsed.guestContact && typeof parsed.guestContact === "object") {
+                    this.guestContact = {
+                        name:
+                            typeof parsed.guestContact.name === "string"
+                                ? parsed.guestContact.name
+                                : "",
+                        phone:
+                            typeof parsed.guestContact.phone === "string"
+                                ? parsed.guestContact.phone
+                                : "",
+                        email:
+                            typeof parsed.guestContact.email === "string"
+                                ? parsed.guestContact.email
+                                : "",
+                    };
+                }
             } catch (e) {
                 console.error("Failed to init order store from localStorage", e);
             }
@@ -107,6 +129,7 @@ export const useOrderStore = defineStore("order", {
                 deliveryInfo: this.deliveryInfo,
                 paymentInfo: this.paymentInfo,
                 customerComment: this.customerComment,
+                guestContact: this.guestContact,
             };
 
             window.localStorage.setItem(ORDER_STORAGE_KEY, JSON.stringify(payload));
@@ -123,6 +146,7 @@ export const useOrderStore = defineStore("order", {
                 changeFrom: null,
             };
             this.customerComment = "";
+            this.guestContact = { name: "", phone: "", email: "" };
 
             if (typeof window !== "undefined") {
                 window.localStorage.removeItem(ORDER_STORAGE_KEY);
@@ -144,6 +168,26 @@ export const useOrderStore = defineStore("order", {
         },
         setCustomerComment(comment) {
             this.customerComment = comment || "";
+            this.persistDraft();
+        },
+        setGuestContact(payload) {
+            this.guestContact = {
+                ...this.guestContact,
+                ...(payload || {}),
+            };
+            this.persistDraft();
+        },
+        patchDeliveryAddress(partial) {
+            this.deliveryInfo = {
+                ...this.deliveryInfo,
+                address: {
+                    ...(this.deliveryInfo.address &&
+                    typeof this.deliveryInfo.address === "object"
+                        ? this.deliveryInfo.address
+                        : {}),
+                    ...(partial || {}),
+                },
+            };
             this.persistDraft();
         },
         setOrders(orders) {
@@ -170,26 +214,29 @@ export const useOrderStore = defineStore("order", {
                 this.loading.list = false;
             }
         },
-        buildCreateOrderPayload(client, selectedAddress, cartItems) {
+        buildCreateOrderPayload(selectedAddress, cartItems, { isGuest = false } = {}) {
             return buildCreateOrderPayloadDto({
-                client,
                 selectedAddress,
                 cartItems: Array.isArray(cartItems) ? cartItems : [],
                 deliveryInfo: this.deliveryInfo,
                 paymentInfo: this.paymentInfo,
                 customerComment: this.customerComment,
+                guestContact:
+                    isGuest &&
+                    this.guestContact &&
+                    String(this.guestContact.phone || "").trim() !== ""
+                        ? this.guestContact
+                        : null,
             });
         },
-        async createOrder(client, selectedAddress, cartItems) {
+        async createOrder(selectedAddress, cartItems, { isGuest = false } = {}) {
             this.loading.create = true;
             this.error.create = null;
 
             try {
-                const payload = this.buildCreateOrderPayload(
-                    client,
-                    selectedAddress,
-                    cartItems,
-                );
+                const payload = this.buildCreateOrderPayload(selectedAddress, cartItems, {
+                    isGuest,
+                });
                 const data = await createOrderRequest(payload);
 
                 const createdOrder = data?.data ?? data ?? null;

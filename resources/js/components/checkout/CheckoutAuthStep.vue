@@ -1,14 +1,19 @@
 <script setup>
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
 
-const { authTab, handleAuthCompleted, goToCart } = useCheckoutFlowContext();
+const {
+    authTab,
+    handleAuthCompleted,
+    handleContinueAsGuest,
+    goToCart,
+} = useCheckoutFlowContext();
 </script>
 
 <template>
     <div class="space-y-3">
         <p class="text-xs text-slate-300">
-            Для оформления заказа нужен личный кабинет. Войди или зарегистрируйся —
-            это займёт минуту.
+            Войди или зарегистрируйся — так удобнее отслеживать заказы и адреса. Либо
+            оформи заказ без аккаунта.
         </p>
 
         <div class="flex gap-2 text-[11px] font-medium">
@@ -50,7 +55,14 @@ const { authTab, handleAuthCompleted, goToCart } = useCheckoutFlowContext();
             />
         </div>
 
-        <div class="mt-2 flex justify-between text-[11px] text-slate-400">
+        <div class="mt-2 flex flex-col gap-2 text-[11px] text-slate-400">
+            <button
+                type="button"
+                class="w-full rounded-full border border-white/10 bg-white/5 px-3 py-2 text-center font-medium text-slate-200 transition hover:bg-white/10"
+                @click="handleContinueAsGuest"
+            >
+                Продолжить без регистрации
+            </button>
             <button
                 type="button"
                 class="underline-offset-2 hover:underline"

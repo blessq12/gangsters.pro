@@ -15,7 +15,7 @@ class Order
      */
     public function __construct(
         private string $id,
-        private int $clientId,
+        private ?int $clientId,
         private CustomerSnapshot $customer,
         private OrderStatus $status,
         private int $subtotal,
@@ -35,7 +35,7 @@ class Order
         return $this->id;
     }
 
-    public function getClientId(): int
+    public function getClientId(): ?int
     {
         return $this->clientId;
     }

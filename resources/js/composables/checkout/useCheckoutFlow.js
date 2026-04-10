@@ -3,6 +3,7 @@ import { useUserStore } from "../../stores/userStore";
 import { useCartStore } from "../../stores/cartStore";
 import { useOrderStore } from "../../stores/orderStore";
 import { formatRuPhone } from "../../utils/phone/formatRuPhone";
+import { validateRuPhoneForSubmit } from "../../validation/ruPhone";
 
 export function useCheckoutFlow() {
     const userStore = useUserStore();
@@ -19,6 +20,7 @@ export function useCheckoutFlow() {
 
     const activeStep = ref("cart"); // cart | auth | delivery | payment | confirm | success
     const authTab = ref("login"); // login | register
+    const isGuestCheckout = ref(false);
 
     const newAddressForm = ref({
         title: "",
@@ -45,14 +47,20 @@ export function useCheckoutFlow() {
         return formatRuPhone(raw);
     }
 
-    function handleStartCheckout() {
-        if (!hasCartItems.value) return;
+    function ensureCheckoutDefaults() {
         if (!orderStore.deliveryInfo.method) {
             orderStore.setDeliveryInfo({ method: "courier" });
         }
         if (!orderStore.paymentInfo.method) {
             orderStore.setPaymentInfo({ method: "card" });
         }
+    }
+
+    /** Авторизован: сразу на доставку */
+    function handleStartCheckout() {
+        if (!hasCartItems.value) return;
+        ensureCheckoutDefaults();
+        isGuestCheckout.value = false;
         if (!isAuthenticated.value) {
             activeStep.value = "auth";
         } else {
@@ -60,7 +68,15 @@ export function useCheckoutFlow() {
         }
     }
 
+    function handleContinueAsGuest() {
+        if (!hasCartItems.value) return;
+        ensureCheckoutDefaults();
+        isGuestCheckout.value = true;
+        activeStep.value = "delivery";
+    }
+
     function handleAuthCompleted() {
+        isGuestCheckout.value = false;
         if (!hasCartItems.value) {
             activeStep.value = "cart";
             return;
@@ -88,7 +104,25 @@ export function useCheckoutFlow() {
             return;
         }
 
-        if (
+        if (isGuestCheckout.value) {
+            const gc = orderStore.guestContact;
+            if (!String(gc?.name || "").trim()) {
+                deliveryStepError.value = "Укажи имя для связи.";
+                return;
+            }
+            const phoneCheck = validateRuPhoneForSubmit(gc?.phone);
+            if (!phoneCheck.ok) {
+                deliveryStepError.value = phoneCheck.message;
+                return;
+            }
+            if (orderStore.deliveryInfo.method === "courier") {
+                const a = orderStore.deliveryInfo.address;
+                if (!String(a?.street || "").trim() || !String(a?.house || "").trim()) {
+                    deliveryStepError.value = "Укажи улицу и дом для курьера.";
+                    return;
+                }
+            }
+        } else if (
             orderStore.deliveryInfo.method === "courier" &&
             !userStore.selectedAddress
         ) {
@@ -115,6 +149,7 @@ export function useCheckoutFlow() {
     }
 
     function handlePlaceOrderSuccess() {
+        isGuestCheckout.value = false;
         const ids = cartItems.value.map((item) => item.productId);
         ids.forEach((id) => cartStore.removeFromCart(id));
         goToSuccess();
@@ -123,21 +158,36 @@ export function useCheckoutFlow() {
     async function handleConfirmOrder() {
         if (!hasCartItems.value) return;
 
-        if (
-            !orderStore.deliveryInfo.method ||
-            (orderStore.deliveryInfo.method === "courier" &&
-                !userStore.selectedAddress) ||
-            !orderStore.paymentInfo.method
+        if (!orderStore.deliveryInfo.method || !orderStore.paymentInfo.method) {
+            return;
+        }
+
+        if (isGuestCheckout.value) {
+            const gc = orderStore.guestContact;
+            if (!String(gc?.name || "").trim()) {
+                return;
+            }
+            if (!validateRuPhoneForSubmit(gc?.phone).ok) {
+                return;
+            }
+            if (
+                orderStore.deliveryInfo.method === "courier" &&
+                (!String(orderStore.deliveryInfo.address?.street || "").trim() ||
+                    !String(orderStore.deliveryInfo.address?.house || "").trim())
+            ) {
+                return;
+            }
+        } else if (
+            orderStore.deliveryInfo.method === "courier" &&
+            !userStore.selectedAddress
         ) {
             return;
         }
+
         try {
-            const client = userStore.profile;
-            await orderStore.createOrder(
-                client,
-                userStore.selectedAddress,
-                cartItems.value,
-            );
+            await orderStore.createOrder(userStore.selectedAddress, cartItems.value, {
+                isGuest: isGuestCheckout.value,
+            });
             handlePlaceOrderSuccess();
         } catch (e) {
             // ошибка уже в orderStore.error.create
@@ -230,6 +280,7 @@ export function useCheckoutFlow() {
         hasCartItems,
         activeStep,
         authTab,
+        isGuestCheckout,
         newAddressForm,
         newAddressLoading,
         newAddressError,
@@ -239,6 +290,7 @@ export function useCheckoutFlow() {
         formatPrice,
         formatPhone,
         handleStartCheckout,
+        handleContinueAsGuest,
         handleAuthCompleted,
         goToCart,
         goToDelivery,
