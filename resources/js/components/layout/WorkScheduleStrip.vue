@@ -276,7 +276,7 @@ onUnmounted(() => {
         class="w-full opacity-0"
     >
         <div
-            class="mx-auto mt-3 flex max-w-7xl justify-center px-4 pb-2 pt-2 sm:mt-4 sm:px-6 md:max-w-none lg:px-8"
+            class="mx-auto mt-3 flex max-w-7xl justify-center px-4 pt-2 sm:mt-4 sm:px-6 md:max-w-none lg:px-8"
         >
             <button
                 ref="triggerRef"
