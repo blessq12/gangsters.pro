@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Orders\Tables;
 use App\Domain\Order\Enums\DeliveryMethod;
 use App\Domain\Order\Enums\PaymentMethod;
 use App\Domain\Order\Enums\PaymentStatus;
+use App\Support\Money;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -50,7 +51,7 @@ class OrdersTable
                     ->sortable()
                     ->formatStateUsing(
                         fn ($state): string => $state !== null
-                            ? number_format(((int) $state) / 100, 2, ',', ' ') . ' ₽'
+                            ? Money::formatKopecksForAdmin((int) $state)
                             : '—'
                     ),
                 TextColumn::make('discount_total')
@@ -59,8 +60,8 @@ class OrdersTable
                     ->sortable()
                     ->formatStateUsing(
                         fn ($state): string => $state !== null && (int) $state !== 0
-                            ? number_format(((int) $state) / 100, 2, ',', ' ') . ' ₽'
-                            : '0 ₽'
+                            ? Money::formatKopecksForAdmin((int) $state)
+                            : Money::formatKopecksForAdmin(0)
                     ),
                 TextColumn::make('total')
                     ->label('Сумма')
@@ -68,7 +69,7 @@ class OrdersTable
                     ->sortable()
                     ->formatStateUsing(
                         fn ($state): string => $state !== null
-                            ? number_format(((int) $state) / 100, 2, ',', ' ') . ' ₽'
+                            ? Money::formatKopecksForAdmin((int) $state)
                             : '—'
                     ),
                 TextColumn::make('delivery_method')

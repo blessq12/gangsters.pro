@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Orders\RelationManagers;
 
+use App\Support\Money;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -40,25 +41,33 @@ class ItemsRelationManager extends RelationManager
                     ->numeric()
                     ->minValue(1),
                 TextInput::make('unit_price')
-                    ->label('Цена за ед. (коп)')
+                    ->label('Цена за ед., ₽')
                     ->required()
                     ->numeric()
-                    ->minValue(0),
+                    ->step(0.01)
+                    ->minValue(0)
+                    ->formatStateUsing(fn ($state): ?float => $state === null || $state === '' ? null : Money::kopecksToApiRubles((int) $state))
+                    ->dehydrateStateUsing(fn ($state): int => Money::apiRublesToKopecks($state) ?? 0),
                 TextInput::make('row_subtotal')
-                    ->label('Подытог (коп)')
+                    ->label('Подытог, ₽')
                     ->numeric()
                     ->disabled()
-                    ->dehydrated(false),
+                    ->dehydrated(false)
+                    ->formatStateUsing(fn ($state): ?string => $state === null ? null : Money::formatRublesRuAdaptive(Money::kopecksToApiRubles((int) $state))),
                 TextInput::make('row_discount')
-                    ->label('Скидка (коп)')
+                    ->label('Скидка, ₽')
                     ->numeric()
+                    ->step(0.01)
                     ->default(0)
-                    ->minValue(0),
+                    ->minValue(0)
+                    ->formatStateUsing(fn ($state): ?float => $state === null || (int) $state === 0 ? 0.0 : Money::kopecksToApiRubles((int) $state))
+                    ->dehydrateStateUsing(fn ($state): int => Money::apiRublesToKopecks($state) ?? 0),
                 TextInput::make('row_total')
-                    ->label('Итого (коп)')
+                    ->label('Итого, ₽')
                     ->numeric()
                     ->disabled()
-                    ->dehydrated(false),
+                    ->dehydrated(false)
+                    ->formatStateUsing(fn ($state): ?string => $state === null ? null : Money::formatRublesRuAdaptive(Money::kopecksToApiRubles((int) $state))),
             ]);
     }
 
@@ -83,7 +92,7 @@ class ItemsRelationManager extends RelationManager
                     ->sortable()
                     ->formatStateUsing(
                         fn ($state): string => $state !== null
-                            ? number_format(((int) $state) / 100, 2, ',', ' ') . ' ₽'
+                            ? Money::formatKopecksForAdmin((int) $state)
                             : '—'
                     ),
                 TextColumn::make('row_subtotal')
@@ -92,7 +101,7 @@ class ItemsRelationManager extends RelationManager
                     ->sortable()
                     ->formatStateUsing(
                         fn ($state): string => $state !== null
-                            ? number_format(((int) $state) / 100, 2, ',', ' ') . ' ₽'
+                            ? Money::formatKopecksForAdmin((int) $state)
                             : '—'
                     ),
                 TextColumn::make('row_discount')
@@ -101,8 +110,8 @@ class ItemsRelationManager extends RelationManager
                     ->sortable()
                     ->formatStateUsing(
                         fn ($state): string => $state !== null && (int) $state !== 0
-                            ? number_format(((int) $state) / 100, 2, ',', ' ') . ' ₽'
-                            : '0 ₽'
+                            ? Money::formatKopecksForAdmin((int) $state)
+                            : Money::formatKopecksForAdmin(0)
                     ),
                 TextColumn::make('row_total')
                     ->label('Итого')
@@ -110,7 +119,7 @@ class ItemsRelationManager extends RelationManager
                     ->sortable()
                     ->formatStateUsing(
                         fn ($state): string => $state !== null
-                            ? number_format(((int) $state) / 100, 2, ',', ' ') . ' ₽'
+                            ? Money::formatKopecksForAdmin((int) $state)
                             : '—'
                     ),
             ])

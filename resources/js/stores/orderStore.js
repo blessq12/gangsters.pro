@@ -46,13 +46,13 @@ export const useOrderStore = defineStore("order", {
          */
         clientOrderStats(state) {
             const list = Array.isArray(state.orders) ? state.orders : [];
-            let totalKopecks = 0;
+            let totalOrderSpendRubles = 0;
             let lastOrderAt = null;
 
             for (const o of list) {
                 const t = Number(o.total);
                 if (!Number.isNaN(t)) {
-                    totalKopecks += t;
+                    totalOrderSpendRubles += t;
                 }
                 const ca = o.created_at;
                 if (ca) {
@@ -67,9 +67,11 @@ export const useOrderStore = defineStore("order", {
 
             return {
                 count,
-                totalKopecks,
+                totalOrderSpendRubles,
                 lastOrderAt,
-                averageKopecks: count ? Math.round(totalKopecks / count) : 0,
+                averageOrderRubles: count
+                    ? Math.round((totalOrderSpendRubles / count) * 100) / 100
+                    : 0,
             };
         },
     },

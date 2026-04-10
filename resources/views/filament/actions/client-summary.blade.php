@@ -25,11 +25,11 @@
             </div>
             <div class="rounded-lg border p-3">
                 <div class="text-xs text-gray-500">Сумма заказов</div>
-                <div class="text-sm font-medium">{{ number_format((int) $summary['orders_total'], 0, ',', ' ') }} ₽</div>
+                <div class="text-sm font-medium">{{ \App\Support\Money::formatKopecksForAdmin((int) $summary['orders_total']) }}</div>
             </div>
             <div class="rounded-lg border p-3">
                 <div class="text-xs text-gray-500">Средний чек</div>
-                <div class="text-sm font-medium">{{ number_format((int) $summary['average_order_total'], 0, ',', ' ') }} ₽</div>
+                <div class="text-sm font-medium">{{ \App\Support\Money::formatKopecksForAdmin((int) $summary['average_order_total']) }}</div>
             </div>
         </div>
 

@@ -8,6 +8,7 @@ use App\Domain\Product\Entity\ProductIngredient;
 use App\Domain\Product\VO\ImageVariant;
 use App\Domain\Product\VO\Nutrition;
 use App\Domain\Product\VO\ProductTag;
+use App\Support\Money;
 
 final class ProductPresenter
 {
@@ -31,7 +32,9 @@ final class ProductPresenter
                 fn (ProductTag $tag) => $this->presentTag($tag),
                 $product->tags(),
             ),
-            'price' => $product->price(),
+            'price' => $product->price() !== null
+                ? Money::kopecksToApiRubles($product->price())
+                : null,
             'created_at' => $product->createdAt()->format(DATE_ATOM),
             'updated_at' => $product->updatedAt()->format(DATE_ATOM),
             'archived_at' => $product->archivedAt()?->format(DATE_ATOM),
@@ -90,6 +93,4 @@ final class ProductPresenter
             'color' => $tag->color(),
         ];
     }
-
 }
-

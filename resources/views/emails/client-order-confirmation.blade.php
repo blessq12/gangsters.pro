@@ -1,5 +1,5 @@
 @php
-    $kopToRub = static fn (mixed $k): string => number_format(((int) $k) / 100, 2, ',', ' ');
+    $fmtRub = static fn (mixed $rub): string => \App\Support\Money::formatRublesRuAdaptive((float) $rub);
 
     $deliveryBlock = $order['delivery'] ?? [];
     $deliveryMethod = is_array($deliveryBlock) ? ($deliveryBlock['method'] ?? '') : '';
@@ -81,26 +81,26 @@
                 $p = $row['product'] ?? [];
                 $name = $p['name'] ?? 'Товар';
                 $qty = (int) ($row['quantity'] ?? 0);
-                $rowTotalKop = (int) ($row['row_total'] ?? 0);
+                $rowTotalRub = (float) ($row['row_total'] ?? 0);
             @endphp
             <tr>
                 <td style="padding: 6px 8px 6px 0; vertical-align: top; border-bottom: 1px solid #e2e8f0;">
                     {{ $name }}<br>
-                    <span style="color: #64748b; font-size: 12px;">{{ $qty }}&nbsp;шт. × {{ $kopToRub($row['unit_price'] ?? 0) }}&nbsp;₽</span>
+                    <span style="color: #64748b; font-size: 12px;">{{ $qty }}&nbsp;шт. × {{ $fmtRub($row['unit_price'] ?? 0) }}&nbsp;₽</span>
                 </td>
                 <td style="padding: 6px 0; vertical-align: top; text-align: right; white-space: nowrap; border-bottom: 1px solid #e2e8f0;">
-                    {{ $kopToRub($rowTotalKop) }}&nbsp;₽
+                    {{ $fmtRub($rowTotalRub) }}&nbsp;₽
                 </td>
             </tr>
         @endforeach
     </table>
 
     <p style="margin-top: 1em; font-size: 14px;">
-        Позиции: <strong>{{ $kopToRub($order['subtotal'] ?? 0) }}&nbsp;₽</strong><br>
-        @if ((int) ($order['discount_total'] ?? 0) > 0)
-            Скидка: <strong>−{{ $kopToRub($order['discount_total'] ?? 0) }}&nbsp;₽</strong><br>
+        Позиции: <strong>{{ $fmtRub($order['subtotal'] ?? 0) }}&nbsp;₽</strong><br>
+        @if ((float) ($order['discount_total'] ?? 0) > 0)
+            Скидка: <strong>−{{ $fmtRub($order['discount_total'] ?? 0) }}&nbsp;₽</strong><br>
         @endif
-        <span style="font-size: 16px;">Итого: <strong>{{ $kopToRub($order['total'] ?? 0) }}&nbsp;₽</strong></span>
+        <span style="font-size: 16px;">Итого: <strong>{{ $fmtRub($order['total'] ?? 0) }}&nbsp;₽</strong></span>
     </p>
 
     <p style="margin-top: 1.25em;"><strong>Контакты</strong></p>

@@ -1,4 +1,5 @@
 import { toCatalogStorageUrl } from "../../utils/catalog/productMedia";
+import { roundRubles2 } from "../../utils/moneyFormat";
 
 function extractWeightGrams(text) {
     if (!text || typeof text !== "string") return null;
@@ -36,7 +37,7 @@ export function normalizeCatalogProduct(apiProduct) {
     if (!id) return null;
 
     const rawPrice = Number(apiProduct.price);
-    const price = Number.isFinite(rawPrice) ? Math.round(rawPrice) : 0;
+    const price = Number.isFinite(rawPrice) ? roundRubles2(rawPrice) : 0;
 
     let imageUrl = null;
     let imageSrcset = [];

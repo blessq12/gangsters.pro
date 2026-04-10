@@ -6,13 +6,14 @@ use App\Domain\Order\Enums\DeliveryMethod;
 use App\Domain\Order\Enums\PaymentMethod;
 use App\Domain\Order\Enums\PaymentStatus;
 use App\Infrastructure\Client\Model\UR_Client;
-use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Components\Utilities\Set;
+use App\Support\Money;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 
 class OrderForm
@@ -50,7 +51,7 @@ class OrderForm
                                     ->dehydrated(false)
                                     ->formatStateUsing(
                                         fn ($state): ?string => $state !== null
-                                            ? number_format(((int) $state) / 100, 2, ',', ' ')
+                                            ? Money::formatRublesRuAdaptive(Money::kopecksToApiRubles((int) $state))
                                             : null
                                     ),
                                 TextInput::make('total')
@@ -59,7 +60,7 @@ class OrderForm
                                     ->dehydrated(false)
                                     ->formatStateUsing(
                                         fn ($state): ?string => $state !== null
-                                            ? number_format(((int) $state) / 100, 2, ',', ' ')
+                                            ? Money::formatRublesRuAdaptive(Money::kopecksToApiRubles((int) $state))
                                             : null
                                     ),
                                 TextInput::make('discount_total')
@@ -68,8 +69,8 @@ class OrderForm
                                     ->dehydrated(false)
                                     ->formatStateUsing(
                                         fn ($state): ?string => $state !== null && (int) $state !== 0
-                                            ? number_format(((int) $state) / 100, 2, ',', ' ')
-                                            : '0'
+                                            ? Money::formatRublesRuAdaptive(Money::kopecksToApiRubles((int) $state))
+                                            : Money::formatRublesRuAdaptive(0)
                                     ),
                             ]),
                     ]),
@@ -84,7 +85,7 @@ class OrderForm
                                     ->orderBy('name')
                                     ->get()
                                     ->mapWithKeys(fn (UR_Client $c) => [
-                                        $c->id => $c->name . ' — ' . ($c->phone ?? '') . ($c->email ? ' (' . $c->email . ')' : ''),
+                                        $c->id => $c->name.' — '.($c->phone ?? '').($c->email ? ' ('.$c->email.')' : ''),
                                     ])
                                     ->all();
 

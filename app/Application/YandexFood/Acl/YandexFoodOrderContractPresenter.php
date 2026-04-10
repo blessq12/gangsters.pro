@@ -4,6 +4,7 @@ namespace App\Application\YandexFood\Acl;
 
 use App\Domain\Order\Entities\Order;
 use App\Domain\Order\Entities\OrderItem;
+use App\Support\Money;
 
 /**
  * ACL: доменный {@see Order} → тело ответа в форме контракта JSON API Яндекс Еда (как было в легаси-слое).
@@ -95,9 +96,9 @@ final class YandexFoodOrderContractPresenter
         $meta = $this->extractYandexMeta($comment);
         $payment = $meta['yandex_payment'] ?? [];
 
-        $itemsCost = $payment['itemsCost'] ?? $this->kopecksToRublesFloat($order->getSubtotal());
+        $itemsCost = $payment['itemsCost'] ?? Money::kopecksToApiRubles($order->getSubtotal());
         $deliveryFee = $payment['deliveryFee'] ?? 0;
-        $total = $payment['total'] ?? $this->kopecksToRublesFloat($order->getTotal());
+        $total = $payment['total'] ?? Money::kopecksToApiRubles($order->getTotal());
         $change = $payment['change'] ?? 0;
 
         return [
@@ -137,7 +138,7 @@ final class YandexFoodOrderContractPresenter
             'id' => $productId !== null ? (string) $productId : $item->getId(),
             'name' => $product->name,
             'quantity' => $item->getQuantity(),
-            'price' => $this->kopecksToRublesFloat($item->getUnitPrice()),
+            'price' => Money::kopecksToApiRubles($item->getUnitPrice()),
             'modifications' => [],
             'promos' => [],
         ];
@@ -150,11 +151,6 @@ final class YandexFoodOrderContractPresenter
             'preparing', 'in_transit', 'delivered' => 'PAID',
             default => 'NEW',
         };
-    }
-
-    private function kopecksToRublesFloat(int $kopecks): float
-    {
-        return round($kopecks / 100, 2);
     }
 
     /**

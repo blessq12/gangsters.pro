@@ -9,12 +9,13 @@ use DateTimeImmutable;
 final class Product
 {
     public const STATUS_ACTIVE = 'active';
+
     public const STATUS_ARCHIVED = 'archived';
 
     /**
-     * @param ProductImage[]      $images
-     * @param ProductIngredient[] $ingredients
-     * @param ProductTag[]        $tags
+     * @param  ProductImage[]  $images
+     * @param  ProductIngredient[]  $ingredients
+     * @param  ProductTag[]  $tags
      */
     private function __construct(
         private ?int $id,
@@ -25,18 +26,18 @@ final class Product
         private array $images,
         private array $ingredients,
         private array $tags,
+        /** Цена в копейках (RUB), null — нет цены */
         private ?int $price,
         private string $status,
         private DateTimeImmutable $createdAt,
         private DateTimeImmutable $updatedAt,
         private ?DateTimeImmutable $archivedAt,
-    ) {
-    }
+    ) {}
 
     /**
-     * @param ProductImage[]      $images
-     * @param ProductIngredient[] $ingredients
-     * @param ProductTag[]        $tags
+     * @param  ProductImage[]  $images
+     * @param  ProductIngredient[]  $ingredients
+     * @param  ProductTag[]  $tags
      */
     public static function create(
         string $name,
@@ -45,10 +46,10 @@ final class Product
         array $images = [],
         array $ingredients = [],
         array $tags = [],
-        ?int $price = null,
+        ?int $price = null, // копейки (RUB)
         ?string $articul = null,
     ): self {
-        $now = new DateTimeImmutable();
+        $now = new DateTimeImmutable;
 
         return new self(
             id: null,
@@ -68,9 +69,9 @@ final class Product
     }
 
     /**
-     * @param ProductImage[]      $images
-     * @param ProductIngredient[] $ingredients
-     * @param ProductTag[]        $tags
+     * @param  ProductImage[]  $images
+     * @param  ProductIngredient[]  $ingredients
+     * @param  ProductTag[]  $tags
      */
     public static function reconstitute(
         int $id,
@@ -160,6 +161,7 @@ final class Product
         return $this->tags;
     }
 
+    /** Цена в копейках (RUB), null — нет цены */
     public function price(): ?int
     {
         return $this->price;
@@ -210,7 +212,7 @@ final class Product
     }
 
     /**
-     * @param ProductImage[] $images
+     * @param  ProductImage[]  $images
      */
     public function setImages(array $images): void
     {
@@ -219,7 +221,7 @@ final class Product
     }
 
     /**
-     * @param ProductIngredient[] $ingredients
+     * @param  ProductIngredient[]  $ingredients
      */
     public function setIngredients(array $ingredients): void
     {
@@ -228,7 +230,7 @@ final class Product
     }
 
     /**
-     * @param ProductTag[] $tags
+     * @param  ProductTag[]  $tags
      */
     public function setTags(array $tags): void
     {
@@ -236,6 +238,7 @@ final class Product
         $this->touch();
     }
 
+    /** @param  ?int  $price  Копейки (RUB) */
     public function setPrice(?int $price): void
     {
         $this->price = $price;
@@ -245,7 +248,7 @@ final class Product
     public function archive(): void
     {
         $this->status = self::STATUS_ARCHIVED;
-        $this->archivedAt = new DateTimeImmutable();
+        $this->archivedAt = new DateTimeImmutable;
         $this->touch();
     }
 
@@ -258,7 +261,6 @@ final class Product
 
     private function touch(): void
     {
-        $this->updatedAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable;
     }
 }
-

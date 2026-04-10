@@ -4,6 +4,7 @@ namespace App\Application\YandexFood\Presenter;
 
 use App\Domain\Category\Entity\Category;
 use App\Domain\Product\Entity\Product;
+use App\Support\Money;
 use Carbon\Carbon;
 
 /**
@@ -57,14 +58,16 @@ final class YandexFoodMenuCatalogPresenter
      */
     private function presentMenuItem(Product $product, string $categoryId, int $sortOrder): array
     {
-        $priceRub = $product->price() !== null ? (float) $product->price() : 0.0;
+        $priceRub = $product->price() !== null
+            ? Money::kopecksToApiRubles($product->price())
+            : 0.0;
 
         return [
             'id' => (string) $product->id(),
             'categoryId' => $categoryId,
             'name' => $product->name(),
             'description' => $product->description(),
-            'price' => (float) $priceRub,
+            'price' => $priceRub,
             'vat' => 0,
             'isCatchweight' => false,
             'measure' => 0,

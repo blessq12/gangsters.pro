@@ -4,7 +4,7 @@ import { useOrderStore } from "../../stores/orderStore";
 import {
     formatDeliveryMethodRu,
     formatOrderDate,
-    formatOrderMoneyKopecks,
+    formatOrderMoneyRubles,
     formatOrderStatusRu,
     formatPaymentMethodRu,
 } from "../../utils/order/orderDisplay";
@@ -98,7 +98,7 @@ onMounted(() => {
                     </div>
                     <div class="shrink-0 text-right">
                         <p class="text-sm font-semibold text-amber-300">
-                            {{ formatOrderMoneyKopecks(order.total) }}&nbsp;₽
+                            {{ formatOrderMoneyRubles(order.total) }}&nbsp;₽
                         </p>
                         <p class="text-[11px] text-slate-500">
                             {{ isExpanded(order.id) ? "Скрыть" : "Состав" }}
@@ -123,7 +123,7 @@ onMounted(() => {
                                 </span>
                             </span>
                             <span class="shrink-0 text-slate-300">
-                                {{ formatOrderMoneyKopecks(row.row_total) }}&nbsp;₽
+                                {{ formatOrderMoneyRubles(row.row_total) }}&nbsp;₽
                             </span>
                         </li>
                     </ul>

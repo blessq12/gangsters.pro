@@ -5,13 +5,16 @@ namespace App\Domain\Order\Entities;
 use App\Domain\Order\Exceptions\OrderInvariantViolation;
 use App\Domain\Order\ValueObjects\CustomerSnapshot;
 use App\Domain\Order\ValueObjects\DeliveryInfo;
-use App\Domain\Order\ValueObjects\PaymentInfo;
 use App\Domain\Order\ValueObjects\OrderStatus;
+use App\Domain\Order\ValueObjects\PaymentInfo;
 
 class Order
 {
     /**
-     * @param OrderItem[] $items
+     * @param  OrderItem[]  $items
+     * @param  int  $subtotal  Копейки (RUB)
+     * @param  int  $discountTotal  Копейки (RUB)
+     * @param  int  $total  Копейки (RUB)
      */
     public function __construct(
         private string $id,
@@ -154,4 +157,3 @@ class Order
         }
     }
 }
-

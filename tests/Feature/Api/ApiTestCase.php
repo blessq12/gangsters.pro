@@ -174,14 +174,24 @@ abstract class ApiTestCase extends TestCase
         }
 
         $this->assertIsArray($order['items']);
+        foreach (['subtotal', 'discount_total', 'total'] as $moneyKey) {
+            $this->assertArrayHasKey($moneyKey, $order);
+            $this->assertIsNumeric($order[$moneyKey]);
+        }
         foreach ($order['items'] as $item) {
             $this->assertIsArray($item);
             foreach (['id', 'order_id', 'product_original_id', 'product', 'quantity', 'unit_price', 'row_subtotal', 'row_discount', 'row_total'] as $ik) {
                 $this->assertArrayHasKey($ik, $item);
             }
+            foreach (['unit_price', 'row_subtotal', 'row_discount', 'row_total'] as $ik) {
+                $this->assertIsNumeric($item[$ik]);
+            }
             $this->assertIsArray($item['product']);
             foreach (['name', 'sku', 'list_price', 'final_price', 'attributes', 'media'] as $pk) {
                 $this->assertArrayHasKey($pk, $item['product']);
+            }
+            foreach (['list_price', 'final_price'] as $pk) {
+                $this->assertIsNumeric($item['product'][$pk]);
             }
         }
     }

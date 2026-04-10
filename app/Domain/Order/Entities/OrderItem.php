@@ -7,6 +7,12 @@ use App\Domain\Order\ValueObjects\ProductSnapshot;
 
 class OrderItem
 {
+    /**
+     * @param  int  $unitPrice  Копейки (RUB)
+     * @param  int  $rowSubtotal  Копейки (RUB)
+     * @param  int  $rowDiscount  Копейки (RUB)
+     * @param  int  $rowTotal  Копейки (RUB)
+     */
     public function __construct(
         private string $id,
         private string $orderId,

@@ -7,6 +7,7 @@ use App\Domain\Order\Entities\Order;
 use App\Domain\Order\Entities\OrderItem;
 use App\Domain\Order\ValueObjects\DeliveryInfo;
 use App\Domain\Order\ValueObjects\PaymentInfo;
+use App\Support\Money;
 
 final class OrderPresenter
 {
@@ -17,9 +18,9 @@ final class OrderPresenter
             'client_id' => $order->getClientId(),
             'customer' => $this->presentCustomer($order->getCustomer()),
             'status' => $order->getStatus()->value,
-            'subtotal' => $order->getSubtotal(),
-            'discount_total' => $order->getDiscountTotal(),
-            'total' => $order->getTotal(),
+            'subtotal' => Money::kopecksToApiRubles($order->getSubtotal()),
+            'discount_total' => Money::kopecksToApiRubles($order->getDiscountTotal()),
+            'total' => Money::kopecksToApiRubles($order->getTotal()),
             'delivery' => $order->getDeliveryInfo() !== null ? $this->presentDelivery($order->getDeliveryInfo()) : null,
             'payment' => $order->getPaymentInfo() !== null ? $this->presentPayment($order->getPaymentInfo()) : null,
             'items' => array_map(
@@ -101,16 +102,16 @@ final class OrderPresenter
             'product' => [
                 'name' => $product->name,
                 'sku' => $product->sku,
-                'list_price' => $product->listPrice,
-                'final_price' => $product->finalPrice,
+                'list_price' => Money::kopecksToApiRubles($product->listPrice),
+                'final_price' => Money::kopecksToApiRubles($product->finalPrice),
                 'attributes' => $product->attributes,
                 'media' => $product->media,
             ],
             'quantity' => $item->getQuantity(),
-            'unit_price' => $item->getUnitPrice(),
-            'row_subtotal' => $item->getRowSubtotal(),
-            'row_discount' => $item->getRowDiscount(),
-            'row_total' => $item->getRowTotal(),
+            'unit_price' => Money::kopecksToApiRubles($item->getUnitPrice()),
+            'row_subtotal' => Money::kopecksToApiRubles($item->getRowSubtotal()),
+            'row_discount' => Money::kopecksToApiRubles($item->getRowDiscount()),
+            'row_total' => Money::kopecksToApiRubles($item->getRowTotal()),
         ];
     }
 }

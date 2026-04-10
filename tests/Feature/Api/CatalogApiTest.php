@@ -37,7 +37,7 @@ final class CatalogApiTest extends ApiTestCase
             foreach ($node['products'] as $product) {
                 foreach ([
                     'id', 'name', 'description', 'status', 'nutrition', 'images', 'ingredients',
-                    'tags', 'prices', 'created_at', 'updated_at', 'archived_at',
+                    'tags', 'price', 'created_at', 'updated_at', 'archived_at',
                 ] as $pk) {
                     $this->assertArrayHasKey($pk, $product, 'product missing '.$pk);
                 }
@@ -47,15 +47,8 @@ final class CatalogApiTest extends ApiTestCase
                     $this->assertArrayHasKey($nk, $product['nutrition']);
                 }
 
-                $this->assertIsArray($product['prices']);
-                foreach ($product['prices'] as $price) {
-                    $this->assertIsArray($price);
-                    foreach (['amount', 'customer_status', 'is_default'] as $prk) {
-                        $this->assertArrayHasKey($prk, $price);
-                    }
-                    // {@see ProductPresenter::presentPrice()} — customer_status это код (строка), не вложенный объект.
-                    $this->assertIsString($price['customer_status']);
-                    $this->assertNotSame('', $price['customer_status']);
+                if ($product['price'] !== null) {
+                    $this->assertIsNumeric($product['price']);
                 }
             }
         }

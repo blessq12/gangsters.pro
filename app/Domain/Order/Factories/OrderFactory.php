@@ -4,31 +4,21 @@ namespace App\Domain\Order\Factories;
 
 use App\Domain\Order\Entities\Order;
 use App\Domain\Order\Entities\OrderItem;
+use App\Domain\Order\Services\OrderIdGenerator;
 use App\Domain\Order\ValueObjects\CustomerSnapshot;
 use App\Domain\Order\ValueObjects\DeliveryInfo;
-use App\Domain\Order\ValueObjects\PaymentInfo;
 use App\Domain\Order\ValueObjects\OrderStatus;
+use App\Domain\Order\ValueObjects\PaymentInfo;
 use App\Domain\Order\ValueObjects\ProductSnapshot;
-use App\Domain\Order\Services\OrderIdGenerator;
 
 class OrderFactory
 {
     public function __construct(
         private readonly OrderIdGenerator $idGenerator,
-    ) {
-    }
+    ) {}
 
     /**
-     * @param array<int, array{
-     *     productOriginalId: int|null,
-     *     name: string,
-     *     sku: string,
-     *     listPrice: int,
-     *     finalPrice: int,
-     *     quantity: int,
-     *     attributes?: array,
-     *     media?: array
-     * }> $itemsData
+     * @param  array<int, array{productOriginalId: int|null, name: string, sku: string, listPrice: int, finalPrice: int, quantity: int, attributes?: array, media?: array}>  $itemsData  listPrice/finalPrice — копейки (RUB)
      */
     public function create(
         ?int $clientId,
@@ -78,7 +68,7 @@ class OrderFactory
         }
         $total = $subtotal - $discountTotal;
 
-        $createdAt = new \DateTimeImmutable();
+        $createdAt = new \DateTimeImmutable;
 
         return new Order(
             id: $id,
@@ -99,16 +89,7 @@ class OrderFactory
     /**
      * Пересборка заказа с сохранением id и даты создания (обновление состава/шапки).
      *
-     * @param array<int, array{
-     *     productOriginalId: int|null,
-     *     name: string,
-     *     sku: string,
-     *     listPrice: int,
-     *     finalPrice: int,
-     *     quantity: int,
-     *     attributes?: array,
-     *     media?: array
-     * }> $itemsData
+     * @param  array<int, array{productOriginalId: int|null, name: string, sku: string, listPrice: int, finalPrice: int, quantity: int, attributes?: array, media?: array}>  $itemsData  listPrice/finalPrice — копейки (RUB)
      */
     public function rebuildOrder(
         string $id,
@@ -159,7 +140,7 @@ class OrderFactory
         }
         $total = $subtotal - $discountTotal;
 
-        $updatedAt = new \DateTimeImmutable();
+        $updatedAt = new \DateTimeImmutable;
 
         return new Order(
             id: $id,
@@ -177,4 +158,3 @@ class OrderFactory
         );
     }
 }
-

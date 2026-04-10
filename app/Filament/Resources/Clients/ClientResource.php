@@ -8,8 +8,8 @@ use App\Filament\Resources\Clients\Pages\EditClient;
 use App\Filament\Resources\Clients\Pages\ListClients;
 use App\Filament\Resources\Clients\Pages\ViewClient;
 use App\Infrastructure\Client\Model\UR_Client;
+use App\Support\Money;
 use BackedEnum;
-use UnitEnum;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
@@ -25,6 +25,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class ClientResource extends Resource
 {
@@ -177,6 +178,7 @@ class ClientResource extends Resource
                         ->state(function (UR_Client $record): int {
                             /** @var ClientSummaryReader $summary */
                             $summary = app(ClientSummaryReader::class);
+
                             return (int) ($summary->getSummaryById((int) $record->id)['orders_count'] ?? 0);
                         }),
                     TextEntry::make('summary.paid_orders_count')
@@ -184,6 +186,7 @@ class ClientResource extends Resource
                         ->state(function (UR_Client $record): int {
                             /** @var ClientSummaryReader $summary */
                             $summary = app(ClientSummaryReader::class);
+
                             return (int) ($summary->getSummaryById((int) $record->id)['paid_orders_count'] ?? 0);
                         }),
                     TextEntry::make('summary.orders_total')
@@ -192,7 +195,8 @@ class ClientResource extends Resource
                             /** @var ClientSummaryReader $summary */
                             $summary = app(ClientSummaryReader::class);
                             $totalKopecks = (int) ($summary->getSummaryById((int) $record->id)['orders_total'] ?? 0);
-                            return number_format($totalKopecks / 100, 2, ',', ' ') . ' ₽';
+
+                            return Money::formatKopecksForAdmin($totalKopecks);
                         }),
                     TextEntry::make('summary.average_order_total')
                         ->label('Средний чек')
@@ -200,13 +204,15 @@ class ClientResource extends Resource
                             /** @var ClientSummaryReader $summary */
                             $summary = app(ClientSummaryReader::class);
                             $avgKopecks = (int) ($summary->getSummaryById((int) $record->id)['average_order_total'] ?? 0);
-                            return number_format($avgKopecks / 100, 2, ',', ' ') . ' ₽';
+
+                            return Money::formatKopecksForAdmin($avgKopecks);
                         }),
                     TextEntry::make('summary.addresses_count')
                         ->label('Количество адресов')
                         ->state(function (UR_Client $record): int {
                             /** @var ClientSummaryReader $summary */
                             $summary = app(ClientSummaryReader::class);
+
                             return (int) ($summary->getSummaryById((int) $record->id)['addresses_count'] ?? 0);
                         }),
                     TextEntry::make('summary.last_order_at')
@@ -215,7 +221,7 @@ class ClientResource extends Resource
                             /** @var ClientSummaryReader $summary */
                             $summary = app(ClientSummaryReader::class);
                             $value = $summary->getSummaryById((int) $record->id)['last_order_at'] ?? null;
-                            if (!is_string($value) || $value === '') {
+                            if (! is_string($value) || $value === '') {
                                 return 'Нет заказов';
                             }
                             try {
@@ -246,4 +252,3 @@ class ClientResource extends Resource
         ];
     }
 }
-

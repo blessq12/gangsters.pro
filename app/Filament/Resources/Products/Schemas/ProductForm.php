@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\Products\Schemas;
 
+use App\Support\Money;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 
 class ProductForm
@@ -31,9 +32,20 @@ class ProductForm
                     ->label('Описание')
                     ->columnSpanFull(),
                 TextInput::make('price')
-                    ->label('Цена (в рублях)')
+                    ->label('Цена, ₽ (2 знака)')
                     ->numeric()
-                    ->minValue(0),
+                    ->step(0.01)
+                    ->minValue(0)
+                    ->formatStateUsing(function ($state): ?float {
+                        if ($state === null || $state === '') {
+                            return null;
+                        }
+
+                        return Money::kopecksToApiRubles((int) $state);
+                    })
+                    ->dehydrateStateUsing(function ($state): ?int {
+                        return Money::apiRublesToKopecks($state);
+                    }),
                 TextInput::make('calories')
                     ->numeric()
                     ->label('Ккал на 100г'),

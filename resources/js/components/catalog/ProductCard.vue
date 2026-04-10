@@ -3,6 +3,7 @@ import { computed, ref, onMounted, onUnmounted, nextTick } from "vue";
 import { playTooltipOpen, playTooltipClose } from "../../animations/animationManager";
 import { useProductActions } from "../../composables/catalog/useProductActions";
 import { useProductMeta } from "../../composables/catalog/useProductMeta";
+import { formatMoneyRublesRu } from "../../utils/moneyFormat";
 
 const props = defineProps({
     product: {
@@ -264,7 +265,7 @@ const handleToggleFavorite = () => {
                     type="button"
                     :aria-label="qtyInCart === 0 ? 'Добавить в корзину' : 'Увеличить количество'"
                 >
-                    {{ product.price }} ₽
+                    {{ formatMoneyRublesRu(product.price) }}&nbsp;₽
                 </button>
             </div>
 

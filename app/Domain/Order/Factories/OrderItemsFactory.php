@@ -12,21 +12,11 @@ final class OrderItemsFactory
     public function __construct(
         private readonly ProductRepository $products,
         private readonly ComplimentaryItemsResolver $complimentaryItemsResolver,
-    ) {
-    }
+    ) {}
 
     /**
-     * @param array<int, array{product_id: int, quantity: int}> $items
-     * @return array<int, array{
-     *     productOriginalId: int|null,
-     *     name: string,
-     *     sku: string,
-     *     listPrice: int,
-     *     finalPrice: int,
-     *     quantity: int,
-     *     attributes: array,
-     *     media: array
-     * }>
+     * @param  array<int, array{product_id: int, quantity: int}>  $items
+     * @return array<int, array{productOriginalId: int|null, name: string, sku: string, listPrice: int, finalPrice: int, quantity: int, attributes: array, media: array}> listPrice/finalPrice — копейки (RUB)
      */
     public function buildItemsData(array $items): array
     {
@@ -81,7 +71,7 @@ final class OrderItemsFactory
     }
 
     /**
-     * @param \App\Domain\Product\Entity\ProductImage[] $images
+     * @param  \App\Domain\Product\Entity\ProductImage[]  $images
      * @return array<int, array<string, mixed>>
      */
     private function productImagesToMedia(array $images): array
@@ -99,4 +89,3 @@ final class OrderItemsFactory
         return $out;
     }
 }
-

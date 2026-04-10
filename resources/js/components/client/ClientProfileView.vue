@@ -2,7 +2,7 @@
 import { computed, onMounted, watch } from "vue";
 import { useUserStore } from "../../stores/userStore";
 import { useOrderStore } from "../../stores/orderStore";
-import { formatOrderDate, formatOrderMoneyKopecks } from "../../utils/order/orderDisplay";
+import { formatOrderDate, formatOrderMoneyRubles } from "../../utils/order/orderDisplay";
 
 const emit = defineEmits(["logout"]);
 
@@ -125,7 +125,7 @@ function handleLogoutClick() {
                         Сумма заказов
                     </p>
                     <p class="mt-1 text-lg font-semibold tabular-nums text-slate-50">
-                        {{ formatOrderMoneyKopecks(stats.totalKopecks) }}&nbsp;₽
+                        {{ formatOrderMoneyRubles(stats.totalOrderSpendRubles) }}&nbsp;₽
                     </p>
                 </div>
                 <div
@@ -145,7 +145,7 @@ function handleLogoutClick() {
                                 Средний чек
                             </p>
                             <p class="mt-0.5 text-sm font-semibold tabular-nums text-amber-200/95">
-                                {{ formatOrderMoneyKopecks(stats.averageKopecks) }}&nbsp;₽
+                                {{ formatOrderMoneyRubles(stats.averageOrderRubles) }}&nbsp;₽
                             </p>
                         </div>
                     </div>

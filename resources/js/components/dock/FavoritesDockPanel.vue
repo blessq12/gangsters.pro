@@ -2,6 +2,7 @@
 import { computed } from "vue";
 import { useCartStore } from "../../stores/cartStore";
 import { useFavoritesStore } from "../../stores/favoritesStore";
+import { formatMoneyRublesRu } from "../../utils/moneyFormat";
 
 const cartStore = useCartStore();
 const favoritesStore = useFavoritesStore();
@@ -13,8 +14,7 @@ const handleAddToCart = (item) => {
     cartStore.addToCart(item.productSnapshot, 1);
 };
 
-const formatPrice = (value) =>
-    new Intl.NumberFormat("ru-RU").format(Number(value) || 0);
+const formatPrice = (value) => formatMoneyRublesRu(value);
 </script>
 
 <template>

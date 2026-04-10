@@ -327,7 +327,7 @@ final class OrderApiTest extends ApiTestCase
 
         $complimentaryItems = array_values(array_filter($items, static fn (array $row): bool => (bool) ($row['product']['attributes']['is_complimentary'] ?? false)));
         $this->assertCount(1, $complimentaryItems);
-        $this->assertSame(0, $complimentaryItems[0]['product']['final_price']);
+        $this->assertEqualsWithDelta(0.0, (float) $complimentaryItems[0]['product']['final_price'], 0.001);
         $this->assertSame(1, $complimentaryItems[0]['quantity']);
     }
 
@@ -346,7 +346,7 @@ final class OrderApiTest extends ApiTestCase
         foreach ($pairs as $row) {
             $categoryId = (int) $row->category_id;
             $productId = (int) $row->product_id;
-            if (!isset($byCategory[$categoryId])) {
+            if (! isset($byCategory[$categoryId])) {
                 $byCategory[$categoryId] = $productId;
             }
         }
@@ -415,7 +415,7 @@ final class OrderApiTest extends ApiTestCase
     }
 
     /**
-     * @param array<int, int> $categoryIds
+     * @param  array<int, int>  $categoryIds
      */
     private function seedComplimentaryRuleForCategories(array $categoryIds, int $giftProductId): void
     {

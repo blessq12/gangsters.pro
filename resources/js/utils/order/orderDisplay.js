@@ -31,10 +31,11 @@ export function formatDeliveryMethodRu(method) {
     return DELIVERY_LABELS[method] || method;
 }
 
-/** Суммы в API заказа — копейки → рубли для отображения */
-export function formatOrderMoneyKopecks(kopecks) {
-    const rub = Math.round(Number(kopecks) || 0) / 100;
-    return new Intl.NumberFormat("ru-RU").format(rub);
+import { formatMoneyRublesRu } from "../moneyFormat";
+
+/** Суммы в API заказа — рубли (number), два знака после запятой */
+export function formatOrderMoneyRubles(rubles) {
+    return formatMoneyRublesRu(rubles);
 }
 
 export function formatOrderDate(iso) {

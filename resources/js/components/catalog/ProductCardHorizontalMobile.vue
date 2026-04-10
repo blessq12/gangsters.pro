@@ -4,6 +4,7 @@ import { playTooltipClose, playTooltipOpen } from "../../animations/animationMan
 import { useFixedTooltip } from "../../composables/catalog/useFixedTooltip";
 import { useProductActions } from "../../composables/catalog/useProductActions";
 import { useProductMeta } from "../../composables/catalog/useProductMeta";
+import { formatMoneyRublesRu } from "../../utils/moneyFormat";
 
 const props = defineProps({
     product: {
@@ -229,7 +230,7 @@ onUnmounted(() => {
                     :aria-label="qtyInCart === 0 ? 'Добавить в корзину' : 'Увеличить количество'"
                     @click.stop="handlePriceClick"
                 >
-                    {{ product.price }} ₽
+                    {{ formatMoneyRublesRu(product.price) }}&nbsp;₽
                 </button>
                 <span v-if="product.weight" class="text-[11px] text-slate-400">{{ product.weight }} г</span>
             </div>

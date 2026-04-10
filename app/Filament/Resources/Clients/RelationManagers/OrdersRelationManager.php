@@ -2,16 +2,17 @@
 
 namespace App\Filament\Resources\Clients\RelationManagers;
 
+use App\Domain\Order\Enums\DeliveryMethod;
+use App\Domain\Order\Enums\PaymentMethod;
+use App\Domain\Order\Enums\PaymentStatus;
+use App\Support\Money;
+use Carbon\Carbon;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use App\Domain\Order\Enums\DeliveryMethod;
-use App\Domain\Order\Enums\PaymentMethod;
-use App\Domain\Order\Enums\PaymentStatus;
-use Carbon\Carbon;
 
 class OrdersRelationManager extends RelationManager
 {
@@ -39,7 +40,7 @@ class OrdersRelationManager extends RelationManager
                     ->numeric()
                     ->formatStateUsing(
                         fn ($state): string => $state !== null
-                            ? number_format(((int) $state) / 100, 2, ',', ' ') . ' ₽'
+                            ? Money::formatKopecksForAdmin((int) $state)
                             : '—'
                     ),
                 TextColumn::make('created_at')
@@ -59,8 +60,8 @@ class OrdersRelationManager extends RelationManager
                     ->modalHeading('Данные заказа')
                     ->mutateRecordDataUsing(function (array $data, $record): array {
                         // Форматированная сумма в рублях
-                        $total = $data['total'] ?? 0;
-                        $data['total_rub'] = sprintf('%s ₽', number_format($total / 100, 2, ',', ' '));
+                        $total = (int) ($data['total'] ?? 0);
+                        $data['total_rub'] = Money::formatKopecksForAdmin($total);
 
                         // Человекочитаемые enum'ы
                         if (isset($data['delivery_method']) && $data['delivery_method']) {
@@ -120,10 +121,10 @@ class OrdersRelationManager extends RelationManager
                             $lines = [];
                             foreach ($items as $item) {
                                 $lines[] = sprintf(
-                                    '%s × %d — %s ₽',
+                                    '%s × %d — %s',
                                     $item->product_name,
                                     (int) $item->quantity,
-                                    number_format($item->row_total / 100, 2, ',', ' ')
+                                    Money::formatKopecksForAdmin((int) $item->row_total)
                                 );
                             }
                             $data['items_summary'] = implode(PHP_EOL, $lines);
@@ -171,9 +172,9 @@ class OrdersRelationManager extends RelationManager
 
                                 $parts = array_filter([
                                     $state['street'] ?? null,
-                                    isset($state['house']) ? 'д. ' . $state['house'] : null,
-                                    isset($state['entrance']) ? 'подъезд ' . $state['entrance'] : null,
-                                    isset($state['apartment']) ? 'кв. ' . $state['apartment'] : null,
+                                    isset($state['house']) ? 'д. '.$state['house'] : null,
+                                    isset($state['entrance']) ? 'подъезд '.$state['entrance'] : null,
+                                    isset($state['apartment']) ? 'кв. '.$state['apartment'] : null,
                                 ]);
 
                                 return $parts === [] ? null : implode(', ', $parts);
@@ -199,4 +200,3 @@ class OrdersRelationManager extends RelationManager
             ]);
     }
 }
-

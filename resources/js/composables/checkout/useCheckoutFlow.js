@@ -4,6 +4,7 @@ import { useCartStore } from "../../stores/cartStore";
 import { useOrderStore } from "../../stores/orderStore";
 import { formatRuPhone } from "../../utils/phone/formatRuPhone";
 import { validateRuPhoneForSubmit } from "../../validation/ruPhone";
+import { formatMoneyRublesRu } from "../../utils/moneyFormat";
 
 export function useCheckoutFlow() {
     const userStore = useUserStore();
@@ -40,8 +41,7 @@ export function useCheckoutFlow() {
     const hasCartItems = computed(() => cartItems.value.length > 0);
     let complimentaryPreviewTimer = null;
 
-    const formatPrice = (value) =>
-        new Intl.NumberFormat("ru-RU").format(Number(value) || 0);
+    const formatPrice = (value) => formatMoneyRublesRu(value);
 
     function formatPhone(raw) {
         return formatRuPhone(raw);

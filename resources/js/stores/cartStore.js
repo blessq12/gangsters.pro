@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { roundRubles2 } from "../utils/moneyFormat";
 
 const CART_STORAGE_KEY = "gangsters_cart";
 /** legacy: корзина раньше лежала в том же ключе, что и профиль */
@@ -12,7 +13,7 @@ function normalizeProductSnapshot(product) {
     return {
         id: product.id ?? null,
         name: product.name || "",
-        price: Number(product.price) || 0,
+        price: roundRubles2(Number(product.price) || 0),
         weight: product.weight ?? null,
     };
 }
@@ -81,9 +82,10 @@ export const useCartStore = defineStore("cart", {
             return state.cartItems.reduce((sum, item) => sum + item.qty, 0);
         },
         cartTotalAmount(state) {
-            return state.cartItems.reduce((sum, item) => {
+            const raw = state.cartItems.reduce((sum, item) => {
                 return sum + (Number(item.productSnapshot?.price) || 0) * item.qty;
             }, 0);
+            return roundRubles2(raw);
         },
     },
     actions: {
