@@ -1,7 +1,9 @@
+import { normalizeRuPhoneDigits } from "../validation/ruPhone";
+
 export function buildRegisterClientPayload(data = {}) {
     return {
         name: data.name ?? "",
-        phone: data.phone ?? "",
+        phone: normalizeRuPhoneDigits(data.phone ?? ""),
         email: data.email ?? "",
         birth_date: data.birth_date ?? null,
         password: data.password ?? null,
@@ -12,8 +14,13 @@ export function buildRegisterClientPayload(data = {}) {
 
 /** Передай ровно один идентификатор: phone или email (второй — null). */
 export function buildLoginClientPayload(data = {}) {
+    const rawPhone = data.phone;
+    const digits =
+        rawPhone == null || rawPhone === ""
+            ? ""
+            : normalizeRuPhoneDigits(rawPhone);
     return {
-        phone: data.phone ?? null,
+        phone: digits || null,
         email: data.email ?? null,
         password: data.password ?? "",
     };
@@ -22,7 +29,8 @@ export function buildLoginClientPayload(data = {}) {
 export function buildUpdateClientProfilePayload(data = {}) {
     const payload = {};
     if ("name" in data) payload.name = data.name;
-    if ("phone" in data) payload.phone = data.phone;
+    if ("phone" in data)
+        payload.phone = normalizeRuPhoneDigits(data.phone ?? "");
     if ("email" in data) payload.email = data.email ?? null;
     if ("birth_date" in data) payload.birth_date = data.birth_date ?? null;
     if ("consent_personal_data" in data)

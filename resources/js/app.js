@@ -1,5 +1,5 @@
 import "@mdi/font/css/materialdesignicons.min.css";
-import { MaskInput, vMaska } from "maska";
+import { vMaska } from "maska";
 import { createPinia } from "pinia";
 import { createApp, defineAsyncComponent } from "vue";
 import VueLazyload from "vue-lazyload";
@@ -70,8 +70,6 @@ Object.entries(vueModules).forEach(([path, loader]) => {
  */
 
 app.mount("#app");
-
-new MaskInput("[data-maska]");
 
 document.querySelectorAll("input, textarea").forEach(function (input) {
     input.addEventListener("focus", function () {

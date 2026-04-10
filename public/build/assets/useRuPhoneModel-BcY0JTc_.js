@@ -1,1 +1,0 @@
-import{f as r}from"./vue-core-BpasoeSx.js";function i(t,u="phone"){return r({get(){return t.value[u]},set(n){let e=String(n||"").replace(/\D/g,"");e.length&&(e[0]==="7"||e[0]==="8")&&(e=e.slice(1)),t.value[u]=e}})}export{i as u};

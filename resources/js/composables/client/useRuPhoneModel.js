@@ -1,24 +1,81 @@
-import { computed } from "vue";
+import { Mask } from "maska";
+import { reactive, watch } from "vue";
+import {
+    normalizeRuPhoneDigits,
+    RU_PHONE_MASKA_PATTERN,
+    RU_PHONE_MASKA_TOKENS,
+} from "../../validation/ruPhone";
+
+const ruMask = new Mask({
+    mask: RU_PHONE_MASKA_PATTERN,
+    tokens: RU_PHONE_MASKA_TOKENS,
+});
+
+function digitsToMaskedDisplay(digitsNormalized) {
+    if (!digitsNormalized) {
+        return "";
+    }
+    return ruMask.masked(digitsNormalized);
+}
 
 /**
- * v-model для поля телефона: хранит только 10 цифр без ведущей 7/8.
+ * Поле телефона с Maska v2: v-model на `phoneMask.masked`, директива `v-maska="phoneMask"`.
+ * В форме (`formRef`) в поле `fieldKey` хранятся только цифры (до 10), без ведущей 7/8.
  * @param {import('vue').Ref<Record<string, unknown>>} formRef
  * @param {string} fieldKey
  */
 export function useRuPhoneModel(formRef, fieldKey = "phone") {
-    return computed({
-        get() {
-            return formRef.value[fieldKey];
-        },
-        set(value) {
-            let digits = String(value || "").replace(/\D/g, "");
-            if (
-                digits.length &&
-                (digits[0] === "7" || digits[0] === "8")
-            ) {
-                digits = digits.slice(1);
-            }
-            formRef.value[fieldKey] = digits;
-        },
+    const phoneMask = reactive({
+        masked: "",
+        unmasked: "",
+        completed: false,
     });
+
+    let skipFormToMask = false;
+
+    watch(
+        () => phoneMask.unmasked,
+        (u) => {
+            const n = normalizeRuPhoneDigits(u);
+            const cur = normalizeRuPhoneDigits(
+                String(formRef.value[fieldKey] ?? ""),
+            );
+            if (cur === n) {
+                return;
+            }
+            skipFormToMask = true;
+            formRef.value[fieldKey] = n;
+        },
+    );
+
+    watch(
+        () => formRef.value[fieldKey],
+        () => {
+            if (skipFormToMask) {
+                skipFormToMask = false;
+                return;
+            }
+            const raw = String(formRef.value[fieldKey] ?? "");
+            const n = normalizeRuPhoneDigits(raw);
+            const maskUn = normalizeRuPhoneDigits(phoneMask.unmasked);
+            if (n === maskUn) {
+                if (raw !== n) {
+                    skipFormToMask = true;
+                    formRef.value[fieldKey] = n;
+                }
+                return;
+            }
+            const m = digitsToMaskedDisplay(n);
+            if (phoneMask.masked !== m) {
+                phoneMask.masked = m;
+            }
+            if (raw !== n) {
+                skipFormToMask = true;
+                formRef.value[fieldKey] = n;
+            }
+        },
+        { immediate: true },
+    );
+
+    return { phoneMask };
 }

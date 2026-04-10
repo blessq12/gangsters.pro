@@ -2,6 +2,11 @@
 import { ref } from "vue";
 import { useUserStore } from "../../stores/userStore";
 import { useRuPhoneModel } from "../../composables/client/useRuPhoneModel";
+import {
+    RU_PHONE_MASKA_PATTERN,
+    RU_PHONE_MASKA_TOKENS_ATTR,
+    validateRuPhoneForSubmit,
+} from "../../validation/ruPhone";
 import { mapApiError } from "../../utils/api/mapApiError";
 
 const emit = defineEmits(["registered"]);
@@ -18,7 +23,7 @@ const form = ref({
     consent_marketing: false,
 });
 
-const phone = useRuPhoneModel(form, "phone");
+const { phoneMask } = useRuPhoneModel(form, "phone");
 
 const loading = ref(false);
 const error = ref("");
@@ -30,8 +35,9 @@ async function submit() {
         error.value = "Введите имя";
         return;
     }
-    if (!form.value.phone) {
-        error.value = "Введите номер телефона";
+    const phoneCheck = validateRuPhoneForSubmit(form.value.phone);
+    if (!phoneCheck.ok) {
+        error.value = phoneCheck.message;
         return;
     }
     const emailTrim = (form.value.email || "").trim();
@@ -107,9 +113,10 @@ async function submit() {
                     Телефон
                 </label>
                 <input
-                    v-model="phone"
-                    v-maska
-                    data-maska="+7 (###) ###-##-##"
+                    v-model="phoneMask.masked"
+                    v-maska="phoneMask"
+                    :data-maska="RU_PHONE_MASKA_PATTERN"
+                    :data-maska-tokens="RU_PHONE_MASKA_TOKENS_ATTR"
                     type="tel"
                     placeholder="+7 (___) ___-__-__"
                     class="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
