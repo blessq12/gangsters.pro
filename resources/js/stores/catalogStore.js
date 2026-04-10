@@ -3,15 +3,10 @@ import { fetchCatalogTree } from "../services/catalog/catalogService";
 
 const CATALOG_STORAGE_KEY = "gangsters_catalog";
 const DESKTOP_CARDS_PER_ROW_DEFAULT = 4;
-const MOBILE_CARDS_PER_ROW_DEFAULT = 1;
 const MOBILE_CARD_VIEW_MODE_DEFAULT = "grid";
 
 function normalizeDesktopCardsPerRow(value) {
     return value === 3 || value === 4 ? value : DESKTOP_CARDS_PER_ROW_DEFAULT;
-}
-
-function normalizeMobileCardsPerRow(value) {
-    return value === 1 || value === 2 ? value : MOBILE_CARDS_PER_ROW_DEFAULT;
 }
 
 function normalizeMobileCardViewMode(value) {
@@ -32,7 +27,6 @@ export const useCatalogStore = defineStore("catalog", {
         /** Поиск по названию в уже загруженном дереве (клиентский фильтр). */
         productSearchQuery: "",
         desktopCardsPerRow: DESKTOP_CARDS_PER_ROW_DEFAULT,
-        mobileCardsPerRow: MOBILE_CARDS_PER_ROW_DEFAULT,
         mobileCardViewMode: MOBILE_CARD_VIEW_MODE_DEFAULT,
     }),
     getters: {
@@ -161,9 +155,6 @@ export const useCatalogStore = defineStore("catalog", {
                 if ("desktopCardsPerRow" in parsed) {
                     this.desktopCardsPerRow = normalizeDesktopCardsPerRow(parsed.desktopCardsPerRow);
                 }
-                if ("mobileCardsPerRow" in parsed) {
-                    this.mobileCardsPerRow = normalizeMobileCardsPerRow(parsed.mobileCardsPerRow);
-                }
                 if ("mobileCardViewMode" in parsed) {
                     this.mobileCardViewMode = normalizeMobileCardViewMode(parsed.mobileCardViewMode);
                 }
@@ -181,7 +172,6 @@ export const useCatalogStore = defineStore("catalog", {
                     selectedCategoryId: this.selectedCategoryId,
                     selectedTag: this.selectedTag,
                     desktopCardsPerRow: this.desktopCardsPerRow,
-                    mobileCardsPerRow: this.mobileCardsPerRow,
                     mobileCardViewMode: this.mobileCardViewMode,
                 }),
             );
@@ -203,10 +193,6 @@ export const useCatalogStore = defineStore("catalog", {
         },
         setDesktopCardsPerRow(value) {
             this.desktopCardsPerRow = normalizeDesktopCardsPerRow(value);
-            this.persist();
-        },
-        setMobileCardsPerRow(value) {
-            this.mobileCardsPerRow = normalizeMobileCardsPerRow(value);
             this.persist();
         },
         setMobileCardViewMode(value) {

@@ -10,10 +10,6 @@ const props = defineProps({
         type: Object,
         required: true,
     },
-    mobileGridColumns: {
-        type: Number,
-        default: 1,
-    },
 });
 
 const emit = defineEmits(["imageClick"]);
@@ -79,11 +75,6 @@ const actionsClusterRef = ref(null);
 const nutritionButtonRef = ref(null);
 const ingredientsButtonRef = ref(null);
 const { tooltipRef, tooltipStyle, openAt, close: hideFloatingTooltip } = useFixedTooltip();
-const imageWrapClass = computed(() =>
-    props.mobileGridColumns === 2
-        ? "relative w-full overflow-hidden aspect-[1/1]"
-        : "relative w-full overflow-hidden aspect-[4/3] lg:h-full lg:aspect-auto",
-);
 
 const liveMessage = ref("");
 let liveMessageTimer = null;
@@ -260,7 +251,9 @@ function handlePriceClick() {
         class="group flex h-full flex-col overflow-hidden rounded-2xl bg-[rgba(255,255,255,0.02)] shadow-[0_18px_45px_rgba(0,0,0,0.85)] transition duration-300 hover:-translate-y-1 hover:bg-[rgba(255,255,255,0.03)]"
     >
         <span class="sr-only" aria-live="polite">{{ liveMessage }}</span>
-        <div :class="imageWrapClass">
+        <div
+            class="relative w-full overflow-hidden aspect-[4/3] lg:h-full lg:aspect-auto"
+        >
             <img
                 v-if="primaryThumb"
                 :src="primaryThumb"

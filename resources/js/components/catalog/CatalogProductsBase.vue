@@ -39,14 +39,7 @@ const gridClass = computed(() => {
     if (props.variant === "desktop") {
         return props.cardsPerRow === 3 ? "catalog-grid--desktop-3" : "catalog-grid--desktop-4";
     }
-    if (props.mobileCardViewMode === "horizontal") {
-        return "catalog-grid--mobile-1";
-    }
-    return props.cardsPerRow === 2 ? "catalog-grid--mobile-2" : "catalog-grid--mobile-1";
-});
-const mobileGridColumns = computed(() => {
-    if (props.variant !== "mobile" || props.mobileCardViewMode !== "grid") return 1;
-    return props.cardsPerRow === 2 ? 2 : 1;
+    return "catalog-grid--mobile-1";
 });
 
 const animateGrid = async () => {
@@ -104,7 +97,6 @@ watch(
                         <ProductCardMobile
                             v-else
                             :product="product"
-                            :mobile-grid-columns="mobileGridColumns"
                             @image-click="emit('productImageClick', $event)"
                         />
                     </div>
@@ -122,10 +114,6 @@ watch(
 
 .catalog-grid--mobile-1 {
     grid-template-columns: repeat(1, minmax(0, 1fr));
-}
-
-.catalog-grid--mobile-2 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .catalog-grid--desktop-3 {

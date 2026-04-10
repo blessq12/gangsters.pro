@@ -9,7 +9,6 @@ const {
     selectedCategoryId,
     selectedTag,
     productSearchQuery,
-    mobileCardsPerRow,
     mobileCardViewMode,
     menuSections,
     categoryTabs,
@@ -78,7 +77,6 @@ const {
 
             <CatalogViewControlsMobile
                 class="mb-4"
-                v-model:cards-per-row="mobileCardsPerRow"
                 v-model:view-mode="mobileCardViewMode"
             />
 
@@ -86,7 +84,6 @@ const {
                 :sections="menuSections"
                 :loading="loading"
                 :empty-message="catalogEmptyMessage"
-                :cards-per-row="mobileCardsPerRow"
                 :mobile-card-view-mode="mobileCardViewMode"
                 @product-image-click="openProductDetail"
             />

@@ -39,10 +39,6 @@ export function useCatalogPageModel() {
         get: () => catalogStore.desktopCardsPerRow,
         set: (value) => catalogStore.setDesktopCardsPerRow(value),
     });
-    const mobileCardsPerRow = computed({
-        get: () => catalogStore.mobileCardsPerRow,
-        set: (value) => catalogStore.setMobileCardsPerRow(value),
-    });
     const mobileCardViewMode = computed({
         get: () => catalogStore.mobileCardViewMode,
         set: (value) => catalogStore.setMobileCardViewMode(value),
@@ -70,7 +66,6 @@ export function useCatalogPageModel() {
         selectedTag,
         productSearchQuery,
         desktopCardsPerRow,
-        mobileCardsPerRow,
         mobileCardViewMode,
         menuSections,
         menuProducts,
