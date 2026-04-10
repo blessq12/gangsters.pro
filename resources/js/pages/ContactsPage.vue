@@ -38,7 +38,7 @@ const heroStats = computed(() => {
             value:
                 c?.average_delivery_time_minutes != null
                     ? `около ${c.average_delivery_time_minutes} мин`
-                    : safeTrim(c?.delivery_hours) || "—",
+                    : "—",
         },
         {
             label: "Покрытие",
@@ -128,10 +128,6 @@ const workScheduleNote = computed(() => {
     if (fromSchedule) return fromSchedule;
     return "Заказы принимаем в заявленном режиме. Уточнения — по телефону или в мессенджере.";
 });
-
-const deliveryHoursLine = computed(() =>
-    safeTrim(company.value?.delivery_hours),
-);
 
 const siteUrl = computed(() => safeTrim(company.value?.site_url));
 
@@ -339,12 +335,6 @@ const whatsappHref = computed(() => {
                 </p>
                 <p class="mt-4 text-3xl font-semibold text-slate-50">
                     {{ workHoursMain }}
-                </p>
-                <p
-                    v-if="deliveryHoursLine"
-                    class="mt-2 text-sm text-slate-400"
-                >
-                    Доставка: {{ deliveryHoursLine }}
                 </p>
                 <p class="mt-3 text-sm leading-relaxed text-slate-300">
                     {{ workScheduleNote }}

@@ -3,9 +3,10 @@
 namespace Tests\Feature\Api;
 
 use App\Infrastructure\SystemContent\Model\SYS_Banner;
+use App\Infrastructure\SystemContent\Model\SYS_Company;
 use App\Infrastructure\SystemContent\Model\SYS_Promotion;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 final class SystemContentApiTest extends ApiTestCase
@@ -84,6 +85,49 @@ final class SystemContentApiTest extends ApiTestCase
 
         Storage::disk('media')->delete($path);
         Storage::disk('media')->deleteDirectory($dir);
+    }
+
+    public function test_company_work_schedule_public_payload_has_no_delivery_slots(): void
+    {
+        $this->skipUnlessTablesExist(['companies']);
+
+        $company = SYS_Company::query()->first();
+        if ($company === null) {
+            $this->markTestSkipped('Нет записи companies для проверки контракта API.');
+        }
+
+        $originalSchedule = $company->work_schedule;
+
+        try {
+            $schedule = [
+                [
+                    'day' => 'mon',
+                    'work' => '10:00-22:00',
+                    'delivery' => '11:00-22:00',
+                    'is_day_off' => '0',
+                ],
+            ];
+            $company->work_schedule = $schedule;
+            $company->save();
+
+            $response = $this->getJson('/api/system/company');
+            $response->assertOk();
+
+            $data = $response->json('data');
+            $this->assertIsArray($data);
+            $this->assertArrayNotHasKey('delivery_hours', $data);
+
+            $ws = $data['work_schedule'] ?? null;
+            $this->assertIsArray($ws);
+            $this->assertNotEmpty($ws);
+            $first = $ws[0];
+            $this->assertIsArray($first);
+            $this->assertArrayNotHasKey('delivery', $first);
+            $this->assertSame('10:00-22:00', $first['work'] ?? null);
+        } finally {
+            $company->work_schedule = $originalSchedule;
+            $company->save();
+        }
     }
 
     public function test_promotions_200_contract_with_real_file(): void

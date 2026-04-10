@@ -122,10 +122,12 @@ onUnmounted(() => {
 
         <AppNavbarDesktop />
 
+        <WorkScheduleStrip />
+
         <main class="flex-1">
             <div
                 ref="mainRef"
-                class="mx-auto max-w-7xl px-6 lg:px-8 py-8 opacity-0"
+                class="mx-auto max-w-7xl px-6 lg:px-8 py-7 opacity-0"
             >
                 <router-view v-slot="{ Component, route }">
                     <Transition

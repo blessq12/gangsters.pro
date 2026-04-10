@@ -8,8 +8,7 @@ final class GetSystemCompanyUseCase
 {
     public function __construct(
         private readonly CompanyRepository $companies,
-    ) {
-    }
+    ) {}
 
     public function execute(): array
     {
@@ -40,8 +39,9 @@ final class GetSystemCompanyUseCase
                 'email_address' => $company->emailAddress(),
                 'public_email' => $company->publicEmail(),
                 'work_hours' => $company->workHours(),
-                'delivery_hours' => $company->deliveryHours(),
-                'work_schedule' => $company->workSchedule(),
+                'work_schedule' => self::sanitizeWorkScheduleForPublic(
+                    $company->workSchedule(),
+                ),
                 'min_order_amount_kopecks' => $company->minOrderAmountKopecks(),
                 'delivery_fee_kopecks' => $company->deliveryFeeKopecks(),
                 'average_delivery_time_minutes' => $company->averageDeliveryTimeMinutes(),
@@ -53,5 +53,28 @@ final class GetSystemCompanyUseCase
             ],
         ];
     }
-}
 
+    /**
+     * Публичный контракт: только режим работы по дням, без слота доставки.
+     *
+     * @param  array<int, array<string, mixed>>|null  $schedule
+     * @return array<int, array<string, mixed>>|null
+     */
+    private static function sanitizeWorkScheduleForPublic(?array $schedule): ?array
+    {
+        if ($schedule === null) {
+            return null;
+        }
+
+        $out = [];
+        foreach ($schedule as $row) {
+            if (! is_array($row)) {
+                continue;
+            }
+            unset($row['delivery']);
+            $out[] = $row;
+        }
+
+        return $out;
+    }
+}

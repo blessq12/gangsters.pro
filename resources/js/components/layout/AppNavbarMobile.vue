@@ -2,12 +2,9 @@
 import { ref, onMounted, onUnmounted, nextTick } from "vue";
 import { playMobileNavbarLogoPulse } from "../../animations/animationManager";
 import { useEnterSlide } from "../../composables/animations/useEnterSlide";
-import { useCompanyOpenStatus } from "../../composables/system/useCompanyOpenStatus";
 import { useUiStore } from "../../stores/uiStore";
-import { useSystemStore } from "../../stores/systemStore";
 
 const uiStore = useUiStore();
-const systemStore = useSystemStore();
 
 const containerRef = ref(null);
 const logoPulseRef = ref(null);
@@ -15,18 +12,9 @@ const logoPulseRef = ref(null);
 /** @type {{ kill: () => void } | null} */
 let logoPulseControl = null;
 
-useEnterSlide(containerRef, {
-    y: -40,
-    delay: 0.8,
-});
-
-const { openNow } = useCompanyOpenStatus(() => systemStore.company);
+useEnterSlide(containerRef);
 
 onMounted(() => {
-    if (!systemStore.company && !systemStore.loadingCompany) {
-        void systemStore.fetchCompany();
-    }
-
     void nextTick().then(() => {
         if (logoPulseRef.value) {
             logoPulseControl?.kill();
@@ -53,20 +41,9 @@ const toggleMobileMenu = () => {
                 class="flex items-center justify-between gap-4 rounded-2xl border border-amber-400/40 bg-[rgba(255,255,255,0.06)] px-4 py-3.5 shadow-[0_0_25px_rgba(0,0,0,0.7)]"
             >
                 <div
-                    class="flex w-10 shrink-0 items-center justify-start"
-                    :title="openNow ? 'Открыто' : 'Закрыто'"
-                >
-                    <span
-                        class="h-3 w-3 rounded-full"
-                        :class="
-                            openNow
-                                ? 'bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.7)]'
-                                : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.7)]'
-                        "
-                        role="img"
-                        :aria-label="openNow ? 'Открыто' : 'Закрыто'"
-                    />
-                </div>
+                    class="w-10 shrink-0"
+                    aria-hidden="true"
+                />
 
                 <div class="text-lg font-semibold flex-1 flex justify-center">
                     <RouterLink

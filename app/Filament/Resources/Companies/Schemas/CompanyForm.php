@@ -5,8 +5,8 @@ namespace App\Filament\Resources\Companies\Schemas;
 use Closure;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
@@ -102,9 +102,6 @@ class CompanyForm
                                 TextInput::make('work')
                                     ->label('Работа')
                                     ->placeholder('10:00-22:00'),
-                                TextInput::make('delivery')
-                                    ->label('Доставка')
-                                    ->placeholder('11:00-22:00'),
                                 Select::make('is_day_off')
                                     ->label('Выходной')
                                     ->options([
@@ -114,7 +111,7 @@ class CompanyForm
                                     ->default('0')
                                     ->required(),
                             ])
-                            ->columns(4)
+                            ->columns(3)
                             ->reorderable(false)
                             ->collapsible(),
                         TextInput::make('average_delivery_time_minutes')
@@ -209,13 +206,13 @@ class CompanyForm
     private static function defaultSchedule(): array
     {
         return [
-            ['day' => 'mon', 'work' => null, 'delivery' => null, 'is_day_off' => '0'],
-            ['day' => 'tue', 'work' => null, 'delivery' => null, 'is_day_off' => '0'],
-            ['day' => 'wed', 'work' => null, 'delivery' => null, 'is_day_off' => '0'],
-            ['day' => 'thu', 'work' => null, 'delivery' => null, 'is_day_off' => '0'],
-            ['day' => 'fri', 'work' => null, 'delivery' => null, 'is_day_off' => '0'],
-            ['day' => 'sat', 'work' => null, 'delivery' => null, 'is_day_off' => '0'],
-            ['day' => 'sun', 'work' => null, 'delivery' => null, 'is_day_off' => '0'],
+            ['day' => 'mon', 'work' => null, 'is_day_off' => '0'],
+            ['day' => 'tue', 'work' => null, 'is_day_off' => '0'],
+            ['day' => 'wed', 'work' => null, 'is_day_off' => '0'],
+            ['day' => 'thu', 'work' => null, 'is_day_off' => '0'],
+            ['day' => 'fri', 'work' => null, 'is_day_off' => '0'],
+            ['day' => 'sat', 'work' => null, 'is_day_off' => '0'],
+            ['day' => 'sun', 'work' => null, 'is_day_off' => '0'],
         ];
     }
 

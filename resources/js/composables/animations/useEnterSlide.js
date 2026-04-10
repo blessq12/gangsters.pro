@@ -1,16 +1,22 @@
 import { onMounted } from "vue";
 import { gsap } from "gsap";
+import {
+    NAVBAR_ENTER_DELAY,
+    NAVBAR_ENTER_DURATION,
+    NAVBAR_ENTER_EASE,
+    NAVBAR_ENTER_Y,
+} from "../../animations/animationManager";
 
 export function useEnterSlide(targetRef, options = {}) {
     onMounted(() => {
         if (!targetRef.value) return;
 
         const {
-            y = 40,
+            y = NAVBAR_ENTER_Y,
             opacity = 0,
-            duration = 0.6,
-            delay = 0,
-            ease = "power3.out",
+            duration = NAVBAR_ENTER_DURATION,
+            delay = NAVBAR_ENTER_DELAY,
+            ease = NAVBAR_ENTER_EASE,
         } = options;
 
         gsap.from(targetRef.value, {

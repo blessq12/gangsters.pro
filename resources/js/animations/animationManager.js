@@ -1,5 +1,34 @@
 import { gsap } from "gsap";
 
+/** Тайминг входа основного блока навбара (см. useEnterSlide в AppNavbar*). */
+export const NAVBAR_ENTER_DELAY = 0.8;
+export const NAVBAR_ENTER_DURATION = 0.6;
+export const NAVBAR_ENTER_Y = -40;
+export const NAVBAR_ENTER_EASE = "power3.out";
+
+/** Задержка до момента, когда анимация навбара завершилась (delay + duration). */
+export function navbarEnterCompleteDelay() {
+    return NAVBAR_ENTER_DELAY + NAVBAR_ENTER_DURATION;
+}
+
+/**
+ * Появление полосы расписания под шапкой — после завершения анимации навбара.
+ */
+export function playWorkScheduleStripEnter(el) {
+    if (!el) return;
+    gsap.fromTo(
+        el,
+        { y: -24, opacity: 0 },
+        {
+            y: 0,
+            opacity: 1,
+            duration: NAVBAR_ENTER_DURATION,
+            delay: navbarEnterCompleteDelay(),
+            ease: NAVBAR_ENTER_EASE,
+        },
+    );
+}
+
 export function playIntroScene({ introOverlay, introLogo, main, onComplete }) {
     if (!introOverlay || !introLogo || !main) return;
 

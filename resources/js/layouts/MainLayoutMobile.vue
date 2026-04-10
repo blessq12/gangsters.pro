@@ -111,10 +111,12 @@ onMounted(() => {
         <AppNavbarMobile />
         <MobileMenu />
 
+        <WorkScheduleStrip />
+
         <main class="flex-1">
             <div
                 ref="mainRef"
-                class="mx-auto max-w-7xl px-4 sm:px-6 py-4 opacity-0"
+                class="mx-auto max-w-7xl px-4 sm:px-6 py-3 opacity-0"
             >
                 <router-view v-slot="{ Component, route }">
                     <Transition

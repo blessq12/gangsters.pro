@@ -11,17 +11,11 @@ const containerRef = ref(null);
 
 const isActive = (name) => route.name === name;
 
-useEnterSlide(containerRef, {
-    y: -40,
-    delay: 0.8,
-});
+useEnterSlide(containerRef);
 
 const toggleMobileMenu = () => {
     uiStore.toggleMobileMenu();
 };
-
-// true = работаем (зелёный), false = закрыты (красный). Позже брать из API/стора.
-const isStoreOpen = ref(true);
 </script>
 
 <template>
@@ -31,23 +25,19 @@ const isStoreOpen = ref(true);
                 ref="containerRef"
                 class="flex items-center justify-between gap-4 rounded-2xl border border-amber-400/40 bg-[rgba(255,255,255,0.04)]/80 px-4 sm:px-6 lg:px-8 py-3.5 shadow-[0_0_25px_rgba(0,0,0,0.7)] backdrop-blur"
             >
-                <!-- Левая зона: индикатор статуса / десктопное меню -->
-                <div class="flex items-center gap-3 w-24 sm:w-auto">
-                    <!-- mobile: индикатор статуса — только круг -->
-                    <span
-                        class="h-3 w-3 shrink-0 rounded-full md:hidden"
-                        :class="
-                            isStoreOpen
-                                ? 'bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.7)]'
-                                : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.7)]'
-                        "
-                        :title="isStoreOpen ? 'Работаем' : 'Закрыты'"
+                <!-- Левая зона: баланс с бургером / десктопное меню -->
+                <div class="flex min-w-0 items-center gap-2 sm:gap-3 w-24 sm:w-auto">
+                    <div
+                        class="w-10 shrink-0 md:hidden"
+                        aria-hidden="true"
                     />
 
-                    <!-- desktop: левое меню -->
-                    <nav
-                        class="hidden md:flex items-center gap-4 text-sm font-medium tracking-wide"
+                    <div
+                        class="hidden min-w-0 items-center md:flex"
                     >
+                        <nav
+                            class="flex items-center gap-4 text-sm font-medium tracking-wide"
+                        >
                         <RouterLink
                             :to="{ name: 'home' }"
                             :class="[
@@ -70,7 +60,8 @@ const isStoreOpen = ref(true);
                         >
                             О компании
                         </RouterLink>
-                    </nav>
+                        </nav>
+                    </div>
                 </div>
 
                 <!-- Центр: логотип всегда по центру -->

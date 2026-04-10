@@ -8,13 +8,7 @@ const containerRef = ref(null);
 
 const isActive = (name) => route.name === name;
 
-useEnterSlide(containerRef, {
-    y: -40,
-    delay: 0.8,
-});
-
-// true = работаем (зелёный), false = закрыты (красный). Позже брать из API/стора.
-const isStoreOpen = ref(true);
+useEnterSlide(containerRef);
 </script>
 
 <template>
@@ -24,19 +18,9 @@ const isStoreOpen = ref(true);
                 ref="containerRef"
                 class="flex items-center justify-between gap-4 rounded-2xl border border-amber-400/40 bg-[rgba(255,255,255,0.04)]/80 px-4 sm:px-6 lg:px-8 py-3.5 shadow-[0_0_25px_rgba(0,0,0,0.7)] backdrop-blur"
             >
-                <div class="flex items-center gap-3 w-24 sm:w-auto">
-                    <span
-                        class="h-3 w-3 shrink-0 rounded-full"
-                        :class="
-                            isStoreOpen
-                                ? 'bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.7)]'
-                                : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.7)]'
-                        "
-                        :title="isStoreOpen ? 'Работаем' : 'Закрыты'"
-                    />
-
+                <div class="flex min-w-0 items-center">
                     <nav
-                        class="flex items-center gap-4 text-sm font-medium tracking-wide ml-2"
+                        class="flex items-center gap-4 text-sm font-medium tracking-wide"
                     >
                         <RouterLink
                             :to="{ name: 'home' }"

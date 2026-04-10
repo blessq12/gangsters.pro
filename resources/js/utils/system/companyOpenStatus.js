@@ -1,6 +1,6 @@
 /**
  * Логика «сейчас открыто» по данным компании из API.
- * Опирается на work_schedule: массив { day, work, delivery, is_day_off }.
+ * Опирается на work_schedule: массив { day, work, is_day_off }.
  * Время в work парсится как «10:00-22:00» (дефис или длинное тире).
  * Часовой пояс — локальный (браузер пользователя).
  */
@@ -127,16 +127,15 @@ export function getCompanyOpenStatusHint(company, now = new Date()) {
         return { open: false, hint: "Выходной" };
     }
 
-    if (row && parseWorkWindow(row.work)) {
-        const w = parseWorkWindow(row.work);
-        if (open && w) {
+    const w =
+        row && row.work != null ? parseWorkWindow(row.work) : null;
+    if (w) {
+        if (open) {
             const eh = String(Math.floor(w.end / 60)).padStart(2, "0");
             const em = String(w.end % 60).padStart(2, "0");
             return { open: true, hint: `До ${eh}:${em}` };
         }
-        if (!open && w) {
-            return { open: false, hint: "Вне часов работы" };
-        }
+        return { open: false, hint: "Вне часов работы" };
     }
 
     if (open) {
