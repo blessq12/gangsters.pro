@@ -1,9 +1,9 @@
 <script setup>
-import { nextTick, onMounted, ref, watch } from "vue";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
 import { playCatalogItemsEnter } from "../../animations/animationManager";
 
 const props = defineProps({
-    products: {
+    sections: {
         type: Array,
         default: () => [],
     },
@@ -19,16 +19,40 @@ const props = defineProps({
         type: String,
         default: "mobile", // mobile | desktop
     },
+    cardsPerRow: {
+        type: Number,
+        default: 1,
+    },
+    mobileCardViewMode: {
+        type: String,
+        default: "grid", // grid | horizontal
+    },
 });
 
 const emit = defineEmits(["productImageClick"]);
 
-const gridRef = ref(null);
+const containerRef = ref(null);
+const isHorizontalMobileMode = computed(
+    () => props.variant === "mobile" && props.mobileCardViewMode === "horizontal",
+);
+const gridClass = computed(() => {
+    if (props.variant === "desktop") {
+        return props.cardsPerRow === 3 ? "catalog-grid--desktop-3" : "catalog-grid--desktop-4";
+    }
+    if (props.mobileCardViewMode === "horizontal") {
+        return "catalog-grid--mobile-1";
+    }
+    return props.cardsPerRow === 2 ? "catalog-grid--mobile-2" : "catalog-grid--mobile-1";
+});
+const mobileGridColumns = computed(() => {
+    if (props.variant !== "mobile" || props.mobileCardViewMode !== "grid") return 1;
+    return props.cardsPerRow === 2 ? 2 : 1;
+});
 
 const animateGrid = async () => {
     await nextTick();
-    if (!gridRef.value) return;
-    playCatalogItemsEnter(gridRef.value);
+    if (!containerRef.value) return;
+    playCatalogItemsEnter(containerRef.value);
 };
 
 onMounted(() => {
@@ -36,7 +60,7 @@ onMounted(() => {
 });
 
 watch(
-    () => props.products,
+    () => props.sections,
     () => {
         animateGrid();
     },
@@ -50,26 +74,42 @@ watch(
             Загружаем вкусняшки...
         </div>
 
-        <div v-else-if="!products.length" class="text-sm text-slate-500">
+        <div v-else-if="!sections.length" class="text-sm text-slate-500">
             {{ emptyMessage }}
         </div>
 
         <div
             v-else
-            ref="gridRef"
-            class="catalog-grid"
-            :class="{ 'catalog-grid--desktop': variant === 'desktop' }"
+            ref="containerRef"
+            class="space-y-7"
         >
-            <div
-                v-for="product in products"
-                :key="product.id || product.sku"
-                class="catalog-item"
-            >
-                <ProductCardMobile
-                    :product="product"
-                    @image-click="emit('productImageClick', $event)"
-                />
-            </div>
+            <section v-for="section in sections" :key="section.id ?? section.name">
+                <h3
+                    class="mb-3 text-sm font-semibold uppercase tracking-wide text-amber-200/90"
+                >
+                    {{ section.name }}
+                </h3>
+
+                <div class="catalog-grid" :class="gridClass">
+                    <div
+                        v-for="product in section.products"
+                        :key="product.id || product.sku"
+                        class="catalog-item"
+                    >
+                        <ProductCardHorizontalMobile
+                            v-if="isHorizontalMobileMode"
+                            :product="product"
+                            @image-click="emit('productImageClick', $event)"
+                        />
+                        <ProductCardMobile
+                            v-else
+                            :product="product"
+                            :mobile-grid-columns="mobileGridColumns"
+                            @image-click="emit('productImageClick', $event)"
+                        />
+                    </div>
+                </div>
+            </section>
         </div>
     </div>
 </template>
@@ -77,28 +117,31 @@ watch(
 <style scoped>
 .catalog-grid {
     display: grid;
-    grid-template-columns: repeat(1, minmax(0, 1fr));
     gap: 1rem;
 }
 
-.catalog-grid--desktop {
+.catalog-grid--mobile-1 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+.catalog-grid--mobile-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.catalog-grid--desktop-3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     grid-auto-rows: minmax(260px, auto);
-    grid-auto-flow: dense;
+    gap: 1.25rem;
+}
+
+.catalog-grid--desktop-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-auto-rows: minmax(260px, auto);
+    gap: 1.25rem;
 }
 
 .catalog-item {
     height: 100%;
-}
-
-.catalog-grid--desktop .catalog-item:nth-child(9n + 1),
-.catalog-grid--desktop .catalog-item:nth-child(9n + 5) {
-    grid-column: span 2;
-}
-
-.catalog-grid--desktop .catalog-item:nth-child(9n + 3),
-.catalog-grid--desktop .catalog-item:nth-child(9n + 8) {
-    grid-row: span 2;
 }
 </style>
 

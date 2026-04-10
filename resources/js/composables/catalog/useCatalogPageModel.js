@@ -35,7 +35,20 @@ export function useCatalogPageModel() {
         get: () => catalogStore.selectedTag,
         set: (value) => catalogStore.setSelectedTag(value),
     });
+    const desktopCardsPerRow = computed({
+        get: () => catalogStore.desktopCardsPerRow,
+        set: (value) => catalogStore.setDesktopCardsPerRow(value),
+    });
+    const mobileCardsPerRow = computed({
+        get: () => catalogStore.mobileCardsPerRow,
+        set: (value) => catalogStore.setMobileCardsPerRow(value),
+    });
+    const mobileCardViewMode = computed({
+        get: () => catalogStore.mobileCardViewMode,
+        set: (value) => catalogStore.setMobileCardViewMode(value),
+    });
 
+    const menuSections = computed(() => catalogStore.menuSections);
     const menuProducts = computed(() => catalogStore.menuProducts);
     const categoryTabs = computed(() => catalogStore.categoryTabs);
     const tagTabs = computed(() => catalogStore.tagTabs);
@@ -56,6 +69,10 @@ export function useCatalogPageModel() {
         selectedCategoryId,
         selectedTag,
         productSearchQuery,
+        desktopCardsPerRow,
+        mobileCardsPerRow,
+        mobileCardViewMode,
+        menuSections,
         menuProducts,
         categoryTabs,
         tagTabs,

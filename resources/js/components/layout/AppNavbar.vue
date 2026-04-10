@@ -80,7 +80,7 @@ const isStoreOpen = ref(true);
                         class="inline-flex items-center justify-center group"
                     >
                         <img
-                            src="/images/logo-text.png"
+                            src="/images/logo.png"
                             alt="Gangsters"
                             class="h-9 min-h-9 sm:h-10 sm:min-h-10 md:h-11 md:min-h-11 w-auto min-w-[7rem] max-w-full mx-auto object-contain drop-shadow-[0_0_15px_rgba(251,191,36,0.45)] group-hover:scale-105 group-hover:drop-shadow-[0_0_22px_rgba(251,191,36,0.7)] transition-transform duration-200"
                         />

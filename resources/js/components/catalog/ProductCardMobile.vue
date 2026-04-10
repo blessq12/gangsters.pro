@@ -1,6 +1,7 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, ref } from "vue";
 import { playTooltipClose, playTooltipOpen } from "../../animations/animationManager";
+import { useFixedTooltip } from "../../composables/catalog/useFixedTooltip";
 import { useProductActions } from "../../composables/catalog/useProductActions";
 import { useProductMeta } from "../../composables/catalog/useProductMeta";
 
@@ -8,6 +9,10 @@ const props = defineProps({
     product: {
         type: Object,
         required: true,
+    },
+    mobileGridColumns: {
+        type: Number,
+        default: 1,
     },
 });
 
@@ -71,8 +76,14 @@ function tagColorClass(color) {
 
 const openTooltip = ref(null); // 'nutrition' | 'ingredients' | null
 const actionsClusterRef = ref(null);
-const nutritionTooltipRef = ref(null);
-const ingredientsTooltipRef = ref(null);
+const nutritionButtonRef = ref(null);
+const ingredientsButtonRef = ref(null);
+const { tooltipRef, tooltipStyle, openAt, close: hideFloatingTooltip } = useFixedTooltip();
+const imageWrapClass = computed(() =>
+    props.mobileGridColumns === 2
+        ? "relative w-full overflow-hidden aspect-[1/1]"
+        : "relative w-full overflow-hidden aspect-[4/3] lg:h-full lg:aspect-auto",
+);
 
 const liveMessage = ref("");
 let liveMessageTimer = null;
@@ -144,7 +155,10 @@ function toggleNutritionTooltip() {
         return;
     }
     openTooltip.value = "nutrition";
-    nextTick(() => playTooltipOpen(nutritionTooltipRef.value));
+    nextTick(async () => {
+        await openAt(nutritionButtonRef.value);
+        playTooltipOpen(tooltipRef.value);
+    });
 }
 
 function toggleIngredientsTooltip() {
@@ -154,20 +168,22 @@ function toggleIngredientsTooltip() {
         return;
     }
     openTooltip.value = "ingredients";
-    nextTick(() => playTooltipOpen(ingredientsTooltipRef.value));
+    nextTick(async () => {
+        await openAt(ingredientsButtonRef.value);
+        playTooltipOpen(tooltipRef.value);
+    });
 }
 
 function closeTooltip() {
-    const current =
-        openTooltip.value === "nutrition"
-            ? nutritionTooltipRef.value
-            : ingredientsTooltipRef.value;
+    const current = tooltipRef.value;
     if (!current) {
         openTooltip.value = null;
+        hideFloatingTooltip();
         return;
     }
     playTooltipClose(current, () => {
         openTooltip.value = null;
+        hideFloatingTooltip();
     });
 }
 
@@ -177,6 +193,9 @@ onMounted(() => {
         if (!openTooltip.value) return;
 
         if (actionsClusterRef.value?.contains(e.target)) {
+            return;
+        }
+        if (tooltipRef.value?.contains(e.target)) {
             return;
         }
 
@@ -241,9 +260,7 @@ function handlePriceClick() {
         class="group flex h-full flex-col overflow-hidden rounded-2xl bg-[rgba(255,255,255,0.02)] shadow-[0_18px_45px_rgba(0,0,0,0.85)] transition duration-300 hover:-translate-y-1 hover:bg-[rgba(255,255,255,0.03)]"
     >
         <span class="sr-only" aria-live="polite">{{ liveMessage }}</span>
-        <div
-            class="relative w-full overflow-hidden aspect-[4/3] lg:h-full lg:aspect-auto"
-        >
+        <div :class="imageWrapClass">
             <img
                 v-if="primaryThumb"
                 :src="primaryThumb"
@@ -335,50 +352,9 @@ function handlePriceClick() {
                         ref="actionsClusterRef"
                         class="relative flex w-fit min-w-0 items-center gap-2.5 rounded-2xl border border-white/10 bg-black/35 px-3 py-1.5 shadow-[0_0_24px_rgba(0,0,0,0.7)] backdrop-blur"
                     >
-                        <div
-                            v-if="openTooltip === 'nutrition'"
-                            ref="nutritionTooltipRef"
-                            class="absolute left-0 bottom-full z-50 mb-2 w-[190px] rounded-xl border border-white/10 bg-[rgba(0,0,0,0.95)] px-2.5 py-2.5 shadow-xl backdrop-blur"
-                            role="dialog"
-                        >
-                            <div class="space-y-1 text-[11px] text-slate-100">
-                                <div class="flex items-center justify-between gap-2">
-                                    <span class="text-slate-300">Калории</span>
-                                    <span class="font-medium">{{ nutrition.calories }}</span>
-                                </div>
-                                <div class="flex items-center justify-between gap-2">
-                                    <span class="text-slate-300">Белки</span>
-                                    <span class="font-medium">{{ nutrition.proteins }} г</span>
-                                </div>
-                                <div class="flex items-center justify-between gap-2">
-                                    <span class="text-slate-300">Жиры</span>
-                                    <span class="font-medium">{{ nutrition.fats }} г</span>
-                                </div>
-                                <div class="flex items-center justify-between gap-2">
-                                    <span class="text-slate-300">Углеводы</span>
-                                    <span class="font-medium">{{ nutrition.carbs }} г</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div
-                            v-if="openTooltip === 'ingredients'"
-                            ref="ingredientsTooltipRef"
-                            class="absolute left-0 bottom-full z-50 mb-2 w-[210px] max-h-44 overflow-y-auto rounded-xl border border-white/10 bg-[rgba(0,0,0,0.95)] px-2.5 py-2.5 shadow-xl backdrop-blur"
-                            role="dialog"
-                        >
-                            <div class="space-y-1 text-[11px] text-slate-100">
-                                <div class="text-[10px] font-medium text-slate-300">
-                                    Состав
-                                </div>
-                                <div class="text-slate-200/90">
-                                    {{ ingredientsText }}
-                                </div>
-                            </div>
-                        </div>
-
                         <div v-if="hasNutrition">
                             <button
+                                ref="nutritionButtonRef"
                                 type="button"
                                 class="flex h-10 w-10 items-center justify-center rounded-full border border-amber-400/40 bg-black/55 text-amber-200 transition-transform duration-300 ease-out hover:border-amber-400/70 hover:text-amber-200"
                                 :class="justPressedNutrition ? 'scale-110' : 'scale-100'"
@@ -391,6 +367,7 @@ function handlePriceClick() {
 
                         <div v-if="hasIngredients">
                             <button
+                                ref="ingredientsButtonRef"
                                 type="button"
                                 class="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-black/55 text-slate-200 transition-transform duration-300 ease-out hover:border-amber-400/50 hover:text-amber-200"
                                 :class="justPressedIngredients ? 'scale-110' : 'scale-100'"
@@ -464,6 +441,44 @@ function handlePriceClick() {
             </div>
         </div>
     </article>
+
+    <Teleport to="body">
+        <div
+            v-if="openTooltip"
+            ref="tooltipRef"
+            class="fixed z-[1300] rounded-xl border border-white/10 bg-[rgba(0,0,0,0.95)] px-2.5 py-2.5 shadow-xl backdrop-blur"
+            :class="openTooltip === 'ingredients' ? 'w-[210px] max-h-44 overflow-y-auto' : 'w-[190px]'"
+            :style="tooltipStyle"
+            role="dialog"
+        >
+            <div v-if="openTooltip === 'nutrition'" class="space-y-1 text-[11px] text-slate-100">
+                <div class="flex items-center justify-between gap-2">
+                    <span class="text-slate-300">Калории</span>
+                    <span class="font-medium">{{ nutrition.calories }}</span>
+                </div>
+                <div class="flex items-center justify-between gap-2">
+                    <span class="text-slate-300">Белки</span>
+                    <span class="font-medium">{{ nutrition.proteins }} г</span>
+                </div>
+                <div class="flex items-center justify-between gap-2">
+                    <span class="text-slate-300">Жиры</span>
+                    <span class="font-medium">{{ nutrition.fats }} г</span>
+                </div>
+                <div class="flex items-center justify-between gap-2">
+                    <span class="text-slate-300">Углеводы</span>
+                    <span class="font-medium">{{ nutrition.carbs }} г</span>
+                </div>
+            </div>
+            <div v-else class="space-y-1 text-[11px] text-slate-100">
+                <div class="text-[10px] font-medium text-slate-300">
+                    Состав
+                </div>
+                <div class="text-slate-200/90">
+                    {{ ingredientsText }}
+                </div>
+            </div>
+        </div>
+    </Teleport>
 </template>
 
 <style scoped>

@@ -7,7 +7,8 @@ const {
     selectedCategoryId,
     selectedTag,
     productSearchQuery,
-    menuProducts,
+    desktopCardsPerRow,
+    menuSections,
     categoryTabs,
     tagTabs,
     selectedProduct,
@@ -72,10 +73,15 @@ const {
                 all-label="Все теги"
             />
 
+            <div class="-mt-6 mb-4 flex justify-end">
+                <CatalogViewControlsDesktop v-model:cards-per-row="desktopCardsPerRow" />
+            </div>
+
             <CatalogProductsDesktop
-                :products="menuProducts"
+                :sections="menuSections"
                 :loading="loading"
                 :empty-message="catalogEmptyMessage"
+                :cards-per-row="desktopCardsPerRow"
                 @product-image-click="openProductDetail"
             />
         </section>

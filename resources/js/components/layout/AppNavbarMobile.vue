@@ -78,7 +78,7 @@ const toggleMobileMenu = () => {
                             class="inline-flex origin-center will-change-transform"
                         >
                             <img
-                                src="/images/logo-text.png"
+                                src="/images/logo.png"
                                 alt="Gangsters"
                                 class="h-9 min-h-9 w-auto min-w-[7rem] max-w-full mx-auto object-contain transition-transform duration-200 group-hover:scale-105"
                             />

@@ -1,6 +1,6 @@
 <script setup>
 defineProps({
-    products: {
+    sections: {
         type: Array,
         default: () => [],
     },
@@ -12,6 +12,14 @@ defineProps({
         type: String,
         default: "Тут пока тихо. Выберите другую категорию.",
     },
+    cardsPerRow: {
+        type: Number,
+        default: 1,
+    },
+    mobileCardViewMode: {
+        type: String,
+        default: "grid",
+    },
 });
 
 const emit = defineEmits(["productImageClick"]);
@@ -19,9 +27,11 @@ const emit = defineEmits(["productImageClick"]);
 
 <template>
     <CatalogProductsBase
-        :products="products"
+        :sections="sections"
         :loading="loading"
         :empty-message="emptyMessage"
+        :cards-per-row="cardsPerRow"
+        :mobile-card-view-mode="mobileCardViewMode"
         variant="mobile"
         @product-image-click="emit('productImageClick', $event)"
     />

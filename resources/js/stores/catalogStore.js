@@ -2,6 +2,23 @@ import { defineStore } from "pinia";
 import { fetchCatalogTree } from "../services/catalog/catalogService";
 
 const CATALOG_STORAGE_KEY = "gangsters_catalog";
+const DESKTOP_CARDS_PER_ROW_DEFAULT = 4;
+const MOBILE_CARDS_PER_ROW_DEFAULT = 1;
+const MOBILE_CARD_VIEW_MODE_DEFAULT = "grid";
+
+function normalizeDesktopCardsPerRow(value) {
+    return value === 3 || value === 4 ? value : DESKTOP_CARDS_PER_ROW_DEFAULT;
+}
+
+function normalizeMobileCardsPerRow(value) {
+    return value === 1 || value === 2 ? value : MOBILE_CARDS_PER_ROW_DEFAULT;
+}
+
+function normalizeMobileCardViewMode(value) {
+    return value === "grid" || value === "horizontal"
+        ? value
+        : MOBILE_CARD_VIEW_MODE_DEFAULT;
+}
 
 export const useCatalogStore = defineStore("catalog", {
     state: () => ({
@@ -14,6 +31,9 @@ export const useCatalogStore = defineStore("catalog", {
         selectedTag: null,
         /** Поиск по названию в уже загруженном дереве (клиентский фильтр). */
         productSearchQuery: "",
+        desktopCardsPerRow: DESKTOP_CARDS_PER_ROW_DEFAULT,
+        mobileCardsPerRow: MOBILE_CARDS_PER_ROW_DEFAULT,
+        mobileCardViewMode: MOBILE_CARD_VIEW_MODE_DEFAULT,
     }),
     getters: {
         flatProducts(state) {
@@ -43,7 +63,7 @@ export const useCatalogStore = defineStore("catalog", {
          * Лента меню: при вводе в поиск — все товары дерева по подстроке в name;
          * без поиска — как раньше (все или выбранная категория).
          */
-        menuProducts() {
+        menuSections(state) {
             const q = this.productSearchQuery.trim().toLowerCase();
             const selectedTag = this.selectedTag;
             const byTag = (product) => {
@@ -51,17 +71,50 @@ export const useCatalogStore = defineStore("catalog", {
                 const tags = Array.isArray(product.tags) ? product.tags : [];
                 return tags.some((tag) => String(tag?.code) === String(selectedTag));
             };
+            const byQuery = (product) =>
+                String(product?.name || "")
+                    .toLowerCase()
+                    .includes(q);
 
-            if (q.length > 0) {
-                return this.flatProducts.filter((p) => {
-                    const byQuery = String(p.name || "")
-                        .toLowerCase()
-                        .includes(q);
+            const sourceCategories =
+                state.selectedCategoryId == null || state.selectedCategoryId === ""
+                    ? state.categories
+                    : state.categories.filter((entry) => {
+                          const id = entry.category?.id;
+                          const slug = entry.category?.slug;
+                          const selected = state.selectedCategoryId;
+                          return (
+                              (id != null && Number(selected) === Number(id)) ||
+                              (slug && String(selected) === String(slug))
+                          );
+                      });
 
-                    return byQuery && byTag(p);
-                });
-            }
-            return this.filteredProducts.filter(byTag);
+            const orderMap = new Map(
+                state.categories.map((entry, index) => [
+                    entry?.category?.id ?? entry?.category?.slug ?? null,
+                    index,
+                ]),
+            );
+
+            return sourceCategories
+                .map((entry) => {
+                    const base = Array.isArray(entry?.products) ? entry.products : [];
+                    const products = base.filter((p) => {
+                        if (!byTag(p)) return false;
+                        if (q.length > 0) return byQuery(p);
+                        return true;
+                    });
+                    return {
+                        id: entry?.category?.id ?? entry?.category?.slug ?? null,
+                        name: entry?.category?.name || "Без категории",
+                        products,
+                    };
+                })
+                .filter((section) => section.products.length > 0)
+                .sort((a, b) => (orderMap.get(a.id) ?? 0) - (orderMap.get(b.id) ?? 0));
+        },
+        menuProducts() {
+            return this.menuSections.flatMap((section) => section.products);
         },
         categoryTabs(state) {
             return state.categories.map((entry) => ({
@@ -105,6 +158,15 @@ export const useCatalogStore = defineStore("catalog", {
                 if ("selectedTag" in parsed) {
                     this.selectedTag = parsed.selectedTag ?? null;
                 }
+                if ("desktopCardsPerRow" in parsed) {
+                    this.desktopCardsPerRow = normalizeDesktopCardsPerRow(parsed.desktopCardsPerRow);
+                }
+                if ("mobileCardsPerRow" in parsed) {
+                    this.mobileCardsPerRow = normalizeMobileCardsPerRow(parsed.mobileCardsPerRow);
+                }
+                if ("mobileCardViewMode" in parsed) {
+                    this.mobileCardViewMode = normalizeMobileCardViewMode(parsed.mobileCardViewMode);
+                }
 
             } catch (e) {
                 console.error("Failed to init catalog store from localStorage", e);
@@ -118,6 +180,9 @@ export const useCatalogStore = defineStore("catalog", {
                 JSON.stringify({
                     selectedCategoryId: this.selectedCategoryId,
                     selectedTag: this.selectedTag,
+                    desktopCardsPerRow: this.desktopCardsPerRow,
+                    mobileCardsPerRow: this.mobileCardsPerRow,
+                    mobileCardViewMode: this.mobileCardViewMode,
                 }),
             );
         },
@@ -136,6 +201,63 @@ export const useCatalogStore = defineStore("catalog", {
             this.productSearchQuery =
                 query == null ? "" : String(query);
         },
+        setDesktopCardsPerRow(value) {
+            this.desktopCardsPerRow = normalizeDesktopCardsPerRow(value);
+            this.persist();
+        },
+        setMobileCardsPerRow(value) {
+            this.mobileCardsPerRow = normalizeMobileCardsPerRow(value);
+            this.persist();
+        },
+        setMobileCardViewMode(value) {
+            this.mobileCardViewMode = normalizeMobileCardViewMode(value);
+            this.persist();
+        },
+
+        /**
+         * Сбрасывает category/tag из localStorage, если после загрузки дерева
+         * они больше не существуют (иначе menuProducts пустой при живых данных).
+         */
+        sanitizePersistedFiltersAfterLoad() {
+            const categories = this.categories;
+            if (!Array.isArray(categories) || categories.length === 0) {
+                return;
+            }
+
+            let changed = false;
+            const sel = this.selectedCategoryId;
+            if (sel != null && sel !== "") {
+                const found = categories.some((entry) => {
+                    const id = entry.category?.id;
+                    const slug = entry.category?.slug;
+                    return (
+                        (id != null && Number(sel) === Number(id)) ||
+                        (slug && String(sel) === String(slug))
+                    );
+                });
+                if (!found) {
+                    this.selectedCategoryId = null;
+                    changed = true;
+                }
+            }
+
+            const tag = this.selectedTag;
+            if (tag) {
+                const flat = categories.flatMap((e) => e.products || []);
+                const tagOk = flat.some((product) => {
+                    const tags = Array.isArray(product.tags) ? product.tags : [];
+                    return tags.some((t) => String(t?.code) === String(tag));
+                });
+                if (!tagOk) {
+                    this.selectedTag = null;
+                    changed = true;
+                }
+            }
+
+            if (changed) {
+                this.persist();
+            }
+        },
 
         async fetchCatalog() {
             this.loading = true;
@@ -143,6 +265,7 @@ export const useCatalogStore = defineStore("catalog", {
 
             try {
                 this.categories = await fetchCatalogTree();
+                this.sanitizePersistedFiltersAfterLoad();
 
                 this.hasLoaded = true;
             } catch (e) {

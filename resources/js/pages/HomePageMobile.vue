@@ -9,7 +9,9 @@ const {
     selectedCategoryId,
     selectedTag,
     productSearchQuery,
-    menuProducts,
+    mobileCardsPerRow,
+    mobileCardViewMode,
+    menuSections,
     categoryTabs,
     tagTabs,
     selectedProduct,
@@ -74,10 +76,18 @@ const {
                 all-label="Все теги"
             />
 
+            <CatalogViewControlsMobile
+                class="mb-4"
+                v-model:cards-per-row="mobileCardsPerRow"
+                v-model:view-mode="mobileCardViewMode"
+            />
+
             <CatalogProductsMobile
-                :products="menuProducts"
+                :sections="menuSections"
                 :loading="loading"
                 :empty-message="catalogEmptyMessage"
+                :cards-per-row="mobileCardsPerRow"
+                :mobile-card-view-mode="mobileCardViewMode"
                 @product-image-click="openProductDetail"
             />
         </section>
