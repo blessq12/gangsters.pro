@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { DOMAIN_EVENTS, emitDomainEvent } from "../shared/domainEvents";
 
 const FAVORITES_STORAGE_KEY = "gangsters_favorites";
 const CART_STORAGE_KEY = "gangsters_cart";
@@ -144,16 +145,25 @@ export const useFavoritesStore = defineStore("favorites", {
                 });
             }
             this.persist();
+            emitDomainEvent(DOMAIN_EVENTS.FAVORITES_CHANGED, {
+                items: this.items,
+            });
         },
         removeFavorite(productId) {
             this.items = this.items.filter((item) => item.productId !== productId);
             this.persist();
+            emitDomainEvent(DOMAIN_EVENTS.FAVORITES_CHANGED, {
+                items: this.items,
+            });
         },
         clear() {
             this.items = [];
             if (typeof window !== "undefined") {
                 window.localStorage.removeItem(FAVORITES_STORAGE_KEY);
             }
+            emitDomainEvent(DOMAIN_EVENTS.FAVORITES_CHANGED, {
+                items: this.items,
+            });
         },
     },
 });

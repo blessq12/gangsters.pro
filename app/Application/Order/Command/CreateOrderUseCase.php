@@ -4,15 +4,45 @@ namespace App\Application\Order\Command;
 
 use App\Application\Common\Exceptions\ApiException;
 use App\Application\Order\DTO\CreateOrderDTO;
+use App\Application\Order\Events\OrderCreatedIntegrationEvent;
 use App\Application\Order\OrderBaseUseCase;
+use App\Application\Order\Presenter\OrderPresenter;
+use App\Application\Order\Contracts\CustomerSnapshotProvider;
 use App\Domain\Order\Enums\PaymentStatus;
+use App\Domain\Order\Factories\OrderFactory;
+use App\Domain\Order\Factories\OrderItemsFactory;
+use App\Domain\Order\Repositories\OrderRepositoryInterface;
 use App\Domain\Order\ValueObjects\CustomerSnapshot;
 use App\Domain\Order\ValueObjects\DeliveryInfo;
 use App\Domain\Order\ValueObjects\PaymentInfo;
 use App\Domain\Order\Events\OrderCreated;
+use App\Shared\Auth\ClientAuthContext;
+use App\Shared\Events\DomainEventBus;
+use App\Shared\Events\IntegrationEventBus;
 
 final class CreateOrderUseCase extends OrderBaseUseCase
 {
+    public function __construct(
+        OrderRepositoryInterface $orders,
+        OrderFactory $orderFactory,
+        CustomerSnapshotProvider $customerSnapshots,
+        ClientAuthContext $authContext,
+        OrderItemsFactory $itemsFactory,
+        OrderPresenter $presenter,
+        DomainEventBus $events,
+        private readonly IntegrationEventBus $integrationEvents,
+    ) {
+        parent::__construct(
+            $orders,
+            $orderFactory,
+            $customerSnapshots,
+            $authContext,
+            $itemsFactory,
+            $presenter,
+            $events,
+        );
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -23,14 +53,7 @@ final class CreateOrderUseCase extends OrderBaseUseCase
         }
 
         if ($authenticatedClientId !== null) {
-            $client = $this->clients->findById($authenticatedClientId);
-            if ($client === null) {
-                throw new ApiException('Client not found.');
-            }
-            if (!$client->isActive()) {
-                throw new ApiException('Client is blocked or deleted.');
-            }
-            $customerSnapshot = $this->customerFactory->fromClient($client);
+            $customerSnapshot = $this->customerSnapshots->forAuthenticatedClient($authenticatedClientId);
             $clientId = $authenticatedClientId;
         } else {
             $name = $dto->guestCustomerName ?? '';
@@ -38,7 +61,7 @@ final class CreateOrderUseCase extends OrderBaseUseCase
             if (trim($name) === '' || trim($phone) === '') {
                 throw new ApiException('Guest order requires customer name and phone.');
             }
-            $customerSnapshot = $this->customerFactory->fromGuestContact(
+            $customerSnapshot = $this->customerSnapshots->forGuestContact(
                 $name,
                 $phone,
                 $dto->guestCustomerEmail,
@@ -76,6 +99,7 @@ final class CreateOrderUseCase extends OrderBaseUseCase
 
         $this->orders->save($order);
         $this->events->publish(new OrderCreated($order));
+        $this->integrationEvents->publish(OrderCreatedIntegrationEvent::fromOrder($order));
 
         return $this->presenter->present($order);
     }

@@ -1,17 +1,22 @@
 <script setup>
 import { computed } from "vue";
-import { useCartStore } from "../../stores/cartStore";
-import { useFavoritesStore } from "../../stores/favoritesStore";
+import { useFavoritesCommands } from "../../features/favorites/useFavoritesCommands";
+import { useFavoritesReadModel } from "../../features/favorites/useFavoritesReadModel";
+import { DOMAIN_EVENTS, emitDomainEvent } from "../../shared/domainEvents";
 import { formatMoneyRublesRu } from "../../utils/moneyFormat";
 
-const cartStore = useCartStore();
-const favoritesStore = useFavoritesStore();
+const favoritesCommands = useFavoritesCommands();
+const favoritesReadModel = useFavoritesReadModel();
 
-const favoriteItems = computed(() => favoritesStore.favorites);
+const favoriteItems = computed(() => favoritesReadModel.items.value);
 
 const handleAddToCart = (item) => {
     if (!item?.productSnapshot?.id) return;
-    cartStore.addToCart(item.productSnapshot, 1);
+    emitDomainEvent(DOMAIN_EVENTS.CART_ADD_REQUESTED, {
+        product: item.productSnapshot,
+        qty: 1,
+        source: "favorites",
+    });
 };
 
 const formatPrice = (value) => formatMoneyRublesRu(value);
@@ -62,7 +67,7 @@ const formatPrice = (value) => formatMoneyRublesRu(value);
                         <button
                             type="button"
                             class="shrink-0 text-[11px] text-slate-400 transition-colors hover:text-red-400"
-                            @click="favoritesStore.removeFavorite(item.productId)"
+                            @click="favoritesCommands.remove(item.productId)"
                         >
                             Убрать
                         </button>

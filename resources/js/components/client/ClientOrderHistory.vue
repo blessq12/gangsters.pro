@@ -1,6 +1,6 @@
 <script setup>
-import { computed, onMounted, ref } from "vue";
-import { useOrderStore } from "../../stores/orderStore";
+import { computed, ref } from "vue";
+import { useClientOrderHistoryReadModel } from "../../features/client/useClientOrderHistoryReadModel";
 import {
     formatDeliveryMethodRu,
     formatOrderDate,
@@ -12,13 +12,13 @@ import {
 /** Во вкладке истории показываем только N последних заказов (API отдаёт свежие первыми). */
 const HISTORY_TAB_LIMIT = 10;
 
-const orderStore = useOrderStore();
+const { orders, loading, error } = useClientOrderHistoryReadModel();
 
 const ordersForTab = computed(() =>
-    orderStore.orders.slice(0, HISTORY_TAB_LIMIT),
+    orders.value.slice(0, HISTORY_TAB_LIMIT),
 );
 
-const totalOrdersLoaded = computed(() => orderStore.orders.length);
+const totalOrdersLoaded = computed(() => orders.value.length);
 
 const expandedIds = ref(new Set());
 
@@ -35,30 +35,26 @@ function toggleExpanded(orderId) {
 function isExpanded(orderId) {
     return expandedIds.value.has(orderId);
 }
-
-onMounted(() => {
-    void orderStore.fetchOrders();
-});
 </script>
 
 <template>
     <div class="space-y-3 text-slate-50">
         <div
-            v-if="orderStore.loading.list"
+            v-if="loading"
             class="rounded-2xl border border-white/10 bg-black/30 px-4 py-6 text-center text-sm text-slate-400"
         >
             Загружаем заказы…
         </div>
 
         <div
-            v-else-if="orderStore.error.list"
+            v-else-if="error"
             class="rounded-2xl border border-red-500/40 bg-red-950/30 px-4 py-3 text-sm text-red-200"
         >
-            {{ orderStore.error.list }}
+            {{ error }}
         </div>
 
         <div
-            v-else-if="!orderStore.orders.length"
+            v-else-if="!orders.length"
             class="rounded-2xl border border-dashed border-white/15 bg-black/25 px-4 py-6 text-center text-sm text-slate-400"
         >
             Заказов пока нет. Собери корзину — и тут появится первая история.

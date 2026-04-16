@@ -5,8 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Application\Order\Command\CreateOrderUseCase;
 use App\Application\Order\DTO\CreateOrderDTO;
 use App\Application\Order\Query\GetClientOrdersUseCase;
-use App\Application\Order\Query\PreviewComplimentaryItemsUseCase;
-use App\Http\Requests\Order\ComplimentaryPreviewRequest;
 use App\Http\Requests\Order\StoreOrderRequest;
 use App\Infrastructure\Client\Model\UR_Client;
 use Illuminate\Http\JsonResponse;
@@ -58,22 +56,4 @@ class OrderController extends Controller
         return response()->json($order, 201);
     }
 
-    public function complimentaryPreview(
-        ComplimentaryPreviewRequest $request,
-        PreviewComplimentaryItemsUseCase $useCase,
-    ): JsonResponse {
-        $payload = $request->validated();
-
-        $items = array_map(
-            static fn (array $row) => [
-                'product_id' => (int) $row['product_id'],
-                'quantity' => (int) $row['quantity'],
-            ],
-            $payload['items'],
-        );
-
-        $result = $useCase->execute($items);
-
-        return response()->json($result);
-    }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Clients;
 
-use App\Application\Client\Query\ClientSummaryReader;
+use App\Application\Reporting\Query\ClientOrderSummaryReader;
 use App\Filament\Resources\Clients\Pages\CreateClient;
 use App\Filament\Resources\Clients\Pages\EditClient;
 use App\Filament\Resources\Clients\Pages\ListClients;
@@ -176,51 +176,36 @@ class ClientResource extends Resource
                     TextEntry::make('summary.orders_count')
                         ->label('Количество заказов')
                         ->state(function (UR_Client $record): int {
-                            /** @var ClientSummaryReader $summary */
-                            $summary = app(ClientSummaryReader::class);
-
-                            return (int) ($summary->getSummaryById((int) $record->id)['orders_count'] ?? 0);
+                            return (int) (static::getClientSummary($record)['orders_count'] ?? 0);
                         }),
                     TextEntry::make('summary.paid_orders_count')
                         ->label('Оплаченных заказов')
                         ->state(function (UR_Client $record): int {
-                            /** @var ClientSummaryReader $summary */
-                            $summary = app(ClientSummaryReader::class);
-
-                            return (int) ($summary->getSummaryById((int) $record->id)['paid_orders_count'] ?? 0);
+                            return (int) (static::getClientSummary($record)['paid_orders_count'] ?? 0);
                         }),
                     TextEntry::make('summary.orders_total')
                         ->label('Сумма заказов')
                         ->state(function (UR_Client $record): string {
-                            /** @var ClientSummaryReader $summary */
-                            $summary = app(ClientSummaryReader::class);
-                            $totalKopecks = (int) ($summary->getSummaryById((int) $record->id)['orders_total'] ?? 0);
+                            $totalKopecks = (int) (static::getClientSummary($record)['orders_total'] ?? 0);
 
                             return Money::formatKopecksForAdmin($totalKopecks);
                         }),
                     TextEntry::make('summary.average_order_total')
                         ->label('Средний чек')
                         ->state(function (UR_Client $record): string {
-                            /** @var ClientSummaryReader $summary */
-                            $summary = app(ClientSummaryReader::class);
-                            $avgKopecks = (int) ($summary->getSummaryById((int) $record->id)['average_order_total'] ?? 0);
+                            $avgKopecks = (int) (static::getClientSummary($record)['average_order_total'] ?? 0);
 
                             return Money::formatKopecksForAdmin($avgKopecks);
                         }),
                     TextEntry::make('summary.addresses_count')
                         ->label('Количество адресов')
                         ->state(function (UR_Client $record): int {
-                            /** @var ClientSummaryReader $summary */
-                            $summary = app(ClientSummaryReader::class);
-
-                            return (int) ($summary->getSummaryById((int) $record->id)['addresses_count'] ?? 0);
+                            return (int) (static::getClientSummary($record)['addresses_count'] ?? 0);
                         }),
                     TextEntry::make('summary.last_order_at')
                         ->label('Последний заказ')
                         ->state(function (UR_Client $record): string {
-                            /** @var ClientSummaryReader $summary */
-                            $summary = app(ClientSummaryReader::class);
-                            $value = $summary->getSummaryById((int) $record->id)['last_order_at'] ?? null;
+                            $value = static::getClientSummary($record)['last_order_at'] ?? null;
                             if (! is_string($value) || $value === '') {
                                 return 'Нет заказов';
                             }
@@ -240,6 +225,17 @@ class ClientResource extends Resource
             \App\Filament\Resources\Clients\RelationManagers\OrdersRelationManager::class,
             \App\Filament\Resources\Clients\RelationManagers\AddressesRelationManager::class,
         ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function getClientSummary(UR_Client $record): array
+    {
+        /** @var ClientOrderSummaryReader $summary */
+        $summary = app(ClientOrderSummaryReader::class);
+
+        return $summary->getSummaryById((int) $record->id) ?? [];
     }
 
     public static function getPages(): array

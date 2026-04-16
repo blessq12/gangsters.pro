@@ -3,22 +3,19 @@
 namespace App\Application\YandexFood\Command;
 
 use App\Application\Common\Exceptions\ApiException;
+use App\Application\Order\Contracts\CustomerSnapshotProvider;
+use App\Application\Order\Contracts\UpdateOrderContract;
 use App\Application\YandexFood\Acl\YandexFoodOrderContractPresenter;
 use App\Application\YandexFood\Acl\YandexFoodOrderPayloadHelper;
+use App\Application\YandexFood\Contracts\YandexFoodOrderMetaStore;
 use App\Application\YandexFood\DTO\YandexUpdateOrderRequestDto;
 use App\Application\YandexFood\YandexFoodBaseUseCase;
-use App\Domain\Category\Repository\CategoryRepository;
-use App\Domain\Client\Repository\ClientRepository;
 use App\Domain\Order\Enums\PaymentStatus;
 use App\Domain\Order\Entities\Order;
-use App\Domain\Order\Factories\CustomerSnapshotFactory;
-use App\Domain\Order\Factories\OrderFactory;
-use App\Domain\Order\Factories\OrderItemsFactory;
 use App\Domain\Order\Repositories\OrderRepositoryInterface;
 use App\Domain\Order\ValueObjects\CustomerSnapshot;
 use App\Domain\Order\ValueObjects\DeliveryInfo;
 use App\Domain\Order\ValueObjects\PaymentInfo;
-use App\Domain\Product\Repository\ProductRepository;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Log;
@@ -29,16 +26,13 @@ final class UpdateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
     private const FAIL = 'Не удалось обновить заказ';
 
     public function __construct(
-        OrderRepositoryInterface $orders,
-        ProductRepository $products,
-        CategoryRepository $categories,
-        private readonly OrderFactory $orderFactory,
-        private readonly OrderItemsFactory $itemsFactory,
-        private readonly CustomerSnapshotFactory $customerFactory,
-        private readonly ClientRepository $clients,
+        private readonly OrderRepositoryInterface $orders,
+        private readonly UpdateOrderContract $updateOrder,
+        private readonly CustomerSnapshotProvider $customerSnapshots,
+        private readonly YandexFoodOrderMetaStore $metaStore,
         private readonly YandexFoodOrderContractPresenter $yandexOrderContract,
     ) {
-        parent::__construct($orders, $products, $categories);
+        parent::__construct();
     }
 
     /**
@@ -63,7 +57,7 @@ final class UpdateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
                 if ($err !== null) {
                     return $err;
                 }
-                $order = $this->buildFullRebuiltOrder($dto->id, $existing, $p);
+                $order = $this->buildFullRebuiltOrder($existing, $p);
             } else {
                 if (!isset($p['items']) || !is_array($p['items']) || $p['items'] === []) {
                     return YandexFoodOrderPayloadHelper::failure(self::FAIL);
@@ -75,8 +69,6 @@ final class UpdateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
                 }
                 $order = $this->rebuildItemsOnlyOrder($existing, $p['items']);
             }
-
-            $this->orders->save($order);
 
             return $this->yandexOrderContract->presentUpdateSuccess($order);
         } catch (ApiException $e) {
@@ -96,7 +88,7 @@ final class UpdateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
     /**
      * @param  array<string, mixed>  $p
      */
-    private function buildFullRebuiltOrder(string $orderId, Order $existing, array $p): Order
+    private function buildFullRebuiltOrder(Order $existing, array $p): Order
     {
         $discriminator = (string) $p['discriminator'];
         $eatsId = $p['eatsId'];
@@ -113,8 +105,7 @@ final class UpdateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
 
         $persons = $p['persons'];
         $comment = trim((string) ($p['comment'] ?? ''));
-        $commentWithMeta = YandexFoodOrderPayloadHelper::appendYandexMetaToComment(
-            $comment,
+        $meta = YandexFoodOrderPayloadHelper::buildYandexMeta(
             $eatsId,
             $restaurantId,
             $p['paymentInfo'],
@@ -137,7 +128,7 @@ final class UpdateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
         $deliveryInfo = new DeliveryInfo(
             method: $discriminator,
             address: $deliveryAddress,
-            comment: $commentWithMeta !== '' ? $commentWithMeta : null,
+            comment: $comment !== '' ? $comment : null,
         );
 
         $paymentInfo = new PaymentInfo(
@@ -160,18 +151,18 @@ final class UpdateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
             ];
         }
 
-        $itemsData = $this->itemsFactory->buildItemsData($lineInputs);
-
-        return $this->orderFactory->rebuildOrder(
-            id: $orderId,
+        $order = $this->updateOrder->update(
+            existing: $existing,
             clientId: $clientId,
-            customer: $customerSnapshotForOrder,
-            status: $existing->getStatus(),
-            itemsData: $itemsData,
+            customerSnapshot: $customerSnapshotForOrder,
+            items: $lineInputs,
             deliveryInfo: $deliveryInfo,
             paymentInfo: $paymentInfo,
-            createdAt: $existing->getCreatedAt(),
         );
+
+        $this->metaStore->upsert($order->getId(), $meta);
+
+        return $order;
     }
 
     /**
@@ -187,49 +178,30 @@ final class UpdateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
             ];
         }
 
-        $itemsData = $this->itemsFactory->buildItemsData($lineInputs);
-
         $delivery = $existing->getDeliveryInfo();
         $customer = $existing->getCustomer();
 
-        $customerSnapshotForOrder = new CustomerSnapshot(
-            name: $customer->name,
-            phone: $customer->phone,
-            email: $customer->email,
-            address: $delivery?->address,
-        );
-
-        return $this->orderFactory->rebuildOrder(
-            id: $existing->getId(),
+        return $this->updateOrder->update(
+            existing: $existing,
             clientId: $existing->getClientId(),
-            customer: $customerSnapshotForOrder,
-            status: $existing->getStatus(),
-            itemsData: $itemsData,
+            customerSnapshot: new CustomerSnapshot(
+                name: $customer->name,
+                phone: $customer->phone,
+                email: $customer->email,
+                address: $delivery?->address,
+            ),
+            items: $lineInputs,
             deliveryInfo: $delivery,
             paymentInfo: $existing->getPaymentInfo(),
-            createdAt: $existing->getCreatedAt(),
         );
     }
 
     private function buildCustomerSnapshot(?int $clientId, string $yandexName, string $yandexPhone): CustomerSnapshot
     {
         if ($clientId !== null) {
-            $client = $this->clients->findById($clientId);
-            if ($client === null) {
-                throw new ApiException('Client not found.');
-            }
-            if (!$client->isActive()) {
-                throw new ApiException('Client is blocked or deleted.');
-            }
-
-            return $this->customerFactory->fromClient($client);
+            return $this->customerSnapshots->forAuthenticatedClient($clientId);
         }
 
-        return new CustomerSnapshot(
-            name: $yandexName,
-            phone: $yandexPhone,
-            email: null,
-            address: null,
-        );
+        return $this->customerSnapshots->forExternalContact($yandexName, $yandexPhone);
     }
 }

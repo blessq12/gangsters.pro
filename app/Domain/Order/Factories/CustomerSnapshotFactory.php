@@ -2,36 +2,48 @@
 
 namespace App\Domain\Order\Factories;
 
-use App\Domain\Client\Entity\Client;
-use App\Domain\Client\Entity\ClientAddress;
 use App\Domain\Order\ValueObjects\CustomerSnapshot;
 
 final class CustomerSnapshotFactory
 {
-    public function fromClient(Client $client): CustomerSnapshot
+    /**
+     * @param  array<int, array{
+     *     id: int,
+     *     street: string|null,
+     *     house: string|null,
+     *     entrance: string|null,
+     *     apartment: string|null
+     * }>  $addresses
+     */
+    public function fromAuthenticatedClientData(
+        string $name,
+        string $phone,
+        ?string $email,
+        array $addresses,
+        ?int $defaultAddressId,
+    ): CustomerSnapshot
     {
         $address = null;
-        $addresses = $client->addresses();
 
         if (\count($addresses) > 0) {
-            $addr = $client->defaultAddressId() !== null
-                ? $this->findAddressById($addresses, $client->defaultAddressId())
+            $addr = $defaultAddressId !== null
+                ? $this->findAddressById($addresses, $defaultAddressId)
                 : $addresses[0];
 
             if ($addr !== null) {
                 $address = [
-                    'street' => $addr->street(),
-                    'house' => $addr->house(),
-                    'entrance' => $addr->entrance(),
-                    'apartment' => $addr->apartment(),
+                    'street' => $addr['street'],
+                    'house' => $addr['house'],
+                    'entrance' => $addr['entrance'],
+                    'apartment' => $addr['apartment'],
                 ];
             }
         }
 
         return new CustomerSnapshot(
-            name: $client->name(),
-            phone: (string) $client->phone(),
-            email: $client->email() !== null ? (string) $client->email() : null,
+            name: trim($name),
+            phone: $this->normalizePhoneForStorage($phone),
+            email: $email !== null && trim($email) !== '' ? trim($email) : null,
             address: $address,
         );
     }
@@ -81,12 +93,12 @@ final class CustomerSnapshotFactory
     }
 
     /**
-     * @param ClientAddress[] $addresses
+     * @param  array<int, array{id: int, street: string|null, house: string|null, entrance: string|null, apartment: string|null}>  $addresses
      */
-    private function findAddressById(array $addresses, int $id): ?ClientAddress
+    private function findAddressById(array $addresses, int $id): ?array
     {
         foreach ($addresses as $a) {
-            if ($a->id() === $id) {
+            if (($a['id'] ?? null) === $id) {
                 return $a;
             }
         }

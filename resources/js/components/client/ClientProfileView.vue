@@ -1,34 +1,29 @@
 <script setup>
-import { computed, onMounted, watch } from "vue";
-import { useUserStore } from "../../stores/userStore";
-import { useOrderStore } from "../../stores/orderStore";
+import { computed } from "vue";
+import { useClientCommands } from "../../features/client/useClientCommands";
+import { useClientProfileSummaryReadModel } from "../../features/client/useClientProfileSummaryReadModel";
+import { useClientReadModel } from "../../features/client/useClientReadModel";
 import { formatOrderDate, formatOrderMoneyRubles } from "../../utils/order/orderDisplay";
 
 const emit = defineEmits(["logout"]);
 
-const userStore = useUserStore();
-const orderStore = useOrderStore();
+const clientReadModel = useClientReadModel();
+const clientCommands = useClientCommands();
+const { stats, loading, error } = useClientProfileSummaryReadModel();
 
-const fullName = computed(() => userStore.profile.name || "Гость Gangsters");
-const phone = computed(() => userStore.profile.phone || "+7 (___) ___‑__‑__");
-const email = computed(() => userStore.profile.email || "email не указан");
-const isAuthenticated = computed(() => !!userStore.token && !!userStore.profile.id);
-
-const stats = computed(() => orderStore.clientOrderStats);
-
-function refreshOrdersIfNeeded() {
-    if (!isAuthenticated.value) return;
-    void orderStore.fetchOrders().catch(() => {});
-}
-
-onMounted(refreshOrdersIfNeeded);
-
-watch(isAuthenticated, (ok) => {
-    if (ok) refreshOrdersIfNeeded();
-});
+const fullName = computed(
+    () => clientReadModel.profile.value.name || "Гость Gangsters",
+);
+const phone = computed(
+    () => clientReadModel.profile.value.phone || "+7 (___) ___‑__‑__",
+);
+const email = computed(
+    () => clientReadModel.profile.value.email || "email не указан",
+);
+const isAuthenticated = computed(() => clientReadModel.isAuthenticated.value);
 
 function handleLogoutClick() {
-    userStore.clearAuth();
+    clientCommands.clearAuth();
     emit("logout");
 }
 </script>
@@ -81,17 +76,17 @@ function handleLogoutClick() {
             </p>
 
             <div
-                v-if="orderStore.loading.list && !orderStore.orders.length"
+                v-if="loading && !stats.count"
                 class="rounded-2xl border border-white/10 bg-black/30 px-3 py-4 text-center text-xs text-slate-400"
             >
                 Считаем вашу историю…
             </div>
 
             <div
-                v-else-if="orderStore.error.list && !orderStore.orders.length"
+                v-else-if="error && !stats.count"
                 class="rounded-2xl border border-amber-400/25 bg-black/35 px-3 py-3 text-[11px] text-slate-400"
             >
-                <span class="text-amber-200/90">{{ orderStore.error.list }}</span>
+                <span class="text-amber-200/90">{{ error }}</span>
                 <span class="mt-1 block text-slate-500">
                     Статистика появится после успешной загрузки списка заказов.
                 </span>

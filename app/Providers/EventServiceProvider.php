@@ -22,9 +22,20 @@ class EventServiceProvider extends ServiceProvider
             // \App\Infrastructure\Order\Listeners\PushOrderToFrontpad::class, // интеграция с Frontpad (пока выключена)
             \App\Infrastructure\Notifications\Client\OnOrderCreatedClientEmail::class,
         ],
+        \App\Application\Order\Events\OrderCreatedIntegrationEvent::class => [
+            \App\Infrastructure\Reporting\Listeners\UpsertClientOrderFact::class,
+        ],
+        \App\Application\Order\Events\OrderUpdatedIntegrationEvent::class => [
+            \App\Infrastructure\Reporting\Listeners\UpsertClientOrderFact::class,
+        ],
+        \App\Application\Order\Events\OrderCancelledIntegrationEvent::class => [
+            \App\Infrastructure\Reporting\Listeners\DeleteClientOrderFact::class,
+            \App\Infrastructure\YandexFood\Listeners\DeleteYandexFoodOrderMeta::class,
+        ],
         \App\Domain\Client\Events\ClientRegistered::class => [
             \App\Infrastructure\Client\Listeners\OnClientRegistered::class,
             \App\Infrastructure\Notifications\Client\OnClientRegisteredClientEmail::class,
+            \App\Infrastructure\Reporting\Listeners\SyncClientProfileProjection::class,
         ],
         \App\Domain\Client\Events\ClientLoginFailed::class => [
             \App\Infrastructure\Client\Listeners\OnClientLoginFailed::class,
@@ -38,9 +49,11 @@ class EventServiceProvider extends ServiceProvider
         ],
         \App\Domain\Client\Events\ClientAddressAdded::class => [
             \App\Infrastructure\Client\Listeners\OnClientAddressAdded::class,
+            \App\Infrastructure\Reporting\Listeners\SyncClientProfileProjection::class,
         ],
         \App\Domain\Client\Events\ClientAddressDeleted::class => [
             \App\Infrastructure\Client\Listeners\OnClientAddressDeleted::class,
+            \App\Infrastructure\Reporting\Listeners\SyncClientProfileProjection::class,
         ],
         \App\Domain\Client\Events\ClientPasswordChanged::class => [
             \App\Infrastructure\Client\Listeners\OnClientPasswordChanged::class,

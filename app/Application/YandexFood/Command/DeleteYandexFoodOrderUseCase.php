@@ -2,12 +2,11 @@
 
 namespace App\Application\YandexFood\Command;
 
+use App\Application\Order\Contracts\CancelOrderContract;
 use App\Application\YandexFood\Acl\YandexFoodOrderContractPresenter;
 use App\Application\YandexFood\DTO\YandexDeleteOrderRequestDto;
 use App\Application\YandexFood\YandexFoodBaseUseCase;
-use App\Domain\Category\Repository\CategoryRepository;
 use App\Domain\Order\Repositories\OrderRepositoryInterface;
-use App\Domain\Product\Repository\ProductRepository;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -15,12 +14,11 @@ use Throwable;
 final class DeleteYandexFoodOrderUseCase extends YandexFoodBaseUseCase
 {
     public function __construct(
-        OrderRepositoryInterface $orders,
-        ProductRepository $products,
-        CategoryRepository $categories,
+        private readonly OrderRepositoryInterface $orders,
+        private readonly CancelOrderContract $cancelOrder,
         private readonly YandexFoodOrderContractPresenter $yandexOrderContract,
     ) {
-        parent::__construct($orders, $products, $categories);
+        parent::__construct();
     }
 
     /**
@@ -49,7 +47,7 @@ final class DeleteYandexFoodOrderUseCase extends YandexFoodBaseUseCase
                 }
             }
 
-            $this->orders->delete($dto->orderId);
+            $this->cancelOrder->cancel($order);
 
             return $this->yandexOrderContract->presentDeleteSuccess($dto->orderId);
         } catch (Throwable $e) {

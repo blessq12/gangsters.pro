@@ -1,1 +1,0 @@
-import{j as N}from"./vue-core-bYqEXXJ1.js";import{g as e}from"./gsap-D3jsOSc0.js";import{N as i,x as n,y as u,z as R}from"./app-Br5UdZTC.js";function f(o,a={}){N(()=>{if(!o.value)return;const{y:E=n,opacity:r=0,duration:s=u,delay:A=R,ease:t=i}=a;e.from(o.value,{y:E,opacity:r,duration:s,delay:A,ease:t})})}export{f as u};

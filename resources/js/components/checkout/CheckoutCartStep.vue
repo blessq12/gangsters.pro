@@ -1,17 +1,37 @@
 <script setup>
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
+import { DOMAIN_EVENTS, emitDomainEvent } from "../../shared/domainEvents";
 
 const {
     orderStore,
-    cartStore,
     cartItems,
-    complimentaryPreviewItems,
     totalAmount,
     formatPrice,
     isAuthenticated,
     handleStartCheckout,
     handleContinueAsGuest,
 } = useCheckoutFlowContext();
+
+function decrementCart(productId) {
+    emitDomainEvent(DOMAIN_EVENTS.CART_DECREMENT_REQUESTED, {
+        productId,
+        source: "checkout",
+    });
+}
+
+function incrementCart(productId) {
+    emitDomainEvent(DOMAIN_EVENTS.CART_INCREMENT_REQUESTED, {
+        productId,
+        source: "checkout",
+    });
+}
+
+function removeFromCart(productId) {
+    emitDomainEvent(DOMAIN_EVENTS.CART_REMOVE_REQUESTED, {
+        productId,
+        source: "checkout",
+    });
+}
 </script>
 
 <template>
@@ -48,7 +68,7 @@ const {
                         <button
                             type="button"
                             class="flex h-6 w-6 items-center justify-center rounded-full bg-black/70 text-[14px]"
-                            @click="cartStore.decrementCart(item.productId)"
+                            @click="decrementCart(item.productId)"
                         >
                             –
                         </button>
@@ -58,7 +78,7 @@ const {
                         <button
                             type="button"
                             class="flex h-6 w-6 items-center justify-center rounded-full bg-black/70 text-[14px]"
-                            @click="cartStore.incrementCart(item.productId)"
+                            @click="incrementCart(item.productId)"
                         >
                             +
                         </button>
@@ -67,7 +87,7 @@ const {
                     <button
                         type="button"
                         class="shrink-0 text-[11px] text-slate-400 transition-colors hover:text-red-400"
-                        @click="cartStore.removeFromCart(item.productId)"
+                        @click="removeFromCart(item.productId)"
                     >
                         Убрать
                     </button>
@@ -85,31 +105,7 @@ const {
             </span>
         </div>
 
-        <div
-            v-if="complimentaryPreviewItems.length"
-            class="mt-3 rounded-2xl border border-emerald-400/30 bg-emerald-950/20 px-3 py-2"
-        >
-            <p class="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-300">
-                Добавится бесплатно
-            </p>
-            <ul class="mt-2 space-y-1 text-xs text-emerald-100">
-                <li
-                    v-for="item in complimentaryPreviewItems"
-                    :key="`complimentary-${item.product_id}-${item.rule_id}`"
-                    class="flex items-center justify-between gap-2"
-                >
-                    <span class="truncate">{{ item.name }}</span>
-                    <span class="shrink-0">{{ item.quantity }} шт · 0 ₽</span>
-                </li>
-            </ul>
-        </div>
-
-        <div
-            v-if="orderStore.error.complimentaryPreview"
-            class="mt-3 rounded-2xl border border-red-500/40 bg-red-950/40 px-3 py-2 text-[11px] text-red-200"
-        >
-            {{ orderStore.error.complimentaryPreview }}
-        </div>
+        <!-- complimentary preview удалён вместе с vertical Promotions -->
 
         <div
             v-if="cartItems.length"

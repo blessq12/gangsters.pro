@@ -102,15 +102,14 @@ final class YandexFoodOrderPayloadHelper
      * @param  array<string, mixed>  $paymentInfo
      * @param  array<string, mixed>  $promos
      */
-    public static function appendYandexMetaToComment(
-        string $comment,
+    public static function buildYandexMeta(
         mixed $eatsId,
         mixed $restaurantId,
         array $paymentInfo,
         mixed $persons,
         array $promos,
-    ): string {
-        $meta = [
+    ): array {
+        return [
             'yandex_eats_id' => $eatsId,
             'yandex_restaurant_id' => $restaurantId,
             'yandex_persons' => $persons,
@@ -122,12 +121,5 @@ final class YandexFoodOrderPayloadHelper
             ],
             'yandex_promos' => $promos,
         ];
-
-        $metaJson = json_encode($meta, JSON_UNESCAPED_UNICODE);
-        if ($comment === '') {
-            return '[yandex_meta] ' . $metaJson;
-        }
-
-        return $comment . "\n\n[yandex_meta] " . $metaJson;
     }
 }

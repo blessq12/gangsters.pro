@@ -2,6 +2,7 @@
 
 namespace App\Application\YandexFood\Acl;
 
+use App\Application\YandexFood\Contracts\YandexFoodOrderMetaStore;
 use App\Domain\Order\Entities\Order;
 use App\Domain\Order\Entities\OrderItem;
 use App\Support\Money;
@@ -11,6 +12,11 @@ use App\Support\Money;
  */
 final class YandexFoodOrderContractPresenter
 {
+    public function __construct(
+        private readonly YandexFoodOrderMetaStore $metaStore,
+    ) {
+    }
+
     /**
      * Успешное создание заказа (result + orderId).
      *
@@ -82,7 +88,7 @@ final class YandexFoodOrderContractPresenter
      */
     public function integrationMeta(Order $order): ?array
     {
-        return $this->extractYandexMeta($order->getDeliveryInfo()?->comment);
+        return $this->metaStore->findByOrderId($order->getId());
     }
 
     /**
@@ -93,7 +99,7 @@ final class YandexFoodOrderContractPresenter
         $delivery = $order->getDeliveryInfo();
         $addr = $delivery?->address ?? [];
         $comment = $delivery?->comment;
-        $meta = $this->extractYandexMeta($comment);
+        $meta = $this->metaStore->findByOrderId($order->getId()) ?? [];
         $payment = $meta['yandex_payment'] ?? [];
 
         $itemsCost = $payment['itemsCost'] ?? Money::kopecksToApiRubles($order->getSubtotal());
@@ -108,7 +114,7 @@ final class YandexFoodOrderContractPresenter
             'full_address' => $addr['full'] ?? '',
             'restaurantId' => $meta['yandex_restaurant_id'] ?? null,
             'personQty' => $meta['yandex_persons'] ?? null,
-            'comment' => $this->stripYandexMetaBlock($comment),
+            'comment' => $comment ?? '',
             'latitude' => $addr['latitude'] ?? null,
             'longitude' => $addr['longitude'] ?? null,
             'deliveryDate' => $addr['delivery_at'] ?? null,
@@ -153,43 +159,4 @@ final class YandexFoodOrderContractPresenter
         };
     }
 
-    /**
-     * @return array<string, mixed>|null
-     */
-    private function extractYandexMeta(?string $comment): ?array
-    {
-        if ($comment === null || $comment === '') {
-            return null;
-        }
-
-        $marker = '[yandex_meta]';
-        $pos = strrpos($comment, $marker);
-        if ($pos === false) {
-            return null;
-        }
-
-        $json = trim(substr($comment, $pos + strlen($marker)));
-        if ($json === '') {
-            return null;
-        }
-
-        $decoded = json_decode($json, true);
-
-        return is_array($decoded) ? $decoded : null;
-    }
-
-    private function stripYandexMetaBlock(?string $comment): string
-    {
-        if ($comment === null || $comment === '') {
-            return '';
-        }
-
-        $marker = '[yandex_meta]';
-        $pos = strrpos($comment, $marker);
-        if ($pos === false) {
-            return $comment;
-        }
-
-        return rtrim(substr($comment, 0, $pos));
-    }
 }

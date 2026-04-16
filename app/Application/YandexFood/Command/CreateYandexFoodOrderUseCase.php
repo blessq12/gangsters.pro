@@ -3,23 +3,17 @@
 namespace App\Application\YandexFood\Command;
 
 use App\Application\Common\Exceptions\ApiException;
+use App\Application\Order\Contracts\CustomerSnapshotProvider;
+use App\Application\Order\Contracts\OrderPlacementContract;
 use App\Application\YandexFood\Acl\YandexFoodOrderContractPresenter;
 use App\Application\YandexFood\Acl\YandexFoodOrderPayloadHelper;
+use App\Application\YandexFood\Contracts\YandexFoodOrderMetaStore;
 use App\Application\YandexFood\DTO\YandexCreateOrderRequestDto;
 use App\Application\YandexFood\YandexFoodBaseUseCase;
-use App\Domain\Category\Repository\CategoryRepository;
-use App\Domain\Client\Repository\ClientRepository;
 use App\Domain\Order\Enums\PaymentStatus;
-use App\Domain\Order\Events\OrderCreated;
-use App\Domain\Order\Factories\CustomerSnapshotFactory;
-use App\Domain\Order\Factories\OrderFactory;
-use App\Domain\Order\Factories\OrderItemsFactory;
-use App\Domain\Order\Repositories\OrderRepositoryInterface;
 use App\Domain\Order\ValueObjects\CustomerSnapshot;
 use App\Domain\Order\ValueObjects\DeliveryInfo;
 use App\Domain\Order\ValueObjects\PaymentInfo;
-use App\Domain\Product\Repository\ProductRepository;
-use App\Shared\Events\DomainEventBus;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -38,17 +32,12 @@ use Throwable;
 final class CreateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
 {
     public function __construct(
-        OrderRepositoryInterface $orders,
-        ProductRepository $products,
-        CategoryRepository $categories,
-        private readonly OrderFactory $orderFactory,
-        private readonly OrderItemsFactory $itemsFactory,
-        private readonly CustomerSnapshotFactory $customerFactory,
-        private readonly ClientRepository $clients,
+        private readonly OrderPlacementContract $orderPlacement,
+        private readonly CustomerSnapshotProvider $customerSnapshots,
+        private readonly YandexFoodOrderMetaStore $metaStore,
         private readonly YandexFoodOrderContractPresenter $yandexOrderContract,
-        private readonly DomainEventBus $events,
     ) {
-        parent::__construct($orders, $products, $categories);
+        parent::__construct();
     }
 
     /**
@@ -83,8 +72,7 @@ final class CreateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
 
             $persons = $data['persons'];
             $comment = trim((string) ($data['comment'] ?? ''));
-            $commentWithMeta = YandexFoodOrderPayloadHelper::appendYandexMetaToComment(
-                $comment,
+            $meta = YandexFoodOrderPayloadHelper::buildYandexMeta(
                 $eatsId,
                 $restaurantId,
                 $data['paymentInfo'],
@@ -106,7 +94,7 @@ final class CreateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
             $deliveryInfo = new DeliveryInfo(
                 method: $discriminator,
                 address: $deliveryAddress,
-                comment: $commentWithMeta !== '' ? $commentWithMeta : null,
+                comment: $comment !== '' ? $comment : null,
             );
 
             $paymentInfo = new PaymentInfo(
@@ -122,26 +110,22 @@ final class CreateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
                 address: $deliveryInfo->address,
             );
 
-            $lineInputs = [];
-            foreach ($data['items'] as $item) {
-                $lineInputs[] = [
+            $lineInputs = array_map(
+                static fn (array $item): array => [
                     'product_id' => (int) $item['id'],
                     'quantity' => (int) $item['quantity'],
-                ];
-            }
+                ],
+                $data['items'],
+            );
 
-            $itemsData = $this->itemsFactory->buildItemsData($lineInputs);
-
-            $order = $this->orderFactory->create(
+            $order = $this->orderPlacement->place(
                 clientId: $clientId,
-                customer: $customerSnapshotForOrder,
-                itemsData: $itemsData,
+                customerSnapshot: $customerSnapshotForOrder,
+                items: $lineInputs,
                 deliveryInfo: $deliveryInfo,
                 paymentInfo: $paymentInfo,
             );
-
-            $this->orders->save($order);
-            $this->events->publish(new OrderCreated($order));
+            $this->metaStore->upsert($order->getId(), $meta);
 
             return $this->yandexOrderContract->presentCreateSuccess($order);
         } catch (ApiException $e) {
@@ -161,24 +145,10 @@ final class CreateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
     private function buildCustomerSnapshot(?int $clientId, string $yandexName, string $yandexPhone): CustomerSnapshot
     {
         if ($clientId !== null) {
-            $client = $this->clients->findById($clientId);
-            if ($client === null) {
-                throw new ApiException('Client not found.');
-            }
-            if (!$client->isActive()) {
-                throw new ApiException('Client is blocked or deleted.');
-            }
-
-            return $this->customerFactory->fromClient($client);
+            return $this->customerSnapshots->forAuthenticatedClient($clientId);
         }
 
-        // Нет client_id: как forGuest(), но ФИО/телефон приходят из Еды.
-        return new CustomerSnapshot(
-            name: $yandexName,
-            phone: $yandexPhone,
-            email: null,
-            address: null,
-        );
+        return $this->customerSnapshots->forExternalContact($yandexName, $yandexPhone);
     }
 
 }

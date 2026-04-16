@@ -1,23 +1,27 @@
-import { computed, onBeforeUnmount, ref, watch } from "vue";
-import { useUserStore } from "../../stores/userStore";
-import { useCartStore } from "../../stores/cartStore";
+import { computed, ref } from "vue";
 import { useOrderStore } from "../../stores/orderStore";
+import { useClientCommands } from "../../features/client/useClientCommands";
+import { useClientAddressSelectionModel } from "../../features/client/useClientAddressSelectionModel";
+import { useClientReadModel } from "../../features/client/useClientReadModel";
+import { useCartCommands } from "../../features/shoppingSession/useCartCommands";
+import { useCartReadModel } from "../../features/shoppingSession/useCartReadModel";
 import { formatRuPhone } from "../../utils/phone/formatRuPhone";
 import { validateRuPhoneForSubmit } from "../../validation/ruPhone";
 import { formatMoneyRublesRu } from "../../utils/moneyFormat";
 
 export function useCheckoutFlow() {
-    const userStore = useUserStore();
-    const cartStore = useCartStore();
+    const clientCommands = useClientCommands();
+    const clientReadModel = useClientReadModel();
     const orderStore = useOrderStore();
+    const addressSelection = useClientAddressSelectionModel();
+    const cartCommands = useCartCommands();
+    const cartReadModel = useCartReadModel();
 
     orderStore.initFromStorage();
 
-    const cartItems = computed(() => cartStore.cartItems);
-    const totalAmount = computed(() => cartStore.cartTotalAmount);
-    const isAuthenticated = computed(
-        () => !!userStore.token && !!userStore.profile.id,
-    );
+    const cartItems = computed(() => cartReadModel.items.value);
+    const totalAmount = computed(() => cartReadModel.totalAmount.value);
+    const isAuthenticated = computed(() => clientReadModel.isAuthenticated.value);
 
     const activeStep = ref("cart"); // cart | auth | delivery | payment | confirm | success
     const authTab = ref("login"); // login | register
@@ -39,7 +43,6 @@ export function useCheckoutFlow() {
     const paymentStepError = ref("");
 
     const hasCartItems = computed(() => cartItems.value.length > 0);
-    let complimentaryPreviewTimer = null;
 
     const formatPrice = (value) => formatMoneyRublesRu(value);
 
@@ -124,7 +127,7 @@ export function useCheckoutFlow() {
             }
         } else if (
             orderStore.deliveryInfo.method === "courier" &&
-            !userStore.selectedAddress
+            !addressSelection.selectedAddress.value
         ) {
             deliveryStepError.value = "Выбери адрес доставки или добавь новый.";
             return;
@@ -150,8 +153,6 @@ export function useCheckoutFlow() {
 
     function handlePlaceOrderSuccess() {
         isGuestCheckout.value = false;
-        const ids = cartItems.value.map((item) => item.productId);
-        ids.forEach((id) => cartStore.removeFromCart(id));
         goToSuccess();
     }
 
@@ -179,13 +180,13 @@ export function useCheckoutFlow() {
             }
         } else if (
             orderStore.deliveryInfo.method === "courier" &&
-            !userStore.selectedAddress
+            !addressSelection.selectedAddress.value
         ) {
             return;
         }
 
         try {
-            await orderStore.createOrder(userStore.selectedAddress, cartItems.value, {
+            await orderStore.createOrder(addressSelection.selectedAddress.value, cartItems.value, {
                 isGuest: isGuestCheckout.value,
             });
             handlePlaceOrderSuccess();
@@ -205,7 +206,7 @@ export function useCheckoutFlow() {
         newAddressLoading.value = true;
 
         try {
-            await userStore.addClientAddress({
+            await clientCommands.addAddress({
                 title: newAddressForm.value.title || null,
                 street: newAddressForm.value.street,
                 house: newAddressForm.value.house,
@@ -234,48 +235,31 @@ export function useCheckoutFlow() {
         }
     }
 
-    function scheduleComplimentaryPreview() {
-        if (complimentaryPreviewTimer) {
-            clearTimeout(complimentaryPreviewTimer);
-        }
-
-        complimentaryPreviewTimer = setTimeout(async () => {
-            if (!cartItems.value.length) {
-                orderStore.complimentaryPreviewItems = [];
-                return;
-            }
-
-            try {
-                await orderStore.fetchComplimentaryPreview(cartItems.value);
-            } catch (e) {
-                // Ошибка уже отражается в orderStore.error.complimentaryPreview.
-            }
-        }, 250);
-    }
-
-    watch(
-        cartItems,
-        () => {
-            scheduleComplimentaryPreview();
-        },
-        { deep: true, immediate: true },
-    );
-
-    onBeforeUnmount(() => {
-        if (complimentaryPreviewTimer) {
-            clearTimeout(complimentaryPreviewTimer);
-        }
-    });
-
     return {
-        userStore,
-        cartStore,
+        userStore: {
+            get profile() {
+                return clientReadModel.profile.value;
+            },
+            get token() {
+                return clientReadModel.token.value;
+            },
+            get addresses() {
+                return clientReadModel.addresses.value;
+            },
+            get selectedAddress() {
+                return clientReadModel.selectedAddress.value;
+            },
+            get selectedAddressId() {
+                return clientReadModel.selectedAddressId.value;
+            },
+            clearAuth: clientCommands.clearAuth,
+            addClientAddress: clientCommands.addAddress,
+            selectAddress: clientCommands.selectAddress,
+        },
+        cartStore: cartCommands.cartStore,
         orderStore,
         cartItems,
         totalAmount,
-        complimentaryPreviewItems: computed(
-            () => orderStore.complimentaryPreviewItems,
-        ),
         isAuthenticated,
         hasCartItems,
         activeStep,

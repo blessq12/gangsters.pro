@@ -2,16 +2,13 @@
 
 namespace App\Domain\Order\Factories;
 
-use App\Application\Common\Exceptions\ApiException;
-use App\Domain\Product\Entity\Product;
-use App\Domain\Product\Repository\ProductRepository;
-use App\Services\Order\ComplimentaryItemsResolver;
+use App\Domain\Order\Contracts\CatalogItemSnapshotProvider;
+use App\Domain\Order\Exceptions\OrderItemNotFound;
 
 final class OrderItemsFactory
 {
     public function __construct(
-        private readonly ProductRepository $products,
-        private readonly ComplimentaryItemsResolver $complimentaryItemsResolver,
+        private readonly CatalogItemSnapshotProvider $catalogItems,
     ) {}
 
     /**
@@ -21,15 +18,7 @@ final class OrderItemsFactory
     public function buildItemsData(array $items): array
     {
         $productIds = array_unique(array_column($items, 'product_id'));
-        $products = $this->products->findByIds($productIds);
-
-        $productsById = [];
-        foreach ($products as $p) {
-            $id = $p->id();
-            if ($id !== null) {
-                $productsById[$id] = $p;
-            }
-        }
+        $productsById = $this->catalogItems->getActiveSnapshotsByIds($productIds);
 
         $result = [];
 
@@ -37,55 +26,23 @@ final class OrderItemsFactory
             $productId = $row['product_id'];
             $quantity = $row['quantity'];
 
-            /** @var Product|null $product */
             $product = $productsById[$productId] ?? null;
             if ($product === null) {
-                throw new ApiException("Product not found: {$productId}");
-            }
-            if ($product->status() !== Product::STATUS_ACTIVE) {
-                throw new ApiException("Product is not available: {$productId}");
-            }
-
-            $price = $product->price();
-            if ($price === null || $price <= 0) {
-                throw new ApiException("Product has no price: {$productId}");
+                throw new OrderItemNotFound("Product not found: {$productId}");
             }
 
             $result[] = [
-                'productOriginalId' => $product->id(),
-                'name' => $product->name(),
-                'sku' => $product->articul() ?? (string) $product->id(),
-                'listPrice' => $price,
-                'finalPrice' => $price,
+                'productOriginalId' => $product['id'],
+                'name' => $product['name'],
+                'sku' => $product['sku'],
+                'listPrice' => $product['price'],
+                'finalPrice' => $product['price'],
                 'quantity' => $quantity,
                 'attributes' => [],
-                'media' => $this->productImagesToMedia($product->images()),
+                'media' => $product['media'],
             ];
         }
 
-        foreach ($this->complimentaryItemsResolver->resolveForOrderItemsData($items) as $complimentaryItem) {
-            $result[] = $complimentaryItem;
-        }
-
         return $result;
-    }
-
-    /**
-     * @param  \App\Domain\Product\Entity\ProductImage[]  $images
-     * @return array<int, array<string, mixed>>
-     */
-    private function productImagesToMedia(array $images): array
-    {
-        $out = [];
-        foreach ($images as $img) {
-            foreach ($img->variants() as $v) {
-                $out[] = [
-                    'url' => $v->path(),
-                    'variant' => $v->size(),
-                ];
-            }
-        }
-
-        return $out;
     }
 }

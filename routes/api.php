@@ -33,8 +33,6 @@ Route::middleware(['attempt.sanctum', 'throttle:guest-order'])
 Route::middleware('auth:sanctum')
     ->get('/order', [OrderController::class, 'index']);
 
-Route::post('/order/complimentary-preview', [OrderController::class, 'complimentaryPreview']);
-
 Route::get('/catalog', [CatalogController::class, 'tree']);
 
 Route::controller(YandexFoodController::class)

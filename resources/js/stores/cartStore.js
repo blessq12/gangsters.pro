@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { DOMAIN_EVENTS, emitDomainEvent } from "../shared/domainEvents";
 import { roundRubles2 } from "../utils/moneyFormat";
 
 const CART_STORAGE_KEY = "gangsters_cart";
@@ -142,6 +143,8 @@ export const useCartStore = defineStore("cart", {
             if (typeof window !== "undefined") {
                 window.localStorage.removeItem(CART_STORAGE_KEY);
             }
+            emitDomainEvent(DOMAIN_EVENTS.CART_CLEARED);
+            emitDomainEvent(DOMAIN_EVENTS.CART_CHANGED, { items: this.cartItems });
         },
         addToCart(product, qty = 1) {
             if (!product || !product.id) return;
@@ -160,12 +163,14 @@ export const useCartStore = defineStore("cart", {
                 });
             }
             this.persist();
+            emitDomainEvent(DOMAIN_EVENTS.CART_CHANGED, { items: this.cartItems });
         },
         incrementCart(productId) {
             const item = this.cartItems.find((i) => i.productId === productId);
             if (!item) return;
             item.qty += 1;
             this.persist();
+            emitDomainEvent(DOMAIN_EVENTS.CART_CHANGED, { items: this.cartItems });
         },
         decrementCart(productId) {
             const idx = this.cartItems.findIndex((i) => i.productId === productId);
@@ -176,10 +181,12 @@ export const useCartStore = defineStore("cart", {
                 this.cartItems.splice(idx, 1);
             }
             this.persist();
+            emitDomainEvent(DOMAIN_EVENTS.CART_CHANGED, { items: this.cartItems });
         },
         removeFromCart(productId) {
             this.cartItems = this.cartItems.filter((item) => item.productId !== productId);
             this.persist();
+            emitDomainEvent(DOMAIN_EVENTS.CART_CHANGED, { items: this.cartItems });
         },
     },
 });

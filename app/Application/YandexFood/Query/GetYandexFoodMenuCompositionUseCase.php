@@ -8,19 +8,17 @@ use App\Application\YandexFood\YandexFoodBaseUseCase;
 use App\Domain\Category\Entity\Category;
 use App\Domain\Category\Entity\CategoryProduct;
 use App\Domain\Category\Repository\CategoryRepository;
-use App\Domain\Order\Repositories\OrderRepositoryInterface;
 use App\Domain\Product\Entity\Product;
 use App\Domain\Product\Repository\ProductRepository;
 
 final class GetYandexFoodMenuCompositionUseCase extends YandexFoodBaseUseCase
 {
     public function __construct(
-        OrderRepositoryInterface $orders,
         ProductRepository $products,
         CategoryRepository $categories,
         private readonly YandexFoodMenuCatalogPresenter $yandexMenuCatalog,
     ) {
-        parent::__construct($orders, $products, $categories);
+        parent::__construct($products, $categories);
     }
 
     /**

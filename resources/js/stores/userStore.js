@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { setClientAuthToken } from "../api/clientAuthToken";
-import { useCartStore } from "./cartStore";
+import { DOMAIN_EVENTS, emitDomainEvent } from "../shared/domainEvents";
 import {
     buildRegisterClientPayload,
     buildLoginClientPayload,
@@ -108,8 +108,8 @@ export const useUserStore = defineStore("user", {
             };
             this.addresses = [];
             this.selectedAddressId = null;
-            useCartStore().clear();
             this.persist();
+            emitDomainEvent(DOMAIN_EVENTS.CLIENT_LOGGED_OUT);
         },
         setProfile(partial) {
             this.profile = {
@@ -150,6 +150,7 @@ export const useUserStore = defineStore("user", {
         selectAddress(id) {
             this.selectedAddressId = id;
             this.persist();
+            emitDomainEvent(DOMAIN_EVENTS.CLIENT_ADDRESS_SELECTED, { id });
         },
         clear() {
             this.profile = {
@@ -162,10 +163,10 @@ export const useUserStore = defineStore("user", {
             setClientAuthToken(null);
             this.addresses = [];
             this.selectedAddressId = null;
-            useCartStore().clear();
             if (typeof window !== "undefined") {
                 window.localStorage.removeItem(USER_KEY);
             }
+            emitDomainEvent(DOMAIN_EVENTS.CLIENT_LOGGED_OUT);
         },
         // --- API-кейсы клиента ---
         async registerClient(payload) {
@@ -187,6 +188,10 @@ export const useUserStore = defineStore("user", {
             if (data?.token) {
                 this.setToken(data.token);
             }
+
+            emitDomainEvent(DOMAIN_EVENTS.CLIENT_LOGGED_IN, {
+                clientId: data?.client?.id ?? null,
+            });
 
             return data;
         },
@@ -210,6 +215,10 @@ export const useUserStore = defineStore("user", {
                 this.setToken(data.token);
             }
 
+            emitDomainEvent(DOMAIN_EVENTS.CLIENT_LOGGED_IN, {
+                clientId: data?.client?.id ?? null,
+            });
+
             return data;
         },
         async fetchClientProfile() {
@@ -229,6 +238,10 @@ export const useUserStore = defineStore("user", {
                 }
             }
 
+            emitDomainEvent(DOMAIN_EVENTS.CLIENT_PROFILE_CHANGED, {
+                clientId: data?.client?.id ?? null,
+            });
+
             return data;
         },
         async updateClientProfile(payload) {
@@ -247,6 +260,10 @@ export const useUserStore = defineStore("user", {
                 }
             }
 
+            emitDomainEvent(DOMAIN_EVENTS.CLIENT_PROFILE_CHANGED, {
+                clientId: data?.client?.id ?? null,
+            });
+
             return data;
         },
         async addClientAddress(payload) {
@@ -260,6 +277,10 @@ export const useUserStore = defineStore("user", {
                 }
             }
 
+            emitDomainEvent(DOMAIN_EVENTS.CLIENT_ADDRESS_CREATED, {
+                clientId: this.profile.id,
+            });
+
             return data;
         },
         async deleteClientAddress(addressId) {
@@ -271,6 +292,11 @@ export const useUserStore = defineStore("user", {
                     this.selectAddress(data.client.default_address_id);
                 }
             }
+
+            emitDomainEvent(DOMAIN_EVENTS.CLIENT_ADDRESS_DELETED, {
+                clientId: this.profile.id,
+                addressId,
+            });
 
             return data;
         },
