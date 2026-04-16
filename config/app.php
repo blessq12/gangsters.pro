@@ -64,17 +64,6 @@ return [
     */
     'client_frontend_url' => env('CLIENT_FRONTEND_URL', env('APP_URL', 'http://localhost')),
 
-    /*
-    |--------------------------------------------------------------------------
-    | Legacy Console Commands
-    |--------------------------------------------------------------------------
-    |
-    | Включает одноразовые миграционные/legacy-команды (app/Legacy/Console/Commands).
-    | В production по умолчанию выключено.
-    |
-    */
-    'legacy_commands_enabled' => (bool) env('LEGACY_COMMANDS_ENABLED', false),
-
     'asset_url' => env('ASSET_URL'),
 
     /*

@@ -3,7 +3,6 @@ import { DOMAIN_EVENTS, emitDomainEvent } from "../shared/domainEvents";
 
 const FAVORITES_STORAGE_KEY = "gangsters_favorites";
 const CART_STORAGE_KEY = "gangsters_cart";
-const USER_LEGACY_KEY = "gangsters_user";
 
 function normalizeProductSnapshot(product) {
     if (!product || typeof product !== "object") {
@@ -48,21 +47,6 @@ function normalizeFavorites(items) {
         .filter(Boolean);
 }
 
-function stripFavoritesFromUserPayload() {
-    if (typeof window === "undefined") return;
-    try {
-        const raw = window.localStorage.getItem(USER_LEGACY_KEY);
-        if (!raw) return;
-        const parsed = JSON.parse(raw);
-        if (!parsed || typeof parsed !== "object" || !("favorites" in parsed)) return;
-
-        delete parsed.favorites;
-        window.localStorage.setItem(USER_LEGACY_KEY, JSON.stringify(parsed));
-    } catch (e) {
-        console.error("Failed to strip favorites from user storage", e);
-    }
-}
-
 export const useFavoritesStore = defineStore("favorites", {
     state: () => ({
         items: [],
@@ -101,18 +85,6 @@ export const useFavoritesStore = defineStore("favorites", {
                     }
                 }
 
-                // Legacy: gangsters_user.favorites
-                const userRaw = window.localStorage.getItem(USER_LEGACY_KEY);
-                if (userRaw) {
-                    const userParsed = JSON.parse(userRaw);
-                    if (userParsed && typeof userParsed === "object" && Array.isArray(userParsed.favorites)) {
-                        if (!this.items.length) {
-                            this.items = normalizeFavorites(userParsed.favorites);
-                            this.persist();
-                        }
-                        stripFavoritesFromUserPayload();
-                    }
-                }
             } catch (e) {
                 console.error("Failed to init favorites store from localStorage", e);
             }

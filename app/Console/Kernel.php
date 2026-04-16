@@ -61,9 +61,6 @@ class Kernel extends ConsoleKernel
     protected function commands(): void
     {
         $this->load(__DIR__ . '/Commands');
-        if ((bool) config('app.legacy_commands_enabled', false)) {
-            $this->load(app_path('Legacy/Console/Commands'));
-        }
 
         require base_path('routes/console.php');
     }

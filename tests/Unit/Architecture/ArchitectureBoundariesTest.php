@@ -108,7 +108,7 @@ final class ArchitectureBoundariesTest extends TestCase
         $this->assertFileExists($this->path('app/Domain/Order/Contracts/CatalogItemSnapshotProvider.php'));
     }
 
-    public function test_legacy_migration_commands_are_isolated_from_core_console_folder(): void
+    public function test_legacy_migration_commands_are_removed_from_runtime(): void
     {
         $violations = [];
         foreach ($this->phpFilesIn($this->path('app/Console/Commands')) as $file) {
@@ -118,10 +118,11 @@ final class ArchitectureBoundariesTest extends TestCase
             }
         }
 
+        $this->assertSame([], $this->phpFilesIn($this->path('app/Legacy/Console/Commands')));
         $this->assertSame(
             [],
             $violations,
-            "Legacy команды должны жить в app/Legacy/Console/Commands:\n".implode("\n", $violations),
+            "Legacy команды не должны присутствовать в runtime-коде:\n".implode("\n", $violations),
         );
     }
 

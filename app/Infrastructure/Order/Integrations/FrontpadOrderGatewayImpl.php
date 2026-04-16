@@ -14,6 +14,7 @@ final class FrontpadOrderGatewayImpl implements FrontpadOrderGateway
         private readonly string $apiUrl,
         private readonly string $apiSecret,
         private readonly string $hookUrl,
+        private readonly bool $failSilently = true,
     ) {
     }
 
@@ -77,10 +78,14 @@ final class FrontpadOrderGatewayImpl implements FrontpadOrderGateway
             $body = json_decode($response->getBody()->getContents(), true);
 
             if (!is_array($body) || ($body['result'] ?? null) !== 'success') {
-                // можно добавить обработку неуспешного ответа при необходимости
+                if (! $this->failSilently) {
+                    throw new \RuntimeException('Frontpad returned unsuccessful response.');
+                }
             }
         } catch (\Throwable $e) {
-            // можно добавить обработку исключений при необходимости
+            if (! $this->failSilently) {
+                throw $e;
+            }
         }
     }
 }

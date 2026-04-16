@@ -1,0 +1,1 @@
+import{f as r}from"./vue-core-bYqEXXJ1.js";import{l as a}from"./app-CbzgI4jP.js";function m(){const t=a();return{items:r(()=>t.cartItems),totalAmount:r(()=>t.cartTotalAmount),totalItems:r(()=>t.cartTotalItems),quantityByProduct(o){return t.cartQuantityByProduct(o)}}}export{m as u};

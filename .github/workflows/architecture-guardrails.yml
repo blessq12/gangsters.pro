@@ -24,7 +24,7 @@ jobs:
         run: composer install --no-interaction --prefer-dist --no-progress
 
       - name: Run architecture boundaries tests
-        run: php artisan test --filter=ArchitectureBoundariesTest
+        run: php artisan test tests/Unit/Architecture
 
       - name: Run release smoke subset
         run: php artisan test --filter='(ReleaseGoNoGoSmokeTest|ArchitectureSmokeTest)'

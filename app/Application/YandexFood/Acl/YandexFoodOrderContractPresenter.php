@@ -3,12 +3,9 @@
 namespace App\Application\YandexFood\Acl;
 
 use App\Application\YandexFood\Contracts\YandexFoodOrderMetaStore;
-use App\Domain\Order\Entities\Order;
-use App\Domain\Order\Entities\OrderItem;
-use App\Support\Money;
 
 /**
- * ACL: доменный {@see Order} → тело ответа в форме контракта JSON API Яндекс Еда (как было в легаси-слое).
+ * ACL: order read-model → тело ответа в форме контракта JSON API Яндекс Еда.
  */
 final class YandexFoodOrderContractPresenter
 {
@@ -22,11 +19,11 @@ final class YandexFoodOrderContractPresenter
      *
      * @return array{result: string, orderId: string}
      */
-    public function presentCreateSuccess(Order $order): array
+    public function presentCreateSuccess(array $order): array
     {
         return [
             'result' => 'OK',
-            'orderId' => $order->getId(),
+            'orderId' => (string) ($order['id'] ?? ''),
         ];
     }
 
@@ -35,7 +32,7 @@ final class YandexFoodOrderContractPresenter
      *
      * @return array{result: string, order: array<string, mixed>}
      */
-    public function presentGetByIdSuccess(Order $order): array
+    public function presentGetByIdSuccess(array $order): array
     {
         return [
             'result' => 'OK',
@@ -48,12 +45,12 @@ final class YandexFoodOrderContractPresenter
      *
      * @return array{status: string, comment: string, updatedAt: string}
      */
-    public function presentOrderStatus(Order $order): array
+    public function presentOrderStatus(array $order): array
     {
         return [
             'status' => $this->mapDomainStatusToYandex($order),
             'comment' => '',
-            'updatedAt' => $order->getUpdatedAt()->format(DATE_ATOM),
+            'updatedAt' => (string) ($order['updated_at'] ?? ''),
         ];
     }
 
@@ -62,11 +59,11 @@ final class YandexFoodOrderContractPresenter
      *
      * @return array{result: string, orderId: string}
      */
-    public function presentUpdateSuccess(Order $order): array
+    public function presentUpdateSuccess(array $order): array
     {
         return [
             'result' => 'OK',
-            'orderId' => $order->getId(),
+            'orderId' => (string) ($order['id'] ?? ''),
         ];
     }
 
@@ -86,31 +83,34 @@ final class YandexFoodOrderContractPresenter
     /**
      * @return array<string, mixed>|null
      */
-    public function integrationMeta(Order $order): ?array
+    public function integrationMetaByOrderId(string $orderId): ?array
     {
-        return $this->metaStore->findByOrderId($order->getId());
+        return $this->metaStore->findByOrderId($orderId);
     }
 
     /**
      * @return array<string, mixed>
      */
-    private function presentOrderPayload(Order $order): array
+    private function presentOrderPayload(array $order): array
     {
-        $delivery = $order->getDeliveryInfo();
-        $addr = $delivery?->address ?? [];
-        $comment = $delivery?->comment;
-        $meta = $this->metaStore->findByOrderId($order->getId()) ?? [];
+        $delivery = is_array($order['delivery'] ?? null) ? $order['delivery'] : [];
+        $addr = is_array($delivery['address'] ?? null) ? $delivery['address'] : [];
+        $comment = $delivery['comment'] ?? null;
+        $orderId = (string) ($order['id'] ?? '');
+        $meta = $orderId !== '' ? ($this->metaStore->findByOrderId($orderId) ?? []) : [];
         $payment = $meta['yandex_payment'] ?? [];
 
-        $itemsCost = $payment['itemsCost'] ?? Money::kopecksToApiRubles($order->getSubtotal());
+        $itemsCost = $payment['itemsCost'] ?? ($order['subtotal'] ?? 0);
         $deliveryFee = $payment['deliveryFee'] ?? 0;
-        $total = $payment['total'] ?? Money::kopecksToApiRubles($order->getTotal());
+        $total = $payment['total'] ?? ($order['total'] ?? 0);
         $change = $payment['change'] ?? 0;
+        $customer = is_array($order['customer'] ?? null) ? $order['customer'] : [];
+        $items = is_array($order['items'] ?? null) ? $order['items'] : [];
 
         return [
-            'id' => $order->getId(),
-            'name' => $order->getCustomer()->name,
-            'tel' => $order->getCustomer()->phone,
+            'id' => $orderId,
+            'name' => (string) ($customer['name'] ?? ''),
+            'tel' => (string) ($customer['phone'] ?? ''),
             'full_address' => $addr['full'] ?? '',
             'restaurantId' => $meta['yandex_restaurant_id'] ?? null,
             'personQty' => $meta['yandex_persons'] ?? null,
@@ -124,10 +124,10 @@ final class YandexFoodOrderContractPresenter
             'total' => $total,
             'change' => $change,
             'promos' => $meta['yandex_promos'] ?? [],
-            'discriminator' => $delivery?->method ?? '',
+            'discriminator' => (string) ($delivery['method'] ?? ''),
             'items' => array_map(
-                fn (OrderItem $item) => $this->presentOrderLine($item),
-                $order->getItems(),
+                fn (array $item) => $this->presentOrderLine($item),
+                $items,
             ),
         ];
     }
@@ -135,24 +135,24 @@ final class YandexFoodOrderContractPresenter
     /**
      * @return array<string, mixed>
      */
-    private function presentOrderLine(OrderItem $item): array
+    private function presentOrderLine(array $item): array
     {
-        $product = $item->getProduct();
-        $productId = $item->getProductOriginalId();
+        $product = is_array($item['product'] ?? null) ? $item['product'] : [];
+        $productId = $item['product_original_id'] ?? null;
 
         return [
-            'id' => $productId !== null ? (string) $productId : $item->getId(),
-            'name' => $product->name,
-            'quantity' => $item->getQuantity(),
-            'price' => Money::kopecksToApiRubles($item->getUnitPrice()),
+            'id' => $productId !== null ? (string) $productId : (string) ($item['id'] ?? ''),
+            'name' => (string) ($product['name'] ?? ''),
+            'quantity' => (int) ($item['quantity'] ?? 0),
+            'price' => (float) ($item['unit_price'] ?? 0),
             'modifications' => [],
             'promos' => [],
         ];
     }
 
-    private function mapDomainStatusToYandex(Order $order): string
+    private function mapDomainStatusToYandex(array $order): string
     {
-        return match ($order->getStatus()->value) {
+        return match ((string) ($order['status'] ?? '')) {
             'new' => 'NEW',
             'preparing', 'in_transit', 'delivered' => 'PAID',
             default => 'NEW',

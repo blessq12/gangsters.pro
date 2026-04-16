@@ -2,9 +2,6 @@
 
 namespace App\Application\YandexFood\Presenter;
 
-use App\Domain\Category\Entity\Category;
-use App\Domain\Product\Entity\Product;
-use App\Support\Money;
 use Carbon\Carbon;
 
 /**
@@ -13,7 +10,10 @@ use Carbon\Carbon;
 final class YandexFoodMenuCatalogPresenter
 {
     /**
-     * @param  list<array{category: Category, lines: list<array{product: Product, sortOrder: int}>}>  $blocks
+     * @param  list<array{
+     *   category: array{id: string, name: string, sortOrder: int},
+     *   lines: list<array{product: array{id: string, name: string, description: string, priceRubles: float}, sortOrder: int}>
+     * }>  $blocks
      * @return array{categories: list<array<string, mixed>>, items: list<array<string, mixed>>, lastChange: string}
      */
     public function presentMenuComposition(array $blocks): array
@@ -26,7 +26,7 @@ final class YandexFoodMenuCatalogPresenter
             foreach ($block['lines'] as $line) {
                 $items[] = $this->presentMenuItem(
                     $line['product'],
-                    (string) $block['category']->id(),
+                    (string) $block['category']['id'],
                     $line['sortOrder'],
                 );
             }
@@ -42,13 +42,13 @@ final class YandexFoodMenuCatalogPresenter
     /**
      * @return array{id: string, name: string, parentId: null, sortOrder: int, images: array<int, mixed>}
      */
-    private function presentCategory(Category $category): array
+    private function presentCategory(array $category): array
     {
         return [
-            'id' => (string) $category->id(),
-            'name' => $category->name(),
+            'id' => (string) $category['id'],
+            'name' => (string) $category['name'],
             'parentId' => null,
-            'sortOrder' => $category->sortOrder(),
+            'sortOrder' => (int) $category['sortOrder'],
             'images' => [],
         ];
     }
@@ -56,18 +56,14 @@ final class YandexFoodMenuCatalogPresenter
     /**
      * @return array<string, mixed>
      */
-    private function presentMenuItem(Product $product, string $categoryId, int $sortOrder): array
+    private function presentMenuItem(array $product, string $categoryId, int $sortOrder): array
     {
-        $priceRub = $product->price() !== null
-            ? Money::kopecksToApiRubles($product->price())
-            : 0.0;
-
         return [
-            'id' => (string) $product->id(),
+            'id' => (string) ($product['id'] ?? ''),
             'categoryId' => $categoryId,
-            'name' => $product->name(),
-            'description' => $product->description(),
-            'price' => $priceRub,
+            'name' => (string) ($product['name'] ?? ''),
+            'description' => (string) ($product['description'] ?? ''),
+            'price' => (float) ($product['priceRubles'] ?? 0),
             'vat' => 0,
             'isCatchweight' => false,
             'measure' => 0,

@@ -57,6 +57,8 @@ return [
         'api_url' => env('FRONTPAD_API_URL'),
         'api_secret' => env('FRONTPAD_API_SECRET'),
         'hook_url' => env('FRONTPAD_HOOK_URL', ''),
+        // fail_open: интеграция не блокирует поток заказа, fail_closed: ошибка Frontpad валит обработку.
+        'degradation_mode' => env('FRONTPAD_DEGRADATION_MODE', 'fail_open'),
     ],
     'yandex_food' => [
         'enabled' => filter_var(env('YANDEX_FOOD_ENABLED', true), FILTER_VALIDATE_BOOLEAN),

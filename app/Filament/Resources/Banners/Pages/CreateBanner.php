@@ -11,7 +11,7 @@ class CreateBanner extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        // legacy: поле image в БД пока обязательное, используем desktop-версию
+        // поле image в БД пока обязательное, используем desktop-версию
         $data['image'] = $data['image_desktop'] ?? ($data['image'] ?? null);
         return $data;
     }

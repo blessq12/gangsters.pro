@@ -11,7 +11,7 @@ class EditBanner extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        // legacy: поле image в БД пока обязательное, используем desktop-версию
+        // поле image в БД пока обязательное, используем desktop-версию
         $data['image'] = $data['image_desktop'] ?? ($data['image'] ?? null);
         return $data;
     }

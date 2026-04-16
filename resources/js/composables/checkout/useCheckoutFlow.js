@@ -1,11 +1,11 @@
 import { useCartCommands } from "../../features/shoppingSession/useCartCommands";
+import { useCheckoutOrchestrator } from "../../features/orders/useCheckoutOrchestrator";
 import { useCheckoutState } from "./useCheckoutState";
-import { useCheckoutCommands } from "./useCheckoutCommands";
 
 export function useCheckoutFlow() {
     const cartCommands = useCartCommands();
     const state = useCheckoutState();
-    const commands = useCheckoutCommands(state);
+    const commands = useCheckoutOrchestrator(state);
 
     return {
         cartStore: cartCommands.cartStore,

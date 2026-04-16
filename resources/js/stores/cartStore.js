@@ -3,8 +3,6 @@ import { DOMAIN_EVENTS, emitDomainEvent } from "../shared/domainEvents";
 import { roundRubles2 } from "../utils/moneyFormat";
 
 const CART_STORAGE_KEY = "gangsters_cart";
-/** legacy: корзина раньше лежала в том же ключе, что и профиль */
-const USER_LEGACY_KEY = "gangsters_user";
 
 function normalizeProductSnapshot(product) {
     if (!product || typeof product !== "object") {
@@ -51,25 +49,6 @@ function normalizeCartItems(items) {
         .filter(Boolean);
 }
 
-function stripCartFieldsFromUserPayload() {
-    if (typeof window === "undefined") return;
-
-    try {
-        const raw = window.localStorage.getItem(USER_LEGACY_KEY);
-        if (!raw) return;
-
-        const parsed = JSON.parse(raw);
-        if (!parsed || typeof parsed !== "object") return;
-
-        if (!("cartItems" in parsed)) return;
-
-        delete parsed.cartItems;
-        window.localStorage.setItem(USER_LEGACY_KEY, JSON.stringify(parsed));
-    } catch (e) {
-        console.error("Failed to strip legacy cart fields from user storage", e);
-    }
-}
-
 export const useCartStore = defineStore("cart", {
     state: () => ({
         cartItems: [],
@@ -95,7 +74,6 @@ export const useCartStore = defineStore("cart", {
 
             try {
                 const cartRaw = window.localStorage.getItem(CART_STORAGE_KEY);
-                let loadedFromCartKey = false;
 
                 if (cartRaw) {
                     const parsed = JSON.parse(cartRaw);
@@ -103,25 +81,6 @@ export const useCartStore = defineStore("cart", {
                         if (Array.isArray(parsed.cartItems)) {
                             this.cartItems = normalizeCartItems(parsed.cartItems);
                         }
-                        loadedFromCartKey = true;
-                    }
-                }
-
-                const userRaw = window.localStorage.getItem(USER_LEGACY_KEY);
-                if (userRaw) {
-                    const userParsed = JSON.parse(userRaw);
-                    if (userParsed && typeof userParsed === "object") {
-                        const hasLegacyCart =
-                            Array.isArray(userParsed.cartItems) &&
-                            userParsed.cartItems.length > 0;
-                        if (!loadedFromCartKey && hasLegacyCart) {
-                            if (Array.isArray(userParsed.cartItems)) {
-                                this.cartItems = normalizeCartItems(userParsed.cartItems);
-                            }
-                            this.persist();
-                        }
-
-                        stripCartFieldsFromUserPayload();
                     }
                 }
             } catch (e) {

@@ -25,7 +25,7 @@ final class Company
         private readonly ?string $publicEmail,
         private readonly ?string $workHours,
         private readonly ?string $deliveryHours,
-        /** @var array<int, array<string, mixed>>|null строки: day, work, is_day_off (legacy в БД мог содержать delivery) */
+        /** @var array<int, array<string, mixed>>|null строки: day, work, is_day_off (старый формат БД мог содержать delivery) */
         private readonly ?array $workSchedule,
         private readonly ?int $minOrderAmountKopecks,
         private readonly ?int $deliveryFeeKopecks,

@@ -24,7 +24,7 @@ final class GetSystemBannersUseCase
                     'id' => $banner->id(),
                     'title' => $banner->title(),
                     'description' => $banner->description(),
-                    // legacy поле (оставляем для обратной совместимости)
+                    // поле для обратной совместимости со старым API-контрактом
                     'image' => $this->mediaUrlResolver->resolve($banner->imagePath()),
                     // новые поля под разные устройства
                     'image_mobile' => $this->mediaUrlResolver->resolve(

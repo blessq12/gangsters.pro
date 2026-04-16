@@ -26,6 +26,8 @@ class OrderServiceProvider extends ServiceProvider
             $apiUrl = (string) config('services.frontpad.api_url', '');
             $apiSecret = (string) config('services.frontpad.api_secret', '');
             $hookUrl = (string) config('services.frontpad.hook_url', '');
+            $degradationMode = (string) config('services.frontpad.degradation_mode', 'fail_open');
+            $failSilently = $degradationMode !== 'fail_closed';
 
             if (! $enabled || $apiUrl === '' || $apiSecret === '') {
                 return new class implements FrontpadOrderGateway
@@ -44,6 +46,7 @@ class OrderServiceProvider extends ServiceProvider
                 $apiUrl,
                 $apiSecret,
                 $hookUrl,
+                $failSilently,
             );
         });
     }

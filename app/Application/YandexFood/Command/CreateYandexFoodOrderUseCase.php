@@ -3,17 +3,12 @@
 namespace App\Application\YandexFood\Command;
 
 use App\Application\Common\Exceptions\ApiException;
-use App\Application\Order\Contracts\CustomerSnapshotProvider;
-use App\Application\Order\Contracts\OrderPlacementContract;
+use App\Application\Order\Contracts\OrderApplicationFacadeContract;
 use App\Application\YandexFood\Acl\YandexFoodOrderContractPresenter;
 use App\Application\YandexFood\Acl\YandexFoodOrderPayloadHelper;
 use App\Application\YandexFood\Contracts\YandexFoodOrderMetaStore;
 use App\Application\YandexFood\DTO\YandexCreateOrderRequestDto;
 use App\Application\YandexFood\YandexFoodBaseUseCase;
-use App\Domain\Order\Enums\PaymentStatus;
-use App\Domain\Order\ValueObjects\CustomerSnapshot;
-use App\Domain\Order\ValueObjects\DeliveryInfo;
-use App\Domain\Order\ValueObjects\PaymentInfo;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -32,13 +27,10 @@ use Throwable;
 final class CreateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
 {
     public function __construct(
-        private readonly OrderPlacementContract $orderPlacement,
-        private readonly CustomerSnapshotProvider $customerSnapshots,
+        private readonly OrderApplicationFacadeContract $orders,
         private readonly YandexFoodOrderMetaStore $metaStore,
         private readonly YandexFoodOrderContractPresenter $yandexOrderContract,
-    ) {
-        parent::__construct();
-    }
+    ) {}
 
     /**
      * @return array<string, mixed>
@@ -89,27 +81,6 @@ final class CreateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
 
             $clientId = YandexFoodOrderPayloadHelper::resolveClientId($data);
 
-            $customerSnapshot = $this->buildCustomerSnapshot($clientId, $clientName, $phoneNumber);
-
-            $deliveryInfo = new DeliveryInfo(
-                method: $discriminator,
-                address: $deliveryAddress,
-                comment: $comment !== '' ? $comment : null,
-            );
-
-            $paymentInfo = new PaymentInfo(
-                method: $paymentType,
-                status: PaymentStatus::Unpaid->value,
-            );
-
-            // Адрес в слепке клиента должен совпадать с адресом доставки заказа (как в CreateOrderUseCase).
-            $customerSnapshotForOrder = new CustomerSnapshot(
-                name: $customerSnapshot->name,
-                phone: $customerSnapshot->phone,
-                email: $customerSnapshot->email,
-                address: $deliveryInfo->address,
-            );
-
             $lineInputs = array_map(
                 static fn (array $item): array => [
                     'product_id' => (int) $item['id'],
@@ -118,14 +89,19 @@ final class CreateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
                 $data['items'],
             );
 
-            $order = $this->orderPlacement->place(
+            $order = $this->orders->placeExternalOrder(
                 clientId: $clientId,
-                customerSnapshot: $customerSnapshotForOrder,
+                customerName: $clientName,
+                customerPhone: $phoneNumber,
+                customerEmail: null,
+                deliveryMethod: $discriminator,
+                deliveryAddress: $deliveryAddress,
+                deliveryComment: $comment !== '' ? $comment : null,
+                paymentMethod: $paymentType,
+                paymentStatus: 'unpaid',
                 items: $lineInputs,
-                deliveryInfo: $deliveryInfo,
-                paymentInfo: $paymentInfo,
             );
-            $this->metaStore->upsert($order->getId(), $meta);
+            $this->metaStore->upsert((string) $order['id'], $meta);
 
             return $this->yandexOrderContract->presentCreateSuccess($order);
         } catch (ApiException $e) {
@@ -140,15 +116,6 @@ final class CreateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
 
             return YandexFoodOrderPayloadHelper::failure('Не удалось создать заказ');
         }
-    }
-
-    private function buildCustomerSnapshot(?int $clientId, string $yandexName, string $yandexPhone): CustomerSnapshot
-    {
-        if ($clientId !== null) {
-            return $this->customerSnapshots->forAuthenticatedClient($clientId);
-        }
-
-        return $this->customerSnapshots->forExternalContact($yandexName, $yandexPhone);
     }
 
 }
