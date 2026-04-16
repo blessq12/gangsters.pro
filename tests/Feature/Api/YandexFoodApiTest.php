@@ -14,12 +14,17 @@ final class YandexFoodApiTest extends ApiTestCase
             'PRD_category_product',
             'PRD_products',
             'ORD_orders',
+            'reporting_client_order_facts',
         ]);
+
+        if (! (bool) config('services.yandex_food.enabled', true)) {
+            $this->markTestSkipped('Yandex Food integration is disabled by config.');
+        }
     }
 
     private function yandexAuthHeader(): array
     {
-        $token = env('YANDEX_EDA_AUTH_TOKEN');
+        $token = (string) config('services.yandex_food.auth_token', '');
 
         return ['Authorization' => 'Bearer '.$token];
     }
@@ -44,8 +49,8 @@ final class YandexFoodApiTest extends ApiTestCase
     public function test_login_200_returns_access_token(): void
     {
         $this->postJson('/api/yandex-food/security/oauth/token', [
-            'client_id' => env('YANDEX_CLIENT_ID'),
-            'client_secret' => env('YANDEX_CLIENT_SECRET'),
+            'client_id' => (string) config('services.yandex_food.client_id', ''),
+            'client_secret' => (string) config('services.yandex_food.client_secret', ''),
         ])
             ->assertOk()
             ->assertJsonStructure(['access_token']);

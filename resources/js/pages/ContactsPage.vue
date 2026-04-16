@@ -1,21 +1,17 @@
 <script setup>
-import { computed, onMounted } from "vue";
-import { useSystemStore } from "../stores/systemStore";
+import { computed } from "vue";
+import { useSystemReadModel } from "../features/system/useSystemReadModel";
 import { formatRuPhone, phoneToTelHref } from "../utils/phone/formatRuPhone";
 import {
     formatWorkScheduleForDisplay,
     safeTrim,
 } from "../utils/system/companyDisplay";
 
-const systemStore = useSystemStore();
-
-const company = computed(() => systemStore.company);
-
-onMounted(() => {
-    if (!systemStore.company && !systemStore.loadingCompany) {
-        void systemStore.fetchCompany();
-    }
+const { company: companyRef, loading, errors } = useSystemReadModel({
+    autoload: true,
 });
+
+const company = computed(() => companyRef.value);
 
 const heroDescription = computed(() => {
     const c = company.value;
@@ -151,10 +147,10 @@ const whatsappHref = computed(() => {
         :stats="heroStats"
     >
         <p
-            v-if="systemStore.errorCompany"
+            v-if="errors.company"
             class="mb-4 rounded-2xl border border-red-500/30 bg-red-950/30 px-4 py-3 text-sm text-red-200"
         >
-            {{ systemStore.errorCompany }}
+            {{ errors.company }}
         </p>
 
         <div class="grid gap-4 md:grid-cols-3">

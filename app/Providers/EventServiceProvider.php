@@ -19,7 +19,6 @@ class EventServiceProvider extends ServiceProvider
             SendEmailVerificationNotification::class,
         ],
         \App\Domain\Order\Events\OrderCreated::class => [
-            // \App\Infrastructure\Order\Listeners\PushOrderToFrontpad::class, // интеграция с Frontpad (пока выключена)
             \App\Infrastructure\Notifications\Client\OnOrderCreatedClientEmail::class,
         ],
         \App\Application\Order\Events\OrderCreatedIntegrationEvent::class => [
@@ -68,7 +67,12 @@ class EventServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        if ((bool) config('services.frontpad.enabled', false)) {
+            Event::listen(
+                \App\Domain\Order\Events\OrderCreated::class,
+                \App\Infrastructure\Order\Listeners\PushOrderToFrontpad::class,
+            );
+        }
     }
 
     /**

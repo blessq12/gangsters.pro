@@ -15,9 +15,16 @@ class YandexAuth
      */
     public function handle(Request $request, Closure $next): Response
     {
+        if (! (bool) config('services.yandex_food.enabled', true)) {
+            return response()->json([
+                'reason' => 'Yandex Food integration is disabled',
+            ], 503);
+        }
+
         $token = $request->header('Authorization');
         $token = str_replace('Bearer ', '', $token);
-        if (!$token || $token !== env('YANDEX_EDA_AUTH_TOKEN')) {
+        $expectedToken = (string) config('services.yandex_food.auth_token', '');
+        if (!$token || $token !== $expectedToken) {
             return response()->json([
                 "reason" => "Access token has been expired. You should request a new one"
             ], 400);

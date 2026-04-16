@@ -1,10 +1,12 @@
 <script setup>
-import { computed } from "vue";
+import { computed, onUnmounted } from "vue";
 import { useUiStore } from "./stores/uiStore";
 import MainLayoutMobile from "./layouts/MainLayoutMobile.vue";
 import MainLayoutDesktop from "./layouts/MainLayoutDesktop.vue";
+import { useAppBootstrap } from "./processes/bootstrap/useAppBootstrap";
 
 const uiStore = useUiStore();
+const appBootstrap = useAppBootstrap();
 
 if (typeof window !== "undefined") {
     uiStore.initDeviceMode();
@@ -13,6 +15,10 @@ if (typeof window !== "undefined") {
 const layoutComponent = computed(() =>
     uiStore.deviceMode === "desktop" ? MainLayoutDesktop : MainLayoutMobile,
 );
+
+onUnmounted(() => {
+    appBootstrap.dispose();
+});
 </script>
 
 <template>

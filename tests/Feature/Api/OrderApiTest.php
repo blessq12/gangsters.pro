@@ -278,6 +278,8 @@ final class OrderApiTest extends ApiTestCase
 
     public function test_complimentary_preview_returns_free_items_for_trigger_category(): void
     {
+        $this->markTestSkipped('Promotions vertical удалена: complimentary preview выведен из релизного API.');
+
         $productId = $this->firstProductIdFromCatalog();
         if ($productId === null) {
             $this->markTestSkipped('Нет товаров в каталоге.');
@@ -302,6 +304,8 @@ final class OrderApiTest extends ApiTestCase
 
     public function test_store_adds_complimentary_item_once_per_order(): void
     {
+        $this->markTestSkipped('Promotions vertical удалена: complimentary items больше не добавляются.');
+
         $session = $this->registerClientViaApi();
         $productId = $this->firstProductIdFromCatalog();
         if ($productId === null) {
@@ -333,6 +337,8 @@ final class OrderApiTest extends ApiTestCase
 
     public function test_single_rule_with_multiple_categories_does_not_duplicate_complimentary_item(): void
     {
+        $this->markTestSkipped('Promotions vertical удалена: правило complimentary не поддерживается.');
+
         DB::table('complimentary_item_rule_categories')->delete();
         DB::table('complimentary_item_rules')->delete();
 
@@ -384,6 +390,8 @@ final class OrderApiTest extends ApiTestCase
 
     public function test_complimentary_preview_works_without_token(): void
     {
+        $this->markTestSkipped('Promotions vertical удалена: complimentary preview выведен из релизного API.');
+
         $productId = $this->firstProductIdFromCatalog();
         if ($productId === null) {
             $this->markTestSkipped('Нет товаров в каталоге.');
@@ -399,6 +407,51 @@ final class OrderApiTest extends ApiTestCase
         $items = $response->json('items');
         $this->assertIsArray($items);
         $this->assertNotEmpty($items);
+    }
+
+    public function test_mark_paid_401_without_internal_token(): void
+    {
+        $this->postJson('/api/internal/orders/ORD-unknown/pay')
+            ->assertUnauthorized();
+    }
+
+    public function test_mark_paid_200_sets_payment_status_paid(): void
+    {
+        $this->skipUnlessTablesExist([
+            'UR_clients',
+            'personal_access_tokens',
+            'ORD_orders',
+            'ORD_order_items',
+            'PRD_products',
+            'PRD_category_product',
+            'reporting_client_order_facts',
+        ]);
+
+        $session = $this->registerClientViaApi();
+        $productId = $this->firstProductIdFromCatalog();
+        if ($productId === null) {
+            $this->markTestSkipped('Нет товаров в каталоге.');
+        }
+
+        $created = $this->postJson(
+            '/api/order',
+            [
+                'items' => [['product_id' => $productId, 'quantity' => 1]],
+                'delivery_method' => 'pickup',
+                'payment_method' => 'cash',
+            ],
+            $this->bearerSanctum($session['token']),
+        )->assertCreated();
+
+        $orderId = (string) $created->json('id');
+
+        $this->postJson(
+            '/api/internal/orders/'.$orderId.'/pay',
+            [],
+            ['X-Internal-Api-Token' => (string) config('services.internal.api_token', '')],
+        )
+            ->assertOk()
+            ->assertJsonPath('payment.status', 'paid');
     }
 
     private function seedComplimentaryRuleForProduct(int $triggerProductId, int $giftProductId): void

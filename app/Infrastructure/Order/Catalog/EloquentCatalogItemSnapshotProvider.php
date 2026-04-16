@@ -3,7 +3,7 @@
 namespace App\Infrastructure\Order\Catalog;
 
 use App\Application\Common\Exceptions\ApiException;
-use App\Application\Order\Contracts\CatalogItemSnapshotProvider;
+use App\Domain\Order\Contracts\CatalogItemSnapshotProvider;
 use App\Domain\Product\Entity\Product;
 use App\Domain\Product\Repository\ProductRepository;
 

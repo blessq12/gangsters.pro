@@ -13,7 +13,7 @@ final class FrontpadOrderGatewayImpl implements FrontpadOrderGateway
         private readonly ClientInterface $http,
         private readonly string $apiUrl,
         private readonly string $apiSecret,
-        private readonly string $appUrl,
+        private readonly string $hookUrl,
     ) {
     }
 
@@ -56,7 +56,7 @@ final class FrontpadOrderGatewayImpl implements FrontpadOrderGateway
             'person' => 1,
             'tags' => [],
             'hook_status' => [1, 10, 11],
-            'hook_url' => rtrim($this->appUrl, '/') . '/api/orders/update',
+            'hook_url' => $this->hookUrl,
             'channel' => '',
             'datetime' => '',
             'affiliate' => '',

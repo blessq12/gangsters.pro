@@ -1,0 +1,30 @@
+name: Architecture Guardrails
+
+on:
+  pull_request:
+  push:
+    branches:
+      - dev
+
+jobs:
+  architecture:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          tools: composer
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Run architecture boundaries tests
+        run: php artisan test --filter=ArchitectureBoundariesTest
+
+      - name: Run release smoke subset
+        run: php artisan test --filter='(ReleaseGoNoGoSmokeTest|ArchitectureSmokeTest)'

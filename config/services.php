@@ -33,7 +33,14 @@ return [
 
     'yandex' => [
         'token' => env('YANDEX_TOKEN'),
-        'counters' => explode(',', env('YANDEX_COUNTERS')),
+        'counters' => array_values(
+            array_filter(
+                array_map('trim', explode(',', (string) env('YANDEX_COUNTERS', ''))),
+                static fn (string $counter): bool => $counter !== '',
+            ),
+        ),
+        'metrics_enabled' => filter_var(env('YANDEX_METRICS_ENABLED', false), FILTER_VALIDATE_BOOLEAN),
+        'metrics_service_class' => env('YANDEX_METRICS_SERVICE_CLASS', ''),
     ],
     'telegram' => [
         'token' => env('TELEGRAM_TOKEN'),
@@ -44,6 +51,21 @@ return [
             'error' => env('TELEGRAM_TOPIC_ERROR', 2),
             'event' => env('TELEGRAM_TOPIC_EVENT', 58),
         ],
+    ],
+    'frontpad' => [
+        'enabled' => filter_var(env('FRONTPAD_ENABLED', false), FILTER_VALIDATE_BOOLEAN),
+        'api_url' => env('FRONTPAD_API_URL'),
+        'api_secret' => env('FRONTPAD_API_SECRET'),
+        'hook_url' => env('FRONTPAD_HOOK_URL', ''),
+    ],
+    'yandex_food' => [
+        'enabled' => filter_var(env('YANDEX_FOOD_ENABLED', true), FILTER_VALIDATE_BOOLEAN),
+        'auth_token' => env('YANDEX_EDA_AUTH_TOKEN'),
+        'client_id' => env('YANDEX_CLIENT_ID'),
+        'client_secret' => env('YANDEX_CLIENT_SECRET'),
+    ],
+    'internal' => [
+        'api_token' => env('INTERNAL_API_TOKEN'),
     ],
 
 ];

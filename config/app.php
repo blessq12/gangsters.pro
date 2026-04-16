@@ -64,6 +64,17 @@ return [
     */
     'client_frontend_url' => env('CLIENT_FRONTEND_URL', env('APP_URL', 'http://localhost')),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Legacy Console Commands
+    |--------------------------------------------------------------------------
+    |
+    | Включает одноразовые миграционные/legacy-команды (app/Legacy/Console/Commands).
+    | В production по умолчанию выключено.
+    |
+    */
+    'legacy_commands_enabled' => (bool) env('LEGACY_COMMANDS_ENABLED', false),
+
     'asset_url' => env('ASSET_URL'),
 
     /*
@@ -177,7 +188,6 @@ return [
         App\Providers\RouteServiceProvider::class,
         App\Providers\OrderServiceProvider::class,
         Intervention\Image\ImageServiceProvider::class,
-        App\Providers\FrontPadServiceProvider::class,
         App\Providers\ClientServiceProvider::class,
         App\Providers\ProductDomainServiceProvider::class,
         App\Providers\SystemContentServiceProvider::class,
@@ -196,7 +206,6 @@ return [
     */
 
     'aliases' => Facade::defaultAliases()->merge([
-        'Frontpad' => App\Facades\Frontpad::class,
         'Image' => Intervention\Image\Facades\Image::class,
     ])->toArray(),
 

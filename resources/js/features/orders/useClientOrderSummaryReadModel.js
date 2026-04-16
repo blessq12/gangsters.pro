@@ -2,12 +2,12 @@ import { computed } from "vue";
 import { useOrdersReadModel } from "./useOrdersReadModel";
 
 export function useClientOrderSummaryReadModel({ autoload = true } = {}) {
-    const { stats, refresh, orderStore } = useOrdersReadModel({ autoload });
+    const { stats, refresh, loading, error } = useOrdersReadModel({ autoload });
 
     return {
         stats,
         refresh,
-        loading: computed(() => orderStore.loading.list),
-        error: computed(() => orderStore.error.list),
+        loading: computed(() => loading.value),
+        error: computed(() => error.value),
     };
 }

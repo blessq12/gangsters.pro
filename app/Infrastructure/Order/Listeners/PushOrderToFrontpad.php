@@ -14,8 +14,7 @@ final class PushOrderToFrontpad
 
     public function handle(OrderCreated $event): void
     {
-        // В будущем здесь можно включить реальный пуш в Frontpad:
-        // $this->gateway->pushOrder($event->order());
+        $this->gateway->pushOrder($event->order());
     }
 }
 

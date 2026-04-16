@@ -10,6 +10,8 @@ export function useOrdersReadModel({ autoload = false } = {}) {
 
     const stats = computed(() => orderStore.clientOrderStats);
     const orders = computed(() => orderStore.orders);
+    const loading = computed(() => orderStore.loading.list);
+    const error = computed(() => orderStore.error.list);
 
     async function refresh() {
         return orderStore.fetchOrders();
@@ -20,12 +22,18 @@ export function useOrdersReadModel({ autoload = false } = {}) {
             void refresh().catch(() => {});
         }
 
-        unsubscribeOrderCreated = subscribeDomainEvent(DOMAIN_EVENTS.ORDER_CREATED, () => {
-            void refresh().catch(() => {});
-        });
-        unsubscribeClientLogout = subscribeDomainEvent(DOMAIN_EVENTS.CLIENT_LOGGED_OUT, () => {
-            orderStore.setOrders([]);
-        });
+        unsubscribeOrderCreated = subscribeDomainEvent(
+            DOMAIN_EVENTS.ORDER_CREATED,
+            () => {
+                void refresh().catch(() => {});
+            },
+        );
+        unsubscribeClientLogout = subscribeDomainEvent(
+            DOMAIN_EVENTS.CLIENT_LOGGED_OUT,
+            () => {
+                orderStore.setOrders([]);
+            },
+        );
     });
 
     onUnmounted(() => {
@@ -40,9 +48,11 @@ export function useOrdersReadModel({ autoload = false } = {}) {
     });
 
     return {
-        orderStore,
         stats,
         orders,
+        loading,
+        error,
         refresh,
     };
 }
+

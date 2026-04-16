@@ -6,11 +6,18 @@ use App\Application\Order\Events\OrderCreatedIntegrationEvent;
 use App\Application\Order\Events\OrderUpdatedIntegrationEvent;
 use App\Infrastructure\Reporting\Model\ReportingClientOrderFact;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Schema;
 
 final class UpsertClientOrderFact
 {
+    private static ?bool $tableExists = null;
+
     public function handle(OrderCreatedIntegrationEvent|OrderUpdatedIntegrationEvent $event): void
     {
+        if (! $this->projectionTableExists()) {
+            return;
+        }
+
         if ($event->clientId === null) {
             return;
         }
@@ -34,5 +41,14 @@ final class UpsertClientOrderFact
                     : ($createdAt ?? Carbon::now()),
             ],
         );
+    }
+
+    private function projectionTableExists(): bool
+    {
+        if (self::$tableExists === null) {
+            self::$tableExists = Schema::hasTable('reporting_client_order_facts');
+        }
+
+        return self::$tableExists;
     }
 }

@@ -7,7 +7,7 @@ use App\Domain\Category\Entity\CategoryProduct as CategoryProductEntity;
 use App\Domain\Category\Repository\CategoryRepository as CategoryRepositoryContract;
 use App\Infrastructure\Category\Model\PRD_Category;
 use App\Infrastructure\Category\Model\PRD_CategoryProduct;
-use App\Services\Slug\TransliteratingSlugGenerator;
+use App\Support\Slug\UniqueSlugGenerator;
 use DateTimeImmutable;
 
 class CategoryRepository implements CategoryRepositoryContract
@@ -35,7 +35,7 @@ class CategoryRepository implements CategoryRepositoryContract
             : new PRD_Category();
 
         $model->name = $category->name();
-        $model->slug = app(TransliteratingSlugGenerator::class)->uniqueFrom(
+        $model->slug = app(UniqueSlugGenerator::class)->uniqueFrom(
             $category->name(),
             PRD_Category::class,
             $category->id()

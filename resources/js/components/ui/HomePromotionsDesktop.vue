@@ -1,19 +1,19 @@
 <script setup>
 import { computed, ref } from "vue";
 import { useFloatLoop } from "../../composables/animations/useFloatLoop";
-import { useSystemStore } from "../../stores/systemStore";
+import { useSystemReadModel } from "../../features/system/useSystemReadModel";
 
-const systemStore = useSystemStore();
+const { promotions, loading } = useSystemReadModel({ autoload: true });
 
 const promos = computed(() =>
-    (systemStore.promotions || []).map((promo) => ({
+    (promotions.value || []).map((promo) => ({
         title: promo.title || "",
         description: promo.description || "",
         image: promo.image || "",
     })),
 );
 
-const isLoading = computed(() => systemStore.loadingPromotions);
+const isLoading = computed(() => loading.value.promotions);
 
 const showModal = ref(false);
 const activePromo = ref(null);

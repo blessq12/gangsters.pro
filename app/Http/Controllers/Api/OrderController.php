@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Application\Order\Contracts\MarkOrderPaidContract;
 use App\Application\Order\Command\CreateOrderUseCase;
 use App\Application\Order\DTO\CreateOrderDTO;
 use App\Application\Order\Query\GetClientOrdersUseCase;
 use App\Http\Requests\Order\StoreOrderRequest;
-use App\Infrastructure\Client\Model\UR_Client;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 
@@ -49,11 +49,20 @@ class OrderController extends Controller
         );
 
         $user = $request->user('sanctum');
-        $authenticatedClientId = $user instanceof UR_Client ? (int) $user->id : null;
+        $authenticatedClientId = is_object($user) && isset($user->id)
+            ? (int) $user->id
+            : null;
 
         $order = $useCase->execute($dto, $authenticatedClientId);
 
         return response()->json($order, 201);
+    }
+
+    public function markPaid(string $id, MarkOrderPaidContract $useCase): JsonResponse
+    {
+        $result = $useCase->execute($id);
+
+        return response()->json($result);
     }
 
 }

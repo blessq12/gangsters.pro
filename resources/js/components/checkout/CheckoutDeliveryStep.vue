@@ -10,6 +10,18 @@ import {
 
 const {
     userStore,
+    checkoutState,
+    goToCart,
+    goToPayment,
+    setDeliveryMethod,
+    setDeliveryComment,
+    setGuestContact,
+    patchDeliveryAddress,
+    selectAddress,
+    handleCreateAddress,
+} = useCheckoutFlowContext();
+
+const {
     orderStore,
     newAddressForm,
     newAddressLoading,
@@ -17,10 +29,7 @@ const {
     isNewAddressOpen,
     deliveryStepError,
     isGuestCheckout,
-    goToCart,
-    goToPayment,
-    handleCreateAddress,
-} = useCheckoutFlowContext();
+} = checkoutState;
 
 const guestPhoneForm = ref({
     phone: normalizeRuPhoneDigits(orderStore.guestContact.phone),
@@ -34,7 +43,7 @@ watch(
         const n = normalizeRuPhoneDigits(digits);
         const cur = normalizeRuPhoneDigits(orderStore.guestContact.phone);
         if (n !== cur) {
-            orderStore.setGuestContact({ phone: n });
+            setGuestContact({ phone: n });
         }
     },
 );
@@ -71,7 +80,7 @@ watch(
                             ? 'bg-amber-400 text-black shadow-[0_0_14px_rgba(251,191,36,0.7)]'
                             : 'bg-white/5 text-slate-200 hover:bg-white/10'
                     "
-                    @click="orderStore.setDeliveryInfo({ method })"
+                    @click="setDeliveryMethod(method)"
                 >
                     {{ method === "courier" ? "Курьер" : "Самовывоз" }}
                 </button>
@@ -91,7 +100,7 @@ watch(
                 placeholder="Имя"
                 class="w-full rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
                 @input="
-                    orderStore.setGuestContact({ name: $event.target.value })
+                    setGuestContact({ name: $event.target.value })
                 "
             />
             <input
@@ -109,7 +118,7 @@ watch(
                 placeholder="Email (необязательно)"
                 class="w-full rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
                 @input="
-                    orderStore.setGuestContact({ email: $event.target.value })
+                    setGuestContact({ email: $event.target.value })
                 "
             />
         </div>
@@ -128,7 +137,7 @@ watch(
                     placeholder="Улица"
                     class="col-span-2 rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
                     @input="
-                        orderStore.patchDeliveryAddress({
+                        patchDeliveryAddress({
                             street: $event.target.value,
                         })
                     "
@@ -139,7 +148,7 @@ watch(
                     placeholder="Дом"
                     class="rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
                     @input="
-                        orderStore.patchDeliveryAddress({
+                        patchDeliveryAddress({
                             house: $event.target.value,
                         })
                     "
@@ -150,7 +159,7 @@ watch(
                     placeholder="Подъезд"
                     class="rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
                     @input="
-                        orderStore.patchDeliveryAddress({
+                        patchDeliveryAddress({
                             entrance: $event.target.value,
                         })
                     "
@@ -161,7 +170,7 @@ watch(
                     placeholder="Квартира"
                     class="col-span-2 rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
                     @input="
-                        orderStore.patchDeliveryAddress({
+                        patchDeliveryAddress({
                             apartment: $event.target.value,
                         })
                     "
@@ -198,7 +207,7 @@ watch(
                             type="radio"
                             class="h-4 w-4 rounded-full border-slate-400 text-amber-400 focus:ring-amber-400"
                             :checked="userStore.selectedAddressId === address.id"
-                            @change="userStore.selectAddress(address.id)"
+                            @change="selectAddress(address.id)"
                         />
                         <label
                             :for="`addr-${address.id}`"
@@ -331,9 +340,7 @@ watch(
                 placeholder="Подъезд, этаж, код домофона и другие нюансы"
                 :value="orderStore.deliveryInfo.comment"
                 @input="
-                    orderStore.setDeliveryInfo({
-                        comment: $event.target.value,
-                    })
+                    setDeliveryComment($event.target.value)
                 "
             />
         </div>

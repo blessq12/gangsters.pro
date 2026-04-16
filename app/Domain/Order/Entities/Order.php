@@ -109,6 +109,12 @@ class Order
         $this->assertInvariant();
     }
 
+    public function setPaymentInfo(PaymentInfo $paymentInfo): void
+    {
+        $this->paymentInfo = $paymentInfo;
+        $this->assertInvariant();
+    }
+
     public function markPreparing(): void
     {
         $this->status = OrderStatus::preparing();

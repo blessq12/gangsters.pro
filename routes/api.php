@@ -33,6 +33,9 @@ Route::middleware(['attempt.sanctum', 'throttle:guest-order'])
 Route::middleware('auth:sanctum')
     ->get('/order', [OrderController::class, 'index']);
 
+Route::middleware('internal.token')
+    ->post('/internal/orders/{id}/pay', [OrderController::class, 'markPaid']);
+
 Route::get('/catalog', [CatalogController::class, 'tree']);
 
 Route::controller(YandexFoodController::class)

@@ -3,11 +3,11 @@
 namespace App\Application\Order\Command;
 
 use App\Application\Common\Exceptions\ApiException;
+use App\Application\Order\Contracts\CustomerSnapshotProvider;
+use App\Application\Order\Contracts\OrderPlacementContract;
 use App\Application\Order\DTO\CreateOrderDTO;
-use App\Application\Order\Events\OrderCreatedIntegrationEvent;
 use App\Application\Order\OrderBaseUseCase;
 use App\Application\Order\Presenter\OrderPresenter;
-use App\Application\Order\Contracts\CustomerSnapshotProvider;
 use App\Domain\Order\Enums\PaymentStatus;
 use App\Domain\Order\Factories\OrderFactory;
 use App\Domain\Order\Factories\OrderItemsFactory;
@@ -15,10 +15,8 @@ use App\Domain\Order\Repositories\OrderRepositoryInterface;
 use App\Domain\Order\ValueObjects\CustomerSnapshot;
 use App\Domain\Order\ValueObjects\DeliveryInfo;
 use App\Domain\Order\ValueObjects\PaymentInfo;
-use App\Domain\Order\Events\OrderCreated;
 use App\Shared\Auth\ClientAuthContext;
 use App\Shared\Events\DomainEventBus;
-use App\Shared\Events\IntegrationEventBus;
 
 final class CreateOrderUseCase extends OrderBaseUseCase
 {
@@ -30,7 +28,7 @@ final class CreateOrderUseCase extends OrderBaseUseCase
         OrderItemsFactory $itemsFactory,
         OrderPresenter $presenter,
         DomainEventBus $events,
-        private readonly IntegrationEventBus $integrationEvents,
+        private readonly OrderPlacementContract $orderPlacement,
     ) {
         parent::__construct(
             $orders,
@@ -69,8 +67,6 @@ final class CreateOrderUseCase extends OrderBaseUseCase
             $clientId = null;
         }
 
-        $itemsData = $this->itemsFactory->buildItemsData($dto->items);
-
         $deliveryInfo = new DeliveryInfo(
             method: $dto->deliveryMethod,
             address: $dto->deliveryAddress,
@@ -89,17 +85,13 @@ final class CreateOrderUseCase extends OrderBaseUseCase
             address: $deliveryInfo->address,
         );
 
-        $order = $this->orderFactory->create(
+        $order = $this->orderPlacement->place(
             $clientId,
             $customerSnapshotForOrder,
-            $itemsData,
+            $dto->items,
             $deliveryInfo,
             $paymentInfo,
         );
-
-        $this->orders->save($order);
-        $this->events->publish(new OrderCreated($order));
-        $this->integrationEvents->publish(OrderCreatedIntegrationEvent::fromOrder($order));
 
         return $this->presenter->present($order);
     }

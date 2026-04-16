@@ -4,7 +4,6 @@ namespace App\Http\Requests\Order;
 
 use App\Domain\Order\Enums\DeliveryMethod;
 use App\Domain\Order\Enums\PaymentMethod;
-use App\Infrastructure\Client\Model\UR_Client;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -25,7 +24,7 @@ final class StoreOrderRequest extends FormRequest
      */
     public function rules(): array
     {
-        $isGuest = ! ($this->user('sanctum') instanceof UR_Client);
+        $isGuest = $this->user('sanctum') === null;
 
         return [
             'items' => ['required', 'array', 'min:1'],

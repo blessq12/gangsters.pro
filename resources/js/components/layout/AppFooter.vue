@@ -1,8 +1,8 @@
 <script setup>
-import { computed, onMounted, ref } from "vue";
+import { computed, ref } from "vue";
 import { useEnterSlide } from "../../composables/animations/useEnterSlide";
 import { getLegalTexts } from "../../content/legalTexts";
-import { useSystemStore } from "../../stores/systemStore";
+import { useSystemReadModel } from "../../features/system/useSystemReadModel";
 import { hasDocumentBody } from "../../utils/system/documentBody";
 
 const FOOTER_DOC_KEYS = {
@@ -13,7 +13,7 @@ const FOOTER_DOC_KEYS = {
 
 const year = new Date().getFullYear();
 const fallbackLegal = getLegalTexts();
-const systemStore = useSystemStore();
+const { documents, loading } = useSystemReadModel({ autoload: true });
 
 const showPrivacy = ref(false);
 const showRules = ref(false);
@@ -27,7 +27,8 @@ useEnterSlide(containerRef, {
 });
 
 function resolveFooterDoc(key, fallbackBlock) {
-    const doc = systemStore.documents.find((d) => d.key === key);
+    const docs = documents.value || [];
+    const doc = docs.find((d) => d.key === key);
     const title =
         doc?.title && String(doc.title).trim()
             ? String(doc.title).trim()
@@ -58,12 +59,6 @@ const agreementDoc = computed(() =>
 
 const legalHtmlClass =
     "legal-doc text-sm text-slate-200/90 [&_p]:mb-3 [&_p:last-child]:mb-0 [&_ul]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:mb-3 [&_ol]:list-decimal [&_ol]:pl-5 [&_a]:text-amber-300 [&_a]:underline-offset-2 hover:[&_a]:underline [&_strong]:text-slate-100";
-
-onMounted(() => {
-    if (!systemStore.documents.length && !systemStore.loadingDocuments) {
-        void systemStore.fetchDocuments();
-    }
-});
 </script>
 
 <template>

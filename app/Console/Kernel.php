@@ -5,7 +5,6 @@ namespace App\Console;
 use App\Shared\Notifications\ThreadedMessageChannel;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
-use App\Facades\YaMetrika;
 use Illuminate\Support\Facades\Log;
 
 
@@ -18,7 +17,20 @@ class Kernel extends ConsoleKernel
     {
         $schedule->call(function () {
             try {
-                $statistic = YaMetrika::getTodayStatistic();
+                if (! (bool) config('services.yandex.metrics_enabled', false)) {
+                    return;
+                }
+
+                $metrikaServiceClass = (string) config('services.yandex.metrics_service_class', '');
+                if ($metrikaServiceClass === '') {
+                    return;
+                }
+
+                if (! class_exists($metrikaServiceClass)) {
+                    return;
+                }
+
+                $statistic = app($metrikaServiceClass)->getTodayStatistic();
                 /** @var ThreadedMessageChannel $notifications */
                 $notifications = app(ThreadedMessageChannel::class);
                 $notifications->sendToTopic([
@@ -34,7 +46,7 @@ class Kernel extends ConsoleKernel
                     '🔍 Поиск: ' . $statistic->sources['search'],
                     '👥 Социальные: ' . $statistic->sources['social'],
                 ], 'analytics');
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 Log::error('Kernel::schedule', [
                     'error' => $e->getMessage(),
                     'trace' => $e->getTraceAsString(),
@@ -49,6 +61,9 @@ class Kernel extends ConsoleKernel
     protected function commands(): void
     {
         $this->load(__DIR__ . '/Commands');
+        if ((bool) config('app.legacy_commands_enabled', false)) {
+            $this->load(app_path('Legacy/Console/Commands'));
+        }
 
         require base_path('routes/console.php');
     }

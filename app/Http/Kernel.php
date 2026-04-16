@@ -71,5 +71,6 @@ class Kernel extends HttpKernel
         'verified'              => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
 
         'attempt.sanctum'       => \App\Http\Middleware\AttemptSanctumAuthentication::class,
+        'internal.token'        => \App\Http\Middleware\EnsureInternalApiToken::class,
     ];
 }

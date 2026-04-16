@@ -2,11 +2,14 @@
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
 
 const {
-    orderStore,
-    paymentStepError,
+    checkoutState,
     goToDelivery,
     goToConfirm,
+    setPaymentMethod,
+    setPaymentChangeFrom,
+    setCustomerComment,
 } = useCheckoutFlowContext();
+const { orderStore, paymentStepError } = checkoutState;
 </script>
 
 <template>
@@ -30,7 +33,7 @@ const {
                             ? 'bg-amber-400 text-black shadow-[0_0_14px_rgba(251,191,36,0.7)]'
                             : 'bg-white/5 text-slate-200 hover:bg-white/10'
                     "
-                    @click="orderStore.setPaymentInfo({ method })"
+                    @click="setPaymentMethod(method)"
                 >
                     {{
                         method === "cash"
@@ -56,11 +59,7 @@ const {
                 class="w-full rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-xs text-slate-100 placeholder-slate-500 outline-none focus:border-amber-400"
                 placeholder="Например, 2000"
                 :value="orderStore.paymentInfo.changeFrom ?? ''"
-                @input="
-                    orderStore.setPaymentInfo({
-                        changeFrom: $event.target.value,
-                    })
-                "
+                @input="setPaymentChangeFrom($event.target.value)"
             />
         </div>
 
@@ -80,7 +79,7 @@ const {
                 class="w-full rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-xs text-slate-100 placeholder-slate-500 outline-none focus:border-amber-400"
                 placeholder="Например: без лука, позвонить за 10 минут до доставки"
                 :value="orderStore.customerComment"
-                @input="orderStore.setCustomerComment($event.target.value)"
+                @input="setCustomerComment($event.target.value)"
             />
         </div>
 

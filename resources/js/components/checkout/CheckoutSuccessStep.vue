@@ -1,7 +1,8 @@
 <script setup>
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
 
-const { orderStore, goToCart } = useCheckoutFlowContext();
+const { checkoutState, goToCart } = useCheckoutFlowContext();
+const { orderStore } = checkoutState;
 </script>
 
 <template>

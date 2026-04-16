@@ -17,8 +17,8 @@ use App\Application\YandexFood\Query\GetYandexFoodMenuCompositionUseCase;
 use App\Application\YandexFood\Query\GetYandexFoodMenuPromosUseCase;
 use App\Application\YandexFood\Query\GetYandexFoodOrderByIdUseCase;
 use App\Application\YandexFood\Query\GetYandexFoodOrderStatusUseCase;
+use App\Application\SystemContent\Query\GetSystemCompanyUseCase;
 use App\Http\Controllers\Controller;
-use App\Infrastructure\SystemContent\Model\SYS_Company;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -36,14 +36,25 @@ class YandexFoodController extends Controller
         private readonly GetYandexFoodOrderStatusUseCase $orderStatus,
         private readonly UpdateYandexFoodOrderUseCase $updateOrderUseCase,
         private readonly DeleteYandexFoodOrderUseCase $deleteOrderUseCase,
+        private readonly GetSystemCompanyUseCase $getSystemCompany,
     ) {
         $this->middleware('yandexAuth')->except('login');
     }
 
     public function login(Request $request): JsonResponse
     {
+        if (! (bool) config('services.yandex_food.enabled', true)) {
+            return response()->json([
+                'code' => 100,
+                'description' => 'Yandex Food integration is disabled',
+            ], 503);
+        }
+
         $clientId = $request->client_id;
         $clientSecret = $request->client_secret;
+        $configuredClientId = (string) config('services.yandex_food.client_id', '');
+        $configuredClientSecret = (string) config('services.yandex_food.client_secret', '');
+        $authToken = (string) config('services.yandex_food.auth_token', '');
 
         if (!$clientId || !$clientSecret) {
             return response()->json([
@@ -52,14 +63,14 @@ class YandexFoodController extends Controller
             ], 400);
         }
 
-        if ($clientId !== env('YANDEX_CLIENT_ID') || $clientSecret !== env('YANDEX_CLIENT_SECRET')) {
+        if ($clientId !== $configuredClientId || $clientSecret !== $configuredClientSecret) {
             return response()->json([
                 'code' => 100,
                 'description' => 'Invalid client ID or client secret',
             ], 400);
         }
 
-        if (empty(env('YANDEX_CLIENT_ID')) || empty(env('YANDEX_CLIENT_SECRET'))) {
+        if ($configuredClientId === '' || $configuredClientSecret === '') {
             return response()->json([
                 'code' => 100,
                 'description' => 'Client ID or Client Secret are not set in app config',
@@ -67,7 +78,7 @@ class YandexFoodController extends Controller
         }
 
         return response()->json([
-            'access_token' => env('YANDEX_EDA_AUTH_TOKEN'),
+            'access_token' => $authToken,
         ], 200);
     }
 
@@ -145,14 +156,14 @@ class YandexFoodController extends Controller
 
     public function getRestaurants(): JsonResponse
     {
-        $company = SYS_Company::query()->first();
+        $company = $this->getSystemCompany->execute()['data'] ?? null;
 
         return response()->json([
             'places' => [
                 [
                     'id' => '1',
-                    'title' => $company?->name ?? '',
-                    'address' => trim(($company?->city ?? '').', '.($company?->street ?? '').', '.($company?->house ?? ''), ', '),
+                    'title' => $company['name'] ?? '',
+                    'address' => trim(($company['city'] ?? '').', '.($company['street'] ?? '').', '.($company['house'] ?? ''), ', '),
                 ],
             ],
 

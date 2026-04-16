@@ -2,8 +2,8 @@
 
 namespace App\Http\Middleware;
 
-use App\Infrastructure\Client\Model\UR_Client;
 use Closure;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\PersonalAccessToken;
@@ -31,7 +31,7 @@ final class AttemptSanctumAuthentication
         }
 
         $tokenable = $accessToken->tokenable;
-        if ($tokenable instanceof UR_Client) {
+        if ($tokenable instanceof Authenticatable) {
             Auth::guard('sanctum')->setUser($tokenable);
         }
 

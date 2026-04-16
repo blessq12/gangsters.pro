@@ -3,15 +3,19 @@ import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowC
 
 const {
     userStore,
+    checkoutState,
+    goToPayment,
+    handleConfirmOrder,
+} = useCheckoutFlowContext();
+
+const {
     orderStore,
     cartItems,
     totalAmount,
     formatPrice,
     formatPhone,
     isGuestCheckout,
-    goToPayment,
-    handleConfirmOrder,
-} = useCheckoutFlowContext();
+} = checkoutState;
 </script>
 
 <template>

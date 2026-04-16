@@ -32,9 +32,9 @@ final class OrderCreatedIntegrationEvent implements IntegrationEvent
             items: array_map(
                 static fn ($item): array => [
                     'id' => $item->getId(),
-                    'product_id' => $item->getProductSnapshot()->id,
+                    'product_id' => $item->getProductOriginalId(),
                     'quantity' => $item->getQuantity(),
-                    'final_price' => $item->getFinalPrice(),
+                    'final_price' => $item->getRowTotal(),
                 ],
                 $order->getItems(),
             ),
