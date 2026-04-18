@@ -1,27 +1,65 @@
 <script setup>
-import { computed } from "vue";
+import { computed, onMounted } from "vue";
 import { useUserStore } from "../../stores/userStore";
+import { useSystemStore } from "../../stores/systemStore";
+import {
+    buildCheckoutAlignedPaymentInfoBlocks,
+    buildDeliveryHeroStats,
+    buildYandexMapWidgetSearchUrl,
+    formatAverageDeliveryLine,
+    formatCoverageLine,
+    formatDeliveryFeeRublesLine,
+    formatMinOrderRublesLine,
+    kitchenAddressLine,
+} from "../../utils/system/companyDeliveryFacts";
 
 const userStore = useUserStore();
+const systemStore = useSystemStore();
+
+const company = computed(() => systemStore.company);
 
 const selectedAddressLabel = computed(() => {
     if (userStore.selectedAddress?.label) {
         return userStore.selectedAddress.label;
     }
-
-    return "г. Пример, ул. Ролльная, д. 7";
+    return "Адрес не выбран";
 });
 
-const paymentMethods = [
-    "Наличными",
-    "Картой при получении",
-    "Онлайн",
-    "СБП",
-];
+const paymentMethodLabels = computed(() =>
+    buildCheckoutAlignedPaymentInfoBlocks().map((b) => b.title),
+);
 
-const kitchenAddress = "г. Город, ул. Примерная, д. 1";
-const mapUrl =
-    "https://yandex.ru/map-widget/v1/?ll=37.617644%2C55.755819&mode=search&text=%D0%B3.%20%D0%93%D0%BE%D1%80%D0%BE%D0%B4%2C%20%D1%83%D0%BB.%20%D0%9F%D1%80%D0%B8%D0%BC%D0%B5%D1%80%D0%BD%D0%B0%D1%8F%2C%20%D0%B4.%201&z=15";
+const kitchenLine = computed(() => kitchenAddressLine(company.value));
+
+const mapUrl = computed(() => buildYandexMapWidgetSearchUrl(company.value));
+
+const dockStats = computed(() => {
+    if (systemStore.loadingCompany && !company.value) {
+        return [
+            { label: "Срок", value: "…" },
+            { label: "Мин. заказ", value: "…" },
+            { label: "Покрытие", value: "…" },
+        ];
+    }
+    return buildDeliveryHeroStats(company.value);
+});
+
+const timeLine = computed(() => {
+    if (systemStore.loadingCompany && !company.value) return "…";
+    return formatAverageDeliveryLine(company.value);
+});
+
+const coverageShort = computed(() => {
+    if (systemStore.loadingCompany && !company.value) return "…";
+    const line = formatCoverageLine(company.value);
+    return line !== "—" ? line : "уточняется при заказе";
+});
+
+onMounted(() => {
+    if (!company.value && !systemStore.loadingCompany) {
+        void systemStore.fetchCompany();
+    }
+});
 </script>
 
 <template>
@@ -53,35 +91,17 @@ const mapUrl =
                         </p>
                     </div>
 
-                    <div class="hidden gap-2 sm:grid-cols-3 sm:gap-3 md:grid">
+                    <div class="hidden grid-cols-3 gap-2 sm:grid sm:gap-3">
                         <div
+                            v-for="s in dockStats"
+                            :key="s.label"
                             class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3 backdrop-blur"
                         >
                             <p class="text-[11px] uppercase tracking-[0.2em] text-slate-400">
-                                Срок
+                                {{ s.label }}
                             </p>
                             <p class="mt-1 font-semibold text-amber-300">
-                                45–90 минут
-                            </p>
-                        </div>
-                        <div
-                            class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3 backdrop-blur"
-                        >
-                            <p class="text-[11px] uppercase tracking-[0.2em] text-slate-400">
-                                Бесплатно
-                            </p>
-                            <p class="mt-1 font-semibold text-amber-300">
-                                от 1500 ₽
-                            </p>
-                        </div>
-                        <div
-                            class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3 backdrop-blur"
-                        >
-                            <p class="text-[11px] uppercase tracking-[0.2em] text-slate-400">
-                                Покрытие
-                            </p>
-                            <p class="mt-1 font-semibold text-slate-100">
-                                город и пригород
+                                {{ s.value }}
                             </p>
                         </div>
                     </div>
@@ -89,15 +109,23 @@ const mapUrl =
             </div>
 
             <div
+                v-if="mapUrl"
                 class="overflow-hidden rounded-[1.75rem] border border-white/10 bg-black/30 shadow-[0_18px_50px_rgba(0,0,0,0.45)]"
             >
                 <iframe
                     :src="mapUrl"
-                    title="Карта доставки Gangsters"
+                    title="Карта — адрес кухни"
                     class="h-56 w-full border-0 sm:h-64 lg:h-72 xl:h-80"
                     loading="lazy"
                     referrerpolicy="no-referrer-when-downgrade"
                 />
+            </div>
+            <div
+                v-else
+                class="flex h-56 items-center justify-center rounded-[1.75rem] border border-dashed border-white/15 bg-black/25 px-4 text-center text-sm text-slate-400 sm:h-64 lg:h-72 xl:h-80"
+            >
+                <span v-if="systemStore.loadingCompany">Загрузка карты…</span>
+                <span v-else>Адрес для карты уточняется.</span>
             </div>
 
             <div
@@ -113,7 +141,9 @@ const mapUrl =
                         {{ selectedAddressLabel }}
                     </p>
                     <p class="mt-2 text-slate-400">
-                        Кухня: {{ kitchenAddress }}
+                        <span v-if="kitchenLine">Кухня: {{ kitchenLine }}</span>
+                        <span v-else-if="systemStore.loadingCompany">Кухня: загрузка…</span>
+                        <span v-else>Кухня: адрес уточняется</span>
                     </p>
                     <div class="mt-4 hidden gap-2 sm:grid sm:grid-cols-2">
                         <div class="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
@@ -121,15 +151,15 @@ const mapUrl =
                                 Время
                             </p>
                             <p class="mt-1 text-sm text-slate-200">
-                                45–90 минут
+                                {{ timeLine }}
                             </p>
                         </div>
                         <div class="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
                             <p class="text-[11px] uppercase tracking-[0.2em] text-slate-400">
-                                Статус
+                                Покрытие
                             </p>
                             <p class="mt-1 text-sm text-slate-200">
-                                Подтверждаем перед готовкой
+                                {{ coverageShort }}
                             </p>
                         </div>
                     </div>
@@ -144,12 +174,20 @@ const mapUrl =
                         </p>
                         <div class="mt-3 space-y-2 text-slate-300">
                             <div class="flex items-center justify-between gap-3">
-                                <span>Бесплатная доставка</span>
-                                <span class="font-semibold text-amber-300">от 1500 ₽</span>
+                                <span>Мин. заказ</span>
+                                <span class="font-semibold text-amber-300">{{
+                                    systemStore.loadingCompany && !company
+                                        ? "…"
+                                        : formatMinOrderRublesLine(company)
+                                }}</span>
                             </div>
                             <div class="flex items-center justify-between gap-3">
-                                <span>Покрытие</span>
-                                <span class="font-semibold text-slate-100">город и пригород</span>
+                                <span>Доставка от</span>
+                                <span class="font-semibold text-slate-100">{{
+                                    systemStore.loadingCompany && !company
+                                        ? "…"
+                                        : formatDeliveryFeeRublesLine(company)
+                                }}</span>
                             </div>
                         </div>
                     </div>
@@ -162,7 +200,7 @@ const mapUrl =
                         </p>
                         <div class="mt-3 flex flex-wrap gap-2">
                             <span
-                                v-for="method in paymentMethods"
+                                v-for="method in paymentMethodLabels"
                                 :key="method"
                                 class="rounded-full bg-black/70 px-3 py-1 text-[11px] text-slate-100"
                             >
@@ -177,4 +215,3 @@ const mapUrl =
 </template>
 
 <style scoped></style>
-

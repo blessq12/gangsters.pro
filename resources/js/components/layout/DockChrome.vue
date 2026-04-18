@@ -57,8 +57,7 @@ function handleDockClick(id) {
 }
 
 function handleChromeEnter(el, done) {
-    playBottomBarShow(el, animVariant.value);
-    if (done) done();
+    playBottomBarShow(el, done, animVariant.value);
 }
 
 function handleChromeLeave(el, done) {

@@ -2,15 +2,9 @@
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
 import { DOMAIN_EVENTS, emitDomainEvent } from "../../shared/domainEvents";
 
-const {
-    orderStore,
-    cartItems,
-    totalAmount,
-    formatPrice,
-    isAuthenticated,
-    handleStartCheckout,
-    handleContinueAsGuest,
-} = useCheckoutFlowContext();
+const { checkoutState, handleStartCheckout, handleContinueAsGuest } =
+    useCheckoutFlowContext();
+const { cartItems, totalAmount, formatPrice, isAuthenticated } = checkoutState;
 
 function decrementCart(productId) {
     emitDomainEvent(DOMAIN_EVENTS.CART_DECREMENT_REQUESTED, {

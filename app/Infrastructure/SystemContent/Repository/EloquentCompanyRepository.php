@@ -43,10 +43,8 @@ final class EloquentCompanyRepository implements CompanyRepository
             averageDeliveryTimeMinutes: $company->average_delivery_time_minutes,
             telegram: $company->telegram,
             siteUrl: $company->site_url,
-            socialLinks: $company->social_links,
             vk: $company->vk,
             inst: $company->inst,
         );
     }
 }
-

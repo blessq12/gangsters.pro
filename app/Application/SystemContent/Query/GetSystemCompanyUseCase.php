@@ -47,7 +47,6 @@ final class GetSystemCompanyUseCase
                 'average_delivery_time_minutes' => $company->averageDeliveryTimeMinutes(),
                 'telegram' => $company->telegram(),
                 'site_url' => $company->siteUrl(),
-                'social_links' => $company->socialLinks(),
                 'vk' => $company->vk(),
                 'inst' => $company->inst(),
             ],

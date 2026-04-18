@@ -27,6 +27,8 @@ const slides = computed(() =>
 
 const isLoading = computed(() => systemStore.loadingBanners);
 const swiperRef = ref(null);
+const loopReady = computed(() => slides.value.length >= 3);
+const rewindEnabled = computed(() => slides.value.length > 1 && !loopReady.value);
 
 const swiperBreakpoints = computed(() =>
     isMobile.value
@@ -54,7 +56,12 @@ const goPrev = () => {
     if (!swiper || total < 2) return;
 
     const targetIndex = (swiper.realIndex - 1 + total) % total;
-    swiper.slideToLoop(targetIndex);
+    if (loopReady.value) {
+        swiper.slideToLoop(targetIndex);
+        return;
+    }
+
+    swiper.slideTo(targetIndex);
 };
 
 const goNext = () => {
@@ -63,7 +70,12 @@ const goNext = () => {
     if (!swiper || total < 2) return;
 
     const targetIndex = (swiper.realIndex + 1) % total;
-    swiper.slideToLoop(targetIndex);
+    if (loopReady.value) {
+        swiper.slideToLoop(targetIndex);
+        return;
+    }
+
+    swiper.slideTo(targetIndex);
 };
 </script>
 
@@ -108,10 +120,11 @@ const goNext = () => {
 
             <Swiper
                 v-else-if="slides.length"
-                :loop="true"
-                :looped-slides="slides.length"
-                :loop-additional-slides="slides.length"
-                :autoplay="{ delay: 4500 }"
+                :loop="loopReady"
+                :rewind="rewindEnabled"
+                :looped-slides="loopReady ? slides.length : 0"
+                :loop-additional-slides="loopReady ? slides.length : 0"
+                :autoplay="slides.length > 1 ? { delay: 4500 } : false"
                 :speed="700"
                 :space-between="isMobile ? 10 : 8"
                 :centered-slides="true"

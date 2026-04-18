@@ -1,12 +1,9 @@
 <script setup>
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
 
-const {
-    authTab,
-    handleAuthCompleted,
-    handleContinueAsGuest,
-    goToCart,
-} = useCheckoutFlowContext();
+const { checkoutState, handleAuthCompleted, handleContinueAsGuest, goToCart } =
+    useCheckoutFlowContext();
+const { authTab } = checkoutState;
 </script>
 
 <template>

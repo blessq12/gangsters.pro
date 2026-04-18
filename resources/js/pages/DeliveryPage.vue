@@ -1,15 +1,95 @@
+<script setup>
+import { computed, onMounted } from "vue";
+import { useSystemStore } from "../stores/systemStore";
+import {
+    buildCheckoutAlignedPaymentInfoBlocks,
+    buildDeliveryHeroStats,
+    deliveryHighlightMinOrderHeadline,
+    deliveryHighlightMinOrderSubline,
+    deliveryHighlightMinutesHeadline,
+    deliveryHighlightMinutesSubline,
+    formatAverageDeliveryLine,
+    formatDeliveryFeeRublesLine,
+    formatMinOrderRublesLine,
+    kopecksToRublesOptional,
+} from "../utils/system/companyDeliveryFacts";
+import { safeTrim } from "../utils/system/companyDisplay";
+
+const systemStore = useSystemStore();
+
+const company = computed(() => systemStore.company);
+
+const heroDescription = computed(() => {
+    const c = company.value;
+    const tag = safeTrim(c?.tagline);
+    if (tag) return tag;
+    const desc = safeTrim(c?.description);
+    if (desc) return desc;
+    return "Условия доставки и оплаты зависят от адреса и состава заказа — актуальные значения видно при оформлении. Ниже — ориентиры из настроек сервиса.";
+});
+
+const stats = computed(() => {
+    if (systemStore.loadingCompany && !company.value) {
+        return [
+            { label: "Срок", value: "…" },
+            { label: "Мин. заказ", value: "…" },
+            { label: "Покрытие", value: "…" },
+        ];
+    }
+    return buildDeliveryHeroStats(company.value);
+});
+
+const highlightMinutes = computed(() => ({
+    head: deliveryHighlightMinutesHeadline(company.value),
+    sub: deliveryHighlightMinutesSubline(company.value),
+}));
+
+const highlightMinOrder = computed(() => ({
+    head: deliveryHighlightMinOrderHeadline(company.value),
+    sub: deliveryHighlightMinOrderSubline(company.value),
+}));
+
+const paymentBlocks = buildCheckoutAlignedPaymentInfoBlocks();
+
+const importantLead = computed(() => {
+    const c = company.value;
+    const minRub = kopecksToRublesOptional(c?.min_order_amount_kopecks);
+    const feeRub = kopecksToRublesOptional(c?.delivery_fee_kopecks);
+    if (minRub != null && feeRub != null) {
+        return `Минимальная сумма заказа — ${formatMinOrderRublesLine(c)}, стоимость доставки — ${formatDeliveryFeeRublesLine(c)}.`;
+    }
+    if (minRub != null) {
+        return `Минимальная сумма заказа — ${formatMinOrderRublesLine(c)}.`;
+    }
+    if (feeRub != null) {
+        return `Стоимость доставки — ${formatDeliveryFeeRublesLine(c)}.`;
+    }
+    return "Итоговые суммы и сроки уточняются при оформлении заказа и зависят от адреса.";
+});
+
+const importantSub = computed(() => {
+    const line = formatAverageDeliveryLine(company.value);
+    if (line !== "—") {
+        return `Ориентир по сроку доставки — ${line}. В пиковые часы время может быть больше — это будет видно до подтверждения заказа.`;
+    }
+    return "В пиковые часы время может быть больше — актуальные условия видны до подтверждения заказа.";
+});
+
+onMounted(() => {
+    if (!company.value && !systemStore.loadingCompany) {
+        void systemStore.fetchCompany();
+    }
+});
+</script>
+
 <template>
     <SecondaryPageLayout
         title="Оплата и доставка"
         eyebrow="Правила доставки"
-        description="Доставляем быстро, без мутных условий и скрытых комиссий. Ниже — всё, что нужно знать о сроках, оплате и сценарии получения заказа."
+        :description="heroDescription"
         :breadcrumbs="['Главная', 'Оплата и доставка']"
         hero-image="/images/banners/banner2.jpeg"
-        :stats="[
-            { label: 'Срок', value: '45–90 минут' },
-            { label: 'Бесплатно', value: 'от 1500 ₽' },
-            { label: 'Оплата', value: 'Карта / СБП / наличные' },
-        ]"
+        :stats="stats"
     >
         <div class="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]">
             <SecondaryContentBlock
@@ -17,14 +97,14 @@
                 subtitle="КАК ЭТО РАБОТАЕТ"
             >
                 <p>
-                    Доставляем по городу и пригороду. Доступность зоны, минимальная
-                    сумма заказа и ориентировочное время система показывает прямо при
-                    оформлении, как только указан адрес.
+                    Доставляем в зону покрытия, указанную в настройках сервиса. Точную
+                    доступность по адресу, минимальную сумму и ориентировочное время
+                    вы видите при оформлении, как только указан адрес.
                 </p>
                 <p>
-                    Стандартный диапазон ожидания — от 45 до 90 минут. В часы пик
-                    срок может увеличиться, но мы не морозимся и показываем это
-                    заранее, чтобы у человека не было ложных ожиданий.
+                    Ориентир по среднему времени доставки берётся из данных компании;
+                    фактический срок может отличаться в зависимости от загрузки кухни и
+                    маршрута курьера.
                 </p>
             </SecondaryContentBlock>
 
@@ -33,18 +113,22 @@
                     <p class="text-[11px] uppercase tracking-[0.22em] text-slate-400">
                         Быстрый факт
                     </p>
-                    <p class="mt-3 text-3xl font-semibold text-amber-300">45–90</p>
+                    <p class="mt-3 text-3xl font-semibold text-amber-300">
+                        {{ highlightMinutes.head }}
+                    </p>
                     <p class="mt-1 text-sm text-slate-300">
-                        минут — базовый ориентир по доставке в пределах основной зоны.
+                        {{ highlightMinutes.sub }}
                     </p>
                 </article>
                 <article class="rounded-[1.75rem] border border-white/10 bg-[rgba(255,255,255,0.04)] p-5">
                     <p class="text-[11px] uppercase tracking-[0.22em] text-slate-400">
-                        Бонус
+                        Мин. заказ
                     </p>
-                    <p class="mt-3 text-3xl font-semibold text-amber-300">1500 ₽</p>
+                    <p class="mt-3 text-3xl font-semibold text-amber-300">
+                        {{ highlightMinOrder.head }}
+                    </p>
                     <p class="mt-1 text-sm text-slate-300">
-                        и выше — доставка по городу за наш счёт.
+                        {{ highlightMinOrder.sub }}
                     </p>
                 </article>
             </div>
@@ -103,30 +187,21 @@
                 subtitle="ОПЛАТА"
             >
                 <div class="grid gap-3">
-                    <div class="flex items-start gap-4 rounded-2xl border border-white/10 bg-black/20 p-4">
-                        <i class="mdi mdi-cash text-2xl text-amber-300"></i>
+                    <div
+                        v-for="block in paymentBlocks"
+                        :key="block.id"
+                        class="flex items-start gap-4 rounded-2xl border border-white/10 bg-black/20 p-4"
+                    >
+                        <i
+                            class="text-2xl text-amber-300"
+                            :class="block.icon"
+                        ></i>
                         <div>
-                            <p class="font-medium text-slate-50">Наличными</p>
-                            <p class="mt-1 text-sm text-slate-300">
-                                Удобно, если предпочитаете рассчитываться при получении заказа.
+                            <p class="font-medium text-slate-50">
+                                {{ block.title }}
                             </p>
-                        </div>
-                    </div>
-                    <div class="flex items-start gap-4 rounded-2xl border border-white/10 bg-black/20 p-4">
-                        <i class="mdi mdi-credit-card-outline text-2xl text-amber-300"></i>
-                        <div>
-                            <p class="font-medium text-slate-50">Банковской картой</p>
                             <p class="mt-1 text-sm text-slate-300">
-                                Онлайн при оформлении либо при получении, если такой способ доступен.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="flex items-start gap-4 rounded-2xl border border-white/10 bg-black/20 p-4">
-                        <i class="mdi mdi-cellphone-nfc text-2xl text-amber-300"></i>
-                        <div>
-                            <p class="font-medium text-slate-50">СБП и онлайн-оплата</p>
-                            <p class="mt-1 text-sm text-slate-300">
-                                Быстрый и безопасный вариант для тех, кто хочет закрыть вопрос сразу.
+                                {{ block.description }}
                             </p>
                         </div>
                     </div>
@@ -138,11 +213,10 @@
                     Важно
                 </p>
                 <p class="mt-4 text-2xl font-semibold leading-tight text-slate-50">
-                    Бесплатная доставка начинается от 1500 ₽.
+                    {{ importantLead }}
                 </p>
                 <p class="mt-3 text-sm leading-relaxed text-slate-300">
-                    Подробные условия зависят от адреса и текущих акций. Если за окном
-                    пик или очень дальняя зона, стоимость и сроки показываются до подтверждения заказа.
+                    {{ importantSub }}
                 </p>
                 <div class="mt-5 flex flex-wrap gap-2 text-xs text-slate-200">
                     <span class="rounded-full border border-white/10 bg-black/30 px-3 py-1.5">

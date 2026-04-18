@@ -15,6 +15,8 @@ const promos = computed(() =>
         image: promo.image || "",
     })),
 );
+const loopReady = computed(() => promos.value.length >= 3);
+const rewindEnabled = computed(() => promos.value.length > 1 && !loopReady.value);
 
 const isLoading = computed(() => loading.value.promotions);
 
@@ -48,7 +50,8 @@ const openPromo = (promo) => {
                 :modules="swiperModules"
                 :slides-per-view="1.15"
                 :space-between="12"
-                :loop="promos.length > 1"
+                :loop="loopReady"
+                :rewind="rewindEnabled"
                 :autoplay="
                     promos.length > 1
                         ? { delay: 3200, disableOnInteraction: false, pauseOnMouseEnter: true }

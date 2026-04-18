@@ -2,7 +2,6 @@
 
 namespace App\Infrastructure\SystemContent\Model;
 
-use App\Infrastructure\SystemContent\Model\SYS_CompanyLegal;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -35,7 +34,6 @@ final class SYS_Company extends Model
         'work_hours',
         'delivery_hours',
         'work_schedule',
-        'social_links',
         'min_order_amount_kopecks',
         'delivery_fee_kopecks',
         'average_delivery_time_minutes',
@@ -47,7 +45,6 @@ final class SYS_Company extends Model
 
     protected $casts = [
         'work_schedule' => 'array',
-        'social_links' => 'array',
     ];
 
     public function legal(): HasOne
@@ -55,4 +52,3 @@ final class SYS_Company extends Model
         return $this->hasOne(SYS_CompanyLegal::class, 'company_id');
     }
 }
-

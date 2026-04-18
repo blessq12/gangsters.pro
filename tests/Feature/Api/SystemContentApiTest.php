@@ -87,6 +87,26 @@ final class SystemContentApiTest extends ApiTestCase
         Storage::disk('media')->deleteDirectory($dir);
     }
 
+    public function test_company_payload_has_social_fields_and_no_social_links_key(): void
+    {
+        $this->skipUnlessTablesExist(['companies']);
+
+        $response = $this->getJson('/api/system/company');
+        $response->assertOk();
+
+        $data = $response->json('data');
+        if ($data === null) {
+            $this->markTestSkipped('Нет данных компании в БД.');
+        }
+
+        $this->assertIsArray($data);
+        $this->assertArrayNotHasKey('social_links', $data);
+        $this->assertArrayHasKey('telegram', $data);
+        $this->assertArrayHasKey('vk', $data);
+        $this->assertArrayHasKey('inst', $data);
+        $this->assertArrayHasKey('site_url', $data);
+    }
+
     public function test_company_work_schedule_public_payload_has_no_delivery_slots(): void
     {
         $this->skipUnlessTablesExist(['companies']);

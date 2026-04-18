@@ -11,6 +11,8 @@ const { company: companyRef, loading, errors } = useSystemReadModel({
     autoload: true,
 });
 
+const loadingCompany = computed(() => loading.value.company);
+
 const company = computed(() => companyRef.value);
 
 const heroDescription = computed(() => {
@@ -162,7 +164,7 @@ const whatsappHref = computed(() => {
                     Телефон
                 </p>
                 <p
-                    v-if="systemStore.loadingCompany && !phoneDisplay"
+                    v-if="loadingCompany && !phoneDisplay"
                     class="mt-2 text-sm text-slate-500"
                 >
                     Загрузка…
@@ -202,7 +204,7 @@ const whatsappHref = computed(() => {
                     Telegram
                 </p>
                 <p
-                    v-if="systemStore.loadingCompany && !telegramLabel"
+                    v-if="loadingCompany && !telegramLabel"
                     class="mt-2 text-sm text-slate-500"
                 >
                     Загрузка…
@@ -251,7 +253,7 @@ const whatsappHref = computed(() => {
                     Эл. почта
                 </p>
                 <p
-                    v-if="systemStore.loadingCompany && !emailDisplay"
+                    v-if="loadingCompany && !emailDisplay"
                     class="mt-2 text-sm text-slate-500"
                 >
                     Загрузка…
@@ -283,7 +285,7 @@ const whatsappHref = computed(() => {
                 title="Где мы находимся"
                 subtitle="БАЗА КУХНИ"
             >
-                <template v-if="systemStore.loadingCompany && !hasAddress">
+                <template v-if="loadingCompany && !hasAddress">
                     <p class="text-sm text-slate-500">
                         Загрузка адреса…
                     </p>

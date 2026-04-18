@@ -280,9 +280,10 @@ export function playMobileNavbarLogoPulse(logoEl) {
 
 /**
  * @param {HTMLElement|null|undefined} bar
+ * @param {() => void} [onComplete]
  * @param {DockAnimVariant} [variant]
  */
-export function playBottomBarShow(bar, variant = "mobile") {
+export function playBottomBarShow(bar, onComplete, variant = "mobile") {
     if (!bar) return;
 
     if (variant === "desktop") {
@@ -294,6 +295,7 @@ export function playBottomBarShow(bar, variant = "mobile") {
                 opacity: 1,
                 duration: 0.32,
                 ease: "power2.out",
+                onComplete,
             },
         );
         return;
@@ -307,6 +309,7 @@ export function playBottomBarShow(bar, variant = "mobile") {
             opacity: 1,
             duration: 0.35,
             ease: "power2.out",
+            onComplete,
         },
     );
 }

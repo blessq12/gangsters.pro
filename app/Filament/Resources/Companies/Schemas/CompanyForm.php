@@ -127,25 +127,30 @@ class CompanyForm
                             ->numeric()
                             ->minValue(0),
                     ]),
-                Section::make('Соцсети')
+                Section::make('Соцсети и сайт')
                     ->columns(2)
                     ->columnSpanFull()
                     ->schema([
-                        Repeater::make('social_links')
-                            ->label('Соцсети и ссылки')
-                            ->columnSpanFull()
-                            ->default(self::defaultSocialLinks())
-                            ->schema([
-                                TextInput::make('name')
-                                    ->label('Название')
-                                    ->required(),
-                                TextInput::make('url')
-                                    ->label('Ссылка')
-                                    ->url()
-                                    ->required(),
-                            ])
-                            ->columns(2)
-                            ->collapsible(),
+                        TextInput::make('telegram')
+                            ->label('Telegram')
+                            ->placeholder('@nickname или https://t.me/...')
+                            ->maxLength(255)
+                            ->columnSpanFull(),
+                        TextInput::make('vk')
+                            ->label('ВКонтакте')
+                            ->url()
+                            ->maxLength(500)
+                            ->columnSpanFull(),
+                        TextInput::make('inst')
+                            ->label('Instagram')
+                            ->url()
+                            ->maxLength(500)
+                            ->columnSpanFull(),
+                        TextInput::make('site_url')
+                            ->label('Сайт')
+                            ->url()
+                            ->maxLength(500)
+                            ->columnSpanFull(),
                     ]),
             ]);
     }
@@ -214,10 +219,5 @@ class CompanyForm
             ['day' => 'sat', 'work' => null, 'is_day_off' => '0'],
             ['day' => 'sun', 'work' => null, 'is_day_off' => '0'],
         ];
-    }
-
-    private static function defaultSocialLinks(): array
-    {
-        return [];
     }
 }

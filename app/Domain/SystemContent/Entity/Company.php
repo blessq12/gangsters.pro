@@ -32,8 +32,6 @@ final class Company
         private readonly ?int $averageDeliveryTimeMinutes,
         private readonly ?string $telegram,
         private readonly ?string $siteUrl,
-        /** @var array<int, array<string, mixed>>|null */
-        private readonly ?array $socialLinks,
         private readonly ?string $vk,
         private readonly ?string $inst,
     ) {}
@@ -167,12 +165,6 @@ final class Company
     public function siteUrl(): ?string
     {
         return $this->siteUrl;
-    }
-
-    /** @return array<int, array<string, mixed>>|null */
-    public function socialLinks(): ?array
-    {
-        return $this->socialLinks;
     }
 
     public function vk(): ?string
