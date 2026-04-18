@@ -64,6 +64,91 @@ export function formatCoverageLine(company) {
 }
 
 /**
+ * @param {object|null|undefined} company
+ */
+export function hasAverageDelivery(company) {
+    return averageDeliveryMinutesOrNull(company) != null;
+}
+
+/**
+ * @param {object|null|undefined} company
+ */
+export function hasMinOrder(company) {
+    return kopecksToRublesOptional(company?.min_order_amount_kopecks) != null;
+}
+
+/**
+ * @param {object|null|undefined} company
+ */
+export function hasDeliveryFee(company) {
+    return kopecksToRublesOptional(company?.delivery_fee_kopecks) != null;
+}
+
+/**
+ * @param {object|null|undefined} company
+ */
+export function hasCityCoverage(company) {
+    return safeTrim(company?.city_coverage) !== "";
+}
+
+/**
+ * @param {object|null|undefined} company
+ */
+export function hasKitchenAddressLine(company) {
+    return kitchenAddressLine(company).trim() !== "";
+}
+
+/**
+ * Плитки дока / hero: только поля, заданные в API (без «—»).
+ * @param {object|null|undefined} company
+ * @returns {{ label: string, value: string }[]}
+ */
+export function buildDefinedDeliveryStats(company) {
+    const out = [];
+    if (hasAverageDelivery(company)) {
+        out.push({
+            label: "Срок",
+            value: formatAverageDeliveryLine(company),
+        });
+    }
+    if (hasMinOrder(company)) {
+        out.push({
+            label: "Мин. заказ",
+            value: formatMinOrderRublesLine(company),
+        });
+    }
+    if (hasCityCoverage(company)) {
+        out.push({
+            label: "Покрытие",
+            value: formatCoverageLine(company),
+        });
+    }
+    return out;
+}
+
+/**
+ * Строки блока «Условия» в доке — только при наличии значений.
+ * @param {object|null|undefined} company
+ * @returns {{ label: string, value: string }[]}
+ */
+export function buildDefinedConditionRows(company) {
+    const rows = [];
+    if (hasMinOrder(company)) {
+        rows.push({
+            label: "Мин. заказ",
+            value: formatMinOrderRublesLine(company),
+        });
+    }
+    if (hasDeliveryFee(company)) {
+        rows.push({
+            label: "Доставка от",
+            value: formatDeliveryFeeRublesLine(company),
+        });
+    }
+    return rows;
+}
+
+/**
  * Статистика для SecondaryPageLayout / дока (только данные из API).
  * @param {object|null|undefined} company
  * @returns {{ label: string, value: string }[]}
