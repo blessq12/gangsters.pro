@@ -15,10 +15,16 @@
 
 ## Технологии
 
--   **Backend**: Laravel 10, PHP 8
--   **Frontend**: Vue.js 3, Tailwind CSS, GSAP
+-   **Backend**: Laravel 12, PHP 8+
+-   **Frontend**: Vue.js 3, Vite, Tailwind CSS, GSAP
 -   **База данных**: MySQL
--   **Дополнительно**: Pinia (state management), Material Design Icons
+-   **Дополнительно**: Pinia, Laravel Sanctum (API), Material Design Icons
+
+## Архитектура (кратко)
+
+-   Бэкенд: вертикали **Domain / Application / Infrastructure** (`App\Domain\*`, `App\Application\*`, `App\Infrastructure\*`), HTTP + `FormRequest`.
+-   **Корзина, избранное, черновик чекаута** — сервер (`/api/shopping`, cookie-сессия, см. `docs/shopping-session-csrf.md`); заказ может собираться из серверной корзины.
+-   Детальные правила для ИИ и разработки: [`.cursor/rules/project-core.mdc`](.cursor/rules/project-core.mdc).
 
 ## Особенности
 
