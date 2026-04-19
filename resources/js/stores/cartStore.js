@@ -1,8 +1,12 @@
 import { defineStore } from "pinia";
 import { DOMAIN_EVENTS, emitDomainEvent } from "../shared/domainEvents";
 import { roundRubles2 } from "../utils/moneyFormat";
-
-const CART_STORAGE_KEY = "gangsters_cart";
+import {
+    upsertCartLineRequest,
+    removeCartLineRequest,
+    clearCartRequest,
+    recalculateCartRequest,
+} from "../api/shoppingApi";
 
 function normalizeProductSnapshot(product) {
     if (!product || typeof product !== "object") {
@@ -17,7 +21,7 @@ function normalizeProductSnapshot(product) {
     };
 }
 
-function normalizeCartItems(items) {
+function normalizeCartItemsFromServer(items) {
     if (!Array.isArray(items)) {
         return [];
     }
@@ -52,6 +56,8 @@ function normalizeCartItems(items) {
 export const useCartStore = defineStore("cart", {
     state: () => ({
         cartItems: [],
+        loading: false,
+        error: null,
     }),
     getters: {
         cartQuantityByProduct: (state) => (id) => {
@@ -70,82 +76,111 @@ export const useCartStore = defineStore("cart", {
     },
     actions: {
         initFromStorage() {
-            if (typeof window === "undefined") return;
-
-            try {
-                const cartRaw = window.localStorage.getItem(CART_STORAGE_KEY);
-
-                if (cartRaw) {
-                    const parsed = JSON.parse(cartRaw);
-                    if (parsed && typeof parsed === "object") {
-                        if (Array.isArray(parsed.cartItems)) {
-                            this.cartItems = normalizeCartItems(parsed.cartItems);
-                        }
-                    }
-                }
-            } catch (e) {
-                console.error("Failed to init cart store from localStorage", e);
-            }
+            /* миграция в bootstrapShoppingFromApi; локальный кэш корзины не используем */
         },
-        persist() {
-            if (typeof window === "undefined") return;
 
-            window.localStorage.setItem(
-                CART_STORAGE_KEY,
-                JSON.stringify({
-                    cartItems: this.cartItems,
-                }),
-            );
-        },
-        clear() {
-            this.cartItems = [];
-            if (typeof window !== "undefined") {
-                window.localStorage.removeItem(CART_STORAGE_KEY);
-            }
-            emitDomainEvent(DOMAIN_EVENTS.CART_CLEARED);
+        /**
+         * @param {object} cart — фрагмент ответа /api/shopping/state (поле cart)
+         */
+        applyServerSnapshot(cart) {
+            this.cartItems = normalizeCartItemsFromServer(cart?.items ?? []);
             emitDomainEvent(DOMAIN_EVENTS.CART_CHANGED, { items: this.cartItems });
         },
-        addToCart(product, qty = 1) {
+
+        _applyStateData(data) {
+            if (data && typeof data === "object" && data.cart) {
+                this.applyServerSnapshot(data.cart);
+            }
+        },
+
+        async addToCart(product, qty = 1) {
             if (!product || !product.id) return;
             const id = product.id;
-            const safeQty = Math.max(1, Number(qty) || 1);
-            const snapshot = normalizeProductSnapshot(product);
+            const add = Math.max(1, Number(qty) || 1);
             const existing = this.cartItems.find((i) => i.productId === id);
-            if (existing) {
-                existing.qty += safeQty;
-                existing.productSnapshot = snapshot || existing.productSnapshot;
-            } else {
-                this.cartItems.push({
-                    productId: id,
-                    qty: safeQty,
-                    productSnapshot: snapshot,
-                });
-            }
-            this.persist();
-            emitDomainEvent(DOMAIN_EVENTS.CART_CHANGED, { items: this.cartItems });
+            const nextQty = (existing ? existing.qty : 0) + add;
+            await this._upsertLine(id, nextQty);
         },
-        incrementCart(productId) {
+
+        async incrementCart(productId) {
             const item = this.cartItems.find((i) => i.productId === productId);
             if (!item) return;
-            item.qty += 1;
-            this.persist();
-            emitDomainEvent(DOMAIN_EVENTS.CART_CHANGED, { items: this.cartItems });
+            await this._upsertLine(productId, item.qty + 1);
         },
-        decrementCart(productId) {
-            const idx = this.cartItems.findIndex((i) => i.productId === productId);
-            if (idx === -1) return;
-            const item = this.cartItems[idx];
-            item.qty -= 1;
-            if (item.qty <= 0) {
-                this.cartItems.splice(idx, 1);
+
+        async decrementCart(productId) {
+            const item = this.cartItems.find((i) => i.productId === productId);
+            if (!item) return;
+            const next = item.qty - 1;
+            if (next <= 0) {
+                await this.removeFromCart(productId);
+            } else {
+                await this._upsertLine(productId, next);
             }
-            this.persist();
-            emitDomainEvent(DOMAIN_EVENTS.CART_CHANGED, { items: this.cartItems });
         },
-        removeFromCart(productId) {
-            this.cartItems = this.cartItems.filter((item) => item.productId !== productId);
-            this.persist();
-            emitDomainEvent(DOMAIN_EVENTS.CART_CHANGED, { items: this.cartItems });
+
+        async removeFromCart(productId) {
+            this.loading = true;
+            this.error = null;
+            try {
+                const data = await removeCartLineRequest(productId);
+                this._applyStateData(data);
+            } catch (e) {
+                console.error("removeFromCart", e);
+                this.error = e?.response?.data?.message || "Не удалось обновить корзину.";
+                throw e;
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        async clear() {
+            this.loading = true;
+            this.error = null;
+            try {
+                const data = await clearCartRequest();
+                this._applyStateData(data);
+                emitDomainEvent(DOMAIN_EVENTS.CART_CLEARED);
+            } catch (e) {
+                console.error("clear cart", e);
+                this.error = e?.response?.data?.message || "Не удалось очистить корзину.";
+                throw e;
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        async recalculateFromServer() {
+            this.loading = true;
+            this.error = null;
+            try {
+                const data = await recalculateCartRequest();
+                this._applyStateData(data);
+            } catch (e) {
+                console.error("recalculate cart", e);
+                this.error = e?.response?.data?.message || "Не удалось пересчитать корзину.";
+                throw e;
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        async _upsertLine(productId, quantity) {
+            this.loading = true;
+            this.error = null;
+            try {
+                const data = await upsertCartLineRequest({
+                    product_id: Number(productId),
+                    quantity: Number(quantity),
+                });
+                this._applyStateData(data);
+            } catch (e) {
+                console.error("upsert cart line", e);
+                this.error = e?.response?.data?.message || "Не удалось обновить корзину.";
+                throw e;
+            } finally {
+                this.loading = false;
+            }
         },
     },
 });

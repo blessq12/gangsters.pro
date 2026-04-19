@@ -15,6 +15,8 @@ use App\Domain\Order\Repositories\OrderRepositoryInterface;
 use App\Domain\Order\ValueObjects\CustomerSnapshot;
 use App\Domain\Order\ValueObjects\DeliveryInfo;
 use App\Domain\Order\ValueObjects\PaymentInfo;
+use App\Domain\Shopping\Entities\ShoppingSession;
+use App\Domain\Shopping\Repositories\ShoppingSessionRepositoryInterface;
 use App\Shared\Auth\ClientAuthContext;
 use App\Shared\Events\DomainEventBus;
 
@@ -29,6 +31,7 @@ final class CreateOrderUseCase extends OrderBaseUseCase
         OrderPresenter $presenter,
         DomainEventBus $events,
         private readonly OrderPlacementContract $orderPlacement,
+        private readonly ShoppingSessionRepositoryInterface $shoppingSessions,
     ) {
         parent::__construct(
             $orders,
@@ -44,9 +47,21 @@ final class CreateOrderUseCase extends OrderBaseUseCase
     /**
      * @return array<string, mixed>
      */
-    public function execute(CreateOrderDTO $dto, ?int $authenticatedClientId): array
+    public function execute(CreateOrderDTO $dto, ?int $authenticatedClientId, ?ShoppingSession $shoppingSession = null): array
     {
-        if (\count($dto->items) === 0) {
+        $items = $dto->items;
+        if ($shoppingSession !== null && ! $shoppingSession->isEmptyCart()) {
+            $items = $shoppingSession->cartLinesAsOrderItems();
+        }
+
+        if ($authenticatedClientId !== null && $shoppingSession !== null) {
+            $sid = $shoppingSession->getClientId();
+            if ($sid !== null && $sid !== $authenticatedClientId) {
+                throw new ApiException('Shopping session does not belong to the current client.', 403);
+            }
+        }
+
+        if (\count($items) === 0) {
             throw new ApiException('Order must contain at least one item.');
         }
 
@@ -88,10 +103,16 @@ final class CreateOrderUseCase extends OrderBaseUseCase
         $order = $this->orderPlacement->place(
             $clientId,
             $customerSnapshotForOrder,
-            $dto->items,
+            $items,
             $deliveryInfo,
             $paymentInfo,
         );
+
+        if ($shoppingSession !== null) {
+            $shoppingSession->clearCart();
+            $shoppingSession->setCheckoutDraft(null);
+            $this->shoppingSessions->save($shoppingSession);
+        }
 
         return $this->presenter->present($order);
     }

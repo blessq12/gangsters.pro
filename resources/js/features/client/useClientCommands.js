@@ -5,7 +5,7 @@ export function useClientCommands() {
 
     return {
         clearAuth() {
-            userStore.clearAuth();
+            return userStore.clearAuth();
         },
         fetchProfile() {
             return userStore.fetchClientProfile();

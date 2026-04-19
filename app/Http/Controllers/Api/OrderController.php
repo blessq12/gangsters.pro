@@ -6,6 +6,8 @@ use App\Application\Order\Contracts\MarkOrderPaidContract;
 use App\Application\Order\Command\CreateOrderUseCase;
 use App\Application\Order\DTO\CreateOrderDTO;
 use App\Application\Order\Query\GetClientOrdersUseCase;
+use App\Domain\Shopping\Entities\ShoppingSession;
+use App\Http\Middleware\EnsureShoppingSession;
 use App\Http\Requests\Order\StoreOrderRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
@@ -31,13 +33,14 @@ class OrderController extends Controller
         $guestPhone = $payload['customer_phone'] ?? null;
         $guestEmail = $payload['customer_email'] ?? null;
 
+        $rows = isset($payload['items']) && is_array($payload['items']) ? $payload['items'] : [];
         $dto = new CreateOrderDTO(
             items: array_map(
                 fn (array $row) => [
                     'product_id' => (int) $row['product_id'],
                     'quantity' => (int) $row['quantity'],
                 ],
-                $payload['items'],
+                $rows,
             ),
             deliveryMethod: $payload['delivery_method'],
             deliveryAddress: $payload['delivery_address'] ?? null,
@@ -53,7 +56,12 @@ class OrderController extends Controller
             ? (int) $user->id
             : null;
 
-        $order = $useCase->execute($dto, $authenticatedClientId);
+        $shoppingSession = $request->attributes->get(EnsureShoppingSession::ATTRIBUTE_KEY);
+        $order = $useCase->execute(
+            $dto,
+            $authenticatedClientId,
+            $shoppingSession instanceof ShoppingSession ? $shoppingSession : null,
+        );
 
         return response()->json($order, 201);
     }

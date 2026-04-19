@@ -176,6 +176,7 @@ return [
         App\Providers\Filament\AdminPanelProvider::class,
         App\Providers\RouteServiceProvider::class,
         App\Providers\OrderServiceProvider::class,
+        App\Providers\ShoppingServiceProvider::class,
         Intervention\Image\ImageServiceProvider::class,
         App\Providers\ClientServiceProvider::class,
         App\Providers\ProductDomainServiceProvider::class,

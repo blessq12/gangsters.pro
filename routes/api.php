@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\CatalogController;
 use App\Http\Controllers\Api\ClientController;
 use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\ShoppingController;
 use App\Http\Controllers\Api\SystemContentController;
 use App\Http\Controllers\Api\YandexFoodController;
 use Illuminate\Support\Facades\Route;
@@ -27,8 +28,24 @@ Route::prefix('client')->controller(ClientController::class)->group(function () 
     Route::delete('/addresses/{id}', 'deleteAddress');
 });
 
-Route::middleware(['attempt.sanctum', 'throttle:guest-order'])
+Route::middleware(['attempt.sanctum', 'shopping.session', 'throttle:guest-order'])
     ->post('/order', [OrderController::class, 'store']);
+
+Route::middleware(['attempt.sanctum', 'shopping.session'])->prefix('shopping')->group(function () {
+    Route::get('/state', [ShoppingController::class, 'state']);
+    Route::post('/cart/items', [ShoppingController::class, 'upsertCartLine']);
+    Route::delete('/cart/items/{productId}', [ShoppingController::class, 'removeCartLine']);
+    Route::delete('/cart', [ShoppingController::class, 'clearCart']);
+    Route::post('/cart/recalculate', [ShoppingController::class, 'recalculate']);
+    Route::post('/favorites/{productId}', [ShoppingController::class, 'toggleFavorite']);
+    Route::delete('/favorites/{productId}', [ShoppingController::class, 'removeFavorite']);
+    Route::patch('/checkout-draft', [ShoppingController::class, 'patchCheckoutDraft']);
+    Route::post('/migrate', [ShoppingController::class, 'migrate']);
+    Route::post('/logout', [ShoppingController::class, 'logout']);
+});
+
+Route::middleware(['attempt.sanctum', 'shopping.session', 'auth:sanctum'])
+    ->post('/shopping/merge', [ShoppingController::class, 'merge']);
 
 Route::middleware('auth:sanctum')
     ->get('/order', [OrderController::class, 'index']);

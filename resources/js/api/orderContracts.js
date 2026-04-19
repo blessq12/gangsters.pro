@@ -8,6 +8,7 @@
  * @param {Object|null} params.selectedAddress
  * @param {string|null} params.customerComment
  * @param {{ name: string, phone: string, email?: string|null }|null} params.guestContact — только без авторизации
+ * @param {boolean} [params.serverCartOnly=true] — состав заказа с бэка (cookie-сессия), items в теле пустые
  * @returns {{
  *   items: Array<{ product_id: number, quantity: number }>,
  *   delivery_method: string,
@@ -26,11 +27,14 @@ export function buildCreateOrderPayloadDto({
     selectedAddress,
     customerComment,
     guestContact,
+    serverCartOnly = true,
 }) {
-    const items = (cartItems || []).map((item) => ({
-        product_id: Number(item.productId),
-        quantity: Number(item.qty),
-    }));
+    const items = serverCartOnly
+        ? []
+        : (cartItems || []).map((item) => ({
+              product_id: Number(item.productId),
+              quantity: Number(item.qty),
+          }));
 
     let deliveryAddress = deliveryInfo?.address || null;
 

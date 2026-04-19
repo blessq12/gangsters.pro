@@ -6,19 +6,19 @@ export function useCartCommands() {
     return {
         cartStore,
         addProductToCart(product, qty = 1) {
-            cartStore.addToCart(product, qty);
+            return cartStore.addToCart(product, qty);
         },
         incrementProductInCart(productId) {
-            cartStore.incrementCart(productId);
+            return cartStore.incrementCart(productId);
         },
         decrementProductInCart(productId) {
-            cartStore.decrementCart(productId);
+            return cartStore.decrementCart(productId);
         },
         removeProductFromCart(productId) {
-            cartStore.removeFromCart(productId);
+            return cartStore.removeFromCart(productId);
         },
         clearCart() {
-            cartStore.clear();
+            return cartStore.clear();
         },
     };
 }

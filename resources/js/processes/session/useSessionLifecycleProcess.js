@@ -1,6 +1,8 @@
 import { DOMAIN_EVENTS, subscribeDomainEvent } from "../../shared/domainEvents";
+import { mergeShoppingAfterAuth } from "../../features/shopping/shoppingBootstrap";
+import { useCartStore } from "../../stores/cartStore";
+import { useFavoritesStore } from "../../stores/favoritesStore";
 import { useCartCommands } from "../../features/shoppingSession/useCartCommands";
-import { useFavoritesCommands } from "../../features/favorites/useFavoritesCommands";
 import { useUiStore } from "../../stores/uiStore";
 
 let processInitialized = false;
@@ -9,13 +11,17 @@ let cleanupHandlers = [];
 export function useSessionLifecycleProcess() {
     if (!processInitialized) {
         const cartCommands = useCartCommands();
-        const favoritesCommands = useFavoritesCommands();
+        const cartStore = useCartStore();
+        const favoritesStore = useFavoritesStore();
         const uiStore = useUiStore();
 
         cleanupHandlers = [
+            subscribeDomainEvent(DOMAIN_EVENTS.CLIENT_LOGGED_IN, () => {
+                void mergeShoppingAfterAuth();
+            }),
             subscribeDomainEvent(DOMAIN_EVENTS.CLIENT_LOGGED_OUT, () => {
-                cartCommands.clearCart();
-                favoritesCommands.clear();
+                cartStore.$patch({ cartItems: [], loading: false, error: null });
+                favoritesStore.$patch({ items: [], loading: false, error: null });
                 uiStore.setDockActive(null);
             }),
             subscribeDomainEvent(DOMAIN_EVENTS.ORDER_CREATED, () => {

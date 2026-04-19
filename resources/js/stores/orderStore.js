@@ -2,6 +2,8 @@ import { defineStore } from "pinia";
 import { DOMAIN_EVENTS, emitDomainEvent } from "../shared/domainEvents";
 import { buildCreateOrderPayloadDto } from "../api/orderContracts";
 import { createOrderRequest, fetchOrdersRequest } from "../api/orderApi";
+import { patchCheckoutDraftRequest } from "../api/shoppingApi";
+import { applyShoppingSnapshotToStores } from "../features/shopping/shoppingApplySnapshot";
 
 const ORDER_STORAGE_KEY = "gangsters_order_draft";
 
@@ -118,17 +120,64 @@ export const useOrderStore = defineStore("order", {
                 console.error("Failed to init order store from localStorage", e);
             }
         },
-        persistDraft() {
-            if (typeof window === "undefined") return;
-
-            const payload = {
-                deliveryInfo: this.deliveryInfo,
-                paymentInfo: this.paymentInfo,
-                customerComment: this.customerComment,
-                guestContact: this.guestContact,
+        async persistDraft() {
+            const body = {
+                delivery_info: {
+                    method: this.deliveryInfo.method,
+                    address: this.deliveryInfo.address,
+                    comment: this.deliveryInfo.comment,
+                    scheduled_at: this.deliveryInfo.scheduledAt,
+                },
+                payment_info: {
+                    method: this.paymentInfo.method,
+                    change_from: this.paymentInfo.changeFrom,
+                },
+                guest_contact: {
+                    name: this.guestContact.name,
+                    phone: this.guestContact.phone,
+                    email: this.guestContact.email,
+                },
+                customer_comment: this.customerComment,
             };
+            try {
+                const data = await patchCheckoutDraftRequest(body);
+                applyShoppingSnapshotToStores(data);
+            } catch (e) {
+                console.error("persistDraft / shopping checkout", e);
+            }
+        },
 
-            window.localStorage.setItem(ORDER_STORAGE_KEY, JSON.stringify(payload));
+        applyCheckoutDraftFromServer(draft) {
+            if (!draft || typeof draft !== "object") {
+                return;
+            }
+            const di = draft.delivery_info;
+            if (di && typeof di === "object") {
+                this.deliveryInfo = {
+                    method: di.method ?? this.deliveryInfo.method,
+                    address: di.address ?? null,
+                    comment: di.comment ?? "",
+                    scheduledAt: di.scheduled_at ?? null,
+                };
+            }
+            const pi = draft.payment_info;
+            if (pi && typeof pi === "object") {
+                this.paymentInfo = {
+                    method: pi.method ?? this.paymentInfo.method,
+                    changeFrom: pi.change_from ?? null,
+                };
+            }
+            const gc = draft.guest_contact;
+            if (gc && typeof gc === "object") {
+                this.guestContact = {
+                    name: typeof gc.name === "string" ? gc.name : "",
+                    phone: typeof gc.phone === "string" ? gc.phone : "",
+                    email: typeof gc.email === "string" ? gc.email : "",
+                };
+            }
+            if (typeof draft.customer_comment === "string") {
+                this.customerComment = draft.customer_comment;
+            }
         },
         clearDraft() {
             this.deliveryInfo = {
@@ -223,6 +272,7 @@ export const useOrderStore = defineStore("order", {
                     String(this.guestContact.phone || "").trim() !== ""
                         ? this.guestContact
                         : null,
+                serverCartOnly: true,
             });
         },
         async createOrder(selectedAddress, cartItems, { isGuest = false } = {}) {

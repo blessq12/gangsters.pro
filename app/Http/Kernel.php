@@ -43,6 +43,7 @@ class Kernel extends HttpKernel
         'api' => [
             // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             \Illuminate\Routing\Middleware\ThrottleRequests::class . ':api',
+            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
     ];
@@ -72,5 +73,6 @@ class Kernel extends HttpKernel
 
         'attempt.sanctum'       => \App\Http\Middleware\AttemptSanctumAuthentication::class,
         'internal.token'        => \App\Http\Middleware\EnsureInternalApiToken::class,
+        'shopping.session'      => \App\Http\Middleware\EnsureShoppingSession::class,
     ];
 }

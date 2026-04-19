@@ -24,13 +24,9 @@ final class ArchitectureSmokeTest extends ApiTestCase
             'PRD_categories',
             'reporting_client_profiles',
             'reporting_client_order_facts',
+            'SHP_shopping_sessions',
+            'SHP_shopping_cart_lines',
         ]);
-
-        $session = $this->registerClientViaApi();
-
-        $this->getJson('/api/client/profile', $this->bearerSanctum($session['token']))
-            ->assertOk()
-            ->assertJsonStructure(['client']);
 
         $productId = $this->firstProductIdFromCatalog();
         if ($productId === null) {
@@ -44,6 +40,12 @@ final class ArchitectureSmokeTest extends ApiTestCase
             'customer_name' => 'Smoke Guest',
             'customer_phone' => '+79991234567',
         ])->assertCreated();
+
+        $session = $this->registerClientViaApi();
+
+        $this->getJson('/api/client/profile', $this->bearerSanctum($session['token']))
+            ->assertOk()
+            ->assertJsonStructure(['client']);
 
         $this->postJson(
             '/api/order',
@@ -76,7 +78,7 @@ final class ArchitectureSmokeTest extends ApiTestCase
 
         $this->assertStringContainsString('useCheckoutFlow', $dockCode);
         $this->assertStringContainsString('provideCheckoutFlow', $dockCode);
-        $this->assertStringContainsString('useCheckoutCommands', $flowCode);
+        $this->assertStringContainsString('useCheckoutOrchestrator', $flowCode);
         $this->assertStringContainsString('CHECKOUT_FLOW_KEY', $contextCode);
     }
 }

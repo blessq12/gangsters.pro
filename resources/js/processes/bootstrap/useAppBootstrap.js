@@ -6,6 +6,7 @@ import { useUiStore } from "../../stores/uiStore";
 import { useUserStore } from "../../stores/userStore";
 import { useSessionLifecycleProcess } from "../session/useSessionLifecycleProcess";
 import { useShoppingSessionProcess } from "../shoppingSession/useShoppingSessionProcess";
+import { bootstrapShoppingFromApi } from "../../features/shopping/shoppingBootstrap";
 
 let bootstrapInitialized = false;
 let cleanupProcesses = [];
@@ -30,6 +31,8 @@ export function useAppBootstrap() {
             useSessionLifecycleProcess(),
             useShoppingSessionProcess(),
         ];
+
+        void bootstrapShoppingFromApi();
 
         bootstrapInitialized = true;
     }

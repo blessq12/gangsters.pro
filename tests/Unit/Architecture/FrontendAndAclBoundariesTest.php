@@ -40,6 +40,7 @@ final class FrontendAndAclBoundariesTest extends TestCase
             $this->path('resources/js/composables/checkout/useCheckoutState.js'),
             $this->path('resources/js/features/orders/useOrderCommands.js'),
             $this->path('resources/js/features/orders/useOrdersReadModel.js'),
+            $this->path('resources/js/features/shopping/shoppingApplySnapshot.js'),
         ];
 
         foreach ($this->filesIn($this->path('resources/js'), '.js') as $file) {
