@@ -10,7 +10,6 @@ const {
     systemCartItems,
     totalAmount,
     userTotalAmount,
-    systemTotalAmount,
     formatPrice,
     isAuthenticated,
 } = checkoutState;
@@ -135,10 +134,6 @@ function unitPriceRub(item) {
             <div class="flex items-center justify-between">
                 <span class="text-slate-300/85">Товары</span>
                 <span class="text-slate-100">{{ formatPrice(userTotalAmount) }} ₽</span>
-            </div>
-            <div class="flex items-center justify-between">
-                <span class="text-slate-300/85">Автодобавления</span>
-                <span class="text-slate-100">{{ formatPrice(systemTotalAmount) }} ₽</span>
             </div>
             <div class="flex items-center justify-between border-t border-white/10 pt-1">
                 <span class="font-medium text-slate-300/90">Итого</span>
