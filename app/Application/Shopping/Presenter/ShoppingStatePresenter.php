@@ -24,6 +24,7 @@ final class ShoppingStatePresenter
         $lines = array_merge($resolved->userLines, $resolved->systemLines);
         $productIds = array_unique(array_map(static fn (CartLineItem $l) => $l->productId, $lines));
         $snapshots = $productIds !== [] ? $this->catalog->getActiveSnapshotsByIds($productIds) : [];
+        $promoState = $this->enrichPromoState($resolved->promoState);
 
         $cartItems = [];
         $subtotalKopecks = 0;
@@ -83,12 +84,63 @@ final class ShoppingStatePresenter
                 'items' => $cartItems,
                 'subtotal_rub' => Money::kopecksToApiRubles($subtotalKopecks),
                 'subtotal_kopecks' => $subtotalKopecks,
-                'promo_state' => $resolved->promoState,
+                'promo_state' => $promoState,
                 'subtotal_user_kopecks' => $resolved->subtotalUserKopecks,
                 'subtotal_system_kopecks' => $resolved->subtotalSystemKopecks,
             ],
             'favorites' => $favorites,
             'checkout_draft' => $session->getCheckoutDraft(),
         ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $promoState
+     * @return array<string, mixed>
+     */
+    private function enrichPromoState(array $promoState): array
+    {
+        $gift = $promoState['gift_promotion'] ?? null;
+        if (! is_array($gift)) {
+            return $promoState;
+        }
+
+        $candidateIds = $gift['candidate_product_ids'] ?? [];
+        if (! is_array($candidateIds)) {
+            $candidateIds = [];
+        }
+        $candidateIds = array_values(array_unique(array_map(
+            static fn ($id): int => (int) $id,
+            array_filter($candidateIds, static fn ($id): bool => (int) $id > 0),
+        )));
+
+        $candidateSnapshots = $candidateIds !== []
+            ? $this->catalog->getActiveSnapshotsByIds($candidateIds)
+            : [];
+
+        $candidateItems = [];
+        foreach ($candidateIds as $id) {
+            $snap = $candidateSnapshots[$id] ?? null;
+            if (! is_array($snap)) {
+                continue;
+            }
+            $media = isset($snap['media']) && is_array($snap['media']) ? $snap['media'] : [];
+            $imageUrl = null;
+            if ($media !== [] && is_array($media[0] ?? null)) {
+                $imageUrl = isset($media[0]['url']) ? (string) $media[0]['url'] : null;
+            }
+            $priceKopecks = (int) ($snap['price'] ?? 0);
+            $candidateItems[] = [
+                'id' => $id,
+                'name' => (string) ($snap['name'] ?? ''),
+                'price_kopecks' => $priceKopecks,
+                'price_rub' => Money::kopecksToApiRubles($priceKopecks),
+                'image_url' => $imageUrl,
+            ];
+        }
+
+        $gift['candidate_items'] = $candidateItems;
+        $promoState['gift_promotion'] = $gift;
+
+        return $promoState;
     }
 }

@@ -11,6 +11,7 @@ export function useCartReadModel() {
         totalAmount: computed(() => cartStore.cartTotalAmount),
         userTotalAmount: computed(() => cartStore.cartUserTotalAmount),
         systemTotalAmount: computed(() => cartStore.cartSystemTotalAmount),
+        promoState: computed(() => cartStore.promoState),
         totalItems: computed(() => cartStore.cartTotalItems),
         systemItemsCount: computed(() => cartStore.cartSystemItemsCount),
         quantityByProduct(productId) {

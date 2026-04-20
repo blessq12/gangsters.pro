@@ -25,6 +25,9 @@ export const useOrderStore = defineStore("order", {
             phone: "",
             email: "",
         },
+        promotions: {
+            freeRollGiftProductId: null,
+        },
         orders: [],
         lastCreatedOrder: null,
         loading: {
@@ -116,6 +119,15 @@ export const useOrderStore = defineStore("order", {
                                 : "",
                     };
                 }
+
+                if (parsed.promotions && typeof parsed.promotions === "object") {
+                    this.promotions = {
+                        freeRollGiftProductId:
+                            parsed.promotions.freeRollGiftProductId != null
+                                ? Number(parsed.promotions.freeRollGiftProductId) || null
+                                : null,
+                    };
+                }
             } catch (e) {
                 console.error("Failed to init order store from localStorage", e);
             }
@@ -138,6 +150,9 @@ export const useOrderStore = defineStore("order", {
                     email: this.guestContact.email,
                 },
                 customer_comment: this.customerComment,
+                promotions: {
+                    free_roll_gift_product_id: this.promotions.freeRollGiftProductId,
+                },
             };
             try {
                 const data = await patchCheckoutDraftRequest(body);
@@ -178,6 +193,15 @@ export const useOrderStore = defineStore("order", {
             if (typeof draft.customer_comment === "string") {
                 this.customerComment = draft.customer_comment;
             }
+            const promotions = draft.promotions;
+            if (promotions && typeof promotions === "object") {
+                this.promotions = {
+                    freeRollGiftProductId:
+                        promotions.free_roll_gift_product_id != null
+                            ? Number(promotions.free_roll_gift_product_id) || null
+                            : null,
+                };
+            }
         },
         clearDraft() {
             this.deliveryInfo = {
@@ -192,6 +216,7 @@ export const useOrderStore = defineStore("order", {
             };
             this.customerComment = "";
             this.guestContact = { name: "", phone: "", email: "" };
+            this.promotions = { freeRollGiftProductId: null };
 
             if (typeof window !== "undefined") {
                 window.localStorage.removeItem(ORDER_STORAGE_KEY);
@@ -221,6 +246,13 @@ export const useOrderStore = defineStore("order", {
                 ...(payload || {}),
             };
             this.persistDraft();
+        },
+        setPromotionGift(productId) {
+            this.promotions = {
+                freeRollGiftProductId:
+                    productId != null ? Number(productId) || null : null,
+            };
+            return this.persistDraft();
         },
         patchDeliveryAddress(partial) {
             this.deliveryInfo = {

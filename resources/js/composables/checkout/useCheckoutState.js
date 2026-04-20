@@ -20,6 +20,7 @@ export function useCheckoutState() {
     const totalAmount = computed(() => cartReadModel.totalAmount.value);
     const userTotalAmount = computed(() => cartReadModel.userTotalAmount.value);
     const systemTotalAmount = computed(() => cartReadModel.systemTotalAmount.value);
+    const promoState = computed(() => cartReadModel.promoState.value);
     const isAuthenticated = computed(() => clientReadModel.isAuthenticated.value);
 
     const activeStep = ref("cart"); // cart | auth | delivery | payment | confirm | success
@@ -59,6 +60,7 @@ export function useCheckoutState() {
         totalAmount,
         userTotalAmount,
         systemTotalAmount,
+        promoState,
         isAuthenticated,
         hasCartItems,
 

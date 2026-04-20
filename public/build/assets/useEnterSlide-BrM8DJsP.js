@@ -1,0 +1,1 @@
+import{j as N}from"./vue-core-DAR2-Xda.js";import{g as e}from"./gsap-D3jsOSc0.js";import{N as i,B as n,C as u,E as R}from"./app-CT4OsFic.js";function f(o,a={}){N(()=>{if(!o.value)return;const{y:E=n,opacity:r=0,duration:s=u,delay:A=R,ease:t=i}=a;e.from(o.value,{y:E,opacity:r,duration:s,delay:A,ease:t})})}export{f as u};

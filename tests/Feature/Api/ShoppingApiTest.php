@@ -2,6 +2,8 @@
 
 namespace Tests\Feature\Api;
 
+use Illuminate\Support\Facades\DB;
+
 final class ShoppingApiTest extends ApiTestCase
 {
     protected function setUp(): void
@@ -102,14 +104,110 @@ final class ShoppingApiTest extends ApiTestCase
         $state = $this->getJson('/api/shopping/state')->assertOk();
         $cookieHeader = $this->cookieHeaderFromResponse($state);
 
+        $giftProductId = $this->firstActiveProductId();
+        if ($giftProductId === null) {
+            $this->markTestSkipped('Нет активных товаров для проверки подарка.');
+        }
+
+        DB::table('PRD_products')
+            ->where('id', $giftProductId)
+            ->update(['cart_rule_gift_candidate' => true]);
+
         $this->withHeaders(['Cookie' => $cookieHeader])
             ->patchJson('/api/shopping/checkout-draft', [
                 'promotions' => [
-                    'free_roll_gift_product_id' => 42,
+                    'free_roll_gift_product_id' => $giftProductId,
                 ],
             ])
             ->assertOk()
-            ->assertJsonPath('data.checkout_draft.promotions.free_roll_gift_product_id', 42);
+            ->assertJsonPath('data.checkout_draft.promotions.free_roll_gift_product_id', $giftProductId);
+    }
+
+    public function test_checkout_draft_rejects_non_gift_candidate_product_id(): void
+    {
+        $state = $this->getJson('/api/shopping/state')->assertOk();
+        $cookieHeader = $this->cookieHeaderFromResponse($state);
+
+        $notGiftProductId = $this->firstActiveProductId();
+        if ($notGiftProductId === null) {
+            $this->markTestSkipped('Нет активных товаров для проверки валидации подарка.');
+        }
+
+        DB::table('PRD_products')
+            ->where('id', $notGiftProductId)
+            ->update(['cart_rule_gift_candidate' => false]);
+
+        $this->withHeaders(['Cookie' => $cookieHeader])
+            ->patchJson('/api/shopping/checkout-draft', [
+                'promotions' => [
+                    'free_roll_gift_product_id' => $notGiftProductId,
+                ],
+            ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['promotions.free_roll_gift_product_id']);
+    }
+
+    public function test_gift_promotion_contains_candidate_items_for_modal(): void
+    {
+        $giftProductId = $this->firstActiveProductId();
+        if ($giftProductId === null) {
+            $this->markTestSkipped('Нет активных товаров для проверки gift promo.');
+        }
+
+        DB::table('PRD_products')
+            ->where('id', $giftProductId)
+            ->update([
+                'cart_rule_gift_candidate' => true,
+                'status' => 'active',
+            ]);
+
+        DB::table('SHP_shopping_cart_rule_settings')->updateOrInsert(
+            ['id' => 1],
+            [
+                'complement_rule_enabled' => true,
+                'gift_rule_enabled' => true,
+                'rolls_per_complement' => 2,
+                'complement_rule_sort' => 10,
+                'gift_rule_sort' => 20,
+                'gift_threshold_kopecks' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        );
+
+        $state = $this->getJson('/api/shopping/state')->assertOk();
+        $cookieHeader = $this->cookieHeaderFromResponse($state);
+
+        $response = $this->withHeaders(['Cookie' => $cookieHeader])
+            ->postJson('/api/shopping/cart/items', [
+                'product_id' => $giftProductId,
+                'quantity' => 1,
+            ])
+            ->assertOk();
+
+        $response->assertJsonPath('data.cart.promo_state.gift_promotion.eligible', true);
+        $response->assertJsonPath('data.cart.promo_state.gift_promotion.selected_product_id', null);
+        $response->assertJsonPath('data.cart.promo_state.gift_promotion.phase', 'select_gift');
+        $response->assertJsonPath('data.cart.promo_state.gift_promotion.candidate_items.0.id', $giftProductId);
+        $response->assertJsonStructure([
+            'data' => [
+                'cart' => [
+                    'promo_state' => [
+                        'gift_promotion' => [
+                            'candidate_items' => [
+                                [
+                                    'id',
+                                    'name',
+                                    'price_kopecks',
+                                    'price_rub',
+                                    'image_url',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
     }
 
     public function test_merge_attaches_client_id(): void
@@ -149,5 +247,16 @@ final class ShoppingApiTest extends ApiTestCase
         }
 
         return implode('; ', $parts);
+    }
+
+    private function firstActiveProductId(): ?int
+    {
+        $id = DB::table('PRD_products')
+            ->where('status', 'active')
+            ->where('price', '>', 0)
+            ->orderBy('id')
+            ->value('id');
+
+        return is_numeric($id) ? (int) $id : null;
     }
 }

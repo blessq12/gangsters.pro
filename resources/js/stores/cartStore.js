@@ -94,6 +94,7 @@ export const useCartStore = defineStore("cart", {
         subtotalKopecks: 0,
         subtotalUserKopecks: 0,
         subtotalSystemKopecks: 0,
+        promoState: {},
         loading: false,
         error: null,
     }),
@@ -152,6 +153,10 @@ export const useCartStore = defineStore("cart", {
             this.subtotalKopecks = Number(cart?.subtotal_kopecks) || 0;
             this.subtotalUserKopecks = Number(cart?.subtotal_user_kopecks) || 0;
             this.subtotalSystemKopecks = Number(cart?.subtotal_system_kopecks) || 0;
+            this.promoState =
+                cart?.promo_state && typeof cart.promo_state === "object"
+                    ? cart.promo_state
+                    : {};
             emitDomainEvent(DOMAIN_EVENTS.CART_CHANGED, { items: this.cartItems });
         },
 
