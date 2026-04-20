@@ -26,6 +26,9 @@ final class Product
         private array $images,
         private array $ingredients,
         private array $tags,
+        private bool $cartRuleCountsAsRoll,
+        private bool $cartRuleGiftCandidate,
+        private bool $cartRuleIsComplementSet,
         /** Цена в копейках (RUB), null — нет цены */
         private ?int $price,
         private string $status,
@@ -60,6 +63,9 @@ final class Product
             images: $images,
             ingredients: $ingredients,
             tags: $tags,
+            cartRuleCountsAsRoll: false,
+            cartRuleGiftCandidate: false,
+            cartRuleIsComplementSet: false,
             price: $price,
             status: self::STATUS_ACTIVE,
             createdAt: $now,
@@ -82,6 +88,9 @@ final class Product
         array $images,
         array $ingredients,
         array $tags,
+        bool $cartRuleCountsAsRoll,
+        bool $cartRuleGiftCandidate,
+        bool $cartRuleIsComplementSet,
         ?int $price,
         string $status,
         DateTimeImmutable $createdAt,
@@ -97,6 +106,9 @@ final class Product
             images: $images,
             ingredients: $ingredients,
             tags: $tags,
+            cartRuleCountsAsRoll: $cartRuleCountsAsRoll,
+            cartRuleGiftCandidate: $cartRuleGiftCandidate,
+            cartRuleIsComplementSet: $cartRuleIsComplementSet,
             price: $price,
             status: $status,
             createdAt: $createdAt,
@@ -159,6 +171,49 @@ final class Product
     public function tags(): array
     {
         return $this->tags;
+    }
+
+    /**
+     * Учитывается в правиле «комплект к роллам» (кол-во единиц для расчёта комплекта).
+     * Не путать с тегами витрины для фильтрации.
+     */
+    public function cartRuleCountsAsRoll(): bool
+    {
+        return $this->cartRuleCountsAsRoll;
+    }
+
+    /**
+     * Товар может быть выбран как бесплатный подарок при достижении порога корзины.
+     */
+    public function cartRuleGiftCandidate(): bool
+    {
+        return $this->cartRuleGiftCandidate;
+    }
+
+    /**
+     * Этот товар — системная позиция «комплект» (соус/имбирь и т.д.), id подставляется правилом из каталога.
+     */
+    public function cartRuleIsComplementSet(): bool
+    {
+        return $this->cartRuleIsComplementSet;
+    }
+
+    public function setCartRuleCountsAsRoll(bool $value): void
+    {
+        $this->cartRuleCountsAsRoll = $value;
+        $this->touch();
+    }
+
+    public function setCartRuleGiftCandidate(bool $value): void
+    {
+        $this->cartRuleGiftCandidate = $value;
+        $this->touch();
+    }
+
+    public function setCartRuleIsComplementSet(bool $value): void
+    {
+        $this->cartRuleIsComplementSet = $value;
+        $this->touch();
     }
 
     /** Цена в копейках (RUB), null — нет цены */

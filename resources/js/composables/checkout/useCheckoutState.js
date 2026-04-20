@@ -15,7 +15,11 @@ export function useCheckoutState() {
     orderStore.initFromStorage();
 
     const cartItems = computed(() => cartReadModel.items.value);
+    const userCartItems = computed(() => cartReadModel.userItems.value);
+    const systemCartItems = computed(() => cartReadModel.systemItems.value);
     const totalAmount = computed(() => cartReadModel.totalAmount.value);
+    const userTotalAmount = computed(() => cartReadModel.userTotalAmount.value);
+    const systemTotalAmount = computed(() => cartReadModel.systemTotalAmount.value);
     const isAuthenticated = computed(() => clientReadModel.isAuthenticated.value);
 
     const activeStep = ref("cart"); // cart | auth | delivery | payment | confirm | success
@@ -37,7 +41,7 @@ export function useCheckoutState() {
     const deliveryStepError = ref("");
     const paymentStepError = ref("");
 
-    const hasCartItems = computed(() => cartItems.value.length > 0);
+    const hasCartItems = computed(() => userCartItems.value.length > 0);
 
     const formatPrice = (value) => formatMoneyRublesRu(value);
 
@@ -50,7 +54,11 @@ export function useCheckoutState() {
         userStore,
         clientReadModel,
         cartItems,
+        userCartItems,
+        systemCartItems,
         totalAmount,
+        userTotalAmount,
+        systemTotalAmount,
         isAuthenticated,
         hasCartItems,
 

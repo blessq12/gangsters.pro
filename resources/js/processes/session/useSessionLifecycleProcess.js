@@ -20,7 +20,14 @@ export function useSessionLifecycleProcess() {
                 void mergeShoppingAfterAuth();
             }),
             subscribeDomainEvent(DOMAIN_EVENTS.CLIENT_LOGGED_OUT, () => {
-                cartStore.$patch({ cartItems: [], loading: false, error: null });
+                cartStore.$patch({
+                    cartItems: [],
+                    subtotalKopecks: 0,
+                    subtotalUserKopecks: 0,
+                    subtotalSystemKopecks: 0,
+                    loading: false,
+                    error: null,
+                });
                 favoritesStore.$patch({ items: [], loading: false, error: null });
                 uiStore.setDockActive(null);
             }),

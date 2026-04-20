@@ -10,7 +10,7 @@ use App\Domain\Order\ValueObjects\PaymentInfo;
 interface OrderPlacementContract
 {
     /**
-     * @param  array<int, array{product_id: int, quantity: int}>  $items
+     * @param  array<int, array{product_id: int, quantity: int, final_price_kopecks?: int|null}>  $items
      */
     public function place(
         ?int $clientId,

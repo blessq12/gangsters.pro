@@ -11,11 +11,29 @@ const {
 const {
     orderStore,
     cartItems,
+    userCartItems,
+    systemCartItems,
     totalAmount,
+    userTotalAmount,
+    systemTotalAmount,
     formatPrice,
     formatPhone,
     isGuestCheckout,
 } = checkoutState;
+
+function lineBadge(item) {
+    const key = String(item?.lineKey || "");
+    if (key.startsWith("gift:")) return "Подарок";
+    if (key.startsWith("complement:")) return "Комплект";
+    if (item?.isSystem) return "Авто";
+    return null;
+}
+
+function unitPriceRub(item) {
+    const kopecks = Number(item?.pricing?.finalUnitPriceKopecks);
+    if (Number.isFinite(kopecks)) return kopecks / 100;
+    return Number(item?.productSnapshot?.price) || 0;
+}
 </script>
 
 <template>
@@ -30,25 +48,65 @@ const {
             </p>
             <ul class="space-y-1 text-xs">
                 <li
-                    v-for="item in cartItems"
-                    :key="item.productId"
+                    v-if="userCartItems.length"
+                    class="pt-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400"
+                >
+                    Вы добавили
+                </li>
+                <li
+                    v-for="item in userCartItems"
+                    :key="item.lineKey"
                     class="flex items-center justify-between gap-2"
                 >
                     <span class="truncate text-slate-100">
                         {{ item.productSnapshot?.name || `Товар #${item.productId}` }}
                     </span>
                     <span class="shrink-0 text-slate-300">
-                        {{ item.qty }} ×
-                        {{ formatPrice(item.productSnapshot?.price) }} ₽
+                        {{ item.qty }} × {{ formatPrice(unitPriceRub(item)) }} ₽
+                    </span>
+                </li>
+
+                <li
+                    v-if="systemCartItems.length"
+                    class="pt-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400"
+                >
+                    Добавлено автоматически
+                </li>
+                <li
+                    v-for="item in systemCartItems"
+                    :key="item.lineKey"
+                    class="flex items-center justify-between gap-2 rounded-xl border border-amber-400/25 bg-amber-400/10 px-2 py-1"
+                >
+                    <span class="truncate text-slate-100">
+                        {{ item.productSnapshot?.name || `Товар #${item.productId}` }}
+                        <span
+                            v-if="lineBadge(item)"
+                            class="ml-1 text-[10px] font-medium text-amber-200"
+                        >
+                            • {{ lineBadge(item) }}
+                        </span>
+                    </span>
+                    <span class="shrink-0 text-slate-200">
+                        {{ item.qty }} × {{ formatPrice(unitPriceRub(item)) }} ₽
                     </span>
                 </li>
             </ul>
             <!-- complimentary preview удалён вместе с vertical Promotions -->
-            <div class="mt-2 flex items-center justify-between border-t border-white/5 pt-2 text-xs">
-                <span class="text-slate-300/85">Итого</span>
-                <span class="font-semibold text-amber-300">
-                    {{ formatPrice(totalAmount) }} ₽
-                </span>
+            <div class="mt-2 space-y-1 border-t border-white/5 pt-2 text-xs">
+                <div class="flex items-center justify-between">
+                    <span class="text-slate-300/85">Товары</span>
+                    <span class="text-slate-100">{{ formatPrice(userTotalAmount) }} ₽</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-slate-300/85">Автодобавления</span>
+                    <span class="text-slate-100">{{ formatPrice(systemTotalAmount) }} ₽</span>
+                </div>
+                <div class="flex items-center justify-between border-t border-white/10 pt-1">
+                    <span class="text-slate-300/90">Итого</span>
+                    <span class="font-semibold text-amber-300">
+                        {{ formatPrice(totalAmount) }} ₽
+                    </span>
+                </div>
             </div>
         </div>
 

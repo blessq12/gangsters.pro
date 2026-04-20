@@ -33,6 +33,8 @@ final class PatchCheckoutDraftRequest extends FormRequest
             'guest_contact.phone' => ['nullable', 'string', 'max:32'],
             'guest_contact.email' => ['nullable', 'string', 'email', 'max:255'],
             'customer_comment' => ['nullable', 'string', 'max:2000'],
+            'promotions' => ['nullable', 'array'],
+            'promotions.free_roll_gift_product_id' => ['nullable', 'integer', 'min:1'],
         ];
     }
 }

@@ -32,6 +32,11 @@ final class ProductPresenter
                 fn (ProductTag $tag) => $this->presentTag($tag),
                 $product->tags(),
             ),
+            'cart_rule_flags' => [
+                'counts_as_roll_unit' => $product->cartRuleCountsAsRoll(),
+                'gift_candidate' => $product->cartRuleGiftCandidate(),
+                'is_complement_set_product' => $product->cartRuleIsComplementSet(),
+            ],
             'price' => $product->price() !== null
                 ? Money::kopecksToApiRubles($product->price())
                 : null,

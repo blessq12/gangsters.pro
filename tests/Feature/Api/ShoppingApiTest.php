@@ -12,6 +12,7 @@ final class ShoppingApiTest extends ApiTestCase
             'SHP_shopping_cart_lines',
             'SHP_shopping_favorites',
             'SHP_shopping_checkout_drafts',
+            'SHP_shopping_cart_rule_settings',
             'PRD_products',
             'PRD_category_product',
             'PRD_categories',
@@ -24,7 +25,21 @@ final class ShoppingApiTest extends ApiTestCase
     {
         $response = $this->getJson('/api/shopping/state');
         $response->assertOk();
-        $response->assertJsonStructure(['data' => ['session', 'cart', 'favorites', 'checkout_draft']]);
+        $response->assertJsonStructure([
+            'data' => [
+                'session',
+                'cart' => [
+                    'items',
+                    'subtotal_rub',
+                    'subtotal_kopecks',
+                    'promo_state',
+                    'subtotal_user_kopecks',
+                    'subtotal_system_kopecks',
+                ],
+                'favorites',
+                'checkout_draft',
+            ],
+        ]);
         $response->assertCookie((string) config('shopping.session_cookie'));
         $this->assertNotEmpty($response->json('data.session.public_id'));
     }
@@ -43,7 +58,7 @@ final class ShoppingApiTest extends ApiTestCase
             $cookieHeader .= $c->getName().'='.$c->getValue().'; ';
         }
 
-        $this->withHeaders(['Cookie' => trim($cookieHeader)])
+        $upsert = $this->withHeaders(['Cookie' => trim($cookieHeader)])
             ->postJson('/api/shopping/cart/items', [
                 'product_id' => $productId,
                 'quantity' => 2,
@@ -51,9 +66,50 @@ final class ShoppingApiTest extends ApiTestCase
             ->assertOk()
             ->assertJsonPath('data.cart.items.0.qty', 2);
 
+        $upsert->assertJsonStructure([
+            'data' => [
+                'cart' => [
+                    'items' => [
+                        [
+                            'productId',
+                            'qty',
+                            'line_key',
+                            'origin',
+                            'productSnapshot',
+                            'pricing' => [
+                                'list_unit_price_kopecks',
+                                'final_unit_price_kopecks',
+                                'line_total_kopecks',
+                            ],
+                        ],
+                    ],
+                    'subtotal_rub',
+                    'subtotal_kopecks',
+                    'subtotal_user_kopecks',
+                    'subtotal_system_kopecks',
+                    'promo_state',
+                ],
+            ],
+        ]);
+
         $this->withHeaders(['Cookie' => trim($cookieHeader)])
             ->postJson('/api/shopping/cart/recalculate')
             ->assertOk();
+    }
+
+    public function test_checkout_draft_accepts_promotions_free_roll_gift_product_id(): void
+    {
+        $state = $this->getJson('/api/shopping/state')->assertOk();
+        $cookieHeader = $this->cookieHeaderFromResponse($state);
+
+        $this->withHeaders(['Cookie' => $cookieHeader])
+            ->patchJson('/api/shopping/checkout-draft', [
+                'promotions' => [
+                    'free_roll_gift_product_id' => 42,
+                ],
+            ])
+            ->assertOk()
+            ->assertJsonPath('data.checkout_draft.promotions.free_roll_gift_product_id', 42);
     }
 
     public function test_merge_attaches_client_id(): void

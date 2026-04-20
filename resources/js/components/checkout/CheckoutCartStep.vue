@@ -4,7 +4,16 @@ import { DOMAIN_EVENTS, emitDomainEvent } from "../../shared/domainEvents";
 
 const { checkoutState, handleStartCheckout, handleContinueAsGuest } =
     useCheckoutFlowContext();
-const { cartItems, totalAmount, formatPrice, isAuthenticated } = checkoutState;
+const {
+    cartItems,
+    userCartItems,
+    systemCartItems,
+    totalAmount,
+    userTotalAmount,
+    systemTotalAmount,
+    formatPrice,
+    isAuthenticated,
+} = checkoutState;
 
 function decrementCart(productId) {
     emitDomainEvent(DOMAIN_EVENTS.CART_DECREMENT_REQUESTED, {
@@ -26,6 +35,12 @@ function removeFromCart(productId) {
         source: "checkout",
     });
 }
+
+function unitPriceRub(item) {
+    const kopecks = Number(item?.pricing?.finalUnitPriceKopecks);
+    if (Number.isFinite(kopecks)) return kopecks / 100;
+    return Number(item?.productSnapshot?.price) || 0;
+}
 </script>
 
 <template>
@@ -38,12 +53,15 @@ function removeFromCart(productId) {
         </div>
 
         <ul
-            v-else
+            v-else-if="userCartItems.length"
             class="space-y-2 text-xs sm:text-sm text-slate-200"
         >
+            <li class="px-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                Вы добавили
+            </li>
             <li
-                v-for="item in cartItems"
-                :key="item.productId"
+                v-for="item in userCartItems"
+                :key="item.lineKey"
                 class="flex items-center justify-between gap-3 rounded-2xl bg-[rgba(255,255,255,0.03)] px-3 py-2"
             >
                 <div class="min-w-0">
@@ -51,7 +69,7 @@ function removeFromCart(productId) {
                         {{ item.productSnapshot?.name || `Товар #${item.productId}` }}
                     </p>
                     <p class="mt-0.5 text-[11px] text-slate-400">
-                        {{ formatPrice(item.productSnapshot?.price) }} ₽ за шт
+                        {{ formatPrice(unitPriceRub(item)) }} ₽ за шт
                     </p>
                 </div>
 
@@ -89,14 +107,43 @@ function removeFromCart(productId) {
             </li>
         </ul>
 
+        <ul
+            v-if="systemCartItems.length"
+            class="mt-2 rounded-xl border border-amber-400/25 bg-amber-400/8 px-2.5 py-2 text-[11px] text-slate-200"
+        >
+            <li class="px-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                Комплект и автодобавления
+            </li>
+            <li
+                v-for="item in systemCartItems"
+                :key="item.lineKey"
+                class="mt-1 flex items-center justify-between gap-2 rounded-lg px-1 py-0.5"
+            >
+                <span class="min-w-0 truncate text-slate-100">
+                    • {{ item.productSnapshot?.name || `Товар #${item.productId}` }}
+                </span>
+                <span class="shrink-0 text-slate-300">
+                    {{ item.qty }} × {{ formatPrice(0) }} ₽
+                </span>
+            </li>
+        </ul>
+
         <div
             v-if="cartItems.length"
-            class="mt-3 flex items-center justify-between text-xs sm:text-sm"
+            class="mt-3 space-y-1 rounded-2xl border border-white/10 bg-[rgba(255,255,255,0.02)] px-3 py-2 text-xs sm:text-sm"
         >
-            <span class="text-slate-300/85">Итого</span>
-            <span class="font-semibold text-amber-300">
-                {{ formatPrice(totalAmount) }} ₽
-            </span>
+            <div class="flex items-center justify-between">
+                <span class="text-slate-300/85">Товары</span>
+                <span class="text-slate-100">{{ formatPrice(userTotalAmount) }} ₽</span>
+            </div>
+            <div class="flex items-center justify-between">
+                <span class="text-slate-300/85">Автодобавления</span>
+                <span class="text-slate-100">{{ formatPrice(systemTotalAmount) }} ₽</span>
+            </div>
+            <div class="flex items-center justify-between border-t border-white/10 pt-1">
+                <span class="font-medium text-slate-300/90">Итого</span>
+                <span class="font-semibold text-amber-300">{{ formatPrice(totalAmount) }} ₽</span>
+            </div>
         </div>
 
         <!-- complimentary preview удалён вместе с vertical Promotions -->

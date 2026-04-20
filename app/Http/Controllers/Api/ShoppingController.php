@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Application\Shopping\Command\ClearCartUseCase;
 use App\Application\Shopping\Command\LogoutShoppingSessionUseCase;
-use App\Application\Shopping\Command\MigrateLocalShoppingStateUseCase;
 use App\Application\Shopping\Command\MergeGuestShoppingUseCase;
+use App\Application\Shopping\Command\MigrateLocalShoppingStateUseCase;
 use App\Application\Shopping\Command\PatchCheckoutDraftUseCase;
 use App\Application\Shopping\Command\RecalculateShoppingCartUseCase;
 use App\Application\Shopping\Command\RemoveCartLineUseCase;
@@ -146,6 +146,9 @@ class ShoppingController extends Controller
         }
         if (array_key_exists('customer_comment', $validated)) {
             $out['customer_comment'] = $validated['customer_comment'];
+        }
+        if (isset($validated['promotions']) && is_array($validated['promotions'])) {
+            $out['promotions'] = $validated['promotions'];
         }
 
         return $out;

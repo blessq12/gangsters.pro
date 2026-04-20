@@ -71,7 +71,7 @@ class ProductRepository implements ProductRepositoryContract
     {
         $model = $product->id()
             ? PRD_Product::findOrFail($product->id())
-            : new PRD_Product();
+            : new PRD_Product;
 
         $model->name = $product->name();
         $model->slug = app(UniqueSlugGenerator::class)->uniqueFrom(
@@ -92,6 +92,9 @@ class ProductRepository implements ProductRepositoryContract
 
         $model->status = $product->status();
         $model->archived_at = $product->archivedAt()?->format('Y-m-d H:i:s');
+        $model->cart_rule_counts_as_roll = $product->cartRuleCountsAsRoll();
+        $model->cart_rule_gift_candidate = $product->cartRuleGiftCandidate();
+        $model->cart_rule_is_complement_set = $product->cartRuleIsComplementSet();
 
         $model->save();
 
@@ -162,7 +165,7 @@ class ProductRepository implements ProductRepositoryContract
     }
 
     /**
-     * @param ProductTag[] $tags
+     * @param  ProductTag[]  $tags
      */
     private function syncTags(PRD_Product $productModel, array $tags): void
     {
@@ -231,6 +234,9 @@ class ProductRepository implements ProductRepositoryContract
             images: $images,
             ingredients: $ingredients,
             tags: $tags,
+            cartRuleCountsAsRoll: (bool) ($model->cart_rule_counts_as_roll ?? false),
+            cartRuleGiftCandidate: (bool) ($model->cart_rule_gift_candidate ?? false),
+            cartRuleIsComplementSet: (bool) ($model->cart_rule_is_complement_set ?? false),
             price: $model->price !== null ? (int) $model->price : null,
             status: $model->status,
             createdAt: $createdAt,
@@ -270,6 +276,4 @@ class ProductRepository implements ProductRepositoryContract
             isAllergen: (bool) $model->is_allergen,
         );
     }
-
 }
-

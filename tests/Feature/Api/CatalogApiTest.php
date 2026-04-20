@@ -37,7 +37,7 @@ final class CatalogApiTest extends ApiTestCase
             foreach ($node['products'] as $product) {
                 foreach ([
                     'id', 'name', 'description', 'status', 'nutrition', 'images', 'ingredients',
-                    'tags', 'price', 'created_at', 'updated_at', 'archived_at',
+                    'tags', 'cart_rule_flags', 'price', 'created_at', 'updated_at', 'archived_at',
                 ] as $pk) {
                     $this->assertArrayHasKey($pk, $product, 'product missing '.$pk);
                 }
@@ -49,6 +49,12 @@ final class CatalogApiTest extends ApiTestCase
 
                 if ($product['price'] !== null) {
                     $this->assertIsNumeric($product['price']);
+                }
+
+                $this->assertIsArray($product['cart_rule_flags']);
+                foreach (['counts_as_roll_unit', 'gift_candidate', 'is_complement_set_product'] as $fk) {
+                    $this->assertArrayHasKey($fk, $product['cart_rule_flags'], 'cart_rule_flags missing '.$fk);
+                    $this->assertIsBool($product['cart_rule_flags'][$fk]);
                 }
             }
         }

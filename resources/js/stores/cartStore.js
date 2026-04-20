@@ -44,10 +44,45 @@ function normalizeCartItemsFromServer(items) {
                 ...(item.productSnapshot || {}),
             });
 
+            const lineKey = String(item.line_key || `user:${productId}`);
+            const origin = String(item.origin || "user");
+            const isSystem = origin === "system";
+            const pricing =
+                item.pricing && typeof item.pricing === "object"
+                    ? {
+                          listUnitPriceKopecks:
+                              Number(item.pricing.list_unit_price_kopecks) || 0,
+                          finalUnitPriceKopecks:
+                              Number(item.pricing.final_unit_price_kopecks) || 0,
+                          lineTotalKopecks: Number(item.pricing.line_total_kopecks) || 0,
+                      }
+                    : {
+                          listUnitPriceKopecks:
+                              Math.round((Number(snapshot?.price) || 0) * 100),
+                          finalUnitPriceKopecks:
+                              Math.round((Number(snapshot?.price) || 0) * 100),
+                          lineTotalKopecks:
+                              Math.round((Number(snapshot?.price) || 0) * 100) * qty,
+                      };
+
+            let lineKind = "user";
+            if (isSystem && lineKey.startsWith("gift:")) {
+                lineKind = "gift";
+            } else if (isSystem && lineKey.startsWith("complement:")) {
+                lineKind = "complement";
+            } else if (isSystem) {
+                lineKind = "system";
+            }
+
             return {
+                lineKey,
+                origin,
+                isSystem,
+                lineKind,
                 productId,
                 qty,
                 productSnapshot: snapshot,
+                pricing,
             };
         })
         .filter(Boolean);
@@ -56,22 +91,52 @@ function normalizeCartItemsFromServer(items) {
 export const useCartStore = defineStore("cart", {
     state: () => ({
         cartItems: [],
+        subtotalKopecks: 0,
+        subtotalUserKopecks: 0,
+        subtotalSystemKopecks: 0,
         loading: false,
         error: null,
     }),
     getters: {
+        userItems(state) {
+            return state.cartItems.filter((item) => !item.isSystem);
+        },
+        systemItems(state) {
+            return state.cartItems.filter((item) => item.isSystem);
+        },
         cartQuantityByProduct: (state) => (id) => {
-            const item = state.cartItems.find((i) => i.productId === id);
+            const item = state.cartItems.find(
+                (i) => i.productId === id && !i.isSystem,
+            );
             return item ? item.qty : 0;
         },
         cartTotalItems(state) {
-            return state.cartItems.reduce((sum, item) => sum + item.qty, 0);
+            return state.cartItems.reduce(
+                (sum, item) => sum + (item.isSystem ? 0 : item.qty),
+                0,
+            );
+        },
+        cartSystemItemsCount(state) {
+            return state.cartItems.reduce(
+                (sum, item) => sum + (item.isSystem ? item.qty : 0),
+                0,
+            );
         },
         cartTotalAmount(state) {
-            const raw = state.cartItems.reduce((sum, item) => {
-                return sum + (Number(item.productSnapshot?.price) || 0) * item.qty;
-            }, 0);
-            return roundRubles2(raw);
+            if (state.subtotalKopecks > 0) {
+                return roundRubles2(state.subtotalKopecks / 100);
+            }
+            const kopecks = state.cartItems.reduce(
+                (sum, item) => sum + (Number(item.pricing?.lineTotalKopecks) || 0),
+                0,
+            );
+            return roundRubles2(kopecks / 100);
+        },
+        cartUserTotalAmount(state) {
+            return roundRubles2((Number(state.subtotalUserKopecks) || 0) / 100);
+        },
+        cartSystemTotalAmount(state) {
+            return roundRubles2((Number(state.subtotalSystemKopecks) || 0) / 100);
         },
     },
     actions: {
@@ -84,6 +149,9 @@ export const useCartStore = defineStore("cart", {
          */
         applyServerSnapshot(cart) {
             this.cartItems = normalizeCartItemsFromServer(cart?.items ?? []);
+            this.subtotalKopecks = Number(cart?.subtotal_kopecks) || 0;
+            this.subtotalUserKopecks = Number(cart?.subtotal_user_kopecks) || 0;
+            this.subtotalSystemKopecks = Number(cart?.subtotal_system_kopecks) || 0;
             emitDomainEvent(DOMAIN_EVENTS.CART_CHANGED, { items: this.cartItems });
         },
 
@@ -97,19 +165,25 @@ export const useCartStore = defineStore("cart", {
             if (!product || !product.id) return;
             const id = product.id;
             const add = Math.max(1, Number(qty) || 1);
-            const existing = this.cartItems.find((i) => i.productId === id);
+            const existing = this.cartItems.find(
+                (i) => i.productId === id && !i.isSystem,
+            );
             const nextQty = (existing ? existing.qty : 0) + add;
             await this._upsertLine(id, nextQty);
         },
 
         async incrementCart(productId) {
-            const item = this.cartItems.find((i) => i.productId === productId);
+            const item = this.cartItems.find(
+                (i) => i.productId === productId && !i.isSystem,
+            );
             if (!item) return;
             await this._upsertLine(productId, item.qty + 1);
         },
 
         async decrementCart(productId) {
-            const item = this.cartItems.find((i) => i.productId === productId);
+            const item = this.cartItems.find(
+                (i) => i.productId === productId && !i.isSystem,
+            );
             if (!item) return;
             const next = item.qty - 1;
             if (next <= 0) {

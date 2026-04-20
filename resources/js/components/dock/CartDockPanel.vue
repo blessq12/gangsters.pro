@@ -1,11 +1,16 @@
 <script setup>
 import { useCheckoutFlow } from "../../composables/checkout/useCheckoutFlow";
 import { provideCheckoutFlow } from "../../composables/checkout/checkoutFlowContext";
+import { formatMoneyRublesRu } from "../../utils/moneyFormat";
 
 const flow = useCheckoutFlow();
 provideCheckoutFlow(flow);
 
 const { cartStore, activeStep } = flow;
+
+function formatPrice(value) {
+    return formatMoneyRublesRu(value);
+}
 </script>
 
 <template>
@@ -17,12 +22,28 @@ const { cartStore, activeStep } = flow;
                 <p class="text-sm sm:text-base font-semibold text-slate-50">
                     Корзина
                 </p>
-                <div
-                    class="flex h-8 items-center rounded-full bg-black/70 px-3 text-xs text-slate-200"
-                >
+                <div class="flex items-center gap-2">
+                    <div
+                        v-if="cartStore.cartSystemItemsCount > 0"
+                        class="hidden sm:flex h-8 items-center rounded-full border border-amber-400/35 bg-amber-400/10 px-3 text-[11px] text-amber-200"
+                    >
+                        +{{ cartStore.cartSystemItemsCount }} авто
+                    </div>
+                    <div
+                        class="flex h-8 items-center rounded-full bg-black/70 px-3 text-xs text-slate-200"
+                    >
                     {{ cartStore.cartTotalItems }} шт
+                    </div>
                 </div>
             </div>
+
+            <p
+                v-if="cartStore.cartSystemItemsCount > 0"
+                class="mt-1 text-[11px] text-slate-400"
+            >
+                Автодобавления: {{ cartStore.cartSystemItemsCount }} шт,
+                {{ formatPrice(cartStore.cartSystemTotalAmount) }} ₽
+            </p>
 
             <CheckoutCartStep v-if="activeStep === 'cart'" />
             <CheckoutAuthStep v-else-if="activeStep === 'auth'" />

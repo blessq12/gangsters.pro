@@ -6,6 +6,8 @@ use App\Support\Money;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
 class ProductForm
@@ -82,6 +84,31 @@ class ProductForm
                                 'violet' => 'Фиолетовый',
                             ]),
                     ]),
+                Section::make('Серверная корзина (доставка)')
+                    ->description(
+                        'Эти три переключателя не связаны с полем «Теги» выше: теги нужны сайту (фильтры, бейджи). Здесь — только то, как бэкенд считает корзину и заказ.'
+                    )
+                    ->schema([
+                        Toggle::make('cart_rule_counts_as_roll')
+                            ->label('1. Считать в промо «комплект к роллам»')
+                            ->helperText(
+                                'Вкл.: каждая единица этого товара увеличивает счётчик «роллов». Когда набралось N единиц (настройка в «Магазин → Правила корзины»), в корзину автоматически добавляется товар из пункта 2. Выкл.: для соусов, напитков, доставки и т.п.'
+                            )
+                            ->default(false),
+                        Toggle::make('cart_rule_is_complement_set')
+                            ->label('2. Это товар «комплект», который подставляет сервер')
+                            ->helperText(
+                                'Вкл.: этот товар системно подставляется как строка «комплект» (соус/имбирь и т.д.). Можно отметить несколько товаров — сервер добавит все отмеченные позиции. Выкл.: у обычных блюд, которые клиент заказывает вручную.'
+                            )
+                            ->default(false),
+                        Toggle::make('cart_rule_gift_candidate')
+                            ->label('3. Можно выбрать бесплатным подарком при сумме заказа')
+                            ->helperText(
+                                'Вкл.: товар попадает в список подарков, когда сумма корзины ≥ порога (там же в «Правила корзины»). Клиент выбирает подарок в черновике чекаута. Выкл.: обычная оплачиваемая позиция.'
+                            )
+                            ->default(false),
+                    ])
+                    ->columnSpanFull(),
             ]);
     }
 }

@@ -2,8 +2,9 @@
 
 namespace App\Application\Shopping\Presenter;
 
+use App\Application\Shopping\CartRules\ResolveShoppingCartUseCase;
 use App\Domain\Order\Contracts\CatalogItemSnapshotProvider;
-use App\Domain\Shopping\Entities\CartLine;
+use App\Domain\Shopping\CartRules\CartLineItem;
 use App\Domain\Shopping\Entities\ShoppingSession;
 use App\Support\Money;
 
@@ -11,35 +12,44 @@ final class ShoppingStatePresenter
 {
     public function __construct(
         private readonly CatalogItemSnapshotProvider $catalog,
-    ) {
-    }
+        private readonly ResolveShoppingCartUseCase $resolveShoppingCart,
+    ) {}
 
     /**
      * @return array<string, mixed>
      */
     public function present(ShoppingSession $session): array
     {
-        $cartLines = $session->getCartLines();
-        $productIds = array_unique(array_map(static fn (CartLine $l) => $l->productId, $cartLines));
+        $resolved = $this->resolveShoppingCart->execute($session);
+        $lines = array_merge($resolved->userLines, $resolved->systemLines);
+        $productIds = array_unique(array_map(static fn (CartLineItem $l) => $l->productId, $lines));
         $snapshots = $productIds !== [] ? $this->catalog->getActiveSnapshotsByIds($productIds) : [];
 
         $cartItems = [];
         $subtotalKopecks = 0;
-        foreach ($cartLines as $line) {
+        foreach ($lines as $line) {
             $snap = $snapshots[$line->productId] ?? null;
             if ($snap === null) {
                 continue;
             }
-            $lineTotal = (int) $snap['price'] * $line->quantity;
+            $finalUnitKopecks = $line->finalUnitPriceKopecks ?? 0;
+            $lineTotal = $finalUnitKopecks * $line->quantity;
             $subtotalKopecks += $lineTotal;
             $cartItems[] = [
                 'productId' => $line->productId,
                 'qty' => $line->quantity,
+                'line_key' => $line->lineKey,
+                'origin' => $line->origin->value,
                 'productSnapshot' => [
                     'id' => $line->productId,
                     'name' => (string) $snap['name'],
-                    'price' => Money::kopecksToApiRubles((int) $snap['price']),
+                    'price' => Money::kopecksToApiRubles($finalUnitKopecks),
                     'weight' => null,
+                ],
+                'pricing' => [
+                    'list_unit_price_kopecks' => (int) $snap['price'],
+                    'final_unit_price_kopecks' => $finalUnitKopecks,
+                    'line_total_kopecks' => $lineTotal,
                 ],
             ];
         }
@@ -73,6 +83,9 @@ final class ShoppingStatePresenter
                 'items' => $cartItems,
                 'subtotal_rub' => Money::kopecksToApiRubles($subtotalKopecks),
                 'subtotal_kopecks' => $subtotalKopecks,
+                'promo_state' => $resolved->promoState,
+                'subtotal_user_kopecks' => $resolved->subtotalUserKopecks,
+                'subtotal_system_kopecks' => $resolved->subtotalSystemKopecks,
             ],
             'favorites' => $favorites,
             'checkout_draft' => $session->getCheckoutDraft(),

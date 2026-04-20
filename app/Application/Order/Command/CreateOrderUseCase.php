@@ -8,6 +8,8 @@ use App\Application\Order\Contracts\OrderPlacementContract;
 use App\Application\Order\DTO\CreateOrderDTO;
 use App\Application\Order\OrderBaseUseCase;
 use App\Application\Order\Presenter\OrderPresenter;
+use App\Application\Shopping\CartRules\ResolvedCartOrderItemsMapper;
+use App\Application\Shopping\CartRules\ResolveShoppingCartUseCase;
 use App\Domain\Order\Enums\PaymentStatus;
 use App\Domain\Order\Factories\OrderFactory;
 use App\Domain\Order\Factories\OrderItemsFactory;
@@ -32,6 +34,7 @@ final class CreateOrderUseCase extends OrderBaseUseCase
         DomainEventBus $events,
         private readonly OrderPlacementContract $orderPlacement,
         private readonly ShoppingSessionRepositoryInterface $shoppingSessions,
+        private readonly ResolveShoppingCartUseCase $resolveShoppingCart,
     ) {
         parent::__construct(
             $orders,
@@ -51,7 +54,8 @@ final class CreateOrderUseCase extends OrderBaseUseCase
     {
         $items = $dto->items;
         if ($shoppingSession !== null && ! $shoppingSession->isEmptyCart()) {
-            $items = $shoppingSession->cartLinesAsOrderItems();
+            $resolved = $this->resolveShoppingCart->execute($shoppingSession);
+            $items = ResolvedCartOrderItemsMapper::toOrderPlacementRows($resolved);
         }
 
         if ($authenticatedClientId !== null && $shoppingSession !== null) {

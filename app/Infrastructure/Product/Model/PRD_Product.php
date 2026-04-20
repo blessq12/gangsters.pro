@@ -33,6 +33,9 @@ class PRD_Product extends Model
         'description',
         'price',
         'status',
+        'cart_rule_counts_as_roll',
+        'cart_rule_gift_candidate',
+        'cart_rule_is_complement_set',
         'calories',
         'proteins',
         'fats',
@@ -46,6 +49,9 @@ class PRD_Product extends Model
         'fats' => 'float',
         'carbs' => 'float',
         'price' => 'integer',
+        'cart_rule_counts_as_roll' => 'boolean',
+        'cart_rule_gift_candidate' => 'boolean',
+        'cart_rule_is_complement_set' => 'boolean',
     ];
 
     public function images(): HasMany
@@ -68,6 +74,4 @@ class PRD_Product extends Model
             'tag_id',
         )->withTimestamps()->orderBy('sort_order');
     }
-
 }
-
