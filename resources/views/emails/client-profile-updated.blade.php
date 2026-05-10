@@ -10,7 +10,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Профиль</title>
 </head>
-<body style="font-family: system-ui, sans-serif; line-height: 1.55; color: #1f1f23;">
+<body style="font-family: system-ui, sans-serif; line-height: 1.55; color: #191919;">
     <p>Мы обновили данные твоего профиля в личном кабинете Gangsters. Ниже — как сейчас сохранено у нас.</p>
 
     <p style="margin-top: 1.25em;"><strong>Основное</strong></p>

@@ -5,137 +5,137 @@
 export const checkoutDesign = {
     shared: {
         stepKicker:
-            "text-[11px] uppercase tracking-[0.18em] text-slate-400",
+            "text-[11px] uppercase tracking-[0.18em] text-app-muted",
         stepKickerAccent:
-            "text-[11px] uppercase tracking-[0.18em] text-amber-300",
-        flowBody: "space-y-3 text-xs sm:text-sm text-slate-200",
-        headingSm: "text-xs font-semibold text-slate-100",
-        headingCardMuted: "text-[11px] font-semibold text-slate-300",
+            "text-[11px] uppercase tracking-[0.18em] text-app-accent",
+        flowBody: "space-y-3 text-xs sm:text-sm text-app-canvas-fg",
+        headingSm: "text-xs font-semibold text-app-canvas-fg",
+        headingCardMuted: "text-[11px] font-semibold text-app-muted",
         subsectionKickerSm:
-            "text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400",
+            "text-[11px] font-semibold uppercase tracking-[0.14em] text-app-muted",
         subsectionKickerXs:
-            "pt-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400",
+            "pt-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-app-muted",
         subsectionKickerXsSpaced:
-            "pt-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400",
+            "pt-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-app-muted",
         pillRound: "rounded-none px-3 py-1 transition",
         pillRoundText: "rounded-none px-3 py-1 text-[11px] transition",
         pillActive:
-            "bg-amber-400 text-black shadow-[0_0_14px_rgba(251,191,36,0.7)]",
+            "bg-app-accent text-black shadow-[0_0_14px_rgba(198,36,36,0.7)]",
         pillInactive:
-            "bg-white/5 text-slate-200 hover:bg-white/10",
-        introMuted: "text-xs text-slate-300",
+            "bg-black/5 text-app-canvas-fg hover:bg-black/8",
+        introMuted: "text-xs text-app-muted",
         authTabRow: "flex gap-2 text-[11px] font-medium",
         guestIsland:
-            "space-y-2 rounded-none border border-white/10 bg-black/30 px-3 py-3",
+            "space-y-2 rounded-none border border-black/12 bg-app-surface px-3 py-3",
         grid2: "grid grid-cols-2 gap-2",
         addressEmptyHint:
-            "rounded-none border border-dashed border-slate-600/60 bg-black/40 px-4 py-3 text-[11px] text-slate-300",
+            "rounded-none border border-dashed border-neutral-500/60 bg-app-surface px-4 py-3 text-[11px] text-neutral-700",
         addressLi:
-            "flex items-center gap-2 rounded-none border border-white/10 bg-black/40 px-3 py-2",
+            "flex items-center gap-2 rounded-none border border-black/12 bg-app-surface px-3 py-2",
         radioField:
-            "h-4 w-4 rounded-none border-slate-400 text-amber-400 focus:ring-amber-400",
+            "h-4 w-4 rounded-none border-neutral-400 text-app-accent focus:ring-app-accent",
         checkboxSm:
-            "h-3.5 w-3.5 rounded-none border-white/20 bg-black/60 text-amber-400 focus:ring-amber-400/60",
-        labelAddress: "flex-1 cursor-pointer text-xs text-slate-200",
-        addressTitle: "block font-medium text-slate-100",
-        addressMeta: "block text-[11px] text-slate-400",
+            "h-3.5 w-3.5 rounded-none border-black/20 bg-neutral-950/85 text-app-accent focus:ring-app-accent/60",
+        labelAddress: "flex-1 cursor-pointer text-xs text-app-canvas-fg",
+        addressTitle: "block font-medium text-app-canvas-fg",
+        addressMeta: "block text-[11px] text-app-muted",
         borderSectionTop:
             "space-y-2 border-t border-white/5 pt-3",
         expandRowBtn:
-            "flex w-full items-center justify-between rounded-none bg-white/5 px-3 py-2 text-[11px] font-medium text-slate-100 hover:bg-white/10",
-        expandRowChevronMuted: "text-[11px] text-slate-400",
+            "flex w-full items-center justify-between rounded-none bg-black/5 px-3 py-2 text-[11px] font-medium text-app-canvas-fg hover:bg-black/8",
+        expandRowChevronMuted: "text-[11px] text-app-muted",
         newAddressWrap: "space-y-2 pt-1",
         inputFieldCol2:
-            "col-span-2 rounded-none border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60",
+            "col-span-2 rounded-none border border-black/12 bg-app-surface px-3 py-2 text-[11px] text-app-surface-fg placeholder:text-neutral-600 focus:border-app-accent focus:outline-none focus:ring-1 focus:ring-app-accent/60",
         inputFieldFull:
-            "w-full rounded-none border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60",
+            "w-full rounded-none border border-black/12 bg-app-surface px-3 py-2 text-[11px] text-app-surface-fg placeholder:text-neutral-600 focus:border-app-accent focus:outline-none focus:ring-1 focus:ring-app-accent/60",
         inputFieldGridCell:
-            "rounded-none border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60",
+            "rounded-none border border-black/12 bg-app-surface px-3 py-2 text-[11px] text-app-surface-fg placeholder:text-neutral-600 focus:border-app-accent focus:outline-none focus:ring-1 focus:ring-app-accent/60",
         textareaAddress:
-            "w-full rounded-none border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60",
+            "w-full rounded-none border border-black/12 bg-app-surface px-3 py-2 text-[11px] text-app-surface-fg placeholder:text-neutral-600 focus:border-app-accent focus:outline-none focus:ring-1 focus:ring-app-accent/60",
         textareaFlow:
-            "w-full rounded-none border border-white/10 bg-black/40 px-3 py-2 text-xs text-slate-100 placeholder-slate-500 outline-none focus:border-amber-400",
+            "w-full rounded-none border border-black/12 bg-app-surface px-3 py-2 text-xs text-app-surface-fg placeholder:text-neutral-500 outline-none focus:border-app-accent",
         checkboxLabelRow:
-            "flex items-center gap-2 text-[11px] text-slate-300",
+            "flex items-center gap-2 text-[11px] text-app-muted",
         saveSecondaryBtn:
-            "inline-flex w-full items-center justify-center rounded-none bg-white/5 px-3 py-1.5 text-[11px] font-medium text-slate-100 transition hover:bg-white/10 disabled:opacity-50",
+            "inline-flex w-full items-center justify-center rounded-none bg-black/5 px-3 py-1.5 text-[11px] font-medium text-app-canvas-fg transition hover:bg-black/8 disabled:opacity-50",
         navFooterRow:
-            "mt-2 flex items-center justify-between text-[11px] text-slate-400",
+            "mt-2 flex items-center justify-between text-[11px] text-app-muted",
         linkUnderline: "underline-offset-2 hover:underline",
         btnPrimarySm:
-            "inline-flex items-center justify-center rounded-none bg-amber-400 px-3 py-1.5 text-[11px] font-semibold text-black shadow-[0_0_14px_rgba(251,191,36,0.7)] transition hover:bg-amber-300",
+            "inline-flex items-center justify-center rounded-none bg-app-accent px-3 py-1.5 text-[11px] font-semibold text-black shadow-[0_0_14px_rgba(198,36,36,0.7)] transition hover:bg-app-accent-hover",
         btnPrimarySmBusy:
-            "inline-flex items-center justify-center rounded-none bg-amber-400 px-3 py-1.5 text-[11px] font-semibold text-black shadow-[0_0_14px_rgba(251,191,36,0.7)] transition hover:bg-amber-300 disabled:opacity-60",
+            "inline-flex items-center justify-center rounded-none bg-app-accent px-3 py-1.5 text-[11px] font-semibold text-black shadow-[0_0_14px_rgba(198,36,36,0.7)] transition hover:bg-app-accent-hover disabled:opacity-60",
         btnPrimaryMd:
-            "inline-flex items-center justify-center rounded-none bg-amber-400 px-4 py-2 text-xs font-semibold text-black shadow-[0_0_18px_rgba(251,191,36,0.7)] transition hover:bg-amber-300",
+            "inline-flex items-center justify-center rounded-none bg-app-accent px-4 py-2 text-xs font-semibold text-black shadow-[0_0_18px_rgba(198,36,36,0.7)] transition hover:bg-app-accent-hover",
         btnSecondaryOutline:
-            "inline-flex w-full items-center justify-center rounded-none border border-white/15 bg-white/5 px-4 py-2 text-xs font-medium text-slate-100 transition hover:bg-white/10",
+            "inline-flex w-full items-center justify-center rounded-none border border-black/15 bg-black/5 px-4 py-2 text-xs font-medium text-app-canvas-fg transition hover:bg-black/8",
         btnSecondaryOutlineCompact:
-            "w-full rounded-none border border-white/10 bg-white/5 px-3 py-2 text-center text-[11px] font-medium text-slate-200 transition hover:bg-white/10",
+            "w-full rounded-none border border-black/12 bg-black/5 px-3 py-2 text-center text-[11px] font-medium text-app-canvas-fg transition hover:bg-black/8",
         errorBanner:
             "rounded-none border border-red-500/40 bg-red-950/40 px-3 py-2 text-[11px] text-red-200",
         errorLine: "text-[11px] text-red-400",
-        mutedNote: "text-[11px] text-slate-400",
-        textBodyXs: "text-xs text-slate-200",
-        textMutedLine: "text-[11px] text-slate-400",
-        textSuccessLead: "text-sm font-semibold text-slate-50",
-        textSuccessBody: "text-xs text-slate-300",
-        monoAccent: "font-mono text-amber-300",
+        mutedNote: "text-[11px] text-app-muted",
+        textBodyXs: "text-xs text-app-canvas-fg",
+        textMutedLine: "text-[11px] text-app-muted",
+        textSuccessLead: "text-sm font-semibold text-app-canvas-fg",
+        textSuccessBody: "text-xs text-app-muted",
+        monoAccent: "font-mono text-app-accent",
         spacerAfterComment: "space-y-1",
     },
 
     cart: {
         emptyState:
-            "rounded-none bg-[rgba(255,255,255,0.03)] px-4 py-5 text-sm text-slate-300",
-        userList: "space-y-2 text-xs sm:text-sm text-slate-200",
+            "rounded-none bg-[rgba(0,0,0,0.04)] px-4 py-5 text-sm text-app-muted",
+        userList: "space-y-2 text-xs sm:text-sm text-app-canvas-fg",
         qtyBar:
-            "inline-flex items-center justify-between rounded-none border border-amber-400/60 bg-black/70 px-2 py-1 text-xs text-slate-50",
+            "inline-flex items-center justify-between rounded-none border border-app-accent/60 bg-neutral-950/88 px-2 py-1 text-xs text-app-canvas-fg",
         qtyBtn:
-            "flex h-6 w-6 items-center justify-center rounded-none bg-black/70 text-[14px]",
+            "flex h-6 w-6 items-center justify-center rounded-none bg-neutral-950/88 text-[14px]",
         qtyLabel: "px-2 font-semibold",
         userLineItem:
-            "flex items-center justify-between gap-3 rounded-none bg-[rgba(255,255,255,0.03)] px-3 py-2",
-        lineTitle: "truncate font-medium text-slate-100",
-        lineSub: "mt-0.5 text-[11px] text-slate-400",
+            "flex items-center justify-between gap-3 rounded-none bg-[rgba(0,0,0,0.04)] px-3 py-2",
+        lineTitle: "truncate font-medium text-app-canvas-fg",
+        lineSub: "mt-0.5 text-[11px] text-app-muted",
         lineActions: "flex items-center gap-3",
         removeLink:
-            "shrink-0 text-[11px] text-slate-400 transition-colors hover:text-red-400",
+            "shrink-0 text-[11px] text-app-muted transition-colors hover:text-red-400",
         systemList:
-            "mt-2 rounded-none border border-amber-400/25 bg-amber-400/8 px-2.5 py-2 text-[11px] text-slate-200",
+            "mt-2 rounded-none border border-app-accent/25 bg-app-accent/8 px-2.5 py-2 text-[11px] text-app-canvas-fg",
         systemLine:
             "mt-1 flex items-center justify-between gap-2 rounded-none px-1 py-0.5",
         totalsCard:
-            "mt-3 space-y-1 rounded-none border border-white/10 bg-[rgba(255,255,255,0.02)] px-3 py-2 text-xs sm:text-sm",
+            "mt-3 space-y-1 rounded-none border border-black/12 bg-[rgba(0,0,0,0.03)] px-3 py-2 text-xs sm:text-sm",
         totalsRow: "flex items-center justify-between",
-        totalsLabelMuted: "text-slate-300/85",
-        totalsLabelStrong: "font-medium text-slate-300/90",
-        totalsValue: "text-slate-100",
+        totalsLabelMuted: "text-app-muted/85",
+        totalsLabelStrong: "font-medium text-app-muted/90",
+        totalsValue: "text-app-canvas-fg",
         totalsDivider:
-            "flex items-center justify-between border-t border-white/10 pt-1",
-        grandTotal: "font-semibold text-amber-300",
+            "flex items-center justify-between border-t border-black/12 pt-1",
+        grandTotal: "font-semibold text-app-accent",
         giftCard:
-            "mt-3 rounded-none border border-amber-300/25 bg-amber-400/10 px-3 py-2 text-xs sm:text-sm",
+            "mt-3 rounded-none border border-app-accent/25 bg-app-accent/10 px-3 py-2 text-xs sm:text-sm",
         giftRow: "flex items-center justify-between gap-2",
-        giftTitle: "font-semibold text-amber-200",
-        giftSelectedHint: "mt-0.5 truncate text-[11px] text-slate-300",
+        giftTitle: "font-semibold text-app-accent",
+        giftSelectedHint: "mt-0.5 truncate text-[11px] text-app-muted",
         giftCta:
-            "shrink-0 rounded-none border border-amber-300/60 bg-black/40 px-3 py-1 text-[11px] font-medium text-amber-200 transition hover:bg-black/60",
+            "shrink-0 rounded-none border border-app-accent/60 bg-app-surface px-3 py-1 text-[11px] font-medium text-app-accent transition hover:bg-neutral-950/85",
         authActions: "mt-3 flex flex-col gap-2",
         giftModalList: "space-y-2",
         giftRadioLabel:
-            "flex cursor-pointer items-center gap-3 rounded-none border border-white/10 bg-white/5 px-3 py-2 transition hover:border-amber-300/40",
-        giftRadioInput: "h-4 w-4 accent-amber-300",
+            "flex cursor-pointer items-center gap-3 rounded-none border border-black/12 bg-black/5 px-3 py-2 transition hover:border-app-accent/40",
+        giftRadioInput: "h-4 w-4 accent-app-accent",
         giftRadioBody: "min-w-0 flex-1",
-        giftRadioTitle: "truncate text-sm font-medium text-slate-100",
-        giftRadioPrice: "text-xs text-slate-400",
+        giftRadioTitle: "truncate text-sm font-medium text-app-canvas-fg",
+        giftRadioPrice: "text-xs text-app-muted",
         giftThumb: "h-10 w-10 rounded-none object-cover",
         giftFooterRow: "flex justify-end",
         giftApplyBtn:
-            "inline-flex items-center justify-center rounded-none bg-amber-400 px-4 py-2 text-xs font-semibold text-black transition hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-60",
+            "inline-flex items-center justify-center rounded-none bg-app-accent px-4 py-2 text-xs font-semibold text-black transition hover:bg-app-accent-hover disabled:cursor-not-allowed disabled:opacity-60",
     },
 
     auth: {
-        footerCol: "mt-2 flex flex-col gap-2 text-[11px] text-slate-400",
+        footerCol: "mt-2 flex flex-col gap-2 text-[11px] text-app-muted",
     },
 
     delivery: {
@@ -144,19 +144,19 @@ export const checkoutDesign = {
 
     confirm: {
         summaryCard:
-            "space-y-2 rounded-none bg-[rgba(255,255,255,0.03)] px-3 py-3",
+            "space-y-2 rounded-none bg-[rgba(0,0,0,0.04)] px-3 py-3",
         orderList: "space-y-1 text-xs",
         orderLineRow: "flex items-center justify-between gap-2",
-        orderLineTruncate: "truncate text-slate-100",
-        orderLineMuted: "shrink-0 text-slate-300",
+        orderLineTruncate: "truncate text-app-canvas-fg",
+        orderLineMuted: "shrink-0 text-app-muted",
         systemLineAccent:
-            "flex items-center justify-between gap-2 rounded-none border border-amber-400/25 bg-amber-400/10 px-2 py-1",
-        badgeTiny: "ml-1 text-[10px] font-medium text-amber-200",
+            "flex items-center justify-between gap-2 rounded-none border border-app-accent/25 bg-app-accent/10 px-2 py-1",
+        badgeTiny: "ml-1 text-[10px] font-medium text-app-accent",
         totalsInset:
             "mt-2 space-y-1 border-t border-white/5 pt-2 text-xs",
         blockMuted:
-            "space-y-1 rounded-none bg-[rgba(255,255,255,0.02)] px-3 py-3",
-        mutedInline: "ml-1 text-slate-400",
+            "space-y-1 rounded-none bg-[rgba(0,0,0,0.03)] px-3 py-3",
+        mutedInline: "ml-1 text-app-muted",
     },
 
     success: {

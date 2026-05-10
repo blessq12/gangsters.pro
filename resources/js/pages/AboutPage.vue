@@ -41,7 +41,7 @@ const a = useAppDesign().components.pages.about;
                         <span :class="a.eyebrowTag">
                             Характер
                         </span>
-                        <i class="mdi mdi-crown-outline text-2xl text-amber-300"></i>
+                        <i class="mdi mdi-crown-outline text-2xl text-app-accent"></i>
                     </div>
                     <p :class="a.spotlightTitle">
                         Вкус, скорость и атмосфера.

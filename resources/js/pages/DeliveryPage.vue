@@ -195,7 +195,7 @@ onMounted(() => {
                         :class="dv.paymentRow"
                     >
                         <i
-                            class="text-2xl text-amber-300"
+                            class="text-2xl text-app-accent"
                             :class="block.icon"
                         ></i>
                         <div>

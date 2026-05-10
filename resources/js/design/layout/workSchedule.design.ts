@@ -10,7 +10,7 @@ export const workScheduleDesign = {
 
     /** Базовый каркас кнопки; поверх — theme.barSurface из `themes`. */
     triggerStatic:
-        "inline-flex w-max max-w-[min(90vw,24rem)] shrink-0 items-center gap-2 rounded-none border px-3 py-2 text-left text-sm outline-none backdrop-blur-sm transition-colors focus-visible:ring-2 focus-visible:ring-amber-400/60 disabled:cursor-not-allowed disabled:opacity-60 md:max-w-[min(90vw,28rem)] sm:px-4",
+        "inline-flex w-max max-w-[min(90vw,24rem)] shrink-0 items-center gap-2 rounded-none border px-3 py-2 text-left text-sm outline-none backdrop-blur-sm transition-colors focus-visible:ring-2 focus-visible:ring-app-accent/60 disabled:cursor-not-allowed disabled:opacity-60 md:max-w-[min(90vw,28rem)] sm:px-4",
 
     dotSize: "h-2.5 w-2.5 shrink-0 rounded-none sm:h-3 sm:w-3",
 
@@ -27,7 +27,7 @@ export const workScheduleDesign = {
     accentToggleHidden: "hidden shrink-0 text-xs font-medium sm:inline",
 
     chevronIcon:
-        "mdi mdi-chevron-down shrink-0 text-lg text-slate-400 transition-transform duration-200",
+        "mdi mdi-chevron-down shrink-0 text-lg text-app-muted transition-transform duration-200",
 
     /** Панель teleport: статика + themes.*.panelSurface */
     panelStatic:
@@ -65,22 +65,22 @@ export const workScheduleDesign = {
             panelHeaderBorder: "border-b border-slate-200/70",
             panelPrimaryText: "text-slate-800",
             panelMutedText: "text-slate-600",
-            panelAccent: "text-amber-600/95",
+            panelAccent: "text-app-accent/95",
             summaryLine: "text-slate-800",
-            todayDayLabel: "text-amber-700",
+            todayDayLabel: "text-app-accent-hover",
         },
         dark: {
             barSurface:
-                "border-white/10 bg-[rgba(255,255,255,0.06)] shadow-[0_0_20px_rgba(0,0,0,0.45)] hover:bg-[rgba(255,255,255,0.09)]",
+                "border-black/12 bg-[rgba(0,0,0,0.08)] shadow-[0_0_20px_rgba(0,0,0,0.45)] hover:bg-[rgba(0,0,0,0.11)]",
             panelSurface:
-                "border-white/[0.08] bg-[#1f1f23]/95 shadow-xl",
-            panelDivide: "divide-white/[0.08]",
-            panelHeaderBorder: "border-b border-white/[0.08]",
-            panelPrimaryText: "text-slate-200",
-            panelMutedText: "text-slate-400",
-            panelAccent: "text-amber-400/90",
-            summaryLine: "text-slate-100",
-            todayDayLabel: "text-amber-300/90",
+                "border-black/15 bg-app-surface shadow-xl",
+            panelDivide: "divide-black/15",
+            panelHeaderBorder: "border-b border-black/15",
+            panelPrimaryText: "text-app-surface-fg",
+            panelMutedText: "text-neutral-600",
+            panelAccent: "text-app-accent",
+            summaryLine: "text-app-surface-fg",
+            todayDayLabel: "text-app-accent",
         },
     },
 } as const;

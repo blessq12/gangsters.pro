@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Восстановление пароля</title>
 </head>
-<body style="font-family: system-ui, sans-serif; line-height: 1.5; color: #1f1f23;">
+<body style="font-family: system-ui, sans-serif; line-height: 1.5; color: #191919;">
     <p>Запрос на сброс пароля личного кабинета.</p>
     <p>Перейди по ссылке (действует ограниченное время):</p>
     <p><a href="{{ $resetUrl }}">{{ $resetUrl }}</a></p>

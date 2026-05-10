@@ -69,7 +69,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Заказ</title>
 </head>
-<body style="font-family: system-ui, sans-serif; line-height: 1.55; color: #1f1f23;">
+<body style="font-family: system-ui, sans-serif; line-height: 1.55; color: #191919;">
     <p>Спасибо за заказ в Gangsters!</p>
     <p>Номер заказа: <strong>{{ $order['id'] ?? '—' }}</strong><br>
         Статус: <strong>{{ $statusLabel }}</strong></p>

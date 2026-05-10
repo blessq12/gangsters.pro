@@ -154,6 +154,13 @@ onUnmounted(() => {
 
 <style scoped>
 .app-shell.theme-dark {
+    --app-canvas: #191919;
+    --app-surface: #ececec;
+    --app-surface-fg: #191919;
+    --app-accent: #c62424;
+    --app-accent-hover: #9e1d1d;
+    --app-canvas-fg: #e8e8e8;
+    --app-muted: #a3a3a3;
     background:
         radial-gradient(
             circle at top left,
@@ -172,11 +179,18 @@ onUnmounted(() => {
             transparent 2px,
             transparent 6px
         ),
-        #1f1f23;
+        var(--app-canvas);
 }
 
 .app-shell.theme-light {
-    background: #f9fafb;
+    --app-canvas: #ececec;
+    --app-surface: #fafafa;
+    --app-surface-fg: #191919;
+    --app-accent: #c62424;
+    --app-accent-hover: #9e1d1d;
+    --app-canvas-fg: #191919;
+    --app-muted: #525252;
+    background: var(--app-canvas);
 }
 </style>
 

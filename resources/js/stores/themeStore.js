@@ -2,8 +2,8 @@ import { defineStore } from "pinia";
 
 const THEME_KEY = "theme";
 const THEME_COLORS = {
-    dark: "#1f1f23",
-    light: "#f9fafb",
+    dark: "#191919",
+    light: "#ececec",
 };
 
 function updateSafariThemeColor(theme) {
