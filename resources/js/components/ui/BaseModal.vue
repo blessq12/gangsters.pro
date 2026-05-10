@@ -5,6 +5,7 @@ import {
     pushBodyScrollLock,
     popBodyScrollLock,
 } from "../../utils/system/bodyScrollLock";
+import { useAppDesign } from "../../design/useAppDesign";
 
 const props = defineProps({
     modelValue: {
@@ -18,6 +19,8 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["update:modelValue"]);
+
+const dm = useAppDesign().components.uiPrimitives.modal;
 
 const isVisible = ref(false);
 const backdropRef = ref(null);
@@ -74,40 +77,35 @@ onBeforeUnmount(() => {
 
 <template>
     <teleport to="body">
-        <div v-if="isVisible" class="base-modal">
-            <div ref="backdropRef" class="backdrop" @click="close"></div>
-            <div class="content">
-                <div
-                    class="mx-auto w-full max-w-lg px-4 sm:px-6 lg:px-8 relative z-10"
-                >
-                    <div
-                        ref="cardRef"
-                        class="rounded-2xl border border-white/10 bg-[rgba(255,255,255,0.04)] px-4 sm:px-6 lg:px-8 py-5 shadow-2xl shadow-black/60 backdrop-blur-lg"
-                    >
+        <div v-if="isVisible" :class="dm.root">
+            <div ref="backdropRef" :class="dm.backdrop" @click="close" />
+            <div :class="dm.content">
+                <div :class="dm.innerWrap">
+                    <div ref="cardRef" :class="dm.card">
                         <div
                             v-if="$slots.header || props.closable"
-                            class="flex items-start justify-between gap-4 mb-4"
+                            :class="dm.headerRow"
                         >
-                            <div class="text-base font-semibold text-amber-300">
+                            <div :class="dm.headerSlot">
                                 <slot name="header" />
                             </div>
                             <button
                                 v-if="props.closable"
                                 type="button"
-                                class="text-slate-400 hover:text-white transition-colors"
+                                :class="dm.closeBtn"
                                 @click="close"
                             >
                                 ✕
                             </button>
                         </div>
 
-                        <div class="space-y-4 text-sm leading-relaxed text-slate-100">
+                        <div :class="dm.body">
                             <slot />
                         </div>
 
                         <div
                             v-if="$slots.footer"
-                            class="mt-4 pt-3 border-t border-white/10"
+                            :class="dm.footerWrap"
                         >
                             <slot name="footer" />
                         </div>
@@ -117,26 +115,3 @@ onBeforeUnmount(() => {
         </div>
     </teleport>
 </template>
-
-<style scoped>
-.base-modal {
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.backdrop {
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.4);
-}
-
-.content {
-    position: relative;
-    z-index: 1;
-}
-</style>
-

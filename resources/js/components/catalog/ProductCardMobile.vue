@@ -5,6 +5,7 @@ import { useFixedTooltip } from "../../composables/catalog/useFixedTooltip";
 import { useProductActions } from "../../composables/catalog/useProductActions";
 import { useProductMeta } from "../../composables/catalog/useProductMeta";
 import { formatMoneyRublesRu } from "../../utils/moneyFormat";
+import { useAppDesign } from "../../design/useAppDesign";
 
 const props = defineProps({
     product: {
@@ -14,6 +15,9 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["imageClick"]);
+
+const m = useAppDesign().components.catalog.cards.mobileGrid;
+const cs = useAppDesign().components.catalog.cards.shared;
 
 const primaryThumb = computed(() => {
     const p = props.product || {};
@@ -62,13 +66,9 @@ const badgeTags = computed(() => {
         .slice(0, 3);
 });
 
-function tagColorClass(color) {
-    if (color === "red") return "border-red-400/50 bg-red-500/20 text-red-100";
-    if (color === "green") return "border-green-400/50 bg-green-500/20 text-green-100";
-    if (color === "slate") return "border-slate-400/50 bg-slate-500/20 text-slate-100";
-    if (color === "sky") return "border-sky-400/50 bg-sky-500/20 text-sky-100";
-    if (color === "violet") return "border-violet-400/50 bg-violet-500/20 text-violet-100";
-    return "border-amber-400/60 bg-amber-500/20 text-amber-100";
+function tagToneClass(color) {
+    const c = String(color || "").trim().toLowerCase();
+    return cs.tagTone[c] ?? cs.tagTone.default;
 }
 
 const openTooltip = ref(null); // 'nutrition' | 'ingredients' | null
@@ -248,110 +248,101 @@ function handlePriceClick() {
 </script>
 
 <template>
-    <article
-        class="group flex h-full flex-col overflow-hidden rounded-2xl bg-[rgba(255,255,255,0.02)] shadow-[0_18px_45px_rgba(0,0,0,0.85)] transition duration-300 hover:-translate-y-1 hover:bg-[rgba(255,255,255,0.03)]"
-    >
-        <span class="sr-only" aria-live="polite">{{ liveMessage }}</span>
-        <div
-            class="relative w-full overflow-hidden aspect-[4/3] lg:h-full lg:aspect-auto"
-        >
+    <article :class="m.article">
+        <span :class="m.srOnlyAria" aria-live="polite">{{ liveMessage }}</span>
+        <div :class="m.mediaWrap">
             <img
                 v-if="primaryThumb"
                 :src="primaryThumb"
                 :srcset="imageSrcset || undefined"
                 :sizes="imageSrcset ? imageSizes : undefined"
                 alt=""
-                class="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105"
+                :class="m.img"
                 loading="lazy"
                 fetchpriority="low"
             />
             <div
                 v-else
-                class="absolute inset-0 flex items-center justify-center bg-slate-900/70 text-xs text-slate-400"
+                :class="m.placeholder"
             >
-                Нет фото
+                {{ cs.noPhotoText }}
             </div>
 
-            <div
-                class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/45 to-black/10"
-            />
+            <div :class="m.gradient" />
 
             <div
-                class="absolute inset-0 z-[1] cursor-pointer"
+                :class="m.imageHit"
                 aria-label="Открыть карточку товара"
                 @click.stop="emit('imageClick', product)"
             />
 
-            <div
-                class="absolute left-3 top-3 z-10 flex max-w-[70%] flex-col gap-1"
-            >
+            <div :class="m.badgesCol">
                 <div
                     v-if="product.weight"
-                    class="inline-flex items-center rounded-full border border-white/10 bg-[rgba(0,0,0,0.75)] px-2.5 py-1 text-[10px] font-medium text-slate-100 backdrop-blur"
+                    :class="m.weightPill"
                 >
                     {{ product.weight }} г
                 </div>
                 <div
                     v-if="badgeTags.length"
-                    class="flex flex-wrap gap-1"
+                    :class="m.tagsRow"
                 >
                     <span
                         v-for="tag in badgeTags"
                         :key="tag.code"
-                        class="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium backdrop-blur"
-                        :class="tagColorClass(tag.color)"
+                        :class="[m.tagPill, tagToneClass(tag.color)]"
                     >
                         {{ tag.label }}
                     </span>
                 </div>
             </div>
 
-            <!-- Только иконки/кнопки: без “острова” с текстом -->
             <button
                 type="button"
-                class="absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/55 text-slate-200 transition-[transform,box-shadow,border-color,color] duration-300 ease-out hover:border-amber-400/60 hover:text-amber-200"
                 :class="[
-                    isFav ? 'border-amber-400/60 text-amber-200' : '',
+                    m.favFab,
+                    isFav ? m.favFabActive : '',
                     justToggledFav ? 'scale-[1.06]' : 'scale-100',
                 ]"
                 aria-label="Избранное"
                 @click.stop="handleToggleFavorite"
             >
                 <span
-                    class="pc-feedback-ring pointer-events-none absolute inset-0 rounded-full ring-2 ring-amber-400/45"
-                    :class="{ 'pc-feedback-ring--active': justToggledFav }"
+                    :class="[m.feedbackRing, { 'pc-feedback-ring--active': justToggledFav }]"
                     aria-hidden="true"
                 />
                 <i
                     :class="[
-                        'mdi text-xl transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]',
+                        m.favFabIcon,
                         isFav ? 'mdi-heart' : 'mdi-heart-outline',
                         justToggledFav ? 'scale-110' : 'scale-100',
                     ]"
                 />
             </button>
 
-            <div class="absolute inset-x-3 bottom-3 z-10 flex flex-col gap-2.5">
-                <div class="w-2/3 min-w-0 pointer-events-none">
+            <div :class="m.bottomStack">
+                <div :class="m.titleWrap">
                     <p
-                        class="rounded-xl bg-black/35 px-2.5 py-2 text-[13px] font-semibold leading-snug text-slate-50 line-clamp-3 shadow-[0_0_24px_rgba(0,0,0,0.7)] backdrop-blur"
+                        :class="m.titlePill"
                         :title="product.name"
                     >
                         {{ product.name }}
                     </p>
                 </div>
 
-                <div class="flex w-full shrink-0 items-center gap-3">
+                <div :class="m.actionsRow">
                     <div
                         ref="actionsClusterRef"
-                        class="relative flex w-fit min-w-0 items-center gap-2.5 rounded-2xl border border-white/10 bg-black/35 px-3 py-1.5 shadow-[0_0_24px_rgba(0,0,0,0.7)] backdrop-blur"
+                        :class="m.actionCluster"
                     >
                         <div v-if="hasNutrition">
                             <button
                                 ref="nutritionButtonRef"
                                 type="button"
-                                class="flex h-10 w-10 items-center justify-center rounded-full border border-amber-400/40 bg-black/55 text-amber-200 transition-transform duration-300 ease-out hover:border-amber-400/70 hover:text-amber-200"
-                                :class="justPressedNutrition ? 'scale-110' : 'scale-100'"
+                                :class="[
+                                    m.nutritionIconBtn,
+                                    justPressedNutrition ? 'scale-110' : 'scale-100',
+                                ]"
                                 aria-label="Показать КБЖУ"
                                 @click.stop="toggleNutritionTooltip"
                             >
@@ -363,8 +354,10 @@ function handlePriceClick() {
                             <button
                                 ref="ingredientsButtonRef"
                                 type="button"
-                                class="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-black/55 text-slate-200 transition-transform duration-300 ease-out hover:border-amber-400/50 hover:text-amber-200"
-                                :class="justPressedIngredients ? 'scale-110' : 'scale-100'"
+                                :class="[
+                                    m.ingredientsIconBtn,
+                                    justPressedIngredients ? 'scale-110' : 'scale-100',
+                                ]"
                                 aria-label="Показать состав"
                                 @click.stop="toggleIngredientsTooltip"
                             >
@@ -372,23 +365,24 @@ function handlePriceClick() {
                             </button>
                         </div>
 
-                        <div class="flex h-10 shrink-0 items-center">
+                        <div :class="m.cartIconOuter">
                             <template v-if="qtyInCart === 0">
                                 <button
                                     type="button"
-                                    class="relative flex h-10 w-10 items-center justify-center rounded-full bg-amber-400 text-black transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
-                                    :class="justAddedToCart ? 'scale-[1.06]' : 'scale-100'"
+                                    :class="[
+                                        m.cartAddCircle,
+                                        justAddedToCart ? 'scale-[1.06]' : 'scale-100',
+                                    ]"
                                     aria-label="Добавить в корзину"
                                     @click.stop="handleAddToCart"
                                 >
                                     <span
-                                        class="pc-feedback-ring pc-feedback-ring--cart pointer-events-none absolute -inset-1 rounded-full ring-2 ring-amber-300/55"
-                                        :class="{ 'pc-feedback-ring--active': justAddedToCart }"
+                                        :class="[m.feedbackCartRing, { 'pc-feedback-ring--active': justAddedToCart }]"
                                         aria-hidden="true"
                                     />
                                     <i
                                         :class="[
-                                            'mdi mdi-cart-outline text-xl transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]',
+                                            m.cartAddIcon,
                                             justAddedToCart ? 'scale-110' : 'scale-100',
                                         ]"
                                     />
@@ -396,23 +390,25 @@ function handlePriceClick() {
                             </template>
                             <div
                                 v-else
-                                class="flex h-10 items-center gap-0.5 rounded-full border border-amber-400/50 bg-black/60 px-0.5 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
-                                :class="justChangedQty ? 'scale-[1.04]' : 'scale-100'"
+                                :class="[
+                                    m.qtyCluster,
+                                    justChangedQty ? 'scale-[1.04]' : 'scale-100',
+                                ]"
                             >
                                 <button
                                     type="button"
-                                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-black/50 text-base font-semibold leading-none text-slate-100 transition-colors hover:bg-black/70"
+                                    :class="m.qtyMiniBtn"
                                     aria-label="Уменьшить количество"
                                     @click.stop="handleDecrement"
                                 >
                                     –
                                 </button>
-                                <span class="min-w-[1.5rem] px-0.5 text-center text-[12px] font-semibold tabular-nums text-amber-200">
+                                <span :class="m.qtyNum">
                                     {{ qtyInCart }}
                                 </span>
                                 <button
                                     type="button"
-                                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-black/50 text-base font-semibold leading-none text-slate-100 transition-colors hover:bg-black/70"
+                                    :class="m.qtyMiniBtn"
                                     aria-label="Увеличить количество"
                                     @click.stop="handleIncrement"
                                 >
@@ -425,7 +421,7 @@ function handlePriceClick() {
                     <button
                         v-if="product.price != null"
                         type="button"
-                        class="ml-auto flex min-h-10 shrink-0 items-center whitespace-nowrap rounded-lg bg-amber-400 px-3 py-1.5 text-[12px] font-semibold text-black transition-transform duration-200 hover:scale-[1.03] cursor-pointer"
+                        :class="m.priceSide"
                         @click.stop="handlePriceClick"
                         :aria-label="qtyInCart === 0 ? 'Добавить в корзину' : 'Увеличить количество'"
                     >
@@ -440,34 +436,38 @@ function handlePriceClick() {
         <div
             v-if="openTooltip"
             ref="tooltipRef"
-            class="fixed z-[1300] rounded-xl border border-white/10 bg-[rgba(0,0,0,0.95)] px-2.5 py-2.5 shadow-xl backdrop-blur"
-            :class="openTooltip === 'ingredients' ? 'w-[210px] max-h-44 overflow-y-auto' : 'w-[190px]'"
+            :class="[
+                m.teleportTooltipBase,
+                openTooltip === 'ingredients'
+                    ? m.teleportTooltipIngredientsWidth
+                    : m.teleportTooltipNutritionWidth,
+            ]"
             :style="tooltipStyle"
             role="dialog"
         >
-            <div v-if="openTooltip === 'nutrition'" class="space-y-1 text-[11px] text-slate-100">
-                <div class="flex items-center justify-between gap-2">
-                    <span class="text-slate-300">Калории</span>
-                    <span class="font-medium">{{ nutrition.calories }}</span>
+            <div v-if="openTooltip === 'nutrition'" :class="m.teleportNutritionInner">
+                <div :class="m.teleportNutritionRow">
+                    <span :class="m.teleportNutritionLabel">Калории</span>
+                    <span :class="m.teleportNutritionVal">{{ nutrition.calories }}</span>
                 </div>
-                <div class="flex items-center justify-between gap-2">
-                    <span class="text-slate-300">Белки</span>
-                    <span class="font-medium">{{ nutrition.proteins }} г</span>
+                <div :class="m.teleportNutritionRow">
+                    <span :class="m.teleportNutritionLabel">Белки</span>
+                    <span :class="m.teleportNutritionVal">{{ nutrition.proteins }} г</span>
                 </div>
-                <div class="flex items-center justify-between gap-2">
-                    <span class="text-slate-300">Жиры</span>
-                    <span class="font-medium">{{ nutrition.fats }} г</span>
+                <div :class="m.teleportNutritionRow">
+                    <span :class="m.teleportNutritionLabel">Жиры</span>
+                    <span :class="m.teleportNutritionVal">{{ nutrition.fats }} г</span>
                 </div>
-                <div class="flex items-center justify-between gap-2">
-                    <span class="text-slate-300">Углеводы</span>
-                    <span class="font-medium">{{ nutrition.carbs }} г</span>
+                <div :class="m.teleportNutritionRow">
+                    <span :class="m.teleportNutritionLabel">Углеводы</span>
+                    <span :class="m.teleportNutritionVal">{{ nutrition.carbs }} г</span>
                 </div>
             </div>
-            <div v-else class="space-y-1 text-[11px] text-slate-100">
-                <div class="text-[10px] font-medium text-slate-300">
+            <div v-else :class="m.teleportIngredientsInner">
+                <div :class="m.teleportIngredientsHeading">
                     Состав
                 </div>
-                <div class="text-slate-200/90">
+                <div :class="m.teleportIngredientsBody">
                     {{ ingredientsText }}
                 </div>
             </div>
@@ -527,4 +527,3 @@ function handlePriceClick() {
     }
 }
 </style>
-

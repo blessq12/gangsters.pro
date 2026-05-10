@@ -14,8 +14,10 @@ import {
     kopecksToRublesOptional,
 } from "../utils/system/companyDeliveryFacts";
 import { safeTrim } from "../utils/system/companyDisplay";
+import { useAppDesign } from "../design/useAppDesign";
 
 const systemStore = useSystemStore();
+const dv = useAppDesign().components.pages.delivery;
 
 const company = computed(() => systemStore.company);
 
@@ -91,7 +93,7 @@ onMounted(() => {
         hero-image="/images/banners/banner2.jpeg"
         :stats="stats"
     >
-        <div class="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]">
+        <div :class="dv.gridTop">
             <SecondaryContentBlock
                 title="Зоны и сроки доставки"
                 subtitle="КАК ЭТО РАБОТАЕТ"
@@ -108,26 +110,26 @@ onMounted(() => {
                 </p>
             </SecondaryContentBlock>
 
-            <div class="grid gap-4">
-                <article class="rounded-[1.75rem] border border-white/10 bg-[rgba(255,255,255,0.04)] p-5">
-                    <p class="text-[11px] uppercase tracking-[0.22em] text-slate-400">
+            <div :class="dv.factsStack">
+                <article :class="dv.highlightCard">
+                    <p :class="dv.highlightKicker">
                         Быстрый факт
                     </p>
-                    <p class="mt-3 text-3xl font-semibold text-amber-300">
+                    <p :class="dv.highlightValue">
                         {{ highlightMinutes.head }}
                     </p>
-                    <p class="mt-1 text-sm text-slate-300">
+                    <p :class="dv.highlightSub">
                         {{ highlightMinutes.sub }}
                     </p>
                 </article>
-                <article class="rounded-[1.75rem] border border-white/10 bg-[rgba(255,255,255,0.04)] p-5">
-                    <p class="text-[11px] uppercase tracking-[0.22em] text-slate-400">
+                <article :class="dv.highlightCard">
+                    <p :class="dv.highlightKicker">
                         Мин. заказ
                     </p>
-                    <p class="mt-3 text-3xl font-semibold text-amber-300">
+                    <p :class="dv.highlightValue">
                         {{ highlightMinOrder.head }}
                     </p>
-                    <p class="mt-1 text-sm text-slate-300">
+                    <p :class="dv.highlightSub">
                         {{ highlightMinOrder.sub }}
                     </p>
                 </article>
@@ -138,50 +140,50 @@ onMounted(() => {
             title="Как проходит заказ"
             subtitle="СЦЕНАРИЙ ЗАКАЗА"
         >
-            <div class="grid gap-4 md:grid-cols-4">
-                <article class="rounded-2xl border border-white/10 bg-black/20 p-5">
-                    <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-amber-400 text-black">
+            <div :class="dv.stepsGrid">
+                <article :class="dv.stepCard">
+                    <div :class="dv.stepIconWrap">
                         <i class="mdi mdi-cart-outline text-xl"></i>
                     </div>
-                    <p class="font-medium text-slate-50">1. Оформление</p>
-                    <p class="mt-2 text-sm text-slate-300">
+                    <p :class="dv.stepTitle">1. Оформление</p>
+                    <p :class="dv.stepBody">
                         Собираете заказ, указываете адрес и сразу видите базовые условия доставки.
                     </p>
                 </article>
 
-                <article class="rounded-2xl border border-white/10 bg-black/20 p-5">
-                    <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-amber-400 text-black">
+                <article :class="dv.stepCard">
+                    <div :class="dv.stepIconWrap">
                         <i class="mdi mdi-check-decagram-outline text-xl"></i>
                     </div>
-                    <p class="font-medium text-slate-50">2. Подтверждение</p>
-                    <p class="mt-2 text-sm text-slate-300">
+                    <p :class="dv.stepTitle">2. Подтверждение</p>
+                    <p :class="dv.stepBody">
                         Заказ считается принятым после подтверждения оператором или системой.
                     </p>
                 </article>
 
-                <article class="rounded-2xl border border-white/10 bg-black/20 p-5">
-                    <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-amber-400 text-black">
+                <article :class="dv.stepCard">
+                    <div :class="dv.stepIconWrap">
                         <i class="mdi mdi-fire-circle text-xl"></i>
                     </div>
-                    <p class="font-medium text-slate-50">3. Приготовление</p>
-                    <p class="mt-2 text-sm text-slate-300">
+                    <p :class="dv.stepTitle">3. Приготовление</p>
+                    <p :class="dv.stepBody">
                         Кухня готовит заказ и собирает его в логичной последовательности, чтобы не терять качество.
                     </p>
                 </article>
 
-                <article class="rounded-2xl border border-white/10 bg-black/20 p-5">
-                    <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-amber-400 text-black">
+                <article :class="dv.stepCard">
+                    <div :class="dv.stepIconWrap">
                         <i class="mdi mdi-moped-outline text-xl"></i>
                     </div>
-                    <p class="font-medium text-slate-50">4. Доставка</p>
-                    <p class="mt-2 text-sm text-slate-300">
+                    <p :class="dv.stepTitle">4. Доставка</p>
+                    <p :class="dv.stepBody">
                         Курьер везёт заказ, а вы получаете его в согласованное время без лишней путаницы.
                     </p>
                 </article>
             </div>
         </SecondaryContentBlock>
 
-        <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <div :class="dv.gridBottom">
             <SecondaryContentBlock
                 title="Способы оплаты"
                 subtitle="ОПЛАТА"
@@ -190,17 +192,17 @@ onMounted(() => {
                     <div
                         v-for="block in paymentBlocks"
                         :key="block.id"
-                        class="flex items-start gap-4 rounded-2xl border border-white/10 bg-black/20 p-4"
+                        :class="dv.paymentRow"
                     >
                         <i
                             class="text-2xl text-amber-300"
                             :class="block.icon"
                         ></i>
                         <div>
-                            <p class="font-medium text-slate-50">
+                            <p :class="dv.paymentTitle">
                                 {{ block.title }}
                             </p>
-                            <p class="mt-1 text-sm text-slate-300">
+                            <p :class="dv.paymentBody">
                                 {{ block.description }}
                             </p>
                         </div>
@@ -208,24 +210,24 @@ onMounted(() => {
                 </div>
             </SecondaryContentBlock>
 
-            <article class="overflow-hidden rounded-[1.75rem] border border-amber-400/20 bg-[linear-gradient(180deg,rgba(251,191,36,0.1),rgba(255,255,255,0.03))] p-6">
-                <p class="text-xs uppercase tracking-[0.26em] text-amber-200">
+            <article :class="dv.importantArticle">
+                <p :class="dv.importantEyebrow">
                     Важно
                 </p>
-                <p class="mt-4 text-2xl font-semibold leading-tight text-slate-50">
+                <p :class="dv.importantTitle">
                     {{ importantLead }}
                 </p>
-                <p class="mt-3 text-sm leading-relaxed text-slate-300">
+                <p :class="dv.importantBody">
                     {{ importantSub }}
                 </p>
-                <div class="mt-5 flex flex-wrap gap-2 text-xs text-slate-200">
-                    <span class="rounded-full border border-white/10 bg-black/30 px-3 py-1.5">
+                <div :class="dv.chipsRow">
+                    <span :class="dv.chip">
                         Прозрачные условия
                     </span>
-                    <span class="rounded-full border border-white/10 bg-black/30 px-3 py-1.5">
+                    <span :class="dv.chip">
                         Без скрытых комиссий
                     </span>
-                    <span class="rounded-full border border-white/10 bg-black/30 px-3 py-1.5">
+                    <span :class="dv.chip">
                         Условия по адресу
                     </span>
                 </div>

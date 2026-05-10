@@ -2,6 +2,9 @@
 import CatalogCategoriesMobile from "../components/catalog/CatalogCategoriesMobile.vue";
 import CatalogProductsMobile from "../components/catalog/CatalogProductsMobile.vue";
 import { useCatalogPageModel } from "../composables/catalog/useCatalogPageModel";
+import { useAppDesign } from "../design/useAppDesign";
+
+const m = useAppDesign().components.pages.home.mobile;
 
 const {
     showProductDetailModal,
@@ -23,25 +26,29 @@ const {
 <template>
     <HomeJumbotronMobile />
 
-    <div class="home-page mt-4 space-y-8">
+    <div :class="m.root">
         <HomePromotionsMobile />
 
         <section>
-            <header class="mb-4 flex flex-col gap-3">
+            <header :class="m.menuHeader">
                 <div>
-                    <h2 class="text-xl font-semibold text-slate-50">
+                    <h2 :class="m.menuTitle">
                         Меню
                     </h2>
-                    <p class="text-sm text-slate-400">
+                    <p :class="m.menuSubtitle">
                         Категории или поиск по названию — как удобнее.
                     </p>
                 </div>
 
-                <div class="w-full">
-                    <label class="sr-only" for="catalog-search">Поиск в меню</label>
-                    <div class="relative">
+                <div :class="m.searchWrapOuter">
+                    <label
+                        :class="m.srOnlyLabel"
+                        for="catalog-search"
+                    >Поиск в меню</label>
+                    <div :class="m.searchWrap">
                         <i
-                            class="mdi mdi-magnify pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-lg text-slate-500"
+                            class="mdi mdi-magnify"
+                            :class="m.searchIconPos"
                             aria-hidden="true"
                         />
                         <input
@@ -50,12 +57,12 @@ const {
                             type="search"
                             autocomplete="off"
                             placeholder="Найти по названию…"
-                            class="w-full rounded-2xl border border-white/10 bg-black/40 py-2.5 pl-10 pr-10 text-sm text-slate-100 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/50"
+                            :class="m.searchInput"
                         />
                         <button
                             v-if="productSearchQuery.trim()"
                             type="button"
-                            class="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 transition hover:bg-white/10 hover:text-slate-200"
+                            :class="m.searchClear"
                             aria-label="Очистить поиск"
                             @click="clearSearch"
                         >
@@ -76,7 +83,7 @@ const {
             />
 
             <CatalogViewControlsMobile
-                class="mb-4"
+                :class="m.viewControls"
                 v-model:view-mode="mobileCardViewMode"
             />
 

@@ -8,8 +8,12 @@ import {
     validateRuPhoneForSubmit,
 } from "../../validation/ruPhone";
 import { mapApiError } from "../../utils/api/mapApiError";
+import { useAppDesign } from "../../design/useAppDesign";
 
 const emit = defineEmits(["registered"]);
+
+const cli = useAppDesign().components.client;
+const s = cli.shared;
 
 const userStore = useUserStore();
 
@@ -88,28 +92,33 @@ async function submit() {
 </script>
 
 <template>
-    <form @submit.prevent="submit" class="space-y-4 text-slate-50">
-        <h3 class="text-base font-semibold text-slate-50">Регистрация</h3>
+    <form
+        :class="s.formRoot"
+        @submit.prevent="submit"
+    >
+        <h3 :class="s.headingH3">
+            Регистрация
+        </h3>
 
-        <p class="text-xs text-slate-400">
+        <p :class="s.leadMuted">
             Создаём аккаунт, чтобы сохранять адреса и заказы.
         </p>
 
-        <div class="space-y-3">
+        <div :class="s.fieldStack">
             <div>
-                <label class="block text-xs font-medium text-slate-300 mb-1">
+                <label :class="s.label">
                     Имя
                 </label>
                 <input
                     v-model="form.name"
                     type="text"
                     placeholder="Как к тебе обращаться?"
-                    class="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                    :class="s.input"
                 />
             </div>
 
             <div>
-                <label class="block text-xs font-medium text-slate-300 mb-1">
+                <label :class="s.label">
                     Телефон
                 </label>
                 <input
@@ -119,12 +128,12 @@ async function submit() {
                     :data-maska-tokens="RU_PHONE_MASKA_TOKENS_ATTR"
                     type="tel"
                     placeholder="+7 (___) ___-__-__"
-                    class="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                    :class="s.input"
                 />
             </div>
 
             <div>
-                <label class="block text-xs font-medium text-slate-300 mb-1">
+                <label :class="s.label">
                     Email
                 </label>
                 <input
@@ -132,62 +141,65 @@ async function submit() {
                     type="email"
                     autocomplete="email"
                     placeholder="you@example.com"
-                    class="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                    :class="s.input"
                 />
             </div>
 
             <div>
-                <label class="block text-xs font-medium text-slate-300 mb-1">
+                <label :class="s.label">
                     Пароль
                 </label>
                 <input
                     v-model="form.password"
                     type="password"
                     placeholder="минимум 6 символов"
-                    class="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                    :class="s.input"
                 />
             </div>
 
             <div>
-                <label class="block text-xs font-medium text-slate-300 mb-1">
+                <label :class="s.label">
                     Подтверждение пароля
                 </label>
                 <input
                     v-model="form.confirmPassword"
                     type="password"
                     placeholder="введите пароль ещё раз"
-                    class="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                    :class="s.input"
                 />
             </div>
 
             <div class="space-y-1">
-                <label class="flex items-center gap-2 text-xs text-slate-300">
+                <label :class="s.checkboxRow">
                     <input
                         v-model="form.consent_personal_data"
                         type="checkbox"
-                        class="h-4 w-4 rounded border-white/20 bg-black/60 text-amber-400 focus:ring-amber-400/60"
+                        :class="s.checkbox"
                     />
                     <span>Согласен на обработку персональных данных</span>
                 </label>
-                <label class="flex items-center gap-2 text-xs text-slate-400">
+                <label :class="s.checkboxRowMuted">
                     <input
                         v-model="form.consent_marketing"
                         type="checkbox"
-                        class="h-4 w-4 rounded border-white/20 bg-black/60 text-amber-400 focus:ring-amber-400/60"
+                        :class="s.checkbox"
                     />
                     <span>Получать новости и акции</span>
                 </label>
             </div>
         </div>
 
-        <p v-if="error" class="text-xs text-red-400">
+        <p
+            v-if="error"
+            :class="s.errorXs"
+        >
             {{ error }}
         </p>
 
         <button
             type="submit"
             :disabled="loading"
-            class="inline-flex w-full items-center justify-center rounded-xl bg-amber-400 px-4 py-2 text-sm font-semibold text-black shadow-[0_0_18px_rgba(251,191,36,0.75)] transition hover:bg-amber-300 disabled:opacity-60 disabled:shadow-none"
+            :class="s.btnPrimaryWide"
         >
             <span v-if="!loading">Зарегистрироваться</span>
             <span v-else>Создаём аккаунт…</span>

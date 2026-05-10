@@ -64,7 +64,7 @@ final class ArchitectureSmokeTest extends ApiTestCase
         $this->get('/delivery')->assertOk();
         $this->get('/contacts')->assertOk();
 
-        $checkoutDockPath = resource_path('js/components/dock/CartDockPanel.vue');
+        $checkoutDockPath = resource_path('js/components/layout/dock/panels/CartDockPanel.vue');
         $checkoutFlowPath = resource_path('js/composables/checkout/useCheckoutFlow.js');
         $checkoutContextPath = resource_path('js/composables/checkout/checkoutFlowContext.js');
 

@@ -1,13 +1,19 @@
 <script setup>
-import { onMounted, onUnmounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import { useThemeStore } from "../../stores/themeStore";
+import { useAppDesign } from "../../design/useAppDesign";
 
 const themeStore = useThemeStore();
+const ds = useAppDesign().components.uiPrimitives.scrollToTop;
 
 const visible = ref(false);
 
 /** Показываем после заметного скролла, чтобы не шуметь у «шапки» */
 const SHOW_AFTER_PX = 320;
+
+const themeBtn = computed(() =>
+    themeStore.theme === "dark" ? ds.themeDark : ds.themeLight,
+);
 
 function syncVisibility() {
     if (typeof window === "undefined") return;
@@ -41,16 +47,11 @@ onUnmounted(() => {
         <button
             v-show="visible"
             type="button"
-            class="fixed z-[32] flex h-12 w-12 items-center justify-center rounded-full border backdrop-blur-md transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent md:bottom-8 md:right-8 max-md:bottom-32 max-md:right-4"
-            :class="
-                themeStore.theme === 'dark'
-                    ? 'border-white/10 bg-[rgba(255,255,255,0.06)] text-amber-300 hover:border-amber-400/40 hover:bg-[rgba(255,255,255,0.1)]'
-                    : 'border-slate-200/90 bg-white/95 text-amber-600 shadow-md shadow-slate-300/30 hover:border-amber-400/50 hover:bg-amber-50/90'
-            "
+            :class="[ds.btnBase, themeBtn]"
             aria-label="Наверх"
             @click="scrollToTop"
         >
-            <i class="mdi mdi-chevron-up text-2xl leading-none" aria-hidden="true" />
+            <i :class="ds.icon" aria-hidden="true" />
         </button>
     </Transition>
 </template>

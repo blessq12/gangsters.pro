@@ -9,6 +9,7 @@ import { buildProductGallerySlides } from "../../utils/catalog/productMedia";
 import { pushBodyScrollLock, popBodyScrollLock } from "../../utils/system/bodyScrollLock";
 import { useProductActions } from "../../composables/catalog/useProductActions";
 import { useSwipeDownToClose } from "../../composables/ui/useSwipeDownToClose";
+import { useAppDesign } from "../../design/useAppDesign";
 
 const props = defineProps({
     modelValue: {
@@ -26,6 +27,8 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["update:modelValue"]);
+
+const ds = useAppDesign().components.catalog.modal.shell;
 
 const isMobile = computed(() => props.variant === "mobile");
 const infoEnterDelay = computed(() => (isMobile.value ? 0.25 : 0.4));
@@ -101,46 +104,48 @@ const { qtyInCart, isFav, addToCart, incrementCart, decrementCart, toggleFavorit
 
 <template>
     <Teleport to="body">
-        <div
-            v-if="isVisible"
-            class="product-detail-modal"
-            :class="{ 'product-detail-modal--mobile': isMobile }"
-        >
+        <div v-if="isVisible" :class="ds.root">
             <div
                 ref="backdropRef"
-                class="product-detail-modal__backdrop"
+                :class="isMobile ? ds.backdropMobile : ds.backdrop"
                 aria-hidden="true"
                 @click="close"
             />
 
-            <div class="product-detail-modal__content">
-                <div class="product-detail-modal__wrapper">
+            <div
+                :class="[ds.content, isMobile ? ds.contentMobile : '']"
+            >
+                <div :class="[ds.wrapper, isMobile ? ds.wrapperMobile : '']">
                     <div
                         ref="panelRef"
-                        class="product-detail-modal__panel"
+                        :class="[ds.panel, isMobile ? ds.panelMobile : '']"
                         @touchstart.passive="onPanelSwipeStart"
                         @touchend="onPanelSwipeEnd"
                     >
                         <button
                             type="button"
-                            class="product-detail-modal__close"
+                            :class="[ds.closeBtn, isMobile ? ds.closeBtnMobile : '']"
                             aria-label="Закрыть"
                             @click="close"
                         >
-                            <i class="mdi mdi-close" />
+                            <i :class="ds.closeIcon" />
                         </button>
 
                         <template v-if="product">
-                            <div class="product-detail-modal__body">
-                                <div class="product-detail-modal__media">
+                            <div :class="ds.body">
+                                <div :class="ds.mediaZone">
                                     <ProductGallerySlider
                                         :images="galleryImages"
                                         :alt="product.name"
                                     />
                                 </div>
                                 <div
+                                    :class="isMobile ? ds.mediaOverlayMobile : ds.mediaOverlayDesktop"
+                                    aria-hidden="true"
+                                />
+                                <div
                                     ref="infoRef"
-                                    class="product-detail-modal__info"
+                                    :class="[ds.info, isMobile ? ds.infoMobile : '']"
                                 >
                                     <ProductDetailInfo
                                         :product="product"
@@ -156,8 +161,8 @@ const { qtyInCart, isFav, addToCart, incrementCart, decrementCart, toggleFavorit
                         </template>
 
                         <template v-else>
-                            <p class="product-detail-modal__empty">
-                                Нет данных о товаре.
+                            <p :class="[ds.empty, isMobile ? ds.emptyMobile : '']">
+                                {{ ds.emptyCopy }}
                             </p>
                         </template>
                     </div>
@@ -166,178 +171,3 @@ const { qtyInCart, isFav, addToCart, incrementCart, decrementCart, toggleFavorit
         </div>
     </Teleport>
 </template>
-
-<style scoped>
-.product-detail-modal {
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.product-detail-modal__backdrop {
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-}
-
-.product-detail-modal--mobile .product-detail-modal__backdrop {
-    background: rgba(0, 0, 0, 0.55);
-}
-
-.product-detail-modal__content {
-    position: relative;
-    z-index: 1;
-    width: 100%;
-    max-height: 100vh;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1.5rem;
-}
-
-.product-detail-modal--mobile .product-detail-modal__content {
-    padding: 0.35rem 0.6rem;
-}
-
-.product-detail-modal__wrapper {
-    margin: auto;
-    width: 100%;
-    max-width: 56rem;
-}
-
-.product-detail-modal--mobile .product-detail-modal__wrapper {
-    max-width: 28rem;
-}
-
-.product-detail-modal__panel {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    max-height: 85vh;
-    border-radius: 1.5rem;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background: rgba(0, 0, 0, 0.3);
-    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9);
-    overflow: hidden;
-}
-
-.product-detail-modal--mobile .product-detail-modal__panel {
-    aspect-ratio: 3 / 4;
-    max-height: 97vh;
-    border-radius: 1rem;
-    border-color: rgba(255, 255, 255, 0.1);
-    background: rgba(31, 31, 35, 0.65);
-    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.92);
-}
-
-.product-detail-modal__close {
-    position: absolute;
-    right: 1rem;
-    top: 1rem;
-    z-index: 3;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.25rem;
-    height: 2.25rem;
-    border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    background: rgba(0, 0, 0, 0.5);
-    color: #94a3b8;
-    font-size: 1.25rem;
-    transition: color 0.2s, border-color 0.2s;
-}
-
-.product-detail-modal--mobile .product-detail-modal__close {
-    left: 0.75rem;
-    right: auto;
-    top: 0.75rem;
-}
-
-.product-detail-modal__close:hover {
-    color: #fcd34d;
-    border-color: rgba(251, 191, 36, 0.5);
-}
-
-.product-detail-modal__body {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-}
-
-.product-detail-modal__media {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-}
-
-.product-detail-modal__media::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background: linear-gradient(
-        to top,
-        rgba(0, 0, 0, 0.95) 0%,
-        rgba(0, 0, 0, 0.4) 25%,
-        transparent 50%
-    );
-}
-
-.product-detail-modal--mobile .product-detail-modal__media::after {
-    background: linear-gradient(
-        to top,
-        rgba(0, 0, 0, 0.95) 0%,
-        rgba(0, 0, 0, 0.45) 30%,
-        transparent 55%
-    );
-}
-
-.product-detail-modal__media :deep(.product-gallery) {
-    width: 100%;
-    height: 100%;
-    min-height: 100%;
-}
-
-.product-detail-modal__info {
-    position: absolute;
-    left: 0.75rem;
-    right: 0.75rem;
-    bottom: 0.75rem;
-    z-index: 2;
-    min-width: 0;
-    max-height: 38%;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-}
-
-.product-detail-modal--mobile .product-detail-modal__info {
-    left: 0.6rem;
-    right: 0.6rem;
-    bottom: 0.6rem;
-    max-height: 48%;
-}
-
-.product-detail-modal__empty {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0;
-    padding: 2rem;
-    font-size: 0.875rem;
-    color: #94a3b8;
-    z-index: 1;
-}
-
-.product-detail-modal--mobile .product-detail-modal__empty {
-    position: static;
-}
-</style>
-

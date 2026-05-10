@@ -1,7 +1,11 @@
 <script setup>
 import { computed, ref, watch } from "vue";
+import { useAppDesign } from "../../design/useAppDesign";
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
 import { DOMAIN_EVENTS, emitDomainEvent } from "../../shared/domainEvents";
+
+const chk = useAppDesign().components.checkout;
+const c = chk.cart;
 
 const { checkoutState, handleStartCheckout, handleContinueAsGuest } =
     useCheckoutFlowContext();
@@ -132,49 +136,47 @@ function unitPriceRub(item) {
     <div>
         <div
             v-if="!cartItems.length"
-            class="rounded-2xl bg-[rgba(255,255,255,0.03)] px-4 py-5 text-sm text-slate-300"
+            :class="c.emptyState"
         >
             Корзина пока пустая. Добавь пару вкусных позиций, и тут станет веселее.
         </div>
 
         <ul
             v-else-if="userCartItems.length"
-            class="space-y-2 text-xs sm:text-sm text-slate-200"
+            :class="c.userList"
         >
-            <li class="px-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+            <li :class="chk.shared.subsectionKickerSm">
                 Вы добавили
             </li>
             <li
                 v-for="item in userCartItems"
                 :key="item.lineKey"
-                class="flex items-center justify-between gap-3 rounded-2xl bg-[rgba(255,255,255,0.03)] px-3 py-2"
+                :class="c.userLineItem"
             >
                 <div class="min-w-0">
-                    <p class="truncate font-medium text-slate-100">
+                    <p :class="c.lineTitle">
                         {{ item.productSnapshot?.name || `Товар #${item.productId}` }}
                     </p>
-                    <p class="mt-0.5 text-[11px] text-slate-400">
+                    <p :class="c.lineSub">
                         {{ formatPrice(unitPriceRub(item)) }} ₽ за шт
                     </p>
                 </div>
 
-                <div class="flex items-center gap-3">
-                    <div
-                        class="inline-flex items-center justify-between rounded-full border border-amber-400/60 bg-black/70 px-2 py-1 text-xs text-slate-50"
-                    >
+                <div :class="c.lineActions">
+                    <div :class="c.qtyBar">
                         <button
                             type="button"
-                            class="flex h-6 w-6 items-center justify-center rounded-full bg-black/70 text-[14px]"
+                            :class="c.qtyBtn"
                             @click="decrementCart(item.productId)"
                         >
                             –
                         </button>
-                        <span class="px-2 font-semibold">
+                        <span :class="c.qtyLabel">
                             {{ item.qty }}
                         </span>
                         <button
                             type="button"
-                            class="flex h-6 w-6 items-center justify-center rounded-full bg-black/70 text-[14px]"
+                            :class="c.qtyBtn"
                             @click="incrementCart(item.productId)"
                         >
                             +
@@ -183,7 +185,7 @@ function unitPriceRub(item) {
 
                     <button
                         type="button"
-                        class="shrink-0 text-[11px] text-slate-400 transition-colors hover:text-red-400"
+                        :class="c.removeLink"
                         @click="removeFromCart(item.productId)"
                     >
                         Убрать
@@ -194,15 +196,15 @@ function unitPriceRub(item) {
 
         <ul
             v-if="systemCartItems.length"
-            class="mt-2 rounded-xl border border-amber-400/25 bg-amber-400/8 px-2.5 py-2 text-[11px] text-slate-200"
+            :class="c.systemList"
         >
-            <li class="px-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+            <li :class="chk.shared.subsectionKickerSm">
                 Комплект и автодобавления
             </li>
             <li
                 v-for="item in systemCartItems"
                 :key="item.lineKey"
-                class="mt-1 flex items-center justify-between gap-2 rounded-lg px-1 py-0.5"
+                :class="c.systemLine"
             >
                 <span class="min-w-0 truncate text-slate-100">
                     • {{ item.productSnapshot?.name || `Товар #${item.productId}` }}
@@ -215,28 +217,28 @@ function unitPriceRub(item) {
 
         <div
             v-if="cartItems.length"
-            class="mt-3 space-y-1 rounded-2xl border border-white/10 bg-[rgba(255,255,255,0.02)] px-3 py-2 text-xs sm:text-sm"
+            :class="c.totalsCard"
         >
-            <div class="flex items-center justify-between">
-                <span class="text-slate-300/85">Товары</span>
-                <span class="text-slate-100">{{ formatPrice(userTotalAmount) }} ₽</span>
+            <div :class="c.totalsRow">
+                <span :class="c.totalsLabelMuted">Товары</span>
+                <span :class="c.totalsValue">{{ formatPrice(userTotalAmount) }} ₽</span>
             </div>
-            <div class="flex items-center justify-between border-t border-white/10 pt-1">
-                <span class="font-medium text-slate-300/90">Итого</span>
-                <span class="font-semibold text-amber-300">{{ formatPrice(totalAmount) }} ₽</span>
+            <div :class="c.totalsDivider">
+                <span :class="c.totalsLabelStrong">Итого</span>
+                <span :class="c.grandTotal">{{ formatPrice(totalAmount) }} ₽</span>
             </div>
         </div>
 
         <div
             v-if="isGiftEligible && giftCandidates.length"
-            class="mt-3 rounded-2xl border border-amber-300/25 bg-amber-400/10 px-3 py-2 text-xs sm:text-sm"
+            :class="c.giftCard"
         >
-            <div class="flex items-center justify-between gap-2">
+            <div :class="c.giftRow">
                 <div class="min-w-0">
-                    <p class="font-semibold text-amber-200">Подарок к заказу доступен</p>
+                    <p :class="c.giftTitle">Подарок к заказу доступен</p>
                     <p
                         v-if="hasGiftSelected"
-                        class="mt-0.5 truncate text-[11px] text-slate-300"
+                        :class="c.giftSelectedHint"
                     >
                         Выбран: {{
                             giftCandidates.find((item) => item.id === Number(giftPromotion?.selected_product_id))
@@ -246,7 +248,7 @@ function unitPriceRub(item) {
                 </div>
                 <button
                     type="button"
-                    class="shrink-0 rounded-full border border-amber-300/60 bg-black/40 px-3 py-1 text-[11px] font-medium text-amber-200 transition hover:bg-black/60"
+                    :class="c.giftCta"
                     @click="openGiftModal"
                 >
                     {{ giftCtaLabel }}
@@ -256,12 +258,12 @@ function unitPriceRub(item) {
 
         <div
             v-if="cartItems.length"
-            class="mt-3 flex flex-col gap-2"
+            :class="c.authActions"
         >
             <template v-if="isAuthenticated">
                 <button
                     type="button"
-                    class="inline-flex w-full items-center justify-center rounded-full bg-amber-400 px-4 py-2 text-xs font-semibold text-black shadow-[0_0_18px_rgba(251,191,36,0.7)] transition hover:bg-amber-300"
+                    :class="chk.shared.btnPrimaryMd"
                     @click="handleStartCheckout"
                 >
                     Перейти к оформлению
@@ -270,14 +272,14 @@ function unitPriceRub(item) {
             <template v-else>
                 <button
                     type="button"
-                    class="inline-flex w-full items-center justify-center rounded-full bg-amber-400 px-4 py-2 text-xs font-semibold text-black shadow-[0_0_18px_rgba(251,191,36,0.7)] transition hover:bg-amber-300"
+                    :class="chk.shared.btnPrimaryMd"
                     @click="handleStartCheckout"
                 >
                     Войти или зарегистрироваться
                 </button>
                 <button
                     type="button"
-                    class="inline-flex w-full items-center justify-center rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-medium text-slate-100 transition hover:bg-white/10"
+                    :class="chk.shared.btnSecondaryOutline"
                     @click="handleContinueAsGuest"
                 >
                     Продолжить без регистрации
@@ -288,24 +290,24 @@ function unitPriceRub(item) {
         <BaseModal v-model="showGiftModal">
             <template #header>Выбери подарок</template>
 
-            <div class="space-y-2">
+            <div :class="c.giftModalList">
                 <label
                     v-for="item in giftCandidates"
                     :key="item.id"
-                    class="flex cursor-pointer items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-2 transition hover:border-amber-300/40"
+                    :class="c.giftRadioLabel"
                 >
                     <input
                         v-model="selectedGiftProductId"
                         :value="item.id"
                         type="radio"
                         name="gift-candidate"
-                        class="h-4 w-4 accent-amber-300"
+                        :class="c.giftRadioInput"
                     />
-                    <div class="min-w-0 flex-1">
-                        <p class="truncate text-sm font-medium text-slate-100">
+                    <div :class="c.giftRadioBody">
+                        <p :class="c.giftRadioTitle">
                             {{ item.name || `Товар #${item.id}` }}
                         </p>
-                        <p class="text-xs text-slate-400">
+                        <p :class="c.giftRadioPrice">
                             Цена в меню: {{ formatPrice(item.priceRub) }} ₽, в корзине — 0 ₽
                         </p>
                     </div>
@@ -313,16 +315,16 @@ function unitPriceRub(item) {
                         v-if="item.imageUrl"
                         :src="item.imageUrl"
                         :alt="item.name || `Товар #${item.id}`"
-                        class="h-10 w-10 rounded-lg object-cover"
+                        :class="c.giftThumb"
                     />
                 </label>
             </div>
 
             <template #footer>
-                <div class="flex justify-end">
+                <div :class="c.giftFooterRow">
                     <button
                         type="button"
-                        class="inline-flex items-center justify-center rounded-full bg-amber-400 px-4 py-2 text-xs font-semibold text-black transition hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-60"
+                        :class="c.giftApplyBtn"
                         :disabled="!canApplyGiftSelection || giftApplying"
                         @click="applyGiftSelection"
                     >

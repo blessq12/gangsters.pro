@@ -1,4 +1,6 @@
 <script setup>
+import { useAppDesign } from "../../design/useAppDesign";
+
 defineProps({
     viewMode: {
         type: String,
@@ -7,26 +9,22 @@ defineProps({
 });
 
 const emit = defineEmits(["update:viewMode"]);
+
+const d = useAppDesign().components.catalog.viewControls.mobile;
 </script>
 
 <template>
-    <div class="inline-flex w-full items-center rounded-2xl border border-white/10 bg-black/30 p-1">
+    <div :class="d.wrapper">
         <button
             type="button"
-            class="flex-1 rounded-xl px-3 py-2 text-xs font-semibold transition"
-            :class="viewMode === 'grid'
-                ? 'bg-amber-400 text-black'
-                : 'text-slate-300 hover:bg-white/10 hover:text-slate-100'"
+            :class="[d.btn, viewMode === 'grid' ? d.btnActive : d.btnInactive]"
             @click="emit('update:viewMode', 'grid')"
         >
             Сетка
         </button>
         <button
             type="button"
-            class="flex-1 rounded-xl px-3 py-2 text-xs font-semibold transition"
-            :class="viewMode === 'horizontal'
-                ? 'bg-amber-400 text-black'
-                : 'text-slate-300 hover:bg-white/10 hover:text-slate-100'"
+            :class="[d.btn, viewMode === 'horizontal' ? d.btnActive : d.btnInactive]"
             @click="emit('update:viewMode', 'horizontal')"
         >
             Горизонтально

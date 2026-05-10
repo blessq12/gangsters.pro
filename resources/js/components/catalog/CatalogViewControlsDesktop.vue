@@ -1,4 +1,6 @@
 <script setup>
+import { useAppDesign } from "../../design/useAppDesign";
+
 defineProps({
     cardsPerRow: {
         type: Number,
@@ -7,27 +9,23 @@ defineProps({
 });
 
 const emit = defineEmits(["update:cardsPerRow"]);
+
+const d = useAppDesign().components.catalog.viewControls.desktop;
 </script>
 
 <template>
-    <div class="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-black/30 p-1">
-        <span class="px-2 text-xs font-medium text-slate-400">Карточек:</span>
+    <div :class="d.wrapper">
+        <span :class="d.label">Карточек:</span>
         <button
             type="button"
-            class="rounded-xl px-3 py-1.5 text-xs font-semibold transition"
-            :class="cardsPerRow === 3
-                ? 'bg-amber-400 text-black'
-                : 'text-slate-300 hover:bg-white/10 hover:text-slate-100'"
+            :class="[d.btn, cardsPerRow === 3 ? d.btnActive : d.btnInactive]"
             @click="emit('update:cardsPerRow', 3)"
         >
             3
         </button>
         <button
             type="button"
-            class="rounded-xl px-3 py-1.5 text-xs font-semibold transition"
-            :class="cardsPerRow === 4
-                ? 'bg-amber-400 text-black'
-                : 'text-slate-300 hover:bg-white/10 hover:text-slate-100'"
+            :class="[d.btn, cardsPerRow === 4 ? d.btnActive : d.btnInactive]"
             @click="emit('update:cardsPerRow', 4)"
         >
             4

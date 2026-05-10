@@ -1,6 +1,9 @@
 <script setup>
 import { onMounted, ref } from "vue";
 import { playBannerSticks } from "../../animations/animationManager";
+import { useAppDesign } from "../../design/useAppDesign";
+
+const b = useAppDesign().components.home.secondary.banner;
 
 const props = defineProps({
     title: {
@@ -33,77 +36,70 @@ onMounted(() => {
 </script>
 
 <template>
-    <section class="my-6 md:my-8 lg:my-12 relative">
+    <section :class="b.section">
         <!-- анимированные палочки в правом верхнем углу -->
-        <div class="rotate-15">
+        <div :class="b.sticksWrap">
             <img
                 ref="leftStickRef"
                 src="/images/stick.png"
                 alt=""
-                class="pointer-events-none absolute -bottom-2 right-6 h-3 w-auto"
+                :class="b.stickLeft"
             />
             <img
                 ref="rightStickRef"
                 src="/images/stick.png"
                 alt=""
-                class="pointer-events-none absolute bottom-1 right-3 h-3 w-auto"
+                :class="b.stickRight"
             />
         </div>
 
-        <div
-            class="rounded-2xl border border-white/10 bg-[rgba(255,255,255,0.03)] px-4 sm:px-6 lg:px-8 py-8 sm:py-10 flex flex-col sm:flex-row gap-6 items-start overflow-hidden relative"
-        >
-            <div
-                class="pointer-events-none absolute inset-0 opacity-40 mix-blend-screen"
-            >
-                <div
-                    class="absolute -top-16 -left-10 h-40 w-40 rounded-full bg-amber-500/20 blur-3xl"
-                ></div>
-                <div
-                    class="absolute -bottom-20 right-0 h-48 w-48 rounded-full bg-rose-500/10 blur-3xl"
-                ></div>
+        <div :class="b.card">
+            <div :class="b.glowLayer">
+                <div :class="b.glowAmber"></div>
+                <div :class="b.glowRose"></div>
             </div>
 
-            <div class="flex-1 min-w-0">
+            <div :class="b.mainCol">
                 <div
                     v-if="breadcrumbs.length"
-                    class="mb-2 text-xs text-slate-400"
+                    :class="b.breadcrumbsWrap"
                 >
-                    <nav class="flex flex-wrap gap-1 items-center">
+                    <nav :class="b.breadcrumbsNav">
                         <span
                             v-for="(crumb, index) in breadcrumbs"
                             :key="index"
-                            class="flex items-center gap-1"
+                            :class="b.crumbRow"
                         >
-                            <span class="truncate">{{ crumb }}</span>
+                            <span :class="b.crumbText">{{ crumb }}</span>
                             <span
                                 v-if="index < breadcrumbs.length - 1"
-                                class="opacity-60"
+                                :class="b.crumbSep"
                                 >/</span
                             >
                         </span>
                     </nav>
                 </div>
 
-                <h1
-                    class="text-xl sm:text-2xl font-semibold text-amber-300 mb-2"
-                >
+                <h1 :class="b.title">
                     {{ props.title }}
                 </h1>
 
-                <p v-if="props.description" class="text-sm text-slate-200/90">
+                <p
+                    v-if="props.description"
+                    :class="b.description"
+                >
                     {{ props.description }}
                 </p>
             </div>
 
             <div
                 v-if="props.image"
-                class="shrink-0 w-28 h-28 sm:w-32 sm:h-32 rounded-xl overflow-hidden border border-white/10 bg-slate-900/40"
+                :class="b.imageWrap"
             >
                 <img
                     :src="props.image"
                     :alt="props.title"
-                    class="w-full h-full object-cover"
+                    :class="b.image"
                 />
             </div>
         </div>

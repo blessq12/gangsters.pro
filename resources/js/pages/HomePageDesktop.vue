@@ -1,5 +1,8 @@
 <script setup>
 import { useCatalogPageModel } from "../composables/catalog/useCatalogPageModel";
+import { useAppDesign } from "../design/useAppDesign";
+
+const d = useAppDesign().components.pages.home.desktop;
 
 const {
     showProductDetailModal,
@@ -21,25 +24,29 @@ const {
 <template>
     <HomeJumbotron />
 
-    <div class="home-page mt-4 space-y-10">
+    <div :class="d.root">
         <HomePromotionsDesktop />
 
         <section>
-            <header class="mb-4 flex items-end justify-between gap-4">
-                <div class="block">
-                    <h2 class="text-xl font-semibold leading-tight text-slate-50">
+            <header :class="d.menuHeader">
+                <div :class="d.menuTitleBlock">
+                    <h2 :class="d.menuTitle">
                         Меню
                     </h2>
-                    <p class="text-sm text-slate-400">
+                    <p :class="d.menuSubtitle">
                         Категории или поиск по названию — как удобнее.
                     </p>
                 </div>
 
-                <div class="w-full max-w-xs shrink-0">
-                    <label class="sr-only" for="catalog-search">Поиск в меню</label>
-                    <div class="relative">
+                <div :class="d.searchCol">
+                    <label
+                        :class="d.srOnlyLabel"
+                        for="catalog-search"
+                    >Поиск в меню</label>
+                    <div :class="d.searchWrap">
                         <i
-                            class="mdi mdi-magnify pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-lg text-slate-500"
+                            class="mdi mdi-magnify"
+                            :class="d.searchIconPos"
                             aria-hidden="true"
                         />
                         <input
@@ -48,12 +55,12 @@ const {
                             type="search"
                             autocomplete="off"
                             placeholder="Найти по названию…"
-                            class="w-full rounded-2xl border border-white/10 bg-black/40 py-2.5 pl-10 pr-10 text-sm text-slate-100 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/50"
+                            :class="d.searchInput"
                         />
                         <button
                             v-if="productSearchQuery.trim()"
                             type="button"
-                            class="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 transition hover:bg-white/10 hover:text-slate-200"
+                            :class="d.searchClear"
                             aria-label="Очистить поиск"
                             @click="clearSearch"
                         >
@@ -73,7 +80,7 @@ const {
                 all-label="Все теги"
             />
 
-            <div class="-mt-6 mb-4 flex justify-end">
+            <div :class="d.catalogControlsRow">
                 <CatalogViewControlsDesktop v-model:cards-per-row="desktopCardsPerRow" />
             </div>
 

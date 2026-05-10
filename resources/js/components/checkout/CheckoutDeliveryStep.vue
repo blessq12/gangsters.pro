@@ -1,5 +1,6 @@
 <script setup>
 import { ref, watch } from "vue";
+import { useAppDesign } from "../../design/useAppDesign";
 import { useRuPhoneModel } from "../../composables/client/useRuPhoneModel";
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
 import {
@@ -7,6 +8,10 @@ import {
     RU_PHONE_MASKA_PATTERN,
     RU_PHONE_MASKA_TOKENS_ATTR,
 } from "../../validation/ruPhone";
+
+const chk = useAppDesign().components.checkout;
+const s = chk.shared;
+const d = chk.delivery;
 
 const {
     userStore,
@@ -60,26 +65,24 @@ watch(
 </script>
 
 <template>
-    <div class="space-y-3 text-xs sm:text-sm text-slate-200">
-        <p class="text-[11px] uppercase tracking-[0.18em] text-slate-400">
+    <div :class="s.flowBody">
+        <p :class="s.stepKicker">
             Шаг 1 из 3 — Доставка
         </p>
 
         <div class="space-y-2">
-            <p class="text-xs font-semibold text-slate-100">
+            <p :class="s.headingSm">
                 Способ доставки
             </p>
-            <div class="flex flex-wrap gap-2">
+            <div :class="d.methodRow">
                 <button
                     v-for="method in ['courier', 'pickup']"
                     :key="method"
                     type="button"
-                    class="rounded-full px-3 py-1 text-[11px] transition"
-                    :class="
-                        orderStore.deliveryInfo.method === method
-                            ? 'bg-amber-400 text-black shadow-[0_0_14px_rgba(251,191,36,0.7)]'
-                            : 'bg-white/5 text-slate-200 hover:bg-white/10'
-                    "
+                    :class="[
+                        s.pillRoundText,
+                        orderStore.deliveryInfo.method === method ? s.pillActive : s.pillInactive,
+                    ]"
                     @click="setDeliveryMethod(method)"
                 >
                     {{ method === "courier" ? "Курьер" : "Самовывоз" }}
@@ -89,16 +92,16 @@ watch(
 
         <div
             v-if="isGuestCheckout"
-            class="space-y-2 rounded-2xl border border-white/10 bg-black/30 px-3 py-3"
+            :class="s.guestIsland"
         >
-            <p class="text-xs font-semibold text-slate-100">
+            <p :class="s.headingSm">
                 Контакт
             </p>
             <input
                 :value="orderStore.guestContact.name"
                 type="text"
                 placeholder="Имя"
-                class="w-full rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                :class="s.inputFieldFull"
                 @input="
                     setGuestContact({ name: $event.target.value })
                 "
@@ -110,13 +113,13 @@ watch(
                 :data-maska-tokens="RU_PHONE_MASKA_TOKENS_ATTR"
                 type="tel"
                 placeholder="+7 (___) ___-__-__"
-                class="w-full rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                :class="s.inputFieldFull"
             />
             <input
                 :value="orderStore.guestContact.email"
                 type="email"
                 placeholder="Email (необязательно)"
-                class="w-full rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                :class="s.inputFieldFull"
                 @input="
                     setGuestContact({ email: $event.target.value })
                 "
@@ -127,15 +130,15 @@ watch(
             v-if="orderStore.deliveryInfo.method !== 'pickup' && isGuestCheckout"
             class="space-y-2"
         >
-            <p class="text-xs font-semibold text-slate-100">
+            <p :class="s.headingSm">
                 Адрес курьера
             </p>
-            <div class="grid grid-cols-2 gap-2">
+            <div :class="s.grid2">
                 <input
                     :value="orderStore.deliveryInfo.address?.street ?? ''"
                     type="text"
                     placeholder="Улица"
-                    class="col-span-2 rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                    :class="s.inputFieldCol2"
                     @input="
                         patchDeliveryAddress({
                             street: $event.target.value,
@@ -146,7 +149,7 @@ watch(
                     :value="orderStore.deliveryInfo.address?.house ?? ''"
                     type="text"
                     placeholder="Дом"
-                    class="rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                    :class="s.inputFieldGridCell"
                     @input="
                         patchDeliveryAddress({
                             house: $event.target.value,
@@ -157,7 +160,7 @@ watch(
                     :value="orderStore.deliveryInfo.address?.entrance ?? ''"
                     type="text"
                     placeholder="Подъезд"
-                    class="rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                    :class="s.inputFieldGridCell"
                     @input="
                         patchDeliveryAddress({
                             entrance: $event.target.value,
@@ -168,7 +171,7 @@ watch(
                     :value="orderStore.deliveryInfo.address?.apartment ?? ''"
                     type="text"
                     placeholder="Квартира"
-                    class="col-span-2 rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                    :class="s.inputFieldCol2"
                     @input="
                         patchDeliveryAddress({
                             apartment: $event.target.value,
@@ -182,13 +185,13 @@ watch(
             v-if="orderStore.deliveryInfo.method !== 'pickup' && !isGuestCheckout"
             class="space-y-2"
         >
-            <p class="text-xs font-semibold text-slate-100">
+            <p :class="s.headingSm">
                 Выбери адрес доставки
             </p>
             <template v-if="orderStore.deliveryInfo.method !== 'pickup'">
                 <div
                     v-if="!userStore.addresses.length"
-                    class="rounded-2xl border border-dashed border-slate-600/60 bg-black/40 px-4 py-3 text-[11px] text-slate-300"
+                    :class="s.addressEmptyHint"
                 >
                     Адресов пока нет. Добавь/отредактируй адреса в профиле — мы подтянем их
                     сюда автоматически.
@@ -200,27 +203,27 @@ watch(
                     <li
                         v-for="address in userStore.addresses"
                         :key="address.id"
-                        class="flex items-center gap-2 rounded-2xl border border-white/10 bg-black/40 px-3 py-2"
+                        :class="s.addressLi"
                     >
                         <input
                             :id="`addr-${address.id}`"
                             type="radio"
-                            class="h-4 w-4 rounded-full border-slate-400 text-amber-400 focus:ring-amber-400"
+                            :class="s.radioField"
                             :checked="userStore.selectedAddressId === address.id"
                             @change="selectAddress(address.id)"
                         />
                         <label
                             :for="`addr-${address.id}`"
-                            class="flex-1 cursor-pointer text-xs text-slate-200"
+                            :class="s.labelAddress"
                         >
-                            <span class="block font-medium text-slate-100">
+                            <span :class="s.addressTitle">
                                 {{
                                     address.title ||
                                         address.label ||
                                         `Адрес #${address.id}`
                                 }}
                             </span>
-                            <span class="block text-[11px] text-slate-400">
+                            <span :class="s.addressMeta">
                                 {{
                                     [
                                         address.street,
@@ -240,22 +243,22 @@ watch(
         </div>
         <p
             v-if="deliveryStepError"
-            class="text-[11px] text-red-400"
+            :class="s.errorLine"
         >
             {{ deliveryStepError }}
         </p>
 
         <div
             v-if="orderStore.deliveryInfo.method !== 'pickup' && !isGuestCheckout"
-            class="space-y-2 border-t border-white/5 pt-3"
+            :class="s.borderSectionTop"
         >
             <button
                 type="button"
-                class="flex w-full items-center justify-between rounded-2xl bg-white/5 px-3 py-2 text-[11px] font-medium text-slate-100 hover:bg-white/10"
+                :class="s.expandRowBtn"
                 @click="isNewAddressOpen = !isNewAddressOpen"
             >
                 <span>Добавить новый адрес</span>
-                <span class="text-[11px] text-slate-400">
+                <span :class="s.expandRowChevronMuted">
                     {{ isNewAddressOpen ? "Скрыть" : "Развернуть" }}
                 </span>
             </button>
@@ -263,63 +266,63 @@ watch(
             <Transition name="checkout-fade">
                 <div
                     v-if="isNewAddressOpen"
-                    class="space-y-2 pt-1"
+                    :class="s.newAddressWrap"
                 >
-                    <div class="grid grid-cols-2 gap-2">
+                    <div :class="s.grid2">
                         <input
                             v-model="newAddressForm.title"
                             type="text"
                             placeholder="Название (дом, работа)"
-                            class="col-span-2 rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                            :class="s.inputFieldCol2"
                         />
                         <input
                             v-model="newAddressForm.street"
                             type="text"
                             placeholder="Улица"
-                            class="col-span-2 rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                            :class="s.inputFieldCol2"
                         />
                         <input
                             v-model="newAddressForm.house"
                             type="text"
                             placeholder="Дом"
-                            class="rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                            :class="s.inputFieldGridCell"
                         />
                         <input
                             v-model="newAddressForm.entrance"
                             type="text"
                             placeholder="Подъезд"
-                            class="rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                            :class="s.inputFieldGridCell"
                         />
                         <input
                             v-model="newAddressForm.apartment"
                             type="text"
                             placeholder="Квартира"
-                            class="rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                            :class="s.inputFieldCol2"
                         />
                     </div>
                     <textarea
                         v-model="newAddressForm.comment"
                         rows="2"
                         placeholder="Комментарий для курьера (подъезд, код, ориентир)"
-                        class="w-full rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                        :class="s.textareaAddress"
                     />
-                    <label class="flex items-center gap-2 text-[11px] text-slate-300">
+                    <label :class="s.checkboxLabelRow">
                         <input
                             v-model="newAddressForm.make_default"
                             type="checkbox"
-                            class="h-3.5 w-3.5 rounded border-white/20 bg-black/60 text-amber-400 focus:ring-amber-400/60"
+                            :class="s.checkboxSm"
                         />
                         <span>Сделать основным адресом</span>
                     </label>
                     <p
                         v-if="newAddressError"
-                        class="text-[11px] text-red-400"
+                        :class="s.errorLine"
                     >
                         {{ newAddressError }}
                     </p>
                     <button
                         type="button"
-                        class="inline-flex w-full items-center justify-center rounded-full bg-white/5 px-3 py-1.5 text-[11px] font-medium text-slate-100 transition hover:bg-white/10 disabled:opacity-50"
+                        :class="s.saveSecondaryBtn"
                         :disabled="newAddressLoading"
                         @click="handleCreateAddress"
                     >
@@ -330,13 +333,13 @@ watch(
             </Transition>
         </div>
 
-        <div class="space-y-1">
-            <p class="text-xs font-semibold text-slate-100">
+        <div :class="s.spacerAfterComment">
+            <p :class="s.headingSm">
                 Комментарий к доставке
             </p>
             <textarea
                 rows="2"
-                class="w-full rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-xs text-slate-100 placeholder-slate-500 outline-none focus:border-amber-400"
+                :class="s.textareaFlow"
                 placeholder="Подъезд, этаж, код домофона и другие нюансы"
                 :value="orderStore.deliveryInfo.comment"
                 @input="
@@ -345,17 +348,17 @@ watch(
             />
         </div>
 
-        <div class="mt-2 flex items-center justify-between text-[11px] text-slate-400">
+        <div :class="s.navFooterRow">
             <button
                 type="button"
-                class="underline-offset-2 hover:underline"
+                :class="s.linkUnderline"
                 @click="goToCart"
             >
                 Назад к корзине
             </button>
             <button
                 type="button"
-                class="inline-flex items-center justify-center rounded-full bg-amber-400 px-3 py-1.5 text-[11px] font-semibold text-black shadow-[0_0_14px_rgba(251,191,36,0.7)] transition hover:bg-amber-300"
+                :class="s.btnPrimarySm"
                 @click="goToPayment"
             >
                 Далее: оплата

@@ -4,8 +4,13 @@ import "swiper/css";
 import { Autoplay } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { useSystemReadModel } from "../../features/system/useSystemReadModel";
+import { useAppDesign } from "../../design/useAppDesign";
 
 const { promotions, loading } = useSystemReadModel({ autoload: true });
+
+const hp = useAppDesign().components.home.promotions;
+const hpShared = hp.shared;
+const hpMob = hp.mobileSplit;
 const swiperModules = [Autoplay];
 
 const promos = computed(() =>
@@ -30,17 +35,19 @@ const openPromo = (promo) => {
 </script>
 
 <template>
-    <section class="my-12">
-        <h2 class="mb-4 text-lg font-semibold text-slate-100">Актуальные акции</h2>
+    <section :class="hpShared.section">
+        <h2 :class="hpMob.heading">
+            Актуальные акции
+        </h2>
 
         <template v-if="isLoading">
-            <div class="flex gap-3 overflow-x-auto px-1 pb-2">
+            <div :class="hpMob.loadingRow">
                 <div
                     v-for="index in 3"
                     :key="index"
-                    class="flex-none w-[18rem] rounded-2xl border border-white/10 bg-slate-800/60 animate-pulse"
+                    :class="hpMob.loadingCard"
                 >
-                    <div class="aspect-[16/9] w-full rounded-2xl" />
+                    <div :class="hpShared.pulseInner" />
                 </div>
             </div>
         </template>
@@ -57,18 +64,18 @@ const openPromo = (promo) => {
                         ? { delay: 3200, disableOnInteraction: false, pauseOnMouseEnter: true }
                         : false
                 "
-                class="promos-swiper"
+                :class="hpShared.swiperHook"
             >
                 <SwiperSlide v-for="(promo, index) in promos" :key="index">
                     <article
-                        class="group relative cursor-pointer overflow-hidden rounded-2xl"
+                        :class="hpMob.article"
                         @click="openPromo(promo)"
                     >
-                        <div class="aspect-[16/9] w-full overflow-hidden rounded-2xl">
+                        <div :class="hpShared.thumbWrap">
                             <img
                                 :src="promo.image"
                                 :alt="promo.title"
-                                class="h-full w-full object-cover grayscale transition-transform duration-500 ease-out group-hover:scale-105 group-hover:grayscale-0"
+                                :class="hpShared.thumbImg"
                             />
                         </div>
                     </article>
@@ -77,22 +84,22 @@ const openPromo = (promo) => {
         </template>
 
         <template v-else>
-            <div class="py-4 text-center text-xs text-slate-500">
+            <div :class="hpShared.emptyText">
                 Акции скоро появятся.
             </div>
         </template>
 
         <BaseModal v-model="showModal" v-if="activePromo">
             <template #header>{{ activePromo.title }}</template>
-            <div class="space-y-3">
-                <div class="aspect-[16/9] w-full overflow-hidden rounded-xl">
+            <div :class="hpShared.modalStack">
+                <div :class="hpShared.modalMedia">
                     <img
                         :src="activePromo.image"
                         :alt="activePromo.title"
-                        class="h-full w-full object-cover"
+                        :class="hpShared.modalImg"
                     />
                 </div>
-                <p class="text-sm leading-relaxed text-slate-100">
+                <p :class="hpShared.modalText">
                     {{ activePromo.description }}
                 </p>
             </div>

@@ -4,8 +4,11 @@ import { useClientCommands } from "../../features/client/useClientCommands";
 import { useClientProfileSummaryReadModel } from "../../features/client/useClientProfileSummaryReadModel";
 import { useClientReadModel } from "../../features/client/useClientReadModel";
 import { formatOrderDate, formatOrderMoneyRubles } from "../../utils/order/orderDisplay";
+import { useAppDesign } from "../../design/useAppDesign";
 
 const emit = defineEmits(["logout"]);
+
+const pv = useAppDesign().components.client.profileView;
 
 const clientReadModel = useClientReadModel();
 const clientCommands = useClientCommands();
@@ -29,26 +32,24 @@ function handleLogoutClick() {
 </script>
 
 <template>
-    <div class="space-y-4 text-slate-50">
-        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
+    <div :class="pv.root">
+        <p :class="pv.sectionKicker">
             Контакты в профиле
         </p>
 
-        <div class="flex items-center justify-between gap-3">
-            <div class="flex items-center gap-3">
-                <div
-                    class="flex h-12 w-12 items-center justify-center rounded-full border border-amber-400/40 bg-black/70 text-base font-semibold text-amber-200 shadow-[0_0_20px_rgba(251,191,36,0.6)]"
-                >
+        <div :class="pv.headerRow">
+            <div :class="pv.userRow">
+                <div :class="pv.avatar">
                     {{ fullName[0] ?? "G" }}
                 </div>
-                <div class="min-w-0">
-                    <p class="text-sm font-semibold text-slate-50">
+                <div :class="pv.userTextCol">
+                    <p :class="pv.nameStrong">
                         {{ fullName }}
                     </p>
-                    <p class="text-xs text-slate-300/85">
+                    <p :class="pv.phoneLine">
                         {{ phone }}
                     </p>
-                    <p class="text-xs text-slate-400">
+                    <p :class="pv.emailLine">
                         {{ email }}
                     </p>
                 </div>
@@ -57,7 +58,7 @@ function handleLogoutClick() {
             <button
                 v-if="isAuthenticated"
                 type="button"
-                class="ml-3 inline-flex items-center rounded-full border border-red-500/70 bg-red-500/10 px-3 py-1 text-[11px] font-semibold text-red-200 transition hover:bg-red-500/20 hover:text-red-100"
+                :class="pv.btnLogout"
                 @click="handleLogoutClick"
             >
                 Выйти
@@ -66,80 +67,74 @@ function handleLogoutClick() {
 
         <div
             v-if="isAuthenticated"
-            class="space-y-2"
+            :class="pv.statsSection"
         >
-            <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
+            <p :class="pv.sectionKicker">
                 Статистика заказов
             </p>
-            <p class="text-[10px] leading-snug text-slate-500">
+            <p :class="pv.statsHint">
                 Считаем все оформленные заказы из твоей истории (без фильтра по статусу).
             </p>
 
             <div
                 v-if="loading && !stats.count"
-                class="rounded-2xl border border-white/10 bg-black/30 px-3 py-4 text-center text-xs text-slate-400"
+                :class="pv.statLoading"
             >
                 Считаем вашу историю…
             </div>
 
             <div
                 v-else-if="error && !stats.count"
-                class="rounded-2xl border border-amber-400/25 bg-black/35 px-3 py-3 text-[11px] text-slate-400"
+                :class="pv.statError"
             >
-                <span class="text-amber-200/90">{{ error }}</span>
-                <span class="mt-1 block text-slate-500">
+                <span :class="pv.statErrorAccent">{{ error }}</span>
+                <span :class="pv.statErrorSub">
                     Статистика появится после успешной загрузки списка заказов.
                 </span>
             </div>
 
             <div
                 v-else-if="!stats.count"
-                class="rounded-2xl border border-dashed border-white/12 bg-black/25 px-3 py-4 text-center text-xs text-slate-400"
+                :class="pv.statEmpty"
             >
                 Заказов ещё не было. Первый заказ — и тут оживут суммы и счётчики.
             </div>
 
             <div
                 v-else
-                class="grid grid-cols-2 gap-2"
+                :class="pv.statGrid"
             >
-                <div
-                    class="rounded-2xl border border-white/10 bg-black/35 px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
-                >
-                    <p class="text-[10px] font-medium uppercase tracking-wide text-slate-500">
+                <div :class="pv.statCard">
+                    <p :class="pv.statLabel">
                         Заказов всего
                     </p>
-                    <p class="mt-1 text-xl font-semibold tabular-nums text-amber-300">
+                    <p :class="pv.statValueAccent">
                         {{ stats.count }}
                     </p>
                 </div>
-                <div
-                    class="rounded-2xl border border-white/10 bg-black/35 px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
-                >
-                    <p class="text-[10px] font-medium uppercase tracking-wide text-slate-500">
+                <div :class="pv.statCard">
+                    <p :class="pv.statLabel">
                         Сумма заказов
                     </p>
-                    <p class="mt-1 text-lg font-semibold tabular-nums text-slate-50">
+                    <p :class="pv.statValueMain">
                         {{ formatOrderMoneyRubles(stats.totalOrderSpendRubles) }}&nbsp;₽
                     </p>
                 </div>
-                <div
-                    class="col-span-2 rounded-2xl border border-white/10 bg-black/35 px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
-                >
-                    <div class="flex flex-wrap items-baseline justify-between gap-2">
+                <div :class="pv.statCardWide">
+                    <div :class="pv.statLastRow">
                         <div>
-                            <p class="text-[10px] font-medium uppercase tracking-wide text-slate-500">
+                            <p :class="pv.statLabel">
                                 Последний заказ
                             </p>
-                            <p class="mt-0.5 text-xs text-slate-200">
+                            <p :class="pv.statDateLine">
                                 {{ formatOrderDate(stats.lastOrderAt) }}
                             </p>
                         </div>
-                        <div class="text-right">
-                            <p class="text-[10px] font-medium uppercase tracking-wide text-slate-500">
+                        <div :class="pv.statRightCol">
+                            <p :class="pv.statLabel">
                                 Средний чек
                             </p>
-                            <p class="mt-0.5 text-sm font-semibold tabular-nums text-amber-200/95">
+                            <p :class="pv.avgValue">
                                 {{ formatOrderMoneyRubles(stats.averageOrderRubles) }}&nbsp;₽
                             </p>
                         </div>
@@ -148,7 +143,7 @@ function handleLogoutClick() {
             </div>
         </div>
 
-        <p class="text-[11px] leading-relaxed text-slate-500">
+        <p :class="pv.footerHint">
             Адреса — вкладка «Адреса», список заказов — «Заказы», правки контактов — «Данные».
         </p>
     </div>

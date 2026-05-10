@@ -8,8 +8,12 @@ import {
     validateRuPhoneForSubmit,
 } from "../../validation/ruPhone";
 import { mapApiError } from "../../utils/api/mapApiError";
+import { useAppDesign } from "../../design/useAppDesign";
 
 const emit = defineEmits(["updated"]);
+
+const cli = useAppDesign().components.client;
+const s = cli.shared;
 
 const userStore = useUserStore();
 
@@ -62,26 +66,29 @@ async function submit() {
 </script>
 
 <template>
-    <form @submit.prevent="submit" class="space-y-4 text-slate-50">
-        <h3 class="text-base font-semibold text-slate-50">
+    <form
+        :class="s.formRoot"
+        @submit.prevent="submit"
+    >
+        <h3 :class="s.headingH3">
             Редактирование профиля
         </h3>
 
-        <div class="space-y-3">
+        <div :class="s.fieldStack">
             <div>
-                <label class="block text-xs font-medium text-slate-300 mb-1">
+                <label :class="s.label">
                     Имя
                 </label>
                 <input
                     v-model="form.name"
                     type="text"
-                    class="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                    :class="s.input"
                     placeholder="Имя"
                 />
             </div>
 
             <div>
-                <label class="block text-xs font-medium text-slate-300 mb-1">
+                <label :class="s.label">
                     Телефон
                 </label>
                 <input
@@ -90,43 +97,46 @@ async function submit() {
                     :data-maska="RU_PHONE_MASKA_PATTERN"
                     :data-maska-tokens="RU_PHONE_MASKA_TOKENS_ATTR"
                     type="tel"
-                    class="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                    :class="s.input"
                     placeholder="+7 (___) ___-__-__"
                 />
             </div>
 
             <div>
-                <label class="block text-xs font-medium text-slate-300 mb-1">
+                <label :class="s.label">
                     Email
                 </label>
                 <input
                     v-model="form.email"
                     type="email"
-                    class="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                    :class="s.input"
                     placeholder="you@example.com"
                 />
             </div>
 
             <div>
-                <label class="block text-xs font-medium text-slate-300 mb-1">
+                <label :class="s.label">
                     Дата рождения
                 </label>
                 <input
                     v-model="form.birth_date"
                     type="date"
-                    class="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                    :class="s.input"
                 />
             </div>
         </div>
 
-        <p v-if="error" class="text-xs text-red-400">
+        <p
+            v-if="error"
+            :class="s.errorXs"
+        >
             {{ error }}
         </p>
 
         <button
             type="submit"
             :disabled="loading"
-            class="inline-flex w-full items-center justify-center rounded-xl bg-amber-400 px-4 py-2 text-sm font-semibold text-black shadow-[0_0_18px_rgba(251,191,36,0.75)] transition hover:bg-amber-300 disabled:opacity-60 disabled:shadow-none"
+            :class="s.btnPrimaryWide"
         >
             <span v-if="!loading">Сохранить</span>
             <span v-else>Сохраняем…</span>

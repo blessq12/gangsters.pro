@@ -21,12 +21,14 @@ import {
     getWorkScheduleRows,
     safeTrim,
 } from "../../utils/system/companyDisplay";
+import { useAppDesign } from "../../design/useAppDesign";
 
 const TOOLTIP_PAD = 12;
 const PANEL_MAX_WIDTH_PX = 20 * 16;
 
 const systemStore = useSystemStore();
 const themeStore = useThemeStore();
+const ws = useAppDesign().components.workSchedule;
 
 const { openNow, statusHint } = useCompanyOpenStatus(
     () => systemStore.company,
@@ -83,14 +85,11 @@ const titleAttr = computed(() => {
 const ariaLabel = computed(() => titleAttr.value);
 
 const dotClass = computed(() => {
+    const d = ws.dot;
     if (!hasCompany.value) {
-        return isLoading.value
-            ? "bg-slate-400/90 shadow-none animate-pulse"
-            : "bg-slate-500 shadow-none";
+        return isLoading.value ? d.loading : d.noCompany;
     }
-    return openNow.value
-        ? "bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.7)]"
-        : "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.7)]";
+    return openNow.value ? d.open : d.closed;
 });
 
 const currentDayKey = computed(() => getCurrentDayKey(new Date()));
@@ -125,40 +124,8 @@ function isScheduleToday(dayKey) {
     return dayKey != null && dayKey === currentDayKey.value;
 }
 
-const barSurfaceClass = computed(() =>
-    themeStore.theme === "light"
-        ? "border-slate-200/90 bg-white/80 shadow-md hover:bg-white/95"
-        : "border-white/10 bg-[rgba(255,255,255,0.06)] shadow-[0_0_20px_rgba(0,0,0,0.45)] hover:bg-[rgba(255,255,255,0.09)]",
-);
-
-const panelSurfaceClass = computed(() =>
-    themeStore.theme === "light"
-        ? "border-slate-200/60 bg-white shadow-md"
-        : "border-white/[0.08] bg-[#1f1f23]/95 shadow-xl",
-);
-
-const panelDivideClass = computed(() =>
-    themeStore.theme === "light"
-        ? "divide-slate-200/70"
-        : "divide-white/[0.08]",
-);
-
-const panelHeaderBorderClass = computed(() =>
-    themeStore.theme === "light"
-        ? "border-b border-slate-200/70"
-        : "border-b border-white/[0.08]",
-);
-
-const panelPrimaryTextClass = computed(() =>
-    themeStore.theme === "light" ? "text-slate-800" : "text-slate-200",
-);
-
-const panelMutedTextClass = computed(() =>
-    themeStore.theme === "light" ? "text-slate-600" : "text-slate-400",
-);
-
-const panelAccentClass = computed(() =>
-    themeStore.theme === "light" ? "text-amber-600/95" : "text-amber-400/90",
+const scheduleTheme = computed(() =>
+    themeStore.theme === "light" ? ws.themes.light : ws.themes.dark,
 );
 
 function panelWidthPx() {
@@ -273,16 +240,13 @@ onUnmounted(() => {
 <template>
     <div
         ref="stripEnterRef"
-        class="w-full opacity-0"
+        :class="ws.stripRoot"
     >
-        <div
-            class="mx-auto mt-3 flex max-w-7xl justify-center px-4 pt-2 sm:mt-4 sm:px-6 md:max-w-none lg:px-8"
-        >
+        <div :class="ws.outerRow">
             <button
                 ref="triggerRef"
                 type="button"
-                class="inline-flex w-max max-w-[min(90vw,24rem)] shrink-0 items-center gap-2 rounded-2xl border px-3 py-2 text-left text-sm outline-none backdrop-blur-sm transition-colors focus-visible:ring-2 focus-visible:ring-amber-400/60 disabled:cursor-not-allowed disabled:opacity-60 md:max-w-[min(90vw,28rem)] sm:px-4"
-                :class="barSurfaceClass"
+                :class="[ws.triggerStatic, scheduleTheme.barSurface]"
                 :disabled="!hasCompany"
                 :title="titleAttr"
                 :aria-label="ariaLabel"
@@ -291,29 +255,21 @@ onUnmounted(() => {
                 @click.stop="toggleExpanded"
             >
                 <span
-                    class="h-2.5 w-2.5 shrink-0 rounded-full sm:h-3 sm:w-3"
-                    :class="dotClass"
+                    :class="[ws.dotSize, dotClass]"
                     role="presentation"
                 />
                 <span
-                    class="max-w-[min(65vw,16rem)] truncate font-medium sm:max-w-[min(50vw,18rem)] md:max-w-[20rem]"
-                    :class="
-                        themeStore.theme === 'light'
-                            ? 'text-slate-800'
-                            : 'text-slate-100'
-                    "
+                    :class="[ws.summaryTruncate, scheduleTheme.summaryLine]"
                 >
                     {{ summaryLine }}
                 </span>
                 <span
-                    class="hidden shrink-0 text-xs font-medium sm:inline"
-                    :class="panelAccentClass"
+                    :class="[ws.accentToggleHidden, scheduleTheme.panelAccent]"
                 >
                     {{ expanded ? "Свернуть" : "Неделя" }}
                 </span>
                 <i
-                    class="mdi mdi-chevron-down shrink-0 text-lg text-slate-400 transition-transform duration-200"
-                    :class="{ 'rotate-180': expanded }"
+                    :class="[ws.chevronIcon, { 'rotate-180': expanded }]"
                     aria-hidden="true"
                 />
             </button>
@@ -323,8 +279,7 @@ onUnmounted(() => {
             <div
                 v-if="expanded && hasCompany"
                 ref="panelRef"
-                class="fixed z-[80] overflow-y-auto rounded-xl border px-4 py-3 backdrop-blur-sm sm:px-5 sm:py-3.5"
-                :class="panelSurfaceClass"
+                :class="[ws.panelStatic, scheduleTheme.panelSurface]"
                 :style="{
                     top: panelPos.top,
                     left: panelPos.left,
@@ -337,57 +292,58 @@ onUnmounted(() => {
             >
                 <p
                     v-if="todayLine && !scheduleRows[0]?.isFallbackString"
-                    class="mb-3 pb-2.5 text-xs leading-snug"
-                    :class="[panelHeaderBorderClass, panelMutedTextClass]"
+                    :class="[
+                        ws.panelParagraphToday,
+                        scheduleTheme.panelHeaderBorder,
+                        scheduleTheme.panelMutedText,
+                    ]"
                 >
                     {{ todayLine }}
                 </p>
                 <p
                     v-else-if="scheduleRows.length && !scheduleRows[0]?.isFallbackString"
-                    class="mb-3 text-xs"
-                    :class="panelMutedTextClass"
+                    :class="[ws.panelParagraphByDays, scheduleTheme.panelMutedText]"
                 >
                     По дням
                 </p>
 
                 <p
                     v-if="scheduleRows.length && scheduleRows[0].isFallbackString"
-                    class="text-sm leading-relaxed tabular-nums"
-                    :class="panelPrimaryTextClass"
+                    :class="[
+                        ws.panelFallbackParagraph,
+                        scheduleTheme.panelPrimaryText,
+                    ]"
                 >
                     {{ scheduleRows[0].work }}
                 </p>
 
                 <ul
                     v-else-if="scheduleRows.length"
-                    class="divide-y text-sm"
-                    :class="panelDivideClass"
+                    :class="[ws.ulSchedule, scheduleTheme.panelDivide]"
                 >
                     <li
                         v-for="(row, idx) in scheduleRows"
                         :key="row.dayKey || `row-${idx}`"
-                        class="flex items-baseline justify-between gap-4 py-2 first:pt-0 last:pb-0"
+                        :class="ws.liScheduleRow"
                     >
                         <span
-                            class="w-8 shrink-0 text-xs font-medium tabular-nums"
-                            :class="
+                            :class="[
+                                ws.dayCell,
                                 isScheduleToday(row.dayKey)
-                                    ? themeStore.theme === 'light'
-                                        ? 'text-amber-700'
-                                        : 'text-amber-300/90'
-                                    : panelMutedTextClass
-                            "
+                                    ? scheduleTheme.todayDayLabel
+                                    : scheduleTheme.panelMutedText,
+                            ]"
                         >
                             {{ row.dayLabel }}
                             <span
                                 v-if="isScheduleToday(row.dayKey)"
-                                class="sr-only"
+                                :class="ws.srOnlyToday"
                             > (сегодня)</span>
                         </span>
                         <span
-                            class="min-w-0 text-right text-sm tabular-nums"
                             :class="[
-                                panelPrimaryTextClass,
+                                ws.workCell,
+                                scheduleTheme.panelPrimaryText,
                                 isScheduleToday(row.dayKey) ? 'font-medium' : '',
                             ]"
                         >
@@ -399,8 +355,7 @@ onUnmounted(() => {
 
                 <p
                     v-else
-                    class="text-sm leading-relaxed"
-                    :class="panelMutedTextClass"
+                    :class="[ws.emptyState, scheduleTheme.panelMutedText]"
                 >
                     Нет данных о графике.
                 </p>

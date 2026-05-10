@@ -1,5 +1,11 @@
 <script setup>
+import { useAppDesign } from "../../design/useAppDesign";
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
+
+const chk = useAppDesign().components.checkout;
+const s = chk.shared;
+const c = chk.cart;
+const cf = chk.confirm;
 
 const {
     userStore,
@@ -10,7 +16,6 @@ const {
 
 const {
     orderStore,
-    cartItems,
     userCartItems,
     systemCartItems,
     totalAmount,
@@ -37,51 +42,51 @@ function unitPriceRub(item) {
 </script>
 
 <template>
-    <div class="space-y-3 text-xs sm:text-sm text-slate-200">
-        <p class="text-[11px] uppercase tracking-[0.18em] text-slate-400">
+    <div :class="s.flowBody">
+        <p :class="s.stepKicker">
             Шаг 3 из 3 — Подтверждение
         </p>
 
-        <div class="space-y-2 rounded-2xl bg-[rgba(255,255,255,0.03)] px-3 py-3">
-            <p class="text-[11px] font-semibold text-slate-300">
+        <div :class="cf.summaryCard">
+            <p :class="s.headingCardMuted">
                 Состав заказа
             </p>
-            <ul class="space-y-1 text-xs">
+            <ul :class="cf.orderList">
                 <li
                     v-if="userCartItems.length"
-                    class="pt-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400"
+                    :class="s.subsectionKickerXs"
                 >
                     Вы добавили
                 </li>
                 <li
                     v-for="item in userCartItems"
                     :key="item.lineKey"
-                    class="flex items-center justify-between gap-2"
+                    :class="cf.orderLineRow"
                 >
-                    <span class="truncate text-slate-100">
+                    <span :class="cf.orderLineTruncate">
                         {{ item.productSnapshot?.name || `Товар #${item.productId}` }}
                     </span>
-                    <span class="shrink-0 text-slate-300">
+                    <span :class="cf.orderLineMuted">
                         {{ item.qty }} × {{ formatPrice(unitPriceRub(item)) }} ₽
                     </span>
                 </li>
 
                 <li
                     v-if="systemCartItems.length"
-                    class="pt-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400"
+                    :class="s.subsectionKickerXsSpaced"
                 >
                     Добавлено автоматически
                 </li>
                 <li
                     v-for="item in systemCartItems"
                     :key="item.lineKey"
-                    class="flex items-center justify-between gap-2 rounded-xl border border-amber-400/25 bg-amber-400/10 px-2 py-1"
+                    :class="cf.systemLineAccent"
                 >
-                    <span class="truncate text-slate-100">
+                    <span :class="cf.orderLineTruncate">
                         {{ item.productSnapshot?.name || `Товар #${item.productId}` }}
                         <span
                             v-if="lineBadge(item)"
-                            class="ml-1 text-[10px] font-medium text-amber-200"
+                            :class="cf.badgeTiny"
                         >
                             • {{ lineBadge(item) }}
                         </span>
@@ -91,31 +96,30 @@ function unitPriceRub(item) {
                     </span>
                 </li>
             </ul>
-            <!-- complimentary preview удалён вместе с vertical Promotions -->
-            <div class="mt-2 space-y-1 border-t border-white/5 pt-2 text-xs">
-                <div class="flex items-center justify-between">
-                    <span class="text-slate-300/85">Товары</span>
-                    <span class="text-slate-100">{{ formatPrice(userTotalAmount) }} ₽</span>
+            <div :class="cf.totalsInset">
+                <div :class="cf.orderLineRow">
+                    <span :class="c.totalsLabelMuted">Товары</span>
+                    <span :class="c.totalsValue">{{ formatPrice(userTotalAmount) }} ₽</span>
                 </div>
-                <div class="flex items-center justify-between">
-                    <span class="text-slate-300/85">Автодобавления</span>
-                    <span class="text-slate-100">{{ formatPrice(systemTotalAmount) }} ₽</span>
+                <div :class="cf.orderLineRow">
+                    <span :class="c.totalsLabelMuted">Автодобавления</span>
+                    <span :class="c.totalsValue">{{ formatPrice(systemTotalAmount) }} ₽</span>
                 </div>
-                <div class="flex items-center justify-between border-t border-white/10 pt-1">
-                    <span class="text-slate-300/90">Итого</span>
-                    <span class="font-semibold text-amber-300">
+                <div :class="c.totalsDivider">
+                    <span :class="c.totalsLabelStrong">Итого</span>
+                    <span :class="c.grandTotal">
                         {{ formatPrice(totalAmount) }} ₽
                     </span>
                 </div>
             </div>
         </div>
 
-        <div class="space-y-1 rounded-2xl bg-[rgba(255,255,255,0.02)] px-3 py-3">
-            <p class="text-[11px] font-semibold text-slate-300">
+        <div :class="cf.blockMuted">
+            <p :class="s.headingCardMuted">
                 Данные клиента
             </p>
             <template v-if="isGuestCheckout">
-                <p class="text-xs text-slate-200">
+                <p :class="s.textBodyXs">
                     {{ orderStore.guestContact.name || "Без имени" }},
                     {{
                         orderStore.guestContact.phone
@@ -125,13 +129,13 @@ function unitPriceRub(item) {
                 </p>
                 <p
                     v-if="orderStore.guestContact.email"
-                    class="text-[11px] text-slate-400"
+                    :class="s.textMutedLine"
                 >
                     {{ orderStore.guestContact.email }}
                 </p>
             </template>
             <template v-else>
-                <p class="text-xs text-slate-200">
+                <p :class="s.textBodyXs">
                     {{ userStore.profile.name || "Без имени" }},
                     {{
                         userStore.profile.phone
@@ -141,18 +145,18 @@ function unitPriceRub(item) {
                 </p>
                 <p
                     v-if="userStore.profile.email"
-                    class="text-[11px] text-slate-400"
+                    :class="s.textMutedLine"
                 >
                     {{ userStore.profile.email }}
                 </p>
             </template>
         </div>
 
-        <div class="space-y-1 rounded-2xl bg-[rgba(255,255,255,0.02)] px-3 py-3">
-            <p class="text-[11px] font-semibold text-slate-300">
+        <div :class="cf.blockMuted">
+            <p :class="s.headingCardMuted">
                 Доставка и оплата
             </p>
-            <p class="text-xs text-slate-200">
+            <p :class="s.textBodyXs">
                 Адрес:
                 <template v-if="orderStore.deliveryInfo.method === 'pickup'">
                     Самовывоз (адрес точки выдачи пришлём в подтверждении)
@@ -192,7 +196,7 @@ function unitPriceRub(item) {
                     </span>
                 </template>
             </p>
-            <p class="text-xs text-slate-200">
+            <p :class="s.textBodyXs">
                 Оплата:
                 {{
                     orderStore.paymentInfo.method === "cash"
@@ -205,14 +209,14 @@ function unitPriceRub(item) {
                 }}
                 <span
                     v-if="orderStore.paymentInfo.method === 'cash' && orderStore.paymentInfo.changeFrom"
-                    class="ml-1 text-slate-400"
+                    :class="cf.mutedInline"
                 >
                     (сдача с {{ formatPrice(orderStore.paymentInfo.changeFrom) }} ₽)
                 </span>
             </p>
             <p
                 v-if="orderStore.customerComment"
-                class="text-[11px] text-slate-400"
+                :class="s.textMutedLine"
             >
                 Комментарий: {{ orderStore.customerComment }}
             </p>
@@ -220,22 +224,22 @@ function unitPriceRub(item) {
 
         <div
             v-if="orderStore.error.create"
-            class="rounded-2xl border border-red-500/40 bg-red-950/40 px-3 py-2 text-[11px] text-red-200"
+            :class="s.errorBanner"
         >
             {{ orderStore.error.create }}
         </div>
 
-        <div class="mt-2 flex items-center justify-between text-[11px] text-slate-400">
+        <div :class="s.navFooterRow">
             <button
                 type="button"
-                class="underline-offset-2 hover:underline"
+                :class="s.linkUnderline"
                 @click="goToPayment"
             >
                 Назад: оплата
             </button>
             <button
                 type="button"
-                class="inline-flex items-center justify-center rounded-full bg-amber-400 px-3 py-1.5 text-[11px] font-semibold text-black shadow-[0_0_14px_rgba(251,191,36,0.7)] transition hover:bg-amber-300 disabled:opacity-60"
+                :class="s.btnPrimarySmBusy"
                 :disabled="orderStore.loading.create"
                 @click="handleConfirmOrder"
             >

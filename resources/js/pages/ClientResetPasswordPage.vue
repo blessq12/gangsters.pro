@@ -4,6 +4,7 @@ import { useRoute, useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
 import { useUserStore } from "../stores/userStore";
 import { mapApiError } from "../utils/api/mapApiError";
+import { useAppDesign } from "../design/useAppDesign";
 
 const route = useRoute();
 const router = useRouter();
@@ -22,6 +23,8 @@ const password = ref("");
 const confirmPassword = ref("");
 const loading = ref(false);
 const error = ref("");
+
+const rp = useAppDesign().components.pages.resetPassword;
 
 async function submit() {
     error.value = "";
@@ -61,21 +64,21 @@ async function submit() {
 </script>
 
 <template>
-    <div class="mx-auto max-w-md py-8 text-slate-50">
-        <h1 class="text-lg font-semibold text-slate-50 mb-1">
+    <div :class="rp.pageWrap">
+        <h1 :class="rp.title">
             Новый пароль
         </h1>
-        <p class="text-xs text-slate-400 mb-6">
+        <p :class="rp.lead">
             Придумай пароль для входа в личный кабинет.
         </p>
 
         <form
             v-if="token"
-            class="space-y-4 rounded-3xl border border-amber-400/20 bg-[rgba(0,0,0,0.35)] px-4 py-5"
+            :class="rp.form"
             @submit.prevent="submit"
         >
             <div>
-                <label class="block text-xs font-medium text-slate-300 mb-1">
+                <label :class="rp.label">
                     Пароль
                 </label>
                 <input
@@ -83,11 +86,11 @@ async function submit() {
                     type="password"
                     autocomplete="new-password"
                     placeholder="минимум 6 символов"
-                    class="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                    :class="rp.input"
                 />
             </div>
             <div>
-                <label class="block text-xs font-medium text-slate-300 mb-1">
+                <label :class="rp.label">
                     Подтверждение
                 </label>
                 <input
@@ -95,16 +98,19 @@ async function submit() {
                     type="password"
                     autocomplete="new-password"
                     placeholder="ещё раз"
-                    class="w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-slate-50 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/60"
+                    :class="rp.input"
                 />
             </div>
-            <p v-if="error" class="text-xs text-red-400">
+            <p
+                v-if="error"
+                :class="rp.error"
+            >
                 {{ error }}
             </p>
             <button
                 type="submit"
                 :disabled="loading"
-                class="inline-flex w-full items-center justify-center rounded-xl bg-amber-400 px-4 py-2 text-sm font-semibold text-black shadow-[0_0_18px_rgba(251,191,36,0.75)] transition hover:bg-amber-300 disabled:opacity-60"
+                :class="rp.submitBtn"
             >
                 <span v-if="!loading">Сохранить пароль</span>
                 <span v-else>Сохраняем…</span>
@@ -113,15 +119,15 @@ async function submit() {
 
         <div
             v-else
-            class="rounded-3xl border border-red-500/30 bg-black/30 px-4 py-5 text-sm text-slate-300"
+            :class="rp.noTokenCard"
         >
-            <p class="mb-3">
+            <p :class="rp.noTokenLead">
                 Ссылка неполная: нет токена. Открой ссылку из письма или запроси
                 сброс пароля снова в форме входа.
             </p>
             <RouterLink
                 :to="{ name: 'home' }"
-                class="text-amber-400 text-sm font-medium hover:text-amber-300"
+                :class="rp.homeLink"
             >
                 На главную
             </RouterLink>

@@ -1,5 +1,6 @@
 <script setup>
-import { nextTick, onMounted, ref, watch } from "vue";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
+import { useAppDesign } from "../../design/useAppDesign";
 import { playCatalogItemsEnter } from "../../animations/animationManager";
 
 const props = defineProps({
@@ -18,6 +19,13 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["productImageClick"]);
+
+const df = useAppDesign().components.catalog.productsFlat;
+
+const loadingCopy = computed(() => df.loadingText);
+const emptyCopy = computed(
+    () => props.emptyMessage || df.emptyText,
+);
 
 const gridRef = ref(null);
 
@@ -41,13 +49,13 @@ watch(
 </script>
 
 <template>
-    <div class="space-y-4">
-        <div v-if="loading" class="text-sm text-slate-400">
-            Загружаем вкусняшки...
+    <div :class="df.root">
+        <div v-if="loading" :class="df.loading">
+            {{ loadingCopy }}
         </div>
 
-        <div v-else-if="!products.length" class="text-sm text-slate-500">
-            {{ emptyMessage }}
+        <div v-else-if="!products.length" :class="df.empty">
+            {{ emptyCopy }}
         </div>
 
         <div v-else ref="gridRef" class="catalog-grid">
@@ -66,6 +74,7 @@ watch(
 </template>
 
 <style scoped>
+/* Плотная masonry-сетка на lg+: см. план каталога, геометрия здесь сознательно. */
 .catalog-grid {
     display: grid;
     grid-template-columns: repeat(1, minmax(0, 1fr));
@@ -88,8 +97,6 @@ watch(
         grid-auto-rows: minmax(260px, auto);
         grid-auto-flow: dense;
     }
-    /* Паттерн: немного хаоса через nth-child,
-       но стабильный и предсказуемый */
     .catalog-item:nth-child(9n + 1),
     .catalog-item:nth-child(9n + 5) {
         grid-column: span 2;
@@ -101,4 +108,3 @@ watch(
     }
 }
 </style>
-

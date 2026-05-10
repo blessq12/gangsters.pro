@@ -1,5 +1,6 @@
 <script setup>
 import { computed, nextTick, onMounted, ref, watch } from "vue";
+import { useAppDesign } from "../../design/useAppDesign";
 import { playCatalogItemsEnter } from "../../animations/animationManager";
 
 const props = defineProps({
@@ -30,6 +31,13 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["productImageClick"]);
+
+const dp = useAppDesign().components.catalog.products;
+
+const loadingCopy = computed(() => dp.loadingText);
+const emptyCopy = computed(
+    () => props.emptyMessage || dp.emptyText,
+);
 
 const containerRef = ref(null);
 const isHorizontalMobileMode = computed(
@@ -62,24 +70,22 @@ watch(
 </script>
 
 <template>
-    <div class="space-y-4">
-        <div v-if="loading" class="text-sm text-slate-400">
-            Загружаем вкусняшки...
+    <div :class="dp.root">
+        <div v-if="loading" :class="dp.loading">
+            {{ loadingCopy }}
         </div>
 
-        <div v-else-if="!sections.length" class="text-sm text-slate-500">
-            {{ emptyMessage }}
+        <div v-else-if="!sections.length" :class="dp.empty">
+            {{ emptyCopy }}
         </div>
 
         <div
             v-else
             ref="containerRef"
-            class="space-y-7"
+            :class="dp.sectionsStack"
         >
             <section v-for="section in sections" :key="section.id ?? section.name">
-                <h3
-                    class="mb-3 text-sm font-semibold uppercase tracking-wide text-amber-200/90"
-                >
+                <h3 :class="dp.sectionTitle">
                     {{ section.name }}
                 </h3>
 
@@ -132,4 +138,3 @@ watch(
     height: 100%;
 }
 </style>
-

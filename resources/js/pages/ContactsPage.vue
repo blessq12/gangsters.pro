@@ -6,6 +6,7 @@ import {
     formatWorkScheduleForDisplay,
     safeTrim,
 } from "../utils/system/companyDisplay";
+import { useAppDesign } from "../design/useAppDesign";
 
 const { company: companyRef, loading, errors } = useSystemReadModel({
     autoload: true,
@@ -137,6 +138,8 @@ const whatsappHref = computed(() => {
     const tail = digits.slice(-10);
     return `https://wa.me/7${tail}`;
 });
+
+const co = useAppDesign().components.pages.contacts;
 </script>
 
 <template>
@@ -150,84 +153,84 @@ const whatsappHref = computed(() => {
     >
         <p
             v-if="errors.company"
-            class="mb-4 rounded-2xl border border-red-500/30 bg-red-950/30 px-4 py-3 text-sm text-red-200"
+            :class="co.apiError"
         >
             {{ errors.company }}
         </p>
 
-        <div class="grid gap-4 md:grid-cols-3">
-            <article class="rounded-[1.75rem] border border-white/10 bg-[rgba(255,255,255,0.04)] p-5 shadow-[0_16px_50px_rgba(0,0,0,0.35)]">
-                <div class="mb-4 flex h-11 w-11 items-center justify-center rounded-full bg-amber-400 text-black">
+        <div :class="co.channelsGrid">
+            <article :class="co.channelArticle">
+                <div :class="co.channelIconWrap">
                     <i class="mdi mdi-phone-outline text-xl" />
                 </div>
-                <p class="text-xs uppercase tracking-[0.22em] text-slate-400">
+                <p :class="co.channelLabel">
                     Телефон
                 </p>
                 <p
                     v-if="loadingCompany && !phoneDisplay"
-                    class="mt-2 text-sm text-slate-500"
+                    :class="co.channelLoading"
                 >
                     Загрузка…
                 </p>
                 <template v-else>
-                    <p class="mt-2 text-lg font-semibold text-slate-50">
+                    <p :class="co.channelValueRow">
                         <a
                             v-if="phoneTel"
                             :href="phoneTel"
-                            class="transition-colors hover:text-amber-300"
+                            :class="co.channelLinkHover"
                         >
                             {{ phoneDisplay }}
                         </a>
                         <span v-else-if="phoneDisplay">{{ phoneDisplay }}</span>
                         <span
                             v-else
-                            class="text-slate-500"
+                            :class="co.channelMutedValue"
                         >Уточняется</span>
                     </p>
                     <p
                         v-if="phoneExtra"
-                        class="mt-1 text-sm text-slate-400"
+                        :class="co.channelSubMuted"
                     >
                         Поддержка: {{ phoneExtra }}
                     </p>
                 </template>
-                <p class="mt-2 text-sm text-slate-300">
+                <p :class="co.channelLead">
                     Для заказов, уточнений по доставке и быстрых вопросов по меню.
                 </p>
             </article>
 
-            <article class="rounded-[1.75rem] border border-white/10 bg-[rgba(255,255,255,0.04)] p-5 shadow-[0_16px_50px_rgba(0,0,0,0.35)]">
-                <div class="mb-4 flex h-11 w-11 items-center justify-center rounded-full bg-amber-400 text-black">
+            <article :class="co.channelArticle">
+                <div :class="co.channelIconWrap">
                     <i class="mdi mdi-send-outline text-xl" />
                 </div>
-                <p class="text-xs uppercase tracking-[0.22em] text-slate-400">
+                <p :class="co.channelLabel">
                     Telegram
                 </p>
                 <p
                     v-if="loadingCompany && !telegramLabel"
-                    class="mt-2 text-sm text-slate-500"
+                    :class="co.channelLoading"
                 >
                     Загрузка…
                 </p>
                 <p
                     v-else
-                    class="mt-2 text-lg font-semibold text-slate-50"
+                    :class="co.channelValueRow"
                 >
                     <a
                         v-if="telegramHref"
                         :href="telegramHref"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="transition-colors hover:text-amber-300"
+                        :class="co.channelLinkHover"
                     >
                         {{ telegramLabel || "Написать в Telegram" }}
                     </a>
                     <span
                         v-else
-                        class="text-slate-500"
+                        :class="co.channelMutedValue"
                     >Уточняется</span>
                 </p>
-                <p class="mt-2 text-sm text-slate-300">
+                <p :class="co.channelLead">
                     Самый быстрый канал для связи и актуальных акций.
                 </p>
                 <p
@@ -238,55 +241,55 @@ const whatsappHref = computed(() => {
                         :href="whatsappHref"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="text-amber-300/90 underline-offset-2 hover:underline"
+                        :class="co.waLink"
                     >
                         WhatsApp
                     </a>
                 </p>
             </article>
 
-            <article class="rounded-[1.75rem] border border-white/10 bg-[rgba(255,255,255,0.04)] p-5 shadow-[0_16px_50px_rgba(0,0,0,0.35)]">
-                <div class="mb-4 flex h-11 w-11 items-center justify-center rounded-full bg-amber-400 text-black">
+            <article :class="co.channelArticle">
+                <div :class="co.channelIconWrap">
                     <i class="mdi mdi-email-outline text-xl" />
                 </div>
-                <p class="text-xs uppercase tracking-[0.22em] text-slate-400">
+                <p :class="co.channelLabel">
                     Эл. почта
                 </p>
                 <p
                     v-if="loadingCompany && !emailDisplay"
-                    class="mt-2 text-sm text-slate-500"
+                    :class="co.channelLoading"
                 >
                     Загрузка…
                 </p>
                 <p
                     v-else
-                    class="mt-2 text-lg font-semibold text-slate-50"
+                    :class="co.channelValueRow"
                 >
                     <a
                         v-if="emailHref"
                         :href="emailHref"
-                        class="break-all transition-colors hover:text-amber-300"
+                        :class="co.emailLink"
                     >
                         {{ emailDisplay }}
                     </a>
                     <span
                         v-else
-                        class="text-slate-500"
+                        :class="co.channelMutedValue"
                     >Уточняется</span>
                 </p>
-                <p class="mt-2 text-sm text-slate-300">
+                <p :class="co.channelLead">
                     Для партнёрств и предложений, где важны детали в переписке.
                 </p>
             </article>
         </div>
 
-        <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.85fr)]">
+        <div :class="co.mainGrid">
             <SecondaryContentBlock
                 title="Где мы находимся"
                 subtitle="БАЗА КУХНИ"
             >
                 <template v-if="loadingCompany && !hasAddress">
-                    <p class="text-sm text-slate-500">
+                    <p :class="co.addressLoading">
                         Загрузка адреса…
                     </p>
                 </template>
@@ -294,7 +297,7 @@ const whatsappHref = computed(() => {
                     <p
                         v-for="(line, i) in addressLines"
                         :key="i"
-                        :class="{ 'mt-3': i > 0 }"
+                        :class="{ [co.addressLineSpaced]: i > 0 }"
                     >
                         {{ line }}
                     </p>
@@ -303,50 +306,50 @@ const whatsappHref = computed(() => {
                     Адрес уточняется. Свяжитесь с нами по телефону или в мессенджере.
                 </p>
 
-                <div class="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4">
-                    <p class="text-[11px] uppercase tracking-[0.22em] text-slate-400">
+                <div :class="co.coverageBox">
+                    <p :class="co.coverageKicker">
                         Зона покрытия
                     </p>
-                    <p class="mt-2 text-sm text-slate-200">
+                    <p :class="co.coverageBody">
                         {{ coverageText }}
                     </p>
                 </div>
 
                 <p
                     v-if="siteUrl"
-                    class="mt-4 text-sm"
+                    :class="co.siteLinkPara"
                 >
                     <a
                         :href="siteUrl"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="text-amber-300/90 underline-offset-2 hover:underline"
+                        :class="co.waLink"
                     >
                         Сайт
                     </a>
                 </p>
             </SecondaryContentBlock>
 
-            <article class="overflow-hidden rounded-[1.75rem] border border-amber-400/20 bg-[linear-gradient(180deg,rgba(251,191,36,0.1),rgba(255,255,255,0.03))] p-6">
-                <p class="text-xs uppercase tracking-[0.26em] text-amber-200">
+            <article :class="co.scheduleArticle">
+                <p :class="co.scheduleEyebrow">
                     Режим работы
                 </p>
-                <p class="mt-4 text-3xl font-semibold text-slate-50">
+                <p :class="co.scheduleTime">
                     {{ workHoursMain }}
                 </p>
-                <p class="mt-3 text-sm leading-relaxed text-slate-300">
+                <p :class="co.scheduleNote">
                     {{ workScheduleNote }}
                 </p>
                 <div
                     v-if="company?.min_order_amount_kopecks != null || company?.delivery_fee_kopecks != null"
-                    class="mt-5 space-y-2 text-sm text-slate-200"
+                    :class="co.feeStack"
                 >
                     <div
                         v-if="company.min_order_amount_kopecks != null"
-                        class="flex items-center justify-between rounded-2xl border border-white/10 bg-black/25 px-4 py-3"
+                        :class="co.feeRow"
                     >
                         <span>Мин. заказ</span>
-                        <span class="font-medium text-amber-200">
+                        <span :class="co.feeValue">
                             {{
                                 new Intl.NumberFormat("ru-RU").format(
                                     Math.round(
@@ -360,10 +363,10 @@ const whatsappHref = computed(() => {
                     </div>
                     <div
                         v-if="company.delivery_fee_kopecks != null"
-                        class="flex items-center justify-between rounded-2xl border border-white/10 bg-black/25 px-4 py-3"
+                        :class="co.feeRow"
                     >
                         <span>Доставка от</span>
-                        <span class="font-medium text-amber-200">
+                        <span :class="co.feeValue">
                             {{
                                 new Intl.NumberFormat("ru-RU").format(
                                     Math.round(
@@ -382,37 +385,37 @@ const whatsappHref = computed(() => {
             title="Как лучше связаться"
             subtitle="КАК С НАМИ СВЯЗАТЬСЯ"
         >
-            <div class="grid gap-4 md:grid-cols-3">
-                <div class="rounded-2xl border border-white/10 bg-black/20 p-5">
-                    <p class="text-[11px] uppercase tracking-[0.22em] text-slate-400">
+            <div :class="co.tipsGrid">
+                <div :class="co.tipTile">
+                    <p :class="co.tipKicker">
                         01
                     </p>
-                    <p class="mt-2 font-medium text-slate-50">
+                    <p :class="co.tipTitle">
                         По заказу
                     </p>
-                    <p class="mt-1 text-sm text-slate-300">
+                    <p :class="co.tipBody">
                         Звонок или Telegram — самый короткий путь, если вопрос срочный.
                     </p>
                 </div>
-                <div class="rounded-2xl border border-white/10 bg-black/20 p-5">
-                    <p class="text-[11px] uppercase tracking-[0.22em] text-slate-400">
+                <div :class="co.tipTile">
+                    <p :class="co.tipKicker">
                         02
                     </p>
-                    <p class="mt-2 font-medium text-slate-50">
+                    <p :class="co.tipTitle">
                         По сотрудничеству
                     </p>
-                    <p class="mt-1 text-sm text-slate-300">
+                    <p :class="co.tipBody">
                         Лучше писать на email, чтобы не потерялись детали и контакты.
                     </p>
                 </div>
-                <div class="rounded-2xl border border-white/10 bg-black/20 p-5">
-                    <p class="text-[11px] uppercase tracking-[0.22em] text-slate-400">
+                <div :class="co.tipTile">
+                    <p :class="co.tipKicker">
                         03
                     </p>
-                    <p class="mt-2 font-medium text-slate-50">
+                    <p :class="co.tipTitle">
                         По акциям и новостям
                     </p>
-                    <p class="mt-1 text-sm text-slate-300">
+                    <p :class="co.tipBody">
                         Удобнее всего следить в Telegram и на сайте.
                     </p>
                 </div>

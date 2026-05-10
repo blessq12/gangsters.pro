@@ -3,6 +3,7 @@ import "swiper/css";
 import { computed, ref } from "vue";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { useSystemStore } from "../../stores/systemStore";
+import { useAppDesign } from "../../design/useAppDesign";
 
 const props = defineProps({
     variant: {
@@ -14,6 +15,10 @@ const props = defineProps({
 
 const systemStore = useSystemStore();
 const isMobile = computed(() => props.variant === "mobile");
+
+const j = useAppDesign().components.home.jumbotron;
+const jShared = j.shared;
+const jVar = computed(() => (isMobile.value ? j.mobile : j.desktop));
 
 const slides = computed(() =>
     (systemStore.banners || []).map((banner) => ({
@@ -80,42 +85,18 @@ const goNext = () => {
 </script>
 
 <template>
-    <section
-        :class="
-            isMobile
-                ? 'home-jumbotron home-jumbotron--mobile relative mt-6 mb-14 w-screen max-w-none overflow-x-clip [margin-left:calc(50%-50vw)] [margin-right:calc(50%-50vw)]'
-                : 'home-jumbotron home-jumbotron--desktop relative mt-8 mb-12 w-screen max-w-none overflow-hidden sm:mt-12 sm:mb-18 [margin-left:calc(50%-50vw)] [margin-right:calc(50%-50vw)]'
-        "
-    >
-        <div class="pointer-events-none absolute inset-0 opacity-50 mix-blend-screen">
-            <div
-                :class="
-                    isMobile
-                        ? 'absolute -left-8 top-6 h-32 w-32 rounded-full bg-amber-500/15 blur-3xl'
-                        : 'absolute -left-10 top-8 h-36 w-36 rounded-full bg-amber-500/15 blur-3xl sm:-left-16 sm:top-0 sm:h-56 sm:w-56'
-                "
-            ></div>
-            <div
-                :class="
-                    isMobile
-                        ? 'absolute -right-8 bottom-0 h-40 w-40 rounded-full bg-rose-500/10 blur-3xl'
-                        : 'absolute -right-8 bottom-0 h-44 w-44 rounded-full bg-rose-500/10 blur-3xl sm:right-0 sm:h-64 sm:w-64'
-                "
-            ></div>
+    <section :class="jVar.sectionRoot">
+        <div :class="jShared.backdropLayer">
+            <div :class="jVar.glowLeft"></div>
+            <div :class="jVar.glowRight"></div>
         </div>
 
-        <div :class="isMobile ? 'relative px-3 sm:px-4 overflow-x-clip' : 'relative px-4 sm:px-6 lg:px-8'">
+        <div :class="jVar.innerWrap">
             <div
                 v-if="isLoading"
-                :class="isMobile ? 'flex justify-center px-1 py-6 sm:py-7' : 'flex justify-center px-1 py-6 sm:py-8'"
+                :class="jVar.loadingRow"
             >
-                <div
-                    :class="
-                        isMobile
-                            ? 'home-jumbotron-aspect-slot rounded-2xl border border-white/10 bg-slate-800/60 animate-pulse'
-                            : 'home-jumbotron-aspect-slot rounded-2xl border border-white/10 bg-slate-800/60 animate-pulse'
-                    "
-                ></div>
+                <div :class="jShared.loadingSlot"></div>
             </div>
 
             <Swiper
@@ -134,69 +115,35 @@ const goNext = () => {
                 :observer="true"
                 :observe-parents="true"
                 :resize-observer="true"
-                class="!overflow-visible"
+                :class="jShared.swiperOverflow"
                 @swiper="handleSwiperInit"
             >
                 <SwiperSlide v-for="(slide, index) in slides" :key="index">
-                    <div :class="isMobile ? 'flex min-w-0 justify-center px-0.5 py-2' : 'flex min-w-0 justify-center px-0.5 py-3 sm:py-4'">
-                        <div
-                            class="home-jumbotron-card relative w-full max-w-full overflow-hidden rounded-2xl border bg-slate-900/60"
-                        >
-                            <div class="home-jumbotron-media home-jumbotron-aspect-slot relative">
+                    <div :class="[jShared.slideInnerFlex, jVar.slidePadY]">
+                        <div :class="jShared.cardFrame">
+                            <div :class="jShared.mediaSlot">
                                 <img
                                     :src="slide.image"
                                     :alt="slide.title"
-                                    class="absolute inset-0 h-full w-full object-cover"
+                                    :class="jShared.slideImage"
                                     :width="isMobile ? 900 : 1920"
                                     :height="isMobile ? 1200 : 1080"
                                     :loading="index === 0 ? 'eager' : 'lazy'"
                                     decoding="async"
                                 />
                             </div>
-                            <div
-                                class="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/85"
-                            ></div>
-                            <div
-                                :class="
-                                    isMobile
-                                        ? 'absolute left-3 top-3 inline-flex rounded-full border border-white/10 bg-[rgba(0,0,0,0.42)] px-2 py-[3px] text-[10px] font-medium uppercase tracking-[0.2em] text-slate-100 backdrop-blur'
-                                        : 'absolute left-3 top-3 inline-flex rounded-full border border-white/10 bg-[rgba(0,0,0,0.42)] px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.2em] text-slate-100 backdrop-blur sm:left-4 sm:top-4 sm:text-[11px]'
-                                "
-                            >
+                            <div :class="jShared.gradientScrim"></div>
+                            <div :class="jVar.badgeBrand">
                                 Gangsters
                             </div>
-                            <div
-                                :class="
-                                    isMobile
-                                        ? 'absolute right-3 top-3 inline-flex rounded-full border border-amber-400/20 bg-[rgba(0,0,0,0.38)] px-2 py-[3px] text-[10px] font-semibold text-amber-200 backdrop-blur'
-                                        : 'absolute right-3 top-3 inline-flex rounded-full border border-amber-400/20 bg-[rgba(0,0,0,0.38)] px-2.5 py-1 text-[10px] font-semibold text-amber-200 backdrop-blur sm:right-4 sm:top-4 sm:text-[11px]'
-                                "
-                            >
+                            <div :class="jVar.badgeCounter">
                                 {{ String(index + 1).padStart(2, "0") }}/{{ String(slides.length).padStart(2, "0") }}
                             </div>
-                            <div
-                                :class="
-                                    isMobile
-                                        ? 'absolute inset-x-2.5 bottom-2 rounded-2xl border border-white/10 bg-[rgba(0,0,0,0.32)] px-3 py-2.5 backdrop-blur-xl'
-                                        : 'absolute inset-x-3 bottom-3 rounded-2xl border border-white/10 bg-[rgba(0,0,0,0.32)] px-4 py-3 backdrop-blur-xl sm:inset-x-0 sm:bottom-0 sm:rounded-none sm:border-0 sm:bg-transparent sm:px-6 sm:py-4 sm:backdrop-blur-0'
-                                "
-                            >
-                                <h1
-                                    :class="
-                                        isMobile
-                                            ? 'text-xl font-semibold leading-tight text-amber-300'
-                                            : 'text-xl font-semibold leading-tight text-amber-300 sm:text-2xl'
-                                    "
-                                >
+                            <div :class="jVar.captionPanel">
+                                <h1 :class="jVar.title">
                                     {{ slide.title }}
                                 </h1>
-                                <p
-                                    :class="
-                                        isMobile
-                                            ? 'mt-1 text-xs leading-relaxed text-slate-200/90'
-                                            : 'mt-1 max-w-[18rem] text-xs leading-relaxed text-slate-200/90 sm:max-w-none sm:text-sm'
-                                    "
-                                >
+                                <p :class="jVar.description">
                                     {{ slide.description }}
                                 </p>
                             </div>
@@ -207,11 +154,11 @@ const goNext = () => {
 
             <div
                 v-if="!isMobile && slides.length > 1"
-                class="pointer-events-none absolute inset-y-0 left-0 right-0 z-20 hidden items-center justify-between px-5 md:flex lg:px-8"
+                :class="jShared.navRail"
             >
                 <button
                     type="button"
-                    class="pointer-events-auto inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-black/45 text-slate-100 backdrop-blur transition hover:border-amber-300/40 hover:text-amber-200"
+                    :class="jShared.navBtn"
                     aria-label="Предыдущий слайд"
                     @click="goPrev"
                 >
@@ -219,7 +166,7 @@ const goNext = () => {
                 </button>
                 <button
                     type="button"
-                    class="pointer-events-auto inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-black/45 text-slate-100 backdrop-blur transition hover:border-amber-300/40 hover:text-amber-200"
+                    :class="jShared.navBtn"
                     aria-label="Следующий слайд"
                     @click="goNext"
                 >
@@ -229,7 +176,7 @@ const goNext = () => {
 
             <div
                 v-if="!isLoading && !slides.length"
-                class="mx-auto max-w-4xl py-8 text-center text-xs text-slate-500"
+                :class="jShared.emptyState"
             >
                 Баннеры скоро появятся.
             </div>

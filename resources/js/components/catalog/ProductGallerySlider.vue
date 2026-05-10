@@ -4,6 +4,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import { Autoplay, Navigation } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/vue";
+import { useAppDesign } from "../../design/useAppDesign";
 
 const swiperModules = [Autoplay, Navigation];
 
@@ -17,6 +18,8 @@ const props = defineProps({
         default: "",
     },
 });
+
+const dg = useAppDesign().components.catalog.modal.gallery;
 
 const ready = ref(false);
 
@@ -36,9 +39,9 @@ const slideUrls = computed(() => {
 </script>
 
 <template>
-    <div class="product-gallery">
-        <div v-if="!slideUrls.length" class="product-gallery__no-photo">
-            Нет фото
+    <div :class="dg.root">
+        <div v-if="!slideUrls.length" :class="dg.noPhoto">
+            {{ dg.noPhotoLabel }}
         </div>
         <!-- Слайдер монтируем после nextTick, чтобы контейнер уже был в DOM (модалка не падает) -->
         <template v-else-if="ready">
@@ -49,79 +52,34 @@ const slideUrls = computed(() => {
                 :loop="slideUrls.length > 1"
                 :navigation="slideUrls.length > 1"
                 :autoplay="{ delay: 3500, disableOnInteraction: false }"
-                class="product-gallery__swiper"
+                :class="dg.swiper"
             >
                 <SwiperSlide
                     v-for="(url, index) in slideUrls"
                     :key="index"
-                    class="product-gallery__slide"
+                    :class="dg.slide"
                 >
                     <img
                         :src="url"
                         :alt="alt ? `${alt} — фото ${index + 1}` : ''"
-                        class="product-gallery__img"
+                        :class="dg.img"
                     />
                 </SwiperSlide>
             </Swiper>
         </template>
-        <div v-else class="product-gallery__wrap">
+        <div v-else :class="dg.wrap">
             <img
                 :src="slideUrls[0]"
                 :alt="alt || 'Фото товара'"
-                class="product-gallery__img"
+                :class="dg.img"
             />
         </div>
     </div>
 </template>
 
 <style scoped>
-.product-gallery {
-    position: relative;
-    width: 100%;
-    height: 16rem;
-    background: rgba(30, 41, 59, 0.5);
-    overflow: hidden;
-}
-
-@media (min-width: 640px) {
-    .product-gallery {
-        height: 20rem;
-    }
-}
-
-.product-gallery__no-photo {
-    display: flex;
-    height: 100%;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.875rem;
-    color: #64748b;
-}
-
-.product-gallery__wrap {
-    width: 100%;
-    height: 100%;
-}
-
-.product-gallery__swiper {
-    width: 100%;
-    height: 100%;
-}
-
 :deep(.swiper-wrapper) {
     height: 100%;
-}
-
-.product-gallery__slide {
-    width: 100%;
-    height: 100%;
-}
-
-.product-gallery__img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
 }
 
 :deep(.swiper-button-prev),

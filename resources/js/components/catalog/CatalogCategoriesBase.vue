@@ -1,4 +1,6 @@
 <script setup>
+import { useAppDesign } from "../../design/useAppDesign";
+
 const props = defineProps({
     categories: {
         type: Array,
@@ -24,7 +26,22 @@ const props = defineProps({
 
 const emit = defineEmits(["update:modelValue", "change"]);
 
+const dc = useAppDesign().components.catalog.categories;
+
 const isMobile = () => props.variant === "mobile";
+
+function pillClasses(forValue) {
+    const active =
+        props.modelValue === forValue;
+    const mob = isMobile();
+    const base = [dc.pillBase, mob ? dc.pillSizingMobile : dc.pillSizingDesktop];
+    if (active) {
+        base.push(mob ? dc.pillActiveMobile : dc.pillActiveDesktop);
+    } else {
+        base.push(dc.pillInactive);
+    }
+    return base;
+}
 
 const handleSelect = (value) => {
     emit("update:modelValue", value);
@@ -33,27 +50,20 @@ const handleSelect = (value) => {
 </script>
 
 <template>
-    <div class="relative mb-10 w-full min-w-0 max-w-full">
+    <div :class="dc.outer">
         <div
-            class="min-w-0 max-w-full rounded-2xl border border-amber-400/30 bg-[rgba(255,255,255,0.035)] shadow-[0_0_22px_rgba(0,0,0,0.65)] backdrop-blur"
-            :class="isMobile() ? 'px-4 py-4' : 'px-4 py-3.5 lg:px-8'"
+            :class="[
+                dc.island,
+                isMobile() ? dc.islandPaddingMobile : dc.islandPaddingDesktop,
+            ]"
         >
             <div
-                class="flex items-center gap-2"
-                :class="isMobile() ? 'cats-scroll overflow-x-auto py-2' : 'flex-wrap pb-1.5'"
+                :class="isMobile() ? dc.rowMobile : dc.rowDesktop"
             >
                 <button
                     v-if="showAll"
                     type="button"
-                    class="whitespace-nowrap rounded-full border transition-colors backdrop-blur bg-[rgba(0,0,0,0.75)]"
-                    :class="[
-                        isMobile() ? 'px-4 py-2 text-xs' : 'px-5 py-2 text-sm',
-                        modelValue === null
-                            ? isMobile()
-                                ? 'border-amber-400/70 text-amber-100 shadow-[0_0_10px_rgba(251,191,36,0.4)]'
-                                : 'border-amber-400/70 text-amber-100 shadow-[0_0_14px_rgba(251,191,36,0.45)]'
-                            : 'border-white/10 text-slate-300 hover:border-amber-400/50 hover:text-amber-200',
-                    ]"
+                    :class="pillClasses(null)"
                     @click="handleSelect(null)"
                 >
                     {{ allLabel }}
@@ -63,15 +73,7 @@ const handleSelect = (value) => {
                     v-for="category in categories"
                     :key="category.id ?? category.uri"
                     type="button"
-                    class="whitespace-nowrap rounded-full border transition-colors backdrop-blur bg-[rgba(0,0,0,0.75)]"
-                    :class="[
-                        isMobile() ? 'px-4 py-2 text-xs' : 'px-5 py-2 text-sm',
-                        modelValue === (category.id ?? category.uri)
-                            ? isMobile()
-                                ? 'border-amber-400/70 text-amber-100 shadow-[0_0_10px_rgba(251,191,36,0.4)]'
-                                : 'border-amber-400/70 text-amber-100 shadow-[0_0_14px_rgba(251,191,36,0.45)]'
-                            : 'border-white/10 text-slate-300 hover:border-amber-400/50 hover:text-amber-200',
-                    ]"
+                    :class="pillClasses(category.id ?? category.uri)"
                     @click="handleSelect(category.id ?? category.uri)"
                 >
                     {{ category.name }}
@@ -93,4 +95,3 @@ const handleSelect = (value) => {
     display: none;
 }
 </style>
-

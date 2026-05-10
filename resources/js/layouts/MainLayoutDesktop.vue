@@ -9,6 +9,9 @@ import { useUiStore } from "../stores/uiStore";
 import { useCatalogStore } from "../stores/catalogStore";
 import { useSystemStore } from "../stores/systemStore";
 import { playIntroScene, playPageEnter, playPageLeave } from "../animations/animationManager";
+import { useAppDesign } from "../design/useAppDesign";
+
+const sh = useAppDesign().components.layoutShell;
 
 const themeStore = useThemeStore();
 const userStore = useUserStore();
@@ -99,24 +102,24 @@ onUnmounted(() => {
 
 <template>
     <div
-        class="app-shell min-h-screen flex flex-col"
         :class="[
+            sh.shared.root,
             themeStore.theme === 'dark'
-                ? 'theme-dark text-slate-50'
-                : 'theme-light text-slate-900',
+                ? sh.shared.themeDark
+                : sh.shared.themeLight,
         ]"
     >
         <!-- 1) стартовый оверлей с логотипом -->
         <div
             v-if="showIntro"
             ref="introOverlayRef"
-            class="fixed inset-0 z-40 flex items-center justify-center pointer-events-none"
+            :class="sh.shared.introOverlay"
         >
             <img
                 ref="introLogoRef"
                 src="/images/logo.png"
                 alt="Gangsters"
-                class="h-44 md:h-52 w-auto"
+                :class="sh.desktop.introLogo"
             />
         </div>
 
@@ -124,10 +127,10 @@ onUnmounted(() => {
 
         <WorkScheduleStrip />
 
-        <main class="flex-1">
+        <main :class="sh.shared.mainGrow">
             <div
                 ref="mainRef"
-                class="mx-auto max-w-7xl px-6 pb-7 pt-0 lg:px-8 opacity-0"
+                :class="sh.desktop.mainContainer"
             >
                 <router-view v-slot="{ Component, route }">
                     <Transition

@@ -2,8 +2,13 @@
 import { computed, ref } from "vue";
 import { useFloatLoop } from "../../composables/animations/useFloatLoop";
 import { useSystemReadModel } from "../../features/system/useSystemReadModel";
+import { useAppDesign } from "../../design/useAppDesign";
 
 const { promotions, loading } = useSystemReadModel({ autoload: true });
+
+const hp = useAppDesign().components.home.promotions;
+const hpShared = hp.shared;
+const hpCombo = hp.combo;
 
 const promos = computed(() =>
     (promotions.value || []).map((promo) => ({
@@ -41,23 +46,21 @@ const openPromo = (promo) => {
 </script>
 
 <template>
-    <section class="my-12">
-        <h2 class="text-lg sm:text-xl font-semibold text-slate-100 mb-4">
+    <section :class="hpShared.section">
+        <h2 :class="hpCombo.heading">
             Актуальные акции
         </h2>
 
         <!-- Mobile: горизонтальный скролл (больше размер карточек) -->
         <div class="md:hidden">
-            <div
-                class="promos-scroll flex gap-3 overflow-x-auto px-1 pb-2 snap-x snap-mandatory"
-            >
+            <div :class="hpCombo.mobileScroll">
                 <template v-if="isLoading">
                     <div
                         v-for="index in 4"
                         :key="index"
-                        class="snap-start flex-none w-[18rem] rounded-2xl border border-white/10 bg-slate-800/60 animate-pulse"
+                        :class="hpCombo.mobileSkeletonOuter"
                     >
-                        <div class="aspect-[16/9] w-full rounded-2xl" />
+                        <div :class="hpShared.pulseInner" />
                     </div>
                 </template>
 
@@ -66,21 +69,21 @@ const openPromo = (promo) => {
                         v-for="(promo, index) in promos"
                         :key="index"
                         :ref="(el) => registerPromo(el, index)"
-                        class="snap-start group flex-none w-[18rem] rounded-2xl relative cursor-pointer"
+                        :class="hpCombo.mobileArticle"
                         @click="openPromo(promo)"
                     >
-                        <div class="aspect-[16/9] w-full overflow-hidden rounded-2xl">
+                        <div :class="hpShared.thumbWrap">
                             <img
                                 :src="promo.image"
                                 :alt="promo.title"
-                                class="h-full w-full object-cover grayscale group-hover:grayscale-0 transition-transform duration-500 ease-out group-hover:scale-105"
+                                :class="hpShared.thumbImg"
                             />
                         </div>
                     </article>
                 </template>
 
                 <template v-else>
-                    <div class="py-4 text-center text-xs text-slate-500">
+                    <div :class="hpShared.emptyText">
                         Акции скоро появятся.
                     </div>
                 </template>
@@ -89,12 +92,12 @@ const openPromo = (promo) => {
 
         <!-- Desktop: 4 в строке, выравнивание по центру -->
         <div class="hidden md:block">
-            <div class="mx-auto grid grid-cols-4 gap-4 justify-items-center">
+            <div :class="hpCombo.desktopGrid">
                 <template v-if="isLoading">
                     <div
                         v-for="index in 4"
                         :key="index"
-                        class="aspect-[16/9] w-full max-w-xs rounded-2xl border border-white/10 bg-slate-800/60 animate-pulse"
+                        :class="hpCombo.desktopSkeleton"
                     ></div>
                 </template>
 
@@ -103,21 +106,21 @@ const openPromo = (promo) => {
                         v-for="(promo, index) in promos"
                         :key="index"
                         :ref="(el) => registerPromo(el, index)"
-                        class="group rounded-2xl relative cursor-pointer w-full max-w-xs"
+                        :class="hpCombo.desktopArticle"
                         @click="openPromo(promo)"
                     >
-                        <div class="aspect-[16/9] w-full overflow-hidden rounded-2xl">
+                        <div :class="hpShared.thumbWrap">
                             <img
                                 :src="promo.image"
                                 :alt="promo.title"
-                                class="h-full w-full object-cover grayscale group-hover:grayscale-0 transition-transform duration-500 ease-out group-hover:scale-105"
+                                :class="hpShared.thumbImg"
                             />
                         </div>
                     </article>
                 </template>
 
                 <template v-else>
-                    <div class="col-span-4 py-4 text-center text-xs text-slate-500">
+                    <div :class="hpCombo.emptyDesktopSpan">
                         Акции скоро появятся.
                     </div>
                 </template>
@@ -126,15 +129,15 @@ const openPromo = (promo) => {
 
         <BaseModal v-model="showModal" v-if="activePromo">
             <template #header>{{ activePromo.title }}</template>
-            <div class="space-y-3">
-                <div class="aspect-[16/9] w-full overflow-hidden rounded-xl">
+            <div :class="hpShared.modalStack">
+                <div :class="hpShared.modalMedia">
                     <img
                         :src="activePromo.image"
                         :alt="activePromo.title"
-                        class="h-full w-full object-cover"
+                        :class="hpShared.modalImg"
                     />
                 </div>
-                <p class="text-sm text-slate-100 leading-relaxed">
+                <p :class="hpShared.modalText">
                     {{ activePromo.description }}
                 </p>
             </div>

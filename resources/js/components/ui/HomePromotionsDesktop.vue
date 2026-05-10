@@ -2,8 +2,13 @@
 import { computed, ref } from "vue";
 import { useFloatLoop } from "../../composables/animations/useFloatLoop";
 import { useSystemReadModel } from "../../features/system/useSystemReadModel";
+import { useAppDesign } from "../../design/useAppDesign";
 
 const { promotions, loading } = useSystemReadModel({ autoload: true });
+
+const hp = useAppDesign().components.home.promotions;
+const hpShared = hp.shared;
+const hpDesk = hp.desktopSplit;
 
 const promos = computed(() =>
     (promotions.value || []).map((promo) => ({
@@ -40,15 +45,17 @@ const openPromo = (promo) => {
 </script>
 
 <template>
-    <section class="my-12">
-        <h2 class="mb-4 text-xl font-semibold text-slate-100">Актуальные акции</h2>
+    <section :class="hpShared.section">
+        <h2 :class="hpDesk.heading">
+            Актуальные акции
+        </h2>
 
-        <div class="mx-auto grid grid-cols-4 justify-items-center gap-4">
+        <div :class="hpDesk.grid">
             <template v-if="isLoading">
                 <div
                     v-for="index in 4"
                     :key="index"
-                    class="aspect-[16/9] w-full max-w-xs rounded-2xl border border-white/10 bg-slate-800/60 animate-pulse"
+                    :class="hpDesk.skeleton"
                 ></div>
             </template>
 
@@ -57,21 +64,21 @@ const openPromo = (promo) => {
                     v-for="(promo, index) in promos"
                     :key="index"
                     :ref="(el) => registerPromo(el, index)"
-                    class="group relative w-full max-w-xs cursor-pointer rounded-2xl"
+                    :class="hpDesk.article"
                     @click="openPromo(promo)"
                 >
-                    <div class="aspect-[16/9] w-full overflow-hidden rounded-2xl">
+                    <div :class="hpShared.thumbWrap">
                         <img
                             :src="promo.image"
                             :alt="promo.title"
-                            class="h-full w-full object-cover grayscale transition-transform duration-500 ease-out group-hover:scale-105 group-hover:grayscale-0"
+                            :class="hpShared.thumbImg"
                         />
                     </div>
                 </article>
             </template>
 
             <template v-else>
-                <div class="col-span-4 py-4 text-center text-xs text-slate-500">
+                <div :class="hpDesk.emptySpan">
                     Акции скоро появятся.
                 </div>
             </template>
@@ -79,15 +86,15 @@ const openPromo = (promo) => {
 
         <BaseModal v-model="showModal" v-if="activePromo">
             <template #header>{{ activePromo.title }}</template>
-            <div class="space-y-3">
-                <div class="aspect-[16/9] w-full overflow-hidden rounded-xl">
+            <div :class="hpShared.modalStack">
+                <div :class="hpShared.modalMedia">
                     <img
                         :src="activePromo.image"
                         :alt="activePromo.title"
-                        class="h-full w-full object-cover"
+                        :class="hpShared.modalImg"
                     />
                 </div>
-                <p class="text-sm leading-relaxed text-slate-100">
+                <p :class="hpShared.modalText">
                     {{ activePromo.description }}
                 </p>
             </div>
