@@ -1,90 +1,40 @@
 <script setup>
 import { ref } from "vue";
-import { useRoute } from "vue-router";
 import { useEnterSlide } from "../../composables/animations/useEnterSlide";
+import { useAppDesign } from "../../design/useAppDesign";
+import {
+    NAV_LINKS_LEFT_PRIMARY,
+    NAV_LINKS_RIGHT_PRIMARY,
+} from "../../design/layout/navigation.present";
 
-const route = useRoute();
+const navbar = useAppDesign().components.navbar;
+
 const containerRef = ref(null);
-
-const isActive = (name) => route.name === name;
 
 useEnterSlide(containerRef);
 </script>
 
 <template>
-    <header class="pt-4">
-        <div class="mx-auto max-w-7xl px-6 lg:px-8">
+    <header :class="navbar.shared.header">
+        <div :class="navbar.desktop.inner">
             <div
                 ref="containerRef"
-                class="flex items-center justify-between gap-4 rounded-2xl border border-amber-400/40 bg-[rgba(255,255,255,0.04)]/80 px-4 sm:px-6 lg:px-8 py-3.5 shadow-[0_0_25px_rgba(0,0,0,0.7)] backdrop-blur"
+                :class="navbar.desktop.bar"
             >
-                <div class="flex min-w-0 items-center">
-                    <nav
-                        class="flex items-center gap-4 text-sm font-medium tracking-wide"
-                    >
-                        <RouterLink
-                            :to="{ name: 'home' }"
-                            :class="[
-                                'transition-colors duration-200',
-                                isActive('home')
-                                    ? 'text-amber-300'
-                                    : 'text-slate-200/80 hover:text-white',
-                            ]"
-                        >
-                            Главная
-                        </RouterLink>
-                        <RouterLink
-                            :to="{ name: 'about' }"
-                            :class="[
-                                'transition-colors duration-200',
-                                isActive('about')
-                                    ? 'text-amber-300'
-                                    : 'text-slate-200/80 hover:text-white',
-                            ]"
-                        >
-                            О компании
-                        </RouterLink>
-                    </nav>
+                <div :class="navbar.desktop.leftZone">
+                    <NavbarLinkGroup
+                        :links="NAV_LINKS_LEFT_PRIMARY"
+                        :nav-class="navbar.desktop.navLeft"
+                    />
                 </div>
 
-                <div class="text-lg font-semibold flex-1 flex justify-center">
-                    <RouterLink
-                        :to="{ name: 'home' }"
-                        class="inline-flex items-center justify-center group"
-                    >
-                        <img
-                            src="/images/logo.png"
-                            alt="Gangsters"
-                            class="h-10 min-h-10 w-auto min-w-[7rem] max-w-full mx-auto object-contain drop-shadow-[0_0_15px_rgba(251,191,36,0.45)] group-hover:scale-105 group-hover:drop-shadow-[0_0_22px_rgba(251,191,36,0.7)] transition-transform duration-200"
-                        />
-                    </RouterLink>
-                </div>
+                <NavbarBrand variant="desktop" />
 
-                <div class="flex items-center justify-end gap-4 w-48">
-                    <nav class="flex items-center gap-4 text-sm font-medium tracking-wide">
-                        <RouterLink
-                            :to="{ name: 'delivery' }"
-                            :class="[
-                                'transition-colors duration-200',
-                                isActive('delivery')
-                                    ? 'text-amber-300'
-                                    : 'text-slate-200/80 hover:text-white',
-                            ]"
-                        >
-                            Оплата и доставка
-                        </RouterLink>
-                        <RouterLink
-                            :to="{ name: 'contacts' }"
-                            :class="[
-                                'transition-colors duration-200',
-                                isActive('contacts')
-                                    ? 'text-amber-300'
-                                    : 'text-slate-200/80 hover:text-white',
-                            ]"
-                        >
-                            Контакты
-                        </RouterLink>
-                    </nav>
+                <div :class="navbar.desktop.rightZone">
+                    <NavbarLinkGroup
+                        :links="NAV_LINKS_RIGHT_PRIMARY"
+                        :nav-class="navbar.desktop.navRight"
+                    />
                 </div>
             </div>
         </div>
@@ -92,4 +42,3 @@ useEnterSlide(containerRef);
 </template>
 
 <style scoped></style>
-

@@ -1,5 +1,7 @@
 <script setup>
-import { computed, onUnmounted } from "vue";
+import { computed, onUnmounted, provide } from "vue";
+import { appDesign } from "./design/app.design";
+import { AppDesignInjectionKey } from "./design/injectionKeys";
 import { useUiStore } from "./stores/uiStore";
 import MainLayoutMobile from "./layouts/MainLayoutMobile.vue";
 import MainLayoutDesktop from "./layouts/MainLayoutDesktop.vue";
@@ -7,6 +9,8 @@ import { useAppBootstrap } from "./processes/bootstrap/useAppBootstrap";
 
 const uiStore = useUiStore();
 const appBootstrap = useAppBootstrap();
+
+provide(AppDesignInjectionKey, appDesign);
 
 if (typeof window !== "undefined") {
     uiStore.initDeviceMode();

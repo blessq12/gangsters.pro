@@ -2,9 +2,11 @@
 import { ref, onMounted, onUnmounted, nextTick } from "vue";
 import { playMobileNavbarLogoPulse } from "../../animations/animationManager";
 import { useEnterSlide } from "../../composables/animations/useEnterSlide";
+import { useAppDesign } from "../../design/useAppDesign";
 import { useUiStore } from "../../stores/uiStore";
 
 const uiStore = useUiStore();
+const navbar = useAppDesign().components.navbar;
 
 const containerRef = ref(null);
 const logoPulseRef = ref(null);
@@ -28,59 +30,42 @@ onUnmounted(() => {
     logoPulseControl = null;
 });
 
-const toggleMobileMenu = () => {
+function toggleMobileMenu() {
     uiStore.toggleMobileMenu();
-};
+}
 </script>
 
 <template>
-    <header class="pt-4">
-        <div class="mx-auto max-w-7xl px-4">
+    <header :class="navbar.shared.header">
+        <div :class="navbar.mobile.inner">
             <div
                 ref="containerRef"
-                class="flex items-center justify-between gap-4 rounded-2xl border border-amber-400/40 bg-[rgba(255,255,255,0.06)] px-4 py-3.5 shadow-[0_0_25px_rgba(0,0,0,0.7)]"
+                :class="navbar.mobile.bar"
             >
                 <div
-                    class="w-10 shrink-0"
+                    :class="navbar.mobile.leftSpacer"
                     aria-hidden="true"
                 />
 
-                <div class="text-lg font-semibold flex-1 flex justify-center">
-                    <RouterLink
-                        :to="{ name: 'home' }"
-                        class="inline-flex items-center justify-center group"
+                <NavbarBrand variant="mobile">
+                    <span
+                        ref="logoPulseRef"
+                        :class="navbar.mobile.logoPulseWrap"
                     >
-                        <span
-                            ref="logoPulseRef"
-                            class="inline-flex origin-center will-change-transform"
-                        >
-                            <img
-                                src="/images/logo.png"
-                                alt="Gangsters"
-                                class="h-9 min-h-9 w-auto min-w-[7rem] max-w-full mx-auto object-contain transition-transform duration-200 group-hover:scale-105"
-                            />
-                        </span>
-                    </RouterLink>
-                </div>
-
-                <div class="flex items-center justify-end">
-                    <button
-                        type="button"
-                        class="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/70 text-slate-200 transition-colors"
-                        :class="
-                            uiStore.isMobileMenuOpen
-                                ? 'border-amber-400/70 text-amber-200'
-                                : 'hover:border-amber-400/50 hover:text-amber-200'
-                        "
-                        @click="toggleMobileMenu"
-                    >
-                        <i
-                            :class="[
-                                'mdi text-lg',
-                                uiStore.isMobileMenuOpen ? 'mdi-close' : 'mdi-menu',
-                            ]"
+                        <img
+                            src="/images/logo.png"
+                            alt="Gangsters"
+                            :class="navbar.mobile.logoImg"
                         />
-                    </button>
+                    </span>
+                </NavbarBrand>
+
+                <div :class="navbar.mobile.burgerZone">
+                    <NavbarBurgerButton
+                        variant="mobile"
+                        :open="uiStore.isMobileMenuOpen"
+                        @click="toggleMobileMenu"
+                    />
                 </div>
             </div>
         </div>
@@ -88,4 +73,3 @@ const toggleMobileMenu = () => {
 </template>
 
 <style scoped></style>
-

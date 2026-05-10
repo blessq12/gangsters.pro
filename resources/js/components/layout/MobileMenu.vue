@@ -2,6 +2,8 @@
 import { computed, onMounted, onUnmounted, watch } from "vue";
 import { useUiStore } from "../../stores/uiStore";
 import { useSystemStore } from "../../stores/systemStore";
+import { useAppDesign } from "../../design/useAppDesign";
+import { NAV_LINKS_MOBILE_SHEET } from "../../design/layout/navigation.present";
 import {
     safeTrim,
     formatTodayWorkScheduleLine,
@@ -11,6 +13,7 @@ import { formatRuPhone, phoneToTelHref } from "../../utils/phone/formatRuPhone";
 
 const uiStore = useUiStore();
 const systemStore = useSystemStore();
+const mm = useAppDesign().components.navbar.mobileMenu;
 
 const companyTitle = computed(() => {
     const c = systemStore.company;
@@ -67,20 +70,20 @@ onUnmounted(() => {
     if (typeof window === "undefined") return;
     window.removeEventListener("scroll", closeMenuOnScroll, { capture: true });
 });
+
+function handleNavClick() {
+    uiStore.setMobileMenuOpen(false);
+}
 </script>
 
 <template>
     <Transition name="mobile-menu-fade">
         <div
             v-if="uiStore.isMobileMenuOpen"
-            class="pointer-events-none fixed inset-x-0 top-0 z-30 md:hidden pt-24"
+            :class="mm.overlayRoot"
         >
-            <div
-                class="pointer-events-auto mx-auto mt-3 max-w-7xl px-4 sm:px-6 lg:px-8"
-            >
-                <nav
-                    class="overflow-hidden rounded-2xl border border-white/10 bg-[#1f1f23] text-sm font-medium text-slate-50 shadow-[0_20px_50px_rgba(0,0,0,0.75)]"
-                >
+            <div :class="mm.innerContainer">
+                <nav :class="mm.sheetNav">
                     <div
                         v-if="
                             companyTitle ||
@@ -89,31 +92,31 @@ onUnmounted(() => {
                             addressLine ||
                             phoneHref
                         "
-                        class="border-b border-white/10 px-4 py-3"
+                        :class="mm.companySection"
                     >
                         <p
                             v-if="companyTitle"
-                            class="text-[13px] font-semibold leading-snug text-slate-50"
+                            :class="mm.companyTitle"
                         >
                             {{ companyTitle }}
                         </p>
                         <p
                             v-if="companyTagline"
-                            class="mt-0.5 line-clamp-2 text-xs leading-snug text-slate-400"
+                            :class="mm.companyTagline"
                         >
                             {{ companyTagline }}
                         </p>
 
                         <p
                             v-if="todayScheduleLine"
-                            class="mt-2.5 text-[11px] leading-snug text-slate-400"
+                            :class="mm.companySchedule"
                         >
                             {{ todayScheduleLine }}
                         </p>
 
                         <p
                             v-if="addressLine"
-                            class="mt-1.5 text-[11px] leading-snug text-slate-500"
+                            :class="mm.companyAddress"
                         >
                             {{ addressLine }}
                         </p>
@@ -121,41 +124,22 @@ onUnmounted(() => {
                         <a
                             v-if="phoneHref && phoneDisplay"
                             :href="phoneHref"
-                            class="mt-2.5 inline-flex text-xs font-medium text-amber-400/95 hover:text-amber-300"
-                            @click="uiStore.setMobileMenuOpen(false)"
+                            :class="mm.phoneLink"
+                            @click="handleNavClick"
                         >
                             {{ phoneDisplay }}
                         </a>
                     </div>
 
-                    <div class="space-y-0.5 px-2 py-2">
+                    <div :class="mm.linksRegion">
                         <RouterLink
-                            :to="{ name: 'home' }"
-                            class="block rounded-xl px-3 py-2.5 text-slate-200 hover:bg-white/5"
-                            @click="uiStore.setMobileMenuOpen(false)"
+                            v-for="item in NAV_LINKS_MOBILE_SHEET"
+                            :key="item.routeName"
+                            :to="{ name: item.routeName }"
+                            :class="mm.routerLinkItem"
+                            @click="handleNavClick"
                         >
-                            Главная
-                        </RouterLink>
-                        <RouterLink
-                            :to="{ name: 'about' }"
-                            class="block rounded-xl px-3 py-2.5 text-slate-200 hover:bg-white/5"
-                            @click="uiStore.setMobileMenuOpen(false)"
-                        >
-                            О компании
-                        </RouterLink>
-                        <RouterLink
-                            :to="{ name: 'delivery' }"
-                            class="block rounded-xl px-3 py-2.5 text-slate-200 hover:bg-white/5"
-                            @click="uiStore.setMobileMenuOpen(false)"
-                        >
-                            Оплата и доставка
-                        </RouterLink>
-                        <RouterLink
-                            :to="{ name: 'contacts' }"
-                            class="block rounded-xl px-3 py-2.5 text-slate-200 hover:bg-white/5"
-                            @click="uiStore.setMobileMenuOpen(false)"
-                        >
-                            Контакты
+                            {{ item.label }}
                         </RouterLink>
                     </div>
                 </nav>
