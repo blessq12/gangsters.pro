@@ -40,3 +40,77 @@
 }
 
 @custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Канвас шелла: сплошной цвет в MainLayout*.vue; лёгкое осветление ::before;
+ * паттерн ::after — тинт чуть светлее канваса + SVG, blend + filter, opacity ~10%.
+ */
+.app-shell {
+    position: relative;
+}
+
+.app-shell.theme-dark::before,
+.app-shell.theme-light::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-repeat: no-repeat;
+    background-size: auto;
+    background-position: 0 0;
+}
+
+.app-shell.theme-dark::before {
+    background-image: linear-gradient(
+        rgba(255, 255, 255, 0.045),
+        rgba(255, 255, 255, 0.045)
+    );
+}
+
+.app-shell.theme-light::before {
+    background-image: linear-gradient(
+        rgba(255, 255, 255, 0.12),
+        rgba(255, 255, 255, 0.12)
+    );
+}
+
+.app-shell.theme-dark::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.01;
+    background-image:
+        linear-gradient(
+            rgba(255, 255, 255, 0.07),
+            rgba(255, 255, 255, 0.07)
+        ),
+        url("../images/back_pattern.svg");
+    background-repeat: no-repeat, repeat-y;
+    background-size: 100% 100%, 100% auto;
+    background-position: 0 0, center top;
+    background-blend-mode: soft-light, normal;
+    filter: grayscale(0.55) saturate(0.65) brightness(1.06);
+}
+
+.app-shell.theme-light::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.09;
+    background-image:
+        linear-gradient(
+            rgba(255, 255, 255, 0.28),
+            rgba(255, 255, 255, 0.28)
+        ),
+        url("../images/back_pattern.svg");
+    background-repeat: no-repeat, repeat-y;
+    background-size: 100% 100%, 100% auto;
+    background-position: 0 0, center top;
+    background-blend-mode: soft-light, normal;
+    filter: grayscale(0.4) saturate(0.72) brightness(1.03);
+}

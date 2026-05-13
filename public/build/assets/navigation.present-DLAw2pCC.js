@@ -1,1 +1,0 @@
-const e=[{routeName:"home",label:"Главная"},{routeName:"about",label:"О компании"}],a=[{routeName:"delivery",label:"Оплата и доставка"},{routeName:"contacts",label:"Контакты"}],o=[...e,...a];export{e as N,a,o as b};

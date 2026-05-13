@@ -118,7 +118,7 @@ onUnmounted(() => {
         >
             <img
                 ref="introLogoRef"
-                src="/images/logo.png"
+                src="/images/load_logo.svg"
                 alt="Gangsters"
                 :class="sh.desktop.introLogo"
             />

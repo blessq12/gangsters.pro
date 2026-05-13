@@ -98,23 +98,23 @@ export const layoutShellDesign = {
         themeLight: "theme-light text-app-canvas-fg",
         introOverlay:
             "pointer-events-none fixed inset-0 z-40 flex items-center justify-center",
-        mainGrow: "flex-1",
+        mainGrow: "relative z-[1] flex-1",
     },
 
     core: {
-        introLogo: "h-40 w-auto md:h-48",
+        introLogo: "h-48 w-auto md:h-[14.4rem]",
         mainContainer:
             "mx-auto max-w-7xl px-4 pb-5 pt-0 opacity-0 sm:px-6 lg:px-8",
     },
 
     desktop: {
-        introLogo: "h-44 w-auto md:h-52",
+        introLogo: "h-[13.2rem] w-auto md:h-[15.6rem]",
         mainContainer:
             "mx-auto max-w-7xl px-6 pb-7 pt-0 opacity-0 lg:px-8",
     },
 
     mobile: {
-        introLogo: "h-40 w-auto md:h-48",
+        introLogo: "h-48 w-auto md:h-[14.4rem]",
         mainContainer: "mx-auto max-w-7xl px-4 pb-3 pt-0 opacity-0 sm:px-6",
     },
 

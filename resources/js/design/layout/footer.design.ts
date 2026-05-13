@@ -3,9 +3,9 @@
  */
 
 export const footerDesign = {
-    footer: "mt-10 pb-6",
+    footer: "relative z-[1] mt-10 pb-6",
     inner: "mx-auto max-w-7xl px-4 sm:px-6 lg:px-8",
-    bar: "flex items-center justify-between gap-4 rounded-none border border-app-accent/30 bg-[rgba(0,0,0,0.06)] px-4 sm:px-6 lg:px-8 py-4 flex-wrap text-sm shadow-[0_0_22px_rgba(0,0,0,0.65)] backdrop-blur",
+    bar: "flex items-center justify-between gap-4 rounded-none border border-app-accent/30 bg-app-canvas px-4 sm:px-6 lg:px-8 py-4 flex-wrap text-sm shadow-[0_0_22px_rgba(0,0,0,0.65)] backdrop-blur",
     navLinks: "flex flex-wrap gap-3 text-app-canvas-fg/85",
     navLink:
         "hover:text-app-accent transition-colors duration-200",

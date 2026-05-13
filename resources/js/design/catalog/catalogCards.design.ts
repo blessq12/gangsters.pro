@@ -18,7 +18,7 @@ export const catalogCardsDesign = {
 
     desktop: {
         article:
-            "group flex h-full flex-col overflow-hidden bg-app-glass-fill shadow-[0_18px_45px_rgba(0,0,0,0.85)] transition duration-300 hover:-translate-y-1 hover:bg-app-accent-soft-bg",
+            "relative z-[1] group flex h-full flex-col overflow-hidden bg-app-glass-fill shadow-[0_18px_45px_rgba(0,0,0,0.85)] transition duration-300 hover:-translate-y-1 hover:bg-app-accent-soft-bg",
         mediaWrap:
             "relative w-full overflow-hidden aspect-[4/3] sm:aspect-[5/4] lg:h-full lg:aspect-auto",
         img: "absolute inset-0 h-full w-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105",
@@ -73,7 +73,7 @@ export const catalogCardsDesign = {
 
     mobileGrid: {
         article:
-            "group flex h-full flex-col overflow-hidden bg-app-glass-fill shadow-[0_18px_45px_rgba(0,0,0,0.85)] transition duration-300 hover:-translate-y-1 hover:bg-app-accent-soft-bg",
+            "relative z-[1] group flex h-full flex-col overflow-hidden bg-app-glass-fill shadow-[0_18px_45px_rgba(0,0,0,0.85)] transition duration-300 hover:-translate-y-1 hover:bg-app-accent-soft-bg",
         srOnlyAria: "sr-only",
         mediaWrap:
             "relative w-full overflow-hidden aspect-[4/3] lg:h-full lg:aspect-auto",
@@ -143,7 +143,7 @@ export const catalogCardsDesign = {
 
     horizontalMobile: {
         article:
-            "group flex overflow-hidden bg-app-glass-fill shadow-[0_10px_32px_rgba(0,0,0,0.7)]",
+            "relative z-[1] group flex overflow-hidden bg-app-glass-fill shadow-[0_10px_32px_rgba(0,0,0,0.7)]",
         thumbCol:
             "relative w-28 shrink-0 cursor-pointer overflow-hidden sm:w-32",
         thumbImg:

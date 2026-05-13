@@ -57,7 +57,7 @@ export const workScheduleDesign = {
 
     theme: {
         barSurface:
-            "border-black/12 bg-[rgba(0,0,0,0.08)] shadow-[0_0_20px_rgba(0,0,0,0.45)] hover:bg-[rgba(0,0,0,0.11)]",
+            "border-black/12 bg-app-canvas shadow-[0_0_20px_rgba(0,0,0,0.45)] hover:bg-black/[0.06]",
         panelSurface:
             "border-app-border-on-surface bg-[rgba(0,0,0,0.88)] shadow-xl backdrop-blur-lg",
         panelDivide: "divide-black/15",

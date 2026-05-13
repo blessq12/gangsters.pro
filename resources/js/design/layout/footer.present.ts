@@ -1,12 +1,7 @@
-import type { PublicNavRouteName } from "./navigation.present";
+/**
+ * Ссылки футера — те же подписи и порядок, что в meta маршрутов с navFooterOrder.
+ */
 
-export type FooterPrimaryNavItem = {
-    routeName: Extract<PublicNavRouteName, "about" | "delivery" | "contacts">;
-    label: string;
-};
+export type { FooterPrimaryNavItem } from "../../router/publicNav";
 
-export const FOOTER_PRIMARY_NAV: readonly FooterPrimaryNavItem[] = [
-    { routeName: "about", label: "О компании" },
-    { routeName: "delivery", label: "Оплата и доставка" },
-    { routeName: "contacts", label: "Контакты" },
-] as const;
+export { FOOTER_PRIMARY_NAV } from "../../router/publicNav";

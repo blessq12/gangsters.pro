@@ -11,14 +11,14 @@ export const catalogDesign = {
     categories: {
         outer: "relative mb-10 w-full min-w-0 max-w-full",
         island:
-            "min-w-0 max-w-full border border-app-accent/30 bg-[rgba(0,0,0,0.06)] shadow-[0_0_22px_rgba(0,0,0,0.65)] backdrop-blur",
+            "min-w-0 max-w-full rounded-none border border-app-accent/40 bg-app-canvas shadow-[0_0_25px_rgba(0,0,0,0.7)] backdrop-blur",
         islandPaddingMobile: "px-4 py-4",
         islandPaddingDesktop: "px-4 py-3.5 lg:px-8",
         rowMobile:
             "cats-scroll flex items-center gap-2 overflow-x-auto py-2",
         rowDesktop: "flex flex-wrap items-center gap-2 pb-1.5",
         pillBase:
-            "whitespace-nowrap border transition-colors backdrop-blur bg-[rgba(0,0,0,0.75)]",
+            "whitespace-nowrap rounded-none border border-black/20 bg-app-canvas transition-colors backdrop-blur",
         pillSizingMobile: "px-4 py-2 text-xs",
         pillSizingDesktop: "px-5 py-2 text-sm",
         pillActiveMobile:
@@ -33,10 +33,10 @@ export const catalogDesign = {
     categoriesLegacy: {
         outer: "relative mb-10 w-full min-w-0 max-w-full",
         island:
-            "min-w-0 max-w-full border border-app-accent/30 bg-[rgba(0,0,0,0.06)] px-4 sm:px-6 lg:px-8 py-3.5 shadow-[0_0_22px_rgba(0,0,0,0.65)] backdrop-blur",
+            "min-w-0 max-w-full rounded-none border border-app-accent/40 bg-app-canvas px-4 sm:px-6 lg:px-8 py-3.5 shadow-[0_0_25px_rgba(0,0,0,0.7)] backdrop-blur",
         row: "flex flex-wrap items-center gap-3 pb-1.5",
         pillBase:
-            "whitespace-nowrap border px-5 py-2 text-xs sm:text-sm md:text-[0.9rem] transition-colors backdrop-blur bg-[rgba(0,0,0,0.75)]",
+            "whitespace-nowrap rounded-none border border-black/20 px-5 py-2 text-xs sm:text-sm md:text-[0.9rem] transition-colors backdrop-blur bg-app-canvas",
         pillActive:
             "border-app-accent/70 text-app-accent shadow-[0_0_14px_rgba(198,36,36,0.45)]",
         pillInactive:
@@ -47,7 +47,7 @@ export const catalogDesign = {
     viewControls: {
         desktop: {
             wrapper:
-                "inline-flex items-center gap-2 border border-app-border-on-surface bg-app-glass-fill p-1 backdrop-blur",
+                "inline-flex items-center gap-2 bg-app-glass-fill p-1 backdrop-blur",
             label: "px-2 text-xs font-medium text-app-muted",
             btn: "px-3 py-1.5 text-xs font-semibold transition",
             btnActive: "bg-app-accent text-black",
@@ -56,7 +56,7 @@ export const catalogDesign = {
         },
         mobile: {
             wrapper:
-                "inline-flex w-full items-center border border-app-border-on-surface bg-app-glass-fill p-1 backdrop-blur",
+                "inline-flex w-full items-center bg-app-glass-fill p-1 backdrop-blur",
             btn: "flex-1 px-3 py-2 text-xs font-semibold transition",
             btnActive: "bg-app-accent text-black",
             btnInactive:

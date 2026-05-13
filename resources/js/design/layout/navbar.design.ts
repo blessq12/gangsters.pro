@@ -6,7 +6,7 @@ import { shellColorRoles, shellTypography } from "./shell.design";
 
 export const navbarDesign = {
     shared: {
-        header: "pt-4",
+        header: "relative z-[1] pt-4",
         linkTransition: "transition-colors duration-200",
         linkActive: "text-app-accent",
         linkInactive: "text-app-canvas-fg/80 hover:text-app-canvas-fg",
@@ -18,7 +18,7 @@ export const navbarDesign = {
 
     responsive: {
         inner: "mx-auto max-w-7xl px-4 sm:px-6 lg:px-8",
-        bar: "flex items-center justify-between gap-4 rounded-none border border-app-accent/40 bg-app-glass-fill/80 px-4 sm:px-6 lg:px-8 py-3.5 shadow-[0_0_25px_rgba(0,0,0,0.7)] backdrop-blur",
+        bar: "flex items-center justify-between gap-4 rounded-none border border-app-accent/40 bg-app-canvas px-4 sm:px-6 lg:px-8 py-3.5 shadow-[0_0_25px_rgba(0,0,0,0.7)] backdrop-blur",
         leftZone:
             "flex min-w-0 items-center gap-2 sm:gap-3 w-24 sm:w-auto",
         balanceSpacer: "w-10 shrink-0 md:hidden",
@@ -36,7 +36,7 @@ export const navbarDesign = {
 
     desktop: {
         inner: "mx-auto max-w-7xl px-6 lg:px-8",
-        bar: "flex items-center justify-between gap-4 rounded-none border border-app-accent/40 bg-app-glass-fill/80 px-4 sm:px-6 lg:px-8 py-3.5 shadow-[0_0_25px_rgba(0,0,0,0.7)] backdrop-blur",
+        bar: "flex items-center justify-between gap-4 rounded-none border border-app-accent/40 bg-app-canvas px-4 sm:px-6 lg:px-8 py-3.5 shadow-[0_0_25px_rgba(0,0,0,0.7)] backdrop-blur",
         leftZone: "flex min-w-0 items-center",
         navLeft: `flex items-center gap-4 ${shellTypography.body.navRow}`,
         logoRow: `${shellTypography.heading.logoMark} flex-1 flex justify-center`,
@@ -48,7 +48,7 @@ export const navbarDesign = {
 
     mobile: {
         inner: "mx-auto max-w-7xl px-4",
-        bar: "flex items-center justify-between gap-4 rounded-none border border-app-accent/40 bg-[rgba(0,0,0,0.06)] px-4 py-3.5 shadow-[0_0_25px_rgba(0,0,0,0.7)]",
+        bar: "flex items-center justify-between gap-4 rounded-none border border-app-accent/40 bg-app-canvas px-4 py-3.5 shadow-[0_0_25px_rgba(0,0,0,0.7)] backdrop-blur",
         leftSpacer: "w-10 shrink-0",
         logoRow: `${shellTypography.heading.logoMark} flex-1 flex justify-center`,
         logoPulseWrap:

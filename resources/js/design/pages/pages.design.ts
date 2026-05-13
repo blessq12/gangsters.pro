@@ -3,7 +3,7 @@
  */
 
 const searchInputClasses =
-    "w-full rounded-none border border-app-border-on-surface bg-app-glass-fill py-2.5 pl-10 pr-10 text-sm text-app-canvas-fg placeholder:text-app-muted focus:border-app-accent focus:outline-none focus:ring-1 focus:ring-app-accent/50";
+    "w-full rounded-none border-0 bg-app-glass-fill py-2.5 pl-10 pr-10 text-sm text-app-canvas-fg placeholder:text-app-muted focus:outline-none focus:ring-1 focus:ring-app-accent/50";
 
 export const pagesDesign = {
     home: {
