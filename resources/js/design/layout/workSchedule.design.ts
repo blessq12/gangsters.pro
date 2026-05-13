@@ -8,7 +8,7 @@ export const workScheduleDesign = {
     outerRow:
         "mx-auto mt-3 flex max-w-7xl justify-center px-4 pt-2 sm:mt-4 sm:px-6 md:max-w-none lg:px-8",
 
-    /** Базовый каркас кнопки; поверх — theme.barSurface из `themes`. */
+    /** Базовый каркас кнопки; поверх — theme.barSurface из `theme`. */
     triggerStatic:
         "inline-flex w-max max-w-[min(90vw,24rem)] shrink-0 items-center gap-2 rounded-none border px-3 py-2 text-left text-sm outline-none backdrop-blur-sm transition-colors focus-visible:ring-2 focus-visible:ring-app-accent/60 disabled:cursor-not-allowed disabled:opacity-60 md:max-w-[min(90vw,28rem)] sm:px-4",
 
@@ -29,7 +29,7 @@ export const workScheduleDesign = {
     chevronIcon:
         "mdi mdi-chevron-down shrink-0 text-lg text-app-muted transition-transform duration-200",
 
-    /** Панель teleport: статика + themes.*.panelSurface */
+    /** Панель teleport: статика + theme.panelSurface */
     panelStatic:
         "fixed z-[80] overflow-y-auto rounded-none border px-4 py-3 backdrop-blur-sm sm:px-5 sm:py-3.5",
 
@@ -55,33 +55,18 @@ export const workScheduleDesign = {
 
     srOnlyToday: "sr-only",
 
-    themes: {
-        light: {
-            barSurface:
-                "border-slate-200/90 bg-white/80 shadow-md hover:bg-white/95",
-            panelSurface:
-                "border-slate-200/60 bg-white shadow-md",
-            panelDivide: "divide-slate-200/70",
-            panelHeaderBorder: "border-b border-slate-200/70",
-            panelPrimaryText: "text-slate-800",
-            panelMutedText: "text-slate-600",
-            panelAccent: "text-app-accent/95",
-            summaryLine: "text-slate-800",
-            todayDayLabel: "text-app-accent-hover",
-        },
-        dark: {
-            barSurface:
-                "border-black/12 bg-[rgba(0,0,0,0.08)] shadow-[0_0_20px_rgba(0,0,0,0.45)] hover:bg-[rgba(0,0,0,0.11)]",
-            panelSurface:
-                "border-black/15 bg-app-surface shadow-xl",
-            panelDivide: "divide-black/15",
-            panelHeaderBorder: "border-b border-black/15",
-            panelPrimaryText: "text-app-surface-fg",
-            panelMutedText: "text-neutral-600",
-            panelAccent: "text-app-accent",
-            summaryLine: "text-app-surface-fg",
-            todayDayLabel: "text-app-accent",
-        },
+    theme: {
+        barSurface:
+            "border-black/12 bg-[rgba(0,0,0,0.08)] shadow-[0_0_20px_rgba(0,0,0,0.45)] hover:bg-[rgba(0,0,0,0.11)]",
+        panelSurface:
+            "border-app-border-on-surface bg-[rgba(0,0,0,0.88)] shadow-xl backdrop-blur-lg",
+        panelDivide: "divide-black/15",
+        panelHeaderBorder: "border-b border-black/15",
+        panelPrimaryText: "text-app-canvas-fg",
+        panelMutedText: "text-app-muted",
+        panelAccent: "text-app-accent",
+        summaryLine: "text-app-canvas-fg",
+        todayDayLabel: "text-app-accent",
     },
 } as const;
 

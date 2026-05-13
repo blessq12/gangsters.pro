@@ -1,0 +1,49 @@
+/* Onest — body/UI. Имена семейств синхронизируй с shell.design.ts (`appFontFamilies`). */
+@font-face {
+    font-family: "Onest";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url("../fonts/Onest/Onest-Regular.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "Onest";
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url("../fonts/Onest/Onest-Medium.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "Onest";
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url("../fonts/Onest/Onest-SemiBold.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "Onest";
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url("../fonts/Onest/Onest-Bold.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "Onest";
+    font-style: normal;
+    font-weight: 800;
+    font-display: swap;
+    src: url("../fonts/Onest/Onest-ExtraBold.ttf") format("truetype");
+}
+
+/* Snowstorm — заголовки; один вес 400 (`@layer base` для `h1–h6` + утилита `.font-heading`). */
+@font-face {
+    font-family: "Snowstorm";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url("../fonts/Snowstorm/Snowstorm.otf") format("opentype");
+}

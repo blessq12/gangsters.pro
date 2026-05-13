@@ -18,7 +18,8 @@ export const homePromotionsDesign = {
     },
 
     combo: {
-        heading: "mb-4 text-lg sm:text-xl font-semibold text-app-canvas-fg",
+        heading:
+            "mb-4 text-xl font-normal text-app-accent sm:text-2xl lg:text-3xl",
         mobileScroll:
             "promos-scroll flex gap-3 overflow-x-auto px-1 pb-2 snap-x snap-mandatory",
         mobileSkeletonOuter:
@@ -35,7 +36,7 @@ export const homePromotionsDesign = {
     },
 
     desktopSplit: {
-        heading: "mb-4 text-xl font-semibold text-app-canvas-fg",
+        heading: "mb-4 text-2xl font-normal text-app-accent sm:text-3xl",
         grid: "mx-auto grid grid-cols-4 justify-items-center gap-4",
         skeleton:
             "aspect-[16/9] w-full max-w-xs rounded-none border border-black/12 bg-neutral-900/65 animate-pulse",
@@ -45,7 +46,7 @@ export const homePromotionsDesign = {
     },
 
     mobileSplit: {
-        heading: "mb-4 text-lg font-semibold text-app-canvas-fg",
+        heading: "mb-4 text-xl font-normal text-app-accent sm:text-2xl",
         loadingRow: "flex gap-3 overflow-x-auto px-1 pb-2",
         loadingCard:
             "flex-none w-[18rem] rounded-none border border-black/12 bg-neutral-900/65 animate-pulse",

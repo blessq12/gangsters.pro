@@ -47,7 +47,7 @@ export const catalogDesign = {
     viewControls: {
         desktop: {
             wrapper:
-                "inline-flex items-center gap-2 border border-black/12 bg-app-surface p-1",
+                "inline-flex items-center gap-2 border border-app-border-on-surface bg-app-glass-fill p-1 backdrop-blur",
             label: "px-2 text-xs font-medium text-app-muted",
             btn: "px-3 py-1.5 text-xs font-semibold transition",
             btnActive: "bg-app-accent text-black",
@@ -56,7 +56,7 @@ export const catalogDesign = {
         },
         mobile: {
             wrapper:
-                "inline-flex w-full items-center border border-black/12 bg-app-surface p-1",
+                "inline-flex w-full items-center border border-app-border-on-surface bg-app-glass-fill p-1 backdrop-blur",
             btn: "flex-1 px-3 py-2 text-xs font-semibold transition",
             btnActive: "bg-app-accent text-black",
             btnInactive:
@@ -73,7 +73,7 @@ export const catalogDesign = {
         emptyText: "Тут пока тихо. Выберите другую категорию.",
         sectionsStack: "space-y-7",
         sectionTitle:
-            "mb-3 text-sm font-semibold uppercase tracking-wide text-app-accent/90",
+            "mb-3 text-base font-normal uppercase tracking-wide text-app-accent/90 sm:text-lg",
     },
 
     /** CatalogProducts.vue: плоский список (masonry — scoped в SFC). */

@@ -92,6 +92,7 @@ onMounted(() => {
     <div
         :class="[
             sh.shared.root,
+            sh.shared.typographyRoot,
             themeStore.theme === 'dark'
                 ? sh.shared.themeDark
                 : sh.shared.themeLight,
@@ -148,27 +149,9 @@ onMounted(() => {
     --app-surface-fg: #191919;
     --app-accent: #c62424;
     --app-accent-hover: #9e1d1d;
-    --app-canvas-fg: #e8e8e8;
+    --app-canvas-fg: #ececec;
     --app-muted: #a3a3a3;
-    background:
-        radial-gradient(
-            circle at top left,
-            rgba(255, 255, 255, 0.02),
-            transparent 60%
-        ),
-        radial-gradient(
-            circle at bottom right,
-            rgba(255, 255, 255, 0.015),
-            transparent 60%
-        ),
-        repeating-linear-gradient(
-            135deg,
-            rgba(255, 255, 255, 0.01) 0,
-            rgba(255, 255, 255, 0.01) 2px,
-            transparent 2px,
-            transparent 6px
-        ),
-        var(--app-canvas);
+    background: var(--app-canvas);
 }
 
 .app-shell.theme-light {

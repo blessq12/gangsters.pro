@@ -10,7 +10,8 @@ export const dockPanelsDesign = {
         shell:
             "rounded-none border border-app-accent/30 bg-[rgba(0,0,0,0.88)] px-4 py-4 shadow-[0_0_26px_rgba(0,0,0,0.85)] backdrop-blur sm:px-6 lg:px-8",
         typography: {
-            panelTitle: "text-sm sm:text-base font-semibold text-app-canvas-fg",
+            panelTitle:
+                "font-heading text-base font-normal sm:text-lg text-app-accent",
             metaLine: "text-[11px] text-app-muted",
             sectionLabelUppercase:
                 "mb-2 text-xs font-medium uppercase tracking-wide text-app-muted",
@@ -44,9 +45,9 @@ export const dockPanelsDesign = {
 
     favorites: {
         emptyState:
-            "rounded-none bg-[rgba(0,0,0,0.04)] px-4 py-5 text-sm text-app-muted",
+            "rounded-none bg-app-accent-soft-bg px-4 py-5 text-sm text-app-muted",
         ul: "space-y-2 text-xs sm:text-sm text-app-canvas-fg",
-        row: "flex items-center justify-between gap-3 rounded-none bg-[rgba(0,0,0,0.04)] px-3 py-2",
+        row: "flex items-center justify-between gap-3 rounded-none bg-app-accent-soft-bg px-3 py-2",
         productName: "truncate font-medium text-app-canvas-fg",
         productPrice: "mt-0.5 text-[11px] text-app-muted",
         actionRow: "flex items-center gap-3",
@@ -67,38 +68,39 @@ export const dockPanelsDesign = {
         contentColumn:
             "relative w-full min-w-0 space-y-4 text-xs text-app-canvas-fg sm:text-sm",
         header:
-            "w-full min-w-0 rounded-none border border-black/12 bg-[linear-gradient(180deg,rgba(0,0,0,0.04),rgba(0,0,0,0.03))] px-4 py-4 sm:px-5",
+            "w-full min-w-0 rounded-none border border-app-border-on-surface bg-[linear-gradient(180deg,rgba(0,0,0,0.04),rgba(0,0,0,0.03))] px-4 py-4 sm:px-5",
         kickerChip:
             "mb-2 inline-flex rounded-none border border-app-accent/30 bg-app-accent/10 px-3 py-1 text-[11px] uppercase tracking-[0.24em] text-app-accent",
-        headline: "text-lg font-semibold text-app-canvas-fg sm:text-xl",
+        headline:
+            "text-xl font-normal text-app-accent sm:text-2xl lg:text-3xl",
         loadingLine: "mt-2 text-sm text-app-muted",
-        statsSection: "mt-4 w-full min-w-0 border-t border-black/12 pt-4",
+        statsSection: "mt-4 w-full min-w-0 border-t border-app-border-on-surface pt-4",
         statsRowFlex: "flex flex-row flex-wrap gap-2",
         statSkeletonCard:
-            "min-w-0 flex-1 basis-full rounded-none border border-black/12 bg-app-surface px-4 py-3 sm:basis-auto",
+            "min-w-0 flex-1 basis-full rounded-none border border-app-border-on-surface bg-[rgba(0,0,0,0.78)] px-4 py-3 backdrop-blur sm:basis-auto",
         statCard:
-            "min-w-0 flex-1 basis-[7.5rem] rounded-none border border-black/12 bg-app-surface px-3 py-3 sm:px-4",
+            "min-w-0 flex-1 basis-[7.5rem] rounded-none border border-app-border-on-surface bg-[rgba(0,0,0,0.78)] px-3 py-3 backdrop-blur sm:px-4",
         statLabel:
             "text-[11px] uppercase tracking-[0.2em] text-app-muted",
         statValueSkeleton: "mt-1 font-semibold text-app-accent/90",
         statValue:
             "mt-1 min-w-0 wrap-break-word text-left text-sm font-semibold leading-relaxed text-app-accent sm:text-base",
         mapFrame:
-            "w-full min-w-0 overflow-hidden rounded-none border border-black/12 bg-app-surface shadow-[0_18px_50px_rgba(0,0,0,0.45)]",
+            "w-full min-w-0 overflow-hidden rounded-none border border-app-border-on-surface bg-[rgba(0,0,0,0.78)] shadow-[0_18px_50px_rgba(0,0,0,0.45)] backdrop-blur",
         mapIframe: "h-56 w-full min-w-0 border-0 sm:h-64 lg:h-72 xl:h-80",
         mapFallbackDashed:
             "grid min-h-[14rem] w-full min-w-0 place-content-center rounded-none border border-dashed border-black/15 bg-app-surface px-4 py-8 text-center text-sm text-neutral-600 sm:min-h-[16rem]",
         mapFallbackProse: "mx-auto max-w-prose leading-relaxed",
         mapLoadingBox:
-            "grid min-h-[10rem] w-full place-content-center rounded-none border border-black/12 bg-app-surface text-sm text-neutral-600",
+            "grid min-h-[10rem] w-full place-content-center rounded-none border border-app-border-on-surface bg-app-surface text-sm text-neutral-600",
         conditionsSection:
-            "w-full min-w-0 rounded-none border border-black/12 bg-[rgba(0,0,0,0.04)] px-4 py-4 sm:px-5",
+            "w-full min-w-0 rounded-none border border-app-border-on-surface bg-[rgba(0,0,0,0.78)] px-4 py-4 backdrop-blur sm:px-5",
         conditionsHeading:
             "text-[11px] font-medium uppercase tracking-[0.22em] text-app-muted",
         conditionsDl:
             "mt-3 flex w-full min-w-0 flex-row flex-wrap gap-2",
         conditionCard:
-            "min-w-0 flex-1 basis-[8rem] rounded-none border border-black/12 bg-app-surface px-3 py-3 sm:px-4",
+            "min-w-0 flex-1 basis-[8rem] rounded-none border border-app-border-on-surface bg-[rgba(0,0,0,0.78)] px-3 py-3 backdrop-blur sm:px-4",
         conditionDt:
             "text-[11px] uppercase tracking-[0.18em] text-app-muted",
         conditionDd:

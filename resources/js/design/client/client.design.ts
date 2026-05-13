@@ -6,7 +6,7 @@ export const clientDesign = {
     shared: {
         formRoot: "space-y-4 text-app-canvas-fg",
         fieldStack: "space-y-3",
-        headingH3: "text-base font-semibold text-app-canvas-fg",
+        headingH3: "text-lg font-normal text-app-canvas-fg sm:text-xl",
         leadMuted: "text-xs text-app-muted",
         tabRow: "flex flex-wrap gap-2",
         tabPillBase: "rounded-none px-3 py-1 text-[11px] font-medium transition",
@@ -15,13 +15,13 @@ export const clientDesign = {
         tabPillInactive: "bg-black/5 text-app-canvas-fg hover:bg-black/8",
         label: "mb-1 block text-xs font-medium text-app-muted",
         input:
-            "w-full rounded-none border border-black/12 bg-app-surface px-3 py-2 text-sm text-app-surface-fg placeholder:text-neutral-600 focus:border-app-accent focus:outline-none focus:ring-1 focus:ring-app-accent/60",
+            "w-full rounded-none border border-app-border-on-surface bg-app-glass-fill px-3 py-2 text-sm text-app-canvas-fg placeholder:text-app-muted focus:border-app-accent focus:outline-none focus:ring-1 focus:ring-app-accent/60",
         inputGrid11:
-            "rounded-none border border-black/12 bg-app-surface px-3 py-2 text-[11px] text-app-surface-fg placeholder:text-neutral-600 focus:border-app-accent focus:outline-none focus:ring-1 focus:ring-app-accent/60",
+            "rounded-none border border-app-border-on-surface bg-app-glass-fill px-3 py-2 text-[11px] text-app-canvas-fg placeholder:text-app-muted focus:border-app-accent focus:outline-none focus:ring-1 focus:ring-app-accent/60",
         inputCol2:
-            "col-span-2 rounded-none border border-black/12 bg-app-surface px-3 py-2 text-[11px] text-app-surface-fg placeholder:text-neutral-600 focus:border-app-accent focus:outline-none focus:ring-1 focus:ring-app-accent/60",
+            "col-span-2 rounded-none border border-app-border-on-surface bg-app-glass-fill px-3 py-2 text-[11px] text-app-canvas-fg placeholder:text-app-muted focus:border-app-accent focus:outline-none focus:ring-1 focus:ring-app-accent/60",
         textarea:
-            "w-full rounded-none border border-black/12 bg-app-surface px-3 py-2 text-[11px] text-app-surface-fg placeholder:text-neutral-600 focus:border-app-accent focus:outline-none focus:ring-1 focus:ring-app-accent/60",
+            "w-full rounded-none border border-app-border-on-surface bg-app-glass-fill px-3 py-2 text-[11px] text-app-canvas-fg placeholder:text-app-muted focus:border-app-accent focus:outline-none focus:ring-1 focus:ring-app-accent/60",
         checkbox:
             "h-4 w-4 rounded-none border-black/20 bg-neutral-950/85 text-app-accent focus:ring-app-accent/60",
         checkboxSm:

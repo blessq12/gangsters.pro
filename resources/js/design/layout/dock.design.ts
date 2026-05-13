@@ -2,6 +2,8 @@
  * Презентация нижнего / бокового dock (DockChrome): mobile остров + desktop rail.
  */
 
+import { shellTypography } from "./shell.design";
+
 export const dockDesign = {
     shared: {
         tabIconActive:
@@ -22,8 +24,7 @@ export const dockDesign = {
         dockIsland:
             "mx-auto flex max-w-3xl items-center justify-center gap-4 rounded-none border border-app-accent/30 bg-[rgba(0,0,0,0.06)] px-5 sm:px-6 py-4 shadow-[0_0_26px_rgba(0,0,0,0.85)] backdrop-blur",
         tabRow: "flex items-center gap-3 sm:gap-4",
-        tabButton:
-            "group flex flex-col items-center gap-1.5 text-xs sm:text-xs transition-colors",
+        tabButton: shellTypography.body.dockTabRow,
         tabIconWrap:
             "relative flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-none border transition-colors",
         tabIconMdiSize: "text-lg sm:text-xl",
@@ -43,8 +44,7 @@ export const dockDesign = {
         tabIconWrap:
             "relative flex h-10 w-10 items-center justify-center rounded-none border transition-colors",
         tabIconMdiSize: "text-lg",
-        tabLabelHidden:
-            "hidden lg:block text-[11px] text-app-muted group-hover:text-app-accent",
+        tabLabelHidden: `${shellTypography.body.dockTabLabelDesktop} text-app-muted group-hover:text-app-accent`,
         tabLabelActive: "text-app-accent",
         tabLabelInactiveMuted: "text-app-muted",
         desktopPanelOuter: "mt-0 mb-0 w-[520px] max-w-[70vw]",

@@ -1,3 +1,4 @@
+@import "./fonts.css";
 @import "tailwindcss";
 
 @source "../js/design/**/*.ts";
@@ -11,8 +12,31 @@
     --color-app-surface-fg: var(--app-surface-fg, #191919);
     --color-app-accent: var(--app-accent, #c62424);
     --color-app-accent-hover: var(--app-accent-hover, #9e1d1d);
-    --color-app-canvas-fg: var(--app-canvas-fg, #e8e8e8);
+    --color-app-canvas-fg: var(--app-canvas-fg, #ececec);
     --color-app-muted: var(--app-muted, #a3a3a3);
+
+    --font-sans: "Onest", ui-sans-serif, system-ui, sans-serif;
+    --font-heading: "Snowstorm", "Onest", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Snowstorm 400 в fonts.css. Утилита — для заголовочного текста не на `h1–h6`. */
+@layer utilities {
+    .font-heading {
+        font-family: var(--font-heading);
+    }
+}
+
+/* Семантические заголовки: Snowstorm 400; тело/UI — `font-sans` (Onest) по умолчанию. */
+@layer base {
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-family: var(--font-heading);
+        font-weight: 400;
+    }
 }
 
 @custom-variant dark (&:where(.dark, .dark *));

@@ -23,7 +23,7 @@ export const secondaryMarketingDesign = {
         crumbRow: "flex items-center gap-1",
         crumbText: "truncate",
         crumbSep: "opacity-60",
-        title: "mb-2 text-xl font-semibold text-app-accent sm:text-2xl",
+        title: "mb-2 text-2xl font-normal text-app-accent sm:text-3xl lg:text-4xl",
         description: "text-sm text-app-canvas-fg/90",
         imageWrap:
             "h-28 w-28 shrink-0 overflow-hidden rounded-none border border-black/12 bg-neutral-900/45 sm:h-32 sm:w-32",
@@ -43,7 +43,7 @@ export const secondaryMarketingDesign = {
         headerRow:
             "mb-5 flex flex-col gap-3 border-b border-black/12 pb-4 sm:flex-row sm:items-end sm:justify-between",
         accentBar: "mb-2 h-px w-14 bg-gradient-to-r from-app-accent to-transparent",
-        title: "text-lg font-semibold text-app-accent sm:text-xl",
+        title: "text-xl font-normal text-app-accent sm:text-2xl lg:text-3xl",
         subtitle:
             "max-w-xl text-xs uppercase tracking-[0.22em] text-app-muted",
         body: "space-y-3 text-sm leading-relaxed text-app-canvas-fg/90",

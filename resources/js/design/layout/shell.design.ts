@@ -1,11 +1,99 @@
 /**
  * Оболочка приложения: корневой flex, интро, контейнер main.
- * Фон темы и .app-shell — в scoped MainLayout* (градиенты).
+ * Типографика: @font-face в resources/css/fonts.css; шкала и цветовые роли — `shellTypography` / `shellColorRoles`.
+ * Базовая шкала — `shellTypography.scale`; доменные алиасы — `heading` / `body` (композиция без цвета).
+ * Размеры для `h1–h6` без классов — см. `@layer base` в resources/css/style.css (Snowstorm 400); утилита `.font-heading` — для заголовочного текста не на `h*`.
  */
 
+/** Должны совпадать с `font-family` в resources/css/fonts.css (`@font-face`). */
+export const appFontFamilies = {
+    body: "Onest",
+    /** Snowstorm: один файл 400 в fonts.css; вес заголовков — `font-normal`. */
+    heading: "Snowstorm",
+} as const;
+
+/**
+ * Ступенчатая шкала (только размер/weight/leading/tracking), без семантики цвета.
+ */
+const shellTypographyScale = {
+    heading: {
+        display:
+            "text-5xl font-normal leading-none tracking-tight sm:text-6xl lg:text-7xl",
+        h1: "text-4xl font-normal leading-tight sm:text-5xl lg:text-6xl",
+        h2: "text-3xl font-normal leading-tight sm:text-4xl lg:text-5xl",
+        h3: "text-2xl font-normal leading-snug sm:text-3xl lg:text-4xl",
+        section: "text-xl font-normal leading-snug sm:text-2xl",
+    },
+    body: {
+        lead: "text-base leading-relaxed sm:text-lg",
+        default: "text-sm leading-relaxed sm:text-base",
+        small: "text-xs leading-snug",
+        caption: "text-[11px] leading-snug",
+        overline: "text-[11px] uppercase tracking-[0.18em]",
+        overlineTight: "text-[11px] font-semibold uppercase tracking-[0.14em]",
+        overlineWide: "text-[11px] uppercase tracking-[0.22em]",
+        overlineEyebrow: "text-[11px] uppercase tracking-[0.28em]",
+        navEmphasis: "text-sm font-medium tracking-wide",
+    },
+} as const;
+
+/**
+ * Публичная типографика: алиасы на шкалу + layout-утилиты.
+ * Цвет подключается через `shellColorRoles` в местах сборки строк.
+ */
+export const shellTypography = {
+    scale: shellTypographyScale,
+
+    heading: {
+        /** Hero `<h1>` вторичных страниц — размер из `scale.heading.h2` + контейнер. */
+        secondaryPageTitle: `${shellTypographyScale.heading.h2} mb-3 max-w-3xl`,
+        statValue: "mt-1 text-base font-semibold sm:text-lg",
+        logoMark: shellTypographyScale.heading.section,
+        mobileMenuCompany: "text-[13px] font-semibold leading-snug",
+    },
+
+    body: {
+        secondaryDescription: `${shellTypographyScale.body.default} max-w-2xl`,
+        navRow: shellTypographyScale.body.navEmphasis,
+        breadcrumbsRow: "mb-4 flex flex-wrap items-center gap-1 text-xs",
+        statLabel: shellTypographyScale.body.overlineWide,
+        eyebrow: `mb-3 inline-flex rounded-none border border-app-accent/30 bg-[rgba(0,0,0,0.04)] px-3 py-1 ${shellTypographyScale.body.overlineEyebrow} backdrop-blur`,
+        mobileMenuTagline: "mt-0.5 line-clamp-2 text-xs leading-snug",
+        mobileMenuMeta: `${shellTypographyScale.body.caption} leading-snug`,
+        mobileMenuPhone: "mt-2.5 inline-flex text-xs font-medium",
+        dockTabRow:
+            "group flex flex-col items-center gap-1.5 text-xs sm:text-xs transition-colors",
+        dockTabLabelDesktop: "hidden lg:block text-[11px]",
+        checkoutFlowBody: "space-y-3 text-xs sm:text-sm",
+        checkoutHeadingSm: "text-xs font-semibold",
+        checkoutKicker: shellTypographyScale.body.overline,
+        checkoutKickerAccent: shellTypographyScale.body.overline,
+        checkoutSubsectionKicker: shellTypographyScale.body.overlineTight,
+    },
+} as const;
+
+/**
+ * Алиасы Tailwind для семантики `app-*` (hex только на `.app-shell` в MainLayout*).
+ * Перебитие в доменных `*.design.ts` допускается точечно (ошибки `red-*`, контраст на кнопках `text-black`).
+ */
+export const shellColorRoles = {
+    canvasFg: "text-app-canvas-fg",
+    canvasFgSoft: "text-app-canvas-fg/90",
+    canvasFg80: "text-app-canvas-fg/80",
+    muted: "text-app-muted",
+    accent: "text-app-accent",
+    accent95: "text-app-accent/95",
+    surfaceFg: "text-app-surface-fg",
+} as const;
+
 export const layoutShellDesign = {
+    typography: shellTypography,
+    colorRoles: shellColorRoles,
+
     shared: {
         root: "app-shell min-h-screen flex flex-col",
+        /** Корень SPA: основной текст через Onest (`--font-sans` в style.css @theme). */
+        typographyRoot: "font-sans antialiased",
         themeDark: "theme-dark text-app-canvas-fg",
         themeLight: "theme-light text-app-canvas-fg",
         introOverlay:
@@ -58,25 +146,19 @@ export const layoutShellDesign = {
         stickRight:
             "pointer-events-none absolute bottom-1 right-3 h-3 w-auto",
         textCol: "min-w-0",
-        breadcrumbsNav:
-            "mb-4 flex flex-wrap items-center gap-1 text-xs text-app-muted",
+        breadcrumbsNav: `${shellTypography.body.breadcrumbsRow} ${shellColorRoles.muted}`,
         breadcrumbHomeLink:
             "transition-colors hover:text-app-accent",
-        breadcrumbText: "text-app-muted",
+        breadcrumbText: shellColorRoles.muted,
         breadcrumbSep: "opacity-60",
-        eyebrow:
-            "mb-3 inline-flex rounded-none border border-app-accent/30 bg-[rgba(0,0,0,0.04)] px-3 py-1 text-[11px] uppercase tracking-[0.28em] text-app-accent backdrop-blur",
-        title:
-            "mb-3 max-w-3xl text-2xl font-semibold leading-tight text-app-accent sm:text-3xl lg:text-4xl",
-        description:
-            "max-w-2xl text-sm leading-relaxed text-app-canvas-fg/90 sm:text-base",
+        eyebrow: `${shellTypography.body.eyebrow} ${shellColorRoles.accent}`,
+        title: `${shellTypography.heading.secondaryPageTitle} ${shellColorRoles.accent}`,
+        description: `${shellTypography.body.secondaryDescription} ${shellColorRoles.canvasFgSoft}`,
         statsGrid: "mt-6 grid gap-3 sm:grid-cols-3",
         statCard:
             "rounded-none border border-black/12 bg-[rgba(0,0,0,0.04)] px-4 py-3 backdrop-blur",
-        statLabel:
-            "text-[11px] uppercase tracking-[0.22em] text-app-muted",
-        statValue:
-            "mt-1 text-base font-semibold text-app-canvas-fg sm:text-lg",
+        statLabel: `${shellTypography.body.statLabel} ${shellColorRoles.muted}`,
+        statValue: `${shellTypography.heading.statValue} ${shellColorRoles.canvasFg}`,
         slotWrap: "space-y-8 sm:space-y-10",
     },
 } as const;

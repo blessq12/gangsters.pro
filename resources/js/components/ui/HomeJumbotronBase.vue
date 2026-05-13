@@ -109,12 +109,12 @@ const goNext = () => {
                 :speed="700"
                 :space-between="isMobile ? 10 : 8"
                 :centered-slides="true"
-                :watch-slides-progress="true"
+                :watch-slides-progress="false"
                 :slide-to-clicked-slide="true"
                 :breakpoints="swiperBreakpoints"
-                :observer="true"
-                :observe-parents="true"
-                :resize-observer="true"
+                :observer="false"
+                :observe-parents="false"
+                :resize-observer="false"
                 :class="jShared.swiperOverflow"
                 @swiper="handleSwiperInit"
             >
@@ -185,6 +185,12 @@ const goNext = () => {
 </template>
 
 <style scoped>
+/* Переменные для анимации border-color слайдов (иначе var() пустой → мерцание острова). */
+.home-jumbotron {
+    --app-slide-border-dim: color-mix(in srgb, var(--app-canvas-fg, #ececec) 12%, transparent);
+    --app-slide-border-accent: color-mix(in srgb, var(--app-accent, #c62424) 50%, transparent);
+}
+
 /*
  * Карточка всегда w-full от слайда — иначе fit-content + min(100%,…) даёт цикл и ширина 0.
  * Медиа: min(100%, …) от карточки; десктоп = витрина под 1920×1080 (16:9), мобила = 3:4.
@@ -252,7 +258,7 @@ const goNext = () => {
     transform: scale(0.92);
     opacity: 0.55;
     cursor: pointer;
-    border-color: rgba(255, 255, 255, 0.1);
+    border-color: var(--app-slide-border-dim);
 }
 
 .home-jumbotron--desktop :deep(.swiper-slide-prev .home-jumbotron-card:hover),
@@ -263,7 +269,7 @@ const goNext = () => {
 .home-jumbotron--desktop :deep(.swiper-slide-active .home-jumbotron-card) {
     transform: scale(1.02);
     opacity: 1;
-    border-color: rgba(251, 191, 36, 0.35);
+    border-color: var(--app-slide-border-accent);
     box-shadow: 0 24px 50px rgba(0, 0, 0, 0.45);
     z-index: 10;
 }
@@ -333,7 +339,7 @@ const goNext = () => {
     transform: scale(0.86);
     opacity: 0.58;
     cursor: pointer;
-    border-color: rgba(255, 255, 255, 0.1);
+    border-color: var(--app-slide-border-dim);
 }
 
 .home-jumbotron--mobile :deep(.swiper-slide-prev .home-jumbotron-card:hover),
@@ -344,7 +350,7 @@ const goNext = () => {
 .home-jumbotron--mobile :deep(.swiper-slide-active .home-jumbotron-card) {
     transform: scale(1.14);
     opacity: 1;
-    border-color: rgba(251, 191, 36, 0.35);
+    border-color: var(--app-slide-border-accent);
     box-shadow: 0 24px 50px rgba(0, 0, 0, 0.45);
     z-index: 10;
 }

@@ -1,9 +1,7 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref } from "vue";
-import { useThemeStore } from "../../stores/themeStore";
 import { useAppDesign } from "../../design/useAppDesign";
 
-const themeStore = useThemeStore();
 const ds = useAppDesign().components.uiPrimitives.scrollToTop;
 
 const visible = ref(false);
@@ -11,9 +9,7 @@ const visible = ref(false);
 /** Показываем после заметного скролла, чтобы не шуметь у «шапки» */
 const SHOW_AFTER_PX = 320;
 
-const themeBtn = computed(() =>
-    themeStore.theme === "dark" ? ds.themeDark : ds.themeLight,
-);
+const themeBtn = computed(() => ds.theme);
 
 function syncVisibility() {
     if (typeof window === "undefined") return;

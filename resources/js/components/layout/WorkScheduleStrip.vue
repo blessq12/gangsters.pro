@@ -14,7 +14,6 @@ import {
 } from "../../animations/animationManager";
 import { useCompanyOpenStatus } from "../../composables/system/useCompanyOpenStatus";
 import { useSystemStore } from "../../stores/systemStore";
-import { useThemeStore } from "../../stores/themeStore";
 import { getCurrentDayKey } from "../../utils/system/companyOpenStatus";
 import {
     formatTodayWorkScheduleLine,
@@ -27,7 +26,6 @@ const TOOLTIP_PAD = 12;
 const PANEL_MAX_WIDTH_PX = 20 * 16;
 
 const systemStore = useSystemStore();
-const themeStore = useThemeStore();
 const ws = useAppDesign().components.workSchedule;
 
 const { openNow, statusHint } = useCompanyOpenStatus(
@@ -124,9 +122,7 @@ function isScheduleToday(dayKey) {
     return dayKey != null && dayKey === currentDayKey.value;
 }
 
-const scheduleTheme = computed(() =>
-    themeStore.theme === "light" ? ws.themes.light : ws.themes.dark,
-);
+const scheduleTheme = computed(() => ws.theme);
 
 function panelWidthPx() {
     return Math.min(PANEL_MAX_WIDTH_PX, window.innerWidth - TOOLTIP_PAD * 2);

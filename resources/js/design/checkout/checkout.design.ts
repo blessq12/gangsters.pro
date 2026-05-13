@@ -2,17 +2,16 @@
  * Презентация чекаута: все шаги и общие паттерны полей/кнопок.
  */
 
+import { shellColorRoles, shellTypography } from "../layout/shell.design";
+
 export const checkoutDesign = {
     shared: {
-        stepKicker:
-            "text-[11px] uppercase tracking-[0.18em] text-app-muted",
-        stepKickerAccent:
-            "text-[11px] uppercase tracking-[0.18em] text-app-accent",
-        flowBody: "space-y-3 text-xs sm:text-sm text-app-canvas-fg",
-        headingSm: "text-xs font-semibold text-app-canvas-fg",
+        stepKicker: `${shellTypography.body.checkoutKicker} ${shellColorRoles.muted}`,
+        stepKickerAccent: `${shellTypography.body.checkoutKickerAccent} ${shellColorRoles.accent}`,
+        flowBody: `${shellTypography.body.checkoutFlowBody} ${shellColorRoles.canvasFg}`,
+        headingSm: `${shellTypography.body.checkoutHeadingSm} ${shellColorRoles.accent}`,
         headingCardMuted: "text-[11px] font-semibold text-app-muted",
-        subsectionKickerSm:
-            "text-[11px] font-semibold uppercase tracking-[0.14em] text-app-muted",
+        subsectionKickerSm: `${shellTypography.body.checkoutSubsectionKicker} ${shellColorRoles.muted}`,
         subsectionKickerXs:
             "pt-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-app-muted",
         subsectionKickerXsSpaced:
@@ -26,12 +25,12 @@ export const checkoutDesign = {
         introMuted: "text-xs text-app-muted",
         authTabRow: "flex gap-2 text-[11px] font-medium",
         guestIsland:
-            "space-y-2 rounded-none border border-black/12 bg-app-surface px-3 py-3",
+            "space-y-2 rounded-none border border-app-border-on-surface bg-app-surface px-3 py-3",
         grid2: "grid grid-cols-2 gap-2",
         addressEmptyHint:
             "rounded-none border border-dashed border-neutral-500/60 bg-app-surface px-4 py-3 text-[11px] text-neutral-700",
         addressLi:
-            "flex items-center gap-2 rounded-none border border-black/12 bg-app-surface px-3 py-2",
+            "flex items-center gap-2 rounded-none border border-app-border-on-surface bg-app-surface px-3 py-2",
         radioField:
             "h-4 w-4 rounded-none border-neutral-400 text-app-accent focus:ring-app-accent",
         checkboxSm:
@@ -40,21 +39,21 @@ export const checkoutDesign = {
         addressTitle: "block font-medium text-app-canvas-fg",
         addressMeta: "block text-[11px] text-app-muted",
         borderSectionTop:
-            "space-y-2 border-t border-white/5 pt-3",
+            "space-y-2 border-t border-app-divider-on-canvas pt-3",
         expandRowBtn:
             "flex w-full items-center justify-between rounded-none bg-black/5 px-3 py-2 text-[11px] font-medium text-app-canvas-fg hover:bg-black/8",
         expandRowChevronMuted: "text-[11px] text-app-muted",
         newAddressWrap: "space-y-2 pt-1",
         inputFieldCol2:
-            "col-span-2 rounded-none border border-black/12 bg-app-surface px-3 py-2 text-[11px] text-app-surface-fg placeholder:text-neutral-600 focus:border-app-accent focus:outline-none focus:ring-1 focus:ring-app-accent/60",
+            "col-span-2 rounded-none border border-app-border-on-surface bg-app-glass-fill px-3 py-2 text-[11px] text-app-canvas-fg placeholder:text-app-muted focus:border-app-accent focus:outline-none focus:ring-1 focus:ring-app-accent/60",
         inputFieldFull:
-            "w-full rounded-none border border-black/12 bg-app-surface px-3 py-2 text-[11px] text-app-surface-fg placeholder:text-neutral-600 focus:border-app-accent focus:outline-none focus:ring-1 focus:ring-app-accent/60",
+            "w-full rounded-none border border-app-border-on-surface bg-app-glass-fill px-3 py-2 text-[11px] text-app-canvas-fg placeholder:text-app-muted focus:border-app-accent focus:outline-none focus:ring-1 focus:ring-app-accent/60",
         inputFieldGridCell:
-            "rounded-none border border-black/12 bg-app-surface px-3 py-2 text-[11px] text-app-surface-fg placeholder:text-neutral-600 focus:border-app-accent focus:outline-none focus:ring-1 focus:ring-app-accent/60",
+            "rounded-none border border-app-border-on-surface bg-app-glass-fill px-3 py-2 text-[11px] text-app-canvas-fg placeholder:text-app-muted focus:border-app-accent focus:outline-none focus:ring-1 focus:ring-app-accent/60",
         textareaAddress:
-            "w-full rounded-none border border-black/12 bg-app-surface px-3 py-2 text-[11px] text-app-surface-fg placeholder:text-neutral-600 focus:border-app-accent focus:outline-none focus:ring-1 focus:ring-app-accent/60",
+            "w-full rounded-none border border-app-border-on-surface bg-app-glass-fill px-3 py-2 text-[11px] text-app-canvas-fg placeholder:text-app-muted focus:border-app-accent focus:outline-none focus:ring-1 focus:ring-app-accent/60",
         textareaFlow:
-            "w-full rounded-none border border-black/12 bg-app-surface px-3 py-2 text-xs text-app-surface-fg placeholder:text-neutral-500 outline-none focus:border-app-accent",
+            "w-full rounded-none border border-app-border-on-surface bg-app-glass-fill px-3 py-2 text-xs text-app-canvas-fg placeholder:text-app-muted outline-none focus:border-app-accent",
         checkboxLabelRow:
             "flex items-center gap-2 text-[11px] text-app-muted",
         saveSecondaryBtn:
@@ -71,7 +70,7 @@ export const checkoutDesign = {
         btnSecondaryOutline:
             "inline-flex w-full items-center justify-center rounded-none border border-black/15 bg-black/5 px-4 py-2 text-xs font-medium text-app-canvas-fg transition hover:bg-black/8",
         btnSecondaryOutlineCompact:
-            "w-full rounded-none border border-black/12 bg-black/5 px-3 py-2 text-center text-[11px] font-medium text-app-canvas-fg transition hover:bg-black/8",
+            "w-full rounded-none border border-app-border-on-surface bg-black/5 px-3 py-2 text-center text-[11px] font-medium text-app-canvas-fg transition hover:bg-black/8",
         errorBanner:
             "rounded-none border border-red-500/40 bg-red-950/40 px-3 py-2 text-[11px] text-red-200",
         errorLine: "text-[11px] text-red-400",
@@ -86,7 +85,7 @@ export const checkoutDesign = {
 
     cart: {
         emptyState:
-            "rounded-none bg-[rgba(0,0,0,0.04)] px-4 py-5 text-sm text-app-muted",
+            "rounded-none bg-app-accent-soft-bg px-4 py-5 text-sm text-app-muted",
         userList: "space-y-2 text-xs sm:text-sm text-app-canvas-fg",
         qtyBar:
             "inline-flex items-center justify-between rounded-none border border-app-accent/60 bg-neutral-950/88 px-2 py-1 text-xs text-app-canvas-fg",
@@ -94,7 +93,7 @@ export const checkoutDesign = {
             "flex h-6 w-6 items-center justify-center rounded-none bg-neutral-950/88 text-[14px]",
         qtyLabel: "px-2 font-semibold",
         userLineItem:
-            "flex items-center justify-between gap-3 rounded-none bg-[rgba(0,0,0,0.04)] px-3 py-2",
+            "flex items-center justify-between gap-3 rounded-none bg-app-accent-soft-bg px-3 py-2",
         lineTitle: "truncate font-medium text-app-canvas-fg",
         lineSub: "mt-0.5 text-[11px] text-app-muted",
         lineActions: "flex items-center gap-3",
@@ -105,13 +104,13 @@ export const checkoutDesign = {
         systemLine:
             "mt-1 flex items-center justify-between gap-2 rounded-none px-1 py-0.5",
         totalsCard:
-            "mt-3 space-y-1 rounded-none border border-black/12 bg-[rgba(0,0,0,0.03)] px-3 py-2 text-xs sm:text-sm",
+            "mt-3 space-y-1 rounded-none border border-app-border-on-surface bg-app-glass-fill px-3 py-2 text-xs sm:text-sm",
         totalsRow: "flex items-center justify-between",
         totalsLabelMuted: "text-app-muted/85",
         totalsLabelStrong: "font-medium text-app-muted/90",
         totalsValue: "text-app-canvas-fg",
         totalsDivider:
-            "flex items-center justify-between border-t border-black/12 pt-1",
+            "flex items-center justify-between border-t border-app-border-on-surface pt-1",
         grandTotal: "font-semibold text-app-accent",
         giftCard:
             "mt-3 rounded-none border border-app-accent/25 bg-app-accent/10 px-3 py-2 text-xs sm:text-sm",
@@ -123,7 +122,7 @@ export const checkoutDesign = {
         authActions: "mt-3 flex flex-col gap-2",
         giftModalList: "space-y-2",
         giftRadioLabel:
-            "flex cursor-pointer items-center gap-3 rounded-none border border-black/12 bg-black/5 px-3 py-2 transition hover:border-app-accent/40",
+            "flex cursor-pointer items-center gap-3 rounded-none border border-app-border-on-surface bg-black/5 px-3 py-2 transition hover:border-app-accent/40",
         giftRadioInput: "h-4 w-4 accent-app-accent",
         giftRadioBody: "min-w-0 flex-1",
         giftRadioTitle: "truncate text-sm font-medium text-app-canvas-fg",
@@ -144,7 +143,7 @@ export const checkoutDesign = {
 
     confirm: {
         summaryCard:
-            "space-y-2 rounded-none bg-[rgba(0,0,0,0.04)] px-3 py-3",
+            "space-y-2 rounded-none bg-app-accent-soft-bg px-3 py-3",
         orderList: "space-y-1 text-xs",
         orderLineRow: "flex items-center justify-between gap-2",
         orderLineTruncate: "truncate text-app-canvas-fg",
@@ -153,9 +152,9 @@ export const checkoutDesign = {
             "flex items-center justify-between gap-2 rounded-none border border-app-accent/25 bg-app-accent/10 px-2 py-1",
         badgeTiny: "ml-1 text-[10px] font-medium text-app-accent",
         totalsInset:
-            "mt-2 space-y-1 border-t border-white/5 pt-2 text-xs",
+            "mt-2 space-y-1 border-t border-app-divider-on-canvas pt-2 text-xs",
         blockMuted:
-            "space-y-1 rounded-none bg-[rgba(0,0,0,0.03)] px-3 py-3",
+            "space-y-1 rounded-none bg-app-glass-fill px-3 py-3",
         mutedInline: "ml-1 text-app-muted",
     },
 

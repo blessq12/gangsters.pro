@@ -14,11 +14,11 @@ export const catalogModalDesign = {
         wrapper: "m-auto w-full max-w-4xl",
         wrapperMobile: "m-auto w-full max-w-full",
         panel:
-            "relative aspect-video max-h-[85vh] w-full overflow-hidden border border-white/[0.08] bg-app-surface shadow-[0_25px_60px_rgba(0,0,0,0.9)]",
+            "relative aspect-video max-h-[85vh] w-full overflow-hidden bg-[rgba(20,20,20,0.88)] shadow-[0_25px_60px_rgba(0,0,0,0.9)]",
         panelMobile:
-            "relative w-full min-h-0 h-[92dvh] max-h-[100dvh] overflow-hidden border border-black/12 bg-[rgba(31,31,35,0.65)] shadow-[0_25px_60px_rgba(0,0,0,0.92)]",
+            "relative w-full min-h-0 h-[92dvh] max-h-[100dvh] overflow-hidden bg-[rgba(31,31,35,0.65)] shadow-[0_25px_60px_rgba(0,0,0,0.92)]",
         closeBtn:
-            "absolute right-4 top-4 z-[3] flex h-9 w-9 items-center justify-center border border-black/15 bg-neutral-950/85 text-xl text-app-muted transition-colors hover:border-app-accent/50 hover:text-app-accent",
+            "absolute right-4 top-4 z-[3] flex h-9 w-9 items-center justify-center border border-transparent bg-neutral-950/85 text-xl text-app-muted transition-colors hover:border-app-accent/50 hover:text-app-accent",
         closeBtnMobile: "left-3 right-auto top-3",
         closeIcon: "mdi mdi-close",
         body: "absolute inset-0 z-0",
@@ -44,23 +44,23 @@ export const catalogModalDesign = {
         card: "flex flex-col gap-3",
         titleCol: "w-2/3 min-w-0",
         title:
-            "bg-app-surface px-2.5 py-2 text-[13px] font-semibold leading-snug text-app-surface-fg line-clamp-3 shadow-[0_0_24px_rgba(0,0,0,0.7)] backdrop-blur",
+            "bg-app-glass-fill px-2.5 py-2 text-[13px] font-semibold leading-snug text-app-accent line-clamp-3 shadow-[0_0_24px_rgba(0,0,0,0.7)] backdrop-blur-xl",
         tagsRow: "mt-2 flex flex-wrap gap-1.5",
         tagPill:
-            "inline-flex items-center border px-2 py-0.5 text-[10px] font-medium backdrop-blur",
+            "inline-flex items-center px-2 py-0.5 text-[10px] font-medium backdrop-blur",
         controlsRow:
             "flex w-full shrink-0 items-center gap-3",
         actionIsland:
-            "relative flex w-fit min-w-0 items-center gap-2.5 border border-black/12 bg-app-surface px-3 py-1.5 shadow-[0_0_24px_rgba(0,0,0,0.7)] backdrop-blur",
+            "relative flex w-fit min-w-0 items-center gap-2.5 bg-app-glass-fill px-3 py-1.5 shadow-[0_0_24px_rgba(0,0,0,0.7)] backdrop-blur-xl",
         favBtn:
-            "flex h-10 w-10 items-center justify-center border border-black/15 bg-neutral-950/85 text-app-canvas-fg transition-colors hover:border-app-accent/60 hover:text-app-accent",
+            "flex h-10 w-10 items-center justify-center border border-transparent bg-neutral-950/85 text-app-canvas-fg transition-colors hover:border-app-accent/60 hover:text-app-accent",
         favBtnActive: "border-app-accent/60 text-app-accent",
         favIcon: "mdi text-xl",
         nutritionBtn:
             "flex h-10 w-10 items-center justify-center border border-app-accent/40 bg-neutral-950/85 text-app-accent transition-colors hover:border-app-accent/70 hover:text-app-accent",
         nutritionIcon: "mdi mdi-fire-circle text-xl",
         ingredientsBtn:
-            "flex h-10 w-10 items-center justify-center border border-black/12 bg-neutral-950/85 text-app-canvas-fg transition-colors hover:border-app-accent/50 hover:text-app-accent",
+            "flex h-10 w-10 items-center justify-center border border-transparent bg-neutral-950/85 text-app-canvas-fg transition-colors hover:border-app-accent/50 hover:text-app-accent",
         ingredientsIcon: "mdi mdi-information-outline text-xl",
         cartBtnWrap: "flex h-10 shrink-0 items-center",
         cartAdd:
@@ -75,7 +75,7 @@ export const catalogModalDesign = {
         priceBtn:
             "ml-auto flex min-h-10 shrink-0 items-center whitespace-nowrap bg-app-accent px-3 py-1.5 text-[12px] font-semibold text-black transition-transform duration-200 hover:scale-[1.03] cursor-pointer",
         teleportTooltipBase:
-            "fixed z-[10000] border border-black/12 bg-[rgba(0,0,0,0.95)] px-3 py-2.5 shadow-xl backdrop-blur max-h-44 overflow-y-auto",
+            "fixed z-[10000] bg-[rgba(0,0,0,0.95)] px-3 py-2.5 shadow-xl backdrop-blur max-h-44 overflow-y-auto",
         tooltipWide: "w-[260px]",
         tooltipNarrow: "w-[240px]",
         nutritionBlock: "space-y-2 text-[11px] text-app-canvas-fg",

@@ -4,7 +4,7 @@ import { createPinia } from "pinia";
 import { createApp, defineAsyncComponent } from "vue";
 import VueLazyload from "vue-lazyload";
 import { useToast } from "vue-toastification";
-import "vue-toastification/dist/index.css";
+import "../css/vue-toastification.css";
 import "./bootstrap";
 import router from "./router";
 import App from "./App.vue";

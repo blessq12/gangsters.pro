@@ -495,17 +495,17 @@ function handlePriceClick() {
     0% {
         opacity: 0;
         transform: scale(0.88);
-        box-shadow: 0 0 0 0 rgba(251, 191, 36, 0);
+        box-shadow: 0 0 0 0 transparent;
     }
     45% {
         opacity: 1;
         transform: scale(1);
-        box-shadow: 0 0 22px rgba(251, 191, 36, 0.45);
+        box-shadow: 0 0 22px var(--app-accent-glow-mid);
     }
     100% {
         opacity: 0;
         transform: scale(1.05);
-        box-shadow: 0 0 0 0 rgba(251, 191, 36, 0);
+        box-shadow: 0 0 0 0 transparent;
     }
 }
 
@@ -513,17 +513,17 @@ function handlePriceClick() {
     0% {
         opacity: 0;
         transform: scale(0.85);
-        box-shadow: 0 0 0 0 rgba(251, 191, 36, 0);
+        box-shadow: 0 0 0 0 transparent;
     }
     42% {
         opacity: 1;
         transform: scale(1);
-        box-shadow: 0 0 28px rgba(251, 191, 36, 0.55);
+        box-shadow: 0 0 28px var(--app-accent-glow-strong);
     }
     100% {
         opacity: 0;
         transform: scale(1.08);
-        box-shadow: 0 0 0 0 rgba(251, 191, 36, 0);
+        box-shadow: 0 0 0 0 transparent;
     }
 }
 </style>

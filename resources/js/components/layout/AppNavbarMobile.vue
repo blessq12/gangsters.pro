@@ -53,7 +53,7 @@ function toggleMobileMenu() {
                         :class="navbar.mobile.logoPulseWrap"
                     >
                         <img
-                            src="/images/logo.png"
+                            src="/images/logo_text.svg"
                             alt="Gangsters"
                             :class="navbar.mobile.logoImg"
                         />
