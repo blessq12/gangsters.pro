@@ -6,11 +6,12 @@ import { shellColorRoles, shellTypography } from "./shell.design";
 
 export const navbarDesign = {
     shared: {
-        header: "relative z-[1] pt-4",
+        header: "relative z-[1] pb-10 pt-6 sm:pb-12 sm:pt-7",
         linkTransition: "transition-colors duration-200",
         linkActive: "text-app-accent",
         linkInactive: "text-app-canvas-fg/80 hover:text-app-canvas-fg",
-        logoLink: "inline-flex items-center justify-center group",
+        logoLink:
+            "absolute left-1/2 top-full z-[2] mb-8 mt-0 inline-flex -translate-x-1/2 -translate-y-[58%] items-center justify-center group sm:mb-10",
         mdiIcon: "mdi text-lg",
         burgerOpen: "border-app-accent/70 text-app-accent",
         burgerClosedHover: "hover:border-app-accent/50 hover:text-app-accent",
@@ -18,15 +19,15 @@ export const navbarDesign = {
 
     responsive: {
         inner: "mx-auto max-w-7xl px-4 sm:px-6 lg:px-8",
-        bar: "flex items-center justify-between gap-4 rounded-none border border-app-accent/40 bg-app-canvas px-4 sm:px-6 lg:px-8 py-3.5 shadow-[0_0_25px_rgba(0,0,0,0.7)] backdrop-blur",
+        bar: "flex h-[70px] min-h-[70px] items-center justify-between gap-4 overflow-visible rounded-none border border-app-accent/40 bg-app-canvas px-4 py-0 shadow-[0_0_25px_rgba(0,0,0,0.7)] backdrop-blur sm:px-6 lg:px-8",
         leftZone:
             "flex min-w-0 items-center gap-2 sm:gap-3 w-24 sm:w-auto",
         balanceSpacer: "w-10 shrink-0 md:hidden",
         desktopNavGate: "hidden min-w-0 items-center md:flex",
         navLeft: `flex items-center gap-4 ${shellTypography.body.navRow}`,
-        logoRow: `${shellTypography.heading.logoMark} flex-1 flex justify-center`,
+        logoRow: `${shellTypography.heading.logoMark} relative z-[2] min-w-0 flex-1 self-stretch`,
         logoImg:
-            "h-9 min-h-9 sm:h-10 sm:min-h-10 md:h-11 md:min-h-11 w-auto min-w-[7rem] max-w-full mx-auto object-contain drop-shadow-[0_0_15px_rgba(198,36,36,0.45)] group-hover:scale-105 group-hover:drop-shadow-[0_0_22px_rgba(198,36,36,0.7)] transition-transform duration-200",
+            "mx-auto h-[6.25rem] w-auto max-w-[10.5rem] object-contain drop-shadow-[0_0_15px_rgba(198,36,36,0.45)] transition-transform duration-200 group-hover:scale-105 group-hover:drop-shadow-[0_0_22px_rgba(198,36,36,0.7)] sm:h-[7rem] sm:max-w-[12rem] md:h-[7.75rem] md:max-w-[13.5rem]",
         rightZone:
             "flex items-center justify-end gap-2 sm:gap-3 w-24 sm:w-auto",
         burgerButton:
@@ -36,25 +37,26 @@ export const navbarDesign = {
 
     desktop: {
         inner: "mx-auto max-w-7xl px-6 lg:px-8",
-        bar: "flex items-center justify-between gap-4 rounded-none border border-app-accent/40 bg-app-canvas px-4 sm:px-6 lg:px-8 py-3.5 shadow-[0_0_25px_rgba(0,0,0,0.7)] backdrop-blur",
+        bar: "flex h-[70px] min-h-[70px] items-center justify-between gap-4 overflow-visible rounded-none border border-app-accent/40 bg-app-canvas px-4 py-0 shadow-[0_0_25px_rgba(0,0,0,0.7)] backdrop-blur sm:px-6 lg:px-8",
         leftZone: "flex min-w-0 items-center",
         navLeft: `flex items-center gap-4 ${shellTypography.body.navRow}`,
-        logoRow: `${shellTypography.heading.logoMark} flex-1 flex justify-center`,
+        logoRow: `${shellTypography.heading.logoMark} relative z-[2] min-w-0 flex-1 self-stretch`,
         logoImg:
-            "h-10 min-h-10 w-auto min-w-[7rem] max-w-full mx-auto object-contain drop-shadow-[0_0_15px_rgba(198,36,36,0.45)] group-hover:scale-105 group-hover:drop-shadow-[0_0_22px_rgba(198,36,36,0.7)] transition-transform duration-200",
+            "mx-auto h-[7rem] w-auto max-w-[12rem] object-contain drop-shadow-[0_0_15px_rgba(198,36,36,0.45)] transition-transform duration-200 group-hover:scale-105 group-hover:drop-shadow-[0_0_22px_rgba(198,36,36,0.7)] lg:h-[7.75rem] lg:max-w-[14rem]",
         rightZone: "flex items-center justify-end gap-4 w-48",
         navRight: `flex items-center gap-4 ${shellTypography.body.navRow}`,
     },
 
     mobile: {
         inner: "mx-auto max-w-7xl px-4",
-        bar: "flex items-center justify-between gap-4 rounded-none border border-app-accent/40 bg-app-canvas px-4 py-3.5 shadow-[0_0_25px_rgba(0,0,0,0.7)] backdrop-blur",
-        leftSpacer: "w-10 shrink-0",
-        logoRow: `${shellTypography.heading.logoMark} flex-1 flex justify-center`,
+        bar: "flex h-[70px] min-h-[70px] items-center justify-between gap-4 overflow-visible rounded-none border border-app-accent/40 bg-app-canvas px-4 py-0 shadow-[0_0_25px_rgba(0,0,0,0.7)] backdrop-blur",
+        scheduleZone:
+            "flex shrink-0 items-center justify-start pr-1",
+        logoRow: `${shellTypography.heading.logoMark} relative z-[2] min-w-0 flex-1 self-stretch`,
         logoPulseWrap:
             "inline-flex origin-center will-change-transform",
         logoImg:
-            "h-9 min-h-9 w-auto min-w-[7rem] max-w-full mx-auto object-contain transition-transform duration-200 group-hover:scale-105",
+            "mx-auto h-[6.25rem] w-auto max-w-[10rem] object-contain drop-shadow-[0_0_12px_rgba(198,36,36,0.4)] transition-transform duration-200 group-hover:scale-105 sm:h-[7rem] sm:max-w-[12rem]",
         burgerZone: "flex items-center justify-end",
         burgerButton:
             "flex h-9 w-9 items-center justify-center rounded-none border border-black/20 bg-neutral-950/88 text-app-canvas-fg transition-colors",
@@ -62,7 +64,7 @@ export const navbarDesign = {
 
     mobileMenu: {
         overlayRoot:
-            "pointer-events-none fixed inset-x-0 top-0 z-30 md:hidden pt-24",
+            "pointer-events-none fixed inset-x-0 top-0 z-30 md:hidden pt-28 sm:pt-32",
         innerContainer:
             "pointer-events-auto mx-auto mt-3 max-w-7xl px-4 sm:px-6 lg:px-8",
         sheetNav:

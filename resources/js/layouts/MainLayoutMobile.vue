@@ -8,7 +8,12 @@ import { useFavoritesStore } from "../stores/favoritesStore";
 import { useUiStore } from "../stores/uiStore";
 import { useCatalogStore } from "../stores/catalogStore";
 import { useSystemStore } from "../stores/systemStore";
-import { playIntroScene, playPageEnter, playPageLeave } from "../animations/animationManager";
+import {
+    INTRO_BOTTOM_BAR_DELAY_MS,
+    playIntroScene,
+    playPageEnter,
+    playPageLeave,
+} from "../animations/animationManager";
 import { useMobileDockScrollSuppression } from "../composables/ui/useMobileDockScrollSuppression";
 import { useAppDesign } from "../design/useAppDesign";
 
@@ -34,6 +39,7 @@ catalogStore.initFromStorage();
 uiStore.setShowBottomNav(false);
 
 const introOverlayRef = ref(null);
+const introGlowRef = ref(null);
 const introLogoRef = ref(null);
 const mainRef = ref(null);
 const showIntro = ref(true);
@@ -72,11 +78,12 @@ onMounted(() => {
 
     playIntroScene({
         introOverlay: introOverlayRef.value,
+        introGlow: introGlowRef.value,
         introLogo: introLogoRef.value,
         main: mainRef.value,
         onComplete: () => {
             showIntro.value = false;
-            const stepDelay = 600;
+            const stepDelay = INTRO_BOTTOM_BAR_DELAY_MS;
             setTimeout(() => {
                 bottomBarReady.value = true;
                 if (isHome()) {
@@ -104,18 +111,21 @@ onMounted(() => {
             ref="introOverlayRef"
             :class="sh.shared.introOverlay"
         >
+            <div
+                ref="introGlowRef"
+                :class="sh.shared.introRadialGlow"
+                aria-hidden="true"
+            />
             <img
                 ref="introLogoRef"
                 src="/images/load_logo.svg"
                 alt="Gangsters"
-                :class="sh.mobile.introLogo"
+                :class="[sh.mobile.introLogo, 'relative z-10']"
             />
         </div>
 
         <AppNavbarMobile />
         <MobileMenu />
-
-        <WorkScheduleStrip />
 
         <main :class="sh.shared.mainGrow">
             <div
@@ -143,6 +153,26 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.intro-radial-glow {
+    --intro-radial-x: 65%;
+    --intro-radial-y: 47.5%;
+    background: radial-gradient(
+        ellipse var(--intro-radial-x) var(--intro-radial-y) at 50% 100%,
+        color-mix(in srgb, var(--app-accent) 42%, transparent) 0%,
+        color-mix(in srgb, var(--app-accent) 14%, transparent) 48%,
+        transparent 72%
+    );
+}
+
+.app-shell.theme-light .intro-radial-glow {
+    background: radial-gradient(
+        ellipse var(--intro-radial-x) var(--intro-radial-y) at 50% 100%,
+        color-mix(in srgb, var(--app-accent) 26%, transparent) 0%,
+        color-mix(in srgb, var(--app-accent) 8%, transparent) 48%,
+        transparent 70%
+    );
+}
+
 .app-shell.theme-dark {
     --app-canvas: #191919;
     --app-surface: #ececec;

@@ -42,10 +42,9 @@ function toggleMobileMenu() {
                 ref="containerRef"
                 :class="navbar.mobile.bar"
             >
-                <div
-                    :class="navbar.mobile.leftSpacer"
-                    aria-hidden="true"
-                />
+                <div :class="navbar.mobile.scheduleZone">
+                    <WorkScheduleStrip layout="navbarCompact" />
+                </div>
 
                 <NavbarBrand variant="mobile">
                     <span
@@ -53,7 +52,7 @@ function toggleMobileMenu() {
                         :class="navbar.mobile.logoPulseWrap"
                     >
                         <img
-                            src="/images/logo_text.svg"
+                            src="/images/load_logo.svg"
                             alt="Gangsters"
                             :class="navbar.mobile.logoImg"
                         />

@@ -1,0 +1,1 @@
+import{q as r}from"./app-BTg2vsAj.js";import{f as t}from"./vue-core-DAR2-Xda.js";function i(){const e=r();return{toggle(o){e.toggleFavorite(o)},remove(o){e.removeFavorite(o)},clear(){e.clear()}}}function n(){const e=r();return{items:t(()=>e.favorites),count:t(()=>e.count),isFavorite(o){return e.isFavorite(o)}}}export{n as a,i as u};

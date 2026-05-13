@@ -5,6 +5,13 @@
 export const workScheduleDesign = {
     stripRoot: "w-full opacity-0",
 
+    /** Корень варианта `navbarCompact` (внутри навбара, без анимации полосы). */
+    navbarCompactRoot: "shrink-0",
+
+    /** Компактная кнопка в мобильном навбаре (рядом с логотипом). */
+    triggerNavbarCompact:
+        "flex h-9 w-9 shrink-0 flex-col items-center justify-center gap-0.5 rounded-none border border-black/20 bg-neutral-950/88 outline-none backdrop-blur-sm transition-colors focus-visible:ring-2 focus-visible:ring-app-accent/60 disabled:cursor-not-allowed disabled:opacity-60",
+
     outerRow:
         "mx-auto mt-3 flex max-w-7xl justify-center px-4 pt-2 sm:mt-4 sm:px-6 md:max-w-none lg:px-8",
 

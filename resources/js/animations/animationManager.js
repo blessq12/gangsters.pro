@@ -11,6 +11,20 @@ export function navbarEnterCompleteDelay() {
     return NAVBAR_ENTER_DELAY + NAVBAR_ENTER_DURATION;
 }
 
+/** Сцена интро: логотип + оверлей + опциональный радиальный глоу снизу. */
+export const INTRO_LOGO_IN_DURATION = 0.7;
+export const INTRO_LOGO_HOLD_DURATION = 0.6;
+export const INTRO_LOGO_OUT_DURATION = 0.65;
+export const INTRO_MAIN_FADE_DURATION = 0.55;
+export const INTRO_OVERLAY_FADE_DURATION = 0.55;
+/** Секунды: fade main начинает до конца предыдущего блока. */
+export const INTRO_MAIN_FADE_OVERLAP = 0.38;
+/** Секунды: fade оверлея — overlap к предыдущему tween. */
+export const INTRO_OVERLAY_FADE_OVERLAP = 0.42;
+
+/** Мс после скрытия интро до активации логики нижнего дока. */
+export const INTRO_BOTTOM_BAR_DELAY_MS = 450;
+
 /**
  * Появление полосы расписания под шапкой — после завершения анимации навбара.
  */
@@ -29,41 +43,85 @@ export function playWorkScheduleStripEnter(el) {
     );
 }
 
-export function playIntroScene({ introOverlay, introLogo, main, onComplete }) {
+export function playIntroScene({
+    introOverlay,
+    introLogo,
+    main,
+    introGlow,
+    onComplete,
+}) {
     if (!introOverlay || !introLogo || !main) return;
 
     const tl = gsap.timeline();
 
+    if (introGlow) {
+        tl.fromTo(
+            introGlow,
+            {
+                opacity: 0,
+                "--intro-radial-x": "65%",
+                "--intro-radial-y": "47.5%",
+            },
+            {
+                opacity: 1,
+                "--intro-radial-x": "130%",
+                "--intro-radial-y": "95%",
+                duration: INTRO_LOGO_IN_DURATION,
+                ease: "back.out(1.7)",
+            },
+            0,
+        );
+    }
+
     tl.fromTo(
         introLogo,
         { scale: 0.6, opacity: 0 },
-        { scale: 1.2, opacity: 1, duration: 0.5, ease: "back.out(1.7)" },
+        {
+            scale: 1.2,
+            opacity: 1,
+            duration: INTRO_LOGO_IN_DURATION,
+            ease: "back.out(1.7)",
+        },
+        0,
     )
-        .to(introLogo, { duration: 0.2 })
+        .to(introLogo, { duration: INTRO_LOGO_HOLD_DURATION })
         .to(introLogo, {
             scale: 0,
-            duration: 0.5,
+            duration: INTRO_LOGO_OUT_DURATION,
             ease: "power2.out",
-        })
-        .to(
-            main,
+        });
+
+    if (introGlow) {
+        tl.to(
+            introGlow,
             {
-                opacity: 1,
-                duration: 0.4,
+                "--intro-radial-x": "65%",
+                "--intro-radial-y": "47.5%",
+                duration: INTRO_LOGO_OUT_DURATION,
                 ease: "power2.out",
             },
-            "-=0.2",
-        )
-        .to(
-            introOverlay,
-            {
-                opacity: 0,
-                duration: 0.4,
-                ease: "power2.out",
-                onComplete,
-            },
-            "-=0.3",
+            "<",
         );
+    }
+
+    tl.to(
+        main,
+        {
+            opacity: 1,
+            duration: INTRO_MAIN_FADE_DURATION,
+            ease: "power2.out",
+        },
+        `-=${INTRO_MAIN_FADE_OVERLAP}`,
+    ).to(
+        introOverlay,
+        {
+            opacity: 0,
+            duration: INTRO_OVERLAY_FADE_DURATION,
+            ease: "power2.out",
+            onComplete,
+        },
+        `-=${INTRO_OVERLAY_FADE_OVERLAP}`,
+    );
 }
 
 export function playModalOpen({ backdrop, card }) {

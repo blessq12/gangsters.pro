@@ -28,6 +28,20 @@ const PANEL_MAX_WIDTH_PX = 20 * 16;
 const systemStore = useSystemStore();
 const ws = useAppDesign().components.workSchedule;
 
+const props = defineProps({
+    layout: {
+        type: String,
+        default: "belowNav",
+        validator: (v) => v === "belowNav" || v === "navbarCompact",
+    },
+});
+
+const isNavbarCompact = computed(() => props.layout === "navbarCompact");
+
+const stripRootClass = computed(() =>
+    isNavbarCompact.value ? ws.navbarCompactRoot : ws.stripRoot,
+);
+
 const { openNow, statusHint } = useCompanyOpenStatus(
     () => systemStore.company,
 );
@@ -81,6 +95,12 @@ const titleAttr = computed(() => {
 });
 
 const ariaLabel = computed(() => titleAttr.value);
+
+const triggerTitle = computed(() => {
+    if (isLoading.value) return "Загрузка расписания…";
+    if (!hasCompany.value) return "Расписание недоступно";
+    return `${titleAttr.value}. ${summaryLine.value}`;
+});
 
 const dotClass = computed(() => {
     const d = ws.dot;
@@ -199,7 +219,7 @@ onMounted(() => {
     }
 
     nextTick(() => {
-        if (stripEnterRef.value) {
+        if (!isNavbarCompact.value && stripEnterRef.value) {
             playWorkScheduleStripEnter(stripEnterRef.value);
         }
     });
@@ -236,15 +256,49 @@ onUnmounted(() => {
 <template>
     <div
         ref="stripEnterRef"
-        :class="ws.stripRoot"
+        :class="stripRootClass"
     >
-        <div :class="ws.outerRow">
+        <template v-if="!isNavbarCompact">
+            <div :class="ws.outerRow">
+                <button
+                    ref="triggerRef"
+                    type="button"
+                    :class="[ws.triggerStatic, scheduleTheme.barSurface]"
+                    :disabled="!hasCompany"
+                    :title="titleAttr"
+                    :aria-label="ariaLabel"
+                    aria-haspopup="dialog"
+                    :aria-expanded="expanded"
+                    @click.stop="toggleExpanded"
+                >
+                    <span
+                        :class="[ws.dotSize, dotClass]"
+                        role="presentation"
+                    />
+                    <span
+                        :class="[ws.summaryTruncate, scheduleTheme.summaryLine]"
+                    >
+                        {{ summaryLine }}
+                    </span>
+                    <span
+                        :class="[ws.accentToggleHidden, scheduleTheme.panelAccent]"
+                    >
+                        {{ expanded ? "Свернуть" : "Неделя" }}
+                    </span>
+                    <i
+                        :class="[ws.chevronIcon, { 'rotate-180': expanded }]"
+                        aria-hidden="true"
+                    />
+                </button>
+            </div>
+        </template>
+        <template v-else>
             <button
                 ref="triggerRef"
                 type="button"
-                :class="[ws.triggerStatic, scheduleTheme.barSurface]"
+                :class="[ws.triggerNavbarCompact, scheduleTheme.barSurface]"
                 :disabled="!hasCompany"
-                :title="titleAttr"
+                :title="triggerTitle"
                 :aria-label="ariaLabel"
                 aria-haspopup="dialog"
                 :aria-expanded="expanded"
@@ -254,22 +308,12 @@ onUnmounted(() => {
                     :class="[ws.dotSize, dotClass]"
                     role="presentation"
                 />
-                <span
-                    :class="[ws.summaryTruncate, scheduleTheme.summaryLine]"
-                >
-                    {{ summaryLine }}
-                </span>
-                <span
-                    :class="[ws.accentToggleHidden, scheduleTheme.panelAccent]"
-                >
-                    {{ expanded ? "Свернуть" : "Неделя" }}
-                </span>
                 <i
-                    :class="[ws.chevronIcon, { 'rotate-180': expanded }]"
+                    class="mdi mdi-clock-outline shrink-0 text-base text-app-canvas-fg"
                     aria-hidden="true"
                 />
             </button>
-        </div>
+        </template>
 
         <Teleport to="body">
             <div

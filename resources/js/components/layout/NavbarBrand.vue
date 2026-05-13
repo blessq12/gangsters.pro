@@ -24,7 +24,7 @@ const logoImgClass = computed(() => navbar[props.variant].logoImg);
         >
             <slot>
                 <img
-                    src="/images/logo_text.svg"
+                    src="/images/load_logo.svg"
                     alt="Gangsters"
                     :class="logoImgClass"
                 />

@@ -98,6 +98,9 @@ export const layoutShellDesign = {
         themeLight: "theme-light text-app-canvas-fg",
         introOverlay:
             "pointer-events-none fixed inset-0 z-40 flex items-center justify-center",
+        /** Хук для scoped radial-gradient (`--app-accent`); слой под логотипом интро. */
+        introRadialGlow:
+            "intro-radial-glow pointer-events-none absolute inset-0 z-0",
         mainGrow: "relative z-[1] flex-1",
     },
 
