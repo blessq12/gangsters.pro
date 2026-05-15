@@ -9,6 +9,7 @@ import { layoutShellDesign } from "./layout/shell.design";
 import { pagesDesign } from "./pages/pages.design";
 import { navbarDesign } from "./layout/navbar.design";
 import { workScheduleDesign } from "./layout/workSchedule.design";
+import { pwaInstallDesign } from "./layout/pwaInstall.design";
 import { uiPrimitivesDesign } from "./ui/uiPrimitives.design";
 
 export const appDesign = {
@@ -22,6 +23,7 @@ export const appDesign = {
         dock: dockDesign,
         dockPanels: dockPanelsDesign,
         workSchedule: workScheduleDesign,
+        pwaInstall: pwaInstallDesign,
         layoutShell: layoutShellDesign,
         catalog: catalogDesign,
         uiPrimitives: uiPrimitivesDesign,

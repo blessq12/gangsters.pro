@@ -145,6 +145,7 @@ onMounted(() => {
         </main>
 
         <AppFooter />
+        <PwaInstallBanner :visible="!showIntro" />
         <AppBottomBarMobile />
         <BaseModal />
     </div>

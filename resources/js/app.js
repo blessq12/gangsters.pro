@@ -6,6 +6,7 @@ import VueLazyload from "vue-lazyload";
 import { useToast } from "vue-toastification";
 import "../css/vue-toastification.css";
 import "./bootstrap";
+import { applyPageHead } from "./features/seo/usePageHead";
 import router from "./router";
 import App from "./App.vue";
 
@@ -68,6 +69,10 @@ Object.entries(vueModules).forEach(([path, loader]) => {
  * an "id" attribute of "app". This element is included with the "auth"
  * scaffolding. Otherwise, you will need to add an element yourself.
  */
+
+router.isReady().then(() => {
+    applyPageHead(router.currentRoute.value);
+});
 
 app.mount("#app");
 

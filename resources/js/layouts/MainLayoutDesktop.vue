@@ -158,6 +158,7 @@ onUnmounted(() => {
         </main>
 
         <AppFooter />
+        <PwaInstallBanner :visible="!showIntro" />
         <AppBottomBarDesktop />
         <BaseModal />
     </div>

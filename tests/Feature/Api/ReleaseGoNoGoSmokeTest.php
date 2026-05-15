@@ -91,9 +91,36 @@ final class ReleaseGoNoGoSmokeTest extends ApiTestCase
 
     public function test_release_spa_shell_baseline(): void
     {
-        $this->get('/')->assertOk();
+        $home = $this->get('/')->assertOk();
         $this->get('/delivery')->assertOk();
         $this->get('/contacts')->assertOk();
+
+        $html = $home->getContent();
+        $this->assertIsString($html);
+        $this->assertStringContainsString('meta name="description"', $html);
+        $this->assertStringContainsString('name="theme-color" content="#191919"', $html);
+        $this->assertStringContainsString('property="og:title"', $html);
+        $this->assertStringContainsString('rel="canonical"', $html);
+        $this->assertStringContainsString('rel="manifest" href="/favicon/site.webmanifest"', $html);
+        $this->assertStringContainsString('apple-mobile-web-app-capable" content="yes"', $html);
+        $this->assertStringContainsString('href="/favicon/favicon.svg"', $html);
+        $this->assertStringContainsString('href="/favicon/favicon.ico"', $html);
+
+        $manifest = $this->get('/favicon/site.webmanifest')->assertOk();
+        $manifest->assertHeader('content-type', 'application/manifest+json; charset=UTF-8');
+        $manifestJson = $manifest->json();
+        $this->assertIsArray($manifestJson);
+        $this->assertSame((string) config('site.name'), $manifestJson['name'] ?? null);
+        $this->assertSame('/?utm_source=pwa', $manifestJson['start_url'] ?? null);
+        $this->assertSame('standalone', $manifestJson['display'] ?? null);
+        $this->assertNotEmpty($manifestJson['icons'] ?? null);
+        $iconSizes = array_column($manifestJson['icons'], 'sizes');
+        $this->assertContains('192x192', $iconSizes);
+        $this->assertContains('512x512', $iconSizes);
+
+        $sitemap = $this->get('/sitemap.xml')->assertOk();
+        $sitemap->assertHeader('content-type', 'application/xml; charset=UTF-8');
+        $this->assertStringContainsString('<urlset', (string) $sitemap->getContent());
 
         $appShellPath = resource_path('js/App.vue');
         $bootstrapPath = resource_path('js/processes/bootstrap/useAppBootstrap.js');

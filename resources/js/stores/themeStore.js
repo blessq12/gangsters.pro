@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
+import { siteMeta } from "../config/siteMeta";
 
 const THEME_KEY = "theme";
-const THEME_COLOR = "#191919";
 
 function updateSafariThemeColor() {
     if (typeof document === "undefined") return;
@@ -13,7 +13,7 @@ function updateSafariThemeColor() {
         document.head.appendChild(meta);
     }
 
-    meta.setAttribute("content", THEME_COLOR);
+    meta.setAttribute("content", siteMeta.themeColor);
 }
 
 export const useThemeStore = defineStore("theme", {
