@@ -8,13 +8,19 @@ import { shellTypography } from "./shell.design";
 const dockChromeIslandSurface =
     "rounded-none border border-app-accent/40 bg-app-canvas shadow-[0_0_25px_rgba(0,0,0,0.7)] backdrop-blur";
 
+/** Пилла/иконка на chrome-острове (dock tabs, бар категорий). */
+const chromePillActive =
+    "border-app-accent/70 bg-neutral-950/88 text-app-accent shadow-[0_0_18px_rgba(198,36,36,0.7)]";
+const chromePillInactive =
+    "border-black/20 bg-neutral-950/88 text-app-canvas-fg hover:border-app-accent/50 hover:text-app-accent";
+
 export const dockDesign = {
     shared: {
         chromeIslandSurface: dockChromeIslandSurface,
-        tabIconActive:
-            "border-app-accent/70 bg-neutral-950/88 text-app-accent shadow-[0_0_18px_rgba(198,36,36,0.7)]",
-        tabIconInactive:
-            "border-black/20 bg-neutral-950/88 text-app-canvas-fg group-hover:border-app-accent/50 group-hover:text-app-accent",
+        chromePillActive,
+        chromePillInactive,
+        tabIconActive: chromePillActive,
+        tabIconInactive: chromePillInactive,
         badge:
             "absolute -top-1.5 -right-1.5 flex min-h-[1.1rem] min-w-[1.1rem] items-center justify-center rounded-none bg-red-500 px-1 text-[10px] font-semibold text-white shadow-[0_0_8px_rgba(239,68,68,0.65)]",
     },

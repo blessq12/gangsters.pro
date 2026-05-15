@@ -3,8 +3,13 @@
  * Карточки и модалка: {@link catalogCards.design}, {@link catalogModal.design}.
  */
 
+import { dockDesign } from "../layout/dock.design";
 import { catalogCardsDesign } from "./catalogCards.design";
 import { catalogModalDesign } from "./catalogModal.design";
+
+const { chromePillActive, chromePillInactive } = dockDesign.shared;
+const categoryPillBase =
+    "whitespace-nowrap rounded-none border transition-colors backdrop-blur";
 
 export const catalogDesign = {
     /** CatalogCategoriesBase: остров и пиллы категорий (desktop/mobile через variant). */
@@ -17,16 +22,12 @@ export const catalogDesign = {
         rowMobile:
             "cats-scroll flex items-center gap-2 overflow-x-auto py-2",
         rowDesktop: "flex flex-wrap items-center gap-2 pb-1.5",
-        pillBase:
-            "whitespace-nowrap rounded-none border border-black/20 bg-app-canvas transition-colors backdrop-blur",
+        pillBase: categoryPillBase,
         pillSizingMobile: "px-4 py-2 text-xs",
         pillSizingDesktop: "px-5 py-2 text-sm",
-        pillActiveMobile:
-            "border-app-accent/70 text-app-accent shadow-[0_0_10px_rgba(198,36,36,0.4)]",
-        pillActiveDesktop:
-            "border-app-accent/70 text-app-accent shadow-[0_0_14px_rgba(198,36,36,0.45)]",
-        pillInactive:
-            "border-black/12 text-app-muted hover:border-app-accent/50 hover:text-app-accent",
+        pillActiveMobile: chromePillActive,
+        pillActiveDesktop: chromePillActive,
+        pillInactive: chromePillInactive,
     },
 
     /** Устаревший CatalogCategories.vue (responsive без Base) — отдельные пиллы. */
@@ -35,12 +36,9 @@ export const catalogDesign = {
         island:
             "min-w-0 max-w-full rounded-none border border-app-accent/40 bg-app-canvas px-4 sm:px-6 lg:px-8 py-3.5 shadow-[0_0_25px_rgba(0,0,0,0.7)] backdrop-blur",
         row: "flex flex-wrap items-center gap-3 pb-1.5",
-        pillBase:
-            "whitespace-nowrap rounded-none border border-black/20 px-5 py-2 text-xs sm:text-sm md:text-[0.9rem] transition-colors backdrop-blur bg-app-canvas",
-        pillActive:
-            "border-app-accent/70 text-app-accent shadow-[0_0_14px_rgba(198,36,36,0.45)]",
-        pillInactive:
-            "border-black/12 text-app-muted hover:border-app-accent/50 hover:text-app-accent",
+        pillBase: `${categoryPillBase} px-5 py-2 text-xs sm:text-sm md:text-[0.9rem]`,
+        pillActive: chromePillActive,
+        pillInactive: chromePillInactive,
     },
 
     /** CatalogViewControls * */
