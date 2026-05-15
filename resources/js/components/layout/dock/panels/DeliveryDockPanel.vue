@@ -3,7 +3,6 @@ import { computed, onMounted } from "vue";
 import { useAppDesign } from "../../../../design/useAppDesign";
 import { useSystemStore } from "../../../../stores/systemStore";
 import {
-    buildDefinedConditionRows,
     buildDefinedDeliveryStats,
     buildYandexMapWidgetSearchUrl,
 } from "../../../../utils/system/companyDeliveryFacts";
@@ -32,13 +31,6 @@ const showStatsRow = computed(
     () => dockStats.value.length > 0 || isLoadingCompany.value,
 );
 
-const conditionRows = computed(() => {
-    if (isLoadingCompany.value) {
-        return [];
-    }
-    return buildDefinedConditionRows(company.value);
-});
-
 onMounted(() => {
     if (!company.value && !systemStore.loadingCompany) {
         void systemStore.fetchCompany();
@@ -47,67 +39,14 @@ onMounted(() => {
 </script>
 
 <template>
-    <div :class="d.root">
-        <div :class="d.decorLayer">
-            <div :class="d.decorBlobLeft"></div>
-            <div :class="d.decorBlobRight"></div>
-        </div>
-
-        <div :class="d.contentColumn">
-            <header :class="d.header">
-                <p :class="d.kickerChip">
-                    Доставка Gangsters
-                </p>
-                <h2 :class="d.headline">
-                    Оплата и доставка
-                </h2>
-                <p
-                    v-if="isLoadingCompany"
-                    :class="d.loadingLine"
-                >
-                    Загрузка данных…
-                </p>
-
-                <div
-                    v-if="showStatsRow"
-                    :class="d.statsSection"
-                >
-                    <div
-                        v-if="isLoadingCompany"
-                        :class="d.statsRowFlex"
-                    >
-                        <div :class="d.statSkeletonCard">
-                            <p :class="d.statLabel">
-                                Данные
-                            </p>
-                            <p :class="d.statValueSkeleton">
-                                …
-                            </p>
-                        </div>
-                    </div>
-                    <div
-                        v-else
-                        :class="d.statsRowFlex"
-                    >
-                        <div
-                            v-for="stat in dockStats"
-                            :key="stat.label"
-                            :class="d.statCard"
-                        >
-                            <p :class="d.statLabel">
-                                {{ stat.label }}
-                            </p>
-                            <p :class="d.statValue">
-                                {{ stat.value }}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
+    <DockPanelLayout
+        title="Оплата и доставка"
+        :body-class="d.mapBodyOverride"
+    >
+        <div :class="d.mapStage">
             <div
                 v-if="mapUrl"
-                :class="d.mapFrame"
+                :class="d.mapLayer"
             >
                 <iframe
                     :src="mapUrl"
@@ -118,44 +57,52 @@ onMounted(() => {
                 />
             </div>
             <div
-                v-else-if="!isLoadingCompany"
-                :class="d.mapFallbackDashed"
+                v-else-if="isLoadingCompany"
+                :class="d.mapLoadingBox"
+            >
+                Загрузка…
+            </div>
+            <div
+                v-else
+                :class="d.mapFallback"
             >
                 <p :class="d.mapFallbackProse">
                     Карта недоступна без адреса кухни в настройках.
                 </p>
             </div>
-            <div
-                v-else
-                :class="d.mapLoadingBox"
-            >
-                Загрузка…
-            </div>
 
-            <section
-                v-if="conditionRows.length > 0"
-                :class="d.conditionsSection"
+            <div
+                v-if="showStatsRow"
+                :class="d.overlayTop"
             >
-                <h3 :class="d.conditionsHeading">
-                    Условия
-                </h3>
-                <dl :class="d.conditionsDl">
+                <div
+                    v-if="isLoadingCompany"
+                    :class="[d.island, d.statSkeletonCard]"
+                >
+                    <p :class="d.statLabel">
+                        Данные
+                    </p>
+                    <p :class="d.statValueSkeleton">
+                        …
+                    </p>
+                </div>
+                <template v-else>
                     <div
-                        v-for="row in conditionRows"
-                        :key="row.label"
-                        :class="d.conditionCard"
+                        v-for="stat in dockStats"
+                        :key="stat.label"
+                        :class="[d.island, d.statCard]"
                     >
-                        <dt :class="d.conditionDt">
-                            {{ row.label }}
-                        </dt>
-                        <dd :class="d.conditionDd">
-                            {{ row.value }}
-                        </dd>
+                        <p :class="d.statLabel">
+                            {{ stat.label }}
+                        </p>
+                        <p :class="[d.statValue, 'wrap-break-word']">
+                            {{ stat.value }}
+                        </p>
                     </div>
-                </dl>
-            </section>
+                </template>
+            </div>
         </div>
-    </div>
+    </DockPanelLayout>
 </template>
 
 <style scoped>

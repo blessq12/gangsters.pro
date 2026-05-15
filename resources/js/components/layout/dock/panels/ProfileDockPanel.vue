@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from "vue";
 import { useAppDesign } from "../../../../design/useAppDesign";
 import { useUserStore } from "../../../../stores/userStore";
 import {
@@ -29,6 +30,16 @@ const {
 const s = panels.shared;
 const p = panels.profile;
 
+const panelTitle = computed(
+    () => userStore.profile.name || "Гость Gangsters",
+);
+
+const panelDescription = computed(() =>
+    isAuthenticated.value
+        ? "Личный кабинет"
+        : "Войдите или зарегистрируйтесь",
+);
+
 function profileTabClasses(name) {
     const tabs = p.tabs;
     return [
@@ -39,22 +50,18 @@ function profileTabClasses(name) {
 </script>
 
 <template>
-    <div :class="s.shell">
-        <div :class="p.headerRow">
-            <div :class="p.avatar">
-                {{ userStore.profile.name?.[0] || "G" }}
+    <DockPanelLayout
+        :title="panelTitle"
+        :description="panelDescription"
+    >
+        <template #headerActions>
+            <div :class="p.headerIdentity">
+                <div :class="p.avatar">
+                    {{ userStore.profile.name?.[0] || "G" }}
+                </div>
             </div>
-            <div>
-                <p :class="p.nameLine">
-                    {{ userStore.profile.name || "Гость Gangsters" }}
-                </p>
-                <p :class="s.typography.metaLine">
-                    {{ isAuthenticated ? "Личный кабинет" : "Войдите или зарегистрируйтесь" }}
-                </p>
-            </div>
-        </div>
+        </template>
 
-        <!-- Гость: один ряд -->
         <div
             v-if="!isAuthenticated"
             :class="p.tabRow"
@@ -75,7 +82,6 @@ function profileTabClasses(name) {
             </button>
         </div>
 
-        <!-- Авторизован: один ряд, без вложенных табов внутри контента -->
         <div
             v-else
             :class="p.tabRow"
@@ -110,7 +116,7 @@ function profileTabClasses(name) {
             </button>
         </div>
 
-        <div :class="p.contentStack">
+        <div :class="s.contentStack">
             <ClientLoginForm
                 v-if="activeTab === PROFILE_TAB_LOGIN"
                 @logged-in="handleLoggedIn"
@@ -145,7 +151,7 @@ function profileTabClasses(name) {
                 @updated="handleUpdated"
             />
         </div>
-    </div>
+    </DockPanelLayout>
 </template>
 
 <style scoped></style>

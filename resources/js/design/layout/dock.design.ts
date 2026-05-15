@@ -25,7 +25,7 @@ export const dockDesign = {
         visibleInner:
             "pointer-events-auto mx-auto max-w-7xl px-4 sm:px-6",
         panelOuter:
-            "mb-3 mx-auto w-full max-w-4xl",
+            "mb-3 mx-auto w-full max-w-4xl min-h-0",
         dockIsland: `${dockChromeIslandSurface} mx-auto flex max-w-3xl items-center justify-center gap-4 px-5 sm:px-6 py-4`,
         tabRow: "flex items-center gap-3 sm:gap-4",
         tabButton: shellTypography.body.dockTabRow,
@@ -50,7 +50,7 @@ export const dockDesign = {
         tabLabelHidden: `${shellTypography.body.dockTabLabelDesktop} text-app-muted group-hover:text-app-accent`,
         tabLabelActive: "text-app-accent",
         tabLabelInactiveMuted: "text-app-muted",
-        desktopPanelOuter: "mt-0 mb-0 w-[520px] max-w-[70vw]",
+        desktopPanelOuter: "mt-0 mb-0 w-[520px] max-w-[70vw] min-h-0",
     },
 } as const;
 
