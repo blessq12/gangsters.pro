@@ -26,29 +26,28 @@ Route::get('/sitemap.xml', function () {
 });
 
 Route::get('/favicon/site.webmanifest', function () {
+    $manifestIconDefs = (array) config('site.manifest_icons', []);
     $icon192 = (string) config('site.icon_192');
-    $icon512 = (string) config('site.icon_512');
 
-    $icons = [
-        [
-            'src' => $icon192,
-            'sizes' => '192x192',
-            'type' => 'image/png',
-            'purpose' => 'any',
-        ],
-        [
-            'src' => $icon512,
-            'sizes' => '512x512',
-            'type' => 'image/png',
-            'purpose' => 'any',
-        ],
-        [
-            'src' => $icon512,
-            'sizes' => '512x512',
-            'type' => 'image/png',
-            'purpose' => 'maskable',
-        ],
-    ];
+    foreach ($manifestIconDefs as $iconDef) {
+        if (($iconDef['sizes'] ?? '') === '192x192') {
+            $icon192 = (string) ($iconDef['path'] ?? $icon192);
+            break;
+        }
+    }
+
+    $icons = array_map(static function (array $iconDef): array {
+        $entry = [
+            'src' => (string) ($iconDef['path'] ?? ''),
+            'sizes' => (string) ($iconDef['sizes'] ?? ''),
+            'type' => (string) ($iconDef['type'] ?? 'image/png'),
+        ];
+        if (! empty($iconDef['purpose'])) {
+            $entry['purpose'] = (string) $iconDef['purpose'];
+        }
+
+        return $entry;
+    }, $manifestIconDefs);
 
     $shortcuts = array_map(static function (array $shortcut) use ($icon192): array {
         return [
@@ -84,5 +83,19 @@ Route::get('/favicon/site.webmanifest', function () {
         'Content-Type' => 'application/manifest+json; charset=UTF-8',
     ]);
 });
+
+Route::get('/favicon/{asset}', function (string $asset) {
+    $safeName = basename($asset);
+    if ($safeName !== $asset) {
+        abort(404);
+    }
+
+    $path = public_path('favicon/'.$safeName);
+    if (! is_file($path)) {
+        abort(404);
+    }
+
+    return response()->file($path);
+})->where('asset', '[a-zA-Z0-9\-\.]+');
 
 Route::view('/{any?}', 'app')->where('any', '.*');

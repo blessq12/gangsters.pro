@@ -33,6 +33,26 @@ return [
     'apple_touch_icon' => $faviconBase.'/apple-touch-icon.png',
     'icon_192' => $faviconBase.'/web-app-manifest-192x192.png',
     'icon_512' => $faviconBase.'/web-app-manifest-512x512.png',
+    'manifest_icons' => [
+        [
+            'path' => $faviconBase.'/web-app-manifest-192x192.png',
+            'sizes' => '192x192',
+            'type' => 'image/png',
+            'purpose' => 'any',
+        ],
+        [
+            'path' => $faviconBase.'/web-app-manifest-512x512.png',
+            'sizes' => '512x512',
+            'type' => 'image/png',
+            'purpose' => 'any',
+        ],
+        [
+            'path' => $faviconBase.'/web-app-manifest-512x512.png',
+            'sizes' => '512x512',
+            'type' => 'image/png',
+            'purpose' => 'maskable',
+        ],
+    ],
     'browserconfig_path' => $faviconBase.'/browserconfig.xml',
 
     'manifest_path' => $faviconBase.'/site.webmanifest',

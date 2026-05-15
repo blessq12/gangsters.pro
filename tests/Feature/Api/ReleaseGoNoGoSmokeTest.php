@@ -125,6 +125,38 @@ final class ReleaseGoNoGoSmokeTest extends ApiTestCase
         $this->assertContains('192x192', $iconSizes);
         $this->assertContains('512x512', $iconSizes);
 
+        foreach ($manifestJson['icons'] as $icon) {
+            $this->assertIsArray($icon);
+            $this->assertNotEmpty($icon['src'] ?? null);
+            $this->assertNotEmpty($icon['sizes'] ?? null);
+            $this->assertNotEmpty($icon['type'] ?? null);
+        }
+
+        $faviconPaths = array_unique(array_merge(
+            array_column((array) config('site.manifest_icons', []), 'path'),
+            [
+                (string) config('site.apple_touch_icon'),
+                (string) config('site.favicon_ico'),
+                (string) config('site.favicon_png_96'),
+            ],
+        ));
+
+        foreach ($faviconPaths as $path) {
+            $response = $this->get($path)->assertOk();
+            if (str_ends_with($path, '.png')) {
+                $this->assertStringContainsString(
+                    'image/png',
+                    (string) $response->headers->get('Content-Type'),
+                );
+            }
+            if (str_ends_with($path, '.ico')) {
+                $this->assertMatchesRegularExpression(
+                    '#image/(x-icon|vnd\.microsoft\.icon)#',
+                    (string) $response->headers->get('Content-Type'),
+                );
+            }
+        }
+
         $sitemap = $this->get('/sitemap.xml')->assertOk();
         $sitemap->assertHeader('content-type', 'application/xml; charset=UTF-8');
         $this->assertStringContainsString('<urlset', (string) $sitemap->getContent());
