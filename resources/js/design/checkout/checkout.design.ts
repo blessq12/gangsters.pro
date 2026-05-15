@@ -2,7 +2,11 @@
  * Презентация чекаута: все шаги и общие паттерны полей/кнопок.
  */
 
-import { shellColorRoles, shellTypography } from "../layout/shell.design";
+import { dockDesign } from "../layout/dock.design";
+import { secondarySurfaces, shellColorRoles, shellTypography } from "../layout/shell.design";
+
+const nestedCard = secondarySurfaces.nestedCard;
+const chromePillInactive = dockDesign.shared.chromePillInactive;
 
 export const checkoutDesign = {
     shared: {
@@ -24,13 +28,10 @@ export const checkoutDesign = {
             "bg-black/5 text-app-canvas-fg hover:bg-black/8",
         introMuted: "text-xs text-app-muted",
         authTabRow: "flex gap-2 text-[11px] font-medium",
-        guestIsland:
-            "space-y-2 rounded-none border border-app-border-on-surface bg-app-surface px-3 py-3",
+        guestIsland: `${nestedCard} space-y-2 px-3 py-3`,
         grid2: "grid grid-cols-2 gap-2",
-        addressEmptyHint:
-            "rounded-none border border-dashed border-neutral-500/60 bg-app-surface px-4 py-3 text-[11px] text-neutral-700",
-        addressLi:
-            "flex items-center gap-2 rounded-none border border-app-border-on-surface bg-app-surface px-3 py-2",
+        addressEmptyHint: `${nestedCard} border-dashed border-neutral-500/60 px-4 py-3 text-[11px] text-app-muted`,
+        addressLi: `flex items-center gap-2 ${nestedCard} px-3 py-2`,
         radioField:
             "h-4 w-4 rounded-none border-neutral-400 text-app-accent focus:ring-app-accent",
         checkboxSm:
@@ -103,6 +104,8 @@ export const checkoutDesign = {
             "mt-2 rounded-none border border-app-accent/25 bg-app-accent/8 px-2.5 py-2 text-[11px] text-app-canvas-fg",
         systemLine:
             "mt-1 flex items-center justify-between gap-2 rounded-none px-1 py-0.5",
+        systemLineName: "min-w-0 truncate text-app-canvas-fg",
+        systemLineMeta: "shrink-0 text-app-muted",
         totalsCard:
             "mt-3 space-y-1 rounded-none border border-app-border-on-surface bg-app-glass-fill px-3 py-2 text-xs sm:text-sm",
         totalsRow: "flex items-center justify-between",
@@ -117,8 +120,7 @@ export const checkoutDesign = {
         giftRow: "flex items-center justify-between gap-2",
         giftTitle: "font-semibold text-app-accent",
         giftSelectedHint: "mt-0.5 truncate text-[11px] text-app-muted",
-        giftCta:
-            "shrink-0 rounded-none border border-app-accent/60 bg-app-surface px-3 py-1 text-[11px] font-medium text-app-accent transition hover:bg-neutral-950/85",
+        giftCta: `shrink-0 ${chromePillInactive} px-3 py-1 text-[11px] font-medium text-app-accent`,
         authActions: "mt-3 flex flex-col gap-2",
         giftModalList: "space-y-2",
         giftRadioLabel:

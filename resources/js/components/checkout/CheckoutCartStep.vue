@@ -206,10 +206,10 @@ function unitPriceRub(item) {
                 :key="item.lineKey"
                 :class="c.systemLine"
             >
-                <span class="min-w-0 truncate text-slate-100">
+                <span :class="c.systemLineName">
                     • {{ item.productSnapshot?.name || `Товар #${item.productId}` }}
                 </span>
-                <span class="shrink-0 text-slate-300">
+                <span :class="c.systemLineMeta">
                     {{ item.qty }} × {{ formatPrice(0) }} ₽
                 </span>
             </li>

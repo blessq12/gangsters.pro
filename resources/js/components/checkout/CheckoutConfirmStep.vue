@@ -91,7 +91,7 @@ function unitPriceRub(item) {
                             • {{ lineBadge(item) }}
                         </span>
                     </span>
-                    <span class="shrink-0 text-slate-200">
+                    <span :class="cf.orderLineMuted">
                         {{ item.qty }} × {{ formatPrice(unitPriceRub(item)) }} ₽
                     </span>
                 </li>
@@ -190,7 +190,7 @@ function unitPriceRub(item) {
                     </span>
                     <span
                         v-else
-                        class="text-slate-400"
+                        :class="s.textMutedLine"
                     >
                         адрес не выбран
                     </span>

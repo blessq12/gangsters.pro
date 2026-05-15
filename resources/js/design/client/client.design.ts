@@ -2,6 +2,10 @@
  * Профиль клиента: формы, адреса, история заказов, блок контактов.
  */
 
+import { secondarySurfaces } from "../layout/shell.design";
+
+const nestedCard = secondarySurfaces.nestedCard;
+
 export const clientDesign = {
     shared: {
         formRoot: "space-y-4 text-app-canvas-fg",
@@ -38,8 +42,7 @@ export const clientDesign = {
         forgotSectionTop: "space-y-2 border-t border-black/12 pt-3",
         forgotToggle:
             "text-[11px] text-app-accent/90 underline-offset-2 hover:text-app-accent hover:underline",
-        forgotIsland:
-            "space-y-2 rounded-none border border-black/12 bg-app-surface p-3",
+        forgotIsland: `${nestedCard} space-y-2 p-3`,
         forgotHint: "text-[11px] text-app-muted",
         forgotSubmitBtn:
             "inline-flex w-full items-center justify-center rounded-none border border-app-accent/50 bg-transparent px-3 py-1.5 text-xs font-medium text-app-accent hover:bg-app-accent/10 disabled:opacity-50",
