@@ -1,8 +1,9 @@
 /**
- * Публичные SEO/бренд-константы SPA (дублируют config/site.php; canonical на клиенте — из window.location).
+ * Публичные SEO/бренд-константы SPA: window.__SITE__ из Blade (config/site.php).
+ * Fallback — для import без DOM (сборка/тесты).
  */
 
-export const siteMeta = {
+const siteMetaFallback = {
     name: "Gangster's Sushi",
     shortName: "Гангстерс Суши",
     pwaDisplayName: "Гангстерс Суши",
@@ -14,7 +15,13 @@ export const siteMeta = {
     ogLocale: "ru_RU",
     ogType: "website",
     ogImagePath: "/favicon/web-app-manifest-512x512.png",
+    ogImageSocialPath: "/images/og/og-default-1200x630.jpg",
     twitterCard: "summary_large_image",
     defaultRobots: "index,follow",
     pwaInstallDismissKey: "gangsters_pwa_install_dismissed",
 };
+
+export const siteMeta =
+    typeof window !== "undefined" && window.__SITE__
+        ? window.__SITE__
+        : siteMetaFallback;

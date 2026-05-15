@@ -38,6 +38,9 @@ final class SYS_Company extends Model
         'delivery_fee_kopecks',
         'average_delivery_time_minutes',
         'city_coverage',
+        'delivery_zone_geojson',
+        'kitchen_latitude',
+        'kitchen_longitude',
         'vk',
         'inst',
         'logo',
@@ -45,6 +48,9 @@ final class SYS_Company extends Model
 
     protected $casts = [
         'work_schedule' => 'array',
+        'delivery_zone_geojson' => 'array',
+        'kitchen_latitude' => 'float',
+        'kitchen_longitude' => 'float',
     ];
 
     public function legal(): HasOne

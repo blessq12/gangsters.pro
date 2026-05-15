@@ -91,11 +91,16 @@ final class ReleaseGoNoGoSmokeTest extends ApiTestCase
 
     public function test_release_spa_shell_baseline(): void
     {
+        $resolver = app(\App\Application\Site\SiteSeoResolver::class);
+        $homeSeo = $resolver->resolveForPath('/');
+        $deliverySeo = $resolver->resolveForPath('delivery');
+
         $home = $this->get('/')->assertOk();
-        $this->get('/delivery')->assertOk();
+        $delivery = $this->get('/delivery')->assertOk();
         $this->get('/contacts')->assertOk();
 
         $html = $home->getContent();
+        $deliveryHtml = $delivery->getContent();
         $this->assertIsString($html);
         $this->assertStringContainsString('meta name="description"', $html);
         $this->assertStringContainsString('name="theme-color" content="#191919"', $html);
@@ -110,6 +115,36 @@ final class ReleaseGoNoGoSmokeTest extends ApiTestCase
         $this->assertStringContainsString('Гангстерс', $html);
         $this->assertStringContainsString('href="/favicon/favicon.svg"', $html);
         $this->assertStringContainsString('href="/favicon/favicon.ico"', $html);
+        $this->assertStringContainsString(
+            '<title>'.e($homeSeo['title']).'</title>',
+            $html,
+        );
+        $this->assertStringContainsString(
+            '<title>'.e($deliverySeo['title']).'</title>',
+            $deliveryHtml,
+        );
+        $this->assertStringNotContainsString(
+            'Доставка суши и роллов в Томске',
+            $deliveryHtml,
+        );
+        $this->assertStringContainsString('window.__SITE__', $html);
+        $this->assertStringContainsString('pwaDisplayName', $html);
+
+        $mapsApiKey = config('services.yandex_maps.api_key');
+        if (! is_string($mapsApiKey) || $mapsApiKey === '') {
+            $this->markTestSkipped('YANDEX_MAPS_API_KEY not configured in this environment.');
+        }
+        $this->assertStringContainsString('yandexMapsApiKey', $html);
+        $this->assertStringContainsString(
+            (string) config('site.og_image_social_path'),
+            $html,
+        );
+
+        $ogSocial = $this->get((string) config('site.og_image_social_path'))->assertOk();
+        $this->assertStringContainsString(
+            'image/',
+            (string) $ogSocial->headers->get('Content-Type'),
+        );
 
         $manifest = $this->get('/favicon/site.webmanifest')->assertOk();
         $manifest->assertHeader('content-type', 'application/manifest+json; charset=UTF-8');
@@ -159,7 +194,10 @@ final class ReleaseGoNoGoSmokeTest extends ApiTestCase
 
         $sitemap = $this->get('/sitemap.xml')->assertOk();
         $sitemap->assertHeader('content-type', 'application/xml; charset=UTF-8');
-        $this->assertStringContainsString('<urlset', (string) $sitemap->getContent());
+        $sitemapXml = (string) $sitemap->getContent();
+        $this->assertStringContainsString('<urlset', $sitemapXml);
+        $this->assertStringContainsString('/delivery', $sitemapXml);
+        $this->assertStringNotContainsString('/reset-password', $sitemapXml);
 
         $appShellPath = resource_path('js/App.vue');
         $bootstrapPath = resource_path('js/processes/bootstrap/useAppBootstrap.js');

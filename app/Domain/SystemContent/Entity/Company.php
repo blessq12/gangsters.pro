@@ -17,6 +17,10 @@ final class Company
         private readonly ?string $house,
         private readonly ?string $addressComment,
         private readonly ?string $cityCoverage,
+        /** @var array{type: string, coordinates: array<mixed>}|null */
+        private readonly ?array $deliveryZoneGeojson,
+        private readonly ?float $kitchenLatitude,
+        private readonly ?float $kitchenLongitude,
         private readonly ?string $phone,
         private readonly ?string $phoneAdditional,
         private readonly ?string $supportPhone,
@@ -94,6 +98,22 @@ final class Company
     public function cityCoverage(): ?string
     {
         return $this->cityCoverage;
+    }
+
+    /** @return array{type: string, coordinates: array<mixed>}|null */
+    public function deliveryZoneGeojson(): ?array
+    {
+        return $this->deliveryZoneGeojson;
+    }
+
+    public function kitchenLatitude(): ?float
+    {
+        return $this->kitchenLatitude;
+    }
+
+    public function kitchenLongitude(): ?float
+    {
+        return $this->kitchenLongitude;
     }
 
     public function phone(): ?string

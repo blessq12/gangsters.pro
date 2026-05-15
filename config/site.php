@@ -23,6 +23,8 @@ return [
     'og_locale' => 'ru_RU',
     'og_type' => 'website',
     'og_image_path' => $faviconBase.'/web-app-manifest-512x512.png',
+    'og_image_social_path' => '/images/og/og-default-1200x630.jpg',
+    'seo_pages_path' => resource_path('site/seo-pages.json'),
     'twitter_card' => 'summary_large_image',
     'apple_mobile_web_app_title' => env('SITE_PWA_DISPLAY_NAME', $pwaDisplayName),
 

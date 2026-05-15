@@ -2,6 +2,13 @@
 
 namespace App\Providers;
 
+use App\Application\Catalog\Contracts\CatalogYandexReadModelContract;
+use App\Application\Catalog\Query\CatalogYandexReadModel;
+use App\Application\Notifications\Ports\ClientOutboundNotifier;
+use App\Application\Order\Command\CancelOrderService;
+use App\Application\Order\Command\MarkOrderPaidService;
+use App\Application\Order\Command\PlaceOrderService;
+use App\Application\Order\Command\UpdateOrderService;
 use App\Application\Order\Contracts\CancelOrderContract;
 use App\Application\Order\Contracts\CustomerSnapshotProvider;
 use App\Application\Order\Contracts\MarkOrderPaidContract;
@@ -9,13 +16,13 @@ use App\Application\Order\Contracts\OrderApplicationFacadeContract;
 use App\Application\Order\Contracts\OrderPlacementContract;
 use App\Application\Order\Contracts\UpdateOrderContract;
 use App\Application\Order\OrderApplicationFacade;
-use App\Application\YandexFood\Contracts\YandexFoodOrderMetaStore;
-use App\Application\Notifications\Ports\ClientOutboundNotifier;
 use App\Application\Security\UnauthorizedClientAccessNotifier;
+use App\Application\Site\BuildRestaurantJsonLd;
+use App\Application\Site\SitePublicConfigPresenter;
+use App\Application\Site\SiteSeoResolver;
+use App\Application\SystemContent\Query\GetSystemCompanyUseCase;
+use App\Application\YandexFood\Contracts\YandexFoodOrderMetaStore;
 use App\Domain\Order\Contracts\CatalogItemSnapshotProvider as DomainCatalogItemSnapshotProvider;
-use App\Application\Order\Command\CancelOrderService;
-use App\Application\Catalog\Contracts\CatalogYandexReadModelContract;
-use App\Application\Catalog\Query\CatalogYandexReadModel;
 use App\Infrastructure\Notifications\Client\LaravelMailClientOutboundNotifier;
 use App\Infrastructure\Order\Catalog\EloquentCatalogItemSnapshotProvider;
 use App\Infrastructure\Order\CustomerSnapshot\EloquentCustomerSnapshotProvider;
@@ -23,10 +30,6 @@ use App\Infrastructure\Security\EventUnauthorizedClientAccessNotifier;
 use App\Infrastructure\Shared\Events\LaravelDomainEventBus;
 use App\Infrastructure\Shared\Events\LaravelIntegrationEventBus;
 use App\Infrastructure\YandexFood\OrderMeta\EloquentYandexFoodOrderMetaStore;
-use App\Application\Order\Command\PlaceOrderService;
-use App\Application\Order\Command\UpdateOrderService;
-use App\Application\Order\Command\MarkOrderPaidService;
-use App\Application\SystemContent\Query\GetSystemCompanyUseCase;
 use App\Shared\Events\DomainEventBus;
 use App\Shared\Events\IntegrationEventBus;
 use Illuminate\Pagination\Paginator;
@@ -79,6 +82,16 @@ class AppServiceProvider extends ServiceProvider
         View::composer(['errors::*', 'error.*'], function ($view) {
             $companyData = app(GetSystemCompanyUseCase::class)->execute()['data'] ?? null;
             $view->with('company', $companyData !== null ? (object) $companyData : null);
+        });
+
+        View::composer('app', function ($view) {
+            $resolver = app(SiteSeoResolver::class);
+
+            $view->with([
+                'pageSeo' => $resolver->resolveForPath((string) request()->path()),
+                'sitePublic' => app(SitePublicConfigPresenter::class)->forClient(),
+                'restaurantJsonLd' => app(BuildRestaurantJsonLd::class)->buildOrNull(),
+            ]);
         });
     }
 }

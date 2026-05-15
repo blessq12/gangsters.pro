@@ -28,7 +28,10 @@ function resolveSeo(route) {
     const title = seo?.title ?? siteMeta.defaultTitle;
     const description = seo?.description ?? siteMeta.defaultDescription;
     const robots = seo?.robots ?? siteMeta.defaultRobots;
-    const ogImagePath = seo?.ogImage ?? siteMeta.ogImagePath;
+    const ogImagePath =
+        seo?.ogImage ??
+        siteMeta.ogImageSocialPath ??
+        siteMeta.ogImagePath;
 
     return {
         title,

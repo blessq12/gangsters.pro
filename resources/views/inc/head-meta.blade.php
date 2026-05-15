@@ -1,16 +1,21 @@
 @php
+    use App\Application\Site\SiteSeoResolver;
+
+    $resolver = app(SiteSeoResolver::class);
+    $pageSeo = $pageSeo ?? $resolver->resolveForPath(request()->path());
     $siteName = (string) config('site.name');
-    $title = (string) config('site.default_title');
-    $description = (string) config('site.default_description');
+    $title = (string) ($pageSeo['title'] ?? config('site.default_title'));
+    $description = (string) ($pageSeo['description'] ?? config('site.default_description'));
+    $robots = (string) ($pageSeo['robots'] ?? 'index,follow');
     $canonicalBase = rtrim((string) config('site.canonical_base'), '/');
     $path = request()->path();
     $canonicalUrl = $canonicalBase . ($path === '' || $path === '/' ? '' : '/' . ltrim($path, '/'));
-    $ogImagePath = (string) config('site.og_image_path');
+    $ogImagePath = (string) config('site.og_image_social_path');
     $ogImageUrl = $canonicalBase . $ogImagePath;
 @endphp
 <meta name="description" content="{{ $description }}">
 <meta name="color-scheme" content="dark">
-<meta name="robots" content="index,follow">
+<meta name="robots" content="{{ $robots }}">
 <link rel="canonical" href="{{ $canonicalUrl }}">
 <meta property="og:locale" content="{{ config('site.og_locale') }}">
 <meta property="og:type" content="{{ config('site.og_type') }}">

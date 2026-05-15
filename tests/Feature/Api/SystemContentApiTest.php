@@ -105,6 +105,9 @@ final class SystemContentApiTest extends ApiTestCase
         $this->assertArrayHasKey('vk', $data);
         $this->assertArrayHasKey('inst', $data);
         $this->assertArrayHasKey('site_url', $data);
+        $this->assertArrayHasKey('delivery_zone_geojson', $data);
+        $this->assertArrayHasKey('kitchen_latitude', $data);
+        $this->assertArrayHasKey('kitchen_longitude', $data);
     }
 
     public function test_company_work_schedule_public_payload_has_no_delivery_slots(): void

@@ -23,6 +23,8 @@
         <env name="CACHE_DRIVER" value="array"/>
         <!-- <env name="DB_CONNECTION" value="sqlite"/> -->
         <!-- <env name="DB_DATABASE" value=":memory:"/> -->
+        <!-- Для изоляции от dev: раскомментируй и создай БД gangsters_test + migrate (RefreshDatabase в проекте запрещён). -->
+        <!-- <env name="DB_DATABASE" value="gangsters_test"/> -->
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
