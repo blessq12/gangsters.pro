@@ -4,7 +4,8 @@
 
 export const siteMeta = {
     name: "Gangster's Sushi",
-    shortName: "Gangster's",
+    shortName: "Гангстерс Суши",
+    pwaDisplayName: "Гангстерс Суши",
     defaultTitle: "Доставка суши и роллов в Томске | Gangster's Sushi",
     defaultDescription:
         "Закажи суши, роллы и горячие блюда с доставкой по Томску. Gangster's Sushi — быстрая доставка и актуальное меню онлайн.",

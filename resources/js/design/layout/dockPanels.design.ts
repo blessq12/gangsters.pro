@@ -18,7 +18,7 @@ export const dockPanelsDesign = {
                 "flex min-w-0 items-start justify-between gap-3",
             title: `font-heading ${shellTypography.scale.heading.section} ${shellColorRoles.accent}`,
             description: `${shellTypography.body.secondaryDescription} ${shellColorRoles.muted}`,
-            body: "min-h-0 flex-1 space-y-4 overflow-y-auto text-xs text-app-canvas-fg sm:text-sm",
+            body: "min-h-0 flex-1 touch-pan-y space-y-4 overflow-y-auto text-xs text-app-canvas-fg sm:text-sm",
             footer:
                 "shrink-0 border-t border-app-accent/15 pt-3 mt-1",
         },

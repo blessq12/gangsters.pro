@@ -103,6 +103,11 @@ final class ReleaseGoNoGoSmokeTest extends ApiTestCase
         $this->assertStringContainsString('rel="canonical"', $html);
         $this->assertStringContainsString('rel="manifest" href="/favicon/site.webmanifest"', $html);
         $this->assertStringContainsString('apple-mobile-web-app-capable" content="yes"', $html);
+        $this->assertStringContainsString(
+            'apple-mobile-web-app-title" content="'.config('site.apple_mobile_web_app_title').'"',
+            $html,
+        );
+        $this->assertStringContainsString('Гангстерс', $html);
         $this->assertStringContainsString('href="/favicon/favicon.svg"', $html);
         $this->assertStringContainsString('href="/favicon/favicon.ico"', $html);
 
@@ -111,6 +116,8 @@ final class ReleaseGoNoGoSmokeTest extends ApiTestCase
         $manifestJson = $manifest->json();
         $this->assertIsArray($manifestJson);
         $this->assertSame((string) config('site.name'), $manifestJson['name'] ?? null);
+        $this->assertSame((string) config('site.short_name'), $manifestJson['short_name'] ?? null);
+        $this->assertStringContainsString('Гангстерс', (string) ($manifestJson['short_name'] ?? ''));
         $this->assertSame('/?utm_source=pwa', $manifestJson['start_url'] ?? null);
         $this->assertSame('standalone', $manifestJson['display'] ?? null);
         $this->assertNotEmpty($manifestJson['icons'] ?? null);

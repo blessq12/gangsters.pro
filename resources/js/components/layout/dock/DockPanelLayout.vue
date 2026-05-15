@@ -61,7 +61,10 @@ const hasFooter = computed(() => Boolean(slots.footer));
             </div>
         </header>
 
-        <div :class="bodyClasses">
+        <div
+            :class="bodyClasses"
+            data-dock-panel-scroll
+        >
             <slot />
         </div>
 

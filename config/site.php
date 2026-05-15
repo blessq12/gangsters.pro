@@ -3,9 +3,11 @@
 $canonicalBase = rtrim((string) env('CLIENT_FRONTEND_URL', env('APP_URL', 'http://localhost')), '/');
 $faviconBase = '/favicon';
 
+$pwaDisplayName = env('SITE_PWA_DISPLAY_NAME', 'Гангстерс Суши');
+
 return [
-    'name' => env('SITE_NAME', env('APP_NAME', "Gangster's Sushi")),
-    'short_name' => env('SITE_SHORT_NAME', "Gangster's"),
+    'name' => env('SITE_NAME', $pwaDisplayName),
+    'short_name' => env('SITE_SHORT_NAME', $pwaDisplayName),
     'default_title' => env(
         'SITE_DEFAULT_TITLE',
         "Доставка суши и роллов в Томске | Gangster's Sushi",
@@ -15,13 +17,14 @@ return [
         'Закажи суши, роллы и горячие блюда с доставкой по Томску. Gangster\'s Sushi — быстрая доставка и актуальное меню онлайн.',
     ),
     'canonical_base' => $canonicalBase,
+    /** Совпадает с --app-canvas в MainLayout / style.css */
     'theme_color' => '#191919',
     'background_color' => '#191919',
     'og_locale' => 'ru_RU',
     'og_type' => 'website',
     'og_image_path' => $faviconBase.'/web-app-manifest-512x512.png',
     'twitter_card' => 'summary_large_image',
-    'apple_mobile_web_app_title' => env('SITE_NAME', env('APP_NAME', "Gangster's Sushi")),
+    'apple_mobile_web_app_title' => env('SITE_PWA_DISPLAY_NAME', $pwaDisplayName),
 
     'favicon_base' => $faviconBase,
     'favicon_svg' => $faviconBase.'/favicon.svg',

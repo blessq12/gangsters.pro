@@ -6,6 +6,7 @@ import {
 
 const SWIPE_CLOSE_MIN_DISTANCE_PX = 80;
 const SWIPE_CLOSE_MAX_X_RATIO = 0.5;
+const SCROLL_TOP_EPSILON_PX = 2;
 
 function elementFromTouchTarget(target) {
     if (!target) return null;
@@ -35,6 +36,36 @@ function findScrollableAncestorFrom(startEl, boundary) {
     return null;
 }
 
+function findPrimaryPanelScroller(boundary) {
+    if (!(boundary instanceof HTMLElement)) return null;
+
+    const fromTouch = boundary.querySelector("[data-dock-panel-scroll]");
+    if (fromTouch instanceof HTMLElement && isScrollableY(fromTouch)) {
+        return fromTouch;
+    }
+
+    const overflowAuto = boundary.querySelectorAll("*");
+    for (const el of overflowAuto) {
+        if (el instanceof HTMLElement && isScrollableY(el)) {
+            return el;
+        }
+    }
+
+    return null;
+}
+
+function resolvePanelScroller(touchTargetEl, boundary) {
+    const fromTouch = findScrollableAncestorFrom(touchTargetEl, boundary);
+    if (fromTouch) {
+        return fromTouch;
+    }
+    return findPrimaryPanelScroller(boundary);
+}
+
+function scrollTopChangedDuringGesture(start, end) {
+    return Math.abs(end - start) > SCROLL_TOP_EPSILON_PX;
+}
+
 /**
  * Свайп закрытия панели и body scroll lock только для мобильного дока.
  * @param {import('pinia').Store} uiStore — ui store с dockActiveId, closeDockPanel
@@ -44,6 +75,8 @@ export function useDockMobileInteractions(uiStore, enabled) {
     const dockPanelOuterRef = ref(null);
     const touchStart = ref({ x: 0, y: 0 });
     let touchStartTargetEl = null;
+    let scrollTopAtTouchStart = 0;
+    let panelScrollerAtTouchStart = null;
 
     function isOn() {
         const v = typeof enabled === "function" ? enabled() : unref(enabled);
@@ -56,6 +89,13 @@ export function useDockMobileInteractions(uiStore, enabled) {
         if (!t) return;
         touchStart.value = { x: t.clientX, y: t.clientY };
         touchStartTargetEl = e.target;
+
+        const boundary = dockPanelOuterRef.value;
+        panelScrollerAtTouchStart = resolvePanelScroller(
+            touchStartTargetEl,
+            boundary,
+        );
+        scrollTopAtTouchStart = panelScrollerAtTouchStart?.scrollTop ?? 0;
     }
 
     function onDockPanelTouchEnd(e) {
@@ -72,12 +112,31 @@ export function useDockMobileInteractions(uiStore, enabled) {
         if (absDx >= absDy * SWIPE_CLOSE_MAX_X_RATIO) return;
 
         const boundary = dockPanelOuterRef.value;
-        const scroller = findScrollableAncestorFrom(touchStartTargetEl, boundary);
-        if (scroller && scroller.scrollTop > 0) {
-            return;
+        const scroller =
+            panelScrollerAtTouchStart ??
+            resolvePanelScroller(touchStartTargetEl, boundary);
+
+        if (scroller) {
+            const scrollTopEnd = scroller.scrollTop;
+            if (scrollTopEnd > SCROLL_TOP_EPSILON_PX) {
+                touchStartTargetEl = null;
+                panelScrollerAtTouchStart = null;
+                return;
+            }
+            if (
+                scrollTopChangedDuringGesture(
+                    scrollTopAtTouchStart,
+                    scrollTopEnd,
+                )
+            ) {
+                touchStartTargetEl = null;
+                panelScrollerAtTouchStart = null;
+                return;
+            }
         }
 
         touchStartTargetEl = null;
+        panelScrollerAtTouchStart = null;
         uiStore.closeDockPanel();
     }
 

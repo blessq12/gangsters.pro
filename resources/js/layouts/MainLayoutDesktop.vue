@@ -91,6 +91,7 @@ onMounted(() => {
         main: mainRef.value,
         onComplete: () => {
             showIntro.value = false;
+            themeStore.syncThemeColorFromCanvas();
             const stepDelay = INTRO_BOTTOM_BAR_DELAY_MS;
             setTimeout(() => {
                 bottomBarReady.value = true;

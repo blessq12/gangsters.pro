@@ -1,0 +1,1 @@
+import{l as r}from"./app-B5xsyMmv.js";import{c as t}from"./vue-core-D09oeovf.js";function i(){const e=r();return{toggle(o){e.toggleFavorite(o)},remove(o){e.removeFavorite(o)},clear(){e.clear()}}}function n(){const e=r();return{items:t(()=>e.favorites),count:t(()=>e.count),isFavorite(o){return e.isFavorite(o)}}}export{n as a,i as u};

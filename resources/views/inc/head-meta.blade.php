@@ -25,4 +25,4 @@
 <meta name="twitter:image" content="{{ $ogImageUrl }}">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="{{ config('site.apple_mobile_web_app_title') }}">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">

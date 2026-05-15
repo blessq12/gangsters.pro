@@ -3,6 +3,21 @@ import { siteMeta } from "../config/siteMeta";
 
 const THEME_KEY = "theme";
 
+function resolveCanvasThemeColor() {
+    if (typeof document === "undefined") {
+        return siteMeta.themeColor;
+    }
+
+    const shell = document.querySelector(".app-shell");
+    const source = shell ?? document.documentElement;
+    const raw = getComputedStyle(source).getPropertyValue("--app-canvas").trim();
+    if (raw) {
+        return raw;
+    }
+
+    return siteMeta.themeColor;
+}
+
 function updateSafariThemeColor() {
     if (typeof document === "undefined") return;
 
@@ -13,7 +28,7 @@ function updateSafariThemeColor() {
         document.head.appendChild(meta);
     }
 
-    meta.setAttribute("content", siteMeta.themeColor);
+    meta.setAttribute("content", resolveCanvasThemeColor());
 }
 
 export const useThemeStore = defineStore("theme", {
@@ -26,6 +41,12 @@ export const useThemeStore = defineStore("theme", {
 
             this.theme = "dark";
             window.localStorage.setItem(THEME_KEY, "dark");
+
+            requestAnimationFrame(() => {
+                updateSafariThemeColor();
+            });
+        },
+        syncThemeColorFromCanvas() {
             updateSafariThemeColor();
         },
     },
