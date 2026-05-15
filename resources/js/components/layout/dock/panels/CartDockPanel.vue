@@ -24,7 +24,7 @@ const c = panels.cart;
         </template>
 
         <CheckoutCartStep v-if="activeStep === 'cart'" />
-        <CheckoutAuthStep v-else-if="activeStep === 'auth'" />
+        <CheckoutGuestStep v-else-if="activeStep === 'guest'" />
         <CheckoutDeliveryStep v-else-if="activeStep === 'delivery'" />
         <CheckoutPaymentStep v-else-if="activeStep === 'payment'" />
         <CheckoutConfirmStep v-else-if="activeStep === 'confirm'" />

@@ -19,7 +19,7 @@ alwaysApply: true
 
 - **Catalog** — дерево каталога и товары (публичное API каталога).
 - **Order** — оформление и список заказов клиента, внутренние служебные эндпойнты; состав заказа может браться с **серверной корзины** (см. Shopping).
-- **Shopping** — единая серверная сессия покупок: корзина, избранное, черновик чекаута; префикс API **`/api/shopping`**; идентификация гостя — **HttpOnly cookie** (`config/shopping.php`), цепочка middleware **`attempt.sanctum` → `shopping.session`** там, где нужен и Bearer, и сессия корзины. После логина клиента — **`POST /api/shopping/merge`** (Sanctum). При выходе — **`POST /api/shopping/logout`** удаляет серверную сессию и сбрасывает cookie (корзина на сервере для этой сессии не сохраняется между «полным логаутом» и следующим входом — это текущая политика).
+- **Shopping** — единая серверная сессия покупок: корзина, избранное, **checkout intent** (`checkout_draft` / alias **`checkout_intent`**); **`suggested_step`** — только для баннера «Продолжить» (`delivery` \| `payment` \| `confirm`), без шага auth в wizard. Dock корзины: всегда список товаров; гость — **«Оформить заказ»** → delivery; вход — dock **Профиль**. Persist intent — **`PATCH /api/shopping/checkout-draft`** на переходах шагов. HttpOnly cookie shopping, middleware **`attempt.sanctum` → `shopping.session`**. Merge / logout — как раньше.
 - **Client** — регистрация, профиль, адреса, Sanctum token.
 - **Integrations** — Yandex Food и др. в своих неймспейсах; к домену Order при необходимости через фасады/контракты.
 
@@ -36,7 +36,7 @@ alwaysApply: true
 
 ### Состояние и API
 
-- Глобальный UI и данные приложения — **Pinia**. **Корзина, избранное и черновик чекаута** — источник правды на **бэкенде**; сторы — кэш/отображение после запросов к **`/api/shopping`** (слой `resources/js/api/shoppingApi.js`, bootstrap `features/shopping/shoppingBootstrap.js`, применение снимка `shoppingApplySnapshot.js`). Старт приложения: `useAppBootstrap` поднимает shopping state после инициализации стора пользователя.
+- Глобальный UI и данные приложения — **Pinia**. **Корзина, избранное и checkout intent** — источник правды на **бэкенде**; `cartStore` / `favoritesStore` / **`checkoutIntentStore`** — кэш после **`/api/shopping`** (`shoppingApi.js`, `shoppingBootstrap.js`, `shoppingApplySnapshot.js`). Оформление в dock — **`useCheckout`** (`features/checkout/useCheckout.js`); заказы — **`orderStore`**. `gangsters_order_draft` в localStorage **не используем** (только одноразовая миграция в bootstrap).
 - **localStorage** для корзины/избранного как источник правды **не используем**; одноразовая миграция старых ключей — в bootstrap (флаг в `sessionStorage`). Тема и прочий чисто клиентский UI по-прежнему могут жить в `localStorage` (см. `themeStore`, `uiStore`).
 - Запросы к API — через **api-хелперы** (`resources/js/api/*.js`), не разбрасывать `axios` по компонентам. HTTP-клиент с **`withCredentials: true`** для shopping-cookie.
 - Оформление заказа: тело `POST /api/order` передаёт доставку/оплату/гостя; **позиции** при активной серверной корзине уходят как **`items: []`** — состав берётся с сервера по сессии (`orderContracts.buildCreateOrderPayloadDto`, `serverCartOnly`).

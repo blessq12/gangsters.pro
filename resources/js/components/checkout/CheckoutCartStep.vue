@@ -1,31 +1,51 @@
 <script setup>
 import { computed, ref, watch } from "vue";
+import { storeToRefs } from "pinia";
 import { useAppDesign } from "../../design/useAppDesign";
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
+import { useCartStore } from "../../stores/cartStore";
 import { DOMAIN_EVENTS, emitDomainEvent } from "../../shared/domainEvents";
 
 const chk = useAppDesign().components.checkout;
 const c = chk.cart;
 
-const { checkoutState, handleStartCheckout, handleContinueAsGuest } =
-    useCheckoutFlowContext();
+const {
+    checkoutState,
+    handleStartCheckout,
+    handleResumeCheckout,
+    openProfileDock,
+} = useCheckoutFlowContext();
+
+const cartStore = useCartStore();
 const {
     cartItems,
-    userCartItems,
-    systemCartItems,
+    userItems: userCartItems,
+    systemItems: systemCartItems,
+} = storeToRefs(cartStore);
+
+const {
     totalAmount,
     userTotalAmount,
     formatPrice,
     isAuthenticated,
     promoState,
-    orderStore,
+    checkoutIntent,
+    canResumeCheckout,
+    resumeCheckoutLabel,
 } = checkoutState;
+
 const showGiftModal = ref(false);
 const selectedGiftProductId = ref(null);
 const giftApplying = ref(false);
 
+const isCartEmpty = computed(() => cartItems.value.length === 0);
+const hasUserLines = computed(() => userCartItems.value.length > 0);
+const hasSystemOnlyCart = computed(
+    () => !isCartEmpty.value && !hasUserLines.value && systemCartItems.value.length > 0,
+);
+
 const giftPromotion = computed(() => {
-    const state = promoState?.value;
+    const state = promoState?.value ?? promoState;
     if (!state || typeof state !== "object") {
         return null;
     }
@@ -97,7 +117,7 @@ async function applyGiftSelection() {
 
     giftApplying.value = true;
     try {
-        await orderStore.setPromotionGift(selectedGiftProductId.value);
+        await checkoutIntent.setPromotionGift(selectedGiftProductId.value);
         showGiftModal.value = false;
     } finally {
         giftApplying.value = false;
@@ -135,14 +155,32 @@ function unitPriceRub(item) {
 <template>
     <div>
         <div
-            v-if="!cartItems.length"
+            v-if="canResumeCheckout"
+            :class="c.resumeBanner"
+        >
+            <div :class="c.resumeBannerRow">
+                <p :class="c.resumeBannerText">
+                    Есть незавершённое оформление — можно продолжить с того места, где остановился.
+                </p>
+                <button
+                    type="button"
+                    :class="chk.shared.btnPrimaryMd"
+                    @click="handleResumeCheckout"
+                >
+                    {{ resumeCheckoutLabel }}
+                </button>
+            </div>
+        </div>
+
+        <div
+            v-if="isCartEmpty"
             :class="c.emptyState"
         >
             Корзина пока пустая. Добавь пару вкусных позиций, и тут станет веселее.
         </div>
 
         <ul
-            v-else-if="userCartItems.length"
+            v-else-if="hasUserLines"
             :class="c.userList"
         >
             <li :class="chk.shared.subsectionKickerSm">
@@ -194,6 +232,13 @@ function unitPriceRub(item) {
             </li>
         </ul>
 
+        <p
+            v-else-if="hasSystemOnlyCart"
+            :class="[chk.shared.introMuted, 'mb-2']"
+        >
+            В корзине только автодобавления по акции. Добавь блюда из меню, чтобы оформить заказ.
+        </p>
+
         <ul
             v-if="systemCartItems.length"
             :class="c.systemList"
@@ -216,7 +261,7 @@ function unitPriceRub(item) {
         </ul>
 
         <div
-            v-if="cartItems.length"
+            v-if="!isCartEmpty"
             :class="c.totalsCard"
         >
             <div :class="c.totalsRow">
@@ -257,34 +302,24 @@ function unitPriceRub(item) {
         </div>
 
         <div
-            v-if="cartItems.length"
+            v-if="hasUserLines"
             :class="c.authActions"
         >
-            <template v-if="isAuthenticated">
-                <button
-                    type="button"
-                    :class="chk.shared.btnPrimaryMd"
-                    @click="handleStartCheckout"
-                >
-                    Перейти к оформлению
-                </button>
-            </template>
-            <template v-else>
-                <button
-                    type="button"
-                    :class="chk.shared.btnPrimaryMd"
-                    @click="handleStartCheckout"
-                >
-                    Войти или зарегистрироваться
-                </button>
-                <button
-                    type="button"
-                    :class="chk.shared.btnSecondaryOutline"
-                    @click="handleContinueAsGuest"
-                >
-                    Продолжить без регистрации
-                </button>
-            </template>
+            <button
+                type="button"
+                :class="chk.shared.btnPrimaryMd"
+                @click="handleStartCheckout"
+            >
+                {{ isAuthenticated ? "Перейти к оформлению" : "Оформить заказ" }}
+            </button>
+            <button
+                v-if="!isAuthenticated"
+                type="button"
+                :class="c.loginLink"
+                @click="openProfileDock"
+            >
+                Войти в аккаунт
+            </button>
         </div>
 
         <BaseModal v-model="showGiftModal">

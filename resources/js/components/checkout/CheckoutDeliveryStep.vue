@@ -1,13 +1,6 @@
 <script setup>
-import { ref, watch } from "vue";
 import { useAppDesign } from "../../design/useAppDesign";
-import { useRuPhoneModel } from "../../composables/client/useRuPhoneModel";
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
-import {
-    normalizeRuPhoneDigits,
-    RU_PHONE_MASKA_PATTERN,
-    RU_PHONE_MASKA_TOKENS_ATTR,
-} from "../../validation/ruPhone";
 
 const chk = useAppDesign().components.checkout;
 const s = chk.shared;
@@ -16,18 +9,19 @@ const d = chk.delivery;
 const {
     userStore,
     checkoutState,
+    checkoutStepMeta,
     goToCart,
+    goToGuest,
     goToPayment,
     setDeliveryMethod,
     setDeliveryComment,
-    setGuestContact,
     patchDeliveryAddress,
     selectAddress,
     handleCreateAddress,
 } = useCheckoutFlowContext();
 
 const {
-    orderStore,
+    checkoutIntent,
     newAddressForm,
     newAddressLoading,
     newAddressError,
@@ -35,39 +29,12 @@ const {
     deliveryStepError,
     isGuestCheckout,
 } = checkoutState;
-
-const guestPhoneForm = ref({
-    phone: normalizeRuPhoneDigits(orderStore.guestContact.phone),
-});
-
-const { phoneMask } = useRuPhoneModel(guestPhoneForm, "phone");
-
-watch(
-    () => guestPhoneForm.value.phone,
-    (digits) => {
-        const n = normalizeRuPhoneDigits(digits);
-        const cur = normalizeRuPhoneDigits(orderStore.guestContact.phone);
-        if (n !== cur) {
-            setGuestContact({ phone: n });
-        }
-    },
-);
-
-watch(
-    () => orderStore.guestContact.phone,
-    (p) => {
-        const n = normalizeRuPhoneDigits(p);
-        if (n !== guestPhoneForm.value.phone) {
-            guestPhoneForm.value.phone = n;
-        }
-    },
-);
 </script>
 
 <template>
     <div :class="s.flowBody">
         <p :class="s.stepKicker">
-            Шаг 1 из 3 — Доставка
+            Шаг {{ checkoutStepMeta.delivery.n }} из {{ checkoutStepMeta.delivery.total }} — Доставка
         </p>
 
         <div class="space-y-2">
@@ -81,7 +48,7 @@ watch(
                     type="button"
                     :class="[
                         s.pillRoundText,
-                        orderStore.deliveryInfo.method === method ? s.pillActive : s.pillInactive,
+                        checkoutIntent.deliveryInfo.method === method ? s.pillActive : s.pillInactive,
                     ]"
                     @click="setDeliveryMethod(method)"
                 >
@@ -91,43 +58,7 @@ watch(
         </div>
 
         <div
-            v-if="isGuestCheckout"
-            :class="s.guestIsland"
-        >
-            <p :class="s.headingSm">
-                Контакт
-            </p>
-            <input
-                :value="orderStore.guestContact.name"
-                type="text"
-                placeholder="Имя"
-                :class="s.inputFieldFull"
-                @input="
-                    setGuestContact({ name: $event.target.value })
-                "
-            />
-            <input
-                v-model="phoneMask.masked"
-                v-maska="phoneMask"
-                :data-maska="RU_PHONE_MASKA_PATTERN"
-                :data-maska-tokens="RU_PHONE_MASKA_TOKENS_ATTR"
-                type="tel"
-                placeholder="+7 (___) ___-__-__"
-                :class="s.inputFieldFull"
-            />
-            <input
-                :value="orderStore.guestContact.email"
-                type="email"
-                placeholder="Email (необязательно)"
-                :class="s.inputFieldFull"
-                @input="
-                    setGuestContact({ email: $event.target.value })
-                "
-            />
-        </div>
-
-        <div
-            v-if="orderStore.deliveryInfo.method !== 'pickup' && isGuestCheckout"
+            v-if="checkoutIntent.deliveryInfo.method !== 'pickup' && isGuestCheckout"
             class="space-y-2"
         >
             <p :class="s.headingSm">
@@ -135,7 +66,7 @@ watch(
             </p>
             <div :class="s.grid2">
                 <input
-                    :value="orderStore.deliveryInfo.address?.street ?? ''"
+                    :value="checkoutIntent.deliveryInfo.address?.street ?? ''"
                     type="text"
                     placeholder="Улица"
                     :class="s.inputFieldCol2"
@@ -146,7 +77,7 @@ watch(
                     "
                 />
                 <input
-                    :value="orderStore.deliveryInfo.address?.house ?? ''"
+                    :value="checkoutIntent.deliveryInfo.address?.house ?? ''"
                     type="text"
                     placeholder="Дом"
                     :class="s.inputFieldGridCell"
@@ -157,7 +88,7 @@ watch(
                     "
                 />
                 <input
-                    :value="orderStore.deliveryInfo.address?.entrance ?? ''"
+                    :value="checkoutIntent.deliveryInfo.address?.entrance ?? ''"
                     type="text"
                     placeholder="Подъезд"
                     :class="s.inputFieldGridCell"
@@ -168,7 +99,7 @@ watch(
                     "
                 />
                 <input
-                    :value="orderStore.deliveryInfo.address?.apartment ?? ''"
+                    :value="checkoutIntent.deliveryInfo.address?.apartment ?? ''"
                     type="text"
                     placeholder="Квартира"
                     :class="s.inputFieldCol2"
@@ -182,13 +113,13 @@ watch(
         </div>
 
         <div
-            v-if="orderStore.deliveryInfo.method !== 'pickup' && !isGuestCheckout"
+            v-if="checkoutIntent.deliveryInfo.method !== 'pickup' && !isGuestCheckout"
             class="space-y-2"
         >
             <p :class="s.headingSm">
                 Выбери адрес доставки
             </p>
-            <template v-if="orderStore.deliveryInfo.method !== 'pickup'">
+            <template v-if="checkoutIntent.deliveryInfo.method !== 'pickup'">
                 <div
                     v-if="!userStore.addresses.length"
                     :class="s.addressEmptyHint"
@@ -249,7 +180,7 @@ watch(
         </p>
 
         <div
-            v-if="orderStore.deliveryInfo.method !== 'pickup' && !isGuestCheckout"
+            v-if="checkoutIntent.deliveryInfo.method !== 'pickup' && !isGuestCheckout"
             :class="s.borderSectionTop"
         >
             <button
@@ -341,7 +272,7 @@ watch(
                 rows="2"
                 :class="s.textareaFlow"
                 placeholder="Подъезд, этаж, код домофона и другие нюансы"
-                :value="orderStore.deliveryInfo.comment"
+                :value="checkoutIntent.deliveryInfo.comment"
                 @input="
                     setDeliveryComment($event.target.value)
                 "
@@ -352,9 +283,9 @@ watch(
             <button
                 type="button"
                 :class="s.linkUnderline"
-                @click="goToCart"
+                @click="isGuestCheckout ? goToGuest() : goToCart()"
             >
-                Назад к корзине
+                {{ isGuestCheckout ? "Назад: контакт" : "Назад к корзине" }}
             </button>
             <button
                 type="button"

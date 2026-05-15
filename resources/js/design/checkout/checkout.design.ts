@@ -122,6 +122,11 @@ export const checkoutDesign = {
         giftSelectedHint: "mt-0.5 truncate text-[11px] text-app-muted",
         giftCta: `shrink-0 ${chromePillInactive} px-3 py-1 text-[11px] font-medium text-app-accent`,
         authActions: "mt-3 flex flex-col gap-2",
+        resumeBanner:
+            "mb-3 rounded-none border border-app-accent/30 bg-app-accent/10 px-3 py-2 text-xs sm:text-sm",
+        resumeBannerRow: "flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between",
+        resumeBannerText: "text-app-canvas-fg",
+        loginLink: "text-center text-xs text-app-muted underline-offset-2 hover:text-app-accent hover:underline",
         giftModalList: "space-y-2",
         giftRadioLabel:
             "flex cursor-pointer items-center gap-3 rounded-none border border-app-border-on-surface bg-black/5 px-3 py-2 transition hover:border-app-accent/40",

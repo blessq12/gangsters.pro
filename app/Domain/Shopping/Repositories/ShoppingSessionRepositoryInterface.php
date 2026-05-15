@@ -14,6 +14,8 @@ interface ShoppingSessionRepositoryInterface
 
     public function save(ShoppingSession $session): void;
 
+    public function touchExpiresAt(int $sessionId, \DateTimeImmutable $expiresAt): void;
+
     /**
      * Создать новую сессию с заданным public_id и сроком жизни.
      */

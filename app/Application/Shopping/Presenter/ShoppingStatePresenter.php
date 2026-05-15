@@ -3,6 +3,7 @@
 namespace App\Application\Shopping\Presenter;
 
 use App\Application\Shopping\CartRules\ResolveShoppingCartUseCase;
+use App\Application\Shopping\SuggestedCheckoutStepResolver;
 use App\Domain\Order\Contracts\CatalogItemSnapshotProvider;
 use App\Domain\Shopping\CartRules\CartLineItem;
 use App\Domain\Shopping\Entities\ShoppingSession;
@@ -13,6 +14,7 @@ final class ShoppingStatePresenter
     public function __construct(
         private readonly CatalogItemSnapshotProvider $catalog,
         private readonly ResolveShoppingCartUseCase $resolveShoppingCart,
+        private readonly SuggestedCheckoutStepResolver $suggestedCheckoutStep,
     ) {}
 
     /**
@@ -74,6 +76,8 @@ final class ShoppingStatePresenter
             ];
         }
 
+        $draft = $session->getCheckoutDraft();
+
         return [
             'session' => [
                 'public_id' => $session->getPublicId(),
@@ -89,7 +93,9 @@ final class ShoppingStatePresenter
                 'subtotal_system_kopecks' => $resolved->subtotalSystemKopecks,
             ],
             'favorites' => $favorites,
-            'checkout_draft' => $session->getCheckoutDraft(),
+            'checkout_draft' => $draft,
+            'checkout_intent' => $draft,
+            'suggested_step' => $this->suggestedCheckoutStep->resolve($session, $resolved),
         ];
     }
 

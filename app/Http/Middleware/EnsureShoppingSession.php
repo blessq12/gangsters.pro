@@ -55,7 +55,7 @@ final class EnsureShoppingSession
                 Cookie::queue($this->makeCookie($cookieName, $session->getPublicId(), $ttlDays));
             } else {
                 $session->setExpiresAt($expiresAt);
-                $this->sessions->save($session);
+                $this->sessions->touchExpiresAt($session->getId(), $expiresAt);
                 Cookie::queue($this->makeCookie($cookieName, $session->getPublicId(), $ttlDays));
             }
         } else {
@@ -64,7 +64,7 @@ final class EnsureShoppingSession
                 Cookie::queue($this->makeCookie($cookieName, $session->getPublicId(), $ttlDays));
             } else {
                 $session->setExpiresAt($expiresAt);
-                $this->sessions->save($session);
+                $this->sessions->touchExpiresAt($session->getId(), $expiresAt);
                 Cookie::queue($this->makeCookie($cookieName, $session->getPublicId(), $ttlDays));
             }
         }

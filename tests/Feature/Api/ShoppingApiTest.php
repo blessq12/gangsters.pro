@@ -9,6 +9,8 @@ final class ShoppingApiTest extends ApiTestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->disableCookieEncryption();
+        $this->withCredentials();
         $this->skipUnlessTablesExist([
             'SHP_shopping_sessions',
             'SHP_shopping_cart_lines',
@@ -40,10 +42,163 @@ final class ShoppingApiTest extends ApiTestCase
                 ],
                 'favorites',
                 'checkout_draft',
+                'checkout_intent',
+                'suggested_step',
             ],
         ]);
         $response->assertCookie((string) config('shopping.session_cookie'));
         $this->assertNotEmpty($response->json('data.session.public_id'));
+        $response->assertJsonPath('data.suggested_step', 'cart');
+        $this->assertSame(
+            $response->json('data.checkout_draft'),
+            $response->json('data.checkout_intent'),
+        );
+    }
+
+    public function test_suggested_step_cart_when_cart_has_items_and_guest_without_draft_progress(): void
+    {
+        $productId = $this->firstProductIdFromCatalog();
+        if ($productId === null) {
+            $this->markTestSkipped('Нет товаров в каталоге.');
+        }
+
+        $state = $this->getJson('/api/shopping/state')->assertOk();
+        $cookieHeader = $this->cookieHeaderFromResponse($state);
+
+        $response = $this->withHeaders(['Cookie' => $cookieHeader])
+            ->postJson('/api/shopping/cart/items', [
+                'product_id' => $productId,
+                'quantity' => 1,
+            ])
+            ->assertOk();
+
+        $response->assertJsonPath('data.suggested_step', 'cart');
+    }
+
+    public function test_suggested_step_payment_when_delivery_draft_complete(): void
+    {
+        $productId = $this->firstProductIdFromCatalog();
+        if ($productId === null) {
+            $this->markTestSkipped('Нет товаров в каталоге.');
+        }
+
+        $cookieName = (string) config('shopping.session_cookie');
+        $cart = $this->postJson('/api/shopping/cart/items', [
+            'product_id' => $productId,
+            'quantity' => 1,
+        ])->assertOk();
+        $sessionPublicId = $cart->json('data.session.public_id');
+
+        $response = $this->withCookie($cookieName, $sessionPublicId)
+            ->patchJson('/api/shopping/checkout-draft', [
+                'guest_contact' => [
+                    'phone' => '+79991234567',
+                ],
+                'delivery_info' => [
+                    'method' => 'courier',
+                    'address' => [
+                        'street' => 'Ленина',
+                        'house' => '1',
+                    ],
+                ],
+            ])
+            ->assertOk();
+
+        $response->assertJsonPath('data.session.public_id', $sessionPublicId);
+        $response->assertJsonPath('data.suggested_step', 'guest');
+    }
+
+    public function test_suggested_step_delivery_when_guest_contact_complete_but_courier_address_missing(): void
+    {
+        $productId = $this->firstProductIdFromCatalog();
+        if ($productId === null) {
+            $this->markTestSkipped('Нет товаров в каталоге.');
+        }
+
+        $cookieName = (string) config('shopping.session_cookie');
+        $cart = $this->postJson('/api/shopping/cart/items', [
+            'product_id' => $productId,
+            'quantity' => 1,
+        ])->assertOk();
+        $sessionPublicId = $cart->json('data.session.public_id');
+
+        $response = $this->withCookie($cookieName, $sessionPublicId)
+            ->patchJson('/api/shopping/checkout-draft', [
+                'guest_contact' => [
+                    'name' => 'Иван',
+                    'phone' => '+79991234567',
+                ],
+                'delivery_info' => [
+                    'method' => 'courier',
+                ],
+            ])
+            ->assertOk();
+
+        $response->assertJsonPath('data.suggested_step', 'delivery');
+    }
+
+    public function test_suggested_step_payment_when_guest_contact_and_delivery_complete(): void
+    {
+        $productId = $this->firstProductIdFromCatalog();
+        if ($productId === null) {
+            $this->markTestSkipped('Нет товаров в каталоге.');
+        }
+
+        $cookieName = (string) config('shopping.session_cookie');
+        $cart = $this->postJson('/api/shopping/cart/items', [
+            'product_id' => $productId,
+            'quantity' => 1,
+        ])->assertOk();
+        $sessionPublicId = $cart->json('data.session.public_id');
+
+        $response = $this->withCookie($cookieName, $sessionPublicId)
+            ->patchJson('/api/shopping/checkout-draft', [
+                'guest_contact' => [
+                    'name' => 'Иван',
+                    'phone' => '+79991234567',
+                ],
+                'delivery_info' => [
+                    'method' => 'courier',
+                    'address' => [
+                        'street' => 'Ленина',
+                        'house' => '1',
+                    ],
+                ],
+            ])
+            ->assertOk();
+
+        $response->assertJsonPath('data.suggested_step', 'payment');
+    }
+
+    public function test_suggested_step_confirm_when_draft_has_payment(): void
+    {
+        $productId = $this->firstProductIdFromCatalog();
+        if ($productId === null) {
+            $this->markTestSkipped('Нет товаров в каталоге.');
+        }
+
+        $cookieName = (string) config('shopping.session_cookie');
+        $cart = $this->postJson('/api/shopping/cart/items', [
+            'product_id' => $productId,
+            'quantity' => 1,
+        ])->assertOk();
+        $sessionPublicId = $cart->json('data.session.public_id');
+
+        $response = $this->withCookie($cookieName, $sessionPublicId)
+            ->patchJson('/api/shopping/checkout-draft', [
+                'guest_contact' => [
+                    'phone' => '+79991234567',
+                ],
+                'delivery_info' => [
+                    'method' => 'pickup',
+                ],
+                'payment_info' => [
+                    'method' => 'card',
+                ],
+            ])
+            ->assertOk();
+
+        $response->assertJsonPath('data.suggested_step', 'guest');
     }
 
     public function test_upsert_cart_line_then_recalculate(): void
@@ -247,6 +402,25 @@ final class ShoppingApiTest extends ApiTestCase
         }
 
         return implode('; ', $parts);
+    }
+
+    private function shoppingSessionCookieHeader(\Illuminate\Testing\TestResponse $response): string
+    {
+        $name = (string) config('shopping.session_cookie');
+
+        return $name.'='.$this->shoppingSessionCookieValue($response);
+    }
+
+    private function shoppingSessionCookieValue(\Illuminate\Testing\TestResponse $response): string
+    {
+        $name = (string) config('shopping.session_cookie');
+        foreach ($response->headers->getCookies() as $c) {
+            if ($c->getName() === $name) {
+                return $c->getValue();
+            }
+        }
+
+        $this->fail("Shopping session cookie [{$name}] not found in response.");
     }
 
     private function firstActiveProductId(): ?int

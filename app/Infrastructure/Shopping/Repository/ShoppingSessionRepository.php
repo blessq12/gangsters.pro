@@ -102,6 +102,13 @@ class ShoppingSessionRepository implements ShoppingSessionRepositoryInterface
         });
     }
 
+    public function touchExpiresAt(int $sessionId, \DateTimeImmutable $expiresAt): void
+    {
+        SHP_ShoppingSession::query()
+            ->whereKey($sessionId)
+            ->update(['expires_at' => $expiresAt]);
+    }
+
     public function delete(int $id): void
     {
         SHP_ShoppingSession::query()->whereKey($id)->delete();

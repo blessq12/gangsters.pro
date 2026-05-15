@@ -8,19 +8,20 @@ const d = chk.delivery;
 
 const {
     checkoutState,
+    checkoutStepMeta,
     goToDelivery,
     goToConfirm,
     setPaymentMethod,
     setPaymentChangeFrom,
     setCustomerComment,
 } = useCheckoutFlowContext();
-const { orderStore, paymentStepError } = checkoutState;
+const { checkoutIntent, paymentStepError } = checkoutState;
 </script>
 
 <template>
     <div :class="s.flowBody">
         <p :class="s.stepKicker">
-            Шаг 2 из 3 — Оплата
+            Шаг {{ checkoutStepMeta.payment.n }} из {{ checkoutStepMeta.payment.total }} — Оплата
         </p>
 
         <div class="space-y-2">
@@ -34,7 +35,7 @@ const { orderStore, paymentStepError } = checkoutState;
                     type="button"
                     :class="[
                         s.pillRoundText,
-                        orderStore.paymentInfo.method === method ? s.pillActive : s.pillInactive,
+                        checkoutIntent.paymentInfo.method === method ? s.pillActive : s.pillInactive,
                     ]"
                     @click="setPaymentMethod(method)"
                 >
@@ -50,7 +51,7 @@ const { orderStore, paymentStepError } = checkoutState;
         </div>
 
         <div
-            v-if="orderStore.paymentInfo.method === 'cash'"
+            v-if="checkoutIntent.paymentInfo.method === 'cash'"
             class="space-y-1"
         >
             <p :class="s.headingSm">
@@ -61,7 +62,7 @@ const { orderStore, paymentStepError } = checkoutState;
                 min="0"
                 :class="s.textareaFlow"
                 placeholder="Например, 2000"
-                :value="orderStore.paymentInfo.changeFrom ?? ''"
+                :value="checkoutIntent.paymentInfo.changeFrom ?? ''"
                 @input="setPaymentChangeFrom($event.target.value)"
             />
         </div>
@@ -81,7 +82,7 @@ const { orderStore, paymentStepError } = checkoutState;
                 rows="2"
                 :class="s.textareaFlow"
                 placeholder="Например: без лука, позвонить за 10 минут до доставки"
-                :value="orderStore.customerComment"
+                :value="checkoutIntent.customerComment"
                 @input="setCustomerComment($event.target.value)"
             />
         </div>

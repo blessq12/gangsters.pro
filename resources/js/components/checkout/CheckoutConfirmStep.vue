@@ -10,11 +10,13 @@ const cf = chk.confirm;
 const {
     userStore,
     checkoutState,
+    checkoutStepMeta,
     goToPayment,
     handleConfirmOrder,
 } = useCheckoutFlowContext();
 
 const {
+    checkoutIntent,
     orderStore,
     userCartItems,
     systemCartItems,
@@ -44,7 +46,7 @@ function unitPriceRub(item) {
 <template>
     <div :class="s.flowBody">
         <p :class="s.stepKicker">
-            Шаг 3 из 3 — Подтверждение
+            Шаг {{ checkoutStepMeta.confirm.n }} из {{ checkoutStepMeta.confirm.total }} — Подтверждение
         </p>
 
         <div :class="cf.summaryCard">
@@ -120,18 +122,12 @@ function unitPriceRub(item) {
             </p>
             <template v-if="isGuestCheckout">
                 <p :class="s.textBodyXs">
-                    {{ orderStore.guestContact.name || "Без имени" }},
+                    {{ checkoutIntent.guestContact.name || "Без имени" }},
                     {{
-                        orderStore.guestContact.phone
-                            ? formatPhone(orderStore.guestContact.phone)
+                        checkoutIntent.guestContact.phone
+                            ? formatPhone(checkoutIntent.guestContact.phone)
                             : "без телефона"
                     }}
-                </p>
-                <p
-                    v-if="orderStore.guestContact.email"
-                    :class="s.textMutedLine"
-                >
-                    {{ orderStore.guestContact.email }}
                 </p>
             </template>
             <template v-else>
@@ -158,18 +154,18 @@ function unitPriceRub(item) {
             </p>
             <p :class="s.textBodyXs">
                 Адрес:
-                <template v-if="orderStore.deliveryInfo.method === 'pickup'">
+                <template v-if="checkoutIntent.deliveryInfo.method === 'pickup'">
                     Самовывоз (адрес точки выдачи пришлём в подтверждении)
                 </template>
                 <template v-else>
-                    <span v-if="isGuestCheckout && orderStore.deliveryInfo.address">
+                    <span v-if="isGuestCheckout && checkoutIntent.deliveryInfo.address">
                         {{
                             [
-                                orderStore.deliveryInfo.address.street,
-                                orderStore.deliveryInfo.address.house &&
-                                    `д. ${orderStore.deliveryInfo.address.house}`,
-                                orderStore.deliveryInfo.address.apartment &&
-                                    `кв. ${orderStore.deliveryInfo.address.apartment}`,
+                                checkoutIntent.deliveryInfo.address.street,
+                                checkoutIntent.deliveryInfo.address.house &&
+                                    `д. ${checkoutIntent.deliveryInfo.address.house}`,
+                                checkoutIntent.deliveryInfo.address.apartment &&
+                                    `кв. ${checkoutIntent.deliveryInfo.address.apartment}`,
                             ]
                                 .filter(Boolean)
                                 .join(", ")
@@ -199,26 +195,26 @@ function unitPriceRub(item) {
             <p :class="s.textBodyXs">
                 Оплата:
                 {{
-                    orderStore.paymentInfo.method === "cash"
+                    checkoutIntent.paymentInfo.method === "cash"
                         ? "Наличными"
-                        : orderStore.paymentInfo.method === "card"
+                        : checkoutIntent.paymentInfo.method === "card"
                           ? "Банковская карта"
-                          : orderStore.paymentInfo.method === "transfer"
+                          : checkoutIntent.paymentInfo.method === "transfer"
                             ? "Перевод"
                             : "не выбрано"
                 }}
                 <span
-                    v-if="orderStore.paymentInfo.method === 'cash' && orderStore.paymentInfo.changeFrom"
+                    v-if="checkoutIntent.paymentInfo.method === 'cash' && checkoutIntent.paymentInfo.changeFrom"
                     :class="cf.mutedInline"
                 >
-                    (сдача с {{ formatPrice(orderStore.paymentInfo.changeFrom) }} ₽)
+                    (сдача с {{ formatPrice(checkoutIntent.paymentInfo.changeFrom) }} ₽)
                 </span>
             </p>
             <p
-                v-if="orderStore.customerComment"
+                v-if="checkoutIntent.customerComment"
                 :class="s.textMutedLine"
             >
-                Комментарий: {{ orderStore.customerComment }}
+                Комментарий: {{ checkoutIntent.customerComment }}
             </p>
         </div>
 

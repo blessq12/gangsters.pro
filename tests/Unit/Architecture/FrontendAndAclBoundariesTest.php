@@ -33,14 +33,14 @@ final class FrontendAndAclBoundariesTest extends TestCase
         );
     }
 
-    public function test_use_order_store_is_isolated_to_order_feature_and_checkout_state(): void
+    public function test_use_order_store_is_isolated_to_order_feature(): void
     {
         $violations = [];
         $allowed = [
-            $this->path('resources/js/composables/checkout/useCheckoutState.js'),
             $this->path('resources/js/features/orders/useOrderCommands.js'),
             $this->path('resources/js/features/orders/useOrdersReadModel.js'),
-            $this->path('resources/js/features/shopping/shoppingApplySnapshot.js'),
+            $this->path('resources/js/features/checkout/useCheckout.js'),
+            $this->path('resources/js/stores/orderStore.js'),
         ];
 
         foreach ($this->filesIn($this->path('resources/js'), '.js') as $file) {
@@ -53,7 +53,31 @@ final class FrontendAndAclBoundariesTest extends TestCase
         $this->assertSame(
             [],
             $violations,
-            "useOrderStore() должен использоваться только в order-feature/read-model и checkout-state:\n".implode("\n", $violations),
+            "useOrderStore() только в order-feature и useCheckout:\n".implode("\n", $violations),
+        );
+    }
+
+    public function test_use_checkout_intent_store_is_isolated_to_checkout_and_shopping(): void
+    {
+        $violations = [];
+        $allowed = [
+            $this->path('resources/js/features/checkout/useCheckout.js'),
+            $this->path('resources/js/features/orders/useOrderCommands.js'),
+            $this->path('resources/js/features/shopping/shoppingApplySnapshot.js'),
+            $this->path('resources/js/stores/checkoutIntentStore.js'),
+        ];
+
+        foreach ($this->filesIn($this->path('resources/js'), '.js') as $file) {
+            $code = (string) file_get_contents($file);
+            if (str_contains($code, 'useCheckoutIntentStore(') && ! in_array($file, $allowed, true)) {
+                $violations[] = $file;
+            }
+        }
+
+        $this->assertSame(
+            [],
+            $violations,
+            "useCheckoutIntentStore() только в checkout/shopping:\n".implode("\n", $violations),
         );
     }
 

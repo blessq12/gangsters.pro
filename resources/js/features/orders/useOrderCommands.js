@@ -1,3 +1,4 @@
+import { useCheckoutIntentStore } from "../../stores/checkoutIntentStore";
 import { useOrderStore } from "../../stores/orderStore";
 import { useCartReadModel } from "../shoppingSession/useCartReadModel";
 import { useClientReadModel } from "../client/useClientReadModel";
@@ -5,6 +6,7 @@ import { useClientAddressSelectionModel } from "../client/useClientAddressSelect
 
 export function useOrderCommands() {
     const orderStore = useOrderStore();
+    const checkoutIntent = useCheckoutIntentStore();
     const cartReadModel = useCartReadModel();
     const clientReadModel = useClientReadModel();
     const addressSelection = useClientAddressSelectionModel();
@@ -20,25 +22,22 @@ export function useOrderCommands() {
             ? null
             : addressSelection.selectedAddress.value;
 
-        return orderStore.createOrder(selectedAddress, cartItems, {
+        return orderStore.createOrder(selectedAddress, cartItems, checkoutIntent, {
             isGuest,
         });
     }
 
     return {
-        // черновик заказа (используется checkout-процессом)
-        setDeliveryInfo: orderStore.setDeliveryInfo,
-        setPaymentInfo: orderStore.setPaymentInfo,
-        setCustomerComment: orderStore.setCustomerComment,
-        setGuestContact: orderStore.setGuestContact,
-        patchDeliveryAddress: orderStore.patchDeliveryAddress,
-        clearDraft: orderStore.clearDraft,
+        setDeliveryInfo: (payload) => checkoutIntent.setDeliveryInfo(payload),
+        setPaymentInfo: (payload) => checkoutIntent.setPaymentInfo(payload),
+        setCustomerComment: (comment) => checkoutIntent.setCustomerComment(comment),
+        setGuestContact: (payload) => checkoutIntent.setGuestContact(payload),
+        patchDeliveryAddress: (partial) => checkoutIntent.patchDeliveryAddress(partial),
+        clearIntentLocal: () => checkoutIntent.clearLocal(),
+        flushIntentToServer: () => checkoutIntent.flushToServer(),
+        setPromotionGift: (productId) => checkoutIntent.setPromotionGift(productId),
 
-        // работа со списком заказов
         fetchOrders,
-
-        // high-level команда оформления заказа из текущего checkout-контекста
         createOrderFromCheckout,
     };
 }
-
