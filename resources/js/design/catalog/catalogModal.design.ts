@@ -9,12 +9,12 @@ export const catalogModalDesign = {
         backdrop: "absolute inset-0 bg-neutral-950/85",
         backdropMobile: "absolute inset-0 bg-neutral-950/85",
         content:
-            "relative z-[1] flex w-full max-h-screen items-center justify-center overflow-hidden p-6",
+            "relative z-[1] flex w-full max-h-screen items-center justify-center overflow-hidden p-6 lg:p-8",
         contentMobile: "p-[0.35rem_0.6rem]",
-        wrapper: "m-auto w-full max-w-4xl",
+        wrapper: "m-auto w-full max-w-5xl",
         wrapperMobile: "m-auto w-full max-w-full",
         panel:
-            "relative aspect-video max-h-[85vh] w-full overflow-hidden bg-[rgba(20,20,20,0.88)] shadow-[0_25px_60px_rgba(0,0,0,0.9)]",
+            "relative aspect-video max-h-[90vh] w-full overflow-hidden bg-[rgba(20,20,20,0.88)] shadow-[0_25px_60px_rgba(0,0,0,0.9)]",
         panelMobile:
             "relative w-full min-h-0 h-[92dvh] max-h-[100dvh] overflow-hidden bg-[rgba(31,31,35,0.65)] shadow-[0_25px_60px_rgba(0,0,0,0.92)]",
         closeBtn:
@@ -31,11 +31,11 @@ export const catalogModalDesign = {
             "pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-black/95 via-black/45 to-transparent",
         emptyCopy: "Нет данных о товаре.",
         empty:
-            "absolute inset-0 z-[1] m-0 flex items-center justify-center p-8 text-sm text-app-muted",
+            "absolute inset-0 z-[1] m-0 flex items-center justify-center p-8 text-base text-app-muted",
         emptyMobile:
             "static flex items-center justify-center p-8 text-sm text-app-muted",
         info:
-            "absolute bottom-3 left-3 right-3 z-[2] flex max-h-[38%] min-w-0 flex-col justify-end",
+            "absolute bottom-3 left-3 right-3 z-[2] flex max-h-[42%] min-w-0 flex-col justify-end",
         infoMobile:
             "bottom-[0.6rem] left-[0.6rem] right-[0.6rem] max-h-[55%]",
     },
@@ -44,10 +44,10 @@ export const catalogModalDesign = {
         card: "flex flex-col gap-3",
         titleCol: "w-2/3 min-w-0",
         title:
-            "bg-app-glass-fill px-2.5 py-2 text-[13px] font-semibold leading-snug text-app-accent line-clamp-3 shadow-[0_0_24px_rgba(0,0,0,0.7)] backdrop-blur-xl",
+            "bg-app-glass-fill px-3 py-2.5 font-heading text-lg font-normal leading-snug text-app-accent line-clamp-3 shadow-[0_0_24px_rgba(0,0,0,0.7)] backdrop-blur-xl sm:text-xl",
         tagsRow: "mt-2 flex flex-wrap gap-1.5",
         tagPill:
-            "inline-flex items-center px-2 py-0.5 text-[10px] font-medium backdrop-blur",
+            "inline-flex items-center px-2 py-0.5 text-[11px] font-medium backdrop-blur",
         controlsRow:
             "flex w-full shrink-0 items-center gap-3",
         actionIsland:
@@ -71,21 +71,21 @@ export const catalogModalDesign = {
         qtyMiniBtn:
             "flex h-9 w-9 shrink-0 items-center justify-center bg-neutral-950/85 text-base font-semibold leading-none text-app-canvas-fg",
         qtyNum:
-            "min-w-[1.5rem] px-0.5 text-center text-[12px] font-semibold tabular-nums text-app-accent",
+            "min-w-[1.5rem] px-0.5 text-center text-sm font-semibold tabular-nums text-app-accent",
         priceBtn:
-            "ml-auto flex min-h-10 shrink-0 items-center whitespace-nowrap bg-app-accent px-3 py-1.5 text-[12px] font-semibold text-black transition-transform duration-200 hover:scale-[1.03] cursor-pointer",
+            "ml-auto flex min-h-10 shrink-0 items-center whitespace-nowrap bg-app-accent px-3 py-1.5 text-sm font-semibold text-black transition-transform duration-200 hover:scale-[1.03] cursor-pointer",
         teleportTooltipBase:
             "fixed z-[10000] bg-[rgba(0,0,0,0.95)] px-3 py-2.5 shadow-xl backdrop-blur max-h-44 overflow-y-auto",
         tooltipWide: "w-[260px]",
         tooltipNarrow: "w-[240px]",
-        nutritionBlock: "space-y-2 text-[11px] text-app-canvas-fg",
+        nutritionBlock: "space-y-2 text-xs text-app-canvas-fg",
         nutritionRow:
             "flex items-center justify-between gap-2",
         nutritionLabel: "text-app-muted",
         nutritionVal: "font-medium",
-        ingredientsBlock: "space-y-2 text-[11px] text-app-canvas-fg",
+        ingredientsBlock: "space-y-2 text-xs text-app-canvas-fg",
         ingredientsHeading:
-            "text-[10px] font-medium text-app-muted",
+            "text-[11px] font-medium text-app-muted",
         ingredientsBody: "break-words text-app-canvas-fg/90",
     },
 
