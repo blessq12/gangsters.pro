@@ -14,6 +14,9 @@
     --color-app-accent-hover: var(--app-accent-hover, #9e1d1d);
     --color-app-canvas-fg: var(--app-canvas-fg, #ececec);
     --color-app-muted: var(--app-muted, #a3a3a3);
+    --color-app-glass-fill: var(--app-glass-fill, rgba(0, 0, 0, 0.55));
+    --color-app-accent-soft-bg: var(--app-accent-soft-bg, rgba(198, 36, 36, 0.12));
+    --color-app-border-on-surface: var(--app-border-on-surface, rgba(236, 236, 236, 0.18));
 
     --font-sans: "Onest", ui-sans-serif, system-ui, sans-serif;
     --font-heading: "Snowstorm", "Onest", ui-sans-serif, system-ui, sans-serif;

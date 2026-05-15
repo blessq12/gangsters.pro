@@ -100,9 +100,7 @@ onMounted(() => {
         :class="[
             sh.shared.root,
             sh.shared.typographyRoot,
-            themeStore.theme === 'dark'
-                ? sh.shared.themeDark
-                : sh.shared.themeLight,
+            sh.shared.themeDark,
         ]"
     >
         <!-- 1) стартовый оверлей с логотипом -->
@@ -164,15 +162,6 @@ onMounted(() => {
     );
 }
 
-.app-shell.theme-light .intro-radial-glow {
-    background: radial-gradient(
-        ellipse var(--intro-radial-x) var(--intro-radial-y) at 50% 100%,
-        color-mix(in srgb, var(--app-accent) 26%, transparent) 0%,
-        color-mix(in srgb, var(--app-accent) 8%, transparent) 48%,
-        transparent 70%
-    );
-}
-
 .app-shell.theme-dark {
     --app-canvas: #191919;
     --app-surface: #ececec;
@@ -181,17 +170,13 @@ onMounted(() => {
     --app-accent-hover: #9e1d1d;
     --app-canvas-fg: #ececec;
     --app-muted: #a3a3a3;
-    background: var(--app-canvas);
-}
-
-.app-shell.theme-light {
-    --app-canvas: #ececec;
-    --app-surface: #fafafa;
-    --app-surface-fg: #191919;
-    --app-accent: #c62424;
-    --app-accent-hover: #9e1d1d;
-    --app-canvas-fg: #191919;
-    --app-muted: #525252;
+    --app-glass-fill: rgba(0, 0, 0, 0.55);
+    --app-accent-soft-bg: rgba(198, 36, 36, 0.12);
+    --app-border-on-surface: color-mix(
+        in srgb,
+        var(--app-canvas-fg) 18%,
+        transparent
+    );
     background: var(--app-canvas);
 }
 </style>

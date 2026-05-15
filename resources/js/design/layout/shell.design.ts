@@ -86,6 +86,20 @@ export const shellColorRoles = {
     surfaceFg: "text-app-surface-fg",
 } as const;
 
+/** Острова на тёмном канвасе (вторичные страницы, контент-блоки). */
+export const secondarySurfaces = {
+    island:
+        "rounded-none border border-app-accent/20 bg-app-glass-fill shadow-[0_16px_50px_rgba(0,0,0,0.35)] backdrop-blur-md",
+    islandPad: "px-4 py-6 sm:px-6 sm:py-8 lg:px-8",
+    gradientIsland:
+        "overflow-hidden rounded-none border border-app-accent/20 bg-[linear-gradient(180deg,rgba(198,36,36,0.1),var(--app-glass-fill))] backdrop-blur-md",
+    nestedCard:
+        "rounded-none border border-app-accent/20 bg-app-glass-fill backdrop-blur-md",
+    onIslandFg: shellColorRoles.canvasFg,
+    onIslandMuted: shellColorRoles.muted,
+    onNestedFg: shellColorRoles.canvasFg,
+} as const;
+
 export const layoutShellDesign = {
     typography: shellTypography,
     colorRoles: shellColorRoles,
@@ -95,7 +109,6 @@ export const layoutShellDesign = {
         /** Корень SPA: основной текст через Onest (`--font-sans` в style.css @theme). */
         typographyRoot: "font-sans antialiased",
         themeDark: "theme-dark text-app-canvas-fg",
-        themeLight: "theme-light text-app-canvas-fg",
         introOverlay:
             "pointer-events-none fixed inset-0 z-40 flex items-center justify-center",
         /** Хук для scoped radial-gradient (`--app-accent`); слой под логотипом интро. */
@@ -131,7 +144,7 @@ export const layoutShellDesign = {
         outerGlowBR:
             "absolute -bottom-24 right-0 h-64 w-64 rounded-full bg-app-accent/12 blur-3xl",
         heroCard:
-            "relative overflow-hidden rounded-none border border-black/12 bg-neutral-950/72 shadow-[0_20px_80px_rgba(0,0,0,0.55)]",
+            "relative overflow-hidden rounded-none border border-app-accent/20 bg-neutral-950/72 shadow-[0_20px_80px_rgba(0,0,0,0.55)]",
         heroImageLayer: "absolute inset-0",
         heroImage: "h-full w-full object-cover opacity-55",
         heroScrim:
@@ -154,12 +167,11 @@ export const layoutShellDesign = {
             "transition-colors hover:text-app-accent",
         breadcrumbText: shellColorRoles.muted,
         breadcrumbSep: "opacity-60",
-        eyebrow: `${shellTypography.body.eyebrow} ${shellColorRoles.accent}`,
+        eyebrow: `mb-3 inline-flex rounded-none border border-app-accent/30 bg-app-accent-soft-bg px-3 py-1 ${shellTypographyScale.body.overlineEyebrow} ${shellColorRoles.accent} backdrop-blur`,
         title: `${shellTypography.heading.secondaryPageTitle} ${shellColorRoles.accent}`,
-        description: `${shellTypography.body.secondaryDescription} ${shellColorRoles.canvasFgSoft}`,
+        description: `${shellTypography.body.secondaryDescription} ${shellColorRoles.canvasFg}`,
         statsGrid: "mt-6 grid gap-3 sm:grid-cols-3",
-        statCard:
-            "rounded-none border border-black/12 bg-[rgba(0,0,0,0.04)] px-4 py-3 backdrop-blur",
+        statCard: `${secondarySurfaces.island} px-4 py-3`,
         statLabel: `${shellTypography.body.statLabel} ${shellColorRoles.muted}`,
         statValue: `${shellTypography.heading.statValue} ${shellColorRoles.canvasFg}`,
         slotWrap: "space-y-8 sm:space-y-10",
