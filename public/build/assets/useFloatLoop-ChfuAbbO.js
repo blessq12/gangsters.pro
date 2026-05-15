@@ -1,0 +1,1 @@
+import{k as u,q as i}from"./vue-core-D09oeovf.js";import{L as p}from"./app-C8jvXo-T.js";function a(l,n={}){let o=null;u(()=>{o=p({elements:l==null?void 0:l.value,options:n})}),i(()=>{o&&typeof o.kill=="function"&&(o.kill(),o=null)})}export{a as u};

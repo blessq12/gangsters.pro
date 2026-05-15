@@ -5,6 +5,8 @@
 import { secondarySurfaces } from "../layout/shell.design";
 
 const nestedCard = secondarySurfaces.nestedCard;
+const profileDivider = "border-app-divider-on-canvas";
+const profileStateEmpty = `${nestedCard} border-dashed border-neutral-500/60`;
 
 export const clientDesign = {
     shared: {
@@ -39,7 +41,7 @@ export const clientDesign = {
             "inline-flex w-full items-center justify-center rounded-none bg-app-accent px-4 py-2 text-sm font-semibold text-black shadow-[0_0_18px_rgba(198,36,36,0.75)] transition hover:bg-app-accent-hover disabled:opacity-60 disabled:shadow-none",
         btnPrimaryCompact:
             "inline-flex w-full items-center justify-center rounded-none bg-app-accent px-3 py-1.5 text-[11px] font-semibold text-black shadow-[0_0_14px_rgba(198,36,36,0.7)] transition hover:bg-app-accent-hover disabled:opacity-60 disabled:shadow-none",
-        forgotSectionTop: "space-y-2 border-t border-black/12 pt-3",
+        forgotSectionTop: `space-y-2 border-t ${profileDivider} pt-3`,
         forgotToggle:
             "text-[11px] text-app-accent/90 underline-offset-2 hover:text-app-accent hover:underline",
         forgotIsland: `${nestedCard} space-y-2 p-3`,
@@ -65,19 +67,15 @@ export const clientDesign = {
             "ml-3 inline-flex items-center rounded-none border border-red-500/70 bg-red-500/10 px-3 py-1 text-[11px] font-semibold text-red-200 transition hover:bg-red-500/20 hover:text-red-100",
         statsSection: "space-y-2",
         statsHint: "text-[10px] leading-snug text-app-muted",
-        statLoading:
-            "rounded-none border border-black/12 bg-app-surface px-3 py-4 text-center text-xs text-neutral-600",
+        statLoading: `${nestedCard} px-3 py-4 text-center text-xs text-app-muted`,
         statError:
-            "rounded-none border border-app-accent/25 bg-app-surface px-3 py-3 text-[11px] text-neutral-600",
+            "rounded-none border border-red-500/40 bg-red-950/40 px-3 py-3 text-[11px] text-red-200",
         statErrorAccent: "text-app-accent/90",
         statErrorSub: "mt-1 block text-app-muted",
-        statEmpty:
-            "rounded-none border border-dashed border-white/12 bg-app-surface px-3 py-4 text-center text-xs text-neutral-600",
+        statEmpty: `${profileStateEmpty} px-3 py-4 text-center text-xs text-app-muted`,
         statGrid: "grid grid-cols-2 gap-2",
-        statCard:
-            "rounded-none border border-black/12 bg-app-surface px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]",
-        statCardWide:
-            "col-span-2 rounded-none border border-black/12 bg-app-surface px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]",
+        statCard: `${nestedCard} px-3 py-3`,
+        statCardWide: `col-span-2 ${nestedCard} px-3 py-3`,
         statLabel:
             "text-[10px] font-medium uppercase tracking-wide text-app-muted",
         statValueAccent: "mt-1 text-xl font-semibold tabular-nums text-app-accent",
@@ -93,19 +91,17 @@ export const clientDesign = {
 
     orderHistory: {
         root: "space-y-3 text-app-canvas-fg",
-        stateLoading:
-            "rounded-none border border-black/12 bg-app-surface px-4 py-6 text-center text-sm text-neutral-600",
+        stateLoading: `${nestedCard} px-4 py-6 text-center text-sm text-app-muted`,
         stateError:
             "rounded-none border border-red-500/40 bg-red-950/30 px-4 py-3 text-sm text-red-200",
-        stateEmpty:
-            "rounded-none border border-dashed border-black/15 bg-app-surface px-4 py-6 text-center text-sm text-neutral-600",
+        stateEmpty: `${profileStateEmpty} px-4 py-6 text-center text-sm text-app-muted`,
         list: "max-h-[min(28rem,55vh)] space-y-2 overflow-y-auto pr-1",
-        card: "rounded-none border border-black/12 bg-app-surface",
+        card: nestedCard,
         cardHeadBtn:
-            "flex w-full items-start justify-between gap-3 px-3 py-3 text-left transition hover:bg-white/[0.04] sm:px-4",
+            "flex w-full items-start justify-between gap-3 px-3 py-3 text-left transition hover:bg-black/8 sm:px-4",
         cardHeadMain: "min-w-0 flex-1",
         cardHeadAside: "shrink-0 text-right",
-        cardBody: "border-t border-white/5 px-3 pb-3 pt-2 sm:px-4",
+        cardBody: `border-t ${profileDivider} px-3 pb-3 pt-2 sm:px-4`,
         monoId: "text-[11px] font-mono text-app-accent/90",
         dateMuted: "mt-0.5 text-xs text-app-muted",
         statusLine: "mt-1 text-xs text-app-muted",
@@ -117,15 +113,14 @@ export const clientDesign = {
         itemName: "min-w-0 truncate",
         itemQtyMuted: "text-app-muted",
         itemPrice: "shrink-0 text-app-muted",
-        paymentFoot:
-            "mt-3 border-t border-white/5 pt-2 text-[11px] text-app-muted",
+        paymentFoot: `mt-3 border-t ${profileDivider} pt-2 text-[11px] text-app-muted`,
         moreHint: "text-center text-[11px] text-app-muted",
     },
 
     addresses: {
         root: "space-y-3 text-app-canvas-fg",
         listStack: "space-y-2 text-xs",
-        card: "rounded-none border border-black/12 bg-app-surface px-3 py-2",
+        card: `${nestedCard} px-3 py-2`,
         cardRow: "flex items-center justify-between gap-2",
         titleStrong: "font-medium text-app-canvas-fg",
         metaLine: "mt-1 text-app-muted",
@@ -135,7 +130,7 @@ export const clientDesign = {
         linkRemove: "text-[10px] text-app-muted hover:text-red-400",
         commentLine: "mt-1 text-[11px] text-app-muted",
         emptyHint: "text-xs text-app-muted",
-        addSection: "mt-3 border-t border-white/5 pt-2 text-xs",
+        addSection: `mt-3 border-t ${profileDivider} pt-2 text-xs`,
         expandBtn:
             "flex w-full items-center justify-between rounded-none bg-black/5 px-3 py-2 text-[11px] font-medium text-app-canvas-fg hover:bg-black/8",
         expandChevron: "text-[11px] text-app-muted",
