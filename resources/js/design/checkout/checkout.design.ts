@@ -146,6 +146,15 @@ export const checkoutDesign = {
 
     delivery: {
         methodRow: "flex flex-wrap gap-2",
+        emptyHero:
+            `${nestedCard} space-y-3 border border-app-accent/25 bg-app-accent/8 px-4 py-4`,
+        emptyTitle: `${shellTypography.body.checkoutHeadingSm} ${shellColorRoles.accent}`,
+        emptyLead: "text-[11px] leading-snug text-app-muted",
+        profileLink:
+            "text-[11px] text-app-muted underline-offset-2 hover:text-app-accent hover:underline",
+        savePrimaryBtn:
+            "inline-flex w-full items-center justify-center rounded-none bg-app-accent px-3 py-1.5 text-[11px] font-semibold text-black shadow-[0_0_14px_rgba(198,36,36,0.7)] transition hover:bg-app-accent-hover disabled:opacity-60",
+        listSection: "space-y-2",
     },
 
     confirm: {

@@ -152,11 +152,14 @@ export function useCheckout() {
                     return "Укажи улицу и дом для курьера.";
                 }
             }
-        } else if (
-            checkoutIntent.deliveryInfo.method === "courier" &&
-            !selectedAddress
-        ) {
-            return "Выбери адрес доставки или добавь новый.";
+        } else if (checkoutIntent.deliveryInfo.method === "courier") {
+            const addressCount = userStore.addresses?.length ?? 0;
+            if (addressCount === 0) {
+                return "Заполни и сохрани адрес доставки.";
+            }
+            if (!selectedAddress) {
+                return "Выбери адрес доставки или добавь новый.";
+            }
         }
 
         return "";
@@ -205,6 +208,17 @@ export function useCheckout() {
         }
     }
 
+    function ensureAuthAddressUi() {
+        if (!isAuthenticated.value || isGuestCheckout.value) {
+            return;
+        }
+        if (checkoutIntent.deliveryInfo.method === "pickup") {
+            return;
+        }
+        const addressCount = userStore.addresses?.length ?? 0;
+        isNewAddressOpen.value = addressCount === 0;
+    }
+
     function beginGuestCheckout() {
         if (!hasCartItems.value) return;
         ensureCheckoutDefaults();
@@ -217,6 +231,7 @@ export function useCheckout() {
         ensureCheckoutDefaults();
         isGuestCheckout.value = false;
         activeStep.value = "delivery";
+        ensureAuthAddressUi();
     }
 
     watch(
@@ -240,6 +255,12 @@ export function useCheckout() {
     watch(isAuthenticated, (authed) => {
         if (authed && activeStep.value === "guest") {
             beginAuthenticatedCheckout();
+        }
+    });
+
+    watch(activeStep, (step) => {
+        if (step === "delivery") {
+            ensureAuthAddressUi();
         }
     });
 
@@ -287,6 +308,9 @@ export function useCheckout() {
         if (isAuthenticated.value) {
             isGuestCheckout.value = false;
             activeStep.value = step;
+            if (step === "delivery") {
+                ensureAuthAddressUi();
+            }
             return;
         }
 
@@ -348,6 +372,11 @@ export function useCheckout() {
 
     function setDeliveryMethod(method) {
         checkoutIntent.setDeliveryInfo({ method });
+        ensureAuthAddressUi();
+    }
+
+    function toggleNewAddressOpen() {
+        isNewAddressOpen.value = !isNewAddressOpen.value;
     }
 
     function setDeliveryComment(comment) {
@@ -406,7 +435,7 @@ export function useCheckout() {
         newAddressLoading.value = true;
 
         try {
-            await clientCommands.addAddress({
+            const data = await clientCommands.addAddress({
                 title: newAddressForm.value.title || null,
                 street: newAddressForm.value.street,
                 house: newAddressForm.value.house,
@@ -415,6 +444,17 @@ export function useCheckout() {
                 comment: newAddressForm.value.comment || null,
                 make_default: newAddressForm.value.make_default,
             });
+
+            isNewAddressOpen.value = false;
+
+            if (!userStore.selectedAddressId && userStore.addresses.length > 0) {
+                const fallbackId =
+                    data?.client?.default_address_id ??
+                    userStore.addresses[userStore.addresses.length - 1]?.id;
+                if (fallbackId != null) {
+                    clientCommands.selectAddress(fallbackId);
+                }
+            }
 
             newAddressForm.value = {
                 title: "",
@@ -485,5 +525,6 @@ export function useCheckout() {
         setCustomerComment,
         handleConfirmOrder,
         handleCreateAddress,
+        toggleNewAddressOpen,
     };
 }

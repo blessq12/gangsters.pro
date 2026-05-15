@@ -63,6 +63,7 @@ export function useCheckoutFlowContext() {
         setCustomerComment,
         handleConfirmOrder,
         handleCreateAddress,
+        toggleNewAddressOpen,
     } = flow;
 
     const checkoutState = {
@@ -120,5 +121,6 @@ export function useCheckoutFlowContext() {
         setCustomerComment,
         handleConfirmOrder,
         handleCreateAddress,
+        toggleNewAddressOpen,
     };
 }
