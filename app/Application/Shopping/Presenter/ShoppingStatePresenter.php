@@ -3,10 +3,12 @@
 namespace App\Application\Shopping\Presenter;
 
 use App\Application\Shopping\CartRules\ResolveShoppingCartUseCase;
+use App\Application\Shopping\CheckoutDraft\SyncCheckoutDraftGiftPromotion;
 use App\Application\Shopping\SuggestedCheckoutStepResolver;
 use App\Domain\Order\Contracts\CatalogItemSnapshotProvider;
 use App\Domain\Shopping\CartRules\CartLineItem;
 use App\Domain\Shopping\Entities\ShoppingSession;
+use App\Domain\Shopping\Repositories\ShoppingSessionRepositoryInterface;
 use App\Support\Money;
 
 final class ShoppingStatePresenter
@@ -15,6 +17,8 @@ final class ShoppingStatePresenter
         private readonly CatalogItemSnapshotProvider $catalog,
         private readonly ResolveShoppingCartUseCase $resolveShoppingCart,
         private readonly SuggestedCheckoutStepResolver $suggestedCheckoutStep,
+        private readonly SyncCheckoutDraftGiftPromotion $syncCheckoutDraftGiftPromotion,
+        private readonly ShoppingSessionRepositoryInterface $sessions,
     ) {}
 
     /**
@@ -23,6 +27,11 @@ final class ShoppingStatePresenter
     public function present(ShoppingSession $session): array
     {
         $resolved = $this->resolveShoppingCart->execute($session);
+
+        if ($this->syncCheckoutDraftGiftPromotion->execute($session, $resolved)) {
+            $this->sessions->save($session);
+        }
+
         $lines = array_merge($resolved->userLines, $resolved->systemLines);
         $productIds = array_unique(array_map(static fn (CartLineItem $l) => $l->productId, $lines));
         $snapshots = $productIds !== [] ? $this->catalog->getActiveSnapshotsByIds($productIds) : [];

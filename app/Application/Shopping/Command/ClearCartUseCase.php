@@ -20,6 +20,7 @@ final class ClearCartUseCase
     public function execute(ShoppingSession $session): array
     {
         $session->clearCart();
+        $session->setCheckoutDraft(null);
         $this->sessions->save($session);
 
         return $this->presenter->present($session);

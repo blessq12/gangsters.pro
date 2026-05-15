@@ -4,6 +4,7 @@ import { useCartStore } from "../../stores/cartStore";
 import { useFavoritesStore } from "../../stores/favoritesStore";
 import { useCartCommands } from "../../features/shoppingSession/useCartCommands";
 import { useUiStore } from "../../stores/uiStore";
+import { resetCheckoutAfterOrderCompleted } from "../../features/checkout/resetCheckoutAfterOrderCompleted";
 
 let processInitialized = false;
 let cleanupHandlers = [];
@@ -33,6 +34,7 @@ export function useSessionLifecycleProcess() {
                 uiStore.setDockActive(null);
             }),
             subscribeDomainEvent(DOMAIN_EVENTS.ORDER_CREATED, () => {
+                resetCheckoutAfterOrderCompleted();
                 cartCommands.clearCart();
             }),
         ];

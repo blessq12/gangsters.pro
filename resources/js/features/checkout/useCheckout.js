@@ -11,6 +11,7 @@ import { useOrderCommands } from "../orders/useOrderCommands";
 import { formatMoneyRublesRu } from "../../utils/moneyFormat";
 import { formatRuPhone } from "../../utils/phone/formatRuPhone";
 import { validateRuPhoneForSubmit } from "../../validation/ruPhone";
+import { resetCheckoutAfterOrderCompleted } from "./resetCheckoutAfterOrderCompleted";
 
 const RESUME_STEPS = ["guest", "delivery", "payment", "confirm"];
 
@@ -366,6 +367,8 @@ export function useCheckout() {
     }
 
     function goToSuccess() {
+        resetCheckoutAfterOrderCompleted();
+        isGuestCheckout.value = false;
         activeStep.value = "success";
         resumeCheckoutStep.value = null;
     }

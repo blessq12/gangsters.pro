@@ -7,13 +7,13 @@ const CHECKOUT_STEPS = ["cart", "guest", "delivery", "payment", "confirm"];
 export const useCheckoutIntentStore = defineStore("checkoutIntent", {
     state: () => ({
         deliveryInfo: {
-            method: "courier",
+            method: null,
             address: null,
             comment: "",
             scheduledAt: null,
         },
         paymentInfo: {
-            method: "card",
+            method: null,
             changeFrom: null,
         },
         customerComment: "",
@@ -29,10 +29,22 @@ export const useCheckoutIntentStore = defineStore("checkoutIntent", {
         flushing: false,
     }),
     actions: {
-        applyFromServer(draft) {
+        applyFromServer(draft, cartPromoState = null) {
+            const giftPromo =
+                cartPromoState?.gift_promotion &&
+                typeof cartPromoState.gift_promotion === "object"
+                    ? cartPromoState.gift_promotion
+                    : null;
+            const giftEligible = giftPromo?.eligible === true;
+
             if (!draft || typeof draft !== "object") {
+                this.clearLocal();
+                if (!giftEligible) {
+                    this.promotions.freeRollGiftProductId = null;
+                }
                 return;
             }
+
             const di = draft.delivery_info;
             if (di && typeof di === "object") {
                 this.deliveryInfo = {
@@ -62,12 +74,16 @@ export const useCheckoutIntentStore = defineStore("checkoutIntent", {
             }
             const promotions = draft.promotions;
             if (promotions && typeof promotions === "object") {
+                const draftGiftId =
+                    promotions.free_roll_gift_product_id != null
+                        ? Number(promotions.free_roll_gift_product_id) || null
+                        : null;
                 this.promotions = {
                     freeRollGiftProductId:
-                        promotions.free_roll_gift_product_id != null
-                            ? Number(promotions.free_roll_gift_product_id) || null
-                            : null,
+                        giftEligible && draftGiftId != null ? draftGiftId : null,
                 };
+            } else if (!giftEligible) {
+                this.promotions.freeRollGiftProductId = null;
             }
         },
         setSuggestedStep(step) {
@@ -94,6 +110,13 @@ export const useCheckoutIntentStore = defineStore("checkoutIntent", {
                     phone: this.guestContact.phone,
                 },
                 customer_comment: this.customerComment,
+                promotions: {
+                    free_roll_gift_product_id: this.promotions.freeRollGiftProductId,
+                },
+            };
+        },
+        promotionsOnlyServerPayload() {
+            return {
                 promotions: {
                     free_roll_gift_product_id: this.promotions.freeRollGiftProductId,
                 },
@@ -150,7 +173,21 @@ export const useCheckoutIntentStore = defineStore("checkoutIntent", {
                         productId != null ? Number(productId) || null : null,
                 },
             });
-            return this.flushToServer();
+            return this.flushPromotionsToServer();
+        },
+        async flushPromotionsToServer() {
+            this.flushing = true;
+            try {
+                const data = await patchCheckoutDraftRequest(
+                    this.promotionsOnlyServerPayload(),
+                );
+                applyShoppingSnapshotToStores(data);
+            } catch (e) {
+                console.error("flushPromotionsToServer / shopping checkout", e);
+                throw e;
+            } finally {
+                this.flushing = false;
+            }
         },
         async flushToServer() {
             this.flushing = true;

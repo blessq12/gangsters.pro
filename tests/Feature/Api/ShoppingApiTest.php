@@ -201,6 +201,109 @@ final class ShoppingApiTest extends ApiTestCase
         $response->assertJsonPath('data.suggested_step', 'guest');
     }
 
+    public function test_suggested_step_cart_after_order_and_promotions_patch_does_not_resume(): void
+    {
+        $this->skipUnlessTablesExist([
+            'ORD_orders',
+            'ORD_order_items',
+        ]);
+
+        $productId = $this->firstProductIdFromCatalog();
+        $giftProductId = $this->firstActiveProductId();
+        if ($productId === null || $giftProductId === null) {
+            $this->markTestSkipped('Нет активных товаров для сценария заказа и подарка.');
+        }
+
+        DB::table('PRD_products')
+            ->where('id', $giftProductId)
+            ->update(['cart_rule_gift_candidate' => true]);
+
+        DB::table('SHP_shopping_cart_rule_settings')->updateOrInsert(
+            ['id' => 1],
+            [
+                'complement_rule_enabled' => true,
+                'gift_rule_enabled' => true,
+                'rolls_per_complement' => 2,
+                'complement_rule_sort' => 10,
+                'gift_rule_sort' => 20,
+                'gift_threshold_kopecks' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        );
+
+        $cookieName = (string) config('shopping.session_cookie');
+        $state = $this->getJson('/api/shopping/state')->assertOk();
+        $sessionPublicId = $state->json('data.session.public_id');
+        $guestPhone = '+79'.str_pad((string) random_int(0, 999999999), 9, '0', STR_PAD_LEFT);
+
+        $this->withCookie($cookieName, $sessionPublicId)
+            ->postJson('/api/shopping/cart/items', [
+                'product_id' => $productId,
+                'quantity' => 1,
+            ])
+            ->assertOk();
+
+        $this->withCookie($cookieName, $sessionPublicId)
+            ->patchJson('/api/shopping/checkout-draft', [
+                'guest_contact' => [
+                    'name' => 'Гость после заказа',
+                    'phone' => $guestPhone,
+                ],
+                'delivery_info' => [
+                    'method' => 'pickup',
+                ],
+                'payment_info' => [
+                    'method' => 'card',
+                ],
+            ])
+            ->assertOk()
+            ->assertJsonPath('data.suggested_step', 'confirm');
+
+        $this->withCookie($cookieName, $sessionPublicId)
+            ->postJson('/api/order', [
+                'items' => [],
+                'delivery_method' => 'pickup',
+                'payment_method' => 'card',
+                'customer_name' => 'Гость после заказа',
+                'customer_phone' => $guestPhone,
+            ])
+            ->assertCreated();
+
+        $afterOrder = $this->withCookie($cookieName, $sessionPublicId)
+            ->getJson('/api/shopping/state')
+            ->assertOk();
+
+        $afterOrder->assertJsonPath('data.suggested_step', 'cart');
+        $this->assertNull($afterOrder->json('data.checkout_draft'));
+
+        $newCart = $this->withCookie($cookieName, $sessionPublicId)
+            ->postJson('/api/shopping/cart/items', [
+                'product_id' => $productId,
+                'quantity' => 1,
+            ])
+            ->assertOk();
+
+        $newCart->assertJsonPath('data.suggested_step', 'cart');
+        $this->assertNull($newCart->json('data.checkout_draft'));
+
+        $giftPatch = $this->withCookie($cookieName, $sessionPublicId)
+            ->patchJson('/api/shopping/checkout-draft', [
+                'promotions' => [
+                    'free_roll_gift_product_id' => $giftProductId,
+                ],
+            ])
+            ->assertOk();
+
+        $giftPatch->assertJsonPath('data.suggested_step', 'cart');
+        $giftPatch->assertJsonPath(
+            'data.checkout_draft.promotions.free_roll_gift_product_id',
+            $giftProductId,
+        );
+        $this->assertNull($giftPatch->json('data.checkout_draft.delivery_info'));
+        $this->assertNull($giftPatch->json('data.checkout_draft.payment_info'));
+    }
+
     public function test_upsert_cart_line_then_recalculate(): void
     {
         $productId = $this->firstProductIdFromCatalog();
@@ -256,11 +359,9 @@ final class ShoppingApiTest extends ApiTestCase
 
     public function test_checkout_draft_accepts_promotions_free_roll_gift_product_id(): void
     {
-        $state = $this->getJson('/api/shopping/state')->assertOk();
-        $cookieHeader = $this->cookieHeaderFromResponse($state);
-
+        $cartProductId = $this->firstProductIdFromCatalog();
         $giftProductId = $this->firstActiveProductId();
-        if ($giftProductId === null) {
+        if ($cartProductId === null || $giftProductId === null) {
             $this->markTestSkipped('Нет активных товаров для проверки подарка.');
         }
 
@@ -268,14 +369,40 @@ final class ShoppingApiTest extends ApiTestCase
             ->where('id', $giftProductId)
             ->update(['cart_rule_gift_candidate' => true]);
 
-        $this->withHeaders(['Cookie' => $cookieHeader])
+        DB::table('SHP_shopping_cart_rule_settings')->updateOrInsert(
+            ['id' => 1],
+            [
+                'complement_rule_enabled' => true,
+                'gift_rule_enabled' => true,
+                'rolls_per_complement' => 2,
+                'complement_rule_sort' => 10,
+                'gift_rule_sort' => 20,
+                'gift_threshold_kopecks' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        );
+
+        $cookieName = (string) config('shopping.session_cookie');
+        $state = $this->getJson('/api/shopping/state')->assertOk();
+        $sessionPublicId = $state->json('data.session.public_id');
+
+        $this->withCookie($cookieName, $sessionPublicId)
+            ->postJson('/api/shopping/cart/items', [
+                'product_id' => $cartProductId,
+                'quantity' => 1,
+            ])
+            ->assertOk();
+
+        $this->withCookie($cookieName, $sessionPublicId)
             ->patchJson('/api/shopping/checkout-draft', [
                 'promotions' => [
                     'free_roll_gift_product_id' => $giftProductId,
                 ],
             ])
             ->assertOk()
-            ->assertJsonPath('data.checkout_draft.promotions.free_roll_gift_product_id', $giftProductId);
+            ->assertJsonPath('data.checkout_draft.promotions.free_roll_gift_product_id', $giftProductId)
+            ->assertJsonPath('data.cart.promo_state.gift_promotion.phase', 'gift_applied');
     }
 
     public function test_checkout_draft_rejects_non_gift_candidate_product_id(): void
@@ -363,6 +490,77 @@ final class ShoppingApiTest extends ApiTestCase
                 ],
             ],
         ]);
+    }
+
+    public function test_gift_removed_from_cart_and_draft_when_user_subtotal_below_threshold(): void
+    {
+        $cartProductId = $this->firstProductIdFromCatalog();
+        $giftProductId = $this->firstActiveProductId();
+        if ($cartProductId === null || $giftProductId === null) {
+            $this->markTestSkipped('Нет активных товаров для проверки gift threshold.');
+        }
+
+        DB::table('PRD_products')
+            ->where('id', $giftProductId)
+            ->update([
+                'cart_rule_gift_candidate' => true,
+                'status' => 'active',
+            ]);
+
+        DB::table('SHP_shopping_cart_rule_settings')->updateOrInsert(
+            ['id' => 1],
+            [
+                'complement_rule_enabled' => true,
+                'gift_rule_enabled' => true,
+                'rolls_per_complement' => 2,
+                'complement_rule_sort' => 10,
+                'gift_rule_sort' => 20,
+                'gift_threshold_kopecks' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        );
+
+        $cookieName = (string) config('shopping.session_cookie');
+        $state = $this->getJson('/api/shopping/state')->assertOk();
+        $sessionPublicId = $state->json('data.session.public_id');
+
+        $this->withCookie($cookieName, $sessionPublicId)
+            ->postJson('/api/shopping/cart/items', [
+                'product_id' => $cartProductId,
+                'quantity' => 1,
+            ])
+            ->assertOk();
+
+        $this->withCookie($cookieName, $sessionPublicId)
+            ->patchJson('/api/shopping/checkout-draft', [
+                'promotions' => [
+                    'free_roll_gift_product_id' => $giftProductId,
+                ],
+            ])
+            ->assertOk()
+            ->assertJsonPath('data.cart.promo_state.gift_promotion.phase', 'gift_applied');
+
+        $response = $this->withCookie($cookieName, $sessionPublicId)
+            ->deleteJson('/api/shopping/cart/items/'.$cartProductId)
+            ->assertOk();
+
+        $response->assertJsonMissingPath('data.cart.promo_state.gift_promotion');
+        $response->assertJsonPath('data.checkout_draft.promotions.free_roll_gift_product_id', null);
+
+        $items = $response->json('data.cart.items') ?? [];
+        foreach ($items as $item) {
+            $this->assertNotSame('gift:free_roll', $item['line_key'] ?? null);
+        }
+
+        $this->withCookie($cookieName, $sessionPublicId)
+            ->postJson('/api/shopping/cart/items', [
+                'product_id' => $cartProductId,
+                'quantity' => 1,
+            ])
+            ->assertOk()
+            ->assertJsonPath('data.cart.promo_state.gift_promotion.phase', 'select_gift')
+            ->assertJsonPath('data.cart.promo_state.gift_promotion.selected_product_id', null);
     }
 
     public function test_merge_attaches_client_id(): void
