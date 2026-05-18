@@ -2,10 +2,12 @@
 
 namespace App\Providers;
 
+use App\Application\Reporting\Query\BusinessMetricsReader;
 use App\Application\Reporting\Query\ClientOrderSummaryReader;
 use App\Domain\Client\Factory\ClientFactory;
 use App\Domain\Client\Repository\ClientRepository as ClientRepositoryContract;
 use App\Infrastructure\Client\Repository\ClientRepository as EloquentClientRepository;
+use App\Infrastructure\Reporting\Query\EloquentBusinessMetricsReader;
 use App\Infrastructure\Reporting\Query\EloquentClientOrderSummaryReader;
 use Illuminate\Support\ServiceProvider;
 
@@ -18,14 +20,12 @@ class ClientServiceProvider extends ServiceProvider
     {
         $this->app->bind(ClientRepositoryContract::class, EloquentClientRepository::class);
         $this->app->bind(ClientOrderSummaryReader::class, EloquentClientOrderSummaryReader::class);
+        $this->app->bind(BusinessMetricsReader::class, EloquentBusinessMetricsReader::class);
         $this->app->singleton(ClientFactory::class);
     }
 
     /**
      * Bootstrap services.
      */
-    public function boot(): void
-    {
-    }
+    public function boot(): void {}
 }
-
