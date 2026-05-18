@@ -10,11 +10,11 @@ use App\Filament\Resources\ProductCategories\Schemas\ProductCategoryForm;
 use App\Filament\Resources\ProductCategories\Tables\ProductCategoriesTable;
 use App\Infrastructure\Category\Model\PRD_Category;
 use BackedEnum;
-use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class ProductCategoryResource extends Resource
 {
@@ -24,10 +24,8 @@ class ProductCategoryResource extends Resource
 
     protected static ?string $navigationLabel = 'Категории';
 
-    // Группа: блок каталога и товаров
-    protected static string|UnitEnum|null $navigationGroup = 'Каталог и товары';
+    protected static string|UnitEnum|null $navigationGroup = 'Каталог';
 
-    // Сортировка в навигации внутри блока каталога
     protected static ?int $navigationSort = 19;
 
     public static function form(Schema $schema): Schema
@@ -54,5 +52,10 @@ class ProductCategoryResource extends Resource
             'create' => CreateProductCategory::route('/create'),
             'edit' => EditProductCategory::route('/{record}/edit'),
         ];
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
     }
 }

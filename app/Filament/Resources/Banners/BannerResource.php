@@ -5,20 +5,16 @@ namespace App\Filament\Resources\Banners;
 use App\Filament\Resources\Banners\Pages\CreateBanner;
 use App\Filament\Resources\Banners\Pages\EditBanner;
 use App\Filament\Resources\Banners\Pages\ListBanners;
+use App\Filament\Resources\Banners\Tables\BannersTable;
 use App\Infrastructure\SystemContent\Model\SYS_Banner;
 use BackedEnum;
-use UnitEnum;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
-use Filament\Tables;
-use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class BannerResource extends Resource
 {
@@ -28,11 +24,14 @@ class BannerResource extends Resource
 
     protected static ?string $navigationLabel = 'Баннеры';
 
-    // Группа: блок контента и промо
-    protected static string|UnitEnum|null $navigationGroup = 'Контент и промо';
+    protected static string|UnitEnum|null $navigationGroup = 'Маркетинг';
 
-    // Сортировка в навигации внутри блока контента
     protected static ?int $navigationSort = 40;
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -67,36 +66,7 @@ class BannerResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->columns([
-                Tables\Columns\ImageColumn::make('image_mobile')
-                    ->label('Мобилка')
-                    ->disk('media')
-                    ->square(),
-                Tables\Columns\ImageColumn::make('image_desktop')
-                    ->label('Десктоп')
-                    ->disk('media')
-                    ->square(),
-                Tables\Columns\TextColumn::make('title')
-                    ->label('Заголовок')
-                    ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('description')
-                    ->label('Описание')
-                    ->limit(50),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Создан')
-                    ->dateTime('d.m.Y H:i')
-                    ->sortable(),
-            ])
-            ->recordActions([
-                EditAction::make()->iconButton(),
-            ], position: RecordActionsPosition::BeforeCells)
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ]);
+        return BannersTable::configure($table);
     }
 
     public static function getPages(): array
@@ -108,4 +78,3 @@ class BannerResource extends Resource
         ];
     }
 }
-

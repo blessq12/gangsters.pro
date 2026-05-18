@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Products;
 use App\Filament\Resources\Products\Pages\CreateProduct;
 use App\Filament\Resources\Products\Pages\EditProduct;
 use App\Filament\Resources\Products\Pages\ListProducts;
+use App\Filament\Resources\Products\RelationManagers\ProductCategoriesRelationManager;
 use App\Filament\Resources\Products\RelationManagers\ProductImagesRelationManager;
 use App\Filament\Resources\Products\RelationManagers\ProductIngredientsRelationManager;
 use App\Filament\Resources\Products\Schemas\ProductForm;
@@ -25,10 +26,8 @@ class ProductResource extends Resource
 
     protected static ?string $navigationLabel = 'Товары';
 
-    // Группа: блок каталога и товаров
-    protected static string|UnitEnum|null $navigationGroup = 'Каталог и товары';
+    protected static string|UnitEnum|null $navigationGroup = 'Каталог';
 
-    // Сортировка в навигации внутри блока каталога
     protected static ?int $navigationSort = 20;
 
     public static function getModelLabel(): string
@@ -54,6 +53,7 @@ class ProductResource extends Resource
     public static function getRelations(): array
     {
         return [
+            ProductCategoriesRelationManager::class,
             ProductImagesRelationManager::class,
             ProductIngredientsRelationManager::class,
         ];
@@ -66,5 +66,10 @@ class ProductResource extends Resource
             'create' => CreateProduct::route('/create'),
             'edit' => EditProduct::route('/{record}/edit'),
         ];
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
     }
 }

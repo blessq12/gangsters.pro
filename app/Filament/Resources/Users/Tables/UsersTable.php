@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Users\Tables;
 
+use App\Filament\Resources\Users\UserResource;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -11,7 +12,10 @@ use Filament\Tables\Table;
 
 class UsersTable
 {
-    public static function configure(Table $table): Table
+    /**
+     * @param  class-string  $resourceClass
+     */
+    public static function configure(Table $table, string $resourceClass = UserResource::class): Table
     {
         return $table
             ->columns([
@@ -40,7 +44,9 @@ class UsersTable
                 //
             ])
             ->recordActions([
-                EditAction::make()->iconButton(),
+                EditAction::make()
+                    ->iconButton()
+                    ->url(fn ($record): string => $resourceClass::getUrl('edit', ['record' => $record])),
             ], position: RecordActionsPosition::BeforeCells)
             ->toolbarActions([
                 BulkActionGroup::make([

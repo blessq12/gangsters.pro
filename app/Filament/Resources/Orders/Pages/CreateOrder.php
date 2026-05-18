@@ -2,12 +2,15 @@
 
 namespace App\Filament\Resources\Orders\Pages;
 
+use App\Filament\Resources\Orders\Concerns\NormalizesOrderFormData;
 use App\Filament\Resources\Orders\OrderResource;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Schemas\Schema;
 
 class CreateOrder extends CreateRecord
 {
+    use NormalizesOrderFormData;
+
     protected static string $resource = OrderResource::class;
 
     protected static ?string $title = 'Создание заказа';
@@ -21,21 +24,8 @@ class CreateOrder extends CreateRecord
             ]);
     }
 
-    protected function mutateFormDataBeforeSave(array $data): array
+    protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $data['customer_address'] = array_filter([
-            'street' => $data['customer_address_street'] ?? null,
-            'house' => $data['customer_address_house'] ?? null,
-            'entrance' => $data['customer_address_entrance'] ?? null,
-            'apartment' => $data['customer_address_apartment'] ?? null,
-        ], fn ($v) => $v !== null && $v !== '');
-        unset(
-            $data['customer_address_street'],
-            $data['customer_address_house'],
-            $data['customer_address_entrance'],
-            $data['customer_address_apartment'],
-        );
-        return $data;
+        return $this->normalizeOrderFormData($data);
     }
 }
-

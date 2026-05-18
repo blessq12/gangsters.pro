@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ProductTags\Schemas;
 
+use App\Support\Product\TagColorLabels;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -24,14 +25,7 @@ class ProductTagForm
                 ->label('Цвет бейджа')
                 ->required()
                 ->default('amber')
-                ->options([
-                    'amber' => 'Янтарный',
-                    'red' => 'Красный',
-                    'green' => 'Зелёный',
-                    'slate' => 'Серо-сланцевый',
-                    'sky' => 'Небесно-голубой',
-                    'violet' => 'Фиолетовый',
-                ]),
+                ->options(TagColorLabels::options()),
             Toggle::make('is_active')
                 ->label('Активен')
                 ->default(true),

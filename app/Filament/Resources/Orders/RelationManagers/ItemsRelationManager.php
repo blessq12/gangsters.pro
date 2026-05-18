@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Orders\RelationManagers;
 
+use App\Application\Order\Service\RecalculateOrderTotalsFromItems;
+use App\Infrastructure\Order\Model\ORD_OrderItem;
 use App\Support\Money;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
@@ -93,7 +95,7 @@ class ItemsRelationManager extends RelationManager
                     ->formatStateUsing(
                         fn ($state): string => $state !== null
                             ? Money::formatKopecksForAdmin((int) $state)
-                            : '—'
+                            : '—',
                     ),
                 TextColumn::make('row_subtotal')
                     ->label('Подытог')
@@ -102,7 +104,7 @@ class ItemsRelationManager extends RelationManager
                     ->formatStateUsing(
                         fn ($state): string => $state !== null
                             ? Money::formatKopecksForAdmin((int) $state)
-                            : '—'
+                            : '—',
                     ),
                 TextColumn::make('row_discount')
                     ->label('Скидка')
@@ -111,7 +113,7 @@ class ItemsRelationManager extends RelationManager
                     ->formatStateUsing(
                         fn ($state): string => $state !== null && (int) $state !== 0
                             ? Money::formatKopecksForAdmin((int) $state)
-                            : Money::formatKopecksForAdmin(0)
+                            : Money::formatKopecksForAdmin(0),
                     ),
                 TextColumn::make('row_total')
                     ->label('Итого')
@@ -120,28 +122,63 @@ class ItemsRelationManager extends RelationManager
                     ->formatStateUsing(
                         fn ($state): string => $state !== null
                             ? Money::formatKopecksForAdmin((int) $state)
-                            : '—'
+                            : '—',
                     ),
             ])
             ->headerActions([
                 CreateAction::make()
-                    ->using(function (array $data): \App\Infrastructure\Order\Model\ORD_OrderItem {
-                        $data['row_subtotal'] = ($data['quantity'] ?? 0) * ($data['unit_price'] ?? 0);
-                        $data['row_total'] = $data['row_subtotal'] - ($data['row_discount'] ?? 0);
-                        $data['product_list_price'] = $data['unit_price'] ?? 0;
-                        $data['product_final_price'] = $data['unit_price'] ?? 0;
+                    ->using(function (array $data): ORD_OrderItem {
+                        $data = $this->prepareItemRow($data);
+                        $item = $this->getOwnerRecord()->items()->create($data);
+                        $this->recalculateOwnerTotals();
 
-                        return $this->getOwnerRecord()->items()->create($data);
+                        return $item;
                     }),
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
+                EditAction::make()
+                    ->using(function (array $data, ORD_OrderItem $record): ORD_OrderItem {
+                        $data = $this->prepareItemRow($data);
+                        $record->update($data);
+                        $this->recalculateOwnerTotals();
+
+                        return $record;
+                    }),
+                DeleteAction::make()
+                    ->after(fn () => $this->recalculateOwnerTotals()),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->after(fn () => $this->recalculateOwnerTotals()),
                 ]),
             ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function prepareItemRow(array $data): array
+    {
+        $data['row_subtotal'] = (int) (($data['quantity'] ?? 0) * ($data['unit_price'] ?? 0));
+        $data['row_total'] = $data['row_subtotal'] - (int) ($data['row_discount'] ?? 0);
+        $unit = (int) ($data['unit_price'] ?? 0);
+        $data['product_list_price'] = $unit;
+        $data['product_final_price'] = $unit;
+
+        return $data;
+    }
+
+    private function recalculateOwnerTotals(): void
+    {
+        app(RecalculateOrderTotalsFromItems::class)->recalculate(
+            $this->getOwnerRecord()->refresh(),
+        );
+
+        $livewire = $this->getLivewire();
+        if (method_exists($livewire, 'refreshFormData')) {
+            $livewire->refreshFormData(['subtotal', 'discount_total', 'total']);
+        }
     }
 }

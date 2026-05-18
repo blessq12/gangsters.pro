@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\DeliveryZones\Pages;
 
+use App\Filament\Resources\Companies\CompanyResource;
 use App\Filament\Resources\DeliveryZones\DeliveryZoneResource;
 use App\Infrastructure\SystemContent\Model\SYS_Company;
 use Filament\Resources\Pages\ListRecords;
@@ -20,7 +21,7 @@ class ListDeliveryZones extends ListRecords
         );
 
         $this->redirect(
-            static::getResource()::getUrl('edit', ['record' => $company]),
+            CompanyResource::getUrl('edit', ['record' => $company]),
             navigate: true
         );
     }

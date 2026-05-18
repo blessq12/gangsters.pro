@@ -8,24 +8,27 @@ use App\Filament\Resources\Companies\Schemas\CompanyForm;
 use App\Filament\Resources\Companies\Tables\CompaniesTable;
 use App\Infrastructure\SystemContent\Model\SYS_Company;
 use BackedEnum;
-use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
+use UnitEnum;
 
 class CompanyResource extends Resource
 {
     protected static ?string $model = SYS_Company::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice2;
 
-    protected static ?string $navigationLabel = 'Компании';
+    protected static ?string $navigationLabel = 'Компания';
 
-    // Группа: данные о компании
+    protected static ?string $modelLabel = 'Компания';
+
+    protected static ?string $pluralModelLabel = 'Компания';
+
     protected static string|UnitEnum|null $navigationGroup = 'Компания';
 
-    // Сортировка в навигации внутри блока компании
     protected static ?int $navigationSort = 50;
 
     public static function form(Schema $schema): Schema
@@ -40,9 +43,7 @@ class CompanyResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array
@@ -51,5 +52,15 @@ class CompanyResource extends Resource
             'index' => ListCompanies::route('/'),
             'edit' => EditCompany::route('/{record}/edit'),
         ];
+    }
+
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return false;
     }
 }

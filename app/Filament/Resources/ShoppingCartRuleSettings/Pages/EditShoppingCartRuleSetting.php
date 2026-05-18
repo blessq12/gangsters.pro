@@ -9,7 +9,7 @@ class EditShoppingCartRuleSetting extends EditRecord
 {
     protected static string $resource = ShoppingCartRuleSettingResource::class;
 
-    protected static ?string $title = 'Правила корзины (доставка)';
+    protected static ?string $title = 'Правила корзины';
 
     protected function getHeaderActions(): array
     {

@@ -23,7 +23,7 @@ class ProductTagResource extends Resource
 
     protected static ?string $navigationLabel = 'Теги товаров';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Каталог и товары';
+    protected static string|UnitEnum|null $navigationGroup = 'Каталог';
 
     protected static ?int $navigationSort = 21;
 
@@ -54,5 +54,10 @@ class ProductTagResource extends Resource
             'create' => CreateProductTag::route('/create'),
             'edit' => EditProductTag::route('/{record}/edit'),
         ];
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
     }
 }

@@ -8,11 +8,12 @@ use App\Filament\Resources\CompanyLegals\Schemas\CompanyLegalForm;
 use App\Filament\Resources\CompanyLegals\Tables\CompanyLegalsTable;
 use App\Infrastructure\SystemContent\Model\SYS_CompanyLegal;
 use BackedEnum;
-use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
+use UnitEnum;
 
 class CompanyLegalResource extends Resource
 {
@@ -51,5 +52,20 @@ class CompanyLegalResource extends Resource
             'index' => ListCompanyLegals::route('/'),
             'edit' => EditCompanyLegal::route('/{record}/edit'),
         ];
+    }
+
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return false;
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
     }
 }

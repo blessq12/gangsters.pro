@@ -2,20 +2,20 @@
 
 namespace App\Filament\Resources\Orders\Pages;
 
+use App\Filament\Resources\Orders\Concerns\HasOrderStatusTabs;
 use App\Filament\Resources\Orders\OrderResource;
-use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListOrders extends ListRecords
 {
+    use HasOrderStatusTabs;
+
     protected static string $resource = OrderResource::class;
 
     protected static ?string $title = 'Заказы';
 
     protected function getHeaderActions(): array
     {
-        return [
-            CreateAction::make(),
-        ];
+        return [];
     }
 }

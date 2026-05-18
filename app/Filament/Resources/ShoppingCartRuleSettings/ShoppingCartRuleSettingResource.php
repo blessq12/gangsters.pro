@@ -5,13 +5,11 @@ namespace App\Filament\Resources\ShoppingCartRuleSettings;
 use App\Filament\Resources\ShoppingCartRuleSettings\Pages\EditShoppingCartRuleSetting;
 use App\Filament\Resources\ShoppingCartRuleSettings\Pages\ListShoppingCartRuleSettings;
 use App\Filament\Resources\ShoppingCartRuleSettings\Schemas\ShoppingCartRuleSettingForm;
-use App\Filament\Resources\ShoppingCartRuleSettings\Tables\ShoppingCartRuleSettingsTable;
 use App\Infrastructure\Shopping\Model\SHP_ShoppingCartRuleSetting;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
-use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
 
@@ -27,18 +25,13 @@ class ShoppingCartRuleSettingResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Правила корзины';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Магазин';
+    protected static string|UnitEnum|null $navigationGroup = 'Заказы';
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 20;
 
     public static function form(Schema $schema): Schema
     {
         return ShoppingCartRuleSettingForm::configure($schema);
-    }
-
-    public static function table(Table $table): Table
-    {
-        return ShoppingCartRuleSettingsTable::configure($table);
     }
 
     public static function getPages(): array
@@ -47,6 +40,26 @@ class ShoppingCartRuleSettingResource extends Resource
             'index' => ListShoppingCartRuleSettings::route('/'),
             'edit' => EditShoppingCartRuleSetting::route('/{record}/edit'),
         ];
+    }
+
+    public static function getNavigationUrl(): string
+    {
+        return static::getUrl('edit', ['record' => static::resolveSettingsRecord()]);
+    }
+
+    public static function resolveSettingsRecord(): SHP_ShoppingCartRuleSetting
+    {
+        return SHP_ShoppingCartRuleSetting::query()->firstOrCreate(
+            ['id' => 1],
+            [
+                'complement_rule_enabled' => true,
+                'gift_rule_enabled' => true,
+                'gift_threshold_kopecks' => 180_000,
+                'rolls_per_complement' => 2,
+                'complement_rule_sort' => 10,
+                'gift_rule_sort' => 20,
+            ],
+        );
     }
 
     public static function canCreate(): bool

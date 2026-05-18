@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\ProductCategories\Pages;
 
+use App\Filament\Pages\ManageCatalog;
 use App\Filament\Resources\ProductCategories\ProductCategoryResource;
-use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListProductCategories extends ListRecords
@@ -12,10 +12,16 @@ class ListProductCategories extends ListRecords
 
     protected static ?string $title = 'Категории';
 
+    public function mount(): void
+    {
+        $this->redirect(
+            ManageCatalog::getUrl(['tab' => 'categories']),
+            navigate: true
+        );
+    }
+
     protected function getHeaderActions(): array
     {
-        return [
-            CreateAction::make(),
-        ];
+        return [];
     }
 }

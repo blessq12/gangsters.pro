@@ -5,21 +5,17 @@ namespace App\Filament\Resources\Promotions;
 use App\Filament\Resources\Promotions\Pages\CreatePromotion;
 use App\Filament\Resources\Promotions\Pages\EditPromotion;
 use App\Filament\Resources\Promotions\Pages\ListPromotions;
+use App\Filament\Resources\Promotions\Tables\PromotionsTable;
 use App\Infrastructure\SystemContent\Model\SYS_Promotion;
 use BackedEnum;
-use UnitEnum;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
-use Filament\Tables;
-use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class PromotionResource extends Resource
 {
@@ -29,11 +25,14 @@ class PromotionResource extends Resource
 
     protected static ?string $navigationLabel = 'Акции';
 
-    // Группа: блок контента и промо
-    protected static string|UnitEnum|null $navigationGroup = 'Контент и промо';
+    protected static string|UnitEnum|null $navigationGroup = 'Маркетинг';
 
-    // Сортировка в навигации внутри блока контента
     protected static ?int $navigationSort = 41;
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -61,29 +60,7 @@ class PromotionResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->columns([
-                Tables\Columns\TextColumn::make('title')
-                    ->label('Заголовок')
-                    ->searchable()
-                    ->sortable(),
-                Tables\Columns\ImageColumn::make('image')
-                    ->label('Картинка')
-                    ->disk('media')
-                    ->square(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Создана')
-                    ->dateTime('d.m.Y H:i')
-                    ->sortable(),
-            ])
-            ->recordActions([
-                EditAction::make()->iconButton(),
-            ], position: RecordActionsPosition::BeforeCells)
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ]);
+        return PromotionsTable::configure($table);
     }
 
     public static function getPages(): array
@@ -95,4 +72,3 @@ class PromotionResource extends Resource
         ];
     }
 }
-

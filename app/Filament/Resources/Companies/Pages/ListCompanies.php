@@ -10,7 +10,7 @@ class ListCompanies extends ListRecords
 {
     protected static string $resource = CompanyResource::class;
 
-    protected static ?string $title = 'Компании';
+    protected static ?string $title = 'Компания';
 
     public function mount(): void
     {

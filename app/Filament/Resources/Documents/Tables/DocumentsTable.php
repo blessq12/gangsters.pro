@@ -2,12 +2,11 @@
 
 namespace App\Filament\Resources\Documents\Tables;
 
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\RecordActionsPosition;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 
 class DocumentsTable
@@ -30,14 +29,12 @@ class DocumentsTable
                     ->dateTime('d.m.Y H:i')
                     ->sortable(),
             ])
+            ->filters([
+                TernaryFilter::make('is_active')
+                    ->label('Активен'),
+            ])
             ->recordActions([
                 EditAction::make()->iconButton(),
-            ], position: RecordActionsPosition::BeforeCells)
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ]);
+            ], position: RecordActionsPosition::BeforeCells);
     }
 }
-
