@@ -38,8 +38,17 @@ const imageSrcset = computed(() => {
 
 const imageSizes = "(max-width: 640px) 40vw, 240px";
 
+const productImageRef = ref(null);
+
 const { qtyInCart, isFav, addToCart, incrementCart, decrementCart, toggleFavorite } =
     useProductActions(computed(() => props.product));
+
+function cartFlyOptions() {
+    return {
+        flySourceEl: productImageRef.value,
+        flyImageUrl: primaryThumb.value || undefined,
+    };
+}
 
 const { nutrition, hasNutrition, hasIngredients, ingredientsText } =
     useProductMeta(computed(() => props.product));
@@ -87,12 +96,20 @@ function closeTooltip() {
     });
 }
 
+function handleAddToCart() {
+    addToCart(1, cartFlyOptions());
+}
+
+function handleIncrement() {
+    incrementCart(cartFlyOptions());
+}
+
 function handlePriceClick() {
     if (qtyInCart.value === 0) {
-        addToCart(1);
+        handleAddToCart();
         return;
     }
-    incrementCart();
+    handleIncrement();
 }
 
 let outsideClickHandler = null;
@@ -122,6 +139,7 @@ onUnmounted(() => {
         >
             <img
                 v-if="primaryThumb"
+                ref="productImageRef"
                 :src="primaryThumb"
                 :srcset="imageSrcset || undefined"
                 :sizes="imageSrcset ? imageSizes : undefined"
@@ -140,20 +158,25 @@ onUnmounted(() => {
         </div>
 
         <div :class="h.body">
-            <div :class="h.textCol">
+            <div :class="h.titleRow">
                 <p
                     :class="h.title"
                     :title="product.name"
                 >
                     {{ product.name }}
                 </p>
-                <p v-if="product.weight" :class="h.weightMuted">
-                    {{ product.weight }} г
-                </p>
+                <span
+                    v-if="product.weight"
+                    :class="h.weightInline"
+                >
+                    {{ product.weight }}&nbsp;г
+                </span>
+            </div>
 
+            <div :class="h.actionsBar">
                 <div
                     ref="actionsClusterRef"
-                    :class="h.actionsCluster"
+                    :class="h.actionCluster"
                 >
                     <button
                         type="button"
@@ -186,55 +209,52 @@ onUnmounted(() => {
                         <i :class="h.ingredientsIcon" />
                     </button>
 
-                    <template v-if="qtyInCart === 0">
+                    <div :class="h.cartIconOuter">
                         <button
+                            v-if="qtyInCart === 0"
                             type="button"
-                            :class="h.cartAddText"
+                            :class="h.cartAddIconBtn"
                             aria-label="Добавить в корзину"
-                            @click.stop="addToCart(1)"
+                            @click.stop="handleAddToCart"
                         >
                             <i :class="h.cartAddIcon" />
-                            <span>В корзину</span>
                         </button>
-                    </template>
-                    <div
-                        v-else
-                        :class="h.qtyCluster"
-                    >
-                        <button
-                            type="button"
-                            :class="h.qtyMiniBtn"
-                            aria-label="Уменьшить количество"
-                            @click.stop="decrementCart"
+                        <div
+                            v-else
+                            :class="h.qtyCluster"
                         >
-                            –
-                        </button>
-                        <span :class="h.qtyNum">
-                            {{ qtyInCart }}
-                        </span>
-                        <button
-                            type="button"
-                            :class="h.qtyMiniBtn"
-                            aria-label="Увеличить количество"
-                            @click.stop="incrementCart"
-                        >
-                            +
-                        </button>
+                            <button
+                                type="button"
+                                :class="h.qtyMiniBtn"
+                                aria-label="Уменьшить количество"
+                                @click.stop="decrementCart"
+                            >
+                                –
+                            </button>
+                            <span :class="h.qtyNum">
+                                {{ qtyInCart }}
+                            </span>
+                            <button
+                                type="button"
+                                :class="h.qtyMiniBtn"
+                                aria-label="Увеличить количество"
+                                @click.stop="handleIncrement"
+                            >
+                                +
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div :class="h.rightCol">
                 <button
                     v-if="product.price != null"
                     type="button"
-                    :class="h.priceBtn"
+                    :class="h.priceSide"
                     :aria-label="qtyInCart === 0 ? 'Добавить в корзину' : 'Увеличить количество'"
                     @click.stop="handlePriceClick"
                 >
                     {{ formatMoneyRublesRu(product.price) }}&nbsp;₽
                 </button>
-                <span v-if="product.weight" :class="h.weightEcho">{{ product.weight }} г</span>
             </div>
         </div>
     </article>

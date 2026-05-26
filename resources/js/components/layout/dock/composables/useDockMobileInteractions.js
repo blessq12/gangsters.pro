@@ -8,6 +8,9 @@ const SWIPE_CLOSE_MIN_DISTANCE_PX = 80;
 const SWIPE_CLOSE_MAX_X_RATIO = 0.5;
 const SCROLL_TOP_EPSILON_PX = 2;
 
+const DOCK_INTERACTIVE_TOUCH_SELECTOR =
+    "input, label, button, textarea, select, a, [role='button']";
+
 function elementFromTouchTarget(target) {
     if (!target) return null;
     return target.nodeType === Node.TEXT_NODE ? target.parentElement : target;
@@ -102,6 +105,16 @@ export function useDockMobileInteractions(uiStore, enabled) {
         if (!isOn() || !uiStore.dockActiveId) return;
         const t = e?.changedTouches?.[0];
         if (!t) return;
+
+        const startEl = elementFromTouchTarget(touchStartTargetEl);
+        if (
+            startEl instanceof HTMLElement &&
+            startEl.closest(DOCK_INTERACTIVE_TOUCH_SELECTOR)
+        ) {
+            touchStartTargetEl = null;
+            panelScrollerAtTouchStart = null;
+            return;
+        }
 
         const dx = t.clientX - touchStart.value.x;
         const dy = t.clientY - touchStart.value.y;

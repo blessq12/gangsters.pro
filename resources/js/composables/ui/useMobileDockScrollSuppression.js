@@ -1,12 +1,31 @@
 import { onMounted, onUnmounted, unref, watch } from "vue";
+import { shouldAllowMobileDockScrollSuppression } from "./dockChromePolicy";
 
 const BOTTOM_THRESHOLD_PX = 80;
 const SCROLL_DELTA_PX = 14;
 const TOP_REVEAL_PX = 48;
 
 /**
- * Mobile home: скрытие хрома дока при скролле вниз и у нижнего края страницы.
- * Состояние — только uiStore.mobileDockSuppressedByScroll (без persist).
+ * @param {number | import('vue').Ref<number> | (() => number)} source
+ * @returns {number}
+ */
+export function resolveCartItemCount(source) {
+    if (typeof source === "function") {
+        return Number(source()) || 0;
+    }
+    return Number(unref(source)) || 0;
+}
+
+/**
+ * Mobile home: скрытие хрома дока при скролле (uiStore.mobileDockSuppressedByScroll).
+ * Видимость dock = showBottomNav (layout) && !mobileDockSuppressedByScroll.
+ * При cartTotalItems > 0 scroll-suppression отключён (dock всегда виден на home).
+ *
+ * @param {object} options
+ * @param {object} options.uiStore
+ * @param {import('vue').Ref<boolean> | boolean} options.bottomBarReady
+ * @param {() => boolean} options.isHome
+ * @param {number | import('vue').Ref<number> | (() => number)} [options.cartItemCount]
  */
 export function useMobileDockScrollSuppression({
     uiStore,
@@ -35,8 +54,8 @@ export function useMobileDockScrollSuppression({
             return;
         }
 
-        const count = Number(unref(cartItemCount)) || 0;
-        if (count > 0) {
+        const count = resolveCartItemCount(cartItemCount);
+        if (!shouldAllowMobileDockScrollSuppression(count)) {
             uiStore.setMobileDockScrollSuppressed(false);
             lastScrollY = window.scrollY;
             return;
@@ -118,6 +137,18 @@ export function useMobileDockScrollSuppression({
         (ready) => {
             if (ready) {
                 syncLastScrollY();
+                applyScrollLogic();
+            }
+        },
+    );
+
+    watch(
+        () => resolveCartItemCount(cartItemCount),
+        (count) => {
+            if (count > 0) {
+                uiStore.setMobileDockScrollSuppressed(false);
+            }
+            if (isHome() && unref(bottomBarReady)) {
                 applyScrollLogic();
             }
         },

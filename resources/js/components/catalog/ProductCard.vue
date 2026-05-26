@@ -111,11 +111,20 @@ const imageSrcset = computed(() => {
 const imageSizes =
     "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw";
 
+const productImageRef = ref(null);
+
 const { qtyInCart, isFav, addToCart, incrementCart, decrementCart, toggleFavorite } =
     useProductActions(computed(() => props.product));
 
+function cartFlyOptions() {
+    return {
+        flySourceEl: productImageRef.value,
+        flyImageUrl: primaryThumb.value || undefined,
+    };
+}
+
 const handleAddToCart = () => {
-    addToCart(1);
+    addToCart(1, cartFlyOptions());
 };
 
 const handlePriceClick = () => {
@@ -128,7 +137,7 @@ const handlePriceClick = () => {
 };
 
 const handleInc = () => {
-    incrementCart();
+    incrementCart(cartFlyOptions());
 };
 
 const handleDec = () => {
@@ -145,6 +154,7 @@ const handleToggleFavorite = () => {
         <div :class="d.mediaWrap">
             <img
                 v-if="primaryThumb"
+                ref="productImageRef"
                 :src="primaryThumb"
                 :srcset="imageSrcset || undefined"
                 :sizes="imageSrcset ? imageSizes : undefined"

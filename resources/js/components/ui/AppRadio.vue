@@ -37,11 +37,11 @@ function onChange() {
 </script>
 
 <template>
-    <span class="inline-flex shrink-0 items-center">
+    <span :class="fc.rootMd">
         <input
             :id="id"
             type="radio"
-            :class="fc.inputHidden"
+            :class="fc.inputOverlay"
             :name="name"
             :value="value"
             :checked="checked"
@@ -49,12 +49,16 @@ function onChange() {
             @change="onChange"
         />
         <span
-            :class="[fc.radio, checked ? fc.radioChecked : '']"
+            :class="[
+                fc.controlDecorLayer,
+                fc.radioDecor,
+                fc.radioCheckedPeer,
+            ]"
             aria-hidden="true"
         >
             <span
-                v-if="checked"
                 :class="fc.radioDot"
+                aria-hidden="true"
             />
         </span>
     </span>

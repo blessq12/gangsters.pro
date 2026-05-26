@@ -405,6 +405,30 @@ final class ShoppingApiTest extends ApiTestCase
             ->assertJsonPath('data.cart.promo_state.gift_promotion.phase', 'gift_applied');
     }
 
+    public function test_checkout_draft_rejects_transfer_payment_method(): void
+    {
+        $productId = $this->firstProductIdFromCatalog();
+        if ($productId === null) {
+            $this->markTestSkipped('Нет товаров в каталоге.');
+        }
+
+        $cookieName = (string) config('shopping.session_cookie');
+        $cart = $this->postJson('/api/shopping/cart/items', [
+            'product_id' => $productId,
+            'quantity' => 1,
+        ])->assertOk();
+        $sessionPublicId = $cart->json('data.session.public_id');
+
+        $this->withCookie($cookieName, $sessionPublicId)
+            ->patchJson('/api/shopping/checkout-draft', [
+                'payment_info' => [
+                    'method' => 'transfer',
+                ],
+            ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['payment_info.method']);
+    }
+
     public function test_checkout_draft_rejects_non_gift_candidate_product_id(): void
     {
         $state = $this->getJson('/api/shopping/state')->assertOk();

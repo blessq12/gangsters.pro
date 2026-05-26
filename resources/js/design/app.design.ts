@@ -11,7 +11,6 @@ import { navbarDesign } from "./layout/navbar.design";
 import { workScheduleDesign } from "./layout/workSchedule.design";
 import { pwaInstallDesign } from "./layout/pwaInstall.design";
 import { uiPrimitivesDesign } from "./ui/uiPrimitives.design";
-import { cartOrderBarDesign } from "./order/cartOrderBar.design";
 
 export const appDesign = {
     theme: {
@@ -28,9 +27,6 @@ export const appDesign = {
         layoutShell: layoutShellDesign,
         catalog: catalogDesign,
         uiPrimitives: uiPrimitivesDesign,
-        order: {
-            cartOrderBar: cartOrderBarDesign,
-        },
         checkout: checkoutDesign,
         client: clientDesign,
         home: homeDesign,

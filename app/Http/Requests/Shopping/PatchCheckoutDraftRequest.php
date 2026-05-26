@@ -26,7 +26,7 @@ final class PatchCheckoutDraftRequest extends FormRequest
             'delivery_info.comment' => ['nullable', 'string', 'max:2000'],
             'delivery_info.scheduled_at' => ['nullable', 'string', 'max:64'],
             'payment_info' => ['nullable', 'array'],
-            'payment_info.method' => ['nullable', 'string', Rule::enum(PaymentMethod::class)],
+            'payment_info.method' => ['nullable', 'string', Rule::in(PaymentMethod::placementValues())],
             'payment_info.change_from' => ['nullable', 'numeric'],
             'guest_contact' => ['nullable', 'array'],
             'guest_contact.name' => ['nullable', 'string', 'max:255'],

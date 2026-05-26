@@ -164,7 +164,7 @@ class OrderForm
                             ->schema([
                                 Select::make('payment_method')
                                     ->label('Способ оплаты')
-                                    ->options(PaymentMethod::options())
+                                    ->options(PaymentMethod::placementOptions())
                                     ->required()
                                     ->columnSpanFull(),
                                 Select::make('payment_status')

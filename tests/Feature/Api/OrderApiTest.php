@@ -116,6 +116,24 @@ final class OrderApiTest extends ApiTestCase
             ->assertJsonValidationErrors(['customer_name', 'customer_phone']);
     }
 
+    public function test_store_422_rejects_transfer_payment_method(): void
+    {
+        $productId = $this->firstProductIdFromCatalog();
+        if ($productId === null) {
+            $this->markTestSkipped('Нет товаров в каталоге.');
+        }
+
+        $this->postJson('/api/order', [
+            'items' => [['product_id' => $productId, 'quantity' => 1]],
+            'delivery_method' => 'pickup',
+            'payment_method' => 'transfer',
+            'customer_name' => 'Гость API',
+            'customer_phone' => '+79991112233',
+        ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['payment_method']);
+    }
+
     public function test_store_validation_422_empty_items(): void
     {
         $session = $this->registerClientViaApi();

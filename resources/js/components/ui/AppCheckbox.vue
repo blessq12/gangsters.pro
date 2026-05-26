@@ -16,14 +16,26 @@ const props = defineProps({
         default: "md",
         validator: (v) => ["md", "sm"].includes(v),
     },
+    id: {
+        type: String,
+        default: "",
+    },
 });
 
 const emit = defineEmits(["update:modelValue"]);
 
 const fc = useAppDesign().components.uiPrimitives.formControls;
 
+const rootClass = computed(() =>
+    props.size === "sm" ? fc.rootSm : fc.rootMd,
+);
+
 const boxClass = computed(() =>
     props.size === "sm" ? fc.checkboxSm : fc.checkbox,
+);
+
+const iconClass = computed(() =>
+    props.size === "sm" ? fc.checkIconSm : fc.checkIcon,
 );
 
 function onChange(event) {
@@ -32,24 +44,22 @@ function onChange(event) {
 </script>
 
 <template>
-    <span class="inline-flex shrink-0 items-center">
+    <span :class="rootClass">
         <input
+            :id="id || undefined"
             type="checkbox"
-            :class="fc.inputHidden"
+            :class="fc.inputOverlay"
             :checked="modelValue"
             :disabled="disabled"
             @change="onChange"
         />
         <span
-            :class="[
-                boxClass,
-                modelValue ? fc.checkboxChecked : '',
-            ]"
+            :class="[fc.controlDecorLayer, boxClass, fc.checkboxCheckedPeer]"
             aria-hidden="true"
         >
             <i
-                v-if="modelValue"
-                :class="fc.checkIcon"
+                :class="iconClass"
+                aria-hidden="true"
             />
         </span>
     </span>

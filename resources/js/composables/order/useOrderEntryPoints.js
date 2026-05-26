@@ -2,6 +2,7 @@ import { computed } from "vue";
 import { useRoute } from "vue-router";
 import { useCartStore } from "../../stores/cartStore";
 import { useUiStore } from "../../stores/uiStore";
+import { ensureDockChromeVisible } from "../ui/dockChromePolicy";
 import { formatMoneyRublesRu } from "../../utils/moneyFormat";
 
 /**
@@ -16,20 +17,15 @@ export function useOrderEntryPoints() {
         amountRub: formatMoneyRublesRu(cartStore.cartTotalAmount),
     }));
 
-    function ensureDockChromeVisible() {
-        uiStore.setShowBottomNav(true);
-        uiStore.setMobileDockScrollSuppressed(false);
-    }
-
     function openCart() {
-        ensureDockChromeVisible();
+        ensureDockChromeVisible(uiStore);
         if (uiStore.dockActiveId !== "cart") {
             uiStore.setDockActive("cart");
         }
     }
 
     function openProfileDock() {
-        ensureDockChromeVisible();
+        ensureDockChromeVisible(uiStore);
         if (uiStore.dockActiveId !== "profile") {
             uiStore.setDockActive("profile");
         }

@@ -39,7 +39,7 @@ final class StoreOrderRequest extends FormRequest
             'delivery_address.entrance' => ['nullable', 'string', 'max:63'],
             'delivery_address.apartment' => ['nullable', 'string', 'max:63'],
             'delivery_comment' => ['nullable', 'string'],
-            'payment_method' => ['required', 'string', Rule::enum(PaymentMethod::class)],
+            'payment_method' => ['required', 'string', Rule::in(PaymentMethod::placementValues())],
             'customer_name' => $isGuest
                 ? ['required', 'string', 'max:255']
                 : ['prohibited'],

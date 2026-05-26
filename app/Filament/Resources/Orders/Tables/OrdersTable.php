@@ -130,7 +130,7 @@ class OrdersTable
                     ->options(DeliveryMethod::options()),
                 SelectFilter::make('payment_method')
                     ->label('Оплата')
-                    ->options(PaymentMethod::options()),
+                    ->options(PaymentMethod::allOptions()),
                 Filter::make('guest')
                     ->label('Только гости')
                     ->toggle()

@@ -39,8 +39,17 @@ const imageSrcset = computed(() => {
 const imageSizes =
     "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw";
 
+const productImageRef = ref(null);
+
 const { qtyInCart, isFav, addToCart, incrementCart, decrementCart, toggleFavorite } =
     useProductActions(computed(() => props.product));
+
+function cartFlyOptions() {
+    return {
+        flySourceEl: productImageRef.value,
+        flyImageUrl: primaryThumb.value || undefined,
+    };
+}
 
 const { nutrition, hasNutrition, hasIngredients, ingredientsText } =
     useProductMeta(computed(() => props.product));
@@ -219,13 +228,13 @@ function handleToggleFavorite() {
 }
 
 function handleAddToCart() {
-    addToCart(1);
+    addToCart(1, cartFlyOptions());
     pulseAddedToCart();
     setLiveMessage("Добавлено в корзину");
 }
 
 function handleIncrement() {
-    incrementCart();
+    incrementCart(cartFlyOptions());
     pulseQty();
     setLiveMessage("Количество увеличено");
 }
@@ -253,6 +262,7 @@ function handlePriceClick() {
         <div :class="m.mediaWrap">
             <img
                 v-if="primaryThumb"
+                ref="productImageRef"
                 :src="primaryThumb"
                 :srcset="imageSrcset || undefined"
                 :sizes="imageSrcset ? imageSizes : undefined"

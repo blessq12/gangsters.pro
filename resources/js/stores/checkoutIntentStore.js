@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { patchCheckoutDraftRequest } from "../api/shoppingApi";
+import { normalizeCheckoutPaymentMethod } from "../features/checkout/checkoutPaymentMethods";
 import { applyShoppingSnapshotToStores } from "../features/shopping/shoppingApplySnapshot";
 
 const CHECKOUT_STEPS = ["cart", "guest", "delivery", "payment", "confirm"];
@@ -57,7 +58,10 @@ export const useCheckoutIntentStore = defineStore("checkoutIntent", {
             const pi = draft.payment_info;
             if (pi && typeof pi === "object") {
                 this.paymentInfo = {
-                    method: pi.method ?? this.paymentInfo.method,
+                    method:
+                        pi.method != null
+                            ? normalizeCheckoutPaymentMethod(pi.method)
+                            : this.paymentInfo.method,
                     changeFrom: pi.change_from ?? null,
                 };
             }
@@ -146,7 +150,11 @@ export const useCheckoutIntentStore = defineStore("checkoutIntent", {
             this.patchLocal({ deliveryInfo: payload || {} });
         },
         setPaymentInfo(payload) {
-            this.patchLocal({ paymentInfo: payload || {} });
+            const patch = { ...(payload || {}) };
+            if (patch.method != null) {
+                patch.method = normalizeCheckoutPaymentMethod(patch.method);
+            }
+            this.patchLocal({ paymentInfo: patch });
         },
         setCustomerComment(comment) {
             this.patchLocal({ customerComment: comment || "" });

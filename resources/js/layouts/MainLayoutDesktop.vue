@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, onUnmounted, ref, watch } from "vue";
+import { onMounted, onUnmounted, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useThemeStore } from "../stores/themeStore";
 import { useUserStore } from "../stores/userStore";
@@ -8,12 +8,8 @@ import { useFavoritesStore } from "../stores/favoritesStore";
 import { useUiStore } from "../stores/uiStore";
 import { useCatalogStore } from "../stores/catalogStore";
 import { useSystemStore } from "../stores/systemStore";
-import {
-    INTRO_BOTTOM_BAR_DELAY_MS,
-    playIntroScene,
-    playPageEnter,
-    playPageLeave,
-} from "../animations/animationManager";
+import { playPageEnter, playPageLeave } from "../animations/animationManager";
+import { useShellIntroDockTimeline } from "../composables/layout/useShellIntroDockTimeline";
 import { useAppDesign } from "../design/useAppDesign";
 
 const sh = useAppDesign().components.layoutShell;
@@ -37,13 +33,6 @@ catalogStore.initFromStorage();
 // На время интро нижний бар скрываем, чтобы он не подсвечивался под оверлеем
 uiStore.setShowBottomNav(false);
 
-const introOverlayRef = ref(null);
-const introGlowRef = ref(null);
-const introLogoRef = ref(null);
-const mainRef = ref(null);
-const showIntro = ref(true);
-const bottomBarReady = ref(false);
-
 /** Скрываем док у верха главной, чтобы не перекрывать баннеры/герой */
 const TOP_BANNER_THRESHOLD = 240;
 const isHome = () => route.name === "home";
@@ -66,6 +55,20 @@ function updateBottomBarFromScroll() {
     uiStore.setShowBottomNav(!atTop);
 }
 
+const {
+    introOverlayRef,
+    introGlowRef,
+    introLogoRef,
+    mainRef,
+    showIntro,
+    bottomBarReady,
+    startIntroScene,
+    dispose: disposeIntroTimeline,
+} = useShellIntroDockTimeline({
+    themeStore,
+    onDockReveal: updateBottomBarFromScroll,
+});
+
 watch(
     () => route.name,
     (name) => {
@@ -80,7 +83,6 @@ watch(
 );
 
 onMounted(() => {
-    // После инициализации из localStorage подтягиваем актуальный профиль с бэка
     if (userStore.token) {
         userStore.fetchClientProfile().catch((e) => {
             console.error("Failed to fetch client profile on mount", e);
@@ -88,28 +90,14 @@ onMounted(() => {
     }
 
     void systemStore.fetchAll();
-
-    playIntroScene({
-        introOverlay: introOverlayRef.value,
-        introGlow: introGlowRef.value,
-        introLogo: introLogoRef.value,
-        main: mainRef.value,
-        onComplete: () => {
-            showIntro.value = false;
-            themeStore.syncThemeColorFromCanvas();
-            const stepDelay = INTRO_BOTTOM_BAR_DELAY_MS;
-            setTimeout(() => {
-                bottomBarReady.value = true;
-                updateBottomBarFromScroll();
-            }, stepDelay);
-        },
-    });
+    startIntroScene();
 
     window.addEventListener("scroll", updateBottomBarFromScroll, { passive: true });
 });
 
 onUnmounted(() => {
     window.removeEventListener("scroll", updateBottomBarFromScroll);
+    disposeIntroTimeline();
 });
 </script>
 
@@ -165,8 +153,7 @@ onUnmounted(() => {
 
         <AppFooter />
         <PwaInstallBanner :visible="!showIntro" />
-        <CartOrderBar />
-        <AppBottomBarDesktop />
+        <AppBottomBarDesktop v-if="bottomBarReady" />
         <BaseModal />
     </div>
 </template>
@@ -201,4 +188,3 @@ onUnmounted(() => {
     background: var(--app-canvas);
 }
 </style>
-

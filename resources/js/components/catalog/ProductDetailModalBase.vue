@@ -98,8 +98,29 @@ onBeforeUnmount(() => {
 });
 
 const galleryImages = computed(() => buildProductGallerySlides(props.product));
+const galleryZoneRef = ref(null);
+
 const { qtyInCart, isFav, addToCart, incrementCart, decrementCart, toggleFavorite } =
     useProductActions(computed(() => props.product));
+
+function cartFlyFromModal() {
+    const img = galleryZoneRef.value?.querySelector("img");
+    const first = galleryImages.value[0];
+    const flyImageUrl =
+        typeof first === "string" ? first : first?.url || undefined;
+    return {
+        flySourceEl: img,
+        flyImageUrl,
+    };
+}
+
+function handleModalAddToCart() {
+    addToCart(1, cartFlyFromModal());
+}
+
+function handleModalIncrement() {
+    incrementCart(cartFlyFromModal());
+}
 </script>
 
 <template>
@@ -133,7 +154,10 @@ const { qtyInCart, isFav, addToCart, incrementCart, decrementCart, toggleFavorit
 
                         <template v-if="product">
                             <div :class="ds.body">
-                                <div :class="ds.mediaZone">
+                                <div
+                                    ref="galleryZoneRef"
+                                    :class="ds.mediaZone"
+                                >
                                     <ProductGallerySlider
                                         :images="galleryImages"
                                         :alt="product.name"
@@ -154,8 +178,8 @@ const { qtyInCart, isFav, addToCart, incrementCart, decrementCart, toggleFavorit
                                         :product="product"
                                         :qty-in-cart="qtyInCart"
                                         :is-fav="isFav"
-                                        @add-to-cart="addToCart(1)"
-                                        @increment="incrementCart"
+                                        @add-to-cart="handleModalAddToCart"
+                                        @increment="handleModalIncrement"
                                         @decrement="decrementCart"
                                         @toggle-favorite="toggleFavorite"
                                     />

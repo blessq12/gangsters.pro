@@ -223,7 +223,7 @@ export function buildYandexMapWidgetSearchUrl(company) {
 }
 
 /**
- * Способы оплаты, согласованные с чекаутом и enum заказа (cash / card / transfer).
+ * Способы оплаты при оформлении (cash / card), согласовано с PaymentMethod::placementValues.
  * @returns {{ id: string, title: string, description: string, icon: string }[]}
  */
 export function buildCheckoutAlignedPaymentInfoBlocks() {
@@ -241,13 +241,6 @@ export function buildCheckoutAlignedPaymentInfoBlocks() {
             description:
                 "При оформлении или при получении — в зависимости от доступных вариантов.",
             icon: "mdi mdi-credit-card-outline",
-        },
-        {
-            id: "transfer",
-            title: "Банковским переводом",
-            description:
-                "Безналичный расчёт по реквизитам, если такой способ доступен для вашего заказа.",
-            icon: "mdi mdi-bank-transfer",
         },
     ];
 }

@@ -20,20 +20,24 @@ export function useProductActions(productSource) {
         productId.value ? favoritesReadModel.isFavorite(productId.value) : false,
     );
 
-    const addToCart = (qty = 1) => {
+    const addToCart = (qty = 1, fly = {}) => {
         if (!productId.value) return;
         emitDomainEvent(DOMAIN_EVENTS.CART_ADD_REQUESTED, {
             product: product.value,
             qty,
             source: "catalog",
+            flySourceEl: fly.flySourceEl ?? null,
+            flyImageUrl: fly.flyImageUrl ?? null,
         });
     };
 
-    const incrementCart = () => {
+    const incrementCart = (fly = {}) => {
         if (!productId.value) return;
         emitDomainEvent(DOMAIN_EVENTS.CART_INCREMENT_REQUESTED, {
             productId: productId.value,
             source: "catalog",
+            flySourceEl: fly.flySourceEl ?? null,
+            flyImageUrl: fly.flyImageUrl ?? null,
         });
     };
 

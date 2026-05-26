@@ -12,6 +12,10 @@ import { formatMoneyRublesRu } from "../../utils/moneyFormat";
 import { formatRuPhone } from "../../utils/phone/formatRuPhone";
 import { validateRuPhoneForSubmit } from "../../validation/ruPhone";
 import { resetCheckoutAfterOrderCompleted } from "./resetCheckoutAfterOrderCompleted";
+import {
+    isCheckoutPaymentMethod,
+    normalizeCheckoutPaymentMethod,
+} from "./checkoutPaymentMethods";
 
 const RESUME_STEPS = ["guest", "delivery", "payment", "confirm"];
 
@@ -204,8 +208,12 @@ export function useCheckout() {
         if (!checkoutIntent.deliveryInfo.method) {
             checkoutIntent.setDeliveryInfo({ method: "courier" });
         }
-        if (!checkoutIntent.paymentInfo.method) {
-            checkoutIntent.setPaymentInfo({ method: "card" });
+        if (!isCheckoutPaymentMethod(checkoutIntent.paymentInfo.method)) {
+            checkoutIntent.setPaymentInfo({
+                method: normalizeCheckoutPaymentMethod(
+                    checkoutIntent.paymentInfo.method,
+                ),
+            });
         }
     }
 
@@ -399,7 +407,9 @@ export function useCheckout() {
     }
 
     function setPaymentMethod(method) {
-        checkoutIntent.setPaymentInfo({ method });
+        checkoutIntent.setPaymentInfo({
+            method: normalizeCheckoutPaymentMethod(method),
+        });
     }
 
     function setPaymentChangeFrom(changeFrom) {

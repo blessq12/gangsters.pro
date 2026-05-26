@@ -2,7 +2,7 @@
  * Карточки товара: десктоп, мобильная сетка, горизонтальная мобильная.
  */
 
-import { shellColorRoles, shellTypography } from "../layout/shell.design";
+import { shellColorRoles } from "../layout/shell.design";
 
 const mediaFooterGradient =
     "pointer-events-none absolute inset-x-0 bottom-0 z-[2] h-[55%] bg-gradient-to-t from-black/92 via-black/50 to-transparent";
@@ -10,6 +10,8 @@ const mediaFooterStack =
     "absolute inset-x-0 bottom-0 z-10 flex flex-col gap-2 px-3 pb-3 pt-2 sm:inset-x-3 sm:pb-3";
 
 const titleUnderPhotoBase = `font-heading font-normal leading-snug line-clamp-2 sm:line-clamp-3 ${shellColorRoles.canvasFg}`;
+/** Единый заголовок mobile grid + horizontal list. */
+const catalogProductTitleMobile = `${titleUnderPhotoBase} text-[13px] sm:text-sm`;
 
 export const catalogCardsDesign = {
     shared: {
@@ -107,7 +109,7 @@ export const catalogCardsDesign = {
             "pc-feedback-ring pointer-events-none absolute inset-0 ring-2 ring-app-accent/45",
         mediaFooterGradient,
         mediaFooterStack,
-        titleUnderPhoto: `${titleUnderPhotoBase} text-[13px] sm:text-sm`,
+        titleUnderPhoto: catalogProductTitleMobile,
         actionsUnderPhoto: "flex w-full shrink-0 items-center gap-3",
         actionCluster:
             "relative flex w-fit min-w-0 items-center gap-2.5 bg-[rgba(0,0,0,0.78)] px-3 py-1.5 shadow-[0_0_24px_rgba(0,0,0,0.7)] backdrop-blur-xl",
@@ -157,37 +159,36 @@ export const catalogCardsDesign = {
             "flex h-full w-full items-center justify-center bg-neutral-950/75 text-xs text-app-muted",
         thumbGradient:
             "pointer-events-none absolute inset-0 bg-gradient-to-r from-black/5 via-black/20 to-black/50",
-        body: "flex min-w-0 flex-1 justify-between gap-3 p-3",
-        textCol: "min-w-0 flex-1",
-        title:
-            `line-clamp-2 ${shellTypography.scale.heading.section} font-normal leading-snug ${shellColorRoles.surfaceFg}`,
-        weightMuted: "mt-1 text-[11px] text-app-muted",
-        actionsCluster:
-            "relative mt-3 flex flex-wrap items-center gap-2",
+        body: "flex min-w-0 flex-1 flex-col justify-center gap-1.5 p-2.5 sm:p-3",
+        titleRow: "flex min-w-0 items-baseline gap-2",
+        title: `min-w-0 flex-1 ${catalogProductTitleMobile}`,
+        weightInline: "shrink-0 text-[11px] text-app-muted",
+        actionsBar:
+            "flex w-full min-w-0 shrink-0 flex-nowrap items-center gap-2",
+        actionCluster:
+            "relative flex w-fit min-w-0 shrink-0 flex-nowrap items-center gap-1.5 bg-[rgba(0,0,0,0.78)] px-2 py-1 shadow-[0_0_24px_rgba(0,0,0,0.7)] backdrop-blur-xl",
         favBtn:
-            "flex h-9 w-9 items-center justify-center border border-transparent bg-app-surface text-app-surface-fg transition hover:border-app-accent/60 hover:text-app-accent",
+            "flex h-9 w-9 shrink-0 items-center justify-center border border-transparent bg-neutral-950/85 text-app-canvas-fg transition hover:border-app-accent/60 hover:text-app-accent",
         favBtnActive: "border-app-accent/60 text-app-accent",
         favIcon: "mdi text-lg",
         nutritionBtn:
-            "flex h-9 w-9 items-center justify-center border border-app-accent/40 bg-app-surface text-app-accent transition hover:border-app-accent/70",
+            "flex h-9 w-9 shrink-0 items-center justify-center border border-app-accent/40 bg-neutral-950/85 text-app-accent transition hover:border-app-accent/70",
         nutritionIcon: "mdi mdi-fire-circle text-lg",
         ingredientsBtn:
-            "flex h-9 w-9 items-center justify-center border border-transparent bg-app-surface text-app-surface-fg transition hover:border-app-accent/60 hover:text-app-accent",
+            "flex h-9 w-9 shrink-0 items-center justify-center border border-transparent bg-neutral-950/85 text-app-canvas-fg transition hover:border-app-accent/50 hover:text-app-accent",
         ingredientsIcon: "mdi mdi-information-outline text-lg",
-        cartAddText:
-            "inline-flex min-h-11 items-center justify-center gap-1.5 bg-app-accent px-3 py-2 text-xs font-semibold text-black transition hover:scale-[1.02]",
-        cartAddIcon: "mdi mdi-cart-outline text-base",
+        cartIconOuter: "flex h-9 shrink-0 items-center",
+        cartAddIconBtn:
+            "relative inline-flex h-9 w-9 items-center justify-center bg-app-accent text-black transition hover:scale-[1.03]",
+        cartAddIcon: "mdi mdi-cart-outline text-lg",
         qtyCluster:
-            "flex h-9 items-center border border-app-accent/50 bg-neutral-950/85 px-1",
+            "flex h-9 shrink-0 items-center gap-0.5 border border-app-accent/50 bg-neutral-950/85 px-0.5",
         qtyMiniBtn:
-            "flex h-7 w-7 items-center justify-center text-sm font-semibold text-app-canvas-fg transition hover:bg-neutral-950/85",
+            "flex h-8 w-8 shrink-0 items-center justify-center text-sm font-semibold text-app-canvas-fg transition-colors hover:bg-neutral-950/88",
         qtyNum:
-            "min-w-[1.25rem] px-1 text-center text-xs font-semibold text-app-accent",
-        rightCol:
-            "flex shrink-0 flex-col items-end justify-between gap-3",
-        priceBtn:
-            "bg-app-accent px-2.5 py-1.5 text-xs font-semibold text-black transition hover:scale-[1.03]",
-        weightEcho: "text-[11px] text-app-muted",
+            "min-w-[1.25rem] px-0.5 text-center text-[11px] font-semibold tabular-nums text-app-accent",
+        priceSide:
+            "ml-auto flex h-9 shrink-0 items-center whitespace-nowrap bg-app-accent px-2.5 py-1.5 text-[11px] font-semibold text-black transition hover:scale-[1.03] sm:text-xs",
         teleportTooltipBase:
             "fixed z-[1300] bg-[rgba(0,0,0,0.95)] px-2.5 py-2 shadow-xl backdrop-blur",
         teleportTooltipNutritionWidth: "w-[180px]",

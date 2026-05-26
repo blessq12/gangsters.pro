@@ -49,26 +49,25 @@ export const catalogModalDesign = {
         tagPill:
             "inline-flex items-center px-2 py-0.5 text-[11px] font-medium backdrop-blur",
         controlsRow:
-            "flex w-full shrink-0 items-center gap-3",
+            "flex w-full min-w-0 shrink-0 flex-nowrap items-center gap-2",
         actionIsland:
-            "relative flex w-fit min-w-0 flex-wrap items-center gap-2.5 bg-app-glass-fill px-3 py-1.5 shadow-[0_0_24px_rgba(0,0,0,0.7)] backdrop-blur-xl",
+            "relative flex w-fit shrink-0 flex-nowrap items-center gap-1.5 bg-[rgba(0,0,0,0.78)] px-2 py-1 shadow-[0_0_24px_rgba(0,0,0,0.7)] backdrop-blur-xl",
         favBtn:
-            "flex h-11 w-11 items-center justify-center border border-transparent bg-neutral-950/85 text-app-canvas-fg transition-colors hover:border-app-accent/60 hover:text-app-accent",
+            "flex h-11 w-11 shrink-0 items-center justify-center border border-transparent bg-neutral-950/85 text-app-canvas-fg transition-colors hover:border-app-accent/60 hover:text-app-accent",
         favBtnActive: "border-app-accent/60 text-app-accent",
         favIcon: "mdi text-xl",
         nutritionBtn:
-            "flex h-10 w-10 items-center justify-center border border-app-accent/40 bg-neutral-950/85 text-app-accent transition-colors hover:border-app-accent/70 hover:text-app-accent",
+            "flex h-10 w-10 shrink-0 items-center justify-center border border-app-accent/40 bg-neutral-950/85 text-app-accent transition-colors hover:border-app-accent/70 hover:text-app-accent",
         nutritionIcon: "mdi mdi-fire-circle text-xl",
         ingredientsBtn:
-            "flex h-10 w-10 items-center justify-center border border-transparent bg-neutral-950/85 text-app-canvas-fg transition-colors hover:border-app-accent/50 hover:text-app-accent",
+            "flex h-10 w-10 shrink-0 items-center justify-center border border-transparent bg-neutral-950/85 text-app-canvas-fg transition-colors hover:border-app-accent/50 hover:text-app-accent",
         ingredientsIcon: "mdi mdi-information-outline text-xl",
-        cartBtnWrap: "flex min-h-11 shrink-0 items-center",
-        cartAddCta:
-            "inline-flex min-h-11 items-center gap-2 bg-app-accent px-4 py-2.5 text-sm font-semibold text-black transition-transform hover:scale-[1.02]",
-        cartAddCtaIcon: "mdi mdi-cart-outline text-xl",
+        cartIconOuter: "flex h-10 shrink-0 items-center",
+        cartAddIconBtn:
+            "relative inline-flex h-10 w-10 shrink-0 items-center justify-center bg-app-accent text-black transition-transform hover:scale-[1.03]",
         cartIcon: "mdi mdi-cart-outline text-xl",
         qtyCluster:
-            "flex h-10 items-center gap-0.5 border border-app-accent/50 bg-neutral-950/85 px-0.5",
+            "flex h-10 shrink-0 items-center gap-0.5 border border-app-accent/50 bg-neutral-950/85 px-0.5",
         qtyMiniBtn:
             "flex h-9 w-9 shrink-0 items-center justify-center bg-neutral-950/85 text-base font-semibold leading-none text-app-canvas-fg",
         qtyNum:

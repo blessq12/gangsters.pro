@@ -259,16 +259,15 @@ function handleToggleFavorite() {
                     <i :class="di.ingredientsIcon" />
                 </button>
 
-                <div :class="di.cartBtnWrap">
+                <div :class="di.cartIconOuter">
                     <button
                         v-if="qtyInCart === 0"
                         type="button"
-                        :class="di.cartAddCta"
+                        :class="di.cartAddIconBtn"
                         aria-label="Добавить в корзину"
                         @click.stop="handleAddToCart"
                     >
-                        <i :class="di.cartAddCtaIcon" />
-                        <span>Добавить в корзину</span>
+                        <i :class="di.cartIcon" />
                     </button>
                     <div
                         v-else

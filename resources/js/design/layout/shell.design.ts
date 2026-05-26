@@ -110,7 +110,7 @@ export const layoutShellDesign = {
         typographyRoot: "font-sans antialiased",
         themeDark: "theme-dark text-app-canvas-fg",
         introOverlay:
-            "pointer-events-none fixed inset-0 z-40 flex items-center justify-center",
+            "pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-app-canvas",
         /** Хук для scoped radial-gradient (`--app-accent`); слой под логотипом интро. */
         introRadialGlow:
             "intro-radial-glow pointer-events-none absolute inset-0 z-0",

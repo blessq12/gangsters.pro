@@ -22,8 +22,35 @@ export const INTRO_MAIN_FADE_OVERLAP = 0.38;
 /** Секунды: fade оверлея — overlap к предыдущему tween. */
 export const INTRO_OVERLAY_FADE_OVERLAP = 0.42;
 
-/** Мс после скрытия интро до активации логики нижнего дока. */
-export const INTRO_BOTTOM_BAR_DELAY_MS = 450;
+/**
+ * Пауза после onComplete fade оверлея интро (оверлей полностью скрыт) до reveal dock.
+ * playIntroScene onComplete = конец tween opacity оверлея, не середина сцены.
+ */
+export const INTRO_DOCK_REVEAL_GAP_MS = 450;
+
+/** @deprecated Используйте INTRO_DOCK_REVEAL_GAP_MS */
+export const INTRO_BOTTOM_BAR_DELAY_MS = INTRO_DOCK_REVEAL_GAP_MS;
+
+/**
+ * Длительность playIntroScene до onComplete (сек), по константам overlap.
+ */
+export function getIntroSceneDurationSec() {
+    const logoEnd =
+        INTRO_LOGO_IN_DURATION +
+        INTRO_LOGO_HOLD_DURATION +
+        INTRO_LOGO_OUT_DURATION;
+    const mainEnd = logoEnd - INTRO_MAIN_FADE_OVERLAP + INTRO_MAIN_FADE_DURATION;
+    return mainEnd - INTRO_OVERLAY_FADE_OVERLAP + INTRO_OVERLAY_FADE_DURATION;
+}
+
+/**
+ * @param {() => void} onReveal
+ * @returns {ReturnType<typeof setTimeout>|undefined}
+ */
+export function scheduleDockRevealAfterIntro(onReveal) {
+    if (typeof onReveal !== "function") return undefined;
+    return setTimeout(onReveal, INTRO_DOCK_REVEAL_GAP_MS);
+}
 
 /**
  * Появление полосы расписания под шапкой — после завершения анимации навбара.
@@ -403,6 +430,194 @@ export function playBottomBarHide(bar, onComplete, variant = "mobile") {
     });
 }
 
+
+let flyProductToCartTween = null;
+
+export function prefersReducedMotion() {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function getVisibleRect(el) {
+    if (!el?.isConnected) return null;
+    const rect = el.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) return null;
+    return rect;
+}
+
+/**
+ * Цель fly: dock cart tab, иначе navbar cart.
+ * @returns {HTMLElement|null}
+ */
+export function resolveCartFlyTargetEl() {
+    if (typeof document === "undefined") return null;
+
+    const dockTab = document.querySelector('[data-dock-target="cart"]');
+    if (getVisibleRect(dockTab)) return dockTab;
+
+    return dockTab;
+}
+
+let skipNextCartBadgeBump = false;
+
+export function markCartBadgeBumpFromFly() {
+    skipNextCartBadgeBump = true;
+}
+
+/**
+ * Заметный bump вкладки dock: пилл tabIconWrap + бейдж (не .mdi).
+ * @param {"cart"|"favorites"|string} dockId
+ */
+export function playDockTabBump(dockId) {
+    if (typeof document === "undefined" || prefersReducedMotion()) return;
+
+    const bumpRoot = document.querySelector(`[data-dock-bump-root="${dockId}"]`);
+    const badge = document.querySelector(`[data-dock-badge="${dockId}"]`);
+    const tabBtn = document.querySelector(`[data-dock-target="${dockId}"]`);
+
+    const tabEl =
+        bumpRoot?.isConnected ? bumpRoot : tabBtn?.isConnected ? tabBtn : null;
+
+    if (tabEl) {
+        gsap.killTweensOf(tabEl);
+        gsap.fromTo(
+            tabEl,
+            { scale: 1, y: 0, transformOrigin: "50% 50%", force3D: true },
+            {
+                scale: 1.2,
+                y: -6,
+                duration: 0.18,
+                ease: "power2.out",
+                yoyo: true,
+                repeat: 1,
+            },
+        );
+    }
+
+    if (badge?.isConnected) {
+        gsap.killTweensOf(badge);
+        gsap.fromTo(
+            badge,
+            {
+                scale: 1,
+                transformOrigin: "50% 50%",
+                force3D: true,
+                boxShadow: "0 0 8px rgba(239,68,68,0.65)",
+            },
+            {
+                scale: 1.45,
+                boxShadow: "0 0 16px rgba(239,68,68,0.95)",
+                duration: 0.2,
+                ease: "back.out(1.6)",
+                yoyo: true,
+                repeat: 1,
+            },
+        );
+    }
+}
+
+/** @deprecated Используйте playDockTabBump */
+export function playDockBadgeBump(dockId) {
+    playDockTabBump(dockId);
+}
+
+/**
+ * @param {HTMLElement|null|undefined} targetEl
+ */
+export function playDockCartTabBump(targetEl) {
+    if (!targetEl?.isConnected || prefersReducedMotion()) return;
+    const dockId = targetEl.getAttribute("data-dock-target") || "cart";
+    playDockTabBump(dockId);
+}
+
+export function consumeSkipNextCartBadgeBump() {
+    if (!skipNextCartBadgeBump) return false;
+    skipNextCartBadgeBump = false;
+    return true;
+}
+
+/**
+ * @param {{
+ *   sourceEl?: HTMLElement|null,
+ *   imageUrl?: string,
+ *   targetEl?: HTMLElement|null,
+ *   onComplete?: () => void,
+ * }} params
+ */
+export function playFlyProductToCart({
+    sourceEl,
+    imageUrl,
+    targetEl,
+    onComplete,
+} = {}) {
+    if (typeof document === "undefined") {
+        onComplete?.();
+        return;
+    }
+
+    const target = targetEl || resolveCartFlyTargetEl();
+    const sourceRect = getVisibleRect(sourceEl);
+    const targetRect = getVisibleRect(target);
+
+    if (prefersReducedMotion() || !sourceRect || !targetRect) {
+        if (target) {
+            markCartBadgeBumpFromFly();
+            playDockTabBump("cart");
+        }
+        onComplete?.();
+        return;
+    }
+
+    if (flyProductToCartTween) {
+        flyProductToCartTween.kill();
+        flyProductToCartTween = null;
+    }
+
+    const ghost = document.createElement("div");
+    ghost.setAttribute("aria-hidden", "true");
+    ghost.style.cssText =
+        "position:fixed;z-index:10001;pointer-events:none;overflow:hidden;border-radius:2px;box-shadow:0 8px 24px rgba(0,0,0,0.45);";
+
+    const size = Math.min(Math.max(sourceRect.width * 0.35, 48), 88);
+    ghost.style.width = `${size}px`;
+    ghost.style.height = `${size}px`;
+    ghost.style.left = `${sourceRect.left + sourceRect.width / 2 - size / 2}px`;
+    ghost.style.top = `${sourceRect.top + sourceRect.height / 2 - size / 2}px`;
+
+    if (imageUrl) {
+        const img = document.createElement("img");
+        img.src = imageUrl;
+        img.alt = "";
+        img.style.cssText =
+            "width:100%;height:100%;object-fit:cover;display:block;";
+        ghost.appendChild(img);
+    } else {
+        ghost.style.background = "rgba(198,36,36,0.85)";
+    }
+
+    document.body.appendChild(ghost);
+
+    const endX = targetRect.left + targetRect.width / 2 - size / 2;
+    const endY = targetRect.top + targetRect.height / 2 - size / 2;
+
+    flyProductToCartTween = gsap.to(ghost, {
+        left: endX,
+        top: endY,
+        scale: 0.35,
+        opacity: 0.15,
+        duration: 0.68,
+        ease: "power2.inOut",
+        onComplete: () => {
+            ghost.remove();
+            flyProductToCartTween = null;
+            if (target) {
+                markCartBadgeBumpFromFly();
+                playDockTabBump("cart");
+            }
+            onComplete?.();
+        },
+    });
+}
 
 export function playCatalogItemsEnter(container) {
     if (!container?.isConnected) return;

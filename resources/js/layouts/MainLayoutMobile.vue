@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, watch } from "vue";
+import { onMounted, onUnmounted, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useThemeStore } from "../stores/themeStore";
 import { useUserStore } from "../stores/userStore";
@@ -8,12 +8,8 @@ import { useFavoritesStore } from "../stores/favoritesStore";
 import { useUiStore } from "../stores/uiStore";
 import { useCatalogStore } from "../stores/catalogStore";
 import { useSystemStore } from "../stores/systemStore";
-import {
-    INTRO_BOTTOM_BAR_DELAY_MS,
-    playIntroScene,
-    playPageEnter,
-    playPageLeave,
-} from "../animations/animationManager";
+import { playPageEnter, playPageLeave } from "../animations/animationManager";
+import { useShellIntroDockTimeline } from "../composables/layout/useShellIntroDockTimeline";
 import { useMobileDockScrollSuppression } from "../composables/ui/useMobileDockScrollSuppression";
 import { useAppDesign } from "../design/useAppDesign";
 
@@ -38,14 +34,25 @@ catalogStore.initFromStorage();
 // На время интро нижний бар скрываем, чтобы он не подсвечивался под оверлеем
 uiStore.setShowBottomNav(false);
 
-const introOverlayRef = ref(null);
-const introGlowRef = ref(null);
-const introLogoRef = ref(null);
-const mainRef = ref(null);
-const showIntro = ref(true);
-const bottomBarReady = ref(false);
-
 const isHome = () => route.name === "home";
+
+const {
+    introOverlayRef,
+    introGlowRef,
+    introLogoRef,
+    mainRef,
+    showIntro,
+    bottomBarReady,
+    startIntroScene,
+    dispose: disposeIntroTimeline,
+} = useShellIntroDockTimeline({
+    themeStore,
+    onDockReveal() {
+        if (isHome()) {
+            uiStore.setShowBottomNav(true);
+        }
+    },
+});
 
 useMobileDockScrollSuppression({
     uiStore,
@@ -68,7 +75,6 @@ watch(
 );
 
 onMounted(() => {
-    // После инициализации из localStorage подтягиваем актуальный профиль с бэка
     if (userStore.token) {
         userStore.fetchClientProfile().catch((e) => {
             console.error("Failed to fetch client profile on mount", e);
@@ -76,24 +82,11 @@ onMounted(() => {
     }
 
     void systemStore.fetchAll();
+    startIntroScene();
+});
 
-    playIntroScene({
-        introOverlay: introOverlayRef.value,
-        introGlow: introGlowRef.value,
-        introLogo: introLogoRef.value,
-        main: mainRef.value,
-        onComplete: () => {
-            showIntro.value = false;
-            themeStore.syncThemeColorFromCanvas();
-            const stepDelay = INTRO_BOTTOM_BAR_DELAY_MS;
-            setTimeout(() => {
-                bottomBarReady.value = true;
-                if (isHome()) {
-                    uiStore.setShowBottomNav(true);
-                }
-            }, stepDelay);
-        },
-    });
+onUnmounted(() => {
+    disposeIntroTimeline();
 });
 </script>
 
@@ -148,8 +141,7 @@ onMounted(() => {
 
         <AppFooter />
         <PwaInstallBanner :visible="!showIntro" />
-        <CartOrderBar />
-        <AppBottomBarMobile />
+        <AppBottomBarMobile v-if="bottomBarReady" />
         <BaseModal />
     </div>
 </template>
@@ -184,4 +176,3 @@ onMounted(() => {
     background: var(--app-canvas);
 }
 </style>
-

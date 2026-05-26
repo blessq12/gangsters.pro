@@ -122,6 +122,7 @@ function handlePanelLeave(el, done) {
                             :key="item.id"
                             type="button"
                             :class="dock.mobile.tabButton"
+                            :data-dock-target="item.id"
                             @click="handleDockClick(item.id)"
                         >
                             <span
@@ -129,6 +130,7 @@ function handlePanelLeave(el, done) {
                                     dock.mobile.tabIconWrap,
                                     tabIconTone(item.id),
                                 ]"
+                                :data-dock-bump-root="item.id"
                             >
                                 <i
                                     :class="[
@@ -140,6 +142,7 @@ function handlePanelLeave(el, done) {
                                 <span
                                     v-if="getBadge(item.id) > 0"
                                     :class="dock.shared.badge"
+                                    :data-dock-badge="item.id"
                                 >
                                     {{ getBadge(item.id) }}
                                 </span>
@@ -182,6 +185,7 @@ function handlePanelLeave(el, done) {
                         type="button"
                         :class="dock.desktop.tabButton"
                         :title="item.label"
+                        :data-dock-target="item.id"
                         @click="handleDockClick(item.id)"
                     >
                         <span
@@ -189,6 +193,7 @@ function handlePanelLeave(el, done) {
                                 dock.desktop.tabIconWrap,
                                 tabIconTone(item.id),
                             ]"
+                            :data-dock-bump-root="item.id"
                         >
                             <i
                                 :class="[
@@ -200,6 +205,7 @@ function handlePanelLeave(el, done) {
                             <span
                                 v-if="getBadge(item.id) > 0"
                                 :class="dock.shared.badge"
+                                :data-dock-badge="item.id"
                             >
                                 {{ getBadge(item.id) }}
                             </span>

@@ -15,7 +15,7 @@ let deviceListenerAttached = false;
 export const useUiStore = defineStore("ui", {
     state: () => ({
         showBottomNav: false,
-        /** Только mobile: временно скрыть хром дока при скролле (не в localStorage). */
+        /** Mobile: скрыть хром dock при скролле (не persist). На home игнорируется при cartTotalItems > 0. */
         mobileDockSuppressedByScroll: false,
         isMobileMenuOpen: false,
         deviceMode: "mobile",

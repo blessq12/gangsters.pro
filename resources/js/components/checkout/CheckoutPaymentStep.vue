@@ -1,6 +1,10 @@
 <script setup>
 import { useAppDesign } from "../../design/useAppDesign";
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
+import {
+    CHECKOUT_PAYMENT_METHOD_IDS,
+    CHECKOUT_PAYMENT_METHOD_LABELS,
+} from "../../features/checkout/checkoutPaymentMethods";
 
 const chk = useAppDesign().components.checkout;
 const s = chk.shared;
@@ -30,7 +34,7 @@ const { checkoutIntent, paymentStepError } = checkoutState;
             </p>
             <div :class="d.methodRow">
                 <button
-                    v-for="method in ['cash', 'card', 'transfer']"
+                    v-for="method in CHECKOUT_PAYMENT_METHOD_IDS"
                     :key="method"
                     type="button"
                     :class="[
@@ -39,13 +43,7 @@ const { checkoutIntent, paymentStepError } = checkoutState;
                     ]"
                     @click="setPaymentMethod(method)"
                 >
-                    {{
-                        method === "cash"
-                            ? "Наличными"
-                            : method === "card"
-                              ? "Банковская карта"
-                              : "Перевод"
-                    }}
+                    {{ CHECKOUT_PAYMENT_METHOD_LABELS[method] }}
                 </button>
             </div>
         </div>
