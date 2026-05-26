@@ -4,9 +4,13 @@ import { playMobileNavbarLogoPulse } from "../../animations/animationManager";
 import { useEnterSlide } from "../../composables/animations/useEnterSlide";
 import { useAppDesign } from "../../design/useAppDesign";
 import { useUiStore } from "../../stores/uiStore";
+import { useOrderEntryPoints } from "../../composables/order/useOrderEntryPoints";
+import { useCartStore } from "../../stores/cartStore";
 
 const uiStore = useUiStore();
+const cartStore = useCartStore();
 const navbar = useAppDesign().components.navbar;
+const { openCart } = useOrderEntryPoints();
 
 const containerRef = ref(null);
 const logoPulseRef = ref(null);
@@ -60,6 +64,20 @@ function toggleMobileMenu() {
                 </NavbarBrand>
 
                 <div :class="navbar.mobile.burgerZone">
+                    <button
+                        type="button"
+                        :class="navbar.mobile.cartBtn"
+                        aria-label="Корзина"
+                        @click="openCart"
+                    >
+                        <i :class="navbar.mobile.cartBtnIcon" />
+                        <span
+                            v-if="cartStore.cartTotalItems > 0"
+                            class="absolute -top-1.5 -right-1.5 flex min-h-[1.1rem] min-w-[1.1rem] items-center justify-center rounded-none bg-red-500 px-1 text-[10px] font-semibold text-white"
+                        >
+                            {{ cartStore.cartTotalItems }}
+                        </span>
+                    </button>
                     <NavbarBurgerButton
                         variant="mobile"
                         :open="uiStore.isMobileMenuOpen"

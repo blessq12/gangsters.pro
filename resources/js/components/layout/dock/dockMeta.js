@@ -4,14 +4,14 @@
  */
 export const DOCK_META = Object.freeze([
     {
-        id: "profile",
-        label: "Профиль",
-        iconClass: "mdi-account-circle-outline",
-    },
-    {
         id: "cart",
         label: "Корзина",
         iconClass: "mdi-cart-outline",
+    },
+    {
+        id: "profile",
+        label: "Профиль",
+        iconClass: "mdi-account-circle-outline",
     },
     {
         id: "favorites",
@@ -20,7 +20,7 @@ export const DOCK_META = Object.freeze([
     },
     {
         id: "delivery",
-        label: "Доставка",
+        label: "Зона доставки",
         iconClass: "mdi-truck-delivery-outline",
     },
 ]);

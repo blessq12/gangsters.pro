@@ -45,6 +45,9 @@ export const navbarDesign = {
             "mx-auto h-[7rem] w-auto max-w-[12rem] object-contain drop-shadow-[0_0_15px_rgba(198,36,36,0.45)] transition-transform duration-200 group-hover:scale-105 group-hover:drop-shadow-[0_0_22px_rgba(198,36,36,0.7)] lg:h-[7.75rem] lg:max-w-[14rem]",
         rightZone: "flex items-center justify-end gap-4 w-48",
         navRight: `flex items-center gap-4 ${shellTypography.body.navRow}`,
+        cartBtn:
+            "relative flex h-9 w-9 items-center justify-center rounded-none border border-black/20 bg-neutral-950/88 text-app-canvas-fg transition-colors hover:border-app-accent/50 hover:text-app-accent",
+        cartBtnIcon: "mdi mdi-cart-outline text-lg",
     },
 
     mobile: {
@@ -57,7 +60,10 @@ export const navbarDesign = {
             "inline-flex origin-center will-change-transform",
         logoImg:
             "mx-auto h-[6.25rem] w-auto max-w-[10rem] object-contain drop-shadow-[0_0_12px_rgba(198,36,36,0.4)] transition-transform duration-200 group-hover:scale-105 sm:h-[7rem] sm:max-w-[12rem]",
-        burgerZone: "flex items-center justify-end",
+        burgerZone: "flex items-center justify-end gap-2",
+        cartBtn:
+            "relative flex h-9 w-9 items-center justify-center rounded-none border border-black/20 bg-neutral-950/88 text-app-canvas-fg transition-colors hover:border-app-accent/50 hover:text-app-accent",
+        cartBtnIcon: "mdi mdi-cart-outline text-lg",
         burgerButton:
             "flex h-9 w-9 items-center justify-center rounded-none border border-black/20 bg-neutral-950/88 text-app-canvas-fg transition-colors",
     },

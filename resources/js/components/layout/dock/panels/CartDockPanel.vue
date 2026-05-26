@@ -1,15 +1,39 @@
 <script setup>
+import { watch } from "vue";
 import { useAppDesign } from "../../../../design/useAppDesign";
 import { useCheckoutFlow } from "../../../../composables/checkout/useCheckoutFlow";
 import { provideCheckoutFlow } from "../../../../composables/checkout/checkoutFlowContext";
+import { useUiStore } from "../../../../stores/uiStore";
 
 const panels = useAppDesign().components.dockPanels;
+const uiStore = useUiStore();
 
 const flow = useCheckoutFlow();
 provideCheckoutFlow(flow);
 
-const { cartStore, activeStep } = flow;
+const { cartStore, activeStep, handleStartCheckout } = flow;
 const c = panels.cart;
+
+function tryConsumeCheckoutStart() {
+    if (!uiStore.pendingCheckoutStart) return;
+    if (uiStore.dockActiveId !== "cart") return;
+    uiStore.consumeCheckoutStart();
+    handleStartCheckout();
+}
+
+watch(
+    () => uiStore.pendingCheckoutStart,
+    (pending) => {
+        if (pending) tryConsumeCheckoutStart();
+    },
+);
+
+watch(
+    () => uiStore.dockActiveId,
+    () => {
+        tryConsumeCheckoutStart();
+    },
+);
 </script>
 
 <template>

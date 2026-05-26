@@ -171,19 +171,11 @@ async function submit() {
 
             <div class="space-y-1">
                 <label :class="s.checkboxRow">
-                    <input
-                        v-model="form.consent_personal_data"
-                        type="checkbox"
-                        :class="s.checkbox"
-                    />
+                    <AppCheckbox v-model="form.consent_personal_data" />
                     <span>Согласен на обработку персональных данных</span>
                 </label>
                 <label :class="s.checkboxRowMuted">
-                    <input
-                        v-model="form.consent_marketing"
-                        type="checkbox"
-                        :class="s.checkbox"
-                    />
+                    <AppCheckbox v-model="form.consent_marketing" />
                     <span>Получать новости и акции</span>
                 </label>
             </div>

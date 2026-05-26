@@ -51,6 +51,7 @@ useMobileDockScrollSuppression({
     uiStore,
     bottomBarReady,
     isHome,
+    cartItemCount: () => cartStore.cartTotalItems,
 });
 
 watch(
@@ -147,6 +148,7 @@ onMounted(() => {
 
         <AppFooter />
         <PwaInstallBanner :visible="!showIntro" />
+        <CartOrderBar />
         <AppBottomBarMobile />
         <BaseModal />
     </div>

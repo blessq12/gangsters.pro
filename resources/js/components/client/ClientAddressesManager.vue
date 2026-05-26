@@ -206,10 +206,9 @@ function useAddress(id) {
                     />
 
                     <label :class="s.checkboxRow11">
-                        <input
+                        <AppCheckbox
                             v-model="form.make_default"
-                            type="checkbox"
-                            :class="s.checkboxSm"
+                            size="sm"
                         />
                         <span>Сделать основным адресом</span>
                     </label>

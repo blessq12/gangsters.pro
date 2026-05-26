@@ -189,11 +189,12 @@ onUnmounted(() => {
                     <template v-if="qtyInCart === 0">
                         <button
                             type="button"
-                            :class="h.cartAdd"
+                            :class="h.cartAddText"
                             aria-label="Добавить в корзину"
                             @click.stop="addToCart(1)"
                         >
                             <i :class="h.cartAddIcon" />
+                            <span>В корзину</span>
                         </button>
                     </template>
                     <div

@@ -1,5 +1,6 @@
 <script setup>
-import { computed, nextTick, onMounted, ref, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import gsap from "gsap";
 import { useAppDesign } from "../../design/useAppDesign";
 import { playCatalogItemsEnter } from "../../animations/animationManager";
 
@@ -50,14 +51,28 @@ const gridClass = computed(() => {
     return "catalog-grid--mobile-1";
 });
 
+function catalogItemsInContainer(container) {
+    if (!container?.isConnected) return [];
+    return Array.from(container.querySelectorAll(".catalog-item"));
+}
+
 const animateGrid = async () => {
+    if (props.loading) return;
     await nextTick();
-    if (!containerRef.value) return;
-    playCatalogItemsEnter(containerRef.value);
+    const container = containerRef.value;
+    if (!container?.isConnected) return;
+    if (!catalogItemsInContainer(container).length) return;
+    playCatalogItemsEnter(container);
 };
 
 onMounted(() => {
     animateGrid();
+});
+
+onBeforeUnmount(() => {
+    const container = containerRef.value;
+    if (!container) return;
+    gsap.killTweensOf(catalogItemsInContainer(container));
 });
 
 watch(
@@ -65,7 +80,14 @@ watch(
     () => {
         animateGrid();
     },
-    { deep: true },
+    { deep: true, flush: "post" },
+);
+
+watch(
+    () => props.loading,
+    (loading) => {
+        if (!loading) animateGrid();
+    },
 );
 </script>
 

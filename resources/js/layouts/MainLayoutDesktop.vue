@@ -57,6 +57,11 @@ function updateBottomBarFromScroll() {
         return;
     }
 
+    if (cartStore.cartTotalItems > 0) {
+        uiStore.setShowBottomNav(true);
+        return;
+    }
+
     const atTop = window.scrollY < TOP_BANNER_THRESHOLD;
     uiStore.setShowBottomNav(!atTop);
 }
@@ -160,6 +165,7 @@ onUnmounted(() => {
 
         <AppFooter />
         <PwaInstallBanner :visible="!showIntro" />
+        <CartOrderBar />
         <AppBottomBarDesktop />
         <BaseModal />
     </div>

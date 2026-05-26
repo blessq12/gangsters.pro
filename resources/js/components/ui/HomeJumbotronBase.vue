@@ -1,6 +1,6 @@
 <script setup>
 import "swiper/css";
-import { computed, ref } from "vue";
+import { computed, onBeforeUnmount, ref } from "vue";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { useSystemStore } from "../../stores/systemStore";
 import { useAppDesign } from "../../design/useAppDesign";
@@ -82,6 +82,18 @@ const goNext = () => {
 
     swiper.slideTo(targetIndex);
 };
+
+const swiperRemountKey = computed(
+    () => `${props.variant}-${slides.value.length}`,
+);
+
+onBeforeUnmount(() => {
+    const swiper = swiperRef.value;
+    if (!swiper?.destroyed) {
+        swiper.destroy(true, true);
+    }
+    swiperRef.value = null;
+});
 </script>
 
 <template>
@@ -101,6 +113,7 @@ const goNext = () => {
 
             <Swiper
                 v-else-if="slides.length"
+                :key="swiperRemountKey"
                 :loop="loopReady"
                 :rewind="rewindEnabled"
                 :looped-slides="loopReady ? slides.length : 0"

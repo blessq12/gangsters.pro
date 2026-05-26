@@ -8,7 +8,12 @@ const TOP_REVEAL_PX = 48;
  * Mobile home: скрытие хрома дока при скролле вниз и у нижнего края страницы.
  * Состояние — только uiStore.mobileDockSuppressedByScroll (без persist).
  */
-export function useMobileDockScrollSuppression({ uiStore, bottomBarReady, isHome }) {
+export function useMobileDockScrollSuppression({
+    uiStore,
+    bottomBarReady,
+    isHome,
+    cartItemCount = () => 0,
+}) {
     let lastScrollY = 0;
     let ticking = false;
 
@@ -27,6 +32,13 @@ export function useMobileDockScrollSuppression({ uiStore, bottomBarReady, isHome
         }
 
         if (uiStore.dockActiveId !== null) {
+            return;
+        }
+
+        const count = Number(unref(cartItemCount)) || 0;
+        if (count > 0) {
+            uiStore.setMobileDockScrollSuppressed(false);
+            lastScrollY = window.scrollY;
             return;
         }
 

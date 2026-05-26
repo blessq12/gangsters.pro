@@ -93,10 +93,9 @@ function formatAddressLine(address) {
             :class="s.textareaAddress"
         />
         <label :class="s.checkboxLabelRow">
-            <input
+            <AppCheckbox
                 v-model="newAddressForm.make_default"
-                type="checkbox"
-                :class="s.checkboxSm"
+                size="sm"
             />
             <span>Сделать основным адресом</span>
         </label>
@@ -134,12 +133,11 @@ function formatAddressLine(address) {
                 :key="address.id"
                 :class="s.addressLi"
             >
-                <input
+                <AppRadio
                     :id="`addr-${address.id}`"
-                    type="radio"
-                    :class="s.radioField"
-                    :checked="userStore.selectedAddressId === address.id"
-                    @change="selectAddress(address.id)"
+                    :model-value="userStore.selectedAddressId"
+                    :value="address.id"
+                    @update:model-value="selectAddress"
                 />
                 <label
                     :for="`addr-${address.id}`"
@@ -215,10 +213,9 @@ function formatAddressLine(address) {
                         :class="s.textareaAddress"
                     />
                     <label :class="s.checkboxLabelRow">
-                        <input
+                        <AppCheckbox
                             v-model="newAddressForm.make_default"
-                            type="checkbox"
-                            :class="s.checkboxSm"
+                            size="sm"
                         />
                         <span>Сделать основным адресом</span>
                     </label>

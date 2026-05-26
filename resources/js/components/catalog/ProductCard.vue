@@ -260,10 +260,15 @@ const handleToggleFavorite = () => {
                 </button>
             </div>
 
-            <div :class="d.footerIsland">
+            <div
+                :class="d.mediaFooterGradient"
+                aria-hidden="true"
+            />
+
+            <div :class="d.mediaFooterStack">
                 <div :class="d.titleRow">
                     <div :class="d.titleText">
-                        <h3 :class="d.titleHeading">
+                        <h3 :class="d.titleUnderPhoto">
                             {{ product.name }}
                         </h3>
                     </div>

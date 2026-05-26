@@ -4,6 +4,7 @@
 
 import { dockDesign } from "../layout/dock.design";
 import { secondarySurfaces, shellColorRoles, shellTypography } from "../layout/shell.design";
+import { formControlsDesign } from "../ui/formControls.design";
 
 const nestedCard = secondarySurfaces.nestedCard;
 const chromePillInactive = dockDesign.shared.chromePillInactive;
@@ -32,10 +33,8 @@ export const checkoutDesign = {
         grid2: "grid grid-cols-2 gap-2",
         addressEmptyHint: `${nestedCard} border-dashed border-neutral-500/60 px-4 py-3 text-[11px] text-app-muted`,
         addressLi: `flex items-center gap-2 ${nestedCard} px-3 py-2`,
-        radioField:
-            "h-4 w-4 rounded-none border-neutral-400 text-app-accent focus:ring-app-accent",
-        checkboxSm:
-            "h-3.5 w-3.5 rounded-none border-black/20 bg-neutral-950/85 text-app-accent focus:ring-app-accent/60",
+        radioField: formControlsDesign.radio,
+        checkboxSm: formControlsDesign.checkboxSm,
         labelAddress: "flex-1 cursor-pointer text-xs text-app-canvas-fg",
         addressTitle: "block font-medium text-app-canvas-fg",
         addressMeta: "block text-[11px] text-app-muted",

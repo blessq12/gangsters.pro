@@ -263,11 +263,12 @@ function handleToggleFavorite() {
                     <button
                         v-if="qtyInCart === 0"
                         type="button"
-                        :class="di.cartAdd"
+                        :class="di.cartAddCta"
                         aria-label="Добавить в корзину"
                         @click.stop="handleAddToCart"
                     >
-                        <i :class="di.cartIcon" />
+                        <i :class="di.cartAddCtaIcon" />
+                        <span>Добавить в корзину</span>
                     </button>
                     <div
                         v-else

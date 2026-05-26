@@ -405,10 +405,14 @@ export function playBottomBarHide(bar, onComplete, variant = "mobile") {
 
 
 export function playCatalogItemsEnter(container) {
-    if (!container) return;
+    if (!container?.isConnected) return;
 
-    const items = container.querySelectorAll(".catalog-item");
+    const items = Array.from(container.querySelectorAll(".catalog-item")).filter(
+        (el) => el.isConnected,
+    );
     if (!items.length) return;
+
+    gsap.killTweensOf(items);
 
     gsap.fromTo(
         items,

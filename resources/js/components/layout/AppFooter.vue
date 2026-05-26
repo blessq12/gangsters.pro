@@ -68,8 +68,6 @@ const agreementDoc = computed(() =>
                 ref="containerRef"
                 :class="footer.bar"
             >
-                <FooterPrimaryNav />
-
                 <div :class="footer.legalLinks">
                     <button
                         type="button"

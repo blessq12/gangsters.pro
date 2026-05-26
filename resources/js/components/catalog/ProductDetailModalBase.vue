@@ -145,7 +145,10 @@ const { qtyInCart, isFav, addToCart, incrementCart, decrementCart, toggleFavorit
                                 />
                                 <div
                                     ref="infoRef"
-                                    :class="[ds.info, isMobile ? ds.infoMobile : '']"
+                                    :class="[
+                                        ds.infoFooterOverlay,
+                                        isMobile ? ds.infoFooterOverlayMobile : '',
+                                    ]"
                                 >
                                     <ProductDetailInfo
                                         :product="product"

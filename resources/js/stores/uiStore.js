@@ -21,6 +21,8 @@ export const useUiStore = defineStore("ui", {
         deviceMode: "mobile",
         dockActiveId: null,
         dockBadges: { ...DEFAULT_DOCK_BADGES },
+        /** Сигнал для CartDockPanel: запустить handleStartCheckout (не persist). */
+        pendingCheckoutStart: false,
     }),
     getters: {
         resolvedDockBadges: (state) => (cartCount = 0, favoritesCount = 0) => ({
@@ -102,6 +104,12 @@ export const useUiStore = defineStore("ui", {
             if (this.dockActiveId === null) return;
             this.dockActiveId = null;
             this.persist();
+        },
+        requestCheckoutStart() {
+            this.pendingCheckoutStart = true;
+        },
+        consumeCheckoutStart() {
+            this.pendingCheckoutStart = false;
         },
         setMobileMenuOpen(value) {
             this.isMobileMenuOpen = Boolean(value);

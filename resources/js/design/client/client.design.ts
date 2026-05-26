@@ -3,6 +3,7 @@
  */
 
 import { secondarySurfaces } from "../layout/shell.design";
+import { formControlsDesign } from "../ui/formControls.design";
 
 const nestedCard = secondarySurfaces.nestedCard;
 const profileDivider = "border-app-divider-on-canvas";
@@ -28,10 +29,8 @@ export const clientDesign = {
             "col-span-2 rounded-none border border-app-border-on-surface bg-app-glass-fill px-3 py-2 text-[11px] text-app-canvas-fg placeholder:text-app-muted focus:border-app-accent focus:outline-none focus:ring-1 focus:ring-app-accent/60",
         textarea:
             "w-full rounded-none border border-app-border-on-surface bg-app-glass-fill px-3 py-2 text-[11px] text-app-canvas-fg placeholder:text-app-muted focus:border-app-accent focus:outline-none focus:ring-1 focus:ring-app-accent/60",
-        checkbox:
-            "h-4 w-4 rounded-none border-black/20 bg-neutral-950/85 text-app-accent focus:ring-app-accent/60",
-        checkboxSm:
-            "h-3.5 w-3.5 rounded-none border-black/20 bg-neutral-950/85 text-app-accent focus:ring-app-accent/60",
+        checkbox: formControlsDesign.checkbox,
+        checkboxSm: formControlsDesign.checkboxSm,
         checkboxRow: "flex items-center gap-2 text-xs text-app-muted",
         checkboxRowMuted: "flex items-center gap-2 text-xs text-app-muted",
         checkboxRow11: "flex items-center gap-2 text-[11px] text-app-muted",

@@ -320,21 +320,24 @@ function handlePriceClick() {
                 />
             </button>
 
-            <div :class="m.bottomStack">
-                <div :class="m.titleWrap">
-                    <p
-                        :class="m.titlePill"
-                        :title="product.name"
-                    >
-                        {{ product.name }}
-                    </p>
-                </div>
+            <div
+                :class="m.mediaFooterGradient"
+                aria-hidden="true"
+            />
 
-                <div :class="m.actionsRow">
-                    <div
-                        ref="actionsClusterRef"
-                        :class="m.actionCluster"
-                    >
+            <div :class="m.mediaFooterStack">
+                <h3
+                    :class="m.titleUnderPhoto"
+                    :title="product.name"
+                >
+                    {{ product.name }}
+                </h3>
+
+                <div :class="m.actionsUnderPhoto">
+                <div
+                    ref="actionsClusterRef"
+                    :class="m.actionCluster"
+                >
                         <div v-if="hasNutrition">
                             <button
                                 ref="nutritionButtonRef"
@@ -370,7 +373,7 @@ function handlePriceClick() {
                                 <button
                                     type="button"
                                     :class="[
-                                        m.cartAddCircle,
+                                        m.cartAddText,
                                         justAddedToCart ? 'scale-[1.06]' : 'scale-100',
                                     ]"
                                     aria-label="Добавить в корзину"
@@ -386,6 +389,7 @@ function handlePriceClick() {
                                             justAddedToCart ? 'scale-110' : 'scale-100',
                                         ]"
                                     />
+                                    <span>В корзину</span>
                                 </button>
                             </template>
                             <div
@@ -418,15 +422,15 @@ function handlePriceClick() {
                         </div>
                     </div>
 
-                    <button
-                        v-if="product.price != null"
-                        type="button"
-                        :class="m.priceSide"
-                        @click.stop="handlePriceClick"
-                        :aria-label="qtyInCart === 0 ? 'Добавить в корзину' : 'Увеличить количество'"
-                    >
-                        {{ formatMoneyRublesRu(product.price) }}&nbsp;₽
-                    </button>
+                <button
+                    v-if="product.price != null"
+                    type="button"
+                    :class="m.priceSide"
+                    @click.stop="handlePriceClick"
+                    :aria-label="qtyInCart === 0 ? 'Добавить в корзину' : 'Увеличить количество'"
+                >
+                    {{ formatMoneyRublesRu(product.price) }}&nbsp;₽
+                </button>
                 </div>
             </div>
         </div>
