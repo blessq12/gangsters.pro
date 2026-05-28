@@ -12,6 +12,12 @@ export function useCartReadModel() {
         userTotalAmount: computed(() => cartStore.cartUserTotalAmount),
         systemTotalAmount: computed(() => cartStore.cartSystemTotalAmount),
         promoState: computed(() => cartStore.promoState),
+        deliveryPricing: computed(() => cartStore.deliveryPricing),
+        itemsTotalAmount: computed(() => cartStore.itemsTotalAmount),
+        deliveryFeeAmount: computed(() => cartStore.deliveryFeeAmount),
+        grandTotalWithDelivery: computed(() => cartStore.grandTotalWithDelivery),
+        isDeliveryFree: computed(() => cartStore.isDeliveryFree),
+        hasDeliveryPricing: computed(() => cartStore.hasDeliveryPricing),
         totalItems: computed(() => cartStore.cartTotalItems),
         systemItemsCount: computed(() => cartStore.cartSystemItemsCount),
         quantityByProduct(productId) {

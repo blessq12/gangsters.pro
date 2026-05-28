@@ -32,6 +32,8 @@ final class PlaceOrderService implements OrderPlacementContract
         array $items,
         DeliveryInfo $deliveryInfo,
         PaymentInfo $paymentInfo,
+        int $deliveryFeeKopecks = 0,
+        ?array $deliveryPricingSnapshot = null,
     ): Order {
         $order = $this->orderFactory->create(
             clientId: $clientId,
@@ -44,6 +46,8 @@ final class PlaceOrderService implements OrderPlacementContract
             itemsData: $this->itemsFactory->buildItemsData($items),
             deliveryInfo: $deliveryInfo,
             paymentInfo: $paymentInfo,
+            deliveryFeeKopecks: $deliveryFeeKopecks,
+            deliveryPricingSnapshot: $deliveryPricingSnapshot,
         );
 
         $this->orders->save($order);

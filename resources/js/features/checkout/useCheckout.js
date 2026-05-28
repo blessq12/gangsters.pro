@@ -40,7 +40,14 @@ export function useCheckout() {
     const cartItems = computed(() => cartReadModel.items.value);
     const userCartItems = computed(() => cartReadModel.userItems.value);
     const systemCartItems = computed(() => cartReadModel.systemItems.value);
-    const totalAmount = computed(() => cartReadModel.totalAmount.value);
+    const totalAmount = computed(() =>
+        cartReadModel.hasDeliveryPricing.value
+            ? cartReadModel.grandTotalWithDelivery.value
+            : cartReadModel.totalAmount.value,
+    );
+    const itemsTotalAmount = computed(() => cartReadModel.itemsTotalAmount.value);
+    const deliveryFeeAmount = computed(() => cartReadModel.deliveryFeeAmount.value);
+    const isDeliveryFree = computed(() => cartReadModel.isDeliveryFree.value);
     const userTotalAmount = computed(() => cartReadModel.userTotalAmount.value);
     const systemTotalAmount = computed(() => cartReadModel.systemTotalAmount.value);
     const promoState = computed(() => cartReadModel.promoState.value);
@@ -497,6 +504,9 @@ export function useCheckout() {
         userCartItems,
         systemCartItems,
         totalAmount,
+        itemsTotalAmount,
+        deliveryFeeAmount,
+        isDeliveryFree,
         userTotalAmount,
         systemTotalAmount,
         promoState,

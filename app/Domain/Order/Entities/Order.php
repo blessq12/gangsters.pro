@@ -14,7 +14,9 @@ class Order
      * @param  OrderItem[]  $items
      * @param  int  $subtotal  Копейки (RUB)
      * @param  int  $discountTotal  Копейки (RUB)
-     * @param  int  $total  Копейки (RUB)
+     * @param  int  $total  Копейки (RUB), товары после скидок + delivery_fee
+     * @param  int  $deliveryFeeKopecks  Копейки (RUB)
+     * @param  array<string, mixed>|null  $deliveryPricingSnapshot
      */
     public function __construct(
         private string $id,
@@ -24,11 +26,13 @@ class Order
         private int $subtotal,
         private int $discountTotal,
         private int $total,
+        private int $deliveryFeeKopecks,
         private ?DeliveryInfo $deliveryInfo,
         private ?PaymentInfo $paymentInfo,
         private array $items,
         private \DateTimeImmutable $createdAt,
         private \DateTimeImmutable $updatedAt,
+        private ?array $deliveryPricingSnapshot = null,
     ) {
         $this->assertInvariant();
     }
@@ -74,6 +78,25 @@ class Order
     public function getTotal(): int
     {
         return $this->total;
+    }
+
+    public function getDeliveryFeeKopecks(): int
+    {
+        return $this->deliveryFeeKopecks;
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    public function getDeliveryPricingSnapshot(): ?array
+    {
+        return $this->deliveryPricingSnapshot;
+    }
+
+    /** Сумма товаров после скидок по строкам (без доставки). */
+    public function getItemsNetTotalKopecks(): int
+    {
+        return $this->subtotal - $this->discountTotal;
     }
 
     public function getDeliveryInfo(): ?DeliveryInfo
@@ -145,16 +168,17 @@ class Order
 
         $this->subtotal = $subtotal;
         $this->discountTotal = $discount;
-        $this->total = $subtotal - $discount;
+        $this->total = ($subtotal - $discount) + $this->deliveryFeeKopecks;
     }
 
     private function assertInvariant(): void
     {
-        if ($this->subtotal < 0 || $this->discountTotal < 0 || $this->total < 0) {
+        if ($this->subtotal < 0 || $this->discountTotal < 0 || $this->total < 0 || $this->deliveryFeeKopecks < 0) {
             throw new OrderInvariantViolation('Order monetary values must be non-negative.');
         }
 
-        if ($this->total !== $this->subtotal - $this->discountTotal) {
+        $itemsNet = $this->subtotal - $this->discountTotal;
+        if ($this->total !== $itemsNet + $this->deliveryFeeKopecks) {
             throw new OrderInvariantViolation('Order totals are inconsistent.');
         }
 

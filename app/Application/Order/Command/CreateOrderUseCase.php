@@ -10,6 +10,8 @@ use App\Application\Order\OrderBaseUseCase;
 use App\Application\Order\Presenter\OrderPresenter;
 use App\Application\Shopping\CartRules\ResolvedCartOrderItemsMapper;
 use App\Application\Shopping\CartRules\ResolveShoppingCartUseCase;
+use App\Application\Shopping\Delivery\ResolveDeliveryPricing;
+use App\Domain\Shopping\CartRules\CartState;
 use App\Domain\Order\Enums\PaymentStatus;
 use App\Domain\Order\Factories\OrderFactory;
 use App\Domain\Order\Factories\OrderItemsFactory;
@@ -35,6 +37,7 @@ final class CreateOrderUseCase extends OrderBaseUseCase
         private readonly OrderPlacementContract $orderPlacement,
         private readonly ShoppingSessionRepositoryInterface $shoppingSessions,
         private readonly ResolveShoppingCartUseCase $resolveShoppingCart,
+        private readonly ResolveDeliveryPricing $resolveDeliveryPricing,
     ) {
         parent::__construct(
             $orders,
@@ -53,9 +56,10 @@ final class CreateOrderUseCase extends OrderBaseUseCase
     public function execute(CreateOrderDTO $dto, ?int $authenticatedClientId, ?ShoppingSession $shoppingSession = null): array
     {
         $items = $dto->items;
+        $resolvedCart = null;
         if ($shoppingSession !== null && ! $shoppingSession->isEmptyCart()) {
-            $resolved = $this->resolveShoppingCart->execute($shoppingSession);
-            $items = ResolvedCartOrderItemsMapper::toOrderPlacementRows($resolved);
+            $resolvedCart = $this->resolveShoppingCart->execute($shoppingSession);
+            $items = ResolvedCartOrderItemsMapper::toOrderPlacementRows($resolvedCart);
         }
 
         if ($authenticatedClientId !== null && $shoppingSession !== null) {
@@ -104,12 +108,18 @@ final class CreateOrderUseCase extends OrderBaseUseCase
             address: $deliveryInfo->address,
         );
 
+        $deliveryPricing = $resolvedCart instanceof CartState
+            ? $this->resolveDeliveryPricing->fromCartState($resolvedCart, $dto->deliveryMethod)
+            : $this->resolveDeliveryPricing->fromPlacementRows($items, $dto->deliveryMethod);
+
         $order = $this->orderPlacement->place(
             $clientId,
             $customerSnapshotForOrder,
             $items,
             $deliveryInfo,
             $paymentInfo,
+            deliveryFeeKopecks: $deliveryPricing->deliveryFeeKopecks,
+            deliveryPricingSnapshot: $deliveryPricing->toSnapshotArray(),
         );
 
         if ($shoppingSession !== null) {

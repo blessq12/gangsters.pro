@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Api;
 
+use App\Infrastructure\SystemContent\Model\SYS_Company;
 use Illuminate\Support\Facades\DB;
 
 final class ShoppingApiTest extends ApiTestCase
@@ -44,6 +45,13 @@ final class ShoppingApiTest extends ApiTestCase
                 'checkout_draft',
                 'checkout_intent',
                 'suggested_step',
+                'delivery_pricing' => [
+                    'method',
+                    'items_payable_kopecks',
+                    'delivery_fee_kopecks',
+                    'is_free',
+                    'grand_total_kopecks',
+                ],
             ],
         ]);
         $response->assertCookie((string) config('shopping.session_cookie'));
@@ -643,6 +651,144 @@ final class ShoppingApiTest extends ApiTestCase
         }
 
         $this->fail("Shopping session cookie [{$name}] not found in response.");
+    }
+
+    public function test_delivery_pricing_pickup_is_free(): void
+    {
+        $this->skipUnlessTablesExist(['companies', 'PRD_products']);
+
+        $productId = $this->firstProductIdFromCatalog();
+        if ($productId === null) {
+            $this->markTestSkipped('Нет товаров в каталоге.');
+        }
+
+        $restore = $this->withCompanyDeliveryTerms(10_000_00, 150_00);
+
+        try {
+            $cart = $this->postJson('/api/shopping/cart/items', [
+                'product_id' => $productId,
+                'quantity' => 1,
+            ])->assertOk();
+
+            $cookie = $this->shoppingSessionCookieHeader($cart);
+
+            $response = $this->withHeaders(['Cookie' => $cookie])
+                ->patchJson('/api/shopping/checkout-draft', [
+                    'delivery_info' => ['method' => 'pickup'],
+                ])
+                ->assertOk();
+
+            $response->assertJsonPath('data.delivery_pricing.method', 'pickup');
+            $response->assertJsonPath('data.delivery_pricing.delivery_fee_kopecks', 0);
+            $response->assertJsonPath('data.delivery_pricing.is_free', true);
+        } finally {
+            $restore();
+        }
+    }
+
+    public function test_delivery_pricing_courier_below_threshold_charges_fee(): void
+    {
+        $this->skipUnlessTablesExist(['companies', 'PRD_products']);
+
+        $productId = $this->firstProductIdFromCatalog();
+        if ($productId === null) {
+            $this->markTestSkipped('Нет товаров в каталоге.');
+        }
+
+        $restore = $this->withCompanyDeliveryTerms(10_000_00, 150_00);
+
+        try {
+            $cart = $this->postJson('/api/shopping/cart/items', [
+                'product_id' => $productId,
+                'quantity' => 1,
+            ])->assertOk();
+
+            $cookie = $this->shoppingSessionCookieHeader($cart);
+
+            $response = $this->withHeaders(['Cookie' => $cookie])
+                ->patchJson('/api/shopping/checkout-draft', [
+                    'delivery_info' => ['method' => 'courier'],
+                ])
+                ->assertOk();
+
+            $itemsPayable = (int) $response->json('data.delivery_pricing.items_payable_kopecks');
+            $itemsTotal = (int) $response->json('data.delivery_pricing.items_total_kopecks');
+            $this->assertLessThan(10_000_00, $itemsPayable);
+
+            $response->assertJsonPath('data.delivery_pricing.delivery_fee_kopecks', 150_00);
+            $response->assertJsonPath('data.delivery_pricing.is_free', false);
+            $response->assertJsonPath(
+                'data.delivery_pricing.grand_total_kopecks',
+                $itemsTotal + 150_00,
+            );
+            $response->assertJsonPath(
+                'data.delivery_pricing.remaining_to_free_kopecks',
+                max(0, 10_000_00 - $itemsPayable),
+            );
+        } finally {
+            $restore();
+        }
+    }
+
+    public function test_delivery_pricing_updates_when_switching_to_pickup(): void
+    {
+        $this->skipUnlessTablesExist(['companies', 'PRD_products']);
+
+        $productId = $this->firstProductIdFromCatalog();
+        if ($productId === null) {
+            $this->markTestSkipped('Нет товаров в каталоге.');
+        }
+
+        $restore = $this->withCompanyDeliveryTerms(10_000_00, 150_00);
+
+        try {
+            $cart = $this->postJson('/api/shopping/cart/items', [
+                'product_id' => $productId,
+                'quantity' => 1,
+            ])->assertOk();
+
+            $cookie = $this->shoppingSessionCookieHeader($cart);
+
+            $this->withHeaders(['Cookie' => $cookie])
+                ->patchJson('/api/shopping/checkout-draft', [
+                    'delivery_info' => ['method' => 'courier'],
+                ])
+                ->assertOk()
+                ->assertJsonPath('data.delivery_pricing.delivery_fee_kopecks', 150_00);
+
+            $this->withHeaders(['Cookie' => $cookie])
+                ->patchJson('/api/shopping/checkout-draft', [
+                    'delivery_info' => ['method' => 'pickup'],
+                ])
+                ->assertOk()
+                ->assertJsonPath('data.delivery_pricing.delivery_fee_kopecks', 0);
+        } finally {
+            $restore();
+        }
+    }
+
+    /**
+     * @return callable(): void
+     */
+    private function withCompanyDeliveryTerms(int $thresholdKopecks, int $feeKopecks): callable
+    {
+        $company = SYS_Company::query()->first();
+        if ($company === null) {
+            $this->markTestSkipped('Нет записи companies.');
+        }
+
+        $originalThreshold = $company->min_order_amount_kopecks;
+        $originalFee = $company->delivery_fee_kopecks;
+
+        $company->min_order_amount_kopecks = $thresholdKopecks;
+        $company->delivery_fee_kopecks = $feeKopecks;
+        $company->save();
+
+        return static function () use ($company, $originalThreshold, $originalFee): void {
+            $company->min_order_amount_kopecks = $originalThreshold;
+            $company->delivery_fee_kopecks = $originalFee;
+            $company->save();
+        };
     }
 
     private function firstActiveProductId(): ?int

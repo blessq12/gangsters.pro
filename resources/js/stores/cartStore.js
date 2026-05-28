@@ -7,6 +7,10 @@ import {
     clearCartRequest,
     recalculateCartRequest,
 } from "../api/shoppingApi";
+import {
+    applyCartAndDeliveryFromState,
+    applyShoppingMetaFromState,
+} from "../features/shopping/applyShoppingState";
 
 function normalizeProductSnapshot(product) {
     if (!product || typeof product !== "object") {
@@ -88,6 +92,39 @@ function normalizeCartItemsFromServer(items) {
         .filter(Boolean);
 }
 
+function normalizeDeliveryPricing(raw) {
+    if (!raw || typeof raw !== "object") {
+        return null;
+    }
+
+    const itemsTotalKopecks = Number(raw.items_total_kopecks) || 0;
+    const deliveryFeeKopecks = Number(raw.delivery_fee_kopecks) || 0;
+    const grandTotalKopecks =
+        Number(raw.grand_total_kopecks) || itemsTotalKopecks + deliveryFeeKopecks;
+
+    return {
+        method: raw.method != null ? String(raw.method) : null,
+        itemsPayableKopecks: Number(raw.items_payable_kopecks) || 0,
+        deliveryFeeKopecks,
+        isFree: Boolean(raw.is_free),
+        remainingToFreeKopecks: Number(raw.remaining_to_free_kopecks) || 0,
+        itemsTotalKopecks,
+        grandTotalKopecks,
+        itemsTotalRub:
+            raw.items_total_rub != null
+                ? roundRubles2(Number(raw.items_total_rub))
+                : roundRubles2(itemsTotalKopecks / 100),
+        deliveryFeeRub:
+            raw.delivery_fee_rub != null
+                ? roundRubles2(Number(raw.delivery_fee_rub))
+                : roundRubles2(deliveryFeeKopecks / 100),
+        grandTotalRub:
+            raw.grand_total_rub != null
+                ? roundRubles2(Number(raw.grand_total_rub))
+                : roundRubles2(grandTotalKopecks / 100),
+    };
+}
+
 export const useCartStore = defineStore("cart", {
     state: () => ({
         cartItems: [],
@@ -95,6 +132,7 @@ export const useCartStore = defineStore("cart", {
         subtotalUserKopecks: 0,
         subtotalSystemKopecks: 0,
         promoState: {},
+        deliveryPricing: null,
         loading: false,
         error: null,
     }),
@@ -139,6 +177,30 @@ export const useCartStore = defineStore("cart", {
         cartSystemTotalAmount(state) {
             return roundRubles2((Number(state.subtotalSystemKopecks) || 0) / 100);
         },
+        hasDeliveryPricing(state) {
+            return state.deliveryPricing != null;
+        },
+        itemsTotalAmount(state) {
+            if (state.deliveryPricing?.itemsTotalRub != null) {
+                return state.deliveryPricing.itemsTotalRub;
+            }
+            if (state.subtotalKopecks > 0) {
+                return roundRubles2(state.subtotalKopecks / 100);
+            }
+            return 0;
+        },
+        deliveryFeeAmount(state) {
+            return state.deliveryPricing?.deliveryFeeRub ?? 0;
+        },
+        grandTotalWithDelivery(state) {
+            if (state.deliveryPricing?.grandTotalRub != null) {
+                return state.deliveryPricing.grandTotalRub;
+            }
+            return this.cartTotalAmount;
+        },
+        isDeliveryFree(state) {
+            return state.deliveryPricing?.isFree ?? true;
+        },
     },
     actions: {
         initFromStorage() {
@@ -160,10 +222,13 @@ export const useCartStore = defineStore("cart", {
             emitDomainEvent(DOMAIN_EVENTS.CART_CHANGED, { items: this.cartItems });
         },
 
+        applyDeliveryPricingSnapshot(deliveryPricing) {
+            this.deliveryPricing = normalizeDeliveryPricing(deliveryPricing);
+        },
+
         _applyStateData(data) {
-            if (data && typeof data === "object" && data.cart) {
-                this.applyServerSnapshot(data.cart);
-            }
+            applyCartAndDeliveryFromState(this, data);
+            applyShoppingMetaFromState(data);
         },
 
         async addToCart(product, qty = 1) {

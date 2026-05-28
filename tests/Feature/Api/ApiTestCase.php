@@ -162,7 +162,8 @@ abstract class ApiTestCase extends TestCase
     protected function assertOrderPresenterContract(array $order): void
     {
         foreach ([
-            'id', 'client_id', 'customer', 'status', 'subtotal', 'discount_total', 'total',
+            'id', 'client_id', 'customer', 'status', 'subtotal', 'discount_total',
+            'items_total', 'delivery_fee', 'total',
             'delivery', 'payment', 'items', 'created_at', 'updated_at',
         ] as $key) {
             $this->assertArrayHasKey($key, $order, 'Missing order key: '.$key);
@@ -174,7 +175,7 @@ abstract class ApiTestCase extends TestCase
         }
 
         $this->assertIsArray($order['items']);
-        foreach (['subtotal', 'discount_total', 'total'] as $moneyKey) {
+        foreach (['subtotal', 'discount_total', 'items_total', 'delivery_fee', 'total'] as $moneyKey) {
             $this->assertArrayHasKey($moneyKey, $order);
             $this->assertIsNumeric($order[$moneyKey]);
         }

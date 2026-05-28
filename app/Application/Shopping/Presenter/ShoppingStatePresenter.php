@@ -4,6 +4,8 @@ namespace App\Application\Shopping\Presenter;
 
 use App\Application\Shopping\CartRules\ResolveShoppingCartUseCase;
 use App\Application\Shopping\CheckoutDraft\SyncCheckoutDraftGiftPromotion;
+use App\Application\Shopping\Delivery\DeliveryPricingPresenter;
+use App\Application\Shopping\Delivery\ResolveDeliveryPricing;
 use App\Application\Shopping\SuggestedCheckoutStepResolver;
 use App\Domain\Order\Contracts\CatalogItemSnapshotProvider;
 use App\Domain\Shopping\CartRules\CartLineItem;
@@ -19,6 +21,8 @@ final class ShoppingStatePresenter
         private readonly SuggestedCheckoutStepResolver $suggestedCheckoutStep,
         private readonly SyncCheckoutDraftGiftPromotion $syncCheckoutDraftGiftPromotion,
         private readonly ShoppingSessionRepositoryInterface $sessions,
+        private readonly ResolveDeliveryPricing $resolveDeliveryPricing,
+        private readonly DeliveryPricingPresenter $deliveryPricingPresenter,
     ) {}
 
     /**
@@ -86,6 +90,14 @@ final class ShoppingStatePresenter
         }
 
         $draft = $session->getCheckoutDraft();
+        $deliveryMethod = null;
+        if (is_array($draft)) {
+            $deliveryInfo = $draft['delivery_info'] ?? null;
+            if (is_array($deliveryInfo) && isset($deliveryInfo['method'])) {
+                $deliveryMethod = is_string($deliveryInfo['method']) ? $deliveryInfo['method'] : null;
+            }
+        }
+        $deliveryPricing = $this->resolveDeliveryPricing->fromCartState($resolved, $deliveryMethod);
 
         return [
             'session' => [
@@ -105,6 +117,7 @@ final class ShoppingStatePresenter
             'checkout_draft' => $draft,
             'checkout_intent' => $draft,
             'suggested_step' => $this->suggestedCheckoutStep->resolve($session, $resolved),
+            'delivery_pricing' => $this->deliveryPricingPresenter->present($deliveryPricing),
         ];
     }
 

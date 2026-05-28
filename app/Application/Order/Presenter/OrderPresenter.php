@@ -20,7 +20,10 @@ final class OrderPresenter
             'status' => $order->getStatus()->value,
             'subtotal' => Money::kopecksToApiRubles($order->getSubtotal()),
             'discount_total' => Money::kopecksToApiRubles($order->getDiscountTotal()),
+            'items_total' => Money::kopecksToApiRubles($order->getItemsNetTotalKopecks()),
+            'delivery_fee' => Money::kopecksToApiRubles($order->getDeliveryFeeKopecks()),
             'total' => Money::kopecksToApiRubles($order->getTotal()),
+            'delivery_pricing_snapshot' => $order->getDeliveryPricingSnapshot(),
             'delivery' => $order->getDeliveryInfo() !== null ? $this->presentDelivery($order->getDeliveryInfo()) : null,
             'payment' => $order->getPaymentInfo() !== null ? $this->presentPayment($order->getPaymentInfo()) : null,
             'items' => array_map(

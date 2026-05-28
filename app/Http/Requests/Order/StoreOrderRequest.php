@@ -49,6 +49,8 @@ final class StoreOrderRequest extends FormRequest
             'customer_email' => $isGuest
                 ? ['nullable', 'string', 'email', 'max:255']
                 : ['prohibited'],
+            'delivery_fee_kopecks' => ['prohibited'],
+            'total' => ['prohibited'],
         ];
     }
 

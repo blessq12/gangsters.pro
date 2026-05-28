@@ -26,6 +26,8 @@ class OrderFactory
         array $itemsData,
         ?DeliveryInfo $deliveryInfo = null,
         ?PaymentInfo $paymentInfo = null,
+        int $deliveryFeeKopecks = 0,
+        ?array $deliveryPricingSnapshot = null,
     ): Order {
         $items = [];
 
@@ -66,7 +68,9 @@ class OrderFactory
             $subtotal += $item->getRowSubtotal();
             $discountTotal += $item->getRowDiscount();
         }
-        $total = $subtotal - $discountTotal;
+        $itemsNet = $subtotal - $discountTotal;
+        $deliveryFeeKopecks = max(0, $deliveryFeeKopecks);
+        $total = $itemsNet + $deliveryFeeKopecks;
 
         $createdAt = new \DateTimeImmutable;
 
@@ -78,11 +82,13 @@ class OrderFactory
             subtotal: $subtotal,
             discountTotal: $discountTotal,
             total: $total,
+            deliveryFeeKopecks: $deliveryFeeKopecks,
             deliveryInfo: $deliveryInfo,
             paymentInfo: $paymentInfo,
             items: $items,
             createdAt: $createdAt,
             updatedAt: $createdAt,
+            deliveryPricingSnapshot: $deliveryPricingSnapshot,
         );
     }
 
@@ -100,6 +106,8 @@ class OrderFactory
         ?DeliveryInfo $deliveryInfo,
         ?PaymentInfo $paymentInfo,
         \DateTimeImmutable $createdAt,
+        int $deliveryFeeKopecks = 0,
+        ?array $deliveryPricingSnapshot = null,
     ): Order {
         $items = [];
 
@@ -138,7 +146,9 @@ class OrderFactory
             $subtotal += $item->getRowSubtotal();
             $discountTotal += $item->getRowDiscount();
         }
-        $total = $subtotal - $discountTotal;
+        $itemsNet = $subtotal - $discountTotal;
+        $deliveryFeeKopecks = max(0, $deliveryFeeKopecks);
+        $total = $itemsNet + $deliveryFeeKopecks;
 
         $updatedAt = new \DateTimeImmutable;
 
@@ -150,11 +160,13 @@ class OrderFactory
             subtotal: $subtotal,
             discountTotal: $discountTotal,
             total: $total,
+            deliveryFeeKopecks: $deliveryFeeKopecks,
             deliveryInfo: $deliveryInfo,
             paymentInfo: $paymentInfo,
             items: $items,
             createdAt: $createdAt,
             updatedAt: $updatedAt,
+            deliveryPricingSnapshot: $deliveryPricingSnapshot,
         );
     }
 }

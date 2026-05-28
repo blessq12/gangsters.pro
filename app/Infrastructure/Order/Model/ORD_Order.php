@@ -25,6 +25,8 @@ class ORD_Order extends Model
         'subtotal',
         'discount_total',
         'total',
+        'delivery_fee_kopecks',
+        'delivery_pricing_snapshot',
         'customer_name',
         'customer_phone',
         'customer_email',
@@ -42,6 +44,8 @@ class ORD_Order extends Model
         'subtotal' => 'int',
         'discount_total' => 'int',
         'total' => 'int',
+        'delivery_fee_kopecks' => 'int',
+        'delivery_pricing_snapshot' => 'array',
     ];
 
     public function items(): HasMany

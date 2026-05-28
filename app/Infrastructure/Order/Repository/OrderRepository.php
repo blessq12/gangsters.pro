@@ -50,6 +50,8 @@ class OrderRepository implements OrderRepositoryInterface
         $model->subtotal = $order->getSubtotal();
         $model->discount_total = $order->getDiscountTotal();
         $model->total = $order->getTotal();
+        $model->delivery_fee_kopecks = $order->getDeliveryFeeKopecks();
+        $model->delivery_pricing_snapshot = $order->getDeliveryPricingSnapshot();
 
         $customer = $order->getCustomer();
         $model->customer_name = $customer->name;
@@ -163,11 +165,13 @@ class OrderRepository implements OrderRepositoryInterface
             subtotal: (int) $model->subtotal,
             discountTotal: (int) $model->discount_total,
             total: (int) $model->total,
+            deliveryFeeKopecks: (int) ($model->delivery_fee_kopecks ?? 0),
             deliveryInfo: $delivery,
             paymentInfo: $payment,
             items: $items,
             createdAt: $createdAt,
             updatedAt: $updatedAt,
+            deliveryPricingSnapshot: $model->delivery_pricing_snapshot,
         );
     }
 }

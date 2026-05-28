@@ -21,8 +21,9 @@ const {
     userCartItems,
     systemCartItems,
     totalAmount,
-    userTotalAmount,
-    systemTotalAmount,
+    itemsTotalAmount,
+    deliveryFeeAmount,
+    isDeliveryFree,
     formatPrice,
     formatPhone,
     isGuestCheckout,
@@ -101,11 +102,22 @@ function unitPriceRub(item) {
             <div :class="cf.totalsInset">
                 <div :class="cf.orderLineRow">
                     <span :class="c.totalsLabelMuted">Товары</span>
-                    <span :class="c.totalsValue">{{ formatPrice(userTotalAmount) }} ₽</span>
+                    <span :class="c.totalsValue">{{ formatPrice(itemsTotalAmount) }} ₽</span>
                 </div>
                 <div :class="cf.orderLineRow">
-                    <span :class="c.totalsLabelMuted">Автодобавления</span>
-                    <span :class="c.totalsValue">{{ formatPrice(systemTotalAmount) }} ₽</span>
+                    <span :class="c.totalsLabelMuted">Доставка</span>
+                    <span
+                        v-if="isDeliveryFree"
+                        :class="c.totalsValue"
+                    >
+                        Бесплатно
+                    </span>
+                    <span
+                        v-else
+                        :class="c.totalsValue"
+                    >
+                        {{ formatPrice(deliveryFeeAmount) }} ₽
+                    </span>
                 </div>
                 <div :class="c.totalsDivider">
                     <span :class="c.totalsLabelStrong">Итого</span>

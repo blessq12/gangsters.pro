@@ -18,5 +18,7 @@ interface OrderPlacementContract
         array $items,
         DeliveryInfo $deliveryInfo,
         PaymentInfo $paymentInfo,
+        int $deliveryFeeKopecks = 0,
+        ?array $deliveryPricingSnapshot = null,
     ): Order;
 }

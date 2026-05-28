@@ -48,6 +48,8 @@ final class UpdateOrderService implements UpdateOrderContract
             deliveryInfo: $deliveryInfo,
             paymentInfo: $paymentInfo,
             createdAt: $existing->getCreatedAt(),
+            deliveryFeeKopecks: $existing->getDeliveryFeeKopecks(),
+            deliveryPricingSnapshot: $existing->getDeliveryPricingSnapshot(),
         );
 
         $this->orders->save($order);

@@ -21,11 +21,14 @@ const {
     cartItems,
     userItems: userCartItems,
     systemItems: systemCartItems,
+    hasDeliveryPricing,
 } = storeToRefs(cartStore);
 
 const {
     totalAmount,
-    userTotalAmount,
+    itemsTotalAmount,
+    deliveryFeeAmount,
+    isDeliveryFree,
     formatPrice,
     isAuthenticated,
     promoState,
@@ -266,7 +269,25 @@ function unitPriceRub(item) {
         >
             <div :class="c.totalsRow">
                 <span :class="c.totalsLabelMuted">Товары</span>
-                <span :class="c.totalsValue">{{ formatPrice(userTotalAmount) }} ₽</span>
+                <span :class="c.totalsValue">{{ formatPrice(itemsTotalAmount) }} ₽</span>
+            </div>
+            <div
+                v-if="hasDeliveryPricing"
+                :class="c.totalsRow"
+            >
+                <span :class="c.totalsLabelMuted">Доставка</span>
+                <span
+                    v-if="isDeliveryFree"
+                    :class="c.totalsValue"
+                >
+                    Бесплатно
+                </span>
+                <span
+                    v-else
+                    :class="c.totalsValue"
+                >
+                    {{ formatPrice(deliveryFeeAmount) }} ₽
+                </span>
             </div>
             <div :class="c.totalsDivider">
                 <span :class="c.totalsLabelStrong">Итого</span>
