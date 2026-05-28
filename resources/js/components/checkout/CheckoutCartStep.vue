@@ -1,9 +1,10 @@
 <script setup>
-import { computed, ref, watch } from "vue";
+import { computed } from "vue";
 import { storeToRefs } from "pinia";
 import { useAppDesign } from "../../design/useAppDesign";
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
 import { useCartStore } from "../../stores/cartStore";
+import { useUiStore } from "../../stores/uiStore";
 import { DOMAIN_EVENTS, emitDomainEvent } from "../../shared/domainEvents";
 
 const chk = useAppDesign().components.checkout;
@@ -17,6 +18,7 @@ const {
 } = useCheckoutFlowContext();
 
 const cartStore = useCartStore();
+const uiStore = useUiStore();
 const {
     cartItems,
     userItems: userCartItems,
@@ -32,14 +34,11 @@ const {
     formatPrice,
     isAuthenticated,
     promoState,
-    checkoutIntent,
+    deliveryBenefit,
+    giftBenefit,
     canResumeCheckout,
     resumeCheckoutLabel,
 } = checkoutState;
-
-const showGiftModal = ref(false);
-const selectedGiftProductId = ref(null);
-const giftApplying = ref(false);
 
 const isCartEmpty = computed(() => cartItems.value.length === 0);
 const hasUserLines = computed(() => userCartItems.value.length > 0);
@@ -91,40 +90,15 @@ const giftCandidates = computed(() => {
             imageUrl: null,
         }));
 });
-const canApplyGiftSelection = computed(() =>
-    giftCandidates.value.some((item) => item.id === Number(selectedGiftProductId.value)),
-);
-
-watch(
-    giftPromotion,
-    (promo) => {
-        const selectedId = Number(promo?.selected_product_id) || null;
-        selectedGiftProductId.value = selectedId;
-    },
-    { immediate: true },
-);
-
 function openGiftModal() {
     if (!isGiftEligible.value) {
         return;
     }
-    const selectedId = Number(giftPromotion.value?.selected_product_id) || null;
-    selectedGiftProductId.value = selectedId;
-    showGiftModal.value = true;
-}
-
-async function applyGiftSelection() {
-    if (!canApplyGiftSelection.value || giftApplying.value) {
-        return;
-    }
-
-    giftApplying.value = true;
-    try {
-        await checkoutIntent.setPromotionGift(selectedGiftProductId.value);
-        showGiftModal.value = false;
-    } finally {
-        giftApplying.value = false;
-    }
+    emitDomainEvent(DOMAIN_EVENTS.BENEFIT_BANNER_CTA_CLICK, {
+        source: "cart",
+        cta: "choose_gift",
+    });
+    uiStore.openGiftSelectionModal({ source: "manual" });
 }
 
 function decrementCart(productId) {
@@ -152,6 +126,11 @@ function unitPriceRub(item) {
     const kopecks = Number(item?.pricing?.finalUnitPriceKopecks);
     if (Number.isFinite(kopecks)) return kopecks / 100;
     return Number(item?.productSnapshot?.price) || 0;
+}
+
+function formatKopecksToRub(kopecks) {
+    const rub = Number(kopecks || 0) / 100;
+    return formatPrice(rub);
 }
 </script>
 
@@ -296,6 +275,38 @@ function unitPriceRub(item) {
         </div>
 
         <div
+            v-if="!isCartEmpty"
+            :class="[c.totalsCard, 'mt-3 space-y-2']"
+        >
+            <p class="text-xs text-app-muted">Прогресс выгод</p>
+            <p
+                v-if="deliveryBenefit?.isReached"
+                class="text-sm text-app-accent"
+            >
+                Бесплатная доставка активна
+            </p>
+            <p
+                v-else
+                class="text-sm text-app-muted"
+            >
+                До бесплатной доставки осталось
+                {{ formatKopecksToRub(deliveryBenefit?.remainingKopecks) }} ₽
+            </p>
+            <p
+                v-if="giftBenefit?.isReached"
+                class="text-sm text-app-accent"
+            >
+                Подарок доступен — выберите в корзине
+            </p>
+            <p
+                v-else-if="giftBenefit?.isActive"
+                class="text-sm text-app-muted"
+            >
+                До подарка осталось {{ formatKopecksToRub(giftBenefit?.remainingKopecks) }} ₽
+            </p>
+        </div>
+
+        <div
             v-if="isGiftEligible && giftCandidates.length"
             :class="c.giftCard"
         >
@@ -343,51 +354,5 @@ function unitPriceRub(item) {
             </button>
         </div>
 
-        <BaseModal v-model="showGiftModal">
-            <template #header>Выбери подарок</template>
-
-            <div :class="c.giftModalList">
-                <label
-                    v-for="item in giftCandidates"
-                    :key="item.id"
-                    :class="c.giftRadioLabel"
-                >
-                    <input
-                        v-model="selectedGiftProductId"
-                        :value="item.id"
-                        type="radio"
-                        name="gift-candidate"
-                        :class="c.giftRadioInput"
-                    />
-                    <div :class="c.giftRadioBody">
-                        <p :class="c.giftRadioTitle">
-                            {{ item.name || `Товар #${item.id}` }}
-                        </p>
-                        <p :class="c.giftRadioPrice">
-                            Цена в меню: {{ formatPrice(item.priceRub) }} ₽, в корзине — 0 ₽
-                        </p>
-                    </div>
-                    <img
-                        v-if="item.imageUrl"
-                        :src="item.imageUrl"
-                        :alt="item.name || `Товар #${item.id}`"
-                        :class="c.giftThumb"
-                    />
-                </label>
-            </div>
-
-            <template #footer>
-                <div :class="c.giftFooterRow">
-                    <button
-                        type="button"
-                        :class="c.giftApplyBtn"
-                        :disabled="!canApplyGiftSelection || giftApplying"
-                        @click="applyGiftSelection"
-                    >
-                        {{ giftApplying ? "Применяем..." : "Применить" }}
-                    </button>
-                </div>
-            </template>
-        </BaseModal>
     </div>
 </template>

@@ -118,7 +118,111 @@ final class ShoppingStatePresenter
             'checkout_intent' => $draft,
             'suggested_step' => $this->suggestedCheckoutStep->resolve($session, $resolved),
             'delivery_pricing' => $this->deliveryPricingPresenter->present($deliveryPricing),
+            'benefits_progress' => $this->buildBenefitsProgress(
+                $resolved->subtotalUserKopecks,
+                $this->deliveryPricingPresenter->present($deliveryPricing),
+                $promoState,
+            ),
         ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $deliveryPricing
+     * @param  array<string, mixed>  $promoState
+     * @return array<string, mixed>
+     */
+    private function buildBenefitsProgress(
+        int $subtotalUserKopecks,
+        array $deliveryPricing,
+        array $promoState,
+    ): array {
+        $deliveryThreshold = isset($deliveryPricing['free_delivery_threshold_kopecks'])
+            ? (is_int($deliveryPricing['free_delivery_threshold_kopecks']) ? $deliveryPricing['free_delivery_threshold_kopecks'] : null)
+            : null;
+        $deliveryCurrent = (int) ($deliveryPricing['items_payable_kopecks'] ?? 0);
+        $deliveryRemaining = max(0, (int) ($deliveryPricing['remaining_to_free_kopecks'] ?? 0));
+        $deliveryReached = (bool) ($deliveryPricing['is_free'] ?? false);
+        $deliveryStatus = $deliveryReached
+            ? 'reached'
+            : ($deliveryCurrent <= 0 ? 'empty' : 'below');
+        $deliveryMessageKey = $deliveryReached
+            ? 'delivery_free'
+            : ($deliveryThreshold === null ? 'delivery_unavailable' : 'delivery_remaining');
+
+        $gift = $promoState['gift_promotion'] ?? null;
+        $giftThreshold = $this->resolveGiftThresholdKopecks($gift);
+        $giftCurrent = is_array($gift)
+            ? (int) ($gift['user_subtotal_kopecks'] ?? $subtotalUserKopecks)
+            : $subtotalUserKopecks;
+        $giftReached = is_array($gift) && ((bool) ($gift['eligible'] ?? false));
+        $giftActive = $giftThreshold !== null;
+        $giftRemaining = $giftActive && ! $giftReached
+            ? max(0, $giftThreshold - max(0, $giftCurrent))
+            : 0;
+        $giftStatus = $giftReached
+            ? 'reached'
+            : ($giftCurrent <= 0 ? 'empty' : ($giftActive ? 'below' : 'empty'));
+        $giftPhase = is_array($gift) && isset($gift['phase']) && is_string($gift['phase'])
+            ? $gift['phase']
+            : 'none';
+        $giftSelectedProductId = is_array($gift) && isset($gift['selected_product_id'])
+            ? (int) ($gift['selected_product_id'] ?: 0)
+            : 0;
+
+        return [
+            'version' => 1,
+            'delivery' => [
+                'is_active' => true,
+                'is_reached' => $deliveryReached,
+                'remaining_kopecks' => $deliveryRemaining,
+                'threshold_kopecks' => $deliveryThreshold,
+                'current_kopecks' => max(0, $deliveryCurrent),
+                'status' => $deliveryStatus,
+                'message_key' => $deliveryMessageKey,
+            ],
+            'gift' => [
+                'is_active' => $giftActive,
+                'is_reached' => $giftReached,
+                'remaining_kopecks' => $giftRemaining,
+                'threshold_kopecks' => $giftThreshold,
+                'current_kopecks' => max(0, $giftCurrent),
+                'status' => $giftStatus,
+                'phase' => $giftPhase,
+                'selected_product_id' => $giftSelectedProductId > 0 ? $giftSelectedProductId : null,
+            ],
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $gift
+     */
+    private function resolveGiftThresholdKopecks(?array $gift): ?int
+    {
+        if (is_array($gift) && isset($gift['threshold_kopecks'])) {
+            $threshold = (int) $gift['threshold_kopecks'];
+            return $threshold > 0 ? $threshold : null;
+        }
+
+        $rules = config('shopping_cart_rules.rules', []);
+        if (! is_array($rules)) {
+            return null;
+        }
+        foreach ($rules as $rule) {
+            if (! is_array($rule) || ($rule['id'] ?? null) !== 'gift_promotion') {
+                continue;
+            }
+            if (($rule['enabled'] ?? true) !== true) {
+                return null;
+            }
+            $options = $rule['options'] ?? null;
+            if (! is_array($options)) {
+                return null;
+            }
+            $threshold = (int) ($options['threshold_kopecks'] ?? 0);
+            return $threshold > 0 ? $threshold : null;
+        }
+
+        return null;
     }
 
     /**

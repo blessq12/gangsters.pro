@@ -18,6 +18,8 @@ export function useCartReadModel() {
         grandTotalWithDelivery: computed(() => cartStore.grandTotalWithDelivery),
         isDeliveryFree: computed(() => cartStore.isDeliveryFree),
         hasDeliveryPricing: computed(() => cartStore.hasDeliveryPricing),
+        benefitsProgress: computed(() => cartStore.benefitsProgress),
+        hasBenefitsProgress: computed(() => cartStore.hasBenefitsProgress),
         totalItems: computed(() => cartStore.cartTotalItems),
         systemItemsCount: computed(() => cartStore.cartSystemItemsCount),
         quantityByProduct(productId) {

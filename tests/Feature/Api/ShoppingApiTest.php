@@ -52,6 +52,28 @@ final class ShoppingApiTest extends ApiTestCase
                     'is_free',
                     'grand_total_kopecks',
                 ],
+                'benefits_progress' => [
+                    'version',
+                    'delivery' => [
+                        'is_active',
+                        'is_reached',
+                        'remaining_kopecks',
+                        'threshold_kopecks',
+                        'current_kopecks',
+                        'status',
+                        'message_key',
+                    ],
+                    'gift' => [
+                        'is_active',
+                        'is_reached',
+                        'remaining_kopecks',
+                        'threshold_kopecks',
+                        'current_kopecks',
+                        'status',
+                        'phase',
+                        'selected_product_id',
+                    ],
+                ],
             ],
         ]);
         $response->assertCookie((string) config('shopping.session_cookie'));
@@ -765,6 +787,90 @@ final class ShoppingApiTest extends ApiTestCase
         } finally {
             $restore();
         }
+    }
+
+    public function test_benefits_progress_delivery_changes_from_below_to_reached(): void
+    {
+        $this->skipUnlessTablesExist(['companies', 'PRD_products']);
+
+        $productId = $this->firstProductIdFromCatalog();
+        if ($productId === null) {
+            $this->markTestSkipped('Нет товаров в каталоге.');
+        }
+
+        $restore = $this->withCompanyDeliveryTerms(10_000_00, 150_00);
+        try {
+            $cart = $this->postJson('/api/shopping/cart/items', [
+                'product_id' => $productId,
+                'quantity' => 1,
+            ])->assertOk();
+            $cookie = $this->shoppingSessionCookieHeader($cart);
+
+            $courier = $this->withHeaders(['Cookie' => $cookie])
+                ->patchJson('/api/shopping/checkout-draft', [
+                    'delivery_info' => ['method' => 'courier'],
+                ])
+                ->assertOk();
+            $courier->assertJsonPath('data.benefits_progress.delivery.is_reached', false);
+            $this->assertContains(
+                $courier->json('data.benefits_progress.delivery.status'),
+                ['empty', 'below'],
+            );
+
+            $pickup = $this->withHeaders(['Cookie' => $cookie])
+                ->patchJson('/api/shopping/checkout-draft', [
+                    'delivery_info' => ['method' => 'pickup'],
+                ])
+                ->assertOk();
+            $pickup->assertJsonPath('data.benefits_progress.delivery.is_reached', true);
+            $pickup->assertJsonPath('data.benefits_progress.delivery.status', 'reached');
+        } finally {
+            $restore();
+        }
+    }
+
+    public function test_benefits_progress_gift_is_reached_when_gift_eligible(): void
+    {
+        $cartProductId = $this->firstProductIdFromCatalog();
+        $giftProductId = $this->firstActiveProductId();
+        if ($giftProductId === null || $cartProductId === null) {
+            $this->markTestSkipped('Нет активных товаров для проверки gift progress.');
+        }
+
+        DB::table('PRD_products')
+            ->where('id', $giftProductId)
+            ->update([
+                'cart_rule_gift_candidate' => true,
+                'status' => 'active',
+            ]);
+
+        DB::table('SHP_shopping_cart_rule_settings')->updateOrInsert(
+            ['id' => 1],
+            [
+                'complement_rule_enabled' => true,
+                'gift_rule_enabled' => true,
+                'rolls_per_complement' => 2,
+                'complement_rule_sort' => 10,
+                'gift_rule_sort' => 20,
+                'gift_threshold_kopecks' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        );
+
+        $state = $this->getJson('/api/shopping/state')->assertOk();
+        $cookieHeader = $this->cookieHeaderFromResponse($state);
+
+        $response = $this->withHeaders(['Cookie' => $cookieHeader])
+            ->postJson('/api/shopping/cart/items', [
+                'product_id' => $cartProductId,
+                'quantity' => 1,
+            ])
+            ->assertOk();
+
+        $response->assertJsonPath('data.benefits_progress.gift.is_active', true);
+        $response->assertJsonPath('data.benefits_progress.gift.is_reached', true);
+        $response->assertJsonPath('data.benefits_progress.gift.status', 'reached');
     }
 
     /**

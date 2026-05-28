@@ -125,6 +125,39 @@ function normalizeDeliveryPricing(raw) {
     };
 }
 
+function normalizeBenefitNode(raw, fallback = {}) {
+    const node = raw && typeof raw === "object" ? raw : {};
+    const thresholdKopecks =
+        node.threshold_kopecks == null ? null : Number(node.threshold_kopecks) || 0;
+    return {
+        isActive: Boolean(node.is_active ?? fallback.isActive ?? false),
+        isReached: Boolean(node.is_reached ?? fallback.isReached ?? false),
+        remainingKopecks: Number(node.remaining_kopecks) || 0,
+        thresholdKopecks,
+        currentKopecks: Number(node.current_kopecks) || 0,
+        status: typeof node.status === "string" ? node.status : fallback.status ?? "empty",
+        messageKey:
+            typeof node.message_key === "string"
+                ? node.message_key
+                : fallback.messageKey ?? null,
+        phase: typeof node.phase === "string" ? node.phase : fallback.phase ?? "none",
+        selectedProductId:
+            node.selected_product_id == null ? null : Number(node.selected_product_id) || null,
+    };
+}
+
+function normalizeBenefitsProgress(raw) {
+    if (!raw || typeof raw !== "object") {
+        return null;
+    }
+
+    return {
+        version: Number(raw.version) || 1,
+        delivery: normalizeBenefitNode(raw.delivery, { isActive: true }),
+        gift: normalizeBenefitNode(raw.gift, { isActive: false, phase: "none" }),
+    };
+}
+
 export const useCartStore = defineStore("cart", {
     state: () => ({
         cartItems: [],
@@ -133,6 +166,7 @@ export const useCartStore = defineStore("cart", {
         subtotalSystemKopecks: 0,
         promoState: {},
         deliveryPricing: null,
+        benefitsProgress: null,
         loading: false,
         error: null,
     }),
@@ -201,6 +235,9 @@ export const useCartStore = defineStore("cart", {
         isDeliveryFree(state) {
             return state.deliveryPricing?.isFree ?? true;
         },
+        hasBenefitsProgress(state) {
+            return state.benefitsProgress != null;
+        },
     },
     actions: {
         initFromStorage() {
@@ -219,11 +256,14 @@ export const useCartStore = defineStore("cart", {
                 cart?.promo_state && typeof cart.promo_state === "object"
                     ? cart.promo_state
                     : {};
-            emitDomainEvent(DOMAIN_EVENTS.CART_CHANGED, { items: this.cartItems });
         },
 
         applyDeliveryPricingSnapshot(deliveryPricing) {
             this.deliveryPricing = normalizeDeliveryPricing(deliveryPricing);
+        },
+
+        applyBenefitsProgressSnapshot(benefitsProgress) {
+            this.benefitsProgress = normalizeBenefitsProgress(benefitsProgress);
         },
 
         _applyStateData(data) {

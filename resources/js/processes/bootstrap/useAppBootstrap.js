@@ -8,6 +8,8 @@ import { useDockCartAffordance } from "../../composables/cart/useDockCartAfforda
 import { useDockBadgeFeedback } from "../../composables/ui/useDockBadgeFeedback";
 import { useSessionLifecycleProcess } from "../session/useSessionLifecycleProcess";
 import { useShoppingSessionProcess } from "../shoppingSession/useShoppingSessionProcess";
+import { useBenefitsProgressProcess } from "../benefits/useBenefitsProgressProcess";
+import { useGiftAutoPromptProcess } from "../benefits/useGiftAutoPromptProcess";
 import { bootstrapShoppingFromApi } from "../../features/shopping/shoppingBootstrap";
 
 let bootstrapInitialized = false;
@@ -30,6 +32,8 @@ export function useAppBootstrap() {
         cleanupProcesses = [
             useSessionLifecycleProcess(),
             useShoppingSessionProcess(),
+            useBenefitsProgressProcess(),
+            useGiftAutoPromptProcess(),
             useCartFlyToDockAnimation(),
             useDockCartAffordance(),
             useDockBadgeFeedback(),

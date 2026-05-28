@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, onUnmounted, watch } from "vue";
+import { computed, onMounted, onUnmounted, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useThemeStore } from "../stores/themeStore";
 import { useUserStore } from "../stores/userStore";
@@ -36,6 +36,7 @@ uiStore.setShowBottomNav(false);
 /** Скрываем док у верха главной, чтобы не перекрывать баннеры/герой */
 const TOP_BANNER_THRESHOLD = 240;
 const isHome = () => route.name === "home";
+const isBenefitsRoute = computed(() => route.name === "home");
 
 function updateBottomBarFromScroll() {
     if (typeof window === "undefined") return;
@@ -131,7 +132,12 @@ onUnmounted(() => {
         <AppNavbarDesktop />
 
         <WorkScheduleStrip />
-
+        <TopBenefitsBanner
+            v-if="isBenefitsRoute"
+            :show-intro="showIntro"
+            :bottom-bar-ready="bottomBarReady"
+            variant="desktop"
+        />
         <main :class="sh.shared.mainGrow">
             <div
                 ref="mainRef"
@@ -154,6 +160,7 @@ onUnmounted(() => {
         <AppFooter />
         <PwaInstallBanner :visible="!showIntro" />
         <AppBottomBarDesktop v-if="bottomBarReady" />
+        <GiftSelectionModal />
         <BaseModal />
     </div>
 </template>

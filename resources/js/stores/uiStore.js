@@ -23,6 +23,9 @@ export const useUiStore = defineStore("ui", {
         dockBadges: { ...DEFAULT_DOCK_BADGES },
         /** Сигнал для CartDockPanel: запустить handleStartCheckout (не persist). */
         pendingCheckoutStart: false,
+        showGiftSelectionModal: false,
+        giftModalSource: null,
+        giftAutoPromptDismissed: false,
     }),
     getters: {
         resolvedDockBadges: (state) => (cartCount = 0, favoritesCount = 0) => ({
@@ -111,6 +114,20 @@ export const useUiStore = defineStore("ui", {
         consumeCheckoutStart() {
             this.pendingCheckoutStart = false;
         },
+        openGiftSelectionModal({ source = "manual" } = {}) {
+            this.giftModalSource = source;
+            this.showGiftSelectionModal = true;
+        },
+        closeGiftSelectionModal({ dismissAuto = false } = {}) {
+            this.showGiftSelectionModal = false;
+            if (dismissAuto) {
+                this.giftAutoPromptDismissed = true;
+            }
+            this.giftModalSource = null;
+        },
+        resetGiftAutoPromptDismissed() {
+            this.giftAutoPromptDismissed = false;
+        },
         setMobileMenuOpen(value) {
             this.isMobileMenuOpen = Boolean(value);
             this.persist();
@@ -165,6 +182,10 @@ export const useUiStore = defineStore("ui", {
             this.isMobileMenuOpen = false;
             this.dockActiveId = null;
             this.dockBadges = { ...DEFAULT_DOCK_BADGES };
+            this.pendingCheckoutStart = false;
+            this.showGiftSelectionModal = false;
+            this.giftModalSource = null;
+            this.giftAutoPromptDismissed = false;
             if (typeof window !== "undefined") {
                 window.localStorage.removeItem(UI_STORAGE_KEY);
             }

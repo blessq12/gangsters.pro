@@ -51,6 +51,9 @@ export function useCheckout() {
     const userTotalAmount = computed(() => cartReadModel.userTotalAmount.value);
     const systemTotalAmount = computed(() => cartReadModel.systemTotalAmount.value);
     const promoState = computed(() => cartReadModel.promoState.value);
+    const benefitsProgress = computed(() => cartReadModel.benefitsProgress.value);
+    const deliveryBenefit = computed(() => benefitsProgress.value?.delivery ?? null);
+    const giftBenefit = computed(() => benefitsProgress.value?.gift ?? null);
     const isAuthenticated = computed(() => clientReadModel.isAuthenticated.value);
     const hasCartItems = computed(() => userCartItems.value.length > 0);
 
@@ -510,6 +513,9 @@ export function useCheckout() {
         userTotalAmount,
         systemTotalAmount,
         promoState,
+        benefitsProgress,
+        deliveryBenefit,
+        giftBenefit,
         isAuthenticated,
         hasCartItems,
         activeStep,

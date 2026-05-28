@@ -15,6 +15,12 @@ export const DOMAIN_EVENTS = Object.freeze({
     CART_CLEARED: "cart.cleared",
     FAVORITES_CHANGED: "favorites.changed",
     ORDER_CREATED: "order.created",
+    BENEFIT_DELIVERY_REACHED: "benefit.delivery_reached",
+    BENEFIT_DELIVERY_LOST: "benefit.delivery_lost",
+    BENEFIT_GIFT_UNLOCKED: "benefit.gift_unlocked",
+    BENEFIT_GIFT_LOST: "benefit.gift_lost",
+    BENEFIT_BANNER_SHOWN: "benefit.banner_shown",
+    BENEFIT_BANNER_CTA_CLICK: "benefit.banner_cta_click",
 });
 
 export function emitDomainEvent(type, payload = {}) {

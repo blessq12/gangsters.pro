@@ -27,6 +27,8 @@ export function useSessionLifecycleProcess() {
                     subtotalUserKopecks: 0,
                     subtotalSystemKopecks: 0,
                     promoState: {},
+                    deliveryPricing: null,
+                    benefitsProgress: null,
                     loading: false,
                     error: null,
                 });

@@ -1,6 +1,7 @@
 import { useCartStore } from "../../stores/cartStore";
 import { useCheckoutIntentStore } from "../../stores/checkoutIntentStore";
 import { useFavoritesStore } from "../../stores/favoritesStore";
+import { DOMAIN_EVENTS, emitDomainEvent } from "../../shared/domainEvents";
 
 /**
  * @param {object} cartStore — Pinia cart store instance
@@ -13,6 +14,11 @@ export function applyCartAndDeliveryFromState(cartStore, data) {
     if (Object.prototype.hasOwnProperty.call(data, "delivery_pricing")) {
         cartStore.applyDeliveryPricingSnapshot(data.delivery_pricing);
     }
+    if (Object.prototype.hasOwnProperty.call(data, "benefits_progress")) {
+        cartStore.applyBenefitsProgressSnapshot(data.benefits_progress);
+    }
+
+    emitDomainEvent(DOMAIN_EVENTS.CART_CHANGED, { items: cartStore.cartItems });
 }
 
 /**
