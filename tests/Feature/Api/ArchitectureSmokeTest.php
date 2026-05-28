@@ -78,7 +78,8 @@ final class ArchitectureSmokeTest extends ApiTestCase
 
         $this->assertStringContainsString('useCheckoutFlow', $dockCode);
         $this->assertStringContainsString('provideCheckoutFlow', $dockCode);
-        $this->assertStringContainsString('useCheckoutOrchestrator', $flowCode);
+        $this->assertStringContainsString('useCheckout', $flowCode);
+        $this->assertStringContainsString('features/checkout/useCheckout', $flowCode);
         $this->assertStringContainsString('CHECKOUT_FLOW_KEY', $contextCode);
     }
 }

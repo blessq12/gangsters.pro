@@ -26,7 +26,6 @@ export const checkoutDesign = {
         pillInactive:
             "bg-black/5 text-app-canvas-fg hover:bg-black/8",
         introMuted: "text-xs text-app-muted",
-        authTabRow: "flex gap-2 text-[11px] font-medium",
         guestIsland: `${nestedCard} space-y-2 px-3 py-3`,
         grid2: "grid grid-cols-2 gap-2",
         addressEmptyHint: `${nestedCard} border-dashed border-neutral-500/60 px-4 py-3 text-[11px] text-app-muted`,
@@ -133,10 +132,6 @@ export const checkoutDesign = {
         giftFooterRow: "flex justify-end",
         giftApplyBtn:
             "inline-flex items-center justify-center rounded-none bg-app-accent px-4 py-2 text-xs font-semibold text-black transition hover:bg-app-accent-hover disabled:cursor-not-allowed disabled:opacity-60",
-    },
-
-    auth: {
-        footerCol: "mt-2 flex flex-col gap-2 text-[11px] text-app-muted",
     },
 
     delivery: {

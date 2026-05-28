@@ -3,7 +3,6 @@
 namespace Tests\Feature\Api;
 
 use App\Mail\ClientOrderConfirmationMail;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
 final class OrderApiTest extends ApiTestCase
@@ -18,8 +17,6 @@ final class OrderApiTest extends ApiTestCase
             'ORD_order_items',
             'PRD_products',
             'PRD_category_product',
-            'complimentary_item_rules',
-            'complimentary_item_rule_categories',
         ]);
     }
 
@@ -294,139 +291,6 @@ final class OrderApiTest extends ApiTestCase
         $this->assertSame($session['client']['id'], $response->json('client_id'));
     }
 
-    public function test_complimentary_preview_returns_free_items_for_trigger_category(): void
-    {
-        $this->markTestSkipped('Promotions vertical удалена: complimentary preview выведен из релизного API.');
-
-        $productId = $this->firstProductIdFromCatalog();
-        if ($productId === null) {
-            $this->markTestSkipped('Нет товаров в каталоге.');
-        }
-
-        $this->seedComplimentaryRuleForProduct($productId, $productId);
-
-        $response = $this->postJson(
-            '/api/order/complimentary-preview',
-            [
-                'items' => [['product_id' => $productId, 'quantity' => 2]],
-            ],
-        );
-
-        $response->assertOk();
-        $items = $response->json('items');
-        $this->assertIsArray($items);
-        $this->assertNotEmpty($items);
-        $this->assertSame($productId, $items[0]['product_id']);
-        $this->assertSame(1, $items[0]['quantity']);
-    }
-
-    public function test_store_adds_complimentary_item_once_per_order(): void
-    {
-        $this->markTestSkipped('Promotions vertical удалена: complimentary items больше не добавляются.');
-
-        $session = $this->registerClientViaApi();
-        $productId = $this->firstProductIdFromCatalog();
-        if ($productId === null) {
-            $this->markTestSkipped('Нет товаров в каталоге.');
-        }
-
-        $this->seedComplimentaryRuleForProduct($productId, $productId);
-
-        $response = $this->postJson(
-            '/api/order',
-            [
-                'items' => [['product_id' => $productId, 'quantity' => 2]],
-                'delivery_method' => 'pickup',
-                'payment_method' => 'cash',
-            ],
-            $this->bearerSanctum($session['token']),
-        );
-
-        $response->assertCreated();
-        $items = $response->json('items');
-        $this->assertIsArray($items);
-        $this->assertCount(2, $items);
-
-        $complimentaryItems = array_values(array_filter($items, static fn (array $row): bool => (bool) ($row['product']['attributes']['is_complimentary'] ?? false)));
-        $this->assertCount(1, $complimentaryItems);
-        $this->assertEqualsWithDelta(0.0, (float) $complimentaryItems[0]['product']['final_price'], 0.001);
-        $this->assertSame(1, $complimentaryItems[0]['quantity']);
-    }
-
-    public function test_single_rule_with_multiple_categories_does_not_duplicate_complimentary_item(): void
-    {
-        $this->markTestSkipped('Promotions vertical удалена: правило complimentary не поддерживается.');
-
-        DB::table('complimentary_item_rule_categories')->delete();
-        DB::table('complimentary_item_rules')->delete();
-
-        $pairs = DB::table('PRD_category_product')
-            ->select(['category_id', 'product_id'])
-            ->distinct()
-            ->limit(20)
-            ->get();
-
-        $byCategory = [];
-        foreach ($pairs as $row) {
-            $categoryId = (int) $row->category_id;
-            $productId = (int) $row->product_id;
-            if (! isset($byCategory[$categoryId])) {
-                $byCategory[$categoryId] = $productId;
-            }
-        }
-
-        $categoryIds = array_keys($byCategory);
-        if (count($categoryIds) < 2) {
-            $this->markTestSkipped('Недостаточно категорий с товарами для проверки множественной логики.');
-        }
-
-        $firstCategoryId = (int) $categoryIds[0];
-        $secondCategoryId = (int) $categoryIds[1];
-        $firstProductId = (int) $byCategory[$firstCategoryId];
-        $secondProductId = (int) $byCategory[$secondCategoryId];
-
-        $this->seedComplimentaryRuleForCategories(
-            [$firstCategoryId, $secondCategoryId],
-            $firstProductId,
-        );
-
-        $response = $this->postJson(
-            '/api/order/complimentary-preview',
-            [
-                'items' => [
-                    ['product_id' => $firstProductId, 'quantity' => 1],
-                    ['product_id' => $secondProductId, 'quantity' => 1],
-                ],
-            ],
-        );
-
-        $response->assertOk();
-        $items = $response->json('items');
-        $this->assertIsArray($items);
-        $this->assertCount(1, $items);
-    }
-
-    public function test_complimentary_preview_works_without_token(): void
-    {
-        $this->markTestSkipped('Promotions vertical удалена: complimentary preview выведен из релизного API.');
-
-        $productId = $this->firstProductIdFromCatalog();
-        if ($productId === null) {
-            $this->markTestSkipped('Нет товаров в каталоге.');
-        }
-
-        $this->seedComplimentaryRuleForProduct($productId, $productId);
-
-        $response = $this->postJson('/api/order/complimentary-preview', [
-            'items' => [['product_id' => $productId, 'quantity' => 1]],
-        ]);
-
-        $response->assertOk();
-        $items = $response->json('items');
-        $this->assertIsArray($items);
-        $this->assertNotEmpty($items);
-    }
-
     public function test_mark_paid_401_without_internal_token(): void
     {
         $this->postJson('/api/internal/orders/ORD-unknown/pay')
@@ -470,44 +334,5 @@ final class OrderApiTest extends ApiTestCase
         )
             ->assertOk()
             ->assertJsonPath('payment.status', 'paid');
-    }
-
-    private function seedComplimentaryRuleForProduct(int $triggerProductId, int $giftProductId): void
-    {
-        $categoryId = DB::table('PRD_category_product')
-            ->where('product_id', $triggerProductId)
-            ->value('category_id');
-
-        if ($categoryId === null) {
-            $this->markTestSkipped('Нет связи товара с категорией в PRD_category_product.');
-        }
-
-        $this->seedComplimentaryRuleForCategories([(int) $categoryId], $giftProductId);
-    }
-
-    /**
-     * @param  array<int, int>  $categoryIds
-     */
-    private function seedComplimentaryRuleForCategories(array $categoryIds, int $giftProductId): void
-    {
-        $now = now();
-        $ruleId = DB::table('complimentary_item_rules')->insertGetId([
-            'trigger_category_id' => null,
-            'gift_product_id' => $giftProductId,
-            'is_active' => 1,
-            'priority' => 100,
-            'updated_at' => $now,
-            'created_at' => $now,
-        ]);
-
-        foreach (array_values(array_unique($categoryIds)) as $categoryId) {
-            DB::table('complimentary_item_rule_categories')->updateOrInsert([
-                'rule_id' => (int) $ruleId,
-                'category_id' => (int) $categoryId,
-            ], [
-                'updated_at' => $now,
-                'created_at' => $now,
-            ]);
-        }
     }
 }

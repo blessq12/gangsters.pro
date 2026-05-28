@@ -5,7 +5,6 @@ namespace App\Providers;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Event;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -61,19 +60,6 @@ class EventServiceProvider extends ServiceProvider
             \App\Infrastructure\Notifications\Client\OnClientPasswordResetRequested::class,
         ],
     ];
-
-    /**
-     * Register any events for your application.
-     */
-    public function boot(): void
-    {
-        if ((bool) config('services.frontpad.enabled', false)) {
-            Event::listen(
-                \App\Domain\Order\Events\OrderCreated::class,
-                \App\Infrastructure\Order\Listeners\PushOrderToFrontpad::class,
-            );
-        }
-    }
 
     /**
      * Determine if events and listeners should be automatically discovered.

@@ -2,23 +2,11 @@
 
 namespace Tests\Feature\Api;
 
-use App\Domain\Order\Entities\Order;
-use App\Domain\Order\Integrations\FrontpadOrderGateway;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 abstract class ApiTestCase extends TestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->app->bind(FrontpadOrderGateway::class, fn () => new class implements FrontpadOrderGateway
-        {
-            public function pushOrder(Order $order): void {}
-        });
-    }
-
     /**
      * Без мигрированной БД тесты осмысленно не гоняем (без RefreshDatabase по твоей политике).
      * На части MySQL имена фактически в нижнем регистре — проверяем оба варианта.
