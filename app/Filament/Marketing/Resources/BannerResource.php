@@ -2,10 +2,12 @@
 
 namespace App\Filament\Marketing\Resources;
 
+use App\Domain\Admin\Enums\AdminHub;
 use App\Filament\Marketing\Resources\BannerResource\Pages\CreateBanner;
 use App\Filament\Marketing\Resources\BannerResource\Pages\EditBanner;
 use App\Filament\Marketing\Schemas\BannerForm;
 use App\Filament\Marketing\Support\RedirectsMarketingIndexToHub;
+use App\Filament\Support\Concerns\AuthorizesAdminHub;
 use App\Infrastructure\SystemContent\Model\SYS_Banner;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -15,6 +17,7 @@ use Filament\Tables\Table;
 
 class BannerResource extends Resource
 {
+    use AuthorizesAdminHub;
     use RedirectsMarketingIndexToHub;
 
     protected static string $marketingHubTab = 'banners';
@@ -30,6 +33,11 @@ class BannerResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPhoto;
 
     protected static bool $shouldRegisterNavigation = false;
+
+    protected static function adminHub(): AdminHub
+    {
+        return AdminHub::Marketing;
+    }
 
     public static function form(Schema $schema): Schema
     {

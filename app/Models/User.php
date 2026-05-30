@@ -3,6 +3,8 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Domain\Admin\AdminAccess;
+use App\Domain\Admin\Enums\AdminRole;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -24,7 +26,8 @@ class User extends Authenticatable implements FilamentUser
         'email',
         'tel',
         'password',
-        'dob'
+        'dob',
+        'admin_role',
     ];
 
     /**
@@ -36,7 +39,7 @@ class User extends Authenticatable implements FilamentUser
         'remember_token',
         'updated_at',
         'email_verified_at',
-        'created_at'
+        'created_at',
     ];
 
     /**
@@ -47,11 +50,11 @@ class User extends Authenticatable implements FilamentUser
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'admin_role' => AdminRole::class,
     ];
-
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return $panel->getId() === 'admin';
+        return $panel->getId() === 'admin' && AdminAccess::isStaff($this);
     }
 }

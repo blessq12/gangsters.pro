@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Application\Notifications\Contracts\NotificationDeliveryReadRepository;
+use App\Application\Notifications\Ports\NotificationDeliveryLogger;
+use App\Infrastructure\Notifications\Repository\EloquentNotificationDeliveryLogger;
+use App\Infrastructure\Notifications\Repository\EloquentNotificationDeliveryReadRepository;
 use App\Infrastructure\Notifications\Telegram\TelegramChannel;
 use App\Infrastructure\Notifications\Telegram\TelegramClient;
 use App\Infrastructure\Notifications\Telegram\TelegramTopicResolver;
@@ -12,6 +16,9 @@ final class NotificationServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->bind(NotificationDeliveryLogger::class, EloquentNotificationDeliveryLogger::class);
+        $this->app->bind(NotificationDeliveryReadRepository::class, EloquentNotificationDeliveryReadRepository::class);
+
         $this->app->singleton(TelegramClient::class, function () {
             return new TelegramClient(
                 token: (string) config('services.telegram.token'),
@@ -34,4 +41,3 @@ final class NotificationServiceProvider extends ServiceProvider
         });
     }
 }
-

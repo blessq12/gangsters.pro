@@ -6,6 +6,7 @@ use App\Application\Catalog\Command\DeleteCategoryUseCase;
 use App\Application\Catalog\Query\GetAdminCategoryListQuery;
 use App\Application\Common\Exceptions\ApiException;
 use App\Filament\Catalog\Resources\CategoryResource;
+use App\Filament\Support\AdminActionVisibility;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
@@ -52,6 +53,7 @@ class HubCategoriesTable extends TableWidget
                     ->label('Удалить')
                     ->icon(Heroicon::OutlinedTrash)
                     ->color('danger')
+                    ->visible(fn (): bool => AdminActionVisibility::canMutate())
                     ->requiresConfirmation()
                     ->action(function (array $record): void {
                         try {
@@ -65,7 +67,8 @@ class HubCategoriesTable extends TableWidget
             ->headerActions([
                 CreateAction::make()
                     ->label('Создать категорию')
-                    ->url(CategoryResource::getUrl('create')),
+                    ->url(CategoryResource::getUrl('create'))
+                    ->visible(fn (): bool => AdminActionVisibility::canMutate()),
             ]);
     }
 }

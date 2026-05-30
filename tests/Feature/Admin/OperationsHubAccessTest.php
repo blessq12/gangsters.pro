@@ -26,7 +26,7 @@ final class OperationsHubAccessTest extends TestCase
     {
         $this->skipUnlessUsersTableExists();
 
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->get('/admin/operations')
@@ -37,7 +37,7 @@ final class OperationsHubAccessTest extends TestCase
     {
         $this->skipUnlessUsersTableExists();
 
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->get('/admin/operations/delivery-zone')
@@ -48,7 +48,7 @@ final class OperationsHubAccessTest extends TestCase
     {
         $this->skipUnlessUsersTableExists();
 
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->get('/admin/operations/cart-rules')
@@ -59,7 +59,7 @@ final class OperationsHubAccessTest extends TestCase
     {
         $this->skipUnlessUsersTableExists();
 
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         foreach (['orders', 'clients', 'delivery', 'active-carts', 'cart-rules'] as $tab) {
             $this->actingAs($user)

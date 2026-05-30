@@ -6,6 +6,7 @@ use App\Application\Common\Exceptions\ApiException;
 use App\Application\Company\Content\Document\Command\DeleteDocumentUseCase;
 use App\Application\Company\Content\Document\Query\GetAdminDocumentListQuery;
 use App\Filament\Company\Resources\DocumentResource;
+use App\Filament\Support\AdminActionVisibility;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
@@ -44,7 +45,8 @@ class HubDocumentsTable extends TableWidget
             ])
             ->headerActions([
                 CreateAction::make()
-                    ->url(DocumentResource::getUrl('create')),
+                    ->url(DocumentResource::getUrl('create'))
+                    ->visible(fn (): bool => AdminActionVisibility::canMutate()),
             ])
             ->recordActions([
                 EditAction::make()
@@ -53,6 +55,7 @@ class HubDocumentsTable extends TableWidget
                     ->label('Удалить')
                     ->icon(Heroicon::OutlinedTrash)
                     ->color('danger')
+                    ->visible(fn (): bool => AdminActionVisibility::canMutate())
                     ->requiresConfirmation()
                     ->modalDescription(fn (array $record): string => 'Документ «'.($record['title'] ?? '—').'» будет удалён безвозвратно.')
                     ->action(function (array $record): void {

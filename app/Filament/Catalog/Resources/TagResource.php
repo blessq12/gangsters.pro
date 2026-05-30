@@ -2,7 +2,9 @@
 
 namespace App\Filament\Catalog\Resources;
 
+use App\Domain\Admin\Enums\AdminHub;
 use App\Filament\Catalog\Support\RedirectsCatalogIndexToHub;
+use App\Filament\Support\Concerns\AuthorizesAdminHub;
 use App\Filament\Catalog\Resources\TagResource\Pages\CreateTag;
 use App\Filament\Catalog\Resources\TagResource\Pages\EditTag;
 use App\Filament\Catalog\Resources\TagResource\Schemas\TagForm;
@@ -15,6 +17,7 @@ use Filament\Tables\Table;
 
 class TagResource extends Resource
 {
+    use AuthorizesAdminHub;
     use RedirectsCatalogIndexToHub;
 
     protected static string $catalogHubTab = 'tags';
@@ -30,6 +33,11 @@ class TagResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTag;
 
     protected static bool $shouldRegisterNavigation = false;
+
+    protected static function adminHub(): AdminHub
+    {
+        return AdminHub::Catalog;
+    }
 
     public static function form(Schema $schema): Schema
     {

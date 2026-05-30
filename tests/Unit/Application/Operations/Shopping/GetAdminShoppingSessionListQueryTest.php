@@ -14,7 +14,14 @@ final class GetAdminShoppingSessionListQueryTest extends TestCase
     public function test_maps_read_repository_rows_to_list_items(): void
     {
         $readRepo = $this->createMock(AdminShoppingSessionReadRepository::class);
-        $readRepo->method('paginateActiveCarts')->with(2, 10)->willReturn([
+        $readRepo->method('paginateActiveCarts')->with(
+            2,
+            10,
+            null,
+            null,
+            null,
+            null,
+        )->willReturn([
             'items' => [[
                 'id' => 7,
                 'public_id' => 'pub-7',
@@ -44,5 +51,34 @@ final class GetAdminShoppingSessionListQueryTest extends TestCase
         $this->assertSame(7, $result['items'][0]['id']);
         $this->assertSame('Гость', $result['items'][0]['client_label']);
         $this->assertSame(3, $result['items'][0]['cart_lines_count']);
+    }
+
+    public function test_passes_parsed_search_filters_to_read_repository(): void
+    {
+        $readRepo = $this->createMock(AdminShoppingSessionReadRepository::class);
+        $readRepo->expects($this->once())
+            ->method('paginateActiveCarts')
+            ->with(
+                1,
+                25,
+                42,
+                42,
+                null,
+                null,
+            )
+            ->willReturn(['items' => [], 'total' => 0]);
+
+        $query = new GetAdminShoppingSessionListQuery(
+            $readRepo,
+            new AdminShoppingSessionPresenter(
+                $this->createMock(AdminShoppingProductReadRepository::class),
+                $this->createMock(AdminClientReadRepository::class),
+            ),
+        );
+
+        $result = $query->execute(search: '42');
+
+        $this->assertSame(0, $result['total']);
+        $this->assertSame([], $result['items']);
     }
 }

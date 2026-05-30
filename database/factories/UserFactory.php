@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Domain\Admin\Enums\AdminRole;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -37,5 +38,17 @@ class UserFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
         ]);
+    }
+
+    public function staff(AdminRole $role = AdminRole::SuperAdmin): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'admin_role' => $role->value,
+        ]);
+    }
+
+    public function superAdmin(): static
+    {
+        return $this->staff(AdminRole::SuperAdmin);
     }
 }

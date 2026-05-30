@@ -6,11 +6,13 @@ use App\Application\Common\Exceptions\ApiException;
 use App\Application\Company\Staff\Command\DeleteAdminUserUseCase;
 use App\Application\Company\Staff\Query\GetAdminStaffListQuery;
 use App\Filament\Company\Resources\StaffUserResource;
+use App\Filament\Support\AdminActionVisibility;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
 use Filament\Support\Icons\Heroicon;
 use Filament\Notifications\Notification;
+use App\Domain\Admin\Enums\AdminRole;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
@@ -51,11 +53,15 @@ class HubStaffTable extends TableWidget
                 TextColumn::make('name')->label('Имя'),
                 TextColumn::make('email')->label('Email'),
                 TextColumn::make('tel')->label('Телефон'),
+                TextColumn::make('admin_role')
+                    ->label('Роль')
+                    ->formatStateUsing(fn (?string $state): string => AdminRole::tryFrom((string) $state)?->label() ?? '—'),
             ])
             ->searchable()
             ->headerActions([
                 CreateAction::make()
-                    ->url(StaffUserResource::getUrl('create')),
+                    ->url(StaffUserResource::getUrl('create'))
+                    ->visible(fn (): bool => AdminActionVisibility::canManageStaff()),
             ])
             ->recordActions([
                 EditAction::make()
@@ -64,6 +70,8 @@ class HubStaffTable extends TableWidget
                     ->label('Удалить')
                     ->icon(Heroicon::OutlinedTrash)
                     ->color('danger')
+                    ->visible(fn (array $record): bool => AdminActionVisibility::canManageStaff()
+                        && (int) $record['id'] !== (int) auth()->id())
                     ->requiresConfirmation()
                     ->modalDescription(fn (array $record): string => 'Сотрудник «'.($record['name'] ?? '—').'» будет удалён безвозвратно.')
                     ->action(function (array $record): void {

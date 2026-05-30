@@ -9,11 +9,13 @@ use App\Application\Catalog\Query\GetAdminProductListQuery;
 use App\Application\Common\Exceptions\ApiException;
 use App\Domain\Product\Entity\Product;
 use App\Filament\Catalog\Resources\ProductResource;
+use App\Filament\Support\AdminActionVisibility;
 use App\Support\Product\ProductStatusLabels;
 use App\Filament\Catalog\Resources\ProductResource\Tables\ProductsTable;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
+use Filament\Notifications\Notification;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
@@ -67,7 +69,8 @@ class HubProductsTable extends TableWidget
                 Action::make('archive')
                     ->label('В архив')
                     ->color('warning')
-                    ->visible(fn (array $record): bool => $record['status'] !== Product::STATUS_ARCHIVED)
+                    ->visible(fn (array $record): bool => AdminActionVisibility::canMutate()
+                        && $record['status'] !== Product::STATUS_ARCHIVED)
                     ->action(fn (array $record) => $this->runArchiveActivate(
                         fn () => app(ArchiveProductUseCase::class)->execute((int) $record['id']),
                         'В архиве',
@@ -75,7 +78,8 @@ class HubProductsTable extends TableWidget
                 Action::make('activate')
                     ->label('Активировать')
                     ->color('success')
-                    ->visible(fn (array $record): bool => $record['status'] === Product::STATUS_ARCHIVED)
+                    ->visible(fn (array $record): bool => AdminActionVisibility::canMutate()
+                        && $record['status'] === Product::STATUS_ARCHIVED)
                     ->action(fn (array $record) => $this->runArchiveActivate(
                         fn () => app(ActivateProductUseCase::class)->execute((int) $record['id']),
                         'Активирован',
@@ -84,6 +88,7 @@ class HubProductsTable extends TableWidget
                     ->label('Удалить')
                     ->icon(Heroicon::OutlinedTrash)
                     ->color('danger')
+                    ->visible(fn (): bool => AdminActionVisibility::canMutate())
                     ->requiresConfirmation()
                     ->modalDescription('Товар будет удалён безвозвратно. Если удаление недоступно — используйте архивацию.')
                     ->action(function (array $record): void {
@@ -98,7 +103,8 @@ class HubProductsTable extends TableWidget
             ->headerActions([
                 CreateAction::make()
                     ->label('Создать товар')
-                    ->url(ProductResource::getUrl('create')),
+                    ->url(ProductResource::getUrl('create'))
+                    ->visible(fn (): bool => AdminActionVisibility::canMutate()),
             ]);
     }
 

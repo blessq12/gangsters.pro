@@ -20,7 +20,7 @@ final class CompanyHubAccessTest extends TestCase
     {
         $this->skipUnlessUsersTableExists();
 
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->get('/admin/company')
@@ -31,7 +31,7 @@ final class CompanyHubAccessTest extends TestCase
     {
         $this->skipUnlessUsersTableExists();
 
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         foreach (['profile', 'legal', 'documents', 'staff'] as $tab) {
             $this->actingAs($user)
@@ -44,7 +44,7 @@ final class CompanyHubAccessTest extends TestCase
     {
         $this->skipUnlessUsersTableExists();
 
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->get('/admin/companies')

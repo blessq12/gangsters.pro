@@ -48,7 +48,7 @@ final class CatalogResourcePagesTest extends TestCase
     {
         $this->skipUnlessCatalogTablesExist();
 
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $response = $this->actingAs($user)->get('/admin/catalog/products/create');
 
@@ -71,7 +71,7 @@ final class CatalogResourcePagesTest extends TestCase
         $this->skipUnlessCatalogTablesExist();
 
         $product = $this->createProduct();
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $response = $this->actingAs($user)->get("/admin/catalog/products/{$product->id}/edit");
 
@@ -90,7 +90,7 @@ final class CatalogResourcePagesTest extends TestCase
             'sort_order' => 0,
             'is_active' => true,
         ]);
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $response = $this->actingAs($user)->get("/admin/catalog/categories/{$category->id}/edit");
 
@@ -110,7 +110,7 @@ final class CatalogResourcePagesTest extends TestCase
             'is_active' => true,
             'sort_order' => 0,
         ]);
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $response = $this->actingAs($user)->get("/admin/catalog/tags/{$tag->id}/edit");
 

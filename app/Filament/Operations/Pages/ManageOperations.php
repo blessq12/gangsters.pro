@@ -2,12 +2,15 @@
 
 namespace App\Filament\Operations\Pages;
 
+use App\Domain\Admin\Enums\AdminHub;
+use App\Filament\Operations\Tables\HubActiveCartsTable;
 use App\Filament\Operations\Tables\HubCartRulesProductsTable;
 use App\Filament\Operations\Tables\HubClientsTable;
+use App\Filament\Operations\Tables\HubNotificationsTable;
 use App\Filament\Operations\Tables\HubOrdersTable;
 use App\Filament\Operations\Widgets\HubCartRulesPanel;
 use App\Filament\Operations\Widgets\HubDeliveryZonePanel;
-use App\Filament\Operations\Tables\HubActiveCartsTable;
+use App\Filament\Support\Concerns\AuthorizesAdminHub;
 use BackedEnum;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Livewire;
@@ -18,6 +21,8 @@ use Filament\Support\Icons\Heroicon;
 
 class ManageOperations extends Page
 {
+    use AuthorizesAdminHub;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog6Tooth;
 
     protected static ?string $navigationLabel = 'Операции';
@@ -31,6 +36,11 @@ class ManageOperations extends Page
     public function getHeading(): string
     {
         return 'Операции';
+    }
+
+    protected static function adminHub(): AdminHub
+    {
+        return AdminHub::Operations;
     }
 
     public function content(Schema $schema): Schema
@@ -65,6 +75,11 @@ class ManageOperations extends Page
                             ->schema([
                                 Livewire::make(HubCartRulesPanel::class),
                                 Livewire::make(HubCartRulesProductsTable::class),
+                            ]),
+                        Tab::make('Уведомления')
+                            ->id('notifications')
+                            ->schema([
+                                Livewire::make(HubNotificationsTable::class),
                             ]),
                     ]),
             ]);

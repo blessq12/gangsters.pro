@@ -2,10 +2,21 @@
 
 namespace App\Application\Site;
 
+use App\Application\Site\Contracts\SiteSeoPagesRepository;
+
 final class SiteSeoResolver
 {
     /** @var array<string, array<string, string>>|null */
     private ?array $pages = null;
+
+    public function __construct(
+        private readonly SiteSeoPagesRepository $pagesRepository,
+    ) {}
+
+    public function invalidateCache(): void
+    {
+        $this->pages = null;
+    }
 
     public function normalizePath(string $path): string
     {
@@ -58,15 +69,7 @@ final class SiteSeoResolver
             return $this->pages;
         }
 
-        $path = (string) config('site.seo_pages_path');
-        if ($path === '' || ! is_readable($path)) {
-            $this->pages = [];
-
-            return $this->pages;
-        }
-
-        $decoded = json_decode((string) file_get_contents($path), true);
-        $this->pages = is_array($decoded) ? $decoded : [];
+        $this->pages = $this->pagesRepository->all();
 
         return $this->pages;
     }

@@ -20,7 +20,7 @@ final class CatalogHubAccessTest extends TestCase
     {
         $this->skipUnlessUsersTableExists();
 
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->get('/admin/catalog')

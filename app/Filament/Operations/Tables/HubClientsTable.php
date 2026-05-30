@@ -6,6 +6,7 @@ use App\Application\Common\Exceptions\ApiException;
 use App\Application\Operations\Client\Query\GetAdminClientListQuery;
 use App\Filament\Operations\Concerns\ConfiguresHubTablePagination;
 use App\Filament\Operations\Resources\ClientResource;
+use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
@@ -67,6 +68,11 @@ class HubClientsTable extends TableWidget
                     ->dateTime('d.m.Y H:i'),
             ])
             ->searchable()
+            ->headerActions([
+                CreateAction::make()
+                    ->label('Создать клиента')
+                    ->url(ClientResource::getUrl('create')),
+            ])
             ->recordActions([
                 EditAction::make()
                     ->url(fn (array $record): string => ClientResource::getUrl('edit', ['record' => $record['id']])),

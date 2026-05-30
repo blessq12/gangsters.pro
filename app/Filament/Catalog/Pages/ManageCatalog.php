@@ -2,11 +2,13 @@
 
 namespace App\Filament\Catalog\Pages;
 
+use App\Domain\Admin\Enums\AdminHub;
 use App\Filament\Catalog\Tables\HubCategoriesTable;
 use App\Filament\Catalog\Tables\HubLayoutTable;
 use App\Filament\Catalog\Tables\HubProductsTable;
 use App\Filament\Catalog\Tables\HubTagsTable;
 use App\Filament\Catalog\Widgets\CatalogOverviewWidget;
+use App\Filament\Support\Concerns\AuthorizesAdminHub;
 use BackedEnum;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Livewire;
@@ -17,6 +19,8 @@ use Filament\Support\Icons\Heroicon;
 
 class ManageCatalog extends Page
 {
+    use AuthorizesAdminHub;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $navigationLabel = 'Каталог';
@@ -30,6 +34,11 @@ class ManageCatalog extends Page
     public function getHeading(): string
     {
         return 'Каталог';
+    }
+
+    protected static function adminHub(): AdminHub
+    {
+        return AdminHub::Catalog;
     }
 
     public function content(Schema $schema): Schema

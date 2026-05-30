@@ -6,6 +6,7 @@ use App\Application\Common\Exceptions\ApiException;
 use App\Application\Marketing\Promotion\Command\DeletePromotionUseCase;
 use App\Application\Marketing\Promotion\Query\GetAdminPromotionListQuery;
 use App\Filament\Marketing\Resources\PromotionResource;
+use App\Filament\Support\AdminActionVisibility;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
@@ -51,7 +52,8 @@ class HubPromotionsTable extends TableWidget
             ])
             ->headerActions([
                 CreateAction::make()
-                    ->url(PromotionResource::getUrl('create')),
+                    ->url(PromotionResource::getUrl('create'))
+                    ->visible(fn (): bool => AdminActionVisibility::canMutate()),
             ])
             ->recordActions([
                 EditAction::make()
@@ -60,6 +62,7 @@ class HubPromotionsTable extends TableWidget
                     ->label('Удалить')
                     ->icon(Heroicon::OutlinedTrash)
                     ->color('danger')
+                    ->visible(fn (): bool => AdminActionVisibility::canMutate())
                     ->requiresConfirmation()
                     ->action(function (array $record): void {
                         try {

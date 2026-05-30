@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Domain\Admin\Enums\AdminRole;
 use App\Models\User;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Schema;
@@ -21,7 +22,7 @@ final class DeliveryZoneMapEditorAccessTest extends TestCase
     {
         $this->skipUnlessUsersTableExists();
 
-        $user = User::factory()->create();
+        $user = User::factory()->staff(AdminRole::Operations)->create();
 
         $this->actingAs($user)
             ->get(route('filament.admin.delivery-zone-map-editor'))
@@ -39,7 +40,7 @@ final class DeliveryZoneMapEditorAccessTest extends TestCase
 
         Config::set('services.yandex_maps.api_key', 'test-maps-key');
 
-        $user = User::factory()->create();
+        $user = User::factory()->staff(AdminRole::Operations)->create();
 
         $html = $this->actingAs($user)
             ->get(route('filament.admin.delivery-zone-map-editor'))
@@ -58,7 +59,7 @@ final class DeliveryZoneMapEditorAccessTest extends TestCase
     {
         $this->skipUnlessUsersTableExists();
 
-        $user = User::factory()->create();
+        $user = User::factory()->staff(AdminRole::Operations)->create();
 
         $this->actingAs($user)
             ->get('/admin/operations?tab=delivery')

@@ -2,7 +2,9 @@
 
 namespace App\Filament\Catalog\Resources;
 
+use App\Domain\Admin\Enums\AdminHub;
 use App\Filament\Catalog\Support\RedirectsCatalogIndexToHub;
+use App\Filament\Support\Concerns\AuthorizesAdminHub;
 use App\Filament\Catalog\Resources\CategoryResource\Pages\CreateCategory;
 use App\Filament\Catalog\Resources\CategoryResource\Pages\EditCategory;
 use App\Filament\Catalog\Resources\CategoryResource\Schemas\CategoryForm;
@@ -15,6 +17,7 @@ use Filament\Tables\Table;
 
 class CategoryResource extends Resource
 {
+    use AuthorizesAdminHub;
     use RedirectsCatalogIndexToHub;
 
     protected static string $catalogHubTab = 'categories';
@@ -30,6 +33,11 @@ class CategoryResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedFolder;
 
     protected static bool $shouldRegisterNavigation = false;
+
+    protected static function adminHub(): AdminHub
+    {
+        return AdminHub::Catalog;
+    }
 
     public static function form(Schema $schema): Schema
     {

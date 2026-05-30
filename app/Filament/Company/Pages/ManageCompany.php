@@ -2,10 +2,13 @@
 
 namespace App\Filament\Company\Pages;
 
+use App\Domain\Admin\Enums\AdminHub;
 use App\Filament\Company\Tables\HubDocumentsTable;
 use App\Filament\Company\Tables\HubStaffTable;
 use App\Filament\Company\Widgets\HubCompanyLegalPanel;
 use App\Filament\Company\Widgets\HubCompanyProfilePanel;
+use App\Filament\Company\Widgets\HubCompanySeoPanel;
+use App\Filament\Support\Concerns\AuthorizesAdminHub;
 use BackedEnum;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Livewire;
@@ -16,6 +19,8 @@ use Filament\Support\Icons\Heroicon;
 
 class ManageCompany extends Page
 {
+    use AuthorizesAdminHub;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice2;
 
     protected static ?string $navigationLabel = 'Компания';
@@ -29,6 +34,11 @@ class ManageCompany extends Page
     public function getHeading(): string
     {
         return 'Компания';
+    }
+
+    protected static function adminHub(): AdminHub
+    {
+        return AdminHub::Company;
     }
 
     public function content(Schema $schema): Schema
@@ -57,6 +67,11 @@ class ManageCompany extends Page
                             ->id('staff')
                             ->schema([
                                 Livewire::make(HubStaffTable::class),
+                            ]),
+                        Tab::make('SEO')
+                            ->id('seo')
+                            ->schema([
+                                Livewire::make(HubCompanySeoPanel::class),
                             ]),
                     ]),
             ]);

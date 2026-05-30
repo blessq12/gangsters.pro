@@ -10,6 +10,7 @@ use App\Application\Operations\Order\Query\GetAdminOrderListQuery;
 use App\Domain\Order\Enums\PaymentStatus;
 use App\Filament\Operations\Concerns\ConfiguresHubTablePagination;
 use App\Filament\Operations\Resources\OrderResource;
+use App\Filament\Support\AdminActionVisibility;
 use App\Support\Order\OrderStatusLabels;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
@@ -115,7 +116,8 @@ class HubOrdersTable extends TableWidget
             ->headerActions([
                 CreateAction::make()
                     ->label('Создать заказ')
-                    ->url(OrderResource::getUrl('create')),
+                    ->url(OrderResource::getUrl('create'))
+                    ->visible(fn (): bool => AdminActionVisibility::canMutate()),
             ])
             ->selectable()
             ->recordActions([
@@ -126,7 +128,8 @@ class HubOrdersTable extends TableWidget
                     ->icon(Heroicon::OutlinedBanknotes)
                     ->color('success')
                     ->requiresConfirmation()
-                    ->visible(fn (array $record): bool => ($record['payment_status'] ?? null) !== PaymentStatus::Paid->value)
+                    ->visible(fn (array $record): bool => AdminActionVisibility::canMutate()
+                        && ($record['payment_status'] ?? null) !== PaymentStatus::Paid->value)
                     ->action(function (array $record): void {
                         $this->runMarkPaid((string) $record['id']);
                     }),
@@ -135,6 +138,7 @@ class HubOrdersTable extends TableWidget
                 BulkAction::make('change_status')
                     ->label('Сменить статус')
                     ->icon(Heroicon::OutlinedArrowPath)
+                    ->visible(fn (): bool => AdminActionVisibility::canMutate())
                     ->form([
                         Select::make('status')
                             ->label('Статус')
@@ -148,6 +152,7 @@ class HubOrdersTable extends TableWidget
                     ->label('Отметить оплаченными')
                     ->icon(Heroicon::OutlinedBanknotes)
                     ->color('success')
+                    ->visible(fn (): bool => AdminActionVisibility::canMutate())
                     ->requiresConfirmation()
                     ->action(function (Collection $records): void {
                         $this->runBulkMarkPaid($records);

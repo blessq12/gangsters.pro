@@ -20,7 +20,7 @@ final class MarketingHubAccessTest extends TestCase
     {
         $this->skipUnlessUsersTableExists();
 
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->get('/admin/marketing')
@@ -31,7 +31,7 @@ final class MarketingHubAccessTest extends TestCase
     {
         $this->skipUnlessUsersTableExists();
 
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         foreach (['banners', 'promotions'] as $tab) {
             $this->actingAs($user)

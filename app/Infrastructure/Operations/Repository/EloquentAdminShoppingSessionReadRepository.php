@@ -5,18 +5,28 @@ namespace App\Infrastructure\Operations\Repository;
 use App\Application\Operations\Shopping\Contracts\AdminShoppingSessionReadRepository;
 use App\Infrastructure\Client\Model\UR_Client;
 use App\Infrastructure\Shopping\Model\SHP_ShoppingSession;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
 final class EloquentAdminShoppingSessionReadRepository implements AdminShoppingSessionReadRepository
 {
-    public function paginateActiveCarts(int $page = 1, int $perPage = 25): array
-    {
-        $paginator = SHP_ShoppingSession::query()
+    public function paginateActiveCarts(
+        int $page = 1,
+        int $perPage = 25,
+        ?int $clientId = null,
+        ?int $sessionId = null,
+        ?string $publicId = null,
+        ?string $orderId = null,
+    ): array {
+        $query = SHP_ShoppingSession::query()
             ->where('expires_at', '>', now())
             ->whereHas('cartLines')
             ->withCount(['cartLines', 'favorites'])
-            ->orderByDesc('updated_at')
-            ->paginate(perPage: $perPage, page: $page);
+            ->orderByDesc('updated_at');
+
+        $this->applyListFilters($query, $clientId, $sessionId, $publicId, $orderId);
+
+        $paginator = $query->paginate(perPage: $perPage, page: $page);
 
         $clients = $this->loadClientsForSessions(collect($paginator->items()));
 
@@ -95,5 +105,43 @@ final class EloquentAdminShoppingSessionReadRepository implements AdminShoppingS
         }
 
         return 'Клиент #'.$clientId;
+    }
+
+    /**
+     * @param  Builder<SHP_ShoppingSession>  $query
+     */
+    private function applyListFilters(
+        Builder $query,
+        ?int $clientId,
+        ?int $sessionId,
+        ?string $publicId,
+        ?string $orderId,
+    ): void {
+        if ($clientId === null && $sessionId === null && ! filled($publicId) && ! filled($orderId)) {
+            return;
+        }
+
+        $query->where(function (Builder $inner) use ($clientId, $sessionId, $publicId, $orderId): void {
+            if ($sessionId !== null) {
+                $inner->orWhere('id', $sessionId);
+            }
+
+            if ($clientId !== null) {
+                $inner->orWhere('client_id', $clientId);
+            }
+
+            if (filled($publicId)) {
+                $inner->orWhere('public_id', $publicId);
+            }
+
+            if (filled($orderId)) {
+                $inner->orWhereIn('client_id', function ($subquery) use ($orderId): void {
+                    $subquery->select('client_id')
+                        ->from('ORD_orders')
+                        ->where('id', $orderId)
+                        ->whereNotNull('client_id');
+                });
+            }
+        });
     }
 }

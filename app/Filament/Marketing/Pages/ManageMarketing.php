@@ -2,8 +2,10 @@
 
 namespace App\Filament\Marketing\Pages;
 
+use App\Domain\Admin\Enums\AdminHub;
 use App\Filament\Marketing\Tables\HubBannersTable;
 use App\Filament\Marketing\Tables\HubPromotionsTable;
+use App\Filament\Support\Concerns\AuthorizesAdminHub;
 use BackedEnum;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Livewire;
@@ -14,6 +16,8 @@ use Filament\Support\Icons\Heroicon;
 
 class ManageMarketing extends Page
 {
+    use AuthorizesAdminHub;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMegaphone;
 
     protected static ?string $navigationLabel = 'Маркетинг';
@@ -27,6 +31,11 @@ class ManageMarketing extends Page
     public function getHeading(): string
     {
         return 'Маркетинг';
+    }
+
+    protected static function adminHub(): AdminHub
+    {
+        return AdminHub::Marketing;
     }
 
     public function content(Schema $schema): Schema

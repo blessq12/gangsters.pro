@@ -2,6 +2,7 @@
 
 namespace App\Filament\Operations\Support;
 
+use App\Application\Operations\Client\DTO\CreateAdminClientDTO;
 use App\Application\Operations\Client\DTO\UpdateAdminClientDTO;
 
 final class FilamentClientFormMapper
@@ -38,6 +39,22 @@ final class FilamentClientFormMapper
             ),
             'orders' => $payload['orders']['items'] ?? [],
         ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public static function toCreateDto(array $data): CreateAdminClientDTO
+    {
+        return new CreateAdminClientDTO(
+            name: (string) ($data['name'] ?? ''),
+            phone: (string) ($data['phone'] ?? ''),
+            email: filled($data['email'] ?? null) ? (string) $data['email'] : null,
+            birthDate: filled($data['birth_date'] ?? null) ? (string) $data['birth_date'] : null,
+            password: filled($data['password'] ?? null) ? (string) $data['password'] : null,
+            consentPersonalData: (bool) ($data['consent_personal_data'] ?? false),
+            consentMarketing: (bool) ($data['consent_marketing'] ?? false),
+        );
     }
 
     /**

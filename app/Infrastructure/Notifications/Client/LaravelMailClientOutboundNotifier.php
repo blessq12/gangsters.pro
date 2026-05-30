@@ -64,6 +64,8 @@ final class LaravelMailClientOutboundNotifier implements ClientOutboundNotifier
                 'email' => $email,
                 'message' => $e->getMessage(),
             ]);
+
+            throw $e;
         }
     }
 }

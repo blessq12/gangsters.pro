@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Application\Catalog\Contracts\CatalogYandexReadModelContract;
 use App\Application\Catalog\Query\CatalogYandexReadModel;
 use App\Application\Notifications\Ports\ClientOutboundNotifier;
+use App\Application\Notifications\Ports\NotificationDeliveryLogger;
 use App\Application\Order\Command\CancelOrderService;
 use App\Application\Order\Command\MarkOrderPaidService;
 use App\Application\Order\Command\PlaceOrderService;
@@ -23,7 +24,11 @@ use App\Application\Site\SiteSeoResolver;
 use App\Application\SystemContent\Query\GetSystemCompanyUseCase;
 use App\Application\YandexFood\Contracts\YandexFoodOrderMetaStore;
 use App\Domain\Order\Contracts\CatalogItemSnapshotProvider as DomainCatalogItemSnapshotProvider;
+use App\Infrastructure\Notifications\Client\CompositeClientOutboundNotifier;
 use App\Infrastructure\Notifications\Client\LaravelMailClientOutboundNotifier;
+use App\Infrastructure\Notifications\Client\LoggingClientOutboundNotifierDecorator;
+use App\Infrastructure\Notifications\Client\StubSmsClientOutboundNotifier;
+use App\Infrastructure\Notifications\Client\StubTelegramClientOutboundNotifier;
 use App\Infrastructure\Order\Catalog\EloquentCatalogItemSnapshotProvider;
 use App\Infrastructure\Order\CustomerSnapshot\EloquentCustomerSnapshotProvider;
 use App\Infrastructure\Security\EventUnauthorizedClientAccessNotifier;
@@ -43,22 +48,24 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // Пока только почта. TG/SMS — заглушки без реальной доставки; композит закомментирован.
-        // Раскомментируй при готовых адаптерах:
-        // use App\Infrastructure\Notifications\Client\CompositeClientOutboundNotifier;
-        // use App\Infrastructure\Notifications\Client\StubSmsClientOutboundNotifier;
-        // use App\Infrastructure\Notifications\Client\StubTelegramClientOutboundNotifier;
-        // $this->app->singleton(LaravelMailClientOutboundNotifier::class);
-        // $this->app->singleton(StubTelegramClientOutboundNotifier::class);
-        // $this->app->singleton(StubSmsClientOutboundNotifier::class);
-        // $this->app->bind(ClientOutboundNotifier::class, function ($app) {
-        //     return new CompositeClientOutboundNotifier(
-        //         $app->make(LaravelMailClientOutboundNotifier::class),
-        //         $app->make(StubTelegramClientOutboundNotifier::class),
-        //         $app->make(StubSmsClientOutboundNotifier::class),
-        //     );
-        // });
-        $this->app->bind(ClientOutboundNotifier::class, LaravelMailClientOutboundNotifier::class);
+        $this->app->singleton(LaravelMailClientOutboundNotifier::class);
+        $this->app->singleton(StubTelegramClientOutboundNotifier::class);
+        $this->app->singleton(StubSmsClientOutboundNotifier::class);
+        $this->app->bind(ClientOutboundNotifier::class, function ($app) {
+            $logger = $app->make(NotificationDeliveryLogger::class);
+
+            $decorate = static fn (ClientOutboundNotifier $notifier, string $channel): LoggingClientOutboundNotifierDecorator => new LoggingClientOutboundNotifierDecorator(
+                $notifier,
+                $channel,
+                $logger,
+            );
+
+            return new CompositeClientOutboundNotifier(
+                $decorate($app->make(LaravelMailClientOutboundNotifier::class), 'mail'),
+                $decorate($app->make(StubTelegramClientOutboundNotifier::class), 'telegram'),
+                $decorate($app->make(StubSmsClientOutboundNotifier::class), 'sms'),
+            );
+        });
         $this->app->bind(DomainEventBus::class, LaravelDomainEventBus::class);
         $this->app->bind(IntegrationEventBus::class, LaravelIntegrationEventBus::class);
         $this->app->bind(UnauthorizedClientAccessNotifier::class, EventUnauthorizedClientAccessNotifier::class);

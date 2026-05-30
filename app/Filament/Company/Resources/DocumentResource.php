@@ -2,9 +2,11 @@
 
 namespace App\Filament\Company\Resources;
 
+use App\Domain\Admin\Enums\AdminHub;
 use App\Filament\Company\Resources\DocumentResource\Pages\CreateDocument;
 use App\Filament\Company\Resources\DocumentResource\Pages\EditDocument;
 use App\Filament\Company\Support\RedirectsCompanyIndexToHub;
+use App\Filament\Support\Concerns\AuthorizesAdminHub;
 use App\Infrastructure\SystemContent\Model\SYS_Document;
 use BackedEnum;
 use Filament\Forms\Components\Textarea;
@@ -17,6 +19,7 @@ use Filament\Tables\Table;
 
 class DocumentResource extends Resource
 {
+    use AuthorizesAdminHub;
     use RedirectsCompanyIndexToHub;
 
     protected static string $companyHubTab = 'documents';
@@ -32,6 +35,11 @@ class DocumentResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
 
     protected static bool $shouldRegisterNavigation = false;
+
+    protected static function adminHub(): AdminHub
+    {
+        return AdminHub::Company;
+    }
 
     public static function form(Schema $schema): Schema
     {

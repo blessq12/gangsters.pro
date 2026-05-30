@@ -6,6 +6,7 @@ use App\Application\Catalog\Command\DeleteTagUseCase;
 use App\Application\Catalog\Query\ListAdminTagsQuery;
 use App\Application\Common\Exceptions\ApiException;
 use App\Filament\Catalog\Resources\TagResource;
+use App\Filament\Support\AdminActionVisibility;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
@@ -54,6 +55,7 @@ class HubTagsTable extends TableWidget
                     ->label('Удалить')
                     ->icon(Heroicon::OutlinedTrash)
                     ->color('danger')
+                    ->visible(fn (): bool => AdminActionVisibility::canMutate())
                     ->requiresConfirmation()
                     ->action(function (array $record): void {
                         try {
@@ -67,7 +69,8 @@ class HubTagsTable extends TableWidget
             ->headerActions([
                 CreateAction::make()
                     ->label('Создать тег')
-                    ->url(TagResource::getUrl('create')),
+                    ->url(TagResource::getUrl('create'))
+                    ->visible(fn (): bool => AdminActionVisibility::canMutate()),
             ]);
     }
 }

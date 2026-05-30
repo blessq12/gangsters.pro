@@ -37,7 +37,11 @@ class EditStaffUser extends EditRecord
 
     protected function handleRecordUpdate(Model $record, array $data): Model
     {
-        app(UpdateAdminUserUseCase::class)->execute((int) $record->getKey(), $data);
+        app(UpdateAdminUserUseCase::class)->execute(
+            (int) $record->getKey(),
+            $data,
+            (int) auth()->id(),
+        );
 
         return $record->refresh();
     }

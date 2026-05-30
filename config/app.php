@@ -185,6 +185,7 @@ return [
         App\Providers\OperationsServiceProvider::class,
         App\Providers\SystemContentServiceProvider::class,
         App\Providers\CompanyServiceProvider::class,
+        App\Providers\SiteServiceProvider::class,
         App\Providers\MarketingServiceProvider::class,
         App\Providers\NotificationServiceProvider::class,
     ])->toArray(),

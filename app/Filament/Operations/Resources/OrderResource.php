@@ -2,10 +2,12 @@
 
 namespace App\Filament\Operations\Resources;
 
+use App\Domain\Admin\Enums\AdminHub;
 use App\Filament\Operations\Resources\OrderResource\Pages\CreateOrder;
 use App\Filament\Operations\Resources\OrderResource\Pages\EditOrder;
 use App\Filament\Operations\Resources\OrderResource\Schemas\OrderForm;
 use App\Filament\Operations\Support\RedirectsOperationsIndexToHub;
+use App\Filament\Support\Concerns\AuthorizesAdminHub;
 use App\Infrastructure\Order\Model\ORD_Order;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -15,6 +17,7 @@ use Filament\Tables\Table;
 
 class OrderResource extends Resource
 {
+    use AuthorizesAdminHub;
     use RedirectsOperationsIndexToHub;
 
     protected static string $operationsHubTab = 'orders';
@@ -30,6 +33,11 @@ class OrderResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShoppingCart;
 
     protected static bool $shouldRegisterNavigation = false;
+
+    protected static function adminHub(): AdminHub
+    {
+        return AdminHub::Operations;
+    }
 
     public static function form(Schema $schema): Schema
     {

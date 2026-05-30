@@ -2,7 +2,9 @@
 
 namespace App\Filament\Catalog\Resources;
 
+use App\Domain\Admin\Enums\AdminHub;
 use App\Filament\Catalog\Support\RedirectsCatalogIndexToHub;
+use App\Filament\Support\Concerns\AuthorizesAdminHub;
 use App\Filament\Catalog\Resources\ProductResource\Pages\CreateProduct;
 use App\Filament\Catalog\Resources\ProductResource\Pages\EditProduct;
 use App\Filament\Catalog\Resources\ProductResource\Schemas\ProductForm;
@@ -15,6 +17,7 @@ use Filament\Tables\Table;
 
 class ProductResource extends Resource
 {
+    use AuthorizesAdminHub;
     use RedirectsCatalogIndexToHub;
 
     protected static string $catalogHubTab = 'products';
@@ -30,6 +33,11 @@ class ProductResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShoppingBag;
 
     protected static bool $shouldRegisterNavigation = false;
+
+    protected static function adminHub(): AdminHub
+    {
+        return AdminHub::Catalog;
+    }
 
     public static function form(Schema $schema): Schema
     {

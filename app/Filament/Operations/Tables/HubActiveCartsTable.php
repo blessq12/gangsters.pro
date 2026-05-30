@@ -39,6 +39,7 @@ class HubActiveCartsTable extends TableWidget
 
                 try {
                     $result = app(GetAdminShoppingSessionListQuery::class)->execute(
+                        search: filled($search) ? $search : null,
                         page: max(1, (int) $page),
                         perPage: $perPage,
                     );
@@ -57,6 +58,8 @@ class HubActiveCartsTable extends TableWidget
             ->emptyStateHeading('Нет активных корзин')
             ->emptyStateDescription('Здесь отображаются неистёкшие shopping-сессии с непустой корзиной.')
             ->emptyStateIcon(Heroicon::OutlinedShoppingCart)
+            ->searchPlaceholder('ID сессии / client_id / public_id / order_id')
+            ->searchable()
             ->columns([
                 TextColumn::make('client_label')
                     ->label('Клиент')

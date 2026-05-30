@@ -40,7 +40,7 @@ final class OperationsHubTablePaginationRenderTest extends TestCase
     {
         $this->skipUnlessUsersTableExists();
 
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $response = $this->actingAs($user)
             ->get('/admin/operations?tab=orders');

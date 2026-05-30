@@ -3,6 +3,7 @@
 namespace App\Infrastructure\Company;
 
 use App\Application\Company\Contracts\AdminUserRepository;
+use App\Domain\Admin\Enums\AdminRole;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
@@ -10,7 +11,9 @@ final class EloquentAdminUserRepository implements AdminUserRepository
 {
     public function list(?string $search, int $page, int $perPage): array
     {
-        $query = User::query()->orderByDesc('id');
+        $query = User::query()
+            ->whereNotNull('admin_role')
+            ->orderByDesc('id');
 
         if (filled($search)) {
             $query->where(function ($builder) use ($search): void {
@@ -47,6 +50,7 @@ final class EloquentAdminUserRepository implements AdminUserRepository
             'tel' => $data['tel'] ?? null,
             'dob' => $data['dob'] ?? null,
             'password' => Hash::make((string) ($data['password'] ?? '')),
+            'admin_role' => (string) ($data['admin_role'] ?? AdminRole::ReadOnly->value),
         ]);
 
         return $this->toArray($user);
@@ -65,6 +69,10 @@ final class EloquentAdminUserRepository implements AdminUserRepository
 
         if (filled($data['password'] ?? null)) {
             $payload['password'] = Hash::make((string) $data['password']);
+        }
+
+        if (array_key_exists('admin_role', $data)) {
+            $payload['admin_role'] = $data['admin_role'];
         }
 
         $user->fill($payload);
@@ -89,6 +97,7 @@ final class EloquentAdminUserRepository implements AdminUserRepository
             'email' => $user->email,
             'tel' => $user->tel,
             'dob' => $user->dob,
+            'admin_role' => $user->admin_role?->value,
         ];
     }
 }

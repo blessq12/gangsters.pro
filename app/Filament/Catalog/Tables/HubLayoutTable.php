@@ -8,6 +8,7 @@ use App\Application\Catalog\Query\GetAdminCategoryLayoutQuery;
 use App\Application\Catalog\Query\GetAdminCategoryListQuery;
 use App\Application\Catalog\Query\GetAdminProductListQuery;
 use App\Application\Common\Exceptions\ApiException;
+use App\Filament\Support\AdminActionVisibility;
 use App\Support\Money;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
@@ -80,12 +81,14 @@ class HubLayoutTable extends TableWidget
                     ->action(function (array $data): void {
                         $this->appendProduct((int) $data['product_id']);
                     })
-                    ->visible(fn (): bool => $this->selectedCategoryId() !== null),
+                    ->visible(fn (): bool => AdminActionVisibility::canMutate()
+                        && $this->selectedCategoryId() !== null),
             ])
             ->recordActions([
                 Action::make('remove')
                     ->label('Убрать')
                     ->color('danger')
+                    ->visible(fn (): bool => AdminActionVisibility::canMutate())
                     ->action(fn (array $record) => $this->removeProduct((int) $record['id'])),
             ]);
     }

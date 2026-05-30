@@ -3,6 +3,7 @@
 namespace App\Filament\Analytics\Pages;
 
 use App\Application\Reporting\ValueObject\MetricsPeriod;
+use App\Domain\Admin\Enums\AdminHub;
 use App\Filament\Analytics\Widgets\Hub\HubClientsPanel;
 use App\Filament\Analytics\Widgets\Hub\HubFinancePanel;
 use App\Filament\Analytics\Widgets\Hub\HubOrdersPanel;
@@ -10,6 +11,7 @@ use App\Filament\Analytics\Widgets\Hub\HubOverviewPanel;
 use App\Filament\Analytics\Widgets\Hub\HubStorefrontPanel;
 use App\Filament\Catalog\Pages\ManageCatalog;
 use App\Filament\Operations\Pages\ManageOperations;
+use App\Filament\Support\Concerns\AuthorizesAdminHub;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
@@ -24,6 +26,8 @@ use Livewire\Attributes\Url;
 
 class ManageAnalytics extends Page
 {
+    use AuthorizesAdminHub;
+
     protected static ?string $slug = 'dashboard';
 
     protected static ?string $navigationLabel = 'Главная';
@@ -42,6 +46,11 @@ class ManageAnalytics extends Page
         if ($this->period === null || $this->period === '') {
             $this->period = MetricsPeriod::SevenDays->value;
         }
+    }
+
+    protected static function adminHub(): AdminHub
+    {
+        return AdminHub::Analytics;
     }
 
     public function updatedPeriod(?string $period): void

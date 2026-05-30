@@ -62,8 +62,10 @@ final class FrontendAndAclBoundariesTest extends TestCase
         $violations = [];
         $allowed = [
             $this->path('resources/js/features/checkout/useCheckout.js'),
+            $this->path('resources/js/features/checkout/resetCheckoutAfterOrderCompleted.js'),
             $this->path('resources/js/features/orders/useOrderCommands.js'),
             $this->path('resources/js/features/shopping/shoppingApplySnapshot.js'),
+            $this->path('resources/js/features/shopping/applyShoppingState.js'),
             $this->path('resources/js/stores/checkoutIntentStore.js'),
         ];
 

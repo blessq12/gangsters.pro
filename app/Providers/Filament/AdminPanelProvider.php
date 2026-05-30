@@ -48,6 +48,7 @@ use App\Filament\Operations\Resources\ClientResource;
 use App\Filament\Operations\Resources\OrderResource;
 use App\Filament\Operations\Tables\HubCartRulesProductsTable;
 use App\Filament\Operations\Tables\HubClientsTable;
+use App\Filament\Operations\Tables\HubNotificationsTable;
 use App\Filament\Operations\Tables\HubOrdersTable;
 use App\Filament\Operations\Widgets\HubCartRulesPanel;
 use App\Filament\Operations\Widgets\HubDeliveryZonePanel;
@@ -127,6 +128,7 @@ class AdminPanelProvider extends PanelProvider
                 HubCartRulesProductsTable::class,
                 HubDeliveryZonePanel::class,
                 HubActiveCartsTable::class,
+                HubNotificationsTable::class,
                 CatalogOverviewWidget::class,
                 HubProductsTable::class,
                 HubCategoriesTable::class,

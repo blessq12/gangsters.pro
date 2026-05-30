@@ -6,6 +6,7 @@ use App\Application\Common\Exceptions\ApiException;
 use App\Application\Marketing\Banner\Command\DeleteBannerUseCase;
 use App\Application\Marketing\Banner\Query\GetAdminBannerListQuery;
 use App\Filament\Marketing\Resources\BannerResource;
+use App\Filament\Support\AdminActionVisibility;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
@@ -52,7 +53,8 @@ class HubBannersTable extends TableWidget
             ])
             ->headerActions([
                 CreateAction::make()
-                    ->url(BannerResource::getUrl('create')),
+                    ->url(BannerResource::getUrl('create'))
+                    ->visible(fn (): bool => AdminActionVisibility::canMutate()),
             ])
             ->recordActions([
                 EditAction::make()
@@ -61,6 +63,7 @@ class HubBannersTable extends TableWidget
                     ->label('Удалить')
                     ->icon(Heroicon::OutlinedTrash)
                     ->color('danger')
+                    ->visible(fn (): bool => AdminActionVisibility::canMutate())
                     ->requiresConfirmation()
                     ->action(function (array $record): void {
                         try {
