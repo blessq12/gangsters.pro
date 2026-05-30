@@ -4,6 +4,7 @@ namespace App\Filament\Catalog\Tables;
 
 use App\Application\Catalog\Command\ActivateProductUseCase;
 use App\Application\Catalog\Command\ArchiveProductUseCase;
+use App\Application\Catalog\Command\DeleteProductUseCase;
 use App\Application\Catalog\Query\GetAdminProductListQuery;
 use App\Application\Common\Exceptions\ApiException;
 use App\Domain\Product\Entity\Product;
@@ -13,7 +14,7 @@ use App\Filament\Catalog\Resources\ProductResource\Tables\ProductsTable;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
-use Filament\Notifications\Notification;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -79,6 +80,20 @@ class HubProductsTable extends TableWidget
                         fn () => app(ActivateProductUseCase::class)->execute((int) $record['id']),
                         'Активирован',
                     )),
+                Action::make('delete')
+                    ->label('Удалить')
+                    ->icon(Heroicon::OutlinedTrash)
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->modalDescription('Товар будет удалён безвозвратно. Если удаление недоступно — используйте архивацию.')
+                    ->action(function (array $record): void {
+                        try {
+                            app(DeleteProductUseCase::class)->execute((int) $record['id']);
+                            Notification::make()->title('Товар удалён')->success()->send();
+                        } catch (ApiException $exception) {
+                            Notification::make()->title($exception->getMessage())->danger()->send();
+                        }
+                    }),
             ])
             ->headerActions([
                 CreateAction::make()

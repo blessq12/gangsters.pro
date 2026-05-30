@@ -51,6 +51,7 @@ use App\Filament\Operations\Tables\HubClientsTable;
 use App\Filament\Operations\Tables\HubOrdersTable;
 use App\Filament\Operations\Widgets\HubCartRulesPanel;
 use App\Filament\Operations\Widgets\HubDeliveryZonePanel;
+use App\Filament\Operations\Tables\HubActiveCartsTable;
 use App\Http\Controllers\Admin\DeliveryZoneMapEditorController;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -58,6 +59,7 @@ use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\Support\Assets\Css;
 use Filament\Support\Assets\Js;
 use Filament\Support\Colors\Color;
 use Filament\Widgets\AccountWidget;
@@ -124,6 +126,7 @@ class AdminPanelProvider extends PanelProvider
                 HubCartRulesPanel::class,
                 HubCartRulesProductsTable::class,
                 HubDeliveryZonePanel::class,
+                HubActiveCartsTable::class,
                 CatalogOverviewWidget::class,
                 HubProductsTable::class,
                 HubCategoriesTable::class,
@@ -156,6 +159,10 @@ class AdminPanelProvider extends PanelProvider
                 RecentOrdersTableWidget::class,
             ])
             ->assets([
+                Css::make(
+                    'hub-table-pagination',
+                    asset('css/filament/hub-table-pagination.css'),
+                ),
                 Js::make(
                     'delivery-zone-iframe-bridge',
                     asset('js/filament/delivery-zone-iframe-bridge.js'),

@@ -2,12 +2,15 @@
 
 namespace App\Filament\Catalog\Resources\TagResource\Pages;
 
+use App\Application\Catalog\Command\DeleteTagUseCase;
 use App\Application\Catalog\Command\UpdateAdminTagUseCase;
 use App\Application\Catalog\Query\GetAdminTagDetailQuery;
 use App\Application\Common\Exceptions\ApiException;
+use App\Filament\Catalog\Pages\ManageCatalog;
 use App\Filament\Catalog\Resources\TagResource;
 use App\Filament\Catalog\Support\FilamentTagFormMapper;
 use App\Filament\Catalog\Support\ResolvesCatalogEditRecord;
+use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Support\Exceptions\Halt;
@@ -18,6 +21,22 @@ class EditTag extends EditRecord
     use ResolvesCatalogEditRecord;
 
     protected static string $resource = TagResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            DeleteAction::make()
+                ->action(function (): void {
+                    try {
+                        app(DeleteTagUseCase::class)->execute((int) $this->getRecord()->getKey());
+                        Notification::make()->title('Тег удалён')->success()->send();
+                        $this->redirect(ManageCatalog::getUrl(['tab' => 'tags']));
+                    } catch (ApiException $exception) {
+                        Notification::make()->title($exception->getMessage())->danger()->send();
+                    }
+                }),
+        ];
+    }
 
     /**
      * @param  array<string, mixed>  $data

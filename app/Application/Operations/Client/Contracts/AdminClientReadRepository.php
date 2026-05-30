@@ -16,4 +16,9 @@ interface AdminClientReadRepository
     ): array;
 
     public function findById(int $id): ?Client;
+
+    /**
+     * @return array{id: int, name: string|null, phone: string|null, email: string|null}|null
+     */
+    public function findProfileSummaryById(int $id): ?array;
 }

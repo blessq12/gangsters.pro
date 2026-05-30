@@ -4,13 +4,16 @@ namespace App\Filament\Catalog\Resources\CategoryResource\Pages;
 
 use App\Application\Catalog\Command\ActivateCategoryUseCase;
 use App\Application\Catalog\Command\DeactivateCategoryUseCase;
+use App\Application\Catalog\Command\DeleteCategoryUseCase;
 use App\Application\Catalog\Command\UpdateCategoryUseCase;
 use App\Application\Catalog\Query\GetAdminCategoryDetailQuery;
 use App\Application\Common\Exceptions\ApiException;
+use App\Filament\Catalog\Pages\ManageCatalog;
 use App\Filament\Catalog\Resources\CategoryResource;
 use App\Filament\Catalog\Support\FilamentCategoryFormMapper;
 use App\Filament\Catalog\Support\ResolvesCatalogEditRecord;
 use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Support\Exceptions\Halt;
@@ -46,6 +49,16 @@ class EditCategory extends EditRecord
                 ->color('success')
                 ->visible(fn (): bool => ! (bool) $this->getRecord()->is_active)
                 ->action(fn () => $this->toggleActive(true)),
+            DeleteAction::make()
+                ->action(function (): void {
+                    try {
+                        app(DeleteCategoryUseCase::class)->execute((int) $this->getRecord()->getKey());
+                        Notification::make()->title('Категория удалена')->success()->send();
+                        $this->redirect(ManageCatalog::getUrl(['tab' => 'categories']));
+                    } catch (ApiException $exception) {
+                        Notification::make()->title($exception->getMessage())->danger()->send();
+                    }
+                }),
         ];
     }
 

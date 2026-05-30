@@ -6,6 +6,7 @@ use App\Filament\Catalog\Tables\HubProductsTable;
 use App\Filament\Operations\Tables\HubClientsTable;
 use App\Filament\Operations\Widgets\HubCartRulesPanel;
 use App\Filament\Operations\Widgets\HubDeliveryZonePanel;
+use App\Filament\Operations\Tables\HubActiveCartsTable;
 use App\Models\User;
 use Illuminate\Support\Facades\Schema;
 use Livewire\Livewire;
@@ -54,6 +55,19 @@ final class OperationsHubAccessTest extends TestCase
             ->assertNotFound();
     }
 
+    public function test_operations_hub_tabs_are_ok(): void
+    {
+        $this->skipUnlessUsersTableExists();
+
+        $user = User::factory()->create();
+
+        foreach (['orders', 'clients', 'delivery', 'active-carts', 'cart-rules'] as $tab) {
+            $this->actingAs($user)
+                ->get('/admin/operations?tab='.$tab)
+                ->assertOk();
+        }
+    }
+
     public function test_hub_livewire_components_are_registered(): void
     {
         $this->assertHubLivewireAlias(
@@ -67,6 +81,10 @@ final class OperationsHubAccessTest extends TestCase
         $this->assertHubLivewireAlias(
             'app.filament.operations.tables.hub-clients-table',
             HubClientsTable::class,
+        );
+        $this->assertHubLivewireAlias(
+            'app.filament.operations.tables.hub-active-carts-table',
+            HubActiveCartsTable::class,
         );
         $this->assertHubLivewireAlias(
             'app.filament.catalog.tables.hub-products-table',

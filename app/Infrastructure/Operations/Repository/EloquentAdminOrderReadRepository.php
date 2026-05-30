@@ -19,7 +19,8 @@ final class EloquentAdminOrderReadRepository implements AdminOrderReadRepository
         ?string $status = null,
         ?string $dateFrom = null,
         ?string $dateTo = null,
-        ?string $phone = null,
+        ?string $search = null,
+        ?string $paymentStatus = null,
         ?int $clientId = null,
         int $page = 1,
         int $perPage = 25,
@@ -38,8 +39,12 @@ final class EloquentAdminOrderReadRepository implements AdminOrderReadRepository
             $query->whereDate('created_at', '<=', $dateTo);
         }
 
-        if (filled($phone)) {
-            $this->applyPhoneFilter($query, $phone);
+        if (filled($search)) {
+            $this->applySearchFilter($query, $search);
+        }
+
+        if (filled($paymentStatus)) {
+            $query->where('payment_status', $paymentStatus);
         }
 
         if ($clientId !== null) {
@@ -71,15 +76,28 @@ final class EloquentAdminOrderReadRepository implements AdminOrderReadRepository
     /**
      * @param  Builder<ORD_Order>  $query
      */
-    private function applyPhoneFilter(Builder $query, string $phone): void
+    private function applySearchFilter(Builder $query, string $search): void
     {
-        $digits = preg_replace('/\D+/', '', $phone) ?? '';
-        if ($digits === '') {
+        $term = trim($search);
+        if ($term === '') {
             $query->whereRaw('1 = 0');
 
             return;
         }
 
-        $query->where('customer_phone', 'like', '%'.$digits.'%');
+        if (ctype_digit($term)) {
+            $query->where('id', $term);
+
+            return;
+        }
+
+        $digits = preg_replace('/\D+/', '', $term) ?? '';
+        $query->where(function (Builder $inner) use ($term, $digits): void {
+            if ($digits !== '') {
+                $inner->orWhere('customer_phone', 'like', '%'.$digits.'%');
+            }
+
+            $inner->orWhere('customer_name', 'like', '%'.$term.'%');
+        });
     }
 }

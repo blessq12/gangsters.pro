@@ -2,10 +2,15 @@
 
 namespace App\Filament\Catalog\Tables;
 
+use App\Application\Catalog\Command\DeleteTagUseCase;
 use App\Application\Catalog\Query\ListAdminTagsQuery;
+use App\Application\Common\Exceptions\ApiException;
 use App\Filament\Catalog\Resources\TagResource;
+use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
+use Filament\Support\Icons\Heroicon;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -45,6 +50,19 @@ class HubTagsTable extends TableWidget
             ->recordActions([
                 EditAction::make()
                     ->url(fn (array $record): string => TagResource::getUrl('edit', ['record' => $record['id']])),
+                Action::make('delete')
+                    ->label('Удалить')
+                    ->icon(Heroicon::OutlinedTrash)
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->action(function (array $record): void {
+                        try {
+                            app(DeleteTagUseCase::class)->execute((int) $record['id']);
+                            Notification::make()->title('Тег удалён')->success()->send();
+                        } catch (ApiException $exception) {
+                            Notification::make()->title($exception->getMessage())->danger()->send();
+                        }
+                    }),
             ])
             ->headerActions([
                 CreateAction::make()

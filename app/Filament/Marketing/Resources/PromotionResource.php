@@ -4,11 +4,10 @@ namespace App\Filament\Marketing\Resources;
 
 use App\Filament\Marketing\Resources\PromotionResource\Pages\CreatePromotion;
 use App\Filament\Marketing\Resources\PromotionResource\Pages\EditPromotion;
+use App\Filament\Marketing\Schemas\PromotionForm;
 use App\Filament\Marketing\Support\RedirectsMarketingIndexToHub;
 use App\Infrastructure\SystemContent\Model\SYS_Promotion;
 use BackedEnum;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -34,11 +33,7 @@ class PromotionResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        return $schema->components([
-            TextInput::make('title')->label('Заголовок')->required()->maxLength(255),
-            Textarea::make('description')->label('Описание'),
-            TextInput::make('image')->label('Изображение (путь)'),
-        ]);
+        return PromotionForm::configure($schema);
     }
 
     public static function table(Table $table): Table

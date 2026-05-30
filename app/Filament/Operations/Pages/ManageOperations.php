@@ -7,6 +7,7 @@ use App\Filament\Operations\Tables\HubClientsTable;
 use App\Filament\Operations\Tables\HubOrdersTable;
 use App\Filament\Operations\Widgets\HubCartRulesPanel;
 use App\Filament\Operations\Widgets\HubDeliveryZonePanel;
+use App\Filament\Operations\Tables\HubActiveCartsTable;
 use BackedEnum;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Livewire;
@@ -53,6 +54,11 @@ class ManageOperations extends Page
                             ->id('delivery')
                             ->schema([
                                 Livewire::make(HubDeliveryZonePanel::class),
+                            ]),
+                        Tab::make('Активные корзины')
+                            ->id('active-carts')
+                            ->schema([
+                                Livewire::make(HubActiveCartsTable::class),
                             ]),
                         Tab::make('Правила корзины')
                             ->id('cart-rules')

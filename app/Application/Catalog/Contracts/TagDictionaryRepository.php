@@ -18,4 +18,6 @@ interface TagDictionaryRepository
     public function create(CreateAdminTagDTO $dto): AdminTagDTO;
 
     public function update(UpdateAdminTagDTO $dto): AdminTagDTO;
+
+    public function delete(int $id): void;
 }

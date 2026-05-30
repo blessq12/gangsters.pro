@@ -2,10 +2,15 @@
 
 namespace App\Filament\Company\Tables;
 
+use App\Application\Common\Exceptions\ApiException;
+use App\Application\Company\Staff\Command\DeleteAdminUserUseCase;
 use App\Application\Company\Staff\Query\GetAdminStaffListQuery;
 use App\Filament\Company\Resources\StaffUserResource;
+use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
+use Filament\Support\Icons\Heroicon;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
@@ -55,6 +60,23 @@ class HubStaffTable extends TableWidget
             ->recordActions([
                 EditAction::make()
                     ->url(fn (array $record): string => StaffUserResource::getUrl('edit', ['record' => $record['id']])),
+                Action::make('delete')
+                    ->label('Удалить')
+                    ->icon(Heroicon::OutlinedTrash)
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->modalDescription(fn (array $record): string => 'Сотрудник «'.($record['name'] ?? '—').'» будет удалён безвозвратно.')
+                    ->action(function (array $record): void {
+                        try {
+                            app(DeleteAdminUserUseCase::class)->execute(
+                                (int) $record['id'],
+                                (int) auth()->id(),
+                            );
+                            Notification::make()->title('Сотрудник удалён')->success()->send();
+                        } catch (ApiException $exception) {
+                            Notification::make()->title($exception->getMessage())->danger()->send();
+                        }
+                    }),
             ]);
     }
 }

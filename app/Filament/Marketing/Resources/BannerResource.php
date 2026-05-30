@@ -4,11 +4,10 @@ namespace App\Filament\Marketing\Resources;
 
 use App\Filament\Marketing\Resources\BannerResource\Pages\CreateBanner;
 use App\Filament\Marketing\Resources\BannerResource\Pages\EditBanner;
+use App\Filament\Marketing\Schemas\BannerForm;
 use App\Filament\Marketing\Support\RedirectsMarketingIndexToHub;
 use App\Infrastructure\SystemContent\Model\SYS_Banner;
 use BackedEnum;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -34,13 +33,7 @@ class BannerResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        return $schema->components([
-            TextInput::make('title')->label('Заголовок')->maxLength(255),
-            Textarea::make('description')->label('Описание'),
-            TextInput::make('image')->label('Изображение (путь)'),
-            TextInput::make('image_mobile')->label('Mobile (путь)'),
-            TextInput::make('image_desktop')->label('Desktop (путь)'),
-        ]);
+        return BannerForm::configure($schema);
     }
 
     public static function table(Table $table): Table

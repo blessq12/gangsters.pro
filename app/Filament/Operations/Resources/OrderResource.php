@@ -2,6 +2,7 @@
 
 namespace App\Filament\Operations\Resources;
 
+use App\Filament\Operations\Resources\OrderResource\Pages\CreateOrder;
 use App\Filament\Operations\Resources\OrderResource\Pages\EditOrder;
 use App\Filament\Operations\Resources\OrderResource\Schemas\OrderForm;
 use App\Filament\Operations\Support\RedirectsOperationsIndexToHub;
@@ -43,6 +44,7 @@ class OrderResource extends Resource
     public static function getPages(): array
     {
         return [
+            'create' => CreateOrder::route('/create'),
             'edit' => EditOrder::route('/{record}/edit'),
         ];
     }

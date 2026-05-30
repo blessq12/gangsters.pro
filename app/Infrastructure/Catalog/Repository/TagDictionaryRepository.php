@@ -57,6 +57,11 @@ final class TagDictionaryRepository implements TagDictionaryRepositoryContract
         return $this->map($tag->refresh());
     }
 
+    public function delete(int $id): void
+    {
+        PRD_Tag::query()->whereKey($id)->delete();
+    }
+
     private function map(PRD_Tag $tag): AdminTagDTO
     {
         return new AdminTagDTO(

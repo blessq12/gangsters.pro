@@ -2,6 +2,8 @@
 
 namespace App\Filament\Operations\Support;
 
+use App\Application\Operations\Client\DTO\UpdateAdminClientDTO;
+
 final class FilamentClientFormMapper
 {
     /**
@@ -24,6 +26,7 @@ final class FilamentClientFormMapper
             'created_at' => $client['created_at'] ?? '',
             'addresses' => array_map(
                 static fn (array $address): array => [
+                    'id' => $address['id'] ?? null,
                     'type' => $address['type'] ?? '',
                     'title' => $address['title'] ?? '',
                     'street' => $address['street'] ?? '',
@@ -35,5 +38,20 @@ final class FilamentClientFormMapper
             ),
             'orders' => $payload['orders']['items'] ?? [],
         ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public static function toUpdateDto(int $clientId, array $data): UpdateAdminClientDTO
+    {
+        return new UpdateAdminClientDTO(
+            clientId: $clientId,
+            name: filled($data['name'] ?? null) ? (string) $data['name'] : null,
+            email: array_key_exists('email', $data) ? (string) ($data['email'] ?? '') : null,
+            birthDate: filled($data['birth_date'] ?? null) ? (string) $data['birth_date'] : null,
+            consentPersonalData: (bool) ($data['consent_personal_data'] ?? false),
+            consentMarketing: (bool) ($data['consent_marketing'] ?? false),
+        );
     }
 }

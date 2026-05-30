@@ -7,6 +7,7 @@ use App\Application\Common\Exceptions\ApiException;
 use App\Application\Operations\CartRules\Contracts\UpdateProductCartRuleFlagsContract;
 use App\Application\Operations\CartRules\Query\GetAdminCartRuleProductsQuery;
 use App\Filament\Catalog\Resources\ProductResource;
+use App\Filament\Operations\Concerns\ConfiguresHubTablePagination;
 use App\Support\Product\ProductStatusLabels;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
@@ -21,13 +22,15 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class HubCartRulesProductsTable extends TableWidget
 {
+    use ConfiguresHubTablePagination;
+
     protected static ?string $heading = 'Товары с флагами правил корзины';
 
     protected int|string|array $columnSpan = 'full';
 
     public function table(Table $table): Table
     {
-        return $table
+        $table = $table
             ->records(function (
                 ?string $search,
                 ?array $filters,
@@ -47,12 +50,10 @@ class HubCartRulesProductsTable extends TableWidget
                     isComplementSet: $this->filterBool($filters, 'is_complement_set'),
                 );
 
-                return new LengthAwarePaginator(
-                    collect($result['items'])->keyBy('id'),
-                    $result['total'],
-                    $perPage,
+                return $this->buildHubLengthAwarePaginator(
+                    $result,
                     max(1, (int) $page),
-                    ['path' => request()->url(), 'pageName' => $this->getTablePaginationPageName()],
+                    $perPage,
                 );
             })
             ->columns([
@@ -84,6 +85,8 @@ class HubCartRulesProductsTable extends TableWidget
                     ->label('Комплект')
                     ->action(fn (array $record) => $this->toggleFlag($record, 'is_complement_set')),
             ]);
+
+        return $this->configureHubPagination($table, 'cartRulesProducts');
     }
 
     /**

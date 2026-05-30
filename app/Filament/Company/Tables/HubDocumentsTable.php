@@ -2,10 +2,15 @@
 
 namespace App\Filament\Company\Tables;
 
+use App\Application\Common\Exceptions\ApiException;
+use App\Application\Company\Content\Document\Command\DeleteDocumentUseCase;
 use App\Application\Company\Content\Document\Query\GetAdminDocumentListQuery;
 use App\Filament\Company\Resources\DocumentResource;
+use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
+use Filament\Support\Icons\Heroicon;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -44,6 +49,20 @@ class HubDocumentsTable extends TableWidget
             ->recordActions([
                 EditAction::make()
                     ->url(fn (array $record): string => DocumentResource::getUrl('edit', ['record' => $record['id']])),
+                Action::make('delete')
+                    ->label('Удалить')
+                    ->icon(Heroicon::OutlinedTrash)
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->modalDescription(fn (array $record): string => 'Документ «'.($record['title'] ?? '—').'» будет удалён безвозвратно.')
+                    ->action(function (array $record): void {
+                        try {
+                            app(DeleteDocumentUseCase::class)->execute((int) $record['id']);
+                            Notification::make()->title('Документ удалён')->success()->send();
+                        } catch (ApiException $exception) {
+                            Notification::make()->title($exception->getMessage())->danger()->send();
+                        }
+                    }),
             ]);
     }
 }

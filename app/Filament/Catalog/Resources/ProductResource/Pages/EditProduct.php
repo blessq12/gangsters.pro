@@ -5,6 +5,7 @@ namespace App\Filament\Catalog\Resources\ProductResource\Pages;
 use App\Application\Catalog\Command\ActivateProductUseCase;
 use App\Application\Catalog\Command\ArchiveProductUseCase;
 use App\Application\Catalog\Command\DeleteProductImageUseCase;
+use App\Application\Catalog\Command\DeleteProductUseCase;
 use App\Application\Catalog\Command\SyncProductTagsUseCase;
 use App\Application\Operations\CartRules\Contracts\UpdateProductCartRuleFlagsContract;
 use App\Application\Catalog\Command\UpdateProductUseCase;
@@ -12,10 +13,12 @@ use App\Application\Catalog\Command\UploadProductImageUseCase;
 use App\Application\Catalog\Query\GetAdminProductFormQuery;
 use App\Application\Common\Exceptions\ApiException;
 use App\Domain\Product\Entity\Product;
+use App\Filament\Catalog\Pages\ManageCatalog;
 use App\Filament\Catalog\Resources\ProductResource;
 use App\Filament\Catalog\Support\FilamentProductFormMapper;
 use App\Filament\Catalog\Support\ResolvesCatalogEditRecord;
 use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
@@ -69,6 +72,16 @@ class EditProduct extends EditRecord
                         );
                         Notification::make()->title('Изображение удалено')->success()->send();
                         $this->refreshRecordFormState();
+                    } catch (ApiException $exception) {
+                        Notification::make()->title($exception->getMessage())->danger()->send();
+                    }
+                }),
+            DeleteAction::make()
+                ->action(function (): void {
+                    try {
+                        app(DeleteProductUseCase::class)->execute((int) $this->getRecord()->getKey());
+                        Notification::make()->title('Товар удалён')->success()->send();
+                        $this->redirect(ManageCatalog::getUrl(['tab' => 'products']));
                     } catch (ApiException $exception) {
                         Notification::make()->title($exception->getMessage())->danger()->send();
                     }

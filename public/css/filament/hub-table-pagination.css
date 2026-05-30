@@ -1,0 +1,36 @@
+/*
+ * Hub TableWidget listings live in a narrow admin content area where Filament
+ * hides pagination overview and page numbers until @4xl container width.
+ * Force full pagination UI and use a two-row flex layout that fits the hub.
+ */
+.fi-wi-table .fi-pagination {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.fi-wi-table .fi-pagination .fi-pagination-overview {
+    display: inline;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.fi-wi-table .fi-pagination .fi-pagination-records-per-page-select-ctn {
+    flex: 0 0 auto;
+    margin-inline-start: auto;
+}
+
+.fi-wi-table .fi-pagination .fi-pagination-items {
+    display: flex;
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.fi-wi-table .fi-pagination:not(.fi-simple) .fi-pagination-previous-btn,
+.fi-wi-table .fi-pagination:not(.fi-simple) .fi-pagination-next-btn {
+    display: none;
+}

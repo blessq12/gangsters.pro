@@ -2,6 +2,7 @@
 
 namespace App\Filament\Operations\Support;
 
+use App\Application\Operations\Order\DTO\CreateAdminOrderDTO;
 use App\Support\Order\OrderStatusLabels;
 
 final class FilamentOrderFormMapper
@@ -73,5 +74,30 @@ final class FilamentOrderFormMapper
         }
 
         return $items;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public static function toCreateAdminOrderDto(array $data): CreateAdminOrderDTO
+    {
+        $address = array_filter([
+            'street' => filled($data['delivery_street'] ?? null) ? (string) $data['delivery_street'] : null,
+            'house' => filled($data['delivery_house'] ?? null) ? (string) $data['delivery_house'] : null,
+            'entrance' => filled($data['delivery_entrance'] ?? null) ? (string) $data['delivery_entrance'] : null,
+            'apartment' => filled($data['delivery_apartment'] ?? null) ? (string) $data['delivery_apartment'] : null,
+        ]);
+
+        return new CreateAdminOrderDTO(
+            clientId: filled($data['client_id'] ?? null) ? (int) $data['client_id'] : null,
+            guestCustomerName: filled($data['guest_customer_name'] ?? null) ? (string) $data['guest_customer_name'] : null,
+            guestCustomerPhone: filled($data['guest_customer_phone'] ?? null) ? (string) $data['guest_customer_phone'] : null,
+            guestCustomerEmail: filled($data['guest_customer_email'] ?? null) ? (string) $data['guest_customer_email'] : null,
+            items: self::toOrderItems($data),
+            deliveryMethod: (string) ($data['delivery_method'] ?? 'courier'),
+            deliveryAddress: $address === [] ? null : $address,
+            deliveryComment: filled($data['delivery_comment'] ?? null) ? (string) $data['delivery_comment'] : null,
+            paymentMethod: (string) ($data['payment_method'] ?? 'cash'),
+        );
     }
 }

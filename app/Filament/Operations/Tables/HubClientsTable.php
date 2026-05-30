@@ -4,6 +4,7 @@ namespace App\Filament\Operations\Tables;
 
 use App\Application\Common\Exceptions\ApiException;
 use App\Application\Operations\Client\Query\GetAdminClientListQuery;
+use App\Filament\Operations\Concerns\ConfiguresHubTablePagination;
 use App\Filament\Operations\Resources\ClientResource;
 use Filament\Actions\EditAction;
 use Filament\Notifications\Notification;
@@ -14,13 +15,15 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class HubClientsTable extends TableWidget
 {
+    use ConfiguresHubTablePagination;
+
     protected static ?string $heading = 'Клиенты';
 
     protected int|string|array $columnSpan = 'full';
 
     public function table(Table $table): Table
     {
-        return $table
+        $table = $table
             ->records(function (
                 ?string $search,
                 ?array $filters,
@@ -38,15 +41,13 @@ class HubClientsTable extends TableWidget
                 } catch (ApiException $exception) {
                     Notification::make()->title($exception->getMessage())->danger()->send();
 
-                    return new LengthAwarePaginator([], 0, $perPage, 1);
+                    return $this->buildEmptyHubLengthAwarePaginator($perPage);
                 }
 
-                return new LengthAwarePaginator(
-                    collect($result['items'])->keyBy('id'),
-                    $result['total'],
-                    $perPage,
+                return $this->buildHubLengthAwarePaginator(
+                    $result,
                     max(1, (int) $page),
-                    ['path' => request()->url(), 'pageName' => $this->getTablePaginationPageName()],
+                    $perPage,
                 );
             })
             ->columns([
@@ -70,5 +71,7 @@ class HubClientsTable extends TableWidget
                 EditAction::make()
                     ->url(fn (array $record): string => ClientResource::getUrl('edit', ['record' => $record['id']])),
             ]);
+
+        return $this->configureHubPagination($table, 'clients');
     }
 }

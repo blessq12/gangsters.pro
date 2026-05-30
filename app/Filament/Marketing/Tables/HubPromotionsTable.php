@@ -2,10 +2,16 @@
 
 namespace App\Filament\Marketing\Tables;
 
+use App\Application\Common\Exceptions\ApiException;
+use App\Application\Marketing\Promotion\Command\DeletePromotionUseCase;
 use App\Application\Marketing\Promotion\Query\GetAdminPromotionListQuery;
 use App\Filament\Marketing\Resources\PromotionResource;
+use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
+use Filament\Support\Icons\Heroicon;
+use Filament\Notifications\Notification;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
@@ -32,9 +38,16 @@ class HubPromotionsTable extends TableWidget
                 );
             })
             ->columns([
-                TextColumn::make('id')->label('ID'),
-                TextColumn::make('title')->label('Заголовок'),
-                TextColumn::make('image')->label('Изображение'),
+                ImageColumn::make('image_url')
+                    ->label('')
+                    ->height(48)
+                    ->width(80),
+                TextColumn::make('title')
+                    ->label('Заголовок'),
+                TextColumn::make('description')
+                    ->label('Описание')
+                    ->limit(50)
+                    ->placeholder('—'),
             ])
             ->headerActions([
                 CreateAction::make()
@@ -43,6 +56,19 @@ class HubPromotionsTable extends TableWidget
             ->recordActions([
                 EditAction::make()
                     ->url(fn (array $record): string => PromotionResource::getUrl('edit', ['record' => $record['id']])),
+                Action::make('delete')
+                    ->label('Удалить')
+                    ->icon(Heroicon::OutlinedTrash)
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->action(function (array $record): void {
+                        try {
+                            app(DeletePromotionUseCase::class)->execute((int) $record['id']);
+                            Notification::make()->title('Акция удалена')->success()->send();
+                        } catch (ApiException $exception) {
+                            Notification::make()->title($exception->getMessage())->danger()->send();
+                        }
+                    }),
             ]);
     }
 }

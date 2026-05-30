@@ -7,8 +7,12 @@ use App\Application\Operations\CartRules\Contracts\UpdateProductCartRuleFlagsCon
 use App\Application\Operations\CartRules\Command\UpdateProductCartRuleFlagsUseCase;
 use App\Application\Operations\Client\Contracts\AdminClientReadRepository;
 use App\Application\Operations\Order\Contracts\AdminOrderReadRepository;
+use App\Application\Operations\Shopping\Contracts\AdminShoppingProductReadRepository;
+use App\Application\Operations\Shopping\Contracts\AdminShoppingSessionReadRepository;
 use App\Infrastructure\Operations\Repository\EloquentAdminClientReadRepository;
 use App\Infrastructure\Operations\Repository\EloquentAdminOrderReadRepository;
+use App\Infrastructure\Operations\Repository\EloquentAdminShoppingProductReadRepository;
+use App\Infrastructure\Operations\Repository\EloquentAdminShoppingSessionReadRepository;
 use App\Infrastructure\Operations\Repository\EloquentCartRuleSettingsRepository;
 use Illuminate\Support\ServiceProvider;
 
@@ -18,6 +22,8 @@ class OperationsServiceProvider extends ServiceProvider
     {
         $this->app->bind(AdminOrderReadRepository::class, EloquentAdminOrderReadRepository::class);
         $this->app->bind(AdminClientReadRepository::class, EloquentAdminClientReadRepository::class);
+        $this->app->bind(AdminShoppingSessionReadRepository::class, EloquentAdminShoppingSessionReadRepository::class);
+        $this->app->bind(AdminShoppingProductReadRepository::class, EloquentAdminShoppingProductReadRepository::class);
         $this->app->bind(CartRuleSettingsRepository::class, EloquentCartRuleSettingsRepository::class);
         $this->app->bind(UpdateProductCartRuleFlagsContract::class, UpdateProductCartRuleFlagsUseCase::class);
     }

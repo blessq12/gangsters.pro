@@ -47,6 +47,24 @@ final class EloquentAdminClientReadRepository implements AdminClientReadReposito
         return $this->clients->findById($id);
     }
 
+    public function findProfileSummaryById(int $id): ?array
+    {
+        $model = UR_Client::query()
+            ->select(['id', 'name', 'phone', 'email'])
+            ->find($id);
+
+        if ($model === null) {
+            return null;
+        }
+
+        return [
+            'id' => (int) $model->id,
+            'name' => $model->name !== null ? (string) $model->name : null,
+            'phone' => $model->phone !== null ? (string) $model->phone : null,
+            'email' => $model->email !== null ? (string) $model->email : null,
+        ];
+    }
+
     /**
      * @param  Builder<UR_Client>  $query
      */
