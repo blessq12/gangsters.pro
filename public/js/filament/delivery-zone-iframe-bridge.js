@@ -8,21 +8,31 @@
         CHANGE: "delivery-zone:change",
     };
 
-    document.addEventListener("alpine:init", () => {
+    function registerDeliveryZoneBridge() {
         Alpine.data("deliveryZoneBridge", () => ({
             state: null,
             geometryStatePath: "data.delivery_zone_geojson",
             kitchenAddress: "",
+            kitchenAddressPath: "data.kitchen_address",
             kitchenLatPath: "data.kitchen_latitude",
             kitchenLngPath: "data.kitchen_longitude",
             iframeReady: false,
             statusMessage: "",
 
             init() {
-                if (this.$wire && this.geometryStatePath) {
-                    this.state = this.$wire.$entangle(this.geometryStatePath);
+                if (this.$wire) {
+                    if (this.geometryStatePath) {
+                        this.state = this.$wire.$entangle(
+                            this.geometryStatePath,
+                        );
+                    }
+                    this.kitchenAddress = this.$wire.$entangle(
+                        this.kitchenAddressPath,
+                    );
                 }
-                window.addEventListener("message", (event) => this.onMessage(event));
+                window.addEventListener("message", (event) =>
+                    this.onMessage(event),
+                );
             },
 
             buildInitPayload() {
@@ -30,7 +40,7 @@
 
                 return {
                     geometry: this.state ?? null,
-                    address: this.kitchenAddress,
+                    address: this.kitchenAddress ?? data.kitchen_address ?? "",
                     kitchenLatitude: data.kitchen_latitude ?? null,
                     kitchenLongitude: data.kitchen_longitude ?? null,
                 };
@@ -96,7 +106,7 @@
                     this.iframeReady = true;
                     this.postToIframe(MSG.INIT, this.buildInitPayload());
                     this.statusMessage =
-                        "Редактор готов. «Применить» в iframe, затем «Сохранить» в форме.";
+                        "Редактор готов. Нарисуйте или измените зону, «Применить» на карте, затем «Сохранить» в форме.";
                     return;
                 }
 
@@ -123,9 +133,15 @@
                         data.payload?.kitchenLongitude ?? null,
                     );
                     this.statusMessage =
-                        "Зона обновлена. Нажмите «Сохранить» внизу страницы.";
+                        "Зона и координаты кухни обновлены. Нажмите «Сохранить» внизу страницы.";
                 }
             },
         }));
-    });
+    }
+
+    if (window.Alpine) {
+        registerDeliveryZoneBridge();
+    } else {
+        document.addEventListener("alpine:init", registerDeliveryZoneBridge);
+    }
 })();

@@ -4,7 +4,7 @@ namespace Tests\Unit\Application\Operations\Delivery;
 
 use App\Application\Common\Exceptions\ApiException;
 use App\Application\Operations\Delivery\Command\UpdateDeliveryZoneUseCase;
-use App\Application\Operations\Delivery\DTO\UpdateDeliveryZoneDTO;
+use App\Application\Operations\Delivery\DTO\UpdateDeliveryZoneDto;
 use App\Application\Operations\Delivery\Query\GetAdminDeliveryZoneQuery;
 use App\Domain\SystemContent\Entity\Company;
 use App\Domain\SystemContent\Repository\CompanyRepository;
@@ -69,7 +69,7 @@ final class UpdateDeliveryZoneUseCaseTest extends TestCase
 
         $this->expectException(ApiException::class);
 
-        $useCase->execute(new UpdateDeliveryZoneDTO(
+        $useCase->execute(new UpdateDeliveryZoneDto(
             deliveryZoneGeojson: ['type' => 'Point', 'coordinates' => [0, 0]],
             kitchenLatitude: null,
             kitchenLongitude: null,

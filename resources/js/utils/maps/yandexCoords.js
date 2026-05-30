@@ -1,4 +1,4 @@
-/** Томск — [широта, долгота] для Яндекс.Карт */
+/** Томск — [широта, долгота] для Яндекс.Карт. Синхронизировать с public/js/maps/yandexGeoJsonCoords.js */
 export const TOMSK_CENTER = [56.49771, 84.97437];
 
 const TOMSK_AREA = {

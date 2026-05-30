@@ -10,5 +10,11 @@ interface BannerRepository
      * @return Banner[]
      */
     public function findAllOrdered(): array;
+
+    public function findById(int $id): ?Banner;
+
+    public function save(Banner $banner): Banner;
+
+    public function delete(int $id): void;
 }
 

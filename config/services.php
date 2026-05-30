@@ -33,6 +33,7 @@ return [
 
     'yandex_maps' => [
         'api_key' => env('YANDEX_MAPS_API_KEY'),
+        'geocoder_api_key' => env('YANDEX_GEOCODER_API_KEY', env('YANDEX_MAPS_API_KEY')),
     ],
 
     'yandex' => [

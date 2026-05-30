@@ -2,7 +2,7 @@
 
 namespace App\Application\Operations\Delivery\DTO;
 
-final readonly class UpdateDeliveryZoneDTO
+final readonly class UpdateDeliveryZoneDto
 {
     /**
      * @param  array<string, mixed>|null  $deliveryZoneGeojson

@@ -5,14 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Редактор зоны доставки</title>
     <style>
-        html, body, #map { margin: 0; height: 100%; width: 100%; }
+        html, body {
+            margin: 0;
+            height: 100%;
+            min-height: 480px;
+        }
+        body {
+            position: relative;
+        }
+        #map {
+            position: absolute;
+            inset: 0;
+        }
         .toolbar {
             position: absolute;
             z-index: 1000;
             top: 12px;
             left: 12px;
+            right: 12px;
             display: flex;
+            flex-wrap: wrap;
             gap: 8px;
+            align-items: center;
+        }
+        .toolbar input[type="text"] {
+            min-width: 220px;
+            flex: 1;
+            padding: 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 14px;
         }
         .toolbar button {
             padding: 8px 12px;
@@ -22,15 +44,40 @@
             color: #fff;
             cursor: pointer;
             font-weight: 600;
+            font-size: 14px;
+        }
+        .toolbar button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        #status {
+            position: absolute;
+            z-index: 1000;
+            bottom: 12px;
+            left: 12px;
+            right: 12px;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 8px;
+            font-size: 13px;
+            color: #333;
         }
     </style>
 </head>
 <body>
 <div class="toolbar">
+    <input type="text" id="addressInput" placeholder="Адрес кухни (геокодер)" value="">
+    <button type="button" id="geocodeBtn">Найти</button>
+    <button type="button" id="drawBtn">Нарисовать зону</button>
     <button type="button" id="applyBtn">Применить</button>
     <button type="button" id="clearBtn">Очистить</button>
 </div>
 <div id="map"></div>
+<p id="status">Загрузка карты…</p>
+<script src="{{ asset('js/maps/yandexGeoJsonCoords.js') }}"></script>
+@if(filled($mapsApiKey))
+<script src="https://api-maps.yandex.ru/2.1/?apikey={{ urlencode($mapsApiKey) }}&lang=ru_RU"></script>
+@endif
 <script>
     const MSG = {
         READY: 'delivery-zone:ready',
@@ -38,12 +85,38 @@
         CHANGE: 'delivery-zone:change',
     };
 
+    const COORDS = window.GangstersMapsCoords;
+    const MAPS_API_KEY = @json($mapsApiKey);
+    const GEOCODER_KEY = @json($geocoderApiKey);
+    const DEFAULT_CENTER = COORDS.TOMSK_CENTER;
+
     let map;
     let polygon;
+    let kitchenPlacemark;
     let kitchenCoords = { lat: null, lng: null };
+    let multiPolygonWarning = false;
+
+    const statusEl = document.getElementById('status');
+    const addressInput = document.getElementById('addressInput');
+
+    function setStatus(text) {
+        statusEl.textContent = text;
+    }
 
     function post(type, payload = {}) {
         window.parent.postMessage({ type, payload }, window.location.origin);
+    }
+
+    function resolveMapCenter(payload) {
+        const fromKitchen = COORDS.pairToYmapsCenter(
+            payload.kitchenLatitude,
+            payload.kitchenLongitude,
+        );
+        if (fromKitchen) {
+            return fromKitchen;
+        }
+
+        return DEFAULT_CENTER;
     }
 
     function geometryPayload() {
@@ -55,36 +128,108 @@
             };
         }
 
-        const coordinates = polygon.geometry.getCoordinates();
+        const ymapsCoords = polygon.geometry.getCoordinates();
         const type = polygon.geometry.getType();
+        const geometry = COORDS.ymapsGeometryToGeoJson(type, ymapsCoords);
 
         return {
-            geometry: { type, coordinates },
+            geometry,
             kitchenLatitude: kitchenCoords.lat,
             kitchenLongitude: kitchenCoords.lng,
         };
     }
 
-    function setGeometry(geometry) {
-        if (polygon) {
+    function removePolygon() {
+        if (polygon && map) {
             map.geoObjects.remove(polygon);
-            polygon = null;
         }
+        polygon = null;
+    }
 
-        if (!geometry || !geometry.type || !geometry.coordinates) {
+    function removeKitchenPlacemark() {
+        if (kitchenPlacemark && map) {
+            map.geoObjects.remove(kitchenPlacemark);
+        }
+        kitchenPlacemark = null;
+    }
+
+    function updateKitchenPlacemark() {
+        removeKitchenPlacemark();
+        if (!map || kitchenCoords.lat == null || kitchenCoords.lng == null) {
             return;
         }
 
-        polygon = new ymaps.Polygon(geometry.coordinates, {}, {
+        kitchenPlacemark = new ymaps.Placemark(
+            [kitchenCoords.lat, kitchenCoords.lng],
+            { hintContent: 'Кухня' },
+            { preset: 'islands#redDotIcon' },
+        );
+        map.geoObjects.add(kitchenPlacemark);
+    }
+
+    function setKitchenCoords(lat, lng) {
+        kitchenCoords.lat = lat;
+        kitchenCoords.lng = lng;
+        updateKitchenPlacemark();
+    }
+
+    function setGeometry(geoJsonGeometry) {
+        removePolygon();
+
+        if (!geoJsonGeometry || !geoJsonGeometry.type || !geoJsonGeometry.coordinates) {
+            if (map) {
+                setStatus('Зоны нет. Нажмите «Нарисовать зону» или найдите адрес кухни.');
+            }
+            return;
+        }
+
+        if (!map) {
+            return;
+        }
+
+        if (geoJsonGeometry.type === 'MultiPolygon') {
+            multiPolygonWarning = true;
+            setStatus('В БД MultiPolygon: редактируется только первый контур. Сохранение запишет Polygon.');
+        }
+
+        const ymapsPolygonCoords = COORDS.geometryToYmapsPolygonCoords(geoJsonGeometry);
+        if (!ymapsPolygonCoords.length || !ymapsPolygonCoords[0]?.length) {
+            setStatus('Не удалось отобразить зону. Нарисуйте заново.');
+            return;
+        }
+
+        polygon = new ymaps.Polygon(ymapsPolygonCoords, {}, {
             editorDrawingCursor: 'crosshair',
             editorMaxPoints: 50,
         });
         map.geoObjects.add(polygon);
         polygon.editor.startEditing();
+
         const bounds = polygon.geometry.getBounds();
         if (bounds) {
             map.setBounds(bounds, { checkZoomRange: true, zoomMargin: 40 });
         }
+
+        if (!multiPolygonWarning) {
+            setStatus('Зона загружена. Отредактируйте контур и нажмите «Применить».');
+        }
+    }
+
+    function startDrawing() {
+        if (!map) {
+            return;
+        }
+
+        removePolygon();
+        multiPolygonWarning = false;
+
+        polygon = new ymaps.Polygon([], {}, {
+            editorDrawingCursor: 'crosshair',
+            editorMaxPoints: 50,
+        });
+        map.geoObjects.add(polygon);
+        polygon.editor.startDrawing();
+        setStatus('Кликайте по карте, чтобы задать контур. Завершите рисование и нажмите «Применить».');
     }
 
     function initMap(center) {
@@ -96,48 +241,171 @@
         post(MSG.READY);
     }
 
+    function applyInitPayload(payload) {
+        const address = payload.address ?? '';
+        if (address) {
+            addressInput.value = address;
+        }
+
+        setKitchenCoords(
+            payload.kitchenLatitude ?? null,
+            payload.kitchenLongitude ?? null,
+        );
+
+        const center = resolveMapCenter(payload);
+        if (map) {
+            map.setCenter(center);
+        }
+
+        setGeometry(payload.geometry ?? null);
+
+        if (!payload.geometry && map) {
+            setStatus('Зоны нет. «Нарисовать зону» или укажите адрес и «Найти».');
+        }
+    }
+
+    function bootstrapMap() {
+        if (map) {
+            return;
+        }
+
+        if (!MAPS_API_KEY) {
+            setStatus('Не задан YANDEX_MAPS_API_KEY');
+            return;
+        }
+
+        if (typeof ymaps === 'undefined') {
+            setStatus('Не удалось загрузить API Яндекс.Карт');
+            return;
+        }
+
+        ymaps.ready(() => {
+            if (map) {
+                return;
+            }
+            initMap(DEFAULT_CENTER);
+            setStatus('Ожидание данных формы…');
+        });
+    }
+
+    async function geocodeAddress() {
+        const address = addressInput.value.trim();
+        if (!address) {
+            setStatus('Введите адрес для поиска.');
+            return;
+        }
+
+        if (!GEOCODER_KEY) {
+            setStatus('Ключ геокодера не настроен (YANDEX_GEOCODER_API_KEY).');
+            return;
+        }
+
+        if (!map) {
+            setStatus('Сначала дождитесь загрузки карты.');
+            return;
+        }
+
+        setStatus('Поиск адреса…');
+
+        try {
+            const url = new URL('https://geocode-maps.yandex.ru/1.x/');
+            url.searchParams.set('apikey', GEOCODER_KEY);
+            url.searchParams.set('geocode', address);
+            url.searchParams.set('format', 'json');
+            url.searchParams.set('lang', 'ru_RU');
+            url.searchParams.set('results', '1');
+
+            const response = await fetch(url.toString());
+            if (!response.ok) {
+                throw new Error('HTTP ' + response.status);
+            }
+
+            const data = await response.json();
+            const member = data?.response?.GeoObjectCollection?.featureMember?.[0];
+            const pos = member?.GeoObject?.Point?.pos;
+
+            if (!pos || typeof pos !== 'string') {
+                setStatus('Адрес не найден.');
+                return;
+            }
+
+            const parts = pos.trim().split(/\s+/);
+            const lng = parseFloat(parts[0]);
+            const lat = parseFloat(parts[1]);
+
+            if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+                setStatus('Некорректный ответ геокодера.');
+                return;
+            }
+
+            setKitchenCoords(lat, lng);
+            map.setCenter([lat, lng], 14, { duration: 300 });
+            setStatus('Точка кухни найдена. Нарисуйте зону или нажмите «Применить».');
+        } catch (error) {
+            setStatus('Ошибка геокодера: ' + (error?.message || 'сеть'));
+        }
+    }
+
     window.addEventListener('message', (event) => {
         if (event.origin !== window.location.origin) {
             return;
         }
         const data = event.data;
-        if (!data || typeof data.type !== 'string') {
-            return;
-        }
-        if (data.type !== MSG.INIT) {
+        if (!data || data.type !== MSG.INIT) {
             return;
         }
 
         const payload = data.payload || {};
-        kitchenCoords.lat = payload.kitchenLatitude ?? null;
-        kitchenCoords.lng = payload.kitchenLongitude ?? null;
-
-        const center = kitchenCoords.lat && kitchenCoords.lng
-            ? [kitchenCoords.lat, kitchenCoords.lng]
-            : [55.751244, 37.618423];
 
         if (!map) {
-            ymaps.ready(() => initMap(center));
-            ymaps.ready(() => setGeometry(payload.geometry));
+            ymaps.ready(() => {
+                if (!map) {
+                    initMap(resolveMapCenter(payload));
+                }
+                applyInitPayload(payload);
+            });
             return;
         }
 
-        map.setCenter(center);
-        setGeometry(payload.geometry);
+        applyInitPayload(payload);
+    });
+
+    document.getElementById('drawBtn').addEventListener('click', () => {
+        if (!map) {
+            return;
+        }
+        startDrawing();
     });
 
     document.getElementById('applyBtn').addEventListener('click', () => {
-        post(MSG.CHANGE, geometryPayload());
+        const payload = geometryPayload();
+        if (polygon && !payload.geometry) {
+            setStatus('Контур слишком короткий: минимум 4 точки (замкнутый полигон).');
+            return;
+        }
+        post(MSG.CHANGE, payload);
+        setStatus('Данные отправлены в форму. Нажмите «Сохранить» внизу страницы.');
     });
 
     document.getElementById('clearBtn').addEventListener('click', () => {
-        if (polygon) {
-            map.geoObjects.remove(polygon);
-            polygon = null;
-        }
+        removePolygon();
+        multiPolygonWarning = false;
         post(MSG.CHANGE, geometryPayload());
+        setStatus('Зона очищена.');
     });
+
+    document.getElementById('geocodeBtn').addEventListener('click', () => {
+        geocodeAddress();
+    });
+
+    addressInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            geocodeAddress();
+        }
+    });
+
+    bootstrapMap();
 </script>
-<script src="https://api-maps.yandex.ru/2.1/?apikey={{ urlencode($apiKey) }}&lang=ru_RU"></script>
 </body>
 </html>

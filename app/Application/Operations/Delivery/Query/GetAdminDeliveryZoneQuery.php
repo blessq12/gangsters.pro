@@ -12,6 +12,9 @@ final class GetAdminDeliveryZoneQuery
     ) {
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function execute(): array
     {
         $company = $this->companies->first();

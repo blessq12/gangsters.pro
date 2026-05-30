@@ -88,6 +88,27 @@ final class DeliveryZoneGeometryTest extends TestCase
     }
 
     #[Test]
+    public function normalizes_swapped_lat_lon_positions_in_ring(): void
+    {
+        $geometry = DeliveryZoneGeometry::fromMixed([
+            'type' => 'Polygon',
+            'coordinates' => [
+                [
+                    [56.48, 84.95],
+                    [56.48, 85.05],
+                    [56.52, 85.05],
+                    [56.52, 84.95],
+                    [56.48, 84.95],
+                ],
+            ],
+        ]);
+
+        $ring = $geometry->toArray()['coordinates'][0];
+
+        $this->assertEqualsWithDelta(84.95, $ring[0][0], 0.0001);
+        $this->assertEqualsWithDelta(56.48, $ring[0][1], 0.0001);
+    }
+
     public function normalizes_almost_closed_ring_with_float_drift(): void
     {
         $geometry = DeliveryZoneGeometry::fromMixed([

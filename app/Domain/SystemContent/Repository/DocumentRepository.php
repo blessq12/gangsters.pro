@@ -10,5 +10,16 @@ interface DocumentRepository
      * @return Document[]
      */
     public function findAllActiveOrdered(): array;
+
+    /**
+     * @return Document[]
+     */
+    public function findAllOrdered(): array;
+
+    public function findById(int $id): ?Document;
+
+    public function save(Document $document): Document;
+
+    public function delete(int $id): void;
 }
 

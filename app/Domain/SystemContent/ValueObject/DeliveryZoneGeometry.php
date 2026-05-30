@@ -140,9 +140,14 @@ final class DeliveryZoneGeometry
                 continue;
             }
 
+            [$lon, $lat] = self::normalizeGeoJsonPositionPair(
+                (float) $position[0],
+                (float) $position[1],
+            );
+
             $normalized[] = [
-                round((float) $position[0], self::COORD_PRECISION),
-                round((float) $position[1], self::COORD_PRECISION),
+                round($lon, self::COORD_PRECISION),
+                round($lat, self::COORD_PRECISION),
             ];
         }
 
@@ -229,6 +234,28 @@ final class DeliveryZoneGeometry
         if ($lonF < -180 || $lonF > 180 || $latF < -90 || $latF > 90) {
             throw new InvalidArgumentException('Координаты вне допустимого диапазона.');
         }
+    }
+
+    /**
+     * @return array{0: float, 1: float} [longitude, latitude]
+     */
+    private static function normalizeGeoJsonPositionPair(float $first, float $second): array
+    {
+        if (self::looksLikeLatitude($first) && self::looksLikeLongitude($second)) {
+            return [$second, $first];
+        }
+
+        return [$first, $second];
+    }
+
+    private static function looksLikeLatitude(float $value): bool
+    {
+        return $value >= 41.0 && $value <= 82.0;
+    }
+
+    private static function looksLikeLongitude(float $value): bool
+    {
+        return $value >= 19.0 && $value <= 180.0;
     }
 
     private static function positionsEqual(mixed $a, mixed $b): bool

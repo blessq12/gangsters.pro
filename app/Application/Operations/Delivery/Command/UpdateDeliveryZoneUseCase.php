@@ -3,7 +3,7 @@
 namespace App\Application\Operations\Delivery\Command;
 
 use App\Application\Common\Exceptions\ApiException;
-use App\Application\Operations\Delivery\DTO\UpdateDeliveryZoneDTO;
+use App\Application\Operations\Delivery\DTO\UpdateDeliveryZoneDto;
 use App\Application\Operations\Delivery\Query\GetAdminDeliveryZoneQuery;
 use App\Domain\SystemContent\Repository\CompanyRepository;
 use App\Domain\SystemContent\ValueObject\DeliveryZoneGeometry;
@@ -17,7 +17,10 @@ final class UpdateDeliveryZoneUseCase
     ) {
     }
 
-    public function execute(UpdateDeliveryZoneDTO $dto): array
+    /**
+     * @return array<string, mixed>
+     */
+    public function execute(UpdateDeliveryZoneDto $dto): array
     {
         $company = $this->companies->first();
         if ($company === null) {

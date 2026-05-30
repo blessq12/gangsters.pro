@@ -4,12 +4,13 @@ namespace App\Filament\Operations\Pages;
 
 use App\Filament\Operations\Tables\HubClientsTable;
 use App\Filament\Operations\Tables\HubOrdersTable;
+use App\Filament\Operations\Widgets\HubCartRulesPanel;
+use App\Filament\Operations\Widgets\HubDeliveryZonePanel;
 use BackedEnum;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Livewire;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
-use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 
@@ -50,20 +51,12 @@ class ManageOperations extends Page
                         Tab::make('Зона доставки')
                             ->id('delivery')
                             ->schema([
-                                View::make('filament.operations.hub-settings-link')
-                                    ->viewData([
-                                        'label' => 'Редактировать зону доставки',
-                                        'url' => ManageDeliveryZone::getUrl(),
-                                    ]),
+                                Livewire::make(HubDeliveryZonePanel::class),
                             ]),
                         Tab::make('Правила корзины')
                             ->id('cart-rules')
                             ->schema([
-                                View::make('filament.operations.hub-settings-link')
-                                    ->viewData([
-                                        'label' => 'Настройки правил корзины',
-                                        'url' => ManageCartRuleSettings::getUrl(),
-                                    ]),
+                                Livewire::make(HubCartRulesPanel::class),
                             ]),
                     ]),
             ]);

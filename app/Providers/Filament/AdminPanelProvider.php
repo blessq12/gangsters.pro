@@ -6,11 +6,30 @@ use App\Filament\Catalog\Pages\ManageCatalog;
 use App\Filament\Catalog\Resources\CategoryResource;
 use App\Filament\Catalog\Resources\ProductResource;
 use App\Filament\Catalog\Resources\TagResource;
-use App\Filament\Operations\Pages\ManageCartRuleSettings;
-use App\Filament\Operations\Pages\ManageDeliveryZone;
+use App\Filament\Catalog\Tables\HubCategoriesTable;
+use App\Filament\Catalog\Tables\HubLayoutTable;
+use App\Filament\Catalog\Tables\HubProductsTable;
+use App\Filament\Catalog\Tables\HubTagsTable;
+use App\Filament\Catalog\Widgets\CatalogOverviewWidget;
+use App\Filament\Company\Pages\ManageCompany;
+use App\Filament\Company\Resources\DocumentResource;
+use App\Filament\Company\Resources\StaffUserResource;
+use App\Filament\Company\Tables\HubDocumentsTable;
+use App\Filament\Company\Tables\HubStaffTable;
+use App\Filament\Company\Widgets\HubCompanyLegalPanel;
+use App\Filament\Company\Widgets\HubCompanyProfilePanel;
+use App\Filament\Marketing\Pages\ManageMarketing;
+use App\Filament\Marketing\Resources\BannerResource;
+use App\Filament\Marketing\Resources\PromotionResource;
+use App\Filament\Marketing\Tables\HubBannersTable;
+use App\Filament\Marketing\Tables\HubPromotionsTable;
 use App\Filament\Operations\Pages\ManageOperations;
 use App\Filament\Operations\Resources\ClientResource;
 use App\Filament\Operations\Resources\OrderResource;
+use App\Filament\Operations\Tables\HubClientsTable;
+use App\Filament\Operations\Tables\HubOrdersTable;
+use App\Filament\Operations\Widgets\HubCartRulesPanel;
+use App\Filament\Operations\Widgets\HubDeliveryZonePanel;
 use App\Filament\Pages\AdminDashboard;
 use App\Http\Controllers\Admin\DeliveryZoneMapEditorController;
 use Illuminate\Support\Facades\Route;
@@ -20,6 +39,7 @@ use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\Support\Assets\Js;
 use Filament\Support\Colors\Color;
 use Filament\Widgets\AccountWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -45,8 +65,8 @@ class AdminPanelProvider extends PanelProvider
                 AdminDashboard::class,
                 ManageCatalog::class,
                 ManageOperations::class,
-                ManageDeliveryZone::class,
-                ManageCartRuleSettings::class,
+                ManageCompany::class,
+                ManageMarketing::class,
             ])
             ->resources([
                 ProductResource::class,
@@ -54,13 +74,52 @@ class AdminPanelProvider extends PanelProvider
                 TagResource::class,
                 OrderResource::class,
                 ClientResource::class,
+                DocumentResource::class,
+                StaffUserResource::class,
+                BannerResource::class,
+                PromotionResource::class,
             ])
             ->routes(function (): void {
                 Route::get('/delivery-zone-map-editor', DeliveryZoneMapEditorController::class)
+                    ->middleware(Authenticate::class)
                     ->name('delivery-zone-map-editor');
+
+                Route::get('/operations/delivery-zone', fn () => abort(404));
+                Route::get('/operations/cart-rules', fn () => abort(404));
+                Route::get('/companies', fn () => abort(404));
+                Route::get('/companies/{any}', fn () => abort(404))->where('any', '.*');
+                Route::get('/users', fn () => abort(404));
+                Route::get('/users/{any}', fn () => abort(404))->where('any', '.*');
+                Route::get('/banners', fn () => abort(404));
+                Route::get('/banners/{any}', fn () => abort(404))->where('any', '.*');
+                Route::get('/company/banners', fn () => abort(404));
+                Route::get('/company/banners/{any}', fn () => abort(404))->where('any', '.*');
+                Route::get('/company/promotions', fn () => abort(404));
+                Route::get('/company/promotions/{any}', fn () => abort(404))->where('any', '.*');
             })
             ->widgets([
                 AccountWidget::class,
+                HubOrdersTable::class,
+                HubClientsTable::class,
+                HubCartRulesPanel::class,
+                HubDeliveryZonePanel::class,
+                CatalogOverviewWidget::class,
+                HubProductsTable::class,
+                HubCategoriesTable::class,
+                HubLayoutTable::class,
+                HubTagsTable::class,
+                HubCompanyProfilePanel::class,
+                HubCompanyLegalPanel::class,
+                HubDocumentsTable::class,
+                HubStaffTable::class,
+                HubBannersTable::class,
+                HubPromotionsTable::class,
+            ])
+            ->assets([
+                Js::make(
+                    'delivery-zone-iframe-bridge',
+                    asset('js/filament/delivery-zone-iframe-bridge.js'),
+                ),
             ])
             ->middleware([
                 EncryptCookies::class,

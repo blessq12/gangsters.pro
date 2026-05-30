@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Operations\Pages\Concerns;
+namespace App\Filament\Operations\Concerns;
 
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
@@ -12,6 +12,7 @@ use Filament\Schemas\Components\EmbeddedSchema;
 use Filament\Schemas\Components\Form;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\Alignment;
 use Filament\Support\Exceptions\Halt;
 use Throwable;
 
@@ -24,6 +25,7 @@ trait InteractsWithOperationsSettingsForm
 
     public function mount(): void
     {
+        $this->mountHasUnsavedDataChangesAlert();
         $this->fillSettingsForm();
     }
 
@@ -50,7 +52,7 @@ trait InteractsWithOperationsSettingsForm
         return $data;
     }
 
-    public function save(bool $shouldRedirect = true, bool $shouldSendSavedNotification = true): void
+    public function save(bool $shouldRedirect = false, bool $shouldSendSavedNotification = true): void
     {
         try {
             $this->beginDatabaseTransaction();
@@ -143,7 +145,7 @@ trait InteractsWithOperationsSettingsForm
         }
 
         return Form::make([EmbeddedSchema::make('form')])
-            ->id('form')
+            ->id($this->getSettingsFormElementId())
             ->livewireSubmitHandler('save')
             ->footer([
                 $this->getFormActionsContentComponent(),
@@ -172,6 +174,11 @@ trait InteractsWithOperationsSettingsForm
         ];
     }
 
+    protected function getSettingsFormElementId(): string
+    {
+        return 'operations-settings-form';
+    }
+
     public function hasFormWrapper(): bool
     {
         return true;
@@ -182,10 +189,29 @@ trait InteractsWithOperationsSettingsForm
         return false;
     }
 
+    public function getFormActionsAlignment(): string | Alignment
+    {
+        return Alignment::Start;
+    }
+
+    public function areFormActionsSticky(): bool
+    {
+        return false;
+    }
+
     public function defaultForm(Schema $schema): Schema
     {
         return $schema
             ->statePath('data')
             ->operation('edit');
+    }
+
+    protected function callHook(string $hook): void
+    {
+        if (! method_exists($this, $hook)) {
+            return;
+        }
+
+        $this->{$hook}();
     }
 }

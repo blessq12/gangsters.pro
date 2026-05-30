@@ -9,7 +9,8 @@ final class DeliveryZoneMapEditorController
     public function __invoke(): View
     {
         return view('admin.delivery-zone-map-editor', [
-            'apiKey' => (string) config('services.yandex_maps.api_key'),
+            'mapsApiKey' => (string) config('services.yandex_maps.api_key'),
+            'geocoderApiKey' => (string) config('services.yandex_maps.geocoder_api_key'),
         ]);
     }
 }
