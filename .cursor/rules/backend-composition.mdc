@@ -1,0 +1,82 @@
+---
+description: Composition root — Providers, Shared, Support, Console, User, Exceptions
+globs: app/Providers/**,app/Shared/**,app/Support/**,app/Console/**,app/Models/**,app/Exceptions/**
+alwaysApply: false
+---
+
+# Layer: Composition & cross-cutting
+
+Composition root склеивает bounded contexts через Laravel DI. Бизнес-правил здесь нет — только wiring, cross-cutting ports и ops.
+
+## ServiceProvider (один контекст — один provider)
+
+| Provider | Контекст |
+|----------|----------|
+| Order, Client, ProductDomain, Shopping | Domain repos/services |
+| Catalog, Operations, Reporting, Marketing, Notification, SystemContent, Company, Site | Application ports → Infrastructure |
+| Auth | client auth ports + admin Gates |
+| Event | `$listen` map (explicit, no auto-discovery) |
+| App | **только** global: event buses, cross-context notifiers, paginator, view composers |
+
+**MUST:** новый port/repo binding → provider своего контекста.
+
+**MUST NOT:** domain logic, Eloquent queries, use case orchestration в provider; раздувать `AppServiceProvider` — Order/Catalog/Integration bindings выносить в domain providers.
+
+Регистрация: `config/app.php`. Filament: `AdminPanelProvider`.
+
+## Shared (`app/Shared/`)
+
+Только **interfaces** и marker types:
+- `Events/` — `DomainEvent`, `IntegrationEvent`, `*EventBus`
+- `Auth/` — `ClientAuthContext`, `ClientTokenService`
+- `Notifications/` — `ThreadedMessageChannel`
+- `SystemContent/` — `MediaUrlResolver`
+
+**MUST NOT:** Laravel facades, Eloquent, config(), imports из Domain/Application/Infrastructure.
+
+Реализации → `Infrastructure/*`. Wiring → соответствующий `*ServiceProvider`.
+
+## Event buses
+
+- Use cases публикуют **domain events** через `DomainEventBus`.
+- Cross-context reactions → **integration events** через `IntegrationEventBus`.
+- Подписчики → `EventServiceProvider::$listen` (`shouldDiscoverEvents(): false`).
+
+**MUST NOT:** `Event::dispatch()` из Application/Domain (исключение: `Exceptions/Handler` для security audit).
+
+## Support (`app/Support/`)
+
+Stateless helpers: форматирование, labels, config/ini bridges, UI formatters.
+
+**OK:** static pure functions; presenters import Support.
+
+**MUST NOT:** repos, transactions, event dispatch, domain invariants.
+
+## Console (`app/Console/`)
+
+- Commands = thin CLI: parse options → delegate to Application/Infrastructure.
+- Ops flags: `--dry-run`, `--force`, транзакции, `report($e)` on failure.
+- **MUST NOT:** fat business logic в Command; прямой Eloquent update минуя domain (кроме явных one-off ops).
+
+## User + admin_role
+
+- `User`: Eloquent model, `admin_role` cast → `AdminRole` enum.
+- Правила доступа → `Domain\Admin\AdminAccess` + `AdminRole` enum.
+- Gates → `AuthServiceProvider`: `admin`, `admin-hub`, `admin-mutate`, `admin-manage-staff`.
+- `null admin_role` = не staff. Filament: `canAccessPanel` → `AdminAccess::isStaff()`.
+
+**MUST NOT:** hub/mutate logic в Filament resources или User model.
+
+## Exceptions (`app/Exceptions/Handler.php`)
+
+- API JSON mapping: `ApiException`, `OrderInvariantViolation` для `api/*`.
+- Security: client unauthorized → `ClientUnauthorizedAccessDetected`.
+- **MUST NOT:** новые domain rules в Handler — только HTTP mapping + audit events.
+
+## Checklist при правках
+
+1. Binding затрагивает один контекст? → свой `*ServiceProvider`.
+2. Нужен cross-context контракт? → interface в Shared, impl в Infrastructure.
+3. UI label/format? → Support, не Domain.
+4. One-off migration? → Console → Infrastructure service, с `--dry-run`.
+5. Admin permission? → Domain\Admin + Gate, не if в Filament.

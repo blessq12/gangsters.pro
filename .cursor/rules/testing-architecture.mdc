@@ -1,0 +1,71 @@
+---
+description: Тесты и архитектурные границы
+globs: tests/**
+alwaysApply: false
+---
+
+# Layer: Testing
+
+PHPUnit 11, suites: `Unit` (`tests/Unit`), `Feature` (`tests/Feature`). Pest не используется.
+
+## Базовые правила
+
+- Базовый класс: `Tests\TestCase` — **запрещён** `RefreshDatabase` (падает в `setUp`).
+- БД: тесты **не** мигрируют сами. Нужна заранее мигрированная БД (`gangsters_test` — раскомментировать в `phpunit.xml`).
+- Нет таблицы → `markTestSkipped`, не падать: `ApiTestCase::skipUnlessTablesExist()` или локальный `skipUnlessUsersTableExists()`.
+- `phpunit.xml`: `memory_limit=512M`, `APP_ENV=testing`.
+
+## Unit vs Feature
+
+| Пиши в | Когда |
+|--------|--------|
+| `tests/Unit` + `PHPUnit\Framework\TestCase` | Domain, pure logic, architecture scans, моки без контейнера |
+| `tests/Unit` + `Tests\TestCase` | `app()`, Filament mappers, Infrastructure с точечным доступом к БД |
+| `tests/Feature/Api` + `ApiTestCase` | JSON API, Sanctum, presenter-контракты |
+| `tests/Feature/Admin` | `/admin/*`, hubs, Livewire alias, ACL, `User::factory()` |
+| `tests/Feature/Console` | Artisan `legacy:*` с `$this->mock()` |
+| `tests/Feature/Site` | SEO settings |
+
+Не дублируй: mapper/schema → `Unit/Filament`; маршрут hub → `Feature/Admin`.
+
+## Feature/Admin vs Api
+
+- **Api** (`tests/Feature/Api`): публичный/клиентский API. Хелперы — `ApiTestCase`.
+- **Admin** (`tests/Feature/Admin`): Filament hubs, не Resource CRUD legacy. Legacy URL → `assertNotFound`.
+- Кросс-слой smoke — `MarketingBannerSaveApiSmokeTest` (extends `ApiTestCase`, лежит в Admin).
+
+## Legacy `Feature/Filament`
+
+Папка `tests/Feature/Filament/` — старые Resource/Page тесты. **Новые** сценарии — в `Feature/Admin` + `Unit/Filament`. При правке legacy — переноси и удаляй.
+
+## ArchitectureBoundariesTest
+
+`tests/Unit/Architecture/ArchitectureBoundariesTest.php` — pure PHPUnit, без Laravel.
+
+Проверяет: Domain/Application ↛ Infrastructure (whitelist 4 файлов); Api controllers + middleware ↛ Infrastructure; controllers ↛ `env()`; snapshot contract в Domain.
+
+Гонять на каждом PR: `phpunit --filter ArchitectureBoundaries`.
+
+## FrontendAndAclBoundariesTest
+
+`tests/Unit/Architecture/FrontendAndAclBoundariesTest.php` — pure PHPUnit.
+
+Проверяет: YandexFood Application без `use App\Domain\`; изоляция `useOrderStore()` и `useCheckoutIntentStore()` в `resources/js`.
+
+Гонять при изменениях JS stores/checkout/orders и YandexFood Application.
+
+## Smoke / release
+
+- `Feature/Api/ArchitectureSmokeTest` — лёгкий API + checkout file presence.
+- `Feature/Api/ReleaseGoNoGoSmokeTest` — release baseline.
+
+## JS
+
+`tests/js/*.test.js` — `node:test`, **вне** PHPUnit. После правок: `node --test tests/js/...`.
+
+## Чеклист перед merge
+
+1. `phpunit --filter 'ArchitectureBoundaries|FrontendAndAcl'` (быстро)
+2. Затронутый suite: Unit и/или Feature/Api и/или Feature/Admin
+3. При новых таблицах — явный список в `skipUnlessTablesExist`
+4. Не добавлять `RefreshDatabase`

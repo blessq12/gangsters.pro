@@ -1,0 +1,80 @@
+---
+description: Frontend presentation — Vue UI, layouts, design tokens, GSAP, router pages
+globs: resources/js/components/**,resources/js/layouts/**,resources/js/design/**,resources/js/pages/**,resources/js/router/**,resources/js/composables/**,resources/js/animations/**,resources/css/**
+alwaysApply: false
+---
+
+# Layer: Frontend presentation
+
+UI-слой SPA: разметка, стили-классы, shell, dock, анимации, маршруты страниц. Без HTTP и server SoT — см. `frontend-application.mdc`.
+
+## Граница
+
+| Можно | Нельзя (→ application) |
+|-------|---------------------------|
+| Разметка, emit/props, локальный UI state | `api/*`, `services/*`, `domain/*` |
+| `useAppDesign()`, GSAP из `animationManager` | Новая логика cart/checkout/auth в `.vue` без feature |
+| Read models в «тупых» блоках | Прямые мутации бизнес-инвариантов |
+
+Допустимо: `stores/*` и `features/*` как тонкая связка UI (бейджи, disabled). Submit/login — выносить в features.
+
+## Регистрация Vue (`app.js`)
+
+- Glob: `components/**/*.vue` + `layouts/SecondaryPageLayout.vue`.
+- Имя = basename файла; `defineAsyncComponent`.
+- **Не в glob:** `App.vue`, `MainLayoutMobile|Desktop`, `pages/*` (lazy в `routeRecords.js`).
+
+## Design tokens
+
+- Агрегатор: `design/app.design.ts`; секции `*.design.ts` по домену UI.
+- В компонентах: `useAppDesign().components.<area>.<token>` — не хардкодить длинные Tailwind-цепочки.
+- Семантика: `app-*` (`@theme` в `resources/css/style.css` + CSS vars `--app-*` в `MainLayout*`).
+- Provide: `App.vue` → `AppDesignInjectionKey`.
+
+## Layout shell
+
+- `App.vue`: `deviceMode` → `MainLayoutDesktop` | `MainLayoutMobile`.
+- Main content container: `mx-auto max-w-7xl` + responsive `px-*` из design.
+- Интро + dock reveal: `composables/layout/useShellIntroDockTimeline.js` + `animationManager`.
+- `SecondaryPageLayout` — about/delivery/contacts.
+- Fetch/init предпочитать в `processes/bootstrap`, не раздувать layout.
+
+## Dock
+
+- Конфиг: `components/layout/dock/dockMeta.js`, `createDockItems.js`, `dockRegistry.js`.
+- Панели: `panels/*.vue` (async); chrome: `DockChrome.vue`.
+- Data-атрибуты для GSAP: `data-dock-target`, `data-dock-badge`.
+- Checkout: `useCheckoutFlow` + `provideCheckoutFlow` в `CartDockPanel`.
+
+## GSAP (`animations/animationManager.js`)
+
+- Сцены: intro, navbar, modal, page enter/leave, dock, catalog items, fly-to-cart.
+- Обёртки: `composables/animations/useEnterSlide`, `useFloatLoop`.
+- Учитывать `prefersReducedMotion()`; не дублировать константы интро вне manager.
+- Прямой `gsap` в компонентах — только если нет функции в manager.
+
+## Router & pages
+
+- Маршруты: `router/routeRecords.js`; навигация: `router/publicNav.ts`.
+- Device split: как `HomePage` → `HomePageMobile|Desktop`.
+- SEO head: `features/seo/usePageHead`, не дублировать в page.
+
+## Composables (presentation)
+
+- `composables/ui/*` — dock scroll, swipe-close, badge feedback.
+- `composables/layout/*` — shell intro timeline.
+- `composables/catalog/*` — UI affordances на карточках.
+- Тяжёлая доменная сборка → `useCatalogPageModel` на стыке; не тянуть stores в мелкие cards.
+
+## CSS (`resources/css/`)
+
+- `style.css`: `@import "tailwindcss"`, `@theme` app colors, `@source` design + vue.
+- `.app-shell` + theme variants; toast — `vue-toastification.css`.
+
+## Чеклист PR (presentation)
+
+1. Стили из `useAppDesign`, цвета `app-*`.
+2. Новый `.vue` в `components/` → уникальный basename.
+3. Анимация через `animationManager` или composable-обёртку.
+4. Без новых `api/` import в components/pages.
+5. Контейнеры — токены с `max-w-7xl` из design.

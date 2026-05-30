@@ -1,0 +1,91 @@
+---
+description: Admin UI — 5 Filament hubs, TableWidget, Resources, FormMappers
+globs: app/Filament/**
+alwaysApply: false
+---
+
+# Layer: Filament (Admin CRM)
+
+Admin panel = `AdminPanelProvider` (`id: admin`, path `/admin`). Единственный UI — **5 hubs**. Legacy `app/Filament/Resources/**` **не регистрируются** — не править, не копировать.
+
+См. `docs/admin-filament-hubs.md`.
+
+## Hubs (`App\Domain\Admin\Enums\AdminHub`)
+
+| Hub | Page | Slug | Namespace |
+|-----|------|------|-----------|
+| Analytics | `ManageAnalytics` | `dashboard` | `App\Filament\Analytics\` |
+| Company | `ManageCompany` | `company` | `App\Filament\Company\` |
+| Catalog | `ManageCatalog` | `catalog` | `App\Filament\Catalog\` |
+| Marketing | `ManageMarketing` | `marketing` | `App\Filament\Marketing\` |
+| Operations | `ManageOperations` | `operations` | `App\Filament\Operations\` |
+
+Каждый hub: `Pages/Manage*.php` + вкладки `Tabs::persistTabInQueryString('tab')` + `Livewire::make(Hub*...)`.
+
+## Hub*Table / Hub*Panel
+
+- **Списки:** `{Hub}/Tables/Hub*Table.php` extends `TableWidget`.
+- **Настройки:** `{Hub}/Widgets/Hub*Panel.php` + `InteractsWith*SettingsForm`.
+- **Analytics:** read-only метрики.
+
+Паттерн таблицы:
+1. `records()` → Application **Query** → paginator.
+2. Row/header actions → Application **UseCase**; `ApiException` → `Notification`.
+3. Мутации: `AdminActionVisibility::canMutate()`.
+4. Create/Edit → hub-Resource URL.
+5. Operations tables: trait `ConfiguresHubTablePagination`.
+
+## Resources (create/edit only)
+
+- `shouldRegisterNavigation = false`
+- `getPages()`: только `create` + `edit`
+- `use AuthorizesAdminHub` + `Redirects*IndexToHub`
+- slug: `{hub}/{entity}` (напр. `catalog/products`)
+- Form: `{Resource}/Schemas/*Form.php`
+
+**MUST NOT:** index/list pages, navigation items, бизнес-логика в Resource.
+
+## FormMappers
+
+`{Hub}/Support/Filament*FormMapper.php` (final):
+- `toFormState` / `emptyFormState` — Query → form
+- `toCreateDto` / `toUpdateDto` / `toSaveDto` — form → Application DTO
+
+Save → UseCase; `ApiException` → Notification + `Halt`. Upload — в page concern, не в mapper без причины.
+
+## Authorization
+
+- `AuthorizesAdminHub` на Manage* + hub Resources.
+- `AdminActionVisibility` для кнопок в Hub*Table.
+- Staff: `AdminAccess::canManageStaff()`; self role change / self delete запрещены.
+- `User::canAccessPanel` → `AdminAccess::isStaff()`.
+
+| Роль | Hubs | Мутации |
+|------|------|---------|
+| super_admin | все | да |
+| operations | Analytics + Operations | да |
+| catalog | Catalog + Marketing | да |
+| company | Company | да |
+| read_only | все | **нет** |
+
+## Filament → Application
+
+**MUST:** только `Application\{Context}\Command\*UseCase` и `Query\*Query`.
+
+**MUST NOT:** Eloquent save доменных правил, Infrastructure repositories, прямой Domain.
+
+## Чеклист новой сущности
+
+1. Query + Command UseCases в Application
+2. `Filament*FormMapper` + `*Form` schema
+3. Resource (create/edit, hidden nav, Redirects trait)
+4. `Hub*Table` на hub-вкладке
+5. Регистрация в `AdminPanelProvider`
+6. `AuthorizesAdminHub` + корректный `AdminHub`
+7. Feature-тест hub access; unit-тест mapper при нетривиальной трансформации
+
+## Тесты
+
+- `tests/Feature/Admin/AdminRoleAccessTest.php`
+- `tests/Feature/Admin/*Hub*.php`
+- `tests/Unit/Filament/{Hub}/`

@@ -1,0 +1,64 @@
+---
+description: HTTP delivery — API controllers, middleware, FormRequest
+globs: app/Http/**
+alwaysApply: false
+---
+
+# Layer: HTTP
+
+Транспорт B2C: `routes/api.php` (prefix `api`, middleware group `api`). SPA/static — `routes/web.php` (не добавлять сюда use case'ы заказов/корзины).
+
+## MUST
+
+- Контроллеры `App\Http\Controllers\Api\*` — **тонкие**: валидация → (опционально map DTO) → **один** Application use case / contract → `JsonResponse`.
+- Входная валидация мутаций — **`FormRequest`** в `app/Http/Requests/{Context}/`, не `$request->validate()` в контроллере.
+- Бизнес-логика, Eloquent, репозитории — **только** Application/Infrastructure. В Api-контроллерах **MUST NOT** `Model::`, query builder, доменные инварианты.
+- Зависимости Application — **method injection** в action (предпочтительно) или readonly constructor для read-only ресурсов.
+- Сессия корзины: читать только через `EnsureShoppingSession::ATTRIBUTE_KEY` или helper контроллера.
+- Новые API-маршруты — регистрировать в `routes/api.php` с явным middleware-стеком.
+
+## Middleware (aliases в `app/Http/Kernel.php`)
+
+| Alias | Когда |
+|-------|--------|
+| `attempt.sanctum` | Гость + опциональный Bearer (корзина, `POST /order`) |
+| `shopping.session` | Любой сценарий с серверной корзиной/checkout draft |
+| `auth:sanctum` | Только для авторизованного клиента (401 без токена) |
+| `internal.token` | Внутренние callback'и (`X-Internal-Api-Token`) |
+| `yandexAuth` | Все `yandex-food/*` кроме OAuth token |
+| `throttle:guest-order` | Только `POST /api/order` |
+
+Порядок для корзины/заказа гостя: `attempt.sanctum` → `shopping.session` → (throttle при заказе).
+
+Документация cookie/CSRF: `docs/shopping-session-csrf.md`.
+
+## FormRequest
+
+- Namespace: `App\Http\Requests\{Order|Shopping|Client|...}\`.
+- `authorize()` — `true`, если доступ уже на middleware; иначе — явная проверка.
+- Правила могут ссылаться на Domain enum'ы (`Rule::enum`, `Rule::in`).
+- Сложная cross-field логика — `withValidator` / `after` **в Request**, не в контроллере.
+- `prepareForValidation` — strip недоверенных полей (`client_id`, цены с клиента).
+
+## Ответы JSON
+
+- Shopping API: оборачивать полезную нагрузку в `{ "data": ... }`.
+- Новые endpoints — выровнять с существующим ресурсом; не смешивать форматы без причины.
+
+## Admin/* (исключение)
+
+- Допустимы `view()`, `auth()->user()`, `App\Models\User`, `App\Domain\Admin\AdminAccess`.
+- **MUST NOT** вызывать B2C Application use case'ы без явной необходимости.
+- Маршруты — через Filament `AdminPanelProvider`, не `routes/api.php`.
+
+## MUST NOT (Api)
+
+- Eloquent/DB в контроллере.
+- Inline `$request->validate([...])` в новом/рефакторимом коде.
+- Доверять `items`/суммам из тела без серверной корзины (см. `StoreOrderRequest`).
+
+## Связанные слои
+
+- Use case'ы: `app/Application/**` → `backend-application.mdc`
+- Filament CRM: `app/Filament/**` → `backend-filament.mdc`
+- Тесты: `tests/Feature/Api/*`, `tests/Feature/Admin/*`

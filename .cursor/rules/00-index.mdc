@@ -1,0 +1,62 @@
+---
+description: Карта слоёв Gangsters и decision tree для агентов
+alwaysApply: true
+---
+
+# Gangsters — index
+
+Модульные rules по слоям. Детали MUST/MUST NOT — в scoped rule по glob; здесь только карта и маршрутизация.
+
+## Карта слоёв
+
+| Слой | Путь | Rule file |
+|------|------|-----------|
+| Domain | `app/Domain/**` | `backend-domain.mdc` |
+| Application | `app/Application/**` | `backend-application.mdc` |
+| Infrastructure | `app/Infrastructure/**` | `backend-infrastructure.mdc` |
+| HTTP (API) | `app/Http/**` | `backend-http.mdc` |
+| Filament (admin) | `app/Filament/**` | `backend-filament.mdc` |
+| Composition | Providers, Shared, Support, Console, Models, Exceptions | `backend-composition.mdc` |
+| Frontend application | features, processes, stores, api, domain, domainEvents | `frontend-application.mdc` |
+| Frontend presentation | components, layouts, design, pages, router, css | `frontend-presentation.mdc` |
+| Testing | `tests/**` | `testing-architecture.mdc` |
+
+## Глобальные MUST (кратко)
+
+1. Направление зависимостей: **Domain ← Application ← Infrastructure**; Delivery (Http/Filament) → Application only.
+2. Бизнес-сценарии — `App\Application\**`, не `App\Services\*` и не fat controllers/resources.
+3. Admin UI — только **5 hubs** в `AdminPanelProvider` (`docs/admin-filament-hubs.md`).
+4. Корзина/checkout/favorites — **server SoT**; frontend stores = cache (`frontend-application.mdc`).
+5. Границы BC — `docs/architecture/bounded-context-dependency-matrix.md`; enforcement — `tests/Unit/Architecture/*`.
+
+## Decision tree
+
+| Редактирую… | Читаю rule | Делаю изменения в… |
+|-------------|------------|-------------------|
+| Entity, VO, domain event, repo interface | backend-domain | `app/Domain/{Context}/` |
+| Use case, query, DTO, presenter, contract | backend-application | `app/Application/{Slice}/` |
+| Eloquent, repo impl, listener, adapter | backend-infrastructure | `app/Infrastructure/{Context}/` |
+| API controller, middleware, FormRequest | backend-http | `app/Http/` + `routes/api.php` |
+| Hub, TableWidget, Resource, FormMapper | backend-filament | `app/Filament/{Hub}/` + Application use case |
+| ServiceProvider, DI, Support, Console | backend-composition | Provider / Shared / Support |
+| Pinia, features, processes, api helper | frontend-application | `resources/js/features|stores|api/` |
+| Vue component, design token, layout, GSAP | frontend-presentation | `resources/js/components|design|layouts/` |
+| Unit/Feature test | testing-architecture | `tests/Unit` или `tests/Feature/{Api|Admin}` |
+
+**Новая фича end-to-end:** Application (use case) → Infrastructure (если нужен port) → Http или Filament → Feature test.
+
+**Новая admin-вкладка:** Application query/command → Filament Hub*Table/Resource → `Feature/Admin` smoke.
+
+**Новая кнопка корзины в UI:** emit `CART_*_REQUESTED` → process → command → store → API (не axios в component).
+
+## Документация
+
+- Bounded contexts: `docs/architecture/bounded-context-dependency-matrix.md`
+- Admin hubs: `docs/admin-filament-hubs.md`
+- Shopping cookie/CSRF: `docs/shopping-session-csrf.md`
+
+## Эталоны
+
+- Backend vertical: `app/Domain/Order/` + `app/Application/Order/` + `app/Application/Operations/Order/`
+- Filament: `app/Filament/Operations/` (hub + TableWidget + FormMapper)
+- Frontend flow: `resources/js/features/shoppingSession/` + `processes/shoppingSession/`
