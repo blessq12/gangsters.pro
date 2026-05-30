@@ -14,5 +14,8 @@ interface AdminProductReadRepository
         ?string $status,
         int $page,
         int $perPage,
+        ?bool $countsAsRoll = null,
+        ?bool $giftCandidate = null,
+        ?bool $isComplementSet = null,
     ): array;
 }

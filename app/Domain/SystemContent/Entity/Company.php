@@ -38,6 +38,7 @@ final class Company
         private readonly ?string $siteUrl,
         private readonly ?string $vk,
         private readonly ?string $inst,
+        private readonly ?string $logo,
     ) {}
 
     public function id(): int
@@ -197,6 +198,11 @@ final class Company
         return $this->inst;
     }
 
+    public function logo(): ?string
+    {
+        return $this->logo;
+    }
+
     /**
      * @param  array{type: string, coordinates: array<mixed>}|null  $deliveryZoneGeojson
      */
@@ -219,15 +225,12 @@ final class Company
         ?string $emailAddress = null,
         ?string $publicEmail = null,
         ?string $workHours = null,
-        ?string $deliveryHours = null,
         ?array $workSchedule = null,
-        ?int $minOrderAmountKopecks = null,
-        ?int $deliveryFeeKopecks = null,
-        ?int $averageDeliveryTimeMinutes = null,
         ?string $telegram = null,
         ?string $siteUrl = null,
         ?string $vk = null,
         ?string $inst = null,
+        ?string $logo = null,
     ): self {
         return new self(
             id: $this->id,
@@ -252,15 +255,16 @@ final class Company
             emailAddress: $emailAddress ?? $this->emailAddress,
             publicEmail: $publicEmail ?? $this->publicEmail,
             workHours: $workHours ?? $this->workHours,
-            deliveryHours: $deliveryHours ?? $this->deliveryHours,
+            deliveryHours: $this->deliveryHours,
             workSchedule: $workSchedule ?? $this->workSchedule,
-            minOrderAmountKopecks: $minOrderAmountKopecks ?? $this->minOrderAmountKopecks,
-            deliveryFeeKopecks: $deliveryFeeKopecks ?? $this->deliveryFeeKopecks,
-            averageDeliveryTimeMinutes: $averageDeliveryTimeMinutes ?? $this->averageDeliveryTimeMinutes,
+            minOrderAmountKopecks: $this->minOrderAmountKopecks,
+            deliveryFeeKopecks: $this->deliveryFeeKopecks,
+            averageDeliveryTimeMinutes: $this->averageDeliveryTimeMinutes,
             telegram: $telegram ?? $this->telegram,
             siteUrl: $siteUrl ?? $this->siteUrl,
             vk: $vk ?? $this->vk,
             inst: $inst ?? $this->inst,
+            logo: $logo ?? $this->logo,
         );
     }
 
@@ -301,6 +305,49 @@ final class Company
             siteUrl: $this->siteUrl,
             vk: $this->vk,
             inst: $this->inst,
+            logo: $this->logo,
+        );
+    }
+
+    public function withDeliverySettings(
+        ?string $deliveryHours = null,
+        ?int $minOrderAmountKopecks = null,
+        ?int $deliveryFeeKopecks = null,
+        ?int $averageDeliveryTimeMinutes = null,
+    ): self {
+        return new self(
+            id: $this->id,
+            name: $this->name,
+            brandName: $this->brandName,
+            description: $this->description,
+            tagline: $this->tagline,
+            country: $this->country,
+            state: $this->state,
+            city: $this->city,
+            street: $this->street,
+            house: $this->house,
+            addressComment: $this->addressComment,
+            cityCoverage: $this->cityCoverage,
+            deliveryZoneGeojson: $this->deliveryZoneGeojson,
+            kitchenLatitude: $this->kitchenLatitude,
+            kitchenLongitude: $this->kitchenLongitude,
+            phone: $this->phone,
+            phoneAdditional: $this->phoneAdditional,
+            supportPhone: $this->supportPhone,
+            whatsappPhone: $this->whatsappPhone,
+            emailAddress: $this->emailAddress,
+            publicEmail: $this->publicEmail,
+            workHours: $this->workHours,
+            deliveryHours: $deliveryHours ?? $this->deliveryHours,
+            workSchedule: $this->workSchedule,
+            minOrderAmountKopecks: $minOrderAmountKopecks ?? $this->minOrderAmountKopecks,
+            deliveryFeeKopecks: $deliveryFeeKopecks ?? $this->deliveryFeeKopecks,
+            averageDeliveryTimeMinutes: $averageDeliveryTimeMinutes ?? $this->averageDeliveryTimeMinutes,
+            telegram: $this->telegram,
+            siteUrl: $this->siteUrl,
+            vk: $this->vk,
+            inst: $this->inst,
+            logo: $this->logo,
         );
     }
 }

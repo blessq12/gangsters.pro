@@ -26,15 +26,11 @@ final readonly class UpdateCompanyProfileDto
         public ?string $emailAddress,
         public ?string $publicEmail,
         public ?string $workHours,
-        public ?string $deliveryHours,
         public ?array $workSchedule,
-        public ?int $minOrderAmountKopecks,
-        public ?int $deliveryFeeKopecks,
-        public ?int $averageDeliveryTimeMinutes,
         public ?string $telegram,
         public ?string $siteUrl,
         public ?string $vk,
         public ?string $inst,
-    ) {
-    }
+        public ?string $logo = null,
+    ) {}
 }

@@ -22,6 +22,27 @@ final class DeliveryZoneSettingsForm
                             ->disabled()
                             ->dehydrated(false),
                     ]),
+                Section::make('Тарифы и параметры доставки')
+                    ->schema([
+                        TextInput::make('delivery_hours')
+                            ->label('Часы доставки (текст)')
+                            ->maxLength(255),
+                        TextInput::make('min_order_amount_kopecks')
+                            ->label('Мин. заказ (коп.)')
+                            ->numeric()
+                            ->minValue(0)
+                            ->helperText('Порог суммы заказа: ниже порога к заказу добавляется плата за доставку.'),
+                        TextInput::make('delivery_fee_kopecks')
+                            ->label('Плата за доставку (коп.)')
+                            ->numeric()
+                            ->minValue(0),
+                        TextInput::make('average_delivery_time_minutes')
+                            ->label('Среднее время доставки (мин)')
+                            ->numeric()
+                            ->minValue(0)
+                            ->maxValue(1440),
+                    ])
+                    ->columns(2),
                 Section::make('Карта')
                     ->schema([
                         Hidden::make('delivery_zone_geojson'),

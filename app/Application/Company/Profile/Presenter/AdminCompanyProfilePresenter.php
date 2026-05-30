@@ -2,6 +2,7 @@
 
 namespace App\Application\Company\Profile\Presenter;
 
+use App\Application\Company\Support\CompanyLogoUrlResolver;
 use App\Domain\SystemContent\Entity\Company;
 
 final class AdminCompanyProfilePresenter
@@ -31,15 +32,13 @@ final class AdminCompanyProfilePresenter
             'email_address' => $company->emailAddress(),
             'public_email' => $company->publicEmail(),
             'work_hours' => $company->workHours(),
-            'delivery_hours' => $company->deliveryHours(),
             'work_schedule' => $company->workSchedule(),
-            'min_order_amount_kopecks' => $company->minOrderAmountKopecks(),
-            'delivery_fee_kopecks' => $company->deliveryFeeKopecks(),
-            'average_delivery_time_minutes' => $company->averageDeliveryTimeMinutes(),
             'telegram' => $company->telegram(),
             'site_url' => $company->siteUrl(),
             'vk' => $company->vk(),
             'inst' => $company->inst(),
+            'logo' => $company->logo(),
+            'logo_url' => CompanyLogoUrlResolver::resolve($company->logo()),
         ];
     }
 }

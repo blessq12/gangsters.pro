@@ -2,6 +2,7 @@
 
 namespace App\Filament\Operations\Pages;
 
+use App\Filament\Operations\Tables\HubCartRulesProductsTable;
 use App\Filament\Operations\Tables\HubClientsTable;
 use App\Filament\Operations\Tables\HubOrdersTable;
 use App\Filament\Operations\Widgets\HubCartRulesPanel;
@@ -48,7 +49,7 @@ class ManageOperations extends Page
                             ->schema([
                                 Livewire::make(HubClientsTable::class),
                             ]),
-                        Tab::make('Зона доставки')
+                        Tab::make('Доставка')
                             ->id('delivery')
                             ->schema([
                                 Livewire::make(HubDeliveryZonePanel::class),
@@ -57,6 +58,7 @@ class ManageOperations extends Page
                             ->id('cart-rules')
                             ->schema([
                                 Livewire::make(HubCartRulesPanel::class),
+                                Livewire::make(HubCartRulesProductsTable::class),
                             ]),
                     ]),
             ]);

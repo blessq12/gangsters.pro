@@ -2,7 +2,9 @@
 
 namespace App\Filament\Operations\Resources\OrderResource\Schemas;
 
+use App\Application\Catalog\Query\GetAdminProductListQuery;
 use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -60,16 +62,61 @@ final class OrderForm
                         Repeater::make('items')
                             ->label('')
                             ->schema([
-                                TextInput::make('name')->label('Товар')->disabled()->dehydrated(false),
-                                TextInput::make('sku')->label('SKU')->disabled()->dehydrated(false),
-                                TextInput::make('quantity')->label('Кол-во')->disabled()->dehydrated(false),
-                                TextInput::make('row_total')->label('Сумма, ₽')->disabled()->dehydrated(false),
+                                Select::make('product_id')
+                                    ->label('Товар')
+                                    ->searchable()
+                                    ->getSearchResultsUsing(function (string $search): array {
+                                        $result = app(GetAdminProductListQuery::class)->execute(
+                                            search: $search !== '' ? $search : null,
+                                            status: 'active',
+                                            page: 1,
+                                            perPage: 30,
+                                        );
+
+                                        $options = [];
+                                        foreach ($result['items'] as $product) {
+                                            $options[(int) $product['id']] = $product['name'].' ('.$product['articul'].')';
+                                        }
+
+                                        return $options;
+                                    })
+                                    ->getOptionLabelUsing(function ($value): ?string {
+                                        if (! filled($value)) {
+                                            return null;
+                                        }
+
+                                        $result = app(GetAdminProductListQuery::class)->execute(
+                                            page: 1,
+                                            perPage: 1,
+                                        );
+
+                                        foreach ($result['items'] as $product) {
+                                            if ((int) $product['id'] === (int) $value) {
+                                                return $product['name'].' ('.$product['articul'].')';
+                                            }
+                                        }
+
+                                        return (string) $value;
+                                    })
+                                    ->required(),
+                                TextInput::make('product_label')
+                                    ->label('Текущее название')
+                                    ->disabled()
+                                    ->dehydrated(false)
+                                    ->visible(fn ($get): bool => filled($get('product_label'))),
+                                TextInput::make('quantity')
+                                    ->label('Кол-во')
+                                    ->numeric()
+                                    ->minValue(1)
+                                    ->required(),
+                                TextInput::make('row_total')
+                                    ->label('Сумма, ₽')
+                                    ->disabled()
+                                    ->dehydrated(false),
                             ])
                             ->columns(4)
-                            ->addable(false)
-                            ->deletable(false)
-                            ->reorderable(false)
-                            ->dehydrated(false),
+                            ->defaultItems(1)
+                            ->minItems(1),
                     ]),
             ]);
     }

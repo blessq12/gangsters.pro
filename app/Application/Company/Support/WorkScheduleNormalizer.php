@@ -2,6 +2,8 @@
 
 namespace App\Application\Company\Support;
 
+use App\Application\Common\Exceptions\ApiException;
+
 final class WorkScheduleNormalizer
 {
     /**
@@ -19,7 +21,26 @@ final class WorkScheduleNormalizer
             if (! is_array($row)) {
                 continue;
             }
-            $out[] = $row;
+
+            unset($row['delivery']);
+
+            $day = isset($row['day']) ? (int) $row['day'] : 0;
+            if ($day < 1 || $day > 7) {
+                throw new ApiException('День расписания должен быть от 1 до 7.', 422);
+            }
+
+            $isDayOff = (bool) ($row['is_day_off'] ?? false);
+            $work = isset($row['work']) ? trim((string) $row['work']) : '';
+
+            if (! $isDayOff && $work === '') {
+                throw new ApiException('Укажите часы работы или отметьте выходной.', 422);
+            }
+
+            $out[] = [
+                'day' => $day,
+                'work' => $isDayOff ? '' : $work,
+                'is_day_off' => $isDayOff,
+            ];
         }
 
         return $out === [] ? null : $out;

@@ -54,6 +54,7 @@ final class EloquentCompanyRepository implements CompanyRepository
             'site_url' => $company->siteUrl(),
             'vk' => $company->vk(),
             'inst' => $company->inst(),
+            'logo' => $company->logo(),
         ]);
 
         $model->save();
@@ -93,6 +94,7 @@ final class EloquentCompanyRepository implements CompanyRepository
             siteUrl: $company->site_url,
             vk: $company->vk,
             inst: $company->inst,
+            logo: $company->logo,
         );
     }
 }

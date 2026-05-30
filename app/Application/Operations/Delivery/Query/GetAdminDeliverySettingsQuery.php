@@ -5,12 +5,11 @@ namespace App\Application\Operations\Delivery\Query;
 use App\Application\Common\Exceptions\ApiException;
 use App\Domain\SystemContent\Repository\CompanyRepository;
 
-final class GetAdminDeliveryZoneQuery
+final class GetAdminDeliverySettingsQuery
 {
     public function __construct(
         private readonly CompanyRepository $companies,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array<string, mixed>
@@ -28,6 +27,10 @@ final class GetAdminDeliveryZoneQuery
             'delivery_zone_geojson' => $company->deliveryZoneGeojson(),
             'kitchen_latitude' => $company->kitchenLatitude(),
             'kitchen_longitude' => $company->kitchenLongitude(),
+            'delivery_hours' => $company->deliveryHours(),
+            'min_order_amount_kopecks' => $company->minOrderAmountKopecks(),
+            'delivery_fee_kopecks' => $company->deliveryFeeKopecks(),
+            'average_delivery_time_minutes' => $company->averageDeliveryTimeMinutes(),
         ];
     }
 }

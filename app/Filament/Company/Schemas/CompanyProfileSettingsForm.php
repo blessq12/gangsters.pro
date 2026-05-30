@@ -2,8 +2,11 @@
 
 namespace App\Filament\Company\Schemas;
 
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
@@ -20,6 +23,13 @@ final class CompanyProfileSettingsForm
                         TextInput::make('brand_name')->label('Бренд'),
                         Textarea::make('description')->label('Описание')->columnSpanFull(),
                         TextInput::make('tagline')->label('Слоган')->columnSpanFull(),
+                        FileUpload::make('logo_upload')
+                            ->label('Логотип')
+                            ->image()
+                            ->disk('public')
+                            ->directory('company')
+                            ->maxSize(2048)
+                            ->columnSpanFull(),
                     ])
                     ->columns(2)
                     ->columnSpanFull(),
@@ -50,17 +60,26 @@ final class CompanyProfileSettingsForm
                     ])
                     ->columns(2)
                     ->columnSpanFull(),
-                Section::make('Режим и доставка')
+                Section::make('Режим работы')
                     ->schema([
                         TextInput::make('work_hours')->label('Часы работы (текст)'),
-                        TextInput::make('delivery_hours')->label('Часы доставки (текст)'),
-                        Textarea::make('work_schedule_json')
-                            ->label('Расписание (JSON)')
-                            ->helperText('Массив объектов: day, work, is_day_off')
-                            ->columnSpanFull(),
-                        TextInput::make('min_order_amount_kopecks')->label('Мин. заказ (коп.)')->numeric(),
-                        TextInput::make('delivery_fee_kopecks')->label('Доставка (коп.)')->numeric(),
-                        TextInput::make('average_delivery_time_minutes')->label('Среднее время доставки (мин)')->numeric(),
+                        Repeater::make('work_schedule')
+                            ->label('Расписание по дням')
+                            ->schema([
+                                TextInput::make('day')
+                                    ->label('День (1–7)')
+                                    ->numeric()
+                                    ->minValue(1)
+                                    ->maxValue(7)
+                                    ->required(),
+                                TextInput::make('work')
+                                    ->label('Часы работы'),
+                                Toggle::make('is_day_off')
+                                    ->label('Выходной'),
+                            ])
+                            ->columns(3)
+                            ->columnSpanFull()
+                            ->defaultItems(0),
                     ])
                     ->columns(2)
                     ->columnSpanFull(),

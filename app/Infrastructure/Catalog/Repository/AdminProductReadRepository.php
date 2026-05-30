@@ -11,14 +11,16 @@ final class AdminProductReadRepository implements AdminProductReadRepositoryCont
 {
     public function __construct(
         private readonly ProductRepository $products,
-    ) {
-    }
+    ) {}
 
     public function paginate(
         ?string $search,
         ?string $status,
         int $page,
         int $perPage,
+        ?bool $countsAsRoll = null,
+        ?bool $giftCandidate = null,
+        ?bool $isComplementSet = null,
     ): array {
         $query = PRD_Product::query()->orderByDesc('updated_at');
 
@@ -26,6 +28,18 @@ final class AdminProductReadRepository implements AdminProductReadRepositoryCont
             $query->where('status', ProductEntity::STATUS_ACTIVE);
         } elseif ($status === ProductEntity::STATUS_ARCHIVED) {
             $query->where('status', ProductEntity::STATUS_ARCHIVED);
+        }
+
+        if ($countsAsRoll !== null) {
+            $query->where('cart_rule_counts_as_roll', $countsAsRoll);
+        }
+
+        if ($giftCandidate !== null) {
+            $query->where('cart_rule_gift_candidate', $giftCandidate);
+        }
+
+        if ($isComplementSet !== null) {
+            $query->where('cart_rule_is_complement_set', $isComplementSet);
         }
 
         if ($search !== null && $search !== '') {

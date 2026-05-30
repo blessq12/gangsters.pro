@@ -13,8 +13,7 @@ final class UpdateAdminCompanyProfileUseCase
     public function __construct(
         private readonly CompanyRepository $companies,
         private readonly GetAdminCompanyProfileQuery $profileQuery,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array<string, mixed>
@@ -45,15 +44,12 @@ final class UpdateAdminCompanyProfileUseCase
             emailAddress: $dto->emailAddress,
             publicEmail: $dto->publicEmail,
             workHours: $dto->workHours,
-            deliveryHours: $dto->deliveryHours,
             workSchedule: WorkScheduleNormalizer::normalizeForStorage($dto->workSchedule),
-            minOrderAmountKopecks: $dto->minOrderAmountKopecks,
-            deliveryFeeKopecks: $dto->deliveryFeeKopecks,
-            averageDeliveryTimeMinutes: $dto->averageDeliveryTimeMinutes,
             telegram: $dto->telegram,
             siteUrl: $dto->siteUrl,
             vk: $dto->vk,
             inst: $dto->inst,
+            logo: $dto->logo,
         );
 
         $this->companies->save($updated);

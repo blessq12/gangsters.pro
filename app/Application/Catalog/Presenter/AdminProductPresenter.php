@@ -25,6 +25,16 @@ final class AdminProductPresenter
         ];
     }
 
+    public function presentCartRuleListItem(Product $product): array
+    {
+        return [
+            ...$this->presentListItem($product),
+            'counts_as_roll' => $product->cartRuleCountsAsRoll(),
+            'gift_candidate' => $product->cartRuleGiftCandidate(),
+            'is_complement_set' => $product->cartRuleIsComplementSet(),
+        ];
+    }
+
     public function presentFormDetail(ProductAdminFormReadModel $readModel): array
     {
         $detail = $this->presentDetail($readModel->product, $readModel->slug);

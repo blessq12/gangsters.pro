@@ -2,6 +2,8 @@
 
 namespace App\Application\SystemContent\Query;
 
+use App\Application\Company\Support\CompanyLogoUrlResolver;
+use App\Application\Company\Support\WorkScheduleNormalizer;
 use App\Domain\SystemContent\Repository\CompanyRepository;
 
 final class GetSystemCompanyUseCase
@@ -42,7 +44,8 @@ final class GetSystemCompanyUseCase
                 'email_address' => $company->emailAddress(),
                 'public_email' => $company->publicEmail(),
                 'work_hours' => $company->workHours(),
-                'work_schedule' => self::sanitizeWorkScheduleForPublic(
+                'logo' => CompanyLogoUrlResolver::resolve($company->logo()),
+                'work_schedule' => WorkScheduleNormalizer::sanitizeForPublic(
                     $company->workSchedule(),
                 ),
                 'min_order_amount_kopecks' => $company->minOrderAmountKopecks(),
@@ -54,29 +57,5 @@ final class GetSystemCompanyUseCase
                 'inst' => $company->inst(),
             ],
         ];
-    }
-
-    /**
-     * Публичный контракт: только режим работы по дням, без слота доставки.
-     *
-     * @param  array<int, array<string, mixed>>|null  $schedule
-     * @return array<int, array<string, mixed>>|null
-     */
-    private static function sanitizeWorkScheduleForPublic(?array $schedule): ?array
-    {
-        if ($schedule === null) {
-            return null;
-        }
-
-        $out = [];
-        foreach ($schedule as $row) {
-            if (! is_array($row)) {
-                continue;
-            }
-            unset($row['delivery']);
-            $out[] = $row;
-        }
-
-        return $out;
     }
 }

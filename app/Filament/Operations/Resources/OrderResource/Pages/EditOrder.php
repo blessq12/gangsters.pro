@@ -6,7 +6,9 @@ use App\Application\Common\Exceptions\ApiException;
 use App\Application\Operations\Order\Command\CancelOrderByIdUseCase;
 use App\Application\Operations\Order\Command\ChangeOrderStatusUseCase;
 use App\Application\Operations\Order\Command\MarkOrderPaidByIdUseCase;
+use App\Application\Operations\Order\Command\UpdateAdminOrderUseCase;
 use App\Application\Operations\Order\DTO\ChangeOrderStatusDTO;
+use App\Application\Operations\Order\DTO\UpdateAdminOrderDto;
 use App\Application\Operations\Order\Query\GetAdminOrderDetailQuery;
 use App\Domain\Order\Enums\PaymentStatus;
 use App\Filament\Operations\Resources\OrderResource;
@@ -79,7 +81,19 @@ class EditOrder extends EditRecord
      */
     protected function handleRecordUpdate(Model $record, array $data): Model
     {
-        return $record;
+        try {
+            app(UpdateAdminOrderUseCase::class)->execute(new UpdateAdminOrderDto(
+                orderId: (string) $record->getKey(),
+                items: FilamentOrderFormMapper::toOrderItems($data),
+            ));
+            Notification::make()->title('Состав заказа сохранён')->success()->send();
+        } catch (ApiException $exception) {
+            Notification::make()->title($exception->getMessage())->danger()->send();
+
+            throw new Halt;
+        }
+
+        return $record->refresh();
     }
 
     protected function getSavedNotificationTitle(): ?string
@@ -118,7 +132,7 @@ class EditOrder extends EditRecord
         } catch (ApiException $exception) {
             Notification::make()->title($exception->getMessage())->danger()->send();
 
-            throw new Halt();
+            throw new Halt;
         }
     }
 }

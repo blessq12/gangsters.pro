@@ -36,13 +36,42 @@ final class FilamentOrderFormMapper
             'created_at' => $detail['created_at'] ?? '',
             'items' => array_map(
                 static fn (array $item): array => [
-                    'name' => $item['product']['name'] ?? '',
-                    'sku' => $item['product']['sku'] ?? '',
-                    'quantity' => $item['quantity'] ?? 0,
+                    'product_id' => (int) ($item['product_original_id'] ?? 0),
+                    'product_label' => ($item['product']['name'] ?? '').' ('.($item['product']['sku'] ?? '').')',
+                    'quantity' => (int) ($item['quantity'] ?? 0),
                     'row_total' => $item['row_total'] ?? 0,
                 ],
                 $detail['items'] ?? [],
             ),
         ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<int, array{product_id: int, quantity: int}>
+     */
+    public static function toOrderItems(array $data): array
+    {
+        $items = [];
+
+        foreach ($data['items'] ?? [] as $row) {
+            if (! is_array($row)) {
+                continue;
+            }
+
+            $productId = (int) ($row['product_id'] ?? 0);
+            $quantity = (int) ($row['quantity'] ?? 0);
+
+            if ($productId < 1 || $quantity < 1) {
+                continue;
+            }
+
+            $items[] = [
+                'product_id' => $productId,
+                'quantity' => $quantity,
+            ];
+        }
+
+        return $items;
     }
 }

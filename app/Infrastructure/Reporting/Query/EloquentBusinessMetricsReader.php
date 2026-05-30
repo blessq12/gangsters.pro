@@ -3,8 +3,15 @@
 namespace App\Infrastructure\Reporting\Query;
 
 use App\Application\Reporting\DTO\BusinessMetricsSnapshotDto;
+use App\Application\Reporting\DTO\ClientsMetricsDto;
+use App\Application\Reporting\DTO\FinanceMetricsDto;
+use App\Application\Reporting\DTO\MetricsSectionDto;
+use App\Application\Reporting\DTO\OrdersMetricsDto;
+use App\Application\Reporting\DTO\OverviewMetricsDto;
+use App\Application\Reporting\DTO\StorefrontMetricsDto;
 use App\Application\Reporting\Query\BusinessMetricsReader;
 use App\Application\Reporting\ValueObject\MetricsPeriod;
+use App\Application\Reporting\ValueObject\MetricsSection;
 use App\Domain\Order\Enums\DeliveryMethod;
 use App\Domain\Order\Enums\PaymentMethod;
 use App\Domain\Order\Enums\PaymentStatus;
@@ -22,16 +29,113 @@ final class EloquentBusinessMetricsReader implements BusinessMetricsReader
 {
     public function forPeriod(MetricsPeriod $period): BusinessMetricsSnapshotDto
     {
-        $cacheKey = sprintf(
-            'business_metrics:%s:%s',
-            $period->value,
-            CarbonImmutable::now()->format('Y-m-d-H'),
-        );
-
         return Cache::remember(
-            $cacheKey,
+            $this->cacheKey('full', $period),
             120,
             fn (): BusinessMetricsSnapshotDto => $this->build($period),
+        );
+    }
+
+    public function forSection(MetricsPeriod $period, MetricsSection $section): MetricsSectionDto
+    {
+        return match ($section) {
+            MetricsSection::Overview => $this->overview($period),
+            MetricsSection::Finance => $this->finance($period),
+            MetricsSection::Clients => $this->clients($period),
+            MetricsSection::Orders => $this->orders($period),
+            MetricsSection::Storefront => $this->storefront($period),
+        };
+    }
+
+    public function overview(MetricsPeriod $period): OverviewMetricsDto
+    {
+        return Cache::remember(
+            $this->cacheKey(MetricsSection::Overview->value, $period),
+            120,
+            function () use ($period): OverviewMetricsDto {
+                $range = $period->currentRange();
+                $previousRange = $period->previousRange();
+
+                return new OverviewMetricsDto(
+                    period: $period,
+                    revenueKpi: $this->revenueKpi($range, $previousRange),
+                    ordersPipeline: $this->ordersPipeline(),
+                );
+            },
+        );
+    }
+
+    public function finance(MetricsPeriod $period): FinanceMetricsDto
+    {
+        return Cache::remember(
+            $this->cacheKey(MetricsSection::Finance->value, $period),
+            120,
+            function () use ($period): FinanceMetricsDto {
+                $range = $period->currentRange();
+                $previousRange = $period->previousRange();
+
+                return new FinanceMetricsDto(
+                    period: $period,
+                    revenueKpi: $this->revenueKpi($range, $previousRange),
+                    revenueTrend: $this->revenueTrend($period, $range),
+                    ordersCountTrend: $this->ordersCountTrend($period, $range),
+                    deliveryMix: $this->deliveryMix($range),
+                    paymentMix: $this->paymentMix($range),
+                );
+            },
+        );
+    }
+
+    public function clients(MetricsPeriod $period): ClientsMetricsDto
+    {
+        return Cache::remember(
+            $this->cacheKey(MetricsSection::Clients->value, $period),
+            120,
+            function () use ($period): ClientsMetricsDto {
+                $range = $period->currentRange();
+                $previousRange = $period->previousRange();
+
+                return new ClientsMetricsDto(
+                    period: $period,
+                    clientsKpi: $this->clientsKpi($range, $previousRange),
+                    topClients: $this->topClients($range),
+                );
+            },
+        );
+    }
+
+    public function orders(MetricsPeriod $period): OrdersMetricsDto
+    {
+        return Cache::remember(
+            $this->cacheKey(MetricsSection::Orders->value, $period),
+            120,
+            function () use ($period): OrdersMetricsDto {
+                $range = $period->currentRange();
+
+                return new OrdersMetricsDto(
+                    period: $period,
+                    ordersPipeline: $this->ordersPipeline(),
+                    channelStats: $this->channelStats($range),
+                    recentOrders: $this->recentOrders(),
+                );
+            },
+        );
+    }
+
+    public function storefront(MetricsPeriod $period): StorefrontMetricsDto
+    {
+        return Cache::remember(
+            $this->cacheKey(MetricsSection::Storefront->value, $period),
+            120,
+            function () use ($period): StorefrontMetricsDto {
+                $range = $period->currentRange();
+
+                return new StorefrontMetricsDto(
+                    period: $period,
+                    shoppingFunnel: $this->shoppingFunnel(),
+                    topProducts: $this->topProducts($range),
+                );
+            },
         );
     }
 
@@ -546,5 +650,15 @@ final class EloquentBusinessMetricsReader implements BusinessMetricsReader
     {
         return DB::table('ORD_orders')
             ->whereBetween('created_at', [$range['from'], $range['to']]);
+    }
+
+    private function cacheKey(string $scope, MetricsPeriod $period): string
+    {
+        return sprintf(
+            'business_metrics:%s:%s:%s',
+            $scope,
+            $period->value,
+            CarbonImmutable::now()->format('Y-m-d-H'),
+        );
     }
 }

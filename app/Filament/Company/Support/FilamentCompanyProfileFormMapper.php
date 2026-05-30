@@ -13,13 +13,10 @@ final class FilamentCompanyProfileFormMapper
      */
     public static function toFormState(array $detail): array
     {
-        $schedule = $detail['work_schedule'] ?? null;
-
         return [
             ...$detail,
-            'work_schedule_json' => $schedule !== null
-                ? json_encode($schedule, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
-                : '',
+            'work_schedule' => $detail['work_schedule'] ?? [],
+            'logo_upload' => null,
         ];
     }
 
@@ -28,13 +25,9 @@ final class FilamentCompanyProfileFormMapper
      */
     public static function toDto(array $data): UpdateCompanyProfileDto
     {
-        $schedule = null;
-        if (filled($data['work_schedule_json'] ?? null)) {
-            $decoded = json_decode((string) $data['work_schedule_json'], true);
-            $schedule = is_array($decoded)
-                ? WorkScheduleNormalizer::normalizeForStorage($decoded)
-                : null;
-        }
+        $schedule = isset($data['work_schedule']) && is_array($data['work_schedule'])
+            ? WorkScheduleNormalizer::normalizeForStorage($data['work_schedule'])
+            : null;
 
         return new UpdateCompanyProfileDto(
             name: $data['name'] ?? null,
@@ -55,21 +48,12 @@ final class FilamentCompanyProfileFormMapper
             emailAddress: $data['email_address'] ?? null,
             publicEmail: $data['public_email'] ?? null,
             workHours: $data['work_hours'] ?? null,
-            deliveryHours: $data['delivery_hours'] ?? null,
             workSchedule: $schedule,
-            minOrderAmountKopecks: isset($data['min_order_amount_kopecks'])
-                ? (int) $data['min_order_amount_kopecks']
-                : null,
-            deliveryFeeKopecks: isset($data['delivery_fee_kopecks'])
-                ? (int) $data['delivery_fee_kopecks']
-                : null,
-            averageDeliveryTimeMinutes: isset($data['average_delivery_time_minutes'])
-                ? (int) $data['average_delivery_time_minutes']
-                : null,
             telegram: $data['telegram'] ?? null,
             siteUrl: $data['site_url'] ?? null,
             vk: $data['vk'] ?? null,
             inst: $data['inst'] ?? null,
+            logo: $data['logo'] ?? null,
         );
     }
 }

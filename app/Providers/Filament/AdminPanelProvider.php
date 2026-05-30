@@ -2,6 +2,26 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Analytics\Pages\ManageAnalytics;
+use App\Filament\Analytics\Widgets\Charts\DeliveryMixChartWidget;
+use App\Filament\Analytics\Widgets\Charts\OrdersCountChartWidget;
+use App\Filament\Analytics\Widgets\Charts\PaymentMixChartWidget;
+use App\Filament\Analytics\Widgets\Charts\RevenueTrendChartWidget;
+use App\Filament\Analytics\Widgets\Hub\HubClientsPanel;
+use App\Filament\Analytics\Widgets\Hub\HubFinancePanel;
+use App\Filament\Analytics\Widgets\Hub\HubOrdersPanel;
+use App\Filament\Analytics\Widgets\Hub\HubOverviewPanel;
+use App\Filament\Analytics\Widgets\Hub\HubStorefrontPanel;
+use App\Filament\Analytics\Widgets\Stats\ChannelStatsWidget;
+use App\Filament\Analytics\Widgets\Stats\ClientsKpiStatsWidget;
+use App\Filament\Analytics\Widgets\Stats\FinanceRevenueStatsWidget;
+use App\Filament\Analytics\Widgets\Stats\OrdersPipelineStatsWidget;
+use App\Filament\Analytics\Widgets\Stats\OverviewPipelineStatsWidget;
+use App\Filament\Analytics\Widgets\Stats\OverviewRevenueStatsWidget;
+use App\Filament\Analytics\Widgets\Stats\ShoppingFunnelStatsWidget;
+use App\Filament\Analytics\Widgets\Tables\RecentOrdersTableWidget;
+use App\Filament\Analytics\Widgets\Tables\TopClientsTableWidget;
+use App\Filament\Analytics\Widgets\Tables\TopProductsTableWidget;
 use App\Filament\Catalog\Pages\ManageCatalog;
 use App\Filament\Catalog\Resources\CategoryResource;
 use App\Filament\Catalog\Resources\ProductResource;
@@ -26,13 +46,12 @@ use App\Filament\Marketing\Tables\HubPromotionsTable;
 use App\Filament\Operations\Pages\ManageOperations;
 use App\Filament\Operations\Resources\ClientResource;
 use App\Filament\Operations\Resources\OrderResource;
+use App\Filament\Operations\Tables\HubCartRulesProductsTable;
 use App\Filament\Operations\Tables\HubClientsTable;
 use App\Filament\Operations\Tables\HubOrdersTable;
 use App\Filament\Operations\Widgets\HubCartRulesPanel;
 use App\Filament\Operations\Widgets\HubDeliveryZonePanel;
-use App\Filament\Pages\AdminDashboard;
 use App\Http\Controllers\Admin\DeliveryZoneMapEditorController;
-use Illuminate\Support\Facades\Route;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -47,6 +66,7 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Route;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
@@ -62,7 +82,7 @@ class AdminPanelProvider extends PanelProvider
                 'primary' => Color::Amber,
             ])
             ->pages([
-                AdminDashboard::class,
+                ManageAnalytics::class,
                 ManageCatalog::class,
                 ManageOperations::class,
                 ManageCompany::class,
@@ -102,6 +122,7 @@ class AdminPanelProvider extends PanelProvider
                 HubOrdersTable::class,
                 HubClientsTable::class,
                 HubCartRulesPanel::class,
+                HubCartRulesProductsTable::class,
                 HubDeliveryZonePanel::class,
                 CatalogOverviewWidget::class,
                 HubProductsTable::class,
@@ -114,6 +135,25 @@ class AdminPanelProvider extends PanelProvider
                 HubStaffTable::class,
                 HubBannersTable::class,
                 HubPromotionsTable::class,
+                HubOverviewPanel::class,
+                HubFinancePanel::class,
+                HubClientsPanel::class,
+                HubOrdersPanel::class,
+                HubStorefrontPanel::class,
+                OverviewRevenueStatsWidget::class,
+                OverviewPipelineStatsWidget::class,
+                FinanceRevenueStatsWidget::class,
+                ClientsKpiStatsWidget::class,
+                OrdersPipelineStatsWidget::class,
+                ChannelStatsWidget::class,
+                ShoppingFunnelStatsWidget::class,
+                RevenueTrendChartWidget::class,
+                OrdersCountChartWidget::class,
+                DeliveryMixChartWidget::class,
+                PaymentMixChartWidget::class,
+                TopProductsTableWidget::class,
+                TopClientsTableWidget::class,
+                RecentOrdersTableWidget::class,
             ])
             ->assets([
                 Js::make(

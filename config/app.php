@@ -179,6 +179,7 @@ return [
         App\Providers\ShoppingServiceProvider::class,
         Intervention\Image\ImageServiceProvider::class,
         App\Providers\ClientServiceProvider::class,
+        App\Providers\ReportingServiceProvider::class,
         App\Providers\ProductDomainServiceProvider::class,
         App\Providers\CatalogServiceProvider::class,
         App\Providers\OperationsServiceProvider::class,
