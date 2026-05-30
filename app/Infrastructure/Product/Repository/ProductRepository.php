@@ -5,6 +5,7 @@ namespace App\Infrastructure\Product\Repository;
 use App\Domain\Product\Entity\Product as ProductEntity;
 use App\Domain\Product\Entity\ProductImage;
 use App\Domain\Product\Entity\ProductIngredient;
+use App\Domain\Product\ReadModel\ProductAdminFormReadModel;
 use App\Domain\Product\Repository\ProductRepository as ProductRepositoryContract;
 use App\Domain\Product\VO\ImageVariant;
 use App\Domain\Product\VO\Nutrition;
@@ -24,6 +25,33 @@ class ProductRepository implements ProductRepositoryContract
         $model = PRD_Product::with(['images', 'ingredients', 'tags'])->find($id);
 
         return $model ? $this->mapToEntity($model) : null;
+    }
+
+    public function findByIdForAdminForm(int $id): ?ProductAdminFormReadModel
+    {
+        $model = PRD_Product::query()
+            ->with(['ingredients', 'tags'])
+            ->withCount('images')
+            ->find($id);
+
+        if ($model === null) {
+            return null;
+        }
+
+        $model->setRelation('images', collect());
+
+        return new ProductAdminFormReadModel(
+            product: $this->mapToEntity($model),
+            slug: (string) $model->slug,
+            imagesCount: (int) $model->images_count,
+        );
+    }
+
+    public function findSlugByProductId(int $id): ?string
+    {
+        $slug = PRD_Product::query()->whereKey($id)->value('slug');
+
+        return is_string($slug) ? $slug : null;
     }
 
     public function findByIds(array $ids): array

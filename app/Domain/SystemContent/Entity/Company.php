@@ -196,4 +196,47 @@ final class Company
     {
         return $this->inst;
     }
+
+    /**
+     * @param  array{type: string, coordinates: array<mixed>}|null  $deliveryZoneGeojson
+     */
+    public function withDeliveryZone(
+        ?array $deliveryZoneGeojson,
+        ?float $kitchenLatitude,
+        ?float $kitchenLongitude,
+    ): self {
+        return new self(
+            id: $this->id,
+            name: $this->name,
+            brandName: $this->brandName,
+            description: $this->description,
+            tagline: $this->tagline,
+            country: $this->country,
+            state: $this->state,
+            city: $this->city,
+            street: $this->street,
+            house: $this->house,
+            addressComment: $this->addressComment,
+            cityCoverage: $this->cityCoverage,
+            deliveryZoneGeojson: $deliveryZoneGeojson,
+            kitchenLatitude: $kitchenLatitude,
+            kitchenLongitude: $kitchenLongitude,
+            phone: $this->phone,
+            phoneAdditional: $this->phoneAdditional,
+            supportPhone: $this->supportPhone,
+            whatsappPhone: $this->whatsappPhone,
+            emailAddress: $this->emailAddress,
+            publicEmail: $this->publicEmail,
+            workHours: $this->workHours,
+            deliveryHours: $this->deliveryHours,
+            workSchedule: $this->workSchedule,
+            minOrderAmountKopecks: $this->minOrderAmountKopecks,
+            deliveryFeeKopecks: $this->deliveryFeeKopecks,
+            averageDeliveryTimeMinutes: $this->averageDeliveryTimeMinutes,
+            telegram: $this->telegram,
+            siteUrl: $this->siteUrl,
+            vk: $this->vk,
+            inst: $this->inst,
+        );
+    }
 }

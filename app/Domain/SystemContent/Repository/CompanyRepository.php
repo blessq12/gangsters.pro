@@ -7,5 +7,7 @@ use App\Domain\SystemContent\Entity\Company;
 interface CompanyRepository
 {
     public function first(): ?Company;
+
+    public function save(Company $company): void;
 }
 

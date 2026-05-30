@@ -50,4 +50,15 @@ final class EloquentCompanyRepository implements CompanyRepository
             inst: $company->inst,
         );
     }
+
+    public function save(CompanyEntity $company): void
+    {
+        $model = SYS_Company::query()->findOrFail($company->id());
+
+        $model->delivery_zone_geojson = $company->deliveryZoneGeojson();
+        $model->kitchen_latitude = $company->kitchenLatitude();
+        $model->kitchen_longitude = $company->kitchenLongitude();
+
+        $model->save();
+    }
 }

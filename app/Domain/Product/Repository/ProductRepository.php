@@ -3,10 +3,15 @@
 namespace App\Domain\Product\Repository;
 
 use App\Domain\Product\Entity\Product;
+use App\Domain\Product\ReadModel\ProductAdminFormReadModel;
 
 interface ProductRepository
 {
     public function findById(int $id): ?Product;
+
+    public function findByIdForAdminForm(int $id): ?ProductAdminFormReadModel;
+
+    public function findSlugByProductId(int $id): ?string;
 
     /**
      * @param int[] $ids

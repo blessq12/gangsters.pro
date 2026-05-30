@@ -180,6 +180,8 @@ return [
         Intervention\Image\ImageServiceProvider::class,
         App\Providers\ClientServiceProvider::class,
         App\Providers\ProductDomainServiceProvider::class,
+        App\Providers\CatalogServiceProvider::class,
+        App\Providers\OperationsServiceProvider::class,
         App\Providers\SystemContentServiceProvider::class,
         App\Providers\NotificationServiceProvider::class,
     ])->toArray(),

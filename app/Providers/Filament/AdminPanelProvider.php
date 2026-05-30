@@ -2,7 +2,18 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Catalog\Pages\ManageCatalog;
+use App\Filament\Catalog\Resources\CategoryResource;
+use App\Filament\Catalog\Resources\ProductResource;
+use App\Filament\Catalog\Resources\TagResource;
+use App\Filament\Operations\Pages\ManageCartRuleSettings;
+use App\Filament\Operations\Pages\ManageDeliveryZone;
+use App\Filament\Operations\Pages\ManageOperations;
+use App\Filament\Operations\Resources\ClientResource;
+use App\Filament\Operations\Resources\OrderResource;
 use App\Filament\Pages\AdminDashboard;
+use App\Http\Controllers\Admin\DeliveryZoneMapEditorController;
+use Illuminate\Support\Facades\Route;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -32,7 +43,22 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->pages([
                 AdminDashboard::class,
+                ManageCatalog::class,
+                ManageOperations::class,
+                ManageDeliveryZone::class,
+                ManageCartRuleSettings::class,
             ])
+            ->resources([
+                ProductResource::class,
+                CategoryResource::class,
+                TagResource::class,
+                OrderResource::class,
+                ClientResource::class,
+            ])
+            ->routes(function (): void {
+                Route::get('/delivery-zone-map-editor', DeliveryZoneMapEditorController::class)
+                    ->name('delivery-zone-map-editor');
+            })
             ->widgets([
                 AccountWidget::class,
             ])

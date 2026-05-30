@@ -59,6 +59,15 @@ class EventServiceProvider extends ServiceProvider
         \App\Domain\Client\Events\ClientPasswordResetRequested::class => [
             \App\Infrastructure\Notifications\Client\OnClientPasswordResetRequested::class,
         ],
+        \App\Domain\Product\Events\ProductCreated::class => [
+            \App\Infrastructure\Product\Listeners\OnProductCreated::class,
+        ],
+        \App\Domain\Product\Events\ProductUpdated::class => [
+            \App\Infrastructure\Product\Listeners\OnProductUpdated::class,
+        ],
+        \App\Domain\Product\Events\ProductArchived::class => [
+            \App\Infrastructure\Product\Listeners\OnProductArchived::class,
+        ],
     ];
 
     /**
