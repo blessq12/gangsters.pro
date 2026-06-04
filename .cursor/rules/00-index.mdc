@@ -23,7 +23,7 @@ alwaysApply: true
 
 ## Глобальные MUST (кратко)
 
-1. Направление зависимостей: **Domain ← Application ← Infrastructure**; Delivery (Http/Filament) → Application only.
+1. Направление зависимостей: **Domain ← Application ← Infrastructure**; Delivery **write** → Application only. Filament **read may** `App\Infrastructure\**\Model` + `app/Filament/Support/*` (без `GetAdmin*Query` / Infra read-repos из UI).
 2. Бизнес-сценарии — `App\Application\**`, не `App\Services\*` и не fat controllers/resources.
 3. Admin UI — только **5 hubs** в `AdminPanelProvider` (`docs/admin-filament-hubs.md`).
 4. Корзина/checkout/favorites — **server SoT**; frontend stores = cache (`frontend-application.mdc`).
@@ -37,7 +37,7 @@ alwaysApply: true
 | Use case, query, DTO, presenter, contract | backend-application | `app/Application/{Slice}/` |
 | Eloquent, repo impl, listener, adapter | backend-infrastructure | `app/Infrastructure/{Context}/` |
 | API controller, middleware, FormRequest | backend-http | `app/Http/` + `routes/api.php` |
-| Hub, TableWidget, Resource, FormMapper | backend-filament | `app/Filament/{Hub}/` + Application use case |
+| Hub, TableWidget, Resource, FormMapper | backend-filament | `app/Filament/{Hub}/` + Application **Command** UseCase (write) |
 | ServiceProvider, DI, Support, Console | backend-composition | Provider / Shared / Support |
 | Pinia, features, processes, api helper | frontend-application | `resources/js/features|stores|api/` |
 | Vue component, design token, layout, GSAP | frontend-presentation | `resources/js/components|design|layouts/` |
@@ -45,7 +45,7 @@ alwaysApply: true
 
 **Новая фича end-to-end:** Application (use case) → Infrastructure (если нужен port) → Http или Filament → Feature test.
 
-**Новая admin-вкладка:** Application query/command → Filament Hub*Table/Resource → `Feature/Admin` smoke.
+**Новая admin-вкладка:** Filament read (Eloquent / `Filament/Support`) + Application **Command** UseCase (write) → `Feature/Admin` smoke.
 
 **Новая кнопка корзины в UI:** emit `CART_*_REQUESTED` → process → command → store → API (не axios в component).
 

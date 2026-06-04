@@ -5,7 +5,7 @@ namespace App\Filament\Operations\Tables;
 use App\Application\Catalog\DTO\UpdateCartRuleFlagsDTO;
 use App\Application\Common\Exceptions\ApiException;
 use App\Application\Operations\CartRules\Contracts\UpdateProductCartRuleFlagsContract;
-use App\Application\Operations\CartRules\Query\GetAdminCartRuleProductsQuery;
+use App\Filament\Support\AdminCartRuleProductsTableQuery;
 use App\Filament\Catalog\Resources\ProductResource;
 use App\Filament\Operations\Concerns\ConfiguresHubTablePagination;
 use App\Support\Product\ProductStatusLabels;
@@ -40,21 +40,16 @@ class HubCartRulesProductsTable extends TableWidget
                 $perPage = is_numeric($recordsPerPage) ? (int) $recordsPerPage : 25;
                 $status = $filters['status']['value'] ?? null;
 
-                $result = app(GetAdminCartRuleProductsQuery::class)->execute(
+                return app(AdminCartRuleProductsTableQuery::class)->paginate(
                     search: filled($search) ? $search : null,
                     status: filled($status) ? (string) $status : null,
                     page: max(1, (int) $page),
                     perPage: $perPage,
+                    pageName: $this->getTablePaginationPageName(),
                     countsAsRoll: $this->filterBool($filters, 'counts_as_roll'),
                     giftCandidate: $this->filterBool($filters, 'gift_candidate'),
                     isComplementSet: $this->filterBool($filters, 'is_complement_set'),
-                );
-
-                return $this->buildHubLengthAwarePaginator(
-                    $result,
-                    max(1, (int) $page),
-                    $perPage,
-                );
+                )->onEachSide(0);
             })
             ->columns([
                 TextColumn::make('name')->label('Название'),

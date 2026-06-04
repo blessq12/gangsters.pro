@@ -2,24 +2,24 @@
 
 namespace App\Application\YandexFood\Query;
 
-use App\Application\Catalog\Contracts\CatalogYandexReadModelContract;
+use App\Application\Integrations\Contracts\IntegrationMenuExportReadPort;
 use App\Application\YandexFood\DTO\YandexMenuCompositionRequestDto;
 use App\Application\YandexFood\Presenter\YandexFoodMenuCatalogPresenter;
-use App\Application\YandexFood\YandexFoodBaseUseCase;
 
-final class GetYandexFoodMenuCompositionUseCase extends YandexFoodBaseUseCase
+final class GetYandexFoodMenuCompositionUseCase
 {
     public function __construct(
-        private readonly CatalogYandexReadModelContract $catalogReadModel,
+        private readonly IntegrationMenuExportReadPort $menuExport,
         private readonly YandexFoodMenuCatalogPresenter $yandexMenuCatalog,
-    ) {}
+    ) {
+    }
 
     /**
      * @return array<string, mixed>
      */
     public function execute(YandexMenuCompositionRequestDto $dto): array
     {
-        $blocks = $this->catalogReadModel->getActiveMenuBlocks();
+        $blocks = $this->menuExport->getActiveMenuBlocks();
 
         return $this->yandexMenuCatalog->presentMenuComposition($blocks);
     }

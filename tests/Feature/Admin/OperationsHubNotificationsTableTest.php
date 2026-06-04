@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Application\Notifications\Query\GetAdminNotificationDeliveryListQuery;
+use App\Filament\Support\AdminNotificationDeliveryTableQuery;
 use App\Filament\Operations\Tables\HubNotificationsTable;
 use App\Infrastructure\Notifications\Model\SYS_NotificationDelivery;
 use Illuminate\Support\Facades\Schema;
@@ -46,17 +46,23 @@ final class OperationsHubNotificationsTableTest extends TestCase
             'created_at' => now(),
         ]);
 
-        $result = app(GetAdminNotificationDeliveryListQuery::class)->execute(
+        $paginator = app(AdminNotificationDeliveryTableQuery::class)->paginate(
             channel: 'mail',
+            status: null,
+            dateFrom: null,
+            dateTo: null,
+            search: null,
             page: 1,
             perPage: 25,
+            pageName: 'page',
         );
 
-        $this->assertSame(1, $result['total']);
-        $this->assertSame('mail', $result['items'][0]['channel']);
-        $this->assertSame('Email', $result['items'][0]['channel_label']);
-        $this->assertSame('order_created', $result['items'][0]['event_type']);
-        $this->assertSame('Отправлено', $result['items'][0]['status_label']);
+        $this->assertSame(1, $paginator->total());
+        $first = collect($paginator->items())->first();
+        $this->assertSame('mail', $first['channel']);
+        $this->assertSame('Email', $first['channel_label']);
+        $this->assertSame('order_created', $first['event_type']);
+        $this->assertSame('Отправлено', $first['status_label']);
 
         SYS_NotificationDelivery::query()->delete();
     }

@@ -4,7 +4,7 @@ namespace App\Filament\Company\Widgets;
 
 use App\Application\Common\Exceptions\ApiException;
 use App\Application\Company\Legal\Command\UpdateAdminCompanyLegalUseCase;
-use App\Application\Company\Legal\Query\GetAdminCompanyLegalQuery;
+use App\Filament\Support\AdminCompanyReadHelper;
 use App\Filament\Company\Concerns\InteractsWithCompanySettingsForm;
 use App\Filament\Company\Schemas\CompanyLegalSettingsForm;
 use App\Filament\Company\Support\FilamentCompanyLegalFormMapper;
@@ -39,7 +39,7 @@ class HubCompanyLegalPanel extends Widget implements HasActions, HasSchemas
     protected function loadSettingsState(): array
     {
         return FilamentCompanyLegalFormMapper::toFormState(
-            app(GetAdminCompanyLegalQuery::class)->execute(),
+            app(AdminCompanyReadHelper::class)->legalState(),
         );
     }
 

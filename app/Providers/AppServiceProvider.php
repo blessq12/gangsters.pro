@@ -13,10 +13,12 @@ use App\Application\Order\Command\UpdateOrderService;
 use App\Application\Order\Contracts\CancelOrderContract;
 use App\Application\Order\Contracts\CustomerSnapshotProvider;
 use App\Application\Order\Contracts\MarkOrderPaidContract;
-use App\Application\Order\Contracts\OrderApplicationFacadeContract;
+use App\Application\Integrations\Contracts\IntegrationMenuExportReadPort;
+use App\Application\Order\Contracts\OrderExternalLifecycleContract;
 use App\Application\Order\Contracts\OrderPlacementContract;
+use App\Application\Order\Contracts\OrderReadContract;
 use App\Application\Order\Contracts\UpdateOrderContract;
-use App\Application\Order\OrderApplicationFacade;
+use App\Application\Order\OrderExternalOperations;
 use App\Application\Security\UnauthorizedClientAccessNotifier;
 use App\Application\Site\BuildRestaurantJsonLd;
 use App\Application\Site\SitePublicConfigPresenter;
@@ -75,8 +77,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(UpdateOrderContract::class, UpdateOrderService::class);
         $this->app->bind(CancelOrderContract::class, CancelOrderService::class);
         $this->app->bind(MarkOrderPaidContract::class, MarkOrderPaidService::class);
-        $this->app->bind(OrderApplicationFacadeContract::class, OrderApplicationFacade::class);
+        $this->app->singleton(OrderExternalOperations::class);
+        $this->app->bind(OrderReadContract::class, OrderExternalOperations::class);
+        $this->app->bind(OrderExternalLifecycleContract::class, OrderExternalOperations::class);
         $this->app->bind(CatalogYandexReadModelContract::class, CatalogYandexReadModel::class);
+        $this->app->bind(IntegrationMenuExportReadPort::class, CatalogYandexReadModel::class);
         $this->app->bind(YandexFoodOrderMetaStore::class, EloquentYandexFoodOrderMetaStore::class);
     }
 

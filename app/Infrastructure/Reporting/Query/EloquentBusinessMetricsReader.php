@@ -13,6 +13,7 @@ use App\Application\Reporting\Query\BusinessMetricsReader;
 use App\Application\Reporting\ValueObject\MetricsPeriod;
 use App\Application\Reporting\ValueObject\MetricsSection;
 use App\Domain\Order\Enums\DeliveryMethod;
+use App\Domain\Order\Enums\OrderSource;
 use App\Domain\Order\Enums\PaymentMethod;
 use App\Domain\Order\Enums\PaymentStatus;
 use App\Infrastructure\Client\Model\UR_Client;
@@ -627,13 +628,7 @@ final class EloquentBusinessMetricsReader implements BusinessMetricsReader
         $guestOrders = (int) $this->ordersInRange($range)->whereNull('client_id')->count();
         $registeredOrders = (int) $this->ordersInRange($range)->whereNotNull('client_id')->count();
 
-        $yandexOrders = 0;
-        if (Schema::hasTable('yandex_food_order_meta')) {
-            $yandexOrders = (int) DB::table('yandex_food_order_meta as meta')
-                ->join('ORD_orders as orders', 'orders.id', '=', 'meta.order_id')
-                ->whereBetween('orders.created_at', [$range['from'], $range['to']])
-                ->count();
-        }
+        $yandexOrders = $this->countYandexOrdersInRange($range);
 
         return [
             'registered_orders' => $registeredOrders,
@@ -641,6 +636,29 @@ final class EloquentBusinessMetricsReader implements BusinessMetricsReader
             'yandex_orders' => $yandexOrders,
             'site_orders' => max(0, $registeredOrders + $guestOrders - $yandexOrders),
         ];
+    }
+
+    /**
+     * @param  array{from: CarbonImmutable, to: CarbonImmutable}  $range
+     */
+    private function countYandexOrdersInRange(array $range): int
+    {
+        $query = $this->ordersInRange($range);
+
+        if (Schema::hasColumn('ORD_orders', 'source')) {
+            return (int) (clone $query)
+                ->where('source', OrderSource::YandexFood->value)
+                ->count();
+        }
+
+        if (! Schema::hasTable('yandex_food_order_meta')) {
+            return 0;
+        }
+
+        return (int) DB::table('yandex_food_order_meta as meta')
+            ->join('ORD_orders as orders', 'orders.id', '=', 'meta.order_id')
+            ->whereBetween('orders.created_at', [$range['from'], $range['to']])
+            ->count();
     }
 
     /**

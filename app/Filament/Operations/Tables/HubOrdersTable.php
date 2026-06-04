@@ -6,7 +6,7 @@ use App\Application\Common\Exceptions\ApiException;
 use App\Application\Operations\Order\Command\ChangeOrderStatusUseCase;
 use App\Application\Operations\Order\Command\MarkOrderPaidByIdUseCase;
 use App\Application\Operations\Order\DTO\ChangeOrderStatusDTO;
-use App\Application\Operations\Order\Query\GetAdminOrderListQuery;
+use App\Filament\Support\AdminOrderTableQuery;
 use App\Domain\Order\Enums\PaymentStatus;
 use App\Filament\Operations\Concerns\ConfiguresHubTablePagination;
 use App\Filament\Operations\Resources\OrderResource;
@@ -52,7 +52,7 @@ class HubOrdersTable extends TableWidget
                 $perPage = is_numeric($recordsPerPage) ? (int) $recordsPerPage : 25;
 
                 try {
-                    $result = app(GetAdminOrderListQuery::class)->execute(
+                    return app(AdminOrderTableQuery::class)->paginate(
                         status: filled($status) ? (string) $status : null,
                         dateFrom: filled($dateFrom) ? (string) $dateFrom : null,
                         dateTo: filled($dateTo) ? (string) $dateTo : null,
@@ -60,18 +60,13 @@ class HubOrdersTable extends TableWidget
                         paymentStatus: filled($paymentStatus) ? (string) $paymentStatus : null,
                         page: max(1, (int) $page),
                         perPage: $perPage,
-                    );
+                        pageName: $this->getTablePaginationPageName(),
+                    )->onEachSide(0);
                 } catch (ApiException $exception) {
                     Notification::make()->title($exception->getMessage())->danger()->send();
 
-                    return $this->buildEmptyHubLengthAwarePaginator($perPage);
+                    return (new LengthAwarePaginator([], 0, $perPage, 1))->onEachSide(0);
                 }
-
-                return $this->buildHubLengthAwarePaginator(
-                    $result,
-                    max(1, (int) $page),
-                    $perPage,
-                );
             })
             ->columns([
                 TextColumn::make('id')

@@ -5,7 +5,6 @@ namespace App\Filament\Marketing\Resources\PromotionResource\Pages;
 use App\Application\Common\Exceptions\ApiException;
 use App\Application\Marketing\Promotion\Command\DeletePromotionUseCase;
 use App\Application\Marketing\Promotion\Command\SavePromotionUseCase;
-use App\Application\Marketing\Promotion\Query\GetAdminPromotionDetailQuery;
 use App\Filament\Marketing\Concerns\ResolvesMarketingPromotionUploads;
 use App\Filament\Marketing\Pages\ManageMarketing;
 use App\Filament\Marketing\Resources\PromotionResource;
@@ -46,10 +45,11 @@ class EditPromotion extends EditRecord
      */
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        $detail = app(GetAdminPromotionDetailQuery::class)->execute((int) $this->getRecord()->getKey());
-        $this->existingImagePath = $detail['image'] ?? null;
+        /** @var \App\Infrastructure\SystemContent\Model\SYS_Promotion $record */
+        $record = $this->getRecord();
+        $this->existingImagePath = $record->image;
 
-        return FilamentPromotionFormMapper::toFormState($detail);
+        return FilamentPromotionFormMapper::toFormState($record);
     }
 
     /**

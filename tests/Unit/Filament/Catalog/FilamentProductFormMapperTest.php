@@ -2,7 +2,11 @@
 
 namespace Tests\Unit\Filament\Catalog;
 
+use App\Domain\Product\Entity\Product;
 use App\Filament\Catalog\Support\FilamentProductFormMapper;
+use App\Infrastructure\Product\Model\PRD_Product;
+use App\Infrastructure\Product\Model\PRD_Tag;
+use Illuminate\Database\Eloquent\Collection;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -38,25 +42,31 @@ final class FilamentProductFormMapperTest extends TestCase
     }
 
     #[Test]
-    public function to_form_state_maps_detail_payload(): void
+    public function to_form_state_maps_product_model(): void
     {
-        $state = FilamentProductFormMapper::toFormState([
+        $product = new PRD_Product([
             'name' => 'Товар',
             'articul' => 'X',
             'description' => 'D',
-            'price_rubles' => 10.0,
-            'status' => 'active',
+            'price' => 1000,
+            'status' => Product::STATUS_ACTIVE,
             'slug' => 'tovar',
-            'nutrition' => ['calories' => 1, 'proteins' => 2, 'fats' => 3, 'carbs' => 4, 'basis' => 'per_100g'],
-            'ingredients' => [],
-            'tags' => [['code' => 'spicy', 'label' => 'Острое']],
-            'cart_rule_flags' => [
-                'counts_as_roll' => true,
-                'gift_candidate' => false,
-                'is_complement_set' => true,
-            ],
-            'images_count' => 2,
+            'calories' => 1,
+            'proteins' => 2,
+            'fats' => 3,
+            'carbs' => 4,
+            'nutrition_basis' => 'per_100g',
+            'cart_rule_counts_as_roll' => true,
+            'cart_rule_gift_candidate' => false,
+            'cart_rule_is_complement_set' => true,
         ]);
+        $product->setRelation('tags', new Collection([
+            new PRD_Tag(['code' => 'spicy', 'label' => 'Острое']),
+        ]));
+        $product->setRelation('ingredients', new Collection());
+        $product->setRelation('images', new Collection([1, 2]));
+
+        $state = FilamentProductFormMapper::toFormState($product);
 
         $this->assertSame('Товар', $state['name']);
         $this->assertSame(['spicy'], $state['tag_codes']);
@@ -69,19 +79,26 @@ final class FilamentProductFormMapperTest extends TestCase
     #[Test]
     public function to_form_state_truncates_ingredients_for_admin_form(): void
     {
-        $ingredients = array_fill(0, 150, [
-            'name' => 'Item',
-            'amount' => '1',
-            'unit' => 'g',
-            'is_allergen' => false,
-        ]);
+        $ingredients = new Collection();
+        for ($i = 0; $i < 150; $i++) {
+            $ingredients->push(new \App\Infrastructure\Product\Model\PRD_ProductIngredient([
+                'name' => 'Item',
+                'amount' => '1',
+                'unit' => 'g',
+                'is_allergen' => false,
+            ]));
+        }
 
-        $state = FilamentProductFormMapper::toFormState([
+        $product = new PRD_Product([
             'name' => 'Товар',
             'description' => '',
-            'status' => 'active',
-            'ingredients' => $ingredients,
+            'status' => Product::STATUS_ACTIVE,
         ]);
+        $product->setRelation('tags', new Collection());
+        $product->setRelation('ingredients', $ingredients);
+        $product->setRelation('images', new Collection());
+
+        $state = FilamentProductFormMapper::toFormState($product);
 
         $this->assertCount(FilamentProductFormMapper::FORM_INGREDIENT_LIMIT, $state['ingredients']);
     }

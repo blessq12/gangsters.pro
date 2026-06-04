@@ -2,26 +2,26 @@
 
 namespace App\Application\YandexFood\Query;
 
-use App\Application\Catalog\Contracts\CatalogYandexReadModelContract;
+use App\Application\Integrations\Contracts\IntegrationMenuExportReadPort;
 use App\Application\YandexFood\DTO\YandexMenuAvailabilityRequestDto;
-use App\Application\YandexFood\YandexFoodBaseUseCase;
 
 /**
  * Формат ответа — как у прежнего легаси-эндпоинта availability (items + modifiers).
  * список позиций с quantity = 0 для товаров вне статуса active (в легаси — visible = 0).
  */
-final class GetYandexFoodMenuAvailabilityUseCase extends YandexFoodBaseUseCase
+final class GetYandexFoodMenuAvailabilityUseCase
 {
     public function __construct(
-        private readonly CatalogYandexReadModelContract $catalogReadModel,
-    ) {}
+        private readonly IntegrationMenuExportReadPort $menuExport,
+    ) {
+    }
 
     /**
      * @return array{items: list<array{id: string, quantity: int}>, modifiers: array<int, mixed>}
      */
     public function execute(YandexMenuAvailabilityRequestDto $dto): array
     {
-        $unavailable = $this->catalogReadModel->getUnavailableProductIds();
+        $unavailable = $this->menuExport->getUnavailableProductIds();
 
         return [
             'items' => array_map(

@@ -26,14 +26,14 @@ Admin panel = `AdminPanelProvider` (`id: admin`, path `/admin`). Единств�
 
 - **Списки:** `{Hub}/Tables/Hub*Table.php` extends `TableWidget`.
 - **Настройки:** `{Hub}/Widgets/Hub*Panel.php` + `InteractsWith*SettingsForm`.
-- **Analytics:** read-only метрики.
+- **Analytics:** read-only метрики через `BusinessMetricsReader` (исключение).
 
 Паттерн таблицы:
-1. `records()` → Application **Query** → paginator.
+1. **Read:** Eloquent `App\Infrastructure\**\Model\*` (`query()`, `with()`, scopes) или `app/Filament/Support/*Query.php` (только композиция Eloquent, без бизнес-правил).
 2. Row/header actions → Application **UseCase**; `ApiException` → `Notification`.
 3. Мутации: `AdminActionVisibility::canMutate()`.
 4. Create/Edit → hub-Resource URL.
-5. Operations tables: trait `ConfiguresHubTablePagination`.
+5. Operations tables: trait `ConfiguresHubTablePagination` (query string id; без ручного `buildHubLengthAwarePaginator` после миграции).
 
 ## Resources (create/edit only)
 
@@ -42,16 +42,29 @@ Admin panel = `AdminPanelProvider` (`id: admin`, path `/admin`). Единств�
 - `use AuthorizesAdminHub` + `Redirects*IndexToHub`
 - slug: `{hub}/{entity}` (напр. `catalog/products`)
 - Form: `{Resource}/Schemas/*Form.php`
+- `$model` = Infrastructure Model
 
 **MUST NOT:** index/list pages, navigation items, бизнес-логика в Resource.
+
+## Support read helpers (`app/Filament/Support/`)
+
+| Шаблон | Назначение |
+|--------|------------|
+| `Admin{Entity}TableQuery.php` | Списки, поиск, пагинация (Eloquent-композиция) |
+| `Admin{Feature}ReadHelper.php` | Settings / edit snapshot / layout options |
+| `AdminActiveCartSnapshotBuilder.php` | Сложный read-only snapshot для modal |
+
+**MUST NOT:** `App\Application\**\GetAdmin*Query`, `ListAdmin*Query`, Application read-repositories.
 
 ## FormMappers
 
 `{Hub}/Support/Filament*FormMapper.php` (final):
-- `toFormState` / `emptyFormState` — Query → form
-- `toCreateDto` / `toUpdateDto` / `toSaveDto` — form → Application DTO
+- `toCreateDto` / `toUpdateDto` / `toSaveDto` / `toDto` — form → Application DTO (**обязательно** на write)
+- `toFormState(Model $record)` или fill через `$record` + `->relationship()` — без `GetAdmin*Query`
+- `toFormState(array $detail)` — **допустимо** для settings: `ReadHelper::settingsState()` → mapper (см. `HubCompanyProfilePanel` + `AdminCompanyReadHelper`)
+- `emptyFormState` — defaults для create
 
-Save → UseCase; `ApiException` → Notification + `Halt`. Upload — в page concern, не в mapper без причины.
+Save → UseCase; `ApiException` → Notification + `Halt`. Upload — в page concern.
 
 ## Authorization
 
@@ -68,21 +81,24 @@ Save → UseCase; `ApiException` → Notification + `Halt`. Upload — в page c
 | company | Company | да |
 | read_only | все | **нет** |
 
-## Filament → Application
+## Filament → слои
 
-**MUST:** только `Application\{Context}\Command\*UseCase` и `Query\*Query`.
-
-**MUST NOT:** Eloquent save доменных правил, Infrastructure repositories, прямой Domain.
+| Операция | MUST | MUST NOT |
+|----------|------|----------|
+| Read | Infrastructure Models; `Filament/Support/*Query.php` | `GetAdmin*Query`, `ListAdmin*Query`, Domain entities, Infrastructure repositories |
+| Write | `Application\{Context}\Command\*UseCase` + DTO via FormMapper | `$record->save()`, mass update, Domain |
+| Analytics read | `BusinessMetricsReader` | `ORD_Order::query()` для дашборда |
 
 ## Чеклист новой сущности
 
-1. Query + Command UseCases в Application
-2. `Filament*FormMapper` + `*Form` schema
-3. Resource (create/edit, hidden nav, Redirects trait)
-4. `Hub*Table` на hub-вкладке
-5. Регистрация в `AdminPanelProvider`
-6. `AuthorizesAdminHub` + корректный `AdminHub`
-7. Feature-тест hub access; unit-тест mapper при нетривиальной трансформации
+1. Command UseCase (write)
+2. При нетривиальном read — `app/Filament/Support/Admin*TableQuery` или `*ReadHelper`
+3. Resource `$model` + `Filament*FormMapper` (DTO)
+4. `Hub*Table` на Eloquent / Support query
+5. `*Form` schema, create/edit pages
+6. Hub tab + `AdminPanelProvider`
+7. `AuthorizesAdminHub` + `AdminHub`
+8. Feature hub access; unit mapper при нетривиальном DTO
 
 ## Тесты
 

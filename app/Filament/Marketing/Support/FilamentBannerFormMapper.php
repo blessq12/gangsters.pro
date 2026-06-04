@@ -3,20 +3,17 @@
 namespace App\Filament\Marketing\Support;
 
 use App\Application\Marketing\Banner\DTO\SaveBannerDTO;
+use App\Infrastructure\SystemContent\Model\SYS_Banner;
 
 final class FilamentBannerFormMapper
 {
-    /**
-     * @param  array<string, mixed>  $detail
-     * @return array<string, mixed>
-     */
-    public static function toFormState(array $detail): array
+    public static function toFormState(SYS_Banner $banner): array
     {
         return [
-            'title' => $detail['title'] ?? null,
-            'description' => $detail['description'] ?? null,
-            'image_mobile_upload' => self::uploadState($detail['image_mobile'] ?? $detail['image'] ?? null),
-            'image_desktop_upload' => self::uploadState($detail['image_desktop'] ?? $detail['image'] ?? null),
+            'title' => $banner->title,
+            'description' => $banner->description,
+            'image_mobile_upload' => self::uploadState($banner->image_mobile ?? $banner->image),
+            'image_desktop_upload' => self::uploadState($banner->image_desktop ?? $banner->image),
         ];
     }
 

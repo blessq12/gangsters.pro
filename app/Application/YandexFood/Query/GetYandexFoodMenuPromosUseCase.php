@@ -3,9 +3,8 @@
 namespace App\Application\YandexFood\Query;
 
 use App\Application\YandexFood\DTO\YandexMenuPromosRequestDto;
-use App\Application\YandexFood\YandexFoodBaseUseCase;
 
-final class GetYandexFoodMenuPromosUseCase extends YandexFoodBaseUseCase
+final class GetYandexFoodMenuPromosUseCase
 {
     /**
      * Пустой promoItems — как в прежнем легаси-ответе promos.

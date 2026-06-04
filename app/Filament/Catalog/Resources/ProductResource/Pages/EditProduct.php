@@ -10,7 +10,6 @@ use App\Application\Catalog\Command\SyncProductTagsUseCase;
 use App\Application\Operations\CartRules\Contracts\UpdateProductCartRuleFlagsContract;
 use App\Application\Catalog\Command\UpdateProductUseCase;
 use App\Application\Catalog\Command\UploadProductImageUseCase;
-use App\Application\Catalog\Query\GetAdminProductFormQuery;
 use App\Application\Common\Exceptions\ApiException;
 use App\Domain\Product\Entity\Product;
 use App\Filament\Catalog\Pages\ManageCatalog;
@@ -95,10 +94,11 @@ class EditProduct extends EditRecord
      */
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        $detail = app(GetAdminProductFormQuery::class)->execute((int) $this->getRecord()->getKey());
-        $this->imagesCount = (int) ($detail['images_count'] ?? 0);
+        /** @var \App\Infrastructure\Product\Model\PRD_Product $record */
+        $record = $this->getRecord()->loadCount('images');
+        $this->imagesCount = (int) $record->images_count;
 
-        return FilamentProductFormMapper::toFormState($detail);
+        return FilamentProductFormMapper::toFormState($record);
     }
 
     /**

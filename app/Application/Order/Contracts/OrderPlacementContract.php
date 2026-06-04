@@ -3,6 +3,7 @@
 namespace App\Application\Order\Contracts;
 
 use App\Domain\Order\Entities\Order;
+use App\Domain\Order\Enums\OrderSource;
 use App\Domain\Order\ValueObjects\CustomerSnapshot;
 use App\Domain\Order\ValueObjects\DeliveryInfo;
 use App\Domain\Order\ValueObjects\PaymentInfo;
@@ -18,6 +19,7 @@ interface OrderPlacementContract
         array $items,
         DeliveryInfo $deliveryInfo,
         PaymentInfo $paymentInfo,
+        OrderSource $source = OrderSource::Site,
         int $deliveryFeeKopecks = 0,
         ?array $deliveryPricingSnapshot = null,
     ): Order;

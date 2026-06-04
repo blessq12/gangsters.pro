@@ -2,7 +2,8 @@
 
 namespace App\Filament\Operations\Resources\OrderResource\Schemas;
 
-use App\Application\Catalog\Query\GetAdminProductListQuery;
+use App\Filament\Support\AdminProductSearchQuery;
+use App\Infrastructure\Product\Model\PRD_Product;
 use App\Domain\Order\Enums\DeliveryMethod;
 use App\Domain\Order\Enums\PaymentMethod;
 use Filament\Forms\Components\Repeater;
@@ -58,37 +59,22 @@ final class AdminOrderCreateForm
                                 Select::make('product_id')
                                     ->label('Товар')
                                     ->searchable()
-                                    ->getSearchResultsUsing(function (string $search): array {
-                                        $result = app(GetAdminProductListQuery::class)->execute(
-                                            search: $search !== '' ? $search : null,
-                                            status: 'active',
-                                            page: 1,
-                                            perPage: 30,
-                                        );
-
-                                        $options = [];
-                                        foreach ($result['items'] as $product) {
-                                            $options[(int) $product['id']] = $product['name'].' ('.$product['articul'].')';
-                                        }
-
-                                        return $options;
-                                    })
+                                    ->getSearchResultsUsing(fn (string $search): array => app(AdminProductSearchQuery::class)->optionsForSelect(
+                                        search: $search !== '' ? $search : null,
+                                        limit: 30,
+                                    ))
                                     ->getOptionLabelUsing(function ($value): ?string {
                                         if ($value === null || $value === '') {
                                             return null;
                                         }
 
-                                        $result = app(GetAdminProductListQuery::class)->execute(
-                                            search: (string) $value,
-                                            page: 1,
-                                            perPage: 1,
-                                        );
+                                        $product = PRD_Product::query()->find((int) $value);
+                                        if ($product === null) {
+                                            return (string) $value;
+                                        }
 
-                                        $product = $result['items'][0] ?? null;
-
-                                        return $product
-                                            ? $product['name'].' ('.$product['articul'].')'
-                                            : (string) $value;
+                                        return trim((string) $product->name)
+                                            .(filled($product->articul) ? ' ('.$product->articul.')' : '');
                                     })
                                     ->required(),
                                 TextInput::make('quantity')

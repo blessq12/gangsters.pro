@@ -4,7 +4,7 @@ namespace App\Filament\Operations\Widgets;
 
 use App\Application\Common\Exceptions\ApiException;
 use App\Application\Operations\CartRules\Command\UpdateCartRuleSettingsUseCase;
-use App\Application\Operations\CartRules\Query\GetAdminCartRuleSettingsQuery;
+use App\Filament\Support\AdminCartRuleSettingsReadHelper;
 use App\Filament\Operations\Concerns\InteractsWithOperationsSettingsForm;
 use App\Filament\Operations\Schemas\CartRuleSettingsForm;
 use App\Filament\Operations\Support\FilamentCartRuleSettingsFormMapper;
@@ -40,7 +40,7 @@ class HubCartRulesPanel extends Widget implements HasActions, HasSchemas
     protected function loadSettingsState(): array
     {
         return FilamentCartRuleSettingsFormMapper::toFormState(
-            app(GetAdminCartRuleSettingsQuery::class)->execute(),
+            app(AdminCartRuleSettingsReadHelper::class)->settingsState(),
         );
     }
 

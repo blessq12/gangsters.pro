@@ -9,7 +9,7 @@ use App\Application\Operations\Client\Command\RequestAdminClientPasswordResetUse
 use App\Application\Operations\Client\Command\UnblockAdminClientUseCase;
 use App\Application\Operations\Client\Command\UpdateAdminClientUseCase;
 use App\Application\Operations\Client\DTO\AdminAddClientAddressDTO;
-use App\Application\Operations\Client\Query\GetAdminClientDetailQuery;
+use App\Filament\Support\AdminClientEditReadHelper;
 use App\Domain\Client\Entity\Client;
 use App\Filament\Operations\Resources\ClientResource;
 use App\Filament\Operations\Support\FilamentClientFormMapper;
@@ -167,7 +167,7 @@ class EditClient extends EditRecord
     private function loadClientPayload(int $clientId): array
     {
         try {
-            return app(GetAdminClientDetailQuery::class)->execute($clientId);
+            return app(AdminClientEditReadHelper::class)->payload($clientId);
         } catch (ApiException $exception) {
             abort(404, $exception->getMessage());
         }

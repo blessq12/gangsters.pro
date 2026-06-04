@@ -3,10 +3,10 @@
 namespace App\Filament\Catalog\Tables;
 
 use App\Application\Catalog\Command\DeleteTagUseCase;
-use App\Application\Catalog\Query\ListAdminTagsQuery;
 use App\Application\Common\Exceptions\ApiException;
 use App\Filament\Catalog\Resources\TagResource;
 use App\Filament\Support\AdminActionVisibility;
+use App\Infrastructure\Product\Model\PRD_Tag;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
@@ -27,11 +27,11 @@ class HubTagsTable extends TableWidget
     public function table(Table $table): Table
     {
         return $table
-            ->records(function (): Collection {
-                $items = app(ListAdminTagsQuery::class)->execute();
-
-                return collect($items)->keyBy('id');
-            })
+            ->records(fn (): Collection => PRD_Tag::query()
+                ->orderBy('sort_order')
+                ->orderBy('label')
+                ->get()
+                ->keyBy('id'))
             ->columns([
                 TextColumn::make('label')
                     ->label('Название')
@@ -50,16 +50,16 @@ class HubTagsTable extends TableWidget
             ->paginated(false)
             ->recordActions([
                 EditAction::make()
-                    ->url(fn (array $record): string => TagResource::getUrl('edit', ['record' => $record['id']])),
+                    ->url(fn (PRD_Tag $record): string => TagResource::getUrl('edit', ['record' => $record->getKey()])),
                 Action::make('delete')
                     ->label('Удалить')
                     ->icon(Heroicon::OutlinedTrash)
                     ->color('danger')
                     ->visible(fn (): bool => AdminActionVisibility::canMutate())
                     ->requiresConfirmation()
-                    ->action(function (array $record): void {
+                    ->action(function (PRD_Tag $record): void {
                         try {
-                            app(DeleteTagUseCase::class)->execute((int) $record['id']);
+                            app(DeleteTagUseCase::class)->execute((int) $record->getKey());
                             Notification::make()->title('Тег удалён')->success()->send();
                         } catch (ApiException $exception) {
                             Notification::make()->title($exception->getMessage())->danger()->send();

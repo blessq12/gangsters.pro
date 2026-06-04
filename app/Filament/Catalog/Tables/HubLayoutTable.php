@@ -4,9 +4,7 @@ namespace App\Filament\Catalog\Tables;
 
 use App\Application\Catalog\Command\SetCategoryProductsUseCase;
 use App\Application\Catalog\DTO\SetCategoryProductsDTO;
-use App\Application\Catalog\Query\GetAdminCategoryLayoutQuery;
-use App\Application\Catalog\Query\GetAdminCategoryListQuery;
-use App\Application\Catalog\Query\GetAdminProductListQuery;
+use App\Filament\Support\AdminCatalogLayoutReadHelper;
 use App\Application\Common\Exceptions\ApiException;
 use App\Filament\Support\AdminActionVisibility;
 use App\Support\Money;
@@ -34,7 +32,7 @@ class HubLayoutTable extends TableWidget
                     return collect();
                 }
 
-                $layout = app(GetAdminCategoryLayoutQuery::class)->execute($categoryId);
+                $layout = app(AdminCatalogLayoutReadHelper::class)->layoutForCategory($categoryId);
 
                 return collect($layout['products'])->keyBy('id');
             })
@@ -52,9 +50,7 @@ class HubLayoutTable extends TableWidget
             ->filters([
                 SelectFilter::make('category_id')
                     ->label('Категория')
-                    ->options(fn (): array => collect(app(GetAdminCategoryListQuery::class)->execute())
-                        ->mapWithKeys(fn (array $category): array => [(int) $category['id'] => (string) $category['name']])
-                        ->all())
+                    ->options(fn (): array => app(AdminCatalogLayoutReadHelper::class)->categoryOptions())
                     ->searchable()
                     ->native(false),
             ])
@@ -69,12 +65,7 @@ class HubLayoutTable extends TableWidget
                     ->form([
                         Select::make('product_id')
                             ->label('Товар')
-                            ->options(fn (): array => collect(app(GetAdminProductListQuery::class)->execute(
-                                status: null,
-                                perPage: 200,
-                            )['items'])->mapWithKeys(
-                                fn (array $item): array => [(int) $item['id'] => (string) $item['name']],
-                            )->all())
+                            ->options(fn (): array => app(AdminCatalogLayoutReadHelper::class)->productOptionsForSelect())
                             ->searchable()
                             ->required(),
                     ])
@@ -139,8 +130,7 @@ class HubLayoutTable extends TableWidget
 
     private function categoryExists(int $categoryId): bool
     {
-        return collect(app(GetAdminCategoryListQuery::class)->execute())
-            ->contains(static fn (array $category): bool => (int) $category['id'] === $categoryId);
+        return app(AdminCatalogLayoutReadHelper::class)->categoryExists($categoryId);
     }
 
     private function appendProduct(int $productId): void
@@ -184,7 +174,7 @@ class HubLayoutTable extends TableWidget
             return [];
         }
 
-        $layout = app(GetAdminCategoryLayoutQuery::class)->execute($categoryId);
+        $layout = app(AdminCatalogLayoutReadHelper::class)->layoutForCategory($categoryId);
 
         return array_map(
             static fn (array $row): int => (int) $row['id'],

@@ -2,7 +2,7 @@
 
 namespace App\Filament\Catalog\Resources\ProductResource\Schemas;
 
-use App\Application\Catalog\Query\ListAdminTagsQuery;
+use App\Infrastructure\Product\Model\PRD_Tag;
 use App\Filament\Catalog\Support\FilamentProductFormMapper;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\CheckboxList;
@@ -156,8 +156,8 @@ final class ProductForm
 
         $options = [];
 
-        foreach (app(ListAdminTagsQuery::class)->execute() as $tag) {
-            $options[(string) $tag['code']] = (string) $tag['label'];
+        foreach (PRD_Tag::query()->orderBy('sort_order')->orderBy('label')->get(['code', 'label']) as $tag) {
+            $options[(string) $tag->code] = (string) $tag->label;
         }
 
         return $options;

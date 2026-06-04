@@ -4,6 +4,7 @@ namespace App\Domain\Order\Factories;
 
 use App\Domain\Order\Entities\Order;
 use App\Domain\Order\Entities\OrderItem;
+use App\Domain\Order\Enums\OrderSource;
 use App\Domain\Order\Services\OrderIdGenerator;
 use App\Domain\Order\ValueObjects\CustomerSnapshot;
 use App\Domain\Order\ValueObjects\DeliveryInfo;
@@ -28,6 +29,7 @@ class OrderFactory
         ?PaymentInfo $paymentInfo = null,
         int $deliveryFeeKopecks = 0,
         ?array $deliveryPricingSnapshot = null,
+        OrderSource $source = OrderSource::Site,
     ): Order {
         $items = [];
 
@@ -89,6 +91,7 @@ class OrderFactory
             createdAt: $createdAt,
             updatedAt: $createdAt,
             deliveryPricingSnapshot: $deliveryPricingSnapshot,
+            source: $source,
         );
     }
 
@@ -108,6 +111,7 @@ class OrderFactory
         \DateTimeImmutable $createdAt,
         int $deliveryFeeKopecks = 0,
         ?array $deliveryPricingSnapshot = null,
+        ?OrderSource $source = null,
     ): Order {
         $items = [];
 
@@ -167,6 +171,7 @@ class OrderFactory
             createdAt: $createdAt,
             updatedAt: $updatedAt,
             deliveryPricingSnapshot: $deliveryPricingSnapshot,
+            source: $source,
         );
     }
 }

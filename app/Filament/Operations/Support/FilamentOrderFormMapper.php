@@ -3,47 +3,45 @@
 namespace App\Filament\Operations\Support;
 
 use App\Application\Operations\Order\DTO\CreateAdminOrderDTO;
+use App\Infrastructure\Order\Model\ORD_Order;
+use App\Infrastructure\Order\Model\ORD_OrderItem;
 use App\Support\Order\OrderStatusLabels;
 
 final class FilamentOrderFormMapper
 {
-    /**
-     * @param  array<string, mixed>  $detail
-     * @return array<string, mixed>
-     */
-    public static function toFormState(array $detail): array
+    public static function toFormState(ORD_Order $order): array
     {
-        $customer = $detail['customer'] ?? [];
-        $delivery = $detail['delivery'] ?? [];
-        $payment = $detail['payment'] ?? [];
+        $order->loadMissing('items');
+        $status = (string) $order->status;
 
         return [
-            'id' => $detail['id'] ?? '',
-            'status' => $detail['status'] ?? '',
-            'status_label' => OrderStatusLabels::statusLabel((string) ($detail['status'] ?? '')),
-            'customer_name' => $customer['name'] ?? '',
-            'customer_phone' => $customer['phone'] ?? '',
-            'customer_email' => $customer['email'] ?? '',
-            'customer_address' => OrderStatusLabels::formatAddress($customer['address'] ?? null) ?? '',
-            'delivery_method' => $delivery['method'] ?? '',
-            'delivery_address' => OrderStatusLabels::formatAddress($delivery['address'] ?? null) ?? '',
-            'delivery_comment' => $delivery['comment'] ?? '',
-            'payment_method' => $payment['method'] ?? '',
-            'payment_status' => $payment['status'] ?? '',
-            'subtotal' => $detail['subtotal'] ?? 0,
-            'discount_total' => $detail['discount_total'] ?? 0,
-            'delivery_fee' => $detail['delivery_fee'] ?? 0,
-            'total' => $detail['total'] ?? 0,
-            'created_at' => $detail['created_at'] ?? '',
-            'items' => array_map(
-                static fn (array $item): array => [
-                    'product_id' => (int) ($item['product_original_id'] ?? 0),
-                    'product_label' => ($item['product']['name'] ?? '').' ('.($item['product']['sku'] ?? '').')',
-                    'quantity' => (int) ($item['quantity'] ?? 0),
-                    'row_total' => $item['row_total'] ?? 0,
-                ],
-                $detail['items'] ?? [],
-            ),
+            'id' => (string) $order->id,
+            'status' => $status,
+            'status_label' => OrderStatusLabels::statusLabel($status),
+            'customer_name' => (string) ($order->customer_name ?? ''),
+            'customer_phone' => (string) ($order->customer_phone ?? ''),
+            'customer_email' => (string) ($order->customer_email ?? ''),
+            'customer_address' => OrderStatusLabels::formatAddress($order->customer_address) ?? '',
+            'delivery_method' => (string) ($order->delivery_method ?? ''),
+            'delivery_address' => OrderStatusLabels::formatAddress($order->delivery_address) ?? '',
+            'delivery_comment' => (string) ($order->delivery_comment ?? ''),
+            'payment_method' => (string) ($order->payment_method ?? ''),
+            'payment_status' => $order->payment_status,
+            'subtotal' => (int) $order->subtotal,
+            'discount_total' => (int) $order->discount_total,
+            'delivery_fee' => (int) ($order->delivery_fee_kopecks ?? 0),
+            'total' => (int) $order->total,
+            'created_at' => $order->created_at?->toIso8601String() ?? '',
+            'items' => $order->items
+                ->map(static fn (ORD_OrderItem $item): array => [
+                    'product_id' => (int) $item->product_original_id,
+                    'product_label' => trim((string) $item->product_name)
+                        .(filled($item->product_sku) ? ' ('.$item->product_sku.')' : ''),
+                    'quantity' => (int) $item->quantity,
+                    'row_total' => (int) $item->row_total,
+                ])
+                ->values()
+                ->all(),
         ];
     }
 

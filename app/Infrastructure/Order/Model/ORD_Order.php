@@ -21,6 +21,7 @@ class ORD_Order extends Model
     protected $fillable = [
         'id',
         'client_id',
+        'source',
         'status',
         'subtotal',
         'discount_total',

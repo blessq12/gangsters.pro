@@ -3,13 +3,14 @@
 namespace App\Application\Catalog\Query;
 
 use App\Application\Catalog\Contracts\CatalogYandexReadModelContract;
+use App\Application\Integrations\Contracts\IntegrationMenuExportReadPort;
 use App\Domain\Category\Entity\CategoryProduct;
 use App\Domain\Category\Repository\CategoryRepository;
 use App\Domain\Product\Entity\Product;
 use App\Domain\Product\Repository\ProductRepository;
 use App\Support\Money;
 
-final class CatalogYandexReadModel implements CatalogYandexReadModelContract
+final class CatalogYandexReadModel implements CatalogYandexReadModelContract, IntegrationMenuExportReadPort
 {
     public function __construct(
         private readonly ProductRepository $products,

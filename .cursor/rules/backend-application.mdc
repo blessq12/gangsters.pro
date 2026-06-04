@@ -13,7 +13,7 @@ alwaysApply: false
 ```
 app/Application/{Slice}/
   Command/     *UseCase.php       — writes
-  Query/       GetAdmin*Query.php — admin reads
+  Query/       GetAdmin*Query.php — internal admin read (UseCase only, not hub UI)
                Get*UseCase.php    — B2C reads (legacy suffix)
   DTO/         input payloads
   Presenter/   output mapping → array
@@ -32,8 +32,8 @@ app/Application/{Slice}/
 ## Эталоны
 
 - B2C orchestration: `Order/Command/CreateOrderUseCase`
-- Contract core: `Order/Command/PlaceOrderService` + `OrderApplicationFacade`
-- Admin query: `Operations/Order/Query/GetAdminOrderListQuery`
+- Contract core: `Order/Command/PlaceOrderService` + `OrderPlacementContract`
+- Admin internal read: `Operations/Order/Query/GetAdminOrderDetailQuery` (return-after-write в admin order UseCase)
 - Integration ACL: `YandexFood/Command/CreateYandexFoodOrderUseCase`
 
 ## Зависимости
@@ -51,7 +51,7 @@ app/Application/{Slice}/
 | Тип | Класс | Метод |
 |-----|-------|-------|
 | Write | `{Action}UseCase` | `execute(DTO): array\|void` |
-| Admin read | `GetAdmin{Entity}{List\|Detail}Query` | `execute(...filters): array` |
+| Admin internal read | `GetAdmin{Entity}{Detail\|Layout\|Settings}Query` | `execute(...): array` — только UseCase, не Filament hub |
 | B2C read | `Get{Entity}UseCase` (в Query/) | `execute(): array` |
 
 Order legacy: `*Service implements *Contract` — новый код: `*UseCase`, контракт при cross-context reuse.
@@ -64,7 +64,7 @@ Order legacy: `*Service implements *Contract` — новый код: `*UseCase`,
 ## Contracts
 
 - Outbound: `*ReadRepository`, `*StoragePort`, `*GuardPort` → Infrastructure
-- Inbound/cross-context: `OrderPlacementContract`, `OrderApplicationFacadeContract`, `CustomerSnapshotProvider`
+- Inbound/cross-context: `OrderPlacementContract`, `OrderExternalLifecycleContract`, `CustomerSnapshotProvider`
 - Интерфейс в Application, реализация never в Application
 
 ## Events

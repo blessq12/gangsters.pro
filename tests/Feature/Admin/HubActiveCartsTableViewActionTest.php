@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Application\Operations\Shopping\Query\GetAdminShoppingSessionDetailQuery;
+use App\Filament\Support\AdminActiveCartSnapshotBuilder;
 use App\Filament\Operations\Support\FilamentActiveCartDetailMapper;
 use App\Infrastructure\Shopping\Model\SHP_ShoppingCartLine;
 use App\Infrastructure\Shopping\Model\SHP_ShoppingSession;
@@ -39,7 +39,7 @@ final class HubActiveCartsTableViewActionTest extends TestCase
         $sessionId = $this->createSession(expiresAt: now()->addDay());
         $this->addCartLine($sessionId, productId: 101, quantity: 2);
 
-        $snapshot = app(GetAdminShoppingSessionDetailQuery::class)->execute($sessionId);
+        $snapshot = app(AdminActiveCartSnapshotBuilder::class)->build($sessionId);
         $state = FilamentActiveCartDetailMapper::toFormState($snapshot);
 
         $this->assertSame('1 поз. · 2 шт.', $state['cart_summary']);

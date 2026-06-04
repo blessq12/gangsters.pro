@@ -2,7 +2,7 @@
 
 namespace App\Filament\Operations\Tables;
 
-use App\Application\Notifications\Query\GetAdminNotificationDeliveryListQuery;
+use App\Filament\Support\AdminNotificationDeliveryTableQuery;
 use App\Filament\Operations\Concerns\ConfiguresHubTablePagination;
 use App\Support\Notifications\NotificationDeliveryLabels;
 use Filament\Actions\ViewAction;
@@ -40,7 +40,7 @@ class HubNotificationsTable extends TableWidget
                 $dateTo = $filters['period']['dateTo'] ?? null;
                 $perPage = is_numeric($recordsPerPage) ? (int) $recordsPerPage : 25;
 
-                $result = app(GetAdminNotificationDeliveryListQuery::class)->execute(
+                return app(AdminNotificationDeliveryTableQuery::class)->paginate(
                     channel: filled($channel) ? (string) $channel : null,
                     status: filled($status) ? (string) $status : null,
                     dateFrom: filled($dateFrom) ? (string) $dateFrom : null,
@@ -48,13 +48,8 @@ class HubNotificationsTable extends TableWidget
                     search: filled($search) ? $search : null,
                     page: max(1, (int) $page),
                     perPage: $perPage,
-                );
-
-                return $this->buildHubLengthAwarePaginator(
-                    $result,
-                    max(1, (int) $page),
-                    $perPage,
-                );
+                    pageName: $this->getTablePaginationPageName(),
+                )->onEachSide(0);
             })
             ->emptyStateHeading('Нет записей')
             ->emptyStateDescription('Здесь отображается журнал исходящих клиентских уведомлений.')

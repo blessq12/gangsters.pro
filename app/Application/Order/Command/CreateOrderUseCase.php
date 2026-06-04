@@ -4,8 +4,9 @@ namespace App\Application\Order\Command;
 
 use App\Application\Common\Exceptions\ApiException;
 use App\Application\Order\Contracts\CustomerSnapshotProvider;
-use App\Application\Order\Contracts\OrderPlacementContract;
 use App\Application\Order\DTO\CreateOrderDTO;
+use App\Application\Order\DTO\PlaceOrderInputDTO;
+use App\Domain\Order\Enums\OrderSource;
 use App\Application\Order\OrderBaseUseCase;
 use App\Application\Order\Presenter\OrderPresenter;
 use App\Application\Shopping\CartRules\ResolvedCartOrderItemsMapper;
@@ -34,7 +35,7 @@ final class CreateOrderUseCase extends OrderBaseUseCase
         OrderItemsFactory $itemsFactory,
         OrderPresenter $presenter,
         DomainEventBus $events,
-        private readonly OrderPlacementContract $orderPlacement,
+        private readonly PlaceOrderWithChannelUseCase $placeOrder,
         private readonly ShoppingSessionRepositoryInterface $shoppingSessions,
         private readonly ResolveShoppingCartUseCase $resolveShoppingCart,
         private readonly ResolveDeliveryPricing $resolveDeliveryPricing,
@@ -112,15 +113,16 @@ final class CreateOrderUseCase extends OrderBaseUseCase
             ? $this->resolveDeliveryPricing->fromCartState($resolvedCart, $dto->deliveryMethod)
             : $this->resolveDeliveryPricing->fromPlacementRows($items, $dto->deliveryMethod);
 
-        $order = $this->orderPlacement->place(
-            $clientId,
-            $customerSnapshotForOrder,
-            $items,
-            $deliveryInfo,
-            $paymentInfo,
+        $order = $this->placeOrder->execute(new PlaceOrderInputDTO(
+            source: OrderSource::Site,
+            clientId: $clientId,
+            customerSnapshot: $customerSnapshotForOrder,
+            items: $items,
+            deliveryInfo: $deliveryInfo,
+            paymentInfo: $paymentInfo,
             deliveryFeeKopecks: $deliveryPricing->deliveryFeeKopecks,
             deliveryPricingSnapshot: $deliveryPricing->toSnapshotArray(),
-        );
+        ));
 
         if ($shoppingSession !== null) {
             $shoppingSession->clearCart();

@@ -6,7 +6,9 @@ use App\Application\Common\Exceptions\ApiException;
 use App\Application\Operations\Order\DTO\CreateAdminOrderDTO;
 use App\Application\Operations\Order\Query\GetAdminOrderDetailQuery;
 use App\Application\Order\Contracts\CustomerSnapshotProvider;
-use App\Application\Order\Contracts\OrderPlacementContract;
+use App\Application\Order\Command\PlaceOrderWithChannelUseCase;
+use App\Application\Order\DTO\PlaceOrderInputDTO;
+use App\Domain\Order\Enums\OrderSource;
 use App\Application\Shopping\Delivery\ResolveDeliveryPricing;
 use App\Domain\Order\Enums\PaymentStatus;
 use App\Domain\Order\ValueObjects\CustomerSnapshot;
@@ -17,7 +19,7 @@ final class CreateAdminOrderUseCase
 {
     public function __construct(
         private readonly CustomerSnapshotProvider $customerSnapshots,
-        private readonly OrderPlacementContract $orderPlacement,
+        private readonly PlaceOrderWithChannelUseCase $placeOrder,
         private readonly ResolveDeliveryPricing $resolveDeliveryPricing,
         private readonly GetAdminOrderDetailQuery $orderDetail,
     ) {
@@ -67,15 +69,16 @@ final class CreateAdminOrderUseCase
 
         $deliveryPricing = $this->resolveDeliveryPricing->fromPlacementRows($dto->items, $dto->deliveryMethod);
 
-        $order = $this->orderPlacement->place(
-            $clientId,
-            $customerSnapshotForOrder,
-            $dto->items,
-            $deliveryInfo,
-            $paymentInfo,
+        $order = $this->placeOrder->execute(new PlaceOrderInputDTO(
+            source: OrderSource::Admin,
+            clientId: $clientId,
+            customerSnapshot: $customerSnapshotForOrder,
+            items: $dto->items,
+            deliveryInfo: $deliveryInfo,
+            paymentInfo: $paymentInfo,
             deliveryFeeKopecks: $deliveryPricing->deliveryFeeKopecks,
             deliveryPricingSnapshot: $deliveryPricing->toSnapshotArray(),
-        );
+        ));
 
         return $this->orderDetail->execute($order->getId());
     }

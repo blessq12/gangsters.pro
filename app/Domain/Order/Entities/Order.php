@@ -2,6 +2,7 @@
 
 namespace App\Domain\Order\Entities;
 
+use App\Domain\Order\Enums\OrderSource;
 use App\Domain\Order\Exceptions\OrderInvariantViolation;
 use App\Domain\Order\ValueObjects\CustomerSnapshot;
 use App\Domain\Order\ValueObjects\DeliveryInfo;
@@ -33,8 +34,14 @@ class Order
         private \DateTimeImmutable $createdAt,
         private \DateTimeImmutable $updatedAt,
         private ?array $deliveryPricingSnapshot = null,
+        private ?OrderSource $source = null,
     ) {
         $this->assertInvariant();
+    }
+
+    public function getSource(): ?OrderSource
+    {
+        return $this->source;
     }
 
     public function getId(): string

@@ -5,7 +5,7 @@ namespace App\Application\Operations\Order\Command;
 use App\Application\Common\Exceptions\ApiException;
 use App\Application\Operations\Order\DTO\UpdateAdminOrderDto;
 use App\Application\Operations\Order\Query\GetAdminOrderDetailQuery;
-use App\Application\Order\Contracts\OrderApplicationFacadeContract;
+use App\Application\Order\Contracts\OrderExternalLifecycleContract;
 use App\Domain\Order\Repositories\OrderRepositoryInterface;
 use App\Domain\Order\ValueObjects\OrderStatus;
 
@@ -13,7 +13,7 @@ final class UpdateAdminOrderUseCase
 {
     public function __construct(
         private readonly OrderRepositoryInterface $orders,
-        private readonly OrderApplicationFacadeContract $ordersFacade,
+        private readonly OrderExternalLifecycleContract $orderLifecycle,
         private readonly GetAdminOrderDetailQuery $orderDetail,
     ) {}
 
@@ -38,7 +38,7 @@ final class UpdateAdminOrderUseCase
             }
         }
 
-        $updated = $this->ordersFacade->updateOrderItems($dto->orderId, $dto->items);
+        $updated = $this->orderLifecycle->updateOrderItems($dto->orderId, $dto->items);
         if ($updated === null) {
             throw new ApiException('Order not found.', 404);
         }

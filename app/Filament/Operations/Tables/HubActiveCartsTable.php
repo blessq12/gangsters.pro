@@ -3,8 +3,8 @@
 namespace App\Filament\Operations\Tables;
 
 use App\Application\Common\Exceptions\ApiException;
-use App\Application\Operations\Shopping\Query\GetAdminShoppingSessionDetailQuery;
-use App\Application\Operations\Shopping\Query\GetAdminShoppingSessionListQuery;
+use App\Filament\Support\AdminActiveCartSnapshotBuilder;
+use App\Filament\Support\AdminActiveCartsTableQuery;
 use App\Filament\Operations\Concerns\ConfiguresHubTablePagination;
 use App\Filament\Operations\Resources\ClientResource;
 use App\Filament\Operations\Schemas\ActiveCartDetailSchema;
@@ -37,23 +37,12 @@ class HubActiveCartsTable extends TableWidget
             ): LengthAwarePaginator {
                 $perPage = is_numeric($recordsPerPage) ? (int) $recordsPerPage : 25;
 
-                try {
-                    $result = app(GetAdminShoppingSessionListQuery::class)->execute(
-                        search: filled($search) ? $search : null,
-                        page: max(1, (int) $page),
-                        perPage: $perPage,
-                    );
-                } catch (ApiException $exception) {
-                    Notification::make()->title($exception->getMessage())->danger()->send();
-
-                    return $this->buildEmptyHubLengthAwarePaginator($perPage);
-                }
-
-                return $this->buildHubLengthAwarePaginator(
-                    $result,
-                    max(1, (int) $page),
-                    $perPage,
-                );
+                return app(AdminActiveCartsTableQuery::class)->paginate(
+                    search: filled($search) ? $search : null,
+                    page: max(1, (int) $page),
+                    perPage: $perPage,
+                    pageName: $this->getTablePaginationPageName(),
+                )->onEachSide(0);
             })
             ->emptyStateHeading('Нет активных корзин')
             ->emptyStateDescription('Здесь отображаются неистёкшие shopping-сессии с непустой корзиной.')
@@ -99,7 +88,7 @@ class HubActiveCartsTable extends TableWidget
                     ->schema(ActiveCartDetailSchema::components())
                     ->fillForm(function (array $record): array {
                         try {
-                            $snapshot = app(GetAdminShoppingSessionDetailQuery::class)->execute((int) $record['id']);
+                            $snapshot = app(AdminActiveCartSnapshotBuilder::class)->build((int) $record['id']);
 
                             return FilamentActiveCartDetailMapper::toFormState($snapshot);
                         } catch (ApiException $exception) {

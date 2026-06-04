@@ -8,7 +8,7 @@ use App\Application\Operations\Order\Contracts\AdminOrderReadRepository;
 use App\Application\Operations\Order\DTO\UpdateAdminOrderDto;
 use App\Application\Operations\Order\Presenter\AdminOrderPresenter;
 use App\Application\Operations\Order\Query\GetAdminOrderDetailQuery;
-use App\Application\Order\Contracts\OrderApplicationFacadeContract;
+use App\Application\Order\Contracts\OrderExternalLifecycleContract;
 use App\Application\Order\Presenter\OrderPresenter;
 use App\Domain\Order\Entities\Order;
 use App\Domain\Order\Repositories\OrderRepositoryInterface;
@@ -25,12 +25,12 @@ final class UpdateAdminOrderUseCaseTest extends TestCase
         $repo = $this->createMock(OrderRepositoryInterface::class);
         $repo->method('getById')->willReturn($order);
 
-        $facade = $this->createMock(OrderApplicationFacadeContract::class);
-        $facade->expects($this->never())->method('updateOrderItems');
+        $lifecycle = $this->createMock(OrderExternalLifecycleContract::class);
+        $lifecycle->expects($this->never())->method('updateOrderItems');
 
         $useCase = new UpdateAdminOrderUseCase(
             $repo,
-            $facade,
+            $lifecycle,
             new GetAdminOrderDetailQuery(
                 $this->createMock(AdminOrderReadRepository::class),
                 new AdminOrderPresenter(new OrderPresenter),

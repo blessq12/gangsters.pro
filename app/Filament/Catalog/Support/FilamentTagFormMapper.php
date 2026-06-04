@@ -2,34 +2,20 @@
 
 namespace App\Filament\Catalog\Support;
 
-use App\Application\Catalog\DTO\AdminTagDTO;
 use App\Application\Catalog\DTO\CreateAdminTagDTO;
 use App\Application\Catalog\DTO\UpdateAdminTagDTO;
+use App\Infrastructure\Product\Model\PRD_Tag;
 
 final class FilamentTagFormMapper
 {
-    /**
-     * @param  AdminTagDTO|array<string, mixed>  $tag
-     * @return array<string, mixed>
-     */
-    public static function toFormState(AdminTagDTO|array $tag): array
+    public static function toFormState(PRD_Tag $tag): array
     {
-        if ($tag instanceof AdminTagDTO) {
-            return [
-                'label' => $tag->label,
-                'color' => $tag->color,
-                'is_active' => $tag->isActive,
-                'sort_order' => $tag->sortOrder,
-                'code' => $tag->code,
-            ];
-        }
-
         return [
-            'label' => $tag['label'] ?? '',
-            'color' => $tag['color'] ?? 'amber',
-            'is_active' => (bool) ($tag['is_active'] ?? true),
-            'sort_order' => (int) ($tag['sort_order'] ?? 0),
-            'code' => $tag['code'] ?? null,
+            'label' => (string) $tag->label,
+            'color' => (string) ($tag->color ?? 'amber'),
+            'is_active' => (bool) $tag->is_active,
+            'sort_order' => (int) $tag->sort_order,
+            'code' => $tag->code,
         ];
     }
 

@@ -4,7 +4,7 @@ namespace App\Filament\Company\Widgets;
 
 use App\Application\Common\Exceptions\ApiException;
 use App\Application\Site\Command\UpdateAdminSiteSeoSettingsUseCase;
-use App\Application\Site\Query\GetAdminSiteSeoSettingsQuery;
+use App\Filament\Support\AdminSiteSeoReadHelper;
 use App\Filament\Company\Concerns\InteractsWithCompanySettingsForm;
 use App\Filament\Company\Schemas\SiteSeoSettingsForm;
 use App\Filament\Company\Support\FilamentSiteSeoFormMapper;
@@ -39,7 +39,7 @@ class HubCompanySeoPanel extends Widget implements HasActions, HasSchemas
     protected function loadSettingsState(): array
     {
         return FilamentSiteSeoFormMapper::toFormState(
-            app(GetAdminSiteSeoSettingsQuery::class)->execute(),
+            app(AdminSiteSeoReadHelper::class)->settingsState(),
         );
     }
 

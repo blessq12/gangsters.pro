@@ -9,7 +9,6 @@ use App\Application\Operations\Order\Command\MarkOrderPaidByIdUseCase;
 use App\Application\Operations\Order\Command\UpdateAdminOrderUseCase;
 use App\Application\Operations\Order\DTO\ChangeOrderStatusDTO;
 use App\Application\Operations\Order\DTO\UpdateAdminOrderDto;
-use App\Application\Operations\Order\Query\GetAdminOrderDetailQuery;
 use App\Domain\Order\Enums\PaymentStatus;
 use App\Filament\Operations\Resources\OrderResource;
 use App\Filament\Operations\Support\FilamentOrderFormMapper;
@@ -34,9 +33,10 @@ class EditOrder extends EditRecord
      */
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        $detail = app(GetAdminOrderDetailQuery::class)->execute((string) $this->getRecord()->getKey());
+        /** @var \App\Infrastructure\Order\Model\ORD_Order $record */
+        $record = $this->getRecord()->load('items');
 
-        return FilamentOrderFormMapper::toFormState($detail);
+        return FilamentOrderFormMapper::toFormState($record);
     }
 
     protected function getHeaderActions(): array

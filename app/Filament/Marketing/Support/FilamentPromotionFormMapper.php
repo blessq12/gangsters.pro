@@ -3,19 +3,16 @@
 namespace App\Filament\Marketing\Support;
 
 use App\Application\Marketing\Promotion\DTO\SavePromotionDTO;
+use App\Infrastructure\SystemContent\Model\SYS_Promotion;
 
 final class FilamentPromotionFormMapper
 {
-    /**
-     * @param  array<string, mixed>  $detail
-     * @return array<string, mixed>
-     */
-    public static function toFormState(array $detail): array
+    public static function toFormState(SYS_Promotion $promotion): array
     {
         return [
-            'title' => $detail['title'] ?? '',
-            'description' => $detail['description'] ?? null,
-            'image_upload' => self::uploadState($detail['image'] ?? null),
+            'title' => (string) ($promotion->title ?? ''),
+            'description' => $promotion->description,
+            'image_upload' => self::uploadState($promotion->image),
         ];
     }
 

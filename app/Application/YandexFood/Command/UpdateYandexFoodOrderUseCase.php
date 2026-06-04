@@ -3,25 +3,27 @@
 namespace App\Application\YandexFood\Command;
 
 use App\Application\Common\Exceptions\ApiException;
-use App\Application\Order\Contracts\OrderApplicationFacadeContract;
+use App\Application\Order\Contracts\OrderExternalLifecycleContract;
+use App\Application\Order\Contracts\OrderReadContract;
 use App\Application\YandexFood\Acl\YandexFoodOrderContractPresenter;
-use App\Application\YandexFood\Acl\YandexFoodOrderPayloadHelper;
+use App\Application\YandexFood\Acl\YandexFoodOrderPayloadMapper;
 use App\Application\YandexFood\Contracts\YandexFoodOrderMetaStore;
 use App\Application\YandexFood\DTO\YandexUpdateOrderRequestDto;
-use App\Application\YandexFood\YandexFoodBaseUseCase;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-final class UpdateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
+final class UpdateYandexFoodOrderUseCase
 {
     private const FAIL = 'Не удалось обновить заказ';
 
     public function __construct(
-        private readonly OrderApplicationFacadeContract $orders,
+        private readonly OrderReadContract $orders,
+        private readonly OrderExternalLifecycleContract $orderLifecycle,
         private readonly YandexFoodOrderMetaStore $metaStore,
         private readonly YandexFoodOrderContractPresenter $yandexOrderContract,
-    ) {}
+    ) {
+    }
 
     /**
      * @return array<string, mixed>
@@ -29,7 +31,7 @@ final class UpdateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
     public function execute(YandexUpdateOrderRequestDto $dto): array
     {
         try {
-            $existing = $this->orders->findById($dto->id);
+            $existing = $this->orders->findPresentedById($dto->id);
             if ($existing === null) {
                 return [
                     'code' => 100,
@@ -39,19 +41,19 @@ final class UpdateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
 
             $p = $dto->payload;
 
-            if (YandexFoodOrderPayloadHelper::isFullYandexUpdate($p)) {
-                $err = YandexFoodOrderPayloadHelper::validateCreateShape($p, self::FAIL);
+            if (YandexFoodOrderPayloadMapper::isFullYandexUpdate($p)) {
+                $err = YandexFoodOrderPayloadMapper::validateCreateShape($p, self::FAIL);
                 if ($err !== null) {
                     return $err;
                 }
                 $order = $this->buildFullRebuiltOrder($existing, $p);
             } else {
-                if (!isset($p['items']) || !is_array($p['items']) || $p['items'] === []) {
-                    return YandexFoodOrderPayloadHelper::failure(self::FAIL);
+                if (! isset($p['items']) || ! is_array($p['items']) || $p['items'] === []) {
+                    return YandexFoodOrderPayloadMapper::failure(self::FAIL);
                 }
                 foreach ($p['items'] as $item) {
-                    if (!is_array($item) || !isset($item['id'], $item['quantity'], $item['price'])) {
-                        return YandexFoodOrderPayloadHelper::failure(self::FAIL);
+                    if (! is_array($item) || ! isset($item['id'], $item['quantity'], $item['price'])) {
+                        return YandexFoodOrderPayloadMapper::failure(self::FAIL);
                     }
                 }
                 $order = $this->rebuildItemsOnlyOrder((string) $existing['id'], $p['items']);
@@ -61,19 +63,21 @@ final class UpdateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
         } catch (ApiException $e) {
             Log::warning('UpdateYandexFoodOrderUseCase', ['message' => $e->getMessage()]);
 
-            return YandexFoodOrderPayloadHelper::failure(self::FAIL);
+            return YandexFoodOrderPayloadMapper::failure(self::FAIL);
         } catch (Throwable $e) {
             Log::error('UpdateYandexFoodOrderUseCase', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return YandexFoodOrderPayloadHelper::failure(self::FAIL);
+            return YandexFoodOrderPayloadMapper::failure(self::FAIL);
         }
     }
 
     /**
+     * @param  array<string, mixed>  $existing
      * @param  array<string, mixed>  $p
+     * @return array<string, mixed>
      */
     private function buildFullRebuiltOrder(array $existing, array $p): array
     {
@@ -92,7 +96,7 @@ final class UpdateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
 
         $persons = $p['persons'];
         $comment = trim((string) ($p['comment'] ?? ''));
-        $meta = YandexFoodOrderPayloadHelper::buildYandexMeta(
+        $meta = YandexFoodOrderPayloadMapper::buildYandexMeta(
             $eatsId,
             $restaurantId,
             $p['paymentInfo'],
@@ -108,7 +112,7 @@ final class UpdateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
         ];
 
         $existingClientId = isset($existing['client_id']) ? (int) $existing['client_id'] : null;
-        $clientId = YandexFoodOrderPayloadHelper::resolveClientId($p)
+        $clientId = YandexFoodOrderPayloadMapper::resolveClientId($p)
             ?? ($existingClientId !== null && $existingClientId !== 0 ? $existingClientId : null);
         $existingPayment = is_array($existing['payment'] ?? null) ? $existing['payment'] : [];
 
@@ -120,7 +124,7 @@ final class UpdateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
             ];
         }
 
-        $order = $this->orders->updateExternalOrder(
+        $order = $this->orderLifecycle->updateExternalOrder(
             orderId: (string) $existing['id'],
             clientId: $clientId,
             customerName: $clientName,
@@ -144,6 +148,7 @@ final class UpdateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
 
     /**
      * @param  array<int, array<string, mixed>>  $itemsPayload
+     * @return array<string, mixed>
      */
     private function rebuildItemsOnlyOrder(string $orderId, array $itemsPayload): array
     {
@@ -155,7 +160,7 @@ final class UpdateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
             ];
         }
 
-        $order = $this->orders->updateOrderItems(
+        $order = $this->orderLifecycle->updateOrderItems(
             orderId: $orderId,
             items: $lineInputs,
         );

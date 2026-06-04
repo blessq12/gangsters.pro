@@ -6,7 +6,6 @@ use App\Application\Catalog\Command\ActivateCategoryUseCase;
 use App\Application\Catalog\Command\DeactivateCategoryUseCase;
 use App\Application\Catalog\Command\DeleteCategoryUseCase;
 use App\Application\Catalog\Command\UpdateCategoryUseCase;
-use App\Application\Catalog\Query\GetAdminCategoryDetailQuery;
 use App\Application\Common\Exceptions\ApiException;
 use App\Filament\Catalog\Pages\ManageCatalog;
 use App\Filament\Catalog\Resources\CategoryResource;
@@ -31,9 +30,10 @@ class EditCategory extends EditRecord
      */
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        $detail = app(GetAdminCategoryDetailQuery::class)->execute((int) $this->getRecord()->getKey());
+        /** @var \App\Infrastructure\Category\Model\PRD_Category $record */
+        $record = $this->getRecord();
 
-        return FilamentCategoryFormMapper::toFormState($detail);
+        return FilamentCategoryFormMapper::toFormState($record);
     }
 
     protected function getHeaderActions(): array

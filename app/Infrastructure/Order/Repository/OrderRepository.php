@@ -4,6 +4,7 @@ namespace App\Infrastructure\Order\Repository;
 
 use App\Domain\Order\Entities\Order as OrderEntity;
 use App\Domain\Order\Entities\OrderItem as OrderItemEntity;
+use App\Domain\Order\Enums\OrderSource;
 use App\Domain\Order\Repositories\OrderRepositoryInterface;
 use App\Domain\Order\ValueObjects\CustomerSnapshot;
 use App\Domain\Order\ValueObjects\DeliveryInfo;
@@ -46,6 +47,7 @@ class OrderRepository implements OrderRepositoryInterface
 
         $model->id = $order->getId();
         $model->client_id = $order->getClientId();
+        $model->source = $order->getSource()?->value;
         $model->status = $order->getStatus()->value;
         $model->subtotal = $order->getSubtotal();
         $model->discount_total = $order->getDiscountTotal();
@@ -157,6 +159,10 @@ class OrderRepository implements OrderRepositoryInterface
             ? DateTimeImmutable::createFromInterface($model->updated_at)
             : $createdAt;
 
+        $source = filled($model->source)
+            ? OrderSource::tryFrom((string) $model->source)
+            : null;
+
         return new OrderEntity(
             id: $model->id,
             clientId: $model->client_id !== null ? (int) $model->client_id : null,
@@ -172,6 +178,7 @@ class OrderRepository implements OrderRepositoryInterface
             createdAt: $createdAt,
             updatedAt: $updatedAt,
             deliveryPricingSnapshot: $model->delivery_pricing_snapshot,
+            source: $source,
         );
     }
 }

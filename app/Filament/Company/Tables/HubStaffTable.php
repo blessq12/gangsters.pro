@@ -4,9 +4,9 @@ namespace App\Filament\Company\Tables;
 
 use App\Application\Common\Exceptions\ApiException;
 use App\Application\Company\Staff\Command\DeleteAdminUserUseCase;
-use App\Application\Company\Staff\Query\GetAdminStaffListQuery;
 use App\Filament\Company\Resources\StaffUserResource;
 use App\Filament\Support\AdminActionVisibility;
+use App\Models\User;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
@@ -16,6 +16,7 @@ use App\Domain\Admin\Enums\AdminRole;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class HubStaffTable extends TableWidget
@@ -34,16 +35,24 @@ class HubStaffTable extends TableWidget
                 int|string $recordsPerPage,
             ): LengthAwarePaginator {
                 $perPage = is_numeric($recordsPerPage) ? (int) $recordsPerPage : 25;
+                $query = User::query()
+                    ->whereNotNull('admin_role')
+                    ->orderByDesc('id');
 
-                $result = app(GetAdminStaffListQuery::class)->execute(
-                    search: filled($search) ? $search : null,
-                    page: max(1, (int) $page),
-                    perPage: $perPage,
-                );
+                if (filled($search)) {
+                    $query->where(function (Builder $builder) use ($search): void {
+                        $builder
+                            ->where('name', 'like', '%'.$search.'%')
+                            ->orWhere('email', 'like', '%'.$search.'%')
+                            ->orWhere('tel', 'like', '%'.$search.'%');
+                    });
+                }
+
+                $paginator = $query->paginate(perPage: $perPage, page: max(1, (int) $page));
 
                 return new LengthAwarePaginator(
-                    collect($result['items'])->keyBy('id'),
-                    $result['total'],
+                    collect($paginator->items())->keyBy('id'),
+                    $paginator->total(),
                     $perPage,
                     max(1, (int) $page),
                     ['path' => request()->url(), 'pageName' => $this->getTablePaginationPageName()],
@@ -55,31 +64,26 @@ class HubStaffTable extends TableWidget
                 TextColumn::make('tel')->label('Телефон'),
                 TextColumn::make('admin_role')
                     ->label('Роль')
-                    ->formatStateUsing(fn (?string $state): string => AdminRole::tryFrom((string) $state)?->label() ?? '—'),
+                    ->formatStateUsing(fn (?AdminRole $state): string => $state?->label() ?? '—'),
             ])
             ->searchable()
             ->headerActions([
                 CreateAction::make()
                     ->url(StaffUserResource::getUrl('create'))
-                    ->visible(fn (): bool => AdminActionVisibility::canManageStaff()),
+                    ->visible(fn (): bool => AdminActionVisibility::canMutate()),
             ])
             ->recordActions([
                 EditAction::make()
-                    ->url(fn (array $record): string => StaffUserResource::getUrl('edit', ['record' => $record['id']])),
+                    ->url(fn (User $record): string => StaffUserResource::getUrl('edit', ['record' => $record->getKey()])),
                 Action::make('delete')
                     ->label('Удалить')
                     ->icon(Heroicon::OutlinedTrash)
                     ->color('danger')
-                    ->visible(fn (array $record): bool => AdminActionVisibility::canManageStaff()
-                        && (int) $record['id'] !== (int) auth()->id())
+                    ->visible(fn (): bool => AdminActionVisibility::canMutate())
                     ->requiresConfirmation()
-                    ->modalDescription(fn (array $record): string => 'Сотрудник «'.($record['name'] ?? '—').'» будет удалён безвозвратно.')
-                    ->action(function (array $record): void {
+                    ->action(function (User $record): void {
                         try {
-                            app(DeleteAdminUserUseCase::class)->execute(
-                                (int) $record['id'],
-                                (int) auth()->id(),
-                            );
+                            app(DeleteAdminUserUseCase::class)->execute((int) $record->getKey());
                             Notification::make()->title('Сотрудник удалён')->success()->send();
                         } catch (ApiException $exception) {
                             Notification::make()->title($exception->getMessage())->danger()->send();

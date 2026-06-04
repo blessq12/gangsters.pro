@@ -4,9 +4,9 @@ namespace App\Filament\Company\Tables;
 
 use App\Application\Common\Exceptions\ApiException;
 use App\Application\Company\Content\Document\Command\DeleteDocumentUseCase;
-use App\Application\Company\Content\Document\Query\GetAdminDocumentListQuery;
 use App\Filament\Company\Resources\DocumentResource;
 use App\Filament\Support\AdminActionVisibility;
+use App\Infrastructure\SystemContent\Model\SYS_Document;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
@@ -16,7 +16,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
-use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 class HubDocumentsTable extends TableWidget
 {
@@ -27,22 +27,16 @@ class HubDocumentsTable extends TableWidget
     public function table(Table $table): Table
     {
         return $table
-            ->records(function (): LengthAwarePaginator {
-                $items = app(GetAdminDocumentListQuery::class)->execute();
-
-                return new LengthAwarePaginator(
-                    collect($items)->keyBy('id'),
-                    count($items),
-                    max(count($items), 1),
-                    1,
-                    ['path' => request()->url(), 'pageName' => $this->getTablePaginationPageName()],
-                );
-            })
+            ->records(fn (): Collection => SYS_Document::query()
+                ->orderBy('key')
+                ->get()
+                ->keyBy('id'))
             ->columns([
                 TextColumn::make('key')->label('Ключ'),
                 TextColumn::make('title')->label('Заголовок'),
                 IconColumn::make('is_active')->label('Активен')->boolean(),
             ])
+            ->paginated(false)
             ->headerActions([
                 CreateAction::make()
                     ->url(DocumentResource::getUrl('create'))
@@ -50,17 +44,17 @@ class HubDocumentsTable extends TableWidget
             ])
             ->recordActions([
                 EditAction::make()
-                    ->url(fn (array $record): string => DocumentResource::getUrl('edit', ['record' => $record['id']])),
+                    ->url(fn (SYS_Document $record): string => DocumentResource::getUrl('edit', ['record' => $record->getKey()])),
                 Action::make('delete')
                     ->label('Удалить')
                     ->icon(Heroicon::OutlinedTrash)
                     ->color('danger')
                     ->visible(fn (): bool => AdminActionVisibility::canMutate())
                     ->requiresConfirmation()
-                    ->modalDescription(fn (array $record): string => 'Документ «'.($record['title'] ?? '—').'» будет удалён безвозвратно.')
-                    ->action(function (array $record): void {
+                    ->modalDescription(fn (SYS_Document $record): string => 'Документ «'.($record->title ?? '—').'» будет удалён безвозвратно.')
+                    ->action(function (SYS_Document $record): void {
                         try {
-                            app(DeleteDocumentUseCase::class)->execute((int) $record['id']);
+                            app(DeleteDocumentUseCase::class)->execute((int) $record->getKey());
                             Notification::make()->title('Документ удалён')->success()->send();
                         } catch (ApiException $exception) {
                             Notification::make()->title($exception->getMessage())->danger()->send();

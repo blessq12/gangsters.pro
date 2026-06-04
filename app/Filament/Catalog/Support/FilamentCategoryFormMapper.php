@@ -4,22 +4,17 @@ namespace App\Filament\Catalog\Support;
 
 use App\Application\Catalog\DTO\CreateCategoryDTO;
 use App\Application\Catalog\DTO\UpdateCategoryDTO;
+use App\Infrastructure\Category\Model\PRD_Category;
 
 final class FilamentCategoryFormMapper
 {
-    /**
-     * @param  array<string, mixed>  $detail
-     * @return array<string, mixed>
-     */
-    public static function toFormState(array $detail): array
+    public static function toFormState(PRD_Category $category): array
     {
-        $category = $detail['category'] ?? $detail;
-
         return [
-            'name' => $category['name'] ?? '',
-            'sort_order' => (int) ($category['sort_order'] ?? 0),
-            'is_active' => (bool) ($category['is_active'] ?? true),
-            'slug' => $category['slug'] ?? null,
+            'name' => (string) $category->name,
+            'sort_order' => (int) $category->sort_order,
+            'is_active' => (bool) $category->is_active,
+            'slug' => $category->slug,
         ];
     }
 

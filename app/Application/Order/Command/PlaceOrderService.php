@@ -5,6 +5,7 @@ namespace App\Application\Order\Command;
 use App\Application\Order\Contracts\OrderPlacementContract;
 use App\Application\Order\Events\OrderCreatedIntegrationEvent;
 use App\Domain\Order\Entities\Order;
+use App\Domain\Order\Enums\OrderSource;
 use App\Domain\Order\Events\OrderCreated;
 use App\Domain\Order\Factories\OrderFactory;
 use App\Domain\Order\Factories\OrderItemsFactory;
@@ -32,6 +33,7 @@ final class PlaceOrderService implements OrderPlacementContract
         array $items,
         DeliveryInfo $deliveryInfo,
         PaymentInfo $paymentInfo,
+        OrderSource $source = OrderSource::Site,
         int $deliveryFeeKopecks = 0,
         ?array $deliveryPricingSnapshot = null,
     ): Order {
@@ -48,6 +50,7 @@ final class PlaceOrderService implements OrderPlacementContract
             paymentInfo: $paymentInfo,
             deliveryFeeKopecks: $deliveryFeeKopecks,
             deliveryPricingSnapshot: $deliveryPricingSnapshot,
+            source: $source,
         );
 
         $this->orders->save($order);

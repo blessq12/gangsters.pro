@@ -4,7 +4,7 @@ namespace App\Filament\Operations\Widgets;
 
 use App\Application\Common\Exceptions\ApiException;
 use App\Application\Operations\Delivery\Command\UpdateAdminDeliverySettingsUseCase;
-use App\Application\Operations\Delivery\Query\GetAdminDeliverySettingsQuery;
+use App\Filament\Support\AdminCompanyReadHelper;
 use App\Filament\Operations\Concerns\InteractsWithOperationsSettingsForm;
 use App\Filament\Operations\Schemas\DeliveryZoneSettingsForm;
 use App\Filament\Operations\Support\FilamentDeliveryZoneFormMapper;
@@ -39,7 +39,7 @@ class HubDeliveryZonePanel extends Widget implements HasActions, HasSchemas
     protected function loadSettingsState(): array
     {
         return FilamentDeliveryZoneFormMapper::toFormState(
-            app(GetAdminDeliverySettingsQuery::class)->execute(),
+            app(AdminCompanyReadHelper::class)->deliverySettingsState(),
         );
     }
 

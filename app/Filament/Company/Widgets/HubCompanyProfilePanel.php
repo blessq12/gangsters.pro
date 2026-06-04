@@ -5,7 +5,7 @@ namespace App\Filament\Company\Widgets;
 use App\Application\Common\Exceptions\ApiException;
 use App\Application\Company\Contracts\CompanyLogoStoragePort;
 use App\Application\Company\Profile\Command\UpdateAdminCompanyProfileUseCase;
-use App\Application\Company\Profile\Query\GetAdminCompanyProfileQuery;
+use App\Filament\Support\AdminCompanyReadHelper;
 use App\Filament\Company\Concerns\InteractsWithCompanySettingsForm;
 use App\Filament\Company\Schemas\CompanyProfileSettingsForm;
 use App\Filament\Company\Support\FilamentCompanyProfileFormMapper;
@@ -43,7 +43,7 @@ class HubCompanyProfilePanel extends Widget implements HasActions, HasSchemas
     protected function loadSettingsState(): array
     {
         return FilamentCompanyProfileFormMapper::toFormState(
-            app(GetAdminCompanyProfileQuery::class)->execute(),
+            app(AdminCompanyReadHelper::class)->profileState(),
         );
     }
 

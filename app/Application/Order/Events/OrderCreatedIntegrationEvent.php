@@ -18,6 +18,7 @@ final class OrderCreatedIntegrationEvent implements IntegrationEvent
         public readonly int $total,
         public readonly array $items,
         public readonly ?string $createdAt,
+        public readonly ?string $source = null,
     ) {
     }
 
@@ -39,6 +40,7 @@ final class OrderCreatedIntegrationEvent implements IntegrationEvent
                 $order->getItems(),
             ),
             createdAt: $order->getCreatedAt()?->format(DATE_ATOM),
+            source: $order->getSource()?->value,
         );
     }
 }

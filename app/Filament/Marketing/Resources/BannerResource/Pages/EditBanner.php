@@ -5,7 +5,6 @@ namespace App\Filament\Marketing\Resources\BannerResource\Pages;
 use App\Application\Common\Exceptions\ApiException;
 use App\Application\Marketing\Banner\Command\DeleteBannerUseCase;
 use App\Application\Marketing\Banner\Command\SaveBannerUseCase;
-use App\Application\Marketing\Banner\Query\GetAdminBannerDetailQuery;
 use App\Filament\Marketing\Concerns\ResolvesMarketingBannerUploads;
 use App\Filament\Marketing\Pages\ManageMarketing;
 use App\Filament\Marketing\Resources\BannerResource;
@@ -52,13 +51,14 @@ class EditBanner extends EditRecord
      */
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        $detail = app(GetAdminBannerDetailQuery::class)->execute((int) $this->getRecord()->getKey());
+        /** @var \App\Infrastructure\SystemContent\Model\SYS_Banner $record */
+        $record = $this->getRecord();
         $this->existingImagePaths = [
-            'image_mobile' => $detail['image_mobile'] ?? $detail['image'] ?? null,
-            'image_desktop' => $detail['image_desktop'] ?? $detail['image'] ?? null,
+            'image_mobile' => $record->image_mobile ?? $record->image,
+            'image_desktop' => $record->image_desktop ?? $record->image,
         ];
 
-        return FilamentBannerFormMapper::toFormState($detail);
+        return FilamentBannerFormMapper::toFormState($record);
     }
 
     /**

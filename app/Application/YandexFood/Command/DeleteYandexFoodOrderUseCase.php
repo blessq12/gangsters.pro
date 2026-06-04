@@ -2,19 +2,21 @@
 
 namespace App\Application\YandexFood\Command;
 
-use App\Application\Order\Contracts\OrderApplicationFacadeContract;
+use App\Application\Order\Contracts\OrderExternalLifecycleContract;
+use App\Application\Order\Contracts\OrderReadContract;
 use App\Application\YandexFood\Acl\YandexFoodOrderContractPresenter;
 use App\Application\YandexFood\DTO\YandexDeleteOrderRequestDto;
-use App\Application\YandexFood\YandexFoodBaseUseCase;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-final class DeleteYandexFoodOrderUseCase extends YandexFoodBaseUseCase
+final class DeleteYandexFoodOrderUseCase
 {
     public function __construct(
-        private readonly OrderApplicationFacadeContract $orders,
+        private readonly OrderReadContract $orders,
+        private readonly OrderExternalLifecycleContract $orderLifecycle,
         private readonly YandexFoodOrderContractPresenter $yandexOrderContract,
-    ) {}
+    ) {
+    }
 
     /**
      * @return array<string, mixed>
@@ -22,7 +24,7 @@ final class DeleteYandexFoodOrderUseCase extends YandexFoodBaseUseCase
     public function execute(YandexDeleteOrderRequestDto $dto): array
     {
         try {
-            $order = $this->orders->findById($dto->orderId);
+            $order = $this->orders->findPresentedById($dto->orderId);
             if ($order === null) {
                 return [
                     'code' => 100,
@@ -41,7 +43,7 @@ final class DeleteYandexFoodOrderUseCase extends YandexFoodBaseUseCase
                 }
             }
 
-            $cancelled = $this->orders->cancelById((string) $order['id']);
+            $cancelled = $this->orderLifecycle->cancelById((string) $order['id']);
             if (! $cancelled) {
                 return [
                     'code' => 100,

@@ -3,10 +3,10 @@
 namespace App\Filament\Catalog\Tables;
 
 use App\Application\Catalog\Command\DeleteCategoryUseCase;
-use App\Application\Catalog\Query\GetAdminCategoryListQuery;
 use App\Application\Common\Exceptions\ApiException;
 use App\Filament\Catalog\Resources\CategoryResource;
 use App\Filament\Support\AdminActionVisibility;
+use App\Infrastructure\Category\Model\PRD_Category;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
@@ -27,11 +27,11 @@ class HubCategoriesTable extends TableWidget
     public function table(Table $table): Table
     {
         return $table
-            ->records(function (): Collection {
-                $items = app(GetAdminCategoryListQuery::class)->execute();
-
-                return collect($items)->keyBy('id');
-            })
+            ->records(fn (): Collection => PRD_Category::query()
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get()
+                ->keyBy('id'))
             ->columns([
                 TextColumn::make('name')
                     ->label('Название')
@@ -48,16 +48,16 @@ class HubCategoriesTable extends TableWidget
             ->paginated(false)
             ->recordActions([
                 EditAction::make()
-                    ->url(fn (array $record): string => CategoryResource::getUrl('edit', ['record' => $record['id']])),
+                    ->url(fn (PRD_Category $record): string => CategoryResource::getUrl('edit', ['record' => $record->getKey()])),
                 Action::make('delete')
                     ->label('Удалить')
                     ->icon(Heroicon::OutlinedTrash)
                     ->color('danger')
                     ->visible(fn (): bool => AdminActionVisibility::canMutate())
                     ->requiresConfirmation()
-                    ->action(function (array $record): void {
+                    ->action(function (PRD_Category $record): void {
                         try {
-                            app(DeleteCategoryUseCase::class)->execute((int) $record['id']);
+                            app(DeleteCategoryUseCase::class)->execute((int) $record->getKey());
                             Notification::make()->title('Категория удалена')->success()->send();
                         } catch (ApiException $exception) {
                             Notification::make()->title($exception->getMessage())->danger()->send();

@@ -4,7 +4,6 @@ namespace App\Filament\Catalog\Resources\TagResource\Pages;
 
 use App\Application\Catalog\Command\DeleteTagUseCase;
 use App\Application\Catalog\Command\UpdateAdminTagUseCase;
-use App\Application\Catalog\Query\GetAdminTagDetailQuery;
 use App\Application\Common\Exceptions\ApiException;
 use App\Filament\Catalog\Pages\ManageCatalog;
 use App\Filament\Catalog\Resources\TagResource;
@@ -44,9 +43,10 @@ class EditTag extends EditRecord
      */
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        $tag = app(GetAdminTagDetailQuery::class)->execute((int) $this->getRecord()->getKey());
+        /** @var \App\Infrastructure\Product\Model\PRD_Tag $record */
+        $record = $this->getRecord();
 
-        return FilamentTagFormMapper::toFormState($tag);
+        return FilamentTagFormMapper::toFormState($record);
     }
 
     /**

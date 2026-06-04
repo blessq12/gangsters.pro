@@ -3,34 +3,23 @@
 namespace App\Application\YandexFood\Command;
 
 use App\Application\Common\Exceptions\ApiException;
-use App\Application\Order\Contracts\OrderApplicationFacadeContract;
+use App\Application\Order\Contracts\OrderExternalLifecycleContract;
 use App\Application\YandexFood\Acl\YandexFoodOrderContractPresenter;
-use App\Application\YandexFood\Acl\YandexFoodOrderPayloadHelper;
+use App\Application\YandexFood\Acl\YandexFoodOrderPayloadMapper;
 use App\Application\YandexFood\Contracts\YandexFoodOrderMetaStore;
 use App\Application\YandexFood\DTO\YandexCreateOrderRequestDto;
-use App\Application\YandexFood\YandexFoodBaseUseCase;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-/**
- * Вертикаль (как у {@see \App\Application\Order\Command\CreateOrderUseCase}):
- * HTTP payload Еды → валидация формы → слепок клиента (клиент из БД или гость) →
- * {@see OrderItemsFactory::buildItemsData()} (цены/снимки из доменного каталога) →
- * {@see DeliveryInfo} + {@see PaymentInfo} → выравнивание адреса в {@see CustomerSnapshot} →
- * {@see OrderFactory::create()} → {@see OrderRepositoryInterface::save()} →
- * {@see OrderCreated} → {@see YandexFoodOrderContractPresenter::presentCreateSuccess()}.
- *
- * Отличия входа: нет {@see \App\Application\Order\DTO\CreateOrderDTO}, данные из JSON Яндекса;
- * при отсутствии client_id имя/телефон берутся из deliveryInfo (у гостя в SPA они остаются из forGuest()).
- */
-final class CreateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
+final class CreateYandexFoodOrderUseCase
 {
     public function __construct(
-        private readonly OrderApplicationFacadeContract $orders,
+        private readonly OrderExternalLifecycleContract $orderLifecycle,
         private readonly YandexFoodOrderMetaStore $metaStore,
         private readonly YandexFoodOrderContractPresenter $yandexOrderContract,
-    ) {}
+    ) {
+    }
 
     /**
      * @return array<string, mixed>
@@ -41,7 +30,7 @@ final class CreateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
         Log::info('CreateYandexFoodOrderUseCase', ['data' => json_encode($data, JSON_UNESCAPED_UNICODE)]);
 
         try {
-            $error = YandexFoodOrderPayloadHelper::validateCreateShape(
+            $error = YandexFoodOrderPayloadMapper::validateCreateShape(
                 $data,
                 'Не удалось создать заказ',
             );
@@ -64,7 +53,7 @@ final class CreateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
 
             $persons = $data['persons'];
             $comment = trim((string) ($data['comment'] ?? ''));
-            $meta = YandexFoodOrderPayloadHelper::buildYandexMeta(
+            $meta = YandexFoodOrderPayloadMapper::buildYandexMeta(
                 $eatsId,
                 $restaurantId,
                 $data['paymentInfo'],
@@ -79,7 +68,7 @@ final class CreateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
                 'delivery_at' => $deliveryDate,
             ];
 
-            $clientId = YandexFoodOrderPayloadHelper::resolveClientId($data);
+            $clientId = YandexFoodOrderPayloadMapper::resolveClientId($data);
 
             $lineInputs = array_map(
                 static fn (array $item): array => [
@@ -89,7 +78,7 @@ final class CreateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
                 $data['items'],
             );
 
-            $order = $this->orders->placeExternalOrder(
+            $order = $this->orderLifecycle->placeExternalOrder(
                 clientId: $clientId,
                 customerName: $clientName,
                 customerPhone: $phoneNumber,
@@ -101,21 +90,21 @@ final class CreateYandexFoodOrderUseCase extends YandexFoodBaseUseCase
                 paymentStatus: 'unpaid',
                 items: $lineInputs,
             );
+
             $this->metaStore->upsert((string) $order['id'], $meta);
 
             return $this->yandexOrderContract->presentCreateSuccess($order);
         } catch (ApiException $e) {
             Log::warning('CreateYandexFoodOrderUseCase', ['message' => $e->getMessage()]);
 
-            return YandexFoodOrderPayloadHelper::failure('Не удалось создать заказ');
+            return YandexFoodOrderPayloadMapper::failure('Не удалось создать заказ');
         } catch (Throwable $e) {
             Log::error('CreateYandexFoodOrderUseCase', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return YandexFoodOrderPayloadHelper::failure('Не удалось создать заказ');
+            return YandexFoodOrderPayloadMapper::failure('Не удалось создать заказ');
         }
     }
-
 }

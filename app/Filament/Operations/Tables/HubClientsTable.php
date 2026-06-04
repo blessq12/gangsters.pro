@@ -3,7 +3,7 @@
 namespace App\Filament\Operations\Tables;
 
 use App\Application\Common\Exceptions\ApiException;
-use App\Application\Operations\Client\Query\GetAdminClientListQuery;
+use App\Filament\Support\AdminClientTableQuery;
 use App\Filament\Operations\Concerns\ConfiguresHubTablePagination;
 use App\Filament\Operations\Resources\ClientResource;
 use Filament\Actions\CreateAction;
@@ -33,23 +33,12 @@ class HubClientsTable extends TableWidget
             ): LengthAwarePaginator {
                 $perPage = is_numeric($recordsPerPage) ? (int) $recordsPerPage : 25;
 
-                try {
-                    $result = app(GetAdminClientListQuery::class)->execute(
-                        search: filled($search) ? $search : null,
-                        page: max(1, (int) $page),
-                        perPage: $perPage,
-                    );
-                } catch (ApiException $exception) {
-                    Notification::make()->title($exception->getMessage())->danger()->send();
-
-                    return $this->buildEmptyHubLengthAwarePaginator($perPage);
-                }
-
-                return $this->buildHubLengthAwarePaginator(
-                    $result,
-                    max(1, (int) $page),
-                    $perPage,
-                );
+                return app(AdminClientTableQuery::class)->paginate(
+                    search: filled($search) ? $search : null,
+                    page: max(1, (int) $page),
+                    perPage: $perPage,
+                    pageName: $this->getTablePaginationPageName(),
+                )->onEachSide(0);
             })
             ->columns([
                 TextColumn::make('id')

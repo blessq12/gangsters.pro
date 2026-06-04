@@ -41,7 +41,7 @@ alwaysApply: false
 ## Read-repository / Reader (Application)
 
 - Контракт: `App\Application\...\Contracts\*` или `...\Query\*`.
-- Имя: `EloquentAdmin{Entity}ReadRepository`, `Admin{Entity}ReadRepository`, `Eloquent{Feature}Reader`.
+- Имя: `EloquentAdmin{Entity}ReadRepository`, `Eloquent{Feature}Reader` (admin hub read — в Filament/Support, не отдельный read-repo на каждый экран).
 - Допустимы Eloquent-фильтры + paginate; для полного агрегата — делегировать Domain write-repo, не дублировать маппинг.
 - Возврат: DTO Application или Domain entity/read model — как в контракте, **не** Eloquent.
 
@@ -65,7 +65,7 @@ alwaysApply: false
 |----------|--------|
 | Model | `{PREFIX}_{Name}` |
 | Domain repo | `Eloquent{Name}Repository` |
-| Admin read | `EloquentAdmin{Name}ReadRepository` |
+| Admin read (UseCase internal) | `EloquentAdmin{Name}ReadRepository` — hub UI read в `app/Filament/Support/*`, не новый read-repo на экран |
 | Listener | `On{Event}` |
 | Guard | `Eloquent{Entity}DeletionGuard` |
 

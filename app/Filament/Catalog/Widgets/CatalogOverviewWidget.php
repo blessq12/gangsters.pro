@@ -2,7 +2,7 @@
 
 namespace App\Filament\Catalog\Widgets;
 
-use App\Application\Catalog\Query\GetAdminCatalogOverviewQuery;
+use App\Filament\Support\AdminCatalogOverviewReadHelper;
 use Filament\Widgets\Widget;
 
 class CatalogOverviewWidget extends Widget
@@ -19,7 +19,7 @@ class CatalogOverviewWidget extends Widget
     protected function getViewData(): array
     {
         return [
-            'categories' => app(GetAdminCatalogOverviewQuery::class)->execute()['categories'],
+            'categories' => app(AdminCatalogOverviewReadHelper::class)->categoryNodes(),
         ];
     }
 }
