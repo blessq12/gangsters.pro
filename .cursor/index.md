@@ -24,6 +24,20 @@ import docs/catalog/events.md
 
 ******** Catalog **********
 
+******** Delivery **********
+
+import docs/delivery/overview.md
+import docs/delivery/routing.md
+import docs/delivery/http.md
+import docs/delivery/application.md
+import docs/delivery/domain.md
+import docs/delivery/infrastructure.md
+import docs/delivery/filament.md
+import docs/delivery/flow.md
+import docs/delivery/events.md
+
+******** Delivery **********
+
 <!-- Другие BC подключать по тому же шаблону:
 
 ******** Order **********
