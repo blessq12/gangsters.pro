@@ -90,6 +90,7 @@ onMounted(() => {
         systemStore.fetchAll(),
         companyStore.fetchAll(),
         deliveryStore.fetchAll(),
+        catalogStore.fetchAll(),
     ]);
     startIntroScene();
 });

@@ -1,8 +1,17 @@
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
+import { useCatalogReadModel } from "../../features/catalog/useCatalogReadModel";
 import { useCatalogStore } from "../../stores/catalogStore";
 
 export function useCatalogPageModel() {
     const catalogStore = useCatalogStore();
+    const {
+        menuSections,
+        menuProducts,
+        categoryTabs,
+        tagTabs,
+        loading,
+    } = useCatalogReadModel({ autoload: true });
+
     const showProductDetailModal = ref(false);
 
     const openProductDetail = (product) => {
@@ -13,12 +22,6 @@ export function useCatalogPageModel() {
     watch(showProductDetailModal, (isOpen) => {
         if (!isOpen) {
             catalogStore.setSelectedProduct(null);
-        }
-    });
-
-    onMounted(() => {
-        if (!catalogStore.hasLoaded && !catalogStore.loading) {
-            catalogStore.fetchCatalog();
         }
     });
 
@@ -44,12 +47,7 @@ export function useCatalogPageModel() {
         set: (value) => catalogStore.setMobileCardViewMode(value),
     });
 
-    const menuSections = computed(() => catalogStore.menuSections);
-    const menuProducts = computed(() => catalogStore.menuProducts);
-    const categoryTabs = computed(() => catalogStore.categoryTabs);
-    const tagTabs = computed(() => catalogStore.tagTabs);
     const selectedProduct = computed(() => catalogStore.selectedProduct);
-    const loading = computed(() => catalogStore.loading);
 
     const catalogEmptyMessage = computed(() =>
         catalogStore.productSearchQuery.trim()
@@ -77,4 +75,3 @@ export function useCatalogPageModel() {
         clearSearch,
     };
 }
-

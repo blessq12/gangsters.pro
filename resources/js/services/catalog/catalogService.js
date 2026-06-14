@@ -1,18 +1,22 @@
 import { fetchCatalogRequest } from "../../api/catalogApi";
 import {
     normalizeCatalogCategory,
-    normalizeCatalogProduct,
+    normalizeCatalogItem,
 } from "../../domain/catalog/catalogMappers";
 
 export async function fetchCatalogTree() {
     const payload = await fetchCatalogRequest();
-    const rawCategories = Array.isArray(payload?.categories) ? payload.categories : [];
+    const rawCategories = Array.isArray(payload?.categories)
+        ? payload.categories
+        : [];
 
     const mapped = rawCategories.map((item) => {
-        const products = Array.isArray(item?.products) ? item.products : [];
+        const rawItems = Array.isArray(item?.items) ? item.items : [];
         return {
             category: normalizeCatalogCategory(item?.category),
-            products: products.map((p) => normalizeCatalogProduct(p)).filter(Boolean),
+            products: rawItems
+                .map((row) => normalizeCatalogItem(row))
+                .filter(Boolean),
         };
     });
 
@@ -20,4 +24,3 @@ export async function fetchCatalogTree() {
         (a, b) => (a.category.sort_order ?? 0) - (b.category.sort_order ?? 0),
     );
 }
-

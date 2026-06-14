@@ -30,44 +30,79 @@ function normalizeProductTags(rawTags) {
         .filter(Boolean);
 }
 
+/**
+ * @param {unknown} price
+ * @returns {number}
+ */
+export function parseCatalogPriceRubles(price) {
+    if (price == null) return 0;
+    if (typeof price === "number" && Number.isFinite(price)) {
+        return roundRubles2(price);
+    }
+    if (typeof price === "object" && price.amount != null) {
+        const n = Number(price.amount);
+        return Number.isFinite(n) ? roundRubles2(n) : 0;
+    }
+    return 0;
+}
+
+/**
+ * @param {unknown} apiImages
+ * @returns {{ imageUrl: string|null, imageSrcset: Array<{ url: string, width: number }> }}
+ */
+function normalizeCatalogImages(apiImages) {
+    if (!Array.isArray(apiImages) || apiImages.length === 0) {
+        return { imageUrl: null, imageSrcset: [] };
+    }
+
+    const firstImage = apiImages[0];
+    if (!firstImage || !Array.isArray(firstImage.variants)) {
+        return { imageUrl: null, imageSrcset: [] };
+    }
+
+    const variants = firstImage.variants;
+    const bySize = (size) =>
+        variants.find(
+            (v) => v && typeof v === "object" && v.size === size && v.path,
+        );
+    const thumb = bySize("thumb");
+    const medium = bySize("medium");
+    const large = bySize("large");
+    const ordered = [thumb, medium, large].filter(Boolean);
+
+    if (!ordered.length) {
+        return { imageUrl: null, imageSrcset: [] };
+    }
+
+    const imageSrcset = ordered
+        .map((v) => ({
+            url: toCatalogStorageUrl(v.path),
+            width:
+                Number(v.width) ||
+                (v.size === "thumb" ? 300 : v.size === "medium" ? 800 : 1200),
+        }))
+        .filter((entry) => entry.url);
+
+    const imageUrl = toCatalogStorageUrl(ordered[ordered.length - 1].path);
+
+    return {
+        imageUrl: imageUrl || null,
+        imageSrcset,
+    };
+}
+
+/**
+ * @param {unknown} apiProduct
+ * @returns {object|null}
+ */
 export function normalizeCatalogProduct(apiProduct) {
     if (!apiProduct || typeof apiProduct !== "object") return null;
 
     const id = apiProduct.id ?? null;
     if (!id) return null;
 
-    const rawPrice = Number(apiProduct.price);
-    const price = Number.isFinite(rawPrice) ? roundRubles2(rawPrice) : 0;
-
-    let imageUrl = null;
-    let imageSrcset = [];
-    if (Array.isArray(apiProduct.images) && apiProduct.images.length) {
-        const firstImage = apiProduct.images[0];
-        if (firstImage && Array.isArray(firstImage.variants)) {
-            const variants = firstImage.variants;
-            const bySize = (size) =>
-                variants.find(
-                    (v) => v && typeof v === "object" && v.size === size && v.path,
-                );
-            const thumb = bySize("thumb");
-            const medium = bySize("medium");
-            const large = bySize("large");
-            const ordered = [thumb, medium, large].filter(Boolean);
-
-            if (ordered.length) {
-                imageSrcset = ordered
-                    .map((v) => ({
-                        url: toCatalogStorageUrl(v.path),
-                        width:
-                            Number(v.width) ||
-                            (v.size === "thumb" ? 300 : v.size === "medium" ? 800 : 1200),
-                    }))
-                    .filter((e) => e.url);
-
-                imageUrl = toCatalogStorageUrl(ordered[ordered.length - 1].path);
-            }
-        }
-    }
+    const price = parseCatalogPriceRubles(apiProduct.price);
+    const { imageUrl, imageSrcset } = normalizeCatalogImages(apiProduct.images);
 
     const derivedWeight =
         extractWeightGrams(apiProduct.weight ?? apiProduct.description) ||
@@ -86,6 +121,8 @@ export function normalizeCatalogProduct(apiProduct) {
 
     return {
         id,
+        kind: "product",
+        slug: String(apiProduct.slug || "").trim(),
         name: apiProduct.name || "",
         price,
         weight: derivedWeight,
@@ -95,6 +132,67 @@ export function normalizeCatalogProduct(apiProduct) {
         nutrition,
         raw: apiProduct,
     };
+}
+
+/**
+ * @param {unknown} apiSet
+ * @returns {object|null}
+ */
+export function normalizeCatalogSet(apiSet) {
+    if (!apiSet || typeof apiSet !== "object") return null;
+
+    const id = apiSet.id ?? null;
+    if (!id) return null;
+
+    const price = parseCatalogPriceRubles(apiSet.price);
+    const { imageUrl, imageSrcset } = normalizeCatalogImages(apiSet.images);
+
+    const derivedWeight =
+        extractWeightGrams(apiSet.description) || extractWeightGrams(apiSet.name);
+
+    const lines = Array.isArray(apiSet.lines)
+        ? apiSet.lines
+              .map((line) => {
+                  if (!line || typeof line !== "object") return null;
+                  const productId = line.product_id ?? null;
+                  if (productId == null) return null;
+                  return {
+                      product_id: productId,
+                      quantity: Number(line.quantity) || 0,
+                  };
+              })
+              .filter(Boolean)
+        : [];
+
+    return {
+        id,
+        kind: "set",
+        slug: String(apiSet.slug || "").trim(),
+        name: apiSet.name || "",
+        price,
+        weight: derivedWeight,
+        tags: normalizeProductTags(apiSet.tags),
+        images: imageUrl ? [imageUrl] : [],
+        imageSrcset,
+        nutrition: null,
+        lines,
+        raw: apiSet,
+    };
+}
+
+/**
+ * @param {unknown} apiItem
+ * @returns {object|null}
+ */
+export function normalizeCatalogItem(apiItem) {
+    if (!apiItem || typeof apiItem !== "object") return null;
+
+    const kind = String(apiItem.kind || "product").toLowerCase();
+    if (kind === "set") {
+        return normalizeCatalogSet(apiItem);
+    }
+
+    return normalizeCatalogProduct(apiItem);
 }
 
 export function normalizeCatalogCategory(apiCategory) {
@@ -108,4 +206,3 @@ export function normalizeCatalogCategory(apiCategory) {
         raw: category,
     };
 }
-

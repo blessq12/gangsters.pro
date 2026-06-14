@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { fetchCatalogTree } from "../services/catalog/catalogService";
+import { mapApiError } from "../utils/api/mapApiError";
 
 const CATALOG_STORAGE_KEY = "gangsters_catalog";
 const DESKTOP_CARDS_PER_ROW_DEFAULT = 4;
@@ -245,7 +246,7 @@ export const useCatalogStore = defineStore("catalog", {
             }
         },
 
-        async fetchCatalog() {
+        async fetchAll() {
             this.loading = true;
             this.error = null;
 
@@ -256,9 +257,10 @@ export const useCatalogStore = defineStore("catalog", {
                 this.hasLoaded = true;
             } catch (e) {
                 console.error("Failed to fetch catalog", e);
-                this.error =
-                    e?.response?.data?.message ||
-                    "Не удалось загрузить каталог. Попробуйте обновить страницу.";
+                this.error = mapApiError(
+                    e,
+                    "Не удалось загрузить каталог. Попробуйте обновить страницу.",
+                );
             } finally {
                 this.loading = false;
             }
