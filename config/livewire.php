@@ -12,7 +12,7 @@ return [
 
     'temporary_file_upload' => [
         'disk' => null,
-        'rules' => [],
+        'rules' => null,
         'directory' => null,
         'middleware' => null,
         'preview_mimes' => [

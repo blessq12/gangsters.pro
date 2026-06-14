@@ -173,7 +173,8 @@ return [
         App\Providers\AppServiceProvider::class,
         App\Providers\AuthServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
-        // App\Providers\Filament\AdminPanelProvider::class,
+        App\Providers\CatalogServiceProvider::class,
+        App\Providers\Filament\AdminPanelProvider::class,
         Intervention\Image\ImageServiceProvider::class,
     ])->toArray(),
 

@@ -41,7 +41,7 @@ final class PatchCheckoutDraftRequest extends FormRequest
                 Rule::exists('PRD_products', 'id')->where(static function ($query): void {
                     $query
                         ->where('status', 'active')
-                        ->where('cart_rule_gift_candidate', true);
+                        ->where('meta_gift_candidate', true);
                 }),
             ],
         ];

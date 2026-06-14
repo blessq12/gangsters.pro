@@ -4,8 +4,6 @@ namespace App\Http\Requests\Order;
 
 use App\Domain\Order\Enums\DeliveryMethod;
 use App\Domain\Order\Enums\PaymentMethod;
-use App\Domain\Shopping\Entities\ShoppingSession;
-use App\Http\Middleware\EnsureShoppingSession;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -61,10 +59,8 @@ final class StoreOrderRequest extends FormRequest
             if (! is_array($items)) {
                 $items = [];
             }
-            $session = $this->attributes->get(EnsureShoppingSession::ATTRIBUTE_KEY);
-            $hasServerCart = $session instanceof ShoppingSession && ! $session->isEmptyCart();
-            if ($items === [] && ! $hasServerCart) {
-                $v->errors()->add('items', 'Корзина пуста: добавьте товары или передайте items.');
+            if ($items === []) {
+                $v->errors()->add('items', 'Корзина пуста: передайте items.');
             }
         });
     }

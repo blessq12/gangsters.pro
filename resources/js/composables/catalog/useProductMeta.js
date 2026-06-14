@@ -13,14 +13,24 @@ export function useProductMeta(productSource) {
     const ingredients = computed(() => {
         const raw = product.value?.raw?.ingredients;
         if (!Array.isArray(raw)) return [];
+
         return raw
-            .filter((i) => i && (i.name || i.amount))
-            .map((i) => ({
-                name: i.name || "",
-                amount: i.amount,
-                unit: i.unit || "",
-                isAllergen: Boolean(i.is_allergen),
-            }));
+            .map((item) => {
+                if (typeof item === "string") {
+                    const name = item.trim();
+                    return name ? { name, amount: null, unit: "", isAllergen: false } : null;
+                }
+
+                if (!item || (!item.name && !item.amount)) return null;
+
+                return {
+                    name: item.name || "",
+                    amount: item.amount,
+                    unit: item.unit || "",
+                    isAllergen: Boolean(item.is_allergen),
+                };
+            })
+            .filter(Boolean);
     });
 
     const hasIngredients = computed(() => ingredients.value.length > 0);
