@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, onUnmounted, watch } from "vue";
+import { onMounted, onUnmounted, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useThemeStore } from "../stores/themeStore";
 import { useUserStore } from "../stores/userStore";
@@ -39,7 +39,6 @@ catalogStore.initFromStorage();
 uiStore.setShowBottomNav(false);
 
 const isHome = () => route.name === "home";
-const isBenefitsRoute = computed(() => route.name === "home");
 
 const {
     introOverlayRef,
@@ -129,12 +128,6 @@ onUnmounted(() => {
 
         <AppNavbarMobile />
         <MobileMenu />
-        <TopBenefitsBanner
-            v-if="isBenefitsRoute"
-            :show-intro="showIntro"
-            :bottom-bar-ready="bottomBarReady"
-            variant="mobile"
-        />
         <main :class="sh.shared.mainGrow">
             <div
                 ref="mainRef"

@@ -14,3 +14,8 @@ export function formatMoneyRublesRu(value) {
         maximumFractionDigits: 2,
     }).format(roundRubles2(value));
 }
+
+/** Копейки → рубли для отображения (прогресс выгод). */
+export function formatKopecksToRub(kopecks) {
+    return formatMoneyRublesRu(Number(kopecks || 0) / 100);
+}

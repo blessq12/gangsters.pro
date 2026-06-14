@@ -6,6 +6,7 @@ import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowC
 import { useCartStore } from "../../stores/cartStore";
 import { useUiStore } from "../../stores/uiStore";
 import { DOMAIN_EVENTS, emitDomainEvent } from "../../shared/domainEvents";
+import CheckoutBenefitsPanel from "./CheckoutBenefitsPanel.vue";
 
 const chk = useAppDesign().components.checkout;
 const c = chk.cart;
@@ -34,8 +35,6 @@ const {
     formatPrice,
     isAuthenticated,
     promoState,
-    deliveryBenefit,
-    giftBenefit,
     canResumeCheckout,
     resumeCheckoutLabel,
 } = checkoutState;
@@ -126,11 +125,6 @@ function unitPriceRub(item) {
     const kopecks = Number(item?.pricing?.finalUnitPriceKopecks);
     if (Number.isFinite(kopecks)) return kopecks / 100;
     return Number(item?.productSnapshot?.price) || 0;
-}
-
-function formatKopecksToRub(kopecks) {
-    const rub = Number(kopecks || 0) / 100;
-    return formatPrice(rub);
 }
 </script>
 
@@ -274,37 +268,7 @@ function formatKopecksToRub(kopecks) {
             </div>
         </div>
 
-        <div
-            v-if="!isCartEmpty"
-            :class="[c.totalsCard, 'mt-3 space-y-2']"
-        >
-            <p class="text-xs text-app-muted">Прогресс выгод</p>
-            <p
-                v-if="deliveryBenefit?.isReached"
-                class="text-sm text-app-accent"
-            >
-                Бесплатная доставка активна
-            </p>
-            <p
-                v-else
-                class="text-sm text-app-muted"
-            >
-                До бесплатной доставки осталось
-                {{ formatKopecksToRub(deliveryBenefit?.remainingKopecks) }} ₽
-            </p>
-            <p
-                v-if="giftBenefit?.isReached"
-                class="text-sm text-app-accent"
-            >
-                Подарок доступен — выберите в корзине
-            </p>
-            <p
-                v-else-if="giftBenefit?.isActive"
-                class="text-sm text-app-muted"
-            >
-                До подарка осталось {{ formatKopecksToRub(giftBenefit?.remainingKopecks) }} ₽
-            </p>
-        </div>
+        <CheckoutBenefitsPanel />
 
         <div
             v-if="isGiftEligible && giftCandidates.length"

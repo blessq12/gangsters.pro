@@ -3,12 +3,8 @@
 namespace App\Application\Checkout\useCases;
 
 use App\Application\Checkout\DTO\SetCheckoutDeliveryDto;
-use App\Application\Checkout\Presenter\CheckoutPresenter;
-use App\Domain\Checkout\Entity\Checkout;
+use App\Application\Checkout\Services\CheckoutDraftLifecycle;
 use App\Domain\Checkout\Enum\DeliveryMethod;
-use App\Domain\Checkout\Exception\CheckoutNotFoundException;
-use App\Domain\Checkout\Repository\CheckoutRepository;
-use App\Domain\Checkout\ValueObject\CheckoutId;
 use App\Domain\Checkout\ValueObject\DeliverySnapshot;
 use InvalidArgumentException;
 
@@ -18,8 +14,7 @@ use InvalidArgumentException;
 final class SetCheckoutDeliveryUseCase
 {
     public function __construct(
-        private readonly CheckoutRepository $checkouts,
-        private readonly CheckoutPresenter $presenter,
+        private readonly CheckoutDraftLifecycle $draftLifecycle,
     ) {}
 
     /**
@@ -27,7 +22,7 @@ final class SetCheckoutDeliveryUseCase
      */
     public function execute(SetCheckoutDeliveryDto $input): array
     {
-        $checkout = $this->findDraftCheckout($input->checkoutId);
+        $checkout = $this->draftLifecycle->loadDraft($input->checkoutId);
 
         if ($input->method === DeliveryMethod::Courier && $input->address === null) {
             throw new InvalidArgumentException('Для курьерской доставки нужен адрес.');
@@ -42,19 +37,6 @@ final class SetCheckoutDeliveryUseCase
             ),
         );
 
-        $this->checkouts->save($checkout);
-
-        return $this->presenter->present($checkout);
-    }
-
-    private function findDraftCheckout(string $checkoutId): Checkout
-    {
-        $checkout = $this->checkouts->findById(CheckoutId::fromString($checkoutId));
-
-        if ($checkout === null) {
-            throw CheckoutNotFoundException::forId($checkoutId);
-        }
-
-        return $checkout;
+        return $this->draftLifecycle->saveAndPresent($checkout);
     }
 }

@@ -4,8 +4,11 @@ namespace App\Application\Checkout\Services;
 
 use App\Domain\Checkout\Entity\Checkout;
 use App\Domain\Checkout\Enum\DeliveryMethod;
+use App\Domain\Checkout\Port\CatalogComplementSetCandidate;
+use App\Domain\Checkout\Port\CatalogComplementSetCandidatesPort;
 use App\Domain\Checkout\Port\CatalogGiftCandidate;
 use App\Domain\Checkout\Port\CatalogGiftCandidatesPort;
+use App\Domain\Checkout\Port\CatalogRollMetaPort;
 use App\Domain\Checkout\ValueObject\CartLineSnapshot;
 use App\Domain\Delivery\Entity\DeliveryConfiguration;
 use App\Domain\Delivery\Repository\DeliveryConfigurationRepository;
@@ -13,6 +16,7 @@ use App\Domain\Promotion\Entity\PromotionPolicy;
 use App\Domain\Promotion\Enum\DeliveryFeeMode;
 use App\Domain\Promotion\Enum\PromotionOrderChannel;
 use App\Domain\Promotion\Repository\PromotionPolicyRepository;
+use App\Domain\Promotion\ValueObject\ComplementSetBenefitRule;
 use App\Domain\Promotion\ValueObject\GiftBenefitRule;
 
 /**
@@ -24,6 +28,8 @@ final class EvaluateCheckoutBenefits
         private readonly PromotionPolicyRepository $promotionPolicies,
         private readonly DeliveryConfigurationRepository $deliveryConfigurations,
         private readonly CatalogGiftCandidatesPort $giftCandidates,
+        private readonly CatalogComplementSetCandidatesPort $complementCandidates,
+        private readonly CatalogRollMetaPort $rollMeta,
     ) {}
 
     /**
@@ -41,7 +47,9 @@ final class EvaluateCheckoutBenefits
         $promotionPolicy = $this->promotionPolicies->find();
         $deliveryConfiguration = $this->deliveryConfigurations->findPublic();
         $giftCandidates = $this->giftCandidates->listActiveGiftCandidates();
+        $complementSetCandidates = $this->complementCandidates->listActiveComplementSetCandidates();
         $selectedGiftProductId = $this->resolveSelectedGiftProductId($checkout);
+        $rollCount = $this->countRollUnitsInCart($checkout);
 
         $giftBenefit = $this->buildGiftBenefit(
             promotionPolicy: $promotionPolicy,
@@ -70,6 +78,18 @@ final class EvaluateCheckoutBenefits
             giftCandidates: $giftCandidates,
         );
 
+        $complementBenefit = $this->buildComplementBenefit(
+            promotionPolicy: $promotionPolicy,
+            rollCount: $rollCount,
+            complementCandidates: $complementSetCandidates,
+        );
+
+        $complementPromotion = $this->buildComplementPromotionState(
+            complementRule: $promotionPolicy?->complementSetBenefitRule(),
+            rollCount: $rollCount,
+            complementCandidates: $complementSetCandidates,
+        );
+
         $deliveryPricing = $this->buildDeliveryPricing(
             deliveryMethod: $deliveryMethod,
             currentKopecks: $currentKopecks,
@@ -81,12 +101,44 @@ final class EvaluateCheckoutBenefits
             'benefits_progress' => [
                 'delivery' => $deliveryBenefit,
                 'gift' => $giftBenefit,
+                'complement' => $complementBenefit,
             ],
             'delivery_pricing' => $deliveryPricing,
             'promo_state' => [
                 'gift_promotion' => $giftPromotion,
+                'complement_promotion' => $complementPromotion,
             ],
         ];
+    }
+
+    private function countRollUnitsInCart(Checkout $checkout): int
+    {
+        $userLines = array_values(array_filter(
+            $checkout->cart()->lines(),
+            fn (CartLineSnapshot $line): bool => ! $this->isPromotionSystemLine($line),
+        ));
+
+        if ($userLines === []) {
+            return 0;
+        }
+
+        $productIds = array_map(
+            static fn (CartLineSnapshot $line): int => $line->productId(),
+            $userLines,
+        );
+
+        $countsAsRollByProductId = $this->rollMeta->countsAsRollByProductIds($productIds);
+        $rollCount = 0;
+
+        foreach ($userLines as $line) {
+            if (! ($countsAsRollByProductId[$line->productId()] ?? false)) {
+                continue;
+            }
+
+            $rollCount += $line->quantity();
+        }
+
+        return $rollCount;
     }
 
     private function payableTotalKopecks(Checkout $checkout): int
@@ -94,7 +146,7 @@ final class EvaluateCheckoutBenefits
         $totalRubles = 0;
 
         foreach ($checkout->cart()->lines() as $line) {
-            if ($this->isGiftLine($line)) {
+            if ($this->isPromotionSystemLine($line)) {
                 continue;
             }
 
@@ -109,6 +161,18 @@ final class EvaluateCheckoutBenefits
         $payload = $line->payload();
 
         return is_array($payload) && (($payload['kind'] ?? null) === 'gift');
+    }
+
+    private function isComplementLine(CartLineSnapshot $line): bool
+    {
+        $payload = $line->payload();
+
+        return is_array($payload) && (($payload['kind'] ?? null) === 'complement');
+    }
+
+    private function isPromotionSystemLine(CartLineSnapshot $line): bool
+    {
+        return $this->isGiftLine($line) || $this->isComplementLine($line);
     }
 
     private function resolveOrderChannel(Checkout $checkout): PromotionOrderChannel
@@ -172,7 +236,7 @@ final class EvaluateCheckoutBenefits
         ?DeliveryMethod $deliveryMethod,
         int $currentKopecks,
     ): array {
-        if ($deliveryMethod !== DeliveryMethod::Courier) {
+        if ($deliveryMethod === DeliveryMethod::Pickup) {
             return $this->inactiveBenefit($currentKopecks);
         }
 
@@ -187,13 +251,19 @@ final class EvaluateCheckoutBenefits
             ? 0
             : max(0, $thresholdKopecks - $currentKopecks);
 
-        return [
+        $benefit = [
             'isActive' => true,
             'isReached' => $isReached,
             'thresholdKopecks' => $thresholdKopecks,
             'currentKopecks' => $currentKopecks,
             'remainingKopecks' => $remainingKopecks,
         ];
+
+        if ($deliveryMethod === null) {
+            $benefit['isPreview'] = true;
+        }
+
+        return $benefit;
     }
 
     /**
@@ -298,6 +368,113 @@ final class EvaluateCheckoutBenefits
             'eligible' => $eligible,
             'phase' => $phase,
             'selected_product_id' => $selectedGiftProductId,
+            'candidate_product_ids' => $candidateProductIds,
+            'candidate_items' => $candidateItems,
+        ];
+    }
+
+    /**
+     * @param  list<CatalogComplementSetCandidate>  $complementCandidates
+     * @return array<string, mixed>
+     */
+    private function buildComplementBenefit(
+        ?PromotionPolicy $promotionPolicy,
+        int $rollCount,
+        array $complementCandidates,
+    ): array {
+        $rule = $promotionPolicy?->complementSetBenefitRule();
+
+        if (
+            ! $rule instanceof ComplementSetBenefitRule
+            || ! $rule->isActive()
+            || $complementCandidates === []
+        ) {
+            return $this->inactiveComplementBenefit($rollCount);
+        }
+
+        $rollsPerSet = $rule->rollsPerSet();
+        $entitledSetCount = intdiv($rollCount, $rollsPerSet);
+        $rollsTowardNextSet = $rollCount % $rollsPerSet;
+        $remainingRollCount = $entitledSetCount > 0 && $rollsTowardNextSet === 0
+            ? 0
+            : $rollsPerSet - $rollsTowardNextSet;
+
+        return [
+            'isActive' => true,
+            'isReached' => $entitledSetCount > 0,
+            'rollsPerSet' => $rollsPerSet,
+            'currentRollCount' => $rollCount,
+            'entitledSetCount' => $entitledSetCount,
+            'remainingRollCount' => $remainingRollCount,
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function inactiveComplementBenefit(int $rollCount): array
+    {
+        return [
+            'isActive' => false,
+            'isReached' => false,
+            'rollsPerSet' => null,
+            'currentRollCount' => $rollCount,
+            'entitledSetCount' => 0,
+            'remainingRollCount' => 0,
+        ];
+    }
+
+    /**
+     * @param  list<CatalogComplementSetCandidate>  $complementCandidates
+     * @return array<string, mixed>
+     */
+    private function buildComplementPromotionState(
+        ?ComplementSetBenefitRule $complementRule,
+        int $rollCount,
+        array $complementCandidates,
+    ): array {
+        $candidateItems = array_map(
+            static fn (CatalogComplementSetCandidate $candidate): array => [
+                'id' => $candidate->productId(),
+                'name' => $candidate->productName(),
+                'price_rub' => $candidate->priceRubles(),
+                'image_url' => $candidate->imageUrl(),
+            ],
+            $complementCandidates,
+        );
+
+        $candidateProductIds = array_map(
+            static fn (CatalogComplementSetCandidate $candidate): int => $candidate->productId(),
+            $complementCandidates,
+        );
+
+        $rollsPerSet = $complementRule?->rollsPerSet();
+        $entitledSetCount = 0;
+        $remainingRollCount = 0;
+
+        if (
+            $complementRule instanceof ComplementSetBenefitRule
+            && $complementRule->isActive()
+            && is_int($rollsPerSet)
+            && $rollsPerSet > 0
+            && $candidateProductIds !== []
+        ) {
+            $entitledSetCount = intdiv($rollCount, $rollsPerSet);
+            $rollsTowardNextSet = $rollCount % $rollsPerSet;
+            $remainingRollCount = $entitledSetCount > 0 && $rollsTowardNextSet === 0
+                ? 0
+                : $rollsPerSet - $rollsTowardNextSet;
+        }
+
+        $eligible = $entitledSetCount > 0;
+
+        return [
+            'eligible' => $eligible,
+            'phase' => $eligible ? 'entitled' : 'below_threshold',
+            'rolls_per_set' => $rollsPerSet,
+            'roll_count' => $rollCount,
+            'entitled_set_count' => $entitledSetCount,
+            'remaining_roll_count' => $remainingRollCount,
             'candidate_product_ids' => $candidateProductIds,
             'candidate_items' => $candidateItems,
         ];

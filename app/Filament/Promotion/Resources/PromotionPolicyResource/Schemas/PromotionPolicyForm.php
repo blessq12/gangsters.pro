@@ -29,6 +29,10 @@ final class PromotionPolicyForm
                             ->label('Доставка')
                             ->icon(Heroicon::OutlinedTruck)
                             ->schema(self::deliverySchema()),
+                        'complement' => Tab::make('complement')
+                            ->label('Комплект')
+                            ->icon(Heroicon::OutlinedSquaresPlus)
+                            ->schema(self::complementSchema()),
                     ]),
             ]);
     }
@@ -69,6 +73,30 @@ final class PromotionPolicyForm
                         ->columnSpanFull(),
                     self::moneyInput('delivery_free_threshold_kopecks', 'Порог бесплатной доставки в зоне'),
                     self::moneyInput('delivery_outside_zone_surcharge_kopecks', 'Надбавка вне зоны при сумме от порога'),
+                ]),
+        ];
+    }
+
+    /**
+     * @return list<Component>
+     */
+    private static function complementSchema(): array
+    {
+        return [
+            Section::make('Комплект дополнений')
+                ->columnSpanFull()
+                ->description('Роллы помечаются в каталоге («Считается как ролл»). Наборы дополнений — («Набор дополнений»). За каждые N роллов в корзине клиенту добавляется один комплект.')
+                ->columns(2)
+                ->schema([
+                    Toggle::make('complement_set_benefit_active')
+                        ->label('Правило комплекта активно')
+                        ->columnSpanFull(),
+                    TextInput::make('complement_set_rolls_per_set')
+                        ->label('Роллов на один комплект')
+                        ->numeric()
+                        ->minValue(1)
+                        ->required()
+                        ->default(2),
                 ]),
         ];
     }

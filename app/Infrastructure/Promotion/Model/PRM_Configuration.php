@@ -15,6 +15,8 @@ class PRM_Configuration extends Model
         'delivery_free_threshold_kopecks',
         'delivery_outside_zone_surcharge_kopecks',
         'delivery_benefit_active',
+        'complement_set_benefit_active',
+        'complement_set_rolls_per_set',
     ];
 
     protected $casts = [
@@ -24,5 +26,7 @@ class PRM_Configuration extends Model
         'delivery_free_threshold_kopecks' => 'integer',
         'delivery_outside_zone_surcharge_kopecks' => 'integer',
         'delivery_benefit_active' => 'boolean',
+        'complement_set_benefit_active' => 'boolean',
+        'complement_set_rolls_per_set' => 'integer',
     ];
 }

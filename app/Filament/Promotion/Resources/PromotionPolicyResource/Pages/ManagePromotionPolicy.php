@@ -30,6 +30,8 @@ class ManagePromotionPolicy extends EditRecord
                 'delivery_free_threshold_kopecks' => 100_000,
                 'delivery_outside_zone_surcharge_kopecks' => 20_000,
                 'delivery_benefit_active' => true,
+                'complement_set_benefit_active' => true,
+                'complement_set_rolls_per_set' => 2,
             ],
         );
 

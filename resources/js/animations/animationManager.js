@@ -430,46 +430,6 @@ export function playBottomBarHide(bar, onComplete, variant = "mobile") {
     });
 }
 
-/**
- * @param {HTMLElement|null|undefined} panel
- * @param {() => void} [onComplete]
- * @param {DockAnimVariant} [variant]
- */
-export function playTopBenefitsShow(panel, onComplete, variant = "mobile") {
-    if (!panel) return;
-    gsap.fromTo(
-        panel,
-        { y: -28, opacity: 0 },
-        {
-            y: 0,
-            opacity: 1,
-            duration: variant === "desktop" ? 0.32 : 0.35,
-            ease: "power2.out",
-            onComplete,
-        },
-    );
-}
-
-/**
- * @param {HTMLElement|null|undefined} panel
- * @param {() => void} [onComplete]
- * @param {DockAnimVariant} [variant]
- */
-export function playTopBenefitsHide(panel, onComplete, variant = "mobile") {
-    if (!panel) {
-        if (onComplete) onComplete();
-        return;
-    }
-    gsap.to(panel, {
-        y: -24,
-        opacity: 0,
-        duration: variant === "desktop" ? 0.22 : 0.25,
-        ease: "power2.in",
-        onComplete,
-    });
-}
-
-
 let flyProductToCartTween = null;
 
 export function prefersReducedMotion() {

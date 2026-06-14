@@ -6,6 +6,7 @@ use App\Domain\Promotion\Entity\PromotionPolicy;
 use App\Domain\Promotion\Enum\DeliveryFeeMode;
 use App\Domain\Promotion\Enum\GiftBenefitType;
 use App\Domain\Promotion\Enum\PromotionOrderChannel;
+use App\Domain\Promotion\ValueObject\ComplementSetBenefitRule;
 use App\Domain\Promotion\ValueObject\DeliveryBenefitPolicy;
 use App\Domain\Promotion\ValueObject\GiftBenefitRule;
 use App\Infrastructure\Promotion\Model\PRM_Configuration;
@@ -51,6 +52,13 @@ final class PromotionPolicyMapper
                 inZoneAtThresholdFeeMode: DeliveryFeeMode::Free,
                 outsideZoneAtThresholdFeeMode: DeliveryFeeMode::BasePlusSurcharge,
                 isActive: (bool) $row->delivery_benefit_active,
+            ),
+            complementSetBenefitRule: new ComplementSetBenefitRule(
+                rollsPerSet: $this->requiredPositiveInt(
+                    $row->complement_set_rolls_per_set,
+                    'complement_set_rolls_per_set',
+                ),
+                isActive: (bool) $row->complement_set_benefit_active,
             ),
         );
     }

@@ -28,12 +28,20 @@ export function normalizeCheckoutCartBlock(cart) {
                   const lineRub = roundRubles2(Number(row.line_total_rubles) || unitRub * qty);
                   const unitKopecks = Math.round(unitRub * 100);
                   const lineKopecks = Math.round(lineRub * 100);
+                  const payload =
+                      row.payload && typeof row.payload === "object" ? row.payload : null;
+                  const lineKind = payload?.kind === "gift"
+                      ? "gift"
+                      : payload?.kind === "complement"
+                        ? "complement"
+                        : "user";
+                  const isSystem = lineKind === "gift" || lineKind === "complement";
 
                   return {
-                      lineKey: `user:${productId}`,
-                      origin: "user",
-                      isSystem: false,
-                      lineKind: "user",
+                      lineKey: `${lineKind}:${productId}`,
+                      origin: isSystem ? "system" : "user",
+                      isSystem,
+                      lineKind,
                       productId,
                       qty,
                       productSnapshot: {

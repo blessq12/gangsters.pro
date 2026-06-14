@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { DOMAIN_EVENTS, emitDomainEvent } from "../shared/domainEvents";
 import { roundRubles2 } from "../utils/moneyFormat";
+import { normalizeBenefitsProgress } from "../features/checkout/normalizeBenefitsProgress";
 import { useCheckoutStore } from "./checkoutStore";
 
 export const useCartStore = defineStore("cart", {
@@ -120,12 +121,7 @@ export const useCartStore = defineStore("cart", {
         },
 
         applyBenefitsProgressSnapshot(benefitsProgress) {
-            if (!benefitsProgress || typeof benefitsProgress !== "object") {
-                this.benefitsProgress = null;
-                return;
-            }
-
-            this.benefitsProgress = benefitsProgress;
+            this.benefitsProgress = normalizeBenefitsProgress(benefitsProgress);
         },
 
         async addToCart(product, qty = 1) {

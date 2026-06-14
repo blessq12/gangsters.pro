@@ -13,6 +13,7 @@ import {
     toServerCheckoutPaymentMethod,
 } from "../features/checkout/checkoutPaymentMethods";
 import { normalizeCheckoutCartBlock } from "../features/checkout/normalizeCheckoutCart";
+import { DOMAIN_EVENTS, emitDomainEvent } from "../shared/domainEvents";
 import { useCartStore } from "./cartStore";
 
 const CHECKOUT_STEPS = ["cart", "guest", "delivery", "payment", "confirm"];
@@ -202,6 +203,8 @@ export const useCheckoutStore = defineStore("checkout", {
 
             this.recomputeSuggestedStep();
             this.persistSession();
+
+            emitDomainEvent(DOMAIN_EVENTS.CART_CHANGED, { items: this.cartItems });
         },
 
         recomputeSuggestedStep() {

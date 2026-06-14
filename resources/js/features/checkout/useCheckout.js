@@ -7,6 +7,7 @@ import { useClientReadModel } from "../client/useClientReadModel";
 import { useClientCommands } from "../client/useClientCommands";
 import { useClientAddressSelectionModel } from "../client/useClientAddressSelectionModel";
 import { useCartReadModel } from "../shoppingSession/useCartReadModel";
+import { useBenefitProgress } from "../shoppingSession/useBenefitProgress";
 import { formatMoneyRublesRu } from "../../utils/moneyFormat";
 import { formatRuPhone } from "../../utils/phone/formatRuPhone";
 import { validateRuPhoneForSubmit } from "../../validation/ruPhone";
@@ -34,6 +35,7 @@ export function useCheckout() {
     const clientCommands = useClientCommands();
     const addressSelection = useClientAddressSelectionModel();
     const cartReadModel = useCartReadModel();
+    const benefits = useBenefitProgress();
 
     const cartItems = computed(() => cartReadModel.items.value);
     const userCartItems = computed(() => cartReadModel.userItems.value);
@@ -50,8 +52,9 @@ export function useCheckout() {
     const systemTotalAmount = computed(() => cartReadModel.systemTotalAmount.value);
     const promoState = computed(() => cartReadModel.promoState.value);
     const benefitsProgress = computed(() => cartReadModel.benefitsProgress.value);
-    const deliveryBenefit = computed(() => benefitsProgress.value?.delivery ?? null);
-    const giftBenefit = computed(() => benefitsProgress.value?.gift ?? null);
+    const deliveryBenefit = computed(() => benefits.delivery.value);
+    const giftBenefit = computed(() => benefits.gift.value);
+    const complementBenefit = computed(() => benefits.complement.value);
     const isAuthenticated = computed(() => clientReadModel.isAuthenticated.value);
     const hasCartItems = computed(() => userCartItems.value.length > 0);
 
@@ -535,8 +538,10 @@ export function useCheckout() {
         systemTotalAmount,
         promoState,
         benefitsProgress,
+        benefits,
         deliveryBenefit,
         giftBenefit,
+        complementBenefit,
         isAuthenticated,
         hasCartItems,
         activeStep,

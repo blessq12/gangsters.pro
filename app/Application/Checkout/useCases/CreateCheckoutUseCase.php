@@ -3,9 +3,8 @@
 namespace App\Application\Checkout\useCases;
 
 use App\Application\Checkout\DTO\CreateCheckoutDto;
-use App\Application\Checkout\Presenter\CheckoutPresenter;
+use App\Application\Checkout\Services\CheckoutDraftLifecycle;
 use App\Domain\Checkout\Entity\Checkout;
-use App\Domain\Checkout\Repository\CheckoutRepository;
 use App\Domain\Checkout\ValueObject\CheckoutId;
 
 /**
@@ -14,8 +13,7 @@ use App\Domain\Checkout\ValueObject\CheckoutId;
 final class CreateCheckoutUseCase
 {
     public function __construct(
-        private readonly CheckoutRepository $checkouts,
-        private readonly CheckoutPresenter $presenter,
+        private readonly CheckoutDraftLifecycle $draftLifecycle,
     ) {}
 
     /**
@@ -25,8 +23,6 @@ final class CreateCheckoutUseCase
     {
         $checkout = Checkout::create(CheckoutId::generate());
 
-        $this->checkouts->save($checkout);
-
-        return $this->presenter->present($checkout);
+        return $this->draftLifecycle->saveAndPresent($checkout);
     }
 }

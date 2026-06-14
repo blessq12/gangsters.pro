@@ -1,6 +1,7 @@
 <script setup>
 import { useAppDesign } from "../../design/useAppDesign";
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
+import CheckoutBenefitsPanel from "./CheckoutBenefitsPanel.vue";
 
 const chk = useAppDesign().components.checkout;
 const s = chk.shared;
@@ -24,8 +25,6 @@ const {
     itemsTotalAmount,
     deliveryFeeAmount,
     isDeliveryFree,
-    deliveryBenefit,
-    giftBenefit,
     formatPrice,
     formatPhone,
     isGuestCheckout,
@@ -43,11 +42,6 @@ function unitPriceRub(item) {
     const kopecks = Number(item?.pricing?.finalUnitPriceKopecks);
     if (Number.isFinite(kopecks)) return kopecks / 100;
     return Number(item?.productSnapshot?.price) || 0;
-}
-
-function formatKopecksToRub(kopecks) {
-    const rub = Number(kopecks || 0) / 100;
-    return formatPrice(rub);
 }
 </script>
 
@@ -167,36 +161,7 @@ function formatKopecksToRub(kopecks) {
             </template>
         </div>
 
-        <div :class="cf.blockMuted">
-            <p :class="s.headingCardMuted">
-                Прогресс выгод
-            </p>
-            <p
-                v-if="deliveryBenefit?.isReached"
-                :class="s.textBodyXs"
-            >
-                Бесплатная доставка активна
-            </p>
-            <p
-                v-else
-                :class="s.textBodyXs"
-            >
-                До бесплатной доставки осталось
-                {{ formatKopecksToRub(deliveryBenefit?.remainingKopecks) }} ₽
-            </p>
-            <p
-                v-if="giftBenefit?.isReached"
-                :class="s.textBodyXs"
-            >
-                Подарок доступен
-            </p>
-            <p
-                v-else-if="giftBenefit?.isActive"
-                :class="s.textBodyXs"
-            >
-                До подарка осталось {{ formatKopecksToRub(giftBenefit?.remainingKopecks) }} ₽
-            </p>
-        </div>
+        <CheckoutBenefitsPanel />
 
         <div :class="cf.blockMuted">
             <p :class="s.headingCardMuted">

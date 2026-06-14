@@ -123,6 +123,13 @@ final class Checkout
         $this->cart = $this->cart->removeLine($productId);
     }
 
+    public function setCart(CartSnapshot $cart): void
+    {
+        $this->assertDraft();
+
+        $this->cart = $cart;
+    }
+
     public function setClient(ClientSnapshot $client): void
     {
         $this->assertDraft();

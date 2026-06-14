@@ -1,6 +1,7 @@
 <script setup>
 import { useAppDesign } from "../../design/useAppDesign";
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
+import CheckoutBenefitsPanel from "./CheckoutBenefitsPanel.vue";
 
 const chk = useAppDesign().components.checkout;
 const s = chk.shared;
@@ -124,6 +125,8 @@ const { checkoutIntent, deliveryStepError, isGuestCheckout } = checkoutState;
                 @input="setDeliveryComment($event.target.value)"
             />
         </div>
+
+        <CheckoutBenefitsPanel />
 
         <div :class="s.navFooterRow">
             <button

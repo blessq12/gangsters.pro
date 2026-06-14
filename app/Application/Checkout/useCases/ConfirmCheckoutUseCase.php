@@ -4,18 +4,20 @@ namespace App\Application\Checkout\useCases;
 
 use App\Application\Checkout\DTO\ConfirmCheckoutDto;
 use App\Application\Checkout\Presenter\CheckoutPresenter;
+use App\Application\Checkout\Services\ApplyCheckoutBenefitRules;
 use App\Domain\Checkout\Exception\CheckoutNotFoundException;
 use App\Domain\Checkout\Repository\CheckoutRepository;
 use App\Domain\Checkout\ValueObject\CheckoutId;
 use Illuminate\Support\Facades\Event;
 
 /**
- * Сценарий: подтвердить собранный объект намерения.
+ * Сценарий: финальное применение бенефитов → подтверждение → создание заказа по событию.
  */
 final class ConfirmCheckoutUseCase
 {
     public function __construct(
         private readonly CheckoutRepository $checkouts,
+        private readonly ApplyCheckoutBenefitRules $benefitRules,
         private readonly CheckoutPresenter $presenter,
     ) {}
 
@@ -29,6 +31,9 @@ final class ConfirmCheckoutUseCase
         if ($checkout === null) {
             throw CheckoutNotFoundException::forId($input->checkoutId);
         }
+
+        $this->benefitRules->apply($checkout);
+        $this->checkouts->save($checkout);
 
         $checkout->confirm();
 
