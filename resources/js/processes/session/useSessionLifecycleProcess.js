@@ -1,6 +1,6 @@
 import { DOMAIN_EVENTS, subscribeDomainEvent } from "../../shared/domainEvents";
-import { mergeShoppingAfterAuth } from "../../features/shopping/shoppingBootstrap";
 import { useCartStore } from "../../stores/cartStore";
+import { useCheckoutStore } from "../../stores/checkoutStore";
 import { useFavoritesStore } from "../../stores/favoritesStore";
 import { useCartCommands } from "../../features/shoppingSession/useCartCommands";
 import { useUiStore } from "../../stores/uiStore";
@@ -17,15 +17,9 @@ export function useSessionLifecycleProcess() {
         const uiStore = useUiStore();
 
         cleanupHandlers = [
-            subscribeDomainEvent(DOMAIN_EVENTS.CLIENT_LOGGED_IN, () => {
-                void mergeShoppingAfterAuth();
-            }),
             subscribeDomainEvent(DOMAIN_EVENTS.CLIENT_LOGGED_OUT, () => {
+                useCheckoutStore().clearAfterCompleted();
                 cartStore.$patch({
-                    cartItems: [],
-                    subtotalKopecks: 0,
-                    subtotalUserKopecks: 0,
-                    subtotalSystemKopecks: 0,
                     promoState: {},
                     deliveryPricing: null,
                     benefitsProgress: null,

@@ -1,8 +1,7 @@
-import { useCheckoutIntentStore } from "../../stores/checkoutIntentStore";
+import { useCheckoutStore } from "../../stores/checkoutStore";
 
-/** Сброс локального checkout-intent и resume после успешного заказа. */
+/** Сброс checkout после успешного оформления; новый объект — при следующем запуске или первом действии с корзиной. */
 export function resetCheckoutAfterOrderCompleted() {
-    const checkoutIntent = useCheckoutIntentStore();
-    checkoutIntent.clearLocal();
-    checkoutIntent.setSuggestedStep(null);
+    const checkoutStore = useCheckoutStore();
+    checkoutStore.clearAfterCompleted();
 }

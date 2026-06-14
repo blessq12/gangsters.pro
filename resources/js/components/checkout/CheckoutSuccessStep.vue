@@ -19,9 +19,9 @@ const { orderStore } = checkoutState;
             Спасибо, бро. Мы приняли заказ и скоро свяжемся для подтверждения.
         </p>
         <p :class="s.textSuccessBody">
-            Номер заказа:
+            Номер оформления:
             <span :class="s.monoAccent">
-                {{ orderStore.lastCreatedOrder?.id ?? "—" }}
+                {{ checkoutState.checkoutStore?.checkoutId ?? orderStore.lastCreatedOrder?.id ?? "—" }}
             </span>
         </p>
         <div :class="su.footerActions">

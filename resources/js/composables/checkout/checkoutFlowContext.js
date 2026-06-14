@@ -46,6 +46,7 @@ export function useCheckoutFlowContext() {
         canResumeCheckout,
         resumeCheckoutLabel,
         checkoutIntent,
+        checkoutStore,
         orderStore,
         checkoutStepMeta,
         handleStartCheckout,
@@ -73,7 +74,8 @@ export function useCheckoutFlowContext() {
     } = flow;
 
     const checkoutState = {
-        checkoutIntent,
+        checkoutIntent: checkoutIntent ?? checkoutStore,
+        checkoutStore: checkoutStore ?? checkoutIntent,
         orderStore,
         cartStore,
         cartItems,

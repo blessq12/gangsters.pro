@@ -2,15 +2,13 @@
 
 namespace App\Application\Checkout\DTO;
 
-/**
- * Вход сценария: зафиксировать способ оплаты.
- */
+use App\Domain\Checkout\Enum\PaymentMethod;
+
 final readonly class SetCheckoutPaymentDto
 {
-    /**
-     * @param  array<string, mixed>|null  $paymentInfo
-     */
     public function __construct(
-        public ?array $paymentInfo = null,
+        public string $checkoutId,
+        public PaymentMethod $method,
+        public ?int $changeFromRubles = null,
     ) {}
 }

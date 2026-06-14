@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\CatalogController;
+use App\Http\Controllers\Api\CheckoutController;
 use App\Http\Controllers\Api\CompanyController;
 use App\Http\Controllers\Api\DeliveryController;
 use App\Http\Controllers\Api\MarketingContentController;
@@ -24,6 +25,15 @@ Route::prefix('marketing')->group(function (): void {
 });
 
 Route::get('/delivery', [DeliveryController::class, 'show']);
+
+Route::prefix('checkout')->group(function (): void {
+    Route::post('/', [CheckoutController::class, 'store']);
+    Route::patch('{checkoutId}/cart', [CheckoutController::class, 'updateCart']);
+    Route::patch('{checkoutId}/client', [CheckoutController::class, 'setClient']);
+    Route::patch('{checkoutId}/delivery', [CheckoutController::class, 'setDelivery']);
+    Route::patch('{checkoutId}/payment', [CheckoutController::class, 'setPayment']);
+    Route::post('{checkoutId}/confirm', [CheckoutController::class, 'confirm']);
+});
 
 Route::prefix('company')->group(function (): void {
     Route::get('/main', [CompanyController::class, 'main']);

@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests\Order;
 
-use App\Domain\Order\Enums\DeliveryMethod;
-use App\Domain\Order\Enums\PaymentMethod;
+use App\Domain\Checkout\Enum\DeliveryMethod;
+use App\Domain\Checkout\Enum\PaymentMethod;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

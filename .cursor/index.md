@@ -74,3 +74,17 @@ import docs/order/overview.md
 ******** Order **********
 
 -->
+
+******** Checkout **********
+
+import docs/checkout/overview.md
+import docs/checkout/routing.md
+import docs/checkout/http.md
+import docs/checkout/application.md
+import docs/checkout/domain.md
+import docs/checkout/infrastructure.md
+import docs/checkout/filament.md
+import docs/checkout/flow.md
+import docs/checkout/events.md
+
+******** Checkout **********

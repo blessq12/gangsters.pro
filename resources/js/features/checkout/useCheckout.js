@@ -1,5 +1,5 @@
 import { computed, ref, watch } from "vue";
-import { useCheckoutIntentStore } from "../../stores/checkoutIntentStore";
+import { useCheckoutStore } from "../../stores/checkoutStore";
 import { useOrderStore } from "../../stores/orderStore";
 import { useUserStore } from "../../stores/userStore";
 import { useUiStore } from "../../stores/uiStore";
@@ -7,11 +7,10 @@ import { useClientReadModel } from "../client/useClientReadModel";
 import { useClientCommands } from "../client/useClientCommands";
 import { useClientAddressSelectionModel } from "../client/useClientAddressSelectionModel";
 import { useCartReadModel } from "../shoppingSession/useCartReadModel";
-import { useOrderCommands } from "../orders/useOrderCommands";
 import { formatMoneyRublesRu } from "../../utils/moneyFormat";
 import { formatRuPhone } from "../../utils/phone/formatRuPhone";
 import { validateRuPhoneForSubmit } from "../../validation/ruPhone";
-import { resetCheckoutAfterOrderCompleted } from "./resetCheckoutAfterOrderCompleted";
+import { DOMAIN_EVENTS, emitDomainEvent } from "../../shared/domainEvents";
 import {
     isCheckoutPaymentMethod,
     normalizeCheckoutPaymentMethod,
@@ -27,7 +26,7 @@ function isGuestContactComplete(gc) {
 }
 
 export function useCheckout() {
-    const checkoutIntent = useCheckoutIntentStore();
+    const checkoutIntent = useCheckoutStore();
     const orderStore = useOrderStore();
     const userStore = useUserStore();
     const uiStore = useUiStore();
@@ -35,7 +34,6 @@ export function useCheckout() {
     const clientCommands = useClientCommands();
     const addressSelection = useClientAddressSelectionModel();
     const cartReadModel = useCartReadModel();
-    const orderCommands = useOrderCommands();
 
     const cartItems = computed(() => cartReadModel.items.value);
     const userCartItems = computed(() => cartReadModel.userItems.value);
@@ -251,6 +249,9 @@ export function useCheckout() {
         isGuestCheckout.value = false;
         activeStep.value = "delivery";
         ensureAuthAddressUi();
+        void checkoutIntent.flushClientToServer({
+            clientId: userStore.profile.id,
+        });
     }
 
     watch(
@@ -363,7 +364,7 @@ export function useCheckout() {
         if (!validateGuestStep()) {
             return;
         }
-        await checkoutIntent.flushToServer();
+        await checkoutIntent.flushClientToServer({ isGuest: true });
         activeStep.value = "delivery";
     }
 
@@ -372,7 +373,7 @@ export function useCheckout() {
         if (!validateDeliveryStep(selectedAddress)) {
             return;
         }
-        await checkoutIntent.flushToServer();
+        await checkoutIntent.flushDeliveryToServer(selectedAddress);
         activeStep.value = "payment";
     }
 
@@ -380,12 +381,11 @@ export function useCheckout() {
         if (!validatePaymentStep()) {
             return;
         }
-        await checkoutIntent.flushToServer();
+        await checkoutIntent.flushPaymentToServer();
         activeStep.value = "confirm";
     }
 
     function goToSuccess() {
-        resetCheckoutAfterOrderCompleted();
         isGuestCheckout.value = false;
         activeStep.value = "success";
         resumeCheckoutStep.value = null;
@@ -436,14 +436,34 @@ export function useCheckout() {
             return;
         }
 
+        orderStore.loading.create = true;
+        orderStore.error.create = null;
+
         try {
-            await checkoutIntent.flushToServer();
-            await orderCommands.createOrderFromCheckout({
-                isGuest: isGuestCheckout.value,
+            if (isGuestCheckout.value) {
+                await checkoutIntent.flushClientToServer({ isGuest: true });
+            } else {
+                await checkoutIntent.flushClientToServer({
+                    clientId: userStore.profile.id,
+                });
+            }
+            await checkoutIntent.flushDeliveryToServer(selectedAddress);
+            await checkoutIntent.flushPaymentToServer();
+            const confirmed = await checkoutIntent.confirmCheckout();
+            orderStore.lastCreatedOrder = {
+                id: confirmed.checkout_id,
+            };
+            emitDomainEvent(DOMAIN_EVENTS.ORDER_CREATED, {
+                order: orderStore.lastCreatedOrder,
             });
             goToSuccess();
         } catch (e) {
-            // ошибка уже сохранена в orderStore.error.create
+            orderStore.error.create =
+                e?.response?.data?.message ||
+                checkoutIntent.error ||
+                "Не удалось подтвердить оформление.";
+        } finally {
+            orderStore.loading.create = false;
         }
     }
 
@@ -500,6 +520,7 @@ export function useCheckout() {
 
     return {
         checkoutIntent,
+        checkoutStore: checkoutIntent,
         orderStore,
         userStore,
         clientReadModel,

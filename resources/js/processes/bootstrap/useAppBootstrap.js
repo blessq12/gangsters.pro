@@ -10,7 +10,7 @@ import { useSessionLifecycleProcess } from "../session/useSessionLifecycleProces
 import { useShoppingSessionProcess } from "../shoppingSession/useShoppingSessionProcess";
 import { useBenefitsProgressProcess } from "../benefits/useBenefitsProgressProcess";
 import { useGiftAutoPromptProcess } from "../benefits/useGiftAutoPromptProcess";
-import { bootstrapShoppingFromApi } from "../../features/shopping/shoppingBootstrap";
+import { bootstrapCheckoutSession } from "../../features/checkout/checkoutBootstrap";
 
 let bootstrapInitialized = false;
 let cleanupProcesses = [];
@@ -39,7 +39,7 @@ export function useAppBootstrap() {
             useDockBadgeFeedback(),
         ];
 
-        void bootstrapShoppingFromApi();
+        void bootstrapCheckoutSession();
 
         bootstrapInitialized = true;
     }
