@@ -5,6 +5,7 @@ use App\Providers\AuthServiceProvider;
 use App\Providers\CatalogServiceProvider;
 use App\Providers\CompanyServiceProvider;
 use App\Providers\DeliveryServiceProvider;
+use App\Providers\MarketingContentServiceProvider;
 use App\Providers\Filament\AdminPanelProvider;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Support\Facades\Facade;
@@ -184,6 +185,7 @@ return [
         RouteServiceProvider::class,
         CatalogServiceProvider::class,
         DeliveryServiceProvider::class,
+        MarketingContentServiceProvider::class,
         CompanyServiceProvider::class,
         AdminPanelProvider::class,
         ImageServiceProvider::class,

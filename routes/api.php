@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\CatalogController;
 use App\Http\Controllers\Api\CompanyController;
 use App\Http\Controllers\Api\DeliveryController;
+use App\Http\Controllers\Api\MarketingContentController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -16,6 +17,12 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/catalog', [CatalogController::class, 'show']);
+Route::prefix('marketing')->group(function (): void {
+    Route::get('/', [MarketingContentController::class, 'show']);
+    Route::get('/banners', [MarketingContentController::class, 'banners']);
+    Route::get('/promotions', [MarketingContentController::class, 'promotions']);
+});
+
 Route::get('/delivery', [DeliveryController::class, 'show']);
 
 Route::prefix('company')->group(function (): void {

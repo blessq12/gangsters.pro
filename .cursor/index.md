@@ -52,6 +52,20 @@ import docs/company/events.md
 
 ******** Company **********
 
+******** MarketingContent **********
+
+import docs/marketing-content/overview.md
+import docs/marketing-content/routing.md
+import docs/marketing-content/http.md
+import docs/marketing-content/application.md
+import docs/marketing-content/domain.md
+import docs/marketing-content/infrastructure.md
+import docs/marketing-content/filament.md
+import docs/marketing-content/flow.md
+import docs/marketing-content/events.md
+
+******** MarketingContent **********
+
 <!-- Другие BC подключать по тому же шаблону:
 
 ******** Order **********

@@ -14,6 +14,11 @@ use App\Filament\Catalog\Widgets\Tables\CategoriesHubTable;
 use App\Filament\Catalog\Widgets\Tables\ProductSetsHubTable;
 use App\Filament\Catalog\Widgets\Tables\ProductsHubTable;
 use App\Filament\Catalog\Widgets\Tables\TagsHubTable;
+use App\Filament\MarketingContent\Resources\BannerResource;
+use App\Filament\MarketingContent\Resources\MarketingContentResource;
+use App\Filament\MarketingContent\Resources\PromotionResource;
+use App\Filament\MarketingContent\Widgets\Tables\BannersHubTable;
+use App\Filament\MarketingContent\Widgets\Tables\PromotionsHubTable;
 use App\Filament\Company\Resources\CompanyResource;
 use App\Filament\Delivery\Resources\DeliveryResource;
 use App\Http\Controllers\Admin\DeliveryZoneMapEditorController;
@@ -52,6 +57,9 @@ class AdminPanelProvider extends PanelProvider
                 ProductSetResource::class,
                 TagResource::class,
                 DeliveryResource::class,
+                MarketingContentResource::class,
+                BannerResource::class,
+                PromotionResource::class,
                 CompanyResource::class,
             ])
             ->livewireComponents([
@@ -62,6 +70,8 @@ class AdminPanelProvider extends PanelProvider
                 CategoryProductsRelationManager::class,
                 ProductImagesRelationManager::class,
                 ProductSetLinesRelationManager::class,
+                BannersHubTable::class,
+                PromotionsHubTable::class,
             ])
             ->middleware([
                 EncryptCookies::class,
