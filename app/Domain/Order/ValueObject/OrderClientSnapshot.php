@@ -2,12 +2,12 @@
 
 namespace App\Domain\Order\ValueObject;
 
-use App\Domain\Order\Enum\OrderClientKind;
+use App\Shared\Enum\ClientKind;
 
 final readonly class OrderClientSnapshot
 {
     private function __construct(
-        private OrderClientKind $kind,
+        private ClientKind $kind,
         private ?int $clientId,
         private ?OrderGuestContact $guestContact,
         private ?string $name,
@@ -18,7 +18,7 @@ final readonly class OrderClientSnapshot
     public static function guest(OrderGuestContact $contact): self
     {
         return new self(
-            kind: OrderClientKind::Guest,
+            kind: ClientKind::Guest,
             clientId: null,
             guestContact: $contact,
             name: $contact->name(),
@@ -30,7 +30,7 @@ final readonly class OrderClientSnapshot
     public static function registered(int $clientId, ?string $name = null, ?string $phone = null, ?string $email = null): self
     {
         return new self(
-            kind: OrderClientKind::Registered,
+            kind: ClientKind::Registered,
             clientId: $clientId,
             guestContact: null,
             name: $name,
@@ -39,7 +39,7 @@ final readonly class OrderClientSnapshot
         );
     }
 
-    public function kind(): OrderClientKind
+    public function kind(): ClientKind
     {
         return $this->kind;
     }

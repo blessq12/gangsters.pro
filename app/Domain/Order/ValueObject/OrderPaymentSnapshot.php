@@ -2,16 +2,16 @@
 
 namespace App\Domain\Order\ValueObject;
 
-use App\Domain\Order\Enum\OrderPaymentMethod;
+use App\Shared\Enum\PaymentMethod;
 
 final readonly class OrderPaymentSnapshot
 {
     public function __construct(
-        private OrderPaymentMethod $method,
+        private PaymentMethod $method,
         private ?int $changeFromRubles,
     ) {}
 
-    public function method(): OrderPaymentMethod
+    public function method(): PaymentMethod
     {
         return $this->method;
     }

@@ -34,25 +34,17 @@ final class SetCheckoutClientUseCase
     private function buildClientSnapshot(SetCheckoutClientDto $input): ClientSnapshot
     {
         if ($input->clientId !== null) {
-            $name = $input->name;
-            $phone = $input->phone;
-            $email = $input->email;
+            $profile = $this->clientProfiles->findRegisteredProfile($input->clientId);
 
-            if ($name === null || $phone === null) {
-                $profile = $this->clientProfiles->findRegisteredProfile($input->clientId);
-
-                if ($profile !== null) {
-                    $name ??= $profile->name();
-                    $phone ??= $profile->phone();
-                    $email ??= $profile->email();
-                }
+            if ($profile === null) {
+                throw new InvalidArgumentException('Клиент с указанным идентификатором не найден.');
             }
 
             return ClientSnapshot::registered(
                 clientId: $input->clientId,
-                name: $name,
-                phone: $phone,
-                email: $email,
+                name: $input->name ?? $profile->name(),
+                phone: $input->phone ?? $profile->phone(),
+                email: $input->email ?? $profile->email(),
             );
         }
 

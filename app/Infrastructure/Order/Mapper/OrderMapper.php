@@ -3,9 +3,9 @@
 namespace App\Infrastructure\Order\Mapper;
 
 use App\Domain\Order\Entity\Order;
-use App\Domain\Order\Enum\OrderClientKind;
-use App\Domain\Order\Enum\OrderDeliveryMethod;
-use App\Domain\Order\Enum\OrderPaymentMethod;
+use App\Shared\Enum\ClientKind;
+use App\Shared\Enum\DeliveryMethod;
+use App\Shared\Enum\PaymentMethod;
 use App\Domain\Order\Enum\OrderStatus;
 use App\Domain\Order\ValueObject\OrderCartSnapshot;
 use App\Domain\Order\ValueObject\OrderClientSnapshot;
@@ -83,9 +83,9 @@ final class OrderMapper
      */
     private function mapClientSnapshot(array $payload): OrderClientSnapshot
     {
-        $kind = OrderClientKind::from((string) ($payload['kind'] ?? OrderClientKind::Guest->value));
+        $kind = ClientKind::from((string) ($payload['kind'] ?? ClientKind::Guest->value));
 
-        if ($kind === OrderClientKind::Registered) {
+        if ($kind === ClientKind::Registered) {
             return OrderClientSnapshot::registered(
                 clientId: (int) ($payload['client_id'] ?? 0),
                 name: isset($payload['name']) ? (string) $payload['name'] : null,
@@ -111,7 +111,7 @@ final class OrderMapper
         $addressPayload = $payload['address'] ?? null;
 
         return new OrderDeliverySnapshot(
-            method: OrderDeliveryMethod::from((string) ($payload['method'] ?? OrderDeliveryMethod::Courier->value)),
+            method: DeliveryMethod::from((string) ($payload['method'] ?? DeliveryMethod::Courier->value)),
             address: is_array($addressPayload)
                 ? new OrderDeliveryAddress(
                     street: (string) ($addressPayload['street'] ?? ''),
@@ -131,7 +131,7 @@ final class OrderMapper
     private function mapPaymentSnapshot(array $payload): OrderPaymentSnapshot
     {
         return new OrderPaymentSnapshot(
-            method: OrderPaymentMethod::from((string) ($payload['method'] ?? OrderPaymentMethod::Cash->value)),
+            method: PaymentMethod::from((string) ($payload['method'] ?? PaymentMethod::Cash->value)),
             changeFromRubles: isset($payload['change_from_rubles'])
                 ? (int) $payload['change_from_rubles']
                 : null,

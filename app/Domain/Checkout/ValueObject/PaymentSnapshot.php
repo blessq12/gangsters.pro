@@ -2,7 +2,7 @@
 
 namespace App\Domain\Checkout\ValueObject;
 
-use App\Domain\Checkout\Enum\PaymentMethod;
+use App\Shared\Enum\PaymentMethod;
 
 final readonly class PaymentSnapshot
 {

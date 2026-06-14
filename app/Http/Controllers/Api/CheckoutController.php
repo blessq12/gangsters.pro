@@ -16,8 +16,8 @@ use App\Application\Checkout\useCases\SetCheckoutClientUseCase;
 use App\Application\Checkout\useCases\SetCheckoutDeliveryUseCase;
 use App\Application\Checkout\useCases\SetCheckoutPaymentUseCase;
 use App\Application\Checkout\useCases\UpdateCheckoutCartUseCase;
-use App\Domain\Checkout\Enum\DeliveryMethod;
-use App\Domain\Checkout\Enum\PaymentMethod;
+use App\Shared\Enum\DeliveryMethod;
+use App\Shared\Enum\PaymentMethod;
 use App\Domain\Checkout\ValueObject\DeliveryAddress;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Checkout\SetCheckoutClientRequest;
@@ -97,6 +97,8 @@ final class CheckoutController extends Controller
                             house: (string) ($addressPayload['house'] ?? ''),
                             entrance: isset($addressPayload['entrance']) ? (string) $addressPayload['entrance'] : null,
                             apartment: isset($addressPayload['apartment']) ? (string) $addressPayload['apartment'] : null,
+                            latitude: isset($addressPayload['latitude']) ? (float) $addressPayload['latitude'] : null,
+                            longitude: isset($addressPayload['longitude']) ? (float) $addressPayload['longitude'] : null,
                         )
                         : null,
                     comment: $request->validated('comment'),

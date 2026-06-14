@@ -4,16 +4,13 @@ namespace App\Application\Order\Mapper;
 
 use App\Application\Order\DTO\CreateOrderDto;
 use App\Domain\Checkout\Event\CheckoutConfirmed;
-use App\Domain\Checkout\Enum\ClientKind;
 use App\Domain\Checkout\ValueObject\CartLineSnapshot;
 use App\Domain\Checkout\ValueObject\ClientSnapshot;
 use App\Domain\Checkout\ValueObject\DeliveryAddress;
 use App\Domain\Checkout\ValueObject\DeliverySnapshot;
 use App\Domain\Checkout\ValueObject\GuestContact;
 use App\Domain\Checkout\ValueObject\PaymentSnapshot;
-use App\Domain\Order\Enum\OrderClientKind;
-use App\Domain\Order\Enum\OrderDeliveryMethod;
-use App\Domain\Order\Enum\OrderPaymentMethod;
+use App\Shared\Enum\ClientKind;
 use App\Domain\Order\ValueObject\OrderCartSnapshot;
 use App\Domain\Order\ValueObject\OrderClientSnapshot;
 use App\Domain\Order\ValueObject\OrderDeliveryAddress;
@@ -82,7 +79,7 @@ final class CheckoutConfirmedOrderSnapshotMapper
         $address = $delivery->address();
 
         return new OrderDeliverySnapshot(
-            method: OrderDeliveryMethod::from($delivery->method()->value),
+            method: $delivery->method(),
             address: $address instanceof DeliveryAddress
                 ? new OrderDeliveryAddress(
                     street: $address->street(),
@@ -99,7 +96,7 @@ final class CheckoutConfirmedOrderSnapshotMapper
     private static function mapPayment(PaymentSnapshot $payment): OrderPaymentSnapshot
     {
         return new OrderPaymentSnapshot(
-            method: OrderPaymentMethod::from($payment->method()->value),
+            method: $payment->method(),
             changeFromRubles: $payment->changeFromRubles(),
         );
     }

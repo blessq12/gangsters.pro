@@ -54,7 +54,7 @@
 | 2 | **Order BC** | `OnCheckoutConfirmed` → `CreateOrderUseCase` — **реализовано** |
 | 3 | **Тесты** | Нет feature/unit на use case и API |
 | 4 | **Legacy HTTP** | ~~`app/Http/Requests/Shopping/*` и `shoppingApi.js`~~ — **удалено** |
-| 5 | **Enum reuse** | `DeliveryMethod` / `PaymentMethod` дублируются в Order enum |
+| 5 | **Enum reuse** | `DeliveryMethod` / `PaymentMethod` вынесены в `App\Shared\Enum\` |
 | 6 | **Акции / подарки** | Нет блока promotions в агрегате; UI подарков на фронте без бекенда |
 | 7 | **Тариф доставки** | Сумма корзины без delivery fee; Delivery BC не подключён к расчёту |
 | 8 | **Auth** | Checkout API публичный, без привязки к Sanctum / cookie-сессии |

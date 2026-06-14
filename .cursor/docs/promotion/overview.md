@@ -1,6 +1,6 @@
 # Promotion — обзор BC
 
-**Роль:** операционные правила коммерческих выгод — пороги подарка, политика стоимости доставки от суммы корзины и зоны. Только **конфигурация**; применение к корзине/checkout — позже через Application-слой Checkout.
+**Роль:** операционные правила коммерческих выгод — пороги подарка, политика стоимости доставки от суммы корзины и зоны. Расчёт benefits для checkout — через Application-слой Promotion; Checkout передаёт `PromotionBenefitsInput` через ACL-маппер.
 
 ## Семантика
 
@@ -40,8 +40,10 @@
 |-----------|---------|
 | Хранение и чтение конфигурации правил | MarketingContent (`MKT_promotions`) — витринные карточки, не правила корзины |
 | Доменные типы правил, singleton-агрегат | GeoJSON зоны, адрес кухни, `delivery_fee_kopecks` — Delivery BC |
-| Порт `PromotionPolicyRepository` | Список товаров-кандидатов — Catalog BC |
-| | Расчёт `benefitsProgress` / `promoState`, строка подарка в корзине — Checkout (+ Application ACL) |
+| Порт `PromotionPolicyRepository` | Список товаров-кандидатов — Catalog BC (через Checkout ACL) |
+| Порт `PromotionDeliveryPricingPort` | Тарифы доставки — Delivery BC (Infrastructure adapter) |
+| `BenefitProductCandidate` | DTO кандидата внутри Promotion, без типов Checkout |
+| | Вызов из Checkout: `PromotionBenefitsInputMapper` → `EvaluatePromotionBenefits` |
 
 **Не путать:** `MarketingContent\Entity\Promotion` и `Promotion` BC — разные bounded contexts, разные таблицы (`MKT_*` vs `PRM_*`).
 
@@ -54,19 +56,21 @@
 | Слой | Promotion |
 |------|-----------|
 | Domain | `app/Domain/Promotion/` |
-| Application | `app/Application/Promotion/` — `EvaluatePromotionBenefits` (расчёт benefits) |
+| Application | `app/Application/Promotion/` — `EvaluatePromotionBenefits`, `ResolveComplementSetEntitlement`, DTO `PromotionBenefitsInput` |
 | Infrastructure | `app/Infrastructure/Promotion/` |
 | HTTP | позже `GET /api/promotion` или вложение в checkout snapshot |
 | Filament | `app/Filament/Promotion/` — hub настроек акций |
-| SPA | `cartStore.benefitsProgress`, `promoState` — потребитель расчёта, не BC Promotion |
+| SPA | `checkoutPricingStore.benefitsProgress`, `promoState` — потребитель расчёта |
 
 ## Аудит (состояние)
 
 ### Сейчас
 
-- Только проектирование (этот документ + domain/infrastructure).
+- Domain + Infrastructure + Application (benefits, complement entitlement).
+- `PromotionDeliveryPricingPort` — слабая связь с Delivery BC.
+- Checkout вызывает Promotion через `PromotionBenefitsInput` (без импорта Checkout types в Promotion Application).
 
-### Техдолг (после появления хранения)
+### Техдолг
 
 1. `GetPromotionPolicyUseCase` + публичный read API (если нужен отдельный endpoint).
 2. `EvaluateCheckoutBenefitsUseCase` в Checkout Application: Promotion + Delivery + Catalog.

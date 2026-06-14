@@ -4,7 +4,7 @@ namespace App\Application\Checkout\useCases;
 
 use App\Application\Checkout\DTO\SetCheckoutDeliveryDto;
 use App\Application\Checkout\Services\CheckoutDraftLifecycle;
-use App\Domain\Checkout\Enum\DeliveryMethod;
+use App\Shared\Enum\DeliveryMethod;
 use App\Domain\Checkout\ValueObject\DeliverySnapshot;
 
 /**

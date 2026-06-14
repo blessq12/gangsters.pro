@@ -44,6 +44,53 @@ final class CheckoutApiTest extends TestCase
         $response->assertNotFound();
     }
 
+    #[Test]
+    public function patch_cart_возвращает_benefits_progress(): void
+    {
+        if (! $this->databaseIsAvailable()) {
+            $this->markTestSkipped('БД недоступна для feature-теста.');
+        }
+
+        $productId = $this->resolveFirstProductId();
+        if ($productId === null) {
+            $this->markTestSkipped('В каталоге нет активных товаров.');
+        }
+
+        $createResponse = $this->postJson('/api/checkout');
+        $createResponse->assertCreated();
+        $checkoutId = (string) $createResponse->json('checkout_id');
+
+        $patchResponse = $this->patchJson('/api/checkout/'.$checkoutId.'/cart', [
+            'product_id' => $productId,
+            'quantity' => 1,
+        ]);
+
+        $patchResponse->assertOk();
+        $patchResponse->assertJsonStructure([
+            'benefits_progress' => [
+                'delivery',
+                'gift',
+                'complement',
+            ],
+        ]);
+    }
+
+    private function resolveFirstProductId(): ?int
+    {
+        $catalogResponse = $this->getJson('/api/catalog');
+        $catalogResponse->assertOk();
+
+        foreach ($catalogResponse->json('categories', []) as $categoryNode) {
+            foreach ($categoryNode['items'] ?? [] as $item) {
+                if (($item['kind'] ?? null) === 'product' && isset($item['id'])) {
+                    return (int) $item['id'];
+                }
+            }
+        }
+
+        return null;
+    }
+
     private function databaseIsAvailable(): bool
     {
         try {

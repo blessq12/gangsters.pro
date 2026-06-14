@@ -20,9 +20,7 @@ final class ArchitectureBoundariesTest extends TestCase
         'Illuminate\\',
     ];
 
-    private const KNOWN_DOMAIN_VIOLATIONS = [
-        'app/Domain/Checkout/ValueObject/CheckoutId.php → Illuminate\Support\Str',
-    ];
+    private const KNOWN_DOMAIN_VIOLATIONS = [];
 
     private const KNOWN_APPLICATION_VIOLATIONS = [];
 
@@ -71,6 +69,17 @@ final class ArchitectureBoundariesTest extends TestCase
                 self::KNOWN_APPLICATION_VIOLATIONS,
             )),
         );
+    }
+
+    #[Test]
+    public function promotion_application_не_импортирует_checkout_domain(): void
+    {
+        $violations = $this->collectImportViolations(
+            root: 'app/Application/Promotion',
+            forbiddenPrefixes: ['App\\Domain\\Checkout\\'],
+        );
+
+        $this->assertSame([], $violations);
     }
 
     /**

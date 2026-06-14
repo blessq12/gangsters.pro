@@ -2,7 +2,7 @@
 
 namespace App\Domain\Checkout\ValueObject;
 
-use App\Domain\Checkout\Enum\ClientKind;
+use App\Shared\Enum\ClientKind;
 
 final readonly class ClientSnapshot
 {

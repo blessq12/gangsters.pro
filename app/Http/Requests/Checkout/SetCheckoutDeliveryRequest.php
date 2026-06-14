@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\Checkout;
 
-use App\Domain\Checkout\Enum\DeliveryMethod;
+use App\Shared\Enum\DeliveryMethod;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -25,6 +25,8 @@ final class SetCheckoutDeliveryRequest extends FormRequest
             'address.house' => ['nullable', 'string', 'max:63'],
             'address.entrance' => ['nullable', 'string', 'max:63'],
             'address.apartment' => ['nullable', 'string', 'max:63'],
+            'address.latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'address.longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'comment' => ['nullable', 'string', 'max:2000'],
             'scheduled_at' => ['nullable', 'string', 'max:64'],
         ];

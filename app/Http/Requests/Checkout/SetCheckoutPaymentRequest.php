@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\Checkout;
 
-use App\Domain\Checkout\Enum\PaymentMethod;
+use App\Shared\Enum\PaymentMethod;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

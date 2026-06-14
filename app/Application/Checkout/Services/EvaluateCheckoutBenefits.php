@@ -2,14 +2,15 @@
 
 namespace App\Application\Checkout\Services;
 
+use App\Application\Checkout\Mapper\PromotionBenefitsInputMapper;
 use App\Application\Promotion\Services\EvaluatePromotionBenefits;
 use App\Domain\Checkout\Entity\Checkout;
-use App\Domain\Checkout\Enum\DeliveryMethod;
 use App\Domain\Checkout\Port\CatalogComplementSetCandidatesPort;
 use App\Domain\Checkout\Port\CatalogGiftCandidatesPort;
 use App\Domain\Checkout\Port\CatalogRollMetaPort;
 use App\Domain\Checkout\ValueObject\CartLineSnapshot;
 use App\Domain\Promotion\Enum\PromotionOrderChannel;
+use App\Shared\Enum\DeliveryMethod;
 
 /**
  * Оркестрация расчёта benefits для ответа Checkout API.
@@ -32,14 +33,20 @@ final class EvaluateCheckoutBenefits
      */
     public function evaluate(Checkout $checkout): array
     {
+        $address = $checkout->delivery()?->address();
+
         return $this->promotionBenefits->evaluate(
-            currentKopecks: $this->payableTotalKopecks($checkout),
-            orderChannel: $this->resolveOrderChannel($checkout),
-            deliveryMethod: $checkout->delivery()?->method(),
-            rollCount: $this->countRollUnitsInCart($checkout),
-            selectedGiftProductId: $this->resolveSelectedGiftProductId($checkout),
-            giftCandidates: $this->giftCandidates->listActiveGiftCandidates(),
-            complementCandidates: $this->complementCandidates->listActiveComplementSetCandidates(),
+            PromotionBenefitsInputMapper::map(
+                currentKopecks: $this->payableTotalKopecks($checkout),
+                orderChannel: $this->resolveOrderChannel($checkout),
+                deliveryMethod: $checkout->delivery()?->method(),
+                rollCount: $this->countRollUnitsInCart($checkout),
+                selectedGiftProductId: $this->resolveSelectedGiftProductId($checkout),
+                giftCandidates: $this->giftCandidates->listActiveGiftCandidates(),
+                complementCandidates: $this->complementCandidates->listActiveComplementSetCandidates(),
+                deliveryLatitude: $address?->latitude(),
+                deliveryLongitude: $address?->longitude(),
+            ),
         );
     }
 

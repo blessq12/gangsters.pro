@@ -2,7 +2,7 @@
 
 namespace App\Application\Checkout\DTO;
 
-use App\Domain\Checkout\Enum\PaymentMethod;
+use App\Shared\Enum\PaymentMethod;
 
 final readonly class SetCheckoutPaymentDto
 {

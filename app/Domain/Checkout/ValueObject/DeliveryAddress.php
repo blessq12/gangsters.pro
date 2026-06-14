@@ -9,6 +9,8 @@ final readonly class DeliveryAddress
         private string $house,
         private ?string $entrance = null,
         private ?string $apartment = null,
+        private ?float $latitude = null,
+        private ?float $longitude = null,
     ) {}
 
     public function street(): string
@@ -29,5 +31,15 @@ final readonly class DeliveryAddress
     public function apartment(): ?string
     {
         return $this->apartment;
+    }
+
+    public function latitude(): ?float
+    {
+        return $this->latitude;
+    }
+
+    public function longitude(): ?float
+    {
+        return $this->longitude;
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Application\Checkout\Services;
 
+use App\Application\Promotion\Services\ResolveComplementSetEntitlement;
 use App\Domain\Checkout\Entity\Checkout;
 use App\Domain\Checkout\Port\CatalogComplementSetCandidate;
 use App\Domain\Checkout\Port\CatalogComplementSetCandidatesPort;
@@ -9,8 +10,6 @@ use App\Domain\Checkout\Port\CatalogPricingPort;
 use App\Domain\Checkout\Port\CatalogRollMetaPort;
 use App\Domain\Checkout\ValueObject\CartLineSnapshot;
 use App\Domain\Checkout\ValueObject\CartSnapshot;
-use App\Domain\Promotion\Repository\PromotionPolicyRepository;
-use App\Domain\Promotion\ValueObject\ComplementSetBenefitRule;
 use App\Shared\ValueObject\Money;
 
 /**
@@ -19,7 +18,7 @@ use App\Shared\ValueObject\Money;
 final class SyncCheckoutComplementBenefitLines
 {
     public function __construct(
-        private readonly PromotionPolicyRepository $promotionPolicies,
+        private readonly ResolveComplementSetEntitlement $complementEntitlement,
         private readonly CatalogRollMetaPort $rollMeta,
         private readonly CatalogComplementSetCandidatesPort $complementCandidates,
         private readonly CatalogPricingPort $pricing,
@@ -28,11 +27,11 @@ final class SyncCheckoutComplementBenefitLines
     public function sync(Checkout $checkout): void
     {
         $userLines = $this->userCartLines($checkout);
-        $policy = $this->promotionPolicies->find();
-        $rule = $policy?->complementSetBenefitRule();
         $candidates = $this->complementCandidates->listActiveComplementSetCandidates();
-
-        $entitledSetCount = $this->resolveEntitledSetCount($userLines, $rule, $candidates);
+        $entitledSetCount = $this->complementEntitlement->resolve(
+            $this->countRollUnits($userLines),
+            $candidates !== [],
+        );
         $lines = $userLines;
 
         if ($entitledSetCount > 0) {
@@ -46,28 +45,6 @@ final class SyncCheckoutComplementBenefitLines
         }
 
         $checkout->setCart(CartSnapshot::fromLines($lines));
-    }
-
-    /**
-     * @param  list<CartLineSnapshot>  $userLines
-     * @param  list<CatalogComplementSetCandidate>  $candidates
-     */
-    private function resolveEntitledSetCount(
-        array $userLines,
-        ?ComplementSetBenefitRule $rule,
-        array $candidates,
-    ): int {
-        if (! $rule instanceof ComplementSetBenefitRule || ! $rule->isActive() || $candidates === []) {
-            return 0;
-        }
-
-        $rollCount = $this->countRollUnits($userLines);
-
-        if ($rollCount < $rule->rollsPerSet()) {
-            return 0;
-        }
-
-        return intdiv($rollCount, $rule->rollsPerSet());
     }
 
     /**

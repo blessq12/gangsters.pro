@@ -34,7 +34,7 @@ use App\Http\Requests\Client\MergeGuestFavoritesRequest;
 use App\Http\Requests\Client\RegisterClientRequest;
 use App\Http\Requests\Client\ToggleClientFavoriteRequest;
 use App\Http\Requests\Client\UpdateClientProfileRequest;
-use App\Infrastructure\Client\Model\CLN_Client;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -95,20 +95,21 @@ final class ClientController extends Controller
 
     public function updateProfile(UpdateClientProfileRequest $request): JsonResponse
     {
-        $client = $this->resolveAuthenticatedClient($request);
+        $clientId = $this->resolveClientId($request);
+        $current = $this->getClientProfile->execute($clientId)['client'];
 
         return response()->json(
             $this->updateClientProfile->execute(
                 new UpdateClientProfileDto(
-                    clientId: (int) $client->id,
-                    name: (string) $request->validated('name', $client->name),
-                    phone: (string) $request->validated('phone', $client->phone),
+                    clientId: $clientId,
+                    name: (string) $request->validated('name', $current['name']),
+                    phone: (string) $request->validated('phone', $current['phone']),
                     email: $request->has('email')
                         ? $request->validated('email')
-                        : $client->email,
+                        : $current['email'],
                     birthDate: $request->has('birth_date')
                         ? $request->validated('birth_date')
-                        : ($client->birth_date?->format('Y-m-d')),
+                        : $current['birth_date'],
                     consentPersonalData: $request->has('consent_personal_data')
                         ? (bool) $request->validated('consent_personal_data')
                         : null,
@@ -233,11 +234,11 @@ final class ClientController extends Controller
         );
     }
 
-    private function resolveAuthenticatedClient(Request $request): CLN_Client
+    private function resolveAuthenticatedClient(Request $request): Authenticatable
     {
         $client = $request->user('sanctum');
 
-        if (! $client instanceof CLN_Client) {
+        if (! $client instanceof Authenticatable) {
             throw new UnauthorizedException();
         }
 
@@ -246,6 +247,6 @@ final class ClientController extends Controller
 
     private function resolveClientId(Request $request): int
     {
-        return (int) $this->resolveAuthenticatedClient($request)->id;
+        return (int) $this->resolveAuthenticatedClient($request)->getAuthIdentifier();
     }
 }

@@ -4,9 +4,9 @@ namespace App\Infrastructure\Checkout\Mapper;
 
 use App\Domain\Checkout\Entity\Checkout;
 use App\Domain\Checkout\Enum\CheckoutStatus;
-use App\Domain\Checkout\Enum\ClientKind;
-use App\Domain\Checkout\Enum\DeliveryMethod;
-use App\Domain\Checkout\Enum\PaymentMethod;
+use App\Shared\Enum\ClientKind;
+use App\Shared\Enum\DeliveryMethod;
+use App\Shared\Enum\PaymentMethod;
 use App\Domain\Checkout\ValueObject\CartLineSnapshot;
 use App\Domain\Checkout\ValueObject\CartSnapshot;
 use App\Domain\Checkout\ValueObject\CheckoutId;
@@ -129,6 +129,8 @@ final class CheckoutMapper
                     house: (string) ($addressPayload['house'] ?? ''),
                     entrance: isset($addressPayload['entrance']) ? (string) $addressPayload['entrance'] : null,
                     apartment: isset($addressPayload['apartment']) ? (string) $addressPayload['apartment'] : null,
+                    latitude: isset($addressPayload['latitude']) ? (float) $addressPayload['latitude'] : null,
+                    longitude: isset($addressPayload['longitude']) ? (float) $addressPayload['longitude'] : null,
                 )
                 : null,
             comment: isset($payload['comment']) ? (string) $payload['comment'] : null,
@@ -198,6 +200,8 @@ final class CheckoutMapper
                     'house' => $address->house(),
                     'entrance' => $address->entrance(),
                     'apartment' => $address->apartment(),
+                    'latitude' => $address->latitude(),
+                    'longitude' => $address->longitude(),
                 ]
                 : null,
             'comment' => $delivery->comment(),

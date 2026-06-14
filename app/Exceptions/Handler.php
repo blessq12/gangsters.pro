@@ -14,6 +14,7 @@ use App\Domain\Checkout\Exception\CheckoutAlreadyConfirmedException;
 use App\Domain\Checkout\Exception\CheckoutNotFoundException;
 use App\Domain\Checkout\Exception\CheckoutNotReadyForConfirmationException;
 use App\Domain\Order\Exception\OrderInvariantViolation;
+use App\Domain\Order\Exception\OrderNotFoundException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Support\Facades\Event;
@@ -111,6 +112,12 @@ class Handler extends ExceptionHandler
             return response()->json([
                 'message' => $e->getMessage(),
             ], 422);
+        }
+
+        if ($e instanceof OrderNotFoundException && $request->is('api/*')) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 404);
         }
 
         return parent::render($request, $e);

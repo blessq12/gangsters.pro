@@ -1,113 +1,33 @@
 import { defineStore } from "pinia";
 import {
-    confirmCheckoutRequest,
-    createCheckoutRequest,
-    fetchCheckoutRequest,
-    setCheckoutClientRequest,
-    setCheckoutDeliveryRequest,
-    setCheckoutPaymentRequest,
-    updateCheckoutCartRequest,
-} from "../api/checkoutApi";
+    setCheckoutPromotionGift,
+    updateCheckoutCartLine,
+} from "../features/checkout/checkoutCartCommands";
 import {
-    fromServerCheckoutPaymentMethod,
-    normalizeCheckoutPaymentMethod,
-    toServerCheckoutPaymentMethod,
-} from "../features/checkout/checkoutPaymentMethods";
+    bootstrapCheckoutSession,
+    confirmCheckoutOnServer,
+    ensureDraftCheckout,
+    flushCheckoutToServer,
+    flushClientToServer,
+    flushDeliveryToServer,
+    flushPaymentToServer,
+    persistCheckoutSession,
+    tryRestoreCheckoutSession,
+} from "../features/checkout/checkoutFlushCommands";
+import {
+    mapClientToGuestContact,
+    mapDeliveryToLocal,
+    mapPaymentToLocal,
+    normalizePaymentPatch,
+} from "../features/checkout/checkoutServerMappers";
+import {
+    buildCheckoutSessionSnapshot,
+    CHECKOUT_WIZARD_STEPS,
+    clearCheckoutSessionPayload,
+} from "../features/checkout/checkoutSessionStorage";
 import { normalizeCheckoutCartBlock } from "../features/checkout/normalizeCheckoutCart";
 import { DOMAIN_EVENTS, emitDomainEvent } from "../shared/domainEvents";
 import { useCheckoutPricingStore } from "./checkoutPricingStore";
-
-const CHECKOUT_STEPS = ["cart", "guest", "delivery", "payment", "confirm"];
-const SESSION_KEY = "gangsters_checkout_session_v1";
-
-function readSessionPayload() {
-    if (typeof window === "undefined") {
-        return null;
-    }
-
-    try {
-        const raw = window.sessionStorage.getItem(SESSION_KEY);
-        if (!raw) {
-            return null;
-        }
-        const parsed = JSON.parse(raw);
-        return parsed && typeof parsed === "object" ? parsed : null;
-    } catch {
-        return null;
-    }
-}
-
-function writeSessionPayload(payload) {
-    if (typeof window === "undefined") {
-        return;
-    }
-
-    window.sessionStorage.setItem(SESSION_KEY, JSON.stringify(payload));
-}
-
-function clearSessionPayload() {
-    if (typeof window === "undefined") {
-        return;
-    }
-
-    window.sessionStorage.removeItem(SESSION_KEY);
-}
-
-function mapClientToGuestContact(client) {
-    if (!client || typeof client !== "object") {
-        return { name: "", phone: "", email: "" };
-    }
-
-    return {
-        name: typeof client.name === "string" ? client.name : "",
-        phone: typeof client.phone === "string" ? client.phone : "",
-        email: typeof client.email === "string" ? client.email : "",
-    };
-}
-
-function mapDeliveryToLocal(delivery) {
-    if (!delivery || typeof delivery !== "object") {
-        return {
-            method: null,
-            address: null,
-            comment: "",
-            scheduledAt: null,
-        };
-    }
-
-    return {
-        method: delivery.method ?? null,
-        address: delivery.address ?? null,
-        comment: delivery.comment ?? "",
-        scheduledAt: delivery.scheduled_at ?? null,
-    };
-}
-
-function mergeCheckoutDeliveryComment(deliveryComment, customerComment) {
-    const parts = [
-        String(deliveryComment || "").trim(),
-        String(customerComment || "").trim(),
-    ].filter(Boolean);
-
-    return parts.length > 0 ? parts.join("\n\n") : "";
-}
-
-function mapPaymentToLocal(payment) {
-    if (!payment || typeof payment !== "object") {
-        return {
-            method: null,
-            changeFrom: null,
-        };
-    }
-
-    return {
-        method:
-            payment.method != null
-                ? fromServerCheckoutPaymentMethod(payment.method)
-                : null,
-        changeFrom: payment.change_from_rubles ?? null,
-    };
-}
 
 export const useCheckoutStore = defineStore("checkout", {
     state: () => ({
@@ -245,7 +165,7 @@ export const useCheckoutStore = defineStore("checkout", {
         },
 
         setSuggestedStep(step) {
-            if (step && CHECKOUT_STEPS.includes(step)) {
+            if (step && CHECKOUT_WIZARD_STEPS.includes(step)) {
                 this.suggestedStep = step;
             } else if (step === null) {
                 this.suggestedStep = null;
@@ -257,108 +177,19 @@ export const useCheckoutStore = defineStore("checkout", {
                 return;
             }
 
-            const pricingStore = useCheckoutPricingStore();
-            const deliveryPricing = pricingStore.deliveryPricing;
-            const benefitsProgress = pricingStore.benefitsProgress;
-            const promoState = pricingStore.promoState;
-
-            writeSessionPayload({
-                checkoutId: this.checkoutId,
-                status: this.status,
-                snapshot: {
-                    checkout_id: this.checkoutId,
-                    status: this.status,
-                    cart: {
-                        items: this.cartItems.map((item) => ({
-                            product_id: item.productId,
-                            product_name: item.productSnapshot?.name ?? "",
-                            quantity: item.qty,
-                            unit_price_rubles: item.productSnapshot?.price ?? 0,
-                            line_total_rubles:
-                                (Number(item.pricing?.lineTotalKopecks) || 0) / 100,
-                            payload: item.payload ?? null,
-                        })),
-                        items_total_rubles: this.itemsTotalRubles,
-                        promo_state: promoState,
-                    },
-                    client: this.serverClient,
-                    delivery: this.serverDelivery,
-                    payment: this.serverPayment,
-                    delivery_pricing: deliveryPricing
-                        ? {
-                              method: deliveryPricing.method,
-                              items_payable_kopecks: deliveryPricing.itemsPayableKopecks,
-                              delivery_fee_kopecks: deliveryPricing.deliveryFeeKopecks,
-                              is_free: deliveryPricing.isFree,
-                              is_preview: deliveryPricing.isPreview,
-                              remaining_to_free_kopecks: deliveryPricing.remainingToFreeKopecks,
-                              items_total_kopecks: deliveryPricing.itemsTotalKopecks,
-                              grand_total_kopecks: deliveryPricing.grandTotalKopecks,
-                              items_total_rub: deliveryPricing.itemsTotalRub,
-                              delivery_fee_rub: deliveryPricing.deliveryFeeRub,
-                              grand_total_rub: deliveryPricing.grandTotalRub,
-                          }
-                        : null,
-                    benefits_progress: benefitsProgress,
-                },
-            });
+            persistCheckoutSession(buildCheckoutSessionSnapshot(this));
         },
 
-        async tryRestoreSession() {
-            const saved = readSessionPayload();
-            if (!saved?.checkoutId || saved.status !== "draft") {
-                return false;
-            }
-
-            try {
-                const remote = await fetchCheckoutRequest(saved.checkoutId);
-                if (remote?.status !== "draft") {
-                    clearSessionPayload();
-                    return false;
-                }
-
-                this.applyFromServer(remote);
-                this.sessionReady = true;
-
-                return true;
-            } catch (error) {
-                if (!saved.snapshot) {
-                    return false;
-                }
-
-                this.checkoutId = saved.checkoutId;
-                this.status = saved.status;
-                this.applyFromServer(
-                    saved.snapshot ?? { checkout_id: saved.checkoutId, status: "draft" },
-                );
-                this.sessionReady = true;
-
-                return true;
-            }
+        tryRestoreSession() {
+            return tryRestoreCheckoutSession(this);
         },
 
-        async ensureDraftCheckout() {
-            if (this.hasCheckout) {
-                return this.checkoutId;
-            }
-
-            const created = await createCheckoutRequest();
-            this.applyFromServer(created);
-            this.sessionReady = true;
-
-            return this.checkoutId;
+        ensureDraftCheckout() {
+            return ensureDraftCheckout(this);
         },
 
-        async bootstrapSession() {
-            if (this.sessionReady) {
-                return;
-            }
-
-            if (await this.tryRestoreSession()) {
-                return;
-            }
-
-            await this.ensureDraftCheckout();
+        bootstrapSession() {
+            return bootstrapCheckoutSession(this);
         },
 
         clearAfterCompleted() {
@@ -373,7 +204,7 @@ export const useCheckoutStore = defineStore("checkout", {
             this.suggestedStep = null;
             this.sessionReady = false;
             this.error = null;
-            clearSessionPayload();
+            clearCheckoutSessionPayload();
         },
 
         clearLocalForms() {
@@ -419,11 +250,7 @@ export const useCheckoutStore = defineStore("checkout", {
         },
 
         setPaymentInfo(payload) {
-            const patch = { ...(payload || {}) };
-            if (patch.method != null) {
-                patch.method = normalizeCheckoutPaymentMethod(patch.method);
-            }
-            this.patchLocal({ paymentInfo: patch });
+            this.patchLocal({ paymentInfo: normalizePaymentPatch(payload) });
         },
 
         setCustomerComment(comment) {
@@ -448,196 +275,32 @@ export const useCheckoutStore = defineStore("checkout", {
             this.recomputeSuggestedStep();
         },
 
-        async updateCartLine(productId, quantity, payload = null) {
-            await this.ensureDraftCheckout();
-            this.loading = true;
-            this.error = null;
-
-            try {
-                const body = {
-                    product_id: Number(productId),
-                    quantity: Number(quantity),
-                };
-                if (payload != null) {
-                    body.payload = payload;
-                }
-
-                const data = await updateCheckoutCartRequest(this.checkoutId, body);
-                this.applyFromServer(data);
-                return data;
-            } catch (e) {
-                console.error("updateCartLine / checkout", e);
-                this.error =
-                    e?.response?.data?.message || "Не удалось обновить корзину.";
-                throw e;
-            } finally {
-                this.loading = false;
-            }
+        updateCartLine(productId, quantity, payload = null) {
+            return updateCheckoutCartLine(this, productId, quantity, payload);
         },
 
-        buildClientPayload({ clientId = null, isGuest = false } = {}) {
-            if (clientId != null) {
-                return {
-                    client_id: Number(clientId),
-                    name: this.guestContact.name || undefined,
-                    phone: this.guestContact.phone || undefined,
-                    email: this.guestContact.email || undefined,
-                };
-            }
-
-            if (!isGuest) {
-                return {
-                    client_id: null,
-                };
-            }
-
-            return {
-                name: this.guestContact.name,
-                phone: this.guestContact.phone,
-                email: this.guestContact.email || undefined,
-            };
+        flushClientToServer(options = {}) {
+            return flushClientToServer(this, options);
         },
 
-        buildDeliveryPayload(selectedAddress = null) {
-            const method = this.deliveryInfo.method;
-            let address = this.deliveryInfo.address;
-
-            if (method === "courier" && selectedAddress && typeof selectedAddress === "object") {
-                address = {
-                    street: selectedAddress.street ?? "",
-                    house: selectedAddress.house ?? "",
-                    entrance: selectedAddress.entrance ?? null,
-                    apartment: selectedAddress.apartment ?? null,
-                };
-            }
-
-            return {
-                method,
-                address: method === "courier" ? address : null,
-                comment:
-                    mergeCheckoutDeliveryComment(
-                        this.deliveryInfo.comment,
-                        this.customerComment,
-                    ) || undefined,
-                scheduled_at: this.deliveryInfo.scheduledAt || undefined,
-            };
+        flushDeliveryToServer(selectedAddress = null) {
+            return flushDeliveryToServer(this, selectedAddress);
         },
 
-        buildPaymentPayload() {
-            return {
-                method: toServerCheckoutPaymentMethod(this.paymentInfo.method),
-                change_from_rubles:
-                    this.paymentInfo.changeFrom != null
-                        ? Number(this.paymentInfo.changeFrom)
-                        : undefined,
-            };
+        flushPaymentToServer() {
+            return flushPaymentToServer(this);
         },
 
-        async flushClientToServer({ clientId = null, isGuest = false } = {}) {
-            await this.ensureDraftCheckout();
-            this.flushing = true;
-
-            try {
-                const data = await setCheckoutClientRequest(
-                    this.checkoutId,
-                    this.buildClientPayload({ clientId, isGuest }),
-                );
-                this.applyFromServer(data);
-            } catch (e) {
-                console.error("flushClientToServer / checkout", e);
-                throw e;
-            } finally {
-                this.flushing = false;
-            }
+        flushToServer(options = {}) {
+            return flushCheckoutToServer(this, options);
         },
 
-        async flushDeliveryToServer(selectedAddress = null) {
-            await this.ensureDraftCheckout();
-            this.flushing = true;
-
-            try {
-                const data = await setCheckoutDeliveryRequest(
-                    this.checkoutId,
-                    this.buildDeliveryPayload(selectedAddress),
-                );
-                this.applyFromServer(data);
-            } catch (e) {
-                console.error("flushDeliveryToServer / checkout", e);
-                throw e;
-            } finally {
-                this.flushing = false;
-            }
+        confirmCheckout() {
+            return confirmCheckoutOnServer(this);
         },
 
-        async flushPaymentToServer() {
-            await this.ensureDraftCheckout();
-            this.flushing = true;
-
-            try {
-                const data = await setCheckoutPaymentRequest(
-                    this.checkoutId,
-                    this.buildPaymentPayload(),
-                );
-                this.applyFromServer(data);
-            } catch (e) {
-                console.error("flushPaymentToServer / checkout", e);
-                throw e;
-            } finally {
-                this.flushing = false;
-            }
-        },
-
-        async flushToServer(options = {}) {
-            const { clientId = null, isGuest = false, selectedAddress = null } = options;
-
-            if (isGuest || clientId != null) {
-                await this.flushClientToServer({ clientId, isGuest });
-            }
-            if (this.deliveryInfo.method) {
-                await this.flushDeliveryToServer(selectedAddress);
-            }
-            if (this.paymentInfo.method) {
-                await this.flushPaymentToServer();
-            }
-        },
-
-        async confirmCheckout() {
-            await this.ensureDraftCheckout();
-            this.flushing = true;
-
-            try {
-                const data = await confirmCheckoutRequest(this.checkoutId);
-                this.applyFromServer(data);
-                clearSessionPayload();
-                return data;
-            } catch (e) {
-                console.error("confirmCheckout", e);
-                this.error =
-                    e?.response?.data?.message || "Не удалось подтвердить оформление.";
-                throw e;
-            } finally {
-                this.flushing = false;
-            }
-        },
-
-        async setPromotionGift(productId) {
-            const previousId = this.promotions.freeRollGiftProductId;
-            const nextId = productId != null ? Number(productId) || null : null;
-
-            if (previousId != null && previousId !== nextId) {
-                await this.updateCartLine(previousId, 0, { kind: "gift" });
-            }
-
-            if (nextId != null) {
-                await this.updateCartLine(nextId, 1, { kind: "gift" });
-            }
-
-            this.patchLocal({
-                promotions: {
-                    freeRollGiftProductId: nextId,
-                },
-            });
+        setPromotionGift(productId) {
+            return setCheckoutPromotionGift(this, productId);
         },
     },
 });
-

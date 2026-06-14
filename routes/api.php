@@ -64,4 +64,5 @@ Route::prefix('client')->group(function (): void {
 
 Route::middleware('auth.client')->group(function (): void {
     Route::get('order', [OrderController::class, 'index']);
+    Route::get('order/{orderId}', [OrderController::class, 'show']);
 });

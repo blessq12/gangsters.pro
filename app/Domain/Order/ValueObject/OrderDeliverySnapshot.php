@@ -2,18 +2,18 @@
 
 namespace App\Domain\Order\ValueObject;
 
-use App\Domain\Order\Enum\OrderDeliveryMethod;
+use App\Shared\Enum\DeliveryMethod;
 
 final readonly class OrderDeliverySnapshot
 {
     public function __construct(
-        private OrderDeliveryMethod $method,
+        private DeliveryMethod $method,
         private ?OrderDeliveryAddress $address,
         private ?string $comment,
         private ?string $scheduledAt,
     ) {}
 
-    public function method(): OrderDeliveryMethod
+    public function method(): DeliveryMethod
     {
         return $this->method;
     }

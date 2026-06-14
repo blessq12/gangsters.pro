@@ -2,7 +2,7 @@
 
 namespace App\Domain\Checkout\ValueObject;
 
-use App\Domain\Checkout\Enum\DeliveryMethod;
+use App\Shared\Enum\DeliveryMethod;
 
 final readonly class DeliverySnapshot
 {
