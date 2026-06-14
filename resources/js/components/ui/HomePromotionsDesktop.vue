@@ -1,10 +1,11 @@
 <script setup>
 import { computed, ref } from "vue";
 import { useFloatLoop } from "../../composables/animations/useFloatLoop";
-import { useSystemReadModel } from "../../features/system/useSystemReadModel";
+import { useMarketingReadModel } from "../../features/marketing/useMarketingReadModel";
+import { hasDocumentBody } from "../../utils/system/documentBody";
 import { useAppDesign } from "../../design/useAppDesign";
 
-const { promotions, loading } = useSystemReadModel({ autoload: true });
+const { promotions, loading } = useMarketingReadModel({ autoload: true });
 
 const hp = useAppDesign().components.home.promotions;
 const hpShared = hp.shared;
@@ -12,9 +13,12 @@ const hpDesk = hp.desktopSplit;
 
 const promos = computed(() =>
     (promotions.value || []).map((promo) => ({
+        id: promo.id,
         title: promo.title || "",
         description: promo.description || "",
+        body: promo.body || "",
         image: promo.image || "",
+        hasHtmlBody: hasDocumentBody(promo.body),
     })),
 );
 
@@ -62,7 +66,7 @@ const openPromo = (promo) => {
             <template v-else-if="promos.length">
                 <article
                     v-for="(promo, index) in promos"
-                    :key="index"
+                    :key="promo.id ?? index"
                     :ref="(el) => registerPromo(el, index)"
                     :class="hpDesk.article"
                     @click="openPromo(promo)"
@@ -94,7 +98,15 @@ const openPromo = (promo) => {
                         :class="hpShared.modalImg"
                     />
                 </div>
-                <p :class="hpShared.modalText">
+                <div
+                    v-if="activePromo.hasHtmlBody"
+                    :class="hpShared.modalText"
+                    v-html="activePromo.body"
+                />
+                <p
+                    v-else-if="activePromo.description"
+                    :class="hpShared.modalText"
+                >
                     {{ activePromo.description }}
                 </p>
             </div>

@@ -2,7 +2,7 @@
 import "swiper/css";
 import { computed, onBeforeUnmount, ref } from "vue";
 import { Swiper, SwiperSlide } from "swiper/vue";
-import { useSystemStore } from "../../stores/systemStore";
+import { useMarketingReadModel } from "../../features/marketing/useMarketingReadModel";
 import { useAppDesign } from "../../design/useAppDesign";
 
 const props = defineProps({
@@ -13,7 +13,7 @@ const props = defineProps({
     },
 });
 
-const systemStore = useSystemStore();
+const { banners, loading } = useMarketingReadModel({ autoload: true });
 const isMobile = computed(() => props.variant === "mobile");
 
 const j = useAppDesign().components.home.jumbotron;
@@ -21,7 +21,7 @@ const jShared = j.shared;
 const jVar = computed(() => (isMobile.value ? j.mobile : j.desktop));
 
 const slides = computed(() =>
-    (systemStore.banners || []).map((banner) => ({
+    (banners.value || []).map((banner) => ({
         title: banner.title || "",
         description: banner.description || "",
         image: isMobile.value
@@ -30,7 +30,7 @@ const slides = computed(() =>
     })),
 );
 
-const isLoading = computed(() => systemStore.loadingBanners);
+const isLoading = computed(() => loading.value.banners);
 const swiperRef = ref(null);
 const loopReady = computed(() => slides.value.length >= 3);
 const rewindEnabled = computed(() => slides.value.length > 1 && !loopReady.value);
