@@ -23,6 +23,7 @@ export const useUiStore = defineStore("ui", {
         dockBadges: { ...DEFAULT_DOCK_BADGES },
         /** Сигнал для CartDockPanel: запустить handleStartCheckout (не persist). */
         pendingCheckoutStart: false,
+        checkoutWizardStep: "cart",
         showGiftSelectionModal: false,
         giftModalSource: null,
         giftAutoPromptDismissed: false,
@@ -114,7 +115,13 @@ export const useUiStore = defineStore("ui", {
         consumeCheckoutStart() {
             this.pendingCheckoutStart = false;
         },
+        setCheckoutWizardStep(step) {
+            this.checkoutWizardStep = step;
+        },
         openGiftSelectionModal({ source = "manual" } = {}) {
+            if (this.checkoutWizardStep !== "confirm") {
+                return;
+            }
             this.giftModalSource = source;
             this.showGiftSelectionModal = true;
         },

@@ -11,6 +11,7 @@ use App\Domain\Checkout\ValueObject\CartLineSnapshot;
 use App\Domain\Checkout\ValueObject\CartSnapshot;
 use App\Domain\Promotion\Repository\PromotionPolicyRepository;
 use App\Domain\Promotion\ValueObject\ComplementSetBenefitRule;
+use App\Shared\ValueObject\Money;
 
 /**
  * Синхронизирует автоматические строки комплекта дополнений в корзине checkout.
@@ -107,9 +108,11 @@ final class SyncCheckoutComplementBenefitLines
             return null;
         }
 
-        return CartLineSnapshot::fromQuote(
-            quote: $quote,
+        return new CartLineSnapshot(
+            productId: $quote->productId(),
+            productName: $quote->productName(),
             quantity: $entitledSetCount,
+            unitPrice: Money::zero(),
             payload: ['kind' => 'complement'],
         );
     }

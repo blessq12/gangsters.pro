@@ -1,7 +1,12 @@
 <script setup>
+import { computed, onMounted, watch } from "vue";
 import { useAppDesign } from "../../design/useAppDesign";
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
+import { wizardNonComplementSystemItems } from "../../features/checkout/normalizeCheckoutCart";
+import { useGiftPromotionPrompt } from "../../features/checkout/useGiftPromotionPrompt";
 import CheckoutBenefitsPanel from "./CheckoutBenefitsPanel.vue";
+import CheckoutComplementOffers from "./CheckoutComplementOffers.vue";
+import CheckoutTotalsSummary from "./CheckoutTotalsSummary.vue";
 
 const chk = useAppDesign().components.checkout;
 const s = chk.shared;
@@ -21,19 +26,43 @@ const {
     orderStore,
     userCartItems,
     systemCartItems,
-    totalAmount,
-    itemsTotalAmount,
-    deliveryFeeAmount,
-    isDeliveryFree,
     formatPrice,
     formatPhone,
     isGuestCheckout,
+    promoState,
 } = checkoutState;
+
+const {
+    isGiftEligible,
+    hasGiftSelected,
+    giftCtaLabel,
+    giftCandidates,
+    selectedGiftName,
+    openGiftModal,
+    tryAutoOpenGiftModal,
+    giftPromotion,
+} = useGiftPromotionPrompt(() => promoState?.value ?? promoState);
+
+onMounted(() => {
+    tryAutoOpenGiftModal();
+});
+
+watch(
+    () => giftPromotion.value?.phase,
+    () => {
+        tryAutoOpenGiftModal();
+    },
+);
+
+const wizardSystemItems = computed(() => {
+    const items = systemCartItems?.value ?? systemCartItems;
+    return wizardNonComplementSystemItems(items);
+});
 
 function lineBadge(item) {
     const key = String(item?.lineKey || "");
     if (key.startsWith("gift:")) return "Подарок";
-    if (key.startsWith("complement:")) return "Комплект";
+    if (isComplementCartLine(item)) return "Комплект";
     if (item?.isSystem) return "Авто";
     return null;
 }
@@ -76,13 +105,13 @@ function unitPriceRub(item) {
                 </li>
 
                 <li
-                    v-if="systemCartItems.length"
+                    v-if="wizardSystemItems.length"
                     :class="s.subsectionKickerXsSpaced"
                 >
                     Добавлено автоматически
                 </li>
                 <li
-                    v-for="item in systemCartItems"
+                    v-for="item in wizardSystemItems"
                     :key="item.lineKey"
                     :class="cf.systemLineAccent"
                 >
@@ -100,33 +129,8 @@ function unitPriceRub(item) {
                     </span>
                 </li>
             </ul>
-            <div :class="cf.totalsInset">
-                <div :class="cf.orderLineRow">
-                    <span :class="c.totalsLabelMuted">Товары</span>
-                    <span :class="c.totalsValue">{{ formatPrice(itemsTotalAmount) }} ₽</span>
-                </div>
-                <div :class="cf.orderLineRow">
-                    <span :class="c.totalsLabelMuted">Доставка</span>
-                    <span
-                        v-if="isDeliveryFree"
-                        :class="c.totalsValue"
-                    >
-                        Бесплатно
-                    </span>
-                    <span
-                        v-else
-                        :class="c.totalsValue"
-                    >
-                        {{ formatPrice(deliveryFeeAmount) }} ₽
-                    </span>
-                </div>
-                <div :class="c.totalsDivider">
-                    <span :class="c.totalsLabelStrong">Итого</span>
-                    <span :class="c.grandTotal">
-                        {{ formatPrice(totalAmount) }} ₽
-                    </span>
-                </div>
-            </div>
+            <CheckoutComplementOffers />
+            <CheckoutTotalsSummary />
         </div>
 
         <div :class="cf.blockMuted">
@@ -162,6 +166,30 @@ function unitPriceRub(item) {
         </div>
 
         <CheckoutBenefitsPanel />
+
+        <div
+            v-if="isGiftEligible && giftCandidates.length"
+            :class="c.giftCard"
+        >
+            <div :class="c.giftRow">
+                <div class="min-w-0">
+                    <p :class="c.giftTitle">Подарок к заказу доступен</p>
+                    <p
+                        v-if="hasGiftSelected"
+                        :class="c.giftSelectedHint"
+                    >
+                        Выбран: {{ selectedGiftName }}
+                    </p>
+                </div>
+                <button
+                    type="button"
+                    :class="c.giftCta"
+                    @click="openGiftModal"
+                >
+                    {{ giftCtaLabel }}
+                </button>
+            </div>
+        </div>
 
         <div :class="cf.blockMuted">
             <p :class="s.headingCardMuted">

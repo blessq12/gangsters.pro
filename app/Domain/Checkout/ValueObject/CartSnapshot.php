@@ -31,7 +31,7 @@ final class CartSnapshot
         $lines = [];
 
         foreach ($this->lines as $existingLine) {
-            if ($existingLine->productId() === $line->productId()) {
+            if ($existingLine->matchesIdentity($line->productId(), $line->lineKind())) {
                 continue;
             }
 
@@ -43,11 +43,11 @@ final class CartSnapshot
         return new self($lines);
     }
 
-    public function removeLine(int $productId): self
+    public function removeLine(int $productId, string $lineKind = 'user'): self
     {
         $lines = array_values(array_filter(
             $this->lines,
-            static fn (CartLineSnapshot $line): bool => $line->productId() !== $productId,
+            static fn (CartLineSnapshot $line): bool => ! $line->matchesIdentity($productId, $lineKind),
         ));
 
         return new self($lines);

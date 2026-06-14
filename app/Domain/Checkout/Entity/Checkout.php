@@ -116,11 +116,16 @@ final class Checkout
         $this->cart = $this->cart->upsertLine($line);
     }
 
-    public function removeCartLine(int $productId): void
+    public function removeCartLine(int $productId, ?array $payload = null): void
     {
         $this->assertDraft();
 
-        $this->cart = $this->cart->removeLine($productId);
+        $lineKind = 'user';
+        if (is_array($payload) && isset($payload['kind']) && is_string($payload['kind']) && $payload['kind'] !== '') {
+            $lineKind = $payload['kind'];
+        }
+
+        $this->cart = $this->cart->removeLine($productId, $lineKind);
     }
 
     public function setCart(CartSnapshot $cart): void

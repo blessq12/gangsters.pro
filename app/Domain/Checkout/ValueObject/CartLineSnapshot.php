@@ -64,6 +64,22 @@ final readonly class CartLineSnapshot
         return $this->payload;
     }
 
+    public function lineKind(): string
+    {
+        if (! is_array($this->payload)) {
+            return 'user';
+        }
+
+        $kind = $this->payload['kind'] ?? null;
+
+        return is_string($kind) && $kind !== '' ? $kind : 'user';
+    }
+
+    public function matchesIdentity(int $productId, string $lineKind): bool
+    {
+        return $this->productId() === $productId && $this->lineKind() === $lineKind;
+    }
+
     public function lineTotal(): Money
     {
         return Money::rubles($this->unitPrice->amountRubles() * $this->quantity);

@@ -62,7 +62,10 @@ export const useCartStore = defineStore("cart", {
             return useCheckoutStore().itemsTotalRubles;
         },
         isDeliveryFree(state) {
-            return state.deliveryPricing?.isFree ?? true;
+            if (state.deliveryPricing == null) {
+                return false;
+            }
+            return Boolean(state.deliveryPricing.isFree);
         },
         hasBenefitsProgress(state) {
             return state.benefitsProgress != null;
@@ -102,6 +105,7 @@ export const useCartStore = defineStore("cart", {
                 itemsPayableKopecks: Number(deliveryPricing.items_payable_kopecks) || 0,
                 deliveryFeeKopecks,
                 isFree: Boolean(deliveryPricing.is_free),
+                isPreview: Boolean(deliveryPricing.is_preview),
                 remainingToFreeKopecks: Number(deliveryPricing.remaining_to_free_kopecks) || 0,
                 itemsTotalKopecks,
                 grandTotalKopecks,

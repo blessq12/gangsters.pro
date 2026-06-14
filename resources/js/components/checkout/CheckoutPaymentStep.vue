@@ -5,6 +5,9 @@ import {
     CHECKOUT_PAYMENT_METHOD_IDS,
     CHECKOUT_PAYMENT_METHOD_LABELS,
 } from "../../features/checkout/checkoutPaymentMethods";
+import CheckoutBenefitsPanel from "./CheckoutBenefitsPanel.vue";
+import CheckoutComplementOffers from "./CheckoutComplementOffers.vue";
+import CheckoutTotalsSummary from "./CheckoutTotalsSummary.vue";
 
 const chk = useAppDesign().components.checkout;
 const s = chk.shared;
@@ -84,6 +87,12 @@ const { checkoutIntent, paymentStepError } = checkoutState;
                 @input="setCustomerComment($event.target.value)"
             />
         </div>
+
+        <CheckoutBenefitsPanel />
+
+        <CheckoutComplementOffers />
+
+        <CheckoutTotalsSummary />
 
         <div :class="s.navFooterRow">
             <button

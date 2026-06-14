@@ -26,7 +26,7 @@ final class UpdateCheckoutCartUseCase
         $checkout = $this->draftLifecycle->loadDraft($input->checkoutId);
 
         if ($input->quantity === 0) {
-            $checkout->removeCartLine($input->productId);
+            $checkout->removeCartLine($input->productId, $input->payload);
         } else {
             $quote = $this->pricing->findActiveProductQuote($input->productId);
 

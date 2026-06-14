@@ -1,6 +1,131 @@
 import { roundRubles2 } from "../../utils/moneyFormat";
 
 /**
+ * @param {object|null|undefined} item
+ */
+export function isComplementCartLine(item) {
+    if (!item || typeof item !== "object") {
+        return false;
+    }
+
+    if (item.lineKind === "complement") {
+        return true;
+    }
+
+    const payloadKind = item.payload?.kind;
+    if (payloadKind === "complement") {
+        return true;
+    }
+
+    return String(item.lineKey || "").startsWith("complement:");
+}
+
+/**
+ * @param {object|null|undefined} item
+ */
+export function isGiftCartLine(item) {
+    if (!item || typeof item !== "object") {
+        return false;
+    }
+
+    if (item.lineKind === "gift") {
+        return true;
+    }
+
+    const payloadKind = item.payload?.kind;
+    if (payloadKind === "gift") {
+        return true;
+    }
+
+    return String(item.lineKey || "").startsWith("gift:");
+}
+
+/**
+ * Системные строки визарда без подарка (подарок — в саммари).
+ *
+ * @param {object[]|null|undefined} items
+ */
+export function wizardVisibleSystemItems(items) {
+    if (!Array.isArray(items)) {
+        return [];
+    }
+
+    return items.filter((item) => !isGiftCartLine(item));
+}
+
+/**
+ * @param {object[]|null|undefined} items
+ */
+export function wizardNonComplementSystemItems(items) {
+    if (!Array.isArray(items)) {
+        return [];
+    }
+
+    return items.filter((item) => !isComplementCartLine(item) && !isGiftCartLine(item));
+}
+
+/**
+ * @param {object[]|null|undefined} items
+ * @returns {object|null}
+ */
+export function selectedGiftCartLine(items) {
+    if (!Array.isArray(items)) {
+        return null;
+    }
+
+    return items.find((item) => isGiftCartLine(item)) ?? null;
+}
+
+/**
+ * @param {object|null|undefined} promoState
+ * @returns {{ productId: number, name: string, qty: number }|null}
+ */
+function resolveSelectedGiftFromPromoState(promoState) {
+    const giftPromotion = promoState?.gift_promotion;
+    if (!giftPromotion || typeof giftPromotion !== "object") {
+        return null;
+    }
+
+    const productId = Number(giftPromotion.selected_product_id) || 0;
+    if (productId <= 0) {
+        return null;
+    }
+
+    const candidateItems = Array.isArray(giftPromotion.candidate_items)
+        ? giftPromotion.candidate_items
+        : [];
+    const candidate = candidateItems.find((item) => Number(item?.id) === productId);
+
+    return {
+        productId,
+        name: candidate?.name ? String(candidate.name) : `Товар #${productId}`,
+        qty: 1,
+    };
+}
+
+/**
+ * @param {{
+ *   cartItems?: object[]|null|undefined,
+ *   promoState?: object|null|undefined,
+ * }} input
+ * @returns {{ productId: number, name: string, qty: number }|null}
+ */
+export function resolveSelectedGiftSummary(input) {
+    const line = selectedGiftCartLine(input?.cartItems);
+    if (line) {
+        return {
+            productId: line.productId,
+            name: line.productSnapshot?.name
+                ? String(line.productSnapshot.name)
+                : `Товар #${line.productId}`,
+            qty: Number(line.qty) || 1,
+        };
+    }
+
+    return resolveSelectedGiftFromPromoState(input?.promoState);
+}
+
+/**
  * Адаптер блока cart из Checkout API к legacy-формату cartStore для UI.
  *
  * @param {object|null|undefined} cart

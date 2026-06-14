@@ -6,7 +6,6 @@ use App\Application\Checkout\DTO\SetCheckoutDeliveryDto;
 use App\Application\Checkout\Services\CheckoutDraftLifecycle;
 use App\Domain\Checkout\Enum\DeliveryMethod;
 use App\Domain\Checkout\ValueObject\DeliverySnapshot;
-use InvalidArgumentException;
 
 /**
  * Сценарий: добавить блок данных о доставке.
@@ -23,10 +22,6 @@ final class SetCheckoutDeliveryUseCase
     public function execute(SetCheckoutDeliveryDto $input): array
     {
         $checkout = $this->draftLifecycle->loadDraft($input->checkoutId);
-
-        if ($input->method === DeliveryMethod::Courier && $input->address === null) {
-            throw new InvalidArgumentException('Для курьерской доставки нужен адрес.');
-        }
 
         $checkout->setDelivery(
             new DeliverySnapshot(

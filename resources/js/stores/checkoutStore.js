@@ -256,6 +256,11 @@ export const useCheckoutStore = defineStore("checkout", {
                 return;
             }
 
+            const cartStore = useCartStore();
+            const deliveryPricing = cartStore.deliveryPricing;
+            const benefitsProgress = cartStore.benefitsProgress;
+            const promoState = cartStore.promoState;
+
             writeSessionPayload({
                 checkoutId: this.checkoutId,
                 status: this.status,
@@ -273,10 +278,27 @@ export const useCheckoutStore = defineStore("checkout", {
                             payload: item.payload ?? null,
                         })),
                         items_total_rubles: this.itemsTotalRubles,
+                        promo_state: promoState,
                     },
                     client: this.serverClient,
                     delivery: this.serverDelivery,
                     payment: this.serverPayment,
+                    delivery_pricing: deliveryPricing
+                        ? {
+                              method: deliveryPricing.method,
+                              items_payable_kopecks: deliveryPricing.itemsPayableKopecks,
+                              delivery_fee_kopecks: deliveryPricing.deliveryFeeKopecks,
+                              is_free: deliveryPricing.isFree,
+                              is_preview: deliveryPricing.isPreview,
+                              remaining_to_free_kopecks: deliveryPricing.remainingToFreeKopecks,
+                              items_total_kopecks: deliveryPricing.itemsTotalKopecks,
+                              grand_total_kopecks: deliveryPricing.grandTotalKopecks,
+                              items_total_rub: deliveryPricing.itemsTotalRub,
+                              delivery_fee_rub: deliveryPricing.deliveryFeeRub,
+                              grand_total_rub: deliveryPricing.grandTotalRub,
+                          }
+                        : null,
+                    benefits_progress: benefitsProgress,
                 },
             });
         },
@@ -583,7 +605,7 @@ export const useCheckoutStore = defineStore("checkout", {
             const nextId = productId != null ? Number(productId) || null : null;
 
             if (previousId != null && previousId !== nextId) {
-                await this.updateCartLine(previousId, 0);
+                await this.updateCartLine(previousId, 0, { kind: "gift" });
             }
 
             if (nextId != null) {

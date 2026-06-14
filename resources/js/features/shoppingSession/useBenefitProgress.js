@@ -13,17 +13,6 @@ function emptyMoneyBenefit() {
     };
 }
 
-function emptyComplementBenefit() {
-    return {
-        isActive: false,
-        isReached: false,
-        rollsPerSet: null,
-        currentRollCount: 0,
-        entitledSetCount: 0,
-        remainingRollCount: 0,
-    };
-}
-
 export function useBenefitProgress() {
     const cartReadModel = useCartReadModel();
 
@@ -31,15 +20,9 @@ export function useBenefitProgress() {
         () => cartReadModel.benefitsProgress.value?.delivery ?? emptyMoneyBenefit(),
     );
     const gift = computed(() => cartReadModel.benefitsProgress.value?.gift ?? emptyMoneyBenefit());
-    const complement = computed(
-        () => cartReadModel.benefitsProgress.value?.complement ?? emptyComplementBenefit(),
-    );
     const hasBenefitsProgress = computed(() => cartReadModel.hasBenefitsProgress.value);
     const hasActiveBenefits = computed(
-        () =>
-            Boolean(
-                delivery.value.isActive || gift.value.isActive || complement.value.isActive,
-            ),
+        () => Boolean(delivery.value.isActive || gift.value.isActive),
     );
     const canShowBenefitsBanner = computed(
         () =>
@@ -64,22 +47,6 @@ export function useBenefitProgress() {
             return gift.value.isReached ? 100 : 0;
         }
         return Math.min(100, Math.max(0, Math.round((current / threshold) * 100)));
-    });
-
-    const complementProgressPercent = computed(() => {
-        const rollsPerSet = Number(complement.value.rollsPerSet);
-        const currentRollCount = Number(complement.value.currentRollCount);
-        if (!Number.isFinite(rollsPerSet) || rollsPerSet <= 0) {
-            return complement.value.isReached ? 100 : 0;
-        }
-        const towardNext = currentRollCount % rollsPerSet;
-        const progressRolls = towardNext === 0 && complement.value.isReached
-            ? rollsPerSet
-            : towardNext;
-        return Math.min(
-            100,
-            Math.max(0, Math.round((progressRolls / rollsPerSet) * 100)),
-        );
     });
 
     const deliveryLabel = computed(() => {
@@ -108,25 +75,8 @@ export function useBenefitProgress() {
         return `До подарка осталось ${remaining} ₽`;
     });
 
-    const complementLabel = computed(() => {
-        if (!complement.value.isActive) {
-            return null;
-        }
-        if (complement.value.isReached) {
-            const count = Number(complement.value.entitledSetCount) || 0;
-            if (count > 1) {
-                return `Комплект дополнений ×${count} добавлен в корзину`;
-            }
-            return "Комплект дополнений добавлен в корзину";
-        }
-        const remaining = Number(complement.value.remainingRollCount) || 0;
-        const rollsPerSet = Number(complement.value.rollsPerSet) || 2;
-        const rollWord = remaining === 1 ? "ролл" : "ролла";
-        return `До комплекта осталось ${remaining} ${rollWord} (каждые ${rollsPerSet})`;
-    });
-
     const benefitLines = computed(() =>
-        [deliveryLabel.value, giftLabel.value, complementLabel.value].filter(Boolean),
+        [deliveryLabel.value, giftLabel.value].filter(Boolean),
     );
 
     return {
@@ -135,13 +85,10 @@ export function useBenefitProgress() {
         canShowBenefitsBanner,
         delivery,
         gift,
-        complement,
         deliveryProgressPercent,
         giftProgressPercent,
-        complementProgressPercent,
         deliveryLabel,
         giftLabel,
-        complementLabel,
         benefitLines,
         formatKopecksToRub,
     };

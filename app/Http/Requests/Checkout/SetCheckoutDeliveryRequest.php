@@ -20,9 +20,9 @@ final class SetCheckoutDeliveryRequest extends FormRequest
     {
         return [
             'method' => ['required', 'string', Rule::enum(DeliveryMethod::class)],
-            'address' => ['nullable', 'array', 'required_if:method,courier'],
-            'address.street' => ['required_if:method,courier', 'string', 'max:255'],
-            'address.house' => ['required_if:method,courier', 'string', 'max:63'],
+            'address' => ['nullable', 'array'],
+            'address.street' => ['nullable', 'string', 'max:255'],
+            'address.house' => ['nullable', 'string', 'max:63'],
             'address.entrance' => ['nullable', 'string', 'max:63'],
             'address.apartment' => ['nullable', 'string', 'max:63'],
             'comment' => ['nullable', 'string', 'max:2000'],

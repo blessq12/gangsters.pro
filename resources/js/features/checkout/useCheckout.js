@@ -45,6 +45,7 @@ export function useCheckout() {
             ? cartReadModel.grandTotalWithDelivery.value
             : cartReadModel.totalAmount.value,
     );
+    const hasDeliveryPricing = computed(() => cartReadModel.hasDeliveryPricing.value);
     const itemsTotalAmount = computed(() => cartReadModel.itemsTotalAmount.value);
     const deliveryFeeAmount = computed(() => cartReadModel.deliveryFeeAmount.value);
     const isDeliveryFree = computed(() => cartReadModel.isDeliveryFree.value);
@@ -54,7 +55,6 @@ export function useCheckout() {
     const benefitsProgress = computed(() => cartReadModel.benefitsProgress.value);
     const deliveryBenefit = computed(() => benefits.delivery.value);
     const giftBenefit = computed(() => benefits.gift.value);
-    const complementBenefit = computed(() => benefits.complement.value);
     const isAuthenticated = computed(() => clientReadModel.isAuthenticated.value);
     const hasCartItems = computed(() => userCartItems.value.length > 0);
 
@@ -269,7 +269,6 @@ export function useCheckout() {
         () => uiStore.dockActiveId,
         (dockId) => {
             if (dockId === "cart") {
-                activeStep.value = "cart";
                 syncResumeFromSuggested();
             }
         },
@@ -282,10 +281,14 @@ export function useCheckout() {
     });
 
     watch(activeStep, (step) => {
+        uiStore.setCheckoutWizardStep(step);
+        if (step !== "confirm") {
+            uiStore.closeGiftSelectionModal({ dismissAuto: false });
+        }
         if (step === "delivery") {
             ensureAuthAddressUi();
         }
-    });
+    }, { immediate: true });
 
     function handleStartCheckout() {
         if (!hasCartItems.value) return;
@@ -394,9 +397,30 @@ export function useCheckout() {
         resumeCheckoutStep.value = null;
     }
 
-    function setDeliveryMethod(method) {
-        checkoutIntent.setDeliveryInfo({ method });
+    async function syncDeliveryBenefitsPreview() {
+        const method = checkoutIntent.deliveryInfo.method;
+        if (!method) {
+            return;
+        }
+
+        try {
+            const selectedAddress =
+                method === "courier" ? addressSelection.selectedAddress.value : null;
+            await checkoutIntent.flushDeliveryToServer(selectedAddress);
+        } catch (e) {
+            console.error("syncDeliveryBenefitsPreview / checkout", e);
+        }
+    }
+
+    async function setDeliveryMethod(method) {
+        const normalized = method === "pickup" ? "pickup" : "courier";
+        if (checkoutIntent.deliveryInfo.method === normalized) {
+            return;
+        }
+
+        checkoutIntent.setDeliveryInfo({ method: normalized });
         ensureAuthAddressUi();
+        await syncDeliveryBenefitsPreview();
     }
 
     function toggleNewAddressOpen() {
@@ -534,6 +558,7 @@ export function useCheckout() {
         itemsTotalAmount,
         deliveryFeeAmount,
         isDeliveryFree,
+        hasDeliveryPricing,
         userTotalAmount,
         systemTotalAmount,
         promoState,
@@ -541,7 +566,6 @@ export function useCheckout() {
         benefits,
         deliveryBenefit,
         giftBenefit,
-        complementBenefit,
         isAuthenticated,
         hasCartItems,
         activeStep,
