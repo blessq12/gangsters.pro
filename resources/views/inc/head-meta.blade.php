@@ -1,8 +1,4 @@
 @php
-    use App\Application\Site\SiteSeoResolver;
-
-    $resolver = app(SiteSeoResolver::class);
-    $pageSeo = $pageSeo ?? $resolver->resolveForPath(request()->path());
     $siteName = (string) config('site.name');
     $title = (string) ($pageSeo['title'] ?? config('site.default_title'));
     $description = (string) ($pageSeo['description'] ?? config('site.default_description'));
