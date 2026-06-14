@@ -2,6 +2,7 @@
 
 namespace App\Application\Checkout\Presenter;
 
+use App\Application\Checkout\Services\EvaluateCheckoutBenefits;
 use App\Domain\Checkout\Entity\Checkout;
 use App\Domain\Checkout\ValueObject\CartLineSnapshot;
 use App\Domain\Checkout\ValueObject\ClientSnapshot;
@@ -11,15 +12,21 @@ use App\Domain\Checkout\ValueObject\PaymentSnapshot;
 
 final class CheckoutPresenter
 {
+    public function __construct(
+        private readonly EvaluateCheckoutBenefits $evaluateBenefits,
+    ) {}
+
     /**
      * @return array<string, mixed>
      */
     public function present(Checkout $checkout): array
     {
+        $benefits = $this->evaluateBenefits->evaluate($checkout);
+
         return [
             'checkout_id' => $checkout->id()->value(),
             'status' => $checkout->status()->value,
-            'cart' => $this->presentCart($checkout),
+            'cart' => $this->presentCart($checkout, $benefits['promo_state']),
             'client' => $checkout->client() instanceof ClientSnapshot
                 ? $this->presentClient($checkout->client())
                 : null,
@@ -29,15 +36,18 @@ final class CheckoutPresenter
             'payment' => $checkout->payment() instanceof PaymentSnapshot
                 ? $this->presentPayment($checkout->payment())
                 : null,
+            'benefits_progress' => $benefits['benefits_progress'],
+            'delivery_pricing' => $benefits['delivery_pricing'],
             'created_at' => $checkout->createdAt()->format(DATE_ATOM),
             'confirmed_at' => $checkout->confirmedAt()?->format(DATE_ATOM),
         ];
     }
 
     /**
+     * @param  array<string, mixed>  $promoState
      * @return array<string, mixed>
      */
-    private function presentCart(Checkout $checkout): array
+    private function presentCart(Checkout $checkout, array $promoState): array
     {
         return [
             'items' => array_map(
@@ -52,6 +62,7 @@ final class CheckoutPresenter
                 $checkout->cart()->lines(),
             ),
             'items_total_rubles' => $checkout->cart()->itemsTotal()->amountRubles(),
+            'promo_state' => $promoState,
         ];
     }
 

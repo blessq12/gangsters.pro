@@ -13,6 +13,7 @@ import {
     toServerCheckoutPaymentMethod,
 } from "../features/checkout/checkoutPaymentMethods";
 import { normalizeCheckoutCartBlock } from "../features/checkout/normalizeCheckoutCart";
+import { useCartStore } from "./cartStore";
 
 const CHECKOUT_STEPS = ["cart", "guest", "delivery", "payment", "confirm"];
 const SESSION_KEY = "gangsters_checkout_session_v1";
@@ -188,6 +189,15 @@ export const useCheckoutStore = defineStore("checkout", {
             if (data.payment && typeof data.payment === "object") {
                 this.serverPayment = data.payment;
                 this.paymentInfo = mapPaymentToLocal(data.payment);
+            }
+
+            const cartStore = useCartStore();
+            cartStore.applyServerSnapshot(data.cart ?? null);
+            if (Object.prototype.hasOwnProperty.call(data, "delivery_pricing")) {
+                cartStore.applyDeliveryPricingSnapshot(data.delivery_pricing);
+            }
+            if (Object.prototype.hasOwnProperty.call(data, "benefits_progress")) {
+                cartStore.applyBenefitsProgressSnapshot(data.benefits_progress);
             }
 
             this.recomputeSuggestedStep();
