@@ -32,20 +32,20 @@ use Illuminate\Http\Request;
 final class ClientController extends Controller
 {
     public function __construct(
-        private readonly RegisterClientUseCase $зарегистрироватьКлиента,
-        private readonly LoginClientUseCase $войтиКлиенту,
-        private readonly GetClientProfileUseCase $получитьПрофильКлиента,
-        private readonly UpdateClientProfileUseCase $обновитьПрофильКлиента,
-        private readonly AddClientAddressUseCase $добавитьАдресКлиента,
-        private readonly DeleteClientAddressUseCase $удалитьАдресКлиента,
-        private readonly RequestPasswordResetUseCase $запроситьСбросПароля,
-        private readonly ChangePasswordWithTokenUseCase $сменитьПарольПоТокену,
+        private readonly RegisterClientUseCase $registerClient,
+        private readonly LoginClientUseCase $loginClient,
+        private readonly GetClientProfileUseCase $getClientProfile,
+        private readonly UpdateClientProfileUseCase $updateClientProfile,
+        private readonly AddClientAddressUseCase $addClientAddress,
+        private readonly DeleteClientAddressUseCase $deleteClientAddress,
+        private readonly RequestPasswordResetUseCase $requestPasswordReset,
+        private readonly ChangePasswordWithTokenUseCase $changePasswordWithToken,
     ) {}
 
     public function register(RegisterClientRequest $request): JsonResponse
     {
         return response()->json(
-            $this->зарегистрироватьКлиента->execute(
+            $this->registerClient->execute(
                 new RegisterClientDto(
                     name: (string) $request->validated('name'),
                     phone: (string) $request->validated('phone'),
@@ -63,7 +63,7 @@ final class ClientController extends Controller
     public function login(LoginClientRequest $request): JsonResponse
     {
         return response()->json(
-            $this->войтиКлиенту->execute(
+            $this->loginClient->execute(
                 new LoginClientDto(
                     phone: $request->validated('phone'),
                     email: $request->validated('email'),
@@ -76,7 +76,7 @@ final class ClientController extends Controller
     public function profile(Request $request): JsonResponse
     {
         return response()->json(
-            $this->получитьПрофильКлиента->execute($this->resolveClientId($request)),
+            $this->getClientProfile->execute($this->resolveClientId($request)),
         );
     }
 
@@ -85,7 +85,7 @@ final class ClientController extends Controller
         $client = $this->resolveAuthenticatedClient($request);
 
         return response()->json(
-            $this->обновитьПрофильКлиента->execute(
+            $this->updateClientProfile->execute(
                 new UpdateClientProfileDto(
                     clientId: (int) $client->id,
                     name: (string) $request->validated('name', $client->name),
@@ -110,7 +110,7 @@ final class ClientController extends Controller
     public function addAddress(AddClientAddressRequest $request): JsonResponse
     {
         return response()->json(
-            $this->добавитьАдресКлиента->execute(
+            $this->addClientAddress->execute(
                 new AddClientAddressDto(
                     clientId: $this->resolveClientId($request),
                     type: $request->validated('type'),
@@ -130,7 +130,7 @@ final class ClientController extends Controller
     public function deleteAddress(Request $request, int $addressId): JsonResponse
     {
         return response()->json(
-            $this->удалитьАдресКлиента->execute(
+            $this->deleteClientAddress->execute(
                 new DeleteClientAddressDto(
                     clientId: $this->resolveClientId($request),
                     addressId: $addressId,
@@ -142,7 +142,7 @@ final class ClientController extends Controller
     public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
     {
         return response()->json(
-            $this->запроситьСбросПароля->execute(
+            $this->requestPasswordReset->execute(
                 new RequestPasswordResetDto(
                     email: (string) $request->validated('email'),
                 ),
@@ -153,7 +153,7 @@ final class ClientController extends Controller
     public function changePassword(ChangePasswordRequest $request): JsonResponse
     {
         return response()->json(
-            $this->сменитьПарольПоТокену->execute(
+            $this->changePasswordWithToken->execute(
                 new ChangePasswordWithTokenDto(
                     token: (string) $request->validated('token'),
                     password: (string) $request->validated('password'),

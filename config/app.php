@@ -8,6 +8,7 @@ use App\Providers\ClientServiceProvider;
 use App\Providers\CompanyServiceProvider;
 use App\Providers\DeliveryServiceProvider;
 use App\Providers\MarketingContentServiceProvider;
+use App\Providers\OrderServiceProvider;
 use App\Providers\Filament\AdminPanelProvider;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Support\Facades\Facade;
@@ -188,6 +189,7 @@ return [
         CatalogServiceProvider::class,
         CheckoutServiceProvider::class,
         ClientServiceProvider::class,
+        OrderServiceProvider::class,
         DeliveryServiceProvider::class,
         MarketingContentServiceProvider::class,
         CompanyServiceProvider::class,

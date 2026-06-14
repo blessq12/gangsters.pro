@@ -11,23 +11,23 @@ use Illuminate\Http\JsonResponse;
 final class CompanyController extends Controller
 {
     public function __construct(
-        private readonly GetCompanyDataUseCase $получитьКомпанию,
-        private readonly GetCompanyLegalDataUseCase $получитьЮрлицо,
-        private readonly GetCompanyDocumentsUseCase $получитьДокументы,
+        private readonly GetCompanyDataUseCase $getCompanyData,
+        private readonly GetCompanyLegalDataUseCase $getCompanyLegalData,
+        private readonly GetCompanyDocumentsUseCase $getCompanyDocuments,
     ) {}
 
     public function main(): JsonResponse
     {
-        return response()->json($this->получитьКомпанию->execute());
+        return response()->json($this->getCompanyData->execute());
     }
 
     public function legals(): JsonResponse
     {
-        return response()->json($this->получитьЮрлицо->execute());
+        return response()->json($this->getCompanyLegalData->execute());
     }
 
     public function documents(): JsonResponse
     {
-        return response()->json($this->получитьДокументы->execute());
+        return response()->json($this->getCompanyDocuments->execute());
     }
 }

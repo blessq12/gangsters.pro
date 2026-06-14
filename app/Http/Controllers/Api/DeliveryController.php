@@ -9,11 +9,11 @@ use Illuminate\Http\JsonResponse;
 final class DeliveryController extends Controller
 {
     public function __construct(
-        private readonly GetDeliveryDataUseCase $получитьДанныеДоставки,
+        private readonly GetDeliveryDataUseCase $getDeliveryData,
     ) {}
 
     public function show(): JsonResponse
     {
-        return response()->json($this->получитьДанныеДоставки->execute());
+        return response()->json($this->getDeliveryData->execute());
     }
 }

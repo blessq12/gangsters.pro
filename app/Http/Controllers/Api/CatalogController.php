@@ -9,11 +9,11 @@ use Illuminate\Http\JsonResponse;
 final class CatalogController extends Controller
 {
     public function __construct(
-        private readonly GetCatalogUseCase $получитьКаталог,
+        private readonly GetCatalogUseCase $getCatalog,
     ) {}
 
     public function show(): JsonResponse
     {
-        return response()->json($this->получитьКаталог->execute());
+        return response()->json($this->getCatalog->execute());
     }
 }

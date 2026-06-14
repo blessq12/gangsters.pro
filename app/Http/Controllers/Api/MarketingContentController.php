@@ -9,19 +9,19 @@ use Illuminate\Http\JsonResponse;
 final class MarketingContentController extends Controller
 {
     public function __construct(
-        private readonly GetMarketingContentUseCase $получитьКонтент,
+        private readonly GetMarketingContentUseCase $getMarketingContent,
     ) {}
 
     public function show(): JsonResponse
     {
         return response()->json([
-            'data' => $this->получитьКонтент->execute(),
+            'data' => $this->getMarketingContent->execute(),
         ]);
     }
 
     public function banners(): JsonResponse
     {
-        $data = $this->получитьКонтент->execute();
+        $data = $this->getMarketingContent->execute();
 
         return response()->json([
             'data' => $data['banners'],
@@ -30,7 +30,7 @@ final class MarketingContentController extends Controller
 
     public function promotions(): JsonResponse
     {
-        $data = $this->получитьКонтент->execute();
+        $data = $this->getMarketingContent->execute();
 
         return response()->json([
             'data' => $data['promotions'],
