@@ -8,6 +8,8 @@ import { useFavoritesStore } from "../stores/favoritesStore";
 import { useUiStore } from "../stores/uiStore";
 import { useCatalogStore } from "../stores/catalogStore";
 import { useSystemStore } from "../stores/systemStore";
+import { useCompanyStore } from "../stores/companyStore";
+import { useDeliveryStore } from "../stores/deliveryStore";
 import { playPageEnter, playPageLeave } from "../animations/animationManager";
 import { useShellIntroDockTimeline } from "../composables/layout/useShellIntroDockTimeline";
 import { useAppDesign } from "../design/useAppDesign";
@@ -21,6 +23,8 @@ const favoritesStore = useFavoritesStore();
 const uiStore = useUiStore();
 const catalogStore = useCatalogStore();
 const systemStore = useSystemStore();
+const companyStore = useCompanyStore();
+const deliveryStore = useDeliveryStore();
 const route = useRoute();
 
 themeStore.initTheme();
@@ -90,7 +94,11 @@ onMounted(() => {
         });
     }
 
-    void systemStore.fetchAll();
+    void Promise.allSettled([
+        systemStore.fetchAll(),
+        companyStore.fetchAll(),
+        deliveryStore.fetchAll(),
+    ]);
     startIntroScene();
 
     window.addEventListener("scroll", updateBottomBarFromScroll, { passive: true });

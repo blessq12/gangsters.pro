@@ -1,23 +1,34 @@
 <script setup>
 import { computed } from "vue";
-import { useSystemReadModel } from "../features/system/useSystemReadModel";
+import { useCompanyReadModel } from "../features/company/useCompanyReadModel";
+import { useDeliveryReadModel } from "../features/delivery/useDeliveryReadModel";
 import { formatRuPhone, phoneToTelHref } from "../utils/phone/formatRuPhone";
 import {
+    formatAverageDeliveryLine,
+    formatCoverageLine,
+} from "../utils/system/companyDeliveryFacts";
+import {
+    formatCompanyAddressLine,
     formatWorkScheduleForDisplay,
     safeTrim,
 } from "../utils/system/companyDisplay";
 import { useAppDesign } from "../design/useAppDesign";
 
-const { company: companyRef, loading, errors } = useSystemReadModel({
+const { profile: profileRef, loading, errors } = useCompanyReadModel({
+    autoload: true,
+});
+const { facts: factsRef, loading: deliveryLoading } = useDeliveryReadModel({
     autoload: true,
 });
 
-const loadingCompany = computed(() => loading.value.company);
+const loadingProfile = computed(() => loading.value.profile);
+const loadingDelivery = computed(() => deliveryLoading.value);
 
-const company = computed(() => companyRef.value);
+const profile = computed(() => profileRef.value);
+const facts = computed(() => factsRef.value);
 
 const heroDescription = computed(() => {
-    const c = company.value;
+    const c = profile.value;
     const tag = safeTrim(c?.tagline);
     if (tag) return tag;
     const desc = safeTrim(c?.description);
@@ -26,7 +37,8 @@ const heroDescription = computed(() => {
 });
 
 const heroStats = computed(() => {
-    const c = company.value;
+    const c = profile.value;
+    const d = facts.value;
     return [
         {
             label: "Режим",
@@ -34,38 +46,35 @@ const heroStats = computed(() => {
         },
         {
             label: "Доставка",
-            value:
-                c?.average_delivery_time_minutes != null
-                    ? `около ${c.average_delivery_time_minutes} мин`
-                    : "—",
+            value: formatAverageDeliveryLine(d),
         },
         {
             label: "Покрытие",
-            value: safeTrim(c?.city_coverage) || "Доставка",
+            value: formatCoverageLine(d) !== "—" ? formatCoverageLine(d) : "Доставка",
         },
     ];
 });
 
 const phoneDisplay = computed(() => {
-    const c = company.value;
+    const c = profile.value;
     const raw = c?.phone || c?.support_phone;
     return raw ? formatRuPhone(raw) : "";
 });
 
 const phoneTel = computed(() => {
-    const c = company.value;
+    const c = profile.value;
     return phoneToTelHref(c?.phone || c?.support_phone);
 });
 
 const phoneExtra = computed(() => {
-    const c = company.value;
+    const c = profile.value;
     if (!c?.phone || !c?.support_phone) return "";
     if (String(c.phone) === String(c.support_phone)) return "";
     return formatRuPhone(c.support_phone);
 });
 
 const telegramLabel = computed(() => {
-    const t = company.value?.telegram;
+    const t = profile.value?.telegram;
     if (!t) return "";
     const s = String(t).trim();
     if (s.startsWith("http")) return s.replace(/^https?:\/\/t\.me\//i, "@");
@@ -73,7 +82,7 @@ const telegramLabel = computed(() => {
 });
 
 const telegramHref = computed(() => {
-    const t = company.value?.telegram;
+    const t = profile.value?.telegram;
     if (!t) return null;
     const s = String(t).trim();
     if (/^https?:\/\//i.test(s)) return s;
@@ -82,7 +91,7 @@ const telegramHref = computed(() => {
 });
 
 const emailDisplay = computed(() => {
-    const c = company.value;
+    const c = profile.value;
     return safeTrim(c?.public_email) || safeTrim(c?.email_address) || "";
 });
 
@@ -92,24 +101,17 @@ const emailHref = computed(() => {
 });
 
 const addressLines = computed(() => {
-    const c = company.value;
-    if (!c) return [];
-    const parts = [
-        [c.city, c.street, c.house && `д. ${c.house}`]
-            .filter(Boolean)
-            .join(", "),
-    ].filter(Boolean);
-    const comment = safeTrim(c.address_comment);
-    if (comment) {
-        parts.push(comment);
-    }
-    return parts;
+    const d = facts.value;
+    if (!d) return [];
+    const line = formatCompanyAddressLine(d);
+    if (!line) return [];
+    return [line];
 });
 
 const hasAddress = computed(() => addressLines.value.length > 0);
 
 const coverageText = computed(() => {
-    const t = safeTrim(company.value?.city_coverage);
+    const t = safeTrim(facts.value?.city_coverage);
     return (
         t ||
         "Точную доступность по адресу можно проверить при оформлении заказа."
@@ -117,21 +119,21 @@ const coverageText = computed(() => {
 });
 
 const workHoursMain = computed(() => {
-    const c = company.value;
+    const c = profile.value;
     return safeTrim(c?.work_hours) || "—";
 });
 
 const workScheduleNote = computed(() => {
-    const c = company.value;
+    const c = profile.value;
     const fromSchedule = formatWorkScheduleForDisplay(c?.work_schedule);
     if (fromSchedule) return fromSchedule;
     return "Заказы принимаем в заявленном режиме. Уточнения — по телефону или в мессенджере.";
 });
 
-const siteUrl = computed(() => safeTrim(company.value?.site_url));
+const siteUrl = computed(() => safeTrim(profile.value?.site_url));
 
 const whatsappHref = computed(() => {
-    const w = company.value?.whatsapp_phone;
+    const w = profile.value?.whatsapp_phone;
     if (!w) return null;
     const digits = String(w).replace(/\D/g, "");
     if (digits.length < 10) return null;
@@ -152,10 +154,10 @@ const co = useAppDesign().components.pages.contacts;
         :stats="heroStats"
     >
         <p
-            v-if="errors.company"
+            v-if="errors.profile"
             :class="co.apiError"
         >
-            {{ errors.company }}
+            {{ errors.profile }}
         </p>
 
         <div :class="co.channelsGrid">
@@ -167,7 +169,7 @@ const co = useAppDesign().components.pages.contacts;
                     Телефон
                 </p>
                 <p
-                    v-if="loadingCompany && !phoneDisplay"
+                    v-if="loadingProfile && !phoneDisplay"
                     :class="co.channelLoading"
                 >
                     Загрузка…
@@ -207,7 +209,7 @@ const co = useAppDesign().components.pages.contacts;
                     Telegram
                 </p>
                 <p
-                    v-if="loadingCompany && !telegramLabel"
+                    v-if="loadingProfile && !telegramLabel"
                     :class="co.channelLoading"
                 >
                     Загрузка…
@@ -256,7 +258,7 @@ const co = useAppDesign().components.pages.contacts;
                     Эл. почта
                 </p>
                 <p
-                    v-if="loadingCompany && !emailDisplay"
+                    v-if="loadingProfile && !emailDisplay"
                     :class="co.channelLoading"
                 >
                     Загрузка…
@@ -288,7 +290,7 @@ const co = useAppDesign().components.pages.contacts;
                 title="Где мы находимся"
                 subtitle="БАЗА КУХНИ"
             >
-                <template v-if="loadingCompany && !hasAddress">
+                <template v-if="loadingDelivery && !hasAddress">
                     <p :class="co.addressLoading">
                         Загрузка адреса…
                     </p>
@@ -341,11 +343,11 @@ const co = useAppDesign().components.pages.contacts;
                     {{ workScheduleNote }}
                 </p>
                 <div
-                    v-if="company?.min_order_amount_kopecks != null || company?.delivery_fee_kopecks != null"
+                    v-if="facts?.min_order_amount_kopecks != null || facts?.delivery_fee_kopecks != null"
                     :class="co.feeStack"
                 >
                     <div
-                        v-if="company.min_order_amount_kopecks != null"
+                        v-if="facts.min_order_amount_kopecks != null"
                         :class="co.feeRow"
                     >
                         <span>Мин. заказ</span>
@@ -353,7 +355,7 @@ const co = useAppDesign().components.pages.contacts;
                             {{
                                 new Intl.NumberFormat("ru-RU").format(
                                     Math.round(
-                                        Number(company.min_order_amount_kopecks) /
+                                        Number(facts.min_order_amount_kopecks) /
                                             100,
                                     ),
                                 )
@@ -362,7 +364,7 @@ const co = useAppDesign().components.pages.contacts;
                         </span>
                     </div>
                     <div
-                        v-if="company.delivery_fee_kopecks != null"
+                        v-if="facts.delivery_fee_kopecks != null"
                         :class="co.feeRow"
                     >
                         <span>Доставка от</span>
@@ -370,7 +372,7 @@ const co = useAppDesign().components.pages.contacts;
                             {{
                                 new Intl.NumberFormat("ru-RU").format(
                                     Math.round(
-                                        Number(company.delivery_fee_kopecks) / 100,
+                                        Number(facts.delivery_fee_kopecks) / 100,
                                     ),
                                 )
                             }}

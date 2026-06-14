@@ -1,7 +1,9 @@
 <script setup>
 import { computed, onMounted, onUnmounted, watch } from "vue";
 import { useUiStore } from "../../stores/uiStore";
-import { useSystemStore } from "../../stores/systemStore";
+import { useCompanyStore } from "../../stores/companyStore";
+import { useDeliveryStore } from "../../stores/deliveryStore";
+import { toDeliveryFactsView } from "../../domain/delivery/deliveryMappers";
 import { useAppDesign } from "../../design/useAppDesign";
 import { NAV_LINKS_MOBILE_SHEET } from "../../design/layout/navigation.present";
 import {
@@ -12,30 +14,36 @@ import {
 import { formatRuPhone, phoneToTelHref } from "../../utils/phone/formatRuPhone";
 
 const uiStore = useUiStore();
-const systemStore = useSystemStore();
+const companyStore = useCompanyStore();
+const deliveryStore = useDeliveryStore();
 const mm = useAppDesign().components.navbar.mobileMenu;
 
+const profile = computed(() => companyStore.profile);
+const deliveryFacts = computed(() =>
+    toDeliveryFactsView(deliveryStore.data),
+);
+
 const companyTitle = computed(() => {
-    const c = systemStore.company;
+    const c = profile.value;
     if (!c) return "";
     return safeTrim(c.brand_name) || safeTrim(c.name) || "";
 });
 
-const companyTagline = computed(() => safeTrim(systemStore.company?.tagline));
+const companyTagline = computed(() => safeTrim(profile.value?.tagline));
 
 const todayScheduleLine = computed(() =>
-    formatTodayWorkScheduleLine(systemStore.company, new Date()),
+    formatTodayWorkScheduleLine(profile.value, new Date()),
 );
 
 const addressLine = computed(() =>
-    formatCompanyAddressLine(systemStore.company),
+    formatCompanyAddressLine(deliveryFacts.value),
 );
 
 const phoneDisplay = computed(() =>
-    formatRuPhone(systemStore.company?.phone),
+    formatRuPhone(profile.value?.phone),
 );
 
-const phoneHref = computed(() => phoneToTelHref(systemStore.company?.phone));
+const phoneHref = computed(() => phoneToTelHref(profile.value?.phone));
 
 function closeMenuOnScroll() {
     if (uiStore.isMobileMenuOpen) {
@@ -61,8 +69,11 @@ watch(
 );
 
 onMounted(() => {
-    if (!systemStore.company && !systemStore.loadingCompany) {
-        void systemStore.fetchCompany();
+    if (!companyStore.profile && !companyStore.loadingProfile) {
+        void companyStore.fetchProfile();
+    }
+    if (!deliveryStore.data && !deliveryStore.loading) {
+        void deliveryStore.fetchAll();
     }
 });
 

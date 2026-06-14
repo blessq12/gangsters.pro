@@ -13,7 +13,7 @@ import {
     playWorkScheduleStripEnter,
 } from "../../animations/animationManager";
 import { useCompanyOpenStatus } from "../../composables/system/useCompanyOpenStatus";
-import { useSystemStore } from "../../stores/systemStore";
+import { useCompanyStore } from "../../stores/companyStore";
 import { getCurrentDayKey } from "../../utils/system/companyOpenStatus";
 import {
     formatTodayWorkScheduleLine,
@@ -25,7 +25,7 @@ import { useAppDesign } from "../../design/useAppDesign";
 const TOOLTIP_PAD = 12;
 const PANEL_MAX_WIDTH_PX = 20 * 16;
 
-const systemStore = useSystemStore();
+const companyStore = useCompanyStore();
 const ws = useAppDesign().components.workSchedule;
 
 const props = defineProps({
@@ -43,7 +43,7 @@ const stripRootClass = computed(() =>
 );
 
 const { openNow, statusHint } = useCompanyOpenStatus(
-    () => systemStore.company,
+    () => companyStore.profile,
 );
 
 const stripEnterRef = ref(null);
@@ -58,9 +58,9 @@ const panelPos = ref({
     maxHeight: "70vh",
 });
 
-const hasCompany = computed(() => systemStore.company != null);
+const hasCompany = computed(() => companyStore.profile != null);
 const isLoading = computed(
-    () => systemStore.loadingCompany && !systemStore.company,
+    () => companyStore.loadingProfile && !companyStore.profile,
 );
 
 const openLabel = computed(() => {
@@ -80,7 +80,7 @@ const summaryLine = computed(() => {
     const base = openLabel.value;
     if (hint) return `${base} · ${hint}`;
     const today = formatTodayWorkScheduleLine(
-        systemStore.company,
+        companyStore.profile,
         new Date(),
     );
     return today || base;
@@ -113,7 +113,7 @@ const dotClass = computed(() => {
 const currentDayKey = computed(() => getCurrentDayKey(new Date()));
 
 const scheduleRows = computed(() => {
-    const c = systemStore.company;
+    const c = companyStore.profile;
     if (!c) return [];
     const rows = getWorkScheduleRows(c.work_schedule);
     if (rows.length) return rows;
@@ -134,7 +134,7 @@ const scheduleRows = computed(() => {
 
 const todayLine = computed(() =>
     hasCompany.value
-        ? formatTodayWorkScheduleLine(systemStore.company, new Date())
+        ? formatTodayWorkScheduleLine(companyStore.profile, new Date())
         : "",
 );
 
@@ -214,8 +214,8 @@ watch(expanded, (open) => {
 });
 
 onMounted(() => {
-    if (!systemStore.company && !systemStore.loadingCompany) {
-        void systemStore.fetchCompany();
+    if (!companyStore.profile && !companyStore.loadingProfile) {
+        void companyStore.fetchProfile();
     }
 
     nextTick(() => {

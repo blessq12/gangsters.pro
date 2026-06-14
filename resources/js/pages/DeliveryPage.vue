@@ -1,6 +1,7 @@
 <script setup>
-import { computed, onMounted } from "vue";
-import { useSystemStore } from "../stores/systemStore";
+import { computed } from "vue";
+import { useCompanyReadModel } from "../features/company/useCompanyReadModel";
+import { useDeliveryReadModel } from "../features/delivery/useDeliveryReadModel";
 import {
     buildCheckoutAlignedPaymentInfoBlocks,
     buildDeliveryHeroStats,
@@ -16,13 +17,18 @@ import {
 import { safeTrim } from "../utils/system/companyDisplay";
 import { useAppDesign } from "../design/useAppDesign";
 
-const systemStore = useSystemStore();
+const { profile: profileRef } = useCompanyReadModel({ autoload: true });
+const { facts: factsRef, loading: deliveryLoading } = useDeliveryReadModel({
+    autoload: true,
+});
+
 const dv = useAppDesign().components.pages.delivery;
 
-const company = computed(() => systemStore.company);
+const profile = computed(() => profileRef.value);
+const facts = computed(() => factsRef.value);
 
 const heroDescription = computed(() => {
-    const c = company.value;
+    const c = profile.value;
     const tag = safeTrim(c?.tagline);
     if (tag) return tag;
     const desc = safeTrim(c?.description);
@@ -31,30 +37,30 @@ const heroDescription = computed(() => {
 });
 
 const stats = computed(() => {
-    if (systemStore.loadingCompany && !company.value) {
+    if (deliveryLoading.value && !facts.value) {
         return [
             { label: "Срок", value: "…" },
             { label: "Мин. заказ", value: "…" },
             { label: "Покрытие", value: "…" },
         ];
     }
-    return buildDeliveryHeroStats(company.value);
+    return buildDeliveryHeroStats(facts.value);
 });
 
 const highlightMinutes = computed(() => ({
-    head: deliveryHighlightMinutesHeadline(company.value),
-    sub: deliveryHighlightMinutesSubline(company.value),
+    head: deliveryHighlightMinutesHeadline(facts.value),
+    sub: deliveryHighlightMinutesSubline(facts.value),
 }));
 
 const highlightMinOrder = computed(() => ({
-    head: deliveryHighlightMinOrderHeadline(company.value),
-    sub: deliveryHighlightMinOrderSubline(company.value),
+    head: deliveryHighlightMinOrderHeadline(facts.value),
+    sub: deliveryHighlightMinOrderSubline(facts.value),
 }));
 
 const paymentBlocks = buildCheckoutAlignedPaymentInfoBlocks();
 
 const importantLead = computed(() => {
-    const c = company.value;
+    const c = facts.value;
     const minRub = kopecksToRublesOptional(c?.min_order_amount_kopecks);
     const feeRub = kopecksToRublesOptional(c?.delivery_fee_kopecks);
     if (minRub != null && feeRub != null) {
@@ -70,17 +76,11 @@ const importantLead = computed(() => {
 });
 
 const importantSub = computed(() => {
-    const line = formatAverageDeliveryLine(company.value);
+    const line = formatAverageDeliveryLine(facts.value);
     if (line !== "—") {
         return `Ориентир по сроку доставки — ${line}. В пиковые часы время может быть больше — это будет видно до подтверждения заказа.`;
     }
     return "В пиковые часы время может быть больше — актуальные условия видны до подтверждения заказа.";
-});
-
-onMounted(() => {
-    if (!company.value && !systemStore.loadingCompany) {
-        void systemStore.fetchCompany();
-    }
 });
 </script>
 
@@ -104,7 +104,7 @@ onMounted(() => {
                     вы видите при оформлении, как только указан адрес.
                 </p>
                 <p>
-                    Ориентир по среднему времени доставки берётся из данных компании;
+                    Ориентир по среднему времени доставки берётся из данных доставки;
                     фактический срок может отличаться в зависимости от загрузки кухни и
                     маршрута курьера.
                 </p>

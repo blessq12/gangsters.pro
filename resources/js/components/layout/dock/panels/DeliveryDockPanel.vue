@@ -1,7 +1,7 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import { useAppDesign } from "../../../../design/useAppDesign";
-import { useSystemStore } from "../../../../stores/systemStore";
+import { useDeliveryReadModel } from "../../../../features/delivery/useDeliveryReadModel";
 import {
     buildDefinedDeliveryStats,
     buildYandexMapWidgetSearchUrl,
@@ -18,13 +18,15 @@ const DOCK_PANEL_ANIM_MS = 300;
 const panels = useAppDesign().components.dockPanels;
 const d = panels.delivery;
 
-const systemStore = useSystemStore();
+const { facts: factsRef, loading: deliveryLoading } = useDeliveryReadModel({
+    autoload: true,
+});
 
-const company = computed(() => systemStore.company);
+const facts = computed(() => factsRef.value);
 
-const mapUrl = computed(() => buildYandexMapWidgetSearchUrl(company.value));
+const mapUrl = computed(() => buildYandexMapWidgetSearchUrl(facts.value));
 
-const hasZoneGeometry = computed(() => hasDeliveryZoneGeometry(company.value));
+const hasZoneGeometry = computed(() => hasDeliveryZoneGeometry(facts.value));
 
 const hasMapsApiKey = computed(() => Boolean(readYandexMapsApiKeyFromSite()));
 
@@ -34,7 +36,7 @@ const mapDisplayMode = computed(() =>
     resolveDeliveryDockMapMode({
         hasApiKey: hasMapsApiKey.value,
         hasAddress: hasKitchenAddress.value,
-        isLoading: systemStore.loadingCompany && !company.value,
+        isLoading: deliveryLoading.value && !facts.value,
     }),
 );
 
@@ -49,8 +51,8 @@ const mapResizeObserver = ref(null);
 /** @type {ReturnType<typeof setTimeout>|null} */
 let mountDelayTimer = null;
 
-const isLoadingCompany = computed(
-    () => systemStore.loadingCompany && !company.value,
+const isLoadingDelivery = computed(
+    () => deliveryLoading.value && !facts.value,
 );
 
 const showZonePolygonHint = computed(
@@ -63,14 +65,17 @@ const showZonePolygonHint = computed(
 );
 
 const dockStats = computed(() => {
-    if (isLoadingCompany.value) {
+    if (isLoadingDelivery.value) {
         return [];
     }
-    return buildDefinedDeliveryStats(company.value);
+    return buildDefinedDeliveryStats(facts.value);
 });
 
 const showStatsRow = computed(
-    () => dockStats.value.length > 0 || isLoadingCompany.value || showZonePolygonHint.value,
+    () =>
+        dockStats.value.length > 0 ||
+        isLoadingDelivery.value ||
+        showZonePolygonHint.value,
 );
 
 function disconnectResizeObserver() {
@@ -114,7 +119,7 @@ async function syncZoneMap() {
     try {
         const controller = await mountCompanyDeliveryZoneReadonlyMap(
             mapContainerRef.value,
-            company.value,
+            facts.value,
         );
         if (!controller) {
             zoneMapMountFailed.value = true;
@@ -140,7 +145,7 @@ function scheduleSyncZoneMap() {
     });
 }
 
-watch([mapDisplayMode, company], async () => {
+watch([mapDisplayMode, facts], async () => {
     await nextTick();
     if (mapDisplayMode.value === "zone-sdk") {
         scheduleSyncZoneMap();
@@ -152,9 +157,6 @@ watch([mapDisplayMode, company], async () => {
 });
 
 onMounted(() => {
-    if (!company.value && !systemStore.loadingCompany) {
-        void systemStore.fetchCompany();
-    }
     scheduleSyncZoneMap();
 });
 
@@ -235,7 +237,7 @@ onUnmounted(() => {
                     </p>
                 </div>
                 <div
-                    v-if="isLoadingCompany"
+                    v-if="isLoadingDelivery"
                     :class="[d.island, d.statSkeletonCard]"
                 >
                     <p :class="d.statLabel">

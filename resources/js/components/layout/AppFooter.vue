@@ -3,7 +3,7 @@ import { computed, ref } from "vue";
 import { useEnterSlide } from "../../composables/animations/useEnterSlide";
 import { useAppDesign } from "../../design/useAppDesign";
 import { getLegalTexts } from "../../content/legalTexts";
-import { useSystemReadModel } from "../../features/system/useSystemReadModel";
+import { useCompanyReadModel } from "../../features/company/useCompanyReadModel";
 import { hasDocumentBody } from "../../utils/system/documentBody";
 
 const FOOTER_DOC_KEYS = {
@@ -16,7 +16,7 @@ const footer = useAppDesign().components.footer;
 
 const year = new Date().getFullYear();
 const fallbackLegal = getLegalTexts();
-const { documents } = useSystemReadModel({ autoload: true });
+const { documents } = useCompanyReadModel({ autoload: true });
 
 const showPrivacy = ref(false);
 const showRules = ref(false);
