@@ -8,6 +8,7 @@ use App\Providers\ClientServiceProvider;
 use App\Providers\CompanyServiceProvider;
 use App\Providers\DeliveryServiceProvider;
 use App\Providers\MarketingContentServiceProvider;
+use App\Providers\PromotionServiceProvider;
 use App\Providers\OrderServiceProvider;
 use App\Providers\Filament\AdminPanelProvider;
 use App\Providers\RouteServiceProvider;
@@ -192,6 +193,7 @@ return [
         OrderServiceProvider::class,
         DeliveryServiceProvider::class,
         MarketingContentServiceProvider::class,
+        PromotionServiceProvider::class,
         CompanyServiceProvider::class,
         AdminPanelProvider::class,
         ImageServiceProvider::class,

@@ -107,3 +107,17 @@ import docs/client/flow.md
 import docs/client/events.md
 
 ******** Client **********
+
+******** Promotion **********
+
+import docs/promotion/overview.md
+import docs/promotion/routing.md
+import docs/promotion/http.md
+import docs/promotion/application.md
+import docs/promotion/domain.md
+import docs/promotion/infrastructure.md
+import docs/promotion/filament.md
+import docs/promotion/flow.md
+import docs/promotion/events.md
+
+******** Promotion **********
