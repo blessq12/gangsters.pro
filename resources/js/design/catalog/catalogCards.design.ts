@@ -25,6 +25,10 @@ export const catalogCardsDesign = {
             default:
                 "border-app-accent/60 bg-app-accent/20 text-app-accent",
         },
+        setBadge:
+            "inline-flex w-fit items-center border border-violet-400/50 bg-violet-500/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-100 backdrop-blur sm:text-[11px]",
+        setCountPill:
+            "inline-flex w-fit items-center bg-[rgba(0,0,0,0.75)] px-2 py-1 text-[10px] font-medium text-app-canvas-fg backdrop-blur sm:px-2.5 sm:text-[11px]",
     },
 
     desktop: {

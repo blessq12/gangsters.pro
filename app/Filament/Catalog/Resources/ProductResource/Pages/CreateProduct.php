@@ -4,7 +4,6 @@ namespace App\Filament\Catalog\Resources\ProductResource\Pages;
 
 use App\Domain\Catalog\Enum\CatalogItemKind;
 use App\Filament\Catalog\Concerns\CatalogContextBreadcrumbs;
-use App\Filament\Catalog\Concerns\RedirectsToCatalogHub;
 use App\Filament\Catalog\Resources\ProductResource;
 use App\Filament\Catalog\Support\FilamentProductPersistence;
 use Filament\Resources\Pages\CreateRecord;
@@ -12,7 +11,6 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateProduct extends CreateRecord
 {
     use CatalogContextBreadcrumbs;
-    use RedirectsToCatalogHub;
 
     protected static string $resource = ProductResource::class;
 
@@ -21,6 +19,13 @@ class CreateProduct extends CreateRecord
     protected static function catalogHubTab(): string
     {
         return 'products';
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('edit', [
+            'record' => $this->getRecord(),
+        ]);
     }
 
     /**

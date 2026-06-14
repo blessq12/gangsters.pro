@@ -3,6 +3,7 @@
 namespace App\Filament\Catalog\Resources\ProductResource\RelationManagers;
 
 use App\Infrastructure\Catalog\Model\PRD_ProductImage;
+use App\Infrastructure\Catalog\Support\CatalogStoredImagePath;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -33,13 +34,24 @@ class ProductImagesRelationManager extends RelationManager
             ->columns(1)
             ->components([
                 FileUpload::make('path')
-                    ->label('Файл')
+                    ->label('Изображение')
                     ->image()
                     ->disk('public')
                     ->directory(fn (): string => 'products/'.$this->getOwnerRecord()->getKey())
                     ->visibility('public')
+                    ->acceptedFileTypes([
+                        'image/jpeg',
+                        'image/png',
+                        'image/webp',
+                    ])
+                    ->imagePreviewHeight('220')
+                    ->panelLayout('integrated')
+                    ->openable()
+                    ->downloadable()
+                    ->previewable()
                     ->required()
-                    ->maxSize(5120),
+                    ->maxSize(5120)
+                    ->helperText('JPEG, PNG или WebP. До 5 МБ.'),
             ]);
     }
 
@@ -51,31 +63,46 @@ class ProductImagesRelationManager extends RelationManager
             ->emptyStateHeading('Изображения не найдены')
             ->emptyStateDescription('Добавьте первое изображение товара.')
             ->heading('Изображения')
-            ->description('Перетаскивайте строки, чтобы изменить порядок изображений в карточке товара.')
+            ->description('Превью и порядок показа в карточке. Перетаскивайте строки, чтобы изменить порядок.')
             ->defaultSort('sort_order')
             ->reorderable('sort_order')
             ->columns([
                 ImageColumn::make('path')
                     ->label('Превью')
+                    ->getStateUsing(
+                        fn (PRD_ProductImage $record): ?string => CatalogStoredImagePath::normalize($record->path),
+                    )
                     ->disk(fn (PRD_ProductImage $record): string => $record->disk ?: 'public')
-                    ->square()
-                    ->imageSize(64),
-                TextColumn::make('path')
-                    ->label('Путь')
-                    ->searchable(),
+                    ->visibility('public')
+                    ->checkFileExistence(false)
+                    ->imageHeight(140)
+                    ->extraImgAttributes([
+                        'class' => 'rounded-md object-contain bg-zinc-100 dark:bg-zinc-800',
+                    ]),
+                TextColumn::make('sort_order')
+                    ->label('Порядок')
+                    ->badge()
+                    ->sortable(),
             ])
             ->headerActions([
                 CreateAction::make()
                     ->label('Добавить изображение')
                     ->mutateFormDataUsing(function (array $data): array {
                         $data['disk'] = 'public';
+                        $data['path'] = CatalogStoredImagePath::normalize($data['path'] ?? null);
 
                         return $data;
                     }),
             ])
             ->recordActions([
                 EditAction::make()
-                    ->label('Заменить файл'),
+                    ->label('Заменить файл')
+                    ->mutateFormDataUsing(function (array $data): array {
+                        $data['disk'] = 'public';
+                        $data['path'] = CatalogStoredImagePath::normalize($data['path'] ?? null);
+
+                        return $data;
+                    }),
                 DeleteAction::make()
                     ->label('Удалить'),
             ])

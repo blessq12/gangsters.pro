@@ -2,6 +2,7 @@
 import { computed, nextTick, onMounted, onUnmounted, ref } from "vue";
 import { playTooltipClose, playTooltipOpen } from "../../animations/animationManager";
 import { useFixedTooltip } from "../../composables/catalog/useFixedTooltip";
+import { useCatalogItemDisplay } from "../../composables/catalog/useCatalogItemDisplay";
 import { useProductActions } from "../../composables/catalog/useProductActions";
 import { useProductMeta } from "../../composables/catalog/useProductMeta";
 import { formatMoneyRublesRu } from "../../utils/moneyFormat";
@@ -52,11 +53,14 @@ function cartFlyOptions() {
 
 const { nutrition, hasNutrition, hasIngredients, ingredientsText } =
     useProductMeta(computed(() => props.product));
+const { isSet, isProduct, setCountLabel, setLines, hasSetComposition } =
+    useCatalogItemDisplay(computed(() => props.product));
 
-const openTooltip = ref(null); // nutrition | ingredients | null
+const openTooltip = ref(null); // nutrition | ingredients | composition | null
 const actionsClusterRef = ref(null);
 const nutritionButtonRef = ref(null);
 const ingredientsButtonRef = ref(null);
+const compositionButtonRef = ref(null);
 const { tooltipRef, tooltipStyle, openAt, close: hideFloatingTooltip } = useFixedTooltip();
 
 function toggleNutritionTooltip() {
@@ -67,6 +71,18 @@ function toggleNutritionTooltip() {
     openTooltip.value = "nutrition";
     nextTick(async () => {
         await openAt(nutritionButtonRef.value);
+        playTooltipOpen(tooltipRef.value);
+    });
+}
+
+function toggleCompositionTooltip() {
+    if (openTooltip.value === "composition") {
+        closeTooltip();
+        return;
+    }
+    openTooltip.value = "composition";
+    nextTick(async () => {
+        await openAt(compositionButtonRef.value);
         playTooltipOpen(tooltipRef.value);
     });
 }
@@ -166,7 +182,13 @@ onUnmounted(() => {
                     {{ product.name }}
                 </p>
                 <span
-                    v-if="product.weight"
+                    v-if="isSet && setCountLabel"
+                    :class="h.weightInline"
+                >
+                    {{ setCountLabel }}
+                </span>
+                <span
+                    v-else-if="product.weight"
                     :class="h.weightInline"
                 >
                     {{ product.weight }}&nbsp;г
@@ -188,7 +210,7 @@ onUnmounted(() => {
                     </button>
 
                     <button
-                        v-if="hasNutrition"
+                        v-if="hasNutrition && isProduct"
                         ref="nutritionButtonRef"
                         type="button"
                         :class="h.nutritionBtn"
@@ -199,7 +221,7 @@ onUnmounted(() => {
                     </button>
 
                     <button
-                        v-if="hasIngredients"
+                        v-if="hasIngredients && isProduct"
                         ref="ingredientsButtonRef"
                         type="button"
                         :class="h.ingredientsBtn"
@@ -207,6 +229,17 @@ onUnmounted(() => {
                         @click.stop="toggleIngredientsTooltip"
                     >
                         <i :class="h.ingredientsIcon" />
+                    </button>
+
+                    <button
+                        v-if="hasSetComposition"
+                        ref="compositionButtonRef"
+                        type="button"
+                        :class="h.ingredientsBtn"
+                        aria-label="Показать состав набора"
+                        @click.stop="toggleCompositionTooltip"
+                    >
+                        <i class="mdi mdi-format-list-bulleted text-xl" />
                     </button>
 
                     <div :class="h.cartIconOuter">
@@ -265,9 +298,9 @@ onUnmounted(() => {
             ref="tooltipRef"
             :class="[
                 h.teleportTooltipBase,
-                openTooltip === 'ingredients'
-                    ? h.teleportTooltipIngredientsWidth
-                    : h.teleportTooltipNutritionWidth,
+                openTooltip === 'nutrition'
+                    ? h.teleportTooltipNutritionWidth
+                    : h.teleportTooltipIngredientsWidth,
             ]"
             :style="tooltipStyle"
             role="dialog"
@@ -290,10 +323,25 @@ onUnmounted(() => {
                     <span :class="h.teleportNutritionVal">{{ nutrition.carbs }} г</span>
                 </div>
             </div>
-            <div v-else :class="h.teleportIngredientsInner">
+            <div v-else-if="openTooltip === 'ingredients'" :class="h.teleportIngredientsInner">
                 <div :class="h.teleportIngredientsHeading">Состав</div>
                 <div :class="h.teleportIngredientsBody">
                     {{ ingredientsText }}
+                </div>
+            </div>
+            <div v-else-if="openTooltip === 'composition'" :class="h.teleportIngredientsInner">
+                <div :class="h.teleportIngredientsHeading">Состав набора</div>
+                <div :class="h.teleportIngredientsBody">
+                    <div
+                        v-for="line in setLines"
+                        :key="line.productId"
+                        class="flex justify-between gap-3 py-0.5"
+                    >
+                        <span>{{ line.productName }}</span>
+                        <span class="shrink-0 font-medium tabular-nums text-app-accent">
+                            ×{{ line.quantity }}
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>

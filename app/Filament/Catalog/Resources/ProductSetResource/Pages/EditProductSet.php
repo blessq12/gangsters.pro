@@ -6,6 +6,7 @@ use App\Filament\Catalog\Concerns\CatalogContextBreadcrumbs;
 use App\Filament\Catalog\Concerns\RedirectsToCatalogHub;
 use App\Filament\Catalog\Concerns\RendersCatalogResourceTabs;
 use App\Filament\Catalog\Resources\ProductSetResource;
+use App\Filament\Catalog\Resources\ProductResource\RelationManagers\ProductImagesRelationManager;
 use App\Filament\Catalog\Resources\ProductSetResource\RelationManagers\ProductSetLinesRelationManager;
 use App\Filament\Catalog\Resources\ProductSetResource\Schemas\ProductSetForm;
 use App\Filament\Catalog\Support\FilamentProductPersistence;
@@ -49,6 +50,12 @@ class EditProductSet extends EditRecord
                             ->schema([
                                 $this->relationManagerTab(ProductSetLinesRelationManager::class),
                             ]),
+                        'images' => Tab::make('images')
+                            ->label('Изображения')
+                            ->icon(Heroicon::OutlinedPhoto)
+                            ->schema([
+                                $this->relationManagerTab(ProductImagesRelationManager::class),
+                            ]),
                     ]),
                 ),
             ]);
@@ -58,7 +65,7 @@ class EditProductSet extends EditRecord
     {
         parent::mount($record);
 
-        $this->ensureDefaultCatalogEditTab('card', ['card', 'composition']);
+        $this->ensureDefaultCatalogEditTab('card', ['card', 'composition', 'images']);
         FilamentProductPersistence::ensureSetKind($this->getRecord());
     }
 

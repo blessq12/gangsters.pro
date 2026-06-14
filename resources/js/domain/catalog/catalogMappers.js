@@ -56,39 +56,58 @@ function normalizeCatalogImages(apiImages) {
     }
 
     const firstImage = apiImages[0];
-    if (!firstImage || !Array.isArray(firstImage.variants)) {
+    if (!firstImage || typeof firstImage !== "object") {
         return { imageUrl: null, imageSrcset: [] };
     }
 
-    const variants = firstImage.variants;
-    const bySize = (size) =>
-        variants.find(
-            (v) => v && typeof v === "object" && v.size === size && v.path,
-        );
-    const thumb = bySize("thumb");
-    const medium = bySize("medium");
-    const large = bySize("large");
-    const ordered = [thumb, medium, large].filter(Boolean);
+    if (Array.isArray(firstImage.variants)) {
+        const variants = firstImage.variants;
+        const bySize = (size) =>
+            variants.find(
+                (v) => v && typeof v === "object" && v.size === size && v.path,
+            );
+        const thumb = bySize("thumb");
+        const medium = bySize("medium");
+        const large = bySize("large");
+        const ordered = [thumb, medium, large].filter(Boolean);
 
-    if (!ordered.length) {
-        return { imageUrl: null, imageSrcset: [] };
+        if (ordered.length) {
+            const imageSrcset = ordered
+                .map((v) => ({
+                    url: toCatalogStorageUrl(v.path),
+                    width:
+                        Number(v.width) ||
+                        (v.size === "thumb"
+                            ? 300
+                            : v.size === "medium"
+                              ? 800
+                              : 1200),
+                }))
+                .filter((entry) => entry.url);
+
+            const imageUrl = toCatalogStorageUrl(
+                ordered[ordered.length - 1].path,
+            );
+
+            return {
+                imageUrl: imageUrl || null,
+                imageSrcset,
+            };
+        }
     }
 
-    const imageSrcset = ordered
-        .map((v) => ({
-            url: toCatalogStorageUrl(v.path),
-            width:
-                Number(v.width) ||
-                (v.size === "thumb" ? 300 : v.size === "medium" ? 800 : 1200),
-        }))
-        .filter((entry) => entry.url);
+    const fallbackPath =
+        typeof firstImage.path === "string" ? firstImage.path.trim() : "";
+    if (fallbackPath !== "") {
+        const imageUrl = toCatalogStorageUrl(fallbackPath);
 
-    const imageUrl = toCatalogStorageUrl(ordered[ordered.length - 1].path);
+        return {
+            imageUrl,
+            imageSrcset: imageUrl ? [{ url: imageUrl, width: 800 }] : [],
+        };
+    }
 
-    return {
-        imageUrl: imageUrl || null,
-        imageSrcset,
-    };
+    return { imageUrl: null, imageSrcset: [] };
 }
 
 /**
@@ -147,22 +166,28 @@ export function normalizeCatalogSet(apiSet) {
     const price = parseCatalogPriceRubles(apiSet.price);
     const { imageUrl, imageSrcset } = normalizeCatalogImages(apiSet.images);
 
-    const derivedWeight =
-        extractWeightGrams(apiSet.description) || extractWeightGrams(apiSet.name);
-
     const lines = Array.isArray(apiSet.lines)
         ? apiSet.lines
               .map((line) => {
                   if (!line || typeof line !== "object") return null;
-                  const productId = line.product_id ?? null;
+                  const productId = line.product_id ?? line.productId ?? null;
                   if (productId == null) return null;
+                  const productName = String(
+                      line.product_name || line.productName || line.name || "",
+                  ).trim();
                   return {
                       product_id: productId,
                       quantity: Number(line.quantity) || 0,
+                      product_name: productName || null,
                   };
               })
               .filter(Boolean)
         : [];
+
+    const description =
+        typeof apiSet.description === "string" && apiSet.description.trim()
+            ? apiSet.description.trim()
+            : null;
 
     return {
         id,
@@ -170,7 +195,8 @@ export function normalizeCatalogSet(apiSet) {
         slug: String(apiSet.slug || "").trim(),
         name: apiSet.name || "",
         price,
-        weight: derivedWeight,
+        weight: null,
+        description,
         tags: normalizeProductTags(apiSet.tags),
         images: imageUrl ? [imageUrl] : [],
         imageSrcset,

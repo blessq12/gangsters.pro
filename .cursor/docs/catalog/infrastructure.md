@@ -1,20 +1,47 @@
-# Catalog — слой инфраструктуры
+# Catalog — инфраструктура
 
 Реализация доменных портов и персистентность. Единственное место, где живут Eloquent и таблицы `PRD_*`.
 
-## Модели (`PRD_*`)
+## Таблицы
 
-| Модель | Таблица | Смысл |
-|--------|---------|--------|
-| `PRD_Category` | `PRD_categories` | Категории |
-| `PRD_Product` | `PRD_products` | Товары и наборы (`catalog_kind`) |
-| `PRD_Tag` | `PRD_tags` | Теги |
-| `PRD_CategoryProduct` | `PRD_category_product` | Состав категории |
-| `PRD_ProductTag` | `PRD_product_tag` | Теги на позиции |
-| `PRD_ProductSetLine` | `PRD_product_set_lines` | Строки набора |
-| `PRD_ProductImage` | `PRD_product_images` | Изображения товара |
+Миграция: `database/migrations/2026_06_14_100000_create_prd_catalog_tables.php`.
 
-## Репозитории
+| Таблица | Назначение |
+|---------|------------|
+| `PRD_categories` | Категории: `name`, `slug`, `sort_order`, `is_active` |
+| `PRD_products` | Товары и наборы: `catalog_kind`, `status`, `price` (рубли), КБЖУ, `ingredients` (json), meta-поля, `archived_at` |
+| `PRD_category_product` | Состав категории: `category_id`, `product_id`, `sort_order` |
+| `PRD_tags` | Теги: `code`, `label`, `color`, `is_active`, `sort_order` |
+| `PRD_product_tag` | Pivot товар/набор ↔ тег |
+| `PRD_product_set_lines` | Строки набора: `set_id`, `product_id`, `quantity`, `sort_order` |
+| `PRD_product_images` | Изображения товара: `disk`, `path`, `sort_order` |
+
+## Eloquent-модели
+
+| Модель | Таблица |
+|--------|---------|
+| `PRD_Category` | `PRD_categories` |
+| `PRD_Product` | `PRD_products` |
+| `PRD_Tag` | `PRD_tags` |
+| `PRD_CategoryProduct` | `PRD_category_product` |
+| `PRD_ProductSetLine` | `PRD_product_set_lines` |
+| `PRD_ProductImage` | `PRD_product_images` |
+
+Eloquent-модели **`PRD_ProductTag` нет** — pivot `PRD_product_tag` читается через `DB::table` в `EloquentCatalogItemRepository`.
+
+### `PRD_Product` relations
+- `categories()`, `tags()`, `setLines()`, `productImages()`
+
+## Mappers
+
+| Класс | Маппинг |
+|-------|---------|
+| `CatalogCategoryMapper` | `PRD_Category` → `Category` |
+| `CatalogProductMapper` | `PRD_Product` → `Product`; `archived_at !== null` → `Archived`; nutrition `null` если все КБЖУ = 0 |
+| `CatalogProductSetMapper` | `PRD_Product` + lines → `ProductSet`; пустые lines → `null` |
+| `CatalogTagMapper` | `PRD_Tag` → `Tag` |
+
+## Repositories
 
 | Класс | Порт |
 |-------|------|
@@ -22,16 +49,30 @@
 | `EloquentCatalogItemRepository` | `CatalogItemRepository` |
 | `EloquentTagRepository` | `TagRepository` |
 
-Маппинг строк БД ↔ домен — через `Mapper/*` в том же слое.
+`findItemsByCategoryId` не фильтрует по статусу позиций — фильтрация в Application use case.
+
+Tag ids для product/set — `DB::table('PRD_product_tag')`, порядок ids сохраняется.
 
 ## Композиция
 
-`CatalogServiceProvider` регистрирует привязки портов к Eloquent-реализациям.
+`CatalogServiceProvider` (`config/app.php`):
 
-## Guards / Storage
+```php
+CategoryRepository → EloquentCategoryRepository
+CatalogItemRepository → EloquentCatalogItemRepository
+TagRepository → EloquentTagRepository
+```
 
-Заготовки под проверки удаления (категория/товар/тег занят) и локальное хранение изображений — инфраструктурные адаптеры для будущих application-сценариев. Filament сейчас пишет в модели напрямую, минуя эти порты.
+Отдельного `config/catalog.php` **нет**.
 
 ## Сидирование
 
-`Database\Seeders\CatalogSeeder` — демо-данные категорий, товаров, набора, тегов и связей для локальной разработки.
+`Database\Seeders\CatalogSeeder` — 4 тега, 4 категории, 4 товара, 1 набор, связи, product tags. Вызывается из `DatabaseSeeder`.
+
+## Тесты
+
+| Файл | Покрытие |
+|------|----------|
+| `tests/Feature/CatalogReadTest.php` | `GET /api/catalog` → 200, структура `categories` |
+
+Unit-тестов mappers/repos/Filament **нет**.

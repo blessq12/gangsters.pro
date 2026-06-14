@@ -12,6 +12,7 @@ import {
     updateCheckoutCartLine,
 } from "../features/checkout/checkoutSessionService";
 import {
+    buildCatalogCartLinePayload,
     mapClientToGuestContact,
     mapDeliveryToLocal,
     mapPaymentToLocal,
@@ -408,7 +409,8 @@ export const useCheckoutStore = defineStore("checkout", {
                 (item) => item.productId === id && !item.isSystem,
             );
             const nextQty = (existing ? existing.qty : 0) + add;
-            await this._upsertCartLine(id, nextQty);
+            const payload = buildCatalogCartLinePayload(product, existing?.payload);
+            await this._upsertCartLine(id, nextQty, payload);
         },
 
         async incrementCart(productId) {
@@ -418,7 +420,7 @@ export const useCheckoutStore = defineStore("checkout", {
             if (!item) {
                 return;
             }
-            await this._upsertCartLine(productId, item.qty + 1);
+            await this._upsertCartLine(productId, item.qty + 1, item.payload ?? null);
         },
 
         async decrementCart(productId) {
@@ -432,7 +434,7 @@ export const useCheckoutStore = defineStore("checkout", {
             if (next <= 0) {
                 await this.removeFromCart(productId);
             } else {
-                await this._upsertCartLine(productId, next);
+                await this._upsertCartLine(productId, next, item.payload ?? null);
             }
         },
 
@@ -440,7 +442,10 @@ export const useCheckoutStore = defineStore("checkout", {
             this.cartLoading = true;
             this.cartError = null;
             try {
-                await this.updateCartLine(productId, 0);
+                const item = this.cartItems.find(
+                    (entry) => entry.productId === productId && !entry.isSystem,
+                );
+                await this.updateCartLine(productId, 0, item?.payload ?? null);
             } catch (e) {
                 this.cartError =
                     e?.response?.data?.message || "Не удалось обновить корзину.";
@@ -467,11 +472,11 @@ export const useCheckoutStore = defineStore("checkout", {
             }
         },
 
-        async _upsertCartLine(productId, quantity) {
+        async _upsertCartLine(productId, quantity, payload = null) {
             this.cartLoading = true;
             this.cartError = null;
             try {
-                await this.updateCartLine(productId, quantity);
+                await this.updateCartLine(productId, quantity, payload);
             } catch (e) {
                 this.cartError =
                     e?.response?.data?.message || "Не удалось обновить корзину.";

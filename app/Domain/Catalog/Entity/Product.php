@@ -6,6 +6,7 @@ use App\Domain\Catalog\Contract\CatalogItem;
 use App\Domain\Catalog\Enum\CatalogItemKind;
 use App\Domain\Catalog\Enum\ProductStatus;
 use App\Domain\Catalog\ValueObject\Nutrition;
+use App\Domain\Catalog\ValueObject\ProductImage;
 use App\Shared\ValueObject\Money;
 
 /**
@@ -16,6 +17,7 @@ final class Product implements CatalogItem
     /**
      * @param  list<int>  $tagIds
      * @param  list<string>  $ingredients
+     * @param  list<ProductImage>  $images
      */
     public function __construct(
         private readonly int $id,
@@ -27,6 +29,7 @@ final class Product implements CatalogItem
         private readonly ?Nutrition $nutrition,
         private readonly array $tagIds,
         private readonly array $ingredients = [],
+        private readonly array $images = [],
     ) {}
 
     public function id(): int
@@ -88,5 +91,13 @@ final class Product implements CatalogItem
     public function ingredients(): array
     {
         return $this->ingredients;
+    }
+
+    /**
+     * @return list<ProductImage>
+     */
+    public function images(): array
+    {
+        return $this->images;
     }
 }

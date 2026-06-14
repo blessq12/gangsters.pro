@@ -19,7 +19,18 @@ final class CatalogReadTest extends TestCase
 
         $response->assertOk();
         $response->assertJsonStructure([
-            'categories',
+            'categories' => [
+                '*' => [
+                    'category',
+                    'items' => [
+                        '*' => [
+                            'kind',
+                            'id',
+                            'images',
+                        ],
+                    ],
+                ],
+            ],
         ]);
     }
 

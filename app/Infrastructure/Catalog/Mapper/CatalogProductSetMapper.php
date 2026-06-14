@@ -4,6 +4,7 @@ namespace App\Infrastructure\Catalog\Mapper;
 
 use App\Domain\Catalog\Entity\ProductSet;
 use App\Domain\Catalog\Enum\ProductStatus;
+use App\Domain\Catalog\ValueObject\ProductImage;
 use App\Domain\Catalog\ValueObject\ProductSetLine;
 use App\Infrastructure\Catalog\Model\PRD_Product;
 use App\Infrastructure\Catalog\Model\PRD_ProductSetLine;
@@ -12,9 +13,11 @@ use App\Shared\ValueObject\Money;
 final class CatalogProductSetMapper
 {
     /**
+     * @param  list<ProductSetLine>  $lines
      * @param  list<int>  $tagIds
+     * @param  list<ProductImage>  $images
      */
-    public function toDomain(PRD_Product $row, array $lines, array $tagIds = []): ?ProductSet
+    public function toDomain(PRD_Product $row, array $lines, array $tagIds = [], array $images = []): ?ProductSet
     {
         if ($lines === []) {
             return null;
@@ -29,6 +32,7 @@ final class CatalogProductSetMapper
             description: $row->description !== null ? (string) $row->description : null,
             lines: $lines,
             tagIds: $tagIds,
+            images: $images,
         );
     }
 

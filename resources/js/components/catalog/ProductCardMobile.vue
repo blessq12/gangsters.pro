@@ -2,6 +2,7 @@
 import { computed, nextTick, onMounted, onUnmounted, ref } from "vue";
 import { playTooltipClose, playTooltipOpen } from "../../animations/animationManager";
 import { useFixedTooltip } from "../../composables/catalog/useFixedTooltip";
+import { useCatalogItemDisplay } from "../../composables/catalog/useCatalogItemDisplay";
 import { useProductActions } from "../../composables/catalog/useProductActions";
 import { useProductMeta } from "../../composables/catalog/useProductMeta";
 import { formatMoneyRublesRu } from "../../utils/moneyFormat";
@@ -53,6 +54,8 @@ function cartFlyOptions() {
 
 const { nutrition, hasNutrition, hasIngredients, ingredientsText } =
     useProductMeta(computed(() => props.product));
+const { isSet, isProduct, setCountLabel, setLines, hasSetComposition } =
+    useCatalogItemDisplay(computed(() => props.product));
 const badgeTags = computed(() => {
     const tags =
         (Array.isArray(props.product?.tags) && props.product.tags) ||
@@ -80,10 +83,11 @@ function tagToneClass(color) {
     return cs.tagTone[c] ?? cs.tagTone.default;
 }
 
-const openTooltip = ref(null); // 'nutrition' | 'ingredients' | null
+const openTooltip = ref(null); // 'nutrition' | 'ingredients' | 'composition' | null
 const actionsClusterRef = ref(null);
 const nutritionButtonRef = ref(null);
 const ingredientsButtonRef = ref(null);
+const compositionButtonRef = ref(null);
 const { tooltipRef, tooltipStyle, openAt, close: hideFloatingTooltip } = useFixedTooltip();
 
 const liveMessage = ref("");
@@ -158,6 +162,18 @@ function toggleNutritionTooltip() {
     openTooltip.value = "nutrition";
     nextTick(async () => {
         await openAt(nutritionButtonRef.value);
+        playTooltipOpen(tooltipRef.value);
+    });
+}
+
+function toggleCompositionTooltip() {
+    if (openTooltip.value === "composition") {
+        closeTooltip();
+        return;
+    }
+    openTooltip.value = "composition";
+    nextTick(async () => {
+        await openAt(compositionButtonRef.value);
         playTooltipOpen(tooltipRef.value);
     });
 }
@@ -287,8 +303,20 @@ function handlePriceClick() {
             />
 
             <div :class="m.badgesCol">
+                <span
+                    v-if="isSet"
+                    :class="cs.setBadge"
+                >
+                    Набор
+                </span>
                 <div
-                    v-if="product.weight"
+                    v-if="isSet && setCountLabel"
+                    :class="cs.setCountPill"
+                >
+                    {{ setCountLabel }}
+                </div>
+                <div
+                    v-else-if="product.weight"
                     :class="m.weightPill"
                 >
                     {{ product.weight }} г
@@ -348,7 +376,7 @@ function handlePriceClick() {
                     ref="actionsClusterRef"
                     :class="m.actionCluster"
                 >
-                        <div v-if="hasNutrition">
+                        <div v-if="hasNutrition && isProduct">
                             <button
                                 ref="nutritionButtonRef"
                                 type="button"
@@ -363,7 +391,7 @@ function handlePriceClick() {
                             </button>
                         </div>
 
-                        <div v-if="hasIngredients">
+                        <div v-if="hasIngredients && isProduct">
                             <button
                                 ref="ingredientsButtonRef"
                                 type="button"
@@ -375,6 +403,18 @@ function handlePriceClick() {
                                 @click.stop="toggleIngredientsTooltip"
                             >
                                 <i class="mdi mdi-information-outline text-xl" />
+                            </button>
+                        </div>
+
+                        <div v-if="hasSetComposition">
+                            <button
+                                ref="compositionButtonRef"
+                                type="button"
+                                :class="m.ingredientsIconBtn"
+                                aria-label="Показать состав набора"
+                                @click.stop="toggleCompositionTooltip"
+                            >
+                                <i class="mdi mdi-format-list-bulleted text-xl" />
                             </button>
                         </div>
 
@@ -452,9 +492,9 @@ function handlePriceClick() {
             ref="tooltipRef"
             :class="[
                 m.teleportTooltipBase,
-                openTooltip === 'ingredients'
-                    ? m.teleportTooltipIngredientsWidth
-                    : m.teleportTooltipNutritionWidth,
+                openTooltip === 'nutrition'
+                    ? m.teleportTooltipNutritionWidth
+                    : m.teleportTooltipIngredientsWidth,
             ]"
             :style="tooltipStyle"
             role="dialog"
@@ -477,12 +517,29 @@ function handlePriceClick() {
                     <span :class="m.teleportNutritionVal">{{ nutrition.carbs }} г</span>
                 </div>
             </div>
-            <div v-else :class="m.teleportIngredientsInner">
+            <div v-else-if="openTooltip === 'ingredients'" :class="m.teleportIngredientsInner">
                 <div :class="m.teleportIngredientsHeading">
                     Состав
                 </div>
                 <div :class="m.teleportIngredientsBody">
                     {{ ingredientsText }}
+                </div>
+            </div>
+            <div v-else-if="openTooltip === 'composition'" :class="m.teleportIngredientsInner">
+                <div :class="m.teleportIngredientsHeading">
+                    Состав набора
+                </div>
+                <div :class="m.teleportIngredientsBody">
+                    <div
+                        v-for="line in setLines"
+                        :key="line.productId"
+                        class="flex justify-between gap-3 py-0.5"
+                    >
+                        <span>{{ line.productName }}</span>
+                        <span class="shrink-0 font-medium tabular-nums text-app-accent">
+                            ×{{ line.quantity }}
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>

@@ -1,45 +1,91 @@
 # Catalog — Filament (оператор)
 
-UI оператора для мутаций каталога. Не заменяет Application на запись — сейчас **пишет в `PRD_*` через Eloquent** (формы, relation managers, hub-таблицы).
+UI оператора для мутаций каталога. **Не** проходит через Application — пишет в `PRD_*` через Eloquent.
 
 ## Точка входа
 
 - **Хаб:** `ManageCatalog` → `/admin/catalog`
-- Табы: категории, товары, наборы, теги (`livewireProperty` — монтируется только активная таблица)
+- Навигация: **Каталог** (`navigationSort` = 10)
+- Табы: `?tab=categories|products|sets|tags` (`activeCatalogTab`, Livewire `livewireProperty`)
+- Поддерживаются legacy-значения `?tab=` (старые slug + `::tab`)
 
 ## Ресурсы
 
-| Resource | Сущность | CRUD |
-|----------|----------|------|
-| `CategoryResource` | Категория | create / edit |
-| `ProductResource` | Товар | create / edit |
-| `ProductSetResource` | Набор (тот же `PRD_Product`, kind=set) | create / edit |
-| `TagResource` | Тег | create / edit |
-| `CatalogResource` | Оболочка хаба | только index |
+| Resource | Model | Slug | Навигация |
+|----------|-------|------|-----------|
+| `CatalogResource` | `PRD_Category` (form/table пустые) | `catalog` | Видим (хаб) |
+| `CategoryResource` | `PRD_Category` | `catalog/categories` | Скрыта |
+| `ProductResource` | `PRD_Product` (kind=product) | `catalog/products` | Скрыта |
+| `ProductSetResource` | `PRD_Product` (kind=set) | `catalog/sets` | Скрыта |
+| `TagResource` | `PRD_Tag` | `catalog/tags` | Скрыта |
 
-Отдельного index-листинга у сущностей нет — списки в hub-таблицах (`*HubTable`).
+Списки — в hub-таблицах (`*HubTable`), не на index ресурсов.
 
-## Relation managers (состав)
+## Hub tables
 
-| Менеджер | Где | Смысл |
-|----------|-----|--------|
-| `CategoryProductsRelationManager` | Edit категории | Товары/наборы в категории, reorder |
-| `ProductSetLinesRelationManager` | Edit набора | Строки набора, количество, reorder |
-| `ProductImagesRelationManager` | Edit товара | Загрузка и порядок изображений |
+| Widget | Сущность |
+|--------|----------|
+| `CategoriesHubTable` | Категории |
+| `ProductsHubTable` | Товары |
+| `ProductSetsHubTable` | Наборы |
+| `TagsHubTable` | Теги |
 
-Bulk-действия в составе отключены — только построчные операции.
+Actions: create/edit/delete (`CatalogHubTableActions`), колонки статуса/meta (`CatalogHubTablePresentation`).
 
-## Паттерны UI
+## Edit-страницы и табы
 
-- Табы редактирования через `RendersCatalogResourceTabs` + именованные ключи табов.
-- Хлебные крошки с контекстом хаба — `CatalogContextBreadcrumbs`.
-- После save/delete — редирект обратно в хаб (`RedirectsToCatalogHub`).
-- Hub-таблицы: `CatalogHubTableActions`, человекопонятные подписи вместо имён моделей.
+### Category (`EditCategory`)
+- `category` — форма (`CategoryForm`)
+- `composition` — `CategoryProductsRelationManager`
 
-## Регистрация Livewire
+### Product (`EditProduct`)
+- `card` — name, slug, description, status, price, теги, состав (`ingredients`)
+- `nutrition` — КБЖУ, `nutrition_basis`
+- `meta` — `meta_counts_as_roll`, `meta_gift_candidate`, `meta_is_complement_set`
+- `images` — `ProductImagesRelationManager`
 
-`AdminPanelProvider::livewireComponents()` — hub-таблицы и relation managers (вложенный Livewire без полной регистрации даёт 419).
+`catalog_kind=product` задаётся при create; `FilamentProductPersistence::ensureProductKind` на edit.
 
-## Нормализация данных
+### ProductSet (`EditProductSet`)
+- `card` — `ProductSetForm::cardTabSchema()`
+- `composition` — `ProductSetLinesRelationManager`
 
-`FilamentProductPersistence` — статус/архив, `catalog_kind`, нормализация `ingredients` (JSON-массив строк) перед сохранением карточки.
+Без табов tags/images/meta/nutrition.
+
+### Tag (`EditTag`)
+- Одна Section (`TagForm`)
+
+## Relation managers
+
+| Manager | Relationship | Reorder | Bulk |
+|---------|--------------|---------|------|
+| `CategoryProductsRelationManager` | `categoryProducts` | `sort_order` | нет |
+| `ProductSetLinesRelationManager` | `setLines` | `sort_order` | нет |
+| `ProductImagesRelationManager` | `productImages` | `sort_order` | `DeleteBulkAction` есть |
+
+### Upload изображений (`ProductImagesRelationManager`)
+- Disk: `public`
+- Directory: `products/{product_id}`
+- `maxSize`: 5120 KB
+
+## Support / Concerns
+
+| Класс | Роль |
+|-------|------|
+| `FilamentProductPersistence` | `normalize()`: `archived_at` по status, trim `ingredients`; `ensureProductKind` / `ensureSetKind` |
+| `FilamentSlugField` | Автогенерация slug из name |
+| `CatalogHubTableActions` | CRUD в hub |
+| `CatalogHubTablePresentation` | Колонки таблиц |
+| `CatalogContextBreadcrumbs` | Хлебные крошки с контекстом хаба |
+| `RedirectsToCatalogHub` | Редирект после save → `/admin/catalog?tab=...` |
+| `RendersCatalogResourceTabs` | Табы edit + relation managers |
+
+`FilamentProductPersistence::normalize()` **не** меняет `catalog_kind`.
+
+## Livewire registration
+
+`AdminPanelProvider::livewireComponents()`: 4 hub tables + 3 relation managers.
+
+## Неиспользуемый view
+
+`resources/views/filament/catalog/widgets/catalog-overview.blade.php` — нигде не referenced.

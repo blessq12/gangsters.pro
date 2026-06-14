@@ -87,6 +87,20 @@ export const catalogModalDesign = {
         ingredientsHeading:
             "text-[11px] font-medium text-app-muted",
         ingredientsBody: "break-words text-app-canvas-fg/90",
+        setBadge:
+            "inline-flex items-center border border-violet-400/50 bg-violet-500/20 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-violet-100 backdrop-blur",
+        description:
+            "text-xs leading-relaxed text-app-canvas-fg/85 line-clamp-4",
+        compositionBtn:
+            "flex h-10 w-10 shrink-0 items-center justify-center border border-violet-400/40 bg-neutral-950/85 text-violet-200 transition-colors hover:border-violet-400/70 hover:text-violet-100",
+        compositionIcon: "mdi mdi-format-list-bulleted text-xl",
+        compositionBlock: "space-y-2 text-xs text-app-canvas-fg",
+        compositionHeading:
+            "text-[11px] font-medium text-app-muted",
+        compositionRow:
+            "flex items-start justify-between gap-3",
+        compositionName: "min-w-0 break-words text-app-canvas-fg/90",
+        compositionQty: "shrink-0 font-medium tabular-nums text-app-accent",
     },
 
     gallery: {

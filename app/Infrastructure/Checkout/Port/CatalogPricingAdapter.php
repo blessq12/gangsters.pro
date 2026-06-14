@@ -16,14 +16,24 @@ final class CatalogPricingAdapter implements CatalogPricingPort
     {
         $product = $this->catalogItems->findProductById($productId);
 
-        if ($product === null || ! $product->isActive()) {
-            return null;
+        if ($product !== null && $product->isActive()) {
+            return new ProductPriceQuote(
+                productId: $product->id(),
+                productName: $product->name(),
+                unitPrice: $product->price(),
+            );
         }
 
-        return new ProductPriceQuote(
-            productId: $product->id(),
-            productName: $product->name(),
-            unitPrice: $product->price(),
-        );
+        $set = $this->catalogItems->findSetById($productId);
+
+        if ($set !== null && $set->isActive()) {
+            return new ProductPriceQuote(
+                productId: $set->id(),
+                productName: $set->name(),
+                unitPrice: $set->price(),
+            );
+        }
+
+        return null;
     }
 }

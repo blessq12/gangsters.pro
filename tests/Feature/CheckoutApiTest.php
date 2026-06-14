@@ -218,6 +218,49 @@ final class CheckoutApiTest extends TestCase
         ];
     }
 
+    #[Test]
+    public function patch_cart_добавляет_набор_в_корзину(): void
+    {
+        if (! $this->databaseIsAvailable()) {
+            $this->markTestSkipped('БД недоступна для feature-теста.');
+        }
+
+        $setId = $this->resolveFirstSetId();
+        if ($setId === null) {
+            $this->markTestSkipped('В каталоге нет активных наборов.');
+        }
+
+        $createResponse = $this->postJson('/api/checkout');
+        $createResponse->assertCreated();
+        $checkoutId = (string) $createResponse->json('checkout_id');
+
+        $patchResponse = $this->patchJson('/api/checkout/'.$checkoutId.'/cart', [
+            'product_id' => $setId,
+            'quantity' => 1,
+            'payload' => ['catalog_kind' => 'set'],
+        ]);
+
+        $patchResponse->assertOk();
+        $patchResponse->assertJsonPath('cart.items.0.product_id', $setId);
+        $patchResponse->assertJsonPath('cart.items.0.quantity', 1);
+    }
+
+    private function resolveFirstSetId(): ?int
+    {
+        $catalogResponse = $this->getJson('/api/catalog');
+        $catalogResponse->assertOk();
+
+        foreach ($catalogResponse->json('categories', []) as $categoryNode) {
+            foreach ($categoryNode['items'] ?? [] as $item) {
+                if (($item['kind'] ?? null) === 'set' && isset($item['id'])) {
+                    return (int) $item['id'];
+                }
+            }
+        }
+
+        return null;
+    }
+
     private function resolveFirstProductId(): ?int
     {
         $catalogResponse = $this->getJson('/api/catalog');

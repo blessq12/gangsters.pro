@@ -12,6 +12,7 @@ use App\Domain\Catalog\Repository\CatalogItemRepository;
 use App\Domain\Catalog\Repository\CategoryRepository;
 use App\Domain\Catalog\Repository\TagRepository;
 use App\Domain\Catalog\ValueObject\Nutrition;
+use App\Domain\Catalog\ValueObject\ProductImage;
 use App\Shared\ValueObject\Money;
 
 /**
@@ -72,10 +73,28 @@ final class GetCatalogUseCase
             $this->catalogItems->findActiveSetsByIds($setIds),
         );
 
+        $lineProductIds = [];
+
+        foreach ($setsById as $set) {
+            foreach ($set->lines() as $line) {
+                $lineProductIds[] = $line->productId();
+            }
+        }
+
+        $lineProductNames = $this->catalogItems->findProductNamesByIds(
+            array_values(array_unique($lineProductIds)),
+        );
+
         $items = [];
 
         foreach ($links as $link) {
-            $item = $this->resolveCategoryItem($link, $productsById, $setsById, $tagById);
+            $item = $this->resolveCategoryItem(
+                $link,
+                $productsById,
+                $setsById,
+                $tagById,
+                $lineProductNames,
+            );
             if ($item !== null) {
                 $items[] = $item;
             }
@@ -91,6 +110,7 @@ final class GetCatalogUseCase
      * @param  array<int, Product>  $productsById
      * @param  array<int, ProductSet>  $setsById
      * @param  array<int, Tag>  $tagById
+     * @param  array<int, string>  $lineProductNames
      * @return array<string, mixed>|null
      */
     private function resolveCategoryItem(
@@ -98,12 +118,13 @@ final class GetCatalogUseCase
         array $productsById,
         array $setsById,
         array $tagById,
+        array $lineProductNames,
     ): ?array {
         if ($link->kind() === CatalogItemKind::Set) {
             $set = $setsById[$link->catalogItemId()] ?? null;
 
             return $set instanceof ProductSet
-                ? $this->mapProductSet($set, $tagById)
+                ? $this->mapProductSet($set, $tagById, $lineProductNames)
                 : null;
         }
 
@@ -189,21 +210,26 @@ final class GetCatalogUseCase
             'nutrition' => $this->mapNutrition($product->nutrition()),
             'ingredients' => $product->ingredients(),
             'tags' => $this->mapTags($product->tagIds(), $tagById),
+            'images' => $this->mapImages($product->images()),
         ];
     }
 
     /**
+     * @param  array<int, string>  $lineProductNames
      * @param  array<int, Tag>  $tagById
      * @return array<string, mixed>
      */
-    private function mapProductSet(ProductSet $set, array $tagById): array
+    private function mapProductSet(ProductSet $set, array $tagById, array $lineProductNames): array
     {
         $lines = [];
 
         foreach ($set->lines() as $line) {
+            $productId = $line->productId();
+
             $lines[] = [
-                'product_id' => $line->productId(),
+                'product_id' => $productId,
                 'quantity' => $line->quantity(),
+                'product_name' => $lineProductNames[$productId] ?? null,
             ];
         }
 
@@ -217,6 +243,7 @@ final class GetCatalogUseCase
             'description' => $set->description(),
             'lines' => $lines,
             'tags' => $this->mapTags($set->tagIds(), $tagById),
+            'images' => $this->mapImages($set->images()),
         ];
     }
 
@@ -243,6 +270,36 @@ final class GetCatalogUseCase
         }
 
         return $tags;
+    }
+
+    /**
+     * @param  list<ProductImage>  $images
+     * @return list<array{variants: list<array{size: string, path: string, width: int}>}>
+     */
+    private function mapImages(array $images): array
+    {
+        $mapped = [];
+
+        foreach ($images as $image) {
+            if (! $image instanceof ProductImage) {
+                continue;
+            }
+
+            $path = $image->path();
+            if ($path === '') {
+                continue;
+            }
+
+            $mapped[] = [
+                'variants' => [
+                    ['size' => 'thumb', 'path' => $path, 'width' => 300],
+                    ['size' => 'medium', 'path' => $path, 'width' => 800],
+                    ['size' => 'large', 'path' => $path, 'width' => 1200],
+                ],
+            ];
+        }
+
+        return $mapped;
     }
 
     /**

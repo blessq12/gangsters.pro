@@ -10,7 +10,10 @@ use App\Domain\Catalog\Repository\CatalogItemRepository;
 use App\Infrastructure\Catalog\Mapper\CatalogProductMapper;
 use App\Infrastructure\Catalog\Mapper\CatalogProductSetMapper;
 use App\Infrastructure\Catalog\Model\PRD_Product;
+use App\Infrastructure\Catalog\Model\PRD_ProductImage;
 use App\Infrastructure\Catalog\Model\PRD_ProductSetLine;
+use App\Infrastructure\Catalog\Support\CatalogStoredImagePath;
+use App\Domain\Catalog\ValueObject\ProductImage;
 
 final class EloquentCatalogItemRepository implements CatalogItemRepository
 {
@@ -30,8 +33,13 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
         }
 
         $tagIds = $this->loadTagIdsForProductIds([$id]);
+        $images = $this->loadImagesByProductIds([$id]);
 
-        return $this->productMapper->toDomain($row, $tagIds[$id] ?? []);
+        return $this->productMapper->toDomain(
+            $row,
+            $tagIds[$id] ?? [],
+            $images[$id] ?? [],
+        );
     }
 
     public function findSetById(int $id): ?ProductSet
@@ -50,8 +58,14 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
             ->all();
 
         $tagIds = $this->loadTagIdsForProductIds([$id]);
+        $images = $this->loadImagesByProductIds([$id]);
 
-        return $this->setMapper->toDomain($row, $lines, $tagIds[$id] ?? []);
+        return $this->setMapper->toDomain(
+            $row,
+            $lines,
+            $tagIds[$id] ?? [],
+            $images[$id] ?? [],
+        );
     }
 
     public function findActiveProductsByIds(array $ids): array
@@ -69,8 +83,9 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
             ->get();
 
         $tagIdsByProduct = $this->loadTagIdsForProductIds($ids);
+        $imagesByProduct = $this->loadImagesByProductIds($ids);
 
-        return $this->mapProductsPreservingOrder($rows, $ids, $tagIdsByProduct);
+        return $this->mapProductsPreservingOrder($rows, $ids, $tagIdsByProduct, $imagesByProduct);
     }
 
     public function findActiveSetsByIds(array $ids): array
@@ -89,6 +104,7 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
             ->get();
 
         $tagIdsBySet = $this->loadTagIdsForProductIds($ids);
+        $imagesBySet = $this->loadImagesByProductIds($ids);
 
         $byId = [];
 
@@ -101,7 +117,13 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
                 ->map(fn (PRD_ProductSetLine $line) => $this->setMapper->mapLine($line))
                 ->all();
 
-            $set = $this->setMapper->toDomain($row, $lines, $tagIdsBySet[(int) $row->id] ?? []);
+            $setId = (int) $row->id;
+            $set = $this->setMapper->toDomain(
+                $row,
+                $lines,
+                $tagIdsBySet[$setId] ?? [],
+                $imagesBySet[$setId] ?? [],
+            );
             if ($set instanceof ProductSet) {
                 $byId[(int) $row->id] = $set;
             }
@@ -115,6 +137,36 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
         }
 
         return $ordered;
+    }
+
+    public function findProductNamesByIds(array $ids): array
+    {
+        $ids = $this->normalizeIds($ids);
+        if ($ids === []) {
+            return [];
+        }
+
+        $rows = $this->productQuery()
+            ->where('catalog_kind', CatalogItemKind::Product->value)
+            ->whereIn('id', $ids)
+            ->get(['id', 'name']);
+
+        $names = [];
+
+        foreach ($rows as $row) {
+            if (! $row instanceof PRD_Product) {
+                continue;
+            }
+
+            $name = trim((string) $row->name);
+            if ($name === '') {
+                continue;
+            }
+
+            $names[(int) $row->id] = $name;
+        }
+
+        return $names;
     }
 
     private function productQuery()
@@ -172,13 +224,59 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
     }
 
     /**
+     * @param  list<int>  $productIds
+     * @return array<int, list<ProductImage>>
+     */
+    private function loadImagesByProductIds(array $productIds): array
+    {
+        $productIds = $this->normalizeIds($productIds);
+        if ($productIds === []) {
+            return [];
+        }
+
+        $rows = PRD_ProductImage::query()
+            ->whereIn('product_id', $productIds)
+            ->orderBy('product_id')
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
+
+        $map = [];
+
+        foreach ($rows as $row) {
+            if (! $row instanceof PRD_ProductImage) {
+                continue;
+            }
+
+            $path = CatalogStoredImagePath::normalize($row->path);
+            if ($path === null) {
+                continue;
+            }
+
+            $productId = (int) $row->product_id;
+            $map[$productId] ??= [];
+            $map[$productId][] = new ProductImage(
+                path: $path,
+                sortOrder: (int) $row->sort_order,
+            );
+        }
+
+        return $map;
+    }
+
+    /**
      * @param  iterable<PRD_Product>  $rows
      * @param  list<int>  $order
      * @param  array<int, list<int>>  $tagIdsByProduct
+     * @param  array<int, list<ProductImage>>  $imagesByProduct
      * @return list<Product>
      */
-    private function mapProductsPreservingOrder(iterable $rows, array $order, array $tagIdsByProduct): array
-    {
+    private function mapProductsPreservingOrder(
+        iterable $rows,
+        array $order,
+        array $tagIdsByProduct,
+        array $imagesByProduct,
+    ): array {
         $byId = [];
 
         foreach ($rows as $row) {
@@ -187,7 +285,11 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
             }
 
             $id = (int) $row->id;
-            $byId[$id] = $this->productMapper->toDomain($row, $tagIdsByProduct[$id] ?? []);
+            $byId[$id] = $this->productMapper->toDomain(
+                $row,
+                $tagIdsByProduct[$id] ?? [],
+                $imagesByProduct[$id] ?? [],
+            );
         }
 
         $ordered = [];

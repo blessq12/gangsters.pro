@@ -189,3 +189,20 @@ export function formatServerPaymentLine(payment, formatPrice) {
 
     return label;
 }
+
+/**
+ * @param {object|null|undefined} product
+ * @param {object|null|undefined} existingPayload
+ * @returns {object|null}
+ */
+export function buildCatalogCartLinePayload(product, existingPayload = null) {
+    if (existingPayload && typeof existingPayload === "object") {
+        return existingPayload;
+    }
+
+    if (product?.kind === "set") {
+        return { catalog_kind: "set" };
+    }
+
+    return null;
+}

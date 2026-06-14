@@ -6,6 +6,7 @@ use App\Domain\Catalog\Contract\CatalogItem;
 use App\Domain\Catalog\Enum\CatalogItemKind;
 use App\Domain\Catalog\Enum\ProductStatus;
 use App\Domain\Catalog\ValueObject\ProductSetLine;
+use App\Domain\Catalog\ValueObject\ProductImage;
 use App\Shared\ValueObject\Money;
 
 /**
@@ -16,6 +17,7 @@ final class ProductSet implements CatalogItem
     /**
      * @param  list<ProductSetLine>  $lines
      * @param  list<int>  $tagIds
+     * @param  list<ProductImage>  $images
      */
     public function __construct(
         private readonly int $id,
@@ -26,6 +28,7 @@ final class ProductSet implements CatalogItem
         private readonly ?string $description,
         private readonly array $lines,
         private readonly array $tagIds,
+        private readonly array $images = [],
     ) {
         if ($lines === []) {
             throw new \InvalidArgumentException('Набор должен содержать хотя бы один товар.');
@@ -86,5 +89,13 @@ final class ProductSet implements CatalogItem
     public function tagIds(): array
     {
         return $this->tagIds;
+    }
+
+    /**
+     * @return list<ProductImage>
+     */
+    public function images(): array
+    {
+        return $this->images;
     }
 }

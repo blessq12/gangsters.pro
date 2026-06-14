@@ -5,6 +5,7 @@ namespace App\Infrastructure\Catalog\Mapper;
 use App\Domain\Catalog\Entity\Product;
 use App\Domain\Catalog\Enum\ProductStatus;
 use App\Domain\Catalog\ValueObject\Nutrition;
+use App\Domain\Catalog\ValueObject\ProductImage;
 use App\Infrastructure\Catalog\Model\PRD_Product;
 use App\Shared\ValueObject\Money;
 
@@ -12,8 +13,9 @@ final class CatalogProductMapper
 {
     /**
      * @param  list<int>  $tagIds
+     * @param  list<ProductImage>  $images
      */
-    public function toDomain(PRD_Product $row, array $tagIds = []): Product
+    public function toDomain(PRD_Product $row, array $tagIds = [], array $images = []): Product
     {
         return new Product(
             id: (int) $row->id,
@@ -25,6 +27,7 @@ final class CatalogProductMapper
             nutrition: $this->resolveNutrition($row),
             tagIds: $tagIds,
             ingredients: $this->resolveIngredients($row),
+            images: $images,
         );
     }
 

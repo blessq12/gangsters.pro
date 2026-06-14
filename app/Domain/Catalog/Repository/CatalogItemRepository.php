@@ -22,4 +22,10 @@ interface CatalogItemRepository
      * @return list<ProductSet>
      */
     public function findActiveSetsByIds(array $ids): array;
+
+    /**
+     * @param  list<int>  $ids
+     * @return array<int, string>
+     */
+    public function findProductNamesByIds(array $ids): array;
 }

@@ -1,8 +1,8 @@
 # Catalog — флоу
 
-Сквозные сценарии BC без привязки к классам.
+Сквозные сценарии BC и связанные контуры.
 
-## 1. Витрина читает меню
+## 1. Витрина: read API
 
 ```
 SPA → GET /api/catalog
@@ -13,53 +13,88 @@ SPA → GET /api/catalog
     → JSON { categories: [ { category, items[] } ] }
 ```
 
-Только **активные** категории и позиции. Пустые категории в ответ не попадают.
+Только **активные** категории и позиции. Категории без items **не попадают** в ответ.  
+**Images и meta** в JSON **нет**.
 
-## 2. Оператор открывает хаб
+## 2. Витрина: SPA read model
+
+```
+MainLayout* / useAppBootstrap
+    → catalogStore.initFromStorage() / fetchAll()
+    → catalogService.fetchCatalogTree()
+        → items[] маппится в products[] на фронте
+    → HomePage (useCatalogPageModel)
+    → CatalogCategories*, CatalogProducts*, ProductCard*, ProductDetailModal*
+```
+
+Отдельного route `/catalog` **нет** — каталог на главной.
+
+`catalogStore` кэширует дерево в localStorage (`gangsters_catalog`).
+
+Клиентские фильтры: категория, тег, поиск по name, `desktopCardsPerRow`, `mobileCardViewMode`.
+
+### Разрыв BE/FE по изображениям
+
+`catalogMappers.js` ожидает `images[].variants[]` (thumb/medium/large).  
+API не отдаёт `images` → `imageUrl` / `imageSrcset` на витрине пустые.
+
+## 3. Корзина с карточки
+
+```
+useProductActions → useCartCommands
+    → DOMAIN_EVENTS.CART_* (source: "catalog")
+```
+
+Цена в корзине — через Checkout API, не напрямую из catalogStore.
+
+## 4. Checkout ACL (косвенно)
+
+```
+UpdateCheckoutCartUseCase → CatalogPricingPort → CatalogPricingAdapter
+EvaluateCheckoutBenefits → CatalogGiftCandidatesPort, CatalogComplementSetCandidatesPort
+CartRollCounter → CatalogRollMetaPort
+```
+
+Gift/complement adapters читают `PRD_Product` напрямую (meta-поля), минуя domain repos.
+
+## 5. Оператор: hub
 
 ```
 Браузер → /admin/catalog?tab=products
-    → ManageCatalog (Filament Page)
-    → активный HubTable (Livewire TableWidget)
-    → чтение PRD_* напрямую
+    → ManageCatalog
+    → активный *HubTable (одна таблица в DOM)
 ```
 
-Переключение таба — смена `activeCatalogTab`, в DOM одна таблица.
-
-## 3. Оператор редактирует товар
+## 6. Оператор: товар
 
 ```
+/admin/catalog/products/create → catalog_kind=product
 /admin/catalog/products/{id}/edit
-    → табы: карточка (теги, состав JSON), nutrition, meta, изображения
-    → save → Eloquent PRD_Product (+ связи тегов)
-    → редирект в хаб /admin/catalog?tab=products
+    → табы card / nutrition / meta / images
+    → save → FilamentProductPersistence::normalize
+    → Eloquent PRD_Product + tags sync
+    → RedirectsToCatalogHub
 ```
 
-Изображения — relation manager, файл в `public` disk.
+Изображения — `ProductImagesRelationManager`, path `products/{id}/` на `public` disk.
 
-## 4. Оператор собирает категорию
-
-```
-Edit категории → таб «Состав»
-    → CategoryProductsRelationManager
-    → PRD_CategoryProduct (sort_order, reorder)
-```
-
-В категорию можно добавить и товар, и набор.
-
-## 5. Оператор собирает набор
+## 7. Оператор: категория и набор
 
 ```
-Edit набора → таб «Состав»
-    → ProductSetLinesRelationManager
-    → PRD_ProductSetLine (product_id, quantity, sort_order)
+Edit категории → composition → CategoryProductsRelationManager → PRD_category_product
+Edit набора → composition → ProductSetLinesRelationManager → PRD_product_set_lines
 ```
 
 ## Разделение read / write
 
 | Контур | Read | Write |
 |--------|------|-------|
-| Публичный API | GetCatalogUseCase → Domain ports | — |
-| Filament | Eloquent в таблицах/формах | Eloquent save/delete |
+| Публичный API | `GetCatalogUseCase` → Domain ports | — |
+| Filament | Eloquent в hub/forms/RM | Eloquent save/delete/reorder |
+| Checkout ACL | Adapters → repos / Eloquent | — |
 
-Целевой флоу мутаций через Application Command — пока не внедрён.
+Write use cases в Application **не** внедрены.
+
+## Следующий read
+
+Изменения в админке видны при следующем `GET /api/catalog` (общая БД; SPA может читать из localStorage до refresh).

@@ -2,6 +2,7 @@
 import { computed, ref, onMounted, onUnmounted, nextTick } from "vue";
 import { playTooltipOpen, playTooltipClose } from "../../animations/animationManager";
 import { useProductActions } from "../../composables/catalog/useProductActions";
+import { useCatalogItemDisplay } from "../../composables/catalog/useCatalogItemDisplay";
 import { useProductMeta } from "../../composables/catalog/useProductMeta";
 import { formatMoneyRublesRu } from "../../utils/moneyFormat";
 import { useAppDesign } from "../../design/useAppDesign";
@@ -23,6 +24,9 @@ const nutritionTriggerRef = ref(null);
 const nutritionTooltipRef = ref(null);
 
 const { nutrition, hasNutrition } = useProductMeta(computed(() => props.product));
+const { isSet, isProduct, setCountLabel } = useCatalogItemDisplay(
+    computed(() => props.product),
+);
 const badgeTags = computed(() => {
     const tags =
         (Array.isArray(props.product?.tags) && props.product.tags) ||
@@ -173,8 +177,20 @@ const handleToggleFavorite = () => {
             <div :class="d.gradient" />
 
             <div :class="d.badgesCol">
+                <span
+                    v-if="isSet"
+                    :class="cs.setBadge"
+                >
+                    Набор
+                </span>
                 <div
-                    v-if="product.weight"
+                    v-if="isSet && setCountLabel"
+                    :class="cs.setCountPill"
+                >
+                    {{ setCountLabel }}
+                </div>
+                <div
+                    v-else-if="product.weight"
                     :class="d.weightPill"
                 >
                     {{ product.weight }} г
@@ -204,7 +220,7 @@ const handleToggleFavorite = () => {
                 :class="d.topRightCluster"
                 @mouseleave="closeNutritionTooltip"
             >
-                <template v-if="hasNutrition">
+                <template v-if="hasNutrition && isProduct">
                     <div class="relative">
                         <button
                             type="button"

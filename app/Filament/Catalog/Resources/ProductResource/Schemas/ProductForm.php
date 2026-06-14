@@ -9,6 +9,7 @@ use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -18,7 +19,41 @@ final class ProductForm
     {
         return $schema
             ->columns(2)
-            ->components(self::allFields());
+            ->components(self::createSections());
+    }
+
+    /**
+     * Семантические блоки формы создания товара (одна страница, сверху вниз).
+     *
+     * @return array<int, Section>
+     */
+    public static function createSections(): array
+    {
+        return [
+            Section::make('Карточка товара')
+                ->description('Основные поля витрины: название, цена и статус публикации.')
+                ->columnSpanFull()
+                ->columns(2)
+                ->schema(self::cardTabSchema()),
+            Section::make('Метки витрины')
+                ->description('Теги показываются на карточке и помогают фильтровать меню.')
+                ->columnSpanFull()
+                ->schema(self::tagsTabSchema()),
+            Section::make('Состав блюда')
+                ->description('Ингредиенты для детальной карточки. Вводите по одному — Tab или запятая.')
+                ->columnSpanFull()
+                ->schema(self::ingredientsTabSchema()),
+            Section::make('Пищевая ценность')
+                ->description('КБЖУ для модального окна товара. Если не нужно — оставьте нули.')
+                ->columnSpanFull()
+                ->columns(2)
+                ->schema(self::nutritionTabSchema()),
+            Section::make('Правила checkout')
+                ->description('Флаги для корзины и акций. Изображения загружаются после сохранения — на вкладке «Изображения» в редактировании.')
+                ->columnSpanFull()
+                ->columns(3)
+                ->schema(self::metaTabSchema()),
+        ];
     }
 
     /**
@@ -51,7 +86,8 @@ final class ProductForm
             Textarea::make('description')
                 ->label('Описание')
                 ->columnSpanFull()
-                ->rows(4),
+                ->rows(4)
+                ->helperText('Краткий текст для карточки и модального окна.'),
             Select::make('status')
                 ->label('Статус')
                 ->options([
@@ -59,12 +95,14 @@ final class ProductForm
                     ProductStatus::Archived->value => 'В архиве',
                 ])
                 ->default(ProductStatus::Active->value)
-                ->required(),
+                ->required()
+                ->helperText('Архивные товары не попадают в публичный каталог.'),
             TextInput::make('price')
                 ->label('Цена, ₽')
                 ->numeric()
                 ->minValue(0)
-                ->suffix('₽'),
+                ->suffix('₽')
+                ->helperText('Цена в рублях. Можно указать позже.'),
         ];
     }
 
@@ -113,15 +151,15 @@ final class ProductForm
                 ->numeric()
                 ->default(0),
             TextInput::make('proteins')
-                ->label('Белки')
+                ->label('Белки, г')
                 ->numeric()
                 ->default(0),
             TextInput::make('fats')
-                ->label('Жиры')
+                ->label('Жиры, г')
                 ->numeric()
                 ->default(0),
             TextInput::make('carbs')
-                ->label('Углеводы')
+                ->label('Углеводы, г')
                 ->numeric()
                 ->default(0),
             Select::make('nutrition_basis')
@@ -143,11 +181,14 @@ final class ProductForm
     {
         return [
             Toggle::make('meta_counts_as_roll')
-                ->label('Считается как ролл'),
+                ->label('Считается как ролл')
+                ->helperText('Учитывается при расчёте комплекта дополнений в корзине.'),
             Toggle::make('meta_gift_candidate')
-                ->label('Кандидат на подарок'),
+                ->label('Кандидат на подарок')
+                ->helperText('Может быть выдан бесплатно по правилам Promotion.'),
             Toggle::make('meta_is_complement_set')
-                ->label('Набор дополнений'),
+                ->label('Набор дополнений')
+                ->helperText('Автодобавление комплекта при достижении порога роллов.'),
         ];
     }
 }

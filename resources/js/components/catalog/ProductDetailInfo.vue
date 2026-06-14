@@ -7,6 +7,7 @@ import {
     ref,
 } from "vue";
 import { playTooltipClose, playTooltipOpen } from "../../animations/animationManager";
+import { useCatalogItemDisplay } from "../../composables/catalog/useCatalogItemDisplay";
 import { useProductMeta } from "../../composables/catalog/useProductMeta";
 import { formatMoneyRublesRu } from "../../utils/moneyFormat";
 import { useAppDesign } from "../../design/useAppDesign";
@@ -38,6 +39,14 @@ const tagTone = useAppDesign().components.catalog.cards.shared.tagTone;
 
 const { nutrition, hasNutrition, ingredients, ingredientsText } =
     useProductMeta(computed(() => props.product));
+const {
+    isSet,
+    isProduct,
+    setLines,
+    setCountLabel,
+    description,
+    hasSetComposition,
+} = useCatalogItemDisplay(computed(() => props.product));
 
 const tags = computed(() => {
     const source = Array.isArray(props.product?.tags)
@@ -63,22 +72,25 @@ function tagToneClass(color) {
     return tagTone[c] ?? tagTone.default;
 }
 
-const activeTooltip = ref(null); // 'nutrition' | 'ingredients' | null
+const activeTooltip = ref(null); // 'nutrition' | 'ingredients' | 'composition' | null
 const tooltipPosition = ref({ left: 0, top: 0 });
 const tooltipRef = ref(null);
 
 const nutritionBtnRef = ref(null);
 const ingredientsBtnRef = ref(null);
+const compositionBtnRef = ref(null);
 
-const tooltipWidthClass = computed(() =>
-    activeTooltip.value === "ingredients"
-        ? di.tooltipWide
-        : di.tooltipNarrow,
-);
+const tooltipWidthClass = computed(() => {
+    if (activeTooltip.value === "ingredients" || activeTooltip.value === "composition") {
+        return di.tooltipWide;
+    }
+    return di.tooltipNarrow;
+});
 
 function getAnchorEl(type) {
     if (type === "nutrition") return nutritionBtnRef.value;
     if (type === "ingredients") return ingredientsBtnRef.value;
+    if (type === "composition") return compositionBtnRef.value;
     return null;
 }
 
@@ -121,6 +133,7 @@ function computeTooltipPosition() {
 async function openTooltip(type) {
     if (type === "nutrition" && !hasNutrition.value) return;
     if (type === "ingredients" && !ingredients.value.length) return;
+    if (type === "composition" && !hasSetComposition.value) return;
 
     activeTooltip.value = type;
     await nextTick();
@@ -144,6 +157,14 @@ function toggleIngredientsTooltip() {
     openTooltip("ingredients");
 }
 
+function toggleCompositionTooltip() {
+    if (activeTooltip.value === "composition") {
+        closeTooltip();
+        return;
+    }
+    openTooltip("composition");
+}
+
 let outsideClickHandler = null;
 onMounted(() => {
     outsideClickHandler = (e) => {
@@ -152,11 +173,13 @@ onMounted(() => {
         const tipEl = tooltipRef.value;
         const nutritionEl = nutritionBtnRef.value;
         const ingredientsEl = ingredientsBtnRef.value;
+        const compositionEl = compositionBtnRef.value;
 
         if (
             tipEl?.contains(e.target) ||
             nutritionEl?.contains(e.target) ||
-            ingredientsEl?.contains(e.target)
+            ingredientsEl?.contains(e.target) ||
+            compositionEl?.contains(e.target)
         ) {
             return;
         }
@@ -213,9 +236,21 @@ function handleToggleFavorite() {
                 {{ product.name || product.raw?.name || "Без названия" }}
             </h2>
             <div
-                v-if="tags.length"
+                v-if="isSet || tags.length"
                 :class="di.tagsRow"
             >
+                <span
+                    v-if="isSet"
+                    :class="di.setBadge"
+                >
+                    Набор
+                </span>
+                <span
+                    v-if="isSet && setCountLabel"
+                    :class="di.tagPill"
+                >
+                    {{ setCountLabel }}
+                </span>
                 <span
                     v-for="tag in tags"
                     :key="tag.code"
@@ -224,6 +259,12 @@ function handleToggleFavorite() {
                     {{ tag.label }}
                 </span>
             </div>
+            <p
+                v-if="description"
+                :class="di.description"
+            >
+                {{ description }}
+            </p>
         </div>
 
         <div :class="di.controlsRow">
@@ -238,7 +279,7 @@ function handleToggleFavorite() {
                 </button>
 
                 <button
-                    v-if="hasNutrition"
+                    v-if="hasNutrition && isProduct"
                     type="button"
                     ref="nutritionBtnRef"
                     :class="di.nutritionBtn"
@@ -249,7 +290,7 @@ function handleToggleFavorite() {
                 </button>
 
                 <button
-                    v-if="ingredients.length"
+                    v-if="ingredients.length && isProduct"
                     type="button"
                     ref="ingredientsBtnRef"
                     :class="di.ingredientsBtn"
@@ -257,6 +298,17 @@ function handleToggleFavorite() {
                     @click.stop="toggleIngredientsTooltip"
                 >
                     <i :class="di.ingredientsIcon" />
+                </button>
+
+                <button
+                    v-if="hasSetComposition"
+                    type="button"
+                    ref="compositionBtnRef"
+                    :class="di.compositionBtn"
+                    aria-label="Показать состав набора"
+                    @click.stop="toggleCompositionTooltip"
+                >
+                    <i :class="di.compositionIcon" />
                 </button>
 
                 <div :class="di.cartIconOuter">
@@ -355,6 +407,26 @@ function handleToggleFavorite() {
                     </div>
                     <div :class="di.ingredientsBody">
                         {{ ingredientsText }}
+                    </div>
+                </div>
+            </template>
+
+            <template v-else-if="activeTooltip === 'composition'">
+                <div :class="di.compositionBlock">
+                    <div :class="di.compositionHeading">
+                        Состав набора
+                    </div>
+                    <div
+                        v-for="line in setLines"
+                        :key="line.productId"
+                        :class="di.compositionRow"
+                    >
+                        <span :class="di.compositionName">
+                            {{ line.productName }}
+                        </span>
+                        <span :class="di.compositionQty">
+                            ×{{ line.quantity }}
+                        </span>
                     </div>
                 </div>
             </template>
