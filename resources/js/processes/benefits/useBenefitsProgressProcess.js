@@ -1,5 +1,5 @@
 import { useToast } from "vue-toastification";
-import { useCartStore } from "../../stores/cartStore";
+import { useCheckoutPricingStore } from "../../stores/checkoutPricingStore";
 import {
     DOMAIN_EVENTS,
     emitDomainEvent,
@@ -14,7 +14,7 @@ let prevGiftReached = null;
 export function useBenefitsProgressProcess() {
     if (!processInitialized) {
         const toast = useToast();
-        const cartStore = useCartStore();
+        const cartStore = useCheckoutPricingStore();
 
         cleanupHandlers = [
             subscribeDomainEvent(DOMAIN_EVENTS.CART_CHANGED, () => {

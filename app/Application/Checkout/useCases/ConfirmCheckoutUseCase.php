@@ -5,9 +5,11 @@ namespace App\Application\Checkout\useCases;
 use App\Application\Checkout\DTO\ConfirmCheckoutDto;
 use App\Application\Checkout\Presenter\CheckoutPresenter;
 use App\Application\Checkout\Services\ApplyCheckoutBenefitRules;
+use App\Application\Order\Presenter\OrderPresenter;
 use App\Domain\Checkout\Exception\CheckoutNotFoundException;
 use App\Domain\Checkout\Repository\CheckoutRepository;
 use App\Domain\Checkout\ValueObject\CheckoutId;
+use App\Domain\Order\Repository\OrderRepository;
 use Illuminate\Support\Facades\Event;
 
 /**
@@ -19,6 +21,8 @@ final class ConfirmCheckoutUseCase
         private readonly CheckoutRepository $checkouts,
         private readonly ApplyCheckoutBenefitRules $benefitRules,
         private readonly CheckoutPresenter $presenter,
+        private readonly OrderRepository $orders,
+        private readonly OrderPresenter $orderPresenter,
     ) {}
 
     /**
@@ -43,6 +47,14 @@ final class ConfirmCheckoutUseCase
             Event::dispatch($event);
         }
 
-        return $this->presenter->present($checkout);
+        $result = $this->presenter->present($checkout);
+
+        $order = $this->orders->findByCheckoutId($input->checkoutId);
+
+        if ($order !== null) {
+            $result['order'] = $this->orderPresenter->present($order);
+        }
+
+        return $result;
     }
 }

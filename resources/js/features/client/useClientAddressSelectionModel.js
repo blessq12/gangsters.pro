@@ -1,6 +1,5 @@
 import { computed } from "vue";
-import { useClientCommands } from "./useClientCommands";
-import { useClientReadModel } from "./useClientReadModel";
+import { useClientCommands, useClientReadModel } from "./useClient";
 import { mapApiError } from "../../utils/api/mapApiError";
 
 export function useClientAddressSelectionModel() {

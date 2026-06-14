@@ -9,6 +9,13 @@ export async function createCheckoutRequest() {
     return unwrap(response);
 }
 
+export async function fetchCheckoutRequest(checkoutId) {
+    const response = await httpClient.get(
+        `/api/checkout/${encodeURIComponent(String(checkoutId))}`,
+    );
+    return unwrap(response);
+}
+
 export async function updateCheckoutCartRequest(checkoutId, payload) {
     const response = await httpClient.patch(
         `/api/checkout/${encodeURIComponent(String(checkoutId))}/cart`,

@@ -1,8 +1,7 @@
 <script setup>
 import { computed } from "vue";
-import { useClientCommands } from "../../features/client/useClientCommands";
-import { useClientProfileSummaryReadModel } from "../../features/client/useClientProfileSummaryReadModel";
-import { useClientReadModel } from "../../features/client/useClientReadModel";
+import { useClientCommands, useClientReadModel } from "../../features/client/useClient";
+import { useOrdersReadModel } from "../../features/orders/useOrdersReadModel";
 import { formatOrderDate, formatOrderMoneyRubles } from "../../utils/order/orderDisplay";
 import { useAppDesign } from "../../design/useAppDesign";
 
@@ -12,7 +11,7 @@ const pv = useAppDesign().components.client.profileView;
 
 const clientReadModel = useClientReadModel();
 const clientCommands = useClientCommands();
-const { stats, loading, error } = useClientProfileSummaryReadModel();
+const { stats, loading, error } = useOrdersReadModel({ autoload: true });
 
 const fullName = computed(
     () => clientReadModel.profile.value.name || "Гость Gangsters",

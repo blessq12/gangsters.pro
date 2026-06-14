@@ -10,6 +10,9 @@ use App\Domain\Client\Exception\ClientFavoriteNotFoundException;
 use App\Domain\Client\Exception\ClientAlreadyExistsException;
 use App\Domain\Client\Exception\ClientNotFoundException;
 use App\Domain\Client\Exception\InvalidPasswordResetTokenException;
+use App\Domain\Checkout\Exception\CheckoutAlreadyConfirmedException;
+use App\Domain\Checkout\Exception\CheckoutNotFoundException;
+use App\Domain\Checkout\Exception\CheckoutNotReadyForConfirmationException;
 use App\Domain\Order\Exception\OrderInvariantViolation;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
@@ -81,6 +84,24 @@ class Handler extends ExceptionHandler
         }
 
         if ($e instanceof InvalidPasswordResetTokenException && $request->is('api/*')) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 422);
+        }
+
+        if ($e instanceof CheckoutNotFoundException && $request->is('api/*')) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 404);
+        }
+
+        if ($e instanceof CheckoutAlreadyConfirmedException && $request->is('api/*')) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 409);
+        }
+
+        if ($e instanceof CheckoutNotReadyForConfirmationException && $request->is('api/*')) {
             return response()->json([
                 'message' => $e->getMessage(),
             ], 422);

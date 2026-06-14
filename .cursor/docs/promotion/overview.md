@@ -54,7 +54,7 @@
 | Слой | Promotion |
 |------|-----------|
 | Domain | `app/Domain/Promotion/` |
-| Application | `app/Application/Promotion/` — use case'ов **пока нет** |
+| Application | `app/Application/Promotion/` — `EvaluatePromotionBenefits` (расчёт benefits) |
 | Infrastructure | `app/Infrastructure/Promotion/` |
 | HTTP | позже `GET /api/promotion` или вложение в checkout snapshot |
 | Filament | `app/Filament/Promotion/` — hub настроек акций |

@@ -1,9 +1,8 @@
 import { DOMAIN_EVENTS, subscribeDomainEvent } from "../../shared/domainEvents";
-import { useCartStore } from "../../stores/cartStore";
+import { useCheckoutPricingStore } from "../../stores/checkoutPricingStore";
 import { useCheckoutStore } from "../../stores/checkoutStore";
 import { useCartCommands } from "../../features/shoppingSession/useCartCommands";
 import { useUiStore } from "../../stores/uiStore";
-import { resetCheckoutAfterOrderCompleted } from "../../features/checkout/resetCheckoutAfterOrderCompleted";
 
 let processInitialized = false;
 let cleanupHandlers = [];
@@ -11,13 +10,13 @@ let cleanupHandlers = [];
 export function useSessionLifecycleProcess() {
     if (!processInitialized) {
         const cartCommands = useCartCommands();
-        const cartStore = useCartStore();
+        const pricingStore = useCheckoutPricingStore();
         const uiStore = useUiStore();
 
         cleanupHandlers = [
             subscribeDomainEvent(DOMAIN_EVENTS.CLIENT_LOGGED_OUT, () => {
                 useCheckoutStore().clearAfterCompleted();
-                cartStore.$patch({
+                pricingStore.$patch({
                     promoState: {},
                     deliveryPricing: null,
                     benefitsProgress: null,
@@ -27,7 +26,7 @@ export function useSessionLifecycleProcess() {
                 uiStore.setDockActive(null);
             }),
             subscribeDomainEvent(DOMAIN_EVENTS.ORDER_CREATED, () => {
-                resetCheckoutAfterOrderCompleted();
+                useCheckoutStore().clearAfterCompleted();
                 cartCommands.clearCart();
             }),
         ];

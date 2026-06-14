@@ -1,18 +1,14 @@
 import { defineStore } from "pinia";
 import { DOMAIN_EVENTS, emitDomainEvent } from "../shared/domainEvents";
-import { buildCreateOrderPayloadDto } from "../api/orderContracts";
-import { createOrderRequest, fetchOrdersRequest } from "../api/orderApi";
+import { fetchOrdersRequest } from "../api/orderApi";
 
 export const useOrderStore = defineStore("order", {
     state: () => ({
         orders: [],
-        lastCreatedOrder: null,
         loading: {
-            create: false,
             list: false,
         },
         error: {
-            create: null,
             list: null,
         },
     }),
@@ -74,57 +70,6 @@ export const useOrderStore = defineStore("order", {
                 throw e;
             } finally {
                 this.loading.list = false;
-            }
-        },
-        buildCreateOrderPayload(selectedAddress, cartItems, intent, { isGuest = false } = {}) {
-            return buildCreateOrderPayloadDto({
-                selectedAddress,
-                cartItems: Array.isArray(cartItems) ? cartItems : [],
-                deliveryInfo: intent.deliveryInfo,
-                paymentInfo: intent.paymentInfo,
-                customerComment: intent.customerComment,
-                guestContact:
-                    isGuest &&
-                    intent.guestContact &&
-                    String(intent.guestContact.phone || "").trim() !== ""
-                        ? intent.guestContact
-                        : null,
-                serverCartOnly: true,
-            });
-        },
-        async createOrder(selectedAddress, cartItems, intent, { isGuest = false } = {}) {
-            this.loading.create = true;
-            this.error.create = null;
-
-            try {
-                const payload = this.buildCreateOrderPayload(
-                    selectedAddress,
-                    cartItems,
-                    intent,
-                    { isGuest },
-                );
-                const data = await createOrderRequest(payload);
-
-                const createdOrder = data?.data ?? data ?? null;
-                this.lastCreatedOrder = createdOrder;
-
-                if (createdOrder) {
-                    this.orders = [createdOrder, ...this.orders];
-                }
-
-                emitDomainEvent(DOMAIN_EVENTS.ORDER_CREATED, {
-                    order: createdOrder,
-                });
-
-                return createdOrder;
-            } catch (e) {
-                console.error("Failed to create order", e);
-                this.error.create =
-                    e?.response?.data?.message ||
-                    "Не удалось оформить заказ. Попробуйте ещё раз.";
-                throw e;
-            } finally {
-                this.loading.create = false;
             }
         },
     },

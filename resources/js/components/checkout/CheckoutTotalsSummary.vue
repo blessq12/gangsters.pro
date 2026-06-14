@@ -4,7 +4,7 @@ import { storeToRefs } from "pinia";
 import { useAppDesign } from "../../design/useAppDesign";
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
 import { useSelectedGiftSummary } from "../../features/checkout/useSelectedGiftSummary";
-import { useCartStore } from "../../stores/cartStore";
+import { useCheckoutPricingStore } from "../../stores/checkoutPricingStore";
 
 const chk = useAppDesign().components.checkout;
 const c = chk.cart;
@@ -13,7 +13,7 @@ const { checkoutState } = useCheckoutFlowContext();
 const { totalAmount, itemsTotalAmount, deliveryFeeAmount, isDeliveryFree, formatPrice } =
     checkoutState;
 
-const cartStore = useCartStore();
+const cartStore = useCheckoutPricingStore();
 const { hasDeliveryPricing, deliveryPricing } = storeToRefs(cartStore);
 const selectedGiftSummary = useSelectedGiftSummary();
 const isDeliveryPreview = computed(() => deliveryPricing.value?.isPreview === true);

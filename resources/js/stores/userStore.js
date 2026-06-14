@@ -7,7 +7,6 @@ import {
     buildUpdateClientProfilePayload,
     buildClientAddressPayload,
 } from "../api/clientContracts";
-import { logoutShoppingSessionRequest } from "../api/shoppingApi";
 import {
     registerClientRequest,
     loginClientRequest,
@@ -100,13 +99,6 @@ export const useUserStore = defineStore("user", {
             this.persist();
         },
         async clearAuth() {
-            try {
-                if (this.token) {
-                    await logoutShoppingSessionRequest();
-                }
-            } catch (e) {
-                console.error("logoutShoppingSessionRequest", e);
-            }
             this.setToken(null);
             this.profile = {
                 id: null,

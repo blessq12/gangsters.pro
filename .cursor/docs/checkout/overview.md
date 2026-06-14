@@ -1,6 +1,6 @@
 # Checkout — обзор BC
 
-**Роль:** серверный объект **намерения оформления** — клиент пошагово заполняет блоки (корзина, клиент, доставка, оплата) и подтверждает. После подтверждения BC публикует доменное событие для Order (пока заглушка).
+**Роль:** серверный объект **намерения оформления** — клиент пошагово заполняет блоки (корзина, клиент, доставка, оплата) и подтверждает. После подтверждения BC публикует доменное событие `CheckoutConfirmed` → Order BC создаёт заказ.
 
 ## Семантика
 
@@ -20,7 +20,7 @@
 | Агрегат, слепки блоков, lifecycle draft → confirmed | Создание **заказа** (Order BC) |
 | Цена товара при upsert корзины — через `CatalogPricingPort` | Тарифы/зона доставки (Delivery BC) |
 | Хранение черновика в `CHK_checkouts` | Профиль клиента, адресная книга (Client BC) |
-| Публичный write-API `/api/checkout/*` | Избранное, старый `/api/shopping/*` (legacy, не реализован) |
+| Публичный write-API `/api/checkout/*` | Legacy `/api/shopping/*` — **удалён** |
 
 ## Хранение
 
@@ -50,11 +50,11 @@
 
 | # | Тема | Детали |
 |---|------|--------|
-| 1 | **Нет GET** | `GET /api/checkout/{id}` отсутствует; SPA восстанавливает draft из `sessionStorage`, не с сервера |
-| 2 | **Order BC** | `OnCheckoutConfirmed` — пустой handler; заказ не создаётся |
+| 1 | **GET checkout** | `GET /api/checkout/{id}` — **реализовано**; SPA восстанавливает с сервера, fallback на sessionStorage |
+| 2 | **Order BC** | `OnCheckoutConfirmed` → `CreateOrderUseCase` — **реализовано** |
 | 3 | **Тесты** | Нет feature/unit на use case и API |
-| 4 | **Legacy HTTP** | `app/Http/Requests/Shopping/*` и `shoppingApi.js` — старый контур, роутов на беке нет |
-| 5 | **Enum reuse** | `DeliveryMethod` / `PaymentMethod` лежат в Checkout, но импортируются из `StoreOrderRequest` (Order) |
+| 4 | **Legacy HTTP** | ~~`app/Http/Requests/Shopping/*` и `shoppingApi.js`~~ — **удалено** |
+| 5 | **Enum reuse** | `DeliveryMethod` / `PaymentMethod` дублируются в Order enum |
 | 6 | **Акции / подарки** | Нет блока promotions в агрегате; UI подарков на фронте без бекенда |
 | 7 | **Тариф доставки** | Сумма корзины без delivery fee; Delivery BC не подключён к расчёту |
 | 8 | **Auth** | Checkout API публичный, без привязки к Sanctum / cookie-сессии |
@@ -62,8 +62,8 @@
 
 ### Рекомендуемый порядок доработок
 
-1. `GetCheckoutUseCase` + GET endpoint (restore после refresh без sessionStorage).
+1. ~~`GetCheckoutUseCase` + GET endpoint~~ — **сделано**.
 2. Order BC: handler `OnCheckoutConfirmed` → `CreateOrderFromCheckout`.
 3. Feature-тесты на happy-path и confirm guards.
-4. Удалить или пометить deprecated legacy Shopping requests + dead `shoppingApi` endpoints.
+4. ~~Удалить legacy Shopping requests + dead `shoppingApi`~~ — **сделано**.
 5. Вынести shared enums в Order/Shared или оставить в Checkout с явной матрицей зависимостей.

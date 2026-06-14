@@ -15,7 +15,7 @@
 - **Снаружи:** каталог, корзина, checkout-promotions (подарки) — другие контексты.
 - Публичный контракт — **только чтение** (`GET /api/marketing/*`).
 - Запись — **только Filament** (`/admin/marketing`).
-- SPA пока читает `/api/system/banners|promotions` — артефакт; целевые endpoint'ы — `/api/marketing/*`.
+- SPA читает `/api/marketing/*` (`marketingStore` → `marketingService`).
 
 ## Хранение
 
@@ -26,7 +26,7 @@
 | Слой | MarketingContent |
 |------|------------------|
 | Domain | `app/Domain/MarketingContent/` |
-| Application | `app/Application/MarketingContent/` |
+| Application | `app/Application/MarketingContent/` — use case + presenter |
 | Infrastructure | `app/Infrastructure/MarketingContent/` |
 | HTTP | `app/Http/Controllers/Api/MarketingContentController.php` |
 | Filament | `app/Filament/MarketingContent/` |

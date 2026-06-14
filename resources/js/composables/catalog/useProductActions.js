@@ -1,7 +1,6 @@
 import { computed, unref } from "vue";
 import { useCartReadModel } from "../../features/shoppingSession/useCartReadModel";
-import { useFavoritesCommands } from "../../features/favorites/useFavoritesCommands";
-import { useFavoritesReadModel } from "../../features/favorites/useFavoritesReadModel";
+import { useFavoritesCommands, useFavoritesReadModel } from "../../features/favorites/useFavorites";
 import { DOMAIN_EVENTS, emitDomainEvent } from "../../shared/domainEvents";
 
 export function useProductActions(productSource) {

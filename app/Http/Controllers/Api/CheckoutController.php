@@ -4,18 +4,18 @@ namespace App\Http\Controllers\Api;
 
 use App\Application\Checkout\DTO\ConfirmCheckoutDto;
 use App\Application\Checkout\DTO\CreateCheckoutDto;
+use App\Application\Checkout\DTO\GetCheckoutDto;
 use App\Application\Checkout\DTO\SetCheckoutClientDto;
 use App\Application\Checkout\DTO\SetCheckoutDeliveryDto;
 use App\Application\Checkout\DTO\SetCheckoutPaymentDto;
 use App\Application\Checkout\DTO\UpdateCheckoutCartDto;
 use App\Application\Checkout\useCases\ConfirmCheckoutUseCase;
 use App\Application\Checkout\useCases\CreateCheckoutUseCase;
+use App\Application\Checkout\useCases\GetCheckoutUseCase;
 use App\Application\Checkout\useCases\SetCheckoutClientUseCase;
 use App\Application\Checkout\useCases\SetCheckoutDeliveryUseCase;
 use App\Application\Checkout\useCases\SetCheckoutPaymentUseCase;
 use App\Application\Checkout\useCases\UpdateCheckoutCartUseCase;
-use App\Application\Order\Presenter\OrderPresenter;
-use App\Domain\Order\Repository\OrderRepository;
 use App\Domain\Checkout\Enum\DeliveryMethod;
 use App\Domain\Checkout\Enum\PaymentMethod;
 use App\Domain\Checkout\ValueObject\DeliveryAddress;
@@ -30,13 +30,12 @@ final class CheckoutController extends Controller
 {
     public function __construct(
         private readonly CreateCheckoutUseCase $createCheckout,
+        private readonly GetCheckoutUseCase $getCheckout,
         private readonly UpdateCheckoutCartUseCase $updateCheckoutCart,
         private readonly SetCheckoutClientUseCase $setCheckoutClient,
         private readonly SetCheckoutDeliveryUseCase $setCheckoutDelivery,
         private readonly SetCheckoutPaymentUseCase $setCheckoutPayment,
         private readonly ConfirmCheckoutUseCase $confirmCheckout,
-        private readonly OrderRepository $orders,
-        private readonly OrderPresenter $orderPresenter,
     ) {}
 
     public function store(): JsonResponse
@@ -44,6 +43,13 @@ final class CheckoutController extends Controller
         return response()->json(
             $this->createCheckout->execute(new CreateCheckoutDto()),
             201,
+        );
+    }
+
+    public function show(string $checkoutId): JsonResponse
+    {
+        return response()->json(
+            $this->getCheckout->execute(new GetCheckoutDto(checkoutId: $checkoutId)),
         );
     }
 
@@ -115,16 +121,10 @@ final class CheckoutController extends Controller
 
     public function confirm(string $checkoutId): JsonResponse
     {
-        $result = $this->confirmCheckout->execute(
-            new ConfirmCheckoutDto(checkoutId: $checkoutId),
+        return response()->json(
+            $this->confirmCheckout->execute(
+                new ConfirmCheckoutDto(checkoutId: $checkoutId),
+            ),
         );
-
-        $order = $this->orders->findByCheckoutId($checkoutId);
-
-        if ($order !== null) {
-            $result['order'] = $this->orderPresenter->present($order);
-        }
-
-        return response()->json($result);
     }
 }

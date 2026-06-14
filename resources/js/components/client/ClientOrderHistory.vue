@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from "vue";
-import { useClientOrderHistoryReadModel } from "../../features/client/useClientOrderHistoryReadModel";
+import { useOrdersReadModel } from "../../features/orders/useOrdersReadModel";
 import {
     formatDeliveryMethodRu,
     formatOrderDate,
@@ -15,7 +15,7 @@ const oh = useAppDesign().components.client.orderHistory;
 /** Во вкладке истории показываем только N последних заказов (API отдаёт свежие первыми). */
 const HISTORY_TAB_LIMIT = 10;
 
-const { orders, loading, error } = useClientOrderHistoryReadModel();
+const { orders, loading, error } = useOrdersReadModel({ autoload: true });
 
 const ordersForTab = computed(() =>
     orders.value.slice(0, HISTORY_TAB_LIMIT),

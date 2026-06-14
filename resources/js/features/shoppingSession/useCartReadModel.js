@@ -1,8 +1,8 @@
 import { computed } from "vue";
-import { useCartStore } from "../../stores/cartStore";
+import { useCheckoutPricingStore } from "../../stores/checkoutPricingStore";
 
 export function useCartReadModel() {
-    const cartStore = useCartStore();
+    const cartStore = useCheckoutPricingStore();
 
     return {
         items: computed(() => cartStore.cartItems),

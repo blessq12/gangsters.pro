@@ -24,9 +24,13 @@
 - `EloquentBannerRepository`
 - `EloquentPromotionRepository`
 
+## Ports (adapters)
+
+- `MarketingMediaUrlAdapter` → `MarketingMediaUrlPort` (делегирует в `PublicMediaUrl`)
+
 ## Support
 
-- `PublicMediaUrl::resolve` — путь storage / абсолютный URL → публичный URL для API
+- `PublicMediaUrl::resolve` — путь storage / абсолютный URL → публичный URL для API (только Infrastructure)
 
 ## Seeder
 

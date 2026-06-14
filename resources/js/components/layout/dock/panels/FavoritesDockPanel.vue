@@ -1,8 +1,7 @@
 <script setup>
 import { computed } from "vue";
 import { useAppDesign } from "../../../../design/useAppDesign";
-import { useFavoritesCommands } from "../../../../features/favorites/useFavoritesCommands";
-import { useFavoritesReadModel } from "../../../../features/favorites/useFavoritesReadModel";
+import { useFavoritesCommands, useFavoritesReadModel } from "../../../../features/favorites/useFavorites";
 import { DOMAIN_EVENTS, emitDomainEvent } from "../../../../shared/domainEvents";
 import { formatMoneyRublesRu } from "../../../../utils/moneyFormat";
 

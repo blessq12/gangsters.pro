@@ -30,6 +30,7 @@ Route::get('/delivery', [DeliveryController::class, 'show']);
 
 Route::prefix('checkout')->group(function (): void {
     Route::post('/', [CheckoutController::class, 'store']);
+    Route::get('{checkoutId}', [CheckoutController::class, 'show']);
     Route::patch('{checkoutId}/cart', [CheckoutController::class, 'updateCart']);
     Route::patch('{checkoutId}/client', [CheckoutController::class, 'setClient']);
     Route::patch('{checkoutId}/delivery', [CheckoutController::class, 'setDelivery']);

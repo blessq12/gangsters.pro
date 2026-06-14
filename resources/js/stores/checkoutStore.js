@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import {
     confirmCheckoutRequest,
     createCheckoutRequest,
+    fetchCheckoutRequest,
     setCheckoutClientRequest,
     setCheckoutDeliveryRequest,
     setCheckoutPaymentRequest,
@@ -14,7 +15,7 @@ import {
 } from "../features/checkout/checkoutPaymentMethods";
 import { normalizeCheckoutCartBlock } from "../features/checkout/normalizeCheckoutCart";
 import { DOMAIN_EVENTS, emitDomainEvent } from "../shared/domainEvents";
-import { useCartStore } from "./cartStore";
+import { useCheckoutPricingStore } from "./checkoutPricingStore";
 
 const CHECKOUT_STEPS = ["cart", "guest", "delivery", "payment", "confirm"];
 const SESSION_KEY = "gangsters_checkout_session_v1";
@@ -192,13 +193,13 @@ export const useCheckoutStore = defineStore("checkout", {
                 this.paymentInfo = mapPaymentToLocal(data.payment);
             }
 
-            const cartStore = useCartStore();
-            cartStore.applyServerSnapshot(data.cart ?? null);
+            const pricingStore = useCheckoutPricingStore();
+            pricingStore.applyServerSnapshot(data.cart ?? null);
             if (Object.prototype.hasOwnProperty.call(data, "delivery_pricing")) {
-                cartStore.applyDeliveryPricingSnapshot(data.delivery_pricing);
+                pricingStore.applyDeliveryPricingSnapshot(data.delivery_pricing);
             }
             if (Object.prototype.hasOwnProperty.call(data, "benefits_progress")) {
-                cartStore.applyBenefitsProgressSnapshot(data.benefits_progress);
+                pricingStore.applyBenefitsProgressSnapshot(data.benefits_progress);
             }
 
             this.recomputeSuggestedStep();
@@ -256,10 +257,10 @@ export const useCheckoutStore = defineStore("checkout", {
                 return;
             }
 
-            const cartStore = useCartStore();
-            const deliveryPricing = cartStore.deliveryPricing;
-            const benefitsProgress = cartStore.benefitsProgress;
-            const promoState = cartStore.promoState;
+            const pricingStore = useCheckoutPricingStore();
+            const deliveryPricing = pricingStore.deliveryPricing;
+            const benefitsProgress = pricingStore.benefitsProgress;
+            const promoState = pricingStore.promoState;
 
             writeSessionPayload({
                 checkoutId: this.checkoutId,
@@ -303,18 +304,37 @@ export const useCheckoutStore = defineStore("checkout", {
             });
         },
 
-        tryRestoreSession() {
+        async tryRestoreSession() {
             const saved = readSessionPayload();
             if (!saved?.checkoutId || saved.status !== "draft") {
                 return false;
             }
 
-            this.checkoutId = saved.checkoutId;
-            this.status = saved.status;
-            this.applyFromServer(saved.snapshot ?? { checkout_id: saved.checkoutId, status: "draft" });
-            this.sessionReady = true;
+            try {
+                const remote = await fetchCheckoutRequest(saved.checkoutId);
+                if (remote?.status !== "draft") {
+                    clearSessionPayload();
+                    return false;
+                }
 
-            return true;
+                this.applyFromServer(remote);
+                this.sessionReady = true;
+
+                return true;
+            } catch (error) {
+                if (!saved.snapshot) {
+                    return false;
+                }
+
+                this.checkoutId = saved.checkoutId;
+                this.status = saved.status;
+                this.applyFromServer(
+                    saved.snapshot ?? { checkout_id: saved.checkoutId, status: "draft" },
+                );
+                this.sessionReady = true;
+
+                return true;
+            }
         },
 
         async ensureDraftCheckout() {
@@ -334,7 +354,7 @@ export const useCheckoutStore = defineStore("checkout", {
                 return;
             }
 
-            if (this.tryRestoreSession()) {
+            if (await this.tryRestoreSession()) {
                 return;
             }
 
@@ -621,5 +641,3 @@ export const useCheckoutStore = defineStore("checkout", {
     },
 });
 
-/** @deprecated используй useCheckoutStore */
-export const useCheckoutIntentStore = useCheckoutStore;

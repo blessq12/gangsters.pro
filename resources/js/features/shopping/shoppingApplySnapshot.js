@@ -1,1 +1,0 @@
-export { applyShoppingSnapshotToStores } from "./applyShoppingState";

@@ -1,7 +1,7 @@
-import { useCartStore } from "../../stores/cartStore";
+import { useCheckoutPricingStore } from "../../stores/checkoutPricingStore";
 
 export function useCartCommands() {
-    const cartStore = useCartStore();
+    const cartStore = useCheckoutPricingStore();
 
     return {
         cartStore,

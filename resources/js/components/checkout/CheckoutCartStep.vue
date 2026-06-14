@@ -4,7 +4,7 @@ import { storeToRefs } from "pinia";
 import { useAppDesign } from "../../design/useAppDesign";
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
 import { wizardNonComplementSystemItems } from "../../features/checkout/normalizeCheckoutCart";
-import { useCartStore } from "../../stores/cartStore";
+import { useCheckoutPricingStore } from "../../stores/checkoutPricingStore";
 import { DOMAIN_EVENTS, emitDomainEvent } from "../../shared/domainEvents";
 import CheckoutBenefitsPanel from "./CheckoutBenefitsPanel.vue";
 import CheckoutComplementOffers from "./CheckoutComplementOffers.vue";
@@ -21,7 +21,7 @@ const {
     openProfileDock,
 } = useCheckoutFlowContext();
 
-const cartStore = useCartStore();
+const cartStore = useCheckoutPricingStore();
 const {
     cartItems,
     userItems: userCartItems,
