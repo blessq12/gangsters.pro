@@ -2,6 +2,7 @@
 
 namespace App\Filament\MarketingContent\Resources;
 
+use App\Filament\MarketingContent\Concerns\HasMarketingHubIndexUrl;
 use App\Filament\MarketingContent\Resources\BannerResource\Pages\CreateBanner;
 use App\Filament\MarketingContent\Resources\BannerResource\Pages\EditBanner;
 use App\Filament\MarketingContent\Resources\BannerResource\Schemas\BannerForm;
@@ -14,6 +15,8 @@ use Filament\Tables\Table;
 
 class BannerResource extends Resource
 {
+    use HasMarketingHubIndexUrl;
+
     protected static ?string $model = MKT_Banner::class;
 
     protected static ?string $slug = 'marketing/banners';
@@ -46,5 +49,10 @@ class BannerResource extends Resource
             'create' => CreateBanner::route('/create'),
             'edit' => EditBanner::route('/{record}/edit'),
         ];
+    }
+
+    protected static function marketingHubTab(): string
+    {
+        return 'banners';
     }
 }

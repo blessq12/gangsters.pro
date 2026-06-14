@@ -89,9 +89,12 @@ function normalizeTotals(totals) {
         return {
             itemsTotalRubles: 0,
             deliveryFeeRubles: null,
+            baseDeliveryFeeRubles: null,
+            outsideZoneSurchargeRubles: null,
             grandTotalRubles: 0,
             isDeliveryFree: false,
             isDeliveryPreview: false,
+            inZone: null,
         };
     }
 
@@ -100,6 +103,14 @@ function normalizeTotals(totals) {
         totals.delivery_fee_rubles != null
             ? roundRubles2(Number(totals.delivery_fee_rubles))
             : null;
+    const baseDeliveryFeeRubles =
+        totals.base_delivery_fee_rubles != null
+            ? roundRubles2(Number(totals.base_delivery_fee_rubles))
+            : null;
+    const outsideZoneSurchargeRubles =
+        totals.outside_zone_surcharge_rubles != null
+            ? roundRubles2(Number(totals.outside_zone_surcharge_rubles))
+            : null;
     const grandTotalRubles = roundRubles2(
         Number(totals.grand_total_rubles ?? totals.items_total_rubles) || 0,
     );
@@ -107,9 +118,17 @@ function normalizeTotals(totals) {
     return {
         itemsTotalRubles,
         deliveryFeeRubles,
+        baseDeliveryFeeRubles,
+        outsideZoneSurchargeRubles,
         grandTotalRubles,
         isDeliveryFree: Boolean(totals.is_delivery_free),
         isDeliveryPreview: Boolean(totals.is_delivery_preview),
+        inZone:
+            totals.in_zone === true
+                ? true
+                : totals.in_zone === false
+                  ? false
+                  : null,
     };
 }
 

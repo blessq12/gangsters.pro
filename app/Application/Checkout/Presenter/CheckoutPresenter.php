@@ -101,6 +101,8 @@ final class CheckoutPresenter
                     'house' => $address->house(),
                     'entrance' => $address->entrance(),
                     'apartment' => $address->apartment(),
+                    'latitude' => $address->latitude(),
+                    'longitude' => $address->longitude(),
                 ]
                 : null,
             'comment' => $delivery->comment(),

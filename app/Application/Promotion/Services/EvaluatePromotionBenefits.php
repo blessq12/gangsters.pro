@@ -49,6 +49,11 @@ final class EvaluatePromotionBenefits
             deliveryLongitude: $input->deliveryLongitude,
         );
 
+        $inZone = $this->deliveryBenefits->resolveInZone(
+            deliveryLatitude: $input->deliveryLatitude,
+            deliveryLongitude: $input->deliveryLongitude,
+        );
+
         $previewDeliveryFeeKopecks = $this->deliveryBenefits->resolveDeliveryFeeKopecks(
             promotionPolicy: $promotionPolicy,
             deliveryMethod: $input->deliveryMethod ?? DeliveryMethod::Courier,
@@ -83,6 +88,7 @@ final class EvaluatePromotionBenefits
                 ? $previewDeliveryFeeKopecks
                 : $deliveryFeeKopecks,
             promotionPolicy: $promotionPolicy,
+            inZone: $inZone,
         );
 
         return [

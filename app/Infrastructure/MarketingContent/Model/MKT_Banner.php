@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\MarketingContent\Model;
 
+use App\Infrastructure\MarketingContent\Support\MarketingStoredMedia;
 use Illuminate\Database\Eloquent\Model;
 
 class MKT_Banner extends Model
@@ -31,6 +32,27 @@ class MKT_Banner extends Model
 
             $maxSortOrder = self::query()->max('sort_order');
             $banner->sort_order = is_null($maxSortOrder) ? 0 : $maxSortOrder + 1;
+        });
+
+        static::updating(function (self $banner): void {
+            foreach (['image_desktop', 'image_mobile'] as $field) {
+                if (! $banner->isDirty($field)) {
+                    continue;
+                }
+
+                $oldPath = $banner->getOriginal($field);
+
+                if (! is_string($oldPath) || $oldPath === '' || $oldPath === $banner->{$field}) {
+                    continue;
+                }
+
+                MarketingStoredMedia::deleteIfStored($oldPath);
+            }
+        });
+
+        static::deleting(function (self $banner): void {
+            MarketingStoredMedia::deleteIfStored($banner->image_desktop);
+            MarketingStoredMedia::deleteIfStored($banner->image_mobile);
         });
     }
 }

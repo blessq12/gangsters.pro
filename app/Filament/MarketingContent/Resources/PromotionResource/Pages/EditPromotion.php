@@ -2,12 +2,14 @@
 
 namespace App\Filament\MarketingContent\Resources\PromotionResource\Pages;
 
+use App\Filament\MarketingContent\Concerns\PreservesMarketingMediaOnEmptyUpload;
 use App\Filament\MarketingContent\Concerns\RedirectsToMarketingHub;
 use App\Filament\MarketingContent\Resources\PromotionResource;
 use Filament\Resources\Pages\EditRecord;
 
 class EditPromotion extends EditRecord
 {
+    use PreservesMarketingMediaOnEmptyUpload;
     use RedirectsToMarketingHub;
 
     protected static string $resource = PromotionResource::class;
@@ -17,5 +19,10 @@ class EditPromotion extends EditRecord
     protected static function marketingHubTab(): string
     {
         return 'promotions';
+    }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        return $this->preserveMarketingMediaPaths($data, ['image']);
     }
 }

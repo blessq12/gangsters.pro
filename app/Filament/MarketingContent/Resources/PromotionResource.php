@@ -2,6 +2,7 @@
 
 namespace App\Filament\MarketingContent\Resources;
 
+use App\Filament\MarketingContent\Concerns\HasMarketingHubIndexUrl;
 use App\Filament\MarketingContent\Resources\PromotionResource\Pages\CreatePromotion;
 use App\Filament\MarketingContent\Resources\PromotionResource\Pages\EditPromotion;
 use App\Filament\MarketingContent\Resources\PromotionResource\Schemas\PromotionForm;
@@ -14,6 +15,8 @@ use Filament\Tables\Table;
 
 class PromotionResource extends Resource
 {
+    use HasMarketingHubIndexUrl;
+
     protected static ?string $model = MKT_Promotion::class;
 
     protected static ?string $slug = 'marketing/promotions';
@@ -46,5 +49,10 @@ class PromotionResource extends Resource
             'create' => CreatePromotion::route('/create'),
             'edit' => EditPromotion::route('/{record}/edit'),
         ];
+    }
+
+    protected static function marketingHubTab(): string
+    {
+        return 'promotions';
     }
 }

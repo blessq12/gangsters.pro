@@ -76,13 +76,15 @@
 <p id="status">Загрузка карты…</p>
 <script src="{{ asset('js/maps/yandexGeoJsonCoords.js') }}"></script>
 @if(filled($mapsApiKey))
-<script src="https://api-maps.yandex.ru/2.1/?apikey={{ urlencode($mapsApiKey) }}&lang=ru_RU"></script>
+<script src="https://api-maps.yandex.ru/2.1/?apikey={{ urlencode($mapsApiKey) }}&lang=ru_RU&load=package.full"></script>
 @endif
 <script>
     const MSG = {
         READY: 'delivery-zone:ready',
         INIT: 'delivery-zone:init',
         CHANGE: 'delivery-zone:change',
+        REQUEST_SNAPSHOT: 'delivery-zone:request-snapshot',
+        SNAPSHOT: 'delivery-zone:snapshot',
     };
 
     const COORDS = window.GangstersMapsCoords;
@@ -95,6 +97,10 @@
     let kitchenPlacemark;
     let kitchenCoords = { lat: null, lng: null };
     let multiPolygonWarning = false;
+    let autoSyncTimer = null;
+    let suppressOutboundChange = false;
+    let awaitingInit = true;
+    let readyHeartbeatTimer = null;
 
     const statusEl = document.getElementById('status');
     const addressInput = document.getElementById('addressInput');
@@ -105,6 +111,33 @@
 
     function post(type, payload = {}) {
         window.parent.postMessage({ type, payload }, window.location.origin);
+    }
+
+    function signalReady() {
+        if (!awaitingInit) {
+            return;
+        }
+
+        post(MSG.READY);
+    }
+
+    function startReadyHeartbeat() {
+        signalReady();
+
+        if (readyHeartbeatTimer) {
+            return;
+        }
+
+        readyHeartbeatTimer = window.setInterval(signalReady, 800);
+    }
+
+    function stopReadyHeartbeat() {
+        awaitingInit = false;
+
+        if (readyHeartbeatTimer) {
+            window.clearInterval(readyHeartbeatTimer);
+            readyHeartbeatTimer = null;
+        }
     }
 
     function resolveMapCenter(payload) {
@@ -137,6 +170,41 @@
             kitchenLatitude: kitchenCoords.lat,
             kitchenLongitude: kitchenCoords.lng,
         };
+    }
+
+    function notifyChange(immediate = false) {
+        if (suppressOutboundChange) {
+            return;
+        }
+
+        const send = () => {
+            const payload = geometryPayload();
+            post(MSG.CHANGE, payload);
+        };
+
+        if (immediate) {
+            if (autoSyncTimer) {
+                clearTimeout(autoSyncTimer);
+                autoSyncTimer = null;
+            }
+            send();
+            return;
+        }
+
+        if (autoSyncTimer) {
+            clearTimeout(autoSyncTimer);
+        }
+
+        autoSyncTimer = setTimeout(send, 400);
+    }
+
+    function attachPolygonEditorListeners() {
+        if (!polygon?.editor?.events) {
+            return;
+        }
+
+        polygon.editor.events.add('drawingstop', () => notifyChange(true));
+        polygon.editor.events.add('geometrychange', () => notifyChange(false));
     }
 
     function removePolygon() {
@@ -203,7 +271,15 @@
             editorMaxPoints: 50,
         });
         map.geoObjects.add(polygon);
-        polygon.editor.startEditing();
+
+        if (polygon.editor) {
+            try {
+                polygon.editor.startEditing();
+                attachPolygonEditorListeners();
+            } catch (error) {
+                setStatus('Зона загружена, но редактор недоступен.');
+            }
+        }
 
         const bounds = polygon.geometry.getBounds();
         if (bounds) {
@@ -211,7 +287,7 @@
         }
 
         if (!multiPolygonWarning) {
-            setStatus('Зона загружена. Отредактируйте контур и нажмите «Применить».');
+            setStatus('Зона загружена. Отредактируйте контур — изменения синхронизируются автоматически.');
         }
     }
 
@@ -229,7 +305,11 @@
         });
         map.geoObjects.add(polygon);
         polygon.editor.startDrawing();
-        setStatus('Кликайте по карте, чтобы задать контур. Завершите рисование и нажмите «Применить».');
+        polygon.editor.events.add('drawingstop', () => {
+            attachPolygonEditorListeners();
+            notifyChange(true);
+        });
+        setStatus('Кликайте по карте, чтобы задать контур. После завершения рисования зона синхронизируется с формой.');
     }
 
     function initMap(center) {
@@ -238,29 +318,36 @@
             zoom: 11,
             controls: ['zoomControl'],
         });
-        post(MSG.READY);
+        startReadyHeartbeat();
+        setStatus('Ожидание данных формы…');
     }
 
     function applyInitPayload(payload) {
-        const address = payload.address ?? '';
-        if (address) {
-            addressInput.value = address;
-        }
+        suppressOutboundChange = true;
 
-        setKitchenCoords(
-            payload.kitchenLatitude ?? null,
-            payload.kitchenLongitude ?? null,
-        );
+        try {
+            const address = payload.address ?? '';
+            if (address) {
+                addressInput.value = address;
+            }
 
-        const center = resolveMapCenter(payload);
-        if (map) {
-            map.setCenter(center);
-        }
+            setKitchenCoords(
+                payload.kitchenLatitude ?? null,
+                payload.kitchenLongitude ?? null,
+            );
 
-        setGeometry(payload.geometry ?? null);
+            const center = resolveMapCenter(payload);
+            if (map) {
+                map.setCenter(center);
+            }
 
-        if (!payload.geometry && map) {
-            setStatus('Зоны нет. «Нарисовать зону» или укажите адрес и «Найти».');
+            setGeometry(payload.geometry ?? null);
+
+            if (!payload.geometry && map) {
+                setStatus('Зоны нет. «Нарисовать зону» или укажите адрес и «Найти».');
+            }
+        } finally {
+            suppressOutboundChange = false;
         }
     }
 
@@ -340,7 +427,8 @@
 
             setKitchenCoords(lat, lng);
             map.setCenter([lat, lng], 14, { duration: 300 });
-            setStatus('Точка кухни найдена. Нарисуйте зону или нажмите «Применить».');
+            notifyChange(true);
+            setStatus('Точка кухни найдена. Нарисуйте зону или сохраните форму.');
         } catch (error) {
             setStatus('Ошибка геокодера: ' + (error?.message || 'сеть'));
         }
@@ -351,9 +439,20 @@
             return;
         }
         const data = event.data;
-        if (!data || data.type !== MSG.INIT) {
+        if (!data || typeof data.type !== 'string') {
             return;
         }
+
+        if (data.type === MSG.REQUEST_SNAPSHOT) {
+            post(MSG.SNAPSHOT, geometryPayload());
+            return;
+        }
+
+        if (data.type !== MSG.INIT) {
+            return;
+        }
+
+        stopReadyHeartbeat();
 
         const payload = data.payload || {};
 
@@ -383,14 +482,14 @@
             setStatus('Контур слишком короткий: минимум 4 точки (замкнутый полигон).');
             return;
         }
-        post(MSG.CHANGE, payload);
+        notifyChange(true);
         setStatus('Данные отправлены в форму. Нажмите «Сохранить» внизу страницы.');
     });
 
     document.getElementById('clearBtn').addEventListener('click', () => {
         removePolygon();
         multiPolygonWarning = false;
-        post(MSG.CHANGE, geometryPayload());
+        notifyChange(true);
         setStatus('Зона очищена.');
     });
 

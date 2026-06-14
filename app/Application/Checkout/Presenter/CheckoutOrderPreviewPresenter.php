@@ -178,9 +178,12 @@ final class CheckoutOrderPreviewPresenter
             return [
                 'items_total_rubles' => $itemsTotalRubles,
                 'delivery_fee_rubles' => null,
+                'base_delivery_fee_rubles' => null,
+                'outside_zone_surcharge_rubles' => null,
                 'grand_total_rubles' => $itemsTotalRubles,
                 'is_delivery_free' => false,
                 'is_delivery_preview' => false,
+                'in_zone' => null,
             ];
         }
 
@@ -189,9 +192,18 @@ final class CheckoutOrderPreviewPresenter
             'delivery_fee_rubles' => array_key_exists('delivery_fee_rub', $deliveryPricing)
                 ? (float) $deliveryPricing['delivery_fee_rub']
                 : null,
+            'base_delivery_fee_rubles' => array_key_exists('base_delivery_fee_rub', $deliveryPricing)
+                ? (float) $deliveryPricing['base_delivery_fee_rub']
+                : null,
+            'outside_zone_surcharge_rubles' => array_key_exists('outside_zone_surcharge_rub', $deliveryPricing)
+                ? (float) $deliveryPricing['outside_zone_surcharge_rub']
+                : null,
             'grand_total_rubles' => (float) ($deliveryPricing['grand_total_rub'] ?? $itemsTotalRubles),
             'is_delivery_free' => (bool) ($deliveryPricing['is_free'] ?? false),
             'is_delivery_preview' => (bool) ($deliveryPricing['is_preview'] ?? false),
+            'in_zone' => array_key_exists('in_zone', $deliveryPricing)
+                ? $deliveryPricing['in_zone']
+                : null,
         ];
     }
 

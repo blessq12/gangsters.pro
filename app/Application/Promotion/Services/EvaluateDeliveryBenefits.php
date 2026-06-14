@@ -27,12 +27,11 @@ final class EvaluateDeliveryBenefits
             return $this->inactiveBenefit($currentKopecks);
         }
 
-        $policy = $promotionPolicy?->deliveryBenefitPolicy();
-        if ($policy === null || ! $policy->isActive()) {
+        $thresholdKopecks = $this->deliveryPricing->resolveFreeDeliveryThresholdKopecks();
+        if ($thresholdKopecks === null) {
             return $this->inactiveBenefit($currentKopecks);
         }
 
-        $thresholdKopecks = $policy->freeDeliveryThresholdKopecks();
         $isReached = $currentKopecks >= $thresholdKopecks;
         $remainingKopecks = $isReached
             ? 0
@@ -70,6 +69,11 @@ final class EvaluateDeliveryBenefits
         );
     }
 
+    public function resolveInZone(?float $deliveryLatitude, ?float $deliveryLongitude): ?bool
+    {
+        return $this->deliveryPricing->resolveInZone($deliveryLatitude, $deliveryLongitude);
+    }
+
     /**
      * @return array<string, mixed>|null
      */
@@ -78,6 +82,7 @@ final class EvaluateDeliveryBenefits
         int $currentKopecks,
         int $deliveryFeeKopecks,
         ?PromotionPolicy $promotionPolicy,
+        ?bool $inZone = null,
     ): ?array {
         $isPreview = $deliveryMethod === null;
         $effectiveMethod = $deliveryMethod ?? DeliveryMethod::Courier;
@@ -98,34 +103,54 @@ final class EvaluateDeliveryBenefits
                 'delivery_fee_rub' => 0,
                 'grand_total_rub' => $grandTotalKopecks / 100,
                 'is_preview' => false,
+                'in_zone' => null,
             ];
         }
 
         $method = $effectiveMethod->value;
         $grandTotalKopecks = $currentKopecks + $deliveryFeeKopecks;
-        $freeThresholdKopecks = $promotionPolicy?->deliveryBenefitPolicy()->freeDeliveryThresholdKopecks();
+        $freeThresholdKopecks = $this->deliveryPricing->resolveFreeDeliveryThresholdKopecks();
         $remainingToFreeKopecks = 0;
 
         if (
             $effectiveMethod === DeliveryMethod::Courier
-            && is_int($freeThresholdKopecks)
+            && $freeThresholdKopecks !== null
             && $currentKopecks < $freeThresholdKopecks
         ) {
             $remainingToFreeKopecks = $freeThresholdKopecks - $currentKopecks;
+        }
+
+        $baseDeliveryFeeKopecks = $deliveryFeeKopecks;
+        $outsideZoneSurchargeKopecks = 0;
+
+        if (! $isPreview && $effectiveMethod === DeliveryMethod::Courier && $inZone === false) {
+            $inZoneDeliveryFeeKopecks = $this->deliveryPricing->resolveDeliveryFeeKopecks(
+                promotionPolicy: $promotionPolicy,
+                deliveryMethod: $deliveryMethod,
+                currentKopecks: $currentKopecks,
+                inZone: true,
+            );
+            $baseDeliveryFeeKopecks = $inZoneDeliveryFeeKopecks;
+            $outsideZoneSurchargeKopecks = max(0, $deliveryFeeKopecks - $inZoneDeliveryFeeKopecks);
         }
 
         return [
             'method' => $method,
             'items_payable_kopecks' => $currentKopecks,
             'delivery_fee_kopecks' => $deliveryFeeKopecks,
+            'base_delivery_fee_kopecks' => $baseDeliveryFeeKopecks,
+            'outside_zone_surcharge_kopecks' => $outsideZoneSurchargeKopecks,
             'is_free' => $effectiveMethod === DeliveryMethod::Courier && $deliveryFeeKopecks === 0,
             'remaining_to_free_kopecks' => max(0, $remainingToFreeKopecks),
             'items_total_kopecks' => $currentKopecks,
             'grand_total_kopecks' => $grandTotalKopecks,
             'items_total_rub' => $currentKopecks / 100,
             'delivery_fee_rub' => $deliveryFeeKopecks / 100,
+            'base_delivery_fee_rub' => $baseDeliveryFeeKopecks / 100,
+            'outside_zone_surcharge_rub' => $outsideZoneSurchargeKopecks / 100,
             'grand_total_rub' => $grandTotalKopecks / 100,
             'is_preview' => $isPreview,
+            'in_zone' => $inZone,
         ];
     }
 

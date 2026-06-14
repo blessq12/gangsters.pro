@@ -161,7 +161,15 @@ export function useCheckoutWizard({
         if (!deliveryStep.validateDeliveryStep(selectedAddress)) {
             return;
         }
-        await checkoutIntent.flushDeliveryToServer(selectedAddress);
+
+        try {
+            await checkoutIntent.flushDeliveryToServer(selectedAddress);
+        } catch (e) {
+            deliveryStep.deliveryStepError.value =
+                e?.response?.data?.message || "Не удалось сохранить адрес доставки.";
+            return;
+        }
+
         activeStep.value = "payment";
     }
 

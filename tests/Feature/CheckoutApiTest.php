@@ -88,6 +88,136 @@ final class CheckoutApiTest extends TestCase
         ]);
     }
 
+    #[Test]
+    public function patch_delivery_с_адресом_в_зоне_возвращает_in_zone_true(): void
+    {
+        if (! $this->databaseIsAvailable()) {
+            $this->markTestSkipped('БД недоступна для feature-теста.');
+        }
+
+        if (! $this->deliveryZoneIsConfigured()) {
+            $this->markTestSkipped('Зона доставки не настроена в БД.');
+        }
+
+        $insidePoint = $this->resolvePointInsideDeliveryZone();
+        if ($insidePoint === null) {
+            $this->markTestSkipped('Не удалось определить точку внутри зоны доставки.');
+        }
+
+        $createResponse = $this->postJson('/api/checkout');
+        $createResponse->assertCreated();
+        $checkoutId = (string) $createResponse->json('checkout_id');
+
+        $response = $this->patchJson('/api/checkout/'.$checkoutId.'/delivery', [
+            'method' => 'courier',
+            'address' => [
+                'street' => 'пр. Ленина',
+                'house' => '1',
+                'latitude' => $insidePoint['latitude'],
+                'longitude' => $insidePoint['longitude'],
+            ],
+        ]);
+
+        $response->assertOk();
+        $response->assertJsonPath('delivery_pricing.in_zone', true);
+    }
+
+    #[Test]
+    public function patch_delivery_с_адресом_вне_зоны_применяет_доплату(): void
+    {
+        if (! $this->databaseIsAvailable()) {
+            $this->markTestSkipped('БД недоступна для feature-теста.');
+        }
+
+        if (! $this->deliveryZoneIsConfigured()) {
+            $this->markTestSkipped('Зона доставки не настроена в БД.');
+        }
+
+        $deliveryResponse = $this->getJson('/api/delivery');
+        $deliveryResponse->assertOk();
+        $baseFeeKopecks = (int) $deliveryResponse->json('data.settings.delivery_fee_kopecks');
+        $outsideFeeKopecks = (int) $deliveryResponse->json('data.settings.outside_zone_delivery_fee_kopecks');
+
+        if ($outsideFeeKopecks <= $baseFeeKopecks) {
+            $this->markTestSkipped('В конфигурации доставки не задана доплата за отдалённый район.');
+        }
+
+        $createResponse = $this->postJson('/api/checkout');
+        $createResponse->assertCreated();
+        $checkoutId = (string) $createResponse->json('checkout_id');
+
+        $response = $this->patchJson('/api/checkout/'.$checkoutId.'/delivery', [
+            'method' => 'courier',
+            'address' => [
+                'street' => 'ул. Тестовая',
+                'house' => '999',
+                'latitude' => 55.0,
+                'longitude' => 84.0,
+            ],
+        ]);
+
+        $response->assertOk();
+        $response->assertJsonPath('delivery_pricing.in_zone', false);
+        $response->assertJsonPath(
+            'delivery_pricing.delivery_fee_kopecks',
+            $baseFeeKopecks + $outsideFeeKopecks,
+        );
+        $response->assertJsonPath('delivery_pricing.base_delivery_fee_kopecks', $baseFeeKopecks);
+        $response->assertJsonPath(
+            'delivery_pricing.outside_zone_surcharge_kopecks',
+            $outsideFeeKopecks,
+        );
+    }
+
+    private function deliveryZoneIsConfigured(): bool
+    {
+        return $this->resolvePointInsideDeliveryZone() !== null;
+    }
+
+    /**
+     * @return array{latitude: float, longitude: float}|null
+     */
+    private function resolvePointInsideDeliveryZone(): ?array
+    {
+        $deliveryResponse = $this->getJson('/api/delivery');
+        if (! $deliveryResponse->isOk()) {
+            return null;
+        }
+
+        $geoJson = $deliveryResponse->json('data.zone.delivery_zone_geojson');
+        if (! is_array($geoJson) || ($geoJson['type'] ?? null) !== 'Polygon') {
+            return null;
+        }
+
+        $ring = $geoJson['coordinates'][0] ?? null;
+        if (! is_array($ring) || count($ring) < 3) {
+            return null;
+        }
+
+        $longitudeSum = 0.0;
+        $latitudeSum = 0.0;
+        $count = 0;
+
+        foreach ($ring as $vertex) {
+            if (! is_array($vertex) || count($vertex) < 2) {
+                continue;
+            }
+
+            $longitudeSum += (float) $vertex[0];
+            $latitudeSum += (float) $vertex[1];
+            $count++;
+        }
+
+        if ($count === 0) {
+            return null;
+        }
+
+        return [
+            'latitude' => $latitudeSum / $count,
+            'longitude' => $longitudeSum / $count,
+        ];
+    }
+
     private function resolveFirstProductId(): ?int
     {
         $catalogResponse = $this->getJson('/api/catalog');

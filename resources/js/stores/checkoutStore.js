@@ -225,6 +225,12 @@ export const useCheckoutStore = defineStore("checkout", {
                 deliveryFeeKopecks,
                 isFree: Boolean(deliveryPricing.is_free),
                 isPreview: Boolean(deliveryPricing.is_preview),
+                inZone:
+                    deliveryPricing.in_zone === true
+                        ? true
+                        : deliveryPricing.in_zone === false
+                          ? false
+                          : null,
                 remainingToFreeKopecks: Number(deliveryPricing.remaining_to_free_kopecks) || 0,
                 itemsTotalKopecks,
                 grandTotalKopecks,

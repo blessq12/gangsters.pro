@@ -5,7 +5,6 @@ namespace App\Filament\MarketingContent\Widgets\Tables;
 use App\Filament\MarketingContent\Support\MarketingHubTableActions;
 use App\Filament\MarketingContent\Support\MarketingHubTablePresentation;
 use App\Infrastructure\MarketingContent\Model\MKT_Promotion;
-use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
@@ -29,10 +28,6 @@ class PromotionsHubTable extends TableWidget
                     TextColumn::make('title')
                         ->label('Заголовок')
                         ->searchable(),
-                    ImageColumn::make('image')
-                        ->label('Изображение')
-                        ->disk('public')
-                        ->square(),
                     MarketingHubTablePresentation::activeStatusColumn(),
                 ]),
         );

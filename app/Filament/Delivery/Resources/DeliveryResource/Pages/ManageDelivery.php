@@ -49,8 +49,37 @@ class ManageDelivery extends EditRecord
         return [
             Action::make('save')
                 ->label('Сохранить')
-                ->submit('save'),
+                ->alpineClickHandler('window.deliveryZoneSyncBeforeSave($wire)')
+                ->livewireClickHandlerEnabled(false),
         ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        $geoJson = $data['delivery_zone_geojson'] ?? null;
+
+        if ($geoJson === null || $geoJson === '') {
+            $data['delivery_zone_geojson'] = null;
+
+            return $data;
+        }
+
+        if (! is_array($geoJson)) {
+            $data['delivery_zone_geojson'] = null;
+
+            return $data;
+        }
+
+        $type = $geoJson['type'] ?? null;
+        if (! is_string($type) || ! in_array($type, ['Polygon', 'MultiPolygon'], true)) {
+            $data['delivery_zone_geojson'] = null;
+        }
+
+        return $data;
     }
 
     protected function getRedirectUrl(): ?string

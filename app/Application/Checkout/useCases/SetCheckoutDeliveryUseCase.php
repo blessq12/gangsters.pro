@@ -4,7 +4,7 @@ namespace App\Application\Checkout\useCases;
 
 use App\Application\Checkout\DTO\SetCheckoutDeliveryDto;
 use App\Application\Checkout\Services\CheckoutDraftLifecycle;
-use App\Shared\Enum\DeliveryMethod;
+use App\Application\Checkout\Services\PrepareCheckoutDeliveryAddress;
 use App\Domain\Checkout\ValueObject\DeliverySnapshot;
 
 /**
@@ -14,6 +14,7 @@ final class SetCheckoutDeliveryUseCase
 {
     public function __construct(
         private readonly CheckoutDraftLifecycle $draftLifecycle,
+        private readonly PrepareCheckoutDeliveryAddress $prepareDeliveryAddress,
     ) {}
 
     /**
@@ -23,10 +24,15 @@ final class SetCheckoutDeliveryUseCase
     {
         $checkout = $this->draftLifecycle->loadDraft($input->checkoutId);
 
+        $preparedAddress = $this->prepareDeliveryAddress->prepare(
+            method: $input->method,
+            address: $input->address,
+        );
+
         $checkout->setDelivery(
             new DeliverySnapshot(
                 method: $input->method,
-                address: $input->address,
+                address: $preparedAddress,
                 comment: $input->comment,
                 scheduledAt: $input->scheduledAt,
             ),

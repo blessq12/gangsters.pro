@@ -5,10 +5,8 @@ namespace App\Infrastructure\Promotion\Port;
 use App\Domain\Delivery\Entity\DeliveryConfiguration;
 use App\Domain\Delivery\Repository\DeliveryConfigurationRepository;
 use App\Domain\Promotion\Entity\PromotionPolicy;
-use App\Domain\Promotion\Enum\DeliveryFeeMode;
 use App\Domain\Promotion\Port\PromotionDeliveryPricingPort;
 use App\Shared\Enum\DeliveryMethod;
-
 use App\Shared\Geo\PointInGeoJsonZone;
 
 final class PromotionDeliveryPricingAdapter implements PromotionDeliveryPricingPort
@@ -32,6 +30,11 @@ final class PromotionDeliveryPricingAdapter implements PromotionDeliveryPricingP
         );
     }
 
+    public function resolveFreeDeliveryThresholdKopecks(): ?int
+    {
+        return $this->deliveryConfigurations->findPublic()?->minOrderAmountKopecks();
+    }
+
     public function resolveDeliveryFeeKopecks(
         ?PromotionPolicy $promotionPolicy,
         ?DeliveryMethod $deliveryMethod,
@@ -46,32 +49,28 @@ final class PromotionDeliveryPricingAdapter implements PromotionDeliveryPricingP
             return 0;
         }
 
-        $deliveryConfiguration = $this->deliveryConfigurations->findPublic();
-        $baseInZoneFee = $deliveryConfiguration?->deliveryFeeKopecks() ?? 0;
-        $baseOutsideZoneFee = $deliveryConfiguration?->outsideZoneDeliveryFeeKopecks() ?? $baseInZoneFee;
+        $configuration = $this->deliveryConfigurations->findPublic();
+        $baseFeeKopecks = max(0, $configuration?->deliveryFeeKopecks() ?? 0);
+        $outsideZoneFeeKopecks = max(
+            0,
+            $configuration?->outsideZoneDeliveryFeeKopecks() ?? $baseFeeKopecks,
+        );
+        $minOrderAmountKopecks = $configuration?->minOrderAmountKopecks();
+        $meetsMinOrderAmount = $minOrderAmountKopecks !== null
+            && $currentKopecks >= $minOrderAmountKopecks;
 
-        $policy = $promotionPolicy?->deliveryBenefitPolicy();
-        if ($policy === null || ! $policy->isActive()) {
-            return $inZone === false ? $baseOutsideZoneFee : $baseInZoneFee;
+        if ($inZone === false) {
+            if ($meetsMinOrderAmount) {
+                return $outsideZoneFeeKopecks;
+            }
+
+            return $baseFeeKopecks + $outsideZoneFeeKopecks;
         }
 
-        $thresholdKopecks = $policy->freeDeliveryThresholdKopecks();
-
-        if ($currentKopecks < $thresholdKopecks) {
-            return $inZone === false ? $baseOutsideZoneFee : $baseInZoneFee;
-        }
-
-        if (
-            $inZone === false
-            && $policy->outsideZoneAtThresholdFeeMode() === DeliveryFeeMode::BasePlusSurcharge
-        ) {
-            return $baseInZoneFee + $policy->outsideZoneSurchargeKopecks();
-        }
-
-        if ($policy->inZoneAtThresholdFeeMode() === DeliveryFeeMode::Free) {
+        if ($meetsMinOrderAmount) {
             return 0;
         }
 
-        return $baseInZoneFee;
+        return $baseFeeKopecks;
     }
 }

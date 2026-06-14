@@ -33,9 +33,12 @@ export function useOrderPreview() {
             preview.value?.totals ?? {
                 itemsTotalRubles: 0,
                 deliveryFeeRubles: null,
+                baseDeliveryFeeRubles: null,
+                outsideZoneSurchargeRubles: null,
                 grandTotalRubles: 0,
                 isDeliveryFree: false,
                 isDeliveryPreview: false,
+                inZone: null,
             },
     );
 
@@ -46,7 +49,42 @@ export function useOrderPreview() {
 
     const hasComplementLines = computed(() => complementLines.value.length > 0);
     const hasAutoLines = computed(() => autoLines.value.length > 0);
-    const hasDeliveryPricing = computed(() => totals.value.deliveryFeeRubles != null);
+    const hasDeliveryPricing = computed(
+        () =>
+            !totals.value.isDeliveryPreview
+            && totals.value.deliveryFeeRubles != null,
+    );
+    const showOutsideZoneSurcharge = computed(
+        () =>
+            totals.value.inZone === false
+            && (totals.value.outsideZoneSurchargeRubles ?? 0) > 0,
+    );
+    const showBaseDeliveryFee = computed(() => {
+        if (!hasDeliveryPricing.value) {
+            return false;
+        }
+
+        if (showOutsideZoneSurcharge.value) {
+            return (totals.value.baseDeliveryFeeRubles ?? 0) > 0;
+        }
+
+        return true;
+    });
+    const baseDeliveryFeeRubles = computed(() => {
+        if (showOutsideZoneSurcharge.value) {
+            return totals.value.baseDeliveryFeeRubles ?? 0;
+        }
+
+        return totals.value.deliveryFeeRubles ?? 0;
+    });
+    const isBaseDeliveryFree = computed(() => {
+        if (showOutsideZoneSurcharge.value) {
+            return (totals.value.baseDeliveryFeeRubles ?? 0) === 0;
+        }
+
+        return totals.value.isDeliveryFree;
+    });
+    const displayGrandTotalRubles = computed(() => totals.value.grandTotalRubles);
 
     const deliveryProgressPercent = computed(() => {
         const threshold = Number(delivery.value.thresholdKopecks);
@@ -132,6 +170,11 @@ export function useOrderPreview() {
         hasComplementLines,
         hasAutoLines,
         hasDeliveryPricing,
+        showOutsideZoneSurcharge,
+        showBaseDeliveryFee,
+        baseDeliveryFeeRubles,
+        isBaseDeliveryFree,
+        displayGrandTotalRubles,
         hasCartItems,
         deliveryProgressPercent,
         giftProgressPercent,

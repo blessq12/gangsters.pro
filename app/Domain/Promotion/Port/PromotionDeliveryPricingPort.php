@@ -9,6 +9,8 @@ interface PromotionDeliveryPricingPort
 {
     public function resolveInZone(?float $latitude, ?float $longitude): ?bool;
 
+    public function resolveFreeDeliveryThresholdKopecks(): ?int;
+
     public function resolveDeliveryFeeKopecks(
         ?PromotionPolicy $promotionPolicy,
         ?DeliveryMethod $deliveryMethod,

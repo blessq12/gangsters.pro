@@ -38,6 +38,11 @@ const {
     hasComplementLines,
     hasAutoLines,
     hasDeliveryPricing,
+    showOutsideZoneSurcharge,
+    showBaseDeliveryFee,
+    baseDeliveryFeeRubles,
+    isBaseDeliveryFree,
+    displayGrandTotalRubles,
     hasCartItems,
     delivery,
     gift,
@@ -65,16 +70,15 @@ const showAutoBlock = computed(
 );
 const showDeliveryBenefit = computed(
     () =>
-        (props.variant === "cart" || props.variant === "delivery")
-        && Boolean(deliveryLabel.value)
-        && (props.variant === "cart" ? delivery.value.isActive : true),
+        props.variant === "delivery"
+        && Boolean(deliveryLabel.value),
 );
 const showBenefitsBlock = computed(() => {
     if (props.part != null) {
         return false;
     }
 
-    if (props.variant === "cart" || props.variant === "delivery") {
+    if (props.variant === "delivery") {
         return canShowBenefits.value;
     }
 
@@ -110,6 +114,16 @@ const showTotalsBlock = computed(() => {
         || props.variant === "payment"
         || props.variant === "confirm";
 });
+
+const showDeliveryFeeRows = computed(
+    () => props.variant !== "cart" && hasDeliveryPricing.value,
+);
+
+const grandTotalRubles = computed(() =>
+    props.variant === "cart"
+        ? totals.value.itemsTotalRubles
+        : displayGrandTotalRubles.value,
+);
 
 function openGiftModal() {
     if (!isGiftEligible.value) {
@@ -262,20 +276,12 @@ function openGiftModal() {
             </span>
         </div>
         <div
-            v-if="hasDeliveryPricing"
+            v-if="showDeliveryFeeRows && showBaseDeliveryFee"
             :class="c.totalsRow"
         >
-            <span :class="c.totalsLabelMuted">
-                Доставка
-                <span
-                    v-if="totals.isDeliveryPreview"
-                    class="text-[10px] text-app-muted"
-                >
-                    (курьер)
-                </span>
-            </span>
+            <span :class="c.totalsLabelMuted">Доставка</span>
             <span
-                v-if="totals.isDeliveryFree"
+                v-if="isBaseDeliveryFree"
                 :class="c.totalsValue"
             >
                 Бесплатно
@@ -284,13 +290,22 @@ function openGiftModal() {
                 v-else
                 :class="c.totalsValue"
             >
-                {{ formatPrice(totals.deliveryFeeRubles) }} ₽
+                {{ formatPrice(baseDeliveryFeeRubles) }} ₽
+            </span>
+        </div>
+        <div
+            v-if="showDeliveryFeeRows && showOutsideZoneSurcharge"
+            :class="c.totalsRow"
+        >
+            <span :class="c.totalsLabelMuted">Доплата за отдалённый район</span>
+            <span :class="c.totalsValue">
+                {{ formatPrice(totals.outsideZoneSurchargeRubles) }} ₽
             </span>
         </div>
         <div :class="c.totalsDivider">
             <span :class="c.totalsLabelStrong">Итого</span>
             <span :class="c.grandTotal">
-                {{ formatPrice(totals.grandTotalRubles) }} ₽
+                {{ formatPrice(grandTotalRubles) }} ₽
             </span>
         </div>
     </div>

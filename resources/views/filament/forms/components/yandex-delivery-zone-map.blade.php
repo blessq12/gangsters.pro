@@ -1,9 +1,27 @@
 @php
+    /** @var \App\Filament\Delivery\Forms\Components\YandexDeliveryZoneMap $field */
     $editorUrl = route('filament.admin.delivery-zone-map-editor');
+    $record = $getRecord();
+    $initialPayload = [
+        'geometry' => $getState(),
+        'address' => $record?->kitchen_address,
+        'kitchenLatitude' => $record?->kitchen_latitude,
+        'kitchenLongitude' => $record?->kitchen_longitude,
+    ];
 @endphp
 
 <x-dynamic-component :component="$getFieldWrapperView()" :field="$field">
-    <div x-data="deliveryZoneBridge" class="space-y-3">
+    <div
+        wire:ignore
+        x-data="deliveryZoneBridge({
+            geometryStatePath: @js($getStatePath()),
+            kitchenAddressPath: @js($field->getKitchenAddressStatePath()),
+            kitchenLatPath: @js($field->getKitchenLatitudeStatePath()),
+            kitchenLngPath: @js($field->getKitchenLongitudeStatePath()),
+            initialPayload: @js($initialPayload),
+        })"
+        class="space-y-3"
+    >
         <iframe
             x-ref="zoneIframe"
             src="{{ $editorUrl }}"

@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\MarketingContent\Model;
 
+use App\Infrastructure\MarketingContent\Support\MarketingStoredMedia;
 use Illuminate\Database\Eloquent\Model;
 
 class MKT_Promotion extends Model
@@ -30,6 +31,24 @@ class MKT_Promotion extends Model
 
             $maxSortOrder = self::query()->max('sort_order');
             $promotion->sort_order = is_null($maxSortOrder) ? 0 : $maxSortOrder + 1;
+        });
+
+        static::updating(function (self $promotion): void {
+            if (! $promotion->isDirty('image')) {
+                return;
+            }
+
+            $oldPath = $promotion->getOriginal('image');
+
+            if (! is_string($oldPath) || $oldPath === '' || $oldPath === $promotion->image) {
+                return;
+            }
+
+            MarketingStoredMedia::deleteIfStored($oldPath);
+        });
+
+        static::deleting(function (self $promotion): void {
+            MarketingStoredMedia::deleteIfStored($promotion->image);
         });
     }
 }
