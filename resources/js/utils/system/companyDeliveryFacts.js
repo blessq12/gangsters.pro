@@ -200,6 +200,28 @@ export function buildYandexMapWidgetSearchUrl(company) {
     return `https://yandex.ru/map-widget/v1/?mode=search&text=${text}&z=12`;
 }
 
+const KITCHEN_ADDRESS_FALLBACK = "Томск, ул. Говорова 50";
+
+/**
+ * Подпись адреса кухни для карты и UI.
+ * @param {object|null|undefined} company
+ * @returns {string}
+ */
+export function kitchenAddressLabelOrFallback(company) {
+    const line = kitchenAddressLine(company);
+    return line || KITCHEN_ADDRESS_FALLBACK;
+}
+
+/**
+ * URL виджета Яндекс.Карт с точкой по адресу кухни.
+ * @param {object|null|undefined} company
+ * @returns {string}
+ */
+export function buildYandexMapKitchenPointWidgetUrl(company) {
+    const text = encodeURIComponent(kitchenAddressLabelOrFallback(company));
+    return `https://yandex.ru/map-widget/v1/?mode=search&text=${text}&z=16`;
+}
+
 /**
  * Способы оплаты при оформлении (cash / card), согласовано с PaymentMethod::placementValues.
  * @returns {{ id: string, title: string, description: string, icon: string }[]}

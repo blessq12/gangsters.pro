@@ -48,6 +48,19 @@ export const pagesDesign = {
         },
     },
 
+    notFound: {
+        pageWrap:
+            "mx-auto flex min-h-[50vh] max-w-lg flex-col items-center justify-center py-16 text-center text-app-canvas-fg",
+        code: "font-heading text-7xl font-normal text-app-accent sm:text-8xl",
+        title: "mt-4 text-xl font-normal text-app-canvas-fg sm:text-2xl",
+        lead: "mt-3 text-sm text-app-muted",
+        actions: "mt-8 flex flex-wrap items-center justify-center gap-3",
+        primaryBtn:
+            "inline-flex items-center justify-center rounded-none bg-app-accent px-5 py-2.5 text-sm font-semibold text-black shadow-[0_0_18px_rgba(198,36,36,0.75)] transition hover:bg-app-accent-hover",
+        secondaryBtn:
+            "inline-flex items-center justify-center rounded-none border border-app-border-on-surface bg-app-glass-fill px-5 py-2.5 text-sm font-medium text-app-canvas-fg backdrop-blur-md transition hover:border-app-accent/40 hover:text-app-accent",
+    },
+
     resetPassword: {
         pageWrap: "mx-auto max-w-md py-8 text-app-canvas-fg",
         title: "mb-1 text-xl font-normal text-app-accent sm:text-2xl",
@@ -134,6 +147,16 @@ export const pagesDesign = {
         importantBody: "mt-3 text-sm leading-relaxed text-app-muted",
         chipsRow: "mt-5 flex flex-wrap gap-2",
         chip: `${nestedCard} px-3 py-1.5 text-xs ${nestedFg}`,
+        zoneMapStage:
+            "relative min-h-[22rem] w-full overflow-hidden rounded-none border border-app-border-on-surface sm:min-h-[26rem]",
+        zoneMapLayer: "absolute inset-0 z-0",
+        zoneMapCanvas: "h-full min-h-[22rem] w-full border-0 sm:min-h-[26rem]",
+        zoneMapFallback:
+            "grid min-h-[22rem] place-content-center bg-app-glass-fill px-4 py-8 text-center text-sm text-app-muted sm:min-h-[26rem]",
+        zoneMapFallbackProse: "mx-auto max-w-prose leading-relaxed",
+        zoneMapLoading:
+            "grid min-h-[22rem] place-content-center bg-app-glass-fill text-sm text-app-muted sm:min-h-[26rem]",
+        zoneMapHint: "mt-3 text-xs text-app-muted",
     },
 
     contacts: {
@@ -157,7 +180,7 @@ export const pagesDesign = {
             "text-app-accent/90 underline-offset-2 hover:underline",
         emailLink: "break-all transition-colors hover:text-app-accent",
         mainGrid:
-            "grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.85fr)]",
+            "grid gap-6 lg:grid-cols-2",
         addressLoading: "text-sm text-app-muted",
         addressLineSpaced: "mt-3",
         coverageBox: `mt-4 ${nestedCard} p-4`,
@@ -165,15 +188,29 @@ export const pagesDesign = {
             "text-[11px] uppercase tracking-[0.22em] text-app-muted",
         coverageBody: `mt-2 text-sm ${nestedFg}`,
         siteLinkPara: "mt-4 text-sm",
-        scheduleArticle: `${gradientIsland} p-6`,
-        scheduleEyebrow: "text-xs uppercase tracking-[0.26em] text-app-accent",
-        scheduleTime:
-            "font-heading mt-4 text-4xl font-normal text-app-accent sm:text-5xl",
-        scheduleNote: "mt-3 text-sm leading-relaxed text-app-muted",
-        feeStack: "mt-5 space-y-2",
-        feeRow:
-            `flex items-center justify-between ${nestedCard} px-4 py-3 ${nestedFg}`,
-        feeValue: "font-medium text-app-accent",
+        kitchenMapStage:
+            "relative mt-4 min-h-[16rem] w-full overflow-hidden rounded-none border border-app-border-on-surface sm:min-h-[18rem]",
+        kitchenMapLayer: "absolute inset-0 z-0",
+        kitchenMapCanvas: "h-full min-h-[16rem] w-full border-0 sm:min-h-[18rem]",
+        kitchenMapFallback:
+            "grid min-h-[16rem] place-content-center bg-app-glass-fill px-4 py-8 text-center text-sm text-app-muted sm:min-h-[18rem]",
+        kitchenMapFallbackProse: "mx-auto max-w-prose leading-relaxed",
+        kitchenMapLoading:
+            "grid min-h-[16rem] place-content-center bg-app-glass-fill text-sm text-app-muted sm:min-h-[18rem]",
+        kitchenMapHint: "mt-3 text-xs text-app-muted",
+        scheduleList: "divide-y divide-app-border-on-surface",
+        scheduleRow:
+            "flex items-baseline justify-between gap-4 py-2.5 first:pt-0 last:pb-0",
+        scheduleDay: "w-8 shrink-0 text-xs font-medium text-app-muted tabular-nums",
+        scheduleDayToday:
+            "w-8 shrink-0 text-xs font-medium text-app-accent tabular-nums",
+        scheduleWork:
+            "min-w-0 text-right tabular-nums text-app-canvas-fg",
+        scheduleWorkToday:
+            "min-w-0 text-right font-medium tabular-nums text-app-canvas-fg",
+        scheduleFallback: "text-sm leading-relaxed text-app-muted",
+        scheduleLoading: "text-sm text-app-muted",
+        scheduleEmpty: "text-sm leading-relaxed text-app-muted",
         tipsGrid: "grid gap-4 md:grid-cols-3",
         tipTile: `${nestedCard} p-5`,
         tipKicker:

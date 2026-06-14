@@ -117,6 +117,68 @@ export async function mountYandexDeliveryZoneReadonlyMap(container, options) {
 }
 
 /**
+ * @param {HTMLElement} container
+ * @param {{
+ *   apiKey: string,
+ *   center?: [number, number]|null,
+ *   balloonContent?: string,
+ *   zoom?: number,
+ * }} options
+ * @returns {Promise<{ destroy: () => void, refit: () => void, placemarkShown: boolean }>}
+ */
+export async function mountYandexKitchenPlacemarkReadonlyMap(container, options) {
+    const {
+        apiKey,
+        center = null,
+        balloonContent = "",
+        zoom = 16,
+    } = options;
+
+    await loadYandexMapsApi(apiKey);
+
+    const mapCenter =
+        center && isNearTomskArea(center) ? center : TOMSK_CENTER;
+    const canShowPlacemark = center != null && isNearTomskArea(center);
+
+    const map = new window.ymaps.Map(
+        container,
+        {
+            center: mapCenter,
+            zoom: canShowPlacemark ? zoom : 12,
+            controls: ["zoomControl"],
+        },
+        {
+            suppressMapOpenBlock: true,
+        },
+    );
+
+    const refit = () => {
+        map.container.fitToViewport();
+    };
+
+    refit();
+
+    if (canShowPlacemark) {
+        const placemark = new window.ymaps.Placemark(
+            center,
+            { balloonContent },
+            {
+                preset: "islands#redDotIcon",
+            },
+        );
+        map.geoObjects.add(placemark);
+    }
+
+    return {
+        placemarkShown: canShowPlacemark,
+        refit,
+        destroy() {
+            map.destroy();
+        },
+    };
+}
+
+/**
  * @returns {string|null}
  */
 export function readYandexMapsApiKeyFromSite() {

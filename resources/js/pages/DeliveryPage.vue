@@ -182,6 +182,8 @@ const importantSub = computed(() => {
             </div>
         </SecondaryContentBlock>
 
+        <DeliveryZoneMapBlock />
+
         <div :class="dv.gridBottom">
             <SecondaryContentBlock
                 title="Способы оплаты"

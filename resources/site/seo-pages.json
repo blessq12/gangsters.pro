@@ -23,5 +23,10 @@
         "title": "Сброс пароля | Gangster's Sushi",
         "description": "Установи новый пароль для личного кабинета Gangster's Sushi.",
         "robots": "noindex,nofollow"
+    },
+    "/404": {
+        "title": "Страница не найдена | Gangster's Sushi",
+        "description": "Запрашиваемая страница не найдена. Перейди на главную Gangster's Sushi и закажи суши с доставкой по Томску.",
+        "robots": "noindex,nofollow"
     }
 }

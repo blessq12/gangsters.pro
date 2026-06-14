@@ -6,9 +6,10 @@ import { formatRuPhone, phoneToTelHref } from "../utils/phone/formatRuPhone";
 import { formatAverageDeliveryLine } from "../utils/system/companyDeliveryFacts";
 import {
     formatCompanyAddressLine,
-    formatWorkScheduleForDisplay,
+    getWorkScheduleRows,
     safeTrim,
 } from "../utils/system/companyDisplay";
+import { getCurrentDayKey } from "../utils/system/companyOpenStatus";
 import { useAppDesign } from "../design/useAppDesign";
 
 const { profile: profileRef, loading, errors } = useCompanyReadModel({
@@ -103,17 +104,31 @@ const addressLines = computed(() => {
 
 const hasAddress = computed(() => addressLines.value.length > 0);
 
-const workHoursMain = computed(() => {
+const scheduleRows = computed(() => {
     const c = profile.value;
-    return safeTrim(c?.work_hours) || "—";
+    if (!c) return [];
+    const rows = getWorkScheduleRows(c.work_schedule);
+    if (rows.length) return rows;
+    const wh = safeTrim(c.work_hours);
+    if (wh) {
+        return [
+            {
+                dayKey: null,
+                dayLabel: "",
+                isDayOff: false,
+                work: wh,
+                isFallbackString: true,
+            },
+        ];
+    }
+    return [];
 });
 
-const workScheduleNote = computed(() => {
-    const c = profile.value;
-    const fromSchedule = formatWorkScheduleForDisplay(c?.work_schedule);
-    if (fromSchedule) return fromSchedule;
-    return "Заказы принимаем в заявленном режиме. Уточнения — по телефону или в мессенджере.";
-});
+const currentDayKey = computed(() => getCurrentDayKey(new Date()));
+
+function isScheduleToday(dayKey) {
+    return dayKey != null && dayKey === currentDayKey.value;
+}
 
 const siteUrl = computed(() => safeTrim(profile.value?.site_url));
 
@@ -293,6 +308,8 @@ const co = useAppDesign().components.pages.contacts;
                     Адрес уточняется. Свяжитесь с нами по телефону или в мессенджере.
                 </p>
 
+                <ContactsKitchenMap />
+
                 <p
                     v-if="siteUrl"
                     :class="co.siteLinkPara"
@@ -308,55 +325,59 @@ const co = useAppDesign().components.pages.contacts;
                 </p>
             </SecondaryContentBlock>
 
-            <article :class="co.scheduleArticle">
-                <p :class="co.scheduleEyebrow">
-                    Режим работы
-                </p>
-                <p :class="co.scheduleTime">
-                    {{ workHoursMain }}
-                </p>
-                <p :class="co.scheduleNote">
-                    {{ workScheduleNote }}
-                </p>
-                <div
-                    v-if="facts?.min_order_amount_kopecks != null || facts?.delivery_fee_kopecks != null"
-                    :class="co.feeStack"
+            <SecondaryContentBlock
+                title="Режим работы"
+                subtitle="РЕЖИМ РАБОТЫ"
+            >
+                <p
+                    v-if="loadingProfile && !scheduleRows.length"
+                    :class="co.scheduleLoading"
                 >
-                    <div
-                        v-if="facts.min_order_amount_kopecks != null"
-                        :class="co.feeRow"
+                    Загрузка…
+                </p>
+                <p
+                    v-else-if="scheduleRows.length && scheduleRows[0].isFallbackString"
+                    :class="co.scheduleFallback"
+                >
+                    {{ scheduleRows[0].work }}
+                </p>
+                <ul
+                    v-else-if="scheduleRows.length"
+                    :class="co.scheduleList"
+                >
+                    <li
+                        v-for="(row, idx) in scheduleRows"
+                        :key="row.dayKey || `row-${idx}`"
+                        :class="co.scheduleRow"
                     >
-                        <span>Мин. заказ</span>
-                        <span :class="co.feeValue">
-                            {{
-                                new Intl.NumberFormat("ru-RU").format(
-                                    Math.round(
-                                        Number(facts.min_order_amount_kopecks) /
-                                            100,
-                                    ),
-                                )
-                            }}
-                            ₽
+                        <span
+                            :class="
+                                isScheduleToday(row.dayKey)
+                                    ? co.scheduleDayToday
+                                    : co.scheduleDay
+                            "
+                        >
+                            {{ row.dayLabel }}
                         </span>
-                    </div>
-                    <div
-                        v-if="facts.delivery_fee_kopecks != null"
-                        :class="co.feeRow"
-                    >
-                        <span>Доставка от</span>
-                        <span :class="co.feeValue">
-                            {{
-                                new Intl.NumberFormat("ru-RU").format(
-                                    Math.round(
-                                        Number(facts.delivery_fee_kopecks) / 100,
-                                    ),
-                                )
-                            }}
-                            ₽
+                        <span
+                            :class="
+                                isScheduleToday(row.dayKey)
+                                    ? co.scheduleWorkToday
+                                    : co.scheduleWork
+                            "
+                        >
+                            <template v-if="row.isDayOff">Выходной</template>
+                            <template v-else>{{ row.work || "—" }}</template>
                         </span>
-                    </div>
-                </div>
-            </article>
+                    </li>
+                </ul>
+                <p
+                    v-else
+                    :class="co.scheduleEmpty"
+                >
+                    Заказы принимаем в заявленном режиме. Уточнения — по телефону или в мессенджере.
+                </p>
+            </SecondaryContentBlock>
         </div>
 
         <SecondaryContentBlock

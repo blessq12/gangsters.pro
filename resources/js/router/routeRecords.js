@@ -62,4 +62,12 @@ export const routeRecords = [
             seo: seoForPath("/reset-password"),
         },
     },
+    {
+        path: "/:pathMatch(.*)*",
+        name: "not-found",
+        component: () => import("../pages/NotFoundPage.vue"),
+        meta: {
+            seo: seoForPath("/404"),
+        },
+    },
 ];
