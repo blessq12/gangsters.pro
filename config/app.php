@@ -172,22 +172,8 @@ return [
          */
         App\Providers\AppServiceProvider::class,
         App\Providers\AuthServiceProvider::class,
-        App\Providers\EventServiceProvider::class,
-        App\Providers\Filament\AdminPanelProvider::class,
-        App\Providers\RouteServiceProvider::class,
-        App\Providers\OrderServiceProvider::class,
-        App\Providers\ShoppingServiceProvider::class,
+        // App\Providers\Filament\AdminPanelProvider::class,
         Intervention\Image\ImageServiceProvider::class,
-        App\Providers\ClientServiceProvider::class,
-        App\Providers\ReportingServiceProvider::class,
-        App\Providers\ProductDomainServiceProvider::class,
-        App\Providers\CatalogServiceProvider::class,
-        App\Providers\OperationsServiceProvider::class,
-        App\Providers\SystemContentServiceProvider::class,
-        App\Providers\CompanyServiceProvider::class,
-        App\Providers\SiteServiceProvider::class,
-        App\Providers\MarketingServiceProvider::class,
-        App\Providers\NotificationServiceProvider::class,
     ])->toArray(),
 
     /*

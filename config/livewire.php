@@ -1,7 +1,5 @@
 <?php
 
-use App\Support\MarketingUploadLimits;
-
 return [
 
     'class_namespace' => 'App\\Livewire',
@@ -14,13 +12,26 @@ return [
 
     'temporary_file_upload' => [
         'disk' => null,
-        'rules' => MarketingUploadLimits::livewireTemporaryUploadRules(),
+        'rules' => [],
         'directory' => null,
         'middleware' => null,
         'preview_mimes' => [
-            'png', 'gif', 'bmp', 'svg', 'wav', 'mp4',
-            'mov', 'avi', 'wmv', 'mp3', 'm4a',
-            'jpg', 'jpeg', 'mpga', 'webp', 'wma',
+            'png',
+            'gif',
+            'bmp',
+            'svg',
+            'wav',
+            'mp4',
+            'mov',
+            'avi',
+            'wmv',
+            'mp3',
+            'm4a',
+            'jpg',
+            'jpeg',
+            'mpga',
+            'webp',
+            'wma',
         ],
         'max_upload_time' => 5,
         'cleanup' => true,
