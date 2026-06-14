@@ -2,6 +2,7 @@ import {
     fromServerCheckoutPaymentMethod,
     normalizeCheckoutPaymentMethod,
     toServerCheckoutPaymentMethod,
+    CHECKOUT_PAYMENT_METHOD_LABELS,
 } from "./checkoutPaymentMethods";
 
 export function mapClientToGuestContact(client) {
@@ -127,4 +128,64 @@ export function normalizePaymentPatch(patch) {
     }
 
     return next;
+}
+
+/**
+ * @param {object|null|undefined} delivery
+ */
+export function formatServerDeliveryLine(delivery) {
+    if (!delivery || typeof delivery !== "object") {
+        return "—";
+    }
+
+    if (delivery.method === "pickup") {
+        return "Самовывоз";
+    }
+
+    const address = delivery.address;
+    if (!address || typeof address !== "object") {
+        return "Курьер";
+    }
+
+    return [
+        address.street,
+        address.house && `д. ${address.house}`,
+        address.apartment && `кв. ${address.apartment}`,
+    ]
+        .filter(Boolean)
+        .join(", ");
+}
+
+/**
+ * @param {object|null|undefined} client
+ * @param {(phone: string) => string} formatPhone
+ */
+export function formatServerClientLine(client, formatPhone) {
+    if (!client || typeof client !== "object") {
+        return "—";
+    }
+
+    const name = String(client.name || "").trim() || "—";
+    const phone = client.phone ? formatPhone(String(client.phone)) : "—";
+
+    return `${name}, ${phone}`;
+}
+
+/**
+ * @param {object|null|undefined} payment
+ * @param {(value: number) => string} formatPrice
+ */
+export function formatServerPaymentLine(payment, formatPrice) {
+    if (!payment || typeof payment !== "object") {
+        return "—";
+    }
+
+    const method = fromServerCheckoutPaymentMethod(payment.method);
+    const label = CHECKOUT_PAYMENT_METHOD_LABELS[method] ?? method;
+
+    if (method === "cash" && payment.change_from_rubles != null) {
+        return `${label} · сдача с ${formatPrice(Number(payment.change_from_rubles))} ₽`;
+    }
+
+    return label;
 }

@@ -129,11 +129,11 @@ export function resolveSelectedGiftSummary(input) {
  * Адаптер блока cart из Checkout API к legacy-формату cartStore для UI.
  *
  * @param {object|null|undefined} cart
- * @returns {{ items: object[], itemsTotalRubles: number }}
+ * @returns {{ items: object[], itemsTotalRubles: number, itemsSubtotalRubles: number }}
  */
 export function normalizeCheckoutCartBlock(cart) {
     if (!cart || typeof cart !== "object") {
-        return { items: [], itemsTotalRubles: 0 };
+        return { items: [], itemsTotalRubles: 0, itemsSubtotalRubles: 0 };
     }
 
     const items = Array.isArray(cart.items)
@@ -185,8 +185,14 @@ export function normalizeCheckoutCartBlock(cart) {
               .filter(Boolean)
         : [];
 
+    const itemsSubtotalRubles = roundRubles2(Number(cart.items_total_rubles) || 0);
+    const itemsTotalRubles = roundRubles2(
+        Number(cart.payable_total_rubles ?? cart.items_total_rubles) || 0,
+    );
+
     return {
         items,
-        itemsTotalRubles: roundRubles2(Number(cart.items_total_rubles) || 0),
+        itemsTotalRubles,
+        itemsSubtotalRubles,
     };
 }

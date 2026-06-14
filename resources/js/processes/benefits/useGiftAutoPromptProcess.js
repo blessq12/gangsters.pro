@@ -1,27 +1,32 @@
+import { watch } from "vue";
+import { useCheckoutStore } from "../../stores/checkoutStore";
 import { useUiStore } from "../../stores/uiStore";
-import { DOMAIN_EVENTS, subscribeDomainEvent } from "../../shared/domainEvents";
 
 let processInitialized = false;
-let cleanupHandlers = [];
+let stopWatch = null;
 
 export function useGiftAutoPromptProcess() {
     if (!processInitialized) {
         const uiStore = useUiStore();
+        const cartStore = useCheckoutStore();
 
-        cleanupHandlers = [
-            subscribeDomainEvent(DOMAIN_EVENTS.BENEFIT_GIFT_LOST, () => {
-                uiStore.resetGiftAutoPromptDismissed();
-                uiStore.closeGiftSelectionModal({ dismissAuto: false });
-            }),
-        ];
+        stopWatch = watch(
+            () => Boolean(cartStore.benefitsProgress?.gift?.isReached),
+            (isReached, wasReached) => {
+                if (wasReached === true && isReached === false) {
+                    uiStore.resetGiftAutoPromptDismissed();
+                    uiStore.closeGiftSelectionModal({ dismissAuto: false });
+                }
+            },
+        );
 
         processInitialized = true;
     }
 
     return {
         dispose() {
-            cleanupHandlers.forEach((cleanup) => cleanup());
-            cleanupHandlers = [];
+            stopWatch?.();
+            stopWatch = null;
             processInitialized = false;
         },
     };

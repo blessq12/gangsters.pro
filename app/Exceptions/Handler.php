@@ -11,6 +11,7 @@ use App\Domain\Client\Exception\ClientAlreadyExistsException;
 use App\Domain\Client\Exception\ClientNotFoundException;
 use App\Domain\Client\Exception\InvalidPasswordResetTokenException;
 use App\Domain\Checkout\Exception\CheckoutAlreadyConfirmedException;
+use App\Domain\Checkout\Exception\CheckoutGiftBenefitViolationException;
 use App\Domain\Checkout\Exception\CheckoutNotFoundException;
 use App\Domain\Checkout\Exception\CheckoutNotReadyForConfirmationException;
 use App\Domain\Order\Exception\OrderInvariantViolation;
@@ -103,6 +104,12 @@ class Handler extends ExceptionHandler
         }
 
         if ($e instanceof CheckoutNotReadyForConfirmationException && $request->is('api/*')) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 422);
+        }
+
+        if ($e instanceof CheckoutGiftBenefitViolationException && $request->is('api/*')) {
             return response()->json([
                 'message' => $e->getMessage(),
             ], 422);

@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from "vue";
 import { useUiStore } from "../../../stores/uiStore";
-import { useCheckoutPricingStore } from "../../../stores/checkoutPricingStore";
+import { useCheckoutStore } from "../../../stores/checkoutStore";
 import { useFavoritesStore } from "../../../stores/favoritesStore";
 import {
     playBottomBarShow,
@@ -28,7 +28,7 @@ const props = defineProps({
 const dock = useAppDesign().components.dock;
 
 const uiStore = useUiStore();
-const cartStore = useCheckoutPricingStore();
+const cartStore = useCheckoutStore();
 const favoritesStore = useFavoritesStore();
 
 const { activeDockItem, getBadge, dockItems } = useBottomDockState({

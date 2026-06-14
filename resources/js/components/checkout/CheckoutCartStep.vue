@@ -3,13 +3,10 @@ import { computed } from "vue";
 import { storeToRefs } from "pinia";
 import { useAppDesign } from "../../design/useAppDesign";
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
-import { wizardNonComplementSystemItems } from "../../features/checkout/normalizeCheckoutCart";
-import { useCheckoutPricingStore } from "../../stores/checkoutPricingStore";
-import { DOMAIN_EVENTS, emitDomainEvent } from "../../shared/domainEvents";
-import CheckoutBenefitsPanel from "./CheckoutBenefitsPanel.vue";
-import CheckoutComplementOffers from "./CheckoutComplementOffers.vue";
+import { useCheckoutStore } from "../../stores/checkoutStore";
+import { useCartCommands } from "../../features/shoppingSession/useCartCommands";
+import CheckoutOrderPreview from "./CheckoutOrderPreview.vue";
 import CheckoutSection from "./CheckoutSection.vue";
-import CheckoutTotalsSummary from "./CheckoutTotalsSummary.vue";
 
 const chk = useAppDesign().components.checkout;
 const c = chk.cart;
@@ -17,52 +14,34 @@ const c = chk.cart;
 const {
     checkoutState,
     handleStartCheckout,
-    handleResumeCheckout,
     openProfileDock,
 } = useCheckoutFlowContext();
 
-const cartStore = useCheckoutPricingStore();
+const cartStore = useCheckoutStore();
+const cartCommands = useCartCommands();
 const {
     cartItems,
     userItems: userCartItems,
-    systemItems: systemCartItems,
 } = storeToRefs(cartStore);
 
 const {
     formatPrice,
     isAuthenticated,
-    canResumeCheckout,
-    resumeCheckoutLabel,
 } = checkoutState;
 
 const isCartEmpty = computed(() => cartItems.value.length === 0);
 const hasUserLines = computed(() => userCartItems.value.length > 0);
-const wizardSystemItems = computed(() =>
-    wizardNonComplementSystemItems(systemCartItems.value),
-);
-const hasSystemOnlyCart = computed(
-    () => !isCartEmpty.value && !hasUserLines.value && wizardSystemItems.value.length > 0,
-);
 
 function decrementCart(productId) {
-    emitDomainEvent(DOMAIN_EVENTS.CART_DECREMENT_REQUESTED, {
-        productId,
-        source: "checkout",
-    });
+    void cartCommands.decrementProductInCart(productId);
 }
 
 function incrementCart(productId) {
-    emitDomainEvent(DOMAIN_EVENTS.CART_INCREMENT_REQUESTED, {
-        productId,
-        source: "checkout",
-    });
+    void cartCommands.incrementProductInCart(productId);
 }
 
 function removeFromCart(productId) {
-    emitDomainEvent(DOMAIN_EVENTS.CART_REMOVE_REQUESTED, {
-        productId,
-        source: "checkout",
-    });
+    void cartCommands.removeProductFromCart(productId);
 }
 
 function unitPriceRub(item) {
@@ -74,24 +53,6 @@ function unitPriceRub(item) {
 
 <template>
     <div class="space-y-3">
-        <div
-            v-if="canResumeCheckout"
-            :class="c.resumeBanner"
-        >
-            <div :class="c.resumeBannerRow">
-                <p :class="c.resumeBannerText">
-                    Незавершённое оформление
-                </p>
-                <button
-                    type="button"
-                    :class="chk.shared.btnPrimaryMd"
-                    @click="handleResumeCheckout"
-                >
-                    {{ resumeCheckoutLabel }}
-                </button>
-            </div>
-        </div>
-
         <div
             v-if="isCartEmpty"
             :class="c.emptyState"
@@ -152,37 +113,13 @@ function unitPriceRub(item) {
         </CheckoutSection>
 
         <p
-            v-else-if="hasSystemOnlyCart"
+            v-else-if="!isCartEmpty"
             :class="chk.shared.introMuted"
         >
             Добавь блюда из меню
         </p>
 
-        <CheckoutComplementOffers />
-
-        <CheckoutSection
-            v-if="wizardSystemItems.length"
-            title="Автодобавления"
-        >
-            <ul :class="c.systemList">
-                <li
-                    v-for="item in wizardSystemItems"
-                    :key="item.lineKey"
-                    :class="c.systemLine"
-                >
-                    <span :class="c.systemLineName">
-                        {{ item.productSnapshot?.name || `Товар #${item.productId}` }}
-                    </span>
-                    <span :class="c.systemLineMeta">
-                        {{ item.qty }} × {{ formatPrice(0) }} ₽
-                    </span>
-                </li>
-            </ul>
-        </CheckoutSection>
-
-        <CheckoutBenefitsPanel delivery-only />
-
-        <CheckoutTotalsSummary v-if="!isCartEmpty" />
+        <CheckoutOrderPreview variant="cart" />
 
         <div
             v-if="hasUserLines"

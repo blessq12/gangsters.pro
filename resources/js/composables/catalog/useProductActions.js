@@ -1,10 +1,12 @@
 import { computed, unref } from "vue";
-import { useCartReadModel } from "../../features/shoppingSession/useCartReadModel";
+import { useCartCommands } from "../../features/shoppingSession/useCartCommands";
+import { useCheckoutSession } from "../../features/checkout/useCheckoutSession";
 import { useFavoritesCommands, useFavoritesReadModel } from "../../features/favorites/useFavorites";
 import { DOMAIN_EVENTS, emitDomainEvent } from "../../shared/domainEvents";
 
 export function useProductActions(productSource) {
-    const cartReadModel = useCartReadModel();
+    const cartCommands = useCartCommands();
+    const cartReadModel = useCheckoutSession();
     const favoritesCommands = useFavoritesCommands();
     const favoritesReadModel = useFavoritesReadModel();
 
@@ -19,7 +21,7 @@ export function useProductActions(productSource) {
         productId.value ? favoritesReadModel.isFavorite(productId.value) : false,
     );
 
-    const addToCart = (qty = 1, fly = {}) => {
+    const addToCart = async (qty = 1, fly = {}) => {
         if (!productId.value) return;
         emitDomainEvent(DOMAIN_EVENTS.CART_ADD_REQUESTED, {
             product: product.value,
@@ -28,9 +30,10 @@ export function useProductActions(productSource) {
             flySourceEl: fly.flySourceEl ?? null,
             flyImageUrl: fly.flyImageUrl ?? null,
         });
+        await cartCommands.addProductToCart(product.value, qty);
     };
 
-    const incrementCart = (fly = {}) => {
+    const incrementCart = async (fly = {}) => {
         if (!productId.value) return;
         emitDomainEvent(DOMAIN_EVENTS.CART_INCREMENT_REQUESTED, {
             productId: productId.value,
@@ -38,14 +41,12 @@ export function useProductActions(productSource) {
             flySourceEl: fly.flySourceEl ?? null,
             flyImageUrl: fly.flyImageUrl ?? null,
         });
+        await cartCommands.incrementProductInCart(productId.value);
     };
 
-    const decrementCart = () => {
+    const decrementCart = async () => {
         if (!productId.value) return;
-        emitDomainEvent(DOMAIN_EVENTS.CART_DECREMENT_REQUESTED, {
-            productId: productId.value,
-            source: "catalog",
-        });
+        await cartCommands.decrementProductInCart(productId.value);
     };
 
     const toggleFavorite = () => {

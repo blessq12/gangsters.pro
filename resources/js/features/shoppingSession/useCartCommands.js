@@ -1,7 +1,7 @@
-import { useCheckoutPricingStore } from "../../stores/checkoutPricingStore";
+import { useCheckoutStore } from "../../stores/checkoutStore";
 
 export function useCartCommands() {
-    const cartStore = useCheckoutPricingStore();
+    const cartStore = useCheckoutStore();
 
     return {
         cartStore,
@@ -18,7 +18,7 @@ export function useCartCommands() {
             return cartStore.removeFromCart(productId);
         },
         clearCart() {
-            return cartStore.clear();
+            return cartStore.clearCart();
         },
     };
 }

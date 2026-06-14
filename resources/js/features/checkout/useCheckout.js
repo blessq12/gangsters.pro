@@ -3,6 +3,7 @@ import { useCheckoutStore } from "../../stores/checkoutStore";
 import { useOrderStore } from "../../stores/orderStore";
 import { useUserStore } from "../../stores/userStore";
 import { useUiStore } from "../../stores/uiStore";
+import { useCartCommands } from "../shoppingSession/useCartCommands";
 import { useClientReadModel } from "../client/useClient";
 import { useCheckoutCartView } from "./useCheckoutCartView";
 import { useCheckoutDeliveryStep } from "./useCheckoutDeliveryStep";
@@ -11,6 +12,7 @@ import { useCheckoutPaymentStep } from "./useCheckoutPaymentStep";
 import { useCheckoutWizard } from "./useCheckoutWizard";
 
 export function useCheckout() {
+    const cartCommands = useCartCommands();
     const checkoutIntent = useCheckoutStore();
     const orderStore = useOrderStore();
     const userStore = useUserStore();
@@ -41,6 +43,7 @@ export function useCheckout() {
     });
 
     return {
+        cartStore: cartCommands.cartStore,
         checkoutIntent,
         checkoutStore: checkoutIntent,
         orderStore,

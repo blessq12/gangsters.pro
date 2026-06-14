@@ -1,0 +1,231 @@
+<?php
+
+namespace App\Application\Checkout\Presenter;
+
+use App\Application\Checkout\Support\PromotionLineClassifier;
+use App\Domain\Checkout\Entity\Checkout;
+use App\Domain\Checkout\ValueObject\CartLineSnapshot;
+
+/**
+ * Read-model превью заказа для UI визарда.
+ */
+final class CheckoutOrderPreviewPresenter
+{
+    /**
+     * @param  array{
+     *     benefits_progress: array<string, mixed>,
+     *     delivery_pricing: array<string, mixed>|null,
+     *     promo_state: array<string, mixed>
+     * }  $benefits
+     * @return array<string, mixed>
+     */
+    public function present(Checkout $checkout, array $benefits): array
+    {
+        $promoState = $benefits['promo_state'];
+
+        return [
+            'complement_lines' => $this->presentComplementLines($checkout, $promoState),
+            'auto_lines' => $this->presentAutoLines($checkout),
+            'gift_summary' => $this->presentGiftSummary($checkout, $promoState),
+            'gift_cta' => $this->presentGiftCta($promoState),
+            'totals' => $this->presentTotals($checkout, $benefits['delivery_pricing']),
+            'benefits' => [
+                'delivery' => $benefits['benefits_progress']['delivery'] ?? null,
+                'gift' => $benefits['benefits_progress']['gift'] ?? null,
+            ],
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $promoState
+     * @return list<array<string, mixed>>
+     */
+    private function presentComplementLines(Checkout $checkout, array $promoState): array
+    {
+        $fromCart = [];
+        foreach ($checkout->cart()->lines() as $line) {
+            if (! PromotionLineClassifier::isComplementLine($line)) {
+                continue;
+            }
+
+            $fromCart[] = $this->presentPreviewLine($line, isFree: true);
+        }
+
+        if ($fromCart !== []) {
+            return $fromCart;
+        }
+
+        $complementPromotion = $promoState['complement_promotion'] ?? null;
+        if (! is_array($complementPromotion) || ($complementPromotion['eligible'] ?? false) !== true) {
+            return [];
+        }
+
+        $quantity = (int) ($complementPromotion['entitled_set_count'] ?? 0);
+        if ($quantity <= 0) {
+            return [];
+        }
+
+        $lines = [];
+        foreach ($complementPromotion['candidate_items'] ?? [] as $candidate) {
+            if (! is_array($candidate)) {
+                continue;
+            }
+
+            $productId = (int) ($candidate['id'] ?? 0);
+            if ($productId <= 0) {
+                continue;
+            }
+
+            $lines[] = [
+                'product_id' => $productId,
+                'name' => (string) ($candidate['name'] ?? ''),
+                'quantity' => $quantity,
+                'price_rubles' => (float) ($candidate['price_rub'] ?? 0),
+                'is_free' => true,
+            ];
+        }
+
+        return $lines;
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function presentAutoLines(Checkout $checkout): array
+    {
+        $lines = [];
+
+        foreach ($checkout->cart()->lines() as $line) {
+            $kind = $line->lineKind();
+            if (in_array($kind, ['user', 'gift', 'complement'], true)) {
+                continue;
+            }
+
+            $lines[] = $this->presentPreviewLine($line, isFree: true);
+        }
+
+        return $lines;
+    }
+
+    /**
+     * @param  array<string, mixed>  $promoState
+     * @return array<string, mixed>|null
+     */
+    private function presentGiftSummary(Checkout $checkout, array $promoState): ?array
+    {
+        foreach ($checkout->cart()->lines() as $line) {
+            if (! PromotionLineClassifier::isGiftLine($line)) {
+                continue;
+            }
+
+            return [
+                'product_id' => $line->productId(),
+                'name' => $line->productName(),
+                'quantity' => $line->quantity(),
+            ];
+        }
+
+        $giftPromotion = $promoState['gift_promotion'] ?? null;
+        if (! is_array($giftPromotion)) {
+            return null;
+        }
+
+        $selectedProductId = (int) ($giftPromotion['selected_product_id'] ?? 0);
+        if ($selectedProductId <= 0) {
+            return null;
+        }
+
+        $name = $this->resolveGiftCandidateName($giftPromotion, $selectedProductId);
+
+        return [
+            'product_id' => $selectedProductId,
+            'name' => $name,
+            'quantity' => 1,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $promoState
+     * @return array<string, mixed>|null
+     */
+    private function presentGiftCta(array $promoState): ?array
+    {
+        $giftPromotion = $promoState['gift_promotion'] ?? null;
+        if (! is_array($giftPromotion)) {
+            return null;
+        }
+
+        return [
+            'eligible' => (bool) ($giftPromotion['eligible'] ?? false),
+            'selected_product_id' => $giftPromotion['selected_product_id'] ?? null,
+            'candidate_items' => array_values(
+                is_array($giftPromotion['candidate_items'] ?? null)
+                    ? $giftPromotion['candidate_items']
+                    : [],
+            ),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $deliveryPricing
+     * @return array<string, mixed>
+     */
+    private function presentTotals(Checkout $checkout, ?array $deliveryPricing): array
+    {
+        $itemsTotalRubles = $checkout->cart()->payableTotal()->amountRubles();
+
+        if (! is_array($deliveryPricing)) {
+            return [
+                'items_total_rubles' => $itemsTotalRubles,
+                'delivery_fee_rubles' => null,
+                'grand_total_rubles' => $itemsTotalRubles,
+                'is_delivery_free' => false,
+                'is_delivery_preview' => false,
+            ];
+        }
+
+        return [
+            'items_total_rubles' => (float) ($deliveryPricing['items_total_rub'] ?? $itemsTotalRubles),
+            'delivery_fee_rubles' => array_key_exists('delivery_fee_rub', $deliveryPricing)
+                ? (float) $deliveryPricing['delivery_fee_rub']
+                : null,
+            'grand_total_rubles' => (float) ($deliveryPricing['grand_total_rub'] ?? $itemsTotalRubles),
+            'is_delivery_free' => (bool) ($deliveryPricing['is_free'] ?? false),
+            'is_delivery_preview' => (bool) ($deliveryPricing['is_preview'] ?? false),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function presentPreviewLine(CartLineSnapshot $line, bool $isFree): array
+    {
+        return [
+            'product_id' => $line->productId(),
+            'name' => $line->productName(),
+            'quantity' => $line->quantity(),
+            'price_rubles' => $line->unitPrice()->amountRubles(),
+            'is_free' => $isFree,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $giftPromotion
+     */
+    private function resolveGiftCandidateName(array $giftPromotion, int $selectedProductId): string
+    {
+        foreach ($giftPromotion['candidate_items'] ?? [] as $candidate) {
+            if (! is_array($candidate)) {
+                continue;
+            }
+
+            if ((int) ($candidate['id'] ?? 0) === $selectedProductId) {
+                $name = trim((string) ($candidate['name'] ?? ''));
+
+                return $name !== '' ? $name : 'Товар #'.$selectedProductId;
+            }
+        }
+
+        return 'Товар #'.$selectedProductId;
+    }
+}

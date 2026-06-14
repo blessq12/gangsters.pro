@@ -8,6 +8,7 @@ import {
     toggleClientFavoriteRequest,
 } from "../api/clientApi";
 import { buildMergeGuestFavoritesPayload } from "../api/clientContracts";
+import { isAxiosUnauthorized } from "../utils/api/mapApiError";
 
 export const FAVORITES_STORAGE_KEY = "gangsters_favorites";
 
@@ -176,10 +177,17 @@ export const useFavoritesStore = defineStore("favorites", {
                 if (data?.favorites) {
                     this.applyServerSnapshot(data.favorites);
                 }
-            } catch (e) {
-                console.error("syncFromServer favorites", e);
-                this.error = e?.response?.data?.message || "Не удалось загрузить избранное.";
-                throw e;
+            } catch (error) {
+                if (isAxiosUnauthorized(error)) {
+                    await useUserStore().clearAuth();
+                    this.error = null;
+                    this.initFromStorage();
+                    return;
+                }
+
+                console.error("syncFromServer favorites", error);
+                this.error = error?.response?.data?.message || "Не удалось загрузить избранное.";
+                throw error;
             } finally {
                 this.loading = false;
             }
@@ -210,10 +218,17 @@ export const useFavoritesStore = defineStore("favorites", {
                 }
 
                 this.clearLocalStorage();
-            } catch (e) {
-                console.error("mergeGuestIntoServer", e);
-                this.error = e?.response?.data?.message || "Не удалось синхронизировать избранное.";
-                throw e;
+            } catch (error) {
+                if (isAxiosUnauthorized(error)) {
+                    await useUserStore().clearAuth();
+                    this.error = null;
+                    this.initFromStorage();
+                    return;
+                }
+
+                console.error("mergeGuestIntoServer", error);
+                this.error = error?.response?.data?.message || "Не удалось синхронизировать избранное.";
+                throw error;
             } finally {
                 this.loading = false;
             }

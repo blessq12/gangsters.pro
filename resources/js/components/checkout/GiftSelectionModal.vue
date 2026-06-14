@@ -1,14 +1,12 @@
 <script setup>
 import { computed, ref, watch } from "vue";
 import { useAppDesign } from "../../design/useAppDesign";
-import { useCheckoutPricingStore } from "../../stores/checkoutPricingStore";
 import { useCheckoutStore } from "../../stores/checkoutStore";
 import { useUiStore } from "../../stores/uiStore";
 import { formatMoneyRublesRu } from "../../utils/moneyFormat";
 
 const chk = useAppDesign().components.checkout;
 const c = chk.cart;
-const pricingStore = useCheckoutPricingStore();
 const checkoutStore = useCheckoutStore();
 const uiStore = useUiStore();
 
@@ -16,7 +14,7 @@ const selectedGiftProductId = ref(null);
 const giftApplying = ref(false);
 
 const giftPromotion = computed(() => {
-    const state = pricingStore.promoState;
+    const state = checkoutStore.promoState;
     if (!state || typeof state !== "object") return null;
     return state.gift_promotion && typeof state.gift_promotion === "object"
         ? state.gift_promotion

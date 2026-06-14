@@ -21,7 +21,19 @@ const siteMetaFallback = {
     pwaInstallDismissKey: "gangsters_pwa_install_dismissed",
 };
 
-export const siteMeta =
-    typeof window !== "undefined" && window.__SITE__
-        ? window.__SITE__
-        : siteMetaFallback;
+function resolveSiteMeta() {
+    const fromWindow =
+        typeof window !== "undefined" &&
+        window.__SITE__ &&
+        typeof window.__SITE__ === "object" &&
+        !Array.isArray(window.__SITE__)
+            ? window.__SITE__
+            : {};
+
+    return {
+        ...siteMetaFallback,
+        ...fromWindow,
+    };
+}
+
+export const siteMeta = resolveSiteMeta();

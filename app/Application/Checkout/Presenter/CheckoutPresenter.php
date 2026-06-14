@@ -3,6 +3,7 @@
 namespace App\Application\Checkout\Presenter;
 
 use App\Application\Checkout\Services\EvaluateCheckoutBenefits;
+use App\Application\Checkout\Support\CheckoutWizardResolver;
 use App\Domain\Checkout\Entity\Checkout;
 use App\Domain\Checkout\ValueObject\CartLineSnapshot;
 use App\Domain\Checkout\ValueObject\ClientSnapshot;
@@ -14,6 +15,8 @@ final class CheckoutPresenter
 {
     public function __construct(
         private readonly EvaluateCheckoutBenefits $evaluateBenefits,
+        private readonly CheckoutWizardResolver $wizardResolver,
+        private readonly CheckoutOrderPreviewPresenter $orderPreviewPresenter,
     ) {}
 
     /**
@@ -38,6 +41,8 @@ final class CheckoutPresenter
                 : null,
             'benefits_progress' => $benefits['benefits_progress'],
             'delivery_pricing' => $benefits['delivery_pricing'],
+            'wizard' => $this->wizardResolver->resolve($checkout),
+            'order_preview' => $this->orderPreviewPresenter->present($checkout, $benefits),
             'created_at' => $checkout->createdAt()->format(DATE_ATOM),
             'confirmed_at' => $checkout->confirmedAt()?->format(DATE_ATOM),
         ];
@@ -62,6 +67,7 @@ final class CheckoutPresenter
                 $checkout->cart()->lines(),
             ),
             'items_total_rubles' => $checkout->cart()->itemsTotal()->amountRubles(),
+            'payable_total_rubles' => $checkout->cart()->payableTotal()->amountRubles(),
             'promo_state' => $promoState,
         ];
     }

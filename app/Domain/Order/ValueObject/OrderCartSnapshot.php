@@ -39,4 +39,19 @@ final readonly class OrderCartSnapshot
 
         return $total;
     }
+
+    public function payableTotal(): Money
+    {
+        $total = Money::zero();
+
+        foreach ($this->lines as $line) {
+            if ($line->isPromotionBenefitLine()) {
+                continue;
+            }
+
+            $total = $total->add($line->lineTotal());
+        }
+
+        return $total;
+    }
 }

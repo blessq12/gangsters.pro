@@ -1,5 +1,3 @@
-import { useCheckoutPricingStore } from "../../stores/checkoutPricingStore";
-
 export const CHECKOUT_SESSION_KEY = "gangsters_checkout_session_v1";
 
 export const CHECKOUT_WIZARD_STEPS = ["cart", "guest", "delivery", "payment", "confirm"];
@@ -38,10 +36,9 @@ export function clearCheckoutSessionPayload() {
 }
 
 export function buildCheckoutSessionSnapshot(store) {
-    const pricingStore = useCheckoutPricingStore();
-    const deliveryPricing = pricingStore.deliveryPricing;
-    const benefitsProgress = pricingStore.benefitsProgress;
-    const promoState = pricingStore.promoState;
+    const deliveryPricing = store.deliveryPricing;
+    const benefitsProgress = store.benefitsProgress;
+    const promoState = store.promoState;
 
     return {
         checkoutId: store.checkoutId,
@@ -59,7 +56,8 @@ export function buildCheckoutSessionSnapshot(store) {
                         (Number(item.pricing?.lineTotalKopecks) || 0) / 100,
                     payload: item.payload ?? null,
                 })),
-                items_total_rubles: store.itemsTotalRubles,
+                items_total_rubles: store.itemsSubtotalRubles,
+                payable_total_rubles: store.itemsTotalRubles,
                 promo_state: promoState,
             },
             client: store.serverClient,

@@ -2,10 +2,9 @@
 import { useAppDesign } from "../../design/useAppDesign";
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
 import CheckoutAuthAddressSection from "./CheckoutAuthAddressSection.vue";
-import CheckoutBenefitsPanel from "./CheckoutBenefitsPanel.vue";
+import CheckoutOrderPreview from "./CheckoutOrderPreview.vue";
 import CheckoutSection from "./CheckoutSection.vue";
 import CheckoutStepFrame from "./CheckoutStepFrame.vue";
-import CheckoutTotalsSummary from "./CheckoutTotalsSummary.vue";
 
 const s = useAppDesign().components.checkout.shared;
 const d = useAppDesign().components.checkout.delivery;
@@ -119,9 +118,7 @@ const { checkoutIntent, deliveryStepError, isGuestCheckout } = checkoutState;
             {{ deliveryStepError }}
         </p>
 
-        <CheckoutBenefitsPanel />
-
-        <CheckoutTotalsSummary />
+        <CheckoutOrderPreview variant="delivery" />
 
         <template #nav>
             <button

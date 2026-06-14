@@ -3,16 +3,12 @@
 namespace App\Application\Checkout\useCases;
 
 use App\Application\Checkout\DTO\GetCheckoutDto;
-use App\Application\Checkout\Presenter\CheckoutPresenter;
-use App\Domain\Checkout\Exception\CheckoutNotFoundException;
-use App\Domain\Checkout\Repository\CheckoutRepository;
-use App\Domain\Checkout\ValueObject\CheckoutId;
+use App\Application\Checkout\Services\CheckoutDraftLifecycle;
 
 final class GetCheckoutUseCase
 {
     public function __construct(
-        private readonly CheckoutRepository $checkouts,
-        private readonly CheckoutPresenter $presenter,
+        private readonly CheckoutDraftLifecycle $draftLifecycle,
     ) {}
 
     /**
@@ -20,12 +16,8 @@ final class GetCheckoutUseCase
      */
     public function execute(GetCheckoutDto $input): array
     {
-        $checkout = $this->checkouts->findById(CheckoutId::fromString($input->checkoutId));
+        $checkout = $this->draftLifecycle->loadDraft($input->checkoutId);
 
-        if ($checkout === null) {
-            throw CheckoutNotFoundException::forId($input->checkoutId);
-        }
-
-        return $this->presenter->present($checkout);
+        return $this->draftLifecycle->saveAndPresent($checkout);
     }
 }

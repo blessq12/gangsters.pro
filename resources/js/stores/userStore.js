@@ -17,6 +17,7 @@ import {
     requestPasswordResetRequest,
     changePasswordWithTokenRequest,
 } from "../api/clientApi";
+import { isAxiosUnauthorized } from "../utils/api/mapApiError";
 
 const USER_KEY = "gangsters_user";
 
@@ -224,25 +225,34 @@ export const useUserStore = defineStore("user", {
         async fetchClientProfile() {
             if (!this.token) return null;
 
-            const data = await fetchClientProfileRequest();
+            try {
+                const data = await fetchClientProfileRequest();
 
-            if (data?.client) {
-                this.setProfile({
-                    id: data.client.id ?? null,
-                    name: data.client.name ?? "",
-                    phone: data.client.phone ?? "",
-                    email: data.client.email ?? "",
-                });
-                if (Array.isArray(data.client.addresses)) {
-                    this.setAddresses(data.client.addresses);
+                if (data?.client) {
+                    this.setProfile({
+                        id: data.client.id ?? null,
+                        name: data.client.name ?? "",
+                        phone: data.client.phone ?? "",
+                        email: data.client.email ?? "",
+                    });
+                    if (Array.isArray(data.client.addresses)) {
+                        this.setAddresses(data.client.addresses);
+                    }
                 }
+
+                emitDomainEvent(DOMAIN_EVENTS.CLIENT_PROFILE_CHANGED, {
+                    clientId: data?.client?.id ?? null,
+                });
+
+                return data;
+            } catch (error) {
+                if (isAxiosUnauthorized(error)) {
+                    await this.clearAuth();
+                    return null;
+                }
+
+                throw error;
             }
-
-            emitDomainEvent(DOMAIN_EVENTS.CLIENT_PROFILE_CHANGED, {
-                clientId: data?.client?.id ?? null,
-            });
-
-            return data;
         },
         async updateClientProfile(payload) {
             const body = buildUpdateClientProfilePayload(payload);

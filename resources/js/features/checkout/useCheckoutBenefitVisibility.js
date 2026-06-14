@@ -36,8 +36,17 @@ export function useCheckoutBenefitVisibility() {
         return Boolean(userStore.selectedAddress);
     });
 
+    const showGiftProgress = computed(() => {
+        const intent = checkoutIntent?.value ?? checkoutIntent;
+        if (!intent || typeof intent !== "object") {
+            return false;
+        }
+
+        return Boolean(intent.serverDelivery?.method);
+    });
+
     return {
         isDeliveryDataFilled,
-        showGiftProgress: isDeliveryDataFilled,
+        showGiftProgress,
     };
 }

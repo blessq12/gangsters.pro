@@ -3,14 +3,14 @@ import {
     consumeSkipNextCartBadgeBump,
     playDockTabBump,
 } from "../../animations/animationManager";
-import { useCheckoutPricingStore } from "../../stores/checkoutPricingStore";
+import { useCheckoutStore } from "../../stores/checkoutStore";
 import { useFavoritesStore } from "../../stores/favoritesStore";
 
 /**
  * Bump бейджей dock при росте счётчиков cart / favorites.
  */
 export function useDockBadgeFeedback() {
-    const cartStore = useCheckoutPricingStore();
+    const cartStore = useCheckoutStore();
     const favoritesStore = useFavoritesStore();
 
     const stopCart = watch(

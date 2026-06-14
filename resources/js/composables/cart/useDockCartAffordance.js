@@ -1,7 +1,7 @@
 import { watch } from "vue";
 import { useRoute } from "vue-router";
 import { DOMAIN_EVENTS, subscribeDomainEvent } from "../../shared/domainEvents";
-import { useCheckoutPricingStore } from "../../stores/checkoutPricingStore";
+import { useCheckoutStore } from "../../stores/checkoutStore";
 import { useUiStore } from "../../stores/uiStore";
 import { ensureDockChromeVisible } from "../ui/dockChromePolicy";
 
@@ -10,7 +10,7 @@ import { ensureDockChromeVisible } from "../ui/dockChromePolicy";
  */
 export function useDockCartAffordance() {
     const uiStore = useUiStore();
-    const cartStore = useCheckoutPricingStore();
+    const cartStore = useCheckoutStore();
     const route = useRoute();
 
     const isHome = () => route.name === "home";

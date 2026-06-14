@@ -13,9 +13,9 @@ use App\Domain\Order\ValueObject\OrderDeliveryAddress;
 use App\Domain\Order\ValueObject\OrderDeliverySnapshot;
 use App\Domain\Order\ValueObject\OrderGuestContact;
 use App\Domain\Order\ValueObject\OrderId;
-use App\Domain\Order\ValueObject\OrderLineSnapshot;
 use App\Domain\Order\ValueObject\OrderPaymentSnapshot;
 use App\Infrastructure\Order\Model\ORD_Order;
+use App\Infrastructure\Shared\Snapshot\CartLinesSnapshotCodec;
 use App\Shared\ValueObject\Money;
 use DateTimeImmutable;
 
@@ -45,7 +45,7 @@ final class OrderMapper
             'checkout_id' => $order->checkoutId(),
             'status' => $order->status()->value,
             'client_id' => $order->client()->clientId(),
-            'total_rubles' => $order->cart()->itemsTotal()->amountRubles(),
+            'total_rubles' => $order->cart()->payableTotal()->amountRubles(),
             'cart_snapshot' => $this->serializeCart($order->cart()),
             'client_snapshot' => $this->serializeClient($order->client()),
             'delivery_snapshot' => $this->serializeDelivery($order->delivery()),
@@ -66,13 +66,7 @@ final class OrderMapper
                 continue;
             }
 
-            $lines[] = new OrderLineSnapshot(
-                productId: (int) ($linePayload['product_id'] ?? 0),
-                productName: (string) ($linePayload['product_name'] ?? ''),
-                quantity: (int) ($linePayload['quantity'] ?? 0),
-                unitPrice: Money::rubles((int) ($linePayload['unit_price_rubles'] ?? 0)),
-                payload: is_array($linePayload['payload'] ?? null) ? $linePayload['payload'] : null,
-            );
+            $lines[] = CartLinesSnapshotCodec::deserializeToOrderLine($linePayload);
         }
 
         return OrderCartSnapshot::fromLines($lines);
@@ -143,19 +137,7 @@ final class OrderMapper
      */
     private function serializeCart(OrderCartSnapshot $cart): array
     {
-        return [
-            'lines' => array_map(
-                static fn (OrderLineSnapshot $line): array => [
-                    'product_id' => $line->productId(),
-                    'product_name' => $line->productName(),
-                    'quantity' => $line->quantity(),
-                    'unit_price_rubles' => $line->unitPrice()->amountRubles(),
-                    'line_total_rubles' => $line->lineTotal()->amountRubles(),
-                    'payload' => $line->payload(),
-                ],
-                $cart->lines(),
-            ),
-        ];
+        return CartLinesSnapshotCodec::serializeCart($cart->lines());
     }
 
     /**

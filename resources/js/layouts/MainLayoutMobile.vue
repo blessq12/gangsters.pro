@@ -3,7 +3,7 @@ import { onMounted, onUnmounted, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useThemeStore } from "../stores/themeStore";
 import { useUserStore } from "../stores/userStore";
-import { useCheckoutPricingStore } from "../stores/checkoutPricingStore";
+import { useCheckoutStore } from "../stores/checkoutStore";
 import { useFavoritesStore } from "../stores/favoritesStore";
 import { useUiStore } from "../stores/uiStore";
 import { useCatalogStore } from "../stores/catalogStore";
@@ -19,7 +19,7 @@ const sh = useAppDesign().components.layoutShell;
 
 const themeStore = useThemeStore();
 const userStore = useUserStore();
-const cartStore = useCheckoutPricingStore();
+const cartStore = useCheckoutStore();
 const favoritesStore = useFavoritesStore();
 const uiStore = useUiStore();
 const catalogStore = useCatalogStore();

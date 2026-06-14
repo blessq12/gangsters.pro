@@ -1,13 +1,14 @@
 <script setup>
 import { computed } from "vue";
 import { useAppDesign } from "../../../../design/useAppDesign";
+import { useCartCommands } from "../../../../features/shoppingSession/useCartCommands";
 import { useFavoritesCommands, useFavoritesReadModel } from "../../../../features/favorites/useFavorites";
-import { DOMAIN_EVENTS, emitDomainEvent } from "../../../../shared/domainEvents";
 import { formatMoneyRublesRu } from "../../../../utils/moneyFormat";
 
 const panels = useAppDesign().components.dockPanels;
 const favoritesCommands = useFavoritesCommands();
 const favoritesReadModel = useFavoritesReadModel();
+const cartCommands = useCartCommands();
 
 const favoriteItems = computed(() => favoritesReadModel.items.value);
 
@@ -16,11 +17,7 @@ const f = panels.favorites;
 
 const handleAddToCart = (item) => {
     if (!item?.productSnapshot?.id) return;
-    emitDomainEvent(DOMAIN_EVENTS.CART_ADD_REQUESTED, {
-        product: item.productSnapshot,
-        qty: 1,
-        source: "favorites",
-    });
+    void cartCommands.addProductToCart(item.productSnapshot, 1);
 };
 
 const formatPrice = (value) => formatMoneyRublesRu(value);

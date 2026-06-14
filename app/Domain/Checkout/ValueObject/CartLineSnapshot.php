@@ -75,6 +75,11 @@ final readonly class CartLineSnapshot
         return is_string($kind) && $kind !== '' ? $kind : 'user';
     }
 
+    public function isPromotionBenefitLine(): bool
+    {
+        return in_array($this->lineKind(), ['gift', 'complement'], true);
+    }
+
     public function matchesIdentity(int $productId, string $lineKind): bool
     {
         return $this->productId() === $productId && $this->lineKind() === $lineKind;

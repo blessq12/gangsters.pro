@@ -2,10 +2,7 @@ import { computed, ref, watch } from "vue";
 import { formatMoneyRublesRu } from "../../utils/moneyFormat";
 import { formatRuPhone } from "../../utils/phone/formatRuPhone";
 import { DOMAIN_EVENTS, emitDomainEvent } from "../../shared/domainEvents";
-import { resolveResumeCheckoutLabel } from "./checkoutWizardGroups";
 import { isGuestContactComplete } from "./useCheckoutGuestStep";
-
-const RESUME_STEPS = ["guest", "delivery", "payment", "confirm"];
 
 export function useCheckoutWizard({
     checkoutIntent,
@@ -24,7 +21,9 @@ export function useCheckoutWizard({
     } = cartView;
 
     const activeStep = ref("cart");
-    const resumeCheckoutStep = ref(null);
+    const confirmLoading = ref(false);
+    const confirmError = ref(null);
+    const lastCreatedOrder = ref(null);
 
     const isAuthenticated = computed(() => clientReadModel.isAuthenticated.value);
 
@@ -49,17 +48,6 @@ export function useCheckoutWizard({
         };
     });
 
-    const canResumeCheckout = computed(
-        () =>
-            hasCartItems.value &&
-            resumeCheckoutStep.value !== null &&
-            RESUME_STEPS.includes(resumeCheckoutStep.value),
-    );
-
-    const resumeCheckoutLabel = computed(() =>
-        resolveResumeCheckoutLabel(resumeCheckoutStep.value),
-    );
-
     const formatPrice = (value) => formatMoneyRublesRu(value);
 
     function formatPhone(raw) {
@@ -69,15 +57,6 @@ export function useCheckoutWizard({
     function ensureCheckoutDefaults() {
         deliveryStep.ensureDeliveryDefaults();
         paymentStep.ensurePaymentDefaults();
-    }
-
-    function syncResumeFromSuggested() {
-        const step = checkoutIntent.suggestedStep;
-        if (step && RESUME_STEPS.includes(step)) {
-            resumeCheckoutStep.value = step;
-        } else {
-            resumeCheckoutStep.value = null;
-        }
     }
 
     function beginGuestCheckout() {
@@ -99,18 +78,15 @@ export function useCheckoutWizard({
     }
 
     watch(
-        () => checkoutIntent.suggestedStep,
-        () => {
-            syncResumeFromSuggested();
-        },
-        { immediate: true },
-    );
-
-    watch(
-        () => uiStore.dockActiveId,
-        (dockId) => {
-            if (dockId === "cart") {
-                syncResumeFromSuggested();
+        () => [checkoutIntent.checkoutId, checkoutIntent.status],
+        ([checkoutId, status]) => {
+            if (
+                checkoutId
+                && status === "draft"
+                && activeStep.value === "success"
+            ) {
+                activeStep.value = "cart";
+                isGuestCheckout.value = false;
             }
         },
     );
@@ -148,35 +124,6 @@ export function useCheckoutWizard({
         if (uiStore.dockActiveId !== "profile") {
             uiStore.setDockActive("profile");
         }
-    }
-
-    function resolveResumeStep(step) {
-        if (!isGuestCheckout.value || isGuestContactComplete(checkoutIntent.guestContact)) {
-            return step;
-        }
-
-        return "guest";
-    }
-
-    function handleResumeCheckout() {
-        const step = resumeCheckoutStep.value;
-        if (!step || !RESUME_STEPS.includes(step) || !hasCartItems.value) {
-            return;
-        }
-
-        ensureCheckoutDefaults();
-
-        if (isAuthenticated.value) {
-            isGuestCheckout.value = false;
-            activeStep.value = step;
-            if (step === "delivery") {
-                deliveryStep.ensureAuthAddressUi();
-            }
-            return;
-        }
-
-        isGuestCheckout.value = true;
-        activeStep.value = resolveResumeStep(step);
     }
 
     function goToCart() {
@@ -229,71 +176,49 @@ export function useCheckoutWizard({
     function goToSuccess() {
         isGuestCheckout.value = false;
         activeStep.value = "success";
-        resumeCheckoutStep.value = null;
     }
 
-    function canConfirmOrder(selectedAddress) {
-        if (!hasCartItems.value) return false;
-
-        const guestOk = !isGuestCheckout.value || guestStep.getGuestStepError() === "";
-
-        return (
-            guestOk &&
-            deliveryStep.getDeliveryStepError(selectedAddress) === "" &&
-            paymentStep.getPaymentStepError() === ""
-        );
+    function canConfirmOrder() {
+        return hasCartItems.value && checkoutIntent.wizardCanConfirm;
     }
 
     async function handleConfirmOrder() {
-        const selectedAddress = deliveryStep.addressSelection.selectedAddress.value;
-        if (!canConfirmOrder(selectedAddress)) {
+        if (!canConfirmOrder()) {
+            confirmError.value = "Заполни все шаги оформления.";
             return;
         }
 
-        orderStore.loading.create = true;
-        orderStore.error.create = null;
+        confirmLoading.value = true;
+        confirmError.value = null;
 
         try {
-            if (isGuestCheckout.value) {
-                await checkoutIntent.flushClientToServer({ isGuest: true });
-            } else {
-                await checkoutIntent.flushClientToServer({
-                    clientId: userStore.profile.id,
-                });
-            }
-            await checkoutIntent.flushDeliveryToServer(selectedAddress);
-            await checkoutIntent.flushPaymentToServer();
             const confirmed = await checkoutIntent.confirmCheckout();
-            orderStore.lastCreatedOrder = {
+            lastCreatedOrder.value = {
                 id: confirmed.checkout_id,
             };
             emitDomainEvent(DOMAIN_EVENTS.ORDER_CREATED, {
-                order: orderStore.lastCreatedOrder,
+                order: lastCreatedOrder.value,
             });
             goToSuccess();
         } catch (e) {
-            orderStore.error.create =
+            confirmError.value =
                 e?.response?.data?.message ||
                 checkoutIntent.error ||
                 "Не удалось подтвердить оформление.";
         } finally {
-            orderStore.loading.create = false;
+            confirmLoading.value = false;
         }
     }
 
     return {
         activeStep,
         isGuestCheckout,
-        resumeCheckoutStep,
         isAuthenticated,
         checkoutStepMeta,
-        canResumeCheckout,
-        resumeCheckoutLabel,
         formatPrice,
         formatPhone,
         handleStartCheckout,
         handleContinueAsGuest,
-        handleResumeCheckout,
         openProfileDock,
         goToCart,
         goToGuest,
@@ -303,5 +228,8 @@ export function useCheckoutWizard({
         goToConfirm,
         goToSuccess,
         handleConfirmOrder,
+        confirmLoading,
+        confirmError,
+        lastCreatedOrder,
     };
 }

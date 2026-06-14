@@ -5,9 +5,9 @@ import {
     CHECKOUT_PAYMENT_METHOD_IDS,
     CHECKOUT_PAYMENT_METHOD_LABELS,
 } from "../../features/checkout/checkoutPaymentMethods";
+import CheckoutOrderPreview from "./CheckoutOrderPreview.vue";
 import CheckoutSection from "./CheckoutSection.vue";
 import CheckoutStepFrame from "./CheckoutStepFrame.vue";
-import CheckoutTotalsSummary from "./CheckoutTotalsSummary.vue";
 
 const s = useAppDesign().components.checkout.shared;
 const d = useAppDesign().components.checkout.delivery;
@@ -77,7 +77,7 @@ const { checkoutIntent, paymentStepError } = checkoutState;
             {{ paymentStepError }}
         </p>
 
-        <CheckoutTotalsSummary />
+        <CheckoutOrderPreview variant="payment" />
 
         <template #nav>
             <button

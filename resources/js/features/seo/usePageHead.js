@@ -1,10 +1,13 @@
 import { siteMeta } from "../../config/siteMeta";
 
 function absoluteUrl(pathOrUrl) {
-    if (typeof window === "undefined") return pathOrUrl;
-    if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl;
+    const normalizedPath =
+        pathOrUrl == null || pathOrUrl === "" ? "/" : String(pathOrUrl);
+
+    if (typeof window === "undefined") return normalizedPath;
+    if (/^https?:\/\//i.test(normalizedPath)) return normalizedPath;
     const origin = window.location.origin.replace(/\/$/, "");
-    const path = pathOrUrl.startsWith("/") ? pathOrUrl : `/${pathOrUrl}`;
+    const path = normalizedPath.startsWith("/") ? normalizedPath : `/${normalizedPath}`;
     return `${origin}${path}`;
 }
 

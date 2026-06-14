@@ -7,7 +7,6 @@ use App\Domain\Checkout\Enum\CheckoutStatus;
 use App\Shared\Enum\ClientKind;
 use App\Shared\Enum\DeliveryMethod;
 use App\Shared\Enum\PaymentMethod;
-use App\Domain\Checkout\ValueObject\CartLineSnapshot;
 use App\Domain\Checkout\ValueObject\CartSnapshot;
 use App\Domain\Checkout\ValueObject\CheckoutId;
 use App\Domain\Checkout\ValueObject\ClientSnapshot;
@@ -16,6 +15,7 @@ use App\Domain\Checkout\ValueObject\DeliverySnapshot;
 use App\Domain\Checkout\ValueObject\GuestContact;
 use App\Domain\Checkout\ValueObject\PaymentSnapshot;
 use App\Infrastructure\Checkout\Model\CHK_Checkout;
+use App\Infrastructure\Shared\Snapshot\CartLinesSnapshotCodec;
 use App\Shared\ValueObject\Money;
 use DateTimeImmutable;
 
@@ -77,13 +77,7 @@ final class CheckoutMapper
                 continue;
             }
 
-            $lines[] = new CartLineSnapshot(
-                productId: (int) ($linePayload['product_id'] ?? 0),
-                productName: (string) ($linePayload['product_name'] ?? ''),
-                quantity: (int) ($linePayload['quantity'] ?? 0),
-                unitPrice: Money::rubles((int) ($linePayload['unit_price_rubles'] ?? 0)),
-                payload: is_array($linePayload['payload'] ?? null) ? $linePayload['payload'] : null,
-            );
+            $lines[] = CartLinesSnapshotCodec::deserializeToCartLine($linePayload);
         }
 
         return CartSnapshot::fromLines($lines);
@@ -156,19 +150,7 @@ final class CheckoutMapper
      */
     private function serializeCart(CartSnapshot $cart): array
     {
-        return [
-            'lines' => array_map(
-                static fn (CartLineSnapshot $line): array => [
-                    'product_id' => $line->productId(),
-                    'product_name' => $line->productName(),
-                    'quantity' => $line->quantity(),
-                    'unit_price_rubles' => $line->unitPrice()->amountRubles(),
-                    'line_total_rubles' => $line->lineTotal()->amountRubles(),
-                    'payload' => $line->payload(),
-                ],
-                $cart->lines(),
-            ),
-        ];
+        return CartLinesSnapshotCodec::serializeCart($cart->lines());
     }
 
     /**

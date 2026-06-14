@@ -7,7 +7,7 @@ const s = chk.shared;
 const su = chk.success;
 
 const { checkoutState, goToCart } = useCheckoutFlowContext();
-const { orderStore } = checkoutState;
+const { lastCreatedOrder } = checkoutState;
 </script>
 
 <template>
@@ -21,7 +21,7 @@ const { orderStore } = checkoutState;
         <p :class="s.textSuccessBody">
             Номер оформления:
             <span :class="s.monoAccent">
-                {{ checkoutState.checkoutStore?.checkoutId ?? orderStore.lastCreatedOrder?.id ?? "—" }}
+                {{ checkoutState.checkoutStore?.checkoutId ?? lastCreatedOrder?.id ?? "—" }}
             </span>
         </p>
         <div :class="su.footerActions">

@@ -6,8 +6,6 @@ import { useCartFlyToDockAnimation } from "../../composables/cart/useCartFlyToDo
 import { useDockCartAffordance } from "../../composables/cart/useDockCartAffordance";
 import { useDockBadgeFeedback } from "../../composables/ui/useDockBadgeFeedback";
 import { useSessionLifecycleProcess } from "../session/useSessionLifecycleProcess";
-import { useShoppingSessionProcess } from "../shoppingSession/useShoppingSessionProcess";
-import { useBenefitsProgressProcess } from "../benefits/useBenefitsProgressProcess";
 import { useGiftAutoPromptProcess } from "../benefits/useGiftAutoPromptProcess";
 import { bootstrapCheckoutSession } from "../../features/checkout/checkoutBootstrap";
 import {
@@ -32,8 +30,6 @@ export function useAppBootstrap() {
 
         cleanupProcesses = [
             useSessionLifecycleProcess(),
-            useShoppingSessionProcess(),
-            useBenefitsProgressProcess(),
             useGiftAutoPromptProcess(),
             useClientFavoritesProcess(),
             useCartFlyToDockAnimation(),

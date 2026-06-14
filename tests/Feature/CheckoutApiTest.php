@@ -21,6 +21,19 @@ final class CheckoutApiTest extends TestCase
             'checkout_id',
             'status',
             'cart',
+            'wizard' => [
+                'suggested_step',
+                'can_confirm',
+                'missing_blocks',
+            ],
+            'order_preview' => [
+                'complement_lines',
+                'auto_lines',
+                'gift_summary',
+                'gift_cta',
+                'totals',
+                'benefits',
+            ],
         ]);
 
         $checkoutId = $createResponse->json('checkout_id');

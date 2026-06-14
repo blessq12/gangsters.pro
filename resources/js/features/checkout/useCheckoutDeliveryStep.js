@@ -74,21 +74,6 @@ export function useCheckoutDeliveryStep({
         isNewAddressOpen.value = addressCount === 0;
     }
 
-    async function syncDeliveryBenefitsPreview() {
-        const method = checkoutIntent.deliveryInfo.method;
-        if (!method) {
-            return;
-        }
-
-        try {
-            const selectedAddress =
-                method === "courier" ? addressSelection.selectedAddress.value : null;
-            await checkoutIntent.flushDeliveryToServer(selectedAddress);
-        } catch (e) {
-            console.error("syncDeliveryBenefitsPreview / checkout", e);
-        }
-    }
-
     async function setDeliveryMethod(method) {
         const normalized = method === "pickup" ? "pickup" : "courier";
         if (checkoutIntent.deliveryInfo.method === normalized) {
@@ -97,7 +82,6 @@ export function useCheckoutDeliveryStep({
 
         checkoutIntent.setDeliveryInfo({ method: normalized });
         ensureAuthAddressUi();
-        await syncDeliveryBenefitsPreview();
     }
 
     function toggleNewAddressOpen() {
