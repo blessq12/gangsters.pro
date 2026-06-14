@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Filament\Checkout\Support;
+namespace App\Filament\Order\Support;
 
 use App\Filament\Support\ClientSnapshotLabel;
-use App\Infrastructure\Checkout\Model\CHK_Checkout;
+use App\Infrastructure\Order\Model\ORD_Order;
 
-final class CheckoutSnapshotReader
+final class OrderSnapshotReader
 {
     /**
      * @return array<string, mixed>
      */
-    public static function formDataFromRecord(CHK_Checkout $record): array
+    public static function formDataFromRecord(ORD_Order $record): array
     {
         $cart = self::asArray($record->cart_snapshot);
         $client = self::asArray($record->client_snapshot);
@@ -22,11 +22,11 @@ final class CheckoutSnapshotReader
 
         return [
             'id' => (string) $record->id,
+            'checkout_id' => (string) $record->checkout_id,
             'status' => self::statusLabel((string) $record->status),
             'created_at' => $record->created_at?->format('d.m.Y H:i') ?? '—',
-            'confirmed_at' => $record->confirmed_at?->format('d.m.Y H:i') ?? '—',
             'cart_lines' => self::mapCartLines($lines),
-            'cart_items_total' => self::formatRubles(self::cartTotalRubles($lines)),
+            'cart_items_total' => self::formatRubles((int) $record->total_rubles),
             'client_kind' => self::clientKindLabel((string) ($client['kind'] ?? '')),
             'client_id' => isset($client['client_id']) ? (string) $client['client_id'] : '—',
             'client_name' => self::clientName($client),
@@ -51,8 +51,10 @@ final class CheckoutSnapshotReader
     public static function statusLabel(string $status): string
     {
         return match ($status) {
-            'draft' => 'Черновик',
-            'confirmed' => 'Подтверждено',
+            'new' => 'Новый',
+            'preparing' => 'Готовится',
+            'in_transit' => 'В доставке',
+            'delivered' => 'Доставлен',
             default => $status !== '' ? $status : '—',
         };
     }

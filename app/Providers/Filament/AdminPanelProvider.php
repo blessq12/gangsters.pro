@@ -22,6 +22,7 @@ use App\Filament\MarketingContent\Widgets\Tables\PromotionsHubTable;
 use App\Filament\Company\Resources\CompanyResource;
 use App\Filament\Checkout\Resources\CheckoutResource;
 use App\Filament\Client\Resources\ClientResource;
+use App\Filament\Order\Resources\OrderResource;
 use App\Filament\Delivery\Resources\DeliveryResource;
 use App\Http\Controllers\Admin\DeliveryZoneMapEditorController;
 use App\Http\Middleware\VerifyCsrfToken;
@@ -61,6 +62,7 @@ class AdminPanelProvider extends PanelProvider
                 DeliveryResource::class,
                 CheckoutResource::class,
                 ClientResource::class,
+                OrderResource::class,
                 MarketingContentResource::class,
                 BannerResource::class,
                 PromotionResource::class,

@@ -9,7 +9,7 @@ use App\Domain\Client\Exception\ClientAddressNotFoundException;
 use App\Domain\Client\Exception\ClientAlreadyExistsException;
 use App\Domain\Client\Exception\ClientNotFoundException;
 use App\Domain\Client\Exception\InvalidPasswordResetTokenException;
-use App\Domain\Order\Exceptions\OrderInvariantViolation;
+use App\Domain\Order\Exception\OrderInvariantViolation;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Support\Facades\Event;

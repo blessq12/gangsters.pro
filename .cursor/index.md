@@ -66,14 +66,19 @@ import docs/marketing-content/events.md
 
 ******** MarketingContent **********
 
-<!-- Другие BC подключать по тому же шаблону:
-
 ******** Order **********
+
 import docs/order/overview.md
-...
-******** Order **********
+import docs/order/routing.md
+import docs/order/http.md
+import docs/order/application.md
+import docs/order/domain.md
+import docs/order/infrastructure.md
+import docs/order/filament.md
+import docs/order/flow.md
+import docs/order/events.md
 
--->
+******** Order **********
 
 ******** Checkout **********
 

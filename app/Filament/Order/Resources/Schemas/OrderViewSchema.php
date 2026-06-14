@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Checkout\Resources\Schemas;
+namespace App\Filament\Order\Resources\Schemas;
 
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Repeater\TableColumn;
@@ -10,11 +10,11 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 
-final class CheckoutViewSchema
+final class OrderViewSchema
 {
     public static function configure(Schema $schema, ?string $livewireTabProperty = null): Schema
     {
-        $tabs = Tabs::make('checkout-view')
+        $tabs = Tabs::make('order-view')
             ->tabs([
                 'overview' => Tab::make('overview')
                     ->label('Общее')
@@ -58,16 +58,16 @@ final class CheckoutViewSchema
     {
         return [
             TextInput::make('id')
-                ->label('Идентификатор')
+                ->label('Идентификатор'),
+            TextInput::make('checkout_id')
+                ->label('Оформление')
                 ->columnSpanFull(),
             TextInput::make('status')
                 ->label('Статус'),
             TextInput::make('cart_items_total')
                 ->label('Сумма товаров'),
             TextInput::make('created_at')
-                ->label('Создано'),
-            TextInput::make('confirmed_at')
-                ->label('Подтверждено'),
+                ->label('Создан'),
         ];
     }
 

@@ -37,6 +37,20 @@ final class EloquentOrderRepository implements OrderRepository
             ->exists();
     }
 
+    public function listByClientId(int $clientId): array
+    {
+        /** @var \Illuminate\Database\Eloquent\Collection<int, ORD_Order> $rows */
+        $rows = ORD_Order::query()
+            ->where('client_id', $clientId)
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->get();
+
+        return $rows
+            ->map(fn (ORD_Order $row): Order => $this->mapper->toDomain($row))
+            ->all();
+    }
+
     public function save(Order $order): void
     {
         $payload = $this->mapper->toPersistence($order);

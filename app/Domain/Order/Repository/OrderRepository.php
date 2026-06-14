@@ -13,5 +13,10 @@ interface OrderRepository
 
     public function existsByCheckoutId(string $checkoutId): bool;
 
+    /**
+     * @return list<Order>
+     */
+    public function listByClientId(int $clientId): array;
+
     public function save(Order $order): void;
 }

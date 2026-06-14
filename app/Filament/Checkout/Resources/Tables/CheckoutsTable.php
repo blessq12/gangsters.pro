@@ -3,6 +3,7 @@
 namespace App\Filament\Checkout\Resources\Tables;
 
 use App\Filament\Checkout\Support\CheckoutSnapshotReader;
+use App\Filament\Support\ClientSnapshotLabel;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -48,29 +49,10 @@ final class CheckoutsTable
                         return CheckoutSnapshotReader::cartTotalRubles($lines);
                     })
                     ->formatStateUsing(fn (int $state): string => number_format($state, 0, ',', ' ')),
-                TextColumn::make('client_snapshot')
+                TextColumn::make('client_label')
                     ->label('Клиент')
-                    ->formatStateUsing(function (mixed $state): string {
-                        if (! is_array($state)) {
-                            return '—';
-                        }
-
-                        if (($state['kind'] ?? '') === 'registered') {
-                            $name = trim((string) ($state['name'] ?? ''));
-                            if ($name !== '') {
-                                return $name;
-                            }
-
-                            $clientId = $state['client_id'] ?? null;
-
-                            return $clientId !== null
-                                ? 'Клиент #'.$clientId
-                                : 'Авторизованный';
-                        }
-
-                        $name = trim((string) ($state['name'] ?? ''));
-
-                        return $name !== '' ? $name : 'Гость';
+                    ->state(function ($record): string {
+                        return ClientSnapshotLabel::forList($record->client_snapshot);
                     }),
                 TextColumn::make('delivery_method')
                     ->label('Доставка')
