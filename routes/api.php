@@ -54,6 +54,10 @@ Route::prefix('client')->group(function (): void {
         Route::patch('profile', [ClientController::class, 'updateProfile']);
         Route::post('addresses', [ClientController::class, 'addAddress']);
         Route::delete('addresses/{addressId}', [ClientController::class, 'deleteAddress']);
+        Route::get('favorites', [ClientController::class, 'favorites']);
+        Route::post('favorites/merge', [ClientController::class, 'mergeGuestFavorites']);
+        Route::post('favorites/{productId}', [ClientController::class, 'toggleFavorite']);
+        Route::delete('favorites/{productId}', [ClientController::class, 'removeFavorite']);
     });
 });
 

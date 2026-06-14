@@ -4,6 +4,7 @@ namespace App\Domain\Client\Entity;
 
 use App\Domain\Client\Event\ClientRegistered;
 use App\Domain\Client\Exception\ClientAddressNotFoundException;
+use App\Domain\Client\Exception\ClientFavoriteNotFoundException;
 use App\Domain\Client\ValueObject\ClientAddressId;
 use App\Domain\Client\ValueObject\ClientId;
 use App\Domain\Client\ValueObject\PhoneNumber;
@@ -18,6 +19,7 @@ final class Client
     private array $recordedEvents = [];
 
     /** @param list<ClientAddress> $addresses */
+    /** @param list<ClientFavorite> $favorites */
     private function __construct(
         private ?ClientId $id,
         private string $name,
@@ -28,6 +30,7 @@ final class Client
         private bool $consentPersonalData,
         private bool $consentMarketing,
         private array $addresses,
+        private array $favorites,
         private readonly DateTimeImmutable $createdAt,
     ) {}
 
@@ -53,6 +56,7 @@ final class Client
             consentPersonalData: $consentPersonalData,
             consentMarketing: $consentMarketing,
             addresses: [],
+            favorites: [],
             createdAt: new DateTimeImmutable(),
         );
 
@@ -75,6 +79,7 @@ final class Client
 
     /**
      * @param list<ClientAddress> $addresses
+     * @param list<ClientFavorite> $favorites
      */
     public static function restore(
         ClientId $id,
@@ -86,6 +91,7 @@ final class Client
         bool $consentPersonalData,
         bool $consentMarketing,
         array $addresses,
+        array $favorites,
         DateTimeImmutable $createdAt,
     ): self {
         return new self(
@@ -98,6 +104,7 @@ final class Client
             consentPersonalData: $consentPersonalData,
             consentMarketing: $consentMarketing,
             addresses: $addresses,
+            favorites: $favorites,
             createdAt: $createdAt,
         );
     }
@@ -157,6 +164,14 @@ final class Client
     public function addresses(): array
     {
         return $this->addresses;
+    }
+
+    /**
+     * @return list<ClientFavorite>
+     */
+    public function favorites(): array
+    {
+        return $this->favorites;
     }
 
     public function createdAt(): DateTimeImmutable
@@ -244,6 +259,78 @@ final class Client
         $this->addresses = $nextAddresses;
     }
 
+    public function toggleFavorite(
+        int $productId,
+        ?string $productName,
+        ?float $priceRub,
+        ?string $weight,
+    ): void {
+        foreach ($this->favorites as $favorite) {
+            if ($favorite->productId() === $productId) {
+                $this->favorites = array_values(array_filter(
+                    $this->favorites,
+                    fn (ClientFavorite $item): bool => $item->productId() !== $productId,
+                ));
+
+                return;
+            }
+        }
+
+        $this->favorites[] = ClientFavorite::create(
+            productId: $productId,
+            productName: $productName,
+            priceRub: $priceRub,
+            weight: $weight,
+        );
+    }
+
+    public function removeFavorite(int $productId): void
+    {
+        $found = false;
+        $nextFavorites = [];
+
+        foreach ($this->favorites as $favorite) {
+            if ($favorite->productId() === $productId) {
+                $found = true;
+
+                continue;
+            }
+
+            $nextFavorites[] = $favorite;
+        }
+
+        if (! $found) {
+            throw ClientFavoriteNotFoundException::forProductId($productId);
+        }
+
+        $this->favorites = $nextFavorites;
+    }
+
+    /**
+     * @param list<array{
+     *     product_id: int,
+     *     product_name?: ?string,
+     *     price_rub?: ?float,
+     *     weight?: ?string
+     * }> $items
+     */
+    public function mergeFavorites(array $items): void
+    {
+        foreach ($items as $item) {
+            $productId = (int) ($item['product_id'] ?? 0);
+            if ($productId <= 0 || $this->hasFavorite($productId)) {
+                continue;
+            }
+
+            $this->favorites[] = ClientFavorite::create(
+                productId: $productId,
+                productName: isset($item['product_name']) ? (string) $item['product_name'] : null,
+                priceRub: isset($item['price_rub']) ? (float) $item['price_rub'] : null,
+                weight: isset($item['weight']) ? (string) $item['weight'] : null,
+            );
+        }
+    }
+
     public function defaultAddressId(): ?int
     {
         foreach ($this->addresses as $address) {
@@ -278,6 +365,17 @@ final class Client
     {
         foreach ($addresses as $address) {
             if ($address->isDefault()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function hasFavorite(int $productId): bool
+    {
+        foreach ($this->favorites as $favorite) {
+            if ($favorite->productId() === $productId) {
                 return true;
             }
         }

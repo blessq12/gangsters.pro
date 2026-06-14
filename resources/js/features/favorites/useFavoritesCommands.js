@@ -4,14 +4,14 @@ export function useFavoritesCommands() {
     const favoritesStore = useFavoritesStore();
 
     return {
-        toggle(product) {
-            favoritesStore.toggleFavorite(product);
+        async toggle(product) {
+            await favoritesStore.toggleFavorite(product);
         },
-        remove(productId) {
-            favoritesStore.removeFavorite(productId);
+        async remove(productId) {
+            await favoritesStore.removeFavorite(productId);
         },
-        clear() {
-            favoritesStore.clear();
+        async clear() {
+            await favoritesStore.clear();
         },
     };
 }

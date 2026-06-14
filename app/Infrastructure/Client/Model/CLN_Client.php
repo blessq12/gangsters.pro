@@ -45,4 +45,9 @@ final class CLN_Client extends Authenticatable
     {
         return $this->hasMany(CLN_ClientAddress::class, 'client_id');
     }
+
+    public function favorites(): HasMany
+    {
+        return $this->hasMany(CLN_ClientFavorite::class, 'client_id');
+    }
 }

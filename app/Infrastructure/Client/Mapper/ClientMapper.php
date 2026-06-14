@@ -4,11 +4,13 @@ namespace App\Infrastructure\Client\Mapper;
 
 use App\Domain\Client\Entity\Client;
 use App\Domain\Client\Entity\ClientAddress;
+use App\Domain\Client\Entity\ClientFavorite;
 use App\Domain\Client\ValueObject\ClientAddressId;
 use App\Domain\Client\ValueObject\ClientId;
 use App\Domain\Client\ValueObject\PhoneNumber;
 use App\Infrastructure\Client\Model\CLN_Client;
 use App\Infrastructure\Client\Model\CLN_ClientAddress;
+use App\Infrastructure\Client\Model\CLN_ClientFavorite;
 use DateTimeImmutable;
 
 final class ClientMapper
@@ -16,10 +18,17 @@ final class ClientMapper
     public function toDomain(CLN_Client $row): Client
     {
         $addresses = [];
+        $favorites = [];
 
         foreach ($row->addresses as $addressRow) {
             if ($addressRow instanceof CLN_ClientAddress) {
                 $addresses[] = $this->mapAddress($addressRow);
+            }
+        }
+
+        foreach ($row->favorites as $favoriteRow) {
+            if ($favoriteRow instanceof CLN_ClientFavorite) {
+                $favorites[] = $this->mapFavorite($favoriteRow);
             }
         }
 
@@ -35,6 +44,7 @@ final class ClientMapper
             consentPersonalData: (bool) $row->consent_personal_data,
             consentMarketing: (bool) $row->consent_marketing,
             addresses: $addresses,
+            favorites: $favorites,
             createdAt: new DateTimeImmutable((string) $row->created_at),
         );
     }
@@ -75,6 +85,20 @@ final class ClientMapper
         ];
     }
 
+    /**
+     * @return array<string, mixed>
+     */
+    public function toFavoritePersistence(ClientFavorite $favorite, int $clientId): array
+    {
+        return [
+            'client_id' => $clientId,
+            'product_id' => $favorite->productId(),
+            'product_name' => $favorite->productName(),
+            'price_rub' => $favorite->priceRub(),
+            'weight' => $favorite->weight(),
+        ];
+    }
+
     private function mapAddress(CLN_ClientAddress $row): ClientAddress
     {
         return ClientAddress::restore(
@@ -87,6 +111,16 @@ final class ClientMapper
             apartment: $row->apartment,
             comment: $row->comment,
             isDefault: (bool) $row->is_default,
+        );
+    }
+
+    private function mapFavorite(CLN_ClientFavorite $row): ClientFavorite
+    {
+        return ClientFavorite::restore(
+            productId: (int) $row->product_id,
+            productName: $row->product_name,
+            priceRub: $row->price_rub !== null ? (float) $row->price_rub : null,
+            weight: $row->weight,
         );
     }
 }

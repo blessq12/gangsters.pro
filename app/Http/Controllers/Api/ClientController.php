@@ -6,16 +6,23 @@ use App\Application\Client\DTO\AddClientAddressDto;
 use App\Application\Client\DTO\ChangePasswordWithTokenDto;
 use App\Application\Client\DTO\DeleteClientAddressDto;
 use App\Application\Client\DTO\LoginClientDto;
+use App\Application\Client\DTO\MergeGuestFavoritesDto;
 use App\Application\Client\DTO\RegisterClientDto;
+use App\Application\Client\DTO\RemoveClientFavoriteDto;
 use App\Application\Client\DTO\RequestPasswordResetDto;
+use App\Application\Client\DTO\ToggleClientFavoriteDto;
 use App\Application\Client\DTO\UpdateClientProfileDto;
 use App\Application\Client\useCases\AddClientAddressUseCase;
 use App\Application\Client\useCases\ChangePasswordWithTokenUseCase;
 use App\Application\Client\useCases\DeleteClientAddressUseCase;
+use App\Application\Client\useCases\GetClientFavoritesUseCase;
 use App\Application\Client\useCases\GetClientProfileUseCase;
 use App\Application\Client\useCases\LoginClientUseCase;
+use App\Application\Client\useCases\MergeGuestFavoritesUseCase;
 use App\Application\Client\useCases\RegisterClientUseCase;
+use App\Application\Client\useCases\RemoveClientFavoriteUseCase;
 use App\Application\Client\useCases\RequestPasswordResetUseCase;
+use App\Application\Client\useCases\ToggleClientFavoriteUseCase;
 use App\Application\Client\useCases\UpdateClientProfileUseCase;
 use App\Application\Common\Exceptions\UnauthorizedException;
 use App\Http\Controllers\Controller;
@@ -23,7 +30,9 @@ use App\Http\Requests\Client\AddClientAddressRequest;
 use App\Http\Requests\Client\ChangePasswordRequest;
 use App\Http\Requests\Client\ForgotPasswordRequest;
 use App\Http\Requests\Client\LoginClientRequest;
+use App\Http\Requests\Client\MergeGuestFavoritesRequest;
 use App\Http\Requests\Client\RegisterClientRequest;
+use App\Http\Requests\Client\ToggleClientFavoriteRequest;
 use App\Http\Requests\Client\UpdateClientProfileRequest;
 use App\Infrastructure\Client\Model\CLN_Client;
 use Illuminate\Http\JsonResponse;
@@ -38,6 +47,10 @@ final class ClientController extends Controller
         private readonly UpdateClientProfileUseCase $updateClientProfile,
         private readonly AddClientAddressUseCase $addClientAddress,
         private readonly DeleteClientAddressUseCase $deleteClientAddress,
+        private readonly GetClientFavoritesUseCase $getClientFavorites,
+        private readonly ToggleClientFavoriteUseCase $toggleClientFavorite,
+        private readonly RemoveClientFavoriteUseCase $removeClientFavorite,
+        private readonly MergeGuestFavoritesUseCase $mergeGuestFavorites,
         private readonly RequestPasswordResetUseCase $requestPasswordReset,
         private readonly ChangePasswordWithTokenUseCase $changePasswordWithToken,
     ) {}
@@ -134,6 +147,64 @@ final class ClientController extends Controller
                 new DeleteClientAddressDto(
                     clientId: $this->resolveClientId($request),
                     addressId: $addressId,
+                ),
+            ),
+        );
+    }
+
+    public function favorites(Request $request): JsonResponse
+    {
+        return response()->json(
+            $this->getClientFavorites->execute($this->resolveClientId($request)),
+        );
+    }
+
+    public function toggleFavorite(ToggleClientFavoriteRequest $request, int $productId): JsonResponse
+    {
+        return response()->json(
+            $this->toggleClientFavorite->execute(
+                new ToggleClientFavoriteDto(
+                    clientId: $this->resolveClientId($request),
+                    productId: $productId,
+                    productName: $request->validated('name'),
+                    priceRub: $request->validated('price') !== null
+                        ? (float) $request->validated('price')
+                        : null,
+                    weight: $request->validated('weight'),
+                ),
+            ),
+        );
+    }
+
+    public function removeFavorite(Request $request, int $productId): JsonResponse
+    {
+        return response()->json(
+            $this->removeClientFavorite->execute(
+                new RemoveClientFavoriteDto(
+                    clientId: $this->resolveClientId($request),
+                    productId: $productId,
+                ),
+            ),
+        );
+    }
+
+    public function mergeGuestFavorites(MergeGuestFavoritesRequest $request): JsonResponse
+    {
+        $items = array_map(
+            static fn (array $item): array => [
+                'product_id' => (int) $item['product_id'],
+                'product_name' => $item['product_name'] ?? null,
+                'price_rub' => isset($item['price_rub']) ? (float) $item['price_rub'] : null,
+                'weight' => $item['weight'] ?? null,
+            ],
+            $request->validated('items'),
+        );
+
+        return response()->json(
+            $this->mergeGuestFavorites->execute(
+                new MergeGuestFavoritesDto(
+                    clientId: $this->resolveClientId($request),
+                    items: $items,
                 ),
             ),
         );

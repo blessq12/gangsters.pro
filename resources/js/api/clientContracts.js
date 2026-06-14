@@ -53,3 +53,36 @@ export function buildClientAddressPayload(data = {}) {
     };
 }
 
+export function buildToggleClientFavoritePayload(product = {}) {
+    return {
+        name: product.name ?? "",
+        price: Number(product.price) || 0,
+        weight: product.weight ?? null,
+    };
+}
+
+export function buildMergeGuestFavoritesPayload(items = []) {
+    if (!Array.isArray(items)) {
+        return { items: [] };
+    }
+
+    return {
+        items: items
+            .map((item) => {
+                const productId = Number(item?.productId ?? item?.productSnapshot?.id) || 0;
+                if (productId <= 0) {
+                    return null;
+                }
+
+                const snapshot = item?.productSnapshot ?? {};
+                return {
+                    product_id: productId,
+                    product_name: snapshot.name ? String(snapshot.name) : null,
+                    price_rub: Number(snapshot.price) || 0,
+                    weight: snapshot.weight ?? null,
+                };
+            })
+            .filter(Boolean),
+    };
+}
+

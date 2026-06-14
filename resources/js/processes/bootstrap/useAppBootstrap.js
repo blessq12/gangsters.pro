@@ -11,6 +11,10 @@ import { useShoppingSessionProcess } from "../shoppingSession/useShoppingSession
 import { useBenefitsProgressProcess } from "../benefits/useBenefitsProgressProcess";
 import { useGiftAutoPromptProcess } from "../benefits/useGiftAutoPromptProcess";
 import { bootstrapCheckoutSession } from "../../features/checkout/checkoutBootstrap";
+import {
+    bootstrapClientFavorites,
+    useClientFavoritesProcess,
+} from "../../features/favorites/clientFavoritesBootstrap";
 
 let bootstrapInitialized = false;
 let cleanupProcesses = [];
@@ -34,12 +38,14 @@ export function useAppBootstrap() {
             useShoppingSessionProcess(),
             useBenefitsProgressProcess(),
             useGiftAutoPromptProcess(),
+            useClientFavoritesProcess(),
             useCartFlyToDockAnimation(),
             useDockCartAffordance(),
             useDockBadgeFeedback(),
         ];
 
         void bootstrapCheckoutSession();
+        void bootstrapClientFavorites();
 
         bootstrapInitialized = true;
     }

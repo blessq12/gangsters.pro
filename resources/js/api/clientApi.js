@@ -30,6 +30,31 @@ export async function deleteClientAddressRequest(addressId) {
     return response.data;
 }
 
+export async function fetchClientFavoritesRequest() {
+    const response = await httpClient.get("/api/client/favorites");
+    return response.data;
+}
+
+export async function toggleClientFavoriteRequest(productId, payload = {}) {
+    const response = await httpClient.post(
+        `/api/client/favorites/${encodeURIComponent(String(productId))}`,
+        payload,
+    );
+    return response.data;
+}
+
+export async function removeClientFavoriteRequest(productId) {
+    const response = await httpClient.delete(
+        `/api/client/favorites/${encodeURIComponent(String(productId))}`,
+    );
+    return response.data;
+}
+
+export async function mergeGuestFavoritesRequest(payload) {
+    const response = await httpClient.post("/api/client/favorites/merge", payload);
+    return response.data;
+}
+
 export async function requestPasswordResetRequest(email) {
     const response = await httpClient.post("/api/client/forgot-password", {
         email,

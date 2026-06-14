@@ -11,6 +11,7 @@ use App\Domain\Client\ValueObject\PhoneNumber;
 use App\Infrastructure\Client\Mapper\ClientMapper;
 use App\Infrastructure\Client\Model\CLN_Client;
 use App\Infrastructure\Client\Model\CLN_ClientAddress;
+use App\Infrastructure\Client\Model\CLN_ClientFavorite;
 use Illuminate\Support\Facades\DB;
 
 final class EloquentClientRepository implements ClientRepository
@@ -22,7 +23,7 @@ final class EloquentClientRepository implements ClientRepository
     public function findById(ClientId $id): ?Client
     {
         $row = CLN_Client::query()
-            ->with('addresses')
+            ->with(['addresses', 'favorites'])
             ->find($id->value());
 
         return $row instanceof CLN_Client ? $this->mapper->toDomain($row) : null;
@@ -31,7 +32,7 @@ final class EloquentClientRepository implements ClientRepository
     public function findByPhone(PhoneNumber $phone): ?Client
     {
         $row = CLN_Client::query()
-            ->with('addresses')
+            ->with(['addresses', 'favorites'])
             ->where('phone', $phone->digits())
             ->first();
 
@@ -41,7 +42,7 @@ final class EloquentClientRepository implements ClientRepository
     public function findByEmail(string $email): ?Client
     {
         $row = CLN_Client::query()
-            ->with('addresses')
+            ->with(['addresses', 'favorites'])
             ->where('email', mb_strtolower($email))
             ->first();
 
@@ -105,6 +106,34 @@ final class EloquentClientRepository implements ClientRepository
                 ->where('client_id', $client->id()->value())
                 ->whereNotIn('id', $persistedAddressIds)
                 ->delete();
+
+            $persistedFavoriteProductIds = [];
+
+            foreach ($client->favorites() as $favorite) {
+                $favoritePayload = $this->mapper->toFavoritePersistence(
+                    $favorite,
+                    $client->id()->value(),
+                );
+
+                CLN_ClientFavorite::query()->updateOrCreate(
+                    [
+                        'client_id' => $favoritePayload['client_id'],
+                        'product_id' => $favoritePayload['product_id'],
+                    ],
+                    $favoritePayload,
+                );
+
+                $persistedFavoriteProductIds[] = (int) $favoritePayload['product_id'];
+            }
+
+            $favoriteQuery = CLN_ClientFavorite::query()
+                ->where('client_id', $client->id()->value());
+
+            if ($persistedFavoriteProductIds !== []) {
+                $favoriteQuery->whereNotIn('product_id', $persistedFavoriteProductIds);
+            }
+
+            $favoriteQuery->delete();
         });
     }
 }

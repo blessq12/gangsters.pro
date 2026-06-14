@@ -6,6 +6,7 @@ use App\Application\Common\Exceptions\ApiException;
 use App\Application\Common\Exceptions\UnauthorizedException;
 use App\Domain\Client\Event\ClientUnauthorizedAccessDetected;
 use App\Domain\Client\Exception\ClientAddressNotFoundException;
+use App\Domain\Client\Exception\ClientFavoriteNotFoundException;
 use App\Domain\Client\Exception\ClientAlreadyExistsException;
 use App\Domain\Client\Exception\ClientNotFoundException;
 use App\Domain\Client\Exception\InvalidPasswordResetTokenException;
@@ -68,6 +69,12 @@ class Handler extends ExceptionHandler
         }
 
         if ($e instanceof ClientAddressNotFoundException && $request->is('api/*')) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 404);
+        }
+
+        if ($e instanceof ClientFavoriteNotFoundException && $request->is('api/*')) {
             return response()->json([
                 'message' => $e->getMessage(),
             ], 404);
