@@ -13,7 +13,6 @@ class DatabaseSeeder extends Seeder
             DeliverySeeder::class,
             CompanySeeder::class,
             MarketingContentSeeder::class,
-            PromotionSeeder::class,
         ]);
     }
 }

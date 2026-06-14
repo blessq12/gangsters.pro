@@ -14,64 +14,67 @@ class CompanySeeder extends Seeder
     {
         $companyId = CompanyRepository::SINGLETON_ID;
 
+        $workHours = '10:00–20:00';
+        $workSchedule = collect(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'])
+            ->map(fn (string $day): array => [
+                'day' => $day,
+                'work' => $workHours,
+                'is_day_off' => false,
+            ])
+            ->all();
+
+        $address = 'Россия, Томская область, Томск, ул. Говорова, 50';
+
         CMP_Company::query()->updateOrCreate(
             ['id' => $companyId],
             [
-                'name' => 'Gangsters',
-                'brand_name' => 'Gangsters',
-                'description' => 'Ресторан в Томске',
+                'name' => 'Гангстерс Суши',
+                'brand_name' => "Gangster's Sushi",
+                'description' => 'Мы предлагаем свежие и вкусные блюда, приготовленные с любовью и вниманием к деталям. Наслаждайтесь японской кухней, не выходя из дома! Быстрая доставка и отличное качество',
                 'tagline' => 'Еда с характером',
-                'phone' => '73822555555',
-                'phone_additional' => '73822555556',
-                'support_phone' => '73822555557',
-                'whatsapp_phone' => '79001234567',
-                'email_address' => 'info@gangsters.local',
-                'public_email' => 'hello@gangsters.local',
-                'work_hours' => '10:00–22:00',
-                'work_schedule' => [
-                    ['day' => 'mon', 'work' => '10:00–22:00', 'is_day_off' => false],
-                    ['day' => 'tue', 'work' => '10:00–22:00', 'is_day_off' => false],
-                    ['day' => 'wed', 'work' => '10:00–22:00', 'is_day_off' => false],
-                    ['day' => 'thu', 'work' => '10:00–22:00', 'is_day_off' => false],
-                    ['day' => 'fri', 'work' => '10:00–23:00', 'is_day_off' => false],
-                    ['day' => 'sat', 'work' => '11:00–23:00', 'is_day_off' => false],
-                    ['day' => 'sun', 'work' => '', 'is_day_off' => true],
-                ],
+                'phone' => '79832348484',
+                'phone_additional' => '79832343438',
+                'support_phone' => null,
+                'whatsapp_phone' => null,
+                'email_address' => 'gangstasushi@mail.ru',
+                'public_email' => 'gangstasushi@mail.ru',
+                'work_hours' => $workHours,
+                'work_schedule' => $workSchedule,
                 'logo' => '/images/logo.png',
-                'telegram' => 'https://t.me/gangsters',
-                'site_url' => 'https://gangsters.local',
-                'vk' => 'https://vk.com/gangsters',
-                'inst' => 'https://instagram.com/gangsters',
+                'telegram' => null,
+                'site_url' => null,
+                'vk' => 'https://vk.com/gangsters_sushi',
+                'inst' => 'https://www.instagram.com/gangsters_sushi',
             ],
         );
 
         CMP_CompanyLegal::query()->updateOrCreate(
             ['company_id' => $companyId],
             [
-                'full_name' => 'Общество с ограниченной ответственностью «Гангстерс»',
-                'short_name' => 'ООО «Гангстерс»',
-                'legal_form' => 'ООО',
-                'legal_email' => 'legal@gangsters.local',
-                'contracts_email' => 'contracts@gangsters.local',
-                'legal_phone' => '73822555558',
-                'owner' => 'Иванов Иван Иванович',
-                'responsible_person' => 'Петров Пётр Петрович',
-                'responsible_position' => 'Генеральный директор',
-                'inn' => '7012345678',
-                'ogrn' => '1027001234567',
-                'ogrnip' => null,
-                'okpo' => '12345678',
-                'kpp' => '701201001',
+                'full_name' => "Gangster's Sushi",
+                'short_name' => 'Пятчин Никита Романович',
+                'legal_form' => 'ИП',
+                'legal_email' => 'gangstasushi@mail.ru',
+                'contracts_email' => 'gangstasushi@mail.ru',
+                'legal_phone' => '79832348484',
+                'owner' => 'Пятчин Никита Романович',
+                'responsible_person' => 'Пятчин Никита Романович',
+                'responsible_position' => 'Ответственный',
+                'inn' => '701717375759',
+                'ogrn' => null,
+                'ogrnip' => '325700000011686',
+                'okpo' => '2040573992',
+                'kpp' => null,
                 'tax_system' => 'УСН',
                 'is_vat_payer' => false,
                 'vat_rate_default' => 0,
-                'registration_address' => '634050, г. Томск, пр. Ленина, д. 10',
-                'actual_address' => '634050, г. Томск, пр. Ленина, д. 10',
-                'postal_address' => '634050, г. Томск, пр. Ленина, д. 10',
-                'bank_name' => 'ПАО «Томскбанк»',
-                'bik' => '046902728',
-                'checking_account' => '40702810123456789012',
-                'correspondent_account' => '30101810123456789012',
+                'registration_address' => $address,
+                'actual_address' => $address,
+                'postal_address' => $address,
+                'bank_name' => null,
+                'bik' => null,
+                'checking_account' => null,
+                'correspondent_account' => null,
             ],
         );
 
@@ -79,17 +82,17 @@ class CompanySeeder extends Seeder
             [
                 'key' => 'privacy_policy',
                 'title' => 'Политика конфиденциальности',
-                'content' => '<p>Настоящая политика описывает порядок обработки персональных данных пользователей сервиса Gangsters.</p>',
+                'content' => '<p>Настоящая политика описывает порядок обработки персональных данных пользователей сервиса Gangster\'s Sushi.</p>',
             ],
             [
                 'key' => 'terms_of_use',
                 'title' => 'Условия использования',
-                'content' => '<p>Используя сайт и приложение Gangsters, вы соглашаетесь с настоящими условиями использования сервиса.</p>',
+                'content' => '<p>Используя сайт и приложение Gangster\'s Sushi, вы соглашаетесь с настоящими условиями использования сервиса.</p>',
             ],
             [
                 'key' => 'user_agreement',
                 'title' => 'Пользовательское соглашение',
-                'content' => '<p>Пользовательское соглашение регулирует отношения между клиентом и ООО «Гангстерс» при оформлении заказов.</p>',
+                'content' => '<p>Пользовательское соглашение регулирует отношения между клиентом и ИП Пятчин Никита Романович (Gangster\'s Sushi) при оформлении заказов.</p>',
             ],
         ];
 
