@@ -55,13 +55,11 @@ export function useBenefitProgress() {
         }
         if (delivery.value.isReached) {
             return delivery.value.isPreview
-                ? "Бесплатная доставка курьером — условие выполнено"
-                : "Бесплатная доставка активна";
+                ? "Бесплатная доставка курьером"
+                : "Бесплатная доставка";
         }
         const remaining = formatKopecksToRub(delivery.value.remainingKopecks);
-        return delivery.value.isPreview
-            ? `До бесплатной доставки курьером осталось ${remaining} ₽`
-            : `До бесплатной доставки осталось ${remaining} ₽`;
+        return `Ещё ${remaining} ₽ до бесплатной доставки`;
     });
 
     const giftLabel = computed(() => {
@@ -72,7 +70,7 @@ export function useBenefitProgress() {
             return "Подарок доступен";
         }
         const remaining = formatKopecksToRub(gift.value.remainingKopecks);
-        return `До подарка осталось ${remaining} ₽`;
+        return `Ещё ${remaining} ₽ до подарка`;
     });
 
     const benefitLines = computed(() =>

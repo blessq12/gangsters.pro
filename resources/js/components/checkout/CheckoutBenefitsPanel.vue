@@ -5,6 +5,13 @@ import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowC
 import { useBenefitProgress } from "../../features/shoppingSession/useBenefitProgress";
 import { useCheckoutBenefitVisibility } from "../../features/checkout/useCheckoutBenefitVisibility";
 
+const props = defineProps({
+    deliveryOnly: {
+        type: Boolean,
+        default: false,
+    },
+});
+
 const chk = useAppDesign().components.checkout;
 const c = chk.cart;
 
@@ -23,15 +30,17 @@ const {
 
 const { showGiftProgress } = useCheckoutBenefitVisibility();
 
+const showGiftBlock = computed(
+    () => !props.deliveryOnly && showGiftProgress.value && gift.value.isActive && giftLabel.value,
+);
+
 const canShowPanel = computed(() => {
     if (!hasCartItems.value || !hasBenefitsProgress.value) {
         return false;
     }
 
-    const deliveryVisible = delivery.value.isActive;
-    const giftVisible = showGiftProgress.value && gift.value.isActive;
-
-    return deliveryVisible || giftVisible;
+    const deliveryVisible = delivery.value.isActive && deliveryLabel.value;
+    return deliveryVisible || showGiftBlock.value;
 });
 </script>
 
@@ -40,10 +49,6 @@ const canShowPanel = computed(() => {
         v-if="canShowPanel"
         :class="[c.totalsCard, 'mt-3 space-y-3']"
     >
-        <p class="text-xs text-app-muted">
-            Прогресс выгод
-        </p>
-
         <div
             v-if="deliveryLabel"
             class="space-y-1"
@@ -66,7 +71,7 @@ const canShowPanel = computed(() => {
         </div>
 
         <div
-            v-if="showGiftProgress && giftLabel"
+            v-if="showGiftBlock"
             class="space-y-1"
         >
             <div class="flex items-center justify-between gap-2 text-xs text-app-muted">

@@ -1,17 +1,17 @@
 <script setup>
 import { useAppDesign } from "../../design/useAppDesign";
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
+import CheckoutAuthAddressSection from "./CheckoutAuthAddressSection.vue";
 import CheckoutBenefitsPanel from "./CheckoutBenefitsPanel.vue";
-import CheckoutComplementOffers from "./CheckoutComplementOffers.vue";
+import CheckoutSection from "./CheckoutSection.vue";
+import CheckoutStepFrame from "./CheckoutStepFrame.vue";
 import CheckoutTotalsSummary from "./CheckoutTotalsSummary.vue";
 
-const chk = useAppDesign().components.checkout;
-const s = chk.shared;
-const d = chk.delivery;
+const s = useAppDesign().components.checkout.shared;
+const d = useAppDesign().components.checkout.delivery;
 
 const {
     checkoutState,
-    checkoutStepMeta,
     goToCart,
     goToGuest,
     goToPayment,
@@ -24,15 +24,8 @@ const { checkoutIntent, deliveryStepError, isGuestCheckout } = checkoutState;
 </script>
 
 <template>
-    <div :class="s.flowBody">
-        <p :class="s.stepKicker">
-            Шаг {{ checkoutStepMeta.delivery.n }} из {{ checkoutStepMeta.delivery.total }} — Доставка
-        </p>
-
-        <div class="space-y-2">
-            <p :class="s.headingSm">
-                Способ доставки
-            </p>
+    <CheckoutStepFrame group="delivery">
+        <CheckoutSection title="Способ">
             <div :class="d.methodRow">
                 <button
                     v-for="method in ['courier', 'pickup']"
@@ -47,15 +40,13 @@ const { checkoutIntent, deliveryStepError, isGuestCheckout } = checkoutState;
                     {{ method === "courier" ? "Курьер" : "Самовывоз" }}
                 </button>
             </div>
-        </div>
+        </CheckoutSection>
 
-        <div
+        <CheckoutSection
             v-if="checkoutIntent.deliveryInfo.method !== 'pickup' && isGuestCheckout"
-            class="space-y-2"
+            title="Адрес"
+            variant="form"
         >
-            <p :class="s.headingSm">
-                Адрес курьера
-            </p>
             <div :class="s.grid2">
                 <input
                     :value="checkoutIntent.deliveryInfo.address?.street ?? ''"
@@ -102,11 +93,24 @@ const { checkoutIntent, deliveryStepError, isGuestCheckout } = checkoutState;
                     "
                 />
             </div>
-        </div>
+        </CheckoutSection>
 
         <CheckoutAuthAddressSection
             v-if="checkoutIntent.deliveryInfo.method !== 'pickup' && !isGuestCheckout"
         />
+
+        <CheckoutSection
+            title="Комментарий"
+            variant="form"
+        >
+            <textarea
+                rows="2"
+                :class="s.textareaFlow"
+                placeholder="Подъезд, код, этаж"
+                :value="checkoutIntent.deliveryInfo.comment"
+                @input="setDeliveryComment($event.target.value)"
+            />
+        </CheckoutSection>
 
         <p
             v-if="deliveryStepError"
@@ -115,40 +119,25 @@ const { checkoutIntent, deliveryStepError, isGuestCheckout } = checkoutState;
             {{ deliveryStepError }}
         </p>
 
-        <div :class="s.spacerAfterComment">
-            <p :class="s.headingSm">
-                Комментарий к доставке
-            </p>
-            <textarea
-                rows="2"
-                :class="s.textareaFlow"
-                placeholder="Подъезд, этаж, код домофона и другие нюансы"
-                :value="checkoutIntent.deliveryInfo.comment"
-                @input="setDeliveryComment($event.target.value)"
-            />
-        </div>
-
         <CheckoutBenefitsPanel />
-
-        <CheckoutComplementOffers />
 
         <CheckoutTotalsSummary />
 
-        <div :class="s.navFooterRow">
+        <template #nav>
             <button
                 type="button"
                 :class="s.linkUnderline"
                 @click="isGuestCheckout ? goToGuest() : goToCart()"
             >
-                {{ isGuestCheckout ? "Назад: контакт" : "Назад к корзине" }}
+                Назад
             </button>
             <button
                 type="button"
                 :class="s.btnPrimarySm"
                 @click="goToPayment"
             >
-                Далее: оплата
+                Далее
             </button>
-        </div>
-    </div>
+        </template>
+    </CheckoutStepFrame>
 </template>

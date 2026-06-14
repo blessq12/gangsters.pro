@@ -16,6 +16,7 @@ import {
     isCheckoutPaymentMethod,
     normalizeCheckoutPaymentMethod,
 } from "./checkoutPaymentMethods";
+import { resolveResumeCheckoutLabel } from "./checkoutWizardGroups";
 
 const RESUME_STEPS = ["guest", "delivery", "payment", "confirm"];
 
@@ -106,20 +107,9 @@ export function useCheckout() {
             RESUME_STEPS.includes(resumeCheckoutStep.value),
     );
 
-    const resumeCheckoutLabel = computed(() => {
-        switch (resumeCheckoutStep.value) {
-            case "guest":
-                return "Продолжить: контакт";
-            case "delivery":
-                return "Продолжить: доставка";
-            case "payment":
-                return "Продолжить: оплата";
-            case "confirm":
-                return "Продолжить: подтверждение";
-            default:
-                return "Продолжить оформление";
-        }
-    });
+    const resumeCheckoutLabel = computed(() =>
+        resolveResumeCheckoutLabel(resumeCheckoutStep.value),
+    );
 
     const formatPrice = (value) => formatMoneyRublesRu(value);
 

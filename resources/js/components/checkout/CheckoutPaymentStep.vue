@@ -5,17 +5,15 @@ import {
     CHECKOUT_PAYMENT_METHOD_IDS,
     CHECKOUT_PAYMENT_METHOD_LABELS,
 } from "../../features/checkout/checkoutPaymentMethods";
-import CheckoutBenefitsPanel from "./CheckoutBenefitsPanel.vue";
-import CheckoutComplementOffers from "./CheckoutComplementOffers.vue";
+import CheckoutSection from "./CheckoutSection.vue";
+import CheckoutStepFrame from "./CheckoutStepFrame.vue";
 import CheckoutTotalsSummary from "./CheckoutTotalsSummary.vue";
 
-const chk = useAppDesign().components.checkout;
-const s = chk.shared;
-const d = chk.delivery;
+const s = useAppDesign().components.checkout.shared;
+const d = useAppDesign().components.checkout.delivery;
 
 const {
     checkoutState,
-    checkoutStepMeta,
     goToDelivery,
     goToConfirm,
     setPaymentMethod,
@@ -26,15 +24,8 @@ const { checkoutIntent, paymentStepError } = checkoutState;
 </script>
 
 <template>
-    <div :class="s.flowBody">
-        <p :class="s.stepKicker">
-            Шаг {{ checkoutStepMeta.payment.n }} из {{ checkoutStepMeta.payment.total }} — Оплата
-        </p>
-
-        <div class="space-y-2">
-            <p :class="s.headingSm">
-                Способ оплаты
-            </p>
+    <CheckoutStepFrame group="payment">
+        <CheckoutSection title="Способ">
             <div :class="d.methodRow">
                 <button
                     v-for="method in CHECKOUT_PAYMENT_METHOD_IDS"
@@ -49,24 +40,35 @@ const { checkoutIntent, paymentStepError } = checkoutState;
                     {{ CHECKOUT_PAYMENT_METHOD_LABELS[method] }}
                 </button>
             </div>
-        </div>
+        </CheckoutSection>
 
-        <div
+        <CheckoutSection
             v-if="checkoutIntent.paymentInfo.method === 'cash'"
-            class="space-y-1"
+            title="Сдача с"
+            variant="form"
         >
-            <p :class="s.headingSm">
-                Сдача с
-            </p>
             <input
                 type="number"
                 min="0"
                 :class="s.textareaFlow"
-                placeholder="Например, 2000"
+                placeholder="2000"
                 :value="checkoutIntent.paymentInfo.changeFrom ?? ''"
                 @input="setPaymentChangeFrom($event.target.value)"
             />
-        </div>
+        </CheckoutSection>
+
+        <CheckoutSection
+            title="Комментарий"
+            variant="form"
+        >
+            <textarea
+                rows="2"
+                :class="s.textareaFlow"
+                placeholder="Пожелания к заказу"
+                :value="checkoutIntent.customerComment"
+                @input="setCustomerComment($event.target.value)"
+            />
+        </CheckoutSection>
 
         <p
             v-if="paymentStepError"
@@ -75,40 +77,23 @@ const { checkoutIntent, paymentStepError } = checkoutState;
             {{ paymentStepError }}
         </p>
 
-        <div class="space-y-1">
-            <p :class="s.headingSm">
-                Комментарий к заказу
-            </p>
-            <textarea
-                rows="2"
-                :class="s.textareaFlow"
-                placeholder="Например: без лука, позвонить за 10 минут до доставки"
-                :value="checkoutIntent.customerComment"
-                @input="setCustomerComment($event.target.value)"
-            />
-        </div>
-
-        <CheckoutBenefitsPanel />
-
-        <CheckoutComplementOffers />
-
         <CheckoutTotalsSummary />
 
-        <div :class="s.navFooterRow">
+        <template #nav>
             <button
                 type="button"
                 :class="s.linkUnderline"
                 @click="goToDelivery"
             >
-                Назад: доставка
+                Назад
             </button>
             <button
                 type="button"
                 :class="s.btnPrimarySm"
                 @click="goToConfirm"
             >
-                Далее: подтвердить
+                Далее
             </button>
-        </div>
-    </div>
+        </template>
+    </CheckoutStepFrame>
 </template>

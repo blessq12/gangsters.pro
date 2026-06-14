@@ -1,11 +1,14 @@
 <script setup>
-import { computed, onMounted, watch } from "vue";
+import { computed, unref } from "vue";
 import { useAppDesign } from "../../design/useAppDesign";
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
-import { wizardNonComplementSystemItems } from "../../features/checkout/normalizeCheckoutCart";
 import { useGiftPromotionPrompt } from "../../features/checkout/useGiftPromotionPrompt";
-import CheckoutBenefitsPanel from "./CheckoutBenefitsPanel.vue";
-import CheckoutComplementOffers from "./CheckoutComplementOffers.vue";
+import {
+    CHECKOUT_PAYMENT_METHOD_LABELS,
+} from "../../features/checkout/checkoutPaymentMethods";
+import CheckoutOrderReview from "./CheckoutOrderReview.vue";
+import CheckoutSection from "./CheckoutSection.vue";
+import CheckoutStepFrame from "./CheckoutStepFrame.vue";
 import CheckoutTotalsSummary from "./CheckoutTotalsSummary.vue";
 
 const chk = useAppDesign().components.checkout;
@@ -16,7 +19,6 @@ const cf = chk.confirm;
 const {
     userStore,
     checkoutState,
-    checkoutStepMeta,
     goToPayment,
     handleConfirmOrder,
 } = useCheckoutFlowContext();
@@ -24,8 +26,6 @@ const {
 const {
     checkoutIntent,
     orderStore,
-    userCartItems,
-    systemCartItems,
     formatPrice,
     formatPhone,
     isGuestCheckout,
@@ -39,226 +39,142 @@ const {
     giftCandidates,
     selectedGiftName,
     openGiftModal,
-    tryAutoOpenGiftModal,
-    giftPromotion,
 } = useGiftPromotionPrompt(() => promoState?.value ?? promoState);
 
-onMounted(() => {
-    tryAutoOpenGiftModal();
+const paymentLabel = computed(() => {
+    const method = checkoutIntent.paymentInfo.method;
+    if (!method) {
+        return "—";
+    }
+    return CHECKOUT_PAYMENT_METHOD_LABELS[method] ?? method;
 });
 
-watch(
-    () => giftPromotion.value?.phase,
-    () => {
-        tryAutoOpenGiftModal();
-    },
-);
+const deliveryAddressLine = computed(() => {
+    if (checkoutIntent.deliveryInfo.method === "pickup") {
+        return "Самовывоз";
+    }
 
-const wizardSystemItems = computed(() => {
-    const items = systemCartItems?.value ?? systemCartItems;
-    return wizardNonComplementSystemItems(items);
+    if (unref(isGuestCheckout)) {
+        const address = checkoutIntent.deliveryInfo.address;
+        if (!address) {
+            return "—";
+        }
+        return [
+            address.street,
+            address.house && `д. ${address.house}`,
+            address.apartment && `кв. ${address.apartment}`,
+        ]
+            .filter(Boolean)
+            .join(", ");
+    }
+
+    const selected = userStore.selectedAddress;
+    if (!selected) {
+        return "—";
+    }
+
+    return [
+        selected.street,
+        selected.house && `д. ${selected.house}`,
+        selected.apartment && `кв. ${selected.apartment}`,
+    ]
+        .filter(Boolean)
+        .join(", ");
 });
 
-function lineBadge(item) {
-    const key = String(item?.lineKey || "");
-    if (key.startsWith("gift:")) return "Подарок";
-    if (isComplementCartLine(item)) return "Комплект";
-    if (item?.isSystem) return "Авто";
-    return null;
-}
+const clientLine = computed(() => {
+    if (unref(isGuestCheckout)) {
+        const name = checkoutIntent.guestContact.name || "—";
+        const phone = checkoutIntent.guestContact.phone
+            ? formatPhone(checkoutIntent.guestContact.phone)
+            : "—";
+        return `${name}, ${phone}`;
+    }
 
-function unitPriceRub(item) {
-    const kopecks = Number(item?.pricing?.finalUnitPriceKopecks);
-    if (Number.isFinite(kopecks)) return kopecks / 100;
-    return Number(item?.productSnapshot?.price) || 0;
-}
+    const name = userStore.profile.name || "—";
+    const phone = userStore.profile.phone
+        ? formatPhone(userStore.profile.phone)
+        : "—";
+    return `${name}, ${phone}`;
+});
 </script>
 
 <template>
-    <div :class="s.flowBody">
-        <p :class="s.stepKicker">
-            Шаг {{ checkoutStepMeta.confirm.n }} из {{ checkoutStepMeta.confirm.total }} — Подтверждение
-        </p>
+    <CheckoutStepFrame group="confirm">
+        <CheckoutSection
+            v-if="isGiftEligible && giftCandidates.length"
+            title="Подарок"
+        >
+            <div
+                :class="[
+                    c.giftCard,
+                    '!mt-0',
+                    !hasGiftSelected && cf.giftCardPrompt,
+                ]"
+            >
+                <div :class="c.giftRow">
+                    <div class="min-w-0">
+                        <p :class="c.giftTitle">
+                            {{ hasGiftSelected ? selectedGiftName : "Выбери подарок" }}
+                        </p>
+                    </div>
+                    <button
+                        type="button"
+                        :class="c.giftCta"
+                        @click="openGiftModal"
+                    >
+                        {{ giftCtaLabel }}
+                    </button>
+                </div>
+            </div>
+        </CheckoutSection>
 
-        <div :class="cf.summaryCard">
-            <p :class="s.headingCardMuted">
-                Состав заказа
-            </p>
-            <ul :class="cf.orderList">
-                <li
-                    v-if="userCartItems.length"
-                    :class="s.subsectionKickerXs"
-                >
-                    Вы добавили
-                </li>
-                <li
-                    v-for="item in userCartItems"
-                    :key="item.lineKey"
-                    :class="cf.orderLineRow"
-                >
-                    <span :class="cf.orderLineTruncate">
-                        {{ item.productSnapshot?.name || `Товар #${item.productId}` }}
-                    </span>
-                    <span :class="cf.orderLineMuted">
-                        {{ item.qty }} × {{ formatPrice(unitPriceRub(item)) }} ₽
-                    </span>
-                </li>
+        <CheckoutSection title="Заказ">
+            <div :class="cf.summaryCard">
+                <CheckoutOrderReview />
+                <CheckoutTotalsSummary />
+            </div>
+        </CheckoutSection>
 
-                <li
-                    v-if="wizardSystemItems.length"
-                    :class="s.subsectionKickerXsSpaced"
-                >
-                    Добавлено автоматически
-                </li>
-                <li
-                    v-for="item in wizardSystemItems"
-                    :key="item.lineKey"
-                    :class="cf.systemLineAccent"
-                >
-                    <span :class="cf.orderLineTruncate">
-                        {{ item.productSnapshot?.name || `Товар #${item.productId}` }}
-                        <span
-                            v-if="lineBadge(item)"
-                            :class="cf.badgeTiny"
-                        >
-                            • {{ lineBadge(item) }}
-                        </span>
-                    </span>
-                    <span :class="cf.orderLineMuted">
-                        {{ item.qty }} × {{ formatPrice(unitPriceRub(item)) }} ₽
-                    </span>
-                </li>
-            </ul>
-            <CheckoutComplementOffers />
-            <CheckoutTotalsSummary />
-        </div>
-
-        <div :class="cf.blockMuted">
-            <p :class="s.headingCardMuted">
-                Данные клиента
-            </p>
-            <template v-if="isGuestCheckout">
+        <div :class="cf.metaRow">
+            <CheckoutSection
+                title="Доставка · оплата"
+                variant="muted"
+            >
                 <p :class="s.textBodyXs">
-                    {{ checkoutIntent.guestContact.name || "Без имени" }},
-                    {{
-                        checkoutIntent.guestContact.phone
-                            ? formatPhone(checkoutIntent.guestContact.phone)
-                            : "без телефона"
-                    }}
+                    {{ deliveryAddressLine }}
                 </p>
-            </template>
-            <template v-else>
                 <p :class="s.textBodyXs">
-                    {{ userStore.profile.name || "Без имени" }},
-                    {{
-                        userStore.profile.phone
-                            ? formatPhone(userStore.profile.phone)
-                            : "без телефона"
-                    }}
+                    {{ paymentLabel }}
+                    <span
+                        v-if="checkoutIntent.paymentInfo.method === 'cash' && checkoutIntent.paymentInfo.changeFrom"
+                        :class="cf.mutedInline"
+                    >
+                        · сдача с {{ formatPrice(checkoutIntent.paymentInfo.changeFrom) }} ₽
+                    </span>
                 </p>
                 <p
-                    v-if="userStore.profile.email"
+                    v-if="checkoutIntent.customerComment"
+                    :class="s.textMutedLine"
+                >
+                    {{ checkoutIntent.customerComment }}
+                </p>
+            </CheckoutSection>
+
+            <CheckoutSection
+                title="Клиент"
+                variant="muted"
+            >
+                <p :class="s.textBodyXs">
+                    {{ clientLine }}
+                </p>
+                <p
+                    v-if="!isGuestCheckout && userStore.profile.email"
                     :class="s.textMutedLine"
                 >
                     {{ userStore.profile.email }}
                 </p>
-            </template>
-        </div>
-
-        <CheckoutBenefitsPanel />
-
-        <div
-            v-if="isGiftEligible && giftCandidates.length"
-            :class="c.giftCard"
-        >
-            <div :class="c.giftRow">
-                <div class="min-w-0">
-                    <p :class="c.giftTitle">Подарок к заказу доступен</p>
-                    <p
-                        v-if="hasGiftSelected"
-                        :class="c.giftSelectedHint"
-                    >
-                        Выбран: {{ selectedGiftName }}
-                    </p>
-                </div>
-                <button
-                    type="button"
-                    :class="c.giftCta"
-                    @click="openGiftModal"
-                >
-                    {{ giftCtaLabel }}
-                </button>
-            </div>
-        </div>
-
-        <div :class="cf.blockMuted">
-            <p :class="s.headingCardMuted">
-                Доставка и оплата
-            </p>
-            <p :class="s.textBodyXs">
-                Адрес:
-                <template v-if="checkoutIntent.deliveryInfo.method === 'pickup'">
-                    Самовывоз (адрес точки выдачи пришлём в подтверждении)
-                </template>
-                <template v-else>
-                    <span v-if="isGuestCheckout && checkoutIntent.deliveryInfo.address">
-                        {{
-                            [
-                                checkoutIntent.deliveryInfo.address.street,
-                                checkoutIntent.deliveryInfo.address.house &&
-                                    `д. ${checkoutIntent.deliveryInfo.address.house}`,
-                                checkoutIntent.deliveryInfo.address.apartment &&
-                                    `кв. ${checkoutIntent.deliveryInfo.address.apartment}`,
-                            ]
-                                .filter(Boolean)
-                                .join(", ")
-                        }}
-                    </span>
-                    <span v-else-if="userStore.selectedAddress">
-                        {{
-                            [
-                                userStore.selectedAddress.street,
-                                userStore.selectedAddress.house &&
-                                    `д. ${userStore.selectedAddress.house}`,
-                                userStore.selectedAddress.apartment &&
-                                    `кв. ${userStore.selectedAddress.apartment}`,
-                            ]
-                                .filter(Boolean)
-                                .join(", ")
-                        }}
-                    </span>
-                    <span
-                        v-else
-                        :class="s.textMutedLine"
-                    >
-                        адрес не выбран
-                    </span>
-                </template>
-            </p>
-            <p :class="s.textBodyXs">
-                Оплата:
-                {{
-                    checkoutIntent.paymentInfo.method === "cash"
-                        ? "Наличными"
-                        : checkoutIntent.paymentInfo.method === "card"
-                          ? "Банковская карта"
-                          : checkoutIntent.paymentInfo.method === "transfer"
-                            ? "Перевод"
-                            : "не выбрано"
-                }}
-                <span
-                    v-if="checkoutIntent.paymentInfo.method === 'cash' && checkoutIntent.paymentInfo.changeFrom"
-                    :class="cf.mutedInline"
-                >
-                    (сдача с {{ formatPrice(checkoutIntent.paymentInfo.changeFrom) }} ₽)
-                </span>
-            </p>
-            <p
-                v-if="checkoutIntent.customerComment"
-                :class="s.textMutedLine"
-            >
-                Комментарий: {{ checkoutIntent.customerComment }}
-            </p>
+            </CheckoutSection>
         </div>
 
         <div
@@ -268,13 +184,13 @@ function unitPriceRub(item) {
             {{ orderStore.error.create }}
         </div>
 
-        <div :class="s.navFooterRow">
+        <template #nav>
             <button
                 type="button"
                 :class="s.linkUnderline"
                 @click="goToPayment"
             >
-                Назад: оплата
+                Назад
             </button>
             <button
                 type="button"
@@ -283,12 +199,59 @@ function unitPriceRub(item) {
                 @click="handleConfirmOrder"
             >
                 <span v-if="orderStore.loading.create">
-                    Оформляем...
+                    Отправляем…
                 </span>
                 <span v-else>
-                    Подтвердить заказ
+                    Подтвердить
                 </span>
             </button>
-        </div>
-    </div>
+        </template>
+    </CheckoutStepFrame>
 </template>
+
+<style scoped>
+@keyframes checkout-gift-shimmer {
+    0% {
+        transform: translateX(-140%) skewX(-18deg);
+    }
+
+    40%,
+    100% {
+        transform: translateX(140%) skewX(-18deg);
+    }
+}
+
+.checkout-gift-prompt {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+}
+
+.checkout-gift-prompt::after {
+    content: "";
+    position: absolute;
+    inset: -20% 0;
+    z-index: 0;
+    pointer-events: none;
+    background: linear-gradient(
+        105deg,
+        transparent 38%,
+        rgba(255, 255, 255, 0.06) 44%,
+        rgba(255, 220, 180, 0.42) 50%,
+        rgba(255, 255, 255, 0.1) 56%,
+        transparent 62%
+    );
+    animation: checkout-gift-shimmer 2.6s ease-in-out infinite;
+}
+
+.checkout-gift-prompt > * {
+    position: relative;
+    z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .checkout-gift-prompt::after {
+        display: none;
+    }
+}
+</style>

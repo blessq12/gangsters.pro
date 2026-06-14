@@ -37,10 +37,7 @@ watch(
 </script>
 
 <template>
-    <DockPanelLayout
-        title="Корзина"
-        description="Оформление в несколько шагов"
-    >
+    <DockPanelLayout title="Корзина">
         <template #headerActions>
             <div :class="c.headerBadge">
                 {{ cartStore.cartTotalItems }} шт

@@ -8,6 +8,7 @@ import { useCartStore } from "../../stores/cartStore";
 import { DOMAIN_EVENTS, emitDomainEvent } from "../../shared/domainEvents";
 import CheckoutBenefitsPanel from "./CheckoutBenefitsPanel.vue";
 import CheckoutComplementOffers from "./CheckoutComplementOffers.vue";
+import CheckoutSection from "./CheckoutSection.vue";
 import CheckoutTotalsSummary from "./CheckoutTotalsSummary.vue";
 
 const chk = useAppDesign().components.checkout;
@@ -72,14 +73,14 @@ function unitPriceRub(item) {
 </script>
 
 <template>
-    <div>
+    <div class="space-y-3">
         <div
             v-if="canResumeCheckout"
             :class="c.resumeBanner"
         >
             <div :class="c.resumeBannerRow">
                 <p :class="c.resumeBannerText">
-                    Есть незавершённое оформление — можно продолжить с того места, где остановился.
+                    Незавершённое оформление
                 </p>
                 <button
                     type="button"
@@ -95,95 +96,93 @@ function unitPriceRub(item) {
             v-if="isCartEmpty"
             :class="c.emptyState"
         >
-            Корзина пока пустая. Добавь пару вкусных позиций, и тут станет веселее.
+            Корзина пуста
         </div>
 
-        <ul
+        <CheckoutSection
             v-else-if="hasUserLines"
-            :class="c.userList"
+            title="Товары"
         >
-            <li :class="chk.shared.subsectionKickerSm">
-                Вы добавили
-            </li>
-            <li
-                v-for="item in userCartItems"
-                :key="item.lineKey"
-                :class="c.userLineItem"
-            >
-                <div class="min-w-0">
-                    <p :class="c.lineTitle">
-                        {{ item.productSnapshot?.name || `Товар #${item.productId}` }}
-                    </p>
-                    <p :class="c.lineSub">
-                        {{ formatPrice(unitPriceRub(item)) }} ₽ за шт
-                    </p>
-                </div>
-
-                <div :class="c.lineActions">
-                    <div :class="c.qtyBar">
-                        <button
-                            type="button"
-                            :class="c.qtyBtn"
-                            @click="decrementCart(item.productId)"
-                        >
-                            –
-                        </button>
-                        <span :class="c.qtyLabel">
-                            {{ item.qty }}
-                        </span>
-                        <button
-                            type="button"
-                            :class="c.qtyBtn"
-                            @click="incrementCart(item.productId)"
-                        >
-                            +
-                        </button>
+            <ul :class="c.userList">
+                <li
+                    v-for="item in userCartItems"
+                    :key="item.lineKey"
+                    :class="c.userLineItem"
+                >
+                    <div class="min-w-0">
+                        <p :class="c.lineTitle">
+                            {{ item.productSnapshot?.name || `Товар #${item.productId}` }}
+                        </p>
+                        <p :class="c.lineSub">
+                            {{ formatPrice(unitPriceRub(item)) }} ₽
+                        </p>
                     </div>
 
-                    <button
-                        type="button"
-                        :class="c.removeLink"
-                        @click="removeFromCart(item.productId)"
-                    >
-                        Убрать
-                    </button>
-                </div>
-            </li>
-        </ul>
+                    <div :class="c.lineActions">
+                        <div :class="c.qtyBar">
+                            <button
+                                type="button"
+                                :class="c.qtyBtn"
+                                @click="decrementCart(item.productId)"
+                            >
+                                –
+                            </button>
+                            <span :class="c.qtyLabel">
+                                {{ item.qty }}
+                            </span>
+                            <button
+                                type="button"
+                                :class="c.qtyBtn"
+                                @click="incrementCart(item.productId)"
+                            >
+                                +
+                            </button>
+                        </div>
+
+                        <button
+                            type="button"
+                            :class="c.removeLink"
+                            @click="removeFromCart(item.productId)"
+                        >
+                            Убрать
+                        </button>
+                    </div>
+                </li>
+            </ul>
+        </CheckoutSection>
 
         <p
             v-else-if="hasSystemOnlyCart"
-            :class="[chk.shared.introMuted, 'mb-2']"
+            :class="chk.shared.introMuted"
         >
-            В корзине только автодобавления по акции. Добавь блюда из меню, чтобы оформить заказ.
+            Добавь блюда из меню
         </p>
 
         <CheckoutComplementOffers />
 
-        <ul
+        <CheckoutSection
             v-if="wizardSystemItems.length"
-            :class="c.systemList"
+            title="Автодобавления"
         >
-            <li :class="chk.shared.subsectionKickerSm">
-                Автодобавления
-            </li>
-            <li
-                v-for="item in wizardSystemItems"
-                :key="item.lineKey"
-                :class="c.systemLine"
-            >
-                <span :class="c.systemLineName">
-                    • {{ item.productSnapshot?.name || `Товар #${item.productId}` }}
-                </span>
-                <span :class="c.systemLineMeta">
-                    {{ item.qty }} × {{ formatPrice(0) }} ₽
-                </span>
-            </li>
-        </ul>
+            <ul :class="c.systemList">
+                <li
+                    v-for="item in wizardSystemItems"
+                    :key="item.lineKey"
+                    :class="c.systemLine"
+                >
+                    <span :class="c.systemLineName">
+                        {{ item.productSnapshot?.name || `Товар #${item.productId}` }}
+                    </span>
+                    <span :class="c.systemLineMeta">
+                        {{ item.qty }} × {{ formatPrice(0) }} ₽
+                    </span>
+                </li>
+            </ul>
+        </CheckoutSection>
+
+        <CheckoutBenefitsPanel delivery-only />
 
         <CheckoutTotalsSummary v-if="!isCartEmpty" />
-
-        <CheckoutBenefitsPanel />
 
         <div
             v-if="hasUserLines"
@@ -194,7 +193,7 @@ function unitPriceRub(item) {
                 :class="chk.shared.btnPrimaryMd"
                 @click="handleStartCheckout"
             >
-                {{ isAuthenticated ? "Перейти к оформлению" : "Оформить заказ" }}
+                {{ isAuthenticated ? "Далее" : "Оформить" }}
             </button>
             <button
                 v-if="!isAuthenticated"
@@ -202,9 +201,8 @@ function unitPriceRub(item) {
                 :class="c.loginLink"
                 @click="openProfileDock"
             >
-                Войти в аккаунт
+                Войти
             </button>
         </div>
-
     </div>
 </template>

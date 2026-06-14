@@ -79,16 +79,6 @@ export function useGiftPromotionPrompt(promoStateSource) {
         uiStore.openGiftSelectionModal({ source: "manual" });
     }
 
-    function tryAutoOpenGiftModal() {
-        if (uiStore.giftAutoPromptDismissed) {
-            return;
-        }
-        const promo = giftPromotion.value;
-        if (promo?.eligible === true && promo?.phase === "select_gift") {
-            uiStore.openGiftSelectionModal({ source: "auto" });
-        }
-    }
-
     return {
         giftPromotion,
         isGiftEligible,
@@ -97,6 +87,5 @@ export function useGiftPromotionPrompt(promoStateSource) {
         giftCandidates,
         selectedGiftName,
         openGiftModal,
-        tryAutoOpenGiftModal,
     };
 }

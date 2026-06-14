@@ -26,6 +26,17 @@ async function handleAdd(productId) {
         addingProductId.value = null;
     }
 }
+
+function offerHint(offer) {
+    const parts = [];
+    if (offer.freeQty > 0) {
+        parts.push(`${offer.freeQty} беспл.`);
+    }
+    if (offer.priceRub > 0) {
+        parts.push(`${formatPrice(offer.priceRub)} ₽`);
+    }
+    return parts.join(" · ");
+}
 </script>
 
 <template>
@@ -34,7 +45,7 @@ async function handleAdd(productId) {
         :class="c.systemList"
     >
         <li :class="chk.shared.subsectionKickerSm">
-            Комплект к заказу
+            Комплект
         </li>
         <li
             v-for="offer in offers"
@@ -46,21 +57,7 @@ async function handleAdd(productId) {
                     {{ offer.name }}
                 </p>
                 <p :class="c.lineSub">
-                    <span v-if="offer.freeQty > 0">
-                        По акции: {{ offer.freeQty }} × бесплатно
-                    </span>
-                    <span v-if="offer.freeQty > 0 && offer.priceRub > 0">
-                        ·
-                    </span>
-                    <span v-if="offer.priceRub > 0">
-                        Докупить: {{ formatPrice(offer.priceRub) }} ₽ за шт
-                    </span>
-                </p>
-                <p
-                    v-if="offer.userQty > 0"
-                    :class="c.lineSub"
-                >
-                    В основной корзине: {{ offer.userQty }} шт
+                    {{ offerHint(offer) }}
                 </p>
             </div>
 

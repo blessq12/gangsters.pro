@@ -161,6 +161,8 @@ export const checkoutDesign = {
             "mt-2 space-y-1 border-t border-app-divider-on-canvas pt-2 text-xs",
         blockMuted:
             "space-y-1 rounded-none bg-app-glass-fill px-3 py-3",
+        metaRow: "grid grid-cols-1 gap-3 md:grid-cols-2",
+        giftCardPrompt: "checkout-gift-prompt",
         mutedInline: "ml-1 text-app-muted",
     },
 

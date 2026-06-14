@@ -8,13 +8,13 @@ import {
     RU_PHONE_MASKA_PATTERN,
     RU_PHONE_MASKA_TOKENS_ATTR,
 } from "../../validation/ruPhone";
+import CheckoutSection from "./CheckoutSection.vue";
+import CheckoutStepFrame from "./CheckoutStepFrame.vue";
 
-const chk = useAppDesign().components.checkout;
-const s = chk.shared;
+const s = useAppDesign().components.checkout.shared;
 
 const {
     checkoutState,
-    checkoutStepMeta,
     goToCart,
     goToGuestNext,
     setGuestContact,
@@ -51,15 +51,11 @@ watch(
 </script>
 
 <template>
-    <div :class="s.flowBody">
-        <p :class="s.stepKicker">
-            Шаг {{ checkoutStepMeta.guest?.n ?? 1 }} из {{ checkoutStepMeta.guest?.total ?? 4 }} — Контакт
-        </p>
-
-        <div :class="s.guestIsland">
-            <p :class="s.headingSm">
-                Как с тобой связаться
-            </p>
+    <CheckoutStepFrame group="guest">
+        <CheckoutSection
+            title="Контакт"
+            variant="form"
+        >
             <input
                 :value="checkoutIntent.guestContact.name"
                 type="text"
@@ -76,7 +72,7 @@ watch(
                 placeholder="+7 (___) ___-__-__"
                 :class="s.inputFieldFull"
             />
-        </div>
+        </CheckoutSection>
 
         <p
             v-if="guestStepError"
@@ -85,21 +81,21 @@ watch(
             {{ guestStepError }}
         </p>
 
-        <div :class="s.navFooterRow">
+        <template #nav>
             <button
                 type="button"
                 :class="s.linkUnderline"
                 @click="goToCart"
             >
-                Назад к корзине
+                Назад
             </button>
             <button
                 type="button"
                 :class="s.btnPrimarySm"
                 @click="goToGuestNext"
             >
-                Далее: доставка
+                Далее
             </button>
-        </div>
-    </div>
+        </template>
+    </CheckoutStepFrame>
 </template>
