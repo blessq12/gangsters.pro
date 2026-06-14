@@ -3,6 +3,7 @@
 namespace App\Filament\Catalog\Resources;
 
 use App\Filament\Catalog\Resources\CatalogResource\Pages\ManageCatalog;
+use App\Filament\Support\AdminNavigationGroup;
 use App\Infrastructure\Catalog\Model\PRD_Category;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -27,6 +28,8 @@ class CatalogResource extends Resource
     protected static bool $hasTitleCaseModelLabel = false;
 
     protected static ?int $navigationSort = 10;
+
+    protected static string | \UnitEnum | null $navigationGroup = AdminNavigationGroup::Storefront;
 
     public static function form(Schema $schema): Schema
     {

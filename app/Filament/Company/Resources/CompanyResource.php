@@ -3,6 +3,7 @@
 namespace App\Filament\Company\Resources;
 
 use App\Filament\Company\Resources\CompanyResource\Pages\ManageCompany;
+use App\Filament\Support\AdminNavigationGroup;
 use App\Infrastructure\Company\Model\CMP_Company;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -26,7 +27,9 @@ class CompanyResource extends Resource
 
     protected static bool $hasTitleCaseModelLabel = false;
 
-    protected static ?int $navigationSort = 30;
+    protected static ?int $navigationSort = 10;
+
+    protected static string | \UnitEnum | null $navigationGroup = AdminNavigationGroup::Organization;
 
     public static function form(Schema $schema): Schema
     {

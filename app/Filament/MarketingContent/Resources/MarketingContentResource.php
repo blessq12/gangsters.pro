@@ -3,6 +3,7 @@
 namespace App\Filament\MarketingContent\Resources;
 
 use App\Filament\MarketingContent\Resources\MarketingContentResource\Pages\ManageMarketingContent;
+use App\Filament\Support\AdminNavigationGroup;
 use App\Infrastructure\MarketingContent\Model\MKT_Banner;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -26,7 +27,9 @@ class MarketingContentResource extends Resource
 
     protected static bool $hasTitleCaseModelLabel = false;
 
-    protected static ?int $navigationSort = 15;
+    protected static ?int $navigationSort = 20;
+
+    protected static string | \UnitEnum | null $navigationGroup = AdminNavigationGroup::Storefront;
 
     public static function form(Schema $schema): Schema
     {

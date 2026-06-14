@@ -4,6 +4,7 @@ namespace App\Filament\Checkout\Resources;
 
 use App\Filament\Checkout\Resources\Pages\ListCheckouts;
 use App\Filament\Checkout\Resources\Pages\ViewCheckout;
+use App\Filament\Support\AdminNavigationGroup;
 use App\Filament\Checkout\Resources\Schemas\CheckoutViewSchema;
 use App\Filament\Checkout\Resources\Tables\CheckoutsTable;
 use App\Infrastructure\Checkout\Model\CHK_Checkout;
@@ -30,7 +31,9 @@ class CheckoutResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
 
-    protected static ?int $navigationSort = 25;
+    protected static ?int $navigationSort = 20;
+
+    protected static string | \UnitEnum | null $navigationGroup = AdminNavigationGroup::Sales;
 
     public static function form(Schema $schema): Schema
     {

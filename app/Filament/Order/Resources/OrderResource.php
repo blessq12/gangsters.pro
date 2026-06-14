@@ -4,6 +4,7 @@ namespace App\Filament\Order\Resources;
 
 use App\Filament\Order\Resources\Pages\ListOrders;
 use App\Filament\Order\Resources\Pages\ViewOrder;
+use App\Filament\Support\AdminNavigationGroup;
 use App\Filament\Order\Resources\Schemas\OrderViewSchema;
 use App\Filament\Order\Resources\Tables\OrdersTable;
 use App\Infrastructure\Order\Model\ORD_Order;
@@ -30,7 +31,9 @@ class OrderResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShoppingBag;
 
-    protected static ?int $navigationSort = 27;
+    protected static ?int $navigationSort = 10;
+
+    protected static string | \UnitEnum | null $navigationGroup = AdminNavigationGroup::Sales;
 
     public static function form(Schema $schema): Schema
     {

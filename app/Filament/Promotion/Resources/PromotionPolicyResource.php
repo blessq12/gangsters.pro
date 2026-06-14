@@ -3,6 +3,7 @@
 namespace App\Filament\Promotion\Resources;
 
 use App\Filament\Promotion\Resources\PromotionPolicyResource\Pages\ManagePromotionPolicy;
+use App\Filament\Support\AdminNavigationGroup;
 use App\Infrastructure\Promotion\Model\PRM_Configuration;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -26,7 +27,9 @@ class PromotionPolicyResource extends Resource
 
     protected static bool $hasTitleCaseModelLabel = false;
 
-    protected static ?int $navigationSort = 21;
+    protected static ?int $navigationSort = 20;
+
+    protected static string | \UnitEnum | null $navigationGroup = AdminNavigationGroup::Service;
 
     public static function form(Schema $schema): Schema
     {

@@ -41,7 +41,6 @@ const stats = computed(() => {
         return [
             { label: "Срок", value: "…" },
             { label: "Мин. заказ", value: "…" },
-            { label: "Покрытие", value: "…" },
         ];
     }
     return buildDeliveryHeroStats(facts.value);

@@ -56,15 +56,6 @@ export function formatDeliveryFeeRublesLine(company) {
 
 /**
  * @param {object|null|undefined} company
- * @returns {string}
- */
-export function formatCoverageLine(company) {
-    const t = safeTrim(company?.city_coverage);
-    return t || "—";
-}
-
-/**
- * @param {object|null|undefined} company
  */
 export function hasAverageDelivery(company) {
     return averageDeliveryMinutesOrNull(company) != null;
@@ -82,13 +73,6 @@ export function hasMinOrder(company) {
  */
 export function hasDeliveryFee(company) {
     return kopecksToRublesOptional(company?.delivery_fee_kopecks) != null;
-}
-
-/**
- * @param {object|null|undefined} company
- */
-export function hasCityCoverage(company) {
-    return safeTrim(company?.city_coverage) !== "";
 }
 
 /**
@@ -115,12 +99,6 @@ export function buildDefinedDeliveryStats(company) {
         out.push({
             label: "Мин. заказ",
             value: formatMinOrderRublesLine(company),
-        });
-    }
-    if (hasCityCoverage(company)) {
-        out.push({
-            label: "Покрытие",
-            value: formatCoverageLine(company),
         });
     }
     return out;
@@ -157,7 +135,6 @@ export function buildDeliveryHeroStats(company) {
     return [
         { label: "Срок", value: formatAverageDeliveryLine(company) },
         { label: "Мин. заказ", value: formatMinOrderRublesLine(company) },
-        { label: "Покрытие", value: formatCoverageLine(company) },
     ];
 }
 
@@ -210,16 +187,17 @@ export function kitchenAddressLine(company) {
     return formatCompanyAddressLine(company);
 }
 
+const DEFAULT_DELIVERY_MAP_CITY = "Томск";
+
 /**
- * URL виджета Яндекс.Карт (поиск по строке адреса).
+ * URL виджета Яндекс.Карт (fallback без SDK: центр по городу кухни).
  * @param {object|null|undefined} company
  * @returns {string|null}
  */
 export function buildYandexMapWidgetSearchUrl(company) {
-    const line = kitchenAddressLine(company).trim();
-    if (!line) return null;
-    const text = encodeURIComponent(line);
-    return `https://yandex.ru/map-widget/v1/?mode=search&text=${text}&z=16`;
+    const city = safeTrim(company?.city) || DEFAULT_DELIVERY_MAP_CITY;
+    const text = encodeURIComponent(city);
+    return `https://yandex.ru/map-widget/v1/?mode=search&text=${text}&z=12`;
 }
 
 /**

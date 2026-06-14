@@ -3,10 +3,7 @@ import { computed } from "vue";
 import { useCompanyReadModel } from "../features/company/useCompanyReadModel";
 import { useDeliveryReadModel } from "../features/delivery/useDeliveryReadModel";
 import { formatRuPhone, phoneToTelHref } from "../utils/phone/formatRuPhone";
-import {
-    formatAverageDeliveryLine,
-    formatCoverageLine,
-} from "../utils/system/companyDeliveryFacts";
+import { formatAverageDeliveryLine } from "../utils/system/companyDeliveryFacts";
 import {
     formatCompanyAddressLine,
     formatWorkScheduleForDisplay,
@@ -47,10 +44,6 @@ const heroStats = computed(() => {
         {
             label: "Доставка",
             value: formatAverageDeliveryLine(d),
-        },
-        {
-            label: "Покрытие",
-            value: formatCoverageLine(d) !== "—" ? formatCoverageLine(d) : "Доставка",
         },
     ];
 });
@@ -109,14 +102,6 @@ const addressLines = computed(() => {
 });
 
 const hasAddress = computed(() => addressLines.value.length > 0);
-
-const coverageText = computed(() => {
-    const t = safeTrim(facts.value?.city_coverage);
-    return (
-        t ||
-        "Точную доступность по адресу можно проверить при оформлении заказа."
-    );
-});
 
 const workHoursMain = computed(() => {
     const c = profile.value;
@@ -307,15 +292,6 @@ const co = useAppDesign().components.pages.contacts;
                 <p v-else>
                     Адрес уточняется. Свяжитесь с нами по телефону или в мессенджере.
                 </p>
-
-                <div :class="co.coverageBox">
-                    <p :class="co.coverageKicker">
-                        Зона покрытия
-                    </p>
-                    <p :class="co.coverageBody">
-                        {{ coverageText }}
-                    </p>
-                </div>
 
                 <p
                     v-if="siteUrl"

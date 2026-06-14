@@ -3,6 +3,7 @@
 namespace App\Filament\Delivery\Resources;
 
 use App\Filament\Delivery\Resources\DeliveryResource\Pages\ManageDelivery;
+use App\Filament\Support\AdminNavigationGroup;
 use App\Infrastructure\Delivery\Model\DLV_Configuration;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -26,7 +27,9 @@ class DeliveryResource extends Resource
 
     protected static bool $hasTitleCaseModelLabel = false;
 
-    protected static ?int $navigationSort = 20;
+    protected static ?int $navigationSort = 10;
+
+    protected static string | \UnitEnum | null $navigationGroup = AdminNavigationGroup::Service;
 
     public static function form(Schema $schema): Schema
     {

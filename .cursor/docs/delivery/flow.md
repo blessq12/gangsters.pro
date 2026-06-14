@@ -22,7 +22,7 @@ MainLayout* / страницы / dock
     → deliveryStore.fetchAll()
     → deliveryService → GET /api/delivery
     → normalizeDeliveryData (deliveryMappers.js)
-    → toDeliveryFactsView → UI
+    → toDeliveryFactsView (тарифы, адрес кухни, зона GeoJSON) → UI
 ```
 
 **Потребители:**

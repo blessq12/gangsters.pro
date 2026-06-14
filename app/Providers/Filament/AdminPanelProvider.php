@@ -20,11 +20,13 @@ use App\Filament\MarketingContent\Resources\PromotionResource;
 use App\Filament\MarketingContent\Widgets\Tables\BannersHubTable;
 use App\Filament\MarketingContent\Widgets\Tables\PromotionsHubTable;
 use App\Filament\Company\Resources\CompanyResource;
+use App\Filament\Company\Resources\OperatorResource;
 use App\Filament\Checkout\Resources\CheckoutResource;
 use App\Filament\Client\Resources\ClientResource;
 use App\Filament\Order\Resources\OrderResource;
 use App\Filament\Delivery\Resources\DeliveryResource;
 use App\Filament\Promotion\Resources\PromotionPolicyResource;
+use App\Filament\Support\AdminNavigationGroup;
 use App\Http\Controllers\Admin\DeliveryZoneMapEditorController;
 use App\Http\Middleware\VerifyCsrfToken;
 use Filament\Http\Middleware\Authenticate;
@@ -54,21 +56,23 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
+            ->navigationGroups(AdminNavigationGroup::class)
             ->resources([
                 CatalogResource::class,
                 CategoryResource::class,
                 ProductResource::class,
                 ProductSetResource::class,
                 TagResource::class,
-                DeliveryResource::class,
-                PromotionPolicyResource::class,
-                CheckoutResource::class,
-                ClientResource::class,
-                OrderResource::class,
                 MarketingContentResource::class,
                 BannerResource::class,
                 PromotionResource::class,
+                DeliveryResource::class,
+                PromotionPolicyResource::class,
+                OrderResource::class,
+                CheckoutResource::class,
+                ClientResource::class,
                 CompanyResource::class,
+                OperatorResource::class,
             ])
             ->livewireComponents([
                 CategoriesHubTable::class,

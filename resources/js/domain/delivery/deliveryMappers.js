@@ -97,9 +97,6 @@ export function toDeliveryFactsView(delivery) {
     const zone = delivery.zone || {};
     const kitchen = zone.kitchen_address || {};
 
-    const coverage =
-        nullableString(kitchen.search_line) || nullableString(kitchen.city);
-
     return {
         min_order_amount_kopecks: settings.min_order_amount_kopecks ?? null,
         delivery_fee_kopecks: settings.delivery_fee_kopecks ?? null,
@@ -111,7 +108,6 @@ export function toDeliveryFactsView(delivery) {
         street: kitchen.street,
         house: kitchen.house,
         address_comment: kitchen.comment,
-        city_coverage: coverage,
         kitchen_latitude: zone.kitchen_latitude ?? null,
         kitchen_longitude: zone.kitchen_longitude ?? null,
         delivery_zone_geojson: zone.delivery_zone_geojson ?? null,

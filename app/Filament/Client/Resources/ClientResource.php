@@ -4,6 +4,7 @@ namespace App\Filament\Client\Resources;
 
 use App\Filament\Client\Resources\Pages\ListClients;
 use App\Filament\Client\Resources\Pages\ViewClient;
+use App\Filament\Support\AdminNavigationGroup;
 use App\Filament\Client\Resources\Schemas\ClientViewSchema;
 use App\Filament\Client\Resources\Tables\ClientsTable;
 use App\Infrastructure\Client\Model\CLN_Client;
@@ -30,7 +31,9 @@ class ClientResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;
 
-    protected static ?int $navigationSort = 26;
+    protected static ?int $navigationSort = 30;
+
+    protected static string | \UnitEnum | null $navigationGroup = AdminNavigationGroup::Sales;
 
     public static function form(Schema $schema): Schema
     {
