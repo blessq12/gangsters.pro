@@ -6,6 +6,7 @@ use App\Application\Checkout\DTO\SetCheckoutClientDto;
 use App\Application\Checkout\Presenter\CheckoutPresenter;
 use App\Domain\Checkout\Entity\Checkout;
 use App\Domain\Checkout\Exception\CheckoutNotFoundException;
+use App\Domain\Checkout\Port\ClientProfilePort;
 use App\Domain\Checkout\Repository\CheckoutRepository;
 use App\Domain\Checkout\ValueObject\CheckoutId;
 use App\Domain\Checkout\ValueObject\ClientSnapshot;
@@ -19,6 +20,7 @@ final class SetCheckoutClientUseCase
 {
     public function __construct(
         private readonly CheckoutRepository $checkouts,
+        private readonly ClientProfilePort $clientProfiles,
         private readonly CheckoutPresenter $presenter,
     ) {}
 
@@ -39,11 +41,25 @@ final class SetCheckoutClientUseCase
     private function buildClientSnapshot(SetCheckoutClientDto $input): ClientSnapshot
     {
         if ($input->clientId !== null) {
+            $name = $input->name;
+            $phone = $input->phone;
+            $email = $input->email;
+
+            if ($name === null || $phone === null) {
+                $profile = $this->clientProfiles->findRegisteredProfile($input->clientId);
+
+                if ($profile !== null) {
+                    $name ??= $profile->name();
+                    $phone ??= $profile->phone();
+                    $email ??= $profile->email();
+                }
+            }
+
             return ClientSnapshot::registered(
                 clientId: $input->clientId,
-                name: $input->name,
-                phone: $input->phone,
-                email: $input->email,
+                name: $name,
+                phone: $phone,
+                email: $email,
             );
         }
 

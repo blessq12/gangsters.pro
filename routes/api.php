@@ -48,7 +48,7 @@ Route::prefix('client')->group(function (): void {
     Route::post('forgot-password', [ClientController::class, 'forgotPassword']);
     Route::post('change-password', [ClientController::class, 'changePassword']);
 
-    Route::middleware('auth:sanctum')->group(function (): void {
+    Route::middleware('auth.client')->group(function (): void {
         Route::get('profile', [ClientController::class, 'profile']);
         Route::patch('profile', [ClientController::class, 'updateProfile']);
         Route::post('addresses', [ClientController::class, 'addAddress']);

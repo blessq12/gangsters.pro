@@ -80,6 +80,15 @@ function mapDeliveryToLocal(delivery) {
     };
 }
 
+function mergeCheckoutDeliveryComment(deliveryComment, customerComment) {
+    const parts = [
+        String(deliveryComment || "").trim(),
+        String(customerComment || "").trim(),
+    ].filter(Boolean);
+
+    return parts.length > 0 ? parts.join("\n\n") : "";
+}
+
 function mapPaymentToLocal(payment) {
     if (!payment || typeof payment !== "object") {
         return {
@@ -450,7 +459,11 @@ export const useCheckoutStore = defineStore("checkout", {
             return {
                 method,
                 address: method === "courier" ? address : null,
-                comment: this.deliveryInfo.comment || undefined,
+                comment:
+                    mergeCheckoutDeliveryComment(
+                        this.deliveryInfo.comment,
+                        this.customerComment,
+                    ) || undefined,
                 scheduled_at: this.deliveryInfo.scheduledAt || undefined,
             };
         },
@@ -553,10 +566,20 @@ export const useCheckoutStore = defineStore("checkout", {
         },
 
         async setPromotionGift(productId) {
+            const previousId = this.promotions.freeRollGiftProductId;
+            const nextId = productId != null ? Number(productId) || null : null;
+
+            if (previousId != null && previousId !== nextId) {
+                await this.updateCartLine(previousId, 0);
+            }
+
+            if (nextId != null) {
+                await this.updateCartLine(nextId, 1, { kind: "gift" });
+            }
+
             this.patchLocal({
                 promotions: {
-                    freeRollGiftProductId:
-                        productId != null ? Number(productId) || null : null,
+                    freeRollGiftProductId: nextId,
                 },
             });
         },

@@ -59,21 +59,41 @@ final class ClientProfileReader
      */
     private static function mapAddresses(array $addresses): array
     {
+        usort(
+            $addresses,
+            static function (CLN_ClientAddress $left, CLN_ClientAddress $right): int {
+                $defaultOrder = (int) $right->is_default <=> (int) $left->is_default;
+
+                if ($defaultOrder !== 0) {
+                    return $defaultOrder;
+                }
+
+                return $left->id <=> $right->id;
+            },
+        );
+
         $mapped = [];
 
         foreach ($addresses as $address) {
             $mapped[] = [
                 'id' => (string) $address->id,
-                'title' => (string) ($address->title ?? '—'),
+                'title' => self::nullableText($address->title),
                 'street' => (string) $address->street,
                 'house' => (string) $address->house,
-                'entrance' => (string) ($address->entrance ?? '—'),
-                'apartment' => (string) ($address->apartment ?? '—'),
-                'comment' => (string) ($address->comment ?? '—'),
+                'entrance' => self::nullableText($address->entrance),
+                'apartment' => self::nullableText($address->apartment),
+                'comment' => self::nullableText($address->comment),
                 'is_default' => self::boolLabel((bool) $address->is_default),
             ];
         }
 
         return $mapped;
+    }
+
+    private static function nullableText(?string $value): string
+    {
+        $text = trim((string) $value);
+
+        return $text !== '' ? $text : '—';
     }
 }

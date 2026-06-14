@@ -2,8 +2,10 @@
 
 namespace App\Filament\Client\Resources\Schemas;
 
-use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\TextInput;
+use Filament\Infolists\Components\RepeatableEntry;
+use Filament\Infolists\Components\RepeatableEntry\TableColumn;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
@@ -62,38 +64,42 @@ final class ClientViewSchema
     }
 
     /**
-     * @return list<Repeater|TextInput>
+     * @return list<RepeatableEntry>
      */
     private static function addressFields(): array
     {
         return [
-            TextInput::make('addresses_count')
-                ->label('Всего адресов'),
-            Repeater::make('addresses')
+            RepeatableEntry::make('addresses')
                 ->label('Адресная книга')
-                ->schema([
-                    TextInput::make('id')
-                        ->label('ID'),
-                    TextInput::make('title')
-                        ->label('Название'),
-                    TextInput::make('street')
-                        ->label('Улица'),
-                    TextInput::make('house')
-                        ->label('Дом'),
-                    TextInput::make('entrance')
-                        ->label('Подъезд'),
-                    TextInput::make('apartment')
-                        ->label('Квартира'),
-                    TextInput::make('comment')
-                        ->label('Комментарий')
-                        ->columnSpanFull(),
-                    TextInput::make('is_default')
-                        ->label('По умолчанию'),
+                ->table([
+                    TableColumn::make('ID')
+                        ->width('4rem'),
+                    TableColumn::make('Название'),
+                    TableColumn::make('Улица'),
+                    TableColumn::make('Дом')
+                        ->width('5rem'),
+                    TableColumn::make('Подъезд')
+                        ->width('6rem'),
+                    TableColumn::make('Квартира')
+                        ->width('6rem'),
+                    TableColumn::make('По умолчанию')
+                        ->width('7rem'),
+                    TableColumn::make('Комментарий'),
                 ])
-                ->columns(3)
-                ->addable(false)
-                ->deletable(false)
-                ->reorderable(false)
+                ->schema([
+                    TextEntry::make('id'),
+                    TextEntry::make('title')
+                        ->placeholder('—'),
+                    TextEntry::make('street'),
+                    TextEntry::make('house'),
+                    TextEntry::make('entrance')
+                        ->placeholder('—'),
+                    TextEntry::make('apartment')
+                        ->placeholder('—'),
+                    TextEntry::make('is_default'),
+                    TextEntry::make('comment')
+                        ->placeholder('—'),
+                ])
                 ->columnSpanFull(),
         ];
     }

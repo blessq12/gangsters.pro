@@ -94,10 +94,22 @@ final class CheckoutSnapshotReader
                 continue;
             }
 
-            $total += (int) ($line['line_total_rubles'] ?? 0);
+            $total += self::lineTotalRubles($line);
         }
 
         return $total;
+    }
+
+    /**
+     * @param  array<string, mixed>  $line
+     */
+    private static function lineTotalRubles(array $line): int
+    {
+        if (isset($line['line_total_rubles'])) {
+            return (int) $line['line_total_rubles'];
+        }
+
+        return (int) ($line['unit_price_rubles'] ?? 0) * (int) ($line['quantity'] ?? 0);
     }
 
     /**
@@ -118,7 +130,7 @@ final class CheckoutSnapshotReader
                 'product_name' => (string) ($line['product_name'] ?? '—'),
                 'quantity' => (string) ($line['quantity'] ?? '—'),
                 'unit_price_rubles' => self::formatRubles((int) ($line['unit_price_rubles'] ?? 0)),
-                'line_total_rubles' => self::formatRubles((int) ($line['line_total_rubles'] ?? 0)),
+                'line_total_rubles' => self::formatRubles(self::lineTotalRubles($line)),
             ];
         }
 

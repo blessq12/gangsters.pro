@@ -56,6 +56,11 @@ final class CheckoutsTable
                         }
 
                         if (($state['kind'] ?? '') === 'registered') {
+                            $name = trim((string) ($state['name'] ?? ''));
+                            if ($name !== '') {
+                                return $name;
+                            }
+
                             $clientId = $state['client_id'] ?? null;
 
                             return $clientId !== null

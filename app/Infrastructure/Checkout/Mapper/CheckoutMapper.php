@@ -161,6 +161,7 @@ final class CheckoutMapper
                     'product_name' => $line->productName(),
                     'quantity' => $line->quantity(),
                     'unit_price_rubles' => $line->unitPrice()->amountRubles(),
+                    'line_total_rubles' => $line->lineTotal()->amountRubles(),
                     'payload' => $line->payload(),
                 ],
                 $cart->lines(),
