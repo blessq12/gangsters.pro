@@ -14,6 +14,7 @@ use App\Filament\Catalog\Widgets\Tables\CategoriesHubTable;
 use App\Filament\Catalog\Widgets\Tables\ProductSetsHubTable;
 use App\Filament\Catalog\Widgets\Tables\ProductsHubTable;
 use App\Filament\Catalog\Widgets\Tables\TagsHubTable;
+use App\Filament\Company\Resources\CompanyResource;
 use App\Filament\Delivery\Resources\DeliveryResource;
 use App\Http\Controllers\Admin\DeliveryZoneMapEditorController;
 use App\Http\Middleware\VerifyCsrfToken;
@@ -51,6 +52,7 @@ class AdminPanelProvider extends PanelProvider
                 ProductSetResource::class,
                 TagResource::class,
                 DeliveryResource::class,
+                CompanyResource::class,
             ])
             ->livewireComponents([
                 CategoriesHubTable::class,

@@ -3,6 +3,7 @@
 use App\Providers\AppServiceProvider;
 use App\Providers\AuthServiceProvider;
 use App\Providers\CatalogServiceProvider;
+use App\Providers\CompanyServiceProvider;
 use App\Providers\DeliveryServiceProvider;
 use App\Providers\Filament\AdminPanelProvider;
 use App\Providers\RouteServiceProvider;
@@ -183,6 +184,7 @@ return [
         RouteServiceProvider::class,
         CatalogServiceProvider::class,
         DeliveryServiceProvider::class,
+        CompanyServiceProvider::class,
         AdminPanelProvider::class,
         ImageServiceProvider::class,
     ])->toArray(),

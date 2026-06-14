@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\CatalogController;
+use App\Http\Controllers\Api\CompanyController;
 use App\Http\Controllers\Api\DeliveryController;
 use Illuminate\Support\Facades\Route;
 
@@ -16,3 +17,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/catalog', [CatalogController::class, 'show']);
 Route::get('/delivery', [DeliveryController::class, 'show']);
+
+Route::prefix('company')->group(function (): void {
+    Route::get('/main', [CompanyController::class, 'main']);
+    Route::get('/legals', [CompanyController::class, 'legals']);
+    Route::get('/documents', [CompanyController::class, 'documents']);
+});

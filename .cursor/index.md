@@ -38,6 +38,20 @@ import docs/delivery/events.md
 
 ******** Delivery **********
 
+******** Company **********
+
+import docs/company/overview.md
+import docs/company/routing.md
+import docs/company/http.md
+import docs/company/application.md
+import docs/company/domain.md
+import docs/company/infrastructure.md
+import docs/company/filament.md
+import docs/company/flow.md
+import docs/company/events.md
+
+******** Company **********
+
 <!-- Другие BC подключать по тому же шаблону:
 
 ******** Order **********
