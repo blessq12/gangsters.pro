@@ -41,7 +41,10 @@ final class MarketingMediaUpload
             label: 'Изображение',
             directory: 'marketing/promotions',
             configKey: 'promotion',
-        );
+            previewHeight: null,
+        )
+            ->panelLayout('integrated')
+            ->panelAspectRatio(null);
     }
 
     private static function make(
@@ -49,6 +52,7 @@ final class MarketingMediaUpload
         string $label,
         string $directory,
         string $configKey,
+        ?string $previewHeight = '150',
     ): FileUpload {
         $field = FileUpload::make($name)
             ->label($label)
@@ -58,8 +62,11 @@ final class MarketingMediaUpload
             ->visibility('public')
             ->acceptedFileTypes(self::ACCEPTED_TYPES)
             ->openable()
-            ->downloadable()
-            ->imagePreviewHeight('150');
+            ->downloadable();
+
+        if ($previewHeight !== null) {
+            $field->imagePreviewHeight($previewHeight);
+        }
 
         $maxUploadKb = self::maxUploadKilobytes($configKey);
 

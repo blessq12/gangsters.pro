@@ -5,16 +5,16 @@
 export const homePromotionsDesign = {
     shared: {
         section: "my-12",
-        thumbWrap: "aspect-[16/9] w-full overflow-hidden rounded-none",
+        thumbWrap: "w-full overflow-hidden rounded-none",
         thumbImg:
-            "h-full w-full object-cover grayscale transition-transform duration-500 ease-out group-hover:scale-105 group-hover:grayscale-0",
+            "block h-auto w-full max-w-full object-contain grayscale transition-transform duration-500 ease-out group-hover:scale-105 group-hover:grayscale-0",
         modalStack: "space-y-3",
-        modalMedia: "aspect-[16/9] w-full overflow-hidden rounded-none",
-        modalImg: "h-full w-full object-cover",
+        modalMedia: "w-full overflow-hidden rounded-none",
+        modalImg: "mx-auto block h-auto w-full max-w-full max-h-[70vh] object-contain",
         modalText: "text-sm leading-relaxed text-app-canvas-fg",
         emptyText: "py-4 text-center text-xs text-app-muted",
         swiperHook: "promos-swiper",
-        pulseInner: "aspect-[16/9] w-full rounded-none",
+        pulseInner: "min-h-[8rem] w-full rounded-none",
     },
 
     combo: {
@@ -29,7 +29,7 @@ export const homePromotionsDesign = {
         desktopGrid:
             "mx-auto grid grid-cols-4 justify-items-center gap-4",
         desktopSkeleton:
-            "aspect-[16/9] w-full max-w-xs rounded-none border border-black/12 bg-neutral-900/65 animate-pulse",
+            "min-h-[8rem] w-full max-w-xs rounded-none border border-black/12 bg-neutral-900/65 animate-pulse",
         desktopArticle:
             "group relative w-full max-w-xs cursor-pointer rounded-none",
         emptyDesktopSpan: "col-span-4 py-4 text-center text-xs text-app-muted",
@@ -39,7 +39,7 @@ export const homePromotionsDesign = {
         heading: "mb-4 text-2xl font-normal text-app-accent sm:text-3xl",
         grid: "mx-auto grid grid-cols-4 justify-items-center gap-4",
         skeleton:
-            "aspect-[16/9] w-full max-w-xs rounded-none border border-black/12 bg-neutral-900/65 animate-pulse",
+            "min-h-[8rem] w-full max-w-xs rounded-none border border-black/12 bg-neutral-900/65 animate-pulse",
         article:
             "group relative w-full max-w-xs cursor-pointer rounded-none",
         emptySpan: "col-span-4 py-4 text-center text-xs text-app-muted",

@@ -16,6 +16,8 @@ UI оператора для мутаций настроек доставки. �
 
 Отдельного листинга и create/delete **нет** — при первом заходе `firstOrCreate` создаёт строку id=1.
 
+`DeliveryResource::form()` / `table()` пустые — схема задаётся в `ManageDelivery::form()` через `DeliveryForm`.
+
 ## Форма (`DeliveryForm`)
 
 ### Таб «Настройки»
@@ -36,13 +38,20 @@ UI оператора для мутаций настроек доставки. �
 | Координаты кухни | `kitchen_latitude`, `kitchen_longitude` | hidden, заполняются с карты |
 | Полигон зоны | `delivery_zone_geojson` | `YandexDeliveryZoneMap` (iframe) |
 
+## Сохранение
+
+- Кнопка «Сохранить» вызывает `window.deliveryZoneSyncBeforeSave($wire)` перед Livewire save — синхронизирует полигон из iframe.
+- `mutateFormDataBeforeSave`: GeoJSON только `Polygon` / `MultiPolygon`, иначе `null`.
+- После save — остаётся на той же странице (`getRedirectUrl` = `null`).
+- Уведомление: «Настройки доставки сохранены».
+
 ## Карта зоны
 
 | Компонент | Путь | Смысл |
 |-----------|------|--------|
 | `YandexDeliveryZoneMap` | `app/Filament/Delivery/Forms/Components/` | Filament Field, view `filament.forms.components.yandex-delivery-zone-map` |
-| iframe-редактор | `resources/views/admin/delivery-zone-map-editor.blade.php` | Яндекс.Карты, рисование полигона |
-| postMessage-мост | `public/js/filament/delivery-zone-iframe-bridge.js` | Alpine `deliveryZoneBridge` |
+| iframe-редактор | `resources/views/admin/delivery-zone-map-editor.blade.php` | Яндекс.Карты, рисование полигона, геокод кухни |
+| postMessage-мост | `public/js/filament/delivery-zone-iframe-bridge.js` | Alpine `deliveryZoneBridge`, `deliveryZoneSyncBeforeSave` |
 
 Маршрут iframe: `/admin/delivery-zone-map-editor` (`filament.admin.delivery-zone-map-editor`).
 
@@ -53,8 +62,7 @@ UI оператора для мутаций настроек доставки. �
 ## Паттерны UI
 
 - `ManageDelivery` extends `EditRecord`, зарегистрирован как `index`-страница ресурса (требование Filament для пункта навигации).
-- После save — остаётся на той же странице (`getRedirectUrl` = `null`).
-- Уведомление: «Настройки доставки сохранены».
+- `mount()` использует `DeliveryConfigurationRepository::SINGLETON_ID` для `firstOrCreate`.
 
 ## Регистрация
 

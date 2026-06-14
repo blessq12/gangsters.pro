@@ -1,15 +1,84 @@
 # MarketingContent — потоки
 
-## Витрина (read)
+Сквозные сценарии BC и связанные контуры.
 
-1. SPA (позже) → `GET /api/marketing/banners` / `promotions`.
-2. `MarketingContentController` → `GetMarketingContentUseCase`.
-3. Repositories → активные записи `MKT_*` по `sort_order`.
-4. Use case маппит URL изображений и excerpt акции.
+## 1. Витрина: read API
 
-## Админка (write)
+```
+SPA → GET /api/marketing/banners | /promotions
+    → MarketingContentController
+    → GetMarketingContentUseCase
+    → BannerRepository / PromotionRepository
+    → Eloquent MKT_* + Mapper
+    → MarketingContentPresenter (+ MarketingMediaUrlPort)
+    → JSON { data: [...] }
+```
 
-1. Оператор → `/admin/marketing`.
-2. Hub table → create/edit форма Filament.
-3. Сохранение в `MKT_banners` / `MKT_promotions` (Eloquent).
-4. Следующий API read отдаёт обновлённые данные.
+Combined endpoint `GET /api/marketing` отдаёт `{ data: { banners, promotions } }` — в SPA не используется.
+
+Фильтр: только `is_active = true`, порядок `sort_order, id`.
+
+## 2. Витрина: SPA read model
+
+```
+MainLayout* onMounted
+    → marketingStore.fetchAll() (Promise.allSettled banners + promotions)
+
+HomeJumbotron* / HomePromotions*
+    → useMarketingReadModel({ autoload: true })
+    → marketingStore.fetchAll() (повторно при mount компонента)
+    → marketingMappers.normalize*
+    → UI (карусель, карточки акций, modal с body HTML)
+```
+
+**Потребители:**
+
+| Место | Данные |
+|-------|--------|
+| `HomeJumbotronBase` (+ Desktop/Mobile обёртки) | banners |
+| `HomePromotionsDesktop` / `HomePromotionsMobile` | promotions |
+| `HomePageDesktop` / `HomePageMobile` | оба блока |
+| `MainLayoutDesktop` / `MainLayoutMobile` | prefetch |
+
+Нормализация на фронте отбрасывает записи без `title`.
+
+## 3. Оператор: hub
+
+```
+Браузер → /admin/marketing?tab=banners|promotions
+    → ManageMarketingContent
+    → BannersHubTable | PromotionsHubTable
+    → create / edit / delete / reorder
+```
+
+## 4. Оператор: create/edit
+
+```
+Hub → CreateBanner | EditBanner | CreatePromotion | EditPromotion
+    → BannerForm | PromotionForm
+    → FileUpload → public disk (marketing/banners/*, marketing/promotions/*)
+    → Eloquent save MKT_*
+    → RedirectsToMarketingHub → /admin/marketing?tab=...
+```
+
+При edit без новой загрузки: `PreservesMarketingMediaOnEmptyUpload` сохраняет старый path.
+
+При смене/удалении image: `MarketingStoredMedia` удаляет старый файл с disk (кроме `/images/*` и http URL).
+
+## 5. Следующий read
+
+Изменения видны при следующем `GET /api/marketing/*` (общая БД, кэша на read нет).
+
+## Разделение read / write
+
+| Контур | Read | Write |
+|--------|------|-------|
+| Публичный API | `GetMarketingContentUseCase` → Domain ports | — |
+| Filament | Eloquent в hub/forms | Eloquent save / delete / reorder |
+
+Write use cases в Application **не** внедрены.
+
+## Не входит в BC
+
+- Checkout benefits, подарки — BC Promotion.
+- Каталог, корзина — другие контексты.

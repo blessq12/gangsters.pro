@@ -1,8 +1,8 @@
 # Delivery — слой приложения
 
-Оркестрация сценариев: читает домен через порт репозитория, собирает контракт для витрины.
+Оркестрация сценариев **внутри BC Delivery**: читает домен через порт репозитория, собирает контракт для витрины.
 
-## Активные сценарии
+## Активные сценарии Delivery BC
 
 | Сценарий | Назначение |
 |----------|------------|
@@ -45,10 +45,23 @@
 }
 ```
 
+## Связанный код в других BC (не Application/Delivery)
+
+Логика, **зависящая** от конфига Delivery, но живущая вне `app/Application/Delivery/`:
+
+| Класс | BC | Роль |
+|-------|-----|------|
+| `PrepareCheckoutDeliveryAddress` | Checkout | Геокодирование адреса курьера через `DeliveryAddressGeocoderPort` + city из конфига |
+| `SetCheckoutDeliveryUseCase` | Checkout | Вызывает `PrepareCheckoutDeliveryAddress` перед сохранением `DeliverySnapshot` |
+| `EvaluateDeliveryBenefits` | Promotion | `delivery_pricing`, `in_zone` через `PromotionDeliveryPricingPort` |
+| `EvaluatePromotionBenefits` | Promotion | Оркестратор benefits + delivery pricing |
+
 ## Админские мутации
 
 Сейчас **не** проходят через Application Delivery. Операторское сохранение выполняет Filament напрямую через Eloquent-модель `DLV_Configuration` (см. `filament.md`).
 
 ## DTO / Presenter / Ports
 
-Отдельных DTO, Presenter и Command-сценариев в BC **нет** — один read use case.
+В BC Delivery **нет** DTO, Presenter и Command-сценариев — один read use case.
+
+Порт геокодирования объявлен в Domain, реализован в Infrastructure; Application Delivery его **не** вызывает.

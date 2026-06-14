@@ -10,6 +10,16 @@
 
 Регистрация: `routes/api.php` → группа `api` (префикс `/api`).
 
+## SPA (витрина)
+
+| Путь | Назначение |
+|------|------------|
+| `/delivery` | Страница условий доставки (`DeliveryPage`) |
+
+Регистрация: `resources/js/router/routeRecords.js`, name `delivery`.
+
+Данные страницы — из `GET /api/delivery`, не из отдельного маршрута.
+
 ## Админка (Filament)
 
 | Путь | Назначение |
@@ -18,6 +28,12 @@
 | `/admin/delivery-zone-map-editor` | iframe-редактор полигона зоны (Яндекс.Карты) |
 
 Панель: `admin` (`AdminPanelProvider`), slug ресурса — `delivery`.
+
+## Связанные маршруты (другие BC)
+
+| Метод | Путь | Связь с Delivery |
+|-------|------|------------------|
+| `PATCH` | `/api/checkout/{checkoutId}/delivery` | Геокод адреса + pricing in/out zone (Checkout + Promotion) |
 
 ## Чего нет
 
