@@ -2,16 +2,18 @@
 
 namespace App\Application\Client\useCases;
 
+use App\Application\Client\DTO\DeleteClientAddressDto;
 use App\Application\Client\Presenter\ClientPresenter;
 use App\Domain\Client\Entity\Client;
 use App\Domain\Client\Exception\ClientNotFoundException;
 use App\Domain\Client\Repository\ClientRepository;
+use App\Domain\Client\ValueObject\ClientAddressId;
 use App\Domain\Client\ValueObject\ClientId;
 
 /**
- * Сценарий: получить данные авторизованного клиента.
+ * Сценарий: удалить адрес из адресной книги клиента.
  */
-final class GetClientProfileUseCase
+final class DeleteClientAddressUseCase
 {
     public function __construct(
         private readonly ClientRepository $clients,
@@ -21,9 +23,15 @@ final class GetClientProfileUseCase
     /**
      * @return array<string, mixed>
      */
-    public function execute(int $clientId): array
+    public function execute(DeleteClientAddressDto $input): array
     {
-        return $this->presenter->present($this->findClient($clientId));
+        $client = $this->findClient($input->clientId);
+
+        $client->removeAddress(ClientAddressId::fromInt($input->addressId));
+
+        $this->clients->save($client);
+
+        return $this->presenter->present($client);
     }
 
     private function findClient(int $clientId): Client

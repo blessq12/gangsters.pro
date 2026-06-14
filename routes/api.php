@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\CatalogController;
 use App\Http\Controllers\Api\CheckoutController;
+use App\Http\Controllers\Api\ClientController;
 use App\Http\Controllers\Api\CompanyController;
 use App\Http\Controllers\Api\DeliveryController;
 use App\Http\Controllers\Api\MarketingContentController;
@@ -39,4 +40,18 @@ Route::prefix('company')->group(function (): void {
     Route::get('/main', [CompanyController::class, 'main']);
     Route::get('/legals', [CompanyController::class, 'legals']);
     Route::get('/documents', [CompanyController::class, 'documents']);
+});
+
+Route::prefix('client')->group(function (): void {
+    Route::post('register', [ClientController::class, 'register']);
+    Route::post('login', [ClientController::class, 'login']);
+    Route::post('forgot-password', [ClientController::class, 'forgotPassword']);
+    Route::post('change-password', [ClientController::class, 'changePassword']);
+
+    Route::middleware('auth:sanctum')->group(function (): void {
+        Route::get('profile', [ClientController::class, 'profile']);
+        Route::patch('profile', [ClientController::class, 'updateProfile']);
+        Route::post('addresses', [ClientController::class, 'addAddress']);
+        Route::delete('addresses/{addressId}', [ClientController::class, 'deleteAddress']);
+    });
 });

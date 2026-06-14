@@ -4,7 +4,11 @@ namespace App\Exceptions;
 
 use App\Application\Common\Exceptions\ApiException;
 use App\Application\Common\Exceptions\UnauthorizedException;
-use App\Domain\Client\Events\ClientUnauthorizedAccessDetected;
+use App\Domain\Client\Event\ClientUnauthorizedAccessDetected;
+use App\Domain\Client\Exception\ClientAddressNotFoundException;
+use App\Domain\Client\Exception\ClientAlreadyExistsException;
+use App\Domain\Client\Exception\ClientNotFoundException;
+use App\Domain\Client\Exception\InvalidPasswordResetTokenException;
 use App\Domain\Order\Exceptions\OrderInvariantViolation;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
@@ -49,6 +53,30 @@ class Handler extends ExceptionHandler
             return response()->json([
                 'message' => $e->getMessage(),
             ], $e->statusCode());
+        }
+
+        if ($e instanceof ClientNotFoundException && $request->is('api/*')) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 404);
+        }
+
+        if ($e instanceof ClientAlreadyExistsException && $request->is('api/*')) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 422);
+        }
+
+        if ($e instanceof ClientAddressNotFoundException && $request->is('api/*')) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 404);
+        }
+
+        if ($e instanceof InvalidPasswordResetTokenException && $request->is('api/*')) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 422);
         }
 
         if ($e instanceof OrderInvariantViolation && $request->is('api/*')) {

@@ -88,3 +88,17 @@ import docs/checkout/flow.md
 import docs/checkout/events.md
 
 ******** Checkout **********
+
+******** Client **********
+
+import docs/client/overview.md
+import docs/client/routing.md
+import docs/client/http.md
+import docs/client/application.md
+import docs/client/domain.md
+import docs/client/infrastructure.md
+import docs/client/filament.md
+import docs/client/flow.md
+import docs/client/events.md
+
+******** Client **********
