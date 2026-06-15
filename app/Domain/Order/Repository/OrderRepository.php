@@ -11,6 +11,8 @@ interface OrderRepository
 
     public function findByCheckoutId(string $checkoutId): ?Order;
 
+    public function findByPartnerAndExternalOrderId(string $partnerCode, string $externalOrderId): ?Order;
+
     public function existsByCheckoutId(string $checkoutId): bool;
 
     /**

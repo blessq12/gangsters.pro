@@ -1,6 +1,6 @@
 # Order — потоки
 
-## Создание заказа (happy path)
+## Создание заказа (сайт)
 
 ```mermaid
 sequenceDiagram
@@ -16,9 +16,34 @@ sequenceDiagram
     CheckoutUC->>Event: dispatch
     Event->>OrderH: handle
     OrderH->>OrderUC: CreateOrderDto
-    OrderUC->>DB: insert (idempotent)
+    OrderUC->>DB: insert (idempotent by checkout_id)
+    OrderUC->>OrderUC: dispatch OrderCreated (новый)
     CheckoutAPI-->>SPA: checkout + order
 ```
+
+## Создание заказа (агрегатор)
+
+```mermaid
+sequenceDiagram
+    participant Agg as Агрегатор
+    participant Ingress as IngressController
+    participant UC as ReceiveExternalOrderUseCase
+    participant OrderUC as CreateOrderFromIngressUseCase
+    participant DB as ORD_orders
+
+    Agg->>Ingress: POST /api/ingress/{partner}/orders
+    Ingress->>UC: pipeline
+    UC->>OrderUC: CreateOrderFromIngressDto
+    OrderUC->>DB: insert (idempotent by partner+external_id)
+    OrderUC->>OrderUC: dispatch OrderCreated (новый)
+    Ingress-->>Agg: order_id
+```
+
+См. [AggregatorIngress flow](../aggregator-ingress/flow.md).
+
+## Экспорт в системы учёта
+
+После `OrderCreated` → [OrderAccountingExport flow](../order-accounting-export/flow.md) (Frontpad, iiko).
 
 ## История заказов (SPA)
 
@@ -39,7 +64,10 @@ sequenceDiagram
 
 ## Идемпотентность
 
-Повторный `confirm` на тот же checkout не создаёт второй заказ — `findByCheckoutId` в `CreateOrderUseCase`.
+| Канал | Ключ |
+|-------|------|
+| Сайт | `findByCheckoutId` в `CreateOrderUseCase` |
+| Агрегатор | `findByPartnerAndExternalOrderId` в `CreateOrderFromIngressUseCase` |
 
 ## Гостевые заказы
 

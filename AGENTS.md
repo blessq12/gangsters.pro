@@ -23,6 +23,11 @@
 
 ## Документация (дополнительно)
 
+- [`.cursor/docs/README.md`](.cursor/docs/README.md) — индекс bounded contexts
+- [`docs/aggregator-ingress.md`](docs/aggregator-ingress.md) — приём заказов от агрегаторов (кратко)
+- [`docs/order-accounting-export.md`](docs/order-accounting-export.md) — экспорт заказов в системы учёта (кратко)
+- [`.cursor/docs/aggregator-ingress/overview.md`](.cursor/docs/aggregator-ingress/overview.md) — BC AggregatorIngress (полностью)
+- [`.cursor/docs/order-accounting-export/overview.md`](.cursor/docs/order-accounting-export/overview.md) — BC OrderAccountingExport (полностью)
 - [`docs/architecture/bounded-context-dependency-matrix.md`](docs/architecture/bounded-context-dependency-matrix.md) — границы bounded contexts
 - [`docs/admin-filament-hubs.md`](docs/admin-filament-hubs.md) — 5 admin hubs
 - [`docs/shopping-session-csrf.md`](docs/shopping-session-csrf.md) — shopping cookie / CSRF
@@ -37,5 +42,7 @@ php artisan test --filter FrontendAndAclBoundaries
 ## Эталоны кода
 
 - Backend: `app/Domain/Order/` → `app/Application/Order/` → `app/Infrastructure/Order/`
+- Ingress агрегаторов: `app/Domain/AggregatorIngress/` → `app/Application/AggregatorIngress/` → `app/Infrastructure/AggregatorIngress/`
+- Экспорт в учётку: `app/Domain/OrderAccountingExport/` → `app/Application/OrderAccountingExport/` → `app/Infrastructure/OrderAccountingExport/`
 - Admin: `app/Filament/Operations/`
 - Frontend shopping: `resources/js/features/shoppingSession/` + `resources/js/processes/shoppingSession/`

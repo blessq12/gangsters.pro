@@ -6,7 +6,9 @@ use App\Domain\Order\Entity\Order;
 use App\Shared\Enum\ClientKind;
 use App\Shared\Enum\DeliveryMethod;
 use App\Shared\Enum\PaymentMethod;
+use App\Domain\Order\Enum\OrderSource;
 use App\Domain\Order\Enum\OrderStatus;
+use App\Domain\Order\ValueObject\OrderAggregatorReference;
 use App\Domain\Order\ValueObject\OrderCartSnapshot;
 use App\Domain\Order\ValueObject\OrderClientSnapshot;
 use App\Domain\Order\ValueObject\OrderDeliveryAddress;
@@ -23,9 +25,17 @@ final class OrderMapper
 {
     public function toDomain(ORD_Order $row): Order
     {
+        $partnerCode = isset($row->partner_code) ? (string) $row->partner_code : '';
+        $externalOrderId = isset($row->external_order_id) ? (string) $row->external_order_id : '';
+        $aggregatorReference = $partnerCode !== '' && $externalOrderId !== ''
+            ? new OrderAggregatorReference($partnerCode, $externalOrderId)
+            : null;
+
         return Order::restore(
             id: OrderId::fromInt((int) $row->id),
-            checkoutId: (string) $row->checkout_id,
+            source: OrderSource::from((string) ($row->source ?? OrderSource::Site->value)),
+            checkoutId: $row->checkout_id !== null ? (string) $row->checkout_id : null,
+            aggregatorReference: $aggregatorReference,
             status: OrderStatus::from((string) $row->status),
             cart: $this->mapCartSnapshot(is_array($row->cart_snapshot) ? $row->cart_snapshot : []),
             client: $this->mapClientSnapshot(is_array($row->client_snapshot) ? $row->client_snapshot : []),
@@ -40,9 +50,14 @@ final class OrderMapper
      */
     public function toPersistence(Order $order): array
     {
+        $aggregatorReference = $order->aggregatorReference();
+
         return [
             'id' => $order->hasId() ? $order->id()->value() : null,
+            'source' => $order->source()->value,
             'checkout_id' => $order->checkoutId(),
+            'partner_code' => $aggregatorReference?->partnerCode(),
+            'external_order_id' => $aggregatorReference?->externalOrderId(),
             'status' => $order->status()->value,
             'client_id' => $order->client()->clientId(),
             'total_rubles' => $order->cart()->payableTotal()->amountRubles(),

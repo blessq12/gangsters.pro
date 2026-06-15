@@ -9,6 +9,8 @@ use App\Providers\CompanyServiceProvider;
 use App\Providers\DeliveryServiceProvider;
 use App\Providers\MarketingContentServiceProvider;
 use App\Providers\PromotionServiceProvider;
+use App\Providers\AggregatorIngressServiceProvider;
+use App\Providers\OrderAccountingExportServiceProvider;
 use App\Providers\OrderServiceProvider;
 use App\Providers\Filament\AdminPanelProvider;
 use App\Providers\RouteServiceProvider;
@@ -191,6 +193,8 @@ return [
         CheckoutServiceProvider::class,
         ClientServiceProvider::class,
         OrderServiceProvider::class,
+        AggregatorIngressServiceProvider::class,
+        OrderAccountingExportServiceProvider::class,
         DeliveryServiceProvider::class,
         MarketingContentServiceProvider::class,
         PromotionServiceProvider::class,

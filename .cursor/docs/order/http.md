@@ -9,6 +9,7 @@
 | Действие | HTTP | Auth | Use case |
 |----------|------|------|----------|
 | `index()` | `GET /api/order` | `auth.client` | `ListClientOrdersUseCase` |
+| `show()` | `GET /api/order/{orderId}` | `auth.client` | `GetOrderUseCase` |
 
 Ответ **200**:
 
@@ -22,11 +23,14 @@
 
 ## Создание заказа
 
-Write **не** через `/api/order`. Создание:
-
-`POST /api/checkout/{checkoutId}/confirm` → `CheckoutConfirmed` → `CreateOrderUseCase`.
+| Канал | Маршрут | Use case |
+|-------|---------|----------|
+| Сайт | `POST /api/checkout/{checkoutId}/confirm` | `CreateOrderUseCase` (через event) |
+| Агрегатор | `POST /api/ingress/{partner}/orders` | `CreateOrderFromIngressUseCase` |
 
 В ответе confirm присутствует поле `order` (тот же `OrderPresenter`).
+
+Агрегаторы: см. [AggregatorIngress http](../aggregator-ingress/http.md).
 
 ## Legacy
 

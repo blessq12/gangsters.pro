@@ -1,0 +1,116 @@
+<?php
+
+namespace Tests\Unit\OrderAccountingExport;
+
+use App\Application\OrderAccountingExport\Mapper\FrontpadOrderMapper;
+use App\Application\OrderAccountingExport\Mapper\IikoOrderMapper;
+use App\Domain\Order\Enum\OrderSource;
+use App\Domain\Order\Event\OrderCreated;
+use App\Domain\Order\ValueObject\OrderCartSnapshot;
+use App\Domain\Order\ValueObject\OrderClientSnapshot;
+use App\Domain\Order\ValueObject\OrderDeliveryAddress;
+use App\Domain\Order\ValueObject\OrderDeliverySnapshot;
+use App\Domain\Order\ValueObject\OrderGuestContact;
+use App\Domain\Order\ValueObject\OrderId;
+use App\Domain\Order\ValueObject\OrderLineSnapshot;
+use App\Domain\Order\ValueObject\OrderPaymentSnapshot;
+use App\Domain\OrderAccountingExport\Repository\AccountingProductBindingRepository;
+use App\Shared\Enum\DeliveryMethod;
+use App\Shared\Enum\PaymentMethod;
+use App\Shared\ValueObject\Money;
+use DateTimeImmutable;
+use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
+
+final class AccountingOrderMappersTest extends TestCase
+{
+    #[Test]
+    public function frontpad_маппер_собирает_form_параметры(): void
+    {
+        config([
+            'order-accounting-export.systems.frontpad.secret' => 'test-secret',
+            'order-accounting-export.systems.frontpad.pay.card_online' => '3',
+            'order-accounting-export.systems.frontpad.product_bindings' => [
+                '10' => '001',
+            ],
+        ]);
+
+        $bindings = $this->createMock(AccountingProductBindingRepository::class);
+        $bindings->method('resolveExternalProductId')
+            ->willReturnCallback(static fn (string $system, int $productId): ?string => $system === 'frontpad' && $productId === 10 ? '001' : null);
+
+        $request = (new FrontpadOrderMapper($bindings))->toRequest($this->sampleEvent());
+
+        $this->assertSame('test-secret', $request['secret']);
+        $this->assertSame('79990001122', $request['phone']);
+        $this->assertSame('Иван', $request['name']);
+        $this->assertSame('3', $request['pay']);
+        $this->assertSame('001', $request['product[0]']);
+        $this->assertSame('2', $request['product_kol[0]']);
+        $this->assertSame('Ленина', $request['street']);
+        $this->assertSame('10', $request['home']);
+    }
+
+    #[Test]
+    public function iiko_маппер_собирает_json_тело(): void
+    {
+        config([
+            'order-accounting-export.systems.iiko.organization_id' => 'org-1',
+            'order-accounting-export.systems.iiko.terminal_group_id' => 'tg-1',
+            'order-accounting-export.systems.iiko.payment_types.card_online.kind' => 'Card',
+            'order-accounting-export.systems.iiko.payment_types.card_online.id' => 'pay-1',
+        ]);
+
+        $bindings = $this->createMock(AccountingProductBindingRepository::class);
+        $bindings->method('resolveExternalProductId')
+            ->willReturnCallback(static fn (string $system, int $productId): ?string => $system === 'iiko' && $productId === 10 ? 'prod-uuid' : null);
+
+        $request = (new IikoOrderMapper($bindings))->toRequest($this->sampleEvent());
+
+        $this->assertSame('org-1', $request['organizationId']);
+        $this->assertSame('tg-1', $request['terminalGroupId']);
+        $this->assertSame('DeliveryByCourier', $request['order']['orderServiceType']);
+        $this->assertSame('prod-uuid', $request['order']['items'][0]['productId']);
+        $this->assertSame('pay-1', $request['order']['payments'][0]['paymentTypeId']);
+        $this->assertTrue($request['order']['payments'][0]['isProcessedExternally']);
+    }
+
+    private function sampleEvent(): OrderCreated
+    {
+        return new OrderCreated(
+            orderId: OrderId::fromInt(42),
+            source: OrderSource::Site,
+            checkoutId: 'chk-1',
+            aggregatorReference: null,
+            cart: OrderCartSnapshot::fromLines([
+                new OrderLineSnapshot(
+                    productId: 10,
+                    productName: 'Филадельфия',
+                    quantity: 2,
+                    unitPrice: Money::rubles(450),
+                ),
+            ]),
+            client: OrderClientSnapshot::guest(new OrderGuestContact(
+                name: 'Иван',
+                phone: '+7 (999) 000-11-22',
+                email: 'ivan@example.com',
+            )),
+            delivery: new OrderDeliverySnapshot(
+                method: DeliveryMethod::Courier,
+                address: new OrderDeliveryAddress(
+                    street: 'Ленина',
+                    house: '10',
+                    entrance: '1',
+                    apartment: '5',
+                ),
+                comment: 'Без имбиря',
+                scheduledAt: null,
+            ),
+            payment: new OrderPaymentSnapshot(
+                method: PaymentMethod::CardOnline,
+                changeFromRubles: null,
+            ),
+            occurredAt: new DateTimeImmutable('2026-06-16T12:00:00+00:00'),
+        );
+    }
+}

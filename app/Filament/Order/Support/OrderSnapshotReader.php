@@ -22,7 +22,12 @@ final class OrderSnapshotReader
 
         return [
             'id' => (string) $record->id,
-            'checkout_id' => (string) $record->checkout_id,
+            'source' => self::sourceLabel((string) ($record->source ?? 'site')),
+            'checkout_id' => $record->checkout_id !== null ? (string) $record->checkout_id : '—',
+            'partner_code' => $record->partner_code !== null
+                ? self::partnerLabel((string) $record->partner_code)
+                : '—',
+            'external_order_id' => $record->external_order_id !== null ? (string) $record->external_order_id : '—',
             'status' => self::statusLabel((string) $record->status),
             'created_at' => $record->created_at?->format('d.m.Y H:i') ?? '—',
             'cart_lines' => self::mapCartLines($lines),
@@ -56,6 +61,30 @@ final class OrderSnapshotReader
             'in_transit' => 'В доставке',
             'delivered' => 'Доставлен',
             default => $status !== '' ? $status : '—',
+        };
+    }
+
+    public static function sourceLabel(string $source): string
+    {
+        return match ($source) {
+            'site' => 'Сайт',
+            'aggregator' => 'Агрегатор',
+            default => $source !== '' ? $source : '—',
+        };
+    }
+
+    public static function partnerLabel(?string $partnerCode): string
+    {
+        if ($partnerCode === null || $partnerCode === '') {
+            return '—';
+        }
+
+        return match ($partnerCode) {
+            'stub' => 'Stub (dev)',
+            'yandex-eda' => 'Яндекс Еда',
+            'chibbis' => 'Чиббис',
+            'kuper' => 'Купер',
+            default => $partnerCode,
         };
     }
 

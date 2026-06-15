@@ -4,15 +4,19 @@
 
 | Класс | Назначение |
 |-------|------------|
-| `CreateOrderUseCase` | Write: создать заказ из `CreateOrderDto`; идемпотентен по `checkout_id` |
+| `CreateOrderUseCase` | Write (сайт): из `CreateOrderDto`; идемпотентен по `checkout_id` |
+| `CreateOrderFromIngressUseCase` | Write (агрегатор): из `CreateOrderFromIngressDto`; идемпотентен по `(partner, external_order_id)` |
 | `ListClientOrdersUseCase` | Read: список заказов клиента → `OrderPresenter` |
+| `GetOrderUseCase` | Read: детали заказа клиента с ACL |
 
 ## DTO
 
 | DTO | Поля |
 |-----|------|
 | `CreateOrderDto` | checkoutId, cart, client, delivery, payment, createdAt |
+| `CreateOrderFromIngressDto` | partnerCode, externalOrderId, cart, client, delivery, payment, createdAt |
 | `ListClientOrdersDto` | clientId |
+| `GetOrderDto` | orderId, clientId |
 
 ## Handler
 
@@ -22,6 +26,8 @@
 CheckoutConfirmed → CheckoutConfirmedOrderSnapshotMapper → CreateOrderDto → CreateOrderUseCase
 ```
 
+Ingress-заказы **не** через handler — см. [AggregatorIngress application](../aggregator-ingress/application.md).
+
 ## Presenter
 
 `OrderPresenter::present(Order)`:
@@ -29,7 +35,10 @@ CheckoutConfirmed → CheckoutConfirmedOrderSnapshotMapper → CreateOrderDto �
 ```json
 {
   "id": 1,
+  "source": "site",
   "checkout_id": "uuid",
+  "partner_code": null,
+  "external_order_id": null,
   "status": "new",
   "total": 1500,
   "created_at": "ISO-8601",
@@ -44,4 +53,7 @@ CheckoutConfirmed → CheckoutConfirmedOrderSnapshotMapper → CreateOrderDto �
 
 ## ACL
 
-`CheckoutConfirmedOrderSnapshotMapper` — маппинг Checkout VO → Order VO без утечки Checkout Entity в Order use case.
+| Mapper | Направление |
+|--------|-------------|
+| `CheckoutConfirmedOrderSnapshotMapper` | Checkout VO → Order VO |
+| `IngressMappedOrderToCreateOrderMapper` | AggregatorIngress → `CreateOrderFromIngressDto` |

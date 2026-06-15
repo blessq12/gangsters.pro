@@ -20,7 +20,7 @@
 | Агрегат, слепки блоков, lifecycle draft → confirmed | Создание **заказа** (Order BC) |
 | Цена товара при upsert корзины — через `CatalogPricingPort` | Тарифы/зона доставки (Delivery BC) |
 | Хранение черновика в `CHK_checkouts` | Профиль клиента, адресная книга (Client BC) |
-| Публичный write-API `/api/checkout/*` | Legacy `/api/shopping/*` — **удалён** |
+| Публичный write-API `/api/checkout/*` | Заказы с агрегаторов — [AggregatorIngress](../aggregator-ingress/overview.md), не через Checkout |
 
 ## Хранение
 

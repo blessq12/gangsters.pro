@@ -18,6 +18,12 @@ final class OrdersTable
                 TextColumn::make('id')
                     ->label('ID')
                     ->sortable(),
+                TextColumn::make('source')
+                    ->label('Источник')
+                    ->formatStateUsing(fn (?string $state): string => OrderSnapshotReader::sourceLabel((string) $state))
+                    ->badge()
+                    ->color(fn (?string $state): string => $state === 'aggregator' ? 'warning' : 'gray')
+                    ->sortable(),
                 TextColumn::make('status')
                     ->label('Статус')
                     ->badge()
@@ -63,7 +69,20 @@ final class OrdersTable
                     ->searchable()
                     ->copyable()
                     ->limit(12)
-                    ->tooltip(fn (string $state): string => $state),
+                    ->tooltip(fn (?string $state): string => (string) $state)
+                    ->placeholder('—'),
+                TextColumn::make('partner_code')
+                    ->label('Партнёр')
+                    ->formatStateUsing(fn (?string $state): string => OrderSnapshotReader::partnerLabel($state))
+                    ->placeholder('—')
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('external_order_id')
+                    ->label('Внешний ID')
+                    ->searchable()
+                    ->copyable()
+                    ->limit(16)
+                    ->placeholder('—')
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
                     ->label('Создан')
                     ->dateTime('d.m.Y H:i')

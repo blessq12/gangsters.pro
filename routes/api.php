@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ClientController;
 use App\Http\Controllers\Api\CompanyController;
 use App\Http\Controllers\Api\DeliveryController;
 use App\Http\Controllers\Api\MarketingContentController;
+use App\Http\Controllers\Api\IngressController;
 use App\Http\Controllers\Api\OrderController;
 use Illuminate\Support\Facades\Route;
 
@@ -66,3 +67,5 @@ Route::middleware('auth.client')->group(function (): void {
     Route::get('order', [OrderController::class, 'index']);
     Route::get('order/{orderId}', [OrderController::class, 'show']);
 });
+
+Route::post('ingress/{partner}/orders', [IngressController::class, 'store']);

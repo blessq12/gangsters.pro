@@ -1,6 +1,21 @@
 # Order — события
 
-Order BC **не публикует** доменных событий при создании (техдолг: `OrderCreated` для уведомлений/аналитики).
+## Исходящие
+
+| Событие | Когда | Подписчики |
+|---------|--------|------------|
+| `OrderCreated` | после первого `save` нового заказа | [OrderAccountingExport](../order-accounting-export/events.md) → `OnOrderCreated` |
+
+Класс: `App\Domain\Order\Event\OrderCreated`.
+
+Диспатч в:
+
+- `CreateOrderUseCase` (сайт)
+- `CreateOrderFromIngressUseCase` (агрегатор)
+
+**Не** диспатчится при идемпотентном `return $existing`.
+
+Payload: полный снимок `orderId`, `source`, `cart`, `client`, `delivery`, `payment`, `occurredAt`.
 
 ## Входящие
 
@@ -14,11 +29,10 @@ Order BC **не публикует** доменных событий при со
 
 Содержит слепки cart, client, delivery, payment и `checkoutId` — маппится ACL `CheckoutConfirmedOrderSnapshotMapper`.
 
-## Исходящие (план)
+## План
 
 | Событие | Когда |
 |---------|--------|
 | `OrderStatusChanged` | при реализации смены статуса |
-| `OrderCreated` | опционально после save (email, push) |
 
-Сейчас email `client-order-confirmation.blade.php` на фронте/legacy не подключён к listener.
+Другие потенциальные подписчики `OrderCreated`: email/push клиенту, аналитика (пока не подключены).

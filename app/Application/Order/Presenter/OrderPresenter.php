@@ -18,7 +18,10 @@ final class OrderPresenter
     {
         return [
             'id' => $order->id()->value(),
+            'source' => $order->source()->value,
             'checkout_id' => $order->checkoutId(),
+            'partner_code' => $order->aggregatorReference()?->partnerCode(),
+            'external_order_id' => $order->aggregatorReference()?->externalOrderId(),
             'status' => $order->status()->value,
             'total' => $order->cart()->itemsTotal()->amountRubles(),
             'created_at' => $order->createdAt()->format(DATE_ATOM),

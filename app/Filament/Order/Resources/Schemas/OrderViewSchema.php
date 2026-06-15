@@ -59,8 +59,15 @@ final class OrderViewSchema
         return [
             TextInput::make('id')
                 ->label('Идентификатор'),
+            TextInput::make('source')
+                ->label('Источник'),
             TextInput::make('checkout_id')
                 ->label('Оформление')
+                ->columnSpanFull(),
+            TextInput::make('partner_code')
+                ->label('Партнёр'),
+            TextInput::make('external_order_id')
+                ->label('Внешний ID заказа')
                 ->columnSpanFull(),
             TextInput::make('status')
                 ->label('Статус'),

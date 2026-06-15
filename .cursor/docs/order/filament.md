@@ -19,11 +19,14 @@ Read-only: оператор смотрит заказы из `ORD_orders`. Со�
 | Колонка | Источник |
 |---------|----------|
 | ID | `id` |
+| Источник | `source` — «Сайт» / «Агрегатор» |
 | Статус | badge + `OrderSnapshotReader::statusLabel()` |
 | Сумма | `total_rubles` |
 | Клиент | `client_snapshot` |
 | Доставка / Оплата | JSON-слепки |
-| Checkout | `checkout_id` (copyable) |
+| Checkout | `checkout_id` (copyable), «—» для aggregator |
+| Партнёр | `partner_code` → `OrderSnapshotReader::partnerLabel()` |
+| Внешний ID | `external_order_id` |
 | Создан | `created_at` |
 
 Фильтр по `status`. Сортировка: `created_at desc`.
@@ -36,7 +39,7 @@ Read-only: оператор смотрит заказы из `ORD_orders`. Со�
 
 | `?tab=` | Блок |
 |---------|------|
-| `overview` | id, checkout_id, status, created_at |
+| `overview` | id, source, checkout_id, partner, external_order_id, status, created_at |
 | `cart` | сумма + `RepeatableEntry` table (TextEntry) |
 | `client` | client snapshot |
 | `delivery` | delivery snapshot |
@@ -54,4 +57,5 @@ Filament не использует Domain Order — только Eloquent + JSON
 |--------|------|-------|
 | Filament | список + просмотр | **запрещён** |
 | API клиента | `GET /api/order` | через Checkout confirm |
-| SPA | история в профиле | checkout wizard |
+| Ingress API | — | [AggregatorIngress](../aggregator-ingress/overview.md) |
+| SPA | история в профиле (только site + registered) | checkout wizard |

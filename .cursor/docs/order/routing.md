@@ -2,21 +2,28 @@
 
 Файл: `routes/api.php`.
 
-## API
+## API (клиент)
 
 ```php
 Route::middleware('auth.client')->group(function (): void {
     Route::get('order', [OrderController::class, 'index']);
+    Route::get('order/{orderId}', [OrderController::class, 'show']);
 });
 ```
 
-| Method | URI | Имя (Laravel auto) | Middleware |
-|--------|-----|----------------------|------------|
-| GET | `/api/order` | — | `api`, `auth.client` |
+| Method | URI | Middleware |
+|--------|-----|------------|
+| GET | `/api/order` | `api`, `auth.client` |
+| GET | `/api/order/{orderId}` | `api`, `auth.client` |
 
-Связанный write-маршрут (Checkout BC):
+## API (создание)
 
-| POST | `/api/checkout/{checkoutId}/confirm` | публичный | создаёт Order через event |
+| Method | URI | BC | Middleware |
+|--------|-----|-----|------------|
+| POST | `/api/checkout/{checkoutId}/confirm` | Checkout → Order | `api` |
+| POST | `/api/ingress/{partner}/orders` | AggregatorIngress → Order | `api` |
+
+Ingress: [aggregator-ingress/routing.md](../aggregator-ingress/routing.md).
 
 ## Filament
 

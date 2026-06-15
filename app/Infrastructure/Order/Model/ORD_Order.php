@@ -14,7 +14,10 @@ final class ORD_Order extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'source',
         'checkout_id',
+        'partner_code',
+        'external_order_id',
         'status',
         'client_id',
         'total_rubles',

@@ -6,11 +6,12 @@
 
 | Элемент | Смысл |
 |---------|--------|
-| `Order` | Aggregate Root: id?, checkoutId, status, cart, client, delivery, payment, createdAt |
+| `Order` | Aggregate Root: id?, source, checkoutId?, aggregatorRef?, status, cart, client, delivery, payment, createdAt |
 
 ### Фабрики
 
-- `Order::fromCheckoutSnapshot(...)` — создание из слепков (инварианты: непустая корзина, checkout_id).
+- `Order::fromCheckoutSnapshot(...)` — сайт; инварианты: непустая корзина, `checkout_id`.
+- `Order::fromIngressSnapshot(...)` — агрегатор; инварианты: partner + external_order_id, непустая корзина.
 - `Order::restore(...)` — гидратация из `ORD_orders`.
 
 Агрегат **immutable** после создания — мутаций статуса в домене пока нет.
@@ -20,6 +21,7 @@
 | VO | Смысл |
 |----|--------|
 | `OrderId` | int PK |
+| `OrderAggregatorReference` | partnerCode + externalOrderId |
 | `OrderCartSnapshot` / `OrderLineSnapshot` | позиции + `lineTotal()` |
 | `OrderClientSnapshot` | guest \| registered |
 | `OrderGuestContact` | name, phone, email? |
@@ -30,6 +32,7 @@
 
 | Enum | Значения |
 |------|----------|
+| `OrderSource` | `site`, `aggregator` |
 | `OrderStatus` | `new`, `preparing`, `in_transit`, `delivered` |
 | `OrderClientKind` | `guest`, `registered` |
 | `OrderDeliveryMethod` | `courier`, `pickup` |
@@ -40,15 +43,17 @@
 | Метод | Назначение |
 |-------|------------|
 | `findById` | по PK |
-| `findByCheckoutId` | идемпотентность create |
+| `findByCheckoutId` | идемпотентность site create |
+| `findByPartnerAndExternalOrderId` | идемпотентность aggregator create |
 | `existsByCheckoutId` | проверка дубликата |
 | `listByClientId` | история клиента, `created_at desc` |
 | `save` | insert (assignId после create) |
 
 ## Exception
 
-`OrderInvariantViolation` — пустая корзина, пустой checkout_id.
+`OrderInvariantViolation` — пустая корзина, пустой checkout_id, пустая ссылка агрегатора.
 
 ## Зависимости
 
-Order **слушает** Checkout через application listener, не импортирует Checkout Domain в Entity.
+- Order **слушает** Checkout через `OnCheckoutConfirmed`.
+- Order **не импортирует** AggregatorIngress; ingress вызывает `CreateOrderFromIngressUseCase` из Application.

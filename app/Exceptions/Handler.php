@@ -14,6 +14,10 @@ use App\Domain\Checkout\Exception\CheckoutAlreadyConfirmedException;
 use App\Domain\Checkout\Exception\CheckoutGiftBenefitViolationException;
 use App\Domain\Checkout\Exception\CheckoutNotFoundException;
 use App\Domain\Checkout\Exception\CheckoutNotReadyForConfirmationException;
+use App\Domain\AggregatorIngress\Exception\IngressAuthenticationFailedException;
+use App\Domain\AggregatorIngress\Exception\IngressInvariantViolation;
+use App\Domain\AggregatorIngress\Exception\PartnerNotConfiguredException;
+use App\Domain\AggregatorIngress\Exception\UnknownPartnerSkuException;
 use App\Domain\Order\Exception\OrderInvariantViolation;
 use App\Domain\Order\Exception\OrderNotFoundException;
 use Illuminate\Auth\AuthenticationException;
@@ -125,6 +129,30 @@ class Handler extends ExceptionHandler
             return response()->json([
                 'message' => $e->getMessage(),
             ], 404);
+        }
+
+        if ($e instanceof IngressAuthenticationFailedException && $request->is('api/*')) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 401);
+        }
+
+        if ($e instanceof PartnerNotConfiguredException && $request->is('api/*')) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 404);
+        }
+
+        if ($e instanceof UnknownPartnerSkuException && $request->is('api/*')) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 422);
+        }
+
+        if ($e instanceof IngressInvariantViolation && $request->is('api/*')) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 422);
         }
 
         return parent::render($request, $e);

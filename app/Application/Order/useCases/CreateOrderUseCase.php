@@ -4,7 +4,9 @@ namespace App\Application\Order\useCases;
 
 use App\Application\Order\DTO\CreateOrderDto;
 use App\Domain\Order\Entity\Order;
+use App\Domain\Order\Event\OrderCreated;
 use App\Domain\Order\Repository\OrderRepository;
+use Illuminate\Support\Facades\Event;
 
 /**
  * Сценарий: создать заказ из снимка подтверждённого чекаута.
@@ -33,6 +35,8 @@ final class CreateOrderUseCase
         );
 
         $this->orders->save($order);
+
+        Event::dispatch(OrderCreated::fromOrder($order));
 
         return $order;
     }
