@@ -30,9 +30,11 @@ final class AccountingOrderMappersTest extends TestCase
         config([
             'order-accounting-export.systems.frontpad.secret' => 'test-secret',
             'order-accounting-export.systems.frontpad.pay.card_online' => '3',
+            'order-accounting-export.systems.frontpad.hook_status' => [1, 10, 11],
             'order-accounting-export.systems.frontpad.product_bindings' => [
                 '10' => '001',
             ],
+            'app.url' => 'https://example.test',
         ]);
 
         $bindings = $this->createMock(AccountingProductBindingRepository::class);
@@ -45,10 +47,14 @@ final class AccountingOrderMappersTest extends TestCase
         $this->assertSame('79990001122', $request['phone']);
         $this->assertSame('Иван', $request['name']);
         $this->assertSame('3', $request['pay']);
-        $this->assertSame('001', $request['product[0]']);
-        $this->assertSame('2', $request['product_kol[0]']);
+        $this->assertSame(1, $request['person']);
+        $this->assertSame(1, $request['product'][0]);
+        $this->assertSame(2, $request['product_kol'][0]);
+        $this->assertArrayNotHasKey('product_price', $request);
         $this->assertSame('Ленина', $request['street']);
         $this->assertSame('10', $request['home']);
+        $this->assertSame('https://example.test/api/orders/update', $request['hook_url']);
+        $this->assertSame([1, 10, 11], $request['hook_status']);
     }
 
     #[Test]
