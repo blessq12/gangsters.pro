@@ -6,7 +6,7 @@
 |---------|-----|--------|
 | `id` | bigint PK | |
 | `source` | string(32) | `site` \| `aggregator` |
-| `checkout_id` | uuid nullable, unique | ссылка на чекаут (site) |
+| `checkout_id` | uuid nullable, unique | `client_request_id` для site |
 | `partner_code` | string nullable | код агрегатора |
 | `external_order_id` | string nullable | ID заказа у партнёра |
 | `status` | string(32) | `OrderStatus` |
@@ -20,10 +20,14 @@
 
 Unique: `(partner_code, external_order_id)` для aggregator.
 
-Миграции:
+Таблица `CHK_checkouts` **удалена**.
 
-- `database/migrations/2026_06_14_190000_create_ord_orders_table.php`
-- `database/migrations/2026_06_15_100000_extend_ord_orders_for_aggregator_ingress.php`
+## OrderDraft ports (Infrastructure)
+
+`app/Infrastructure/Order/Port/`:
+
+- `CatalogPricingAdapter`, `CatalogGiftCandidatesAdapter`, …
+- `ClientProfileAdapter`
 
 ## Модель
 
@@ -31,23 +35,19 @@ Unique: `(partner_code, external_order_id)` для aggregator.
 
 ## Mapper
 
-`OrderMapper`:
-
-- `toDomain(ORD_Order)` → `Order::restore`
-- `toPersistence(Order)` → массив для insert/update
-- serialize cart lines с `line_total_rubles`
+`OrderMapper` — domain ↔ persistence.
 
 ## Repository
 
 `EloquentOrderRepository` implements `OrderRepository`.
 
-Метод `findByPartnerAndExternalOrderId` — для ingress идемпотентности.
+`findByClientRequestId` — alias `findByCheckoutId`.
 
 ## Provider
 
 `OrderServiceProvider`:
 
-- bind `OrderRepository`
-- `Event::listen(CheckoutConfirmed, OnCheckoutConfirmed)`
+- bind `OrderRepository` + OrderDraft ports
+- `Event::listen(OrderCreated, OnOrderCreated)` → OrderAccountingExport
 
-Ingress-таблицы — см. [AggregatorIngress infrastructure](../aggregator-ingress/infrastructure.md).
+Ingress-таблицы — [AggregatorIngress infrastructure](../aggregator-ingress/infrastructure.md).

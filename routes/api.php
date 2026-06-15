@@ -1,13 +1,14 @@
 <?php
 
 use App\Http\Controllers\Api\CatalogController;
-use App\Http\Controllers\Api\CheckoutController;
 use App\Http\Controllers\Api\ClientController;
 use App\Http\Controllers\Api\CompanyController;
 use App\Http\Controllers\Api\DeliveryController;
 use App\Http\Controllers\Api\MarketingContentController;
 use App\Http\Controllers\Api\IngressController;
 use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\OrderDraftController;
+use App\Http\Controllers\Api\StorefrontController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -20,6 +21,11 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "api" middleware group. Make something great!
 */
 
+Route::get('/storefront/bootstrap', [StorefrontController::class, 'bootstrap']);
+
+Route::post('/order-drafts/preview', [OrderDraftController::class, 'preview']);
+Route::post('/orders', [OrderDraftController::class, 'store']);
+
 Route::get('/catalog', [CatalogController::class, 'show']);
 Route::prefix('marketing')->group(function (): void {
     Route::get('/', [MarketingContentController::class, 'show']);
@@ -28,16 +34,6 @@ Route::prefix('marketing')->group(function (): void {
 });
 
 Route::get('/delivery', [DeliveryController::class, 'show']);
-
-Route::prefix('checkout')->group(function (): void {
-    Route::post('/', [CheckoutController::class, 'store']);
-    Route::get('{checkoutId}', [CheckoutController::class, 'show']);
-    Route::patch('{checkoutId}/cart', [CheckoutController::class, 'updateCart']);
-    Route::patch('{checkoutId}/client', [CheckoutController::class, 'setClient']);
-    Route::patch('{checkoutId}/delivery', [CheckoutController::class, 'setDelivery']);
-    Route::patch('{checkoutId}/payment', [CheckoutController::class, 'setPayment']);
-    Route::post('{checkoutId}/confirm', [CheckoutController::class, 'confirm']);
-});
 
 Route::prefix('company')->group(function (): void {
     Route::get('/main', [CompanyController::class, 'main']);

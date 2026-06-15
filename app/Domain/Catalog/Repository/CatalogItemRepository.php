@@ -28,4 +28,10 @@ interface CatalogItemRepository
      * @return array<int, string>
      */
     public function findProductNamesByIds(array $ids): array;
+
+    /**
+     * @param  list<int>  $ids
+     * @return array<int, array{counts_as_roll: bool, gift_candidate: bool, complement_set: bool}>
+     */
+    public function findPromotionMetaByProductIds(array $ids): array;
 }

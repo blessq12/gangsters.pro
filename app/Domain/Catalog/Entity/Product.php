@@ -23,6 +23,7 @@ final class Product implements CatalogItem
         private readonly int $id,
         private readonly string $name,
         private readonly string $slug,
+        private readonly ?string $sku,
         private readonly ProductStatus $status,
         private readonly Money $price,
         private readonly ?string $description,
@@ -50,6 +51,11 @@ final class Product implements CatalogItem
     public function slug(): string
     {
         return $this->slug;
+    }
+
+    public function sku(): ?string
+    {
+        return $this->sku;
     }
 
     public function status(): ProductStatus

@@ -85,6 +85,8 @@ final class GetCatalogUseCase
             array_values(array_unique($lineProductIds)),
         );
 
+        $promotionMetaByProductId = $this->catalogItems->findPromotionMetaByProductIds($productIds);
+
         $items = [];
 
         foreach ($links as $link) {
@@ -94,6 +96,7 @@ final class GetCatalogUseCase
                 $setsById,
                 $tagById,
                 $lineProductNames,
+                $promotionMetaByProductId,
             );
             if ($item !== null) {
                 $items[] = $item;
@@ -119,6 +122,7 @@ final class GetCatalogUseCase
         array $setsById,
         array $tagById,
         array $lineProductNames,
+        array $promotionMetaByProductId,
     ): ?array {
         if ($link->kind() === CatalogItemKind::Set) {
             $set = $setsById[$link->catalogItemId()] ?? null;
@@ -131,7 +135,7 @@ final class GetCatalogUseCase
         $product = $productsById[$link->catalogItemId()] ?? null;
 
         return $product instanceof Product
-            ? $this->mapProduct($product, $tagById)
+            ? $this->mapProduct($product, $tagById, $promotionMetaByProductId[$product->id()] ?? null)
             : null;
     }
 
@@ -195,9 +199,10 @@ final class GetCatalogUseCase
 
     /**
      * @param  array<int, Tag>  $tagById
+     * @param  array{counts_as_roll: bool, gift_candidate: bool, complement_set: bool}|null  $promotionMeta
      * @return array<string, mixed>
      */
-    private function mapProduct(Product $product, array $tagById): array
+    private function mapProduct(Product $product, array $tagById, ?array $promotionMeta): array
     {
         return [
             'kind' => CatalogItemKind::Product->value,
@@ -211,6 +216,20 @@ final class GetCatalogUseCase
             'ingredients' => $product->ingredients(),
             'tags' => $this->mapTags($product->tagIds(), $tagById),
             'images' => $this->mapImages($product->images()),
+            'promotion_meta' => $this->mapPromotionMeta($promotionMeta),
+        ];
+    }
+
+    /**
+     * @param  array{counts_as_roll: bool, gift_candidate: bool, complement_set: bool}|null  $promotionMeta
+     * @return array{counts_as_roll: bool, gift_candidate: bool, complement_set: bool}
+     */
+    private function mapPromotionMeta(?array $promotionMeta): array
+    {
+        return [
+            'counts_as_roll' => (bool) ($promotionMeta['counts_as_roll'] ?? false),
+            'gift_candidate' => (bool) ($promotionMeta['gift_candidate'] ?? false),
+            'complement_set' => (bool) ($promotionMeta['complement_set'] ?? false),
         ];
     }
 

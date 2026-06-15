@@ -21,6 +21,7 @@ final class CatalogProductMapper
             id: (int) $row->id,
             name: (string) $row->name,
             slug: (string) $row->slug,
+            sku: $this->resolveSku($row),
             status: $this->resolveStatus($row),
             price: Money::rubles((int) ($row->price ?? 0)),
             description: $row->description !== null ? (string) $row->description : null,
@@ -31,9 +32,13 @@ final class CatalogProductMapper
         );
     }
 
-    /**
-     * @return list<string>
-     */
+    private function resolveSku(PRD_Product $row): ?string
+    {
+        $sku = trim((string) ($row->sku ?? ''));
+
+        return $sku !== '' ? $sku : null;
+    }
+
     private function resolveIngredients(PRD_Product $row): array
     {
         $raw = $row->ingredients;

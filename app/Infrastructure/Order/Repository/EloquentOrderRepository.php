@@ -47,6 +47,16 @@ final class EloquentOrderRepository implements OrderRepository
             ->exists();
     }
 
+    public function findByClientRequestId(string $clientRequestId): ?Order
+    {
+        return $this->findByCheckoutId($clientRequestId);
+    }
+
+    public function existsByClientRequestId(string $clientRequestId): bool
+    {
+        return $this->existsByCheckoutId($clientRequestId);
+    }
+
     public function listByClientId(int $clientId): array
     {
         /** @var \Illuminate\Database\Eloquent\Collection<int, ORD_Order> $rows */

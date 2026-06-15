@@ -7,7 +7,7 @@
 - нет Laravel `Event` / `Listener` для изменения тарифов или зоны;
 - нет outbox и публикации в другие контексты при сохранении из Filament;
 - `GetDeliveryDataUseCase` — синхронный read без побочных эффектов;
-- геокодирование в Checkout — синхронный вызов порта без событий.
+- геокодирование в OrderDraft pipeline — синхронный вызов порта без событий.
 
 Изменения в админке сразу видны при следующем `GET /api/delivery` (общая БД, кэша на read нет).
 
@@ -16,7 +16,7 @@
 | Действие | Эффект |
 |----------|--------|
 | Filament save `DLV_configuration` | Следующий `findPublic()` / `GET /api/delivery` отдаёт новые данные |
-| `PATCH checkout/delivery` | Геокод (если нужен) + пересчёт `delivery_pricing` в ответе checkout |
+| `POST order-drafts/preview` / `POST orders` | Геокод (если courier) + `delivery_pricing` в ответе |
 
 ## Сейчас
 

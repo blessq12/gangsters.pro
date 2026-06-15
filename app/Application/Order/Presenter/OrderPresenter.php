@@ -19,6 +19,7 @@ final class OrderPresenter
         return [
             'id' => $order->id()->value(),
             'source' => $order->source()->value,
+            'client_request_id' => $order->clientRequestId(),
             'checkout_id' => $order->checkoutId(),
             'partner_code' => $order->aggregatorReference()?->partnerCode(),
             'external_order_id' => $order->aggregatorReference()?->externalOrderId(),

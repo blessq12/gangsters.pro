@@ -58,8 +58,7 @@
 
 | Класс | BC | Роль |
 |-------|-----|------|
-| `PrepareCheckoutDeliveryAddress` | Checkout | Геокодирование адреса курьера через `DeliveryAddressGeocoderPort` + city из конфига |
-| `SetCheckoutDeliveryUseCase` | Checkout | Вызывает `PrepareCheckoutDeliveryAddress` перед сохранением `DeliverySnapshot` |
+| `PrepareOrderDraftDeliveryAddress` | Order OrderDraft | Геокодирование адреса курьера через `DeliveryAddressGeocoderPort` + city из конфига |
 | `EvaluateDeliveryBenefits` | Promotion | `delivery_pricing`, `in_zone` через `PromotionDeliveryPricingPort` |
 | `EvaluatePromotionBenefits` | Promotion | Оркестратор benefits + delivery pricing |
 

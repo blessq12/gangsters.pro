@@ -17,7 +17,7 @@ const props = defineProps({
     part: {
         type: String,
         default: null,
-        validator: (value) => value == null || ["gift", "totals"].includes(value),
+        validator: (value) => value == null || ["gift", "totals", "benefits"].includes(value),
     },
 });
 
@@ -36,6 +36,7 @@ const {
     giftSummary,
     totals,
     hasComplementLines,
+    hasRollsInCart,
     hasAutoLines,
     hasDeliveryPricing,
     showOutsideZoneSurcharge,
@@ -46,24 +47,52 @@ const {
     hasCartItems,
     delivery,
     gift,
+    complement,
     deliveryProgressPercent,
     giftProgressPercent,
+    complementProgressPercent,
     deliveryLabel,
     giftLabel,
+    complementLabel,
+    inZoneLabel,
     canShowBenefits,
+    showComplementProgress,
     showGiftProgress,
     isGiftEligible,
     hasGiftSelected,
     giftCtaLabel,
     giftCandidates,
     selectedGiftName,
+    previewLoading,
 } = useOrderPreview();
 
+const showComplementProgressBlock = computed(
+    () =>
+        props.variant === "cart"
+        && props.part == null
+        && showComplementProgress.value,
+);
+const showDeliveryZoneCheck = computed(
+    () => props.variant === "delivery" && props.part == null,
+);
+const showDeliveryZoneLoading = computed(
+    () => showDeliveryZoneCheck.value && previewLoading.value,
+);
+const showZoneStatus = computed(
+    () =>
+        showDeliveryZoneCheck.value
+        && !previewLoading.value
+        && inZoneLabel.value,
+);
 const showComplementBlock = computed(
     () =>
         props.variant === "cart"
         && props.part == null
+        && hasRollsInCart.value
         && hasComplementLines.value,
+);
+const showConfirmBenefits = computed(
+    () => props.variant === "confirm" && props.part === "benefits",
 );
 const showAutoBlock = computed(
     () => props.variant === "cart" && props.part == null && hasAutoLines.value,
@@ -102,7 +131,7 @@ const showGiftCta = computed(
         && giftCandidates.value.length > 0,
 );
 const showTotalsBlock = computed(() => {
-    if (props.part === "gift") {
+    if (props.part === "gift" || props.part === "benefits") {
         return false;
     }
 
@@ -139,6 +168,80 @@ function openGiftModal() {
 </script>
 
 <template>
+    <p
+        v-if="previewLoading && variant === 'confirm'"
+        :class="c.previewLoading"
+    >
+        Пересчитываем доставку…
+    </p>
+
+    <p
+        v-if="showDeliveryZoneLoading"
+        :class="c.previewLoading"
+    >
+        Проверяем адрес в зоне доставки…
+    </p>
+
+    <CheckoutSection
+        v-if="showConfirmBenefits"
+        title="Акции и бонусы"
+    >
+        <div :class="cf.benefitsCard">
+            <p
+                v-if="showComplementProgress"
+                :class="cf.benefitLine"
+            >
+                {{ complementLabel }}
+            </p>
+            <p
+                v-if="giftLabel"
+                :class="cf.benefitLine"
+            >
+                {{ giftLabel }}
+            </p>
+            <p
+                v-if="inZoneLabel"
+                :class="cf.benefitLine"
+            >
+                {{ inZoneLabel }}
+            </p>
+            <p
+                v-if="deliveryLabel && variant === 'confirm'"
+                :class="cf.benefitLineMuted"
+            >
+                {{ deliveryLabel }}
+            </p>
+        </div>
+    </CheckoutSection>
+
+    <div
+        v-if="showZoneStatus"
+        :class="totals.inZone === true ? c.zoneStatusIn : c.zoneStatusOut"
+    >
+        {{ inZoneLabel }}
+    </div>
+
+    <div
+        v-if="showComplementProgressBlock"
+        :class="c.complementProgressCard"
+    >
+        <div class="flex items-center justify-between gap-2 text-xs text-app-muted">
+            <span>Комплект к роллам</span>
+            <span>{{ complementProgressPercent }}%</span>
+        </div>
+        <div class="h-1.5 overflow-hidden rounded-full bg-app-accent-soft-bg">
+            <div
+                class="h-full rounded-full bg-app-accent transition-all"
+                :style="{ width: `${complementProgressPercent}%` }"
+            />
+        </div>
+        <p
+            :class="complement.isReached ? 'text-sm text-app-accent' : 'text-sm text-app-muted'"
+        >
+            {{ complementLabel }}
+        </p>
+    </div>
+
     <CheckoutSection
         v-if="showGiftCta"
         title="Подарок"

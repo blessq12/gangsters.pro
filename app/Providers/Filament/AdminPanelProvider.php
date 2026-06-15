@@ -21,7 +21,6 @@ use App\Filament\MarketingContent\Widgets\Tables\BannersHubTable;
 use App\Filament\MarketingContent\Widgets\Tables\PromotionsHubTable;
 use App\Filament\Company\Resources\CompanyResource;
 use App\Filament\Company\Resources\OperatorResource;
-use App\Filament\Checkout\Resources\CheckoutResource;
 use App\Filament\Client\Resources\ClientResource;
 use App\Filament\Order\Resources\OrderResource;
 use App\Filament\Delivery\Resources\DeliveryResource;
@@ -69,7 +68,6 @@ class AdminPanelProvider extends PanelProvider
                 DeliveryResource::class,
                 PromotionPolicyResource::class,
                 OrderResource::class,
-                CheckoutResource::class,
                 ClientResource::class,
                 CompanyResource::class,
                 OperatorResource::class,

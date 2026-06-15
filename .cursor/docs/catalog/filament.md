@@ -26,7 +26,7 @@ UI оператора для мутаций каталога. **Не** прох�
 | Widget | Сущность |
 |--------|----------|
 | `CategoriesHubTable` | Категории |
-| `ProductsHubTable` | Товары |
+| `ProductsHubTable` | Товары (колонки: name, slug, **sku**, price, status) |
 | `ProductSetsHubTable` | Наборы |
 | `TagsHubTable` | Теги |
 
@@ -39,7 +39,7 @@ Actions: create/edit/delete (`CatalogHubTableActions`), колонки стат�
 - `composition` — `CategoryProductsRelationManager`
 
 ### Product (`EditProduct`)
-- `card` — name, slug, description, status, price, теги, состав (`ingredients`)
+- `card` — name, slug, **sku**, description, status, price, теги, состав (`ingredients`)
 - `nutrition` — КБЖУ, `nutrition_basis`
 - `meta` — `meta_counts_as_roll`, `meta_gift_candidate`, `meta_is_complement_set`
 - `images` — `ProductImagesRelationManager`
@@ -72,7 +72,7 @@ Actions: create/edit/delete (`CatalogHubTableActions`), колонки стат�
 
 | Класс | Роль |
 |-------|------|
-| `FilamentProductPersistence` | `normalize()`: `archived_at` по status, trim `ingredients`; `ensureProductKind` / `ensureSetKind` |
+| `FilamentProductPersistence` | `normalize()`: `archived_at` по status, trim `ingredients`, trim `sku` (пусто → `null`); `ensureProductKind` / `ensureSetKind` |
 | `FilamentSlugField` | Автогенерация slug из name |
 | `CatalogHubTableActions` | CRUD в hub |
 | `CatalogHubTablePresentation` | Колонки таблиц |

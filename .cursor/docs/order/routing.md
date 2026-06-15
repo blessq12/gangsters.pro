@@ -2,7 +2,19 @@
 
 Файл: `routes/api.php`.
 
-## API (клиент)
+## API (OrderDraft + Place)
+
+```php
+Route::post('order-drafts/preview', [OrderDraftController::class, 'preview']);
+Route::post('orders', [OrderDraftController::class, 'store']);
+```
+
+| Method | URI | Middleware |
+|--------|-----|------------|
+| POST | `/api/order-drafts/preview` | `api` |
+| POST | `/api/orders` | `api` |
+
+## API (read, клиент)
 
 ```php
 Route::middleware('auth.client')->group(function (): void {
@@ -16,14 +28,19 @@ Route::middleware('auth.client')->group(function (): void {
 | GET | `/api/order` | `api`, `auth.client` |
 | GET | `/api/order/{orderId}` | `api`, `auth.client` |
 
-## API (создание)
+## API (агрегатор)
 
 | Method | URI | BC | Middleware |
 |--------|-----|-----|------------|
-| POST | `/api/checkout/{checkoutId}/confirm` | Checkout → Order | `api` |
 | POST | `/api/ingress/{partner}/orders` | AggregatorIngress → Order | `api` |
 
 Ingress: [aggregator-ingress/routing.md](../aggregator-ingress/routing.md).
+
+## Storefront (смежный, не Order)
+
+| Method | URI |
+|--------|-----|
+| GET | `/api/storefront/bootstrap` |
 
 ## Filament
 
@@ -36,4 +53,8 @@ Ingress: [aggregator-ingress/routing.md](../aggregator-ingress/routing.md).
 
 ## Provider
 
-`config/app.php` → `OrderServiceProvider::class` (DI + event listener).
+`config/app.php` → `OrderServiceProvider::class` (DI OrderDraft ports + `OrderCreated` listener).
+
+## Удалено
+
+~~`POST /api/checkout/{checkoutId}/confirm`~~

@@ -28,6 +28,7 @@ final class EloquentPartnerCatalogBindingRepository implements PartnerCatalogBin
         return new ResolvedPartnerProduct(
             productId: (int) $product->id,
             productName: (string) $product->name,
+            sku: is_string($product->sku) && trim($product->sku) !== '' ? trim($product->sku) : null,
         );
     }
 }

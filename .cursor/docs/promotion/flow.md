@@ -1,55 +1,47 @@
-# Promotion — флоу
+# Promotion — потоки
 
-## 1. Оператор настраивает акции (будущее)
-
-```
-Браузер → /admin/promotion
-    → ManagePromotion (Filament)
-    → firstOrCreate PRM_configuration id=1
-    → форма порогов подарка / доставки
-    → save → Eloquent PRM_configuration
-```
-
-Базовый тариф и полигон зоны — в `/admin/delivery`.
-
-## 2. Checkout пересчитывает выгоды (будущее)
+## 1. Bootstrap (read policy)
 
 ```
-SPA PATCH /api/checkout/{id}/cart | delivery
-    → Checkout use case
-    → EvaluateCheckoutBenefits (Application)
-        → PromotionPolicyRepository::find()
-        → DeliveryConfigurationRepository::findPublic()
-        → CatalogGiftCandidatesPort
-    → ответ: cart snapshot + benefitsProgress + promoState + deliveryFeeKopecks
+SPA app mount
+  → GET /api/storefront/bootstrap
+  → GetPromotionPolicyUseCase
+  → promotion: { gift, complement, delivery_benefit }
 ```
 
-Promotion BC в этом флоу **только читается**.
+Пороги подарка и бесплатной доставки — **единый источник PRM**.
 
-## 3. Клиент выбирает подарок (уже частично на фронте)
-
-```
-SPA GiftSelectionModal
-    → checkoutStore.setPromotionGift(productId)
-    → PATCH cart line { kind: "gift" }
-```
-
-Правило eligibility сверяется с `PromotionPolicy` на сервере при следующем пересчёте; хранение выбора — в слепке корзины Checkout, не в PRM.
-
-## 4. Публичный read (опционально)
+## 2. OrderDraft preview / place (evaluate benefits)
 
 ```
-SPA → GET /api/promotion
-    → GetPromotionPolicyUseCase
-    → JSON порогов (без кандидатов каталога)
+SPA local draft
+  → POST /api/order-drafts/preview | POST /api/orders
+  → ProcessOrderDraftPipeline
+  → EvaluateOrderDraftBenefits
+  → OrderDraftBenefitsInputMapper → PromotionBenefitsInput
+  → EvaluatePromotionBenefits
+  → ApplyGiftBenefitLines / ApplyComplementBenefitLines (sync cart lines)
+  → OrderDraftPresenter: benefits_progress, delivery_pricing
 ```
 
-Можно не выделять endpoint, если пороги всегда приходят в ответе checkout.
+## 3. Выбор подарка (SPA)
 
-## Разделение read / write
+```
+GiftPicker
+  → checkoutStore.setSelectedGiftProductId
+  → local draft only
+  → next preview validates eligibility server-side
+```
 
-| Контур | Read | Write |
-|--------|------|-------|
-| Filament | Eloquent / use case | `UpdatePromotionPolicyUseCase` или прямой save (как Delivery сейчас) |
-| Checkout API | `PromotionPolicyRepository` через evaluator | — |
-| Публичный API | `GetPromotionPolicyUseCase` | — |
+## 4. Legacy read (опционально)
+
+Отдельный `GET /api/promotion` не обязателен — policy уже в bootstrap.
+
+## Разделение ответственности
+
+| Контур | Promotion | OrderDraft |
+|--------|-----------|------------|
+| Хранение правил | `PRM_configuration` | — |
+| Расчёт eligibility | `EvaluatePromotionBenefits` | orchestration |
+| Sync gift/complement lines | — | `Apply*BenefitLines` |
+| Geocode + in_zone | — | `PrepareOrderDraftDeliveryAddress` + pricing port |

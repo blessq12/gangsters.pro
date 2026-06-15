@@ -10,10 +10,8 @@ use App\Domain\Client\Exception\ClientFavoriteNotFoundException;
 use App\Domain\Client\Exception\ClientAlreadyExistsException;
 use App\Domain\Client\Exception\ClientNotFoundException;
 use App\Domain\Client\Exception\InvalidPasswordResetTokenException;
-use App\Domain\Checkout\Exception\CheckoutAlreadyConfirmedException;
-use App\Domain\Checkout\Exception\CheckoutGiftBenefitViolationException;
-use App\Domain\Checkout\Exception\CheckoutNotFoundException;
-use App\Domain\Checkout\Exception\CheckoutNotReadyForConfirmationException;
+use App\Domain\Order\OrderDraft\Exception\OrderDraftGiftBenefitViolationException;
+use App\Domain\Order\OrderDraft\Exception\OrderDraftNotReadyException;
 use App\Domain\AggregatorIngress\Exception\IngressAuthenticationFailedException;
 use App\Domain\AggregatorIngress\Exception\IngressInvariantViolation;
 use App\Domain\AggregatorIngress\Exception\PartnerNotConfiguredException;
@@ -95,25 +93,13 @@ class Handler extends ExceptionHandler
             ], 422);
         }
 
-        if ($e instanceof CheckoutNotFoundException && $request->is('api/*')) {
-            return response()->json([
-                'message' => $e->getMessage(),
-            ], 404);
-        }
-
-        if ($e instanceof CheckoutAlreadyConfirmedException && $request->is('api/*')) {
-            return response()->json([
-                'message' => $e->getMessage(),
-            ], 409);
-        }
-
-        if ($e instanceof CheckoutNotReadyForConfirmationException && $request->is('api/*')) {
+        if ($e instanceof OrderDraftNotReadyException && $request->is('api/*')) {
             return response()->json([
                 'message' => $e->getMessage(),
             ], 422);
         }
 
-        if ($e instanceof CheckoutGiftBenefitViolationException && $request->is('api/*')) {
+        if ($e instanceof OrderDraftGiftBenefitViolationException && $request->is('api/*')) {
             return response()->json([
                 'message' => $e->getMessage(),
             ], 422);

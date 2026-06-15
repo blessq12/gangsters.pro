@@ -11,7 +11,7 @@ use DateTimeImmutable;
 final readonly class CreateOrderDto
 {
     public function __construct(
-        public string $checkoutId,
+        public string $clientRequestId,
         public OrderCartSnapshot $cart,
         public OrderClientSnapshot $client,
         public OrderDeliverySnapshot $delivery,

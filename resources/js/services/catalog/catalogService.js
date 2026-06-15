@@ -64,8 +64,7 @@ function enrichCatalogSetLineNames(categories) {
     return categories;
 }
 
-export async function fetchCatalogTree() {
-    const payload = await fetchCatalogRequest();
+export function mapCatalogTreeFromPayload(payload) {
     const rawCategories = Array.isArray(payload?.categories)
         ? payload.categories
         : [];
@@ -85,4 +84,9 @@ export async function fetchCatalogTree() {
     );
 
     return enrichCatalogSetLineNames(sorted);
+}
+
+export async function fetchCatalogTree() {
+    const payload = await fetchCatalogRequest();
+    return mapCatalogTreeFromPayload(payload);
 }

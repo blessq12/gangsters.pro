@@ -27,4 +27,4 @@ BC **не публикует** доменных событий при приём
 
 ## Смежные BC
 
-- Order BC слушает `CheckoutConfirmed` (сайт), но **не** ingress — см. [Order events](../order/events.md).
+- Order BC слушает `OrderCreated` для export; ingress и site — см. [Order events](../order/events.md).

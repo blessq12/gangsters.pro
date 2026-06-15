@@ -1,4 +1,5 @@
 <script setup>
+import { onMounted } from "vue";
 import { useAppDesign } from "../../design/useAppDesign";
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
 import CheckoutAuthAddressSection from "./CheckoutAuthAddressSection.vue";
@@ -17,7 +18,12 @@ const {
     setDeliveryMethod,
     setDeliveryComment,
     patchDeliveryAddress,
+    scheduleDeliveryPreview,
 } = useCheckoutFlowContext();
+
+onMounted(() => {
+    scheduleDeliveryPreview();
+});
 
 const { checkoutIntent, deliveryStepError, isGuestCheckout } = checkoutState;
 </script>

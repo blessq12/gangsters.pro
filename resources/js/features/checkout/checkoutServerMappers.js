@@ -84,19 +84,61 @@ export function buildClientPayload(store, { clientId = null, isGuest = false } =
     };
 }
 
+function normalizeDeliveryCoordinate(value) {
+    if (value == null || value === "") {
+        return null;
+    }
+
+    const number = Number(value);
+    if (!Number.isFinite(number)) {
+        return null;
+    }
+
+    return number;
+}
+
+function deliveryCoordinatesAreUsable(latitude, longitude) {
+    if (latitude == null || longitude == null) {
+        return false;
+    }
+
+    if (latitude === 0 && longitude === 0) {
+        return false;
+    }
+
+    return Math.abs(latitude) <= 90 && Math.abs(longitude) <= 180;
+}
+
+function buildDeliveryAddressPayload(source) {
+    if (!source || typeof source !== "object") {
+        return null;
+    }
+
+    const latitude = normalizeDeliveryCoordinate(source.latitude);
+    const longitude = normalizeDeliveryCoordinate(source.longitude);
+    const payload = {
+        street: source.street ?? "",
+        house: source.house ?? "",
+        entrance: source.entrance ?? null,
+        apartment: source.apartment ?? null,
+    };
+
+    if (deliveryCoordinatesAreUsable(latitude, longitude)) {
+        payload.latitude = latitude;
+        payload.longitude = longitude;
+    }
+
+    return payload;
+}
+
 export function buildDeliveryPayload(store, selectedAddress = null) {
     const method = store.deliveryInfo.method;
     let address = store.deliveryInfo.address;
 
     if (method === "courier" && selectedAddress && typeof selectedAddress === "object") {
-        address = {
-            street: selectedAddress.street ?? "",
-            house: selectedAddress.house ?? "",
-            entrance: selectedAddress.entrance ?? null,
-            apartment: selectedAddress.apartment ?? null,
-            latitude: selectedAddress.latitude ?? null,
-            longitude: selectedAddress.longitude ?? null,
-        };
+        address = buildDeliveryAddressPayload(selectedAddress);
+    } else if (method === "courier" && address && typeof address === "object") {
+        address = buildDeliveryAddressPayload(address);
     }
 
     return {

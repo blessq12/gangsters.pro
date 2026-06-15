@@ -1,16 +1,8 @@
 import {
-    confirmCheckoutRequest,
-    createCheckoutRequest,
-    fetchCheckoutRequest,
-    setCheckoutClientRequest,
-    setCheckoutDeliveryRequest,
-    setCheckoutPaymentRequest,
-    updateCheckoutCartRequest,
-} from "../../api/checkoutApi";
-import {
-    isAxiosNetworkError,
-    isAxiosNotFound,
-} from "../../utils/api/mapApiError";
+    placeOrderRequest,
+    previewOrderDraftRequest,
+} from "../../api/orderDraftApi";
+import { useUserStore } from "../../stores/userStore";
 import {
     buildClientPayload,
     buildDeliveryPayload,
@@ -21,59 +13,109 @@ import {
     readCheckoutSessionPayload,
     writeCheckoutSessionPayload,
 } from "./checkoutSessionStorage";
+import { roundRubles2 } from "../../utils/moneyFormat";
 
-export async function ensureDraftCheckout(store) {
-    if (store.hasCheckout) {
-        return store.checkoutId;
+const CLIENT_REQUEST_KEY = "client_request_id";
+
+export function resolveClientRequestId() {
+    if (typeof window === "undefined") {
+        return crypto.randomUUID();
     }
 
-    const created = await createCheckoutRequest();
-    store.applyFromServer(created);
-    store.sessionReady = true;
+    const saved = readCheckoutSessionPayload();
+    if (saved?.clientRequestId) {
+        return saved.clientRequestId;
+    }
 
-    return store.checkoutId;
+    const id = crypto.randomUUID();
+    writeCheckoutSessionPayload({ clientRequestId: id });
+
+    return id;
 }
 
-export async function tryRestoreCheckoutSession(store) {
-    const saved = readCheckoutSessionPayload();
-    if (!saved?.checkoutId || saved.status !== "draft") {
-        return false;
+function ensureCheckoutSessionActive(store) {
+    if (store.sessionReady) {
+        return;
     }
 
+    store.clientRequestId = resolveClientRequestId();
+    store.sessionReady = true;
+}
+
+function resolveRegisteredClientId(store, options = {}) {
+    if (options.clientId != null) {
+        return Number(options.clientId);
+    }
+
+    if (store.serverClient?.client_id != null) {
+        return Number(store.serverClient.client_id);
+    }
+
+    const userStore = useUserStore();
+    if (userStore.token && userStore.profile?.id != null) {
+        return Number(userStore.profile.id);
+    }
+
+    return null;
+}
+
+export function buildOrderDraftPayload(store, selectedAddress = null, options = {}) {
+    const userLines = store.userItems.map((item) => ({
+        product_id: item.productId,
+        quantity: item.qty,
+        payload: item.payload ?? null,
+    }));
+
+    const clientPayload = buildClientPayload(store, {
+        clientId: resolveRegisteredClientId(store, options),
+        isGuest: Boolean(store.guestContact?.name && store.guestContact?.phone),
+    });
+
+    const deliveryPayload = store.deliveryInfo.method
+        ? buildDeliveryPayload(store, selectedAddress)
+        : null;
+
+    const paymentPayload = store.paymentInfo.method
+        ? buildPaymentPayload(store)
+        : null;
+
+    return {
+        cart: {
+            lines: userLines,
+            selected_gift_product_id: store.promotions.freeRollGiftProductId,
+        },
+        client: clientPayload.client_id != null || clientPayload.name ? clientPayload : null,
+        delivery: deliveryPayload,
+        payment: paymentPayload,
+    };
+}
+
+export async function refreshOrderDraftPreview(store, selectedAddress = null, options = {}) {
+    ensureCheckoutSessionActive(store);
+
+    const requestSeq = ++store.previewRequestSeq;
+    store.flushing = true;
+    store.error = null;
+
     try {
-        const remote = await fetchCheckoutRequest(saved.checkoutId);
-        if (remote?.status !== "draft") {
-            clearCheckoutSessionPayload();
-            return false;
-        }
-
-        store.applyFromServer(remote);
-        store.sessionReady = true;
-
-        return true;
-    } catch (error) {
-        if (isAxiosNotFound(error)) {
-            clearCheckoutSessionPayload();
-            return false;
-        }
-
-        if (!isAxiosNetworkError(error)) {
-            clearCheckoutSessionPayload();
-            return false;
-        }
-
-        if (!saved.snapshot) {
-            return false;
-        }
-
-        store.checkoutId = saved.checkoutId;
-        store.status = saved.status;
-        store.applyFromServer(
-            saved.snapshot ?? { checkout_id: saved.checkoutId, status: "draft" },
+        const data = await previewOrderDraftRequest(
+            buildOrderDraftPayload(store, selectedAddress, options),
         );
-        store.sessionReady = true;
 
-        return true;
+        if (requestSeq !== store.previewRequestSeq) {
+            return data;
+        }
+
+        store.applyFromServer(data);
+        store.persistSession();
+        return data;
+    } catch (e) {
+        console.error("refreshOrderDraftPreview", e);
+        store.error =
+            e?.response?.data?.message || "Не удалось пересчитать оформление.";
+        throw e;
+    } finally {
+        store.flushing = false;
     }
 }
 
@@ -82,140 +124,132 @@ export async function bootstrapCheckoutSession(store) {
         return;
     }
 
-    if (await tryRestoreCheckoutSession(store)) {
-        return;
+    const saved = readCheckoutSessionPayload();
+    if (saved?.localCart?.length) {
+        store.restoreLocalCart(saved.localCart);
+    }
+    if (saved?.forms) {
+        store.patchLocal(saved.forms);
     }
 
-    await ensureDraftCheckout(store);
+    store.clientRequestId = saved?.clientRequestId ?? resolveClientRequestId();
+    store.sessionReady = true;
+
+    if (store.hasCartItems) {
+        try {
+            await refreshOrderDraftPreview(store);
+        } catch {
+            // preview optional on bootstrap
+        }
+    }
 }
 
-export async function updateCheckoutCartLine(store, productId, quantity, payload = null) {
-    await ensureDraftCheckout(store);
-    store.loading = true;
-    store.error = null;
+export function buildLocalCartItem(product, qty, payload = null) {
+    const productId = Number(product?.id);
+    const quantity = Math.max(1, Number(qty) || 1);
+    const unitRub = roundRubles2(Number(product?.price?.amount ?? product?.price) || 0);
+    const unitKopecks = Math.round(unitRub * 100);
+    const lineKopecks = unitKopecks * quantity;
 
-    try {
-        const body = {
-            product_id: Number(productId),
-            quantity: Number(quantity),
-        };
-        if (payload != null) {
-            body.payload = payload;
-        }
+    return {
+        lineKey: `user:${productId}`,
+        origin: "user",
+        isSystem: false,
+        lineKind: "user",
+        productId,
+        qty: quantity,
+        productSnapshot: {
+            id: productId,
+            name: String(product?.name || ""),
+            price: unitRub,
+        },
+        pricing: {
+            listUnitPriceKopecks: unitKopecks,
+            finalUnitPriceKopecks: unitKopecks,
+            lineTotalKopecks: lineKopecks,
+        },
+        payload,
+    };
+}
 
-        const data = await updateCheckoutCartRequest(store.checkoutId, body);
-        store.applyFromServer(data);
-        return data;
-    } catch (e) {
-        console.error("updateCartLine / checkout", e);
-        store.error =
-            e?.response?.data?.message || "Не удалось обновить корзину.";
-        throw e;
-    } finally {
-        store.loading = false;
+export function recalculateLocalCartTotals(store) {
+    const userLines = store.userItems;
+    const subtotalKopecks = userLines.reduce(
+        (sum, item) => sum + (Number(item.pricing?.lineTotalKopecks) || 0),
+        0,
+    );
+    store.itemsSubtotalRubles = roundRubles2(subtotalKopecks / 100);
+    store.itemsTotalRubles = store.itemsSubtotalRubles;
+}
+
+export function upsertLocalCartLine(store, product, quantity, payload = null) {
+    const productId = Number(product?.id);
+    const nextQty = Math.max(0, Number(quantity) || 0);
+    const without = store.cartItems.filter(
+        (item) => !(item.productId === productId && !item.isSystem),
+    );
+
+    if (nextQty > 0) {
+        without.push(buildLocalCartItem(product, nextQty, payload));
     }
+
+    store.cartItems = without;
+    recalculateLocalCartTotals(store);
+    store.persistSession();
 }
 
 export async function setCheckoutPromotionGift(store, productId) {
-    const previousId = store.promotions.freeRollGiftProductId;
-    const nextId = productId != null ? Number(productId) || null : null;
-
-    if (previousId != null && previousId !== nextId) {
-        await updateCheckoutCartLine(store, previousId, 0, { kind: "gift" });
-    }
-
-    if (nextId != null) {
-        await updateCheckoutCartLine(store, nextId, 1, { kind: "gift" });
-    }
-
     store.patchLocal({
         promotions: {
-            freeRollGiftProductId: nextId,
+            freeRollGiftProductId: productId != null ? Number(productId) || null : null,
         },
     });
+    store.persistSession();
+
+    if (store.hasCartItems) {
+        await refreshOrderDraftPreview(store);
+    }
 }
 
-export async function flushClientToServer(store, { clientId = null, isGuest = false } = {}) {
-    await ensureDraftCheckout(store);
-    store.flushing = true;
-
-    try {
-        const data = await setCheckoutClientRequest(
-            store.checkoutId,
-            buildClientPayload(store, { clientId, isGuest }),
-        );
-        store.applyFromServer(data);
-    } catch (e) {
-        console.error("flushClientToServer / checkout", e);
-        throw e;
-    } finally {
-        store.flushing = false;
+export async function flushClientToServer(store, options = {}) {
+    if (store.hasCartItems) {
+        await refreshOrderDraftPreview(store, null, options);
     }
 }
 
 export async function flushDeliveryToServer(store, selectedAddress = null) {
-    await ensureDraftCheckout(store);
-    store.flushing = true;
-
-    try {
-        const data = await setCheckoutDeliveryRequest(
-            store.checkoutId,
-            buildDeliveryPayload(store, selectedAddress),
-        );
-        store.applyFromServer(data);
-    } catch (e) {
-        console.error("flushDeliveryToServer / checkout", e);
-        throw e;
-    } finally {
-        store.flushing = false;
-    }
+    await refreshOrderDraftPreview(store, selectedAddress);
 }
 
 export async function flushPaymentToServer(store) {
-    await ensureDraftCheckout(store);
-    store.flushing = true;
-
-    try {
-        const data = await setCheckoutPaymentRequest(
-            store.checkoutId,
-            buildPaymentPayload(store),
-        );
-        store.applyFromServer(data);
-    } catch (e) {
-        console.error("flushPaymentToServer / checkout", e);
-        throw e;
-    } finally {
-        store.flushing = false;
+    if (store.hasCartItems) {
+        await refreshOrderDraftPreview(store);
     }
 }
 
 export async function flushCheckoutToServer(store, options = {}) {
-    const { clientId = null, isGuest = false, selectedAddress = null } = options;
-
-    if (isGuest || clientId != null) {
-        await flushClientToServer(store, { clientId, isGuest });
-    }
-    if (store.deliveryInfo.method) {
-        await flushDeliveryToServer(store, selectedAddress);
-    }
-    if (store.paymentInfo.method) {
-        await flushPaymentToServer(store);
-    }
+    const { selectedAddress = null } = options;
+    await refreshOrderDraftPreview(store, selectedAddress);
 }
 
-export async function confirmCheckoutOnServer(store) {
-    await ensureDraftCheckout(store);
+export async function placeOrderOnServer(store, selectedAddress = null) {
+    store.previewRequestSeq += 1;
     store.flushing = true;
+    store.error = null;
 
     try {
-        const data = await confirmCheckoutRequest(store.checkoutId);
-        store.applyFromServer(data);
+        const body = {
+            client_request_id: store.clientRequestId || resolveClientRequestId(),
+            ...buildOrderDraftPayload(store, selectedAddress),
+        };
+
+        const data = await placeOrderRequest(body);
         clearCheckoutSessionPayload();
         return data;
     } catch (e) {
-        console.error("confirmCheckout", e);
+        console.error("placeOrderOnServer", e);
         store.error =
-            e?.response?.data?.message || "Не удалось подтвердить оформление.";
+            e?.response?.data?.message || "Не удалось оформить заказ.";
         throw e;
     } finally {
         store.flushing = false;

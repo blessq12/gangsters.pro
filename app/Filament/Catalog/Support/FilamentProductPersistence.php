@@ -26,6 +26,11 @@ final class FilamentProductPersistence
             ), static fn (string $value): bool => $value !== ''));
         }
 
+        if (array_key_exists('sku', $data)) {
+            $sku = trim((string) $data['sku']);
+            $data['sku'] = $sku !== '' ? $sku : null;
+        }
+
         return $data;
     }
 

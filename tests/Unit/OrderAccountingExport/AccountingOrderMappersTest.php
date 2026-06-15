@@ -31,17 +31,13 @@ final class AccountingOrderMappersTest extends TestCase
             'order-accounting-export.systems.frontpad.secret' => 'test-secret',
             'order-accounting-export.systems.frontpad.pay.card_online' => '3',
             'order-accounting-export.systems.frontpad.hook_status' => [1, 10, 11],
-            'order-accounting-export.systems.frontpad.product_bindings' => [
-                '10' => '001',
-            ],
             'app.url' => 'https://example.test',
         ]);
 
         $bindings = $this->createMock(AccountingProductBindingRepository::class);
-        $bindings->method('resolveExternalProductId')
-            ->willReturnCallback(static fn (string $system, int $productId): ?string => $system === 'frontpad' && $productId === 10 ? '001' : null);
+        $bindings->expects($this->never())->method('resolveExternalProductId');
 
-        $request = (new FrontpadOrderMapper($bindings))->toRequest($this->sampleEvent());
+        $request = (new FrontpadOrderMapper($bindings))->toRequest($this->sampleEvent(sku: '001'));
 
         $this->assertSame('test-secret', $request['secret']);
         $this->assertSame('79990001122', $request['phone']);
@@ -81,7 +77,7 @@ final class AccountingOrderMappersTest extends TestCase
         $this->assertTrue($request['order']['payments'][0]['isProcessedExternally']);
     }
 
-    private function sampleEvent(): OrderCreated
+    private function sampleEvent(?string $sku = '001'): OrderCreated
     {
         return new OrderCreated(
             orderId: OrderId::fromInt(42),
@@ -94,6 +90,7 @@ final class AccountingOrderMappersTest extends TestCase
                     productName: 'Филадельфия',
                     quantity: 2,
                     unitPrice: Money::rubles(450),
+                    sku: $sku,
                 ),
             ]),
             client: OrderClientSnapshot::guest(new OrderGuestContact(

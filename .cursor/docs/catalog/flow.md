@@ -45,13 +45,13 @@ useProductActions → useCartCommands
     → DOMAIN_EVENTS.CART_* (source: "catalog")
 ```
 
-Цена в корзине — через Checkout API, не напрямую из catalogStore.
+Цена в корзине — через `POST /api/order-drafts/preview`, не напрямую из catalogStore.
 
-## 4. Checkout ACL (косвенно)
+## 4. Order ACL (косвенно)
 
 ```
-UpdateCheckoutCartUseCase → CatalogPricingPort → CatalogPricingAdapter
-EvaluateCheckoutBenefits → CatalogGiftCandidatesPort, CatalogComplementSetCandidatesPort
+ProcessOrderDraftPipeline → CatalogPricingPort → CatalogPricingAdapter
+EvaluateOrderDraftBenefits → CatalogGiftCandidatesPort, CatalogComplementSetCandidatesPort
 CartRollCounter → CatalogRollMetaPort
 ```
 
@@ -70,7 +70,7 @@ Gift/complement adapters читают `PRD_Product` напрямую (meta-по�
 ```
 /admin/catalog/products/create → catalog_kind=product
 /admin/catalog/products/{id}/edit
-    → табы card / nutrition / meta / images
+    → табы card (name, slug, sku, …) / nutrition / meta / images
     → save → FilamentProductPersistence::normalize
     → Eloquent PRD_Product + tags sync
     → RedirectsToCatalogHub
@@ -91,7 +91,7 @@ Edit набора → composition → ProductSetLinesRelationManager → PRD_pro
 |--------|------|-------|
 | Публичный API | `GetCatalogUseCase` → Domain ports | — |
 | Filament | Eloquent в hub/forms/RM | Eloquent save/delete/reorder |
-| Checkout ACL | Adapters → repos / Eloquent | — |
+| Order ACL | Adapters → repos / Eloquent | — |
 
 Write use cases в Application **не** внедрены.
 

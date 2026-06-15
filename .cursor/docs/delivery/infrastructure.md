@@ -89,6 +89,6 @@ SPA получает maps key через `SitePublicConfigPresenter` → `window
 | Файл | Покрытие |
 |------|----------|
 | `tests/Unit/Promotion/PromotionDeliveryPricingAdapterTest.php` | Тарифная логика in/out zone (5 unit-тестов) |
-| `tests/Feature/CheckoutApiTest.php` | `PATCH /api/checkout/{id}/delivery` in/out zone |
+| `tests/Feature/PlaceOrderTest.php` | courier delivery in/out zone через place |
 
 Тестов слоя `Infrastructure/Delivery` (repository, mapper, geocoder) **нет**.

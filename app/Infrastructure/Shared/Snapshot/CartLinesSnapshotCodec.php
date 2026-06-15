@@ -2,7 +2,7 @@
 
 namespace App\Infrastructure\Shared\Snapshot;
 
-use App\Domain\Checkout\ValueObject\CartLineSnapshot;
+use App\Domain\Order\OrderDraft\ValueObject\CartLineSnapshot;
 use App\Domain\Order\ValueObject\OrderLineSnapshot;
 use App\Shared\ValueObject\Money;
 
@@ -17,8 +17,9 @@ final class CartLinesSnapshotCodec
         int $quantity,
         Money $unitPrice,
         ?array $payload,
+        ?string $sku = null,
     ): array {
-        return [
+        $line = [
             'product_id' => $productId,
             'product_name' => $productName,
             'quantity' => $quantity,
@@ -26,6 +27,12 @@ final class CartLinesSnapshotCodec
             'line_total_rubles' => $unitPrice->amountRubles() * $quantity,
             'payload' => $payload,
         ];
+
+        if (is_string($sku) && $sku !== '') {
+            $line['sku'] = $sku;
+        }
+
+        return $line;
     }
 
     /**
@@ -39,6 +46,7 @@ final class CartLinesSnapshotCodec
             quantity: (int) ($payload['quantity'] ?? 0),
             unitPrice: Money::rubles((int) ($payload['unit_price_rubles'] ?? 0)),
             payload: is_array($payload['payload'] ?? null) ? $payload['payload'] : null,
+            sku: isset($payload['sku']) ? (string) $payload['sku'] : null,
         );
     }
 
@@ -53,6 +61,7 @@ final class CartLinesSnapshotCodec
             quantity: (int) ($payload['quantity'] ?? 0),
             unitPrice: Money::rubles((int) ($payload['unit_price_rubles'] ?? 0)),
             payload: is_array($payload['payload'] ?? null) ? $payload['payload'] : null,
+            sku: isset($payload['sku']) ? (string) $payload['sku'] : null,
         );
     }
 
@@ -71,6 +80,7 @@ final class CartLinesSnapshotCodec
                 quantity: $line->quantity(),
                 unitPrice: $line->unitPrice(),
                 payload: $line->payload(),
+                sku: $line->sku(),
             );
         }
 

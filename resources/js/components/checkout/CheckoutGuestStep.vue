@@ -18,7 +18,10 @@ const {
     goToCart,
     goToGuestNext,
     setGuestContact,
+    openProfileDock,
 } = useCheckoutFlowContext();
+
+const c = useAppDesign().components.checkout.cart;
 
 const { checkoutIntent, guestStepError } = checkoutState;
 
@@ -74,6 +77,14 @@ watch(
             />
         </CheckoutSection>
 
+        <button
+            type="button"
+            :class="c.authCtaBtn"
+            @click="openProfileDock"
+        >
+            Регистрация / вход
+        </button>
+
         <p
             v-if="guestStepError"
             :class="s.errorLine"
@@ -99,3 +110,39 @@ watch(
         </template>
     </CheckoutStepFrame>
 </template>
+
+<style scoped>
+@keyframes checkout-auth-shimmer {
+    0% {
+        transform: translateX(-140%) skewX(-18deg);
+    }
+
+    40%,
+    100% {
+        transform: translateX(140%) skewX(-18deg);
+    }
+}
+
+.checkout-auth-cta::after {
+    content: "";
+    position: absolute;
+    inset: -20% 0;
+    z-index: 0;
+    pointer-events: none;
+    background: linear-gradient(
+        105deg,
+        transparent 38%,
+        rgba(255, 255, 255, 0.08) 44%,
+        rgba(255, 220, 180, 0.55) 50%,
+        rgba(255, 255, 255, 0.12) 56%,
+        transparent 62%
+    );
+    animation: checkout-auth-shimmer 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .checkout-auth-cta::after {
+        display: none;
+    }
+}
+</style>

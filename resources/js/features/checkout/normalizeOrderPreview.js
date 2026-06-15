@@ -149,7 +149,7 @@ export function normalizeOrderPreview(orderPreview) {
     const benefits = normalizeBenefitsProgress({
         delivery: orderPreview.benefits?.delivery,
         gift: orderPreview.benefits?.gift,
-        complement: null,
+        complement: orderPreview.benefits?.complement,
     }) ?? {
         delivery: null,
         gift: null,
@@ -165,6 +165,7 @@ export function normalizeOrderPreview(orderPreview) {
         benefits: {
             delivery: benefits.delivery,
             gift: benefits.gift,
+            complement: benefits.complement,
         },
     };
 }

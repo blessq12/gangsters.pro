@@ -14,7 +14,6 @@ const c = chk.cart;
 const {
     checkoutState,
     handleStartCheckout,
-    openProfileDock,
 } = useCheckoutFlowContext();
 
 const cartStore = useCheckoutStore();
@@ -131,14 +130,6 @@ function unitPriceRub(item) {
                 @click="handleStartCheckout"
             >
                 {{ isAuthenticated ? "Далее" : "Оформить" }}
-            </button>
-            <button
-                v-if="!isAuthenticated"
-                type="button"
-                :class="c.loginLink"
-                @click="openProfileDock"
-            >
-                Войти
             </button>
         </div>
     </div>

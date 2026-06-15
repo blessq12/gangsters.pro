@@ -55,7 +55,7 @@
 - `Pickup`
 - `Courier`
 
-Маппинг на Checkout `DeliveryMethod` — в Application ACL (те же строки `pickup` / `courier`).
+Маппинг на `DeliveryMethod` — в OrderDraft / Promotion Application ACL (`pickup` / `courier`).
 
 ### `GiftBenefitType`
 
@@ -99,8 +99,8 @@
 ## Что домен **не** делает
 
 - Не проверяет точку в полигоне (Delivery / shared geo helper в Infrastructure).
-- Не загружает кандидатов подарка (Catalog port в Checkout Application).
-- Не пишет `kind: gift` в корзину (Checkout).
+- Не загружает кандидатов подарка (Catalog port в Order Application).
+- Не пишет `kind: gift` в корзину (OrderDraft).
 - Не публикует события (конфигурация статична до save из админки).
 
 ## Зависимости BC (матрица)
@@ -108,7 +108,7 @@
 ```
 Promotion  →  (нет исходящих domain-зависимостей)
 
-Checkout Application  →  PromotionPolicyRepository (read)
-Checkout Application  →  DeliveryConfigurationRepository (read)
-Checkout Application  →  Catalog (gift candidates, read)
+Order OrderDraft Application  →  PromotionPolicyRepository (read)
+Order OrderDraft Application  →  PromotionDeliveryPricingPort → Delivery (read)
+Order OrderDraft Application  →  Catalog (via Order ports, read)
 ```

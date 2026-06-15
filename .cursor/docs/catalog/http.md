@@ -14,6 +14,8 @@
 
 Read-only, без параметров, без auth middleware сверх группы `api`.
 
+**Bootstrap:** тот же `GetCatalogUseCase`, но через `GET /api/storefront/bootstrap` с `promotion_meta` на product items.
+
 ## Админка
 
 HTTP для оператора не проходит через `CatalogController`. Filament/Livewire обслуживает `/admin/catalog`.

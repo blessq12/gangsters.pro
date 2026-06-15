@@ -1,15 +1,14 @@
 import { defineStore } from "pinia";
 import {
     bootstrapCheckoutSession,
-    confirmCheckoutOnServer,
-    ensureDraftCheckout,
     flushClientToServer,
     flushDeliveryToServer,
     flushPaymentToServer,
     persistCheckoutSession,
+    placeOrderOnServer,
+    refreshOrderDraftPreview,
     setCheckoutPromotionGift,
-    tryRestoreCheckoutSession,
-    updateCheckoutCartLine,
+    upsertLocalCartLine,
 } from "../features/checkout/checkoutSessionService";
 import {
     buildCatalogCartLinePayload,
@@ -25,14 +24,16 @@ import {
 } from "../features/checkout/checkoutSessionStorage";
 import { normalizeBenefitsProgress } from "../features/checkout/normalizeBenefitsProgress";
 import { normalizeOrderPreview } from "../features/checkout/normalizeOrderPreview";
-import { normalizeCheckoutCartBlock } from "../features/checkout/normalizeCheckoutCart";
+import {
+    normalizeCheckoutCartBlock,
+    selectedGiftCartLine,
+} from "../features/checkout/normalizeCheckoutCart";
 import { DOMAIN_EVENTS, emitDomainEvent } from "../shared/domainEvents";
 import { roundRubles2 } from "../utils/moneyFormat";
 
 export const useCheckoutStore = defineStore("checkout", {
     state: () => ({
-        checkoutId: null,
-        status: null,
+        clientRequestId: null,
         cartItems: [],
         itemsTotalRubles: 0,
         itemsSubtotalRubles: 0,
@@ -71,13 +72,15 @@ export const useCheckoutStore = defineStore("checkout", {
         cartError: null,
         error: null,
         sessionReady: false,
+        /** Инкремент при сбросе сессии — отсекает устаревшие preview-ответы. */
+        previewRequestSeq: 0,
     }),
     getters: {
-        isDraft(state) {
-            return state.status === "draft";
+        isDraft() {
+            return true;
         },
-        hasCheckout(state) {
-            return Boolean(state.checkoutId) && state.status === "draft";
+        hasCheckout() {
+            return this.sessionReady;
         },
         userItems(state) {
             return state.cartItems.filter((item) => !item.isSystem);
@@ -146,8 +149,7 @@ export const useCheckoutStore = defineStore("checkout", {
                 return;
             }
 
-            this.checkoutId = data.checkout_id ?? this.checkoutId;
-            this.status = data.status ?? this.status;
+            this.clientRequestId = data.client_request_id ?? this.clientRequestId;
 
             const cart = normalizeCheckoutCartBlock(data.cart);
             this.cartItems = cart.items;
@@ -176,6 +178,7 @@ export const useCheckoutStore = defineStore("checkout", {
             }
 
             this._applyCartPromoSnapshot(data.cart ?? null);
+            this._syncSelectedGiftFromServer();
             if (Object.prototype.hasOwnProperty.call(data, "delivery_pricing")) {
                 this._applyDeliveryPricingSnapshot(data.delivery_pricing);
             }
@@ -203,6 +206,31 @@ export const useCheckoutStore = defineStore("checkout", {
                 cart?.promo_state && typeof cart.promo_state === "object"
                     ? cart.promo_state
                     : {};
+        },
+
+        _syncSelectedGiftFromServer() {
+            const giftLine = selectedGiftCartLine(this.cartItems);
+            if (giftLine) {
+                this.promotions = {
+                    ...this.promotions,
+                    freeRollGiftProductId: giftLine.productId,
+                };
+                return;
+            }
+
+            const selectedFromPromo =
+                Number(this.promoState?.gift_promotion?.selected_product_id) || 0;
+            if (selectedFromPromo > 0) {
+                this.promotions = {
+                    ...this.promotions,
+                    freeRollGiftProductId: selectedFromPromo,
+                };
+                return;
+            }
+
+            if (this.promoState?.gift_promotion?.eligible !== true) {
+                this.promotions = { ...this.promotions, freeRollGiftProductId: null };
+            }
         },
 
         _applyDeliveryPricingSnapshot(deliveryPricing) {
@@ -284,19 +312,19 @@ export const useCheckoutStore = defineStore("checkout", {
         },
 
         persistSession() {
-            if (!this.checkoutId || this.status !== "draft") {
-                return;
-            }
-
             persistCheckoutSession(buildCheckoutSessionSnapshot(this));
         },
 
-        tryRestoreSession() {
-            return tryRestoreCheckoutSession(this);
-        },
-
-        ensureDraftCheckout() {
-            return ensureDraftCheckout(this);
+        restoreLocalCart(localCart) {
+            if (!Array.isArray(localCart)) {
+                return;
+            }
+            this.cartItems = localCart;
+            this.itemsSubtotalRubles = localCart.reduce(
+                (sum, item) => sum + (Number(item.pricing?.lineTotalKopecks) || 0) / 100,
+                0,
+            );
+            this.itemsTotalRubles = this.itemsSubtotalRubles;
         },
 
         bootstrapSession() {
@@ -304,8 +332,8 @@ export const useCheckoutStore = defineStore("checkout", {
         },
 
         clearAfterCompleted() {
-            this.checkoutId = null;
-            this.status = null;
+            this.previewRequestSeq += 1;
+            this.clientRequestId = null;
             this.cartItems = [];
             this.itemsTotalRubles = 0;
             this.itemsSubtotalRubles = 0;
@@ -395,8 +423,9 @@ export const useCheckoutStore = defineStore("checkout", {
             };
         },
 
-        updateCartLine(productId, quantity, payload = null) {
-            return updateCheckoutCartLine(this, productId, quantity, payload);
+        updateCartLine(product, quantity, payload = null) {
+            upsertLocalCartLine(this, product, quantity, payload);
+            return refreshOrderDraftPreview(this);
         },
 
         async addToCart(product, qty = 1) {
@@ -410,7 +439,7 @@ export const useCheckoutStore = defineStore("checkout", {
             );
             const nextQty = (existing ? existing.qty : 0) + add;
             const payload = buildCatalogCartLinePayload(product, existing?.payload);
-            await this._upsertCartLine(id, nextQty, payload);
+            await this._upsertCartLine(product, nextQty, payload);
         },
 
         async incrementCart(productId) {
@@ -420,7 +449,12 @@ export const useCheckoutStore = defineStore("checkout", {
             if (!item) {
                 return;
             }
-            await this._upsertCartLine(productId, item.qty + 1, item.payload ?? null);
+            const product = {
+                id: productId,
+                name: item.productSnapshot?.name,
+                price: { amount: item.productSnapshot?.price },
+            };
+            await this._upsertCartLine(product, item.qty + 1, item.payload ?? null);
         },
 
         async decrementCart(productId) {
@@ -430,11 +464,16 @@ export const useCheckoutStore = defineStore("checkout", {
             if (!item) {
                 return;
             }
+            const product = {
+                id: productId,
+                name: item.productSnapshot?.name,
+                price: { amount: item.productSnapshot?.price },
+            };
             const next = item.qty - 1;
             if (next <= 0) {
                 await this.removeFromCart(productId);
             } else {
-                await this._upsertCartLine(productId, next, item.payload ?? null);
+                await this._upsertCartLine(product, next, item.payload ?? null);
             }
         },
 
@@ -445,7 +484,13 @@ export const useCheckoutStore = defineStore("checkout", {
                 const item = this.cartItems.find(
                     (entry) => entry.productId === productId && !entry.isSystem,
                 );
-                await this.updateCartLine(productId, 0, item?.payload ?? null);
+                const product = {
+                    id: productId,
+                    name: item?.productSnapshot?.name,
+                    price: { amount: item?.productSnapshot?.price },
+                };
+                upsertLocalCartLine(this, product, 0, item?.payload ?? null);
+                await refreshOrderDraftPreview(this);
             } catch (e) {
                 this.cartError =
                     e?.response?.data?.message || "Не удалось обновить корзину.";
@@ -459,9 +504,10 @@ export const useCheckoutStore = defineStore("checkout", {
             this.cartLoading = true;
             this.cartError = null;
             try {
-                for (const item of [...this.userItems]) {
-                    await this.updateCartLine(item.productId, 0);
-                }
+                this.cartItems = this.cartItems.filter((item) => item.isSystem);
+                this.itemsTotalRubles = 0;
+                this.itemsSubtotalRubles = 0;
+                this.persistSession();
                 emitDomainEvent(DOMAIN_EVENTS.CART_CLEARED);
             } catch (e) {
                 this.cartError =
@@ -472,11 +518,12 @@ export const useCheckoutStore = defineStore("checkout", {
             }
         },
 
-        async _upsertCartLine(productId, quantity, payload = null) {
+        async _upsertCartLine(product, quantity, payload = null) {
             this.cartLoading = true;
             this.cartError = null;
             try {
-                await this.updateCartLine(productId, quantity, payload);
+                upsertLocalCartLine(this, product, quantity, payload);
+                await refreshOrderDraftPreview(this);
             } catch (e) {
                 this.cartError =
                     e?.response?.data?.message || "Не удалось обновить корзину.";
@@ -499,7 +546,7 @@ export const useCheckoutStore = defineStore("checkout", {
         },
 
         confirmCheckout() {
-            return confirmCheckoutOnServer(this);
+            return placeOrderOnServer(this);
         },
 
         setPromotionGift(productId) {

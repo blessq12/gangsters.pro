@@ -19,14 +19,14 @@ final class CreateOrderUseCase
 
     public function execute(CreateOrderDto $input): Order
     {
-        $existing = $this->orders->findByCheckoutId($input->checkoutId);
+        $existing = $this->orders->findByClientRequestId($input->clientRequestId);
 
         if ($existing instanceof Order) {
             return $existing;
         }
 
         $order = Order::fromCheckoutSnapshot(
-            checkoutId: $input->checkoutId,
+            clientRequestId: $input->clientRequestId,
             cart: $input->cart,
             client: $input->client,
             delivery: $input->delivery,

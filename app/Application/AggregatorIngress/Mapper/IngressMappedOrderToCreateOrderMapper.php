@@ -45,6 +45,7 @@ final class IngressMappedOrderToCreateOrderMapper
                     'kind' => 'user',
                     'ingress_partner_sku' => $line->partnerSku,
                 ],
+                sku: $product->sku,
             );
         }
 

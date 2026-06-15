@@ -1,6 +1,7 @@
-import { ref } from "vue";
+import { onBeforeUnmount, ref } from "vue";
 import { useClientCommands } from "../client/useClient";
 import { useClientAddressSelectionModel } from "../client/useClientAddressSelectionModel";
+import { createOrderDraftPreviewScheduler } from "./orderDraftPreviewScheduler";
 
 export function useCheckoutDeliveryStep({
     checkoutIntent,
@@ -10,6 +11,7 @@ export function useCheckoutDeliveryStep({
 }) {
     const addressSelection = useClientAddressSelectionModel();
     const clientCommands = useClientCommands();
+    const previewScheduler = createOrderDraftPreviewScheduler(checkoutIntent);
 
     const newAddressForm = ref({
         title: "",
@@ -24,6 +26,43 @@ export function useCheckoutDeliveryStep({
     const newAddressError = ref("");
     const isNewAddressOpen = ref(false);
     const deliveryStepError = ref("");
+
+    function resolvePreviewAddress() {
+        if (isGuestCheckout.value) {
+            return null;
+        }
+
+        return addressSelection.selectedAddress.value ?? null;
+    }
+
+    function canPreviewDelivery() {
+        const method = checkoutIntent.deliveryInfo.method;
+        if (!method) {
+            return false;
+        }
+
+        if (method === "pickup") {
+            return true;
+        }
+
+        if (isGuestCheckout.value) {
+            const address = checkoutIntent.deliveryInfo.address;
+            return (
+                String(address?.street || "").trim() !== ""
+                && String(address?.house || "").trim() !== ""
+            );
+        }
+
+        return Boolean(addressSelection.selectedAddress.value);
+    }
+
+    function scheduleDeliveryPreview() {
+        if (!canPreviewDelivery()) {
+            return;
+        }
+
+        previewScheduler.schedule(resolvePreviewAddress());
+    }
 
     function getDeliveryStepError(selectedAddress) {
         if (!checkoutIntent.deliveryInfo.method) {
@@ -82,6 +121,7 @@ export function useCheckoutDeliveryStep({
 
         checkoutIntent.setDeliveryInfo({ method: normalized });
         ensureAuthAddressUi();
+        scheduleDeliveryPreview();
     }
 
     function toggleNewAddressOpen() {
@@ -94,10 +134,12 @@ export function useCheckoutDeliveryStep({
 
     function patchDeliveryAddress(partial) {
         checkoutIntent.patchDeliveryAddress(partial);
+        scheduleDeliveryPreview();
     }
 
     function selectAddress(addressId) {
         clientCommands.selectAddress(addressId);
+        previewScheduler.schedule(resolvePreviewAddress(), 200);
     }
 
     async function handleCreateAddress() {
@@ -141,6 +183,8 @@ export function useCheckoutDeliveryStep({
                 comment: "",
                 make_default: true,
             };
+
+            previewScheduler.schedule(resolvePreviewAddress(), 200);
         } catch (e) {
             console.error(e);
             newAddressError.value =
@@ -150,6 +194,10 @@ export function useCheckoutDeliveryStep({
             newAddressLoading.value = false;
         }
     }
+
+    onBeforeUnmount(() => {
+        previewScheduler.cancel();
+    });
 
     return {
         addressSelection,
@@ -168,5 +216,7 @@ export function useCheckoutDeliveryStep({
         patchDeliveryAddress,
         selectAddress,
         handleCreateAddress,
+        scheduleDeliveryPreview,
+        flushDeliveryPreview: () => previewScheduler.flush(resolvePreviewAddress()),
     };
 }

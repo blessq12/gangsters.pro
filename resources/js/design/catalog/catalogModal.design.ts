@@ -19,7 +19,8 @@ export const catalogModalDesign = {
             "relative h-[92dvh] max-h-[100dvh] w-full min-h-0 overflow-hidden bg-[rgba(31,31,35,0.65)] shadow-[0_25px_60px_rgba(0,0,0,0.92)]",
         closeBtn:
             "absolute right-4 top-4 z-[3] flex h-9 w-9 items-center justify-center border border-transparent bg-neutral-950/85 text-xl text-app-muted transition-colors hover:border-app-accent/50 hover:text-app-accent",
-        closeBtnMobile: "left-3 right-auto top-3",
+        closeBtnInline:
+            "flex h-9 w-9 shrink-0 items-center justify-center border border-transparent bg-neutral-950/85 text-xl text-app-muted transition-colors hover:border-app-accent/50 hover:text-app-accent",
         closeIcon: "mdi mdi-close",
         body: "absolute inset-0 z-0",
         /** Зона галереи: отдельный градиентный оверлей в шаблоне (дочерний div). */
@@ -34,22 +35,38 @@ export const catalogModalDesign = {
             "absolute inset-0 z-[1] m-0 flex items-center justify-center p-8 text-base text-app-muted",
         emptyMobile:
             "static flex items-center justify-center p-8 text-sm text-app-muted",
-        infoFooterOverlay:
-            "absolute inset-x-0 bottom-0 z-[2] flex max-h-[55%] min-w-0 flex-col justify-end overflow-y-auto px-4 pb-4 pt-2 sm:px-5 sm:pb-5",
-        infoFooterOverlayMobile:
-            "inset-x-[0.6rem] bottom-[0.6rem] max-h-[58%] px-0 pb-0",
+        infoOverlay:
+            "pointer-events-none absolute inset-0 z-[2] flex flex-col justify-between",
+        infoHeader:
+            "pointer-events-auto w-full max-w-full px-4 pt-4 pb-2 sm:px-5 sm:pt-5",
+        infoHeaderMobile: "px-3",
+        infoFooter:
+            "pointer-events-auto flex max-h-[55%] min-w-0 flex-col justify-end overflow-y-auto px-4 pb-4 pt-2 sm:px-5 sm:pb-5",
+        infoFooterMobile:
+            "mx-[0.6rem] max-h-[58%] px-0 pb-[0.6rem]",
     },
 
     detailInfo: {
         card: "flex flex-col gap-3",
-        titleCol: "min-w-0",
+        titleCol: "min-w-0 mb-3",
+        headerBlock: "w-full",
+        titleTopRow: "flex w-full items-start gap-2 sm:gap-3",
+        headerContentCol: "flex min-w-0 flex-1 flex-col gap-0.5",
         title:
-            "font-heading text-lg font-normal leading-snug text-app-canvas-fg line-clamp-3 sm:text-xl",
-        tagsRow: "mt-2 flex flex-wrap gap-1.5",
+            "block w-full min-w-0 font-heading text-xl font-normal leading-tight text-app-canvas-fg line-clamp-2 drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)] sm:text-2xl lg:text-3xl",
+        metaLinksRow: "flex flex-wrap items-center gap-x-3 gap-y-0",
+        metaLink:
+            "block text-xs font-medium text-app-canvas-fg/85 underline-offset-2 transition-colors hover:text-app-accent hover:underline sm:text-sm",
+        metaLinkActive: "text-app-accent underline",
+        metaLinkMuted:
+            "block text-xs font-medium text-app-canvas-fg/70 sm:text-sm",
+        priceHeaderBtn:
+            "inline-flex shrink-0 min-h-10 items-center whitespace-nowrap px-3 py-1.5 text-base font-bold tabular-nums text-white transition-transform duration-200 hover:scale-[1.02] sm:min-h-11 sm:px-4 sm:py-2 sm:text-xl lg:text-2xl",
+        tagsRow: "mb-2 flex flex-wrap gap-1.5",
         tagPill:
             "inline-flex items-center px-2 py-0.5 text-[11px] font-medium backdrop-blur",
         controlsRow:
-            "flex w-full min-w-0 shrink-0 flex-nowrap items-center gap-2",
+            "flex w-full min-w-0 shrink-0 flex-nowrap items-center justify-start gap-2",
         actionIsland:
             "relative flex w-fit shrink-0 flex-nowrap items-center gap-1.5 bg-[rgba(0,0,0,0.78)] px-2 py-1 shadow-[0_0_24px_rgba(0,0,0,0.7)] backdrop-blur-xl",
         favBtn:
@@ -64,7 +81,7 @@ export const catalogModalDesign = {
         ingredientsIcon: "mdi mdi-information-outline text-xl",
         cartIconOuter: "flex h-10 shrink-0 items-center",
         cartAddIconBtn:
-            "relative inline-flex h-10 w-10 shrink-0 items-center justify-center bg-app-accent text-black transition-transform hover:scale-[1.03]",
+            "inline-flex h-10 shrink-0 items-center justify-center bg-app-accent px-4 py-2 text-xs font-bold uppercase tracking-wide text-black transition-transform hover:scale-[1.03] sm:text-sm",
         cartIcon: "mdi mdi-cart-outline text-xl",
         qtyCluster:
             "flex h-10 shrink-0 items-center gap-0.5 border border-app-accent/50 bg-neutral-950/85 px-0.5",

@@ -301,4 +301,29 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
 
         return $ordered;
     }
+
+    /**
+     * @param  list<int>  $ids
+     * @return array<int, array{counts_as_roll: bool, gift_candidate: bool, complement_set: bool}>
+     */
+    public function findPromotionMetaByProductIds(array $ids): array
+    {
+        $ids = $this->normalizeIds($ids);
+        if ($ids === []) {
+            return [];
+        }
+
+        return PRD_Product::query()
+            ->where('catalog_kind', CatalogItemKind::Product->value)
+            ->whereIn('id', $ids)
+            ->get(['id', 'meta_counts_as_roll', 'meta_gift_candidate', 'meta_is_complement_set'])
+            ->mapWithKeys(static fn (PRD_Product $row): array => [
+                (int) $row->id => [
+                    'counts_as_roll' => (bool) $row->meta_counts_as_roll,
+                    'gift_candidate' => (bool) $row->meta_gift_candidate,
+                    'complement_set' => (bool) $row->meta_is_complement_set,
+                ],
+            ])
+            ->all();
+    }
 }

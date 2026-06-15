@@ -3,7 +3,6 @@
 use App\Providers\AppServiceProvider;
 use App\Providers\AuthServiceProvider;
 use App\Providers\CatalogServiceProvider;
-use App\Providers\CheckoutServiceProvider;
 use App\Providers\ClientServiceProvider;
 use App\Providers\CompanyServiceProvider;
 use App\Providers\DeliveryServiceProvider;
@@ -190,7 +189,6 @@ return [
         AuthServiceProvider::class,
         RouteServiceProvider::class,
         CatalogServiceProvider::class,
-        CheckoutServiceProvider::class,
         ClientServiceProvider::class,
         OrderServiceProvider::class,
         AggregatorIngressServiceProvider::class,

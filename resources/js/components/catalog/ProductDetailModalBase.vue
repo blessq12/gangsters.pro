@@ -29,6 +29,7 @@ const props = defineProps({
 const emit = defineEmits(["update:modelValue"]);
 
 const ds = useAppDesign().components.catalog.modal.shell;
+const di = useAppDesign().components.catalog.modal.detailInfo;
 
 const isMobile = computed(() => props.variant === "mobile");
 const infoEnterDelay = computed(() => (isMobile.value ? 0.25 : 0.4));
@@ -144,8 +145,9 @@ function handleModalIncrement() {
                         @touchend="onPanelSwipeEnd"
                     >
                         <button
+                            v-if="!product"
                             type="button"
-                            :class="[ds.closeBtn, isMobile ? ds.closeBtnMobile : '']"
+                            :class="ds.closeBtn"
                             aria-label="Закрыть"
                             @click="close"
                         >
@@ -169,20 +171,58 @@ function handleModalIncrement() {
                                 />
                                 <div
                                     ref="infoRef"
-                                    :class="[
-                                        ds.infoFooterOverlay,
-                                        isMobile ? ds.infoFooterOverlayMobile : '',
-                                    ]"
+                                    :class="ds.infoOverlay"
                                 >
-                                    <ProductDetailInfo
-                                        :product="product"
-                                        :qty-in-cart="qtyInCart"
-                                        :is-fav="isFav"
-                                        @add-to-cart="handleModalAddToCart"
-                                        @increment="handleModalIncrement"
-                                        @decrement="decrementCart"
-                                        @toggle-favorite="toggleFavorite"
-                                    />
+                                    <div
+                                        :class="[
+                                            ds.infoHeader,
+                                            isMobile ? ds.infoHeaderMobile : '',
+                                        ]"
+                                    >
+                                        <div :class="di.headerBlock">
+                                            <div :class="di.titleTopRow">
+                                                <button
+                                                    type="button"
+                                                    :class="[di.favBtn, isFav ? di.favBtnActive : '']"
+                                                    aria-label="Избранное"
+                                                    @click.stop="toggleFavorite"
+                                                >
+                                                    <i :class="[di.favIcon, isFav ? 'mdi-heart' : 'mdi-heart-outline']" />
+                                                </button>
+                                                <div :class="di.headerContentCol">
+                                                    <h2
+                                                        :class="di.title"
+                                                        :title="product.name || product.raw?.name || 'Без названия'"
+                                                    >
+                                                        {{ product.name || product.raw?.name || "Без названия" }}
+                                                    </h2>
+                                                    <ProductDetailHeaderMeta :product="product" />
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    :class="ds.closeBtnInline"
+                                                    aria-label="Закрыть"
+                                                    @click.stop="close"
+                                                >
+                                                    <i :class="ds.closeIcon" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div
+                                        :class="[
+                                            ds.infoFooter,
+                                            isMobile ? ds.infoFooterMobile : '',
+                                        ]"
+                                    >
+                                        <ProductDetailInfo
+                                            :product="product"
+                                            :qty-in-cart="qtyInCart"
+                                            @add-to-cart="handleModalAddToCart"
+                                            @increment="handleModalIncrement"
+                                            @decrement="decrementCart"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </template>

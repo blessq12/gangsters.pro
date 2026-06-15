@@ -17,7 +17,7 @@ SPA может показывать устаревшие данные из local
 |----------|--------|
 | Filament save/delete/reorder `PRD_*` | Следующий API read отдаёт новые данные |
 | Upload image в relation manager | Файл на `public` disk; **не** в публичном API до доработки use case |
-| Meta toggle в Filament | Влияет на Checkout ACL (gift/roll/complement), не на `GET /api/catalog` |
+| Meta toggle в Filament | Влияет на Order ACL (gift/roll/complement) и bootstrap `promotion_meta` |
 
 ## Сейчас
 

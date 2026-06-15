@@ -44,6 +44,6 @@ Plain PHP objects — без Laravel contracts.
 ClientRegistered
   → welcome email / CRM / analytics
 
-Checkout SetCheckoutClient
+PlaceOrder / OrderDraft
   → ClientLookupPort::assertExists(clientId)
 ```

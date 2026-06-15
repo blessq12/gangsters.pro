@@ -32,10 +32,10 @@ ClientLoginForm
 
 ```
 MainLayout mount
+  → storefrontStore.fetchBootstrap()
   → userStore.initFromStorage()
   → если token: fetchClientProfile()
   → GET /api/client/profile
-  → emit CLIENT_PROFILE_CHANGED
 ```
 
 ## 4. Адресная книга
@@ -49,17 +49,20 @@ ClientAddressesManager
   → emit CLIENT_ADDRESS_*
 ```
 
-Выбор адреса для checkout — локально в store (`selectAddress`), без отдельного API.
+Выбор адреса для оформления — локально в store (`selectAddress`), попадает в local OrderDraft.
 
-## 5. Checkout + Client
+## 5. OrderDraft + Client
 
 ```
 useCheckout (auth path)
   → useClientReadModel / useClientAddressSelectionModel
-  → PATCH /api/checkout/{id}/client с client_id
+  → client_id в local draft
+  → POST /api/orders с client: { client_id, ... } или registered snapshot
 ```
 
-Client BC **не участвует** в этом PATCH — только id из SPA store.
+`ClientProfilePort` (Order) может подтянуть профиль при place для registered client.
+
+Client BC **не участвует** в preview/place напрямую — только auth API и id из SPA store.
 
 ## 6. Сброс пароля
 

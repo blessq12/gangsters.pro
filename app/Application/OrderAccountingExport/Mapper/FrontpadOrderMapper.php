@@ -3,6 +3,7 @@
 namespace App\Application\OrderAccountingExport\Mapper;
 
 use App\Domain\Order\Event\OrderCreated;
+use App\Domain\Order\ValueObject\OrderLineSnapshot;
 use App\Domain\OrderAccountingExport\Exception\UnknownAccountingProductException;
 use App\Domain\OrderAccountingExport\Repository\AccountingProductBindingRepository;
 use App\Shared\Enum\DeliveryMethod;
@@ -114,7 +115,7 @@ final class FrontpadOrderMapper
                 continue;
             }
 
-            $article = $this->productBindings->resolveExternalProductId(self::SYSTEM_CODE, $line->productId());
+            $article = $this->resolveProductArticle($line);
             if ($article === null || $article === '') {
                 throw new UnknownAccountingProductException(self::SYSTEM_CODE, $line->productId());
             }
@@ -215,6 +216,16 @@ final class FrontpadOrderMapper
             'aggregator' => 'aggregator',
             default => '',
         };
+    }
+
+    private function resolveProductArticle(OrderLineSnapshot $line): ?string
+    {
+        $sku = $line->sku();
+        if (is_string($sku) && $sku !== '') {
+            return $sku;
+        }
+
+        return $this->productBindings->resolveExternalProductId(self::SYSTEM_CODE, $line->productId());
     }
 
     private function resolvePersonCount(): int

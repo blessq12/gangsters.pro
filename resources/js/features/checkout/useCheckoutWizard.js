@@ -163,7 +163,7 @@ export function useCheckoutWizard({
         }
 
         try {
-            await checkoutIntent.flushDeliveryToServer(selectedAddress);
+            await deliveryStep.flushDeliveryPreview();
         } catch (e) {
             deliveryStep.deliveryStepError.value =
                 e?.response?.data?.message || "Не удалось сохранить адрес доставки.";
@@ -201,9 +201,7 @@ export function useCheckoutWizard({
 
         try {
             const confirmed = await checkoutIntent.confirmCheckout();
-            lastCreatedOrder.value = {
-                id: confirmed.checkout_id,
-            };
+            lastCreatedOrder.value = confirmed.order ?? null;
             emitDomainEvent(DOMAIN_EVENTS.ORDER_CREATED, {
                 order: lastCreatedOrder.value,
             });

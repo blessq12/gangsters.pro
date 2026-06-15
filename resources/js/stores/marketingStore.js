@@ -55,5 +55,17 @@ export const useMarketingStore = defineStore("marketing", {
                 this.fetchPromotions(),
             ]);
         },
+
+        applyBootstrap(marketingPayload) {
+            if (!marketingPayload || typeof marketingPayload !== "object") {
+                return;
+            }
+            if (Array.isArray(marketingPayload.banners)) {
+                this.banners = marketingPayload.banners;
+            }
+            if (Array.isArray(marketingPayload.promotions)) {
+                this.promotions = marketingPayload.promotions;
+            }
+        },
     },
 });

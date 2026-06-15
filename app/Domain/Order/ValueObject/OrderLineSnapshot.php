@@ -15,6 +15,7 @@ final readonly class OrderLineSnapshot
         private int $quantity,
         private Money $unitPrice,
         private ?array $payload = null,
+        private ?string $sku = null,
     ) {}
 
     public function productId(): int
@@ -43,6 +44,11 @@ final readonly class OrderLineSnapshot
     public function payload(): ?array
     {
         return $this->payload;
+    }
+
+    public function sku(): ?string
+    {
+        return $this->sku;
     }
 
     public function lineKind(): string

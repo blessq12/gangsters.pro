@@ -73,6 +73,8 @@ export function useCheckoutFlowContext() {
         lastCreatedOrder,
         handleCreateAddress,
         toggleNewAddressOpen,
+        scheduleDeliveryPreview,
+        flushDeliveryPreview,
     } = flow;
 
     const checkoutState = {
@@ -143,5 +145,7 @@ export function useCheckoutFlowContext() {
         lastCreatedOrder,
         handleCreateAddress,
         toggleNewAddressOpen,
+        scheduleDeliveryPreview,
+        flushDeliveryPreview,
     };
 }

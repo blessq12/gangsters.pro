@@ -80,7 +80,7 @@ Read-only контур: оператор **только смотрит** кли�
 ])
 ```
 
-Эталон: `CheckoutViewSchema`, `ViewCheckout`.
+Эталон UI табов: `OrderViewSchema`, `ViewOrder`.
 
 ## Чтение профиля (`ClientProfileReader`)
 
@@ -124,5 +124,5 @@ app/Filament/Client/
 ## Чего нет
 
 - Редактирование профиля/адресов из админки.
-- Связь с Checkout/Order в UI Filament.
+- Связь с Order в UI Filament (заказы — отдельный hub).
 - Виджеты hub-таблиц.

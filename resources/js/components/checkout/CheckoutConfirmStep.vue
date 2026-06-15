@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from "vue";
+import { computed, onMounted } from "vue";
 import { storeToRefs } from "pinia";
 import { useAppDesign } from "../../design/useAppDesign";
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
@@ -8,6 +8,7 @@ import {
     formatServerDeliveryLine,
     formatServerPaymentLine,
 } from "../../features/checkout/checkoutServerMappers";
+import { refreshOrderDraftPreview } from "../../features/checkout/checkoutSessionService";
 import { useCheckoutStore } from "../../stores/checkoutStore";
 import CheckoutOrderPreview from "./CheckoutOrderPreview.vue";
 import CheckoutOrderReview from "./CheckoutOrderReview.vue";
@@ -52,10 +53,21 @@ const deliveryComment = computed(() => {
     const comment = serverDelivery.value?.comment;
     return typeof comment === "string" && comment.trim() !== "" ? comment.trim() : null;
 });
+
+onMounted(() => {
+    if (checkoutStore.hasCartItems) {
+        void refreshOrderDraftPreview(checkoutStore).catch(() => {});
+    }
+});
 </script>
 
 <template>
     <CheckoutStepFrame group="confirm">
+        <CheckoutOrderPreview
+            variant="confirm"
+            part="benefits"
+        />
+
         <CheckoutOrderPreview
             variant="confirm"
             part="gift"

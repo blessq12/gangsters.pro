@@ -1,50 +1,71 @@
-# Order — HTTP-слой
+# Order — HTTP
 
-Тонкий адаптер: Request → DTO → use case → JSON.
+## Write (сайт)
 
-## Публичный API
+**Контроллер:** `App\Http\Controllers\Api\OrderDraftController`
 
-**Контроллер:** `App\Http\Controllers\Api\OrderController`
+| Действие | Метод | Use case | Request |
+|----------|-------|----------|---------|
+| `preview()` | `POST /api/order-drafts/preview` | `PreviewOrderDraftUseCase` | `PreviewOrderDraftRequest` |
+| `store()` | `POST /api/orders` | `PlaceOrderUseCase` | `PlaceOrderRequest` |
 
-| Действие | HTTP | Auth | Use case |
-|----------|------|------|----------|
-| `index()` | `GET /api/order` | `auth.client` | `ListClientOrdersUseCase` |
-| `show()` | `GET /api/order/{orderId}` | `auth.client` | `GetOrderUseCase` |
-
-Ответ **200**:
+### Preview body (фрагмент)
 
 ```json
 {
-  "data": [ /* OrderPresenter[] */ ]
+  "cart": {
+    "lines": [{ "product_id": 1, "quantity": 2 }],
+    "selected_gift_product_id": 55
+  },
+  "delivery": { "method": "courier", "address": { ... } },
+  "client": null,
+  "payment": null
 }
 ```
 
-Авторизация: middleware `AuthenticateClient` (Bearer `CLN_Client`, без web-сессии Filament).
+### Place body
 
-## Создание заказа
+Preview body **+** обязательные:
 
-| Канал | Маршрут | Use case |
-|-------|---------|----------|
-| Сайт | `POST /api/checkout/{checkoutId}/confirm` | `CreateOrderUseCase` (через event) |
-| Агрегатор | `POST /api/ingress/{partner}/orders` | `CreateOrderFromIngressUseCase` |
+```json
+{
+  "client_request_id": "uuid-v4",
+  "client": { "name": "...", "phone": "..." },
+  "delivery": { "method": "pickup" },
+  "payment": { "method": "cash" }
+}
+```
 
-В ответе confirm присутствует поле `order` (тот же `OrderPresenter`).
+### Place response 201
 
-Агрегаторы: см. [AggregatorIngress http](../aggregator-ingress/http.md).
+```json
+{
+  "order": {
+    "id": 42,
+    "client_request_id": "uuid",
+    "checkout_id": "uuid",
+    "status": "new",
+    ...
+  }
+}
+```
 
-## Legacy
+## Read (история клиента)
 
-| Артефакт | Статус |
-|----------|--------|
-| `StoreOrderRequest` | не подключён к роутам |
-| `POST /api/order` в `orderApi.js` | legacy; SPA использует checkout confirm |
+**Контроллер:** `App\Http\Controllers\Api\OrderController`
 
-## Handler
-
-`OrderInvariantViolation` → 422 JSON на `api/*`.
+| Действие | Метод | Auth |
+|----------|-------|------|
+| `index()` | `GET /api/order` | `auth.client` |
+| `show()` | `GET /api/order/{orderId}` | `auth.client` |
 
 ## SPA
 
-`resources/js/api/orderApi.js` — `fetchOrdersRequest()` → `GET /api/order`.
+| Файл | Endpoint |
+|------|----------|
+| `resources/js/api/orderDraftApi.js` | preview, place |
+| ~~`checkoutApi.js`~~ | **удалён** |
 
-Store: `orderStore.fetchOrders()` ожидает `data.data` или массив в корне.
+## Удалённые маршруты
+
+~~`POST/PATCH /api/checkout/*`~~ — см. [Checkout (удалён)](../checkout/overview.md).

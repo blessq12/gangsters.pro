@@ -57,6 +57,8 @@ Presenter/DTO **нет** — маппинг в приватных методах
 | `ingredients` | `list<string>` |
 | `tags` | `list<{ code, label, color }>` |
 
+`sku` **не входит** в публичный контракт (только домен + Filament).
+
 ### Set item
 
 | Поле | Тип |
@@ -66,24 +68,36 @@ Presenter/DTO **нет** — маппинг в приватных методах
 | `lines` | `list<{ product_id, quantity }>` |
 | `tags` | `list<{ code, label, color }>` |
 
-### Не включается в API
+### В bootstrap catalog item
+
+```json
+"promotion_meta": {
+  "counts_as_roll": false,
+  "gift_candidate": true,
+  "complement_set": false
+}
+```
+
+`GetCatalogUseCase` + `CatalogItemRepository::findPromotionMetaByProductIds()`.
+
+### Не включается в legacy `GET /api/catalog` (без bootstrap)
 
 - `images` (хранятся в `PRD_product_images`, Filament relation manager).
-- Meta: `meta_counts_as_roll`, `meta_gift_candidate`, `meta_is_complement_set`.
+- `promotion_meta` — только через bootstrap (или расширить legacy endpoint позже).
 
 ## Админские мутации
 
 **Не** проходят через Application Catalog. Filament пишет в `PRD_*` напрямую (см. `filament.md`).
 
-## Интеграция с Checkout (вне Application Catalog)
+## Интеграция с Order (вне Application Catalog)
 
-Checkout ACL-адаптеры в `app/Infrastructure/Checkout/Port/` читают Catalog:
+Order ACL-адаптеры в `app/Infrastructure/Order/Port/` читают Catalog:
 
 | Порт | Адаптер | Источник |
 |------|---------|----------|
-| `CatalogPricingPort` | `CatalogPricingAdapter` | `CatalogItemRepository::findProductById` (только товары) |
+| `CatalogPricingPort` | `CatalogPricingAdapter` | `CatalogItemRepository::findProductById` |
 | `CatalogGiftCandidatesPort` | `CatalogGiftCandidatesAdapter` | `PRD_Product` where `meta_gift_candidate=true` |
 | `CatalogRollMetaPort` | `CatalogRollMetaAdapter` | `PRD_Product.meta_counts_as_roll` |
 | `CatalogComplementSetCandidatesPort` | `CatalogComplementSetCandidatesAdapter` | `PRD_Product` where `meta_is_complement_set=true` |
 
-Биндинги — `CheckoutServiceProvider`, не `CatalogServiceProvider`.
+Биндинги — `OrderServiceProvider`.

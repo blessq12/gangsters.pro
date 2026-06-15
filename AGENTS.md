@@ -24,6 +24,8 @@
 ## Документация (дополнительно)
 
 - [`.cursor/docs/README.md`](.cursor/docs/README.md) — индекс bounded contexts
+- [`.cursor/docs/storefront/overview.md`](.cursor/docs/storefront/overview.md) — bootstrap витрины
+- [`.cursor/docs/order/overview.md`](.cursor/docs/order/overview.md) — Order + OrderDraft (сайт)
 - [`docs/aggregator-ingress.md`](docs/aggregator-ingress.md) — приём заказов от агрегаторов (кратко)
 - [`docs/order-accounting-export.md`](docs/order-accounting-export.md) — экспорт заказов в системы учёта (кратко)
 - [`.cursor/docs/aggregator-ingress/overview.md`](.cursor/docs/aggregator-ingress/overview.md) — BC AggregatorIngress (полностью)

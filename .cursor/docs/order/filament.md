@@ -24,7 +24,7 @@ Read-only: оператор смотрит заказы из `ORD_orders`. Со�
 | Сумма | `total_rubles` |
 | Клиент | `client_snapshot` |
 | Доставка / Оплата | JSON-слепки |
-| Checkout | `checkout_id` (copyable), «—» для aggregator |
+| Client request | `checkout_id` (copyable), «—» для aggregator |
 | Партнёр | `partner_code` → `OrderSnapshotReader::partnerLabel()` |
 | Внешний ID | `external_order_id` |
 | Создан | `created_at` |
@@ -35,12 +35,12 @@ Read-only: оператор смотрит заказы из `ORD_orders`. Со�
 
 `mutateFormDataBeforeFill()` → `OrderSnapshotReader::formDataFromRecord()`.
 
-Табы (`OrderViewSchema`, ключи ассоциативные + `activeOrderViewTab`):
+Табы (`OrderViewSchema`):
 
 | `?tab=` | Блок |
 |---------|------|
 | `overview` | id, source, checkout_id, partner, external_order_id, status, created_at |
-| `cart` | сумма + `RepeatableEntry` table (TextEntry) |
+| `cart` | сумма + `RepeatableEntry` table |
 | `client` | client snapshot |
 | `delivery` | delivery snapshot |
 | `payment` | payment snapshot |
@@ -49,13 +49,13 @@ Read-only: оператор смотрит заказы из `ORD_orders`. Со�
 
 `app/Filament/Order/Support/OrderSnapshotReader.php` — русские подписи enum, формат денег.
 
-Filament не использует Domain Order — только Eloquent + JSON (как Checkout).
+Filament не использует Domain Order — только Eloquent + JSON.
 
 ## Принцип
 
 | Контур | Read | Write |
 |--------|------|-------|
 | Filament | список + просмотр | **запрещён** |
-| API клиента | `GET /api/order` | через Checkout confirm |
+| API клиента | `GET /api/order` | `POST /api/orders` (PlaceOrder) |
 | Ingress API | — | [AggregatorIngress](../aggregator-ingress/overview.md) |
-| SPA | история в профиле (только site + registered) | checkout wizard |
+| SPA | история в профиле | local OrderDraft + place |

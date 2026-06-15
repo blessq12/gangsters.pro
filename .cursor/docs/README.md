@@ -4,11 +4,12 @@
 
 ## Индекс BC
 
-| BC | Обзор | Назначение |
-|----|-------|------------|
+| BC / слой | Обзор | Назначение |
+|-----------|-------|------------|
+| **Storefront** | [storefront/overview.md](storefront/overview.md) | Bootstrap витрины (composition, не BC) |
 | Catalog | [catalog/overview.md](catalog/overview.md) | Каталог товаров |
-| Checkout | [checkout/overview.md](checkout/overview.md) | Черновик оформления (сайт) |
-| **Order** | [order/overview.md](order/overview.md) | Заказ на исполнение |
+| **Order** | [order/overview.md](order/overview.md) | Заказ + OrderDraft (сайт) |
+| ~~Checkout~~ | [checkout/overview.md](checkout/overview.md) | **Удалён** — см. Order + Storefront |
 | **AggregatorIngress** | [aggregator-ingress/overview.md](aggregator-ingress/overview.md) | Приём заказов от агрегаторов |
 | **OrderAccountingExport** | [order-accounting-export/overview.md](order-accounting-export/overview.md) | Экспорт заказов в системы учёта |
 | Client | [client/overview.md](client/overview.md) | Клиентский аккаунт |
@@ -31,16 +32,16 @@
 | `filament.md` | Админка (если есть) |
 | `events.md` | Доменные события |
 
-Дополнительно у **AggregatorIngress**: [partners.md](aggregator-ingress/partners.md) — контракты webhook по партнёрам.
+Дополнительно у **AggregatorIngress**: [partners.md](aggregator-ingress/partners.md).
 
-Дополнительно у **OrderAccountingExport**: [systems.md](order-accounting-export/systems.md) — контракты Frontpad / iiko.
+Дополнительно у **OrderAccountingExport**: [systems.md](order-accounting-export/systems.md).
 
 ## Создание заказа: два канала
 
 ```mermaid
 flowchart LR
     subgraph site [Сайт]
-        A[Checkout confirm] --> B[CreateOrderUseCase]
+        A[POST /orders PlaceOrder] --> B[CreateOrderUseCase]
     end
     subgraph agg [Агрегаторы]
         C[Ingress webhook] --> D[CreateOrderFromIngressUseCase]
@@ -51,11 +52,11 @@ flowchart LR
     F --> G[OrderAccountingExport]
 ```
 
-- Сайт: [checkout/flow.md](checkout/flow.md) → [order/flow.md](order/flow.md)
+- Сайт: [storefront/flow.md](storefront/flow.md) → [order/flow.md](order/flow.md)
 - Агрегаторы: [aggregator-ingress/flow.md](aggregator-ingress/flow.md)
-- Экспорт в учётку: [order-accounting-export/flow.md](order-accounting-export/flow.md)
+- Экспорт: [order-accounting-export/flow.md](order-accounting-export/flow.md)
 
 ## См. также
 
 - [AGENTS.md](../AGENTS.md) — guidance для агентов
-- [docs/aggregator-ingress.md](../docs/aggregator-ingress.md) — краткая точка входа в `docs/`
+- [docs/aggregator-ingress.md](../docs/aggregator-ingress.md)

@@ -116,6 +116,16 @@ export const checkoutDesign = {
         giftSelectedHint: "mt-0.5 truncate text-[11px] text-app-muted",
         giftCta: `shrink-0 ${chromePillInactive} px-3 py-1 text-[11px] font-medium text-app-accent`,
         authActions: "mt-3 flex flex-col gap-2",
+        authCtaBtn:
+            "checkout-auth-cta relative inline-flex w-full items-center justify-center overflow-hidden rounded-none bg-app-accent px-4 py-3 text-sm font-bold text-black shadow-[0_0_22px_rgba(198,36,36,0.75)] transition hover:bg-app-accent-hover",
+        complementProgressCard:
+            "mt-3 space-y-1 rounded-none border border-app-accent/25 bg-app-accent/8 px-3 py-2",
+        zoneStatusIn:
+            "rounded-none border border-emerald-500/30 bg-emerald-950/20 px-3 py-2 text-[11px] text-emerald-200",
+        zoneStatusOut:
+            "rounded-none border border-amber-500/30 bg-amber-950/20 px-3 py-2 text-[11px] text-amber-100",
+        previewLoading:
+            "rounded-none border border-app-border-on-surface bg-black/5 px-3 py-2 text-[11px] text-app-muted animate-pulse",
         resumeBanner:
             "mb-3 rounded-none border border-app-accent/30 bg-app-accent/10 px-3 py-2 text-xs sm:text-sm",
         resumeBannerRow: "flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between",
@@ -150,6 +160,10 @@ export const checkoutDesign = {
     confirm: {
         summaryCard:
             "space-y-2 rounded-none bg-app-accent-soft-bg px-3 py-3",
+        benefitsCard:
+            "space-y-2 rounded-none border border-app-accent/20 bg-app-accent/5 px-3 py-3 text-xs",
+        benefitLine: "text-[11px] text-app-canvas-fg",
+        benefitLineMuted: "text-[11px] text-app-muted",
         orderList: "space-y-1 text-xs",
         orderLineRow: "flex items-center justify-between gap-2",
         orderLineTruncate: "truncate text-app-canvas-fg",
@@ -167,6 +181,7 @@ export const checkoutDesign = {
     },
 
     success: {
-        footerActions: "mt-2 flex justify-end",
+        orderTitle: "text-2xl font-bold tracking-tight text-app-accent",
+        footerActions: "mt-4 flex justify-end",
     },
 } as const;

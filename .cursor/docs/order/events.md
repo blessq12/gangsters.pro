@@ -10,29 +10,31 @@
 
 Диспатч в:
 
-- `CreateOrderUseCase` (сайт)
+- `CreateOrderUseCase` (сайт, через `PlaceOrderUseCase`)
 - `CreateOrderFromIngressUseCase` (агрегатор)
 
-**Не** диспатчится при идемпотентном `return $existing`.
+**Не** диспатчится при идемпотентном повторе.
 
-Payload: полный снимок `orderId`, `source`, `cart`, `client`, `delivery`, `payment`, `occurredAt`.
+Payload: `orderId`, `source`, `checkoutId` (client_request_id для site), cart, client, delivery, payment, `occurredAt`.
 
 ## Входящие
 
 | Событие | Источник | Обработчик |
 |---------|----------|------------|
-| `CheckoutConfirmed` | Checkout BC | `OnCheckoutConfirmed` → `CreateOrderUseCase` |
+| — | — | ~~`CheckoutConfirmed`~~ **удалён** |
 
-Подписка: `OrderServiceProvider::boot()`.
+Сайт больше не использует промежуточное доменное событие: `PlaceOrderUseCase` вызывает `CreateOrderUseCase` напрямую.
 
-## Payload `CheckoutConfirmed`
+## SPA (не домен Order)
 
-Содержит слепки cart, client, delivery, payment и `checkoutId` — маппится ACL `CheckoutConfirmedOrderSnapshotMapper`.
+| Событие | Когда |
+|---------|--------|
+| `order.created` | После успешного `POST /api/orders` |
+
+Trigger: `useCheckoutWizard.handleConfirmOrder` → `useSessionLifecycleProcess` → clear draft + cart.
 
 ## План
 
 | Событие | Когда |
 |---------|--------|
 | `OrderStatusChanged` | при реализации смены статуса |
-
-Другие потенциальные подписчики `OrderCreated`: email/push клиенту, аналитика (пока не подключены).

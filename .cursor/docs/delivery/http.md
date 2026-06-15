@@ -1,45 +1,30 @@
-# Delivery — HTTP-слой
+# Delivery — HTTP
 
-Тонкий адаптер между HTTP и сценариями приложения Delivery BC. Бизнес-логики в контроллере нет.
-
-## Публичный API
+## Публичный read
 
 **Контроллер:** `App\Http\Controllers\Api\DeliveryController`
 
 | Действие | Сценарий | Ответ |
 |----------|----------|--------|
-| `show()` | `GetDeliveryDataUseCase::execute()` | JSON `{ data: { settings, zone } \| null }` |
+| `show()` | `GetDeliveryDataUseCase::execute()` | JSON `{ settings, zone }` |
 
-Контроллер только делегирует use case и отдаёт `JsonResponse`. Валидация входа не требуется — read-only без параметров.
+Read-only, без auth.
 
-Авторизация не навешена (публичные настройки).
+## Bootstrap
 
-## Админка
+`GET /api/storefront/bootstrap` → блок `delivery` (тот же use case).
 
-HTTP для оператора (форма доставки, редактор карты) не проходит через `app/Http/Controllers/Api`. Исключение — вспомогательный маршрут панели:
+## OrderDraft (косвенно)
 
-| Контроллер | Маршрут | Смысл |
-|------------|---------|--------|
-| `DeliveryZoneMapEditorController` | `/admin/delivery-zone-map-editor` | iframe-редактор полигона, передаёт Yandex API keys |
+Delivery BC **не имеет** write HTTP. Геокод и pricing — внутри:
 
-Регистрируется в `AdminPanelProvider::routes()`.
+| Method | URI | Связь с Delivery |
+|--------|-----|------------------|
+| POST | `/api/order-drafts/preview` | `PrepareOrderDraftDeliveryAddress` |
+| POST | `/api/orders` | то же + persist snapshot в Order |
 
-Основное сохранение настроек — Filament/Livewire на `/admin/delivery`.
+В ответе preview: `delivery`, `delivery_pricing` (`in_zone`, surcharges).
 
-## Связанный HTTP (другие BC)
+## Удалено
 
-Конфиг Delivery **косвенно** участвует в checkout API:
-
-| Метод | Путь | Связь с Delivery |
-|-------|------|------------------|
-| `PATCH` | `/api/checkout/{checkoutId}/delivery` | `SetCheckoutDeliveryUseCase` → `PrepareCheckoutDeliveryAddress` (геокод + конфиг) → pricing через Promotion |
-
-Request: `App\Http\Requests\Checkout\SetCheckoutDeliveryRequest`.
-
-В ответе checkout: `delivery`, `delivery_pricing` (`in_zone`, `outside_zone_surcharge_*`), `benefits_progress.delivery`.
-
-## Принцип
-
-- API Delivery BC = **один read-endpoint** (`GET /api/delivery`).
-- Нет публичных write-endpoint'ов доставки.
-- Админские запросы защищены middleware панели Filament (session + auth).
+~~`PATCH /api/checkout/{checkoutId}/delivery`~~

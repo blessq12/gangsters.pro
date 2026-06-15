@@ -32,14 +32,14 @@ final class Order
     ) {}
 
     public static function fromCheckoutSnapshot(
-        string $checkoutId,
+        string $clientRequestId,
         OrderCartSnapshot $cart,
         OrderClientSnapshot $client,
         OrderDeliverySnapshot $delivery,
         OrderPaymentSnapshot $payment,
         DateTimeImmutable $createdAt,
     ): self {
-        if ($checkoutId === '') {
+        if ($clientRequestId === '') {
             throw OrderInvariantViolation::invalidCheckoutReference();
         }
 
@@ -50,7 +50,7 @@ final class Order
         return new self(
             id: null,
             source: OrderSource::Site,
-            checkoutId: $checkoutId,
+            checkoutId: $clientRequestId,
             aggregatorReference: null,
             status: OrderStatus::New,
             cart: $cart,
@@ -142,6 +142,11 @@ final class Order
     }
 
     public function checkoutId(): ?string
+    {
+        return $this->checkoutId;
+    }
+
+    public function clientRequestId(): ?string
     {
         return $this->checkoutId;
     }

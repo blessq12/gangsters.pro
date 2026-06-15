@@ -22,7 +22,7 @@
 
 В домене Delivery **нет** enum-классов.
 
-Способ доставки (`courier` \| `pickup`) — shared enum `App\Shared\Enum\DeliveryMethod` (используется Checkout / Promotion, не Delivery BC).
+Способ доставки (`courier` \| `pickup`) — shared enum `App\Shared\Enum\DeliveryMethod` (OrderDraft / Promotion, не Delivery BC).
 
 ## Порты
 
@@ -44,7 +44,7 @@
 
 Файл: `app/Domain/Delivery/Port/DeliveryAddressGeocoderPort.php`.
 
-**Потребитель:** `Application\Checkout\Services\PrepareCheckoutDeliveryAddress` — не use case Delivery BC.  
+**Потребитель:** `Application\Order\OrderDraft\PrepareOrderDraftDeliveryAddress` — не use case Delivery BC.  
 City для запроса берётся из `kitchen_address` конфигурации.
 
 Домен **не знает** про Yandex API, Eloquent и таблицу `DLV_configuration` — только интерфейсы и чистые типы.
@@ -60,4 +60,4 @@ City для запроса берётся из `kitchen_address` конфигу�
 
 - Порта расчёта стоимости доставки — pricing живёт в Promotion (`PromotionDeliveryPricingPort`).
 - Событий, команд записи, валидации адреса курьера.
-- Типов checkout/order (`DeliveryAddress`, `DeliverySnapshot` — в Checkout / Order BC).
+- Типов order draft / order (`DeliveryAddress`, `DeliverySnapshot` — в Order BC).

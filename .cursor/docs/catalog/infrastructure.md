@@ -4,12 +4,12 @@
 
 ## Таблицы
 
-Миграция: `database/migrations/2026_06_14_100000_create_prd_catalog_tables.php`.
+Миграции: `database/migrations/2026_06_14_100000_create_prd_catalog_tables.php`, `2026_06_16_120000_add_sku_to_prd_products.php`.
 
 | Таблица | Назначение |
 |---------|------------|
 | `PRD_categories` | Категории: `name`, `slug`, `sort_order`, `is_active` |
-| `PRD_products` | Товары и наборы: `catalog_kind`, `status`, `price` (рубли), КБЖУ, `ingredients` (json), meta-поля, `archived_at` |
+| `PRD_products` | Товары и наборы: `catalog_kind`, `status`, `sku` (nullable, unique, только смысл для `product`), `price` (рубли), КБЖУ, `ingredients` (json), meta-поля, `archived_at` |
 | `PRD_category_product` | Состав категории: `category_id`, `product_id`, `sort_order` |
 | `PRD_tags` | Теги: `code`, `label`, `color`, `is_active`, `sort_order` |
 | `PRD_product_tag` | Pivot товар/набор ↔ тег |
@@ -37,7 +37,7 @@ Eloquent-модели **`PRD_ProductTag` нет** — pivot `PRD_product_tag` ч
 | Класс | Маппинг |
 |-------|---------|
 | `CatalogCategoryMapper` | `PRD_Category` → `Category` |
-| `CatalogProductMapper` | `PRD_Product` → `Product`; `archived_at !== null` → `Archived`; nutrition `null` если все КБЖУ = 0 |
+| `CatalogProductMapper` | `PRD_Product` → `Product`; trim `sku`, пусто → `null`; `archived_at !== null` → `Archived`; nutrition `null` если все КБЖУ = 0 |
 | `CatalogProductSetMapper` | `PRD_Product` + lines → `ProductSet`; пустые lines → `null` |
 | `CatalogTagMapper` | `PRD_Tag` → `Tag` |
 

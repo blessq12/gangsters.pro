@@ -18,7 +18,7 @@
 | Внутри BC | Снаружи |
 |-----------|---------|
 | Auth, ACL-адаптеры, pipeline, audit | Order BC — единственный write в `ORD_orders` |
-| Catalog binding (read) | Checkout BC — **не участвует** |
+| Catalog binding (read) | ~~Checkout BC~~ — **не участвует** |
 | Stub + шаблоны партнёров | SPA / клиентский API — **не видят** ingress-заказы |
 
 ## Принцип

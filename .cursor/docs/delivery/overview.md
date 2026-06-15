@@ -10,16 +10,16 @@
 | **Настройки доставки** | Минимальная сумма заказа, стоимость доставки в зоне, стоимость за пределами зоны, среднее время доставки |
 | **Зона доставки** | Адрес кухни, координаты кухни, полигон(ы) в GeoJSON |
 | **Адрес кухни** | Структурированный адрес (`city`, `street`, `house`, `comment`) для текстов на витрине |
-| **Зона доставки (покрытие)** | GeoJSON-полигон + координаты кухни; in/out zone при checkout — не строка адреса |
+| **Зона доставки (покрытие)** | GeoJSON-полигон + координаты кухни; in/out zone при OrderDraft preview — не строка адреса |
 | **Тариф in/out zone** | Расчёт стоимости курьерской доставки по сумме корзины и попаданию адреса в GeoJSON-полигон — **не в Delivery BC**, а в Promotion через `PromotionDeliveryPricingPort` |
 
 ## Границы
 
 | Внутри BC | Снаружи |
 |-----------|---------|
-| Тарифы доставки, срок, адрес кухни, геометрия зоны | Оформление заказа, выбор способа доставки (Checkout BC) |
+| Тарифы доставки, срок, адрес кухни, геометрия зоны | OrderDraft (выбор способа, geocode адреса) |
 | Порт геокодирования адреса курьера (`DeliveryAddressGeocoderPort`) | Расчёт `delivery_pricing` / benefits (Promotion BC) |
-| Публичный read API `GET /api/delivery` | Создание заказа, слепок доставки в Order (копия из Checkout) |
+| Публичный read API `GET /api/delivery` и bootstrap `delivery` | Слепок доставки в Order (из OrderDraft при place) |
 | Запись настроек — Filament (`/admin/delivery`) | `DeliveryMethod` (`courier` \| `pickup`) — `app/Shared/Enum/DeliveryMethod.php` |
 
 Публичный контракт BC — **только чтение** (`GET /api/delivery`).  
@@ -29,9 +29,9 @@
 
 | BC | Направление | Как |
 |----|-------------|-----|
-| **Checkout** | Delivery → Checkout | `PrepareCheckoutDeliveryAddress` читает конфиг и геокодирует адрес курьера через `DeliveryAddressGeocoderPort` (city из `kitchen_address`) |
-| **Promotion** | Delivery → Promotion | `PromotionDeliveryPricingAdapter` (Infrastructure Promotion) читает `DeliveryConfigurationRepository`, проверяет точку в зоне (`PointInGeoJsonZone`), считает fee |
-| **Order** | косвенно | Копирует `DeliverySnapshot` из подтверждённого Checkout; к Delivery BC не обращается |
+| **Order (OrderDraft)** | Delivery → Order | `PrepareOrderDraftDeliveryAddress` — geocode через `DeliveryAddressGeocoderPort` |
+| **Promotion** | Delivery → Promotion | `PromotionDeliveryPricingAdapter` — базовые тарифы + зона; порог free delivery из PRM |
+| **Order** | косвенно | `DeliverySnapshot` в слепке заказа при place; к Delivery BC не обращается |
 
 ## Хранение
 
@@ -59,10 +59,9 @@
 - Полная вертикаль read: Domain → Application → Infrastructure → HTTP (`GET /api/delivery`).
 - Singleton-конфиг с тарифами in/out zone, GeoJSON зоной, структурированным адресом кухни.
 - Filament: табы «Настройки» / «Зона доставки», iframe-редактор полигона (Яндекс.Карты), postMessage-мост.
-- Порт геокодирования + Yandex adapter; используется в Checkout при сохранении адреса курьера.
-- Pricing in/out zone через `PromotionDeliveryPricingAdapter` (читает конфиг Delivery).
-- SPA подключена к `GET /api/delivery`: `deliveryStore`, `useDeliveryReadModel`, страница `/delivery`, dock-панель, контакты; preload в `MainLayout*`.
-- Unit-тесты pricing adapter; feature-тесты checkout delivery in/out zone.
+- Порт геокодирования + Yandex adapter; используется в OrderDraft pipeline.
+- SPA: bootstrap `delivery` + legacy `GET /api/delivery`.
+- Feature: `PlaceOrderTest` (courier in/out zone через place flow).
 
 ### Пробелы / техдолг
 

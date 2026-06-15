@@ -7,9 +7,7 @@ import { useCheckoutStore } from "../stores/checkoutStore";
 import { useFavoritesStore } from "../stores/favoritesStore";
 import { useUiStore } from "../stores/uiStore";
 import { useCatalogStore } from "../stores/catalogStore";
-import { useMarketingStore } from "../stores/marketingStore";
-import { useCompanyStore } from "../stores/companyStore";
-import { useDeliveryStore } from "../stores/deliveryStore";
+import { useStorefrontStore } from "../stores/storefrontStore";
 import { playPageEnter, playPageLeave } from "../animations/animationManager";
 import { useShellIntroDockTimeline } from "../composables/layout/useShellIntroDockTimeline";
 import { useMobileDockScrollSuppression } from "../composables/ui/useMobileDockScrollSuppression";
@@ -23,9 +21,7 @@ const cartStore = useCheckoutStore();
 const favoritesStore = useFavoritesStore();
 const uiStore = useUiStore();
 const catalogStore = useCatalogStore();
-const marketingStore = useMarketingStore();
-const companyStore = useCompanyStore();
-const deliveryStore = useDeliveryStore();
+const storefrontStore = useStorefrontStore();
 const route = useRoute();
 
 themeStore.initTheme();
@@ -85,10 +81,7 @@ onMounted(() => {
     }
 
     void Promise.allSettled([
-        marketingStore.fetchAll(),
-        companyStore.fetchAll(),
-        deliveryStore.fetchAll(),
-        catalogStore.fetchAll(),
+        storefrontStore.fetchBootstrap(),
     ]);
     startIntroScene();
 });

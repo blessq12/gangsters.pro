@@ -9,9 +9,10 @@
 - Методы: геттеры по каждому полю
 
 ### `Product` (implements `CatalogItem`)
-- `id`, `name`, `slug`, `status: ProductStatus`, `price: Money`, `description`, `nutrition`, `tagIds: list<int>`, `ingredients: list<string>`
+- `id`, `name`, `slug`, `sku: ?string`, `status: ProductStatus`, `price: Money`, `description`, `nutrition`, `tagIds: list<int>`, `ingredients: list<string>`
 - `kind()` → `CatalogItemKind::Product`
-- Методы: `id()`, `kind()`, `name()`, `slug()`, `status()`, `isActive()`, `price()`, `description()`, `nutrition()`, `tagIds()`, `ingredients()`
+- Методы: `id()`, `kind()`, `name()`, `slug()`, `sku()`, `status()`, `isActive()`, `price()`, `description()`, `nutrition()`, `tagIds()`, `ingredients()`
+- `sku` — опциональный уникальный артикул; пустая строка при маппинге → `null`
 
 ### `ProductSet` (implements `CatalogItem`)
 - `id`, `name`, `slug`, `status`, `price: Money`, `description`, `lines: list<ProductSetLine>`, `tagIds: list<int>`
@@ -79,4 +80,4 @@
 ## Чего нет в домене
 
 - Изображений, meta-полей (`meta_gift_candidate` и т.д.).
-- Событий, write-команд, портов Checkout.
+- Событий, write-команд, портов Order (ACL снаружи BC).

@@ -1,28 +1,40 @@
 # Promotion — HTTP
 
-Публичный API **не реализован**. Опциональный контракт:
+## Основной контракт: Storefront bootstrap
 
-## `GET /api/promotion`
-
-Ответ 200:
+`GET /api/storefront/bootstrap` → блок `promotion`:
 
 ```json
 {
-  "data": {
-    "gift": {
-      "active": true,
-      "pickup_min_order_kopecks": 100000,
-      "courier_min_order_kopecks": 180000
-    },
-    "delivery": {
-      "active": true,
-      "free_threshold_kopecks": 100000,
-      "outside_zone_surcharge_kopecks": 20000
-    }
+  "gift": {
+    "active": true,
+    "pickup_min_kopecks": 100000,
+    "courier_min_kopecks": 180000
+  },
+  "complement": {
+    "active": true,
+    "rolls_per_set": 3
+  },
+  "delivery_benefit": {
+    "active": true,
+    "free_threshold_kopecks": 100000,
+    "outside_zone_surcharge_kopecks": 20000
   }
 }
 ```
 
-Если строки id=1 нет — `data: null` (как Delivery).
+Если конфигурации нет — `promotion: null`.
 
-Write-endpoint'ов нет. Альтернатива: не вводить маршрут, а отдавать те же поля в теле ответов checkout после evaluator.
+## Preview / place (расчёт benefits)
+
+`POST /api/order-drafts/preview` и `POST /api/orders` возвращают в теле preview:
+
+- `benefits_progress`
+- `delivery_pricing`
+- `promo_state` (gift eligibility, candidates)
+
+Write-endpoint'ов у Promotion **нет**.
+
+## Опциональный legacy
+
+`GET /api/promotion` — отдельный read, если нужен без bootstrap. На витрине не используется.

@@ -15,12 +15,41 @@ function emptyMoneyBenefit() {
     };
 }
 
+function emptyComplementBenefit() {
+    return {
+        isActive: false,
+        isReached: false,
+        rollsPerSet: null,
+        currentRollCount: 0,
+        entitledSetCount: 0,
+        remainingRollCount: 0,
+    };
+}
+
+function rollWord(count) {
+    const n = Math.abs(Number(count)) || 0;
+    const mod10 = n % 10;
+    const mod100 = n % 100;
+    if (mod100 >= 11 && mod100 <= 14) {
+        return "роллов";
+    }
+    if (mod10 === 1) {
+        return "ролл";
+    }
+    if (mod10 >= 2 && mod10 <= 4) {
+        return "ролла";
+    }
+
+    return "роллов";
+}
+
 /**
- * Read-model превью заказа из блока order_preview API.
+ * Read-model превью заказа из order_preview API + benefits_progress store.
  */
 export function useOrderPreview() {
     const checkoutStore = useCheckoutStore();
-    const { orderPreview, hasCartItems } = storeToRefs(checkoutStore);
+    const { orderPreview, hasCartItems, benefitsProgress, flushing } =
+        storeToRefs(checkoutStore);
     const { showGiftProgress } = useCheckoutBenefitVisibility();
 
     const preview = computed(() => orderPreview.value);
@@ -43,11 +72,28 @@ export function useOrderPreview() {
     );
 
     const delivery = computed(
-        () => preview.value?.benefits?.delivery ?? emptyMoneyBenefit(),
+        () =>
+            preview.value?.benefits?.delivery ??
+            benefitsProgress.value?.delivery ??
+            emptyMoneyBenefit(),
     );
-    const gift = computed(() => preview.value?.benefits?.gift ?? emptyMoneyBenefit());
+    const gift = computed(
+        () =>
+            preview.value?.benefits?.gift ??
+            benefitsProgress.value?.gift ??
+            emptyMoneyBenefit(),
+    );
+    const complement = computed(
+        () =>
+            preview.value?.benefits?.complement ??
+            benefitsProgress.value?.complement ??
+            emptyComplementBenefit(),
+    );
 
     const hasComplementLines = computed(() => complementLines.value.length > 0);
+    const hasRollsInCart = computed(
+        () => (Number(complement.value.currentRollCount) || 0) > 0,
+    );
     const hasAutoLines = computed(() => autoLines.value.length > 0);
     const hasDeliveryPricing = computed(
         () =>
@@ -104,6 +150,26 @@ export function useOrderPreview() {
         return Math.min(100, Math.max(0, Math.round((current / threshold) * 100)));
     });
 
+    const complementProgressPercent = computed(() => {
+        const rollsPerSet = Number(complement.value.rollsPerSet);
+        const currentRollCount = Number(complement.value.currentRollCount) || 0;
+
+        if (!Number.isFinite(rollsPerSet) || rollsPerSet <= 0) {
+            return complement.value.isReached ? 100 : 0;
+        }
+
+        const progressInSet = currentRollCount % rollsPerSet;
+
+        if (complement.value.entitledSetCount > 0 && progressInSet === 0) {
+            return 100;
+        }
+
+        return Math.min(
+            100,
+            Math.max(0, Math.round((progressInSet / rollsPerSet) * 100)),
+        );
+    });
+
     const deliveryLabel = computed(() => {
         if (!delivery.value.isActive) {
             return null;
@@ -128,6 +194,39 @@ export function useOrderPreview() {
         return `Ещё ${remaining} ₽ до подарка`;
     });
 
+    const complementLabel = computed(() => {
+        if (!complement.value.isActive) {
+            return null;
+        }
+
+        const rollsPerSet = Number(complement.value.rollsPerSet) || 2;
+
+        if (complement.value.isReached && complement.value.entitledSetCount > 0) {
+            const sets = complement.value.entitledSetCount;
+            return `Комплект добавлен · ${sets} ${sets === 1 ? "набор" : "набора"}`;
+        }
+
+        const remaining = Number(complement.value.remainingRollCount) || rollsPerSet;
+
+        return `Ещё ${remaining} ${rollWord(remaining)} до комплекта (${rollsPerSet} = 1 комплект)`;
+    });
+
+    const inZoneLabel = computed(() => {
+        if (totals.value.isDeliveryPreview) {
+            return null;
+        }
+
+        if (totals.value.inZone === true) {
+            return "Адрес в зоне доставки";
+        }
+
+        if (totals.value.inZone === false) {
+            return "Адрес вне зоны — доплата за отдалённый район";
+        }
+
+        return null;
+    });
+
     const canShowBenefits = computed(() => {
         if (!hasCartItems.value || !preview.value) {
             return false;
@@ -139,6 +238,13 @@ export function useOrderPreview() {
 
         return deliveryVisible || giftVisible;
     });
+
+    const showComplementProgress = computed(
+        () =>
+            complement.value.isActive
+            && Boolean(complementLabel.value)
+            && hasRollsInCart.value,
+    );
 
     const isGiftEligible = computed(() => giftCta.value?.eligible === true);
     const hasGiftSelected = computed(
@@ -167,7 +273,9 @@ export function useOrderPreview() {
         totals,
         delivery,
         gift,
+        complement,
         hasComplementLines,
+        hasRollsInCart,
         hasAutoLines,
         hasDeliveryPricing,
         showOutsideZoneSurcharge,
@@ -178,14 +286,19 @@ export function useOrderPreview() {
         hasCartItems,
         deliveryProgressPercent,
         giftProgressPercent,
+        complementProgressPercent,
         deliveryLabel,
         giftLabel,
+        complementLabel,
+        inZoneLabel,
         canShowBenefits,
+        showComplementProgress,
         showGiftProgress,
         isGiftEligible,
         hasGiftSelected,
         giftCtaLabel,
         giftCandidates,
         selectedGiftName,
+        previewLoading: flushing,
     };
 }

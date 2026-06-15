@@ -77,5 +77,22 @@ export const useCompanyStore = defineStore("company", {
                 this.fetchDocuments(),
             ]);
         },
+
+        applyBootstrap(companyPayload) {
+            if (!companyPayload || typeof companyPayload !== "object") {
+                return;
+            }
+            if (Object.prototype.hasOwnProperty.call(companyPayload, "main")) {
+                this.profile = companyPayload.main ?? null;
+            }
+            if (Object.prototype.hasOwnProperty.call(companyPayload, "legals")) {
+                this.legal = companyPayload.legals ?? null;
+            }
+            if (Object.prototype.hasOwnProperty.call(companyPayload, "documents")) {
+                this.documents = Array.isArray(companyPayload.documents)
+                    ? companyPayload.documents
+                    : [];
+            }
+        },
     },
 });

@@ -1,6 +1,6 @@
 # Promotion — обзор BC
 
-**Роль:** операционные правила коммерческих выгод — пороги подарка, политика стоимости доставки от суммы корзины и зоны. Расчёт benefits для checkout — через Application-слой Promotion; Checkout передаёт `PromotionBenefitsInput` через ACL-маппер.
+**Роль:** операционные правила коммерческих выгод — пороги подарка, complement set, политика стоимости доставки от суммы корзины и зоны. Расчёт benefits — `EvaluatePromotionBenefits`; вызывается из **Order OrderDraft** через `OrderDraftBenefitsInputMapper`.
 
 ## Семантика
 
@@ -13,7 +13,7 @@
 
 ## Правила (текущий бизнес-контракт)
 
-Деньги в домене и БД — **копейки** (`int`). Способ получения — как в Checkout: `pickup` \| `courier`.
+Деньги в домене и БД — **копейки** (`int`). Способ получения: `pickup` \| `courier`.
 
 ### Подарок (ролл)
 
@@ -40,10 +40,10 @@
 |-----------|---------|
 | Хранение и чтение конфигурации правил | MarketingContent (`MKT_promotions`) — витринные карточки, не правила корзины |
 | Доменные типы правил, singleton-агрегат | GeoJSON зоны, адрес кухни, `delivery_fee_kopecks` — Delivery BC |
-| Порт `PromotionPolicyRepository` | Список товаров-кандидатов — Catalog BC (через Checkout ACL) |
-| Порт `PromotionDeliveryPricingPort` | Тарифы доставки — Delivery BC (Infrastructure adapter) |
-| `BenefitProductCandidate` | DTO кандидата внутри Promotion, без типов Checkout |
-| | Вызов из Checkout: `PromotionBenefitsInputMapper` → `EvaluatePromotionBenefits` |
+| Порт `PromotionPolicyRepository` | Кандидаты подарка — Catalog BC (через Order ACL ports) |
+| Порт `PromotionDeliveryPricingPort` | Тарифы доставки — Delivery BC; **порог бесплатной доставки из PRM**, не из `DLV.min_order_amount` |
+| `BenefitProductCandidate` | DTO кандидата внутри Promotion |
+| | Вызов из OrderDraft: `EvaluateOrderDraftBenefits` → `EvaluatePromotionBenefits` |
 
 **Не путать:** `MarketingContent\Entity\Promotion` и `Promotion` BC — разные bounded contexts, разные таблицы (`MKT_*` vs `PRM_*`).
 
@@ -58,22 +58,20 @@
 | Domain | `app/Domain/Promotion/` |
 | Application | `app/Application/Promotion/` — `EvaluatePromotionBenefits`, `ResolveComplementSetEntitlement`, DTO `PromotionBenefitsInput` |
 | Infrastructure | `app/Infrastructure/Promotion/` |
-| HTTP | позже `GET /api/promotion` или вложение в checkout snapshot |
+| HTTP | `GET /api/storefront/bootstrap` → блок `promotion`; legacy `GET /api/promotion` опционален |
 | Filament | `app/Filament/Promotion/` — hub настроек акций |
-| SPA | `checkoutPricingStore.benefitsProgress`, `promoState` — потребитель расчёта |
+| SPA | `storefrontStore.promotion`, `checkoutPricingStore.benefitsProgress` из preview |
 
 ## Аудит (состояние)
 
 ### Сейчас
 
 - Domain + Infrastructure + Application (benefits, complement entitlement).
-- `PromotionDeliveryPricingPort` — слабая связь с Delivery BC.
-- Checkout вызывает Promotion через `PromotionBenefitsInput` (без импорта Checkout types в Promotion Application).
+- `GetPromotionPolicyUseCase` + `PromotionPolicyPresenter` — в bootstrap.
+- OrderDraft pipeline вызывает Promotion на каждом preview/place.
+- `PromotionDeliveryPricingAdapter` читает free-delivery threshold из `PromotionPolicy.deliveryBenefitPolicy`.
 
 ### Техдолг
 
-1. `GetPromotionPolicyUseCase` + публичный read API (если нужен отдельный endpoint).
-2. `EvaluateCheckoutBenefitsUseCase` в Checkout Application: Promotion + Delivery + Catalog.
-3. Filament `ManagePromotion` (singleton).
-4. Подключение фронта: сейчас `benefitsProgress` / `promoState` без бекенда.
-5. Граница с `DLV_configuration.min_order_amount_kopecks` — см. domain.md (единый источник порога 1000 ₽).
+1. Filament `ManagePromotion` (singleton) — доработки UX.
+2. Отдельный `GET /api/promotion` (если нужен без полного bootstrap).

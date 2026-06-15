@@ -1,24 +1,34 @@
 # Order — потоки
 
-## Создание заказа (сайт)
+## Оформление и создание заказа (сайт)
 
 ```mermaid
 sequenceDiagram
     participant SPA
-    participant CheckoutAPI
-    participant CheckoutUC as ConfirmCheckoutUseCase
-    participant Event as CheckoutConfirmed
-    participant OrderH as OnCheckoutConfirmed
+    participant Bootstrap as GET /storefront/bootstrap
+    participant Preview as POST /order-drafts/preview
+    participant Place as POST /orders
+    participant Pipeline as ProcessOrderDraftPipeline
+    participant Promo as EvaluatePromotionBenefits
     participant OrderUC as CreateOrderUseCase
     participant DB as ORD_orders
 
-    SPA->>CheckoutAPI: POST /api/checkout/{id}/confirm
-    CheckoutUC->>Event: dispatch
-    Event->>OrderH: handle
-    OrderH->>OrderUC: CreateOrderDto
-    OrderUC->>DB: insert (idempotent by checkout_id)
-    OrderUC->>OrderUC: dispatch OrderCreated (новый)
-    CheckoutAPI-->>SPA: checkout + order
+    SPA->>Bootstrap: app open
+    Bootstrap-->>SPA: catalog + promotion + delivery + ...
+
+    Note over SPA: wizard steps — local Pinia draft only
+
+    SPA->>Preview: debounced draft JSON
+    Preview->>Pipeline: build + sync benefits
+    Pipeline->>Promo: evaluate
+    Preview-->>SPA: cart + benefits + order_preview
+
+    SPA->>Place: draft + client_request_id
+    Place->>Pipeline: forPlace=true
+    Place->>OrderUC: CreateOrderDto
+    OrderUC->>DB: insert (idempotent)
+    OrderUC->>OrderUC: dispatch OrderCreated
+    Place-->>SPA: { order }
 ```
 
 ## Создание заказа (агрегатор)
@@ -43,7 +53,7 @@ sequenceDiagram
 
 ## Экспорт в системы учёта
 
-После `OrderCreated` → [OrderAccountingExport flow](../order-accounting-export/flow.md) (Frontpad, iiko).
+После `OrderCreated` → [OrderAccountingExport flow](../order-accounting-export/flow.md).
 
 ## История заказов (SPA)
 
@@ -60,17 +70,13 @@ sequenceDiagram
     OrderAPI-->>SPA: { data: [...] }
 ```
 
-Триггер загрузки: `useOrdersReadModel({ autoload: true })` в профиле клиента.
-
 ## Идемпотентность
 
 | Канал | Ключ |
 |-------|------|
-| Сайт | `findByCheckoutId` в `CreateOrderUseCase` |
-| Агрегатор | `findByPartnerAndExternalOrderId` в `CreateOrderFromIngressUseCase` |
+| Сайт | `findByClientRequestId` / `checkout_id` в `CreateOrderUseCase` |
+| Агрегатор | `findByPartnerAndExternalOrderId` |
 
 ## Гостевые заказы
 
-`client_id` в `ORD_orders` = null → не попадают в `GET /api/order` (только registered).
-
-Оператор видит гостевые заказы в Filament `/admin/orders`.
+`client_id` в `ORD_orders` = null → не попадают в `GET /api/order`. Оператор видит их в Filament `/admin/orders`.

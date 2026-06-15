@@ -16,12 +16,12 @@
 
 | Внутри BC | Снаружи |
 |-----------|---------|
-| Регистрация, auth, профиль, CRUD адресов | Оформление заказа (Checkout хранит **слепок** клиента) |
+| Регистрация, auth, профиль, CRUD адресов | Order place хранит **слепок** клиента в `ORD_orders` |
 | Хранение в `CLN_*` | Создание заказа (Order BC) |
 | Публичный API `/api/client/*` | Legacy `/api/shopping/*` (не реализован) |
 | Filament read-only просмотр | Админ-пользователи (`users` — отдельная таблица для Filament admin) |
 
-Checkout при `PATCH .../client` принимает `client_id` **без проверки** существования клиента в Client BC — техдолг.
+PlaceOrder при `client_id` в payload может использовать `ClientProfilePort` (Order ACL) — валидация через Client BC — техдолг.
 
 ## Хранение
 
@@ -53,16 +53,16 @@ Checkout при `PATCH .../client` принимает `client_id` **без пр�
 
 | # | Тема | Детали |
 |---|------|--------|
-| 1 | **Checkout ACL** | `SetCheckoutClientUseCase` не валидирует `client_id` через Client BC |
+| 1 | **Order ACL** | `ClientProfilePort` / place payload — усилить проверку `client_id` |
 | 2 | **Тесты** | Нет feature/unit на use case и API |
 | 3 | **Legacy `users`** | Таблица `users` — только Filament admin; клиенты в `CLN_clients` |
 | 4 | **Logout API** | Нет `POST /api/client/logout` (фронт чистит токен локально) |
 | 5 | **Письмо сброса** | Plain-text mail / log; нет HTML-шаблона |
-| 6 | **Order BC** | История заказов на фронте ждёт `/api/order` — не реализован |
+| 6 | **Order BC** | `GET /api/order` реализован; success screen может подгружать детали заказа |
 
 ### Рекомендуемый порядок доработок
 
-1. Port `ClientLookupPort` + проверка `client_id` в Checkout.
+1. Port `ClientLookupPort` + проверка `client_id` в PlaceOrder / OrderDraft.
 2. Feature-тесты: register, login, profile, addresses, password reset.
 3. `POST /api/client/logout` (revoke current token).
 4. HTML Mailable для сброса пароля.

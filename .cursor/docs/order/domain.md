@@ -2,21 +2,33 @@
 
 Ядро BC без Laravel/HTTP.
 
-## Агрегат
+## Агрегат Order
 
 | Элемент | Смысл |
 |---------|--------|
-| `Order` | Aggregate Root: id?, source, checkoutId?, aggregatorRef?, status, cart, client, delivery, payment, createdAt |
+| `Order` | Aggregate Root: id?, source, checkoutId? (client_request_id), aggregatorRef?, status, cart, client, delivery, payment, createdAt |
 
 ### Фабрики
 
 - `Order::fromCheckoutSnapshot(...)` — сайт; инварианты: непустая корзина, `checkout_id`.
-- `Order::fromIngressSnapshot(...)` — агрегатор; инварианты: partner + external_order_id, непустая корзина.
+- `Order::fromIngressSnapshot(...)` — агрегатор; partner + external_order_id.
 - `Order::restore(...)` — гидратация из `ORD_orders`.
 
-Агрегат **immutable** после создания — мутаций статуса в домене пока нет.
+Агрегат **immutable** после создания.
 
-## Value Objects
+## OrderDraft (in-memory, не агрегат)
+
+Расположение: `app/Domain/Order/OrderDraft/`.
+
+| Элемент | Смысл |
+|---------|--------|
+| `OrderDraft` | Черновик: cart, client?, delivery?, payment?; методы `assertReadyForPlace`, `assertValidForPlace` |
+| `CartLineSnapshot`, `CartSnapshot`, … | VO черновика (копия бывшего Checkout) |
+| `OrderDraftNotReadyForPlace`, … | Исключения валидации |
+
+OrderDraft **не персистится** и не имеет repository.
+
+## Value Objects (Order snapshot)
 
 | VO | Смысл |
 |----|--------|
@@ -43,11 +55,23 @@
 | Метод | Назначение |
 |-------|------------|
 | `findById` | по PK |
-| `findByCheckoutId` | идемпотентность site create |
-| `findByPartnerAndExternalOrderId` | идемпотентность aggregator create |
+| `findByCheckoutId` / `findByClientRequestId` | идемпотентность site create |
+| `findByPartnerAndExternalOrderId` | идемпотентность aggregator |
 | `existsByCheckoutId` | проверка дубликата |
-| `listByClientId` | история клиента, `created_at desc` |
-| `save` | insert (assignId после create) |
+| `listByClientId` | история клиента |
+| `save` | insert |
+
+## Ports (ACL к другим BC)
+
+`app/Domain/Order/Port/`:
+
+| Port | Назначение |
+|------|------------|
+| `CatalogPricingPort` | Котировки цен |
+| `CatalogGiftCandidatesPort` | Кандидаты подарка |
+| `CatalogComplementSetCandidatesPort` | Комplement set |
+| `CatalogRollMetaPort` | `counts_as_roll` |
+| `ClientProfilePort` | Профиль для registered client |
 
 ## Exception
 
@@ -55,5 +79,5 @@
 
 ## Зависимости
 
-- Order **слушает** Checkout через `OnCheckoutConfirmed`.
-- Order **не импортирует** AggregatorIngress; ingress вызывает `CreateOrderFromIngressUseCase` из Application.
+- Сайт: `PlaceOrderUseCase` → `CreateOrderUseCase` (без доменного события Checkout).
+- Order **не импортирует** AggregatorIngress; ingress вызывает Application use case.
