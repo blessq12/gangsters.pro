@@ -24,7 +24,7 @@
 |---------|--------|
 | `OrderDraft` | Черновик: cart, client?, delivery?, payment?; методы `assertReadyForPlace`, `assertValidForPlace` |
 | `CartLineSnapshot`, `CartSnapshot`, … | VO черновика (копия бывшего Checkout) |
-| `OrderDraftNotReadyForPlace`, … | Исключения валидации |
+| `OrderDraftNotReadyException`, … | Исключения валидации |
 
 OrderDraft **не персистится** и не имеет repository.
 

@@ -45,14 +45,15 @@
 | Infrastructure | `app/Infrastructure/Order/` |
 | HTTP | `OrderController`, `OrderDraftController` |
 | Filament | `app/Filament/Order/` — read-only |
-| SPA | `checkoutStore.js` (local draft), `orderDraftApi.js`, `storefrontStore.js` |
+| SPA | `checkoutStore.js`, `orderDraftApi.js`, `storefrontStore.js` — см. [spa.md](spa.md) |
 
 ## Аудит (состояние 2026-06)
 
 ### Готово
 
 - Site: `POST /api/orders` (PlaceOrder) + `POST /api/order-drafts/preview`.
-- `ProcessOrderDraftPipeline`: benefits, geocode, validation → `CreateOrderUseCase`.
+- `ProcessOrderDraftPipeline`: benefits, geocode (с fallback при невалидных coords), validation → `CreateOrderUseCase`.
+- Preview: инвалидация устаревших ответов на клиенте (`previewRequestSeq`).
 - `OrderCreated` → OrderAccountingExport.
 - Ingress: `CreateOrderFromIngressUseCase`.
 - `GET /api/order`, `GET /api/order/{id}` — история клиента.
@@ -69,5 +70,6 @@
 ## См. также
 
 - [flow.md](flow.md)
+- [spa.md](spa.md) — корзина и визард на клиенте
 - [Storefront bootstrap](../storefront/overview.md)
 - [Checkout (удалён)](../checkout/overview.md)

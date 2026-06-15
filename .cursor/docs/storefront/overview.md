@@ -39,8 +39,11 @@ storefrontStore.fetchBootstrap()
 
 Legacy отдельные вызовы `GET /catalog`, `/delivery`, … остаются для совместимости, но витрина использует bootstrap.
 
+Подробнее: [spa.md](spa.md).
+
 ## См. также
 
 - [http.md](http.md) — контракт API
 - [flow.md](flow.md) — диаграмма загрузки
-- [Order OrderDraft](../order/application.md#orderdraft-сайт) — оформление и создание заказа
+- [Order SPA](../order/spa.md) — оформление заказа (отдельно от bootstrap)
+- [Order OrderDraft](../order/application.md#orderdraft-сайт-in-memory) — backend preview/place

@@ -58,7 +58,7 @@
 
 | Класс | BC | Роль |
 |-------|-----|------|
-| `PrepareOrderDraftDeliveryAddress` | Order OrderDraft | Геокодирование адреса курьера через `DeliveryAddressGeocoderPort` + city из конфига |
+| `PrepareOrderDraftDeliveryAddress` | Order OrderDraft | Geocode через `DeliveryAddressGeocoderPort`; invalid coords → geocode; иначе in_zone check |
 | `EvaluateDeliveryBenefits` | Promotion | `delivery_pricing`, `in_zone` через `PromotionDeliveryPricingPort` |
 | `EvaluatePromotionBenefits` | Promotion | Оркестратор benefits + delivery pricing |
 
@@ -70,4 +70,11 @@
 
 В BC Delivery **нет** DTO, Presenter и Command-сценариев — один read use case.
 
-Порт геокодирования объявлен в Domain, реализован в Infrastructure; Application Delivery его **не** вызывает.
+Порт геокодирования объявлен в Domain, реализован в Infrastructure (`YandexDeliveryAddressGeocoderAdapter`); Application Delivery его **не** вызывает.
+
+Env: `YANDEX_GEOCODER_API_KEY` (fallback `YANDEX_MAPS_API_KEY`).
+
+## См. также
+
+- [Order application — geocode](../order/application.md#geocode-адреса)
+- [Order SPA — координаты в payload](../order/spa.md#preview-payload-клиент--сервер)

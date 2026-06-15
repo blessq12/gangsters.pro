@@ -25,7 +25,9 @@
 
 - [`.cursor/docs/README.md`](.cursor/docs/README.md) — индекс bounded contexts
 - [`.cursor/docs/storefront/overview.md`](.cursor/docs/storefront/overview.md) — bootstrap витрины
+- [`.cursor/docs/storefront/spa.md`](.cursor/docs/storefront/spa.md) — bootstrap SPA
 - [`.cursor/docs/order/overview.md`](.cursor/docs/order/overview.md) — Order + OrderDraft (сайт)
+- [`.cursor/docs/order/spa.md`](.cursor/docs/order/spa.md) — корзина и визард SPA
 - [`docs/aggregator-ingress.md`](docs/aggregator-ingress.md) — приём заказов от агрегаторов (кратко)
 - [`docs/order-accounting-export.md`](docs/order-accounting-export.md) — экспорт заказов в системы учёта (кратко)
 - [`.cursor/docs/aggregator-ingress/overview.md`](.cursor/docs/aggregator-ingress/overview.md) — BC AggregatorIngress (полностью)
@@ -47,4 +49,5 @@ php artisan test --filter FrontendAndAclBoundaries
 - Ingress агрегаторов: `app/Domain/AggregatorIngress/` → `app/Application/AggregatorIngress/` → `app/Infrastructure/AggregatorIngress/`
 - Экспорт в учётку: `app/Domain/OrderAccountingExport/` → `app/Application/OrderAccountingExport/` → `app/Infrastructure/OrderAccountingExport/`
 - Admin: `app/Filament/Operations/`
-- Frontend shopping: `resources/js/features/shoppingSession/` + `resources/js/processes/shoppingSession/`
+- Frontend shopping: `resources/js/features/checkout/` + `resources/js/stores/checkoutStore.js` + `resources/js/features/shoppingSession/`
+- Frontend bootstrap: `resources/js/stores/storefrontStore.js` + `resources/js/layouts/MainLayout*.vue`

@@ -7,8 +7,10 @@
 | BC / слой | Обзор | Назначение |
 |-----------|-------|------------|
 | **Storefront** | [storefront/overview.md](storefront/overview.md) | Bootstrap витрины (composition, не BC) |
+| **Storefront SPA** | [storefront/spa.md](storefront/spa.md) | Bootstrap на клиенте |
 | Catalog | [catalog/overview.md](catalog/overview.md) | Каталог товаров |
 | **Order** | [order/overview.md](order/overview.md) | Заказ + OrderDraft (сайт) |
+| **Order SPA** | [order/spa.md](order/spa.md) | Корзина и визард на клиенте |
 | ~~Checkout~~ | [checkout/overview.md](checkout/overview.md) | **Удалён** — см. Order + Storefront |
 | **AggregatorIngress** | [aggregator-ingress/overview.md](aggregator-ingress/overview.md) | Приём заказов от агрегаторов |
 | **OrderAccountingExport** | [order-accounting-export/overview.md](order-accounting-export/overview.md) | Экспорт заказов в системы учёта |
@@ -31,6 +33,7 @@
 | `routing.md` | Маршруты, env, providers |
 | `filament.md` | Админка (если есть) |
 | `events.md` | Доменные события |
+| `spa.md` | SPA-слой (Order, Storefront) — если есть |
 
 Дополнительно у **AggregatorIngress**: [partners.md](aggregator-ingress/partners.md).
 

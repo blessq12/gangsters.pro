@@ -19,6 +19,7 @@
 | HTTP API | [order/http.md](../order/http.md) |
 | SPA draft | `resources/js/features/checkout/checkoutSessionService.js` |
 | Потоки | [order/flow.md](../order/flow.md) |
+| SPA | [order/spa.md](../order/spa.md) |
 
 ## Удалённые пути
 

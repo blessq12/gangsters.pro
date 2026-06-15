@@ -56,13 +56,18 @@ ClientAddressesManager
 ```
 useCheckout (auth path)
   → useClientReadModel / useClientAddressSelectionModel
-  → client_id в local draft
-  → POST /api/orders с client: { client_id, ... } или registered snapshot
+  → resolveRegisteredClientId из userStore.profile.id
+  → POST /api/order-drafts/preview | POST /api/orders
+     client: { client_id, name?, phone?, email? }
 ```
 
-`ClientProfilePort` (Order) может подтянуть профиль при place для registered client.
+Адреса клиента **без lat/lng** — geocode на сервере при preview (street + house).
+
+`ClientProfilePort` (Order) подтягивает профиль registered client при сборке draft.
 
 Client BC **не участвует** в preview/place напрямую — только auth API и id из SPA store.
+
+См. [Order SPA](../order/spa.md).
 
 ## 6. Сброс пароля
 

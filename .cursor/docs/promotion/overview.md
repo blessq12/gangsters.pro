@@ -60,7 +60,7 @@
 | Infrastructure | `app/Infrastructure/Promotion/` |
 | HTTP | `GET /api/storefront/bootstrap` → блок `promotion`; legacy `GET /api/promotion` опционален |
 | Filament | `app/Filament/Promotion/` — hub настроек акций |
-| SPA | `storefrontStore.promotion`, `checkoutPricingStore.benefitsProgress` из preview |
+| SPA | `storefrontStore.promotion`, `checkoutStore.benefitsProgress` / `orderPreview` из preview |
 
 ## Аудит (состояние)
 

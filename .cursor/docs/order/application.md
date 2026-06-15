@@ -17,11 +17,11 @@
 |-------|------------|
 | `PreviewOrderDraftUseCase` | Stateless preview → `OrderDraftPresenter` |
 | `PlaceOrderUseCase` | Authoritative place → `CreateOrderUseCase` |
-| `BuildOrderDraftFromInput` | JSON → `OrderDraft` entity |
+| `BuildOrderDraftFromInput` | JSON → `OrderDraft` entity; nullable координаты адреса |
 | `ProcessOrderDraftPipeline` | Template Method: complement/gift sync, geocode, validate |
-| `ApplyGiftBenefitLines` | Sync gift line (бывш. Checkout) |
+| `ApplyGiftBenefitLines` | Sync gift line |
 | `ApplyComplementBenefitLines` | Sync complement lines |
-| `PrepareOrderDraftDeliveryAddress` | Geocode courier address |
+| `PrepareOrderDraftDeliveryAddress` | Geocode courier address (пропускает null, `""`, `(0,0)`) |
 | `EvaluateOrderDraftBenefits` | → `EvaluatePromotionBenefits` |
 
 ### Pipeline `ProcessOrderDraftPipeline`
@@ -34,6 +34,14 @@
 ```
 
 Preview останавливается после шага 3; place выполняет шаг 4.
+
+`BuildOrderDraftFromInput::build()` вызывает `setClient` / `setDelivery` / `setPayment` **только** для не-null блоков — частичный draft на ранних шагах визарда допустим.
+
+### Geocode адреса
+
+`PrepareOrderDraftDeliveryAddress`:
+- если lat/lng отсутствуют, пустые или `(0,0)` → Yandex geocoder (street + house + city из DLV);
+- иначе координаты клиента используются as-is для `in_zone`.
 
 ## DTO
 

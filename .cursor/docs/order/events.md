@@ -33,6 +33,8 @@ Payload: `orderId`, `source`, `checkoutId` (client_request_id для site), cart
 
 Trigger: `useCheckoutWizard.handleConfirmOrder` → `useSessionLifecycleProcess` → clear draft + cart.
 
+См. [spa.md](spa.md).
+
 ## План
 
 | Событие | Когда |

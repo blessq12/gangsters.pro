@@ -27,10 +27,10 @@ SPA local draft
 ## 3. Выбор подарка (SPA)
 
 ```
-GiftPicker
-  → checkoutStore.setSelectedGiftProductId
-  → local draft only
-  → next preview validates eligibility server-side
+GiftSelectionModal
+  → checkoutStore.setPromotionGift(productId)
+  → promotions.freeRollGiftProductId в sessionStorage
+  → POST /api/order-drafts/preview
 ```
 
 ## 4. Legacy read (опционально)
