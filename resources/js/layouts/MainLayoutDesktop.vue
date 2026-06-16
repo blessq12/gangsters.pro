@@ -3,20 +3,19 @@ import { onMounted, onUnmounted, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useThemeStore } from "../stores/themeStore";
 import { useUserStore } from "../stores/userStore";
-import { useCheckoutStore } from "../stores/checkoutStore";
 import { useFavoritesStore } from "../stores/favoritesStore";
 import { useUiStore } from "../stores/uiStore";
 import { useCatalogStore } from "../stores/catalogStore";
 import { useStorefrontStore } from "../stores/storefrontStore";
 import { playPageEnter, playPageLeave } from "../animations/animationManager";
 import { useShellIntroDockTimeline } from "../composables/layout/useShellIntroDockTimeline";
+import { useDockScrollScale } from "../composables/ui/useDockScrollScale";
 import { useAppDesign } from "../design/useAppDesign";
 
 const sh = useAppDesign().components.layoutShell;
 
 const themeStore = useThemeStore();
 const userStore = useUserStore();
-const cartStore = useCheckoutStore();
 const favoritesStore = useFavoritesStore();
 const uiStore = useUiStore();
 const catalogStore = useCatalogStore();
@@ -29,29 +28,20 @@ favoritesStore.initFromStorage();
 uiStore.initFromStorage();
 catalogStore.initFromStorage();
 
-// На время интро нижний бар скрываем, чтобы он не подсвечивался под оверлеем
 uiStore.setShowBottomNav(false);
 
-/** Скрываем док у верха главной, чтобы не перекрывать баннеры/герой */
-const TOP_BANNER_THRESHOLD = 240;
 const isHome = () => route.name === "home";
 
-function updateBottomBarFromScroll() {
-    if (typeof window === "undefined") return;
+function syncBottomNavForRoute() {
     if (!bottomBarReady.value) return;
 
-    if (!isHome()) {
-        uiStore.setShowBottomNav(false);
-        return;
-    }
-
-    if (cartStore.cartTotalItems > 0) {
+    if (isHome()) {
         uiStore.setShowBottomNav(true);
         return;
     }
 
-    const atTop = window.scrollY < TOP_BANNER_THRESHOLD;
-    uiStore.setShowBottomNav(!atTop);
+    uiStore.setShowBottomNav(false);
+    uiStore.setDockChromeScrollScale(1);
 }
 
 const {
@@ -65,19 +55,19 @@ const {
     dispose: disposeIntroTimeline,
 } = useShellIntroDockTimeline({
     themeStore,
-    onDockReveal: updateBottomBarFromScroll,
+    onDockReveal: syncBottomNavForRoute,
+});
+
+useDockScrollScale({
+    uiStore,
+    bottomBarReady,
+    isHome,
 });
 
 watch(
     () => route.name,
-    (name) => {
-        if (name !== "home") {
-            uiStore.setShowBottomNav(false);
-            return;
-        }
-        if (bottomBarReady.value) {
-            updateBottomBarFromScroll();
-        }
+    () => {
+        syncBottomNavForRoute();
     },
 );
 
@@ -92,12 +82,9 @@ onMounted(() => {
         storefrontStore.fetchBootstrap(),
     ]);
     startIntroScene();
-
-    window.addEventListener("scroll", updateBottomBarFromScroll, { passive: true });
 });
 
 onUnmounted(() => {
-    window.removeEventListener("scroll", updateBottomBarFromScroll);
     disposeIntroTimeline();
 });
 </script>

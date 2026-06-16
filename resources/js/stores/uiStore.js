@@ -15,8 +15,8 @@ let deviceListenerAttached = false;
 export const useUiStore = defineStore("ui", {
     state: () => ({
         showBottomNav: false,
-        /** Mobile: скрыть хром dock при скролле (не persist). На home игнорируется при cartTotalItems > 0. */
-        mobileDockSuppressedByScroll: false,
+        /** Home scroll: масштаб chrome dock (1 = полный, <1 = компакт при скролле). Не persist. */
+        dockChromeScrollScale: 1,
         isMobileMenuOpen: false,
         deviceMode: "mobile",
         dockActiveId: null,
@@ -86,8 +86,11 @@ export const useUiStore = defineStore("ui", {
                 }),
             );
         },
-        setMobileDockScrollSuppressed(value) {
-            this.mobileDockSuppressedByScroll = Boolean(value);
+        setDockChromeScrollScale(value) {
+            const next = Number(value);
+            this.dockChromeScrollScale = Number.isFinite(next)
+                ? Math.min(1, Math.max(0.5, next))
+                : 1;
         },
         setShowBottomNav(value) {
             this.showBottomNav = Boolean(value);
@@ -101,7 +104,7 @@ export const useUiStore = defineStore("ui", {
             this.dockActiveId = this.dockActiveId === id ? null : id;
             if (this.dockActiveId) {
                 this.showBottomNav = true;
-                this.mobileDockSuppressedByScroll = false;
+                this.dockChromeScrollScale = 1;
             }
             this.persist();
         },
@@ -199,7 +202,7 @@ export const useUiStore = defineStore("ui", {
         },
         clear() {
             this.showBottomNav = false;
-            this.mobileDockSuppressedByScroll = false;
+            this.dockChromeScrollScale = 1;
             this.isMobileMenuOpen = false;
             this.dockActiveId = null;
             this.dockBadges = { ...DEFAULT_DOCK_BADGES };

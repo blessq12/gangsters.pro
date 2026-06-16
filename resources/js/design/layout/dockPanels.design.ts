@@ -9,10 +9,13 @@ import { shellColorRoles, shellTypography } from "./shell.design";
 const dockPanelCardSurface =
     "rounded-none border border-app-accent/30 bg-[rgba(0,0,0,0.88)] shadow-[0_0_26px_rgba(0,0,0,0.85)] backdrop-blur";
 
+const dockPanelShell =
+    `relative flex w-full min-w-0 max-w-full flex-col gap-3 min-h-0 h-full max-h-full overflow-hidden ${dockPanelCardSurface} px-4 py-4 sm:px-6 lg:px-8`;
+
 export const dockPanelsDesign = {
     shared: {
         layout: {
-            root: `relative flex w-full min-w-0 max-w-full flex-col gap-3 min-h-0 max-h-[min(72vh,640px)] overflow-hidden ${dockPanelCardSurface} px-4 py-4 sm:px-6 lg:px-8`,
+            root: dockPanelShell,
             header: "shrink-0 space-y-2",
             headerRow:
                 "flex min-w-0 items-start justify-between gap-3",
@@ -67,17 +70,17 @@ export const dockPanelsDesign = {
 
     delivery: {
         mapBodyOverride:
-            "min-h-0 flex-1 overflow-hidden p-0 space-y-0",
+            "flex min-h-0 flex-1 flex-col overflow-hidden p-0 space-y-0",
         mapStage:
-            "relative h-full min-h-[min(520px,68vh)] w-full flex-1 overflow-hidden",
+            "relative h-full min-h-[min(420px,50dvh)] w-full flex-1 overflow-hidden",
         mapLayer:
-            "pointer-events-auto absolute inset-0 z-0 min-h-[380px]",
-        mapIframe: "h-full min-h-[380px] w-full border-0",
+            "pointer-events-auto absolute inset-0 z-0",
+        mapIframe: "h-full w-full border-0",
         mapFallback:
-            "absolute inset-0 z-0 grid min-h-[380px] place-content-center bg-app-surface px-4 py-8 text-center text-sm text-neutral-600",
+            "absolute inset-0 z-0 grid place-content-center bg-app-surface px-4 py-8 text-center text-sm text-neutral-600",
         mapFallbackProse: "mx-auto max-w-prose leading-relaxed",
         mapLoadingBox:
-            "absolute inset-0 z-0 grid min-h-[380px] place-content-center bg-app-surface text-sm text-neutral-600",
+            "absolute inset-0 z-0 grid place-content-center bg-app-surface text-sm text-neutral-600",
         overlayTop:
             "pointer-events-none absolute inset-x-3 top-3 z-10 flex flex-wrap gap-2",
         island:

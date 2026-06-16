@@ -1,16 +1,14 @@
 import { watch } from "vue";
 import { useRoute } from "vue-router";
 import { DOMAIN_EVENTS, subscribeDomainEvent } from "../../shared/domainEvents";
-import { useCheckoutStore } from "../../stores/checkoutStore";
 import { useUiStore } from "../../stores/uiStore";
 import { ensureDockChromeVisible } from "../ui/dockChromePolicy";
 
 /**
- * Home mobile: при корзине N>0 не скрываем dock; при первом add — показываем chrome до fly/add.
+ * Home: при add из каталога — показать dock и сбросить scale до fly/add.
  */
 export function useDockCartAffordance() {
     const uiStore = useUiStore();
-    const cartStore = useCheckoutStore();
     const route = useRoute();
 
     const isHome = () => route.name === "home";
@@ -24,20 +22,9 @@ export function useDockCartAffordance() {
         },
     );
 
-    const stopCartCount = watch(
-        () => cartStore.cartTotalItems,
-        (count, prev) => {
-            if (!isHome()) return;
-            if (count > 0 && (prev === 0 || prev == null)) {
-                ensureDockChromeVisible(uiStore);
-            }
-        },
-    );
-
     return {
         dispose() {
             unsubAdd();
-            stopCartCount();
         },
     };
 }

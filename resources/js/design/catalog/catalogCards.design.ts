@@ -14,6 +14,35 @@ const titleUnderPhotoBase = `font-heading font-normal leading-snug line-clamp-2 
 const catalogProductTitleMobile = `${titleUnderPhotoBase} text-[13px] sm:text-sm`;
 
 export const catalogCardsDesign = {
+    commerce: {
+        root: {
+            desktop:
+                "flex w-full items-center justify-between gap-2",
+            desktopCompact:
+                "gap-1.5",
+            mobileGrid:
+                "flex w-full shrink-0 items-center gap-3",
+            horizontal:
+                "flex min-w-0 flex-1 flex-nowrap items-center gap-2",
+        },
+        priceIdle: {
+            desktop:
+                "shrink-0 whitespace-nowrap text-sm font-semibold tabular-nums text-app-accent sm:text-base",
+            mobileGrid:
+                "ml-auto flex min-h-10 shrink-0 items-center whitespace-nowrap bg-app-accent/15 px-3 py-1.5 text-[12px] font-semibold tabular-nums text-app-accent",
+            horizontal:
+                "ml-auto flex h-9 shrink-0 items-center whitespace-nowrap bg-app-accent/15 px-2.5 py-1.5 text-[11px] font-semibold tabular-nums text-app-accent sm:text-xs",
+        },
+        priceInCart: {
+            desktop:
+                "shrink-0 whitespace-nowrap text-xs font-semibold tabular-nums text-app-muted sm:text-sm",
+            mobileGrid:
+                "ml-auto flex min-h-10 shrink-0 items-center whitespace-nowrap px-2 text-[12px] font-semibold tabular-nums text-app-muted",
+            horizontal:
+                "ml-auto flex h-9 shrink-0 items-center whitespace-nowrap px-2 text-[11px] font-semibold tabular-nums text-app-muted sm:text-xs",
+        },
+    },
+
     shared: {
         noPhotoText: "Нет фото",
         tagTone: {
@@ -50,21 +79,9 @@ export const catalogCardsDesign = {
             "inline-flex items-center px-2 py-0.5 text-[10px] font-medium backdrop-blur",
         imageHit:
             "absolute inset-0 z-[1] cursor-pointer",
-        topRightCluster:
-            "absolute right-2.5 top-2.5 z-10 flex items-center gap-1.5 sm:right-3 sm:top-3",
-        nutritionBtn:
-            "flex h-7 w-7 shrink-0 items-center justify-center border border-transparent bg-neutral-950/85 text-app-canvas-fg backdrop-blur transition-colors hover:border-app-accent/60 hover:text-app-accent sm:h-6 sm:w-6",
-        nutritionBtnIcon: "mdi mdi-information-outline text-sm sm:text-xs",
-        nutritionTooltip:
-            "absolute right-0 top-full z-10 mt-1.5 min-w-[180px] bg-[rgba(0,0,0,0.94)] px-3 py-2.5 shadow-xl backdrop-blur sm:min-w-[200px]",
-        nutritionTooltipInner: "space-y-1.5 text-[11px] text-app-canvas-fg sm:text-xs",
-        nutritionRow: "flex justify-between gap-4",
-        nutritionLabel: "text-app-muted",
-        nutritionVal: "font-medium",
-        nutritionFooter:
-            "mt-1.5 pt-1.5 text-[10px] text-app-muted sm:text-[11px]",
-        priceBadge:
-            "inline-flex items-center bg-app-accent px-2.5 py-1 text-[11px] font-semibold text-black shadow-[0_0_20px_rgba(198,36,36,0.7)] sm:px-3 sm:py-1.5 sm:text-xs transition-transform duration-200 hover:scale-[1.03] cursor-pointer",
+        cartAddIconBtn:
+            "inline-flex h-9 w-9 shrink-0 items-center justify-center bg-app-accent text-black transition hover:scale-[1.03] sm:h-8 sm:w-8",
+        cartAddIcon: "mdi mdi-cart-outline text-lg",
         mediaFooterGradient,
         mediaFooterStack,
         titleRow: "flex items-start gap-2",
@@ -73,7 +90,6 @@ export const catalogCardsDesign = {
         favBtn:
             "shrink-0 flex h-9 w-9 items-center justify-center border border-transparent bg-neutral-950/85 text-[15px] text-app-canvas-fg transition-colors hover:border-app-accent hover:text-app-accent sm:h-8 sm:w-8",
         favBtnActive: "border-app-accent text-app-accent",
-        cartRow: "flex items-center justify-between gap-2",
         addBtn:
             "inline-flex min-h-10 flex-1 items-center justify-center bg-app-accent px-3 py-2 text-xs font-semibold text-black shadow-[0_0_12px_rgba(198,36,36,0.45)] transition-transform hover:scale-[1.02] sm:min-h-0 sm:py-1.5 sm:text-sm",
         qtyBar:
@@ -114,14 +130,6 @@ export const catalogCardsDesign = {
         mediaFooterGradient,
         mediaFooterStack,
         titleUnderPhoto: catalogProductTitleMobile,
-        actionsUnderPhoto: "flex w-full shrink-0 items-center gap-3",
-        actionCluster:
-            "relative flex w-fit min-w-0 items-center gap-2.5 bg-[rgba(0,0,0,0.78)] px-3 py-1.5 shadow-[0_0_24px_rgba(0,0,0,0.7)] backdrop-blur-xl",
-        nutritionIconBtn:
-            "flex h-10 w-10 items-center justify-center border border-app-accent/40 bg-neutral-950/85 text-app-accent transition-transform duration-300 ease-out hover:border-app-accent/70 hover:text-app-accent",
-        ingredientsIconBtn:
-            "flex h-10 w-10 items-center justify-center border border-transparent bg-neutral-950/85 text-app-canvas-fg transition-transform duration-300 ease-out hover:border-app-accent/50 hover:text-app-accent",
-        cartIconOuter: "flex h-10 shrink-0 items-center",
         cartAddText:
             "relative inline-flex min-h-11 items-center justify-center gap-1.5 bg-app-accent px-3 py-2 text-xs font-semibold text-black transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:text-[13px]",
         cartAddIcon:
@@ -134,22 +142,6 @@ export const catalogCardsDesign = {
             "flex h-9 w-9 shrink-0 items-center justify-center bg-neutral-950/85 text-base font-semibold leading-none text-app-canvas-fg transition-colors hover:bg-neutral-950/88",
         qtyNum:
             "min-w-[1.5rem] px-0.5 text-center text-[12px] font-semibold tabular-nums text-app-accent",
-        priceSide:
-            "ml-auto flex min-h-10 shrink-0 items-center whitespace-nowrap bg-app-accent px-3 py-1.5 text-[12px] font-semibold text-black transition-transform duration-200 hover:scale-[1.03] cursor-pointer",
-        teleportTooltipBase:
-            "fixed z-[1300] bg-[rgba(0,0,0,0.95)] px-2.5 py-2.5 shadow-xl backdrop-blur",
-        teleportTooltipNutritionWidth: "w-[190px]",
-        teleportTooltipIngredientsWidth:
-            "w-[210px] max-h-44 overflow-y-auto",
-        teleportNutritionInner: "space-y-1 text-[11px] text-app-canvas-fg",
-        teleportNutritionRow:
-            "flex items-center justify-between gap-2",
-        teleportNutritionLabel: "text-app-muted",
-        teleportNutritionVal: "font-medium",
-        teleportIngredientsInner: "space-y-1 text-[11px] text-app-canvas-fg",
-        teleportIngredientsHeading:
-            "text-[10px] font-medium text-app-muted",
-        teleportIngredientsBody: "text-app-canvas-fg/90",
     },
 
     horizontalMobile: {
@@ -167,21 +159,15 @@ export const catalogCardsDesign = {
         titleRow: "flex min-w-0 items-baseline gap-2",
         title: `min-w-0 flex-1 ${catalogProductTitleMobile}`,
         weightInline: "shrink-0 text-[11px] text-app-muted",
+        setBadgeInline:
+            "shrink-0 inline-flex w-fit items-center border border-violet-400/50 bg-violet-500/20 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-100",
+        primaryTagInline: "self-start",
         actionsBar:
             "flex w-full min-w-0 shrink-0 flex-nowrap items-center gap-2",
-        actionCluster:
-            "relative flex w-fit min-w-0 shrink-0 flex-nowrap items-center gap-1.5 bg-[rgba(0,0,0,0.78)] px-2 py-1 shadow-[0_0_24px_rgba(0,0,0,0.7)] backdrop-blur-xl",
         favBtn:
             "flex h-9 w-9 shrink-0 items-center justify-center border border-transparent bg-neutral-950/85 text-app-canvas-fg transition hover:border-app-accent/60 hover:text-app-accent",
         favBtnActive: "border-app-accent/60 text-app-accent",
         favIcon: "mdi text-lg",
-        nutritionBtn:
-            "flex h-9 w-9 shrink-0 items-center justify-center border border-app-accent/40 bg-neutral-950/85 text-app-accent transition hover:border-app-accent/70",
-        nutritionIcon: "mdi mdi-fire-circle text-lg",
-        ingredientsBtn:
-            "flex h-9 w-9 shrink-0 items-center justify-center border border-transparent bg-neutral-950/85 text-app-canvas-fg transition hover:border-app-accent/50 hover:text-app-accent",
-        ingredientsIcon: "mdi mdi-information-outline text-lg",
-        cartIconOuter: "flex h-9 shrink-0 items-center",
         cartAddIconBtn:
             "relative inline-flex h-9 w-9 items-center justify-center bg-app-accent text-black transition hover:scale-[1.03]",
         cartAddIcon: "mdi mdi-cart-outline text-lg",
@@ -191,22 +177,6 @@ export const catalogCardsDesign = {
             "flex h-8 w-8 shrink-0 items-center justify-center text-sm font-semibold text-app-canvas-fg transition-colors hover:bg-neutral-950/88",
         qtyNum:
             "min-w-[1.25rem] px-0.5 text-center text-[11px] font-semibold tabular-nums text-app-accent",
-        priceSide:
-            "ml-auto flex h-9 shrink-0 items-center whitespace-nowrap bg-app-accent px-2.5 py-1.5 text-[11px] font-semibold text-black transition hover:scale-[1.03] sm:text-xs",
-        teleportTooltipBase:
-            "fixed z-[1300] bg-[rgba(0,0,0,0.95)] px-2.5 py-2 shadow-xl backdrop-blur",
-        teleportTooltipNutritionWidth: "w-[180px]",
-        teleportTooltipIngredientsWidth:
-            "w-[210px] max-h-44 overflow-y-auto",
-        teleportNutritionInner: "space-y-1 text-[11px] text-app-canvas-fg",
-        teleportNutritionRow:
-            "flex items-center justify-between gap-2",
-        teleportNutritionLabel: "text-app-muted",
-        teleportNutritionVal: "font-medium",
-        teleportIngredientsInner: "space-y-1 text-[11px] text-app-canvas-fg",
-        teleportIngredientsHeading:
-            "text-[10px] font-medium text-app-muted",
-        teleportIngredientsBody: "text-app-canvas-fg/90",
     },
 } as const;
 

@@ -50,6 +50,9 @@ const gridClass = computed(() => {
     }
     return "catalog-grid--mobile-1";
 });
+const isDesktopCardCompact = computed(
+    () => props.variant === "desktop" && props.cardsPerRow === 4,
+);
 
 function catalogItemsInContainer(container) {
     if (!container?.isConnected) return [];
@@ -120,6 +123,12 @@ watch(
                         <ProductCardHorizontalMobile
                             v-if="isHorizontalMobileMode"
                             :product="product"
+                            @image-click="emit('productImageClick', $event)"
+                        />
+                        <ProductCard
+                            v-else-if="variant === 'desktop'"
+                            :product="product"
+                            :compact="isDesktopCardCompact"
                             @image-click="emit('productImageClick', $event)"
                         />
                         <ProductCardMobile

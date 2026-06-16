@@ -50,6 +50,8 @@ const zonePolygonShown = ref(false);
 const mapResizeObserver = ref(null);
 /** @type {ReturnType<typeof setTimeout>|null} */
 let mountDelayTimer = null;
+let mountRetryCount = 0;
+const MAX_MAP_MOUNT_RETRIES = 10;
 
 const isLoadingDelivery = computed(
     () => deliveryLoading.value && !facts.value,
@@ -116,6 +118,17 @@ async function syncZoneMap() {
         return;
     }
 
+    const { height } = mapContainerRef.value.getBoundingClientRect();
+    if (height < 8) {
+        if (mountRetryCount < MAX_MAP_MOUNT_RETRIES) {
+            mountRetryCount += 1;
+            scheduleSyncZoneMap();
+        }
+        return;
+    }
+
+    mountRetryCount = 0;
+
     try {
         const controller = await mountCompanyDeliveryZoneReadonlyMap(
             mapContainerRef.value,
@@ -164,6 +177,7 @@ onUnmounted(() => {
     clearMountDelayTimer();
     destroyZoneMap();
     zoneMapMountFailed.value = false;
+    mountRetryCount = 0;
 });
 </script>
 

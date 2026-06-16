@@ -48,6 +48,9 @@ const gridClass = computed(() => {
     }
     return "catalog-grid--mobile-1";
 });
+const isDesktopCardCompact = computed(
+    () => props.variant === "desktop" && props.cardsPerRow === 4,
+);
 
 /** @type {ReturnType<typeof setTimeout> | null} */
 let animateTimer = null;
@@ -175,6 +178,7 @@ watch(
                 <template v-if="variant === 'desktop'">
                     <ProductCard
                         :product="product"
+                        :compact="isDesktopCardCompact"
                         @image-click="emit('productImageClick', $event)"
                     />
                 </template>

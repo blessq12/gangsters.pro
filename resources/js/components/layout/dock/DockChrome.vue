@@ -48,11 +48,26 @@ const {
 
 const animVariant = computed(() => (props.variant === "desktop" ? "desktop" : "mobile"));
 
-const chromeVisible = computed(() => {
-    if (!isMobile.value) {
-        return uiStore.showBottomNav;
+const isMobilePanelOpen = computed(
+    () => isMobile.value && Boolean(activeDockItem.value),
+);
+const isDesktopPanelOpen = computed(
+    () => !isMobile.value && Boolean(activeDockItem.value),
+);
+
+const chromeScaleStyle = computed(() => {
+    if (isMobilePanelOpen.value) {
+        return {};
     }
-    return uiStore.showBottomNav && !uiStore.mobileDockSuppressedByScroll;
+    const scale = uiStore.dockChromeScrollScale;
+    const origin = isMobile.value ? "bottom center" : "center left";
+    const opacity = scale < 1 ? 0.88 : 1;
+
+    return {
+        transform: `scale(${scale})`,
+        transformOrigin: origin,
+        opacity,
+    };
 });
 
 function tabIconTone(id) {
@@ -94,8 +109,13 @@ function handlePanelLeave(el, done) {
             @leave="handleChromeLeave"
         >
             <div
-                v-if="chromeVisible"
-                :class="dock.mobile.visibleInner"
+                v-if="uiStore.showBottomNav"
+                :class="[
+                    dock.mobile.visibleInner,
+                    isMobilePanelOpen ? dock.mobile.visibleInnerWithPanel : '',
+                    !isMobilePanelOpen ? dock.shared.chromeScrollTransform : '',
+                ]"
+                :style="isMobilePanelOpen ? undefined : chromeScaleStyle"
             >
                 <Transition
                     name="dock-panel"
@@ -107,7 +127,10 @@ function handlePanelLeave(el, done) {
                         v-if="activeDockItem"
                         ref="dockPanelOuterRef"
                         :key="activeDockItem.id"
-                        :class="dock.mobile.panelOuter"
+                        :class="[
+                            dock.mobile.panelOuter,
+                            dock.mobile.panelOuterExpanded,
+                        ]"
                         @touchstart.passive="onDockPanelTouchStart"
                         @touchend="onDockPanelTouchEnd"
                     >
@@ -176,7 +199,12 @@ function handlePanelLeave(el, done) {
         >
             <div
                 v-if="uiStore.showBottomNav"
-                :class="dock.desktop.chromeIsland"
+                :class="[
+                    dock.desktop.chromeIsland,
+                    isDesktopPanelOpen ? dock.desktop.chromeIslandWithPanel : '',
+                    dock.shared.chromeScrollTransform,
+                ]"
+                :style="chromeScaleStyle"
             >
                 <div :class="dock.desktop.tabColumn">
                     <button
@@ -232,7 +260,10 @@ function handlePanelLeave(el, done) {
                     <div
                         v-if="activeDockItem"
                         :key="activeDockItem.id"
-                        :class="dock.desktop.desktopPanelOuter"
+                        :class="[
+                            dock.desktop.desktopPanelOuter,
+                            dock.desktop.desktopPanelOuterExpanded,
+                        ]"
                     >
                         <component :is="activeDockItem.content" />
                     </div>

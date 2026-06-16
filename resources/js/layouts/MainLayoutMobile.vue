@@ -3,21 +3,19 @@ import { onMounted, onUnmounted, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useThemeStore } from "../stores/themeStore";
 import { useUserStore } from "../stores/userStore";
-import { useCheckoutStore } from "../stores/checkoutStore";
 import { useFavoritesStore } from "../stores/favoritesStore";
 import { useUiStore } from "../stores/uiStore";
 import { useCatalogStore } from "../stores/catalogStore";
 import { useStorefrontStore } from "../stores/storefrontStore";
 import { playPageEnter, playPageLeave } from "../animations/animationManager";
 import { useShellIntroDockTimeline } from "../composables/layout/useShellIntroDockTimeline";
-import { useMobileDockScrollSuppression } from "../composables/ui/useMobileDockScrollSuppression";
+import { useDockScrollScale } from "../composables/ui/useDockScrollScale";
 import { useAppDesign } from "../design/useAppDesign";
 
 const sh = useAppDesign().components.layoutShell;
 
 const themeStore = useThemeStore();
 const userStore = useUserStore();
-const cartStore = useCheckoutStore();
 const favoritesStore = useFavoritesStore();
 const uiStore = useUiStore();
 const catalogStore = useCatalogStore();
@@ -53,11 +51,10 @@ const {
     },
 });
 
-useMobileDockScrollSuppression({
+useDockScrollScale({
     uiStore,
     bottomBarReady,
     isHome,
-    cartItemCount: () => cartStore.cartTotalItems,
 });
 
 watch(
