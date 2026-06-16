@@ -18,6 +18,7 @@ use App\Domain\AggregatorIngress\Exception\PartnerNotConfiguredException;
 use App\Domain\AggregatorIngress\Exception\UnknownPartnerSkuException;
 use App\Domain\Order\Exception\OrderInvariantViolation;
 use App\Domain\Order\Exception\OrderNotFoundException;
+use App\Domain\Order\Exception\OrderRepeatNotSupportedException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Support\Facades\Event;
@@ -115,6 +116,12 @@ class Handler extends ExceptionHandler
             return response()->json([
                 'message' => $e->getMessage(),
             ], 404);
+        }
+
+        if ($e instanceof OrderRepeatNotSupportedException && $request->is('api/*')) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 422);
         }
 
         if ($e instanceof IngressAuthenticationFailedException && $request->is('api/*')) {

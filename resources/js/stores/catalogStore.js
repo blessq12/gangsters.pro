@@ -25,8 +25,6 @@ export const useCatalogStore = defineStore("catalog", {
         selectedProduct: null,
         hasLoaded: false,
         selectedTag: null,
-        /** Поиск по названию в уже загруженном дереве (клиентский фильтр). */
-        productSearchQuery: "",
         desktopCardsPerRow: DESKTOP_CARDS_PER_ROW_DEFAULT,
         mobileCardViewMode: MOBILE_CARD_VIEW_MODE_DEFAULT,
     }),
@@ -55,21 +53,15 @@ export const useCatalogStore = defineStore("catalog", {
             return entry.products || [];
         },
         /**
-         * Лента меню: при вводе в поиск — все товары дерева по подстроке в name;
-         * без поиска — как раньше (все или выбранная категория).
+         * Лента меню: фильтр по категории и тегу.
          */
         menuSections(state) {
-            const q = this.productSearchQuery.trim().toLowerCase();
             const selectedTag = this.selectedTag;
             const byTag = (product) => {
                 if (!selectedTag) return true;
                 const tags = Array.isArray(product.tags) ? product.tags : [];
                 return tags.some((tag) => String(tag?.code) === String(selectedTag));
             };
-            const byQuery = (product) =>
-                String(product?.name || "")
-                    .toLowerCase()
-                    .includes(q);
 
             const sourceCategories =
                 state.selectedCategoryId == null || state.selectedCategoryId === ""
@@ -94,11 +86,7 @@ export const useCatalogStore = defineStore("catalog", {
             return sourceCategories
                 .map((entry) => {
                     const base = Array.isArray(entry?.products) ? entry.products : [];
-                    const products = base.filter((p) => {
-                        if (!byTag(p)) return false;
-                        if (q.length > 0) return byQuery(p);
-                        return true;
-                    });
+                    const products = base.filter((p) => byTag(p));
                     return {
                         id: entry?.category?.id ?? entry?.category?.slug ?? null,
                         name: entry?.category?.name || "Без категории",
@@ -187,10 +175,6 @@ export const useCatalogStore = defineStore("catalog", {
         },
         setSelectedProduct(product) {
             this.selectedProduct = product ?? null;
-        },
-        setProductSearchQuery(query) {
-            this.productSearchQuery =
-                query == null ? "" : String(query);
         },
         setDesktopCardsPerRow(value) {
             this.desktopCardsPerRow = normalizeDesktopCardsPerRow(value);

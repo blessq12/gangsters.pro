@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Application\Common\Exceptions\UnauthorizedException;
 use App\Application\Order\DTO\GetOrderDto;
 use App\Application\Order\DTO\ListClientOrdersDto;
+use App\Application\Order\DTO\RepeatableOrderLinesDto;
 use App\Application\Order\useCases\GetOrderUseCase;
 use App\Application\Order\useCases\ListClientOrdersUseCase;
+use App\Application\Order\useCases\ResolveRepeatableOrderLinesUseCase;
 use App\Http\Controllers\Controller;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\JsonResponse;
@@ -17,6 +19,7 @@ final class OrderController extends Controller
     public function __construct(
         private readonly ListClientOrdersUseCase $listClientOrders,
         private readonly GetOrderUseCase $getOrder,
+        private readonly ResolveRepeatableOrderLinesUseCase $resolveRepeatableOrderLines,
     ) {}
 
     public function show(Request $request, int $orderId): JsonResponse
@@ -40,6 +43,18 @@ final class OrderController extends Controller
                 ),
             ),
         ]);
+    }
+
+    public function repeatableLines(Request $request, int $orderId): JsonResponse
+    {
+        return response()->json(
+            $this->resolveRepeatableOrderLines->execute(
+                new RepeatableOrderLinesDto(
+                    orderId: $orderId,
+                    clientId: $this->resolveClientId($request),
+                ),
+            ),
+        );
     }
 
     private function resolveAuthenticatedClient(Request $request): Authenticatable

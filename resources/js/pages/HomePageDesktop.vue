@@ -9,7 +9,6 @@ const {
     openProductDetail,
     selectedCategoryId,
     selectedTag,
-    productSearchQuery,
     desktopCardsPerRow,
     menuSections,
     categoryTabs,
@@ -17,7 +16,6 @@ const {
     selectedProduct,
     loading,
     catalogEmptyMessage,
-    clearSearch,
 } = useCatalogPageModel();
 </script>
 
@@ -34,39 +32,17 @@ const {
                         Меню
                     </h2>
                     <p :class="d.menuSubtitle">
-                        Категории или поиск по названию — как удобнее.
+                        Категории или поиск — как удобнее.
                     </p>
                 </div>
 
                 <div :class="d.searchCol">
-                    <label
-                        :class="d.srOnlyLabel"
-                        for="catalog-search"
-                    >Поиск в меню</label>
-                    <div :class="d.searchWrap">
-                        <i
-                            class="mdi mdi-magnify"
-                            :class="d.searchIconPos"
-                            aria-hidden="true"
-                        />
-                        <input
-                            id="catalog-search"
-                            v-model="productSearchQuery"
-                            type="search"
-                            autocomplete="off"
-                            placeholder="Найти по названию…"
-                            :class="d.searchInput"
-                        />
-                        <button
-                            v-if="productSearchQuery.trim()"
-                            type="button"
-                            :class="d.searchClear"
-                            aria-label="Очистить поиск"
-                            @click="clearSearch"
-                        >
-                            <i class="mdi mdi-close text-lg" />
-                        </button>
-                    </div>
+                    <CatalogSearchTrigger
+                        input-id="catalog-search"
+                        :wrap-class="d.searchWrap"
+                        :input-class="d.searchInput"
+                        :icon-class="d.searchIconPos"
+                    />
                 </div>
             </header>
 
@@ -101,4 +77,3 @@ const {
 </template>
 
 <style scoped></style>
-

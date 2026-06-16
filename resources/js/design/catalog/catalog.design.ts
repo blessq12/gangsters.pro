@@ -6,6 +6,7 @@
 import { dockDesign } from "../layout/dock.design";
 import { catalogCardsDesign } from "./catalogCards.design";
 import { catalogModalDesign } from "./catalogModal.design";
+import { catalogSearchDesign } from "./catalogSearch.design";
 
 const { chromePillActive, chromePillInactive } = dockDesign.shared;
 const categoryPillBase =
@@ -85,6 +86,7 @@ export const catalogDesign = {
 
     cards: catalogCardsDesign,
     modal: catalogModalDesign,
+    search: catalogSearchDesign,
 } as const;
 
 export type CatalogDesign = typeof catalogDesign;

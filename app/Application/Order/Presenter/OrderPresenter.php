@@ -92,6 +92,7 @@ final class OrderPresenter
             'id' => $line->productId(),
             'quantity' => $line->quantity(),
             'row_total' => $line->lineTotal()->amountRubles(),
+            'kind' => $line->lineKind(),
             'product' => [
                 'name' => $line->productName(),
             ],

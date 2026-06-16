@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref } from "vue";
 import { useOrdersReadModel } from "../../features/orders/useOrdersReadModel";
+import { useRepeatOrder } from "../../features/orders/useRepeatOrder";
 import {
     formatDeliveryMethodRu,
     formatOrderDate,
@@ -9,6 +10,7 @@ import {
     formatPaymentMethodRu,
 } from "../../utils/order/orderDisplay";
 import { useAppDesign } from "../../design/useAppDesign";
+import RepeatOrderCartChoiceModal from "./RepeatOrderCartChoiceModal.vue";
 
 const oh = useAppDesign().components.client.orderHistory;
 
@@ -16,6 +18,14 @@ const oh = useAppDesign().components.client.orderHistory;
 const HISTORY_TAB_LIMIT = 10;
 
 const { orders, loading, error } = useOrdersReadModel({ autoload: true });
+const {
+    cartChoiceModalOpen,
+    applyingRepeat,
+    requestRepeatOrder,
+    confirmCartChoice,
+    cancelCartChoice,
+    isRepeatingOrder,
+} = useRepeatOrder();
 
 const ordersForTab = computed(() =>
     orders.value.slice(0, HISTORY_TAB_LIMIT),
@@ -37,6 +47,26 @@ function toggleExpanded(orderId) {
 
 function isExpanded(orderId) {
     return expandedIds.value.has(orderId);
+}
+
+function isPromoLine(row) {
+    return row?.kind === "gift" || row?.kind === "complement";
+}
+
+function canRepeatOrder(order) {
+    return order?.source !== "aggregator";
+}
+
+async function handleRepeatOrder(orderId) {
+    await requestRepeatOrder(orderId);
+}
+
+async function handleMergeChoice() {
+    await confirmCartChoice("merge");
+}
+
+async function handleReplaceChoice() {
+    await confirmCartChoice("replace");
 }
 </script>
 
@@ -112,11 +142,17 @@ function isExpanded(orderId) {
                     <ul :class="oh.itemsList">
                         <li
                             v-for="row in order.items"
-                            :key="row.id"
+                            :key="`${row.id}-${row.kind || 'user'}`"
                             :class="oh.itemRow"
                         >
                             <span :class="oh.itemName">
                                 {{ row.product?.name || "Товар" }}
+                                <span
+                                    v-if="isPromoLine(row)"
+                                    :class="oh.promoBadge"
+                                >
+                                    ({{ row.kind === "gift" ? "подарок" : "комплект" }})
+                                </span>
                                 <span :class="oh.itemQtyMuted">
                                     × {{ row.quantity }}
                                 </span>
@@ -133,6 +169,19 @@ function isExpanded(orderId) {
                         Оплата:
                         {{ formatPaymentMethodRu(order.payment.method) }}
                     </p>
+                    <button
+                        v-if="canRepeatOrder(order)"
+                        type="button"
+                        :class="oh.repeatBtn"
+                        :disabled="isRepeatingOrder(order.id)"
+                        @click="handleRepeatOrder(order.id)"
+                    >
+                        {{
+                            isRepeatingOrder(order.id)
+                                ? "Собираем корзину…"
+                                : "Повторить заказ"
+                        }}
+                    </button>
                 </div>
             </li>
         </ul>
@@ -143,5 +192,13 @@ function isExpanded(orderId) {
         >
             Показаны {{ HISTORY_TAB_LIMIT }} последних из {{ totalOrdersLoaded }} заказов.
         </p>
+
+        <RepeatOrderCartChoiceModal
+            v-model="cartChoiceModalOpen"
+            :loading="applyingRepeat"
+            @merge="handleMergeChoice"
+            @replace="handleReplaceChoice"
+            @cancel="cancelCartChoice"
+        />
     </div>
 </template>

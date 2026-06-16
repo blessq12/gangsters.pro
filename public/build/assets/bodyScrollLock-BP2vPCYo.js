@@ -1,1 +1,0 @@
-let e=0,o="";function t(){typeof document>"u"||(e===0&&(o=document.body.style.overflow,document.body.style.overflow="hidden"),e+=1)}function d(){typeof document>"u"||e!==0&&(e-=1,e===0&&(document.body.style.overflow=o||""))}export{d as a,t as p};

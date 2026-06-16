@@ -1,1 +1,0 @@
-import{f as o}from"./vue-core-YDNKvTKW.js";import{A as a}from"./app-B-CgnwPi.js";function i(){const e=a();return{items:o(()=>e.favorites),count:o(()=>e.count),isFavorite(t){return e.isFavorite(t)}}}function n(){const e=a();return{async toggle(t){await e.toggleFavorite(t)},async remove(t){await e.removeFavorite(t)},async clear(){await e.clear()}}}export{i as a,n as u};

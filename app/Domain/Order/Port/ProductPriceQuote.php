@@ -11,6 +11,7 @@ final readonly class ProductPriceQuote
         private string $productName,
         private Money $unitPrice,
         private ?string $sku = null,
+        private string $catalogKind = 'product',
     ) {}
 
     public function productId(): int
@@ -31,5 +32,10 @@ final readonly class ProductPriceQuote
     public function unitPrice(): Money
     {
         return $this->unitPrice;
+    }
+
+    public function catalogKind(): string
+    {
+        return $this->catalogKind;
     }
 }

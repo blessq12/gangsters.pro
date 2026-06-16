@@ -15,14 +15,18 @@ function runFlyFromPayload(payload) {
     });
 }
 
+function isCatalogFlySource(source) {
+    return source === "catalog" || source === "catalog-search";
+}
+
 /**
- * Shell-level: fly превью к dock cart на CART_ADD / INCREMENT с каталога.
+ * Shell-level: fly превью к dock cart на CART_ADD / INCREMENT с каталога и поиска.
  */
 export function useCartFlyToDockAnimation() {
     const unsubAdd = subscribeDomainEvent(
         DOMAIN_EVENTS.CART_ADD_REQUESTED,
         (payload) => {
-            if (payload?.source !== "catalog") return;
+            if (!isCatalogFlySource(payload?.source)) return;
             runFlyFromPayload(payload);
         },
     );
@@ -30,7 +34,7 @@ export function useCartFlyToDockAnimation() {
     const unsubInc = subscribeDomainEvent(
         DOMAIN_EVENTS.CART_INCREMENT_REQUESTED,
         (payload) => {
-            if (payload?.source !== "catalog") return;
+            if (!isCatalogFlySource(payload?.source)) return;
             runFlyFromPayload(payload);
         },
     );

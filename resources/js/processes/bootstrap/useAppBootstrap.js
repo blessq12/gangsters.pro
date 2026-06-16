@@ -7,6 +7,7 @@ import { useDockCartAffordance } from "../../composables/cart/useDockCartAfforda
 import { useDockBadgeFeedback } from "../../composables/ui/useDockBadgeFeedback";
 import { useSessionLifecycleProcess } from "../session/useSessionLifecycleProcess";
 import { useGiftAutoPromptProcess } from "../benefits/useGiftAutoPromptProcess";
+import { useCompanyClosedNoticeProcess } from "../company/useCompanyClosedNoticeProcess";
 import { bootstrapCheckoutSession } from "../../features/checkout/checkoutBootstrap";
 import {
     bootstrapClientFavorites,
@@ -31,6 +32,7 @@ export function useAppBootstrap() {
         cleanupProcesses = [
             useSessionLifecycleProcess(),
             useGiftAutoPromptProcess(),
+            useCompanyClosedNoticeProcess(),
             useClientFavoritesProcess(),
             useCartFlyToDockAnimation(),
             useDockCartAffordance(),

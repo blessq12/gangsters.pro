@@ -618,12 +618,15 @@ export function playFlyProductToCart({
     });
 }
 
-export function playCatalogItemsEnter(container) {
-    if (!container?.isConnected) return;
+/**
+ * @param {HTMLElement|null|undefined} container
+ * @param {{ onlyItems?: HTMLElement[] }} [options]
+ */
+export function playCatalogItemsEnter(container, options = {}) {
+    const items = (options.onlyItems ?? Array.from(
+        container?.querySelectorAll(".catalog-item") ?? [],
+    )).filter((el) => el?.isConnected);
 
-    const items = Array.from(container.querySelectorAll(".catalog-item")).filter(
-        (el) => el.isConnected,
-    );
     if (!items.length) return;
 
     gsap.killTweensOf(items);
@@ -730,4 +733,97 @@ export function playProductDetailInfoEnter(panel, options = {}) {
     );
 }
 
+/**
+ * @param {{ shell: HTMLElement|null|undefined, variant?: 'mobile'|'desktop', onComplete?: () => void }} params
+ */
+export function playCatalogSearchOpen({ shell, variant = "mobile", onComplete }) {
+    if (!shell) {
+        onComplete?.();
+        return;
+    }
+
+    gsap.killTweensOf(shell);
+
+    if (variant === "mobile") {
+        gsap.fromTo(
+            shell,
+            { yPercent: 100, opacity: 0.94 },
+            {
+                yPercent: 0,
+                opacity: 1,
+                duration: 0.38,
+                ease: "power3.out",
+                onComplete,
+            },
+        );
+        return;
+    }
+
+    gsap.fromTo(
+        shell,
+        { opacity: 0, y: -16 },
+        {
+            opacity: 1,
+            y: 0,
+            duration: 0.3,
+            ease: "power2.out",
+            onComplete,
+        },
+    );
+}
+
+/**
+ * @param {{ shell: HTMLElement|null|undefined, variant?: 'mobile'|'desktop', onComplete?: () => void }} params
+ */
+export function playCatalogSearchClose({ shell, variant = "mobile", onComplete }) {
+    if (!shell) {
+        onComplete?.();
+        return;
+    }
+
+    gsap.killTweensOf(shell);
+
+    if (variant === "mobile") {
+        gsap.to(shell, {
+            yPercent: 100,
+            opacity: 0.94,
+            duration: 0.28,
+            ease: "power2.in",
+            onComplete,
+        });
+        return;
+    }
+
+    gsap.to(shell, {
+        opacity: 0,
+        y: -12,
+        duration: 0.22,
+        ease: "power2.in",
+        onComplete,
+    });
+}
+
+/**
+ * @param {HTMLElement|null|undefined} panel
+ * @param {() => void} [onComplete]
+ */
+export function playSearchPanelCrossfade(panel, onComplete) {
+    if (!panel) {
+        onComplete?.();
+        return;
+    }
+
+    gsap.killTweensOf(panel);
+    gsap.fromTo(
+        panel,
+        { opacity: 0, y: 8 },
+        {
+            opacity: 1,
+            y: 0,
+            duration: 0.22,
+            ease: "power2.out",
+            onComplete,
+        },
+    );
+}
 

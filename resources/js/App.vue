@@ -6,6 +6,8 @@ import { useUiStore } from "./stores/uiStore";
 import MainLayoutMobile from "./layouts/MainLayoutMobile.vue";
 import MainLayoutDesktop from "./layouts/MainLayoutDesktop.vue";
 import { useAppBootstrap } from "./processes/bootstrap/useAppBootstrap";
+import ClosedForOrdersModal from "./components/company/ClosedForOrdersModal.vue";
+import CatalogSearchLayer from "./components/catalog/CatalogSearchLayer.vue";
 
 const uiStore = useUiStore();
 const appBootstrap = useAppBootstrap();
@@ -28,6 +30,8 @@ onUnmounted(() => {
 <template>
     <component :is="layoutComponent" />
     <ScrollToTopButton />
+    <ClosedForOrdersModal />
+    <CatalogSearchLayer />
 </template>
 
 <style scoped>

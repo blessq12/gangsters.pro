@@ -30,10 +30,6 @@ export function useCatalogPageModel() {
         set: (value) => catalogStore.setSelectedCategoryId(value),
     });
 
-    const productSearchQuery = computed({
-        get: () => catalogStore.productSearchQuery,
-        set: (value) => catalogStore.setProductSearchQuery(value),
-    });
     const selectedTag = computed({
         get: () => catalogStore.selectedTag,
         set: (value) => catalogStore.setSelectedTag(value),
@@ -50,19 +46,14 @@ export function useCatalogPageModel() {
     const selectedProduct = computed(() => catalogStore.selectedProduct);
 
     const catalogEmptyMessage = computed(() =>
-        catalogStore.productSearchQuery.trim()
-            ? "Ничего не нашли по этому запросу. Попробуй другое слово или сбрось поиск."
-            : "Тут пока тихо. Выберите другую категорию.",
+        "Тут пока тихо. Выберите другую категорию.",
     );
-
-    const clearSearch = () => catalogStore.setProductSearchQuery("");
 
     return {
         showProductDetailModal,
         openProductDetail,
         selectedCategoryId,
         selectedTag,
-        productSearchQuery,
         desktopCardsPerRow,
         mobileCardViewMode,
         menuSections,
@@ -72,6 +63,5 @@ export function useCatalogPageModel() {
         selectedProduct,
         loading,
         catalogEmptyMessage,
-        clearSearch,
     };
 }

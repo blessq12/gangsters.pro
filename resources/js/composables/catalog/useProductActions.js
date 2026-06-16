@@ -1,4 +1,5 @@
-import { computed, unref } from "vue";
+import { computed, inject, unref } from "vue";
+import { CatalogSearchActionSourceKey } from "../../features/catalog/catalogSearchContext";
 import { useCartCommands } from "../../features/shoppingSession/useCartCommands";
 import { useCheckoutSession } from "../../features/checkout/useCheckoutSession";
 import { useFavoritesCommands, useFavoritesReadModel } from "../../features/favorites/useFavorites";
@@ -9,6 +10,8 @@ export function useProductActions(productSource) {
     const cartReadModel = useCheckoutSession();
     const favoritesCommands = useFavoritesCommands();
     const favoritesReadModel = useFavoritesReadModel();
+    const searchActionSource = inject(CatalogSearchActionSourceKey, null);
+    const cartEventSource = searchActionSource ?? "catalog";
 
     const product = computed(() => unref(productSource) ?? null);
     const productId = computed(() => product.value?.id ?? null);
@@ -26,7 +29,7 @@ export function useProductActions(productSource) {
         emitDomainEvent(DOMAIN_EVENTS.CART_ADD_REQUESTED, {
             product: product.value,
             qty,
-            source: "catalog",
+            source: cartEventSource,
             flySourceEl: fly.flySourceEl ?? null,
             flyImageUrl: fly.flyImageUrl ?? null,
         });
@@ -37,7 +40,7 @@ export function useProductActions(productSource) {
         if (!productId.value) return;
         emitDomainEvent(DOMAIN_EVENTS.CART_INCREMENT_REQUESTED, {
             productId: productId.value,
-            source: "catalog",
+            source: cartEventSource,
             flySourceEl: fly.flySourceEl ?? null,
             flyImageUrl: fly.flyImageUrl ?? null,
         });

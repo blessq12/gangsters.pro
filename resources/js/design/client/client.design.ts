@@ -111,6 +111,18 @@ export const clientDesign = {
         itemPrice: "shrink-0 text-app-muted",
         paymentFoot: `mt-3 border-t ${profileDivider} pt-2 text-[11px] text-app-muted`,
         moreHint: "text-center text-[11px] text-app-muted",
+        repeatBtn:
+            "mt-3 inline-flex w-full items-center justify-center rounded-none bg-app-accent px-3 py-2 text-[11px] font-semibold text-black shadow-[0_0_14px_rgba(198,36,36,0.7)] transition hover:bg-app-accent-hover disabled:opacity-60 disabled:shadow-none",
+        promoBadge: "text-[10px] text-app-muted",
+    },
+
+    repeatOrderModal: {
+        lead: "text-sm text-app-canvas-fg",
+        actions: "flex flex-col gap-2",
+        replaceBtn:
+            "inline-flex w-full items-center justify-center rounded-none border border-app-accent/50 bg-transparent px-3 py-1.5 text-xs font-medium text-app-accent hover:bg-app-accent/10 disabled:opacity-50",
+        cancelBtn:
+            "inline-flex w-full items-center justify-center rounded-none bg-black/5 px-3 py-1.5 text-[11px] font-medium text-app-muted transition hover:bg-black/8 hover:text-app-canvas-fg disabled:opacity-50",
     },
 
     addresses: {

@@ -27,6 +27,8 @@ export const useUiStore = defineStore("ui", {
         showGiftSelectionModal: false,
         giftModalSource: null,
         giftAutoPromptDismissed: false,
+        showClosedForOrdersModal: false,
+        catalogSearchOpen: false,
     }),
     getters: {
         resolvedDockBadges: (state) => (cartCount = 0, favoritesCount = 0) => ({
@@ -132,6 +134,18 @@ export const useUiStore = defineStore("ui", {
             }
             this.giftModalSource = null;
         },
+        openClosedForOrdersModal() {
+            this.showClosedForOrdersModal = true;
+        },
+        closeClosedForOrdersModal() {
+            this.showClosedForOrdersModal = false;
+        },
+        openCatalogSearch() {
+            this.catalogSearchOpen = true;
+        },
+        closeCatalogSearch() {
+            this.catalogSearchOpen = false;
+        },
         resetGiftAutoPromptDismissed() {
             this.giftAutoPromptDismissed = false;
         },
@@ -193,6 +207,8 @@ export const useUiStore = defineStore("ui", {
             this.showGiftSelectionModal = false;
             this.giftModalSource = null;
             this.giftAutoPromptDismissed = false;
+            this.showClosedForOrdersModal = false;
+            this.catalogSearchOpen = false;
             if (typeof window !== "undefined") {
                 window.localStorage.removeItem(UI_STORAGE_KEY);
             }

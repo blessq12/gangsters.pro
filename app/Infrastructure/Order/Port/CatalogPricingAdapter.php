@@ -22,6 +22,7 @@ final class CatalogPricingAdapter implements CatalogPricingPort
                 productName: $product->name(),
                 unitPrice: $product->price(),
                 sku: $product->sku(),
+                catalogKind: 'product',
             );
         }
 
@@ -32,6 +33,7 @@ final class CatalogPricingAdapter implements CatalogPricingPort
                 productId: $set->id(),
                 productName: $set->name(),
                 unitPrice: $set->price(),
+                catalogKind: 'set',
             );
         }
 
