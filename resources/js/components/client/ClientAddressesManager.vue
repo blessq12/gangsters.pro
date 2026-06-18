@@ -1,10 +1,14 @@
 <script setup>
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useUserStore } from "../../stores/userStore";
+import { useFormFieldErrors } from "../../composables/forms/useFormFieldErrors";
+import { applyApiFieldErrors } from "../../utils/api/extractApiFieldErrors";
 import { mapApiError } from "../../utils/api/mapApiError";
 import { useAppDesign } from "../../design/useAppDesign";
+import FormField from "../ui/FormField.vue";
 
 const userStore = useUserStore();
+const fieldErrors = useFormFieldErrors();
 
 const cli = useAppDesign().components.client;
 const s = cli.shared;
@@ -21,7 +25,6 @@ const form = ref({
 });
 
 const loading = ref(false);
-const error = ref("");
 
 const hasAddresses = computed(
     () => Array.isArray(userStore.addresses) && userStore.addresses.length > 0,
@@ -29,11 +32,25 @@ const hasAddresses = computed(
 
 const isAddOpen = ref(false);
 
-async function addAddress() {
-    error.value = "";
+watch(
+    () => form.value.street,
+    () => fieldErrors.clearField("street"),
+);
+watch(
+    () => form.value.house,
+    () => fieldErrors.clearField("house"),
+);
 
-    if (!form.value.street || !form.value.house) {
-        error.value = "Укажи улицу и дом";
+async function addAddress() {
+    fieldErrors.clearAll();
+
+    if (!String(form.value.street || "").trim()) {
+        fieldErrors.setFieldError("street", "Укажи улицу.");
+    }
+    if (!String(form.value.house || "").trim()) {
+        fieldErrors.setFieldError("house", "Укажи дом.");
+    }
+    if (fieldErrors.hasAny.value) {
         return;
     }
 
@@ -61,10 +78,19 @@ async function addAddress() {
         };
     } catch (e) {
         console.error(e);
-        error.value = mapApiError(
-            e,
-            "Не удалось сохранить адрес. Попробуй ещё раз.",
-        );
+        if (
+            !applyApiFieldErrors(fieldErrors, e, {
+                street: "street",
+                house: "house",
+            })
+        ) {
+            fieldErrors.setFormError(
+                mapApiError(
+                    e,
+                    "Не удалось сохранить адрес. Попробуй ещё раз.",
+                ),
+            );
+        }
     } finally {
         loading.value = false;
     }
@@ -75,9 +101,11 @@ async function removeAddress(id) {
         await userStore.deleteClientAddress(id);
     } catch (e) {
         console.error(e);
-        error.value = mapApiError(
-            e,
-            "Не удалось удалить адрес. Попробуй ещё раз.",
+        fieldErrors.setFormError(
+            mapApiError(
+                e,
+                "Не удалось удалить адрес. Попробуй ещё раз.",
+            ),
         );
     }
 }
@@ -147,6 +175,13 @@ function useAddress(id) {
             запомним.
         </p>
 
+        <p
+            v-if="fieldErrors.formError && hasAddresses"
+            :class="s.error11"
+        >
+            {{ fieldErrors.formError }}
+        </p>
+
         <div :class="ad.addSection">
             <button
                 type="button"
@@ -172,18 +207,35 @@ function useAddress(id) {
                             placeholder="Название (дом, работа)"
                             :class="s.inputCol2"
                         />
-                        <input
-                            v-model="form.street"
-                            type="text"
-                            placeholder="Улица"
-                            :class="s.inputCol2"
-                        />
-                        <input
-                            v-model="form.house"
-                            type="text"
-                            placeholder="Дом"
-                            :class="s.inputGrid11"
-                        />
+
+                        <FormField :error="fieldErrors.get('street')">
+                            <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
+                                <input
+                                    :id="id"
+                                    v-model="form.street"
+                                    type="text"
+                                    placeholder="Улица"
+                                    :class="[s.inputCol2, invalid && invalidClass]"
+                                    :aria-invalid="ariaInvalid"
+                                    :aria-describedby="describedBy"
+                                />
+                            </template>
+                        </FormField>
+
+                        <FormField :error="fieldErrors.get('house')">
+                            <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
+                                <input
+                                    :id="id"
+                                    v-model="form.house"
+                                    type="text"
+                                    placeholder="Дом"
+                                    :class="[s.inputGrid11, invalid && invalidClass]"
+                                    :aria-invalid="ariaInvalid"
+                                    :aria-describedby="describedBy"
+                                />
+                            </template>
+                        </FormField>
+
                         <input
                             v-model="form.entrance"
                             type="text"
@@ -214,10 +266,10 @@ function useAddress(id) {
                     </label>
 
                     <p
-                        v-if="error"
+                        v-if="fieldErrors.formError"
                         :class="s.error11"
                     >
-                        {{ error }}
+                        {{ fieldErrors.formError }}
                     </p>
 
                     <button
@@ -233,4 +285,3 @@ function useAddress(id) {
         </div>
     </div>
 </template>
-

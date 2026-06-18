@@ -1,14 +1,17 @@
 <script setup>
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { useUserStore } from "../../stores/userStore";
 import { useRuPhoneModel } from "../../composables/client/useRuPhoneModel";
+import { useFormFieldErrors } from "../../composables/forms/useFormFieldErrors";
 import {
     RU_PHONE_MASKA_PATTERN,
     RU_PHONE_MASKA_TOKENS_ATTR,
     validateRuPhoneForSubmit,
 } from "../../validation/ruPhone";
 import { mapApiError } from "../../utils/api/mapApiError";
+import { applyApiFieldErrors } from "../../utils/api/extractApiFieldErrors";
 import { useAppDesign } from "../../design/useAppDesign";
+import FormField from "../ui/FormField.vue";
 
 const emit = defineEmits(["registered"]);
 
@@ -16,6 +19,7 @@ const cli = useAppDesign().components.client;
 const s = cli.shared;
 
 const userStore = useUserStore();
+const fieldErrors = useFormFieldErrors();
 
 const form = ref({
     name: "",
@@ -30,39 +34,70 @@ const form = ref({
 const { phoneMask } = useRuPhoneModel(form, "phone");
 
 const loading = ref(false);
-const error = ref("");
+
+watch(
+    () => form.value.name,
+    () => fieldErrors.clearField("name"),
+);
+watch(
+    () => form.value.phone,
+    () => fieldErrors.clearField("phone"),
+);
+watch(
+    () => form.value.email,
+    () => fieldErrors.clearField("email"),
+);
+watch(
+    () => form.value.password,
+    () => {
+        fieldErrors.clearField("password");
+        fieldErrors.clearField("confirmPassword");
+    },
+);
+watch(
+    () => form.value.confirmPassword,
+    () => fieldErrors.clearField("confirmPassword"),
+);
+watch(
+    () => form.value.consent_personal_data,
+    () => fieldErrors.clearField("consent_personal_data"),
+);
 
 async function submit() {
-    error.value = "";
+    fieldErrors.clearAll();
 
     if (!form.value.name) {
-        error.value = "Введите имя";
-        return;
+        fieldErrors.setFieldError("name", "Введите имя");
     }
+
     const phoneCheck = validateRuPhoneForSubmit(form.value.phone);
     if (!phoneCheck.ok) {
-        error.value = phoneCheck.message;
-        return;
+        fieldErrors.setFieldError("phone", phoneCheck.message);
     }
+
     const emailTrim = (form.value.email || "").trim();
     if (!emailTrim) {
-        error.value = "Введите электронную почту";
-        return;
+        fieldErrors.setFieldError("email", "Введите электронную почту");
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrim)) {
+        fieldErrors.setFieldError("email", "Некорректный формат email");
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrim)) {
-        error.value = "Некорректный формат email";
-        return;
-    }
+
     if (!form.value.password) {
-        error.value = "Придумайте пароль";
-        return;
+        fieldErrors.setFieldError("password", "Придумайте пароль");
     }
+
     if (form.value.password !== form.value.confirmPassword) {
-        error.value = "Пароль и подтверждение не совпадают";
-        return;
+        fieldErrors.setFieldError("confirmPassword", "Пароль и подтверждение не совпадают");
     }
+
     if (!form.value.consent_personal_data) {
-        error.value = "Нужно согласиться на обработку персональных данных";
+        fieldErrors.setFieldError(
+            "consent_personal_data",
+            "Нужно согласиться на обработку персональных данных",
+        );
+    }
+
+    if (fieldErrors.hasAny.value) {
         return;
     }
 
@@ -81,10 +116,14 @@ async function submit() {
         emit("registered");
     } catch (e) {
         console.error(e);
-        error.value = mapApiError(
-            e,
-            "Не удалось завершить регистрацию. Попробуйте ещё раз.",
-        );
+        if (!applyApiFieldErrors(fieldErrors, e)) {
+            fieldErrors.setFormError(
+                mapApiError(
+                    e,
+                    "Не удалось завершить регистрацию. Попробуйте ещё раз.",
+                ),
+            );
+        }
     } finally {
         loading.value = false;
     }
@@ -105,75 +144,112 @@ async function submit() {
         </p>
 
         <div :class="s.fieldStack">
-            <div>
-                <label :class="s.label">
-                    Имя
-                </label>
-                <input
-                    v-model="form.name"
-                    type="text"
-                    placeholder="Как к тебе обращаться?"
-                    :class="s.input"
-                />
-            </div>
+            <FormField
+                label="Имя"
+                error-size="xs"
+                :error="fieldErrors.get('name')"
+            >
+                <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
+                    <input
+                        :id="id"
+                        v-model="form.name"
+                        type="text"
+                        placeholder="Как к тебе обращаться?"
+                        :class="[s.input, invalid && invalidClass]"
+                        :aria-invalid="ariaInvalid"
+                        :aria-describedby="describedBy"
+                    />
+                </template>
+            </FormField>
 
-            <div>
-                <label :class="s.label">
-                    Телефон
-                </label>
-                <input
-                    v-model="phoneMask.masked"
-                    v-maska="phoneMask"
-                    :data-maska="RU_PHONE_MASKA_PATTERN"
-                    :data-maska-tokens="RU_PHONE_MASKA_TOKENS_ATTR"
-                    type="tel"
-                    placeholder="+7 (___) ___-__-__"
-                    :class="s.input"
-                />
-            </div>
+            <FormField
+                label="Телефон"
+                error-size="xs"
+                :error="fieldErrors.get('phone')"
+            >
+                <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
+                    <input
+                        :id="id"
+                        v-model="phoneMask.masked"
+                        v-maska="phoneMask"
+                        :data-maska="RU_PHONE_MASKA_PATTERN"
+                        :data-maska-tokens="RU_PHONE_MASKA_TOKENS_ATTR"
+                        type="tel"
+                        placeholder="+7 (___) ___-__-__"
+                        :class="[s.input, invalid && invalidClass]"
+                        :aria-invalid="ariaInvalid"
+                        :aria-describedby="describedBy"
+                    />
+                </template>
+            </FormField>
 
-            <div>
-                <label :class="s.label">
-                    Email
-                </label>
-                <input
-                    v-model="form.email"
-                    type="email"
-                    autocomplete="email"
-                    placeholder="you@example.com"
-                    :class="s.input"
-                />
-            </div>
+            <FormField
+                label="Email"
+                error-size="xs"
+                :error="fieldErrors.get('email')"
+            >
+                <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
+                    <input
+                        :id="id"
+                        v-model="form.email"
+                        type="email"
+                        autocomplete="email"
+                        placeholder="you@example.com"
+                        :class="[s.input, invalid && invalidClass]"
+                        :aria-invalid="ariaInvalid"
+                        :aria-describedby="describedBy"
+                    />
+                </template>
+            </FormField>
 
-            <div>
-                <label :class="s.label">
-                    Пароль
-                </label>
-                <input
-                    v-model="form.password"
-                    type="password"
-                    placeholder="минимум 6 символов"
-                    :class="s.input"
-                />
-            </div>
+            <FormField
+                label="Пароль"
+                error-size="xs"
+                :error="fieldErrors.get('password')"
+            >
+                <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
+                    <input
+                        :id="id"
+                        v-model="form.password"
+                        type="password"
+                        placeholder="минимум 6 символов"
+                        :class="[s.input, invalid && invalidClass]"
+                        :aria-invalid="ariaInvalid"
+                        :aria-describedby="describedBy"
+                    />
+                </template>
+            </FormField>
 
-            <div>
-                <label :class="s.label">
-                    Подтверждение пароля
-                </label>
-                <input
-                    v-model="form.confirmPassword"
-                    type="password"
-                    placeholder="введите пароль ещё раз"
-                    :class="s.input"
-                />
-            </div>
+            <FormField
+                label="Подтверждение пароля"
+                error-size="xs"
+                :error="fieldErrors.get('confirmPassword')"
+            >
+                <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
+                    <input
+                        :id="id"
+                        v-model="form.confirmPassword"
+                        type="password"
+                        placeholder="введите пароль ещё раз"
+                        :class="[s.input, invalid && invalidClass]"
+                        :aria-invalid="ariaInvalid"
+                        :aria-describedby="describedBy"
+                    />
+                </template>
+            </FormField>
 
             <div class="space-y-1">
-                <label :class="s.checkboxRow">
-                    <AppCheckbox v-model="form.consent_personal_data" />
-                    <span>Согласен на обработку персональных данных</span>
-                </label>
+                <FormField
+                    error-size="xs"
+                    :error="fieldErrors.get('consent_personal_data')"
+                >
+                    <template #default>
+                        <label :class="s.checkboxRow">
+                            <AppCheckbox v-model="form.consent_personal_data" />
+                            <span>Согласен на обработку персональных данных</span>
+                        </label>
+                    </template>
+                </FormField>
                 <label :class="s.checkboxRowMuted">
                     <AppCheckbox v-model="form.consent_marketing" />
                     <span>Получать новости и акции</span>
@@ -182,10 +258,10 @@ async function submit() {
         </div>
 
         <p
-            v-if="error"
+            v-if="fieldErrors.formError"
             :class="s.errorXs"
         >
-            {{ error }}
+            {{ fieldErrors.formError }}
         </p>
 
         <button

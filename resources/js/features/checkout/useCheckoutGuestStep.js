@@ -1,5 +1,5 @@
-import { ref } from "vue";
 import { validateRuPhoneForSubmit } from "../../validation/ruPhone";
+import { useFormFieldErrors } from "../../composables/forms/useFormFieldErrors";
 
 export function isGuestContactComplete(guestContact) {
     const name = String(guestContact?.name || "").trim();
@@ -9,35 +9,36 @@ export function isGuestContactComplete(guestContact) {
 }
 
 export function useCheckoutGuestStep(checkoutIntent) {
-    const guestStepError = ref("");
-
-    function getGuestStepError() {
-        const guestContact = checkoutIntent.guestContact;
-        if (!String(guestContact?.name || "").trim()) {
-            return "Укажи имя для связи.";
-        }
-        const phoneCheck = validateRuPhoneForSubmit(guestContact?.phone);
-        if (!phoneCheck.ok) {
-            return phoneCheck.message;
-        }
-
-        return "";
-    }
+    const guestFieldErrors = useFormFieldErrors();
 
     function validateGuestStep() {
-        const message = getGuestStepError();
-        guestStepError.value = message;
+        guestFieldErrors.clearAll();
 
-        return message === "";
+        const guestContact = checkoutIntent.guestContact;
+        if (!String(guestContact?.name || "").trim()) {
+            guestFieldErrors.setFieldError("name", "Укажи имя для связи.");
+        }
+
+        const phoneCheck = validateRuPhoneForSubmit(guestContact?.phone);
+        if (!phoneCheck.ok) {
+            guestFieldErrors.setFieldError("phone", phoneCheck.message);
+        }
+
+        return !guestFieldErrors.hasAny.value;
     }
 
     function setGuestContact(payload) {
         checkoutIntent.setGuestContact(payload);
+        if (payload?.name != null) {
+            guestFieldErrors.clearField("name");
+        }
+        if (payload?.phone != null) {
+            guestFieldErrors.clearField("phone");
+        }
     }
 
     return {
-        guestStepError,
-        getGuestStepError,
+        guestFieldErrors,
         validateGuestStep,
         setGuestContact,
     };

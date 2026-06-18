@@ -5,6 +5,7 @@ import {
     CHECKOUT_PAYMENT_METHOD_IDS,
     CHECKOUT_PAYMENT_METHOD_LABELS,
 } from "../../features/checkout/checkoutPaymentMethods";
+import FormField from "../ui/FormField.vue";
 import CheckoutOrderPreview from "./CheckoutOrderPreview.vue";
 import CheckoutSection from "./CheckoutSection.vue";
 import CheckoutStepFrame from "./CheckoutStepFrame.vue";
@@ -20,27 +21,31 @@ const {
     setPaymentChangeFrom,
     setCustomerComment,
 } = useCheckoutFlowContext();
-const { checkoutIntent, paymentStepError } = checkoutState;
+const { checkoutIntent, paymentFieldErrors } = checkoutState;
 </script>
 
 <template>
     <CheckoutStepFrame group="payment">
-        <CheckoutSection title="Способ">
-            <div :class="d.methodRow">
-                <button
-                    v-for="method in CHECKOUT_PAYMENT_METHOD_IDS"
-                    :key="method"
-                    type="button"
-                    :class="[
-                        s.pillRoundText,
-                        checkoutIntent.paymentInfo.method === method ? s.pillActive : s.pillInactive,
-                    ]"
-                    @click="setPaymentMethod(method)"
-                >
-                    {{ CHECKOUT_PAYMENT_METHOD_LABELS[method] }}
-                </button>
-            </div>
-        </CheckoutSection>
+        <FormField :error="paymentFieldErrors.get('method')">
+            <template #default>
+                <CheckoutSection title="Способ">
+                    <div :class="d.methodRow">
+                        <button
+                            v-for="method in CHECKOUT_PAYMENT_METHOD_IDS"
+                            :key="method"
+                            type="button"
+                            :class="[
+                                s.pillRoundText,
+                                checkoutIntent.paymentInfo.method === method ? s.pillActive : s.pillInactive,
+                            ]"
+                            @click="setPaymentMethod(method)"
+                        >
+                            {{ CHECKOUT_PAYMENT_METHOD_LABELS[method] }}
+                        </button>
+                    </div>
+                </CheckoutSection>
+            </template>
+        </FormField>
 
         <CheckoutSection
             v-if="checkoutIntent.paymentInfo.method === 'cash'"
@@ -69,13 +74,6 @@ const { checkoutIntent, paymentStepError } = checkoutState;
                 @input="setCustomerComment($event.target.value)"
             />
         </CheckoutSection>
-
-        <p
-            v-if="paymentStepError"
-            :class="s.errorLine"
-        >
-            {{ paymentStepError }}
-        </p>
 
         <CheckoutOrderPreview variant="payment" />
 

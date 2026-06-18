@@ -1,25 +1,20 @@
-import { ref } from "vue";
 import {
     isCheckoutPaymentMethod,
     normalizeCheckoutPaymentMethod,
 } from "./checkoutPaymentMethods";
+import { useFormFieldErrors } from "../../composables/forms/useFormFieldErrors";
 
 export function useCheckoutPaymentStep(checkoutIntent) {
-    const paymentStepError = ref("");
-
-    function getPaymentStepError() {
-        if (!checkoutIntent.paymentInfo.method) {
-            return "Выбери способ оплаты.";
-        }
-
-        return "";
-    }
+    const paymentFieldErrors = useFormFieldErrors();
 
     function validatePaymentStep() {
-        const message = getPaymentStepError();
-        paymentStepError.value = message;
+        paymentFieldErrors.clearAll();
 
-        return message === "";
+        if (!checkoutIntent.paymentInfo.method) {
+            paymentFieldErrors.setFieldError("method", "Выбери способ оплаты.");
+        }
+
+        return !paymentFieldErrors.hasAny.value;
     }
 
     function ensurePaymentDefaults() {
@@ -36,6 +31,7 @@ export function useCheckoutPaymentStep(checkoutIntent) {
         checkoutIntent.setPaymentInfo({
             method: normalizeCheckoutPaymentMethod(method),
         });
+        paymentFieldErrors.clearField("method");
     }
 
     function setPaymentChangeFrom(changeFrom) {
@@ -47,8 +43,7 @@ export function useCheckoutPaymentStep(checkoutIntent) {
     }
 
     return {
-        paymentStepError,
-        getPaymentStepError,
+        paymentFieldErrors,
         validatePaymentStep,
         ensurePaymentDefaults,
         setPaymentMethod,

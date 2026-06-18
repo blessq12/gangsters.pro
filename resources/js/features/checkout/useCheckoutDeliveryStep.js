@@ -1,4 +1,6 @@
-import { onBeforeUnmount, ref } from "vue";
+import { onBeforeUnmount, ref, watch } from "vue";
+import { useFormFieldErrors } from "../../composables/forms/useFormFieldErrors";
+import { applyApiFieldErrors } from "../../utils/api/extractApiFieldErrors";
 import { useClientCommands } from "../client/useClient";
 import { useClientAddressSelectionModel } from "../client/useClientAddressSelectionModel";
 import { createOrderDraftPreviewScheduler } from "./orderDraftPreviewScheduler";
@@ -12,6 +14,8 @@ export function useCheckoutDeliveryStep({
     const addressSelection = useClientAddressSelectionModel();
     const clientCommands = useClientCommands();
     const previewScheduler = createOrderDraftPreviewScheduler(checkoutIntent);
+    const deliveryFieldErrors = useFormFieldErrors();
+    const newAddressFieldErrors = useFormFieldErrors();
 
     const newAddressForm = ref({
         title: "",
@@ -23,9 +27,7 @@ export function useCheckoutDeliveryStep({
         make_default: true,
     });
     const newAddressLoading = ref(false);
-    const newAddressError = ref("");
     const isNewAddressOpen = ref(false);
-    const deliveryStepError = ref("");
 
     function resolvePreviewAddress() {
         if (isGuestCheckout.value) {
@@ -64,36 +66,52 @@ export function useCheckoutDeliveryStep({
         previewScheduler.schedule(resolvePreviewAddress());
     }
 
-    function getDeliveryStepError(selectedAddress) {
+    function validateDeliveryStep(selectedAddress) {
+        deliveryFieldErrors.clearAll();
+
         if (!checkoutIntent.deliveryInfo.method) {
-            return "Выбери способ доставки.";
+            deliveryFieldErrors.setFieldError("method", "Выбери способ доставки.");
+            return false;
+        }
+
+        if (checkoutIntent.deliveryInfo.method !== "courier") {
+            return true;
         }
 
         if (isGuestCheckout.value) {
-            if (checkoutIntent.deliveryInfo.method === "courier") {
-                const address = checkoutIntent.deliveryInfo.address;
-                if (!String(address?.street || "").trim() || !String(address?.house || "").trim()) {
-                    return "Укажи улицу и дом для курьера.";
-                }
+            const address = checkoutIntent.deliveryInfo.address;
+            if (!String(address?.street || "").trim()) {
+                deliveryFieldErrors.setFieldError("street", "Укажи улицу.");
             }
-        } else if (checkoutIntent.deliveryInfo.method === "courier") {
-            const addressCount = userStore.addresses?.length ?? 0;
-            if (addressCount === 0) {
-                return "Заполни и сохрани адрес доставки.";
+            if (!String(address?.house || "").trim()) {
+                deliveryFieldErrors.setFieldError("house", "Укажи дом.");
             }
-            if (!selectedAddress) {
-                return "Выбери адрес доставки или добавь новый.";
-            }
+            return !deliveryFieldErrors.hasAny.value;
         }
 
-        return "";
-    }
+        const addressCount = userStore.addresses?.length ?? 0;
+        if (addressCount === 0) {
+            if (!String(newAddressForm.value.street || "").trim()) {
+                newAddressFieldErrors.setFieldError("street", "Укажи улицу.");
+            }
+            if (!String(newAddressForm.value.house || "").trim()) {
+                newAddressFieldErrors.setFieldError("house", "Укажи дом.");
+            }
+            if (!newAddressFieldErrors.hasAny.value) {
+                deliveryFieldErrors.setFormError("Сохрани адрес перед продолжением.");
+            }
+            return false;
+        }
 
-    function validateDeliveryStep(selectedAddress) {
-        const message = getDeliveryStepError(selectedAddress);
-        deliveryStepError.value = message;
+        if (!selectedAddress) {
+            deliveryFieldErrors.setFieldError(
+                "selectedAddress",
+                "Выбери адрес доставки или добавь новый.",
+            );
+            return false;
+        }
 
-        return message === "";
+        return true;
     }
 
     function ensureDeliveryDefaults() {
@@ -120,6 +138,7 @@ export function useCheckoutDeliveryStep({
         }
 
         checkoutIntent.setDeliveryInfo({ method: normalized });
+        deliveryFieldErrors.clearField("method");
         ensureAuthAddressUi();
         scheduleDeliveryPreview();
     }
@@ -134,19 +153,48 @@ export function useCheckoutDeliveryStep({
 
     function patchDeliveryAddress(partial) {
         checkoutIntent.patchDeliveryAddress(partial);
+        if (partial?.street != null) {
+            deliveryFieldErrors.clearField("street");
+        }
+        if (partial?.house != null) {
+            deliveryFieldErrors.clearField("house");
+        }
         scheduleDeliveryPreview();
     }
 
     function selectAddress(addressId) {
         clientCommands.selectAddress(addressId);
+        deliveryFieldErrors.clearField("selectedAddress");
         previewScheduler.schedule(resolvePreviewAddress(), 200);
     }
 
-    async function handleCreateAddress() {
-        newAddressError.value = "";
+    function clearNewAddressField(key) {
+        newAddressFieldErrors.clearField(key);
+    }
 
-        if (!newAddressForm.value.street || !newAddressForm.value.house) {
-            newAddressError.value = "Укажи улицу и дом";
+    watch(
+        newAddressForm,
+        (form) => {
+            if (form.street) {
+                newAddressFieldErrors.clearField("street");
+            }
+            if (form.house) {
+                newAddressFieldErrors.clearField("house");
+            }
+        },
+        { deep: true },
+    );
+
+    async function handleCreateAddress() {
+        newAddressFieldErrors.clearAll();
+
+        if (!String(newAddressForm.value.street || "").trim()) {
+            newAddressFieldErrors.setFieldError("street", "Укажи улицу.");
+        }
+        if (!String(newAddressForm.value.house || "").trim()) {
+            newAddressFieldErrors.setFieldError("house", "Укажи дом.");
+        }
+        if (newAddressFieldErrors.hasAny.value) {
             return;
         }
 
@@ -164,6 +212,7 @@ export function useCheckoutDeliveryStep({
             });
 
             isNewAddressOpen.value = false;
+            deliveryFieldErrors.clearAll();
 
             if (!userStore.selectedAddressId && userStore.addresses.length > 0) {
                 const fallbackId =
@@ -187,9 +236,17 @@ export function useCheckoutDeliveryStep({
             previewScheduler.schedule(resolvePreviewAddress(), 200);
         } catch (e) {
             console.error(e);
-            newAddressError.value =
-                e?.response?.data?.message ||
-                "Не удалось сохранить адрес. Попробуй ещё раз.";
+            if (
+                !applyApiFieldErrors(newAddressFieldErrors, e, {
+                    street: "street",
+                    house: "house",
+                })
+            ) {
+                newAddressFieldErrors.setFormError(
+                    e?.response?.data?.message ||
+                        "Не удалось сохранить адрес. Попробуй ещё раз.",
+                );
+            }
         } finally {
             newAddressLoading.value = false;
         }
@@ -203,10 +260,9 @@ export function useCheckoutDeliveryStep({
         addressSelection,
         newAddressForm,
         newAddressLoading,
-        newAddressError,
         isNewAddressOpen,
-        deliveryStepError,
-        getDeliveryStepError,
+        deliveryFieldErrors,
+        newAddressFieldErrors,
         validateDeliveryStep,
         ensureDeliveryDefaults,
         ensureAuthAddressUi,

@@ -1,4 +1,4 @@
-import { inject, provide } from "vue";
+import { inject, provide, reactive } from "vue";
 
 export const CHECKOUT_FLOW_KEY = Symbol("checkoutFlow");
 
@@ -21,11 +21,11 @@ export function useCheckoutFlowContext() {
         isGuestCheckout,
         newAddressForm,
         newAddressLoading,
-        newAddressError,
         isNewAddressOpen,
-        guestStepError,
-        deliveryStepError,
-        paymentStepError,
+        guestFieldErrors,
+        deliveryFieldErrors,
+        newAddressFieldErrors,
+        paymentFieldErrors,
         cartItems,
         userCartItems,
         systemCartItems,
@@ -77,7 +77,7 @@ export function useCheckoutFlowContext() {
         flushDeliveryPreview,
     } = flow;
 
-    const checkoutState = {
+    const checkoutState = reactive({
         checkoutIntent: checkoutIntent ?? checkoutStore,
         checkoutStore: checkoutStore ?? checkoutIntent,
         orderStore,
@@ -106,15 +106,15 @@ export function useCheckoutFlowContext() {
         checkoutStepMeta,
         newAddressForm,
         newAddressLoading,
-        newAddressError,
         isNewAddressOpen,
-        guestStepError,
-        deliveryStepError,
-        paymentStepError,
+        guestFieldErrors,
+        deliveryFieldErrors,
+        newAddressFieldErrors,
+        paymentFieldErrors,
         confirmLoading,
         confirmError,
         lastCreatedOrder,
-    };
+    });
 
     return {
         cartStore,

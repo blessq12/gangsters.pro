@@ -1,15 +1,18 @@
 <script setup>
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { useToast } from "vue-toastification";
 import { useUserStore } from "../../stores/userStore";
 import { useRuPhoneModel } from "../../composables/client/useRuPhoneModel";
+import { useFormFieldErrors } from "../../composables/forms/useFormFieldErrors";
 import {
     RU_PHONE_MASKA_PATTERN,
     RU_PHONE_MASKA_TOKENS_ATTR,
     validateRuPhoneForSubmit,
 } from "../../validation/ruPhone";
 import { mapApiError } from "../../utils/api/mapApiError";
+import { applyApiFieldErrors } from "../../utils/api/extractApiFieldErrors";
 import { useAppDesign } from "../../design/useAppDesign";
+import FormField from "../ui/FormField.vue";
 
 const emit = defineEmits(["logged-in"]);
 
@@ -18,6 +21,8 @@ const s = cli.shared;
 
 const userStore = useUserStore();
 const toast = useToast();
+const fieldErrors = useFormFieldErrors();
+const forgotFieldErrors = useFormFieldErrors();
 
 /** @type {import('vue').Ref<'phone' | 'email'>} */
 const loginBy = ref("phone");
@@ -32,7 +37,6 @@ function tabClass(mode) {
 const showForgot = ref(false);
 const forgotEmail = ref("");
 const forgotLoading = ref(false);
-const forgotError = ref("");
 
 const form = ref({
     phone: "",
@@ -43,32 +47,49 @@ const form = ref({
 const { phoneMask } = useRuPhoneModel(form, "phone");
 
 const loading = ref(false);
-const error = ref("");
+
+watch(loginBy, () => {
+    fieldErrors.clearField("phone");
+    fieldErrors.clearField("email");
+});
+
+watch(
+    () => form.value.phone,
+    () => fieldErrors.clearField("phone"),
+);
+watch(
+    () => form.value.email,
+    () => fieldErrors.clearField("email"),
+);
+watch(
+    () => form.value.password,
+    () => fieldErrors.clearField("password"),
+);
+watch(forgotEmail, () => forgotFieldErrors.clearField("email"));
 
 async function submit() {
-    error.value = "";
+    fieldErrors.clearAll();
 
     if (!form.value.password) {
-        error.value = "Введите пароль";
-        return;
+        fieldErrors.setFieldError("password", "Введите пароль");
     }
 
     if (loginBy.value === "phone") {
         const phoneCheck = validateRuPhoneForSubmit(form.value.phone);
         if (!phoneCheck.ok) {
-            error.value = phoneCheck.message;
-            return;
+            fieldErrors.setFieldError("phone", phoneCheck.message);
         }
     } else {
         const emailTrim = (form.value.email || "").trim();
         if (!emailTrim) {
-            error.value = "Введите email";
-            return;
+            fieldErrors.setFieldError("email", "Введите email");
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrim)) {
+            fieldErrors.setFieldError("email", "Некорректный формат email");
         }
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrim)) {
-            error.value = "Некорректный формат email";
-            return;
-        }
+    }
+
+    if (fieldErrors.hasAny.value) {
+        return;
     }
 
     loading.value = true;
@@ -84,24 +105,29 @@ async function submit() {
         emit("logged-in");
     } catch (e) {
         console.error(e);
-        error.value = mapApiError(
-            e,
-            "Не удалось выполнить вход. Проверьте данные и попробуйте ещё раз.",
-        );
+        if (!applyApiFieldErrors(fieldErrors, e)) {
+            fieldErrors.setFormError(
+                mapApiError(
+                    e,
+                    "Не удалось выполнить вход. Проверьте данные и попробуйте ещё раз.",
+                ),
+            );
+        }
     } finally {
         loading.value = false;
     }
 }
 
 async function submitForgot() {
-    forgotError.value = "";
+    forgotFieldErrors.clearAll();
+
     const emailTrim = (forgotEmail.value || "").trim();
     if (!emailTrim) {
-        forgotError.value = "Введите email";
+        forgotFieldErrors.setFieldError("email", "Введите email");
         return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrim)) {
-        forgotError.value = "Некорректный формат email";
+        forgotFieldErrors.setFieldError("email", "Некорректный формат email");
         return;
     }
 
@@ -115,10 +141,14 @@ async function submitForgot() {
         forgotEmail.value = "";
     } catch (e) {
         console.error(e);
-        forgotError.value = mapApiError(
-            e,
-            "Не удалось отправить запрос. Попробуй позже.",
-        );
+        if (!applyApiFieldErrors(forgotFieldErrors, e)) {
+            forgotFieldErrors.setFormError(
+                mapApiError(
+                    e,
+                    "Не удалось отправить запрос. Попробуй позже.",
+                ),
+            );
+        }
     } finally {
         forgotLoading.value = false;
     }
@@ -156,53 +186,73 @@ async function submitForgot() {
         </div>
 
         <div :class="s.fieldStack">
-            <div v-if="loginBy === 'phone'">
-                <label :class="s.label">
-                    Телефон
-                </label>
-                <input
-                    v-model="phoneMask.masked"
-                    v-maska="phoneMask"
-                    :data-maska="RU_PHONE_MASKA_PATTERN"
-                    :data-maska-tokens="RU_PHONE_MASKA_TOKENS_ATTR"
-                    type="tel"
-                    placeholder="+7 (___) ___-__-__"
-                    :class="s.input"
-                />
-            </div>
+            <FormField
+                v-if="loginBy === 'phone'"
+                label="Телефон"
+                error-size="xs"
+                :error="fieldErrors.get('phone')"
+            >
+                <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
+                    <input
+                        :id="id"
+                        v-model="phoneMask.masked"
+                        v-maska="phoneMask"
+                        :data-maska="RU_PHONE_MASKA_PATTERN"
+                        :data-maska-tokens="RU_PHONE_MASKA_TOKENS_ATTR"
+                        type="tel"
+                        placeholder="+7 (___) ___-__-__"
+                        :class="[s.input, invalid && invalidClass]"
+                        :aria-invalid="ariaInvalid"
+                        :aria-describedby="describedBy"
+                    />
+                </template>
+            </FormField>
 
-            <div v-else>
-                <label :class="s.label">
-                    Email
-                </label>
-                <input
-                    v-model="form.email"
-                    type="email"
-                    autocomplete="username"
-                    placeholder="you@example.com"
-                    :class="s.input"
-                />
-            </div>
+            <FormField
+                v-else
+                label="Email"
+                error-size="xs"
+                :error="fieldErrors.get('email')"
+            >
+                <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
+                    <input
+                        :id="id"
+                        v-model="form.email"
+                        type="email"
+                        autocomplete="username"
+                        placeholder="you@example.com"
+                        :class="[s.input, invalid && invalidClass]"
+                        :aria-invalid="ariaInvalid"
+                        :aria-describedby="describedBy"
+                    />
+                </template>
+            </FormField>
 
-            <div>
-                <label :class="s.label">
-                    Пароль
-                </label>
-                <input
-                    v-model="form.password"
-                    type="password"
-                    autocomplete="current-password"
-                    placeholder="••••••••"
-                    :class="s.input"
-                />
-            </div>
+            <FormField
+                label="Пароль"
+                error-size="xs"
+                :error="fieldErrors.get('password')"
+            >
+                <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
+                    <input
+                        :id="id"
+                        v-model="form.password"
+                        type="password"
+                        autocomplete="current-password"
+                        placeholder="••••••••"
+                        :class="[s.input, invalid && invalidClass]"
+                        :aria-invalid="ariaInvalid"
+                        :aria-describedby="describedBy"
+                    />
+                </template>
+            </FormField>
         </div>
 
         <p
-            v-if="error"
+            v-if="fieldErrors.formError"
             :class="s.errorXs"
         >
-            {{ error }}
+            {{ fieldErrors.formError }}
         </p>
 
         <button
@@ -230,18 +280,28 @@ async function submitForgot() {
                 <p :class="s.forgotHint">
                     Укажи email аккаунта — пришлём ссылку для нового пароля.
                 </p>
-                <input
-                    v-model="forgotEmail"
-                    type="email"
-                    autocomplete="email"
-                    placeholder="you@example.com"
-                    :class="s.input"
-                />
+                <FormField
+                    error-size="xs"
+                    :error="forgotFieldErrors.get('email')"
+                >
+                    <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
+                        <input
+                            :id="id"
+                            v-model="forgotEmail"
+                            type="email"
+                            autocomplete="email"
+                            placeholder="you@example.com"
+                            :class="[s.input, invalid && invalidClass]"
+                            :aria-invalid="ariaInvalid"
+                            :aria-describedby="describedBy"
+                        />
+                    </template>
+                </FormField>
                 <p
-                    v-if="forgotError"
+                    v-if="forgotFieldErrors.formError"
                     :class="s.error11"
                 >
-                    {{ forgotError }}
+                    {{ forgotFieldErrors.formError }}
                 </p>
                 <button
                     type="button"

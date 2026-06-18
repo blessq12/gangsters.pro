@@ -1,14 +1,17 @@
 <script setup>
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { useUserStore } from "../../stores/userStore";
 import { useRuPhoneModel } from "../../composables/client/useRuPhoneModel";
+import { useFormFieldErrors } from "../../composables/forms/useFormFieldErrors";
 import {
     RU_PHONE_MASKA_PATTERN,
     RU_PHONE_MASKA_TOKENS_ATTR,
     validateRuPhoneForSubmit,
 } from "../../validation/ruPhone";
 import { mapApiError } from "../../utils/api/mapApiError";
+import { applyApiFieldErrors } from "../../utils/api/extractApiFieldErrors";
 import { useAppDesign } from "../../design/useAppDesign";
+import FormField from "../ui/FormField.vue";
 
 const emit = defineEmits(["updated"]);
 
@@ -16,6 +19,7 @@ const cli = useAppDesign().components.client;
 const s = cli.shared;
 
 const userStore = useUserStore();
+const fieldErrors = useFormFieldErrors();
 
 const form = ref({
     name: userStore.profile.name || "",
@@ -27,18 +31,37 @@ const form = ref({
 const { phoneMask } = useRuPhoneModel(form, "phone");
 
 const loading = ref(false);
-const error = ref("");
+
+watch(
+    () => form.value.name,
+    () => fieldErrors.clearField("name"),
+);
+watch(
+    () => form.value.phone,
+    () => fieldErrors.clearField("phone"),
+);
+watch(
+    () => form.value.email,
+    () => fieldErrors.clearField("email"),
+);
+watch(
+    () => form.value.birth_date,
+    () => fieldErrors.clearField("birth_date"),
+);
 
 async function submit() {
-    error.value = "";
+    fieldErrors.clearAll();
 
     if (!form.value.name) {
-        error.value = "Имя не может быть пустым";
-        return;
+        fieldErrors.setFieldError("name", "Имя не может быть пустым");
     }
+
     const phoneCheck = validateRuPhoneForSubmit(form.value.phone);
     if (!phoneCheck.ok) {
-        error.value = phoneCheck.message;
+        fieldErrors.setFieldError("phone", phoneCheck.message);
+    }
+
+    if (fieldErrors.hasAny.value) {
         return;
     }
 
@@ -55,10 +78,14 @@ async function submit() {
         emit("updated");
     } catch (e) {
         console.error(e);
-        error.value = mapApiError(
-            e,
-            "Не удалось сохранить профиль. Попробуйте ещё раз.",
-        );
+        if (!applyApiFieldErrors(fieldErrors, e)) {
+            fieldErrors.setFormError(
+                mapApiError(
+                    e,
+                    "Не удалось сохранить профиль. Попробуйте ещё раз.",
+                ),
+            );
+        }
     } finally {
         loading.value = false;
     }
@@ -75,62 +102,86 @@ async function submit() {
         </h3>
 
         <div :class="s.fieldStack">
-            <div>
-                <label :class="s.label">
-                    Имя
-                </label>
-                <input
-                    v-model="form.name"
-                    type="text"
-                    :class="s.input"
-                    placeholder="Имя"
-                />
-            </div>
+            <FormField
+                label="Имя"
+                error-size="xs"
+                :error="fieldErrors.get('name')"
+            >
+                <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
+                    <input
+                        :id="id"
+                        v-model="form.name"
+                        type="text"
+                        :class="[s.input, invalid && invalidClass]"
+                        placeholder="Имя"
+                        :aria-invalid="ariaInvalid"
+                        :aria-describedby="describedBy"
+                    />
+                </template>
+            </FormField>
 
-            <div>
-                <label :class="s.label">
-                    Телефон
-                </label>
-                <input
-                    v-model="phoneMask.masked"
-                    v-maska="phoneMask"
-                    :data-maska="RU_PHONE_MASKA_PATTERN"
-                    :data-maska-tokens="RU_PHONE_MASKA_TOKENS_ATTR"
-                    type="tel"
-                    :class="s.input"
-                    placeholder="+7 (___) ___-__-__"
-                />
-            </div>
+            <FormField
+                label="Телефон"
+                error-size="xs"
+                :error="fieldErrors.get('phone')"
+            >
+                <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
+                    <input
+                        :id="id"
+                        v-model="phoneMask.masked"
+                        v-maska="phoneMask"
+                        :data-maska="RU_PHONE_MASKA_PATTERN"
+                        :data-maska-tokens="RU_PHONE_MASKA_TOKENS_ATTR"
+                        type="tel"
+                        :class="[s.input, invalid && invalidClass]"
+                        placeholder="+7 (___) ___-__-__"
+                        :aria-invalid="ariaInvalid"
+                        :aria-describedby="describedBy"
+                    />
+                </template>
+            </FormField>
 
-            <div>
-                <label :class="s.label">
-                    Email
-                </label>
-                <input
-                    v-model="form.email"
-                    type="email"
-                    :class="s.input"
-                    placeholder="you@example.com"
-                />
-            </div>
+            <FormField
+                label="Email"
+                error-size="xs"
+                :error="fieldErrors.get('email')"
+            >
+                <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
+                    <input
+                        :id="id"
+                        v-model="form.email"
+                        type="email"
+                        :class="[s.input, invalid && invalidClass]"
+                        placeholder="you@example.com"
+                        :aria-invalid="ariaInvalid"
+                        :aria-describedby="describedBy"
+                    />
+                </template>
+            </FormField>
 
-            <div>
-                <label :class="s.label">
-                    Дата рождения
-                </label>
-                <input
-                    v-model="form.birth_date"
-                    type="date"
-                    :class="s.input"
-                />
-            </div>
+            <FormField
+                label="Дата рождения"
+                error-size="xs"
+                :error="fieldErrors.get('birth_date')"
+            >
+                <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
+                    <input
+                        :id="id"
+                        v-model="form.birth_date"
+                        type="date"
+                        :class="[s.input, invalid && invalidClass]"
+                        :aria-invalid="ariaInvalid"
+                        :aria-describedby="describedBy"
+                    />
+                </template>
+            </FormField>
         </div>
 
         <p
-            v-if="error"
+            v-if="fieldErrors.formError"
             :class="s.errorXs"
         >
-            {{ error }}
+            {{ fieldErrors.formError }}
         </p>
 
         <button

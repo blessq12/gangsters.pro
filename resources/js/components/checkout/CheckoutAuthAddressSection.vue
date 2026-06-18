@@ -4,10 +4,12 @@ import { storeToRefs } from "pinia";
 import { useAppDesign } from "../../design/useAppDesign";
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
 import { useUserStore } from "../../stores/userStore";
+import FormField from "../ui/FormField.vue";
 
 const chk = useAppDesign().components.checkout;
 const s = chk.shared;
 const d = chk.delivery;
+const ff = useAppDesign().components.uiPrimitives.formField;
 
 const userStore = useUserStore();
 const { addresses } = storeToRefs(userStore);
@@ -23,12 +25,17 @@ const {
 const {
     newAddressForm,
     newAddressLoading,
-    newAddressError,
     isNewAddressOpen,
+    deliveryFieldErrors,
+    newAddressFieldErrors,
 } = checkoutState;
 
 const hasAddresses = computed(
     () => Array.isArray(addresses.value) && addresses.value.length > 0,
+);
+
+const selectedAddressInvalid = computed(() =>
+    deliveryFieldErrors.has("selectedAddress"),
 );
 
 function formatAddressLine(address) {
@@ -61,18 +68,37 @@ function formatAddressLine(address) {
                 placeholder="Название (дом, работа)"
                 :class="s.inputFieldCol2"
             />
-            <input
-                v-model="newAddressForm.street"
-                type="text"
-                placeholder="Улица"
-                :class="s.inputFieldCol2"
-            />
-            <input
-                v-model="newAddressForm.house"
-                type="text"
-                placeholder="Дом"
-                :class="s.inputFieldGridCell"
-            />
+        </div>
+
+        <FormField :error="newAddressFieldErrors.get('street')">
+            <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
+                <input
+                    :id="id"
+                    v-model="newAddressForm.street"
+                    type="text"
+                    placeholder="Улица"
+                    :class="[s.inputFieldFull, invalid && invalidClass]"
+                    :aria-invalid="ariaInvalid"
+                    :aria-describedby="describedBy"
+                />
+            </template>
+        </FormField>
+
+        <div :class="s.grid2">
+            <FormField :error="newAddressFieldErrors.get('house')">
+                <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
+                    <input
+                        :id="id"
+                        v-model="newAddressForm.house"
+                        type="text"
+                        placeholder="Дом"
+                        :class="[s.inputFieldGridCell, invalid && invalidClass]"
+                        :aria-invalid="ariaInvalid"
+                        :aria-describedby="describedBy"
+                    />
+                </template>
+            </FormField>
+
             <input
                 v-model="newAddressForm.entrance"
                 type="text"
@@ -100,10 +126,10 @@ function formatAddressLine(address) {
             <span>Сделать основным адресом</span>
         </label>
         <p
-            v-if="newAddressError"
+            v-if="newAddressFieldErrors.formError"
             :class="s.errorLine"
         >
-            {{ newAddressError }}
+            {{ newAddressFieldErrors.formError }}
         </p>
         <button
             type="button"
@@ -123,39 +149,49 @@ function formatAddressLine(address) {
         </button>
     </div>
 
-    <div v-else :class="d.listSection">
-        <p :class="s.headingSm">
-            Выбери адрес доставки
-        </p>
-        <ul class="space-y-2">
-            <li
-                v-for="address in addresses"
-                :key="address.id"
-                :class="s.addressLi"
-            >
-                <AppRadio
-                    :id="`addr-${address.id}`"
-                    :model-value="userStore.selectedAddressId"
-                    :value="address.id"
-                    @update:model-value="selectAddress"
-                />
-                <label
-                    :for="`addr-${address.id}`"
-                    :class="s.labelAddress"
+    <div
+        v-else
+        :class="d.listSection"
+    >
+        <FormField :error="deliveryFieldErrors.get('selectedAddress')">
+            <template #default>
+                <p :class="s.headingSm">
+                    Выбери адрес доставки
+                </p>
+                <ul
+                    class="space-y-2"
+                    :class="selectedAddressInvalid && ff.groupInvalid"
                 >
-                    <span :class="s.addressTitle">
-                        {{
-                            address.title ||
-                                address.label ||
-                                `Адрес #${address.id}`
-                        }}
-                    </span>
-                    <span :class="s.addressMeta">
-                        {{ formatAddressLine(address) }}
-                    </span>
-                </label>
-            </li>
-        </ul>
+                    <li
+                        v-for="address in addresses"
+                        :key="address.id"
+                        :class="s.addressLi"
+                    >
+                        <AppRadio
+                            :id="`addr-${address.id}`"
+                            :model-value="userStore.selectedAddressId"
+                            :value="address.id"
+                            @update:model-value="selectAddress"
+                        />
+                        <label
+                            :for="`addr-${address.id}`"
+                            :class="s.labelAddress"
+                        >
+                            <span :class="s.addressTitle">
+                                {{
+                                    address.title ||
+                                        address.label ||
+                                        `Адрес #${address.id}`
+                                }}
+                            </span>
+                            <span :class="s.addressMeta">
+                                {{ formatAddressLine(address) }}
+                            </span>
+                        </label>
+                    </li>
+                </ul>
+            </template>
+        </FormField>
 
         <div :class="s.borderSectionTop">
             <button
@@ -181,18 +217,37 @@ function formatAddressLine(address) {
                             placeholder="Название (дом, работа)"
                             :class="s.inputFieldCol2"
                         />
-                        <input
-                            v-model="newAddressForm.street"
-                            type="text"
-                            placeholder="Улица"
-                            :class="s.inputFieldCol2"
-                        />
-                        <input
-                            v-model="newAddressForm.house"
-                            type="text"
-                            placeholder="Дом"
-                            :class="s.inputFieldGridCell"
-                        />
+                    </div>
+
+                    <FormField :error="newAddressFieldErrors.get('street')">
+                        <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
+                            <input
+                                :id="id"
+                                v-model="newAddressForm.street"
+                                type="text"
+                                placeholder="Улица"
+                                :class="[s.inputFieldFull, invalid && invalidClass]"
+                                :aria-invalid="ariaInvalid"
+                                :aria-describedby="describedBy"
+                            />
+                        </template>
+                    </FormField>
+
+                    <div :class="s.grid2">
+                        <FormField :error="newAddressFieldErrors.get('house')">
+                            <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
+                                <input
+                                    :id="id"
+                                    v-model="newAddressForm.house"
+                                    type="text"
+                                    placeholder="Дом"
+                                    :class="[s.inputFieldGridCell, invalid && invalidClass]"
+                                    :aria-invalid="ariaInvalid"
+                                    :aria-describedby="describedBy"
+                                />
+                            </template>
+                        </FormField>
+
                         <input
                             v-model="newAddressForm.entrance"
                             type="text"
@@ -220,10 +275,10 @@ function formatAddressLine(address) {
                         <span>Сделать основным адресом</span>
                     </label>
                     <p
-                        v-if="newAddressError"
+                        v-if="newAddressFieldErrors.formError"
                         :class="s.errorLine"
                     >
-                        {{ newAddressError }}
+                        {{ newAddressFieldErrors.formError }}
                     </p>
                     <button
                         type="button"

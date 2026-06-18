@@ -165,8 +165,9 @@ export function useCheckoutWizard({
         try {
             await deliveryStep.flushDeliveryPreview();
         } catch (e) {
-            deliveryStep.deliveryStepError.value =
-                e?.response?.data?.message || "Не удалось сохранить адрес доставки.";
+            deliveryStep.deliveryFieldErrors.setFormError(
+                e?.response?.data?.message || "Не удалось сохранить адрес доставки.",
+            );
             return;
         }
 

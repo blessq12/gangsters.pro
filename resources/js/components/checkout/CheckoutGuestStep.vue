@@ -8,6 +8,7 @@ import {
     RU_PHONE_MASKA_PATTERN,
     RU_PHONE_MASKA_TOKENS_ATTR,
 } from "../../validation/ruPhone";
+import FormField from "../ui/FormField.vue";
 import CheckoutSection from "./CheckoutSection.vue";
 import CheckoutStepFrame from "./CheckoutStepFrame.vue";
 
@@ -23,7 +24,7 @@ const {
 
 const c = useAppDesign().components.checkout.cart;
 
-const { checkoutIntent, guestStepError } = checkoutState;
+const { checkoutIntent, guestFieldErrors } = checkoutState;
 
 const guestPhoneForm = ref({
     phone: normalizeRuPhoneDigits(checkoutIntent.guestContact.phone),
@@ -59,22 +60,37 @@ watch(
             title="Контакт"
             variant="form"
         >
-            <input
-                :value="checkoutIntent.guestContact.name"
-                type="text"
-                placeholder="Имя"
-                :class="s.inputFieldFull"
-                @input="setGuestContact({ name: $event.target.value })"
-            />
-            <input
-                v-model="phoneMask.masked"
-                v-maska="phoneMask"
-                :data-maska="RU_PHONE_MASKA_PATTERN"
-                :data-maska-tokens="RU_PHONE_MASKA_TOKENS_ATTR"
-                type="tel"
-                placeholder="+7 (___) ___-__-__"
-                :class="s.inputFieldFull"
-            />
+            <FormField :error="guestFieldErrors.get('name')">
+                <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
+                    <input
+                        :id="id"
+                        :value="checkoutIntent.guestContact.name"
+                        type="text"
+                        placeholder="Имя"
+                        :class="[s.inputFieldFull, invalid && invalidClass]"
+                        :aria-invalid="ariaInvalid"
+                        :aria-describedby="describedBy"
+                        @input="setGuestContact({ name: $event.target.value })"
+                    />
+                </template>
+            </FormField>
+
+            <FormField :error="guestFieldErrors.get('phone')">
+                <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
+                    <input
+                        :id="id"
+                        v-model="phoneMask.masked"
+                        v-maska="phoneMask"
+                        :data-maska="RU_PHONE_MASKA_PATTERN"
+                        :data-maska-tokens="RU_PHONE_MASKA_TOKENS_ATTR"
+                        type="tel"
+                        placeholder="+7 (___) ___-__-__"
+                        :class="[s.inputFieldFull, invalid && invalidClass]"
+                        :aria-invalid="ariaInvalid"
+                        :aria-describedby="describedBy"
+                    />
+                </template>
+            </FormField>
         </CheckoutSection>
 
         <button
@@ -84,13 +100,6 @@ watch(
         >
             Регистрация / вход
         </button>
-
-        <p
-            v-if="guestStepError"
-            :class="s.errorLine"
-        >
-            {{ guestStepError }}
-        </p>
 
         <template #nav>
             <button
