@@ -7,7 +7,7 @@ export function createOrderDraftPreviewScheduler(store) {
     let timer = null;
 
     return {
-        schedule(selectedAddress = null, delayMs = 450) {
+        schedule(selectedAddress = null, delayMs = 700) {
             clearTimeout(timer);
             timer = setTimeout(() => {
                 void refreshOrderDraftPreview(store, selectedAddress).catch(() => {});

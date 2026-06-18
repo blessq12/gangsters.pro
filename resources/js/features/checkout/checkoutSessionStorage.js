@@ -36,11 +36,26 @@ export function clearCheckoutSessionPayload() {
 }
 
 export function buildCheckoutSessionSnapshot(store) {
+    const deliveryInfo = store.deliveryInfo;
+    let deliveryInfoForSession = deliveryInfo;
+
+    if (
+        deliveryInfo?.address &&
+        typeof deliveryInfo.address === "object"
+    ) {
+        const { latitude, longitude, ...addressWithoutCoords } =
+            deliveryInfo.address;
+        deliveryInfoForSession = {
+            ...deliveryInfo,
+            address: addressWithoutCoords,
+        };
+    }
+
     return {
         clientRequestId: store.clientRequestId,
         localCart: store.cartItems.filter((item) => !item.isSystem),
         forms: {
-            deliveryInfo: store.deliveryInfo,
+            deliveryInfo: deliveryInfoForSession,
             paymentInfo: store.paymentInfo,
             guestContact: store.guestContact,
             customerComment: store.customerComment,

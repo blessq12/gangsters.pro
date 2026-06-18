@@ -74,6 +74,8 @@ export const useCheckoutStore = defineStore("checkout", {
         sessionReady: false,
         /** Инкремент при сбросе сессии — отсекает устаревшие preview-ответы. */
         previewRequestSeq: 0,
+        /** Гостевой адрес в черновике — не перезаписывать текст полей из preview. */
+        deliveryAddressDraftDirty: false,
     }),
     getters: {
         isDraft() {
@@ -166,7 +168,18 @@ export const useCheckoutStore = defineStore("checkout", {
             if (Object.prototype.hasOwnProperty.call(data, "delivery")) {
                 this.serverDelivery = data.delivery ?? null;
                 if (data.delivery && typeof data.delivery === "object") {
-                    this.deliveryInfo = mapDeliveryToLocal(data.delivery);
+                    const mapped = mapDeliveryToLocal(data.delivery);
+                    if (this.deliveryAddressDraftDirty) {
+                        this.deliveryInfo = {
+                            ...this.deliveryInfo,
+                            method: mapped.method ?? this.deliveryInfo.method,
+                            comment: mapped.comment ?? this.deliveryInfo.comment,
+                            scheduledAt:
+                                mapped.scheduledAt ?? this.deliveryInfo.scheduledAt,
+                        };
+                    } else {
+                        this.deliveryInfo = mapped;
+                    }
                 }
             }
 
@@ -358,6 +371,7 @@ export const useCheckoutStore = defineStore("checkout", {
         },
 
         clearLocalForms() {
+            this.deliveryAddressDraftDirty = false;
             this.deliveryInfo = {
                 method: null,
                 address: null,
@@ -411,16 +425,53 @@ export const useCheckoutStore = defineStore("checkout", {
         },
 
         patchDeliveryAddress(partial) {
+            const previous =
+                this.deliveryInfo.address &&
+                typeof this.deliveryInfo.address === "object"
+                    ? this.deliveryInfo.address
+                    : {};
+            const next = {
+                ...previous,
+                ...(partial || {}),
+            };
+
+            const streetChanged =
+                partial?.street != null && partial.street !== previous.street;
+            const houseChanged =
+                partial?.house != null && partial.house !== previous.house;
+
+            if (streetChanged || houseChanged) {
+                delete next.latitude;
+                delete next.longitude;
+            }
+
             this.deliveryInfo = {
                 ...this.deliveryInfo,
-                address: {
-                    ...(this.deliveryInfo.address &&
-                    typeof this.deliveryInfo.address === "object"
-                        ? this.deliveryInfo.address
-                        : {}),
-                    ...(partial || {}),
-                },
+                address: next,
             };
+        },
+
+        setDeliveryAddressDraftDirty(dirty = true) {
+            this.deliveryAddressDraftDirty = Boolean(dirty);
+        },
+
+        invalidateDeliveryZoneResolve() {
+            if (this.deliveryPricing) {
+                this.deliveryPricing = {
+                    ...this.deliveryPricing,
+                    inZone: null,
+                };
+            }
+
+            if (this.orderPreview?.totals) {
+                this.orderPreview = {
+                    ...this.orderPreview,
+                    totals: {
+                        ...this.orderPreview.totals,
+                        inZone: null,
+                    },
+                };
+            }
         },
 
         updateCartLine(product, quantity, payload = null) {

@@ -5,6 +5,31 @@ import { useClientCommands } from "../client/useClient";
 import { useClientAddressSelectionModel } from "../client/useClientAddressSelectionModel";
 import { createOrderDraftPreviewScheduler } from "./orderDraftPreviewScheduler";
 
+const GUEST_ADDRESS_ZONE_KEYS = new Set(["street", "house"]);
+
+function createEmptyGuestAddressDraft() {
+    return {
+        street: "",
+        house: "",
+        entrance: "",
+        apartment: "",
+    };
+}
+
+function readGuestAddressDraftFromStore(checkoutIntent) {
+    const address = checkoutIntent.deliveryInfo.address;
+    if (!address || typeof address !== "object") {
+        return createEmptyGuestAddressDraft();
+    }
+
+    return {
+        street: address.street ?? "",
+        house: address.house ?? "",
+        entrance: address.entrance ?? "",
+        apartment: address.apartment ?? "",
+    };
+}
+
 export function useCheckoutDeliveryStep({
     checkoutIntent,
     userStore,
@@ -28,6 +53,16 @@ export function useCheckoutDeliveryStep({
     });
     const newAddressLoading = ref(false);
     const isNewAddressOpen = ref(false);
+    const guestAddressDraft = ref(readGuestAddressDraftFromStore(checkoutIntent));
+
+    function syncGuestAddressDraftToStore() {
+        checkoutIntent.patchDeliveryAddress({ ...guestAddressDraft.value });
+        checkoutIntent.persistSession();
+    }
+
+    function resolveGuestAddressForValidation() {
+        return guestAddressDraft.value;
+    }
 
     function resolvePreviewAddress() {
         if (isGuestCheckout.value) {
@@ -48,7 +83,7 @@ export function useCheckoutDeliveryStep({
         }
 
         if (isGuestCheckout.value) {
-            const address = checkoutIntent.deliveryInfo.address;
+            const address = guestAddressDraft.value;
             return (
                 String(address?.street || "").trim() !== ""
                 && String(address?.house || "").trim() !== ""
@@ -63,11 +98,25 @@ export function useCheckoutDeliveryStep({
             return;
         }
 
+        syncGuestAddressDraftToStore();
+        previewScheduler.schedule(resolvePreviewAddress());
+    }
+
+    function scheduleZonePreview() {
+        if (!canPreviewDelivery()) {
+            return;
+        }
+
+        syncGuestAddressDraftToStore();
         previewScheduler.schedule(resolvePreviewAddress());
     }
 
     function validateDeliveryStep(selectedAddress) {
         deliveryFieldErrors.clearAll();
+
+        if (isGuestCheckout.value) {
+            syncGuestAddressDraftToStore();
+        }
 
         if (!checkoutIntent.deliveryInfo.method) {
             deliveryFieldErrors.setFieldError("method", "Выбери способ доставки.");
@@ -79,7 +128,7 @@ export function useCheckoutDeliveryStep({
         }
 
         if (isGuestCheckout.value) {
-            const address = checkoutIntent.deliveryInfo.address;
+            const address = resolveGuestAddressForValidation();
             if (!String(address?.street || "").trim()) {
                 deliveryFieldErrors.setFieldError("street", "Укажи улицу.");
             }
@@ -151,15 +200,42 @@ export function useCheckoutDeliveryStep({
         checkoutIntent.setDeliveryInfo({ comment });
     }
 
-    function patchDeliveryAddress(partial) {
-        checkoutIntent.patchDeliveryAddress(partial);
-        if (partial?.street != null) {
+    function patchGuestAddressDraft(partial) {
+        if (!partial || typeof partial !== "object") {
+            return;
+        }
+
+        Object.assign(guestAddressDraft.value, partial);
+
+        if (partial.street != null) {
             deliveryFieldErrors.clearField("street");
         }
-        if (partial?.house != null) {
+        if (partial.house != null) {
             deliveryFieldErrors.clearField("house");
         }
-        scheduleDeliveryPreview();
+
+        const touchesZone = Object.keys(partial).some((key) =>
+            GUEST_ADDRESS_ZONE_KEYS.has(key),
+        );
+
+        syncGuestAddressDraftToStore();
+
+        if (!touchesZone) {
+            return;
+        }
+
+        checkoutIntent.setDeliveryAddressDraftDirty(true);
+        checkoutIntent.invalidateDeliveryZoneResolve();
+        scheduleZonePreview();
+    }
+
+    function handleGuestAddressHouseBlur() {
+        if (!isGuestCheckout.value || !canPreviewDelivery()) {
+            return;
+        }
+
+        syncGuestAddressDraftToStore();
+        previewScheduler.schedule(resolvePreviewAddress(), 0);
     }
 
     function selectAddress(addressId) {
@@ -171,6 +247,21 @@ export function useCheckoutDeliveryStep({
     function clearNewAddressField(key) {
         newAddressFieldErrors.clearField(key);
     }
+
+    watch(
+        () => checkoutIntent.deliveryInfo.address,
+        () => {
+            if (
+                isGuestCheckout.value
+                && !checkoutIntent.deliveryAddressDraftDirty
+            ) {
+                guestAddressDraft.value = readGuestAddressDraftFromStore(
+                    checkoutIntent,
+                );
+            }
+        },
+        { deep: true },
+    );
 
     watch(
         newAddressForm,
@@ -252,12 +343,25 @@ export function useCheckoutDeliveryStep({
         }
     }
 
+    async function flushDeliveryPreview() {
+        if (isGuestCheckout.value) {
+            syncGuestAddressDraftToStore();
+        }
+
+        const result = await previewScheduler.flush(resolvePreviewAddress());
+        if (isGuestCheckout.value) {
+            checkoutIntent.setDeliveryAddressDraftDirty(false);
+        }
+        return result;
+    }
+
     onBeforeUnmount(() => {
         previewScheduler.cancel();
     });
 
     return {
         addressSelection,
+        guestAddressDraft,
         newAddressForm,
         newAddressLoading,
         isNewAddressOpen,
@@ -269,10 +373,11 @@ export function useCheckoutDeliveryStep({
         setDeliveryMethod,
         toggleNewAddressOpen,
         setDeliveryComment,
-        patchDeliveryAddress,
+        patchGuestAddressDraft,
+        handleGuestAddressHouseBlur,
         selectAddress,
         handleCreateAddress,
         scheduleDeliveryPreview,
-        flushDeliveryPreview: () => previewScheduler.flush(resolvePreviewAddress()),
+        flushDeliveryPreview,
     };
 }

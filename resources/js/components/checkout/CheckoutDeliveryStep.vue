@@ -18,7 +18,9 @@ const {
     goToPayment,
     setDeliveryMethod,
     setDeliveryComment,
-    patchDeliveryAddress,
+    guestAddressDraft,
+    patchGuestAddressDraft,
+    handleGuestAddressHouseBlur,
     scheduleDeliveryPreview,
 } = useCheckoutFlowContext();
 
@@ -61,14 +63,14 @@ const { checkoutIntent, deliveryFieldErrors, isGuestCheckout } = checkoutState;
                 <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
                     <input
                         :id="id"
-                        :value="checkoutIntent.deliveryInfo.address?.street ?? ''"
+                        :value="guestAddressDraft.street"
                         type="text"
                         placeholder="Улица"
                         :class="[s.inputFieldFull, invalid && invalidClass]"
                         :aria-invalid="ariaInvalid"
                         :aria-describedby="describedBy"
                         @input="
-                            patchDeliveryAddress({
+                            patchGuestAddressDraft({
                                 street: $event.target.value,
                             })
                         "
@@ -81,39 +83,40 @@ const { checkoutIntent, deliveryFieldErrors, isGuestCheckout } = checkoutState;
                     <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
                         <input
                             :id="id"
-                            :value="checkoutIntent.deliveryInfo.address?.house ?? ''"
+                            :value="guestAddressDraft.house"
                             type="text"
                             placeholder="Дом"
                             :class="[s.inputFieldGridCell, invalid && invalidClass]"
                             :aria-invalid="ariaInvalid"
                             :aria-describedby="describedBy"
                             @input="
-                                patchDeliveryAddress({
+                                patchGuestAddressDraft({
                                     house: $event.target.value,
                                 })
                             "
+                            @blur="handleGuestAddressHouseBlur"
                         />
                     </template>
                 </FormField>
 
                 <input
-                    :value="checkoutIntent.deliveryInfo.address?.entrance ?? ''"
+                    :value="guestAddressDraft.entrance"
                     type="text"
                     placeholder="Подъезд"
                     :class="s.inputFieldGridCell"
                     @input="
-                        patchDeliveryAddress({
+                        patchGuestAddressDraft({
                             entrance: $event.target.value,
                         })
                     "
                 />
                 <input
-                    :value="checkoutIntent.deliveryInfo.address?.apartment ?? ''"
+                    :value="guestAddressDraft.apartment"
                     type="text"
                     placeholder="Квартира"
                     :class="s.inputFieldCol2"
                     @input="
-                        patchDeliveryAddress({
+                        patchGuestAddressDraft({
                             apartment: $event.target.value,
                         })
                     "

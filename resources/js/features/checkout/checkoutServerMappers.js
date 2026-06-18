@@ -84,51 +84,17 @@ export function buildClientPayload(store, { clientId = null, isGuest = false } =
     };
 }
 
-function normalizeDeliveryCoordinate(value) {
-    if (value == null || value === "") {
-        return null;
-    }
-
-    const number = Number(value);
-    if (!Number.isFinite(number)) {
-        return null;
-    }
-
-    return number;
-}
-
-function deliveryCoordinatesAreUsable(latitude, longitude) {
-    if (latitude == null || longitude == null) {
-        return false;
-    }
-
-    if (latitude === 0 && longitude === 0) {
-        return false;
-    }
-
-    return Math.abs(latitude) <= 90 && Math.abs(longitude) <= 180;
-}
-
 function buildDeliveryAddressPayload(source) {
     if (!source || typeof source !== "object") {
         return null;
     }
 
-    const latitude = normalizeDeliveryCoordinate(source.latitude);
-    const longitude = normalizeDeliveryCoordinate(source.longitude);
-    const payload = {
+    return {
         street: source.street ?? "",
         house: source.house ?? "",
         entrance: source.entrance ?? null,
         apartment: source.apartment ?? null,
     };
-
-    if (deliveryCoordinatesAreUsable(latitude, longitude)) {
-        payload.latitude = latitude;
-        payload.longitude = longitude;
-    }
-
-    return payload;
 }
 
 export function buildDeliveryPayload(store, selectedAddress = null) {

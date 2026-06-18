@@ -23,6 +23,29 @@ final class PrepareOrderDraftDeliveryAddress
             return $address;
         }
 
+        $street = trim($address->street());
+        $house = trim($address->house());
+
+        if ($street !== '' && $house !== '') {
+            $configuration = $this->deliveryConfigurations->findPublic();
+            $geocoded = $this->geocoder->geocode(
+                street: $street,
+                house: $house,
+                city: $configuration?->kitchenAddress()->city(),
+            );
+
+            if ($geocoded !== null) {
+                return new DeliveryAddress(
+                    street: $address->street(),
+                    house: $address->house(),
+                    entrance: $address->entrance(),
+                    apartment: $address->apartment(),
+                    latitude: $geocoded['latitude'],
+                    longitude: $geocoded['longitude'],
+                );
+            }
+        }
+
         $latitude = $address->latitude();
         $longitude = $address->longitude();
 
@@ -30,25 +53,7 @@ final class PrepareOrderDraftDeliveryAddress
             return $address;
         }
 
-        $configuration = $this->deliveryConfigurations->findPublic();
-        $geocoded = $this->geocoder->geocode(
-            street: $address->street(),
-            house: $address->house(),
-            city: $configuration?->kitchenAddress()->city(),
-        );
-
-        if ($geocoded === null) {
-            return $address;
-        }
-
-        return new DeliveryAddress(
-            street: $address->street(),
-            house: $address->house(),
-            entrance: $address->entrance(),
-            apartment: $address->apartment(),
-            latitude: $geocoded['latitude'],
-            longitude: $geocoded['longitude'],
-        );
+        return $address;
     }
 
     private static function coordinatesAreUsable(?float $latitude, ?float $longitude): bool
