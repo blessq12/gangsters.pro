@@ -25,6 +25,8 @@ export const dockDesign = {
             "transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform",
         badge:
             "absolute -top-1.5 -right-1.5 flex min-h-[1.1rem] min-w-[1.1rem] items-center justify-center rounded-none bg-red-500 px-1 text-[10px] font-semibold text-white shadow-[0_0_8px_rgba(239,68,68,0.65)]",
+        panelScrim:
+            "fixed inset-0 z-[25] bg-black/45 backdrop-blur-[2px]",
     },
 
     mobile: {

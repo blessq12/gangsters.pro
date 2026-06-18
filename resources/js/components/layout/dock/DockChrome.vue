@@ -10,8 +10,10 @@ import {
     playDockContentHide,
 } from "../../../animations/animationManager";
 import { useBottomDockState } from "../../../composables/ui/useBottomDockState";
+import { useDockDismiss } from "../../../composables/ui/useDockDismiss";
 import { useDockMobileInteractions } from "./composables/useDockMobileInteractions";
 import { useAppDesign } from "../../../design/useAppDesign";
+import DockDismissConfirmModal from "./DockDismissConfirmModal.vue";
 
 const props = defineProps({
     variant: {
@@ -41,10 +43,19 @@ const { activeDockItem, getBadge, dockItems } = useBottomDockState({
 const isMobile = computed(() => props.variant === "mobile");
 
 const {
+    showScrim,
+    confirmOpen,
+    pendingConfirm,
+    requestDockDismiss,
+    confirmDismiss,
+    cancelDismiss,
+} = useDockDismiss();
+
+const {
     dockPanelOuterRef,
     onDockPanelTouchStart,
     onDockPanelTouchEnd,
-} = useDockMobileInteractions(uiStore, () => isMobile.value);
+} = useDockMobileInteractions(uiStore, () => isMobile.value, requestDockDismiss);
 
 const animVariant = computed(() => (props.variant === "desktop" ? "desktop" : "mobile"));
 
@@ -77,6 +88,10 @@ function tabIconTone(id) {
 }
 
 function handleDockClick(id) {
+    if (uiStore.dockActiveId === id) {
+        requestDockDismiss();
+        return;
+    }
     uiStore.setDockActive(id);
 }
 
@@ -98,6 +113,26 @@ function handlePanelLeave(el, done) {
 </script>
 
 <template>
+    <teleport to="body">
+        <button
+            v-if="showScrim"
+            type="button"
+            :class="dock.shared.panelScrim"
+            aria-label="Свернуть панель дока"
+            @click="requestDockDismiss"
+        />
+    </teleport>
+
+    <DockDismissConfirmModal
+        v-model="confirmOpen"
+        :title="pendingConfirm?.title ?? ''"
+        :message="pendingConfirm?.message ?? ''"
+        :confirm-label="pendingConfirm?.confirmLabel ?? ''"
+        :cancel-label="pendingConfirm?.cancelLabel ?? ''"
+        @confirm="confirmDismiss"
+        @cancel="cancelDismiss"
+    />
+
     <!-- Mobile: панель над нижним островом -->
     <div
         v-if="variant === 'mobile'"

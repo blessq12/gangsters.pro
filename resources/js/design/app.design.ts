@@ -10,6 +10,7 @@ import { pagesDesign } from "./pages/pages.design";
 import { navbarDesign } from "./layout/navbar.design";
 import { workScheduleDesign } from "./layout/workSchedule.design";
 import { closedNoticeDesign } from "./layout/closedNotice.design";
+import { dockDismissConfirmDesign } from "./layout/dockDismissConfirm.design";
 import { pwaInstallDesign } from "./layout/pwaInstall.design";
 import { uiPrimitivesDesign } from "./ui/uiPrimitives.design";
 
@@ -22,6 +23,7 @@ export const appDesign = {
         navbar: navbarDesign,
         footer: footerDesign,
         dock: dockDesign,
+        dockDismissConfirm: dockDismissConfirmDesign,
         dockPanels: dockPanelsDesign,
         workSchedule: workScheduleDesign,
         closedNotice: closedNoticeDesign,

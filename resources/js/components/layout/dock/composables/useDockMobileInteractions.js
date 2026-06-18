@@ -71,10 +71,11 @@ function scrollTopChangedDuringGesture(start, end) {
 
 /**
  * Свайп закрытия панели и body scroll lock только для мобильного дока.
- * @param {import('pinia').Store} uiStore — ui store с dockActiveId, closeDockPanel
+ * @param {import('pinia').Store} uiStore — ui store с dockActiveId
  * @param {import('vue').Ref<boolean> | boolean | (() => boolean)} enabled — когда false, хуки no-op
+ * @param {() => void} [onRequestDismiss] — политика dismiss (клик вне / подтверждение)
  */
-export function useDockMobileInteractions(uiStore, enabled) {
+export function useDockMobileInteractions(uiStore, enabled, onRequestDismiss) {
     const dockPanelOuterRef = ref(null);
     const touchStart = ref({ x: 0, y: 0 });
     let touchStartTargetEl = null;
@@ -150,6 +151,10 @@ export function useDockMobileInteractions(uiStore, enabled) {
 
         touchStartTargetEl = null;
         panelScrollerAtTouchStart = null;
+        if (typeof onRequestDismiss === "function") {
+            onRequestDismiss();
+            return;
+        }
         uiStore.closeDockPanel();
     }
 
