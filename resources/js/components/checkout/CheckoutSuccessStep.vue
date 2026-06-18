@@ -7,8 +7,7 @@ const chk = useAppDesign().components.checkout;
 const s = chk.shared;
 const su = chk.success;
 
-const { checkoutState, goToCart } = useCheckoutFlowContext();
-const { lastCreatedOrder } = checkoutState;
+const { goToCart, lastCreatedOrder } = useCheckoutFlowContext();
 
 const orderNumber = computed(() => {
     const id = lastCreatedOrder.value?.id;
@@ -34,9 +33,18 @@ const orderNumber = computed(() => {
         >
             Заказ оформлен
         </p>
+
         <p :class="s.textSuccessLead">
             Спасибо, бро. Мы приняли заказ и скоро свяжемся для подтверждения.
         </p>
+
+        <p
+            v-if="orderNumber"
+            :class="su.supportHint"
+        >
+            Сохрани номер заказа — назови его и свой телефон, если захочешь уточнить статус.
+        </p>
+
         <div :class="su.footerActions">
             <button
                 type="button"

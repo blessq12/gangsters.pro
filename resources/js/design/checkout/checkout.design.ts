@@ -193,6 +193,11 @@ export const checkoutDesign = {
 
     success: {
         orderTitle: "text-2xl font-bold tracking-tight text-app-accent",
+        supportHint: "text-xs leading-relaxed text-app-muted",
+        metaLine: "text-[11px] text-app-muted",
+        summaryStack: "mt-4 space-y-3",
+        totalRow:
+            "flex items-center justify-between gap-2 border-t border-app-divider-on-canvas pt-2 text-xs font-semibold text-app-canvas-fg",
         footerActions: "mt-4 flex justify-end",
     },
 } as const;
