@@ -1,26 +1,15 @@
 <script setup>
 import { computed } from "vue";
 import { useAppDesign } from "../../../../design/useAppDesign";
-import { useCartCommands } from "../../../../features/shoppingSession/useCartCommands";
-import { useFavoritesCommands, useFavoritesReadModel } from "../../../../features/favorites/useFavorites";
-import { formatMoneyRublesRu } from "../../../../utils/moneyFormat";
+import { useFavoritesReadModel } from "../../../../features/favorites/useFavorites";
+import FavoritesDockItem from "./FavoritesDockItem.vue";
 
 const panels = useAppDesign().components.dockPanels;
-const favoritesCommands = useFavoritesCommands();
 const favoritesReadModel = useFavoritesReadModel();
-const cartCommands = useCartCommands();
 
 const favoriteItems = computed(() => favoritesReadModel.items.value);
 
-const s = panels.shared;
 const f = panels.favorites;
-
-const handleAddToCart = (item) => {
-    if (!item?.productSnapshot?.id) return;
-    void cartCommands.addProductToCart(item.productSnapshot, 1);
-};
-
-const formatPrice = (value) => formatMoneyRublesRu(value);
 </script>
 
 <template>
@@ -39,37 +28,11 @@ const formatPrice = (value) => formatMoneyRublesRu(value);
             v-else
             :class="f.ul"
         >
-            <li
+            <FavoritesDockItem
                 v-for="item in favoriteItems"
                 :key="item.productId"
-                :class="f.row"
-            >
-                <div :class="s.minWidth0">
-                    <p :class="f.productName">
-                        {{ item.productSnapshot?.name || `Товар #${item.productId}` }}
-                    </p>
-                    <p :class="f.productPrice">
-                        {{ formatPrice(item.productSnapshot?.price) }} ₽
-                    </p>
-                </div>
-
-                <div :class="f.actionRow">
-                    <button
-                        type="button"
-                        :class="f.actionAddToCart"
-                        @click="handleAddToCart(item)"
-                    >
-                        В корзину
-                    </button>
-                    <button
-                        type="button"
-                        :class="f.actionRemove"
-                        @click="favoritesCommands.remove(item.productId)"
-                    >
-                        Убрать
-                    </button>
-                </div>
-            </li>
+                :item="item"
+            />
         </ul>
     </DockPanelLayout>
 </template>

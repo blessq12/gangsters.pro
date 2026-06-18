@@ -64,6 +64,13 @@ export const dockPanelsDesign = {
         actionRow: "flex items-center gap-3",
         actionAddToCart:
             "shrink-0 text-[11px] text-app-accent transition-colors hover:text-app-accent",
+        qtyBar:
+            "inline-flex shrink-0 items-center justify-between rounded-none border border-app-accent/60 bg-neutral-950/88 px-1.5 py-0.5 text-[11px] text-app-canvas-fg",
+        qtyBtn:
+            "flex h-6 w-6 items-center justify-center rounded-none bg-neutral-950/88 text-[13px] leading-none",
+        qtyLabel:
+            "min-w-[2.25rem] px-1 text-center text-[11px] font-semibold tabular-nums transition-transform duration-300",
+        qtyLabelPulse: "scale-125 text-app-accent",
         actionRemove:
             "shrink-0 text-[11px] text-app-muted transition-colors hover:text-red-400",
     },
