@@ -2,6 +2,7 @@
 
 namespace App\Application\Order\OrderDraft\Support;
 
+use App\Application\Order\OrderDraft\Services\ApplyGiftBenefitLines;
 use App\Domain\Order\OrderDraft\Entity\OrderDraft;
 
 /**
@@ -9,6 +10,9 @@ use App\Domain\Order\OrderDraft\Entity\OrderDraft;
  */
 final class OrderDraftWizardResolver
 {
+    public function __construct(
+        private readonly ApplyGiftBenefitLines $giftBenefitLines,
+    ) {}
     /**
      * @return array{
      *     suggested_step: string|null,
@@ -50,6 +54,10 @@ final class OrderDraftWizardResolver
             $missing[] = 'payment';
         }
 
+        if ($this->giftBenefitLines->requiresGiftSelection($draft)) {
+            $missing[] = 'gift';
+        }
+
         return $missing;
     }
 
@@ -76,6 +84,10 @@ final class OrderDraftWizardResolver
 
         if (in_array('payment', $missingBlocks, true)) {
             return 'payment';
+        }
+
+        if (in_array('gift', $missingBlocks, true)) {
+            return 'confirm';
         }
 
         return null;

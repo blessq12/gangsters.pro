@@ -7,11 +7,15 @@ namespace App\Domain\Order\Port;
  */
 final readonly class CatalogGiftCandidate
 {
+    /**
+     * @param  list<string>  $composition
+     */
     public function __construct(
         private int $productId,
         private string $productName,
         private int $priceRubles,
         private ?string $imageUrl,
+        private array $composition = [],
     ) {}
 
     public function productId(): int
@@ -32,5 +36,13 @@ final readonly class CatalogGiftCandidate
     public function imageUrl(): ?string
     {
         return $this->imageUrl;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function composition(): array
+    {
+        return $this->composition;
     }
 }

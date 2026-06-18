@@ -69,6 +69,9 @@ function normalizeGiftCta(giftCta) {
                       name: item.name ? String(item.name) : `Товар #${id}`,
                       priceRub: Number(item.price_rub) || 0,
                       imageUrl: item.image_url ? String(item.image_url) : null,
+                      composition: Array.isArray(item.composition)
+                          ? item.composition.map((part) => String(part)).filter(Boolean)
+                          : [],
                   };
               })
               .filter(Boolean)
@@ -76,6 +79,7 @@ function normalizeGiftCta(giftCta) {
 
     return {
         eligible: Boolean(giftCta.eligible),
+        phase: giftCta.phase ? String(giftCta.phase) : null,
         selectedProductId: Number(giftCta.selected_product_id) || null,
         candidateItems,
     };

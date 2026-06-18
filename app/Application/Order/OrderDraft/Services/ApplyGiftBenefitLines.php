@@ -59,8 +59,21 @@ final class ApplyGiftBenefitLines
         $draft->setCart(CartSnapshot::fromLines([...$baseLines, $giftLine]));
     }
 
+    public function requiresGiftSelection(OrderDraft $draft): bool
+    {
+        if (! $this->isEligible($draft)) {
+            return false;
+        }
+
+        return $this->resolveSelectedGiftProductId($draft->cart()->lines()) === null;
+    }
+
     public function assertValidForPlace(OrderDraft $draft): void
     {
+        if ($this->requiresGiftSelection($draft)) {
+            throw OrderDraftGiftBenefitViolationException::giftRequired();
+        }
+
         $giftLines = array_values(array_filter(
             $draft->cart()->lines(),
             static fn (CartLineSnapshot $line): bool => PromotionLineClassifier::isGiftLine($line),

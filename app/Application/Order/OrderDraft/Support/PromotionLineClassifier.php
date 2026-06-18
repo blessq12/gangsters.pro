@@ -37,6 +37,18 @@ final class PromotionLineClassifier
      * @param  list<CartLineSnapshot>  $lines
      * @return list<CartLineSnapshot>
      */
+    public static function linesWithoutComplement(array $lines): array
+    {
+        return array_values(array_filter(
+            $lines,
+            static fn (CartLineSnapshot $line): bool => ! self::isComplementLine($line),
+        ));
+    }
+
+    /**
+     * @param  list<CartLineSnapshot>  $lines
+     * @return list<CartLineSnapshot>
+     */
     public static function linesWithoutGift(array $lines): array
     {
         return array_values(array_filter(

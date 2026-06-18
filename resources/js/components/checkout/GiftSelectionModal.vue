@@ -1,20 +1,24 @@
 <script setup>
 import { computed, ref, watch } from "vue";
+import { storeToRefs } from "pinia";
 import { useAppDesign } from "../../design/useAppDesign";
 import { useCheckoutStore } from "../../stores/checkoutStore";
 import { useUiStore } from "../../stores/uiStore";
-import { formatMoneyRublesRu } from "../../utils/moneyFormat";
+import { resolveGiftSelectionRequired } from "../../features/checkout/giftSelectionGate";
+import GiftCandidateCard from "./GiftCandidateCard.vue";
 
 const chk = useAppDesign().components.checkout;
 const c = chk.cart;
 const checkoutStore = useCheckoutStore();
 const uiStore = useUiStore();
+const { orderPreview, promoState, wizardMissingBlocks, cartItems, error } =
+    storeToRefs(checkoutStore);
 
 const selectedGiftProductId = ref(null);
 const giftApplying = ref(false);
 
 const giftPromotion = computed(() => {
-    const state = checkoutStore.promoState;
+    const state = promoState.value;
     if (!state || typeof state !== "object") return null;
     return state.gift_promotion && typeof state.gift_promotion === "object"
         ? state.gift_promotion
@@ -22,20 +26,64 @@ const giftPromotion = computed(() => {
 });
 
 const isGiftEligible = computed(() => giftPromotion.value?.eligible === true);
+
+const isGiftSelectionMandatory = computed(() =>
+    resolveGiftSelectionRequired({
+        giftCta: orderPreview.value?.giftCta,
+        promoState: promoState.value,
+        wizardMissingBlocks: wizardMissingBlocks.value,
+        cartItems: cartItems.value,
+        giftSummary: orderPreview.value?.giftSummary,
+    }),
+);
+
+function mapCandidateItem(item) {
+    if (!item || typeof item !== "object") {
+        return null;
+    }
+
+    const id = Number(item.id) || 0;
+    if (id <= 0) {
+        return null;
+    }
+
+    const composition = Array.isArray(item.composition)
+        ? item.composition
+        : Array.isArray(item.composition_items)
+          ? item.composition_items
+          : [];
+
+    return {
+        id,
+        name: item.name ? String(item.name) : "",
+        priceRub: Number(item.price_rub ?? item.priceRub) || 0,
+        imageUrl: item.image_url ?? item.imageUrl ? String(item.image_url ?? item.imageUrl) : null,
+        composition: composition.map((part) => String(part)).filter(Boolean),
+    };
+}
+
 const giftCandidates = computed(() => {
+    const previewItems = orderPreview.value?.giftCta?.candidateItems;
+    if (Array.isArray(previewItems) && previewItems.length > 0) {
+        return previewItems
+            .map((item) => ({
+                id: Number(item.id) || 0,
+                name: item.name ? String(item.name) : "",
+                priceRub: Number(item.priceRub) || 0,
+                imageUrl: item.imageUrl ? String(item.imageUrl) : null,
+                composition: Array.isArray(item.composition)
+                    ? item.composition.map((part) => String(part)).filter(Boolean)
+                    : [],
+            }))
+            .filter((item) => item.id > 0);
+    }
+
     const promo = giftPromotion.value;
     if (!promo) return [];
 
     const candidateItems = Array.isArray(promo.candidate_items) ? promo.candidate_items : [];
     if (candidateItems.length > 0) {
-        return candidateItems
-            .map((item) => ({
-                id: Number(item?.id) || 0,
-                name: item?.name ? String(item.name) : "",
-                priceRub: Number(item?.price_rub) || 0,
-                imageUrl: item?.image_url ? String(item.image_url) : null,
-            }))
-            .filter((item) => item.id > 0);
+        return candidateItems.map(mapCandidateItem).filter(Boolean);
     }
 
     const ids = Array.isArray(promo.candidate_product_ids) ? promo.candidate_product_ids : [];
@@ -47,6 +95,7 @@ const giftCandidates = computed(() => {
             name: `Товар #${id}`,
             priceRub: 0,
             imageUrl: null,
+            composition: [],
         }));
 });
 
@@ -63,6 +112,11 @@ const isOpen = computed({
             uiStore.openGiftSelectionModal({ source: "manual" });
             return;
         }
+
+        if (isGiftSelectionMandatory.value) {
+            return;
+        }
+
         uiStore.closeGiftSelectionModal({
             dismissAuto: uiStore.giftModalSource === "auto",
         });
@@ -73,62 +127,63 @@ watch(
     () => uiStore.showGiftSelectionModal,
     (opened) => {
         if (!opened) return;
-        selectedGiftProductId.value = Number(giftPromotion.value?.selected_product_id) || null;
+
+        const selectedFromPreview = Number(orderPreview.value?.giftCta?.selectedProductId) || 0;
+        const selectedFromPromo = Number(giftPromotion.value?.selected_product_id) || 0;
+        const selectedFromStore = Number(checkoutStore.promotions?.freeRollGiftProductId) || 0;
+        selectedGiftProductId.value =
+            selectedFromPreview || selectedFromPromo || selectedFromStore || null;
     },
     { immediate: true },
 );
 
-function formatPrice(value) {
-    return formatMoneyRublesRu(value);
-}
+async function applyGiftSelection(productId = selectedGiftProductId.value) {
+    const normalizedId = Number(productId) || 0;
+    if (!giftCandidates.value.some((item) => item.id === normalizedId) || giftApplying.value) {
+        return;
+    }
 
-async function applyGiftSelection() {
-    if (!canApplyGiftSelection.value || giftApplying.value) return;
+    selectedGiftProductId.value = normalizedId;
     giftApplying.value = true;
+
     try {
-        await checkoutStore.setPromotionGift(selectedGiftProductId.value);
+        await checkoutStore.setPromotionGift(normalizedId);
         uiStore.closeGiftSelectionModal({ dismissAuto: false });
+    } catch {
+        // Ошибка уже в checkoutStore.error
     } finally {
         giftApplying.value = false;
     }
 }
+
+async function handleCandidateSelect(item) {
+    if (!item?.id || giftApplying.value) {
+        return;
+    }
+
+    await applyGiftSelection(item.id);
+}
 </script>
 
 <template>
-    <BaseModal v-model="isOpen">
+    <BaseModal
+        v-model="isOpen"
+        :closable="!isGiftSelectionMandatory"
+    >
         <template #header>Выбери подарок</template>
 
         <div
             v-if="isGiftEligible && giftCandidates.length"
             :class="c.giftModalList"
         >
-            <label
+            <GiftCandidateCard
                 v-for="item in giftCandidates"
                 :key="item.id"
-                :class="c.giftRadioLabel"
-            >
-                <input
-                    v-model="selectedGiftProductId"
-                    :value="item.id"
-                    type="radio"
-                    name="gift-candidate"
-                    :class="c.giftRadioInput"
-                />
-                <div :class="c.giftRadioBody">
-                    <p :class="c.giftRadioTitle">
-                        {{ item.name || `Товар #${item.id}` }}
-                    </p>
-                    <p :class="c.giftRadioPrice">
-                        Цена в меню: {{ formatPrice(item.priceRub) }} ₽, в корзине - 0 ₽
-                    </p>
-                </div>
-                <img
-                    v-if="item.imageUrl"
-                    :src="item.imageUrl"
-                    :alt="item.name || `Товар #${item.id}`"
-                    :class="c.giftThumb"
-                />
-            </label>
+                :item="item"
+                :selected="Number(selectedGiftProductId) === item.id"
+                :disabled="giftApplying"
+                @select="handleCandidateSelect"
+            />
         </div>
         <p
             v-else
@@ -137,13 +192,23 @@ async function applyGiftSelection() {
             Сейчас список подарков недоступен.
         </p>
 
+        <p
+            v-if="error"
+            class="mt-3 text-sm text-red-300"
+        >
+            {{ error }}
+        </p>
+
         <template #footer>
             <div :class="c.giftFooterRow">
+                <p :class="c.giftFooterHint">
+                    Нажми на карточку или подтверди выбор кнопкой.
+                </p>
                 <button
                     type="button"
                     :class="c.giftApplyBtn"
                     :disabled="!canApplyGiftSelection || giftApplying"
-                    @click="applyGiftSelection"
+                    @click="applyGiftSelection()"
                 >
                     {{ giftApplying ? "Применяем..." : "Применить" }}
                 </button>

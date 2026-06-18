@@ -57,6 +57,7 @@ final class EvaluateGiftBenefits
                 'name' => $candidate->productName(),
                 'price_rub' => $candidate->priceRubles(),
                 'image_url' => $candidate->imageUrl(),
+                'composition' => $candidate->composition(),
             ],
             $giftCandidates,
         );

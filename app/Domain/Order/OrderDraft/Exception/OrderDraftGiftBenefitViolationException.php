@@ -20,4 +20,9 @@ final class OrderDraftGiftBenefitViolationException extends RuntimeException
     {
         return new self('Некорректная строка подарка в корзине.');
     }
+
+    public static function giftRequired(): self
+    {
+        return new self('Выбери подарок, чтобы подтвердить заказ.');
+    }
 }

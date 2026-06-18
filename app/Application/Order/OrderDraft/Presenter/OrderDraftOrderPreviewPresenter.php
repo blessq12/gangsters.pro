@@ -158,6 +158,7 @@ final class OrderDraftOrderPreviewPresenter
 
         return [
             'eligible' => (bool) ($giftPromotion['eligible'] ?? false),
+            'phase' => (string) ($giftPromotion['phase'] ?? 'below_threshold'),
             'selected_product_id' => $giftPromotion['selected_product_id'] ?? null,
             'candidate_items' => array_values(
                 is_array($giftPromotion['candidate_items'] ?? null)

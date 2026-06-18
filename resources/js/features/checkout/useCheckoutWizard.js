@@ -1,8 +1,10 @@
 import { computed, ref, watch } from "vue";
+import { storeToRefs } from "pinia";
 import { formatMoneyRublesRu } from "../../utils/moneyFormat";
 import { formatRuPhone } from "../../utils/phone/formatRuPhone";
 import { DOMAIN_EVENTS, emitDomainEvent } from "../../shared/domainEvents";
 import { isGuestContactComplete } from "./useCheckoutGuestStep";
+import { resolveGiftSelectionRequired } from "./giftSelectionGate";
 
 export function useCheckoutWizard({
     checkoutIntent,
@@ -97,6 +99,31 @@ export function useCheckoutWizard({
         }
     });
 
+    const {
+        orderPreview,
+        promoState,
+        wizardMissingBlocks,
+        cartItems,
+        wizardCanConfirm,
+    } = storeToRefs(checkoutIntent);
+
+    const giftSelectionRequired = computed(() =>
+        resolveGiftSelectionRequired({
+            giftCta: orderPreview.value?.giftCta,
+            promoState: promoState.value,
+            wizardMissingBlocks: wizardMissingBlocks.value,
+            cartItems: cartItems.value,
+            giftSummary: orderPreview.value?.giftSummary,
+        }),
+    );
+
+    const canConfirmOrder = computed(
+        () =>
+            hasCartItems.value
+            && wizardCanConfirm.value
+            && !giftSelectionRequired.value,
+    );
+
     watch(activeStep, (step) => {
         uiStore.setCheckoutWizardStep(step);
         if (step !== "confirm") {
@@ -105,7 +132,16 @@ export function useCheckoutWizard({
         if (step === "delivery") {
             deliveryStep.ensureAuthAddressUi();
         }
+        if (step === "confirm" && giftSelectionRequired.value) {
+            uiStore.openGiftSelectionModal({ source: "auto" });
+        }
     }, { immediate: true });
+
+    watch(giftSelectionRequired, (required, wasRequired) => {
+        if (required && wasRequired === false && activeStep.value === "confirm") {
+            uiStore.openGiftSelectionModal({ source: "auto" });
+        }
+    });
 
     function handleStartCheckout() {
         if (!hasCartItems.value) return;
@@ -187,12 +223,14 @@ export function useCheckoutWizard({
         activeStep.value = "success";
     }
 
-    function canConfirmOrder() {
-        return hasCartItems.value && checkoutIntent.wizardCanConfirm;
-    }
-
     async function handleConfirmOrder() {
-        if (!canConfirmOrder()) {
+        if (giftSelectionRequired.value) {
+            confirmError.value = "Выбери подарок, чтобы подтвердить заказ.";
+            uiStore.openGiftSelectionModal({ source: "auto" });
+            return;
+        }
+
+        if (!canConfirmOrder.value) {
             confirmError.value = "Заполни все шаги оформления.";
             return;
         }
@@ -238,5 +276,7 @@ export function useCheckoutWizard({
         confirmLoading,
         confirmError,
         lastCreatedOrder,
+        giftSelectionRequired,
+        canConfirmOrder,
     };
 }

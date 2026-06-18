@@ -25,6 +25,8 @@ const {
     handleConfirmOrder,
     confirmLoading,
     confirmError,
+    giftSelectionRequired,
+    canConfirmOrder,
 } = useCheckoutFlowContext();
 
 const checkoutStore = useCheckoutStore();
@@ -119,6 +121,13 @@ onMounted(() => {
         </div>
 
         <div
+            v-if="giftSelectionRequired"
+            :class="s.errorBanner"
+        >
+            Выбери подарок, чтобы подтвердить заказ.
+        </div>
+
+        <div
             v-if="confirmError"
             :class="s.errorBanner"
         >
@@ -136,7 +145,7 @@ onMounted(() => {
             <button
                 type="button"
                 :class="s.btnPrimarySmBusy"
-                :disabled="confirmLoading"
+                :disabled="confirmLoading || !canConfirmOrder"
                 @click="handleConfirmOrder"
             >
                 <span v-if="confirmLoading">

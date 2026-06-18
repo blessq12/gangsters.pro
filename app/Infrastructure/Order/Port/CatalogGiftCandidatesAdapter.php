@@ -41,6 +41,7 @@ final class CatalogGiftCandidatesAdapter implements CatalogGiftCandidatesPort
                     productName: (string) $row->name,
                     priceRubles: (int) ($row->price ?? 0),
                     imageUrl: $imageUrlByProductId[$productId] ?? null,
+                    composition: $this->resolveComposition($row),
                 );
             })
             ->all();
@@ -77,5 +78,31 @@ final class CatalogGiftCandidatesAdapter implements CatalogGiftCandidatesPort
         }
 
         return $urls;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function resolveComposition(PRD_Product $row): array
+    {
+        $raw = $row->ingredients;
+
+        if (! is_array($raw)) {
+            return [];
+        }
+
+        $composition = [];
+
+        foreach ($raw as $value) {
+            $name = trim((string) $value);
+
+            if ($name === '') {
+                continue;
+            }
+
+            $composition[] = $name;
+        }
+
+        return $composition;
     }
 }

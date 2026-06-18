@@ -39,6 +39,10 @@ const unlockBodyScroll = () => {
 };
 
 const close = () => {
+    if (!props.closable) {
+        return;
+    }
+
     emit("update:modelValue", false);
 };
 
@@ -78,7 +82,11 @@ onBeforeUnmount(() => {
 <template>
     <teleport to="body">
         <div v-if="isVisible" :class="dm.root">
-            <div ref="backdropRef" :class="dm.backdrop" @click="close" />
+            <div
+                ref="backdropRef"
+                :class="dm.backdrop"
+                @click="props.closable ? close() : undefined"
+            />
             <div :class="dm.content">
                 <div :class="dm.innerWrap">
                     <div ref="cardRef" :class="dm.card">

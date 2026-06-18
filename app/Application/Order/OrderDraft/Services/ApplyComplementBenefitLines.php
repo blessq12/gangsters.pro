@@ -33,7 +33,7 @@ final class ApplyComplementBenefitLines
             $this->rollCounter->countRollUnits($userLines),
             $candidates !== [],
         );
-        $lines = $userLines;
+        $lines = PromotionLineClassifier::linesWithoutComplement($draft->cart()->lines());
 
         if ($entitledSetCount > 0) {
             foreach ($candidates as $candidate) {

@@ -131,15 +131,26 @@ export const checkoutDesign = {
         resumeBannerRow: "flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between",
         resumeBannerText: "text-app-canvas-fg",
         loginLink: "text-center text-xs text-app-muted underline-offset-2 hover:text-app-accent hover:underline",
-        giftModalList: "space-y-2",
-        giftRadioLabel:
-            "flex cursor-pointer items-center gap-3 rounded-none border border-app-border-on-surface bg-black/5 px-3 py-2 transition hover:border-app-accent/40",
-        giftRadioInput: "h-4 w-4 accent-app-accent",
-        giftRadioBody: "min-w-0 flex-1",
-        giftRadioTitle: "truncate text-sm font-medium text-app-canvas-fg",
-        giftRadioPrice: "text-xs text-app-muted",
-        giftThumb: "h-10 w-10 rounded-none object-cover",
-        giftFooterRow: "flex justify-end",
+        giftModalList: "space-y-3",
+        giftCandidateCard:
+            "group relative flex w-full cursor-pointer overflow-hidden border bg-black/5 text-left shadow-[0_10px_32px_rgba(0,0,0,0.45)] transition hover:border-app-accent/50",
+        giftCandidateCardSelected:
+            "border-app-accent ring-1 ring-app-accent/60",
+        giftCandidateCardIdle:
+            "border-app-border-on-surface",
+        giftCandidateThumbCol: "relative w-28 shrink-0 overflow-hidden sm:w-32",
+        giftCandidateThumbImg:
+            "h-full min-h-[6.5rem] w-full object-cover object-center transition-transform duration-500 group-hover:scale-105",
+        giftCandidateThumbPlaceholder:
+            "flex min-h-[6.5rem] h-full w-full items-center justify-center bg-neutral-950/75 text-xs text-app-muted",
+        giftCandidateBody: "flex min-w-0 flex-1 flex-col justify-center gap-1.5 p-2.5 sm:p-3",
+        giftCandidateTitle: "text-sm font-medium leading-snug text-app-canvas-fg",
+        giftCandidateComposition: "text-[11px] leading-snug text-app-muted line-clamp-3",
+        giftCandidatePrice: "text-xs font-medium text-app-accent",
+        giftCandidateBadge:
+            "absolute right-2 top-2 inline-flex items-center border border-app-accent/50 bg-app-accent/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-app-accent",
+        giftFooterRow: "flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between",
+        giftFooterHint: "text-xs text-app-muted",
         giftApplyBtn:
             "inline-flex items-center justify-center rounded-none bg-app-accent px-4 py-2 text-xs font-semibold text-black transition hover:bg-app-accent-hover disabled:cursor-not-allowed disabled:opacity-60",
     },

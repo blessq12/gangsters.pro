@@ -38,6 +38,7 @@ final class OrderDraftBenefitsInputMapper
                     productName: $candidate->productName(),
                     priceRubles: $candidate->priceRubles(),
                     imageUrl: $candidate->imageUrl(),
+                    composition: $candidate->composition(),
                 ),
                 $giftCandidates,
             ),
