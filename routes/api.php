@@ -105,3 +105,16 @@ Route::controller(\App\Http\Controllers\Api\RemoteController::class)
         Route::put('{table}/{id}', 'updateRecord');
         Route::delete('{table}/{id}', 'deleteRecord');
     });
+
+Route::get('all-goods', function () {
+    $categories = \App\Models\ProductCategory::where('visible', true)->has('products')->orderBy('order')->get();
+    $categories->each(function ($category) {
+        $category->products = $category->products()->orderBy('category_product.order')->get();
+        $category->products->each(function ($product) {
+            $product->thumbnails = $product->thumbs ? $product->thumbs : null;
+            $product->images = $product->images ? $product->images : null;
+        });
+    });
+    $products = $categories;
+    return response()->json($products);
+});
