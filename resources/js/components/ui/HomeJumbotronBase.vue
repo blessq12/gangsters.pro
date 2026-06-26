@@ -190,7 +190,7 @@ onBeforeUnmount(() => {
 
 /*
  * Карточка всегда w-full от слайда — иначе fit-content + min(100%,…) даёт цикл и ширина 0.
- * Медиа: десктоп 4:3 (1600×1200), мобила 3:4; object-contain, без обрезки.
+ * Медиа: десктоп 4:3 с max-height (dvh), мобила 3:4; object-contain, без обрезки.
  */
 .home-jumbotron--mobile .home-jumbotron-card {
     width: 100%;
@@ -210,12 +210,32 @@ onBeforeUnmount(() => {
     max-width: 100%;
 }
 
-/* Десктоп: рекламный арт 4:3 (1600×1200) */
+/* Десктоп: рекламный арт 4:3 — height-first, блок контента, не hero на весь экран */
 .home-jumbotron--desktop .home-jumbotron-aspect-slot {
-    width: min(100%, 1600px);
+    --jh-d-h: min(40dvh, 520px);
+    width: min(100%, 1600px, calc(var(--jh-d-h) * 4 / 3));
+    max-height: var(--jh-d-h);
     max-width: 100%;
     aspect-ratio: 4 / 3;
     margin-inline: auto;
+}
+
+@media (min-width: 1024px) {
+    .home-jumbotron--desktop .home-jumbotron-aspect-slot {
+        --jh-d-h: min(42dvh, 560px);
+    }
+}
+
+@media (min-width: 1280px) {
+    .home-jumbotron--desktop .home-jumbotron-aspect-slot {
+        --jh-d-h: min(44dvh, 600px);
+    }
+}
+
+@media (min-width: 1536px) {
+    .home-jumbotron--desktop .home-jumbotron-aspect-slot {
+        --jh-d-h: min(46dvh, 640px);
+    }
 }
 
 .home-jumbotron--desktop :deep(.swiper-slide) {
@@ -251,7 +271,7 @@ onBeforeUnmount(() => {
 }
 
 .home-jumbotron--desktop :deep(.swiper-slide-active .home-jumbotron-card) {
-    transform: scale(1.02);
+    transform: scale(1);
     opacity: 1;
     border-color: var(--app-slide-border-accent);
     box-shadow: 0 24px 50px rgba(0, 0, 0, 0.45);
@@ -270,7 +290,7 @@ onBeforeUnmount(() => {
     }
 
     .home-jumbotron--desktop :deep(.swiper-slide-active .home-jumbotron-card) {
-        transform: scale(1.02);
+        transform: scale(1);
         box-shadow: 0 20px 42px rgba(0, 0, 0, 0.42);
     }
 }
