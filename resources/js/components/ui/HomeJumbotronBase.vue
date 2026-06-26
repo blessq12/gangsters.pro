@@ -30,23 +30,63 @@ const slides = computed(() =>
 );
 
 const isLoading = computed(() => loading.value.banners);
-const swiperRef = ref(null);
-const loopReady = computed(() => slides.value.length >= 3);
+
+const desktopSlidesPerView = computed(() => {
+    const total = slides.value.length;
+    if (total >= 5) {
+        return 5;
+    }
+    if (total === 4) {
+        return 4;
+    }
+    if (total === 3) {
+        return 3;
+    }
+    if (total === 2) {
+        return 1.24;
+    }
+    return 1;
+});
+
+const desktopQuintet = computed(
+    () => !isMobile.value && slides.value.length >= 5,
+);
+
+const loopReady = computed(() => {
+    const total = slides.value.length;
+    if (total < 3) {
+        return false;
+    }
+    if (isMobile.value) {
+        return true;
+    }
+    return total >= desktopSlidesPerView.value;
+});
+
 const rewindEnabled = computed(() => slides.value.length > 1 && !loopReady.value);
 
-const swiperBreakpoints = computed(() =>
-    isMobile.value
-        ? {
-              0: { slidesPerView: 1.18, spaceBetween: 10 },
-              480: { slidesPerView: 1.24 },
-          }
-        : {
-              0: { slidesPerView: 1.08, spaceBetween: 8 },
-              768: { slidesPerView: 1.12, spaceBetween: 8 },
-              1024: { slidesPerView: 1.18, spaceBetween: 10 },
-              1280: { slidesPerView: 1.24, spaceBetween: 10 },
-          },
-);
+const swiperBreakpoints = computed(() => {
+    if (isMobile.value) {
+        return {
+            0: { slidesPerView: 1.18, spaceBetween: 10 },
+            480: { slidesPerView: 1.24 },
+        };
+    }
+
+    const slidesPerView = desktopSlidesPerView.value;
+    const spaceBetween = slidesPerView >= 5 ? 10 : 8;
+
+    return {
+        0: { slidesPerView, spaceBetween },
+        768: { slidesPerView, spaceBetween },
+        1024: { slidesPerView, spaceBetween },
+        1280: { slidesPerView, spaceBetween },
+    };
+});
+
+const watchSlidesProgress = computed(() => desktopQuintet.value);
+
+const swiperRef = ref(null);
 
 const handleSwiperInit = (swiper) => {
     if (!swiper) return;
@@ -96,7 +136,12 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <section :class="jVar.sectionRoot">
+    <section
+        :class="[
+            jVar.sectionRoot,
+            { 'home-jumbotron--desktop-quintet': desktopQuintet },
+        ]"
+    >
         <div :class="jShared.backdropLayer">
             <div :class="jVar.glowLeft"></div>
             <div :class="jVar.glowRight"></div>
@@ -121,7 +166,7 @@ onBeforeUnmount(() => {
                 :speed="700"
                 :space-between="isMobile ? 10 : 8"
                 :centered-slides="true"
-                :watch-slides-progress="false"
+                :watch-slides-progress="watchSlidesProgress"
                 :slide-to-clicked-slide="true"
                 :breakpoints="swiperBreakpoints"
                 :observer="false"
@@ -238,6 +283,11 @@ onBeforeUnmount(() => {
     }
 }
 
+/* Пятёрка: размер карточки от height-cap, не от ширины колонки слайда */
+.home-jumbotron--desktop-quintet .home-jumbotron-aspect-slot {
+    width: min(calc(var(--jh-d-h) * 4 / 3), 1600px);
+}
+
 .home-jumbotron--desktop :deep(.swiper-slide) {
     min-width: 0;
 }
@@ -276,6 +326,28 @@ onBeforeUnmount(() => {
     border-color: var(--app-slide-border-accent);
     box-shadow: 0 24px 50px rgba(0, 0, 0, 0.45);
     z-index: 10;
+}
+
+/* Пятёрка: внешняя пара (±2 от active) — видимые, но не prev/next */
+.home-jumbotron--desktop-quintet :deep(.swiper-slide-visible:not(.swiper-slide-active):not(.swiper-slide-prev):not(.swiper-slide-next) .home-jumbotron-card) {
+    transform: scale(0.78);
+    opacity: 0.38;
+    cursor: pointer;
+    border-color: var(--app-slide-border-dim);
+}
+
+.home-jumbotron--desktop-quintet :deep(.swiper-slide-visible:not(.swiper-slide-active):not(.swiper-slide-prev):not(.swiper-slide-next) .home-jumbotron-card:hover) {
+    opacity: 0.52;
+}
+
+.home-jumbotron--desktop-quintet {
+    overflow-x: clip;
+}
+
+.home-jumbotron--desktop-quintet :deep(.swiper),
+.home-jumbotron--desktop-quintet :deep(.swiper-wrapper),
+.home-jumbotron--desktop-quintet :deep(.swiper-slide) {
+    overflow: visible !important;
 }
 
 @media (max-width: 767px) {
