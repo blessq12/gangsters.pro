@@ -5,21 +5,16 @@ namespace App\Application\OrderAccountingExport\Mapper;
 use App\Domain\Order\Event\OrderCreated;
 use App\Domain\Order\ValueObject\OrderLineSnapshot;
 use App\Domain\OrderAccountingExport\Exception\UnknownAccountingProductException;
-use App\Domain\OrderAccountingExport\Repository\AccountingProductBindingRepository;
 use App\Shared\Enum\DeliveryMethod;
 use App\Shared\Enum\PaymentMethod;
 
 /**
  * ACL: OrderCreated → form-параметры Frontpad new_order.
- * Поведение выровнено с legacy FrontpadService на main.
+ * Артикул позиции — SKU товара из каталога (снимок строки заказа).
  */
 final class FrontpadOrderMapper
 {
     private const SYSTEM_CODE = 'frontpad';
-
-    public function __construct(
-        private readonly AccountingProductBindingRepository $productBindings,
-    ) {}
 
     /**
      * @return array<string, mixed>
@@ -117,7 +112,7 @@ final class FrontpadOrderMapper
 
             $article = $this->resolveProductArticle($line);
             if ($article === null || $article === '') {
-                throw new UnknownAccountingProductException(self::SYSTEM_CODE, $line->productId());
+                throw UnknownAccountingProductException::missingCatalogSku(self::SYSTEM_CODE, $line->productId());
             }
 
             $products[$index] = $this->normalizeProductArticle($article);
@@ -221,11 +216,13 @@ final class FrontpadOrderMapper
     private function resolveProductArticle(OrderLineSnapshot $line): ?string
     {
         $sku = $line->sku();
-        if (is_string($sku) && $sku !== '') {
-            return $sku;
+        if (! is_string($sku)) {
+            return null;
         }
 
-        return $this->productBindings->resolveExternalProductId(self::SYSTEM_CODE, $line->productId());
+        $sku = trim($sku);
+
+        return $sku !== '' ? $sku : null;
     }
 
     private function resolvePersonCount(): int

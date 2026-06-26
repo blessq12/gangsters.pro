@@ -14,6 +14,7 @@ use App\Domain\Order\ValueObject\OrderGuestContact;
 use App\Domain\Order\ValueObject\OrderId;
 use App\Domain\Order\ValueObject\OrderLineSnapshot;
 use App\Domain\Order\ValueObject\OrderPaymentSnapshot;
+use App\Domain\OrderAccountingExport\Exception\UnknownAccountingProductException;
 use App\Domain\OrderAccountingExport\Repository\AccountingProductBindingRepository;
 use App\Shared\Enum\DeliveryMethod;
 use App\Shared\Enum\PaymentMethod;
@@ -34,10 +35,7 @@ final class AccountingOrderMappersTest extends TestCase
             'app.url' => 'https://example.test',
         ]);
 
-        $bindings = $this->createMock(AccountingProductBindingRepository::class);
-        $bindings->expects($this->never())->method('resolveExternalProductId');
-
-        $request = (new FrontpadOrderMapper($bindings))->toRequest($this->sampleEvent(sku: '001'));
+        $request = (new FrontpadOrderMapper())->toRequest($this->sampleEvent(sku: '001'));
 
         $this->assertSame('test-secret', $request['secret']);
         $this->assertSame('79990001122', $request['phone']);
@@ -51,6 +49,19 @@ final class AccountingOrderMappersTest extends TestCase
         $this->assertSame('10', $request['home']);
         $this->assertSame('https://example.test/api/orders/update', $request['hook_url']);
         $this->assertSame([1, 10, 11], $request['hook_status']);
+    }
+
+    #[Test]
+    public function frontpad_маппер_требует_sku_каталога(): void
+    {
+        config([
+            'order-accounting-export.systems.frontpad.secret' => 'test-secret',
+        ]);
+
+        $this->expectException(UnknownAccountingProductException::class);
+        $this->expectExceptionMessage('не имеет SKU каталога');
+
+        (new FrontpadOrderMapper())->toRequest($this->sampleEvent(sku: null));
     }
 
     #[Test]
