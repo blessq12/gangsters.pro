@@ -6,21 +6,31 @@ use App\Domain\Catalog\Enum\CatalogItemKind;
 use App\Domain\Catalog\Enum\ProductStatus;
 use App\Infrastructure\Catalog\Model\PRD_Category;
 use App\Infrastructure\Catalog\Model\PRD_Product;
+use App\Infrastructure\Catalog\Model\PRD_ProductImage;
 use App\Infrastructure\Catalog\Model\PRD_Tag;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 class CatalogSeeder extends Seeder
 {
     private const CATALOG_SOURCE_URL = 'https://gangsta-sushi.ru/api/all-goods';
 
+    private const CATALOG_SOURCE_ORIGIN = 'https://gangsta-sushi.ru';
+
+    /** @var array<string, string> */
+    private array $reservedSlugs = [];
+
     public function run(): void
     {
         $categoriesPayload = $this->fetchCategoriesPayload();
+        $products = [];
 
-        DB::transaction(function () use ($categoriesPayload): void {
+        DB::transaction(function () use ($categoriesPayload, &$products): void {
             $tags = $this->seedTags();
             $categories = $this->seedCategories($categoriesPayload);
             $products = $this->seedProducts($categoriesPayload);
@@ -28,6 +38,8 @@ class CatalogSeeder extends Seeder
             $this->attachProductTags($categoriesPayload, $tags, $products);
             $this->purgeObsoleteRecords($categoriesPayload);
         });
+
+        $this->seedProductImages($categoriesPayload, $products);
     }
 
     /**
@@ -118,6 +130,7 @@ class CatalogSeeder extends Seeder
      */
     private function seedProducts(array $categoriesPayload): array
     {
+        $this->reservedSlugs = [];
         $products = [];
 
         foreach ($categoriesPayload as $categoryRow) {
@@ -132,11 +145,13 @@ class CatalogSeeder extends Seeder
                     continue;
                 }
 
+                $name = $this->stringValue($row['name'] ?? $sku);
+
                 $products[$sku] = PRD_Product::query()->updateOrCreate(
                     ['sku' => $sku],
                     [
-                        'name' => $this->stringValue($row['name'] ?? $sku),
-                        'slug' => $sku,
+                        'name' => $name,
+                        'slug' => $this->resolveProductSlug($name, $sku),
                         'description' => $this->nullableString($row['consist'] ?? null),
                         'status' => ($row['visible'] ?? true)
                             ? ProductStatus::Active->value
@@ -159,6 +174,208 @@ class CatalogSeeder extends Seeder
         }
 
         return $products;
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $categoriesPayload
+     * @param  array<string, PRD_Product>  $products
+     */
+    private function seedProductImages(array $categoriesPayload, array $products): void
+    {
+        $rowsBySku = $this->indexProductRowsBySku($categoriesPayload);
+
+        foreach ($products as $sku => $product) {
+            $row = $rowsBySku[$sku] ?? null;
+
+            if ($row === null) {
+                continue;
+            }
+
+            $this->syncProductImages($product, $this->largeImageUrlsFromProductRow($row));
+        }
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $categoriesPayload
+     * @return array<string, array<string, mixed>>
+     */
+    private function indexProductRowsBySku(array $categoriesPayload): array
+    {
+        $rowsBySku = [];
+
+        foreach ($categoriesPayload as $categoryRow) {
+            foreach ($this->productsFromCategoryRow($categoryRow) as $row) {
+                $sku = $this->stringValue($row['sku'] ?? null);
+
+                if ($sku === '') {
+                    continue;
+                }
+
+                $rowsBySku[$sku] = $row;
+            }
+        }
+
+        return $rowsBySku;
+    }
+
+    /**
+     * @param  array<string, mixed>  $row
+     * @return list<string>
+     */
+    private function largeImageUrlsFromProductRow(array $row): array
+    {
+        $thumbnails = $row['thumbnails'] ?? [];
+
+        if (! is_array($thumbnails)) {
+            return [];
+        }
+
+        $urls = [];
+
+        foreach ($thumbnails as $thumbnail) {
+            if (! is_array($thumbnail)) {
+                continue;
+            }
+
+            $large = $this->stringValue($thumbnail['large'] ?? null);
+
+            if ($large !== '') {
+                $urls[] = $large;
+            }
+        }
+
+        return $urls;
+    }
+
+    /**
+     * @param  list<string>  $sourceUrls
+     */
+    private function syncProductImages(PRD_Product $product, array $sourceUrls): void
+    {
+        $disk = Storage::disk('public');
+        $storedPaths = [];
+
+        foreach (array_values($sourceUrls) as $sortOrder => $sourceUrl) {
+            $storagePath = $this->downloadProductImage($product, $sourceUrl, $disk);
+
+            if ($storagePath === null) {
+                continue;
+            }
+
+            PRD_ProductImage::query()->updateOrCreate(
+                [
+                    'product_id' => $product->id,
+                    'sort_order' => $sortOrder,
+                ],
+                [
+                    'disk' => 'public',
+                    'path' => $storagePath,
+                ],
+            );
+
+            $storedPaths[] = $storagePath;
+        }
+
+        if ($storedPaths === []) {
+            $product->productImages()->delete();
+
+            return;
+        }
+
+        $product->productImages()
+            ->whereNotIn('path', $storedPaths)
+            ->delete();
+    }
+
+    private function downloadProductImage(
+        PRD_Product $product,
+        string $sourceUrl,
+        \Illuminate\Contracts\Filesystem\Filesystem $disk,
+    ): ?string {
+        $absoluteUrl = $this->absoluteAssetUrl($sourceUrl);
+        $basename = basename((string) parse_url($absoluteUrl, PHP_URL_PATH));
+
+        if ($basename === '') {
+            return null;
+        }
+
+        $storagePath = 'products/'.$product->id.'/'.$basename;
+
+        if ($disk->exists($storagePath)) {
+            return $storagePath;
+        }
+
+        try {
+            $response = Http::timeout(30)
+                ->retry(2, 500)
+                ->get($absoluteUrl);
+        } catch (\Throwable $exception) {
+            Log::warning('CatalogSeeder: не удалось скачать изображение.', [
+                'product_id' => $product->id,
+                'sku' => $product->sku,
+                'url' => $absoluteUrl,
+                'error' => $exception->getMessage(),
+            ]);
+
+            return null;
+        }
+
+        if (! $response->successful()) {
+            Log::warning('CatalogSeeder: не удалось скачать изображение.', [
+                'product_id' => $product->id,
+                'sku' => $product->sku,
+                'url' => $absoluteUrl,
+                'status' => $response->status(),
+            ]);
+
+            return null;
+        }
+
+        $disk->put($storagePath, $response->body());
+
+        return $storagePath;
+    }
+
+    private function absoluteAssetUrl(string $path): string
+    {
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return $path;
+        }
+
+        return rtrim(self::CATALOG_SOURCE_ORIGIN, '/').'/'.ltrim($path, '/');
+    }
+
+    private function resolveProductSlug(string $name, string $sku): string
+    {
+        $base = Str::slug(Str::transliterate($name));
+
+        if ($base === '') {
+            $base = 'product';
+        }
+
+        $slug = $base;
+        $suffix = 2;
+
+        while ($this->isSlugTaken($slug, $sku)) {
+            $slug = $base.'-'.$suffix;
+            $suffix++;
+        }
+
+        $this->reservedSlugs[$slug] = $sku;
+
+        return $slug;
+    }
+
+    private function isSlugTaken(string $slug, string $sku): bool
+    {
+        if (isset($this->reservedSlugs[$slug]) && $this->reservedSlugs[$slug] !== $sku) {
+            return true;
+        }
+
+        return PRD_Product::query()
+            ->where('slug', $slug)
+            ->where('sku', '!=', $sku)
+            ->exists();
     }
 
     /**
