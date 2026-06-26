@@ -138,8 +138,8 @@ onBeforeUnmount(() => {
                                     :src="slide.image"
                                     :alt="`Баннер ${index + 1}`"
                                     :class="jShared.slideImage"
-                                    :width="isMobile ? 1600 : 1920"
-                                    :height="isMobile ? 1200 : 1080"
+                                    :width="isMobile ? 900 : 1600"
+                                    :height="isMobile ? 1200 : 1200"
                                     :loading="index === 0 ? 'eager' : 'lazy'"
                                     decoding="async"
                                 />
@@ -190,18 +190,18 @@ onBeforeUnmount(() => {
 
 /*
  * Карточка всегда w-full от слайда — иначе fit-content + min(100%,…) даёт цикл и ширина 0.
- * Медиа: десктоп 16:9, мобила 4:3; изображение целиком (object-contain), без обрезки.
+ * Медиа: десктоп 4:3 (1600×1200), мобила 3:4; object-contain, без обрезки.
  */
 .home-jumbotron--mobile .home-jumbotron-card {
     width: 100%;
     max-width: 100%;
 }
 
-/* Мобила: рекламный арт 4:3 */
+/* Мобила: рекламный арт 3:4 */
 .home-jumbotron--mobile .home-jumbotron-aspect-slot {
     width: min(100%, 960px);
     max-width: 100%;
-    aspect-ratio: 4 / 3;
+    aspect-ratio: 3 / 4;
     margin-inline: auto;
 }
 
@@ -210,11 +210,11 @@ onBeforeUnmount(() => {
     max-width: 100%;
 }
 
-/* Десктоп: рекламный арт 16:9 */
+/* Десктоп: рекламный арт 4:3 (1600×1200) */
 .home-jumbotron--desktop .home-jumbotron-aspect-slot {
-    width: min(100%, 1920px);
+    width: min(100%, 1600px);
     max-width: 100%;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: 4 / 3;
     margin-inline: auto;
 }
 
