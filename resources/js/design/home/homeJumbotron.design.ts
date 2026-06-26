@@ -1,5 +1,5 @@
 /**
- * Карусель главного баннера. Геометрия слота — scoped HomeJumbotronBase (десктоп: height-cap + 4:3).
+ * Карусель главного баннера. Сложная геометрия карточек — в scoped HomeJumbotronBase.
  */
 
 export const homeJumbotronDesign = {
@@ -9,9 +9,14 @@ export const homeJumbotronDesign = {
         cardFrame:
             "home-jumbotron-card relative w-full max-w-full overflow-hidden rounded-none border border-transparent bg-neutral-950/72",
         swiperOverflow: "!overflow-visible",
-        mediaSlot:
+        mediaSlotMobile:
             "home-jumbotron-media home-jumbotron-aspect-slot relative flex items-center justify-center",
-        slideImage: "block h-full w-full object-contain object-center",
+        mediaSlotDesktop:
+            "home-jumbotron-media home-jumbotron-aspect-slot relative",
+        slideImageMobile:
+            "block h-full w-full object-contain object-center",
+        slideImageDesktop:
+            "absolute inset-0 h-full w-full object-cover",
         loadingSlot:
             "home-jumbotron-aspect-slot rounded-none bg-neutral-900/65 animate-pulse",
         navRail:
@@ -36,13 +41,13 @@ export const homeJumbotronDesign = {
 
     desktop: {
         sectionRoot:
-            "home-jumbotron home-jumbotron--desktop relative mt-6 mb-8 w-screen max-w-none overflow-hidden sm:mt-8 sm:mb-10 [margin-left:calc(50%-50vw)] [margin-right:calc(50%-50vw)]",
+            "home-jumbotron home-jumbotron--desktop relative mt-8 mb-12 w-screen max-w-none overflow-hidden sm:mt-12 sm:mb-18 [margin-left:calc(50%-50vw)] [margin-right:calc(50%-50vw)]",
         glowLeft:
             "absolute -left-10 top-8 h-36 w-36 rounded-full bg-app-accent/15 blur-3xl sm:-left-16 sm:top-0 sm:h-56 sm:w-56",
         glowRight:
             "absolute -right-8 bottom-0 h-44 w-44 rounded-full bg-app-accent/12 blur-3xl sm:right-0 sm:h-64 sm:w-64",
         innerWrap: "relative px-4 sm:px-6 lg:px-8",
         loadingRow: "flex justify-center px-1 py-6 sm:py-8",
-        slidePadY: "py-2 sm:py-3",
+        slidePadY: "py-3 sm:py-4",
     },
 } as const;

@@ -30,63 +30,23 @@ const slides = computed(() =>
 );
 
 const isLoading = computed(() => loading.value.banners);
-
-const desktopSlidesPerView = computed(() => {
-    const total = slides.value.length;
-    if (total >= 5) {
-        return 5;
-    }
-    if (total === 4) {
-        return 4;
-    }
-    if (total === 3) {
-        return 3;
-    }
-    if (total === 2) {
-        return 1.24;
-    }
-    return 1;
-});
-
-const desktopQuintet = computed(
-    () => !isMobile.value && slides.value.length >= 5,
-);
-
-const loopReady = computed(() => {
-    const total = slides.value.length;
-    if (total < 3) {
-        return false;
-    }
-    if (isMobile.value) {
-        return true;
-    }
-    return total >= desktopSlidesPerView.value;
-});
-
+const swiperRef = ref(null);
+const loopReady = computed(() => slides.value.length >= 3);
 const rewindEnabled = computed(() => slides.value.length > 1 && !loopReady.value);
 
-const swiperBreakpoints = computed(() => {
-    if (isMobile.value) {
-        return {
-            0: { slidesPerView: 1.18, spaceBetween: 10 },
-            480: { slidesPerView: 1.24 },
-        };
-    }
-
-    const slidesPerView = desktopSlidesPerView.value;
-    const spaceBetween = slidesPerView >= 5 ? 10 : 8;
-
-    return {
-        0: { slidesPerView, spaceBetween },
-        768: { slidesPerView, spaceBetween },
-        1024: { slidesPerView, spaceBetween },
-        1280: { slidesPerView, spaceBetween },
-    };
-});
-
-const watchSlidesProgress = computed(() => desktopQuintet.value);
-
-const swiperRef = ref(null);
+const swiperBreakpoints = computed(() =>
+    isMobile.value
+        ? {
+              0: { slidesPerView: 1.18, spaceBetween: 10 },
+              480: { slidesPerView: 1.24 },
+          }
+        : {
+              0: { slidesPerView: 1.08, spaceBetween: 8 },
+              768: { slidesPerView: 1.12, spaceBetween: 8 },
+              1024: { slidesPerView: 1.18, spaceBetween: 10 },
+              1280: { slidesPerView: 1.24, spaceBetween: 10 },
+          },
+);
 
 const handleSwiperInit = (swiper) => {
     if (!swiper) return;
@@ -136,12 +96,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <section
-        :class="[
-            jVar.sectionRoot,
-            { 'home-jumbotron--desktop-quintet': desktopQuintet },
-        ]"
-    >
+    <section :class="jVar.sectionRoot">
         <div :class="jShared.backdropLayer">
             <div :class="jVar.glowLeft"></div>
             <div :class="jVar.glowRight"></div>
@@ -166,7 +121,7 @@ onBeforeUnmount(() => {
                 :speed="700"
                 :space-between="isMobile ? 10 : 8"
                 :centered-slides="true"
-                :watch-slides-progress="watchSlidesProgress"
+                :watch-slides-progress="false"
                 :slide-to-clicked-slide="true"
                 :breakpoints="swiperBreakpoints"
                 :observer="false"
@@ -178,13 +133,23 @@ onBeforeUnmount(() => {
                 <SwiperSlide v-for="(slide, index) in slides" :key="slide.id ?? index">
                     <div :class="[jShared.slideInnerFlex, jVar.slidePadY]">
                         <div :class="jShared.cardFrame">
-                            <div :class="jShared.mediaSlot">
+                            <div
+                                :class="
+                                    isMobile
+                                        ? jShared.mediaSlotMobile
+                                        : jShared.mediaSlotDesktop
+                                "
+                            >
                                 <img
                                     :src="slide.image"
                                     :alt="`Баннер ${index + 1}`"
-                                    :class="jShared.slideImage"
-                                    :width="isMobile ? 900 : 1600"
-                                    :height="isMobile ? 1200 : 1200"
+                                    :class="
+                                        isMobile
+                                            ? jShared.slideImageMobile
+                                            : jShared.slideImageDesktop
+                                    "
+                                    :width="isMobile ? 900 : 1920"
+                                    :height="isMobile ? 1200 : 1080"
                                     :loading="index === 0 ? 'eager' : 'lazy'"
                                     decoding="async"
                                 />
@@ -235,7 +200,7 @@ onBeforeUnmount(() => {
 
 /*
  * Карточка всегда w-full от слайда — иначе fit-content + min(100%,…) даёт цикл и ширина 0.
- * Медиа: десктоп 4:3 с max-height (dvh), мобила 3:4; object-contain, без обрезки.
+ * Мобила: 3:4, object-contain. Десктоп: 16:9 hero, object-cover (до правок 2026-06-26).
  */
 .home-jumbotron--mobile .home-jumbotron-card {
     width: 100%;
@@ -255,37 +220,14 @@ onBeforeUnmount(() => {
     max-width: 100%;
 }
 
-/* Десктоп: рекламный арт 4:3 — height-first, блок контента, не hero на весь экран */
+/* Десктоп: витрина под 1920×1080 (16:9) */
 .home-jumbotron--desktop .home-jumbotron-aspect-slot {
-    --jh-d-h: min(40dvh, 520px);
-    width: min(100%, 1600px, calc(var(--jh-d-h) * 4 / 3));
+    --jh-d-h: min(75dvh, 1080px);
+    width: min(100%, 1920px, calc(var(--jh-d-h) * 16 / 9));
     max-height: var(--jh-d-h);
+    aspect-ratio: 16 / 9;
     max-width: 100%;
-    aspect-ratio: 4 / 3;
     margin-inline: auto;
-}
-
-@media (min-width: 1024px) {
-    .home-jumbotron--desktop .home-jumbotron-aspect-slot {
-        --jh-d-h: min(42dvh, 560px);
-    }
-}
-
-@media (min-width: 1280px) {
-    .home-jumbotron--desktop .home-jumbotron-aspect-slot {
-        --jh-d-h: min(44dvh, 600px);
-    }
-}
-
-@media (min-width: 1536px) {
-    .home-jumbotron--desktop .home-jumbotron-aspect-slot {
-        --jh-d-h: min(46dvh, 640px);
-    }
-}
-
-/* Пятёрка: размер карточки от height-cap, не от ширины колонки слайда */
-.home-jumbotron--desktop-quintet .home-jumbotron-aspect-slot {
-    width: min(calc(var(--jh-d-h) * 4 / 3), 1600px);
 }
 
 .home-jumbotron--desktop :deep(.swiper-slide) {
@@ -321,33 +263,11 @@ onBeforeUnmount(() => {
 }
 
 .home-jumbotron--desktop :deep(.swiper-slide-active .home-jumbotron-card) {
-    transform: scale(1);
+    transform: scale(1.02);
     opacity: 1;
     border-color: var(--app-slide-border-accent);
     box-shadow: 0 24px 50px rgba(0, 0, 0, 0.45);
     z-index: 10;
-}
-
-/* Пятёрка: внешняя пара (±2 от active) — видимые, но не prev/next */
-.home-jumbotron--desktop-quintet :deep(.swiper-slide-visible:not(.swiper-slide-active):not(.swiper-slide-prev):not(.swiper-slide-next) .home-jumbotron-card) {
-    transform: scale(0.78);
-    opacity: 0.38;
-    cursor: pointer;
-    border-color: var(--app-slide-border-dim);
-}
-
-.home-jumbotron--desktop-quintet :deep(.swiper-slide-visible:not(.swiper-slide-active):not(.swiper-slide-prev):not(.swiper-slide-next) .home-jumbotron-card:hover) {
-    opacity: 0.52;
-}
-
-.home-jumbotron--desktop-quintet {
-    overflow-x: clip;
-}
-
-.home-jumbotron--desktop-quintet :deep(.swiper),
-.home-jumbotron--desktop-quintet :deep(.swiper-wrapper),
-.home-jumbotron--desktop-quintet :deep(.swiper-slide) {
-    overflow: visible !important;
 }
 
 @media (max-width: 767px) {
@@ -362,7 +282,7 @@ onBeforeUnmount(() => {
     }
 
     .home-jumbotron--desktop :deep(.swiper-slide-active .home-jumbotron-card) {
-        transform: scale(1);
+        transform: scale(1.02);
         box-shadow: 0 20px 42px rgba(0, 0, 0, 0.42);
     }
 }
