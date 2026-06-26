@@ -138,7 +138,7 @@ onBeforeUnmount(() => {
                                     :src="slide.image"
                                     :alt="`Баннер ${index + 1}`"
                                     :class="jShared.slideImage"
-                                    :width="isMobile ? 900 : 1920"
+                                    :width="isMobile ? 1600 : 1920"
                                     :height="isMobile ? 1200 : 1080"
                                     :loading="index === 0 ? 'eager' : 'lazy'"
                                     decoding="async"
@@ -190,30 +190,19 @@ onBeforeUnmount(() => {
 
 /*
  * Карточка всегда w-full от слайда — иначе fit-content + min(100%,…) даёт цикл и ширина 0.
- * Медиа: min(100%, …) от карточки; десктоп = витрина под 1920×1080 (16:9), мобила = 3:4.
+ * Медиа: десктоп 16:9, мобила 4:3; изображение целиком (object-contain), без обрезки.
  */
 .home-jumbotron--mobile .home-jumbotron-card {
     width: 100%;
     max-width: 100%;
 }
 
-/* Мобила: арт 3:4 (выше слот — запас под scale активного слайда) */
+/* Мобила: рекламный арт 4:3 */
 .home-jumbotron--mobile .home-jumbotron-aspect-slot {
-    --jh-m-h: min(88dvh, 960px);
-    width: min(100%, calc(var(--jh-m-h) * 3 / 4));
-    max-height: var(--jh-m-h);
-    aspect-ratio: 3 / 4;
+    width: min(100%, 960px);
     max-width: 100%;
+    aspect-ratio: 4 / 3;
     margin-inline: auto;
-}
-
-@media (orientation: landscape) {
-    .home-jumbotron--mobile .home-jumbotron-aspect-slot {
-        --jh-ml-h: min(88dvh, 520px);
-        width: min(100%, calc(var(--jh-ml-h) * 16 / 9));
-        max-height: var(--jh-ml-h);
-        aspect-ratio: 16 / 9;
-    }
 }
 
 .home-jumbotron--desktop .home-jumbotron-card {
@@ -221,13 +210,11 @@ onBeforeUnmount(() => {
     max-width: 100%;
 }
 
-/* Десктоп: витрина под 1920×1080 (16:9) */
+/* Десктоп: рекламный арт 16:9 */
 .home-jumbotron--desktop .home-jumbotron-aspect-slot {
-    --jh-d-h: min(75dvh, 1080px);
-    width: min(100%, 1920px, calc(var(--jh-d-h) * 16 / 9));
-    max-height: var(--jh-d-h);
-    aspect-ratio: 16 / 9;
+    width: min(100%, 1920px);
     max-width: 100%;
+    aspect-ratio: 16 / 9;
     margin-inline: auto;
 }
 

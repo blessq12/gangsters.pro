@@ -1,1 +1,0 @@
-import{k as e}from"./vue-core-BOr6Gvm9.js";import{g as i}from"./gsap-D3jsOSc0.js";import{Y as N,Z as n,$ as u,a0 as R}from"./app-CTTfpifs.js";function f(a,o={}){e(()=>{if(!a.value)return;const{y:E=n,opacity:r=0,duration:s=u,delay:A=R,ease:t=N}=o;i.from(a.value,{y:E,opacity:r,duration:s,delay:A,ease:t})})}export{f as u};

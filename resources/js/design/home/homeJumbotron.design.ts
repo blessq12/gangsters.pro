@@ -9,8 +9,9 @@ export const homeJumbotronDesign = {
         cardFrame:
             "home-jumbotron-card relative w-full max-w-full overflow-hidden rounded-none border border-transparent bg-neutral-950/72",
         swiperOverflow: "!overflow-visible",
-        mediaSlot: "home-jumbotron-media home-jumbotron-aspect-slot relative",
-        slideImage: "absolute inset-0 h-full w-full object-cover",
+        mediaSlot:
+            "home-jumbotron-media home-jumbotron-aspect-slot relative flex items-center justify-center",
+        slideImage: "block h-full w-full object-contain object-center",
         loadingSlot:
             "home-jumbotron-aspect-slot rounded-none bg-neutral-900/65 animate-pulse",
         navRail:
