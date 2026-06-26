@@ -5,7 +5,7 @@ namespace App\Filament\MarketingContent\Widgets\Tables;
 use App\Filament\MarketingContent\Support\MarketingHubTableActions;
 use App\Filament\MarketingContent\Support\MarketingHubTablePresentation;
 use App\Infrastructure\MarketingContent\Model\MKT_Banner;
-use App\Infrastructure\MarketingContent\Support\PublicMediaUrl;
+use App\Infrastructure\MarketingContent\Support\MarketingStoredPath;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -33,8 +33,10 @@ class BannersHubTable extends TableWidget
                     ImageColumn::make('image_desktop')
                         ->label('Десктоп')
                         ->getStateUsing(
-                            fn (MKT_Banner $record): ?string => PublicMediaUrl::resolve($record->image_desktop),
+                            fn (MKT_Banner $record): ?string => MarketingStoredPath::filamentImageState($record->image_desktop),
                         )
+                        ->disk('public')
+                        ->visibility('public')
                         ->checkFileExistence(false)
                         ->imageHeight(72)
                         ->extraImgAttributes([
@@ -43,8 +45,10 @@ class BannersHubTable extends TableWidget
                     ImageColumn::make('image_mobile')
                         ->label('Мобила')
                         ->getStateUsing(
-                            fn (MKT_Banner $record): ?string => PublicMediaUrl::resolve($record->image_mobile),
+                            fn (MKT_Banner $record): ?string => MarketingStoredPath::filamentImageState($record->image_mobile),
                         )
+                        ->disk('public')
+                        ->visibility('public')
                         ->checkFileExistence(false)
                         ->imageHeight(72)
                         ->extraImgAttributes([

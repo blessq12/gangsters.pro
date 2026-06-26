@@ -21,10 +21,16 @@ final class PublicMediaUrl
             return $trimmed;
         }
 
+        $diskPath = MarketingStoredPath::normalizePublicDiskPath($trimmed);
+
+        if ($diskPath !== null) {
+            return Storage::disk('public')->url($diskPath);
+        }
+
         if (str_starts_with($trimmed, '/')) {
             return asset($trimmed);
         }
 
-        return Storage::disk('public')->url($trimmed);
+        return asset('/'.$trimmed);
     }
 }

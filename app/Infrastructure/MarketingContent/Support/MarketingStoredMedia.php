@@ -8,14 +8,12 @@ final class MarketingStoredMedia
 {
     public static function deleteIfStored(?string $path): void
     {
-        if (! is_string($path) || $path === '') {
+        $diskPath = MarketingStoredPath::normalizePublicDiskPath($path);
+
+        if ($diskPath === null) {
             return;
         }
 
-        if (str_starts_with($path, '/') || preg_match('#^https?://#i', $path) === 1) {
-            return;
-        }
-
-        Storage::disk('public')->delete($path);
+        Storage::disk('public')->delete($diskPath);
     }
 }
