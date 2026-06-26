@@ -40,7 +40,7 @@ HomeJumbotron* / HomePromotions*
 | `HomePageDesktop` / `HomePageMobile` | оба блока |
 | `MainLayoutDesktop` / `MainLayoutMobile` | prefetch |
 
-Нормализация на фронте отбрасывает записи без `title`.
+Нормализация на фронте отбрасывает записи без изображений desktop/mobile.
 
 ## 3. Оператор: hub
 

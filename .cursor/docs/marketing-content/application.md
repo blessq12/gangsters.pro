@@ -38,11 +38,8 @@
 | Поле | Источник |
 |------|----------|
 | `id` | `$banner->id()` |
-| `title` | `$banner->title()` |
-| `description` | `$banner->description()` |
 | `image_desktop` | `resolve(imageDesktop)` |
 | `image_mobile` | `resolve(imageMobile)` |
-| `image` | `image_desktop ?? image_mobile` |
 
 ### Акция (`presentPromotion`)
 

@@ -12,20 +12,14 @@ class MarketingContentSeeder extends Seeder
     {
         $banners = [
             [
-                'title' => 'Азиатская кухня',
-                'description' => 'Воки на любой вкус',
                 'image' => '/images/banners/banner1.jpeg',
                 'sort_order' => 0,
             ],
             [
-                'title' => 'Супы от которых невозможно отказаться',
-                'description' => 'Попробуй все что есть в каталоге чтобы найти свой...',
                 'image' => '/images/banners/banner2.jpeg',
                 'sort_order' => 1,
             ],
             [
-                'title' => 'Роллы с характером',
-                'description' => 'Суровый вкус традиций азиатской кухни',
                 'image' => '/images/banners/banner3.jpeg',
                 'sort_order' => 2,
             ],
@@ -33,12 +27,10 @@ class MarketingContentSeeder extends Seeder
 
         foreach ($banners as $banner) {
             MKT_Banner::query()->updateOrCreate(
-                ['title' => $banner['title']],
+                ['sort_order' => $banner['sort_order']],
                 [
-                    'description' => $banner['description'],
                     'image_desktop' => $banner['image'],
                     'image_mobile' => $banner['image'],
-                    'sort_order' => $banner['sort_order'],
                     'is_active' => true,
                 ],
             );

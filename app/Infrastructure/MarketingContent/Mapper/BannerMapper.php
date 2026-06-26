@@ -11,8 +11,6 @@ final class BannerMapper
     {
         return new Banner(
             id: (int) $row->id,
-            title: (string) $row->title,
-            description: $this->nullableString($row->description),
             imageDesktop: $this->nullableString($row->image_desktop),
             imageMobile: $this->nullableString($row->image_mobile),
             sortOrder: (int) ($row->sort_order ?? 0),

@@ -6,7 +6,7 @@
 
 | Элемент | Поля | Методы |
 |---------|------|--------|
-| `Banner` | `id`, `title`, `description`, `imageDesktop`, `imageMobile`, `sortOrder`, `isActive` | геттеры по каждому полю |
+| `Banner` | `id`, `imageDesktop`, `imageMobile`, `sortOrder`, `isActive` | геттеры по каждому полю |
 | `Promotion` | `id`, `title`, `body`, `image`, `sortOrder`, `isActive` | геттеры по каждому полю |
 
 Файлы:

@@ -8,8 +8,6 @@ export const homeJumbotronDesign = {
             "pointer-events-none absolute inset-0 opacity-50 mix-blend-screen",
         cardFrame:
             "home-jumbotron-card relative w-full max-w-full overflow-hidden rounded-none border border-transparent bg-neutral-950/72",
-        gradientScrim:
-            "pointer-events-none absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/85",
         swiperOverflow: "!overflow-visible",
         mediaSlot: "home-jumbotron-media home-jumbotron-aspect-slot relative",
         slideImage: "absolute inset-0 h-full w-full object-cover",
@@ -33,15 +31,6 @@ export const homeJumbotronDesign = {
         innerWrap: "relative overflow-x-clip px-3 sm:px-4",
         loadingRow: "flex justify-center px-1 py-6 sm:py-7",
         slidePadY: "py-2",
-        badgeBrand:
-            "absolute left-3 top-3 inline-flex rounded-none bg-[rgba(0,0,0,0.42)] px-2 py-[3px] text-[10px] font-medium uppercase tracking-[0.2em] text-app-canvas-fg backdrop-blur",
-        badgeCounter:
-            "absolute right-3 top-3 inline-flex rounded-none border border-app-accent/20 bg-[rgba(0,0,0,0.38)] px-2 py-[3px] text-[10px] font-semibold text-app-accent backdrop-blur",
-        captionPanel:
-            "absolute inset-x-2.5 bottom-2 rounded-none bg-[rgba(0,0,0,0.32)] px-3 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.45)] backdrop-blur-xl",
-        title:
-            "text-2xl font-normal leading-tight text-app-accent sm:text-3xl lg:text-4xl",
-        description: "mt-1 text-xs leading-relaxed text-app-canvas-fg/90",
     },
 
     desktop: {
@@ -54,15 +43,5 @@ export const homeJumbotronDesign = {
         innerWrap: "relative px-4 sm:px-6 lg:px-8",
         loadingRow: "flex justify-center px-1 py-6 sm:py-8",
         slidePadY: "py-3 sm:py-4",
-        badgeBrand:
-            "absolute left-3 top-3 inline-flex rounded-none bg-[rgba(0,0,0,0.42)] px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.2em] text-app-canvas-fg backdrop-blur sm:left-4 sm:top-4 sm:text-[11px]",
-        badgeCounter:
-            "absolute right-3 top-3 inline-flex rounded-none border border-app-accent/20 bg-[rgba(0,0,0,0.38)] px-2.5 py-1 text-[10px] font-semibold text-app-accent backdrop-blur sm:right-4 sm:top-4 sm:text-[11px]",
-        captionPanel:
-            "absolute inset-x-3 bottom-3 rounded-none bg-[rgba(0,0,0,0.32)] px-4 py-3 shadow-[0_8px_32px_rgba(0,0,0,0.45)] backdrop-blur-xl sm:inset-x-0 sm:bottom-0 sm:px-6 sm:py-4",
-        title:
-            "text-2xl font-normal leading-tight text-app-accent sm:text-3xl lg:text-4xl",
-        description:
-            "mt-1 max-w-[18rem] text-xs leading-relaxed text-app-canvas-fg/90 sm:max-w-none sm:text-sm",
     },
 } as const;

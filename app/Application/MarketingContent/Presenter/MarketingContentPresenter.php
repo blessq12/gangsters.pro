@@ -36,16 +36,10 @@ final class MarketingContentPresenter
      */
     public function presentBanner(Banner $banner): array
     {
-        $desktop = $this->mediaUrls->resolve($banner->imageDesktop());
-        $mobile = $this->mediaUrls->resolve($banner->imageMobile());
-
         return [
             'id' => $banner->id(),
-            'title' => $banner->title(),
-            'description' => $banner->description(),
-            'image_desktop' => $desktop,
-            'image_mobile' => $mobile,
-            'image' => $desktop ?? $mobile,
+            'image_desktop' => $this->mediaUrls->resolve($banner->imageDesktop()),
+            'image_mobile' => $this->mediaUrls->resolve($banner->imageMobile()),
         ];
     }
 

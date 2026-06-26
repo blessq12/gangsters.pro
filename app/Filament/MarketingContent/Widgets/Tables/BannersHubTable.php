@@ -5,6 +5,8 @@ namespace App\Filament\MarketingContent\Widgets\Tables;
 use App\Filament\MarketingContent\Support\MarketingHubTableActions;
 use App\Filament\MarketingContent\Support\MarketingHubTablePresentation;
 use App\Infrastructure\MarketingContent\Model\MKT_Banner;
+use App\Infrastructure\MarketingContent\Support\PublicMediaUrl;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
@@ -25,9 +27,29 @@ class BannersHubTable extends TableWidget
                 ->defaultSort('sort_order')
                 ->reorderable('sort_order')
                 ->columns([
-                    TextColumn::make('title')
-                        ->label('Заголовок')
-                        ->searchable(),
+                    TextColumn::make('id')
+                        ->label('#')
+                        ->sortable(),
+                    ImageColumn::make('image_desktop')
+                        ->label('Десктоп')
+                        ->getStateUsing(
+                            fn (MKT_Banner $record): ?string => PublicMediaUrl::resolve($record->image_desktop),
+                        )
+                        ->checkFileExistence(false)
+                        ->imageHeight(72)
+                        ->extraImgAttributes([
+                            'class' => 'rounded-md object-cover bg-zinc-100 dark:bg-zinc-800',
+                        ]),
+                    ImageColumn::make('image_mobile')
+                        ->label('Мобила')
+                        ->getStateUsing(
+                            fn (MKT_Banner $record): ?string => PublicMediaUrl::resolve($record->image_mobile),
+                        )
+                        ->checkFileExistence(false)
+                        ->imageHeight(72)
+                        ->extraImgAttributes([
+                            'class' => 'rounded-md object-cover bg-zinc-100 dark:bg-zinc-800',
+                        ]),
                     MarketingHubTablePresentation::activeStatusColumn(),
                 ]),
         );

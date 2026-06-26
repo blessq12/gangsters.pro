@@ -21,12 +21,11 @@ const jShared = j.shared;
 const jVar = computed(() => (isMobile.value ? j.mobile : j.desktop));
 
 const slides = computed(() =>
-    (banners.value || []).map((banner) => ({
-        title: banner.title || "",
-        description: banner.description || "",
+    (banners.value || []).map((banner, index) => ({
+        id: banner.id ?? index,
         image: isMobile.value
-            ? banner.image_mobile || banner.image || banner.image_desktop || ""
-            : banner.image_desktop || banner.image || banner.image_mobile || "",
+            ? banner.image_mobile || banner.image_desktop || ""
+            : banner.image_desktop || banner.image_mobile || "",
     })),
 );
 
@@ -131,34 +130,19 @@ onBeforeUnmount(() => {
                 :class="jShared.swiperOverflow"
                 @swiper="handleSwiperInit"
             >
-                <SwiperSlide v-for="(slide, index) in slides" :key="index">
+                <SwiperSlide v-for="(slide, index) in slides" :key="slide.id ?? index">
                     <div :class="[jShared.slideInnerFlex, jVar.slidePadY]">
                         <div :class="jShared.cardFrame">
                             <div :class="jShared.mediaSlot">
                                 <img
                                     :src="slide.image"
-                                    :alt="slide.title"
+                                    :alt="`Баннер ${index + 1}`"
                                     :class="jShared.slideImage"
                                     :width="isMobile ? 900 : 1920"
                                     :height="isMobile ? 1200 : 1080"
                                     :loading="index === 0 ? 'eager' : 'lazy'"
                                     decoding="async"
                                 />
-                            </div>
-                            <div :class="jShared.gradientScrim"></div>
-                            <div :class="jVar.badgeBrand">
-                                Gangsters
-                            </div>
-                            <div :class="jVar.badgeCounter">
-                                {{ String(index + 1).padStart(2, "0") }}/{{ String(slides.length).padStart(2, "0") }}
-                            </div>
-                            <div :class="jVar.captionPanel">
-                                <h1 :class="jVar.title">
-                                    {{ slide.title }}
-                                </h1>
-                                <p :class="jVar.description">
-                                    {{ slide.description }}
-                                </p>
                             </div>
                         </div>
                     </div>

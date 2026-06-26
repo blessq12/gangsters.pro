@@ -21,7 +21,7 @@ class BannerResource extends Resource
 
     protected static ?string $slug = 'marketing/banners';
 
-    protected static ?string $recordTitleAttribute = 'title';
+    protected static ?string $recordTitleAttribute = 'id';
 
     protected static ?string $modelLabel = 'Баннер';
 

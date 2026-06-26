@@ -10,8 +10,6 @@ class MKT_Banner extends Model
     protected $table = 'MKT_banners';
 
     protected $fillable = [
-        'title',
-        'description',
         'image_desktop',
         'image_mobile',
         'sort_order',

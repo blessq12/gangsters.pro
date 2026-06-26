@@ -18,22 +18,17 @@ export function normalizeMarketingBanner(apiBanner) {
         return null;
     }
 
-    const title = safeTrim(apiBanner.title);
-    if (!title) {
+    const imageDesktop = nullableString(apiBanner.image_desktop);
+    const imageMobile = nullableString(apiBanner.image_mobile);
+
+    if (!imageDesktop && !imageMobile) {
         return null;
     }
 
-    const imageDesktop = nullableString(apiBanner.image_desktop);
-    const imageMobile = nullableString(apiBanner.image_mobile);
-    const image = nullableString(apiBanner.image) || imageDesktop || imageMobile;
-
     return {
         id: apiBanner.id ?? null,
-        title,
-        description: nullableString(apiBanner.description),
         image_desktop: imageDesktop,
         image_mobile: imageMobile,
-        image,
     };
 }
 
