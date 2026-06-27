@@ -138,15 +138,11 @@ export const checkoutDesign = {
             "border-app-accent ring-1 ring-app-accent/60",
         giftCandidateCardIdle:
             "border-app-border-on-surface",
-        giftCandidateThumbCol: "relative w-28 shrink-0 overflow-hidden sm:w-32",
-        giftCandidateThumbImg:
-            "h-full min-h-[6.5rem] w-full object-cover object-center transition-transform duration-500 group-hover:scale-105",
-        giftCandidateThumbPlaceholder:
-            "flex min-h-[6.5rem] h-full w-full items-center justify-center bg-neutral-950/75 text-xs text-app-muted",
+        giftCandidateThumbCol:
+            "relative w-28 shrink-0 overflow-hidden aspect-[4/3] sm:w-32",
         giftCandidateBody: "flex min-w-0 flex-1 flex-col justify-center gap-1.5 p-2.5 sm:p-3",
         giftCandidateTitle: "text-sm font-medium leading-snug text-app-canvas-fg",
         giftCandidateComposition: "text-[11px] leading-snug text-app-muted line-clamp-3",
-        giftCandidatePrice: "text-xs font-medium text-app-accent",
         giftCandidateBadge:
             "absolute right-2 top-2 inline-flex items-center border border-app-accent/50 bg-app-accent/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-app-accent",
         giftFooterRow: "flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between",

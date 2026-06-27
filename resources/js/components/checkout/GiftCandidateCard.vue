@@ -1,7 +1,6 @@
 <script setup>
 import { computed } from "vue";
 import { useAppDesign } from "../../design/useAppDesign";
-import { formatMoneyRublesRu } from "../../utils/moneyFormat";
 
 const props = defineProps({
     item: {
@@ -21,7 +20,19 @@ const props = defineProps({
 const emit = defineEmits(["select"]);
 
 const c = useAppDesign().components.checkout.cart;
+const d = useAppDesign().components.catalog.cards.desktop;
 const cs = useAppDesign().components.catalog.cards.shared;
+
+const thumbUrl = computed(() => {
+    const raw = props.item.imageUrl ?? props.item.image_url;
+    if (raw == null) {
+        return null;
+    }
+
+    const url = String(raw).trim();
+
+    return url !== "" ? url : null;
+});
 
 const compositionLine = computed(() => {
     const parts = Array.isArray(props.item.composition)
@@ -30,10 +41,6 @@ const compositionLine = computed(() => {
 
     return parts.length > 0 ? parts.join(" · ") : null;
 });
-
-function formatPrice(value) {
-    return formatMoneyRublesRu(value);
-}
 
 function handleSelect() {
     if (props.disabled) {
@@ -65,15 +72,15 @@ function handleSelect() {
 
         <div :class="c.giftCandidateThumbCol">
             <img
-                v-if="item.imageUrl"
-                :src="item.imageUrl"
+                v-if="thumbUrl"
+                :src="thumbUrl"
                 :alt="item.name || `Товар #${item.id}`"
-                :class="c.giftCandidateThumbImg"
+                :class="d.img"
                 loading="lazy"
             />
             <div
                 v-else
-                :class="c.giftCandidateThumbPlaceholder"
+                :class="d.placeholder"
             >
                 {{ cs.noPhotoText }}
             </div>
@@ -88,9 +95,6 @@ function handleSelect() {
                 :class="c.giftCandidateComposition"
             >
                 {{ compositionLine }}
-            </p>
-            <p :class="c.giftCandidatePrice">
-                В меню {{ formatPrice(item.priceRub) }} ₽ · в заказе 0 ₽
             </p>
         </div>
     </button>
