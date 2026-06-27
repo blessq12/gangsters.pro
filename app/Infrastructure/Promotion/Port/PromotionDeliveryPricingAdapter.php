@@ -118,6 +118,7 @@ final class PromotionDeliveryPricingAdapter implements PromotionDeliveryPricingP
         return match ($mode) {
             DeliveryFeeMode::Free => 0,
             DeliveryFeeMode::BasePlusSurcharge => $baseFeeKopecks + $outsideZoneSurchargeKopecks,
+            DeliveryFeeMode::OutsideZoneSurchargeOnly => $outsideZoneSurchargeKopecks,
             DeliveryFeeMode::BaseTariff => $baseFeeKopecks,
         };
     }

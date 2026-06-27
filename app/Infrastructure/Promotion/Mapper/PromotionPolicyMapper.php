@@ -50,7 +50,7 @@ final class PromotionPolicyMapper
                 ),
                 belowThresholdFeeMode: DeliveryFeeMode::BaseTariff,
                 inZoneAtThresholdFeeMode: DeliveryFeeMode::Free,
-                outsideZoneAtThresholdFeeMode: DeliveryFeeMode::BasePlusSurcharge,
+                outsideZoneAtThresholdFeeMode: DeliveryFeeMode::OutsideZoneSurchargeOnly,
                 isActive: (bool) $row->delivery_benefit_active,
             ),
             complementSetBenefitRule: new ComplementSetBenefitRule(

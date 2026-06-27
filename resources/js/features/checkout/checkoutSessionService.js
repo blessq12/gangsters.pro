@@ -43,6 +43,38 @@ function ensureCheckoutSessionActive(store) {
     store.sessionReady = true;
 }
 
+/**
+ * Адрес профиля для preview/place: auth + courier + выбранный адрес.
+ * Гость использует deliveryInfo.address из store.
+ */
+export function resolveCheckoutPreviewAddress(store) {
+    if (store.deliveryInfo?.method !== "courier") {
+        return null;
+    }
+
+    const isGuest = Boolean(
+        store.guestContact?.name && store.guestContact?.phone,
+    );
+    if (isGuest) {
+        return null;
+    }
+
+    const userStore = useUserStore();
+    if (!userStore.token || userStore.selectedAddressId == null) {
+        return null;
+    }
+
+    return userStore.selectedAddress ?? null;
+}
+
+function effectivePreviewAddress(store, selectedAddress) {
+    if (selectedAddress != null) {
+        return selectedAddress;
+    }
+
+    return resolveCheckoutPreviewAddress(store);
+}
+
 function resolveRegisteredClientId(store, options = {}) {
     if (options.clientId != null) {
         return Number(options.clientId);
@@ -97,10 +129,11 @@ export async function refreshOrderDraftPreview(store, selectedAddress = null, op
     const requestSeq = ++store.previewRequestSeq;
     store.flushing = true;
     store.error = null;
+    const previewAddress = effectivePreviewAddress(store, selectedAddress);
 
     try {
         const data = await previewOrderDraftRequest(
-            buildOrderDraftPayload(store, selectedAddress, options),
+            buildOrderDraftPayload(store, previewAddress, options),
         );
 
         if (requestSeq !== store.previewRequestSeq) {
@@ -237,11 +270,12 @@ export async function placeOrderOnServer(store, selectedAddress = null) {
     store.previewRequestSeq += 1;
     store.flushing = true;
     store.error = null;
+    const previewAddress = effectivePreviewAddress(store, selectedAddress);
 
     try {
         const body = {
             client_request_id: store.clientRequestId || resolveClientRequestId(),
-            ...buildOrderDraftPayload(store, selectedAddress),
+            ...buildOrderDraftPayload(store, previewAddress),
         };
 
         const data = await placeOrderRequest(body);
