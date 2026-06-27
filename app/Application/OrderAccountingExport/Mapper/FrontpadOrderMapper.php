@@ -106,10 +106,6 @@ final class FrontpadOrderMapper
         $index = 0;
 
         foreach ($event->cart()->lines() as $line) {
-            if ($line->isPromotionBenefitLine()) {
-                continue;
-            }
-
             $article = $this->resolveProductArticle($line);
             if ($article === null || $article === '') {
                 throw UnknownAccountingProductException::missingCatalogSku(self::SYSTEM_CODE, $line->productId());
@@ -119,6 +115,8 @@ final class FrontpadOrderMapper
             $quantities[$index] = $line->quantity();
 
             $payload = $line->payload();
+            $linePrice = null;
+
             if (is_array($payload)) {
                 if (array_key_exists('parent_index', $payload)) {
                     $modifiers[$index] = (int) $payload['parent_index'];
@@ -127,8 +125,16 @@ final class FrontpadOrderMapper
                 }
 
                 if (array_key_exists('custom_price', $payload)) {
-                    $prices[$index] = $payload['custom_price'];
+                    $linePrice = $payload['custom_price'];
                 }
+            }
+
+            if ($linePrice === null && $line->unitPrice()->amountRubles() === 0) {
+                $linePrice = 0;
+            }
+
+            if ($linePrice !== null) {
+                $prices[$index] = $linePrice;
             }
 
             $index++;

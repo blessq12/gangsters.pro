@@ -64,6 +64,7 @@ final class ApplyComplementBenefitLines
             quantity: $entitledSetCount,
             unitPrice: Money::zero(),
             payload: ['kind' => 'complement'],
+            sku: $quote->sku(),
         );
     }
 }

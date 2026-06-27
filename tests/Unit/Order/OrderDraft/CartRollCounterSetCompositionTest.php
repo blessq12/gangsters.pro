@@ -68,6 +68,9 @@ final class CartRollCounterSetCompositionTest extends TestCase
         ));
 
         $this->assertNotEmpty($complementLines);
+        foreach ($complementLines as $complementLine) {
+            $this->assertNotEmpty($complementLine->sku());
+        }
     }
 
     private function resolveSetIdBySlug(string $slug): ?int

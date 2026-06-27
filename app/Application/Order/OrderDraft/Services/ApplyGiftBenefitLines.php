@@ -175,6 +175,7 @@ final class ApplyGiftBenefitLines
             quantity: 1,
             unitPrice: Money::zero(),
             payload: ['kind' => 'gift'],
+            sku: $quote->sku(),
         );
     }
 }

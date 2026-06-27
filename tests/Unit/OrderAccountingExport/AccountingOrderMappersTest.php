@@ -65,6 +65,66 @@ final class AccountingOrderMappersTest extends TestCase
     }
 
     #[Test]
+    public function frontpad_маппер_включает_подарок_и_комплект(): void
+    {
+        config([
+            'order-accounting-export.systems.frontpad.secret' => 'test-secret',
+        ]);
+
+        $request = (new FrontpadOrderMapper())->toRequest(new OrderCreated(
+            orderId: OrderId::fromInt(42),
+            source: OrderSource::Site,
+            checkoutId: 'chk-1',
+            aggregatorReference: null,
+            cart: OrderCartSnapshot::fromLines([
+                new OrderLineSnapshot(
+                    productId: 10,
+                    productName: 'Филадельфия',
+                    quantity: 2,
+                    unitPrice: Money::rubles(450),
+                    sku: '001',
+                ),
+                new OrderLineSnapshot(
+                    productId: 20,
+                    productName: 'Имбирь',
+                    quantity: 1,
+                    unitPrice: Money::rubles(0),
+                    payload: ['kind' => 'complement'],
+                    sku: 'cmp-1',
+                ),
+                new OrderLineSnapshot(
+                    productId: 30,
+                    productName: 'Суп подарок',
+                    quantity: 1,
+                    unitPrice: Money::rubles(0),
+                    payload: ['kind' => 'gift'],
+                    sku: 'gift-1',
+                ),
+            ]),
+            client: OrderClientSnapshot::guest(new OrderGuestContact(
+                name: 'Иван',
+                phone: '+79990001122',
+                email: null,
+            )),
+            delivery: new OrderDeliverySnapshot(
+                method: DeliveryMethod::Pickup,
+                address: null,
+                comment: null,
+                scheduledAt: null,
+            ),
+            payment: new OrderPaymentSnapshot(
+                method: PaymentMethod::Cash,
+                changeFromRubles: null,
+            ),
+            occurredAt: new DateTimeImmutable('2026-06-16T12:00:00+00:00'),
+        ));
+
+        $this->assertSame([1, 'cmp-1', 'gift-1'], $request['product']);
+        $this->assertSame([2, 1, 1], $request['product_kol']);
+        $this->assertSame([1 => 0, 2 => 0], $request['product_price']);
+    }
+
+    #[Test]
     public function iiko_маппер_собирает_json_тело(): void
     {
         config([

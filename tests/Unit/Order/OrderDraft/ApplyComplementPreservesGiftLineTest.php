@@ -44,6 +44,7 @@ final class ApplyComplementPreservesGiftLineTest extends TestCase
         $this->assertCount(1, $giftLines);
         $this->assertSame($giftProductId, $giftLines[0]->productId());
         $this->assertSame(0, $giftLines[0]->unitPrice()->amountRubles());
+        $this->assertNotEmpty($giftLines[0]->sku());
     }
 
     private function resolveGiftCandidateProductId(): ?int
