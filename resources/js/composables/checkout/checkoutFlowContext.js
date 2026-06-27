@@ -151,6 +151,9 @@ export function useCheckoutFlowContext() {
         canConfirmOrder,
         handleCreateAddress,
         toggleNewAddressOpen,
+        isNewAddressOpen,
+        newAddressForm,
+        newAddressLoading,
         scheduleDeliveryPreview,
         flushDeliveryPreview,
     };

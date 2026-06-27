@@ -22,15 +22,12 @@ const {
     handleCreateAddress,
     openProfileDock,
     toggleNewAddressOpen,
-} = useCheckoutFlowContext();
-
-const {
+    isNewAddressOpen,
     newAddressForm,
     newAddressLoading,
-    isNewAddressOpen,
-    deliveryFieldErrors,
-    newAddressFieldErrors,
-} = checkoutState;
+} = useCheckoutFlowContext();
+
+const { deliveryFieldErrors, newAddressFieldErrors } = checkoutState;
 
 const hasAddresses = computed(
     () => Array.isArray(addresses.value) && addresses.value.length > 0,
