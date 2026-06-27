@@ -1,12 +1,19 @@
 import { computed, onMounted } from "vue";
 import { toDeliveryFactsView } from "../../domain/delivery/deliveryMappers";
+import { isStorefrontBootstrapPending } from "../shell/isStorefrontBootstrapPending";
 import { useDeliveryStore } from "../../stores/deliveryStore";
+import { useStorefrontStore } from "../../stores/storefrontStore";
 
 export function useDeliveryReadModel({ autoload = true } = {}) {
     const deliveryStore = useDeliveryStore();
+    const storefrontStore = useStorefrontStore();
 
     if (autoload) {
         onMounted(() => {
+            if (isStorefrontBootstrapPending(storefrontStore)) {
+                return;
+            }
+
             void deliveryStore.fetchAll();
         });
     }

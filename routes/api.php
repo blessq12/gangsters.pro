@@ -22,6 +22,8 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/storefront/bootstrap', [StorefrontController::class, 'bootstrap']);
+Route::get('/storefront/bootstrap/critical', [StorefrontController::class, 'bootstrapCritical']);
+Route::get('/storefront/bootstrap/deferred', [StorefrontController::class, 'bootstrapDeferred']);
 
 Route::post('/order-drafts/preview', [OrderDraftController::class, 'preview']);
 Route::post('/orders', [OrderDraftController::class, 'store']);

@@ -1,9 +1,7 @@
 import { watch } from "vue";
-import {
-    getIntroSceneDurationSec,
-    INTRO_DOCK_REVEAL_GAP_MS,
-} from "../../animations/animationManager";
+import { INTRO_DOCK_REVEAL_GAP_MS } from "../../animations/animationManager";
 import { useCompanyStore } from "../../stores/companyStore";
+import { useShellStore } from "../../stores/shellStore";
 import { useStorefrontStore } from "../../stores/storefrontStore";
 import { useUiStore } from "../../stores/uiStore";
 import { isCompanyOpenNow } from "../../utils/system/companyOpenStatus";
@@ -15,18 +13,15 @@ let stopWatch = null;
 let revealTimer = null;
 let noticeScheduled = false;
 
-function getShellRevealDelayMs() {
-    return Math.round(getIntroSceneDurationSec() * 1000) + INTRO_DOCK_REVEAL_GAP_MS;
-}
-
 export function useCompanyClosedNoticeProcess() {
     if (!processInitialized) {
         const uiStore = useUiStore();
         const companyStore = useCompanyStore();
         const storefrontStore = useStorefrontStore();
+        const shellStore = useShellStore();
 
         function tryOpenNotice() {
-            if (!storefrontStore.loaded || !companyStore.profile) {
+            if (!shellStore.isInteractive || !storefrontStore.loaded || !companyStore.profile) {
                 return;
             }
 
@@ -50,7 +45,7 @@ export function useCompanyClosedNoticeProcess() {
                 return;
             }
 
-            if (!storefrontStore.loaded || !companyStore.profile) {
+            if (!shellStore.isInteractive || !storefrontStore.loaded || !companyStore.profile) {
                 return;
             }
 
@@ -58,11 +53,15 @@ export function useCompanyClosedNoticeProcess() {
             revealTimer = setTimeout(() => {
                 revealTimer = null;
                 tryOpenNotice();
-            }, getShellRevealDelayMs());
+            }, INTRO_DOCK_REVEAL_GAP_MS);
         }
 
         stopWatch = watch(
-            () => [storefrontStore.loaded, companyStore.profile],
+            () => [
+                shellStore.isInteractive,
+                storefrontStore.loaded,
+                companyStore.profile,
+            ],
             () => scheduleNoticeAfterShellReady(),
             { immediate: true },
         );

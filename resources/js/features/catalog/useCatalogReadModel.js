@@ -1,11 +1,18 @@
 import { computed, onMounted } from "vue";
 import { useCatalogStore } from "../../stores/catalogStore";
+import { isStorefrontBootstrapPending } from "../shell/isStorefrontBootstrapPending";
+import { useStorefrontStore } from "../../stores/storefrontStore";
 
 export function useCatalogReadModel({ autoload = true } = {}) {
     const catalogStore = useCatalogStore();
+    const storefrontStore = useStorefrontStore();
 
     if (autoload) {
         onMounted(() => {
+            if (isStorefrontBootstrapPending(storefrontStore)) {
+                return;
+            }
+
             if (!catalogStore.hasLoaded && !catalogStore.loading) {
                 void catalogStore.fetchAll();
             }

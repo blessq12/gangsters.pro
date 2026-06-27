@@ -18,6 +18,60 @@ final class GetDeliveryDataUseCase
     /**
      * @return array{data: array<string, mixed>|null}
      */
+    public function executeLite(): array
+    {
+        $config = $this->configuration->findPublic();
+
+        return [
+            'data' => $config instanceof DeliveryConfiguration
+                ? $this->mapConfigurationLite($config)
+                : null,
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function mapConfigurationLite(DeliveryConfiguration $config): array
+    {
+        $address = $config->kitchenAddress();
+
+        return [
+            'settings' => [
+                'min_order_amount_kopecks' => $config->minOrderAmountKopecks(),
+                'delivery_fee_kopecks' => $config->deliveryFeeKopecks(),
+                'outside_zone_delivery_fee_kopecks' => $config->outsideZoneDeliveryFeeKopecks(),
+                'average_delivery_time_minutes' => $config->averageDeliveryTimeMinutes(),
+            ],
+            'zone' => [
+                'kitchen_address' => $this->mapKitchenAddress($address),
+                'kitchen_latitude' => $config->kitchenLatitude(),
+                'kitchen_longitude' => $config->kitchenLongitude(),
+            ],
+        ];
+    }
+
+    /**
+     * @return array{zone: array{delivery_zone_geojson: mixed|null}|null}
+     */
+    public function executeDeferredZone(): array
+    {
+        $config = $this->configuration->findPublic();
+
+        if (! $config instanceof DeliveryConfiguration) {
+            return ['zone' => null];
+        }
+
+        return [
+            'zone' => [
+                'delivery_zone_geojson' => $config->deliveryZoneGeoJson(),
+            ],
+        ];
+    }
+
+    /**
+     * @return array{data: array<string, mixed>|null}
+     */
     public function execute(): array
     {
         $config = $this->configuration->findPublic();

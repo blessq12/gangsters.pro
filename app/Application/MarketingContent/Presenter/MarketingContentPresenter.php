@@ -14,20 +14,38 @@ final class MarketingContentPresenter
 
     /**
      * @param  list<Banner>  $banners
+     * @return list<array<string, mixed>>
+     */
+    public function presentBanners(array $banners): array
+    {
+        return array_map(
+            fn (Banner $banner): array => $this->presentBanner($banner),
+            $banners,
+        );
+    }
+
+    /**
+     * @param  list<Promotion>  $promotions
+     * @return list<array<string, mixed>>
+     */
+    public function presentPromotions(array $promotions): array
+    {
+        return array_map(
+            fn (Promotion $promotion): array => $this->presentPromotion($promotion),
+            $promotions,
+        );
+    }
+
+    /**
+     * @param  list<Banner>  $banners
      * @param  list<Promotion>  $promotions
      * @return array{banners: list<array<string, mixed>>, promotions: list<array<string, mixed>>}
      */
     public function present(array $banners, array $promotions): array
     {
         return [
-            'banners' => array_map(
-                fn (Banner $banner): array => $this->presentBanner($banner),
-                $banners,
-            ),
-            'promotions' => array_map(
-                fn (Promotion $promotion): array => $this->presentPromotion($promotion),
-                $promotions,
-            ),
+            'banners' => $this->presentBanners($banners),
+            'promotions' => $this->presentPromotions($promotions),
         ];
     }
 

@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { useShellStore } from "./shellStore";
 
 const UI_STORAGE_KEY = "gangsters_ui";
 const DEFAULT_DOCK_BADGES = {
@@ -101,6 +102,15 @@ export const useUiStore = defineStore("ui", {
             this.persist();
         },
         setDockActive(id) {
+            const shellStore = useShellStore();
+            if (!shellStore.dockReady) {
+                shellStore.enqueueDockOpen(id);
+                return;
+            }
+
+            this.applyDockActive(id);
+        },
+        applyDockActive(id) {
             this.dockActiveId = this.dockActiveId === id ? null : id;
             if (this.dockActiveId) {
                 this.showBottomNav = true;

@@ -18,6 +18,30 @@ final class GetMarketingContentUseCase
     ) {}
 
     /**
+     * @return array{banners: list<array<string, mixed>>}
+     */
+    public function executeBannersOnly(): array
+    {
+        return [
+            'banners' => $this->presenter->presentBanners(
+                $this->banners->findActiveOrdered(),
+            ),
+        ];
+    }
+
+    /**
+     * @return array{promotions: list<array<string, mixed>>}
+     */
+    public function executePromotionsOnly(): array
+    {
+        return [
+            'promotions' => $this->presenter->presentPromotions(
+                $this->promotions->findActiveOrdered(),
+            ),
+        ];
+    }
+
+    /**
      * @return array{banners: list<array<string, mixed>>, promotions: list<array<string, mixed>>}
      */
     public function execute(): array

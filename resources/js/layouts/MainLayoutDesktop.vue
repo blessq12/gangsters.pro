@@ -3,10 +3,9 @@ import { onMounted, onUnmounted, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useThemeStore } from "../stores/themeStore";
 import { useUserStore } from "../stores/userStore";
-import { useFavoritesStore } from "../stores/favoritesStore";
 import { useUiStore } from "../stores/uiStore";
-import { useCatalogStore } from "../stores/catalogStore";
 import { useStorefrontStore } from "../stores/storefrontStore";
+import { useShellStore } from "../stores/shellStore";
 import { playPageEnter, playPageLeave } from "../animations/animationManager";
 import { useShellIntroDockTimeline } from "../composables/layout/useShellIntroDockTimeline";
 import { useDockScrollScale } from "../composables/ui/useDockScrollScale";
@@ -16,24 +15,19 @@ const sh = useAppDesign().components.layoutShell;
 
 const themeStore = useThemeStore();
 const userStore = useUserStore();
-const favoritesStore = useFavoritesStore();
 const uiStore = useUiStore();
-const catalogStore = useCatalogStore();
 const storefrontStore = useStorefrontStore();
+const shellStore = useShellStore();
 const route = useRoute();
 
 themeStore.initTheme();
-userStore.initFromStorage();
-favoritesStore.initFromStorage();
-uiStore.initFromStorage();
-catalogStore.initFromStorage();
 
 uiStore.setShowBottomNav(false);
 
 const isHome = () => route.name === "home";
 
 function syncBottomNavForRoute() {
-    if (!bottomBarReady.value) return;
+    if (!shellStore.dockReady) return;
 
     if (isHome()) {
         uiStore.setShowBottomNav(true);
@@ -51,7 +45,7 @@ const {
     mainRef,
     showIntro,
     bottomBarReady,
-    startIntroScene,
+    presentShellContent,
     dispose: disposeIntroTimeline,
 } = useShellIntroDockTimeline({
     themeStore,
@@ -71,17 +65,28 @@ watch(
     },
 );
 
-onMounted(() => {
-    if (userStore.token) {
+watch(
+    () => storefrontStore.loaded,
+    (loaded) => {
+        if (!loaded || !userStore.token) {
+            return;
+        }
+
         userStore.fetchClientProfile().catch((e) => {
-            console.error("Failed to fetch client profile on mount", e);
+            console.error("Failed to fetch client profile after bootstrap", e);
         });
+    },
+    { immediate: true },
+);
+
+onMounted(() => {
+    if (storefrontStore.loaded) {
+        shellStore.markDataReady();
+    } else {
+        void storefrontStore.fetchBootstrap();
     }
 
-    void Promise.allSettled([
-        storefrontStore.fetchBootstrap(),
-    ]);
-    startIntroScene();
+    void presentShellContent();
 });
 
 onUnmounted(() => {

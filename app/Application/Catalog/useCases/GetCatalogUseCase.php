@@ -31,12 +31,30 @@ final class GetCatalogUseCase
      */
     public function execute(): array
     {
+        return $this->buildCatalog(lite: false);
+    }
+
+    /**
+     * Облегчённый каталог для critical bootstrap: без description/ingredients/nutrition, thumb-only images.
+     *
+     * @return array{categories: list<array{category: array<string, mixed>, items: list<array<string, mixed>>}>}
+     */
+    public function executeLite(): array
+    {
+        return $this->buildCatalog(lite: true);
+    }
+
+    /**
+     * @return array{categories: list<array{category: array<string, mixed>, items: list<array<string, mixed>>}>}
+     */
+    private function buildCatalog(bool $lite): array
+    {
         $tagById = $this->loadActiveTagsIndexed();
 
         $result = [];
 
         foreach ($this->categories->findAllOrdered() as $category) {
-            $node = $this->buildCategoryNode($category, $tagById);
+            $node = $this->buildCategoryNode($category, $tagById, $lite);
 
             if ($node['items'] !== []) {
                 $result[] = $node;
@@ -50,7 +68,7 @@ final class GetCatalogUseCase
      * @param  array<int, Tag>  $tagById
      * @return array{category: array<string, mixed>, items: list<array<string, mixed>>}
      */
-    private function buildCategoryNode(Category $category, array $tagById): array
+    private function buildCategoryNode(Category $category, array $tagById, bool $lite): array
     {
         $links = $this->categories->findItemsByCategoryId($category->id());
 
@@ -97,6 +115,7 @@ final class GetCatalogUseCase
                 $tagById,
                 $lineProductNames,
                 $promotionMetaByProductId,
+                $lite,
             );
             if ($item !== null) {
                 $items[] = $item;
@@ -123,19 +142,20 @@ final class GetCatalogUseCase
         array $tagById,
         array $lineProductNames,
         array $promotionMetaByProductId,
+        bool $lite,
     ): ?array {
         if ($link->kind() === CatalogItemKind::Set) {
             $set = $setsById[$link->catalogItemId()] ?? null;
 
             return $set instanceof ProductSet
-                ? $this->mapProductSet($set, $tagById, $lineProductNames)
+                ? $this->mapProductSet($set, $tagById, $lineProductNames, $lite)
                 : null;
         }
 
         $product = $productsById[$link->catalogItemId()] ?? null;
 
         return $product instanceof Product
-            ? $this->mapProduct($product, $tagById, $promotionMetaByProductId[$product->id()] ?? null)
+            ? $this->mapProduct($product, $tagById, $promotionMetaByProductId[$product->id()] ?? null, $lite)
             : null;
     }
 
@@ -202,21 +222,29 @@ final class GetCatalogUseCase
      * @param  array{counts_as_roll: bool, complement_set: bool}|null  $promotionMeta
      * @return array<string, mixed>
      */
-    private function mapProduct(Product $product, array $tagById, ?array $promotionMeta): array
+    private function mapProduct(Product $product, array $tagById, ?array $promotionMeta, bool $lite): array
     {
-        return [
+        $payload = [
             'kind' => CatalogItemKind::Product->value,
             'id' => $product->id(),
             'name' => $product->name(),
             'slug' => $product->slug(),
             'status' => $product->status()->value,
             'price' => $this->mapMoney($product->price()),
+            'tags' => $this->mapTags($product->tagIds(), $tagById),
+            'images' => $this->mapImages($product->images(), $lite),
+            'promotion_meta' => $this->mapPromotionMeta($promotionMeta),
+        ];
+
+        if ($lite) {
+            return $payload;
+        }
+
+        return [
+            ...$payload,
             'description' => $product->description(),
             'nutrition' => $this->mapNutrition($product->nutrition()),
             'ingredients' => $product->ingredients(),
-            'tags' => $this->mapTags($product->tagIds(), $tagById),
-            'images' => $this->mapImages($product->images()),
-            'promotion_meta' => $this->mapPromotionMeta($promotionMeta),
         ];
     }
 
@@ -237,7 +265,7 @@ final class GetCatalogUseCase
      * @param  array<int, Tag>  $tagById
      * @return array<string, mixed>
      */
-    private function mapProductSet(ProductSet $set, array $tagById, array $lineProductNames): array
+    private function mapProductSet(ProductSet $set, array $tagById, array $lineProductNames, bool $lite): array
     {
         $lines = [];
 
@@ -251,17 +279,25 @@ final class GetCatalogUseCase
             ];
         }
 
-        return [
+        $payload = [
             'kind' => CatalogItemKind::Set->value,
             'id' => $set->id(),
             'name' => $set->name(),
             'slug' => $set->slug(),
             'status' => $set->status()->value,
             'price' => $this->mapMoney($set->price()),
-            'description' => $set->description(),
             'lines' => $lines,
             'tags' => $this->mapTags($set->tagIds(), $tagById),
-            'images' => $this->mapImages($set->images()),
+            'images' => $this->mapImages($set->images(), $lite),
+        ];
+
+        if ($lite) {
+            return $payload;
+        }
+
+        return [
+            ...$payload,
+            'description' => $set->description(),
         ];
     }
 
@@ -294,7 +330,7 @@ final class GetCatalogUseCase
      * @param  list<ProductImage>  $images
      * @return list<array{variants: list<array{size: string, path: string, width: int}>}>
      */
-    private function mapImages(array $images): array
+    private function mapImages(array $images, bool $lite = false): array
     {
         $mapped = [];
 
@@ -309,11 +345,13 @@ final class GetCatalogUseCase
             }
 
             $mapped[] = [
-                'variants' => [
-                    ['size' => 'thumb', 'path' => $path, 'width' => 300],
-                    ['size' => 'medium', 'path' => $path, 'width' => 800],
-                    ['size' => 'large', 'path' => $path, 'width' => 1200],
-                ],
+                'variants' => $lite
+                    ? [['size' => 'thumb', 'path' => $path, 'width' => 300]]
+                    : [
+                        ['size' => 'thumb', 'path' => $path, 'width' => 300],
+                        ['size' => 'medium', 'path' => $path, 'width' => 800],
+                        ['size' => 'large', 'path' => $path, 'width' => 1200],
+                    ],
             ];
         }
 

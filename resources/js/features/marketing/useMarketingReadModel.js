@@ -1,11 +1,18 @@
 import { computed, onMounted } from "vue";
 import { useMarketingStore } from "../../stores/marketingStore";
+import { isStorefrontBootstrapPending } from "../shell/isStorefrontBootstrapPending";
+import { useStorefrontStore } from "../../stores/storefrontStore";
 
 export function useMarketingReadModel({ autoload = true } = {}) {
     const marketingStore = useMarketingStore();
+    const storefrontStore = useStorefrontStore();
 
     if (autoload) {
         onMounted(() => {
+            if (isStorefrontBootstrapPending(storefrontStore)) {
+                return;
+            }
+
             void marketingStore.fetchAll();
         });
     }

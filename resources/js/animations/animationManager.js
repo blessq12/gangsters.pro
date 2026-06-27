@@ -70,6 +70,29 @@ export function playWorkScheduleStripEnter(el) {
     );
 }
 
+/**
+ * Показать основной контент shell (router-view). Без вызова main остаётся opacity-0 из layout design.
+ *
+ * @param {HTMLElement | null | undefined} mainEl
+ * @param {{ animate?: boolean }} [options]
+ */
+export function revealShellMainContent(mainEl, { animate = false } = {}) {
+    if (!mainEl) {
+        return;
+    }
+
+    if (animate) {
+        gsap.to(mainEl, {
+            opacity: 1,
+            duration: INTRO_MAIN_FADE_DURATION,
+            ease: "power2.out",
+        });
+        return;
+    }
+
+    gsap.set(mainEl, { opacity: 1 });
+}
+
 export function playIntroScene({
     introOverlay,
     introLogo,
@@ -77,7 +100,16 @@ export function playIntroScene({
     introGlow,
     onComplete,
 }) {
-    if (!introOverlay || !introLogo || !main) return;
+    if (!main) {
+        onComplete?.();
+        return;
+    }
+
+    if (!introOverlay || !introLogo) {
+        revealShellMainContent(main);
+        onComplete?.();
+        return;
+    }
 
     const tl = gsap.timeline();
 

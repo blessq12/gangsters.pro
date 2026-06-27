@@ -14,6 +14,8 @@ import {
 } from "../../animations/animationManager";
 import { useCompanyOpenStatus } from "../../composables/system/useCompanyOpenStatus";
 import { useCompanyStore } from "../../stores/companyStore";
+import { useStorefrontStore } from "../../stores/storefrontStore";
+import { isStorefrontBootstrapPending } from "../../features/shell/isStorefrontBootstrapPending";
 import { getCurrentDayKey } from "../../utils/system/companyOpenStatus";
 import {
     formatTodayWorkScheduleLine,
@@ -26,6 +28,7 @@ const TOOLTIP_PAD = 12;
 const PANEL_MAX_WIDTH_PX = 20 * 16;
 
 const companyStore = useCompanyStore();
+const storefrontStore = useStorefrontStore();
 const ws = useAppDesign().components.workSchedule;
 
 const props = defineProps({
@@ -214,7 +217,11 @@ watch(expanded, (open) => {
 });
 
 onMounted(() => {
-    if (!companyStore.profile && !companyStore.loadingProfile) {
+    if (
+        !isStorefrontBootstrapPending(storefrontStore)
+        && !companyStore.profile
+        && !companyStore.loadingProfile
+    ) {
         void companyStore.fetchProfile();
     }
 

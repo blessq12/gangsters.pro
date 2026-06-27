@@ -25,5 +25,29 @@ export const useDeliveryStore = defineStore("delivery", {
                 this.loading = false;
             }
         },
+
+        applyDeferredBootstrap(deferredDelivery) {
+            if (!deferredDelivery || typeof deferredDelivery !== "object") {
+                return;
+            }
+
+            const geojson = deferredDelivery?.zone?.delivery_zone_geojson;
+            if (geojson == null) {
+                return;
+            }
+
+            if (!this.data || typeof this.data !== "object") {
+                this.data = { settings: null, zone: { delivery_zone_geojson: geojson } };
+                return;
+            }
+
+            this.data = {
+                ...this.data,
+                zone: {
+                    ...(this.data.zone ?? {}),
+                    delivery_zone_geojson: geojson,
+                },
+            };
+        },
     },
 });
