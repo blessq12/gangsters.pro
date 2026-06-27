@@ -56,6 +56,7 @@ class AdminPanelProvider extends PanelProvider
                 'primary' => Color::Amber,
             ])
             ->navigationGroups(AdminNavigationGroup::class)
+            ->sidebarCollapsibleOnDesktop()
             ->resources([
                 CatalogResource::class,
                 CategoryResource::class,
