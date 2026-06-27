@@ -3,6 +3,7 @@
 namespace App\Application\Order\OrderDraft\Mapper;
 
 use App\Application\Order\DTO\CreateOrderDto;
+use App\Application\Order\Support\OrderDeliveryCommentComposer;
 use App\Domain\Order\OrderDraft\Entity\OrderDraft;
 use App\Domain\Order\OrderDraft\ValueObject\CartLineSnapshot;
 use App\Domain\Order\OrderDraft\ValueObject\ClientSnapshot;
@@ -42,7 +43,7 @@ final class OrderDraftToCreateOrderMapper
             clientRequestId: $clientRequestId,
             cart: self::mapCart($draft->cart()->lines()),
             client: self::mapClient($client),
-            delivery: self::mapDelivery($delivery),
+            delivery: self::mapDelivery($delivery, $payment),
             payment: self::mapPayment($payment),
             createdAt: $createdAt,
         );
@@ -90,7 +91,7 @@ final class OrderDraftToCreateOrderMapper
         );
     }
 
-    private static function mapDelivery(DeliverySnapshot $delivery): OrderDeliverySnapshot
+    private static function mapDelivery(DeliverySnapshot $delivery, PaymentSnapshot $payment): OrderDeliverySnapshot
     {
         $address = $delivery->address();
 
@@ -104,7 +105,11 @@ final class OrderDraftToCreateOrderMapper
                     apartment: $address->apartment(),
                 )
                 : null,
-            comment: $delivery->comment(),
+            comment: OrderDeliveryCommentComposer::compose(
+                $delivery->comment(),
+                $payment->method(),
+                $payment->changeFromRubles(),
+            ),
             scheduledAt: $delivery->scheduledAt(),
         );
     }

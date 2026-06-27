@@ -3,6 +3,7 @@
 namespace App\Application\AggregatorIngress\Mapper;
 
 use App\Application\Order\DTO\CreateOrderFromIngressDto;
+use App\Application\Order\Support\OrderDeliveryCommentComposer;
 use App\Domain\AggregatorIngress\ValueObject\IngressMappedAddress;
 use App\Domain\AggregatorIngress\ValueObject\IngressMappedLine;
 use App\Domain\AggregatorIngress\ValueObject\IngressMappedOrder;
@@ -72,7 +73,11 @@ final class IngressMappedOrderToCreateOrderMapper
                         apartment: $address->apartment,
                     )
                     : null,
-                comment: $mapped->deliveryComment,
+                comment: OrderDeliveryCommentComposer::compose(
+                    $mapped->deliveryComment,
+                    $mapped->paymentMethod,
+                    $mapped->paymentChangeFromRubles,
+                ),
                 scheduledAt: $mapped->deliveryScheduledAt,
             ),
             payment: new OrderPaymentSnapshot(

@@ -125,6 +125,56 @@ final class AccountingOrderMappersTest extends TestCase
     }
 
     #[Test]
+    public function frontpad_маппер_передаёт_комментарий_доставки_в_descr(): void
+    {
+        config([
+            'order-accounting-export.systems.frontpad.secret' => 'test-secret',
+        ]);
+
+        $request = (new FrontpadOrderMapper())->toRequest(new OrderCreated(
+            orderId: OrderId::fromInt(42),
+            source: OrderSource::Site,
+            checkoutId: 'chk-1',
+            aggregatorReference: null,
+            cart: OrderCartSnapshot::fromLines([
+                new OrderLineSnapshot(
+                    productId: 10,
+                    productName: 'Филадельфия',
+                    quantity: 1,
+                    unitPrice: Money::rubles(450),
+                    sku: '001',
+                ),
+            ]),
+            client: OrderClientSnapshot::guest(new OrderGuestContact(
+                name: 'Иван',
+                phone: '+79990001122',
+                email: null,
+            )),
+            delivery: new OrderDeliverySnapshot(
+                method: DeliveryMethod::Courier,
+                address: new OrderDeliveryAddress(
+                    street: 'Ленина',
+                    house: '10',
+                    entrance: null,
+                    apartment: null,
+                ),
+                comment: 'Без имбиря. Сдача с 2000 ₽',
+                scheduledAt: null,
+            ),
+            payment: new OrderPaymentSnapshot(
+                method: PaymentMethod::Cash,
+                changeFromRubles: 2000,
+            ),
+            occurredAt: new DateTimeImmutable('2026-06-16T12:00:00+00:00'),
+        ));
+
+        $this->assertSame(
+            'Заказ #42. Без имбиря. Сдача с 2000 ₽',
+            $request['descr'],
+        );
+    }
+
+    #[Test]
     public function iiko_маппер_собирает_json_тело(): void
     {
         config([
