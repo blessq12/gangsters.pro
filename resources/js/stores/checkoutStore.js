@@ -22,6 +22,7 @@ import {
     CHECKOUT_WIZARD_STEPS,
     clearCheckoutSessionPayload,
 } from "../features/checkout/checkoutSessionStorage";
+import { mapServerWizardStep } from "../features/checkout/checkoutWizardGroups";
 import { normalizeBenefitsProgress } from "../features/checkout/normalizeBenefitsProgress";
 import { normalizeOrderPreview } from "../features/checkout/normalizeOrderPreview";
 import {
@@ -302,7 +303,7 @@ export const useCheckoutStore = defineStore("checkout", {
                 return;
             }
 
-            const step = wizard.suggested_step;
+            const step = mapServerWizardStep(wizard.suggested_step);
             this.suggestedStep =
                 step && CHECKOUT_WIZARD_STEPS.includes(step) ? step : null;
             this.wizardCanConfirm = Boolean(wizard.can_confirm);
@@ -316,8 +317,9 @@ export const useCheckoutStore = defineStore("checkout", {
         },
 
         setSuggestedStep(step) {
-            if (step && CHECKOUT_WIZARD_STEPS.includes(step)) {
-                this.suggestedStep = step;
+            const mapped = mapServerWizardStep(step);
+            if (mapped && CHECKOUT_WIZARD_STEPS.includes(mapped)) {
+                this.suggestedStep = mapped;
             } else if (step === null) {
                 this.suggestedStep = null;
             }

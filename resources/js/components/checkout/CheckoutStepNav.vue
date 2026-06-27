@@ -32,6 +32,10 @@ const props = defineProps({
         type: String,
         default: "",
     },
+    showNavTotal: {
+        type: Boolean,
+        default: false,
+    },
 });
 
 const emit = defineEmits(["back", "primary"]);
@@ -68,7 +72,7 @@ const primaryText = computed(() =>
 
         <div :class="n.primaryCluster">
             <span
-                v-if="totalLabel"
+                v-if="showNavTotal"
                 :class="n.totalLabel"
             >
                 {{ totalLabel }}

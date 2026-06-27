@@ -49,8 +49,7 @@ watch(
 
         <CheckoutCartStep v-if="activeStep === 'cart'" />
         <CheckoutGuestStep v-else-if="activeStep === 'guest'" />
-        <CheckoutDeliveryStep v-else-if="activeStep === 'delivery'" />
-        <CheckoutPaymentStep v-else-if="activeStep === 'payment'" />
+        <CheckoutFulfillmentStep v-else-if="activeStep === 'fulfillment'" />
         <CheckoutConfirmStep v-else-if="activeStep === 'confirm'" />
         <CheckoutSuccessStep v-else-if="activeStep === 'success'" />
     </DockPanelLayout>

@@ -11,11 +11,13 @@ export const CHECKOUT_PAYMENT_METHOD_LABELS = {
 export const CHECKOUT_PAYMENT_METHOD_META = {
     cash: {
         label: CHECKOUT_PAYMENT_METHOD_LABELS.cash,
+        inlineLabel: "Наличные",
         hint: "Оплата курьеру при получении заказа",
         icon: "mdi mdi-cash",
     },
     card: {
         label: CHECKOUT_PAYMENT_METHOD_LABELS.card,
+        inlineLabel: "Картой",
         hint: "Терминал у курьера при доставке",
         icon: "mdi mdi-credit-card-outline",
     },

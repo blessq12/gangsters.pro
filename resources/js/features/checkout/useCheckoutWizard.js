@@ -5,6 +5,7 @@ import { formatRuPhone } from "../../utils/phone/formatRuPhone";
 import { DOMAIN_EVENTS, emitDomainEvent } from "../../shared/domainEvents";
 import { isGuestContactComplete } from "./useCheckoutGuestStep";
 import { resolveGiftSelectionRequired } from "./giftSelectionGate";
+import { resolveWizardStepMeta } from "./checkoutWizardGroups";
 import {
     formatServerDeliveryLine,
     formatServerPaymentLine,
@@ -24,9 +25,7 @@ export function useCheckoutWizard({
     paymentStep,
     isGuestCheckout,
 }) {
-    const {
-        hasCartItems,
-    } = cartView;
+    const { hasCartItems } = cartView;
 
     const activeStep = ref("cart");
     const confirmLoading = ref(false);
@@ -37,24 +36,11 @@ export function useCheckoutWizard({
     const isAuthenticated = computed(() => clientReadModel.isAuthenticated.value);
 
     const checkoutStepMeta = computed(() => {
-        const guestFlow = isGuestCheckout.value;
-        const total = guestFlow ? 4 : 3;
-
-        if (guestFlow) {
-            return {
-                guest: { n: 1, total },
-                delivery: { n: 2, total },
-                payment: { n: 3, total },
-                confirm: { n: 4, total },
-            };
+        const meta = resolveWizardStepMeta(activeStep.value, isGuestCheckout.value);
+        if (meta) {
+            return { [activeStep.value]: meta };
         }
-
-        return {
-            guest: null,
-            delivery: { n: 1, total },
-            payment: { n: 2, total },
-            confirm: { n: 3, total },
-        };
+        return {};
     });
 
     const formatPrice = (value) => formatMoneyRublesRu(value);
@@ -79,7 +65,7 @@ export function useCheckoutWizard({
         if (!hasCartItems.value) return;
         ensureCheckoutDefaults();
         isGuestCheckout.value = false;
-        activeStep.value = "delivery";
+        activeStep.value = "fulfillment";
         deliveryStep.ensureAuthAddressUi();
         void checkoutIntent.flushClientToServer({
             clientId: userStore.profile.id,
@@ -136,7 +122,7 @@ export function useCheckoutWizard({
         if (step !== "confirm") {
             uiStore.closeGiftSelectionModal({ dismissAuto: false });
         }
-        if (step === "delivery") {
+        if (step === "fulfillment") {
             deliveryStep.ensureAuthAddressUi();
         }
         if (step === "confirm" && giftSelectionRequired.value) {
@@ -202,18 +188,18 @@ export function useCheckoutWizard({
         activeStep.value = hasCartItems.value && isGuestCheckout.value ? "guest" : "cart";
     }
 
-    function goToDelivery() {
+    function goToFulfillment() {
         if (!hasCartItems.value) {
             activeStep.value = "cart";
             return;
         }
         if (isGuestCheckout.value) {
             activeStep.value = isGuestContactComplete(checkoutIntent.guestContact)
-                ? "delivery"
+                ? "fulfillment"
                 : "guest";
             return;
         }
-        activeStep.value = "delivery";
+        activeStep.value = "fulfillment";
     }
 
     async function goToGuestNext() {
@@ -221,10 +207,14 @@ export function useCheckoutWizard({
             return;
         }
         await checkoutIntent.flushClientToServer({ isGuest: true });
-        activeStep.value = "delivery";
+        activeStep.value = "fulfillment";
     }
 
-    async function goToPayment() {
+    async function goToFulfillmentNext() {
+        if (!paymentStep.validatePaymentStep()) {
+            return;
+        }
+
         const selectedAddress = deliveryStep.addressSelection.selectedAddress.value;
         if (!deliveryStep.validateDeliveryStep(selectedAddress)) {
             return;
@@ -239,14 +229,6 @@ export function useCheckoutWizard({
             return;
         }
 
-        activeStep.value = "payment";
-    }
-
-    async function goToConfirm() {
-        if (!paymentStep.validatePaymentStep()) {
-            return;
-        }
-        await checkoutIntent.flushPaymentToServer();
         activeStep.value = "confirm";
     }
 
@@ -303,10 +285,9 @@ export function useCheckoutWizard({
         openProfileDock,
         goToCart,
         goToGuest,
-        goToDelivery,
+        goToFulfillment,
         goToGuestNext,
-        goToPayment,
-        goToConfirm,
+        goToFulfillmentNext,
         goToSuccess,
         handleConfirmOrder,
         confirmLoading,

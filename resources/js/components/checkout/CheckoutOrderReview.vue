@@ -107,9 +107,6 @@ function linePriceLabel(item) {
                 {{ gift.name }}
                 <span :class="cf.badgeTiny">· подарок</span>
             </span>
-            <span :class="cf.orderLineMuted">
-                {{ gift.qty }} × Бесплатно
-            </span>
         </li>
 
         <li

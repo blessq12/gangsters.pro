@@ -157,6 +157,16 @@ export const checkoutDesign = {
             "inline-flex items-center justify-center rounded-none bg-app-accent px-4 py-2 text-xs font-semibold text-black transition hover:bg-app-accent-hover disabled:cursor-not-allowed disabled:opacity-60",
     },
 
+    inlineOption: {
+        group: "flex gap-2",
+        btn:
+            "inline-flex flex-1 items-center justify-center border px-3 py-2 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-accent/60",
+        btnIdle:
+            "border-app-border-on-surface bg-black/5 text-app-canvas-fg hover:border-app-accent/40 hover:bg-black/10",
+        btnSelected:
+            "border-app-accent bg-app-accent/15 text-app-accent ring-1 ring-app-accent/50",
+    },
+
     optionCard: {
         listStack: "flex flex-col gap-2",
         card:
@@ -189,11 +199,12 @@ export const checkoutDesign = {
         backLink:
             "text-xs text-app-muted underline-offset-2 hover:text-app-canvas-fg hover:underline",
         primaryCluster: "flex shrink-0 items-center gap-2",
-        totalLabel: "text-xs font-semibold text-app-accent tabular-nums",
+        totalLabel:
+            "inline-block min-w-[5.5rem] text-right text-xs font-semibold tabular-nums text-app-accent",
         btnPrimary:
-            "inline-flex items-center justify-center rounded-none bg-app-accent px-3 py-1.5 text-xs font-semibold text-black shadow-[0_0_14px_rgba(198,36,36,0.7)] transition hover:bg-app-accent-hover",
+            "inline-flex min-w-[8.75rem] items-center justify-center whitespace-nowrap rounded-none bg-app-accent px-3 py-1.5 text-xs font-semibold text-black shadow-[0_0_14px_rgba(198,36,36,0.7)] transition hover:bg-app-accent-hover",
         btnPrimaryBusy:
-            "inline-flex items-center justify-center rounded-none bg-app-accent px-3 py-1.5 text-xs font-semibold text-black shadow-[0_0_14px_rgba(198,36,36,0.7)] transition hover:bg-app-accent-hover disabled:opacity-60",
+            "inline-flex min-w-[8.75rem] items-center justify-center whitespace-nowrap rounded-none bg-app-accent px-3 py-1.5 text-xs font-semibold text-black shadow-[0_0_14px_rgba(198,36,36,0.7)] transition hover:bg-app-accent-hover disabled:opacity-60",
     },
 
     summaryRow: {

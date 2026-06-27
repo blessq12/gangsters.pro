@@ -65,6 +65,14 @@ function isPaymentStepDirty(checkoutStore) {
     return changeFrom != null && String(changeFrom).trim() !== "";
 }
 
+function isFulfillmentStepDirty(checkoutStore) {
+    return (
+        isDeliveryStepDirty(checkoutStore)
+        || isPaymentStepDirty(checkoutStore)
+        || Boolean(checkoutStore?.paymentInfo?.method)
+    );
+}
+
 /**
  * @param {{
  *   dockActiveId: string | null,
@@ -101,14 +109,8 @@ export function resolveDockDismissPolicy({
             : { kind: DOCK_DISMISS_KIND.IMMEDIATE };
     }
 
-    if (step === "delivery") {
-        return isDeliveryStepDirty(checkoutStore)
-            ? { ...CHECKOUT_EXIT_CONFIRM }
-            : { kind: DOCK_DISMISS_KIND.IMMEDIATE };
-    }
-
-    if (step === "payment") {
-        return isPaymentStepDirty(checkoutStore)
+    if (step === "fulfillment") {
+        return isFulfillmentStepDirty(checkoutStore)
             ? { ...CHECKOUT_EXIT_CONFIRM }
             : { kind: DOCK_DISMISS_KIND.IMMEDIATE };
     }

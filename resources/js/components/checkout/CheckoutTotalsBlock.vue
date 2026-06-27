@@ -79,7 +79,7 @@ const visible = computed(() => {
             >
                 <span :class="c.totalsLabelMuted">Подарок</span>
                 <span :class="c.totalsValue">
-                    {{ giftSummary.name }} · Бесплатно
+                    {{ giftSummary.name }}
                 </span>
             </div>
             <div
@@ -134,7 +134,7 @@ const visible = computed(() => {
         >
             <span :class="c.totalsLabelMuted">Подарок</span>
             <span :class="c.totalsValue">
-                {{ giftSummary.name }} · Бесплатно
+                {{ giftSummary.name }}
             </span>
         </div>
         <div

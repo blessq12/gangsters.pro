@@ -9,8 +9,7 @@ export function resolveCheckoutDockTitle(step) {
 export const CHECKOUT_STEP_HINTS = Object.freeze({
     cart: "Проверь состав заказа перед оформлением.",
     guest: "Позвоним для подтверждения заказа.",
-    delivery: "Укажи, как и куда доставить заказ.",
-    payment: "Выбери способ оплаты при получении.",
+    fulfillment: "Сначала оплата, затем способ и адрес получения.",
     confirm: "Проверь данные и отправь заказ.",
     success: null,
 });
@@ -22,4 +21,5 @@ export const CHECKOUT_NAV_LABELS = Object.freeze({
     confirm: "Отправить заказ",
     success: "В меню",
     authLink: "Уже есть аккаунт? Войти",
+    editFulfillment: "Изменить оплату и доставку",
 });

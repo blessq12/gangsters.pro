@@ -1,1 +1,0 @@
-const i=["courier","pickup"],o={courier:{label:"Курьер",hint:"Доставка по адресу",icon:"mdi mdi-moped"},pickup:{label:"Самовывоз",hint:"Заберёшь заказ сам",icon:"mdi mdi-store-outline"}};export{i as C,o as a};

@@ -2,28 +2,51 @@
 export const CHECKOUT_WIZARD_GROUPS = {
     cart: "Корзина",
     guest: "Клиент",
-    delivery: "Доставка",
-    payment: "Оплата",
+    fulfillment: "Оплата и доставка",
     confirm: "Оформление",
     success: "Готово",
 };
 
 export const CHECKOUT_WIZARD_FLOW_GUEST = Object.freeze([
     "guest",
-    "delivery",
-    "payment",
+    "fulfillment",
     "confirm",
 ]);
 
 export const CHECKOUT_WIZARD_FLOW_AUTH = Object.freeze([
-    "delivery",
-    "payment",
+    "fulfillment",
     "confirm",
 ]);
 
+/** Серверные suggested_step → UI-шаг. */
+const SERVER_STEP_TO_UI = Object.freeze({
+    delivery: "fulfillment",
+    payment: "fulfillment",
+});
+
+/**
+ * @param {string|null|undefined} serverStep
+ * @returns {'guest'|'fulfillment'|'confirm'|null}
+ */
+export function mapServerWizardStep(serverStep) {
+    if (serverStep == null || serverStep === "") {
+        return null;
+    }
+
+    if (
+        serverStep === "guest"
+        || serverStep === "fulfillment"
+        || serverStep === "confirm"
+    ) {
+        return serverStep;
+    }
+
+    return SERVER_STEP_TO_UI[serverStep] ?? null;
+}
+
 /**
  * @param {boolean} isGuestCheckout
- * @returns {readonly ('guest'|'delivery'|'payment'|'confirm')[]}
+ * @returns {readonly ('guest'|'fulfillment'|'confirm')[]}
  */
 export function resolveWizardFlowSteps(isGuestCheckout) {
     return isGuestCheckout
@@ -32,7 +55,7 @@ export function resolveWizardFlowSteps(isGuestCheckout) {
 }
 
 /**
- * @param {'guest'|'delivery'|'payment'|'confirm'} step
+ * @param {'guest'|'fulfillment'|'confirm'} step
  * @param {boolean} isGuestCheckout
  */
 export function resolveWizardStepMeta(step, isGuestCheckout) {

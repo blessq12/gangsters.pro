@@ -13,6 +13,7 @@ import {
 import { refreshOrderDraftPreview } from "../../features/checkout/checkoutSessionService";
 import { useCheckoutStore } from "../../stores/checkoutStore";
 import { useOrderPreview } from "../../features/checkout/useOrderPreview";
+import { useCheckoutNavTotal } from "../../features/checkout/useCheckoutNavTotal";
 import CheckoutOrderReview from "./CheckoutOrderReview.vue";
 import CheckoutPromoStrip from "./CheckoutPromoStrip.vue";
 import CheckoutSection from "./CheckoutSection.vue";
@@ -28,9 +29,8 @@ const c = chk.cart;
 
 const {
     checkoutState,
-    goToPayment,
+    goToFulfillment,
     goToGuest,
-    goToDelivery,
     handleConfirmOrder,
     confirmLoading,
     confirmError,
@@ -40,6 +40,7 @@ const {
 const checkoutStore = useCheckoutStore();
 const { serverClient, serverDelivery, serverPayment } = storeToRefs(checkoutStore);
 const { previewLoading } = useOrderPreview();
+const { navTotalLabel } = useCheckoutNavTotal();
 
 const { formatPrice, formatPhone, isGuestCheckout } = checkoutState;
 
@@ -98,14 +99,14 @@ onMounted(() => {
                     @edit="goToGuest"
                 />
                 <CheckoutSummaryRow
-                    label="Получение"
-                    :value="deliveryAddressLine"
-                    @edit="goToDelivery"
-                />
-                <CheckoutSummaryRow
                     label="Оплата"
                     :value="paymentLine"
-                    @edit="goToPayment"
+                    @edit="goToFulfillment"
+                />
+                <CheckoutSummaryRow
+                    label="Получение"
+                    :value="deliveryAddressLine"
+                    @edit="goToFulfillment"
                 />
                 <CheckoutSummaryRow
                     v-if="deliveryComment"
@@ -131,7 +132,9 @@ onMounted(() => {
                 :primary-loading="confirmLoading"
                 :primary-disabled="!canConfirmOrder"
                 :primary-busy-label="CHECKOUT_LOADING_LABELS.orderSubmit"
-                @back="goToPayment"
+                show-nav-total
+                :total-label="navTotalLabel"
+                @back="goToFulfillment"
                 @primary="handleConfirmOrder"
             />
         </template>

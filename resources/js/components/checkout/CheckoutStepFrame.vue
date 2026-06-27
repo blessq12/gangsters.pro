@@ -4,7 +4,7 @@ import { useAppDesign } from "../../design/useAppDesign";
 import { CHECKOUT_STEP_HINTS } from "../../features/checkout/checkoutWizardLabels";
 
 const props = defineProps({
-    /** @type {'cart'|'guest'|'delivery'|'payment'|'confirm'|'success'} */
+    /** @type {'cart'|'guest'|'fulfillment'|'confirm'|'success'} */
     group: {
         type: String,
         required: true,
