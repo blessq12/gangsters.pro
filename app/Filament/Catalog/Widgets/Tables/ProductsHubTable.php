@@ -43,9 +43,11 @@ class ProductsHubTable extends TableWidget
                         ->formatStateUsing(fn (?int $state): string => $state === null ? '—' : number_format($state, 0, ',', ' ').' ₽')
                         ->sortable(),
                     CatalogHubTablePresentation::catalogItemStatusColumn(),
+                    CatalogHubTablePresentation::productSystemColumn(),
                 ])
                 ->filters([
                     CatalogHubTablePresentation::catalogItemStatusFilter(),
+                    CatalogHubTablePresentation::productSystemFilter(),
                     CatalogHubTablePresentation::productMetaFilter(),
                 ])
                 ->defaultSort('name'),

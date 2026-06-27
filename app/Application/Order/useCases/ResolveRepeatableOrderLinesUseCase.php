@@ -78,7 +78,7 @@ final class ResolveRepeatableOrderLinesUseCase
         $unavailableLines = [];
 
         foreach ($quantityByProductId as $productId => $quantity) {
-            $quote = $this->pricing->findActiveProductQuote($productId);
+            $quote = $this->pricing->findStorefrontProductQuote($productId);
             $productName = $this->resolveUserLineName($order->cart()->lines(), $productId);
 
             if ($quote === null) {

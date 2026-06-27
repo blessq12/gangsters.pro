@@ -25,6 +25,7 @@ final class Product implements CatalogItem
         private readonly string $slug,
         private readonly ?string $sku,
         private readonly ProductStatus $status,
+        private readonly bool $isSystem,
         private readonly Money $price,
         private readonly ?string $description,
         private readonly ?Nutrition $nutrition,
@@ -66,6 +67,11 @@ final class Product implements CatalogItem
     public function isActive(): bool
     {
         return $this->status->isActive();
+    }
+
+    public function isSystem(): bool
+    {
+        return $this->isSystem;
     }
 
     public function price(): Money

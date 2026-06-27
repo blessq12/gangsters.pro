@@ -199,7 +199,7 @@ final class GetCatalogUseCase
 
     /**
      * @param  array<int, Tag>  $tagById
-     * @param  array{counts_as_roll: bool, gift_candidate: bool, complement_set: bool}|null  $promotionMeta
+     * @param  array{counts_as_roll: bool, complement_set: bool}|null  $promotionMeta
      * @return array<string, mixed>
      */
     private function mapProduct(Product $product, array $tagById, ?array $promotionMeta): array
@@ -221,14 +221,13 @@ final class GetCatalogUseCase
     }
 
     /**
-     * @param  array{counts_as_roll: bool, gift_candidate: bool, complement_set: bool}|null  $promotionMeta
-     * @return array{counts_as_roll: bool, gift_candidate: bool, complement_set: bool}
+     * @param  array{counts_as_roll: bool, complement_set: bool}|null  $promotionMeta
+     * @return array{counts_as_roll: bool, complement_set: bool}
      */
     private function mapPromotionMeta(?array $promotionMeta): array
     {
         return [
             'counts_as_roll' => (bool) ($promotionMeta['counts_as_roll'] ?? false),
-            'gift_candidate' => (bool) ($promotionMeta['gift_candidate'] ?? false),
             'complement_set' => (bool) ($promotionMeta['complement_set'] ?? false),
         ];
     }

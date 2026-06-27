@@ -78,6 +78,7 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
         $rows = $this->productQuery()
             ->where('catalog_kind', CatalogItemKind::Product->value)
             ->where('status', ProductStatus::Active->value)
+            ->where('is_system', false)
             ->whereNull('archived_at')
             ->whereIn('id', $ids)
             ->get();
@@ -304,7 +305,7 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
 
     /**
      * @param  list<int>  $ids
-     * @return array<int, array{counts_as_roll: bool, gift_candidate: bool, complement_set: bool}>
+     * @return array<int, array{counts_as_roll: bool, complement_set: bool}>
      */
     public function findPromotionMetaByProductIds(array $ids): array
     {
@@ -316,11 +317,10 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
         return PRD_Product::query()
             ->where('catalog_kind', CatalogItemKind::Product->value)
             ->whereIn('id', $ids)
-            ->get(['id', 'meta_counts_as_roll', 'meta_gift_candidate', 'meta_is_complement_set'])
+            ->get(['id', 'meta_counts_as_roll', 'meta_is_complement_set'])
             ->mapWithKeys(static fn (PRD_Product $row): array => [
                 (int) $row->id => [
                     'counts_as_roll' => (bool) $row->meta_counts_as_roll,
-                    'gift_candidate' => (bool) $row->meta_gift_candidate,
                     'complement_set' => (bool) $row->meta_is_complement_set,
                 ],
             ])

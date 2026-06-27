@@ -23,6 +23,7 @@ final class CatalogProductMapper
             slug: (string) $row->slug,
             sku: $this->resolveSku($row),
             status: $this->resolveStatus($row),
+            isSystem: (bool) $row->is_system,
             price: Money::rubles((int) ($row->price ?? 0)),
             description: $row->description !== null ? (string) $row->description : null,
             nutrition: $this->resolveNutrition($row),

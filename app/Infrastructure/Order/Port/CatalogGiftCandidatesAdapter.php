@@ -17,7 +17,7 @@ final class CatalogGiftCandidatesAdapter implements CatalogGiftCandidatesPort
         $rows = PRD_Product::query()
             ->where('catalog_kind', CatalogItemKind::Product->value)
             ->where('status', ProductStatus::Active->value)
-            ->where('meta_gift_candidate', true)
+            ->where('is_system', true)
             ->whereNull('archived_at')
             ->orderBy('name')
             ->get();

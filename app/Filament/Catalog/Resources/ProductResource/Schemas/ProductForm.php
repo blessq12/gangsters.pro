@@ -102,6 +102,10 @@ final class ProductForm
                 ->default(ProductStatus::Active->value)
                 ->required()
                 ->helperText('Архивные товары не попадают в публичный каталог.'),
+            Toggle::make('is_system')
+                ->label('Системный товар')
+                ->default(false)
+                ->helperText('Не отображается на витрине. Доступен для подарков, дополнений и других системных сценариев.'),
             TextInput::make('price')
                 ->label('Цена, ₽')
                 ->numeric()
@@ -188,9 +192,6 @@ final class ProductForm
             Toggle::make('meta_counts_as_roll')
                 ->label('Считается как ролл')
                 ->helperText('Учитывается при расчёте комплекта дополнений в корзине.'),
-            Toggle::make('meta_gift_candidate')
-                ->label('Кандидат на подарок')
-                ->helperText('Может быть выдан бесплатно по правилам Promotion.'),
             Toggle::make('meta_is_complement_set')
                 ->label('Набор дополнений')
                 ->helperText('Автодобавление комплекта при достижении порога роллов.'),

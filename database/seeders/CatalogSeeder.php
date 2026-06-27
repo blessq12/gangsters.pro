@@ -165,7 +165,6 @@ class CatalogSeeder extends Seeder
                         'nutrition_basis' => 'per_100g',
                         'ingredients' => null,
                         'meta_counts_as_roll' => $countsAsRoll,
-                        'meta_gift_candidate' => false,
                         'meta_is_complement_set' => false,
                         'archived_at' => ($row['visible'] ?? true) ? null : now(),
                     ],

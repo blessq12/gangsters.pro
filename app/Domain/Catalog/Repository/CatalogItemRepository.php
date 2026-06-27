@@ -12,6 +12,8 @@ interface CatalogItemRepository
     public function findSetById(int $id): ?ProductSet;
 
     /**
+     * Активные товары витрины (без системных).
+     *
      * @param  list<int>  $ids
      * @return list<Product>
      */
@@ -31,7 +33,7 @@ interface CatalogItemRepository
 
     /**
      * @param  list<int>  $ids
-     * @return array<int, array{counts_as_roll: bool, gift_candidate: bool, complement_set: bool}>
+     * @return array<int, array{counts_as_roll: bool, complement_set: bool}>
      */
     public function findPromotionMetaByProductIds(array $ids): array;
 }

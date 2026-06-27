@@ -76,13 +76,35 @@ final class CatalogHubTablePresentation
             ]);
     }
 
+    public static function productSystemColumn(): TextColumn
+    {
+        return TextColumn::make('is_system')
+            ->label('Системный')
+            ->badge()
+            ->formatStateUsing(
+                fn (bool $state): string => $state ? 'Да' : 'Нет',
+            )
+            ->color(
+                fn (bool $state): string => $state ? 'warning' : 'gray',
+            );
+    }
+
+    public static function productSystemFilter(): SelectFilter
+    {
+        return SelectFilter::make('is_system')
+            ->label('Системный товар')
+            ->options([
+                '1' => 'Да',
+                '0' => 'Нет',
+            ]);
+    }
+
     public static function productMetaFilter(): SelectFilter
     {
         return SelectFilter::make('product_meta')
             ->label('Мета товара')
             ->options([
                 'meta_counts_as_roll' => 'Считается как ролл',
-                'meta_gift_candidate' => 'Кандидат на подарок',
                 'meta_is_complement_set' => 'Набор дополнений',
             ])
             ->query(function (Builder $query, array $data): void {
@@ -94,7 +116,6 @@ final class CatalogHubTablePresentation
 
                 if (! in_array($column, [
                     'meta_counts_as_roll',
-                    'meta_gift_candidate',
                     'meta_is_complement_set',
                 ], true)) {
                     return;

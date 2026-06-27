@@ -50,7 +50,8 @@ final class ApplyComplementPreservesGiftLineTest extends TestCase
     private function resolveGiftCandidateProductId(): ?int
     {
         $id = \App\Infrastructure\Catalog\Model\PRD_Product::query()
-            ->where('meta_gift_candidate', true)
+            ->where('is_system', true)
+            ->where('catalog_kind', 'product')
             ->where('status', 'active')
             ->whereNull('archived_at')
             ->value('id');
@@ -61,7 +62,8 @@ final class ApplyComplementPreservesGiftLineTest extends TestCase
     private function resolveRegularProductId(): ?int
     {
         $id = \App\Infrastructure\Catalog\Model\PRD_Product::query()
-            ->where('meta_gift_candidate', false)
+            ->where('is_system', false)
+            ->where('catalog_kind', 'product')
             ->where('status', 'active')
             ->whereNull('archived_at')
             ->value('id');
