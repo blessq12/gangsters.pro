@@ -2,6 +2,7 @@
 
 namespace App\Application\Company\useCases;
 
+use App\Domain\Client\ValueObject\PhoneNumber;
 use App\Domain\Company\Entity\Company;
 use App\Domain\Company\Repository\CompanyRepository;
 use App\Domain\Company\ValueObject\CompanyContact;
@@ -58,13 +59,22 @@ final class GetCompanyDataUseCase
     private function mapContact(CompanyContact $contact): array
     {
         return [
-            'phone' => $contact->phone(),
-            'phone_additional' => $contact->phoneAdditional(),
-            'support_phone' => $contact->supportPhone(),
-            'whatsapp_phone' => $contact->whatsappPhone(),
+            'phone' => self::formatOptionalPhone($contact->phone()),
+            'phone_additional' => self::formatOptionalPhone($contact->phoneAdditional()),
+            'support_phone' => self::formatOptionalPhone($contact->supportPhone()),
+            'whatsapp_phone' => self::formatOptionalPhone($contact->whatsappPhone()),
             'email_address' => $contact->emailAddress(),
             'public_email' => $contact->publicEmail(),
         ];
+    }
+
+    private static function formatOptionalPhone(?string $phone): ?string
+    {
+        if ($phone === null || trim($phone) === '') {
+            return null;
+        }
+
+        return PhoneNumber::tryFormatFromRaw($phone) ?? trim($phone);
     }
 
     /**

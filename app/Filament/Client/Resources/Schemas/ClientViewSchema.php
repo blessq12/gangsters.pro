@@ -2,6 +2,7 @@
 
 namespace App\Filament\Client\Resources\Schemas;
 
+use App\Filament\Support\FilamentRuPhoneField;
 use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\RepeatableEntry\TableColumn;
@@ -52,8 +53,7 @@ final class ClientViewSchema
                 ->label('Идентификатор'),
             TextInput::make('name')
                 ->label('Имя'),
-            TextInput::make('phone')
-                ->label('Телефон'),
+            FilamentRuPhoneField::makeReadOnly('phone', 'Телефон'),
             TextInput::make('email')
                 ->label('Email'),
             TextInput::make('birth_date')

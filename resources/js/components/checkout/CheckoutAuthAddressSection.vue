@@ -3,13 +3,15 @@ import { computed } from "vue";
 import { storeToRefs } from "pinia";
 import { useAppDesign } from "../../design/useAppDesign";
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
+import { CHECKOUT_LOADING_LABELS } from "../../features/checkout/checkoutLoadingLabels";
 import { useUserStore } from "../../stores/userStore";
 import FormField from "../ui/FormField.vue";
+import CheckoutAddressFormFields from "./CheckoutAddressFormFields.vue";
+import CheckoutSection from "./CheckoutSection.vue";
 
 const chk = useAppDesign().components.checkout;
 const s = chk.shared;
-const d = chk.delivery;
-const ff = useAppDesign().components.uiPrimitives.formField;
+const o = chk.optionCard;
 
 const userStore = useUserStore();
 const { addresses } = storeToRefs(userStore);
@@ -34,10 +36,6 @@ const hasAddresses = computed(
     () => Array.isArray(addresses.value) && addresses.value.length > 0,
 );
 
-const selectedAddressInvalid = computed(() =>
-    deliveryFieldErrors.has("selectedAddress"),
-);
-
 function formatAddressLine(address) {
     return [
         address.street,
@@ -51,80 +49,38 @@ function formatAddressLine(address) {
 </script>
 
 <template>
-    <div v-if="!hasAddresses" :class="d.emptyHero">
-        <div class="space-y-1">
-            <p :class="d.emptyTitle">
-                Адрес доставки
-            </p>
-            <p :class="d.emptyLead">
-                Укажи адрес — сохраним в аккаунте для следующих заказов.
-            </p>
-        </div>
+    <CheckoutSection
+        v-if="!hasAddresses"
+        title="Куда доставить"
+        variant="inset"
+    >
+        <p :class="s.introMuted">
+            Сохраним адрес в аккаунте для следующих заказов.
+        </p>
 
-        <div :class="s.grid2">
-            <input
-                v-model="newAddressForm.title"
-                type="text"
-                placeholder="Название (дом, работа)"
-                :class="s.inputFieldCol2"
-            />
-        </div>
-
-        <FormField :error="newAddressFieldErrors.get('street')">
-            <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
-                <input
-                    :id="id"
-                    v-model="newAddressForm.street"
-                    type="text"
-                    placeholder="Улица"
-                    :class="[s.inputFieldFull, invalid && invalidClass]"
-                    :aria-invalid="ariaInvalid"
-                    :aria-describedby="describedBy"
-                />
-            </template>
-        </FormField>
-
-        <div :class="s.grid2">
-            <FormField :error="newAddressFieldErrors.get('house')">
-                <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
-                    <input
-                        :id="id"
-                        v-model="newAddressForm.house"
-                        type="text"
-                        placeholder="Дом"
-                        :class="[s.inputFieldGridCell, invalid && invalidClass]"
-                        :aria-invalid="ariaInvalid"
-                        :aria-describedby="describedBy"
-                    />
-                </template>
-            </FormField>
-
-            <input
-                v-model="newAddressForm.entrance"
-                type="text"
-                placeholder="Подъезд"
-                :class="s.inputFieldGridCell"
-            />
-            <input
-                v-model="newAddressForm.apartment"
-                type="text"
-                placeholder="Квартира"
-                :class="s.inputFieldCol2"
-            />
-        </div>
-        <textarea
-            v-model="newAddressForm.comment"
-            rows="2"
-            placeholder="Комментарий для курьера (подъезд, код, ориентир)"
-            :class="s.textareaAddress"
+        <CheckoutAddressFormFields
+            show-title
+            show-comment
+            comment-placeholder="Заметка к адресу в профиле (необязательно)"
+            show-default-checkbox
+            :title="newAddressForm.title"
+            :street="newAddressForm.street"
+            :house="newAddressForm.house"
+            :entrance="newAddressForm.entrance"
+            :apartment="newAddressForm.apartment"
+            :comment="newAddressForm.comment"
+            :make-default="newAddressForm.make_default"
+            :street-error="newAddressFieldErrors.get('street')"
+            :house-error="newAddressFieldErrors.get('house')"
+            @update:title="newAddressForm.title = $event"
+            @update:street="newAddressForm.street = $event"
+            @update:house="newAddressForm.house = $event"
+            @update:entrance="newAddressForm.entrance = $event"
+            @update:apartment="newAddressForm.apartment = $event"
+            @update:comment="newAddressForm.comment = $event"
+            @update:make-default="newAddressForm.make_default = $event"
         />
-        <label :class="s.checkboxLabelRow">
-            <AppCheckbox
-                v-model="newAddressForm.make_default"
-                size="sm"
-            />
-            <span>Сделать основным адресом</span>
-        </label>
+
         <p
             v-if="newAddressFieldErrors.formError"
             :class="s.errorLine"
@@ -133,63 +89,62 @@ function formatAddressLine(address) {
         </p>
         <button
             type="button"
-            :class="d.savePrimaryBtn"
+            :class="s.btnPrimaryNav"
             :disabled="newAddressLoading"
             @click="handleCreateAddress"
         >
             <span v-if="!newAddressLoading">Сохранить и продолжить</span>
-            <span v-else>Сохраняем…</span>
+            <span v-else>{{ CHECKOUT_LOADING_LABELS.addressSave }}</span>
         </button>
         <button
             type="button"
-            :class="d.profileLink"
+            :class="s.linkUnderline"
             @click="openProfileDock"
         >
             Управлять адресами в профиле
         </button>
-    </div>
+    </CheckoutSection>
 
-    <div
+    <CheckoutSection
         v-else
-        :class="d.listSection"
+        title="Куда доставить"
     >
         <FormField :error="deliveryFieldErrors.get('selectedAddress')">
             <template #default>
-                <p :class="s.headingSm">
-                    Выбери адрес доставки
-                </p>
-                <ul
-                    class="space-y-2"
-                    :class="selectedAddressInvalid && ff.groupInvalid"
-                >
-                    <li
+                <div :class="o.listStack">
+                    <button
                         v-for="address in addresses"
                         :key="address.id"
-                        :class="s.addressLi"
+                        type="button"
+                        :class="[
+                            o.addressCard,
+                            userStore.selectedAddressId === address.id
+                                ? o.cardSelected
+                                : o.cardIdle,
+                        ]"
+                        :aria-pressed="userStore.selectedAddressId === address.id"
+                        @click="selectAddress(address.id)"
                     >
-                        <AppRadio
-                            :id="`addr-${address.id}`"
-                            :model-value="userStore.selectedAddressId"
-                            :value="address.id"
-                            @update:model-value="selectAddress"
-                        />
-                        <label
-                            :for="`addr-${address.id}`"
-                            :class="s.labelAddress"
+                        <span
+                            v-if="userStore.selectedAddressId === address.id"
+                            :class="o.badge"
                         >
-                            <span :class="s.addressTitle">
+                            Выбрано
+                        </span>
+                        <span :class="o.addressInner">
+                            <span :class="o.addressTitle">
                                 {{
                                     address.title ||
                                         address.label ||
                                         `Адрес #${address.id}`
                                 }}
                             </span>
-                            <span :class="s.addressMeta">
+                            <span :class="o.addressMeta">
                                 {{ formatAddressLine(address) }}
                             </span>
-                        </label>
-                    </li>
-                </ul>
+                        </span>
+                    </button>
+                </div>
             </template>
         </FormField>
 
@@ -208,72 +163,30 @@ function formatAddressLine(address) {
             <Transition name="checkout-fade">
                 <div
                     v-if="isNewAddressOpen"
-                    :class="s.newAddressWrap"
+                    :class="[s.newAddressWrap, s.sectionInset]"
                 >
-                    <div :class="s.grid2">
-                        <input
-                            v-model="newAddressForm.title"
-                            type="text"
-                            placeholder="Название (дом, работа)"
-                            :class="s.inputFieldCol2"
-                        />
-                    </div>
-
-                    <FormField :error="newAddressFieldErrors.get('street')">
-                        <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
-                            <input
-                                :id="id"
-                                v-model="newAddressForm.street"
-                                type="text"
-                                placeholder="Улица"
-                                :class="[s.inputFieldFull, invalid && invalidClass]"
-                                :aria-invalid="ariaInvalid"
-                                :aria-describedby="describedBy"
-                            />
-                        </template>
-                    </FormField>
-
-                    <div :class="s.grid2">
-                        <FormField :error="newAddressFieldErrors.get('house')">
-                            <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
-                                <input
-                                    :id="id"
-                                    v-model="newAddressForm.house"
-                                    type="text"
-                                    placeholder="Дом"
-                                    :class="[s.inputFieldGridCell, invalid && invalidClass]"
-                                    :aria-invalid="ariaInvalid"
-                                    :aria-describedby="describedBy"
-                                />
-                            </template>
-                        </FormField>
-
-                        <input
-                            v-model="newAddressForm.entrance"
-                            type="text"
-                            placeholder="Подъезд"
-                            :class="s.inputFieldGridCell"
-                        />
-                        <input
-                            v-model="newAddressForm.apartment"
-                            type="text"
-                            placeholder="Квартира"
-                            :class="s.inputFieldCol2"
-                        />
-                    </div>
-                    <textarea
-                        v-model="newAddressForm.comment"
-                        rows="2"
-                        placeholder="Комментарий для курьера (подъезд, код, ориентир)"
-                        :class="s.textareaAddress"
+                    <CheckoutAddressFormFields
+                        show-title
+                        show-comment
+                        show-default-checkbox
+                        :title="newAddressForm.title"
+                        :street="newAddressForm.street"
+                        :house="newAddressForm.house"
+                        :entrance="newAddressForm.entrance"
+                        :apartment="newAddressForm.apartment"
+                        :comment="newAddressForm.comment"
+                        :make-default="newAddressForm.make_default"
+                        :street-error="newAddressFieldErrors.get('street')"
+                        :house-error="newAddressFieldErrors.get('house')"
+                        @update:title="newAddressForm.title = $event"
+                        @update:street="newAddressForm.street = $event"
+                        @update:house="newAddressForm.house = $event"
+                        @update:entrance="newAddressForm.entrance = $event"
+                        @update:apartment="newAddressForm.apartment = $event"
+                        @update:comment="newAddressForm.comment = $event"
+                        @update:make-default="newAddressForm.make_default = $event"
                     />
-                    <label :class="s.checkboxLabelRow">
-                        <AppCheckbox
-                            v-model="newAddressForm.make_default"
-                            size="sm"
-                        />
-                        <span>Сделать основным адресом</span>
-                    </label>
+
                     <p
                         v-if="newAddressFieldErrors.formError"
                         :class="s.errorLine"
@@ -287,12 +200,12 @@ function formatAddressLine(address) {
                         @click="handleCreateAddress"
                     >
                         <span v-if="!newAddressLoading">Сохранить адрес</span>
-                        <span v-else>Сохраняем…</span>
+                        <span v-else>{{ CHECKOUT_LOADING_LABELS.addressSave }}</span>
                     </button>
                 </div>
             </Transition>
         </div>
-    </div>
+    </CheckoutSection>
 </template>
 
 <style scoped>

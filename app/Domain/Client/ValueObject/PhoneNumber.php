@@ -45,8 +45,47 @@ final readonly class PhoneNumber
         return substr($digits, 0, 10);
     }
 
+    /**
+     * Канонический вид: +7 (XXX) XXX-XX-XX.
+     */
+    public static function formatFromRaw(?string $raw): string
+    {
+        return self::fromRaw($raw)->formatted();
+    }
+
+    /**
+     * @return string|null Канон или null, если номер неполный/невалидный.
+     */
+    public static function tryFormatFromRaw(?string $raw): ?string
+    {
+        $digits = self::normalizeDigits($raw);
+
+        if (strlen($digits) !== 10) {
+            return null;
+        }
+
+        return self::formatDigits($digits);
+    }
+
+    public static function formatDigits(string $digits): string
+    {
+        return sprintf(
+            '+7 (%s) %s-%s-%s',
+            substr($digits, 0, 3),
+            substr($digits, 3, 3),
+            substr($digits, 6, 2),
+            substr($digits, 8, 2),
+        );
+    }
+
+    /** Внутренние 10 цифр абонента (без кода страны). */
     public function digits(): string
     {
         return $this->digits;
+    }
+
+    public function formatted(): string
+    {
+        return self::formatDigits($this->digits);
     }
 }

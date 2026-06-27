@@ -17,7 +17,7 @@ const fullName = computed(
     () => clientReadModel.profile.value.name || "Гость Gangsters",
 );
 const phone = computed(
-    () => clientReadModel.profile.value.phone || "+7 (___) ___‑__‑__",
+    () => clientReadModel.profile.value.phone || "+7 (___) ___-__-__",
 );
 const email = computed(
     () => clientReadModel.profile.value.email || "email не указан",

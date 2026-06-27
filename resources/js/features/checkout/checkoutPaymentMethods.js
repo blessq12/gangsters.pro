@@ -7,6 +7,20 @@ export const CHECKOUT_PAYMENT_METHOD_LABELS = {
     card: "Банковской картой",
 };
 
+/** UI: заголовок, подсказка и иконка для карточек выбора на шаге оплаты. */
+export const CHECKOUT_PAYMENT_METHOD_META = {
+    cash: {
+        label: CHECKOUT_PAYMENT_METHOD_LABELS.cash,
+        hint: "Оплата курьеру при получении заказа",
+        icon: "mdi mdi-cash",
+    },
+    card: {
+        label: CHECKOUT_PAYMENT_METHOD_LABELS.card,
+        hint: "Терминал у курьера при доставке",
+        icon: "mdi mdi-credit-card-outline",
+    },
+};
+
 /**
  * @param {unknown} id
  * @returns {id is string}

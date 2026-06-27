@@ -1,6 +1,6 @@
 /**
- * Политика российского мобильного номера для форм (10 цифр без ведущей 7/8).
- * Согласовано с нормализацией на бэкенде (см. App\Domain\Client\VO\PhoneNumber).
+ * Политика российского мобильного номера.
+ * Канон: +7 (XXX) XXX-XX-XX (согласовано с App\Domain\Client\ValueObject\PhoneNumber).
  */
 
 /**
@@ -24,9 +24,7 @@ export const RU_PHONE_MESSAGES = Object.freeze({
 });
 
 /**
- * Только цифры РФ: убирает маску, при 11 знаках с ведущей 7 или 8 — отрезает её.
- * Пока длина &lt; 11, снимает ведущие 7/8 (ошибочный «код» после +7 в UI).
- * Обрезает до 10 цифр (мобильный абонент).
+ * Извлекает 10 цифр абонента из произвольной строки.
  * @param {string|null|undefined} raw
  * @returns {string}
  */
@@ -49,6 +47,19 @@ export function normalizeRuPhoneDigits(raw) {
 }
 
 /**
+ * Канонический вид: +7 (XXX) XXX-XX-XX.
+ * @param {string|null|undefined} raw
+ * @returns {string} Пустая строка, если номер неполный.
+ */
+export function formatRuPhoneCanonical(raw) {
+    const digits = normalizeRuPhoneDigits(raw);
+    if (digits.length !== 10) {
+        return "";
+    }
+    return `+7 (${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 8)}-${digits.slice(8, 10)}`;
+}
+
+/**
  * @param {string} digits — уже нормализованные цифры
  * @returns {boolean}
  */
@@ -58,7 +69,7 @@ export function isRuPhoneComplete(digits) {
 
 /**
  * @param {string|null|undefined} raw
- * @returns {{ ok: true, digits: string } | { ok: false, message: string }}
+ * @returns {{ ok: true, digits: string, formatted: string } | { ok: false, message: string }}
  */
 export function validateRuPhoneForSubmit(raw) {
     const digits = normalizeRuPhoneDigits(raw);
@@ -68,5 +79,5 @@ export function validateRuPhoneForSubmit(raw) {
     if (!isRuPhoneComplete(digits)) {
         return { ok: false, message: RU_PHONE_MESSAGES.incomplete };
     }
-    return { ok: true, digits };
+    return { ok: true, digits, formatted: formatRuPhoneCanonical(digits) };
 }

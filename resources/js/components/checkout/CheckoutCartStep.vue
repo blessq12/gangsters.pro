@@ -3,18 +3,19 @@ import { computed } from "vue";
 import { storeToRefs } from "pinia";
 import { useAppDesign } from "../../design/useAppDesign";
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
+import { CHECKOUT_NAV_LABELS } from "../../features/checkout/checkoutWizardLabels";
 import { useCheckoutStore } from "../../stores/checkoutStore";
 import { useCartCommands } from "../../features/shoppingSession/useCartCommands";
-import CheckoutOrderPreview from "./CheckoutOrderPreview.vue";
+import CheckoutPromoStrip from "./CheckoutPromoStrip.vue";
 import CheckoutSection from "./CheckoutSection.vue";
+import CheckoutStepFrame from "./CheckoutStepFrame.vue";
+import CheckoutStepNav from "./CheckoutStepNav.vue";
+import CheckoutTotalsBlock from "./CheckoutTotalsBlock.vue";
 
 const chk = useAppDesign().components.checkout;
 const c = chk.cart;
 
-const {
-    checkoutState,
-    handleStartCheckout,
-} = useCheckoutFlowContext();
+const { checkoutState, handleStartCheckout } = useCheckoutFlowContext();
 
 const cartStore = useCheckoutStore();
 const cartCommands = useCartCommands();
@@ -23,10 +24,7 @@ const {
     userItems: userCartItems,
 } = storeToRefs(cartStore);
 
-const {
-    formatPrice,
-    isAuthenticated,
-} = checkoutState;
+const { formatPrice } = checkoutState;
 
 const isCartEmpty = computed(() => cartItems.value.length === 0);
 const hasUserLines = computed(() => userCartItems.value.length > 0);
@@ -51,7 +49,7 @@ function unitPriceRub(item) {
 </script>
 
 <template>
-    <div class="space-y-3">
+    <CheckoutStepFrame group="cart">
         <div
             v-if="isCartEmpty"
             :class="c.emptyState"
@@ -118,19 +116,18 @@ function unitPriceRub(item) {
             Добавь блюда из меню
         </p>
 
-        <CheckoutOrderPreview variant="cart" />
+        <CheckoutPromoStrip variant="cart" />
+        <CheckoutTotalsBlock depth="items" />
 
-        <div
+        <template
             v-if="hasUserLines"
-            :class="c.authActions"
+            #nav
         >
-            <button
-                type="button"
-                :class="chk.shared.btnPrimaryMd"
-                @click="handleStartCheckout"
-            >
-                {{ isAuthenticated ? "Далее" : "Оформить" }}
-            </button>
-        </div>
-    </div>
+            <CheckoutStepNav
+                :show-back="false"
+                :primary-label="CHECKOUT_NAV_LABELS.cartPrimary"
+                @primary="handleStartCheckout"
+            />
+        </template>
+    </CheckoutStepFrame>
 </template>

@@ -17,7 +17,7 @@ final class LoginClientRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'phone' => ['nullable', 'string', 'max:32', 'required_without:email'],
+            'phone' => ['nullable', 'string', 'max:20', 'required_without:email'],
             'email' => ['nullable', 'string', 'email', 'max:255', 'required_without:phone'],
             'password' => ['required', 'string', 'max:255'],
         ];

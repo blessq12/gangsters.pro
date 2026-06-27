@@ -13,6 +13,7 @@ use App\Domain\Order\OrderDraft\ValueObject\GuestContact;
 use App\Domain\Order\OrderDraft\ValueObject\PaymentSnapshot;
 use App\Domain\Order\Port\CatalogPricingPort;
 use App\Domain\Order\Port\ClientProfilePort;
+use App\Domain\Client\ValueObject\PhoneNumber;
 use App\Shared\Enum\DeliveryMethod;
 use App\Shared\Enum\PaymentMethod;
 use InvalidArgumentException;
@@ -117,22 +118,24 @@ final class BuildOrderDraftFromInput
             return ClientSnapshot::registered(
                 clientId: $clientId,
                 name: isset($client['name']) ? (string) $client['name'] : $profile->name(),
-                phone: isset($client['phone']) ? (string) $client['phone'] : $profile->phone(),
+                phone: isset($client['phone']) && trim((string) $client['phone']) !== ''
+                    ? PhoneNumber::formatFromRaw((string) $client['phone'])
+                    : $profile->phone(),
                 email: isset($client['email']) ? (string) $client['email'] : $profile->email(),
             );
         }
 
         $name = isset($client['name']) ? trim((string) $client['name']) : '';
-        $phone = isset($client['phone']) ? trim((string) $client['phone']) : '';
+        $phoneRaw = isset($client['phone']) ? trim((string) $client['phone']) : '';
 
-        if ($name === '' || $phone === '') {
+        if ($name === '' || $phoneRaw === '') {
             return null;
         }
 
         return ClientSnapshot::guest(
             new GuestContact(
                 name: $name,
-                phone: $phone,
+                phone: PhoneNumber::formatFromRaw($phoneRaw),
                 email: isset($client['email']) ? (string) $client['email'] : null,
             ),
         );

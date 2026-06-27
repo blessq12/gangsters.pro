@@ -33,7 +33,7 @@ final class EloquentClientRepository implements ClientRepository
     {
         $row = CLN_Client::query()
             ->with(['addresses', 'favorites'])
-            ->where('phone', $phone->digits())
+            ->where('phone', $phone->formatted())
             ->first();
 
         return $row instanceof CLN_Client ? $this->mapper->toDomain($row) : null;
@@ -52,7 +52,7 @@ final class EloquentClientRepository implements ClientRepository
     public function existsByPhone(PhoneNumber $phone): bool
     {
         return CLN_Client::query()
-            ->where('phone', $phone->digits())
+            ->where('phone', $phone->formatted())
             ->exists();
     }
 

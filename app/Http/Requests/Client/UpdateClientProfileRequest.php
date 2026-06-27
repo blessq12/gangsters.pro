@@ -18,7 +18,7 @@ final class UpdateClientProfileRequest extends FormRequest
     {
         return [
             'name' => ['sometimes', 'string', 'max:255'],
-            'phone' => ['sometimes', 'string', 'max:32'],
+            'phone' => ['sometimes', 'string', 'max:20'],
             'email' => ['nullable', 'string', 'email', 'max:255'],
             'birth_date' => ['nullable', 'date'],
             'consent_personal_data' => ['sometimes', 'boolean'],

@@ -1,49 +1,42 @@
 <script setup>
-import { computed, unref } from "vue";
+import { computed } from "vue";
 import { useAppDesign } from "../../design/useAppDesign";
-import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
-import {
-    CHECKOUT_WIZARD_GROUPS,
-    resolveWizardStepMeta,
-} from "../../features/checkout/checkoutWizardGroups";
+import { CHECKOUT_STEP_HINTS } from "../../features/checkout/checkoutWizardLabels";
 
 const props = defineProps({
-    /** @type {'cart'|'guest'|'delivery'|'payment'|'confirm'} */
+    /** @type {'cart'|'guest'|'delivery'|'payment'|'confirm'|'success'} */
     group: {
         type: String,
         required: true,
     },
+    hint: {
+        type: String,
+        default: null,
+    },
 });
 
 const s = useAppDesign().components.checkout.shared;
-const { checkoutState } = useCheckoutFlowContext();
-const { isGuestCheckout } = checkoutState;
 
-const headerLabel = computed(() => {
-    if (props.group === "cart") {
-        return CHECKOUT_WIZARD_GROUPS.cart;
+const stepHint = computed(() => {
+    if (props.hint != null) {
+        return props.hint;
     }
-
-    const guestFlow = unref(isGuestCheckout);
-    const meta = resolveWizardStepMeta(props.group, guestFlow);
-    if (!meta) {
-        return CHECKOUT_WIZARD_GROUPS[props.group] ?? "";
-    }
-
-    return `${meta.label} · ${meta.n}/${meta.total}`;
+    return CHECKOUT_STEP_HINTS[props.group] ?? null;
 });
 </script>
 
 <template>
     <div :class="[s.flowBody, 'space-y-3']">
-        <p :class="s.stepKicker">
-            {{ headerLabel }}
-        </p>
-        <slot />
-        <div
-            v-if="$slots.nav"
-            :class="s.navFooterRow"
+        <p
+            v-if="stepHint"
+            :class="s.stepHint"
         >
+            {{ stepHint }}
+        </p>
+
+        <slot />
+
+        <div v-if="$slots.nav">
             <slot name="nav" />
         </div>
     </div>

@@ -26,6 +26,9 @@ export const checkoutDesign = {
         pillInactive:
             "bg-black/5 text-app-canvas-fg hover:bg-black/8",
         introMuted: "text-xs text-app-muted",
+        stepHint: "text-xs leading-snug text-app-muted",
+        sectionInset: `${nestedCard} space-y-2 px-3 py-3`,
+        fieldLabel: "text-[11px] font-medium text-app-canvas-fg",
         guestIsland: `${nestedCard} space-y-2 px-3 py-3`,
         grid2: "grid grid-cols-2 gap-2",
         addressEmptyHint: `${nestedCard} border-dashed border-neutral-500/60 px-4 py-3 text-[11px] text-app-muted`,
@@ -55,13 +58,20 @@ export const checkoutDesign = {
             "inline-flex w-full items-center justify-center rounded-none bg-black/5 px-3 py-1.5 text-[11px] font-medium text-app-canvas-fg transition hover:bg-black/8 disabled:opacity-50",
         navFooterRow:
             "mt-2 flex items-center justify-between text-[11px] text-app-muted",
-        linkUnderline: "underline-offset-2 hover:underline",
+        linkUnderline: "underline-offset-2 hover:underline text-app-muted hover:text-app-canvas-fg",
         btnPrimarySm:
             "inline-flex items-center justify-center rounded-none bg-app-accent px-3 py-1.5 text-[11px] font-semibold text-black shadow-[0_0_14px_rgba(198,36,36,0.7)] transition hover:bg-app-accent-hover",
         btnPrimarySmBusy:
             "inline-flex items-center justify-center rounded-none bg-app-accent px-3 py-1.5 text-[11px] font-semibold text-black shadow-[0_0_14px_rgba(198,36,36,0.7)] transition hover:bg-app-accent-hover disabled:opacity-60",
+        /** Единая primary-кнопка навигации визарда (nav footer, success). */
+        btnPrimaryNav:
+            "inline-flex items-center justify-center rounded-none bg-app-accent px-3 py-1.5 text-[11px] font-semibold text-black shadow-[0_0_14px_rgba(198,36,36,0.7)] transition hover:bg-app-accent-hover disabled:opacity-60",
+        btnPrimaryNavBusy:
+            "inline-flex items-center justify-center rounded-none bg-app-accent px-3 py-1.5 text-[11px] font-semibold text-black shadow-[0_0_14px_rgba(198,36,36,0.7)] transition hover:bg-app-accent-hover disabled:opacity-60",
         btnPrimaryMd:
             "inline-flex items-center justify-center rounded-none bg-app-accent px-4 py-2 text-xs font-semibold text-black shadow-[0_0_18px_rgba(198,36,36,0.7)] transition hover:bg-app-accent-hover",
+        btnAuthSecondary:
+            "inline-flex w-full items-center justify-center rounded-none border border-black/15 bg-black/5 px-4 py-2.5 text-xs font-medium text-app-canvas-fg transition hover:bg-black/8",
         btnSecondaryOutline:
             "inline-flex w-full items-center justify-center rounded-none border border-black/15 bg-black/5 px-4 py-2 text-xs font-medium text-app-canvas-fg transition hover:bg-black/8",
         btnSecondaryOutlineCompact:
@@ -126,10 +136,6 @@ export const checkoutDesign = {
             "rounded-none border border-amber-500/30 bg-amber-950/20 px-3 py-2 text-[11px] text-amber-100",
         previewLoading:
             "rounded-none border border-app-border-on-surface bg-black/5 px-3 py-2 text-[11px] text-app-muted animate-pulse",
-        resumeBanner:
-            "mb-3 rounded-none border border-app-accent/30 bg-app-accent/10 px-3 py-2 text-xs sm:text-sm",
-        resumeBannerRow: "flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between",
-        resumeBannerText: "text-app-canvas-fg",
         loginLink: "text-center text-xs text-app-muted underline-offset-2 hover:text-app-accent hover:underline",
         giftModalList: "space-y-3",
         giftCandidateCard:
@@ -151,8 +157,75 @@ export const checkoutDesign = {
             "inline-flex items-center justify-center rounded-none bg-app-accent px-4 py-2 text-xs font-semibold text-black transition hover:bg-app-accent-hover disabled:cursor-not-allowed disabled:opacity-60",
     },
 
+    optionCard: {
+        listStack: "flex flex-col gap-2",
+        card:
+            "group relative flex w-full cursor-pointer border text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-accent/60",
+        cardSelected:
+            "border-app-accent bg-app-accent/10 ring-1 ring-app-accent/50 shadow-[0_0_18px_rgba(198,36,36,0.25)]",
+        cardIdle:
+            "border-app-border-on-surface bg-app-glass-fill hover:border-app-accent/40 hover:bg-black/5",
+        inner: "flex w-full items-start gap-3 px-3 py-3 sm:px-4 sm:py-3.5",
+        iconWrap:
+            "flex h-10 w-10 shrink-0 items-center justify-center border text-lg transition",
+        iconWrapIdle:
+            "border-app-border-on-surface bg-black/10 text-app-canvas-fg",
+        iconWrapSelected:
+            "border-app-accent bg-app-accent/15 text-app-accent",
+        body: "min-w-0 flex-1 space-y-0.5",
+        title: "text-sm font-semibold leading-snug text-app-canvas-fg",
+        hint: "text-[11px] leading-snug text-app-muted",
+        badge:
+            "absolute right-2.5 top-2.5 inline-flex items-center border border-app-accent/50 bg-app-accent/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-app-accent",
+        addressCard:
+            "relative flex w-full cursor-pointer border text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-accent/60",
+        addressInner: "flex w-full flex-col gap-0.5 px-3 py-3",
+        addressTitle: "text-sm font-medium text-app-canvas-fg",
+        addressMeta: "text-[11px] leading-snug text-app-muted",
+    },
+
+    nav: {
+        row: "mt-2 flex items-center justify-between gap-3",
+        backLink:
+            "text-xs text-app-muted underline-offset-2 hover:text-app-canvas-fg hover:underline",
+        primaryCluster: "flex shrink-0 items-center gap-2",
+        totalLabel: "text-xs font-semibold text-app-accent tabular-nums",
+        btnPrimary:
+            "inline-flex items-center justify-center rounded-none bg-app-accent px-3 py-1.5 text-xs font-semibold text-black shadow-[0_0_14px_rgba(198,36,36,0.7)] transition hover:bg-app-accent-hover",
+        btnPrimaryBusy:
+            "inline-flex items-center justify-center rounded-none bg-app-accent px-3 py-1.5 text-xs font-semibold text-black shadow-[0_0_14px_rgba(198,36,36,0.7)] transition hover:bg-app-accent-hover disabled:opacity-60",
+    },
+
+    summaryRow: {
+        row: "flex items-start justify-between gap-3 border-b border-app-divider-on-canvas py-2 last:border-b-0",
+        body: "min-w-0 space-y-0.5",
+        label: "text-[10px] font-semibold uppercase tracking-[0.12em] text-app-muted",
+        value: "text-xs text-app-canvas-fg",
+        editLink:
+            "shrink-0 text-[11px] text-app-muted underline-offset-2 hover:text-app-accent hover:underline",
+    },
+
+    promo: {
+        wrap: "space-y-2",
+        cartBody: "space-y-2",
+    },
+
+    payment: {
+        optionList: "flex flex-col gap-2",
+        cashExtra:
+            "space-y-2 rounded-none border border-app-border-on-surface bg-black/5 px-3 py-3",
+        cashExtraLabel: "text-[11px] font-medium text-app-canvas-fg",
+        cashExtraHint: "text-[10px] text-app-muted",
+    },
+
     delivery: {
-        methodRow: "flex flex-wrap gap-2",
+        zonePanel: "rounded-none border px-3 py-2.5 text-[11px] leading-snug",
+        zoneStatusIdle:
+            "border-app-border-on-surface bg-black/5 text-app-muted",
+        zoneStatusPending:
+            "border-app-border-on-surface bg-black/5 text-app-muted animate-pulse",
+        zoneStatusUnknown:
+            "border-amber-500/30 bg-amber-950/20 text-amber-100",
         emptyHero:
             `${nestedCard} space-y-3 border border-app-accent/25 bg-app-accent/8 px-4 py-4`,
         emptyTitle: `${shellTypography.body.checkoutHeadingSm} ${shellColorRoles.accent}`,
@@ -166,7 +239,8 @@ export const checkoutDesign = {
 
     confirm: {
         summaryCard:
-            "space-y-2 rounded-none bg-app-accent-soft-bg px-3 py-3",
+            "space-y-2 rounded-none bg-app-glass-fill px-3 py-3",
+        summaryList: "divide-y divide-app-divider-on-canvas rounded-none bg-app-glass-fill px-3 py-1",
         benefitsCard:
             "space-y-2 rounded-none border border-app-accent/20 bg-app-accent/5 px-3 py-3 text-xs",
         benefitLine: "text-[11px] text-app-canvas-fg",
@@ -188,7 +262,7 @@ export const checkoutDesign = {
     },
 
     success: {
-        orderTitle: "text-2xl font-bold tracking-tight text-app-accent",
+        orderTitle: "text-xl font-bold tracking-tight text-app-accent",
         supportHint: "text-xs leading-relaxed text-app-muted",
         metaLine: "text-[11px] text-app-muted",
         summaryStack: "mt-4 space-y-3",

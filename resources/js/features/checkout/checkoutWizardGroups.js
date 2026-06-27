@@ -5,47 +5,48 @@ export const CHECKOUT_WIZARD_GROUPS = {
     delivery: "Доставка",
     payment: "Оплата",
     confirm: "Оформление",
+    success: "Готово",
 };
+
+export const CHECKOUT_WIZARD_FLOW_GUEST = Object.freeze([
+    "guest",
+    "delivery",
+    "payment",
+    "confirm",
+]);
+
+export const CHECKOUT_WIZARD_FLOW_AUTH = Object.freeze([
+    "delivery",
+    "payment",
+    "confirm",
+]);
+
+/**
+ * @param {boolean} isGuestCheckout
+ * @returns {readonly ('guest'|'delivery'|'payment'|'confirm')[]}
+ */
+export function resolveWizardFlowSteps(isGuestCheckout) {
+    return isGuestCheckout
+        ? CHECKOUT_WIZARD_FLOW_GUEST
+        : CHECKOUT_WIZARD_FLOW_AUTH;
+}
 
 /**
  * @param {'guest'|'delivery'|'payment'|'confirm'} step
  * @param {boolean} isGuestCheckout
  */
 export function resolveWizardStepMeta(step, isGuestCheckout) {
-    const total = isGuestCheckout ? 4 : 3;
-
-    if (isGuestCheckout) {
-        const map = {
-            guest: { n: 1, total, label: CHECKOUT_WIZARD_GROUPS.guest },
-            delivery: { n: 2, total, label: CHECKOUT_WIZARD_GROUPS.delivery },
-            payment: { n: 3, total, label: CHECKOUT_WIZARD_GROUPS.payment },
-            confirm: { n: 4, total, label: CHECKOUT_WIZARD_GROUPS.confirm },
-        };
-        return map[step] ?? null;
+    const flow = resolveWizardFlowSteps(isGuestCheckout);
+    const index = flow.indexOf(step);
+    if (index === -1) {
+        return null;
     }
 
-    const map = {
-        delivery: { n: 1, total, label: CHECKOUT_WIZARD_GROUPS.delivery },
-        payment: { n: 2, total, label: CHECKOUT_WIZARD_GROUPS.payment },
-        confirm: { n: 3, total, label: CHECKOUT_WIZARD_GROUPS.confirm },
+    const total = flow.length;
+
+    return {
+        n: index + 1,
+        total,
+        label: CHECKOUT_WIZARD_GROUPS[step],
     };
-    return map[step] ?? null;
-}
-
-/**
- * @param {'guest'|'delivery'|'payment'|'confirm'|null|undefined} step
- */
-export function resolveResumeCheckoutLabel(step) {
-    switch (step) {
-        case "guest":
-            return "Продолжить";
-        case "delivery":
-            return "Продолжить";
-        case "payment":
-            return "Продолжить";
-        case "confirm":
-            return "Продолжить";
-        default:
-            return "Продолжить";
-    }
 }

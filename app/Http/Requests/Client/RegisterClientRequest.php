@@ -18,7 +18,7 @@ final class RegisterClientRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'phone' => ['required', 'string', 'max:32'],
+            'phone' => ['required', 'string', 'max:20'],
             'email' => ['required', 'string', 'email', 'max:255'],
             'birth_date' => ['nullable', 'date'],
             'password' => ['required', 'string', 'min:6', 'max:255'],

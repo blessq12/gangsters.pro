@@ -2,6 +2,7 @@
 
 namespace App\Filament\Company\Resources\OperatorResource\Schemas;
 
+use App\Filament\Support\FilamentRuPhoneField;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -27,10 +28,7 @@ final class OperatorForm
                             ->required()
                             ->maxLength(255)
                             ->unique(ignoreRecord: true),
-                        TextInput::make('tel')
-                            ->label('Телефон')
-                            ->tel()
-                            ->maxLength(255)
+                        FilamentRuPhoneField::make('tel', 'Телефон')
                             ->unique(ignoreRecord: true),
                         TextInput::make('password')
                             ->label('Пароль')

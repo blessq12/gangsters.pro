@@ -3,6 +3,8 @@ import { computed, onMounted } from "vue";
 import { storeToRefs } from "pinia";
 import { useAppDesign } from "../../design/useAppDesign";
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
+import { CHECKOUT_LOADING_LABELS } from "../../features/checkout/checkoutLoadingLabels";
+import { CHECKOUT_NAV_LABELS } from "../../features/checkout/checkoutWizardLabels";
 import {
     formatServerClientLine,
     formatServerDeliveryLine,
@@ -10,29 +12,36 @@ import {
 } from "../../features/checkout/checkoutServerMappers";
 import { refreshOrderDraftPreview } from "../../features/checkout/checkoutSessionService";
 import { useCheckoutStore } from "../../stores/checkoutStore";
-import CheckoutOrderPreview from "./CheckoutOrderPreview.vue";
+import { useOrderPreview } from "../../features/checkout/useOrderPreview";
 import CheckoutOrderReview from "./CheckoutOrderReview.vue";
+import CheckoutPromoStrip from "./CheckoutPromoStrip.vue";
 import CheckoutSection from "./CheckoutSection.vue";
 import CheckoutStepFrame from "./CheckoutStepFrame.vue";
+import CheckoutStepNav from "./CheckoutStepNav.vue";
+import CheckoutSummaryRow from "./CheckoutSummaryRow.vue";
+import CheckoutTotalsBlock from "./CheckoutTotalsBlock.vue";
 
 const chk = useAppDesign().components.checkout;
 const s = chk.shared;
 const cf = chk.confirm;
+const c = chk.cart;
 
 const {
     checkoutState,
     goToPayment,
+    goToGuest,
+    goToDelivery,
     handleConfirmOrder,
     confirmLoading,
     confirmError,
-    giftSelectionRequired,
     canConfirmOrder,
 } = useCheckoutFlowContext();
 
 const checkoutStore = useCheckoutStore();
 const { serverClient, serverDelivery, serverPayment } = storeToRefs(checkoutStore);
+const { previewLoading } = useOrderPreview();
 
-const { formatPrice, formatPhone } = checkoutState;
+const { formatPrice, formatPhone, isGuestCheckout } = checkoutState;
 
 const deliveryAddressLine = computed(() =>
     formatServerDeliveryLine(serverDelivery.value),
@@ -45,11 +54,6 @@ const paymentLine = computed(() =>
 const clientLine = computed(() =>
     formatServerClientLine(serverClient.value, formatPhone),
 );
-
-const clientEmail = computed(() => {
-    const email = serverClient.value?.email;
-    return typeof email === "string" && email.trim() !== "" ? email.trim() : null;
-});
 
 const deliveryComment = computed(() => {
     const comment = serverDelivery.value?.comment;
@@ -65,67 +69,54 @@ onMounted(() => {
 
 <template>
     <CheckoutStepFrame group="confirm">
-        <CheckoutOrderPreview
-            variant="confirm"
-            part="benefits"
-        />
-
-        <CheckoutOrderPreview
-            variant="confirm"
-            part="gift"
-        />
+        <p
+            v-if="previewLoading"
+            :class="c.previewLoading"
+        >
+            {{ CHECKOUT_LOADING_LABELS.orderRecalc }}
+        </p>
 
         <CheckoutSection title="Заказ">
             <div :class="cf.summaryCard">
                 <CheckoutOrderReview />
-                <CheckoutOrderPreview
-                    variant="confirm"
-                    part="totals"
+                <CheckoutTotalsBlock
+                    depth="full"
+                    :wrap-section="false"
                 />
             </div>
         </CheckoutSection>
 
-        <div :class="cf.metaRow">
-            <CheckoutSection
-                title="Доставка · оплата"
-                variant="muted"
-            >
-                <p :class="s.textBodyXs">
-                    {{ deliveryAddressLine }}
-                </p>
-                <p :class="s.textBodyXs">
-                    {{ paymentLine }}
-                </p>
-                <p
-                    v-if="deliveryComment"
-                    :class="s.textMutedLine"
-                >
-                    {{ deliveryComment }}
-                </p>
-            </CheckoutSection>
-
-            <CheckoutSection
-                title="Клиент"
-                variant="muted"
-            >
-                <p :class="s.textBodyXs">
-                    {{ clientLine }}
-                </p>
-                <p
-                    v-if="clientEmail"
-                    :class="s.textMutedLine"
-                >
-                    {{ clientEmail }}
-                </p>
-            </CheckoutSection>
-        </div>
-
-        <div
-            v-if="giftSelectionRequired"
-            :class="s.errorBanner"
+        <CheckoutSection
+            title="Проверь данные"
+            variant="inset"
         >
-            Выбери подарок, чтобы подтвердить заказ.
-        </div>
+            <div :class="cf.summaryList">
+                <CheckoutSummaryRow
+                    label="Контакт"
+                    :value="clientLine"
+                    :show-edit="isGuestCheckout"
+                    @edit="goToGuest"
+                />
+                <CheckoutSummaryRow
+                    label="Получение"
+                    :value="deliveryAddressLine"
+                    @edit="goToDelivery"
+                />
+                <CheckoutSummaryRow
+                    label="Оплата"
+                    :value="paymentLine"
+                    @edit="goToPayment"
+                />
+                <CheckoutSummaryRow
+                    v-if="deliveryComment"
+                    label="Пожелания"
+                    :value="deliveryComment"
+                    :show-edit="false"
+                />
+            </div>
+        </CheckoutSection>
+
+        <CheckoutPromoStrip variant="confirm" />
 
         <div
             v-if="confirmError"
@@ -135,26 +126,14 @@ onMounted(() => {
         </div>
 
         <template #nav>
-            <button
-                type="button"
-                :class="s.linkUnderline"
-                @click="goToPayment"
-            >
-                Назад
-            </button>
-            <button
-                type="button"
-                :class="s.btnPrimarySmBusy"
-                :disabled="confirmLoading || !canConfirmOrder"
-                @click="handleConfirmOrder"
-            >
-                <span v-if="confirmLoading">
-                    Отправляем…
-                </span>
-                <span v-else>
-                    Подтвердить
-                </span>
-            </button>
+            <CheckoutStepNav
+                :primary-label="CHECKOUT_NAV_LABELS.confirm"
+                :primary-loading="confirmLoading"
+                :primary-disabled="!canConfirmOrder"
+                :primary-busy-label="CHECKOUT_LOADING_LABELS.orderSubmit"
+                @back="goToPayment"
+                @primary="handleConfirmOrder"
+            />
         </template>
     </CheckoutStepFrame>
 </template>

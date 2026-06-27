@@ -3,6 +3,7 @@
 namespace App\Infrastructure\AggregatorIngress\Support;
 
 use App\Domain\AggregatorIngress\Exception\IngressInvariantViolation;
+use App\Domain\Client\ValueObject\PhoneNumber;
 use DateTimeImmutable;
 
 final class IngressAdapterSupport
@@ -51,5 +52,19 @@ final class IngressAdapterSupport
         $value = $payload[$key] ?? null;
 
         return is_array($value) ? $value : [];
+    }
+
+    /**
+     * Канонический телефон клиента: +7 (XXX) XXX-XX-XX.
+     */
+    public static function normalizeClientPhone(string $raw): string
+    {
+        try {
+            return PhoneNumber::formatFromRaw($raw);
+        } catch (\InvalidArgumentException) {
+            throw IngressInvariantViolation::invalidPayload(
+                'Телефон клиента должен содержать 10 цифр российского мобильного номера.',
+            );
+        }
     }
 }

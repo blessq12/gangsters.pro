@@ -229,15 +229,6 @@ export function useCheckoutDeliveryStep({
         scheduleZonePreview();
     }
 
-    function handleGuestAddressHouseBlur() {
-        if (!isGuestCheckout.value || !canPreviewDelivery()) {
-            return;
-        }
-
-        syncGuestAddressDraftToStore();
-        previewScheduler.schedule(resolvePreviewAddress(), 0);
-    }
-
     function selectAddress(addressId) {
         clientCommands.selectAddress(addressId);
         deliveryFieldErrors.clearField("selectedAddress");
@@ -374,7 +365,6 @@ export function useCheckoutDeliveryStep({
         toggleNewAddressOpen,
         setDeliveryComment,
         patchGuestAddressDraft,
-        handleGuestAddressHouseBlur,
         selectAddress,
         handleCreateAddress,
         scheduleDeliveryPreview,

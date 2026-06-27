@@ -98,7 +98,7 @@ final class StubIngressPartnerAdapter implements IngressPartnerAdapter
             externalOrderId: $externalOrderId,
             placedAt: $placedAt,
             clientName: $clientName,
-            clientPhone: $clientPhone,
+            clientPhone: IngressAdapterSupport::normalizeClientPhone($clientPhone),
             clientEmail: isset($client['email']) ? (string) $client['email'] : null,
             deliveryMethod: $deliveryMethod,
             deliveryAddress: $address,

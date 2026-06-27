@@ -16,7 +16,7 @@ final class ClientPresenter
             'client' => [
                 'id' => $client->id()->value(),
                 'name' => $client->name(),
-                'phone' => $client->phone()->digits(),
+                'phone' => $client->phone()->formatted(),
                 'email' => $client->email(),
                 'birth_date' => $client->birthDate()?->format('Y-m-d'),
                 'consent_personal_data' => $client->consentPersonalData(),

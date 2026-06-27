@@ -5,6 +5,12 @@ import { formatRuPhone } from "../../utils/phone/formatRuPhone";
 import { DOMAIN_EVENTS, emitDomainEvent } from "../../shared/domainEvents";
 import { isGuestContactComplete } from "./useCheckoutGuestStep";
 import { resolveGiftSelectionRequired } from "./giftSelectionGate";
+import {
+    formatServerDeliveryLine,
+    formatServerPaymentLine,
+} from "./checkoutServerMappers";
+import { CHECKOUT_PAYMENT_METHOD_LABELS } from "./checkoutPaymentMethods";
+import { CHECKOUT_DELIVERY_METHOD_META } from "./checkoutDeliveryMethods";
 
 export function useCheckoutWizard({
     checkoutIntent,
@@ -26,6 +32,7 @@ export function useCheckoutWizard({
     const confirmLoading = ref(false);
     const confirmError = ref(null);
     const lastCreatedOrder = ref(null);
+    const successSummary = ref(null);
 
     const isAuthenticated = computed(() => clientReadModel.isAuthenticated.value);
 
@@ -162,6 +169,31 @@ export function useCheckoutWizard({
         }
     }
 
+    function buildSuccessSummary(order, store) {
+        if (!order || typeof order !== "object") {
+            return null;
+        }
+
+        const deliveryMethod = order.delivery?.method;
+        const deliveryLine =
+            deliveryMethod === "pickup"
+                ? CHECKOUT_DELIVERY_METHOD_META.pickup.label
+                : formatServerDeliveryLine(order.delivery);
+
+        const paymentMethod = order.payment?.method;
+        const paymentLabel =
+            paymentMethod === "cash"
+                ? CHECKOUT_PAYMENT_METHOD_LABELS.cash
+                : CHECKOUT_PAYMENT_METHOD_LABELS.card;
+
+        return {
+            orderId: order.id ?? null,
+            totalRubles: Number(order.total) || store.itemsTotalRubles || 0,
+            deliveryLine,
+            paymentLine: paymentLabel,
+        };
+    }
+
     function goToCart() {
         activeStep.value = "cart";
     }
@@ -241,6 +273,10 @@ export function useCheckoutWizard({
         try {
             const confirmed = await checkoutIntent.confirmCheckout();
             lastCreatedOrder.value = confirmed.order ?? null;
+            successSummary.value = buildSuccessSummary(
+                lastCreatedOrder.value,
+                checkoutIntent,
+            );
             emitDomainEvent(DOMAIN_EVENTS.ORDER_CREATED, {
                 order: lastCreatedOrder.value,
             });
@@ -276,6 +312,7 @@ export function useCheckoutWizard({
         confirmLoading,
         confirmError,
         lastCreatedOrder,
+        successSummary,
         giftSelectionRequired,
         canConfirmOrder,
     };

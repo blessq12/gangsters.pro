@@ -1,8 +1,9 @@
 <script setup>
-import { watch } from "vue";
+import { computed, watch } from "vue";
 import { useAppDesign } from "../../../../design/useAppDesign";
 import { useCheckoutFlow } from "../../../../composables/checkout/useCheckoutFlow";
 import { provideCheckoutFlow } from "../../../../composables/checkout/checkoutFlowContext";
+import { resolveCheckoutDockTitle } from "../../../../features/checkout/checkoutWizardLabels";
 import { useUiStore } from "../../../../stores/uiStore";
 
 const panels = useAppDesign().components.dockPanels;
@@ -13,6 +14,8 @@ provideCheckoutFlow(flow);
 
 const { cartStore, activeStep, handleStartCheckout } = flow;
 const c = panels.cart;
+
+const dockTitle = computed(() => resolveCheckoutDockTitle(activeStep.value));
 
 function tryConsumeCheckoutStart() {
     if (!uiStore.pendingCheckoutStart) return;
@@ -37,7 +40,7 @@ watch(
 </script>
 
 <template>
-    <DockPanelLayout title="Корзина">
+    <DockPanelLayout :title="dockTitle">
         <template #headerActions>
             <div :class="c.headerBadge">
                 {{ cartStore.cartTotalItems }} шт

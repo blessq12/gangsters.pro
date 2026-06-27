@@ -35,15 +35,6 @@ export function mapDeliveryToLocal(delivery) {
     };
 }
 
-export function mergeCheckoutDeliveryComment(deliveryComment, customerComment) {
-    const parts = [
-        String(deliveryComment || "").trim(),
-        String(customerComment || "").trim(),
-    ].filter(Boolean);
-
-    return parts.length > 0 ? parts.join("\n\n") : "";
-}
-
 export function mapPaymentToLocal(payment) {
     if (!payment || typeof payment !== "object") {
         return {
@@ -110,11 +101,7 @@ export function buildDeliveryPayload(store, selectedAddress = null) {
     return {
         method,
         address: method === "courier" ? address : null,
-        comment:
-            mergeCheckoutDeliveryComment(
-                store.deliveryInfo.comment,
-                store.customerComment,
-            ) || undefined,
+        comment: String(store.deliveryInfo.comment || "").trim() || undefined,
         scheduled_at: store.deliveryInfo.scheduledAt || undefined,
     };
 }

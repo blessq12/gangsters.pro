@@ -42,6 +42,7 @@ final class IngressPartnerAdaptersTest extends TestCase
 
         $this->assertSame('ye-100', $mapped->externalOrderId);
         $this->assertSame('Иван', $mapped->clientName);
+        $this->assertSame('+7 (999) 000-11-22', $mapped->clientPhone);
         $this->assertCount(1, $mapped->lines);
         $this->assertSame('YE-SKU-1', $mapped->lines[0]->partnerSku);
         $this->assertSame(450, $mapped->lines[0]->unitPriceRubles);
@@ -70,6 +71,7 @@ final class IngressPartnerAdaptersTest extends TestCase
 
         $this->assertSame('ch-200', $mapped->externalOrderId);
         $this->assertSame('Пётр', $mapped->clientName);
+        $this->assertSame('+7 (999) 000-22-33', $mapped->clientPhone);
         $this->assertSame('pickup', $mapped->deliveryMethod->value);
         $this->assertSame('CH-SKU-9', $mapped->lines[0]->partnerSku);
     }
@@ -107,6 +109,7 @@ final class IngressPartnerAdaptersTest extends TestCase
 
         $this->assertSame('kp-300', $mapped->externalOrderId);
         $this->assertSame('Анна', $mapped->clientName);
+        $this->assertSame('+7 (999) 000-33-44', $mapped->clientPhone);
         $this->assertSame('KP-SKU-7', $mapped->lines[0]->partnerSku);
         $this->assertSame(250, $mapped->lines[0]->unitPriceRubles);
     }

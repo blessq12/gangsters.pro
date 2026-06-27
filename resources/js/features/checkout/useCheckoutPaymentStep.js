@@ -38,16 +38,11 @@ export function useCheckoutPaymentStep(checkoutIntent) {
         checkoutIntent.setPaymentInfo({ changeFrom });
     }
 
-    function setCustomerComment(comment) {
-        checkoutIntent.setCustomerComment(comment);
-    }
-
     return {
         paymentFieldErrors,
         validatePaymentStep,
         ensurePaymentDefaults,
         setPaymentMethod,
         setPaymentChangeFrom,
-        setCustomerComment,
     };
 }

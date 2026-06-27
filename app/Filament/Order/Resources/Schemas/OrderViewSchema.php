@@ -2,6 +2,7 @@
 
 namespace App\Filament\Order\Resources\Schemas;
 
+use App\Filament\Support\FilamentRuPhoneField;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Repeater\TableColumn;
 use Filament\Forms\Components\TextInput;
@@ -123,8 +124,7 @@ final class OrderViewSchema
                 ->label('ID клиента'),
             TextInput::make('client_name')
                 ->label('Имя'),
-            TextInput::make('client_phone')
-                ->label('Телефон'),
+            FilamentRuPhoneField::makeReadOnly('client_phone', 'Телефон'),
             TextInput::make('client_email')
                 ->label('Email')
                 ->columnSpanFull(),

@@ -1,6 +1,7 @@
 import { Mask } from "maska";
 import { reactive, watch } from "vue";
 import {
+    formatRuPhoneCanonical,
     normalizeRuPhoneDigits,
     RU_PHONE_MASKA_PATTERN,
     RU_PHONE_MASKA_TOKENS,
@@ -20,7 +21,7 @@ function digitsToMaskedDisplay(digitsNormalized) {
 
 /**
  * Поле телефона с Maska v2: v-model на `phoneMask.masked`, директива `v-maska="phoneMask"`.
- * В форме (`formRef`) в поле `fieldKey` хранятся только цифры (до 10), без ведущей 7/8.
+ * В форме (`formRef`) в поле `fieldKey` хранится канон +7 (XXX) XXX-XX-XX.
  * @param {import('vue').Ref<Record<string, unknown>>} formRef
  * @param {string} fieldKey
  */
@@ -44,7 +45,7 @@ export function useRuPhoneModel(formRef, fieldKey = "phone") {
                 return;
             }
             skipFormToMask = true;
-            formRef.value[fieldKey] = n;
+            formRef.value[fieldKey] = formatRuPhoneCanonical(n) || n;
         },
     );
 
@@ -59,9 +60,10 @@ export function useRuPhoneModel(formRef, fieldKey = "phone") {
             const n = normalizeRuPhoneDigits(raw);
             const maskUn = normalizeRuPhoneDigits(phoneMask.unmasked);
             if (n === maskUn) {
-                if (raw !== n) {
+                const canonical = formatRuPhoneCanonical(n);
+                if (canonical && raw !== canonical) {
                     skipFormToMask = true;
-                    formRef.value[fieldKey] = n;
+                    formRef.value[fieldKey] = canonical;
                 }
                 return;
             }
@@ -69,9 +71,10 @@ export function useRuPhoneModel(formRef, fieldKey = "phone") {
             if (phoneMask.masked !== m) {
                 phoneMask.masked = m;
             }
-            if (raw !== n) {
+            const canonical = formatRuPhoneCanonical(n);
+            if (canonical && raw !== canonical) {
                 skipFormToMask = true;
-                formRef.value[fieldKey] = n;
+                formRef.value[fieldKey] = canonical;
             }
         },
         { immediate: true },

@@ -7,33 +7,29 @@ const props = defineProps({
         type: String,
         default: "",
     },
-    /** plain — заголовок; form — карточка с полями; muted — блок сводки */
+    /** default — заголовок + контент; inset — поля в рамке */
     variant: {
         type: String,
-        default: "plain",
+        default: "default",
     },
 });
 
 const s = useAppDesign().components.checkout.shared;
-const cf = useAppDesign().components.checkout.confirm;
 
-const sectionClass = computed(() => {
-    switch (props.variant) {
-        case "form":
-            return s.guestIsland;
-        case "muted":
-            return cf.blockMuted;
-        default:
-            return "space-y-2";
+const normalizedVariant = computed(() => {
+    if (props.variant === "form" || props.variant === "muted" || props.variant === "inset") {
+        return "inset";
     }
+    return "default";
 });
 
-const titleClass = computed(() => {
-    if (props.variant === "muted") {
-        return s.headingCardMuted;
-    }
-    return s.headingSm;
-});
+const sectionClass = computed(() =>
+    normalizedVariant.value === "inset" ? s.sectionInset : "space-y-2",
+);
+
+const titleClass = computed(() =>
+    normalizedVariant.value === "inset" ? s.headingCardMuted : s.headingSm,
+);
 </script>
 
 <template>

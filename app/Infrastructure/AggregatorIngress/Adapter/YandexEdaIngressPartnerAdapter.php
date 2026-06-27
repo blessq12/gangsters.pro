@@ -90,7 +90,7 @@ final class YandexEdaIngressPartnerAdapter implements IngressPartnerAdapter
             externalOrderId: $externalOrderId,
             placedAt: IngressAdapterSupport::parseDateTime($payload['created_at'] ?? null),
             clientName: $clientName,
-            clientPhone: $clientPhone,
+            clientPhone: IngressAdapterSupport::normalizeClientPhone($clientPhone),
             clientEmail: isset($customer['email']) ? (string) $customer['email'] : null,
             deliveryMethod: $deliveryMethod,
             deliveryAddress: $address,

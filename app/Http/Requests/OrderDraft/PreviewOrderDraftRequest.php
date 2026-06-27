@@ -29,7 +29,7 @@ final class PreviewOrderDraftRequest extends FormRequest
             'client' => ['nullable', 'array'],
             'client.client_id' => ['nullable', 'integer', 'min:1'],
             'client.name' => ['nullable', 'string', 'max:255'],
-            'client.phone' => ['nullable', 'string', 'max:32'],
+            'client.phone' => ['nullable', 'string', 'max:20'],
             'client.email' => ['nullable', 'string', 'max:255'],
             'delivery' => ['nullable', 'array'],
             'delivery.method' => ['nullable', 'string', Rule::enum(DeliveryMethod::class)],

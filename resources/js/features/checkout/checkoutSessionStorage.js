@@ -35,6 +35,44 @@ export function clearCheckoutSessionPayload() {
     window.sessionStorage.removeItem(CHECKOUT_SESSION_KEY);
 }
 
+/**
+ * Миграция старых сессий: customerComment → deliveryInfo.comment.
+ *
+ * @param {Record<string, unknown>} forms
+ * @returns {Record<string, unknown>}
+ */
+export function normalizeCheckoutSessionForms(forms) {
+    if (!forms || typeof forms !== "object") {
+        return {};
+    }
+
+    const normalized = { ...forms };
+    const legacyComment =
+        typeof normalized.customerComment === "string"
+            ? normalized.customerComment.trim()
+            : "";
+
+    if (legacyComment) {
+        const delivery =
+            normalized.deliveryInfo && typeof normalized.deliveryInfo === "object"
+                ? { ...normalized.deliveryInfo }
+                : {};
+        const existing = String(delivery.comment || "").trim();
+
+        if (!existing) {
+            delivery.comment = legacyComment;
+        } else if (!existing.includes(legacyComment)) {
+            delivery.comment = `${existing}\n\n${legacyComment}`;
+        }
+
+        normalized.deliveryInfo = delivery;
+    }
+
+    delete normalized.customerComment;
+
+    return normalized;
+}
+
 export function buildCheckoutSessionSnapshot(store) {
     const deliveryInfo = store.deliveryInfo;
     let deliveryInfoForSession = deliveryInfo;
@@ -58,7 +96,6 @@ export function buildCheckoutSessionSnapshot(store) {
             deliveryInfo: deliveryInfoForSession,
             paymentInfo: store.paymentInfo,
             guestContact: store.guestContact,
-            customerComment: store.customerComment,
             promotions: store.promotions,
         },
     };

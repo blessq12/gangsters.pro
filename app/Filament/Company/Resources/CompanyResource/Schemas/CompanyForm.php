@@ -2,6 +2,7 @@
 
 namespace App\Filament\Company\Resources\CompanyResource\Schemas;
 
+use App\Filament\Support\FilamentRuPhoneField;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -98,22 +99,10 @@ final class CompanyForm
                 ->columnSpanFull()
                 ->columns(2)
                 ->schema([
-                    TextInput::make('phone')
-                        ->label('Телефон')
-                        ->tel()
-                        ->maxLength(32),
-                    TextInput::make('phone_additional')
-                        ->label('Доп. телефон')
-                        ->tel()
-                        ->maxLength(32),
-                    TextInput::make('support_phone')
-                        ->label('Телефон поддержки')
-                        ->tel()
-                        ->maxLength(32),
-                    TextInput::make('whatsapp_phone')
-                        ->label('WhatsApp')
-                        ->tel()
-                        ->maxLength(32),
+                    FilamentRuPhoneField::make('phone', 'Телефон'),
+                    FilamentRuPhoneField::make('phone_additional', 'Доп. телефон'),
+                    FilamentRuPhoneField::make('support_phone', 'Телефон поддержки'),
+                    FilamentRuPhoneField::make('whatsapp_phone', 'WhatsApp'),
                     TextInput::make('email_address')
                         ->label('Email')
                         ->email()
@@ -219,7 +208,7 @@ final class CompanyForm
                     TextInput::make('legal_responsible_position')->label('Должность'),
                     TextInput::make('legal_legal_email')->label('Юр. email')->email(),
                     TextInput::make('legal_contracts_email')->label('Email по договорам')->email(),
-                    TextInput::make('legal_legal_phone')->label('Юр. телефон')->tel(),
+                    FilamentRuPhoneField::make('legal_legal_phone', 'Юр. телефон'),
                     Textarea::make('legal_registration_address')->label('Юр. адрес')->columnSpanFull()->rows(2),
                     Textarea::make('legal_actual_address')->label('Фактический адрес')->columnSpanFull()->rows(2),
                     Textarea::make('legal_postal_address')->label('Почтовый адрес')->columnSpanFull()->rows(2),

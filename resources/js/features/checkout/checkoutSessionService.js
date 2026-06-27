@@ -10,6 +10,7 @@ import {
 } from "./checkoutServerMappers";
 import {
     clearCheckoutSessionPayload,
+    normalizeCheckoutSessionForms,
     readCheckoutSessionPayload,
     writeCheckoutSessionPayload,
 } from "./checkoutSessionStorage";
@@ -129,7 +130,7 @@ export async function bootstrapCheckoutSession(store) {
         store.restoreLocalCart(saved.localCart);
     }
     if (saved?.forms) {
-        store.patchLocal(saved.forms);
+        store.patchLocal(normalizeCheckoutSessionForms(saved.forms));
     }
 
     store.clientRequestId = saved?.clientRequestId ?? resolveClientRequestId();

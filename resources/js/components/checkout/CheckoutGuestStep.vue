@@ -3,14 +3,16 @@ import { ref, watch } from "vue";
 import { useAppDesign } from "../../design/useAppDesign";
 import { useRuPhoneModel } from "../../composables/client/useRuPhoneModel";
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
+import { CHECKOUT_NAV_LABELS } from "../../features/checkout/checkoutWizardLabels";
 import {
-    normalizeRuPhoneDigits,
+    formatRuPhoneCanonical,
     RU_PHONE_MASKA_PATTERN,
     RU_PHONE_MASKA_TOKENS_ATTR,
 } from "../../validation/ruPhone";
 import FormField from "../ui/FormField.vue";
 import CheckoutSection from "./CheckoutSection.vue";
 import CheckoutStepFrame from "./CheckoutStepFrame.vue";
+import CheckoutStepNav from "./CheckoutStepNav.vue";
 
 const s = useAppDesign().components.checkout.shared;
 
@@ -18,16 +20,14 @@ const {
     checkoutState,
     goToCart,
     goToGuestNext,
-    setGuestContact,
     openProfileDock,
+    setGuestContact,
 } = useCheckoutFlowContext();
-
-const c = useAppDesign().components.checkout.cart;
 
 const { checkoutIntent, guestFieldErrors } = checkoutState;
 
 const guestPhoneForm = ref({
-    phone: normalizeRuPhoneDigits(checkoutIntent.guestContact.phone),
+    phone: formatRuPhoneCanonical(checkoutIntent.guestContact.phone),
 });
 
 const { phoneMask } = useRuPhoneModel(guestPhoneForm, "phone");
@@ -35,10 +35,10 @@ const { phoneMask } = useRuPhoneModel(guestPhoneForm, "phone");
 watch(
     () => guestPhoneForm.value.phone,
     (digits) => {
-        const n = normalizeRuPhoneDigits(digits);
-        const cur = normalizeRuPhoneDigits(checkoutIntent.guestContact.phone);
-        if (n !== cur) {
-            setGuestContact({ phone: n });
+        const formatted = formatRuPhoneCanonical(digits);
+        const cur = checkoutIntent.guestContact.phone;
+        if (formatted && formatted !== cur) {
+            setGuestContact({ phone: formatted });
         }
     },
 );
@@ -46,9 +46,9 @@ watch(
 watch(
     () => checkoutIntent.guestContact.phone,
     (p) => {
-        const n = normalizeRuPhoneDigits(p);
-        if (n !== guestPhoneForm.value.phone) {
-            guestPhoneForm.value.phone = n;
+        const formatted = formatRuPhoneCanonical(p);
+        if (formatted && formatted !== guestPhoneForm.value.phone) {
+            guestPhoneForm.value.phone = formatted;
         }
     },
 );
@@ -58,15 +58,18 @@ watch(
     <CheckoutStepFrame group="guest">
         <CheckoutSection
             title="Контакт"
-            variant="form"
+            variant="inset"
         >
-            <FormField :error="guestFieldErrors.get('name')">
+            <FormField
+                label="Имя"
+                :error="guestFieldErrors.get('name')"
+            >
                 <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
                     <input
                         :id="id"
                         :value="checkoutIntent.guestContact.name"
                         type="text"
-                        placeholder="Имя"
+                        placeholder="Как к тебе обращаться"
                         :class="[s.inputFieldFull, invalid && invalidClass]"
                         :aria-invalid="ariaInvalid"
                         :aria-describedby="describedBy"
@@ -75,7 +78,10 @@ watch(
                 </template>
             </FormField>
 
-            <FormField :error="guestFieldErrors.get('phone')">
+            <FormField
+                label="Телефон"
+                :error="guestFieldErrors.get('phone')"
+            >
                 <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
                     <input
                         :id="id"
@@ -95,63 +101,18 @@ watch(
 
         <button
             type="button"
-            :class="c.authCtaBtn"
+            :class="s.linkUnderline"
             @click="openProfileDock"
         >
-            Регистрация / вход
+            {{ CHECKOUT_NAV_LABELS.authLink }}
         </button>
 
         <template #nav>
-            <button
-                type="button"
-                :class="s.linkUnderline"
-                @click="goToCart"
-            >
-                Назад
-            </button>
-            <button
-                type="button"
-                :class="s.btnPrimarySm"
-                @click="goToGuestNext"
-            >
-                Далее
-            </button>
+            <CheckoutStepNav
+                :primary-label="CHECKOUT_NAV_LABELS.next"
+                @back="goToCart"
+                @primary="goToGuestNext"
+            />
         </template>
     </CheckoutStepFrame>
 </template>
-
-<style scoped>
-@keyframes checkout-auth-shimmer {
-    0% {
-        transform: translateX(-140%) skewX(-18deg);
-    }
-
-    40%,
-    100% {
-        transform: translateX(140%) skewX(-18deg);
-    }
-}
-
-.checkout-auth-cta::after {
-    content: "";
-    position: absolute;
-    inset: -20% 0;
-    z-index: 0;
-    pointer-events: none;
-    background: linear-gradient(
-        105deg,
-        transparent 38%,
-        rgba(255, 255, 255, 0.08) 44%,
-        rgba(255, 220, 180, 0.55) 50%,
-        rgba(255, 255, 255, 0.12) 56%,
-        transparent 62%
-    );
-    animation: checkout-auth-shimmer 2.4s ease-in-out infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .checkout-auth-cta::after {
-        display: none;
-    }
-}
-</style>

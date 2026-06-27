@@ -94,7 +94,7 @@ final class KuperIngressPartnerAdapter implements IngressPartnerAdapter
             externalOrderId: $externalOrderId,
             placedAt: IngressAdapterSupport::parseDateTime($order['created_at'] ?? null),
             clientName: $clientName,
-            clientPhone: $clientPhone,
+            clientPhone: IngressAdapterSupport::normalizeClientPhone($clientPhone),
             clientEmail: isset($user['email']) ? (string) $user['email'] : null,
             deliveryMethod: $deliveryMethod,
             deliveryAddress: $address,

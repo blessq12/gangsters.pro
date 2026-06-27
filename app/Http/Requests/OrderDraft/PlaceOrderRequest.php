@@ -30,7 +30,7 @@ final class PlaceOrderRequest extends FormRequest
             'client' => ['required', 'array'],
             'client.client_id' => ['nullable', 'integer', 'min:1'],
             'client.name' => ['required_without:client.client_id', 'nullable', 'string', 'max:255'],
-            'client.phone' => ['required_without:client.client_id', 'nullable', 'string', 'max:32'],
+            'client.phone' => ['required_without:client.client_id', 'nullable', 'string', 'max:20'],
             'client.email' => ['nullable', 'string', 'max:255'],
             'delivery' => ['required', 'array'],
             'delivery.method' => ['required', 'string', Rule::enum(DeliveryMethod::class)],

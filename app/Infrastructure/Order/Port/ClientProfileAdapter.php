@@ -23,7 +23,7 @@ final class ClientProfileAdapter implements ClientProfilePort
 
         return new RegisteredClientProfileQuote(
             name: $client->name(),
-            phone: $client->phone()->digits(),
+            phone: $client->phone()->formatted(),
             email: $client->email(),
         );
     }

@@ -55,7 +55,6 @@ export const useCheckoutStore = defineStore("checkout", {
             phone: "",
             email: "",
         },
-        customerComment: "",
         promotions: {
             freeRollGiftProductId: null,
         },
@@ -383,7 +382,6 @@ export const useCheckoutStore = defineStore("checkout", {
                 changeFrom: null,
             };
             this.guestContact = { name: "", phone: "", email: "" };
-            this.customerComment = "";
             this.promotions = { freeRollGiftProductId: null };
         },
 
@@ -400,9 +398,6 @@ export const useCheckoutStore = defineStore("checkout", {
             if (partial.guestContact) {
                 this.guestContact = { ...this.guestContact, ...partial.guestContact };
             }
-            if (typeof partial.customerComment === "string") {
-                this.customerComment = partial.customerComment;
-            }
             if (partial.promotions) {
                 this.promotions = { ...this.promotions, ...partial.promotions };
             }
@@ -414,10 +409,6 @@ export const useCheckoutStore = defineStore("checkout", {
 
         setPaymentInfo(payload) {
             this.patchLocal({ paymentInfo: normalizePaymentPatch(payload) });
-        },
-
-        setCustomerComment(comment) {
-            this.patchLocal({ customerComment: comment || "" });
         },
 
         setGuestContact(payload) {

@@ -61,10 +61,6 @@ function isDeliveryStepDirty(checkoutStore) {
 }
 
 function isPaymentStepDirty(checkoutStore) {
-    if (hasText(checkoutStore?.customerComment)) {
-        return true;
-    }
-
     const changeFrom = checkoutStore?.paymentInfo?.changeFrom;
     return changeFrom != null && String(changeFrom).trim() !== "";
 }

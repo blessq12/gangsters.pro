@@ -57,7 +57,7 @@ final class ClientMapper
         return [
             'id' => $client->hasId() ? $client->id()->value() : null,
             'name' => $client->name(),
-            'phone' => $client->phone()->digits(),
+            'phone' => $client->phone()->formatted(),
             'email' => $client->email(),
             'birth_date' => $client->birthDate()?->format('Y-m-d'),
             'password' => $client->passwordHash(),

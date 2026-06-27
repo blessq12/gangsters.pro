@@ -2,6 +2,7 @@
 
 namespace App\Application\Company\useCases;
 
+use App\Domain\Client\ValueObject\PhoneNumber;
 use App\Domain\Company\Entity\CompanyLegalInfo;
 use App\Domain\Company\Repository\CompanyLegalRepository;
 
@@ -41,7 +42,7 @@ final class GetCompanyLegalDataUseCase
             'legal_form' => $legal->legalForm(),
             'legal_email' => $legal->legalEmail(),
             'contracts_email' => $legal->contractsEmail(),
-            'legal_phone' => $legal->legalPhone(),
+            'legal_phone' => self::formatOptionalPhone($legal->legalPhone()),
             'owner' => $legal->owner(),
             'responsible_person' => $legal->responsiblePerson(),
             'responsible_position' => $legal->responsiblePosition(),
@@ -61,5 +62,14 @@ final class GetCompanyLegalDataUseCase
             'checking_account' => $legal->checkingAccount(),
             'correspondent_account' => $legal->correspondentAccount(),
         ];
+    }
+
+    private static function formatOptionalPhone(?string $phone): ?string
+    {
+        if ($phone === null || trim($phone) === '') {
+            return null;
+        }
+
+        return PhoneNumber::tryFormatFromRaw($phone) ?? trim($phone);
     }
 }

@@ -1,15 +1,27 @@
 <script setup>
-import { onMounted } from "vue";
+import { storeToRefs } from "pinia";
+import { computed, onMounted } from "vue";
 import { useAppDesign } from "../../design/useAppDesign";
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
+import { CHECKOUT_LOADING_LABELS } from "../../features/checkout/checkoutLoadingLabels";
+import { CHECKOUT_NAV_LABELS } from "../../features/checkout/checkoutWizardLabels";
+import { useCheckoutNavTotal } from "../../features/checkout/useCheckoutNavTotal";
+import {
+    CHECKOUT_DELIVERY_METHOD_IDS,
+    CHECKOUT_DELIVERY_METHOD_META,
+} from "../../features/checkout/checkoutDeliveryMethods";
 import FormField from "../ui/FormField.vue";
+import CheckoutAddressFormFields from "./CheckoutAddressFormFields.vue";
 import CheckoutAuthAddressSection from "./CheckoutAuthAddressSection.vue";
-import CheckoutOrderPreview from "./CheckoutOrderPreview.vue";
+import CheckoutCollapsibleSection from "./CheckoutCollapsibleSection.vue";
+import CheckoutDeliveryZoneStatus from "./CheckoutDeliveryZoneStatus.vue";
+import CheckoutOptionCard from "./CheckoutOptionCard.vue";
 import CheckoutSection from "./CheckoutSection.vue";
 import CheckoutStepFrame from "./CheckoutStepFrame.vue";
+import CheckoutStepNav from "./CheckoutStepNav.vue";
 
 const s = useAppDesign().components.checkout.shared;
-const d = useAppDesign().components.checkout.delivery;
+const o = useAppDesign().components.checkout.optionCard;
 
 const {
     checkoutState,
@@ -20,7 +32,6 @@ const {
     setDeliveryComment,
     guestAddressDraft,
     patchGuestAddressDraft,
-    handleGuestAddressHouseBlur,
     scheduleDeliveryPreview,
 } = useCheckoutFlowContext();
 
@@ -29,117 +40,70 @@ onMounted(() => {
 });
 
 const { checkoutIntent, deliveryFieldErrors, isGuestCheckout } = checkoutState;
+const { flushing } = storeToRefs(checkoutIntent);
+const { navTotalLabel } = useCheckoutNavTotal();
+
+const isCourier = computed(
+    () => checkoutIntent.deliveryInfo.method === "courier",
+);
 </script>
 
 <template>
     <CheckoutStepFrame group="delivery">
         <FormField :error="deliveryFieldErrors.get('method')">
             <template #default>
-                <CheckoutSection title="Способ">
-                    <div :class="d.methodRow">
-                        <button
-                            v-for="method in ['courier', 'pickup']"
+                <CheckoutSection title="Как получить заказ">
+                    <div :class="o.listStack">
+                        <CheckoutOptionCard
+                            v-for="method in CHECKOUT_DELIVERY_METHOD_IDS"
                             :key="method"
-                            type="button"
-                            :class="[
-                                s.pillRoundText,
-                                checkoutIntent.deliveryInfo.method === method ? s.pillActive : s.pillInactive,
-                            ]"
-                            @click="setDeliveryMethod(method)"
-                        >
-                            {{ method === "courier" ? "Курьер" : "Самовывоз" }}
-                        </button>
+                            :selected="checkoutIntent.deliveryInfo.method === method"
+                            :title="CHECKOUT_DELIVERY_METHOD_META[method].label"
+                            :icon="CHECKOUT_DELIVERY_METHOD_META[method].icon"
+                            @select="setDeliveryMethod(method)"
+                        />
                     </div>
                 </CheckoutSection>
             </template>
         </FormField>
 
         <CheckoutSection
-            v-if="checkoutIntent.deliveryInfo.method !== 'pickup' && isGuestCheckout"
-            title="Адрес"
-            variant="form"
+            v-if="isCourier && isGuestCheckout"
+            title="Куда доставить"
+            variant="inset"
         >
-            <FormField :error="deliveryFieldErrors.get('street')">
-                <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
-                    <input
-                        :id="id"
-                        :value="guestAddressDraft.street"
-                        type="text"
-                        placeholder="Улица"
-                        :class="[s.inputFieldFull, invalid && invalidClass]"
-                        :aria-invalid="ariaInvalid"
-                        :aria-describedby="describedBy"
-                        @input="
-                            patchGuestAddressDraft({
-                                street: $event.target.value,
-                            })
-                        "
-                    />
-                </template>
-            </FormField>
-
-            <div :class="s.grid2">
-                <FormField :error="deliveryFieldErrors.get('house')">
-                    <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
-                        <input
-                            :id="id"
-                            :value="guestAddressDraft.house"
-                            type="text"
-                            placeholder="Дом"
-                            :class="[s.inputFieldGridCell, invalid && invalidClass]"
-                            :aria-invalid="ariaInvalid"
-                            :aria-describedby="describedBy"
-                            @input="
-                                patchGuestAddressDraft({
-                                    house: $event.target.value,
-                                })
-                            "
-                            @blur="handleGuestAddressHouseBlur"
-                        />
-                    </template>
-                </FormField>
-
-                <input
-                    :value="guestAddressDraft.entrance"
-                    type="text"
-                    placeholder="Подъезд"
-                    :class="s.inputFieldGridCell"
-                    @input="
-                        patchGuestAddressDraft({
-                            entrance: $event.target.value,
-                        })
-                    "
-                />
-                <input
-                    :value="guestAddressDraft.apartment"
-                    type="text"
-                    placeholder="Квартира"
-                    :class="s.inputFieldCol2"
-                    @input="
-                        patchGuestAddressDraft({
-                            apartment: $event.target.value,
-                        })
-                    "
-                />
-            </div>
+            <CheckoutAddressFormFields
+                :street="guestAddressDraft.street"
+                :house="guestAddressDraft.house"
+                :entrance="guestAddressDraft.entrance"
+                :apartment="guestAddressDraft.apartment"
+                :street-error="deliveryFieldErrors.get('street')"
+                :house-error="deliveryFieldErrors.get('house')"
+                @update:street="patchGuestAddressDraft({ street: $event })"
+                @update:house="patchGuestAddressDraft({ house: $event })"
+                @update:entrance="patchGuestAddressDraft({ entrance: $event })"
+                @update:apartment="patchGuestAddressDraft({ apartment: $event })"
+            />
         </CheckoutSection>
 
         <CheckoutAuthAddressSection
-            v-if="checkoutIntent.deliveryInfo.method !== 'pickup' && !isGuestCheckout"
+            v-if="isCourier && !isGuestCheckout"
         />
 
-        <CheckoutSection
-            title="Комментарий"
-            variant="form"
+        <CheckoutDeliveryZoneStatus v-if="isCourier" />
+
+        <CheckoutCollapsibleSection
+            v-if="isCourier"
+            title="Пожелания к заказу"
         >
             <textarea
                 rows="2"
                 :class="s.textareaFlow"
-                placeholder="Подъезд, код, этаж"
+                placeholder="Время, упаковка, звонок перед доставкой"
                 :value="checkoutIntent.deliveryInfo.comment"
                 @input="setDeliveryComment($event.target.value)"
             />
-        </CheckoutSection>
+        </CheckoutCollapsibleSection>
 
         <p
             v-if="deliveryFieldErrors.formError"
@@ -148,23 +112,15 @@ const { checkoutIntent, deliveryFieldErrors, isGuestCheckout } = checkoutState;
             {{ deliveryFieldErrors.formError }}
         </p>
 
-        <CheckoutOrderPreview variant="delivery" />
-
         <template #nav>
-            <button
-                type="button"
-                :class="s.linkUnderline"
-                @click="isGuestCheckout ? goToGuest() : goToCart()"
-            >
-                Назад
-            </button>
-            <button
-                type="button"
-                :class="s.btnPrimarySm"
-                @click="goToPayment"
-            >
-                Далее
-            </button>
+            <CheckoutStepNav
+                :primary-label="CHECKOUT_NAV_LABELS.next"
+                :primary-loading="flushing"
+                :primary-busy-label="CHECKOUT_LOADING_LABELS.zoneCheck"
+                :total-label="navTotalLabel"
+                @back="isGuestCheckout ? goToGuest() : goToCart()"
+                @primary="goToPayment"
+            />
         </template>
     </CheckoutStepFrame>
 </template>

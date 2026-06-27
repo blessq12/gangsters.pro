@@ -2,6 +2,7 @@
 
 namespace App\Filament\Client\Support;
 
+use App\Domain\Client\ValueObject\PhoneNumber;
 use App\Infrastructure\Client\Model\CLN_Client;
 use App\Infrastructure\Client\Model\CLN_ClientAddress;
 
@@ -31,21 +32,17 @@ final class ClientProfileReader
         ];
     }
 
-    public static function formatPhone(string $digits): string
+    public static function formatPhone(string $phone): string
     {
-        $digits = preg_replace('/\D+/', '', $digits) ?? '';
+        $formatted = PhoneNumber::tryFormatFromRaw($phone);
 
-        if (strlen($digits) !== 10) {
-            return $digits !== '' ? $digits : '—';
+        if ($formatted !== null) {
+            return $formatted;
         }
 
-        return sprintf(
-            '+7 (%s) %s-%s-%s',
-            substr($digits, 0, 3),
-            substr($digits, 3, 3),
-            substr($digits, 6, 2),
-            substr($digits, 8, 2),
-        );
+        $trimmed = trim($phone);
+
+        return $trimmed !== '' ? $trimmed : '—';
     }
 
     public static function boolLabel(bool $value): string
