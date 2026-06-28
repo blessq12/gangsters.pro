@@ -9,6 +9,7 @@ use App\Providers\DeliveryServiceProvider;
 use App\Providers\MarketingContentServiceProvider;
 use App\Providers\PromotionServiceProvider;
 use App\Providers\AggregatorIngressServiceProvider;
+use App\Providers\YandexFoodServiceProvider;
 use App\Providers\OrderAccountingExportServiceProvider;
 use App\Providers\OrderServiceProvider;
 use App\Providers\Filament\AdminPanelProvider;
@@ -192,6 +193,7 @@ return [
         ClientServiceProvider::class,
         OrderServiceProvider::class,
         AggregatorIngressServiceProvider::class,
+        YandexFoodServiceProvider::class,
         OrderAccountingExportServiceProvider::class,
         DeliveryServiceProvider::class,
         MarketingContentServiceProvider::class,

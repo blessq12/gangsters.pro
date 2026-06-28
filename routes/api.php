@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\IngressController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\OrderDraftController;
 use App\Http\Controllers\Api\StorefrontController;
+use App\Http\Controllers\Api\YandexFoodController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -68,3 +69,14 @@ Route::middleware('auth.client')->group(function (): void {
 });
 
 Route::post('ingress/{partner}/orders', [IngressController::class, 'store']);
+
+Route::prefix('yandex-food')->group(function (): void {
+    Route::post('/security/oauth/token', [YandexFoodController::class, 'login']);
+
+    Route::middleware('yandex.food.auth')->group(function (): void {
+        Route::get('/menu/{id}/composition', [YandexFoodController::class, 'getMenuComposition']);
+        Route::get('/menu/{id}/availability', [YandexFoodController::class, 'getMenuAvailability']);
+        Route::get('/menu/{id}/promos', [YandexFoodController::class, 'getMenuPromos']);
+        Route::get('/restaurants', [YandexFoodController::class, 'getRestaurants']);
+    });
+});

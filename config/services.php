@@ -57,12 +57,6 @@ return [
             'event' => env('TELEGRAM_TOPIC_EVENT', 58),
         ],
     ],
-    'yandex_food' => [
-        'enabled' => filter_var(env('YANDEX_FOOD_ENABLED', true), FILTER_VALIDATE_BOOLEAN),
-        'auth_token' => env('YANDEX_EDA_AUTH_TOKEN'),
-        'client_id' => env('YANDEX_CLIENT_ID'),
-        'client_secret' => env('YANDEX_CLIENT_SECRET'),
-    ],
     'internal' => [
         'api_token' => env('INTERNAL_API_TOKEN'),
     ],

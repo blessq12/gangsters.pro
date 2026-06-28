@@ -16,6 +16,9 @@ use App\Domain\AggregatorIngress\Exception\IngressAuthenticationFailedException;
 use App\Domain\AggregatorIngress\Exception\IngressInvariantViolation;
 use App\Domain\AggregatorIngress\Exception\PartnerNotConfiguredException;
 use App\Domain\AggregatorIngress\Exception\UnknownPartnerSkuException;
+use App\Domain\YandexFood\Exception\YandexFoodBearerTokenRejectedException;
+use App\Domain\YandexFood\Exception\YandexFoodDisabledException;
+use App\Domain\YandexFood\Exception\YandexFoodOAuthRejectedException;
 use App\Domain\Order\Exception\OrderInvariantViolation;
 use App\Domain\Order\Exception\OrderNotFoundException;
 use App\Domain\Order\Exception\OrderRepeatNotSupportedException;
@@ -146,6 +149,26 @@ class Handler extends ExceptionHandler
             return response()->json([
                 'message' => $e->getMessage(),
             ], 422);
+        }
+
+        if ($e instanceof YandexFoodOAuthRejectedException && $request->is('api/yandex-food/*')) {
+            return response()->json([
+                'code' => 100,
+                'description' => $e->description(),
+            ], 400);
+        }
+
+        if ($e instanceof YandexFoodDisabledException && $request->is('api/yandex-food/*')) {
+            return response()->json([
+                'code' => 100,
+                'description' => $e->getMessage(),
+            ], 400);
+        }
+
+        if ($e instanceof YandexFoodBearerTokenRejectedException && $request->is('api/yandex-food/*')) {
+            return response()->json([
+                'reason' => $e->reason(),
+            ], 400);
         }
 
         return parent::render($request, $e);
