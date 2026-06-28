@@ -11,7 +11,7 @@ final class YandexFoodMenuPresenter
 {
     /**
      * @param  list<array{category: Category, has_items: bool}>  $categories
-     * @param  list<array{partner_sku: string, category_id: int, product: Product, sort_order: int}>  $products
+     * @param  list<array{category_id: int, product: Product, sort_order: int}>  $products
      * @return array{categories: list<array<string, mixed>>, items: list<array<string, mixed>>, lastChange: string}
      */
     public function presentComposition(
@@ -41,7 +41,7 @@ final class YandexFoodMenuPresenter
         foreach ($products as $row) {
             $product = $row['product'];
             $items[] = [
-                'id' => $row['partner_sku'],
+                'id' => (string) $product->id(),
                 'categoryId' => (string) $row['category_id'],
                 'name' => $product->name(),
                 'description' => $product->description() ?? '',
@@ -65,16 +65,16 @@ final class YandexFoodMenuPresenter
     }
 
     /**
-     * @param  list<string>  $unavailablePartnerSkus
+     * @param  list<string>  $unavailableProductIds
      * @return array{items: list<array{id: string, quantity: int}>, modifiers: list<mixed>}
      */
-    public function presentAvailability(array $unavailablePartnerSkus): array
+    public function presentAvailability(array $unavailableProductIds): array
     {
         $items = [];
 
-        foreach ($unavailablePartnerSkus as $partnerSku) {
+        foreach ($unavailableProductIds as $productId) {
             $items[] = [
-                'id' => $partnerSku,
+                'id' => $productId,
                 'quantity' => 0,
             ];
         }

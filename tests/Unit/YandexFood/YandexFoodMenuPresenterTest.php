@@ -14,7 +14,7 @@ use Tests\TestCase;
 final class YandexFoodMenuPresenterTest extends TestCase
 {
     #[Test]
-    public function composition_отдаёт_partner_sku_как_id_товара(): void
+    public function composition_отдаёт_product_id_как_id_товара(): void
     {
         $category = new Category(
             id: 5,
@@ -46,7 +46,6 @@ final class YandexFoodMenuPresenterTest extends TestCase
             ],
             products: [
                 [
-                    'partner_sku' => 'YE-MENU-001',
                     'category_id' => 5,
                     'product' => $product,
                     'sort_order' => 20,
@@ -55,7 +54,7 @@ final class YandexFoodMenuPresenterTest extends TestCase
             changedAt: Carbon::parse('2026-06-15T12:00:00+00:00'),
         );
 
-        $this->assertSame('YE-MENU-001', $payload['items'][0]['id']);
+        $this->assertSame('42', $payload['items'][0]['id']);
         $this->assertSame('5', $payload['items'][0]['categoryId']);
         $this->assertSame(450.0, $payload['items'][0]['price']);
         $this->assertSame('Роллы', $payload['categories'][0]['name']);
@@ -66,11 +65,11 @@ final class YandexFoodMenuPresenterTest extends TestCase
     {
         $presenter = new YandexFoodMenuPresenter();
 
-        $payload = $presenter->presentAvailability(['YE-MENU-001', 'YE-MENU-002']);
+        $payload = $presenter->presentAvailability(['12', '15']);
 
         $this->assertSame([
-            ['id' => 'YE-MENU-001', 'quantity' => 0],
-            ['id' => 'YE-MENU-002', 'quantity' => 0],
+            ['id' => '12', 'quantity' => 0],
+            ['id' => '15', 'quantity' => 0],
         ], $payload['items']);
     }
 }

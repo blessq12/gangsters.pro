@@ -6,5 +6,4 @@ return [
     'client_id' => env('YANDEX_CLIENT_ID', ''),
     'client_secret' => env('YANDEX_CLIENT_SECRET', ''),
     'restaurant_id' => env('YANDEX_FOOD_RESTAURANT_ID', '1'),
-    'partner_code' => 'yandex-eda',
 ];

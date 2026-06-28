@@ -18,7 +18,7 @@ final class GetYandexFoodMenuAvailabilityUseCase
     public function execute(): array
     {
         return $this->presenter->presentAvailability(
-            $this->catalogReader->readUnavailablePartnerSkus(),
+            $this->catalogReader->readUnavailableProductIds(),
         );
     }
 }

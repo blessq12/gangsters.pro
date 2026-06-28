@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Infrastructure\AggregatorIngress\Model\ING_PartnerSkuBinding;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -29,7 +28,7 @@ final class YandexFoodMenuTest extends TestCase
     }
 
     #[Test]
-    public function composition_требует_bearer_и_отдаёт_partner_sku(): void
+    public function composition_требует_bearer_и_отдаёт_каталог_по_product_id(): void
     {
         if (! $this->databaseIsAvailable()) {
             $this->markTestSkipped('БД недоступна для feature-теста.');
@@ -46,16 +45,6 @@ final class YandexFoodMenuTest extends TestCase
         if ($productId === null) {
             $this->markTestSkipped('В каталоге нет активных товаров.');
         }
-
-        ING_PartnerSkuBinding::query()->updateOrCreate(
-            [
-                'partner_code' => 'yandex-eda',
-                'partner_sku' => 'YE-MENU-TEST-001',
-            ],
-            [
-                'product_id' => $productId,
-            ],
-        );
 
         $unauthorized = $this->getJson('/api/yandex-food/menu/1/composition');
         $unauthorized->assertStatus(400);
@@ -75,11 +64,11 @@ final class YandexFoodMenuTest extends TestCase
         $items = $response->json('items', []);
         $matched = array_values(array_filter(
             $items,
-            static fn (mixed $item): bool => is_array($item) && ($item['id'] ?? null) === 'YE-MENU-TEST-001',
+            static fn (mixed $item): bool => is_array($item) && ($item['id'] ?? null) === (string) $productId,
         ));
 
         $this->assertNotEmpty($matched);
-        $this->assertSame('YE-MENU-TEST-001', $matched[0]['id']);
+        $this->assertNotEmpty($response->json('categories', []));
     }
 
     #[Test]
