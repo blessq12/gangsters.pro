@@ -6,7 +6,6 @@ const DEFAULT_DOCK_BADGES = {
     profile: 0,
     cart: 0,
     favorites: 0,
-    delivery: 0,
     notifications: 0,
 };
 
@@ -35,7 +34,6 @@ export const useUiStore = defineStore("ui", {
         resolvedDockBadges: (state) => (cartCount = 0, favoritesCount = 0) => ({
             ...state.dockBadges,
             profile: 0,
-            delivery: 0,
             cart: Number(cartCount) || 0,
             favorites: Number(favoritesCount) || 0,
         }),
@@ -61,6 +59,9 @@ export const useUiStore = defineStore("ui", {
 
                 if ("dockActiveId" in parsed) {
                     this.dockActiveId = parsed.dockActiveId ?? null;
+                    if (this.dockActiveId === "delivery") {
+                        this.dockActiveId = null;
+                    }
                 }
 
                 if (parsed.dockBadges && typeof parsed.dockBadges === "object") {

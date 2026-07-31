@@ -1,7 +1,7 @@
 /**
- * Контент-панели дока (Cart / Profile / Favorites / Delivery).
- * Компоненты: resources/js/components/layout/dock/panels/*.vue
- * Оболочка: DockPanelLayout + shared.layout.
+ * Dock content panels (Cart / Profile / Favorites).
+ * Components: resources/js/components/layout/dock/panels/*.vue
+ * Shell: DockPanelLayout + shared.layout.
  */
 
 import { shellColorRoles, shellTypography } from "./shell.design";
@@ -73,33 +73,6 @@ export const dockPanelsDesign = {
         qtyLabelPulse: "scale-125 text-app-accent",
         actionRemove:
             "shrink-0 text-[11px] text-app-muted transition-colors hover:text-red-400",
-    },
-
-    delivery: {
-        mapBodyOverride:
-            "flex min-h-0 flex-1 flex-col overflow-hidden p-0 space-y-0",
-        mapStage:
-            "relative h-full min-h-[min(420px,50dvh)] w-full flex-1 overflow-hidden",
-        mapLayer:
-            "pointer-events-auto absolute inset-0 z-0",
-        mapIframe: "h-full w-full border-0",
-        mapFallback:
-            "absolute inset-0 z-0 grid place-content-center bg-app-surface px-4 py-8 text-center text-sm text-neutral-600",
-        mapFallbackProse: "mx-auto max-w-prose leading-relaxed",
-        mapLoadingBox:
-            "absolute inset-0 z-0 grid place-content-center bg-app-surface text-sm text-neutral-600",
-        overlayTop:
-            "pointer-events-none absolute inset-x-3 top-3 z-10 flex flex-wrap gap-2",
-        island:
-            "pointer-events-auto rounded-none bg-[rgba(0,0,0,0.82)] px-3 py-2 shadow-lg backdrop-blur",
-        statCard:
-            "min-w-0 flex-1 basis-[7.5rem] sm:flex-none sm:basis-auto",
-        statSkeletonCard: "min-w-0 flex-1 basis-full sm:basis-auto",
-        statLabel:
-            "text-[11px] uppercase tracking-[0.2em] text-app-muted",
-        statValueSkeleton: "mt-1 font-semibold text-app-accent/90",
-        statValue:
-            "mt-1 min-w-0 wrap-break-word text-left text-sm font-semibold leading-relaxed text-app-accent sm:text-base",
     },
 } as const;
 

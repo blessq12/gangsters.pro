@@ -18,9 +18,4 @@ export const DOCK_META = Object.freeze([
         label: "Избранное",
         iconClass: "mdi-heart-outline",
     },
-    {
-        id: "delivery",
-        label: "Зона доставки",
-        iconClass: "mdi-truck-delivery-outline",
-    },
 ]);

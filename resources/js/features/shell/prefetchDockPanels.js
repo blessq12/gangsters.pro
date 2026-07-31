@@ -25,6 +25,6 @@ export function scheduleIdlePrefetchDockPanels() {
     });
 
     scheduleIdleTask(() => {
-        prefetchDockPanels(["favorites", "delivery"]);
+        prefetchDockPanels(["favorites"]);
     }, { timeoutMs: 5000 });
 }
