@@ -73,9 +73,11 @@ const rewindEnabled = computed(() => slides.value.length > 1 && !loopReady.value
 const настройкиАвтолистания = computed(() =>
     slides.value.length > 1
         ? {
+              enabled: true,
               delay: ИНТЕРВАЛ_АВТОЛИСТАНИЯ_МС,
               disableOnInteraction: false,
-              pauseOnMouseEnter: true,
+              pauseOnMouseEnter: false,
+              waitForTransition: false,
           }
         : false,
 );
@@ -97,12 +99,11 @@ const swiperBreakpoints = computed(() =>
 const handleSwiperInit = (swiper) => {
     if (!swiper) return;
     swiperRef.value = swiper;
-    // Стартуем с первого после Fisher–Yates (не slidePrev — он всегда открывал последний).
-    if (loopReady.value) {
-        swiper.slideToLoop(0, 0);
-        return;
+    // Не вызываем slideTo на init: при speed 0 transitionend не приходит,
+    // Autoplay остаётся на паузе после beforeTransitionStart.
+    if (swiper.autoplay && !swiper.autoplay.running) {
+        swiper.autoplay.start();
     }
-    swiper.slideTo(0, 0);
 };
 
 const goPrev = () => {
