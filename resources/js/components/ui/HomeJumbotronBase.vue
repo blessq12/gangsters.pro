@@ -6,7 +6,8 @@ import { Swiper, SwiperSlide } from "swiper/vue";
 import { useMarketingReadModel } from "../../features/marketing/useMarketingReadModel";
 import { useAppDesign } from "../../design/useAppDesign";
 
-const ИНТЕРВАЛ_АВТОЛИСТАНИЯ_МС = 45000;
+const AUTOPLAY_INTERVAL_MS = 30000;
+const ZOOM_SCALE = 1.12;
 
 const props = defineProps({
     variant: {
@@ -23,42 +24,42 @@ const j = useAppDesign().components.home.jumbotron;
 const jShared = j.shared;
 const jVar = computed(() => (isMobile.value ? j.mobile : j.desktop));
 
-const модулиСвайпера = [Autoplay];
-const перемешанныеБаннеры = ref([]);
-let сигнатураБаннеров = "";
+const swiperModules = [Autoplay];
+const shuffledBanners = ref([]);
+let bannersSignature = "";
 
-function перемешатьФишерЙейтс(элементы) {
-    const копия = [...элементы];
-    for (let i = копия.length - 1; i > 0; i -= 1) {
-        const случайныйИндекс = Math.floor(Math.random() * (i + 1));
-        [копия[i], копия[случайныйИндекс]] = [копия[случайныйИндекс], копия[i]];
+function shuffleFisherYates(items) {
+    const copy = [...items];
+    for (let i = copy.length - 1; i > 0; i -= 1) {
+        const randomIndex = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[randomIndex]] = [copy[randomIndex], copy[i]];
     }
-    return копия;
+    return copy;
 }
 
 watch(
     () => banners.value,
-    (список) => {
-        const источник = Array.isArray(список) ? [...список] : [];
-        if (!источник.length) {
-            перемешанныеБаннеры.value = [];
-            сигнатураБаннеров = "";
+    (list) => {
+        const source = Array.isArray(list) ? [...list] : [];
+        if (!source.length) {
+            shuffledBanners.value = [];
+            bannersSignature = "";
             return;
         }
 
-        const сигнатура = источник.map((баннер, индекс) => баннер.id ?? индекс).join("|");
-        if (сигнатура === сигнатураБаннеров && перемешанныеБаннеры.value.length) {
+        const signature = source.map((banner, index) => banner.id ?? index).join("|");
+        if (signature === bannersSignature && shuffledBanners.value.length) {
             return;
         }
 
-        сигнатураБаннеров = сигнатура;
-        перемешанныеБаннеры.value = перемешатьФишерЙейтс(источник);
+        bannersSignature = signature;
+        shuffledBanners.value = shuffleFisherYates(source);
     },
     { immediate: true },
 );
 
 const slides = computed(() =>
-    перемешанныеБаннеры.value.map((banner, index) => ({
+    shuffledBanners.value.map((banner, index) => ({
         id: banner.id ?? index,
         image: isMobile.value
             ? banner.image_mobile || banner.image_desktop || ""
@@ -70,17 +71,21 @@ const isLoading = computed(() => loading.value.banners);
 const swiperRef = ref(null);
 const loopReady = computed(() => slides.value.length >= 3);
 const rewindEnabled = computed(() => slides.value.length > 1 && !loopReady.value);
-const настройкиАвтолистания = computed(() =>
+const autoplayOptions = computed(() =>
     slides.value.length > 1
         ? {
               enabled: true,
-              delay: ИНТЕРВАЛ_АВТОЛИСТАНИЯ_МС,
+              delay: AUTOPLAY_INTERVAL_MS,
               disableOnInteraction: false,
-              pauseOnMouseEnter: false,
               waitForTransition: false,
           }
         : false,
 );
+
+const zoomStyle = computed(() => ({
+    "--home-jumbotron-naplyv-duration": `${AUTOPLAY_INTERVAL_MS}ms`,
+    "--home-jumbotron-naplyv-scale": String(ZOOM_SCALE),
+}));
 
 const swiperBreakpoints = computed(() =>
     isMobile.value
@@ -99,8 +104,8 @@ const swiperBreakpoints = computed(() =>
 const handleSwiperInit = (swiper) => {
     if (!swiper) return;
     swiperRef.value = swiper;
-    // Не вызываем slideTo на init: при speed 0 transitionend не приходит,
-    // Autoplay остаётся на паузе после beforeTransitionStart.
+    // Do not call slideTo on init: with speed 0, transitionend may never fire
+    // and Autoplay stays paused after beforeTransitionStart.
     if (swiper.autoplay && !swiper.autoplay.running) {
         swiper.autoplay.start();
     }
@@ -148,7 +153,10 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <section :class="jVar.sectionRoot">
+    <section
+        :class="jVar.sectionRoot"
+        :style="zoomStyle"
+    >
         <div :class="jShared.backdropLayer">
             <div :class="jVar.glowLeft"></div>
             <div :class="jVar.glowRight"></div>
@@ -165,12 +173,12 @@ onBeforeUnmount(() => {
             <Swiper
                 v-else-if="slides.length"
                 :key="swiperRemountKey"
-                :modules="модулиСвайпера"
+                :modules="swiperModules"
                 :loop="loopReady"
                 :rewind="rewindEnabled"
                 :looped-slides="loopReady ? slides.length : 0"
                 :loop-additional-slides="loopReady ? slides.length : 0"
-                :autoplay="настройкиАвтолистания"
+                :autoplay="autoplayOptions"
                 :speed="700"
                 :space-between="isMobile ? 10 : 8"
                 :centered-slides="true"
@@ -196,11 +204,12 @@ onBeforeUnmount(() => {
                                 <img
                                     :src="slide.image"
                                     :alt="`Баннер ${index + 1}`"
-                                    :class="
+                                    :class="[
                                         isMobile
                                             ? jShared.slideImageMobile
-                                            : jShared.slideImageDesktop
-                                    "
+                                            : jShared.slideImageDesktop,
+                                        'home-jumbotron-naplyv',
+                                    ]"
                                     :width="isMobile ? 900 : 1920"
                                     :height="isMobile ? 1200 : 1080"
                                     :loading="index === 0 ? 'eager' : 'lazy'"
@@ -249,6 +258,38 @@ onBeforeUnmount(() => {
 .home-jumbotron {
     --app-slide-border-dim: color-mix(in srgb, var(--app-canvas-fg, #ececec) 12%, transparent);
     --app-slide-border-accent: color-mix(in srgb, var(--app-accent, #c62424) 50%, transparent);
+    --home-jumbotron-naplyv-duration: 30000ms;
+    --home-jumbotron-naplyv-scale: 1.12;
+}
+
+.home-jumbotron-media {
+    overflow: hidden;
+}
+
+.home-jumbotron-naplyv {
+    transform: scale(1);
+    transform-origin: center center;
+    will-change: transform;
+}
+
+.home-jumbotron :deep(.swiper-slide-active) .home-jumbotron-naplyv {
+    animation: home-jumbotron-naplyv var(--home-jumbotron-naplyv-duration) linear forwards;
+}
+
+@keyframes home-jumbotron-naplyv {
+    from {
+        transform: scale(1);
+    }
+
+    to {
+        transform: scale(var(--home-jumbotron-naplyv-scale));
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .home-jumbotron :deep(.swiper-slide-active) .home-jumbotron-naplyv {
+        animation: none;
+    }
 }
 
 /*
