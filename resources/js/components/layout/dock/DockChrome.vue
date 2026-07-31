@@ -16,11 +16,6 @@ import { useAppDesign } from "../../../design/useAppDesign";
 import DockDismissConfirmModal from "./DockDismissConfirmModal.vue";
 
 const props = defineProps({
-    variant: {
-        type: String,
-        required: true,
-        validator: (v) => v === "mobile" || v === "desktop",
-    },
     dockItems: {
         type: Array,
         required: true,
@@ -28,6 +23,7 @@ const props = defineProps({
 });
 
 const dock = useAppDesign().components.dock;
+const chrome = dock.chrome;
 
 const uiStore = useUiStore();
 const cartStore = useCheckoutStore();
@@ -40,7 +36,7 @@ const { activeDockItem, getBadge, dockItems } = useBottomDockState({
     dockItems: props.dockItems,
 });
 
-const isMobile = computed(() => props.variant === "mobile");
+const isMobile = computed(() => uiStore.deviceMode === "mobile");
 
 const {
     showScrim,
@@ -57,26 +53,18 @@ const {
     onDockPanelTouchEnd,
 } = useDockMobileInteractions(uiStore, () => isMobile.value, requestDockDismiss);
 
-const animVariant = computed(() => (props.variant === "desktop" ? "desktop" : "mobile"));
-
-const isMobilePanelOpen = computed(
-    () => isMobile.value && Boolean(activeDockItem.value),
-);
-const isDesktopPanelOpen = computed(
-    () => !isMobile.value && Boolean(activeDockItem.value),
-);
+const isPanelOpen = computed(() => Boolean(activeDockItem.value));
 
 const chromeScaleStyle = computed(() => {
-    if (isMobilePanelOpen.value) {
+    if (isPanelOpen.value) {
         return {};
     }
     const scale = uiStore.dockChromeScrollScale;
-    const origin = isMobile.value ? "bottom center" : "center left";
     const opacity = scale < 1 ? 0.88 : 1;
 
     return {
         transform: `scale(${scale})`,
-        transformOrigin: origin,
+        transformOrigin: "bottom center",
         opacity,
     };
 });
@@ -96,19 +84,19 @@ function handleDockClick(id) {
 }
 
 function handleChromeEnter(el, done) {
-    playBottomBarShow(el, done, animVariant.value);
+    playBottomBarShow(el, done);
 }
 
 function handleChromeLeave(el, done) {
-    playBottomBarHide(el, done, animVariant.value);
+    playBottomBarHide(el, done);
 }
 
 function handlePanelEnter(el, done) {
-    playDockContentShow(el, done, animVariant.value);
+    playDockContentShow(el, done);
 }
 
 function handlePanelLeave(el, done) {
-    playDockContentHide(el, done, animVariant.value);
+    playDockContentHide(el, done);
 }
 </script>
 
@@ -133,11 +121,8 @@ function handlePanelLeave(el, done) {
         @cancel="cancelDismiss"
     />
 
-    <!-- Mobile: панель над нижним островом -->
-    <div
-        v-if="variant === 'mobile'"
-        :class="dock.mobile.fixedRoot"
-    >
+    <!-- Bottom dock: panel above horizontal island -->
+    <div :class="chrome.fixedRoot">
         <Transition
             name="bottom-bar"
             @enter="handleChromeEnter"
@@ -146,11 +131,11 @@ function handlePanelLeave(el, done) {
             <div
                 v-if="uiStore.showBottomNav"
                 :class="[
-                    dock.mobile.visibleInner,
-                    isMobilePanelOpen ? dock.mobile.visibleInnerWithPanel : '',
-                    !isMobilePanelOpen ? dock.shared.chromeScrollTransform : '',
+                    chrome.visibleInner,
+                    isPanelOpen ? chrome.visibleInnerWithPanel : '',
+                    !isPanelOpen ? dock.shared.chromeScrollTransform : '',
                 ]"
-                :style="isMobilePanelOpen ? undefined : chromeScaleStyle"
+                :style="isPanelOpen ? undefined : chromeScaleStyle"
             >
                 <Transition
                     name="dock-panel"
@@ -163,8 +148,8 @@ function handlePanelLeave(el, done) {
                         ref="dockPanelOuterRef"
                         :key="activeDockItem.id"
                         :class="[
-                            dock.mobile.panelOuter,
-                            dock.mobile.panelOuterExpanded,
+                            chrome.panelOuter,
+                            chrome.panelOuterExpanded,
                         ]"
                         @touchstart.passive="onDockPanelTouchStart"
                         @touchend="onDockPanelTouchEnd"
@@ -173,19 +158,20 @@ function handlePanelLeave(el, done) {
                     </div>
                 </Transition>
 
-                <div :class="dock.mobile.dockIsland">
-                    <div :class="dock.mobile.tabRow">
+                <div :class="chrome.dockIsland">
+                    <div :class="chrome.tabRow">
                         <button
                             v-for="item in dockItems"
                             :key="item.id"
                             type="button"
-                            :class="dock.mobile.tabButton"
+                            :class="chrome.tabButton"
+                            :title="item.label"
                             :data-dock-target="item.id"
                             @click="handleDockClick(item.id)"
                         >
                             <span
                                 :class="[
-                                    dock.mobile.tabIconWrap,
+                                    chrome.tabIconWrap,
                                     tabIconTone(item.id),
                                 ]"
                                 :data-dock-bump-root="item.id"
@@ -194,7 +180,7 @@ function handlePanelLeave(el, done) {
                                     :class="[
                                         'mdi',
                                         item.iconClass,
-                                        dock.mobile.tabIconMdiSize,
+                                        chrome.tabIconMdiSize,
                                     ]"
                                 />
                                 <span
@@ -207,10 +193,10 @@ function handlePanelLeave(el, done) {
                             </span>
                             <span
                                 :class="[
-                                    dock.mobile.tabLabelVisibility,
+                                    chrome.tabLabelVisibility,
                                     uiStore.dockActiveId === item.id
-                                        ? dock.mobile.tabLabelActive
-                                        : dock.mobile.tabLabelInactive,
+                                        ? chrome.tabLabelActive
+                                        : chrome.tabLabelInactive,
                                 ]"
                             >
                                 {{ item.label }}
@@ -218,91 +204,6 @@ function handlePanelLeave(el, done) {
                         </button>
                     </div>
                 </div>
-            </div>
-        </Transition>
-    </div>
-
-    <!-- Desktop: слева, по вертикали по центру вьюпорта; pl больше контента — воздух от края -->
-    <div
-        v-else
-        :class="dock.desktop.fixedRoot"
-    >
-        <Transition
-            name="bottom-bar"
-            @enter="handleChromeEnter"
-            @leave="handleChromeLeave"
-        >
-            <div
-                v-if="uiStore.showBottomNav"
-                :class="[
-                    dock.desktop.chromeIsland,
-                    isDesktopPanelOpen ? dock.desktop.chromeIslandWithPanel : '',
-                    dock.shared.chromeScrollTransform,
-                ]"
-                :style="chromeScaleStyle"
-            >
-                <div :class="dock.desktop.tabColumn">
-                    <button
-                        v-for="item in dockItems"
-                        :key="item.id"
-                        type="button"
-                        :class="dock.desktop.tabButton"
-                        :title="item.label"
-                        :data-dock-target="item.id"
-                        @click="handleDockClick(item.id)"
-                    >
-                        <span
-                            :class="[
-                                dock.desktop.tabIconWrap,
-                                tabIconTone(item.id),
-                            ]"
-                            :data-dock-bump-root="item.id"
-                        >
-                            <i
-                                :class="[
-                                    'mdi',
-                                    item.iconClass,
-                                    dock.desktop.tabIconMdiSize,
-                                ]"
-                            />
-                            <span
-                                v-if="getBadge(item.id) > 0"
-                                :class="dock.shared.badge"
-                                :data-dock-badge="item.id"
-                            >
-                                {{ getBadge(item.id) }}
-                            </span>
-                        </span>
-                        <span
-                            :class="[
-                                dock.desktop.tabLabelHidden,
-                                uiStore.dockActiveId === item.id
-                                    ? dock.desktop.tabLabelActive
-                                    : dock.desktop.tabLabelInactiveMuted,
-                            ]"
-                        >
-                            {{ item.label }}
-                        </span>
-                    </button>
-                </div>
-
-                <Transition
-                    name="dock-panel"
-                    mode="out-in"
-                    @enter="handlePanelEnter"
-                    @leave="handlePanelLeave"
-                >
-                    <div
-                        v-if="activeDockItem"
-                        :key="activeDockItem.id"
-                        :class="[
-                            dock.desktop.desktopPanelOuter,
-                            dock.desktop.desktopPanelOuterExpanded,
-                        ]"
-                    >
-                        <component :is="activeDockItem.content" />
-                    </div>
-                </Transition>
             </div>
         </Transition>
     </div>

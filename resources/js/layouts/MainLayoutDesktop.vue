@@ -137,7 +137,7 @@ onUnmounted(() => {
         </main>
 
         <AppFooter />
-        <AppBottomBarDesktop v-if="bottomBarReady" />
+        <AppBottomBar v-if="bottomBarReady" />
         <GiftSelectionModal />
         <BaseModal />
     </div>

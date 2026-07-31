@@ -403,20 +403,8 @@ export function playMobileNavbarLogoPulse(logoEl) {
 export function playBottomBarShow(bar, onComplete, variant = "mobile") {
     if (!bar) return;
 
-    if (variant === "desktop") {
-        gsap.fromTo(
-            bar,
-            { x: -40, opacity: 0 },
-            {
-                x: 0,
-                opacity: 1,
-                duration: 0.32,
-                ease: "power2.out",
-                onComplete,
-            },
-        );
-        return;
-    }
+    // Bottom dock for both mobile and desktop (Y motion).
+    void variant;
 
     gsap.fromTo(
         bar,
@@ -442,16 +430,7 @@ export function playBottomBarHide(bar, onComplete, variant = "mobile") {
         return;
     }
 
-    if (variant === "desktop") {
-        gsap.to(bar, {
-            x: -36,
-            opacity: 0,
-            duration: 0.22,
-            ease: "power2.in",
-            onComplete,
-        });
-        return;
-    }
+    void variant;
 
     gsap.to(bar, {
         y: 40,
@@ -570,20 +549,7 @@ export function playDockContentShow(panel, onComplete, variant = "mobile") {
         return;
     }
 
-    if (variant === "desktop") {
-        gsap.fromTo(
-            panel,
-            { opacity: 0, x: -16 },
-            {
-                opacity: 1,
-                x: 0,
-                duration: 0.24,
-                ease: "power2.out",
-                onComplete,
-            },
-        );
-        return;
-    }
+    void variant;
 
     gsap.fromTo(
         panel,
@@ -609,16 +575,7 @@ export function playDockContentHide(panel, onComplete, variant = "mobile") {
         return;
     }
 
-    if (variant === "desktop") {
-        gsap.to(panel, {
-            opacity: 0,
-            x: -12,
-            duration: 0.18,
-            ease: "power2.in",
-            onComplete,
-        });
-        return;
-    }
+    void variant;
 
     gsap.to(panel, {
         opacity: 0,
