@@ -7,7 +7,7 @@ use Closure;
 use Filament\Forms\Components\TextInput;
 
 /**
- * Поле телефона РФ для Filament: маска +7 (XXX) XXX-XX-XX (Alpine mask).
+ * Russian phone field for Filament: mask +7 (XXX) XXX-XX-XX (Alpine mask).
  */
 final class FilamentRuPhoneField
 {
@@ -51,8 +51,8 @@ final class FilamentRuPhoneField
      */
     public static function validationRules(bool $required = false): array
     {
-        // Filament v4: внешний Closure резолвится DI и должен вернуть Laravel-rule;
-        // иначе [$attribute] считается утилитой поля и падает unresolvable.
+        // Filament v4: outer Closure is resolved via DI and must return a Laravel rule;
+        // otherwise [$attribute] is treated as a field utility and fails as unresolvable.
         $rules = [
             'string',
             'max:20',

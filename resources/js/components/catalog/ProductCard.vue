@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import { useCatalogCardView } from "../../composables/catalog/useCatalogCardView";
 import { useProductActions } from "../../composables/catalog/useProductActions";
 import { useAppDesign } from "../../design/useAppDesign";
@@ -29,24 +29,16 @@ const {
 } = useCatalogCardView(computed(() => props.product));
 
 const imageSizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw";
-const productImageRef = ref(null);
 
 const { qtyInCart, isFav, addToCart, incrementCart, decrementCart, toggleFavorite } =
     useProductActions(computed(() => props.product));
 
-function cartFlyOptions() {
-    return {
-        flySourceEl: productImageRef.value,
-        flyImageUrl: primaryThumb.value || undefined,
-    };
-}
-
 function handleAddToCart() {
-    addToCart(1, cartFlyOptions());
+    addToCart(1);
 }
 
 function handleIncrement() {
-    incrementCart(cartFlyOptions());
+    incrementCart();
 }
 </script>
 
@@ -55,7 +47,6 @@ function handleIncrement() {
         <div :class="d.mediaWrap">
             <img
                 v-if="primaryThumb"
-                ref="productImageRef"
                 :src="primaryThumb"
                 :srcset="imageSrcset || undefined"
                 :sizes="imageSrcset ? imageSizes : undefined"

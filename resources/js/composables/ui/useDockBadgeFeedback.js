@@ -1,13 +1,10 @@
 import { watch } from "vue";
-import {
-    consumeSkipNextCartBadgeBump,
-    playDockTabBump,
-} from "../../animations/animationManager";
+import { playDockTabBump } from "../../animations/animationManager";
 import { useCheckoutStore } from "../../stores/checkoutStore";
 import { useFavoritesStore } from "../../stores/favoritesStore";
 
 /**
- * Bump бейджей dock при росте счётчиков cart / favorites.
+ * Bump dock badges when cart / favorites counts grow.
  */
 export function useDockBadgeFeedback() {
     const cartStore = useCheckoutStore();
@@ -17,7 +14,6 @@ export function useDockBadgeFeedback() {
         () => cartStore.cartTotalItems,
         (count, prev) => {
             if (count <= 0 || prev == null || count <= prev) return;
-            if (consumeSkipNextCartBadgeBump()) return;
             playDockTabBump("cart");
         },
     );

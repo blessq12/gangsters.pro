@@ -25,7 +25,6 @@ const {
 } = useCatalogCardView(computed(() => props.product));
 
 const imageSizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw";
-const productImageRef = ref(null);
 
 const { qtyInCart, isFav, addToCart, incrementCart, decrementCart, toggleFavorite } =
     useProductActions(computed(() => props.product));
@@ -52,13 +51,6 @@ function pulseFav() {
     }, FEEDBACK_ANIM_MS);
 }
 
-function cartFlyOptions() {
-    return {
-        flySourceEl: productImageRef.value,
-        flyImageUrl: primaryThumb.value || undefined,
-    };
-}
-
 function handleToggleFavorite() {
     const wasFav = isFav.value;
     toggleFavorite();
@@ -67,12 +59,12 @@ function handleToggleFavorite() {
 }
 
 function handleAddToCart() {
-    addToCart(1, cartFlyOptions());
+    addToCart(1);
     setLiveMessage("Добавлено в корзину");
 }
 
 function handleIncrement() {
-    incrementCart(cartFlyOptions());
+    incrementCart();
     setLiveMessage("Количество увеличено");
 }
 
@@ -91,7 +83,6 @@ function handleDecrement() {
         <div :class="m.mediaWrap">
             <img
                 v-if="primaryThumb"
-                ref="productImageRef"
                 :src="primaryThumb"
                 :srcset="imageSrcset || undefined"
                 :sizes="imageSrcset ? imageSizes : undefined"

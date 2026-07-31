@@ -99,28 +99,16 @@ onBeforeUnmount(() => {
 });
 
 const galleryImages = computed(() => buildProductGallerySlides(props.product));
-const galleryZoneRef = ref(null);
 
 const { qtyInCart, isFav, addToCart, incrementCart, decrementCart, toggleFavorite } =
     useProductActions(computed(() => props.product));
 
-function cartFlyFromModal() {
-    const img = galleryZoneRef.value?.querySelector("img");
-    const first = galleryImages.value[0];
-    const flyImageUrl =
-        typeof first === "string" ? first : first?.url || undefined;
-    return {
-        flySourceEl: img,
-        flyImageUrl,
-    };
-}
-
 function handleModalAddToCart() {
-    addToCart(1, cartFlyFromModal());
+    addToCart(1);
 }
 
 function handleModalIncrement() {
-    incrementCart(cartFlyFromModal());
+    incrementCart();
 }
 </script>
 
@@ -157,7 +145,6 @@ function handleModalIncrement() {
                         <template v-if="product">
                             <div :class="ds.body">
                                 <div
-                                    ref="galleryZoneRef"
                                     :class="ds.mediaZone"
                                 >
                                     <ProductGallerySlider

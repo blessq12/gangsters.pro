@@ -2,7 +2,6 @@ import { useCatalogStore } from "../../stores/catalogStore";
 import { useFavoritesStore } from "../../stores/favoritesStore";
 import { useUiStore } from "../../stores/uiStore";
 import { useUserStore } from "../../stores/userStore";
-import { useCartFlyToDockAnimation } from "../../composables/cart/useCartFlyToDockAnimation";
 import { useDockCartAffordance } from "../../composables/cart/useDockCartAffordance";
 import { useDockBadgeFeedback } from "../../composables/ui/useDockBadgeFeedback";
 import { useSessionLifecycleProcess } from "../session/useSessionLifecycleProcess";
@@ -34,7 +33,6 @@ export function useAppBootstrap() {
             useGiftAutoPromptProcess(),
             useCompanyClosedNoticeProcess(),
             useClientFavoritesProcess(),
-            useCartFlyToDockAnimation(),
             useDockCartAffordance(),
             useDockBadgeFeedback(),
         ];

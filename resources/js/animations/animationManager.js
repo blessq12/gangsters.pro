@@ -462,41 +462,13 @@ export function playBottomBarHide(bar, onComplete, variant = "mobile") {
     });
 }
 
-let flyProductToCartTween = null;
-
 export function prefersReducedMotion() {
     if (typeof window === "undefined") return false;
     return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-function getVisibleRect(el) {
-    if (!el?.isConnected) return null;
-    const rect = el.getBoundingClientRect();
-    if (rect.width <= 0 || rect.height <= 0) return null;
-    return rect;
-}
-
 /**
- * Цель fly: dock cart tab, иначе navbar cart.
- * @returns {HTMLElement|null}
- */
-export function resolveCartFlyTargetEl() {
-    if (typeof document === "undefined") return null;
-
-    const dockTab = document.querySelector('[data-dock-target="cart"]');
-    if (getVisibleRect(dockTab)) return dockTab;
-
-    return dockTab;
-}
-
-let skipNextCartBadgeBump = false;
-
-export function markCartBadgeBumpFromFly() {
-    skipNextCartBadgeBump = true;
-}
-
-/**
- * Заметный bump вкладки dock: пилл tabIconWrap + бейдж (не .mdi).
+ * Noticeable dock tab bump: pill tabIconWrap + badge (not .mdi).
  * @param {"cart"|"favorites"|string} dockId
  */
 export function playDockTabBump(dockId) {
@@ -547,7 +519,7 @@ export function playDockTabBump(dockId) {
     }
 }
 
-/** @deprecated Используйте playDockTabBump */
+/** @deprecated Use playDockTabBump */
 export function playDockBadgeBump(dockId) {
     playDockTabBump(dockId);
 }
@@ -559,95 +531,6 @@ export function playDockCartTabBump(targetEl) {
     if (!targetEl?.isConnected || prefersReducedMotion()) return;
     const dockId = targetEl.getAttribute("data-dock-target") || "cart";
     playDockTabBump(dockId);
-}
-
-export function consumeSkipNextCartBadgeBump() {
-    if (!skipNextCartBadgeBump) return false;
-    skipNextCartBadgeBump = false;
-    return true;
-}
-
-/**
- * @param {{
- *   sourceEl?: HTMLElement|null,
- *   imageUrl?: string,
- *   targetEl?: HTMLElement|null,
- *   onComplete?: () => void,
- * }} params
- */
-export function playFlyProductToCart({
-    sourceEl,
-    imageUrl,
-    targetEl,
-    onComplete,
-} = {}) {
-    if (typeof document === "undefined") {
-        onComplete?.();
-        return;
-    }
-
-    const target = targetEl || resolveCartFlyTargetEl();
-    const sourceRect = getVisibleRect(sourceEl);
-    const targetRect = getVisibleRect(target);
-
-    if (prefersReducedMotion() || !sourceRect || !targetRect) {
-        if (target) {
-            markCartBadgeBumpFromFly();
-            playDockTabBump("cart");
-        }
-        onComplete?.();
-        return;
-    }
-
-    if (flyProductToCartTween) {
-        flyProductToCartTween.kill();
-        flyProductToCartTween = null;
-    }
-
-    const ghost = document.createElement("div");
-    ghost.setAttribute("aria-hidden", "true");
-    ghost.style.cssText =
-        "position:fixed;z-index:10001;pointer-events:none;overflow:hidden;border-radius:2px;box-shadow:0 8px 24px rgba(0,0,0,0.45);";
-
-    const size = Math.min(Math.max(sourceRect.width * 0.35, 48), 88);
-    ghost.style.width = `${size}px`;
-    ghost.style.height = `${size}px`;
-    ghost.style.left = `${sourceRect.left + sourceRect.width / 2 - size / 2}px`;
-    ghost.style.top = `${sourceRect.top + sourceRect.height / 2 - size / 2}px`;
-
-    if (imageUrl) {
-        const img = document.createElement("img");
-        img.src = imageUrl;
-        img.alt = "";
-        img.style.cssText =
-            "width:100%;height:100%;object-fit:cover;display:block;";
-        ghost.appendChild(img);
-    } else {
-        ghost.style.background = "rgba(198,36,36,0.85)";
-    }
-
-    document.body.appendChild(ghost);
-
-    const endX = targetRect.left + targetRect.width / 2 - size / 2;
-    const endY = targetRect.top + targetRect.height / 2 - size / 2;
-
-    flyProductToCartTween = gsap.to(ghost, {
-        left: endX,
-        top: endY,
-        scale: 0.35,
-        opacity: 0.15,
-        duration: 0.68,
-        ease: "power2.inOut",
-        onComplete: () => {
-            ghost.remove();
-            flyProductToCartTween = null;
-            if (target) {
-                markCartBadgeBumpFromFly();
-                playDockTabBump("cart");
-            }
-            onComplete?.();
-        },
-    });
 }
 
 /**

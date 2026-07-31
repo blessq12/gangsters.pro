@@ -24,25 +24,21 @@ export function useProductActions(productSource) {
         productId.value ? favoritesReadModel.isFavorite(productId.value) : false,
     );
 
-    const addToCart = async (qty = 1, fly = {}) => {
+    const addToCart = async (qty = 1) => {
         if (!productId.value) return;
         emitDomainEvent(DOMAIN_EVENTS.CART_ADD_REQUESTED, {
             product: product.value,
             qty,
             source: cartEventSource,
-            flySourceEl: fly.flySourceEl ?? null,
-            flyImageUrl: fly.flyImageUrl ?? null,
         });
         await cartCommands.addProductToCart(product.value, qty);
     };
 
-    const incrementCart = async (fly = {}) => {
+    const incrementCart = async () => {
         if (!productId.value) return;
         emitDomainEvent(DOMAIN_EVENTS.CART_INCREMENT_REQUESTED, {
             productId: productId.value,
             source: cartEventSource,
-            flySourceEl: fly.flySourceEl ?? null,
-            flyImageUrl: fly.flyImageUrl ?? null,
         });
         await cartCommands.incrementProductInCart(productId.value);
     };
@@ -67,4 +63,3 @@ export function useProductActions(productSource) {
         toggleFavorite,
     };
 }
-
