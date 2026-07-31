@@ -1,9 +1,12 @@
 <script setup>
 import "swiper/css";
-import { computed, onBeforeUnmount, ref } from "vue";
+import { computed, onBeforeUnmount, ref, watch } from "vue";
+import { Autoplay } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { useMarketingReadModel } from "../../features/marketing/useMarketingReadModel";
 import { useAppDesign } from "../../design/useAppDesign";
+
+const ИНТЕРВАЛ_АВТОЛИСТАНИЯ_МС = 45000;
 
 const props = defineProps({
     variant: {
@@ -20,8 +23,42 @@ const j = useAppDesign().components.home.jumbotron;
 const jShared = j.shared;
 const jVar = computed(() => (isMobile.value ? j.mobile : j.desktop));
 
+const модулиСвайпера = [Autoplay];
+const перемешанныеБаннеры = ref([]);
+let сигнатураБаннеров = "";
+
+function перемешатьФишерЙейтс(элементы) {
+    const копия = [...элементы];
+    for (let i = копия.length - 1; i > 0; i -= 1) {
+        const случайныйИндекс = Math.floor(Math.random() * (i + 1));
+        [копия[i], копия[случайныйИндекс]] = [копия[случайныйИндекс], копия[i]];
+    }
+    return копия;
+}
+
+watch(
+    () => banners.value,
+    (список) => {
+        const источник = Array.isArray(список) ? [...список] : [];
+        if (!источник.length) {
+            перемешанныеБаннеры.value = [];
+            сигнатураБаннеров = "";
+            return;
+        }
+
+        const сигнатура = источник.map((баннер, индекс) => баннер.id ?? индекс).join("|");
+        if (сигнатура === сигнатураБаннеров && перемешанныеБаннеры.value.length) {
+            return;
+        }
+
+        сигнатураБаннеров = сигнатура;
+        перемешанныеБаннеры.value = перемешатьФишерЙейтс(источник);
+    },
+    { immediate: true },
+);
+
 const slides = computed(() =>
-    (banners.value || []).map((banner, index) => ({
+    перемешанныеБаннеры.value.map((banner, index) => ({
         id: banner.id ?? index,
         image: isMobile.value
             ? banner.image_mobile || banner.image_desktop || ""
@@ -33,6 +70,15 @@ const isLoading = computed(() => loading.value.banners);
 const swiperRef = ref(null);
 const loopReady = computed(() => slides.value.length >= 3);
 const rewindEnabled = computed(() => slides.value.length > 1 && !loopReady.value);
+const настройкиАвтолистания = computed(() =>
+    slides.value.length > 1
+        ? {
+              delay: ИНТЕРВАЛ_АВТОЛИСТАНИЯ_МС,
+              disableOnInteraction: false,
+              pauseOnMouseEnter: true,
+          }
+        : false,
+);
 
 const swiperBreakpoints = computed(() =>
     isMobile.value
@@ -51,7 +97,12 @@ const swiperBreakpoints = computed(() =>
 const handleSwiperInit = (swiper) => {
     if (!swiper) return;
     swiperRef.value = swiper;
-    swiper.slidePrev(0);
+    // Стартуем с первого после Fisher–Yates (не slidePrev — он всегда открывал последний).
+    if (loopReady.value) {
+        swiper.slideToLoop(0, 0);
+        return;
+    }
+    swiper.slideTo(0, 0);
 };
 
 const goPrev = () => {
@@ -83,7 +134,7 @@ const goNext = () => {
 };
 
 const swiperRemountKey = computed(
-    () => `${props.variant}-${slides.value.length}`,
+    () => `${props.variant}-${slides.value.map((slide) => slide.id).join("-")}`,
 );
 
 onBeforeUnmount(() => {
@@ -113,11 +164,12 @@ onBeforeUnmount(() => {
             <Swiper
                 v-else-if="slides.length"
                 :key="swiperRemountKey"
+                :modules="модулиСвайпера"
                 :loop="loopReady"
                 :rewind="rewindEnabled"
                 :looped-slides="loopReady ? slides.length : 0"
                 :loop-additional-slides="loopReady ? slides.length : 0"
-                :autoplay="slides.length > 1 ? { delay: 4500 } : false"
+                :autoplay="настройкиАвтолистания"
                 :speed="700"
                 :space-between="isMobile ? 10 : 8"
                 :centered-slides="true"
