@@ -1,15 +1,15 @@
 <script setup>
 import { onMounted, onUnmounted, watch } from "vue";
 import { useRoute } from "vue-router";
-import { useThemeStore } from "../stores/themeStore";
-import { useUserStore } from "../stores/userStore";
-import { useUiStore } from "../stores/uiStore";
-import { useStorefrontStore } from "../stores/storefrontStore";
-import { useShellStore } from "../stores/shellStore";
 import { playPageEnter, playPageLeave } from "../animations/animationManager";
 import { useShellIntroDockTimeline } from "../composables/layout/useShellIntroDockTimeline";
 import { useDockScrollScale } from "../composables/ui/useDockScrollScale";
 import { useAppDesign } from "../design/useAppDesign";
+import { useShellStore } from "../stores/shellStore";
+import { useStorefrontStore } from "../stores/storefrontStore";
+import { useThemeStore } from "../stores/themeStore";
+import { useUiStore } from "../stores/uiStore";
+import { useUserStore } from "../stores/userStore";
 
 const sh = useAppDesign().components.layoutShell;
 
@@ -94,11 +94,7 @@ onUnmounted(() => {
 
 <template>
     <div
-        :class="[
-            sh.shared.root,
-            sh.shared.typographyRoot,
-            sh.shared.themeDark,
-        ]"
+        :class="[sh.shared.root, sh.shared.typographyRoot, sh.shared.themeDark]"
     >
         <!-- 1) стартовый оверлей с логотипом -->
         <div
@@ -122,10 +118,7 @@ onUnmounted(() => {
         <AppNavbarMobile />
         <MobileMenu />
         <main :class="sh.shared.mainGrow">
-            <div
-                ref="mainRef"
-                :class="sh.mobile.mainContainer"
-            >
+            <div ref="mainRef" :class="sh.mobile.mainContainer">
                 <router-view v-slot="{ Component, route }">
                     <Transition
                         mode="out-in"
@@ -141,7 +134,7 @@ onUnmounted(() => {
         </main>
 
         <AppFooter />
-        <PwaInstallBanner :visible="!showIntro" />
+
         <AppBottomBarMobile v-if="bottomBarReady" />
         <GiftSelectionModal />
         <BaseModal />
