@@ -51,10 +51,12 @@ final class FilamentRuPhoneField
      */
     public static function validationRules(bool $required = false): array
     {
+        // Filament v4: внешний Closure резолвится DI и должен вернуть Laravel-rule;
+        // иначе [$attribute] считается утилитой поля и падает unresolvable.
         $rules = [
             'string',
             'max:20',
-            static function (string $attribute, mixed $value, Closure $fail): void {
+            static fn (): Closure => static function (string $attribute, mixed $value, Closure $fail): void {
                 if (! is_string($value) || trim($value) === '') {
                     return;
                 }
