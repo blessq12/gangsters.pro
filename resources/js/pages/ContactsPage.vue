@@ -150,7 +150,7 @@ const co = useAppDesign().components.pages.contacts;
         eyebrow="Связаться с нами"
         :description="heroDescription"
         :breadcrumbs="['Главная', 'Контакты']"
-        hero-image="/images/banners/banner3.jpeg"
+        hero-image="/images/contact_banner.jpg"
         :stats="heroStats"
     >
         <p

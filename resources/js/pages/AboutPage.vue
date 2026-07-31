@@ -10,7 +10,7 @@ const a = useAppDesign().components.pages.about;
         eyebrow="История бренда"
         description="Gangsters — это доставка с характером: тёмная эстетика, сочные позиции в меню и сервис, который не рассыпается на мелочах."
         :breadcrumbs="['Главная', 'О компании']"
-        hero-image="/images/banners/banner1.jpeg"
+        hero-image="/images/about_us_banner.jpg"
         :stats="[
             { label: 'Кухни', value: '3 направления' },
             { label: 'Фокус', value: 'Скорость и вкус' },

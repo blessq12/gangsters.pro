@@ -89,7 +89,7 @@ const importantSub = computed(() => {
         eyebrow="Правила доставки"
         :description="heroDescription"
         :breadcrumbs="['Главная', 'Оплата и доставка']"
-        hero-image="/images/banners/banner2.jpeg"
+        hero-image="/images/delivery_banner.jpg"
         :stats="stats"
     >
         <div :class="dv.gridTop">
