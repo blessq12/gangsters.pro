@@ -72,7 +72,7 @@ export const catalogDesign = {
         emptyText: "Тут пока тихо. Выберите другую категорию.",
         sectionsStack: "space-y-7",
         sectionTitle:
-            "mb-3 text-base font-normal uppercase tracking-wide text-app-accent/90 sm:text-lg",
+            "mb-4 text-xl font-bold uppercase tracking-wider text-app-accent sm:text-2xl sm:mb-5",
     },
 
     /** CatalogProducts.vue: плоский список (masonry — scoped в SFC). */
