@@ -13,6 +13,7 @@ import { useBottomDockState } from "../../../composables/ui/useBottomDockState";
 import { useDockDismiss } from "../../../composables/ui/useDockDismiss";
 import { useDockMobileInteractions } from "./composables/useDockMobileInteractions";
 import { useAppDesign } from "../../../design/useAppDesign";
+import DockCartSummary from "./DockCartSummary.vue";
 import DockDismissConfirmModal from "./DockDismissConfirmModal.vue";
 
 const props = defineProps({
@@ -35,6 +36,11 @@ const { activeDockItem, getBadge, dockItems } = useBottomDockState({
     favoritesStore,
     dockItems: props.dockItems,
 });
+
+/** Nav tabs only — cart opens from DockCartSummary. */
+const navDockItems = computed(() =>
+    dockItems.filter((item) => item.id !== "cart"),
+);
 
 const isMobile = computed(() => uiStore.deviceMode === "mobile");
 
@@ -159,13 +165,18 @@ function handlePanelLeave(el, done) {
                 </Transition>
 
                 <div :class="chrome.dockIsland">
+                    <DockCartSummary @toggle="handleDockClick('cart')" />
+
+                    <div :class="chrome.islandDivider" aria-hidden="true" />
+
                     <div :class="chrome.tabRow">
                         <button
-                            v-for="item in dockItems"
+                            v-for="item in navDockItems"
                             :key="item.id"
                             type="button"
                             :class="chrome.tabButton"
                             :title="item.label"
+                            :aria-label="item.label"
                             :data-dock-target="item.id"
                             @click="handleDockClick(item.id)"
                         >
@@ -190,16 +201,6 @@ function handlePanelLeave(el, done) {
                                 >
                                     {{ getBadge(item.id) }}
                                 </span>
-                            </span>
-                            <span
-                                :class="[
-                                    chrome.tabLabelVisibility,
-                                    uiStore.dockActiveId === item.id
-                                        ? chrome.tabLabelActive
-                                        : chrome.tabLabelInactive,
-                                ]"
-                            >
-                                {{ item.label }}
                             </span>
                         </button>
                     </div>

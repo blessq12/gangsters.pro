@@ -2,8 +2,6 @@
  * Bottom dock presentation (DockChrome): one horizontal island for all breakpoints.
  */
 
-import { shellTypography } from "./shell.design";
-
 /** Same as `navbar.*.bar`: dense island on canvas. */
 const dockChromeIslandSurface =
     "rounded-none border border-app-accent/40 bg-app-canvas shadow-[0_0_25px_rgba(0,0,0,0.7)] backdrop-blur";
@@ -40,15 +38,33 @@ export const dockDesign = {
             "mb-3 w-full max-w-4xl min-h-0 md:max-w-5xl",
         panelOuterExpanded:
             "flex flex-1 flex-col",
-        dockIsland: `${dockChromeIslandSurface} flex w-fit shrink-0 items-center px-3 py-3 sm:px-4 sm:py-4 md:px-4 md:py-3.5`,
+        dockIsland: `${dockChromeIslandSurface} flex w-fit shrink-0 items-stretch gap-3 px-3 py-3 sm:gap-4 sm:px-4 sm:py-4 md:px-4 md:py-3.5`,
+        islandDivider:
+            "w-px shrink-0 self-stretch bg-app-accent/25",
         tabRow: "flex items-center gap-2.5 sm:gap-3",
-        tabButton: shellTypography.body.dockTabRow,
+        tabButton: "group flex items-center justify-center transition-colors",
         tabIconWrap:
             "relative flex h-11 w-11 items-center justify-center rounded-none border transition-colors sm:h-12 sm:w-12",
         tabIconMdiSize: "text-lg sm:text-xl",
-        tabLabelVisibility: "hidden text-[11px] lg:block",
-        tabLabelActive: "text-app-accent",
-        tabLabelInactive: "text-app-muted group-hover:text-app-accent",
+    },
+
+    cartSummary: {
+        root:
+            "relative flex min-w-[9.5rem] flex-col items-start justify-center gap-0.5 overflow-hidden rounded-none border px-4 py-1.5 text-left transition-colors sm:min-w-[11rem] sm:px-5",
+        rootActive: chromePillActive,
+        rootInactive: chromePillInactive,
+        rootFlash:
+            "border-app-accent bg-app-accent text-white shadow-[0_0_18px_rgba(198,36,36,0.7)]",
+        sheen: "dock-cart-summary-sheen pointer-events-none absolute inset-0 z-0",
+        content: "relative z-10 flex w-full flex-col items-start justify-center gap-0.5",
+        amount:
+            "text-sm font-semibold leading-tight tabular-nums sm:text-base",
+        qty: "text-[11px] leading-tight text-app-muted tabular-nums sm:text-xs",
+        flashLabel:
+            "w-full text-center text-sm font-semibold uppercase tracking-wide leading-tight sm:text-base",
+        emptyWrap: "flex items-center gap-2",
+        emptyIcon: "mdi mdi-cart-outline text-lg leading-none sm:text-xl",
+        emptyLabel: "max-w-[7rem] text-[11px] leading-snug sm:max-w-[8rem] sm:text-xs",
     },
 } as const;
 
