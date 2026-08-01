@@ -3,6 +3,7 @@
 use App\Domain\Crm\Event\ClientCreated;
 use App\Domain\Crm\Event\ClientPasswordChanged;
 use App\Domain\Order\Event\OrderCreated;
+use App\Infrastructure\Crm\Listener\RecordOrderHistoryOnCreated;
 use App\Integration\Frontpad\Listener\OnOrderCreated;
 
 /**
@@ -17,7 +18,8 @@ use App\Integration\Frontpad\Listener\OnOrderCreated;
 return [
     'listen' => [
         OrderCreated::class => [
-            OnOrderCreated::class,
+            OnOrderCreated::class, // frontpad integration
+            RecordOrderHistoryOnCreated::class,
         ],
 
         ClientCreated::class => [
