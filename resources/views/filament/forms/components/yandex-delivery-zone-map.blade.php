@@ -1,5 +1,5 @@
 @php
-    /** @var \App\Filament\Delivery\Forms\Components\YandexDeliveryZoneMap $field */
+    /** @var \App\Filament\Content\Delivery\Forms\Components\YandexDeliveryZoneMap $field */
     $editorUrl = route('filament.admin.delivery-zone-map-editor');
     $record = $getRecord();
     $initialPayload = [

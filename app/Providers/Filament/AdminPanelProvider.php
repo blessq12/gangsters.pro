@@ -14,16 +14,15 @@ use App\Filament\Catalog\Widgets\Tables\CategoriesHubTable;
 use App\Filament\Catalog\Widgets\Tables\ProductSetsHubTable;
 use App\Filament\Catalog\Widgets\Tables\ProductsHubTable;
 use App\Filament\Catalog\Widgets\Tables\TagsHubTable;
-use App\Filament\MarketingContent\Resources\BannerResource;
-use App\Filament\MarketingContent\Resources\MarketingContentResource;
-use App\Filament\MarketingContent\Resources\PromotionResource;
-use App\Filament\MarketingContent\Widgets\Tables\BannersHubTable;
-use App\Filament\MarketingContent\Widgets\Tables\PromotionsHubTable;
-use App\Filament\Company\Resources\CompanyResource;
-use App\Filament\Company\Resources\OperatorResource;
-use App\Filament\Client\Resources\ClientResource;
+use App\Filament\Content\MarketingContent\Resources\BannerResource;
+use App\Filament\Content\MarketingContent\Resources\MarketingContentResource;
+use App\Filament\Content\MarketingContent\Resources\PromotionResource;
+use App\Filament\Content\MarketingContent\Widgets\Tables\BannersHubTable;
+use App\Filament\Content\MarketingContent\Widgets\Tables\PromotionsHubTable;
+use App\Filament\Content\Company\Resources\CompanyResource;
+use App\Filament\Content\Company\Resources\OperatorResource;
 use App\Filament\Order\Resources\OrderResource;
-use App\Filament\Delivery\Resources\DeliveryResource;
+use App\Filament\Content\Delivery\Resources\DeliveryResource;
 use App\Filament\Promotion\Resources\PromotionPolicyResource;
 use App\Filament\Support\AdminNavigationGroup;
 use App\Http\Controllers\Admin\DeliveryZoneMapEditorController;
@@ -69,7 +68,6 @@ class AdminPanelProvider extends PanelProvider
                 DeliveryResource::class,
                 PromotionPolicyResource::class,
                 OrderResource::class,
-                ClientResource::class,
                 CompanyResource::class,
                 OperatorResource::class,
             ])

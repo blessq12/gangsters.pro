@@ -3,13 +3,13 @@
 namespace App\Shared\ValueObject;
 
 /**
- * Деньги приложения: только целые рубли, валюта RUB.
+ * Деньги приложения: целые рубли, валюта RUB.
  */
 final readonly class Money
 {
     public const CURRENCY = 'RUB';
 
-    public function __construct(
+    private function __construct(
         private int $amountRubles,
     ) {
         if ($this->amountRubles < 0) {
@@ -61,5 +61,10 @@ final readonly class Money
         }
 
         return new self($result);
+    }
+
+    public function __toString(): string
+    {
+        return (string) $this->amountRubles;
     }
 }

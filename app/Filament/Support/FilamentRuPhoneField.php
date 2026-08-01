@@ -2,7 +2,7 @@
 
 namespace App\Filament\Support;
 
-use App\Domain\Client\ValueObject\PhoneNumber;
+use App\Shared\ValueObject\PhoneNumber;
 use Closure;
 use Filament\Forms\Components\TextInput;
 

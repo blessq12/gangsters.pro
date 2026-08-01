@@ -3,7 +3,7 @@
 namespace App\Application\Content\useCases;
 
 use App\Application\Content\Presenter\MarketingContentPresenter;
-use App\Domain\Client\ValueObject\PhoneNumber;
+use App\Shared\ValueObject\PhoneNumber;
 use App\Domain\Content\Entity\Company;
 use App\Domain\Content\Entity\CompanyDocument;
 use App\Domain\Content\Entity\CompanyLegalInfo;

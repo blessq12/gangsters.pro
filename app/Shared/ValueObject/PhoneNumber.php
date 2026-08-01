@@ -2,8 +2,13 @@
 
 namespace App\Shared\ValueObject;
 
+/**
+ * Российский телефон. Канон: +7 (XXX) XXX-XX-XX.
+ */
 final readonly class PhoneNumber
 {
+    public const PATTERN = '+7 (###) ###-##-##';
+
     private function __construct(
         private string $digits,
     ) {}
@@ -23,6 +28,20 @@ final readonly class PhoneNumber
         return new self($digits);
     }
 
+    public static function tryFromRaw(?string $raw): ?self
+    {
+        $digits = self::normalizeDigits($raw);
+
+        if (strlen($digits) !== 10) {
+            return null;
+        }
+
+        return new self($digits);
+    }
+
+    /**
+     * Нормализация в 10 цифр абонента (без кода страны).
+     */
     public static function normalizeDigits(?string $raw): string
     {
         $digits = preg_replace('/\D+/', '', (string) $raw) ?? '';
@@ -45,24 +64,28 @@ final readonly class PhoneNumber
         return substr($digits, 0, 10);
     }
 
+    /**
+     * Всегда возвращает +7 (XXX) XXX-XX-XX либо бросает.
+     */
     public static function formatFromRaw(?string $raw): string
     {
         return self::fromRaw($raw)->formatted();
     }
 
+    /**
+     * +7 (XXX) XXX-XX-XX или null, если номер неполный.
+     */
     public static function tryFormatFromRaw(?string $raw): ?string
     {
-        $digits = self::normalizeDigits($raw);
-
-        if (strlen($digits) !== 10) {
-            return null;
-        }
-
-        return self::formatDigits($digits);
+        return self::tryFromRaw($raw)?->formatted();
     }
 
     public static function formatDigits(string $digits): string
     {
+        if (strlen($digits) !== 10 || ! ctype_digit($digits)) {
+            throw new \InvalidArgumentException('Для форматирования нужны ровно 10 цифр.');
+        }
+
         return sprintf(
             '+7 (%s) %s-%s-%s',
             substr($digits, 0, 3),
@@ -72,13 +95,25 @@ final readonly class PhoneNumber
         );
     }
 
+    /** 10 цифр абонента без кода страны. */
     public function digits(): string
     {
         return $this->digits;
     }
 
+    /** Всегда +7 (XXX) XXX-XX-XX. */
     public function formatted(): string
     {
         return self::formatDigits($this->digits);
+    }
+
+    public function equals(self $other): bool
+    {
+        return $this->digits === $other->digits;
+    }
+
+    public function __toString(): string
+    {
+        return $this->formatted();
     }
 }
