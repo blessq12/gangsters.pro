@@ -1,10 +1,10 @@
 <script setup>
-import { computed, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
+import { computed, ref, watch } from "vue";
 import { useAppDesign } from "../../design/useAppDesign";
+import { resolveGiftSelectionRequired } from "../../features/checkout/giftSelectionGate";
 import { useCheckoutStore } from "../../stores/checkoutStore";
 import { useUiStore } from "../../stores/uiStore";
-import { resolveGiftSelectionRequired } from "../../features/checkout/giftSelectionGate";
 import GiftCandidateCard from "./GiftCandidateCard.vue";
 
 const chk = useAppDesign().components.checkout;
@@ -57,7 +57,10 @@ function mapCandidateItem(item) {
         id,
         name: item.name ? String(item.name) : "",
         priceRub: Number(item.price_rub ?? item.priceRub) || 0,
-        imageUrl: item.image_url ?? item.imageUrl ? String(item.image_url ?? item.imageUrl) : null,
+        imageUrl:
+            (item.image_url ?? item.imageUrl)
+                ? String(item.image_url ?? item.imageUrl)
+                : null,
         composition: composition.map((part) => String(part)).filter(Boolean),
     };
 }
@@ -72,7 +75,9 @@ const giftCandidates = computed(() => {
                 priceRub: Number(item.priceRub) || 0,
                 imageUrl: item.imageUrl ? String(item.imageUrl) : null,
                 composition: Array.isArray(item.composition)
-                    ? item.composition.map((part) => String(part)).filter(Boolean)
+                    ? item.composition
+                          .map((part) => String(part))
+                          .filter(Boolean)
                     : [],
             }))
             .filter((item) => item.id > 0);
@@ -81,12 +86,16 @@ const giftCandidates = computed(() => {
     const promo = giftPromotion.value;
     if (!promo) return [];
 
-    const candidateItems = Array.isArray(promo.candidate_items) ? promo.candidate_items : [];
+    const candidateItems = Array.isArray(promo.candidate_items)
+        ? promo.candidate_items
+        : [];
     if (candidateItems.length > 0) {
         return candidateItems.map(mapCandidateItem).filter(Boolean);
     }
 
-    const ids = Array.isArray(promo.candidate_product_ids) ? promo.candidate_product_ids : [];
+    const ids = Array.isArray(promo.candidate_product_ids)
+        ? promo.candidate_product_ids
+        : [];
     return ids
         .map((id) => Number(id) || 0)
         .filter((id) => id > 0)
@@ -100,7 +109,9 @@ const giftCandidates = computed(() => {
 });
 
 const canApplyGiftSelection = computed(() =>
-    giftCandidates.value.some((item) => item.id === Number(selectedGiftProductId.value)),
+    giftCandidates.value.some(
+        (item) => item.id === Number(selectedGiftProductId.value),
+    ),
 );
 
 const isOpen = computed({
@@ -128,18 +139,27 @@ watch(
     (opened) => {
         if (!opened) return;
 
-        const selectedFromPreview = Number(orderPreview.value?.giftCta?.selectedProductId) || 0;
-        const selectedFromPromo = Number(giftPromotion.value?.selected_product_id) || 0;
-        const selectedFromStore = Number(checkoutStore.promotions?.freeRollGiftProductId) || 0;
+        const selectedFromPreview =
+            Number(orderPreview.value?.giftCta?.selectedProductId) || 0;
+        const selectedFromPromo =
+            Number(giftPromotion.value?.selected_product_id) || 0;
+        const selectedFromStore =
+            Number(checkoutStore.promotions?.freeRollGiftProductId) || 0;
         selectedGiftProductId.value =
-            selectedFromPreview || selectedFromPromo || selectedFromStore || null;
+            selectedFromPreview ||
+            selectedFromPromo ||
+            selectedFromStore ||
+            null;
     },
     { immediate: true },
 );
 
 async function applyGiftSelection(productId = selectedGiftProductId.value) {
     const normalizedId = Number(productId) || 0;
-    if (!giftCandidates.value.some((item) => item.id === normalizedId) || giftApplying.value) {
+    if (
+        !giftCandidates.value.some((item) => item.id === normalizedId) ||
+        giftApplying.value
+    ) {
         return;
     }
 
@@ -156,20 +176,17 @@ async function applyGiftSelection(productId = selectedGiftProductId.value) {
     }
 }
 
-async function handleCandidateSelect(item) {
+function handleCandidateSelect(item) {
     if (!item?.id || giftApplying.value) {
         return;
     }
 
-    await applyGiftSelection(item.id);
+    selectedGiftProductId.value = item.id;
 }
 </script>
 
 <template>
-    <BaseModal
-        v-model="isOpen"
-        :closable="!isGiftSelectionMandatory"
-    >
+    <BaseModal v-model="isOpen" :closable="!isGiftSelectionMandatory">
         <template #header>Выбери подарок</template>
 
         <div
@@ -185,32 +202,23 @@ async function handleCandidateSelect(item) {
                 @select="handleCandidateSelect"
             />
         </div>
-        <p
-            v-else
-            class="text-sm text-app-muted"
-        >
+        <p v-else class="text-sm text-app-muted">
             Сейчас список подарков недоступен.
         </p>
 
-        <p
-            v-if="error"
-            class="mt-3 text-sm text-red-300"
-        >
+        <p v-if="error" class="mt-3 text-sm text-red-300">
             {{ error }}
         </p>
 
         <template #footer>
             <div :class="c.giftFooterRow">
-                <p :class="c.giftFooterHint">
-                    Нажми на карточку или подтверди выбор кнопкой.
-                </p>
                 <button
                     type="button"
                     :class="c.giftApplyBtn"
                     :disabled="!canApplyGiftSelection || giftApplying"
                     @click="applyGiftSelection()"
                 >
-                    {{ giftApplying ? "Применяем..." : "Применить" }}
+                    {{ giftApplying ? "Выбираем..." : "Выбрать" }}
                 </button>
             </div>
         </template>
