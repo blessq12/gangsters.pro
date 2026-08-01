@@ -1,6 +1,9 @@
 /**
- * Один ряд на productId: бесплатная часть (system) + каталожный товар для докупки.
- * Каталожные комплекты показываем только когда есть право на комплект (роллы / free lines).
+ * Ряды комплекта: free qty из quote + каталог для докупки.
+ *
+ * Правило бэка: entitledSets = floor(rollCount / rollsPerSet), по умолчанию
+ * rollsPerSet = 2 → 2 ролла = 1 набор (freeQty на каждый комплектный товар).
+ * Каталог для докупки подключать только при entitledSets >= 1.
  *
  * @param {unknown} complementLines
  * @param {unknown} complementProducts

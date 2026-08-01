@@ -64,8 +64,8 @@ export const shellTypography = {
         dockTabRow:
             "group flex flex-col items-center gap-1.5 text-xs sm:text-xs transition-colors",
         dockTabLabelDesktop: "hidden lg:block text-[11px]",
-        checkoutFlowBody: "space-y-3 text-xs sm:text-sm",
-        checkoutHeadingSm: "text-xs font-semibold",
+        checkoutFlowBody: "space-y-3.5 text-sm sm:text-base",
+        checkoutHeadingSm: "text-sm font-bold tracking-wide",
         checkoutKicker: shellTypographyScale.body.overline,
         checkoutKickerAccent: shellTypographyScale.body.overline,
         checkoutSubsectionKicker: shellTypographyScale.body.overlineTight,

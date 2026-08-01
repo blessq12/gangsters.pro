@@ -1,1 +1,0 @@
-import{K as o,N as r}from"./app-CbOndIix.js";function l(t){const n=o(t);return n||(t?String(t):"")}function u(t){if(!t)return null;const n=r(t);if(n.length!==10){const e=String(t).replace(/\D/g,"");return e.length?e.startsWith("7")&&e.length===11?`tel:+${e}`:`tel:+${e}`:null}return`tel:+7${n}`}export{l as f,u as p};

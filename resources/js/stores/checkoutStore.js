@@ -31,6 +31,19 @@ import {
 } from "../features/checkout/normalizeCheckoutCart";
 import { DOMAIN_EVENTS, emitDomainEvent } from "../shared/domainEvents";
 import { roundRubles2 } from "../utils/moneyFormat";
+import { useCatalogStore } from "./catalogStore";
+
+function resolveComplementProductIds() {
+    const catalogStore = useCatalogStore();
+    const ids = new Set();
+    for (const product of catalogStore.complementProducts || []) {
+        const id = Number(product?.id);
+        if (Number.isFinite(id) && id > 0) {
+            ids.add(id);
+        }
+    }
+    return ids;
+}
 
 export const useCheckoutStore = defineStore("checkout", {
     state: () => ({
@@ -92,6 +105,15 @@ export const useCheckoutStore = defineStore("checkout", {
         },
         hasCartItems(state) {
             return state.cartItems.some((item) => !item.isSystem);
+        },
+        /** User-линии меню без комплектных (палочки и т.п.). */
+        hasMenuUserItems(state) {
+            const complementIds = resolveComplementProductIds();
+            return state.cartItems.some(
+                (item) =>
+                    !item.isSystem
+                    && !complementIds.has(Number(item.productId)),
+            );
         },
         cartTotalItems(state) {
             return state.cartItems.reduce(
@@ -469,6 +491,9 @@ export const useCheckoutStore = defineStore("checkout", {
 
         updateCartLine(product, quantity, payload = null) {
             upsertLocalCartLine(this, product, quantity, payload);
+            if (!this.hasMenuUserItems) {
+                return this.clearCart();
+            }
             return refreshOrderDraftPreview(this);
         },
 
@@ -534,6 +559,10 @@ export const useCheckoutStore = defineStore("checkout", {
                     price: { amount: item?.productSnapshot?.price },
                 };
                 upsertLocalCartLine(this, product, 0, item?.payload ?? null);
+                if (!this.hasMenuUserItems) {
+                    await this.clearCart();
+                    return;
+                }
                 await refreshOrderDraftPreview(this);
             } catch (e) {
                 this.cartError =
@@ -589,6 +618,10 @@ export const useCheckoutStore = defineStore("checkout", {
             this.cartError = null;
             try {
                 upsertLocalCartLine(this, product, quantity, payload);
+                if (!this.hasMenuUserItems) {
+                    await this.clearCart();
+                    return;
+                }
                 await refreshOrderDraftPreview(this);
             } catch (e) {
                 this.cartError =

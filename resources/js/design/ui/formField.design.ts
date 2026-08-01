@@ -4,8 +4,8 @@
 
 export const formFieldDesign = {
     root: "min-w-0 w-full space-y-1",
-    label: "mb-1 block text-xs font-medium text-app-muted",
-    errorSm: "text-[11px] text-red-400",
+    label: "mb-1 block text-sm font-medium text-app-canvas-fg",
+    errorSm: "text-xs text-red-400",
     errorXs: "text-xs text-red-400",
     groupInvalid: "rounded-none ring-1 ring-red-500/40",
     inputInvalid:

@@ -44,7 +44,7 @@ const showProgress = computed(() => {
 </script>
 
 <template>
-    <div :class="[s.flowBody, 'space-y-3']">
+    <div :class="s.flowBody">
         <div
             v-if="showProgress || waiterLine"
             :class="s.storyHeader"
