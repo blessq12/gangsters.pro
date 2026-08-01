@@ -1,8 +1,9 @@
 import {
     placeOrderRequest,
-    previewOrderDraftRequest,
+    quoteOrderRequest,
 } from "../../api/orderDraftApi";
 import { useUserStore } from "../../stores/userStore";
+import { adaptQuoteToCheckoutSnapshot } from "./adaptQuoteToCheckoutSnapshot";
 import {
     buildClientPayload,
     buildDeliveryPayload,
@@ -14,9 +15,8 @@ import {
     readCheckoutSessionPayload,
     writeCheckoutSessionPayload,
 } from "./checkoutSessionStorage";
+import { isComplementCartLine } from "./normalizeCheckoutCart";
 import { roundRubles2 } from "../../utils/moneyFormat";
-
-const CLIENT_REQUEST_KEY = "client_request_id";
 
 export function resolveClientRequestId() {
     if (typeof window === "undefined") {
@@ -92,16 +92,50 @@ function resolveRegisteredClientId(store, options = {}) {
     return null;
 }
 
-export function buildOrderDraftPayload(store, selectedAddress = null, options = {}) {
+function resolveComplementProductIds(store) {
+    return store.cartItems
+        .filter((item) => isComplementCartLine(item))
+        .map((item) => Number(item.productId) || 0)
+        .filter((id) => id > 0);
+}
+
+function resolveCoords(selectedAddress, store) {
+    const source =
+        selectedAddress
+        ?? (store.deliveryInfo?.address && typeof store.deliveryInfo.address === "object"
+            ? store.deliveryInfo.address
+            : null);
+
+    if (!source || typeof source !== "object") {
+        return { latitude: null, longitude: null };
+    }
+
+    const latitude =
+        source.latitude != null ? Number(source.latitude) : null;
+    const longitude =
+        source.longitude != null ? Number(source.longitude) : null;
+
+    return {
+        latitude: Number.isFinite(latitude) ? latitude : null,
+        longitude: Number.isFinite(longitude) ? longitude : null,
+    };
+}
+
+export function buildQuoteOrderPayload(store, selectedAddress = null, options = {}) {
     const userLines = store.userItems.map((item) => ({
         product_id: item.productId,
         quantity: item.qty,
-        payload: item.payload ?? null,
     }));
 
+    const clientId = resolveRegisteredClientId(store, options);
+    const isGuest = Boolean(
+        options.isGuest
+        || (store.guestContact?.name && store.guestContact?.phone),
+    );
+
     const clientPayload = buildClientPayload(store, {
-        clientId: resolveRegisteredClientId(store, options),
-        isGuest: Boolean(store.guestContact?.name && store.guestContact?.phone),
+        clientId,
+        isGuest: isGuest || clientId == null,
     });
 
     const deliveryPayload = store.deliveryInfo.method
@@ -112,15 +146,28 @@ export function buildOrderDraftPayload(store, selectedAddress = null, options = 
         ? buildPaymentPayload(store)
         : null;
 
+    const coords = resolveCoords(selectedAddress, store);
+    const giftProductId = store.promotions.freeRollGiftProductId;
+
     return {
-        cart: {
-            lines: userLines,
-            selected_gift_product_id: store.promotions.freeRollGiftProductId,
-        },
-        client: clientPayload.client_id != null || clientPayload.name ? clientPayload : null,
-        delivery: deliveryPayload,
-        payment: paymentPayload,
+        lines: userLines,
+        delivery_method: deliveryPayload?.method ?? store.deliveryInfo.method ?? "courier",
+        client: clientPayload,
+        address: deliveryPayload?.address ?? null,
+        delivery_comment: deliveryPayload?.comment,
+        scheduled_at: deliveryPayload?.scheduled_at,
+        payment_method: paymentPayload?.method ?? "cash",
+        change_from_rubles: paymentPayload?.change_from_rubles,
+        gift_product_id: giftProductId != null ? Number(giftProductId) : null,
+        complement_product_ids: resolveComplementProductIds(store),
+        latitude: coords.latitude,
+        longitude: coords.longitude,
     };
+}
+
+/** @deprecated используй buildQuoteOrderPayload */
+export function buildOrderDraftPayload(store, selectedAddress = null, options = {}) {
+    return buildQuoteOrderPayload(store, selectedAddress, options);
 }
 
 export async function refreshOrderDraftPreview(store, selectedAddress = null, options = {}) {
@@ -132,17 +179,18 @@ export async function refreshOrderDraftPreview(store, selectedAddress = null, op
     const previewAddress = effectivePreviewAddress(store, selectedAddress);
 
     try {
-        const data = await previewOrderDraftRequest(
-            buildOrderDraftPayload(store, previewAddress, options),
+        const quote = await quoteOrderRequest(
+            buildQuoteOrderPayload(store, previewAddress, options),
         );
 
         if (requestSeq !== store.previewRequestSeq) {
-            return data;
+            return quote;
         }
 
-        store.applyFromServer(data);
+        const snapshot = adaptQuoteToCheckoutSnapshot(quote);
+        store.applyFromServer(snapshot);
         store.persistSession();
-        return data;
+        return quote;
     } catch (e) {
         console.error("refreshOrderDraftPreview", e);
         store.error =
@@ -273,14 +321,21 @@ export async function placeOrderOnServer(store, selectedAddress = null) {
     const previewAddress = effectivePreviewAddress(store, selectedAddress);
 
     try {
+        const quote = await quoteOrderRequest(
+            buildQuoteOrderPayload(store, previewAddress),
+        );
+
         const body = {
             client_request_id: store.clientRequestId || resolveClientRequestId(),
-            ...buildOrderDraftPayload(store, previewAddress),
+            cart: quote.cart,
+            client: quote.client,
+            delivery: quote.delivery,
+            payment: quote.payment,
         };
 
         const data = await placeOrderRequest(body);
         clearCheckoutSessionPayload();
-        return data;
+        return { order: data };
     } catch (e) {
         console.error("placeOrderOnServer", e);
         store.error =

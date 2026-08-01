@@ -136,58 +136,67 @@ export function normalizeCheckoutCartBlock(cart) {
         return { items: [], itemsTotalRubles: 0, itemsSubtotalRubles: 0 };
     }
 
-    const items = Array.isArray(cart.items)
+    const rawLines = Array.isArray(cart.items)
         ? cart.items
-              .map((row) => {
-                  if (!row || typeof row !== "object") {
-                      return null;
-                  }
+        : Array.isArray(cart.lines)
+          ? cart.lines
+          : [];
 
-                  const productId = Number(row.product_id) || 0;
-                  const qty = Number(row.quantity) || 0;
-                  if (productId <= 0 || qty <= 0) {
-                      return null;
-                  }
+    const items = rawLines
+        .map((row) => {
+            if (!row || typeof row !== "object") {
+                return null;
+            }
 
-                  const unitRub = roundRubles2(Number(row.unit_price_rubles) || 0);
-                  const lineRub = roundRubles2(Number(row.line_total_rubles) || unitRub * qty);
-                  const unitKopecks = Math.round(unitRub * 100);
-                  const lineKopecks = Math.round(lineRub * 100);
-                  const payload =
-                      row.payload && typeof row.payload === "object" ? row.payload : null;
-                  const lineKind = payload?.kind === "gift"
-                      ? "gift"
-                      : payload?.kind === "complement"
-                        ? "complement"
-                        : "user";
-                  const isSystem = lineKind === "gift" || lineKind === "complement";
+            const productId = Number(row.product_id) || 0;
+            const qty = Number(row.quantity) || 0;
+            if (productId <= 0 || qty <= 0) {
+                return null;
+            }
 
-                  return {
-                      lineKey: `${lineKind}:${productId}`,
-                      origin: isSystem ? "system" : "user",
-                      isSystem,
-                      lineKind,
-                      productId,
-                      qty,
-                      productSnapshot: {
-                          id: productId,
-                          name: row.product_name ? String(row.product_name) : "",
-                          price: unitRub,
-                      },
-                      pricing: {
-                          listUnitPriceKopecks: unitKopecks,
-                          finalUnitPriceKopecks: unitKopecks,
-                          lineTotalKopecks: lineKopecks,
-                      },
-                      payload: row.payload ?? null,
-                  };
-              })
-              .filter(Boolean)
-        : [];
+            const unitRub = roundRubles2(Number(row.unit_price_rubles) || 0);
+            const lineRub = roundRubles2(Number(row.line_total_rubles) || unitRub * qty);
+            const unitKopecks = Math.round(unitRub * 100);
+            const lineKopecks = Math.round(lineRub * 100);
+            const payload =
+                row.payload && typeof row.payload === "object" ? row.payload : null;
+            const lineKind = payload?.kind === "gift"
+                ? "gift"
+                : payload?.kind === "complement"
+                  ? "complement"
+                  : "user";
+            const isSystem = lineKind === "gift" || lineKind === "complement";
 
-    const itemsSubtotalRubles = roundRubles2(Number(cart.items_total_rubles) || 0);
+            return {
+                lineKey: `${lineKind}:${productId}`,
+                origin: isSystem ? "system" : "user",
+                isSystem,
+                lineKind,
+                productId,
+                qty,
+                productSnapshot: {
+                    id: productId,
+                    name: row.product_name ? String(row.product_name) : "",
+                    price: unitRub,
+                },
+                pricing: {
+                    listUnitPriceKopecks: unitKopecks,
+                    finalUnitPriceKopecks: unitKopecks,
+                    lineTotalKopecks: lineKopecks,
+                },
+                payload: row.payload ?? null,
+            };
+        })
+        .filter(Boolean);
+
+    const itemsSubtotalRubles = roundRubles2(
+        Number(cart.items_total_rubles) ||
+            items
+                .filter((item) => !item.isSystem)
+                .reduce((sum, item) => sum + (item.pricing.lineTotalKopecks || 0) / 100, 0),
+    );
     const itemsTotalRubles = roundRubles2(
-        Number(cart.payable_total_rubles ?? cart.items_total_rubles) || 0,
+        Number(cart.payable_total_rubles ?? cart.items_total_rubles) || itemsSubtotalRubles,
     );
 
     return {

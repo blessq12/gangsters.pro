@@ -2,12 +2,18 @@
 
 use App\Http\Controllers\Api\CatalogController;
 use App\Http\Controllers\Api\ContentController;
+use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\YandexFoodController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/content', [ContentController::class, 'show']);
 
 Route::get('/catalog', [CatalogController::class, 'show']);
+
+Route::prefix('order')->group(function (): void {
+    Route::post('quote', [OrderController::class, 'quote']);
+    Route::post('/', [OrderController::class, 'place']);
+});
 
 Route::prefix('yandex-food')->group(function (): void {
     Route::post('/security/oauth/token', [YandexFoodController::class, 'login']);

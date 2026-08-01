@@ -55,6 +55,7 @@ export function mapPaymentToLocal(payment) {
 export function buildClientPayload(store, { clientId = null, isGuest = false } = {}) {
     if (clientId != null) {
         return {
+            kind: "registered",
             client_id: Number(clientId),
             name: store.guestContact.name || undefined,
             phone: store.guestContact.phone || undefined,
@@ -64,11 +65,16 @@ export function buildClientPayload(store, { clientId = null, isGuest = false } =
 
     if (!isGuest) {
         return {
+            kind: "guest",
             client_id: null,
+            name: store.guestContact?.name || undefined,
+            phone: store.guestContact?.phone || undefined,
+            email: store.guestContact?.email || undefined,
         };
     }
 
     return {
+        kind: "guest",
         name: store.guestContact.name,
         phone: store.guestContact.phone,
         email: store.guestContact.email || undefined,

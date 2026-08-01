@@ -41,6 +41,12 @@ class Handler extends ExceptionHandler
             ], 404);
         }
 
+        if ($e instanceof \InvalidArgumentException && $request->is('api/*')) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 422);
+        }
+
         return parent::render($request, $e);
     }
 }

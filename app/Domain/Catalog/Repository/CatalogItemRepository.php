@@ -20,6 +20,13 @@ interface CatalogItemRepository
     public function findActiveProductsByIds(array $ids): array;
 
     /**
+     * Активные системные товары (кандидаты подарка).
+     *
+     * @return list<Product>
+     */
+    public function findActiveSystemProducts(): array;
+
+    /**
      * @param  list<int>  $ids
      * @return list<ProductSet>
      */
