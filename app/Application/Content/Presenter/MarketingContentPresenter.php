@@ -4,14 +4,9 @@ namespace App\Application\Content\Presenter;
 
 use App\Domain\Content\Entity\Banner;
 use App\Domain\Content\Entity\Promotion;
-use App\Domain\Content\Port\MarketingMediaUrlPort;
 
 final class MarketingContentPresenter
 {
-    public function __construct(
-        private readonly MarketingMediaUrlPort $mediaUrls,
-    ) {}
-
     /**
      * @param  list<Banner>  $banners
      * @return list<array<string, mixed>>
@@ -56,8 +51,8 @@ final class MarketingContentPresenter
     {
         return [
             'id' => $banner->id(),
-            'image_desktop' => $this->mediaUrls->resolve($banner->imageDesktop()),
-            'image_mobile' => $this->mediaUrls->resolve($banner->imageMobile()),
+            'image_desktop' => $banner->imageDesktop(),
+            'image_mobile' => $banner->imageMobile(),
         ];
     }
 
@@ -71,7 +66,7 @@ final class MarketingContentPresenter
         return [
             'id' => $promotion->id(),
             'title' => $promotion->title(),
-            'image' => $this->mediaUrls->resolve($promotion->image()),
+            'image' => $promotion->image(),
             'body' => $body,
             'description' => $this->plainTextExcerpt($body),
         ];
