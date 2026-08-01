@@ -67,7 +67,7 @@ return [
 
         'clients' => [
             'driver' => 'eloquent',
-            'model' => App\Infrastructure\Client\Model\CLN_Client::class,
+            'model' => App\Infrastructure\Crm\Model\CRM_Client::class,
         ],
     ],
 

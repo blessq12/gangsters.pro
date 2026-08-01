@@ -48,6 +48,7 @@ export function buildClientAddressPayload(data = {}) {
         house: data.house ?? "",
         entrance: data.entrance ?? null,
         apartment: data.apartment ?? null,
+        comment: data.comment ?? null,
         make_default:
             "make_default" in data ? Boolean(data.make_default) : undefined,
     };

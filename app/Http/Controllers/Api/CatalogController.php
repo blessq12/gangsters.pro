@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Application\Catalog\useCases\GetCatalogUseCase;
+use App\Application\Catalog\Query\GetCatalogUseCase;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Application\Content\useCases\GetBootstrapUseCase;
+use App\Application\Content\Query\GetBootstrapUseCase;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 

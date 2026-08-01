@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\CatalogController;
+use App\Http\Controllers\Api\ClientController;
 use App\Http\Controllers\Api\ContentController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\YandexFoodController;
@@ -10,9 +11,27 @@ Route::get('/content', [ContentController::class, 'show']);
 
 Route::get('/catalog', [CatalogController::class, 'show']);
 
+Route::prefix('client')->group(function (): void {
+    Route::post('register', [ClientController::class, 'register']);
+    Route::post('login', [ClientController::class, 'login']);
+
+    Route::middleware('auth:sanctum')->group(function (): void {
+        Route::get('profile', [ClientController::class, 'profile']);
+        Route::patch('profile', [ClientController::class, 'updateProfile']);
+        Route::post('addresses', [ClientController::class, 'addAddress']);
+        Route::delete('addresses/{addressId}', [ClientController::class, 'deleteAddress']);
+    });
+});
+
 Route::prefix('order')->group(function (): void {
     Route::post('quote', [OrderController::class, 'quote']);
     Route::post('/', [OrderController::class, 'place']);
+
+    Route::middleware('auth:sanctum')->group(function (): void {
+        Route::get('/', [ClientController::class, 'orders']);
+        Route::get('{orderId}/repeatable-lines', [ClientController::class, 'repeatableLines'])
+            ->whereNumber('orderId');
+    });
 });
 
 Route::prefix('yandex-food')->group(function (): void {

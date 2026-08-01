@@ -13,6 +13,13 @@ final class EloquentOrderRepository implements OrderRepository
         private readonly OrderMapper $mapper,
     ) {}
 
+    public function findById(int $id): ?Order
+    {
+        $row = ORD_Order::query()->find($id);
+
+        return $row instanceof ORD_Order ? $this->mapper->toDomain($row) : null;
+    }
+
     public function findByClientRequestId(string $clientRequestId): ?Order
     {
         $row = ORD_Order::query()
@@ -20,6 +27,20 @@ final class EloquentOrderRepository implements OrderRepository
             ->first();
 
         return $row instanceof ORD_Order ? $this->mapper->toDomain($row) : null;
+    }
+
+    public function listByClientId(int $clientId): array
+    {
+        /** @var \Illuminate\Database\Eloquent\Collection<int, ORD_Order> $rows */
+        $rows = ORD_Order::query()
+            ->where('client_id', $clientId)
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->get();
+
+        return $rows
+            ->map(fn (ORD_Order $row): Order => $this->mapper->toDomain($row))
+            ->all();
     }
 
     public function save(Order $order): void

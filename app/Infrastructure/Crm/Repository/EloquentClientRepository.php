@@ -45,6 +45,20 @@ final class EloquentClientRepository implements ClientRepository
         return $row instanceof CRM_Client ? $this->mapper->toDomain($row) : null;
     }
 
+    public function findByEmail(string $email): ?Client
+    {
+        $email = trim($email);
+        if ($email === '') {
+            return null;
+        }
+
+        $row = CRM_Client::query()
+            ->whereRaw('LOWER(email) = ?', [mb_strtolower($email)])
+            ->first();
+
+        return $row instanceof CRM_Client ? $this->mapper->toDomain($row) : null;
+    }
+
     public function existsByPhone(string $phone): bool
     {
         return CRM_Client::query()

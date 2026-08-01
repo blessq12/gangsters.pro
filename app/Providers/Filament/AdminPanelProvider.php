@@ -23,6 +23,8 @@ use App\Filament\Content\Company\Resources\CompanyResource;
 use App\Filament\Content\Company\Resources\OperatorResource;
 use App\Filament\Order\Resources\OrderResource;
 use App\Filament\Content\Delivery\Resources\DeliveryResource;
+use App\Filament\Crm\Resources\ClientResource;
+use App\Filament\Crm\Resources\ClientResource\RelationManagers\OrderHistoryRelationManager;
 use App\Filament\Promotion\Resources\PromotionPolicyResource;
 use App\Filament\Support\AdminNavigationGroup;
 use App\Http\Controllers\Admin\DeliveryZoneMapEditorController;
@@ -68,6 +70,7 @@ class AdminPanelProvider extends PanelProvider
                 DeliveryResource::class,
                 PromotionPolicyResource::class,
                 OrderResource::class,
+                ClientResource::class,
                 CompanyResource::class,
                 OperatorResource::class,
             ])
@@ -81,6 +84,7 @@ class AdminPanelProvider extends PanelProvider
                 ProductSetLinesRelationManager::class,
                 BannersHubTable::class,
                 PromotionsHubTable::class,
+                OrderHistoryRelationManager::class,
             ])
             ->middleware([
                 EncryptCookies::class,

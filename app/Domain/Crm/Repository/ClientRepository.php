@@ -12,5 +12,7 @@ interface ClientRepository
 
     public function findByPhone(string $phone): ?Client;
 
+    public function findByEmail(string $email): ?Client;
+
     public function existsByPhone(string $phone): bool;
 }

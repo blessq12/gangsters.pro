@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Application\YandexFood\DTO\IssueAccessTokenDto;
-use App\Application\YandexFood\useCases\GetYandexFoodMenuAvailabilityUseCase;
-use App\Application\YandexFood\useCases\GetYandexFoodMenuCompositionUseCase;
-use App\Application\YandexFood\useCases\GetYandexFoodMenuPromosUseCase;
-use App\Application\YandexFood\useCases\GetYandexFoodRestaurantsUseCase;
-use App\Application\YandexFood\useCases\IssueYandexFoodAccessTokenUseCase;
+use App\Application\YandexFood\Query\GetYandexFoodMenuAvailabilityUseCase;
+use App\Application\YandexFood\Query\GetYandexFoodMenuCompositionUseCase;
+use App\Application\YandexFood\Query\GetYandexFoodMenuPromosUseCase;
+use App\Application\YandexFood\Query\GetYandexFoodRestaurantsUseCase;
+use App\Application\YandexFood\Command\IssueYandexFoodAccessTokenUseCase;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
