@@ -53,11 +53,7 @@ const {
     cancelDismiss,
 } = useDockDismiss();
 
-const {
-    dockPanelOuterRef,
-    onDockPanelTouchStart,
-    onDockPanelTouchEnd,
-} = useDockMobileInteractions(uiStore, () => isMobile.value, requestDockDismiss);
+useDockMobileInteractions(uiStore, () => isMobile.value);
 
 const isPanelOpen = computed(() => Boolean(activeDockItem.value));
 
@@ -151,14 +147,11 @@ function handlePanelLeave(el, done) {
                 >
                     <div
                         v-if="activeDockItem"
-                        ref="dockPanelOuterRef"
                         :key="activeDockItem.id"
                         :class="[
                             chrome.panelOuter,
                             chrome.panelOuterExpanded,
                         ]"
-                        @touchstart.passive="onDockPanelTouchStart"
-                        @touchend="onDockPanelTouchEnd"
                     >
                         <component :is="activeDockItem.content" />
                     </div>
