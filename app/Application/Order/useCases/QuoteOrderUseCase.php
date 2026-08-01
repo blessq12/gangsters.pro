@@ -146,22 +146,16 @@ final class QuoteOrderUseCase
             ];
         }
 
-        $selectedComplementIds = $this->resolveComplementProductIds(
-            entitledSets: $entitledSets,
-            requestedIds: $input->complementProductIds,
-            availableById: $complementProducts,
-        );
-
-        $quantityByComplementId = array_count_values($selectedComplementIds);
-        foreach ($quantityByComplementId as $complementId => $quantity) {
-            $complement = $products[(int) $complementId] ?? null;
-            if (! $complement instanceof Product) {
-                throw new \InvalidArgumentException(sprintf('Комплект #%d недоступен.', $complementId));
-            }
-
+        foreach (
+            $this->resolveComplementProducts(
+                entitledSets: $entitledSets,
+                requestedIds: $input->complementProductIds,
+                availableById: $complementProducts,
+            ) as $complement
+        ) {
             $cartLines[] = $this->linePayload(
                 product: $complement,
-                quantity: (int) $quantity,
+                quantity: $entitledSets,
                 unitPriceRubles: 0,
                 kind: 'complement',
             );
@@ -360,11 +354,13 @@ final class QuoteOrderUseCase
     }
 
     /**
+     * Все активные наборы дополнений (или явный whitelist с FE), каждый × entitledSets.
+     *
      * @param  list<int>  $requestedIds
      * @param  array<int, Product>  $availableById
-     * @return list<int>
+     * @return list<Product>
      */
-    private function resolveComplementProductIds(
+    private function resolveComplementProducts(
         int $entitledSets,
         array $requestedIds,
         array $availableById,
@@ -373,23 +369,18 @@ final class QuoteOrderUseCase
             return [];
         }
 
-        $chosen = [];
+        $requested = [];
         foreach ($requestedIds as $rawId) {
             $id = (int) $rawId;
-            if ($id < 1 || ! isset($availableById[$id])) {
-                continue;
-            }
-            $chosen[] = $id;
-            if (count($chosen) >= $entitledSets) {
-                return $chosen;
+            if ($id >= 1 && isset($availableById[$id])) {
+                $requested[$id] = $availableById[$id];
             }
         }
 
-        $fallbackId = (int) array_key_first($availableById);
-        while (count($chosen) < $entitledSets) {
-            $chosen[] = $fallbackId;
+        if ($requested !== []) {
+            return array_values($requested);
         }
 
-        return $chosen;
+        return array_values($availableById);
     }
 }
