@@ -17,7 +17,7 @@ final class HttpFrontpadOrderExporter implements FrontpadOrderExporter
     {
         if (! $this->isEnabled()) {
             Log::debug('Frontpad export skipped (disabled or secret empty)', [
-                'order_id' => $event->orderId()->value(),
+                'order_id' => $event->orderId(),
             ]);
 
             return;
@@ -30,7 +30,7 @@ final class HttpFrontpadOrderExporter implements FrontpadOrderExporter
             $error = (string) ($response['error'] ?? $response['message'] ?? 'unknown_error');
 
             Log::error('Frontpad export rejected', [
-                'order_id' => $event->orderId()->value(),
+                'order_id' => $event->orderId(),
                 'error' => $error,
                 'response' => $response,
             ]);
@@ -40,13 +40,13 @@ final class HttpFrontpadOrderExporter implements FrontpadOrderExporter
 
         if (isset($response['warnings'])) {
             Log::warning('Frontpad export warnings', [
-                'order_id' => $event->orderId()->value(),
+                'order_id' => $event->orderId(),
                 'warnings' => $response['warnings'],
             ]);
         }
 
         Log::info('Frontpad order created', [
-            'order_id' => $event->orderId()->value(),
+            'order_id' => $event->orderId(),
             'frontpad_order_id' => $response['order_id'] ?? null,
             'frontpad_order_number' => $response['order_number'] ?? null,
         ]);

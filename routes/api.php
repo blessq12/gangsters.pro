@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\Api\CatalogController;
 use App\Http\Controllers\Api\ContentController;
-use App\Http\Controllers\Api\OrderDraftController;
 use App\Http\Controllers\Api\YandexFoodController;
 use Illuminate\Support\Facades\Route;
 

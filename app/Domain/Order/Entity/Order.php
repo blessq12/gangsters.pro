@@ -2,57 +2,63 @@
 
 namespace App\Domain\Order\Entity;
 
-use App\Domain\Order\Enum\OrderSource;
-use App\Domain\Order\Enum\OrderStatus;
-use App\Domain\Order\Exception\OrderInvariantViolation;
-use App\Domain\Order\ValueObject\OrderAggregatorReference;
-use App\Domain\Order\ValueObject\OrderCartSnapshot;
-use App\Domain\Order\ValueObject\OrderClientSnapshot;
-use App\Domain\Order\ValueObject\OrderDeliverySnapshot;
-use App\Domain\Order\ValueObject\OrderId;
-use App\Domain\Order\ValueObject\OrderPaymentSnapshot;
 use DateTimeImmutable;
 
 /**
- * Агрегат заказа — неизменяемый снимок подтверждённого оформления или ingress-заказа агрегатора.
+ * Агрегат заказа — неизменяемый снимок подтверждённого оформления.
  */
 final class Order
 {
+    /**
+     * @param  array<string, mixed>  $cart
+     * @param  array<string, mixed>  $client
+     * @param  array<string, mixed>  $delivery
+     * @param  array<string, mixed>  $payment
+     */
     private function __construct(
-        private ?OrderId $id,
-        private readonly OrderSource $source,
+        private ?int $id,
+        private readonly string $source,
         private readonly ?string $checkoutId,
-        private readonly ?OrderAggregatorReference $aggregatorReference,
-        private readonly OrderStatus $status,
-        private readonly OrderCartSnapshot $cart,
-        private readonly OrderClientSnapshot $client,
-        private readonly OrderDeliverySnapshot $delivery,
-        private readonly OrderPaymentSnapshot $payment,
+        private readonly ?string $partnerCode,
+        private readonly ?string $externalOrderId,
+        private readonly string $status,
+        private readonly array $cart,
+        private readonly array $client,
+        private readonly array $delivery,
+        private readonly array $payment,
         private readonly DateTimeImmutable $createdAt,
     ) {}
 
+    /**
+     * @param  array<string, mixed>  $cart
+     * @param  array<string, mixed>  $client
+     * @param  array<string, mixed>  $delivery
+     * @param  array<string, mixed>  $payment
+     */
     public static function fromCheckoutSnapshot(
         string $clientRequestId,
-        OrderCartSnapshot $cart,
-        OrderClientSnapshot $client,
-        OrderDeliverySnapshot $delivery,
-        OrderPaymentSnapshot $payment,
+        array $cart,
+        array $client,
+        array $delivery,
+        array $payment,
         DateTimeImmutable $createdAt,
     ): self {
         if ($clientRequestId === '') {
-            throw OrderInvariantViolation::invalidCheckoutReference();
+            throw new \InvalidArgumentException('Заказ нельзя создать без ссылки на чекаут.');
         }
 
-        if ($cart->lines() === []) {
-            throw OrderInvariantViolation::emptyCart();
+        $lines = $cart['lines'] ?? null;
+        if (! is_array($lines) || $lines === []) {
+            throw new \InvalidArgumentException('Заказ нельзя создать с пустой корзиной.');
         }
 
         return new self(
             id: null,
-            source: OrderSource::Site,
+            source: 'site',
             checkoutId: $clientRequestId,
-            aggregatorReference: null,
-            status: OrderStatus::New,
+            partnerCode: null,
+            externalOrderId: null,
+            status: 'new',
             cart: $cart,
             client: $client,
             delivery: $delivery,
@@ -61,23 +67,31 @@ final class Order
         );
     }
 
+    /**
+     * @param  array<string, mixed>  $cart
+     * @param  array<string, mixed>  $client
+     * @param  array<string, mixed>  $delivery
+     * @param  array<string, mixed>  $payment
+     */
     public static function restore(
-        OrderId $id,
-        OrderSource $source,
+        int $id,
+        string $source,
         ?string $checkoutId,
-        ?OrderAggregatorReference $aggregatorReference,
-        OrderStatus $status,
-        OrderCartSnapshot $cart,
-        OrderClientSnapshot $client,
-        OrderDeliverySnapshot $delivery,
-        OrderPaymentSnapshot $payment,
+        ?string $partnerCode,
+        ?string $externalOrderId,
+        string $status,
+        array $cart,
+        array $client,
+        array $delivery,
+        array $payment,
         DateTimeImmutable $createdAt,
     ): self {
         return new self(
             id: $id,
             source: $source,
             checkoutId: $checkoutId,
-            aggregatorReference: $aggregatorReference,
+            partnerCode: $partnerCode,
+            externalOrderId: $externalOrderId,
             status: $status,
             cart: $cart,
             client: $client,
@@ -87,7 +101,7 @@ final class Order
         );
     }
 
-    public function id(): OrderId
+    public function id(): int
     {
         if ($this->id === null) {
             throw new \LogicException('Заказ ещё не сохранён.');
@@ -101,12 +115,20 @@ final class Order
         return $this->id !== null;
     }
 
-    public function assignId(OrderId $id): void
+    public function assignId(int $id): void
     {
+        if ($this->id !== null) {
+            throw new \LogicException('id уже назначен.');
+        }
+
+        if ($id < 1) {
+            throw new \InvalidArgumentException('id должен быть положительным.');
+        }
+
         $this->id = $id;
     }
 
-    public function source(): OrderSource
+    public function source(): string
     {
         return $this->source;
     }
@@ -121,32 +143,49 @@ final class Order
         return $this->checkoutId;
     }
 
-    public function aggregatorReference(): ?OrderAggregatorReference
+    public function partnerCode(): ?string
     {
-        return $this->aggregatorReference;
+        return $this->partnerCode;
     }
 
-    public function status(): OrderStatus
+    public function externalOrderId(): ?string
+    {
+        return $this->externalOrderId;
+    }
+
+    public function status(): string
     {
         return $this->status;
     }
 
-    public function cart(): OrderCartSnapshot
+    /**
+     * @return array<string, mixed>
+     */
+    public function cart(): array
     {
         return $this->cart;
     }
 
-    public function client(): OrderClientSnapshot
+    /**
+     * @return array<string, mixed>
+     */
+    public function client(): array
     {
         return $this->client;
     }
 
-    public function delivery(): OrderDeliverySnapshot
+    /**
+     * @return array<string, mixed>
+     */
+    public function delivery(): array
     {
         return $this->delivery;
     }
 
-    public function payment(): OrderPaymentSnapshot
+    /**
+     * @return array<string, mixed>
+     */
+    public function payment(): array
     {
         return $this->payment;
     }
@@ -154,5 +193,35 @@ final class Order
     public function createdAt(): DateTimeImmutable
     {
         return $this->createdAt;
+    }
+
+    public function clientId(): ?int
+    {
+        $clientId = $this->client['client_id'] ?? null;
+
+        return $clientId !== null ? (int) $clientId : null;
+    }
+
+    public function totalRubles(): int
+    {
+        $total = 0;
+
+        foreach ($this->cart['lines'] ?? [] as $line) {
+            if (! is_array($line)) {
+                continue;
+            }
+
+            $kind = is_array($line['payload'] ?? null)
+                ? (string) (($line['payload']['kind'] ?? '') ?: 'user')
+                : 'user';
+
+            if (in_array($kind, ['gift', 'complement'], true)) {
+                continue;
+            }
+
+            $total += (int) ($line['line_total_rubles'] ?? 0);
+        }
+
+        return $total;
     }
 }

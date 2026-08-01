@@ -3,11 +3,6 @@
 namespace App\Application\Order\Presenter;
 
 use App\Domain\Order\Entity\Order;
-use App\Domain\Order\ValueObject\OrderClientSnapshot;
-use App\Domain\Order\ValueObject\OrderDeliveryAddress;
-use App\Domain\Order\ValueObject\OrderDeliverySnapshot;
-use App\Domain\Order\ValueObject\OrderLineSnapshot;
-use App\Domain\Order\ValueObject\OrderPaymentSnapshot;
 
 final class OrderPresenter
 {
@@ -16,86 +11,55 @@ final class OrderPresenter
      */
     public function present(Order $order): array
     {
+        $lines = [];
+        foreach ($order->cart()['lines'] ?? [] as $line) {
+            if (! is_array($line)) {
+                continue;
+            }
+
+            $payload = is_array($line['payload'] ?? null) ? $line['payload'] : null;
+            $kind = is_string($payload['kind'] ?? null) && $payload['kind'] !== ''
+                ? $payload['kind']
+                : 'user';
+
+            $lines[] = [
+                'id' => (int) ($line['product_id'] ?? 0),
+                'quantity' => (int) ($line['quantity'] ?? 0),
+                'row_total' => (int) ($line['line_total_rubles'] ?? 0),
+                'kind' => $kind,
+                'product' => [
+                    'name' => (string) ($line['product_name'] ?? ''),
+                ],
+            ];
+        }
+
+        $itemsTotal = 0;
+        foreach ($lines as $line) {
+            $itemsTotal += $line['row_total'];
+        }
+
+        $payment = $order->payment();
+        $paymentMethod = (string) ($payment['method'] ?? 'cash');
+
         return [
-            'id' => $order->id()->value(),
-            'source' => $order->source()->value,
+            'id' => $order->id(),
+            'source' => $order->source(),
             'client_request_id' => $order->clientRequestId(),
             'checkout_id' => $order->checkoutId(),
-            'partner_code' => $order->aggregatorReference()?->partnerCode(),
-            'external_order_id' => $order->aggregatorReference()?->externalOrderId(),
-            'status' => $order->status()->value,
-            'total' => $order->cart()->itemsTotal()->amountRubles(),
+            'partner_code' => $order->partnerCode(),
+            'external_order_id' => $order->externalOrderId(),
+            'status' => $order->status(),
+            'total' => $itemsTotal,
             'created_at' => $order->createdAt()->format(DATE_ATOM),
-            'client' => $this->presentClient($order->client()),
-            'delivery' => $this->presentDelivery($order->delivery()),
-            'payment' => $this->presentPayment($order->payment()),
-            'items' => array_map(
-                fn (OrderLineSnapshot $line): array => $this->presentLine($line),
-                $order->cart()->lines(),
-            ),
-        ];
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function presentClient(OrderClientSnapshot $client): array
-    {
-        return [
-            'kind' => $client->kind()->value,
-            'client_id' => $client->clientId(),
-            'name' => $client->name(),
-            'phone' => $client->phone(),
-            'email' => $client->email(),
-        ];
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function presentDelivery(OrderDeliverySnapshot $delivery): array
-    {
-        $address = $delivery->address();
-
-        return [
-            'method' => $delivery->method()->value,
-            'address' => $address instanceof OrderDeliveryAddress
-                ? [
-                    'street' => $address->street(),
-                    'house' => $address->house(),
-                    'entrance' => $address->entrance(),
-                    'apartment' => $address->apartment(),
-                ]
-                : null,
-            'comment' => $delivery->comment(),
-            'scheduled_at' => $delivery->scheduledAt(),
-        ];
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function presentPayment(OrderPaymentSnapshot $payment): array
-    {
-        return [
-            'method' => $this->presentPaymentMethodForFrontend($payment->method()->value),
-            'change_from_rubles' => $payment->changeFromRubles(),
-        ];
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function presentLine(OrderLineSnapshot $line): array
-    {
-        return [
-            'id' => $line->productId(),
-            'quantity' => $line->quantity(),
-            'row_total' => $line->lineTotal()->amountRubles(),
-            'kind' => $line->lineKind(),
-            'product' => [
-                'name' => $line->productName(),
+            'client' => $order->client(),
+            'delivery' => $order->delivery(),
+            'payment' => [
+                'method' => $this->presentPaymentMethodForFrontend($paymentMethod),
+                'change_from_rubles' => isset($payment['change_from_rubles'])
+                    ? (int) $payment['change_from_rubles']
+                    : null,
             ],
+            'items' => $lines,
         ];
     }
 

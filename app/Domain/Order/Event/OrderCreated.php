@@ -3,29 +3,26 @@
 namespace App\Domain\Order\Event;
 
 use App\Domain\Order\Entity\Order;
-use App\Domain\Order\Enum\OrderSource;
-use App\Domain\Order\ValueObject\OrderAggregatorReference;
-use App\Domain\Order\ValueObject\OrderCartSnapshot;
-use App\Domain\Order\ValueObject\OrderClientSnapshot;
-use App\Domain\Order\ValueObject\OrderDeliverySnapshot;
-use App\Domain\Order\ValueObject\OrderId;
-use App\Domain\Order\ValueObject\OrderPaymentSnapshot;
 use DateTimeImmutable;
 
-/**
- * Заказ впервые сохранён в хранилище — точка подключения исходящих интеграций.
- */
 final readonly class OrderCreated
 {
+    /**
+     * @param  array<string, mixed>  $cart
+     * @param  array<string, mixed>  $client
+     * @param  array<string, mixed>  $delivery
+     * @param  array<string, mixed>  $payment
+     */
     public function __construct(
-        private OrderId $orderId,
-        private OrderSource $source,
+        private int $orderId,
+        private string $source,
         private ?string $checkoutId,
-        private ?OrderAggregatorReference $aggregatorReference,
-        private OrderCartSnapshot $cart,
-        private OrderClientSnapshot $client,
-        private OrderDeliverySnapshot $delivery,
-        private OrderPaymentSnapshot $payment,
+        private ?string $partnerCode,
+        private ?string $externalOrderId,
+        private array $cart,
+        private array $client,
+        private array $delivery,
+        private array $payment,
         private DateTimeImmutable $occurredAt,
     ) {}
 
@@ -39,7 +36,8 @@ final readonly class OrderCreated
             orderId: $order->id(),
             source: $order->source(),
             checkoutId: $order->checkoutId(),
-            aggregatorReference: $order->aggregatorReference(),
+            partnerCode: $order->partnerCode(),
+            externalOrderId: $order->externalOrderId(),
             cart: $order->cart(),
             client: $order->client(),
             delivery: $order->delivery(),
@@ -48,12 +46,12 @@ final readonly class OrderCreated
         );
     }
 
-    public function orderId(): OrderId
+    public function orderId(): int
     {
         return $this->orderId;
     }
 
-    public function source(): OrderSource
+    public function source(): string
     {
         return $this->source;
     }
@@ -63,27 +61,44 @@ final readonly class OrderCreated
         return $this->checkoutId;
     }
 
-    public function aggregatorReference(): ?OrderAggregatorReference
+    public function partnerCode(): ?string
     {
-        return $this->aggregatorReference;
+        return $this->partnerCode;
     }
 
-    public function cart(): OrderCartSnapshot
+    public function externalOrderId(): ?string
+    {
+        return $this->externalOrderId;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function cart(): array
     {
         return $this->cart;
     }
 
-    public function client(): OrderClientSnapshot
+    /**
+     * @return array<string, mixed>
+     */
+    public function client(): array
     {
         return $this->client;
     }
 
-    public function delivery(): OrderDeliverySnapshot
+    /**
+     * @return array<string, mixed>
+     */
+    public function delivery(): array
     {
         return $this->delivery;
     }
 
-    public function payment(): OrderPaymentSnapshot
+    /**
+     * @return array<string, mixed>
+     */
+    public function payment(): array
     {
         return $this->payment;
     }

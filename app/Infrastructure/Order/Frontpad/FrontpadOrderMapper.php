@@ -3,14 +3,10 @@
 namespace App\Infrastructure\Order\Frontpad;
 
 use App\Domain\Order\Event\OrderCreated;
-use App\Domain\Order\ValueObject\OrderLineSnapshot;
-use App\Shared\Enum\DeliveryMethod;
-use App\Shared\Enum\PaymentMethod;
 use InvalidArgumentException;
 
 /**
  * ACL: OrderCreated → Frontpad new_order form params.
- * Line article = catalog SKU from the order line snapshot.
  */
 final class FrontpadOrderMapper
 {
@@ -19,13 +15,17 @@ final class FrontpadOrderMapper
      */
     public function toRequest(OrderCreated $event): array
     {
+        $client = $event->client();
+        $delivery = $event->delivery();
+        $payment = $event->payment();
+
         $request = [
             'secret' => (string) config('frontpad.secret', ''),
-            'phone' => $this->normalizePhone($event->client()->phone()),
-            'name' => $this->truncate((string) ($event->client()->name() ?? ''), 50),
-            'mail' => $this->truncate((string) ($event->client()->email() ?? ''), 50),
+            'phone' => $this->normalizePhone(isset($client['phone']) ? (string) $client['phone'] : null),
+            'name' => $this->truncate((string) ($client['name'] ?? ''), 50),
+            'mail' => $this->truncate((string) ($client['email'] ?? ''), 50),
             'descr' => $this->buildDescription($event),
-            'pay' => $this->resolvePayCode($event->payment()->method()),
+            'pay' => $this->resolvePayCode((string) ($payment['method'] ?? 'cash')),
             'person' => $this->resolvePersonCount(),
             'score' => 0,
             'sale' => 0,
@@ -54,12 +54,12 @@ final class FrontpadOrderMapper
             $request['tags'] = array_values($tags);
         }
 
-        $scheduledAt = $event->delivery()->scheduledAt();
+        $scheduledAt = $delivery['scheduled_at'] ?? null;
         if (is_string($scheduledAt) && $scheduledAt !== '') {
             $request['datetime'] = $this->formatScheduledAt($scheduledAt);
         }
 
-        $this->appendAddress($request, $event);
+        $this->appendAddress($request, $delivery);
         $this->appendProducts($request, $event);
         $this->appendWebhook($request);
 
@@ -68,27 +68,30 @@ final class FrontpadOrderMapper
 
     /**
      * @param  array<string, mixed>  $request
+     * @param  array<string, mixed>  $delivery
      */
-    private function appendAddress(array &$request, OrderCreated $event): void
+    private function appendAddress(array &$request, array $delivery): void
     {
-        if ($event->delivery()->method() === DeliveryMethod::Pickup) {
+        if (($delivery['method'] ?? '') === 'pickup') {
             return;
         }
 
-        $address = $event->delivery()->address();
-        if ($address === null) {
+        $address = $delivery['address'] ?? null;
+        if (! is_array($address)) {
             return;
         }
 
-        $request['street'] = $this->truncate($address->street(), 50);
-        $request['home'] = $this->truncate($address->house(), 50);
+        $request['street'] = $this->truncate((string) ($address['street'] ?? ''), 50);
+        $request['home'] = $this->truncate((string) ($address['house'] ?? ''), 50);
 
-        if ($address->entrance() !== null && $address->entrance() !== '') {
-            $request['pod'] = $this->truncate($address->entrance(), 2);
+        $entrance = $address['entrance'] ?? null;
+        if (is_string($entrance) && $entrance !== '') {
+            $request['pod'] = $this->truncate($entrance, 2);
         }
 
-        if ($address->apartment() !== null && $address->apartment() !== '') {
-            $request['apart'] = $this->truncate($address->apartment(), 50);
+        $apartment = $address['apartment'] ?? null;
+        if (is_string($apartment) && $apartment !== '') {
+            $request['apart'] = $this->truncate($apartment, 50);
         }
     }
 
@@ -103,19 +106,23 @@ final class FrontpadOrderMapper
         $prices = [];
         $index = 0;
 
-        foreach ($event->cart()->lines() as $line) {
+        foreach ($event->cart()['lines'] ?? [] as $line) {
+            if (! is_array($line)) {
+                continue;
+            }
+
             $article = $this->resolveProductArticle($line);
             if ($article === null || $article === '') {
                 throw new InvalidArgumentException(sprintf(
                     'Product #%d has no catalog SKU for Frontpad export.',
-                    $line->productId(),
+                    (int) ($line['product_id'] ?? 0),
                 ));
             }
 
             $products[$index] = $this->normalizeProductArticle($article);
-            $quantities[$index] = $line->quantity();
+            $quantities[$index] = (int) ($line['quantity'] ?? 0);
 
-            $payload = $line->payload();
+            $payload = is_array($line['payload'] ?? null) ? $line['payload'] : null;
             $linePrice = null;
 
             if (is_array($payload)) {
@@ -130,7 +137,8 @@ final class FrontpadOrderMapper
                 }
             }
 
-            if ($linePrice === null && $line->unitPrice()->amountRubles() === 0) {
+            $unitPrice = (int) ($line['unit_price_rubles'] ?? 0);
+            if ($linePrice === null && $unitPrice === 0) {
                 $linePrice = 0;
             }
 
@@ -178,10 +186,10 @@ final class FrontpadOrderMapper
     private function buildDescription(OrderCreated $event): string
     {
         $parts = [
-            sprintf('Заказ #%d', $event->orderId()->value()),
+            sprintf('Заказ #%d', $event->orderId()),
         ];
 
-        $comment = $event->delivery()->comment();
+        $comment = $event->delivery()['comment'] ?? null;
         if (is_string($comment) && trim($comment) !== '') {
             $parts[] = trim($comment);
         }
@@ -189,7 +197,7 @@ final class FrontpadOrderMapper
         return $this->truncate(implode('. ', $parts), 100);
     }
 
-    private function resolvePayCode(PaymentMethod $method): string
+    private function resolvePayCode(string $method): string
     {
         $map = config('frontpad.pay', []);
         if (! is_array($map)) {
@@ -197,12 +205,12 @@ final class FrontpadOrderMapper
         }
 
         $defaults = [
-            PaymentMethod::Cash->value => '1',
-            PaymentMethod::CardCourier->value => '2',
-            PaymentMethod::CardOnline->value => '2',
+            'cash' => '1',
+            'card_courier' => '2',
+            'card_online' => '2',
         ];
 
-        $code = $map[$method->value] ?? $defaults[$method->value] ?? '1';
+        $code = $map[$method] ?? $defaults[$method] ?? '1';
 
         return (string) $code;
     }
@@ -214,15 +222,15 @@ final class FrontpadOrderMapper
             return $channel;
         }
 
-        return match ($event->source()->value) {
-            'aggregator' => 'aggregator',
-            default => '',
-        };
+        return $event->source() === 'aggregator' ? 'aggregator' : '';
     }
 
-    private function resolveProductArticle(OrderLineSnapshot $line): ?string
+    /**
+     * @param  array<string, mixed>  $line
+     */
+    private function resolveProductArticle(array $line): ?string
     {
-        $sku = $line->sku();
+        $sku = $line['sku'] ?? null;
         if (! is_string($sku)) {
             return null;
         }
