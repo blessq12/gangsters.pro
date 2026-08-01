@@ -7,17 +7,18 @@ import { useDockScrollScale } from "../composables/ui/useDockScrollScale";
 import { useAppDesign } from "../design/useAppDesign";
 import { useShellStore } from "../stores/shellStore";
 import { useContentStore } from "../stores/contentStore";
-import { useAppBootstrapStore } from "../stores/appBootstrapStore";
+import { useCatalogStore } from "../stores/catalogStore";
 import { useThemeStore } from "../stores/themeStore";
 import { useUiStore } from "../stores/uiStore";
 import { useUserStore } from "../stores/userStore";
+import { scheduleIdlePrefetchDockPanels } from "../features/shell/prefetchDockPanels";
 
 const sh = useAppDesign().components.layoutShell;
 
 const themeStore = useThemeStore();
 const userStore = useUserStore();
 const uiStore = useUiStore();
-const appBootstrapStore = useAppBootstrapStore();
+const catalogStore = useCatalogStore();
 const contentStore = useContentStore();
 const shellStore = useShellStore();
 const route = useRoute();
@@ -66,29 +67,40 @@ watch(
 );
 
 watch(
-    () => appBootstrapStore.loaded,
+    () => catalogStore.hasLoaded,
     (loaded) => {
         if (!loaded || !userStore.token) {
             return;
         }
 
         userStore.fetchClientProfile().catch((e) => {
-            console.error("Failed to fetch client profile after bootstrap", e);
+            console.error("Failed to fetch client profile after catalog load", e);
         });
     },
     { immediate: true },
 );
 
 onMounted(() => {
-    if (appBootstrapStore.loaded) {
-        shellStore.markDataReady();
-    } else {
-        void appBootstrapStore.fetchBootstrap();
-    }
+    void (async () => {
+        shellStore.markDataLoading();
 
-    if (!contentStore.loaded) {
-        void contentStore.fetchBootstrap();
-    }
+        try {
+            const tasks = [];
+
+            if (!catalogStore.hasLoaded && !catalogStore.loading) {
+                tasks.push(catalogStore.fetchAll());
+            }
+
+            if (!contentStore.loaded) {
+                tasks.push(contentStore.fetchBootstrap());
+            }
+
+            await Promise.all(tasks);
+        } finally {
+            shellStore.markDataReady();
+            scheduleIdlePrefetchDockPanels();
+        }
+    })();
 
     void presentShellContent();
 });

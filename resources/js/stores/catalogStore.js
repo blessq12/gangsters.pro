@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { fetchCatalogTree, mapCatalogTreeFromPayload } from "../services/catalog/catalogService";
+import { fetchCatalogTree } from "../services/catalog/catalogService";
 import { mapApiError } from "../utils/api/mapApiError";
 
 const CATALOG_STORAGE_KEY = "gangsters_catalog";
@@ -248,12 +248,6 @@ export const useCatalogStore = defineStore("catalog", {
             } finally {
                 this.loading = false;
             }
-        },
-
-        applyBootstrapCatalog(catalogPayload) {
-            this.categories = mapCatalogTreeFromPayload(catalogPayload ?? {});
-            this.sanitizePersistedFiltersAfterLoad();
-            this.hasLoaded = true;
         },
     },
 });

@@ -2,18 +2,21 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Application\Content\useCases\GetContentBootstrapUseCase;
+use App\Application\Content\useCases\GetBootstrapUseCase;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 
+/**
+ * HTTP adapter for Content BC public snapshot.
+ */
 final class ContentController extends Controller
 {
     public function __construct(
-        private readonly GetContentBootstrapUseCase $bootstrap,
+        private readonly GetBootstrapUseCase $getBootstrap,
     ) {}
 
-    public function bootstrap(): JsonResponse
+    public function show(): JsonResponse
     {
-        return response()->json($this->bootstrap->execute());
+        return response()->json($this->getBootstrap->execute());
     }
 }

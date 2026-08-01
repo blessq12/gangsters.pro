@@ -1,14 +1,10 @@
 /**
  * Единый список маршрутов SPA: path, name, component и meta для публичной навигации.
  * Подписи ссылок шапки/футера — только в meta (см. resources/js/router/publicNav.ts).
- * SEO-тексты страниц — resources/site/seo-pages.json.
+ * SEO — resources/js/config/seoPages.js.
  */
 
-import seoPages from "../../site/seo-pages.json";
-
-function seoForPath(path) {
-    return seoPages[path] ?? seoPages["/"];
-}
+import { seoForPath } from "../config/seoPages";
 
 export const routeRecords = [
     {

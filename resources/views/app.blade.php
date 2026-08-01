@@ -5,13 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>{{ $pageSeo['title'] ?? config('site.default_title') }}</title>
+    {{-- Shell defaults; SPA перезапишет через usePageHead + resources/js/config/site.js --}}
+    <title>Доставка суши и роллов в Томске | Gangster's Sushi</title>
     @include('inc.head-meta')
-    @include('inc.json-ld-restaurant')
-    @include('inc/favicon')
-    <script>
-        window.__SITE__ = @json($sitePublic ?? []);
-    </script>
+    @include('inc.favicon')
     @vite('resources/css/style.css')
     @vite('resources/js/app.js')
 </head>

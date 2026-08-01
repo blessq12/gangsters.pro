@@ -4,6 +4,7 @@ import {
     isNearTomskArea,
     ringIsNearTomsk,
 } from "./yandexCoords";
+import { readYandexMapsApiKey } from "../../config/site";
 
 const SCRIPT_ID = "gangsters-yandex-maps-api";
 
@@ -186,6 +187,5 @@ export async function mountYandexKitchenPlacemarkReadonlyMap(container, options)
  * @returns {string|null}
  */
 export function readYandexMapsApiKeyFromSite() {
-    const key = window.__SITE__?.yandexMapsApiKey;
-    return typeof key === "string" && key.trim() !== "" ? key.trim() : null;
+    return readYandexMapsApiKey();
 }

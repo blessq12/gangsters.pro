@@ -2,14 +2,16 @@
 
 namespace App\Application\YandexFood\useCases;
 
-use App\Application\Content\useCases\GetDeliveryDataUseCase;
+use App\Domain\Content\Entity\DeliveryConfiguration;
 use App\Domain\Content\Repository\CompanyRepository;
+use App\Domain\Content\Repository\DeliveryConfigurationRepository;
+use App\Domain\Content\ValueObject\KitchenAddress;
 
 final class GetYandexFoodRestaurantsUseCase
 {
     public function __construct(
         private readonly CompanyRepository $company,
-        private readonly GetDeliveryDataUseCase $deliveryData,
+        private readonly DeliveryConfigurationRepository $delivery,
     ) {}
 
     /**
@@ -18,11 +20,13 @@ final class GetYandexFoodRestaurantsUseCase
     public function execute(): array
     {
         $company = $this->company->findPublic();
-        $delivery = $this->deliveryData->executeLite();
-        $kitchenAddress = $delivery['data']['zone']['kitchen_address'] ?? null;
+        $config = $this->delivery->findPublic();
+        $kitchenAddress = $config instanceof DeliveryConfiguration
+            ? $config->kitchenAddress()
+            : null;
 
         $title = $company?->name() ?? 'Ресторан';
-        $address = $this->formatKitchenAddress(is_array($kitchenAddress) ? $kitchenAddress : null);
+        $address = $this->formatKitchenAddress($kitchenAddress);
 
         $restaurantId = config('yandex_food.restaurant_id', '1');
 
@@ -37,27 +41,24 @@ final class GetYandexFoodRestaurantsUseCase
         ];
     }
 
-    /**
-     * @param  array<string, string|null>|null  $kitchenAddress
-     */
-    private function formatKitchenAddress(?array $kitchenAddress): string
+    private function formatKitchenAddress(?KitchenAddress $kitchenAddress): string
     {
         if ($kitchenAddress === null) {
             return '';
         }
 
-        $street = $kitchenAddress['street'] ?? null;
+        $street = $kitchenAddress->street();
         $parts = array_filter([
-            $kitchenAddress['city'] ?? null,
-            is_string($street) ? $this->formatStreetLine($street) : null,
-            $kitchenAddress['house'] ?? null,
+            $kitchenAddress->city(),
+            is_string($street) && $street !== '' ? $this->formatStreetLine($street) : null,
+            $kitchenAddress->house(),
         ], static fn (mixed $part): bool => is_string($part) && trim($part) !== '');
 
         if ($parts !== []) {
             return implode(', ', $parts);
         }
 
-        $searchLine = $kitchenAddress['search_line'] ?? null;
+        $searchLine = $kitchenAddress->searchLine();
 
         return is_string($searchLine) ? $searchLine : '';
     }
