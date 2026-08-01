@@ -2,7 +2,13 @@
 import { useAppDesign } from "../../design/useAppDesign";
 
 defineProps({
-    /** @type {readonly { id: string, label: string }[]} */
+    /**
+     * @type {readonly {
+     *   id: string,
+     *   label: string,
+     *   icon?: string,
+     * }[]}
+     */
     options: {
         type: Array,
         required: true,
@@ -19,27 +25,36 @@ defineProps({
 
 defineEmits(["select"]);
 
-const i = useAppDesign().components.checkout.inlineOption;
+const m = useAppDesign().components.checkout.methodState;
 </script>
 
 <template>
     <div
-        :class="i.group"
-        role="group"
+        :class="m.shell"
+        role="radiogroup"
         :aria-label="ariaLabel"
     >
         <button
             v-for="option in options"
             :key="option.id"
             type="button"
+            role="radio"
+            :aria-checked="selectedId === option.id"
             :class="[
-                i.btn,
-                selectedId === option.id ? i.btnSelected : i.btnIdle,
+                m.cell,
+                m.cellDivider,
+                selectedId === option.id ? m.cellSelected : m.cellIdle,
             ]"
-            :aria-pressed="selectedId === option.id"
             @click="$emit('select', option.id)"
         >
-            {{ option.label }}
+            <i
+                v-if="option.icon"
+                :class="[option.icon, m.icon]"
+                aria-hidden="true"
+            />
+            <span :class="m.label">
+                {{ option.label }}
+            </span>
         </button>
     </div>
 </template>

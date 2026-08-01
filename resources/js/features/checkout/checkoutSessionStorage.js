@@ -2,10 +2,11 @@ export const CHECKOUT_SESSION_KEY = "gangsters_order_draft_v1";
 
 export const CHECKOUT_WIZARD_STEPS = [
     "cart",
+    "upsell",
     "guest",
     "fulfillment",
-    "drinks",
     "confirm",
+    "success",
 ];
 
 export function readCheckoutSessionPayload() {
@@ -83,10 +84,7 @@ export function buildCheckoutSessionSnapshot(store) {
     const deliveryInfo = store.deliveryInfo;
     let deliveryInfoForSession = deliveryInfo;
 
-    if (
-        deliveryInfo?.address &&
-        typeof deliveryInfo.address === "object"
-    ) {
+    if (deliveryInfo?.address && typeof deliveryInfo.address === "object") {
         const { latitude, longitude, ...addressWithoutCoords } =
             deliveryInfo.address;
         deliveryInfoForSession = {

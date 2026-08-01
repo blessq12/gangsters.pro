@@ -49,7 +49,7 @@ function formatAddressLine(address) {
     <CheckoutSection
         v-if="!hasAddresses"
         title="Куда доставить"
-        variant="inset"
+        variant="form"
     >
         <p :class="s.introMuted">
             Сохраним адрес в аккаунте для следующих заказов.

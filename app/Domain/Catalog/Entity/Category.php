@@ -13,6 +13,7 @@ final class Category
         private readonly string $slug,
         private readonly int $sortOrder,
         private readonly bool $isActive,
+        private readonly bool $isAccompanying = false,
     ) {}
 
     public function id(): int
@@ -38,5 +39,10 @@ final class Category
     public function isActive(): bool
     {
         return $this->isActive;
+    }
+
+    public function isAccompanying(): bool
+    {
+        return $this->isAccompanying;
     }
 }

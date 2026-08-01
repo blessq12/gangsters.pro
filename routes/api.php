@@ -8,7 +8,6 @@ use App\Http\Controllers\Api\YandexFoodController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/content', [ContentController::class, 'show']);
-
 Route::get('/catalog', [CatalogController::class, 'show']);
 
 Route::prefix('client')->group(function (): void {

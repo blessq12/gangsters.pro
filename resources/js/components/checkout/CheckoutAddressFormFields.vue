@@ -105,7 +105,7 @@ const s = useAppDesign().components.checkout.shared;
         </template>
     </FormField>
 
-    <div :class="s.grid2">
+    <div :class="s.grid3">
         <FormField
             label="Дом"
             :error="houseError"
@@ -144,7 +144,7 @@ const s = useAppDesign().components.checkout.shared;
                     :value="apartment"
                     type="text"
                     placeholder="45"
-                    :class="s.inputFieldFull"
+                    :class="s.inputFieldGridCell"
                     @input="emit('update:apartment', $event.target.value)"
                 />
             </template>

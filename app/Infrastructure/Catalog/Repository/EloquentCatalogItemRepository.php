@@ -78,9 +78,12 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
         $rows = $this->productQuery()
             ->where('catalog_kind', CatalogItemKind::Product->value)
             ->where('status', ProductStatus::Active->value)
-            ->where('is_system', false)
             ->whereNull('archived_at')
             ->whereIn('id', $ids)
+            ->where(function ($query): void {
+                $query->where('is_system', false)
+                    ->orWhere('meta_is_complement_set', true);
+            })
             ->get();
 
         $tagIdsByProduct = $this->loadTagIdsForProductIds($ids);

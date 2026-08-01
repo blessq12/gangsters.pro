@@ -6,7 +6,9 @@ import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowC
 import { CHECKOUT_LOADING_LABELS } from "../../features/checkout/checkoutLoadingLabels";
 import { CHECKOUT_NAV_LABELS } from "../../features/checkout/checkoutWizardLabels";
 import {
-    formatServerClientLine,
+    CHECKOUT_DELIVERY_METHOD_META,
+} from "../../features/checkout/checkoutDeliveryMethods";
+import {
     formatServerDeliveryLine,
     formatServerPaymentLine,
 } from "../../features/checkout/checkoutServerMappers";
@@ -45,21 +47,44 @@ const { navTotalLabel } = useCheckoutNavTotal();
 
 const { formatPrice, formatPhone, isGuestCheckout } = checkoutState;
 
-const deliveryAddressLine = computed(() =>
-    formatServerDeliveryLine(serverDelivery.value),
+const deliveryMethodLabel = computed(() => {
+    const method = serverDelivery.value?.method;
+    if (method === "courier" || method === "pickup") {
+        return CHECKOUT_DELIVERY_METHOD_META[method]?.label ?? method;
+    }
+    return "—";
+});
+
+const isCourierDelivery = computed(
+    () => serverDelivery.value?.method === "courier",
 );
+
+const deliveryAddressLine = computed(() => {
+    if (!isCourierDelivery.value) {
+        return "";
+    }
+    return formatServerDeliveryLine(serverDelivery.value);
+});
 
 const paymentLine = computed(() =>
     formatServerPaymentLine(serverPayment.value, formatPrice),
 );
 
-const clientLine = computed(() =>
-    formatServerClientLine(serverClient.value, formatPhone),
-);
+const clientName = computed(() => {
+    const name = String(serverClient.value?.name || "").trim();
+    return name || "—";
+});
+
+const clientPhone = computed(() => {
+    const phone = serverClient.value?.phone;
+    return phone ? formatPhone(String(phone)) : "—";
+});
 
 const deliveryComment = computed(() => {
     const comment = serverDelivery.value?.comment;
-    return typeof comment === "string" && comment.trim() !== "" ? comment.trim() : null;
+    return typeof comment === "string" && comment.trim() !== ""
+        ? comment.trim()
+        : null;
 });
 
 onMounted(() => {
@@ -71,60 +96,96 @@ onMounted(() => {
 
 <template>
     <CheckoutStepFrame group="confirm">
-        <p
-            v-if="previewLoading"
-            :class="c.previewLoading"
-        >
-            {{ CHECKOUT_LOADING_LABELS.orderRecalc }}
-        </p>
+        <div :class="cf.stack">
+            <p
+                v-if="previewLoading"
+                :class="c.previewLoading"
+            >
+                {{ CHECKOUT_LOADING_LABELS.orderRecalc }}
+            </p>
 
-        <CheckoutSection title="Заказ">
-            <div :class="cf.summaryCard">
+            <CheckoutSection
+                title="Состав"
+                variant="form"
+            >
                 <CheckoutOrderReview />
-                <CheckoutTotalsBlock
-                    depth="full"
-                    :wrap-section="false"
-                />
-            </div>
-        </CheckoutSection>
+            </CheckoutSection>
 
-        <CheckoutSection
-            title="Проверь данные"
-            variant="inset"
-        >
-            <div :class="cf.summaryList">
+            <CheckoutSection
+                title="Получение"
+                variant="form"
+            >
+                <div :class="cf.summaryList">
+                    <CheckoutSummaryRow
+                        label="Способ"
+                        :value="deliveryMethodLabel"
+                        @edit="goToFulfillment"
+                    />
+                    <CheckoutSummaryRow
+                        v-if="isCourierDelivery"
+                        label="Адрес"
+                        :value="deliveryAddressLine || '—'"
+                        @edit="goToFulfillment"
+                    />
+                    <CheckoutSummaryRow
+                        v-if="deliveryComment"
+                        label="Пожелания"
+                        :value="deliveryComment"
+                        :show-edit="false"
+                    />
+                </div>
+            </CheckoutSection>
+
+            <CheckoutSection
+                title="Оплата"
+                variant="form"
+            >
                 <CheckoutSummaryRow
-                    label="Контакт"
-                    :value="clientLine"
-                    :show-edit="isGuestCheckout"
-                    @edit="goToGuest"
-                />
-                <CheckoutSummaryRow
-                    label="Оплата"
+                    label="Способ"
                     :value="paymentLine"
                     @edit="goToFulfillment"
                 />
-                <CheckoutSummaryRow
-                    label="Получение"
-                    :value="deliveryAddressLine"
-                    @edit="goToFulfillment"
+            </CheckoutSection>
+
+            <CheckoutSection
+                title="Контакт"
+                variant="form"
+            >
+                <div :class="cf.summaryList">
+                    <CheckoutSummaryRow
+                        label="Имя"
+                        :value="clientName"
+                        :show-edit="isGuestCheckout"
+                        @edit="goToGuest"
+                    />
+                    <CheckoutSummaryRow
+                        label="Телефон"
+                        :value="clientPhone"
+                        :show-edit="isGuestCheckout"
+                        @edit="goToGuest"
+                    />
+                </div>
+            </CheckoutSection>
+
+            <CheckoutPromoStrip variant="confirm" />
+
+            <CheckoutSection
+                title="Сумма"
+                variant="form"
+            >
+                <CheckoutTotalsBlock
+                    depth="full"
+                    surface="light"
+                    :wrap-section="false"
                 />
-                <CheckoutSummaryRow
-                    v-if="deliveryComment"
-                    label="Пожелания"
-                    :value="deliveryComment"
-                    :show-edit="false"
-                />
+            </CheckoutSection>
+
+            <div
+                v-if="confirmError"
+                :class="s.errorBanner"
+            >
+                {{ confirmError }}
             </div>
-        </CheckoutSection>
-
-        <CheckoutPromoStrip variant="confirm" />
-
-        <div
-            v-if="confirmError"
-            :class="s.errorBanner"
-        >
-            {{ confirmError }}
         </div>
 
         <template #nav>

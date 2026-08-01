@@ -1,0 +1,1 @@
+const i=["courier","pickup"],e={courier:{label:"Курьер",inlineLabel:"Курьером",hint:"Доставка по адресу",icon:"mdi mdi-moped"},pickup:{label:"Самовывоз",inlineLabel:"Самовывоз",hint:"Заберёшь заказ сам",icon:"mdi mdi-store-outline"}};export{e as C,i as a};

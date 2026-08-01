@@ -3,6 +3,7 @@ import { computed } from "vue";
 import { useAppDesign } from "../../design/useAppDesign";
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
 import { CHECKOUT_NAV_LABELS } from "../../features/checkout/checkoutWizardLabels";
+import CheckoutStepFrame from "./CheckoutStepFrame.vue";
 import CheckoutStepNav from "./CheckoutStepNav.vue";
 
 const s = useAppDesign().components.checkout.shared;
@@ -40,41 +41,33 @@ const recapLines = computed(() => {
 </script>
 
 <template>
-    <div :class="[s.flowBody, 'space-y-4']">
+    <CheckoutStepFrame group="success">
         <h2
             v-if="orderNumber"
             :class="su.orderTitle"
         >
             Заказ №{{ orderNumber }}
         </h2>
-        <p
-            v-else
-            :class="s.stepKickerAccent"
-        >
-            Заказ оформлен
-        </p>
 
-        <p :class="s.textSuccessLead">
-            Приняли заказ — скоро позвоним для подтверждения.
-        </p>
-
-        <dl
+        <ul
             v-if="recapLines.length"
             class="space-y-2"
         >
-            <div
+            <li
                 v-for="line in recapLines"
                 :key="line.label"
-                class="flex items-baseline justify-between gap-3 text-xs"
+                :class="s.offerCard"
             >
-                <dt class="text-app-muted">
-                    {{ line.label }}
-                </dt>
-                <dd class="text-right text-app-canvas-fg">
-                    {{ line.value }}
-                </dd>
-            </div>
-        </dl>
+                <div class="min-w-0 flex-1">
+                    <p :class="s.offerCardMeta">
+                        {{ line.label }}
+                    </p>
+                    <p :class="s.offerCardTitle">
+                        {{ line.value }}
+                    </p>
+                </div>
+            </li>
+        </ul>
 
         <p
             v-if="orderNumber"
@@ -83,10 +76,12 @@ const recapLines = computed(() => {
             Сохрани номер — назови его и телефон, если захочешь уточнить статус.
         </p>
 
-        <CheckoutStepNav
-            :show-back="false"
-            :primary-label="CHECKOUT_NAV_LABELS.success"
-            @primary="goToCart"
-        />
-    </div>
+        <template #nav>
+            <CheckoutStepNav
+                :show-back="false"
+                :primary-label="CHECKOUT_NAV_LABELS.success"
+                @primary="goToCart"
+            />
+        </template>
+    </CheckoutStepFrame>
 </template>

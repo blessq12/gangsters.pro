@@ -15,11 +15,13 @@ class PRD_Category extends Model
         'slug',
         'sort_order',
         'is_active',
+        'is_accompanying',
     ];
 
     protected $casts = [
         'sort_order' => 'integer',
         'is_active' => 'boolean',
+        'is_accompanying' => 'boolean',
     ];
 
     protected static function booted(): void

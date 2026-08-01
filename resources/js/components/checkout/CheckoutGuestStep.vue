@@ -18,7 +18,7 @@ const s = useAppDesign().components.checkout.shared;
 
 const {
     checkoutState,
-    goToCart,
+    goToUpsell,
     goToGuestNext,
     openProfileDock,
     setGuestContact,
@@ -56,8 +56,41 @@ watch(
 
 <template>
     <CheckoutStepFrame group="guest">
+        <div :class="s.registerPitchCard">
+            <div class="space-y-1.5">
+                <p :class="s.registerPitchEyebrow">
+                    {{ CHECKOUT_NAV_LABELS.authRegisterEyebrow }}
+                </p>
+                <p :class="s.registerPitchTitle">
+                    {{ CHECKOUT_NAV_LABELS.authRegisterPitch }}
+                </p>
+            </div>
+
+            <ul :class="s.registerPitchList">
+                <li
+                    v-for="benefit in CHECKOUT_NAV_LABELS.authRegisterBenefits"
+                    :key="benefit"
+                    :class="s.registerPitchListItem"
+                >
+                    <span
+                        :class="s.registerPitchListMark"
+                        aria-hidden="true"
+                    >•</span>
+                    <span>{{ benefit }}</span>
+                </li>
+            </ul>
+
+            <button
+                type="button"
+                :class="s.registerPitchBtn"
+                @click="openProfileDock"
+            >
+                {{ CHECKOUT_NAV_LABELS.authRegisterCta }}
+            </button>
+        </div>
+
         <CheckoutSection
-            title="Контакт"
+            title="Или оформить как гость"
             variant="inset"
         >
             <FormField
@@ -69,7 +102,7 @@ watch(
                         :id="id"
                         :value="checkoutIntent.guestContact.name"
                         type="text"
-                        placeholder="Как к тебе обращаться"
+                        placeholder="Имя"
                         :class="[s.inputFieldFull, invalid && invalidClass]"
                         :aria-invalid="ariaInvalid"
                         :aria-describedby="describedBy"
@@ -99,18 +132,10 @@ watch(
             </FormField>
         </CheckoutSection>
 
-        <button
-            type="button"
-            :class="s.linkUnderline"
-            @click="openProfileDock"
-        >
-            {{ CHECKOUT_NAV_LABELS.authLink }}
-        </button>
-
         <template #nav>
             <CheckoutStepNav
-                :primary-label="CHECKOUT_NAV_LABELS.next"
-                @back="goToCart"
+                :primary-label="CHECKOUT_NAV_LABELS.guestPrimary"
+                @back="goToUpsell"
                 @primary="goToGuestNext"
             />
         </template>

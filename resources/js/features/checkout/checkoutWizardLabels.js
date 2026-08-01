@@ -5,23 +5,39 @@ export function resolveCheckoutDockTitle(step) {
     return CHECKOUT_WIZARD_GROUPS[step] ?? CHECKOUT_WIZARD_GROUPS.cart;
 }
 
-/** Подсказка под заголовком dock (одна строка). */
-export const CHECKOUT_STEP_HINTS = Object.freeze({
-    cart: "Проверь состав заказа перед оформлением.",
-    guest: "Позвоним для подтверждения заказа.",
-    fulfillment: "Сначала оплата, затем способ и адрес получения.",
-    drinks: "Можно пропустить — напитки не обязательны.",
-    confirm: "Проверь данные и отправь заказ.",
-    success: null,
+/**
+ * Реплика «официанта» на каждом шаге.
+ * Корзина/success — вне нумерации flow.
+ */
+export const CHECKOUT_WAITER_LINES = Object.freeze({
+    cart: "Проверьте состав заказа перед оформлением",
+    upsell: "Удобно добавить к заказу сейчас — всё приедет вместе",
+    guest: "Вход сохраняет контакты и адреса — следующее оформление быстрее",
+    fulfillment: "Способ оплаты и получение заказа",
+    confirm: "Проверьте состав, получение и оплату",
+    success: "Заказ принят. Готовим",
 });
+
+/** @deprecated используй CHECKOUT_WAITER_LINES */
+export const CHECKOUT_STEP_HINTS = CHECKOUT_WAITER_LINES;
 
 export const CHECKOUT_NAV_LABELS = Object.freeze({
     back: "Назад",
-    cartPrimary: "Оформить заказ",
+    cartPrimary: "Далее",
     next: "Далее",
-    drinksPrimary: "Продолжить",
+    upsellPrimary: "Продолжить",
+    upsellSkip: "Без дополнений",
+    guestPrimary: "Продолжить как гость",
     confirm: "Отправить заказ",
     success: "В меню",
     authLink: "Уже есть аккаунт? Войти",
-    editFulfillment: "Изменить оплату и доставку",
+    authRegisterCta: "Войти или зарегистрироваться",
+    authRegisterEyebrow: "Удобство сервиса",
+    authRegisterPitch: "Контакты и адреса сохраняются для следующих заказов",
+    authRegisterBenefits: Object.freeze([
+        "Быстрее оформление без повторного ввода",
+        "Адреса доставки под рукой",
+        "История заказов в профиле",
+    ]),
+    editFulfillment: "Изменить доставку и оплату",
 });

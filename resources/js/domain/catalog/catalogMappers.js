@@ -229,6 +229,7 @@ export function normalizeCatalogCategory(apiCategory) {
         slug: category.slug || "",
         sort_order: category.sort_order ?? null,
         is_active: Boolean(category.is_active),
+        is_accompanying: Boolean(category.is_accompanying),
         raw: category,
     };
 }

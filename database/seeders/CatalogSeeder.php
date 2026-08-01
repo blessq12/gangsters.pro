@@ -117,6 +117,7 @@ class CatalogSeeder extends Seeder
                     'name' => $this->stringValue($row['name'] ?? $slug),
                     'sort_order' => (int) ($row['order'] ?? 0),
                     'is_active' => (bool) ($row['visible'] ?? true),
+                    'is_accompanying' => $slug === 'napitki',
                 ],
             );
         }

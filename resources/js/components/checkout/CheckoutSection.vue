@@ -17,18 +17,27 @@ const props = defineProps({
 const s = useAppDesign().components.checkout.shared;
 
 const normalizedVariant = computed(() => {
-    if (props.variant === "form" || props.variant === "muted" || props.variant === "inset") {
+    if (props.variant === "form") {
+        return "form";
+    }
+    if (props.variant === "muted" || props.variant === "inset") {
         return "inset";
     }
     return "default";
 });
 
-const sectionClass = computed(() =>
-    normalizedVariant.value === "inset" ? s.sectionInset : "space-y-2",
-);
+const sectionClass = computed(() => {
+    if (normalizedVariant.value === "form") {
+        return s.sectionForm;
+    }
+    if (normalizedVariant.value === "inset") {
+        return s.sectionInset;
+    }
+    return "space-y-2";
+});
 
 const titleClass = computed(() =>
-    normalizedVariant.value === "inset" ? s.headingCardMuted : s.headingSm,
+    normalizedVariant.value === "default" ? s.headingSm : s.headingCardMuted,
 );
 </script>
 

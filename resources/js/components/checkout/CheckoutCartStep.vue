@@ -4,9 +4,10 @@ import { storeToRefs } from "pinia";
 import { useAppDesign } from "../../design/useAppDesign";
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
 import { CHECKOUT_NAV_LABELS } from "../../features/checkout/checkoutWizardLabels";
-import { useCheckoutStore } from "../../stores/checkoutStore";
 import { useCartCommands } from "../../features/shoppingSession/useCartCommands";
-import CheckoutPromoStrip from "./CheckoutPromoStrip.vue";
+import { useCatalogStore } from "../../stores/catalogStore";
+import { useCheckoutStore } from "../../stores/checkoutStore";
+import CheckoutComplementOffers from "./CheckoutComplementOffers.vue";
 import CheckoutSection from "./CheckoutSection.vue";
 import CheckoutStepFrame from "./CheckoutStepFrame.vue";
 import CheckoutStepNav from "./CheckoutStepNav.vue";
@@ -18,16 +19,36 @@ const c = chk.cart;
 const { checkoutState, handleStartCheckout } = useCheckoutFlowContext();
 
 const cartStore = useCheckoutStore();
+const catalogStore = useCatalogStore();
 const cartCommands = useCartCommands();
 const {
     cartItems,
     userItems: userCartItems,
 } = storeToRefs(cartStore);
+const { complementProducts } = storeToRefs(catalogStore);
 
 const { formatPrice } = checkoutState;
 
+const complementProductIds = computed(() => {
+    const ids = new Set();
+    for (const product of complementProducts.value || []) {
+        if (product?.id != null) ids.add(Number(product.id));
+    }
+    return ids;
+});
+
+/** Комплектные не дублируем в «Товары» — только в блоке комплекта. */
+const menuUserCartItems = computed(() =>
+    (userCartItems.value || []).filter(
+        (item) => !complementProductIds.value.has(Number(item.productId)),
+    ),
+);
+
 const isCartEmpty = computed(() => cartItems.value.length === 0);
-const hasUserLines = computed(() => userCartItems.value.length > 0);
+const hasUserLines = computed(() => menuUserCartItems.value.length > 0);
+const canStartCheckout = computed(
+    () => (userCartItems.value || []).length > 0,
+);
 
 function decrementCart(productId) {
     void cartCommands.decrementProductInCart(productId);
@@ -63,7 +84,7 @@ function unitPriceRub(item) {
         >
             <ul :class="c.userList">
                 <li
-                    v-for="item in userCartItems"
+                    v-for="item in menuUserCartItems"
                     :key="item.lineKey"
                     :class="c.userLineItem"
                 >
@@ -116,11 +137,11 @@ function unitPriceRub(item) {
             Добавь блюда из меню
         </p>
 
-        <CheckoutPromoStrip variant="cart" />
+        <CheckoutComplementOffers />
         <CheckoutTotalsBlock depth="items" />
 
         <template
-            v-if="hasUserLines"
+            v-if="canStartCheckout"
             #nav
         >
             <CheckoutStepNav

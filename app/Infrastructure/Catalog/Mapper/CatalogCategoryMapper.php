@@ -15,6 +15,7 @@ final class CatalogCategoryMapper
             slug: (string) $row->slug,
             sortOrder: (int) $row->sort_order,
             isActive: (bool) $row->is_active,
+            isAccompanying: (bool) $row->is_accompanying,
         );
     }
 }

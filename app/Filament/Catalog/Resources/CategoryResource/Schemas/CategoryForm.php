@@ -25,6 +25,10 @@ final class CategoryForm
             Toggle::make('is_active')
                 ->label('Активна')
                 ->default(true),
+            Toggle::make('is_accompanying')
+                ->label('Сопутствующее')
+                ->helperText('Не в меню каталога — только шаг «Добавьте ещё» в оформлении')
+                ->default(false),
         ];
     }
 

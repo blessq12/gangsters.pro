@@ -57,14 +57,8 @@ const hasComplementProducts = computed(
     () => (complementProducts.value?.length ?? 0) > 0,
 );
 
-const showCartToggle = computed(
-    () =>
-        props.variant === "cart"
-        && (showComplementProgress.value
-            || (hasRollsInCart.value && hasComplementLines.value)
-            || hasAutoLines.value
-            || hasComplementProducts.value),
-);
+/** Cart-upsell перенесён на шаг upsell; strip на cart больше не показываем. */
+const showCartToggle = computed(() => false);
 
 const showGiftCta = computed(
     () =>
@@ -246,13 +240,13 @@ function openGiftModal() {
     <CheckoutSection
         v-if="showGiftCta"
         title="Подарок"
-        variant="inset"
+        variant="form"
     >
-        <div :class="[c.giftCard, '!mt-0']">
+        <div :class="chk.confirm.giftCard">
             <div :class="c.giftRow">
                 <div class="min-w-0">
                     <p :class="c.giftTitle">
-                        {{ hasGiftSelected ? selectedGiftName : "Выбери подарок" }}
+                        {{ hasGiftSelected ? selectedGiftName : "Выберите подарок" }}
                     </p>
                 </div>
                 <button

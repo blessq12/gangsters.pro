@@ -20,9 +20,21 @@ const props = defineProps({
         type: Boolean,
         default: true,
     },
+    /** default — cart glass; light — confirm panel */
+    surface: {
+        type: String,
+        default: "default",
+        validator: (value) => ["default", "light"].includes(value),
+    },
 });
 
-const c = useAppDesign().components.checkout.cart;
+const chk = useAppDesign().components.checkout;
+const c = chk.cart;
+const cf = chk.confirm;
+
+const totalsCardClass = computed(() =>
+    props.surface === "light" ? cf.totalsCard : c.totalsCard,
+);
 const { checkoutState } = useCheckoutFlowContext();
 const { formatPrice, checkoutIntent } = checkoutState;
 
@@ -66,7 +78,7 @@ const visible = computed(() => {
         v-if="visible && wrapSection"
         :title="title"
     >
-        <div :class="c.totalsCard">
+        <div :class="totalsCardClass">
             <div :class="c.totalsRow">
                 <span :class="c.totalsLabelMuted">Товары</span>
                 <span :class="c.totalsValue">
@@ -120,7 +132,7 @@ const visible = computed(() => {
 
     <div
         v-else-if="visible"
-        :class="c.totalsCard"
+        :class="totalsCardClass"
     >
         <div :class="c.totalsRow">
             <span :class="c.totalsLabelMuted">Товары</span>

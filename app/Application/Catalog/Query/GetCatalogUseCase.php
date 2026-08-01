@@ -29,6 +29,7 @@ final class GetCatalogUseCase
     /**
      * @return array{
      *     categories: list<array{category: array<string, mixed>, items: list<array<string, mixed>>}>,
+     *     accompanying_categories: list<array{category: array<string, mixed>, items: list<array<string, mixed>>}>,
      *     complement_products: list<array<string, mixed>>
      * }
      */
@@ -42,6 +43,7 @@ final class GetCatalogUseCase
      *
      * @return array{
      *     categories: list<array{category: array<string, mixed>, items: list<array<string, mixed>>}>,
+     *     accompanying_categories: list<array{category: array<string, mixed>, items: list<array<string, mixed>>}>,
      *     complement_products: list<array<string, mixed>>
      * }
      */
@@ -53,6 +55,7 @@ final class GetCatalogUseCase
     /**
      * @return array{
      *     categories: list<array{category: array<string, mixed>, items: list<array<string, mixed>>}>,
+     *     accompanying_categories: list<array{category: array<string, mixed>, items: list<array<string, mixed>>}>,
      *     complement_products: list<array<string, mixed>>
      * }
      */
@@ -60,18 +63,25 @@ final class GetCatalogUseCase
     {
         $tagById = $this->loadActiveTagsIndexed();
 
-        $result = [];
+        $menuCategories = [];
+        $accompanyingCategories = [];
 
         foreach ($this->categories->findAllOrdered() as $category) {
             $node = $this->buildCategoryNode($category, $tagById, $lite);
+            if ($node['items'] === []) {
+                continue;
+            }
 
-            if ($node['items'] !== []) {
-                $result[] = $node;
+            if ($category->isAccompanying()) {
+                $accompanyingCategories[] = $node;
+            } else {
+                $menuCategories[] = $node;
             }
         }
 
         return [
-            'categories' => $result,
+            'categories' => $menuCategories,
+            'accompanying_categories' => $accompanyingCategories,
             'complement_products' => $this->buildComplementProducts($tagById, $lite),
         ];
     }
@@ -264,6 +274,7 @@ final class GetCatalogUseCase
             'slug' => $category->slug(),
             'sort_order' => $category->sortOrder(),
             'is_active' => $category->isActive(),
+            'is_accompanying' => $category->isAccompanying(),
         ];
     }
 

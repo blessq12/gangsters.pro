@@ -6,7 +6,7 @@ import { DOMAIN_EVENTS, emitDomainEvent } from "../../shared/domainEvents";
 import { useCatalogStore } from "../../stores/catalogStore";
 import { isGuestContactComplete } from "./useCheckoutGuestStep";
 import { resolveGiftSelectionRequired } from "./giftSelectionGate";
-import { isCheckoutDrinksStepAvailable } from "./checkoutDrinksCategory";
+import { isCheckoutUpsellStepAvailable } from "./checkoutUpsellAvailability";
 import { resolveWizardStepMeta } from "./checkoutWizardGroups";
 import {
     formatServerDeliveryLine,
@@ -37,13 +37,13 @@ export function useCheckoutWizard({
     const successSummary = ref(null);
 
     const isAuthenticated = computed(() => clientReadModel.isAuthenticated.value);
-    const includeDrinksStep = computed(() =>
-        isCheckoutDrinksStepAvailable(catalogStore.categories),
+    const includeUpsellStep = computed(() =>
+        isCheckoutUpsellStepAvailable(catalogStore.accompanyingCategories),
     );
 
     const checkoutStepMeta = computed(() => {
         const meta = resolveWizardStepMeta(activeStep.value, isGuestCheckout.value, {
-            includeDrinks: includeDrinksStep.value,
+            includeUpsell: includeUpsellStep.value,
         });
         if (meta) {
             return { [activeStep.value]: meta };
@@ -62,18 +62,26 @@ export function useCheckoutWizard({
         paymentStep.ensurePaymentDefaults();
     }
 
+    function firstCheckoutStep() {
+        return includeUpsellStep.value ? "upsell" : nextAfterUpsell();
+    }
+
+    function nextAfterUpsell() {
+        return isGuestCheckout.value ? "guest" : "fulfillment";
+    }
+
     function beginGuestCheckout() {
         if (!hasCartItems.value) return;
         ensureCheckoutDefaults();
         isGuestCheckout.value = true;
-        activeStep.value = "guest";
+        activeStep.value = firstCheckoutStep();
     }
 
     function beginAuthenticatedCheckout() {
         if (!hasCartItems.value) return;
         ensureCheckoutDefaults();
         isGuestCheckout.value = false;
-        activeStep.value = "fulfillment";
+        activeStep.value = firstCheckoutStep();
         deliveryStep.ensureAuthAddressUi();
         void checkoutIntent.flushClientToServer({
             clientId: userStore.profile.id,
@@ -138,9 +146,9 @@ export function useCheckoutWizard({
         }
     }, { immediate: true });
 
-    watch(includeDrinksStep, (available) => {
-        if (!available && activeStep.value === "drinks") {
-            activeStep.value = "confirm";
+    watch(includeUpsellStep, (available) => {
+        if (!available && activeStep.value === "upsell") {
+            activeStep.value = nextAfterUpsell();
         }
     });
 
@@ -198,8 +206,29 @@ export function useCheckoutWizard({
         activeStep.value = "cart";
     }
 
+    function goToUpsell() {
+        if (!hasCartItems.value) {
+            activeStep.value = "cart";
+            return;
+        }
+        // Назад с гостя / вход в upsell: без товаров upsell — в корзину.
+        activeStep.value = includeUpsellStep.value ? "upsell" : "cart";
+    }
+
+    function goToUpsellNext() {
+        activeStep.value = nextAfterUpsell();
+    }
+
     function goToGuest() {
-        activeStep.value = hasCartItems.value && isGuestCheckout.value ? "guest" : "cart";
+        if (!hasCartItems.value) {
+            activeStep.value = "cart";
+            return;
+        }
+        if (isGuestCheckout.value) {
+            activeStep.value = "guest";
+            return;
+        }
+        activeStep.value = includeUpsellStep.value ? "upsell" : "fulfillment";
     }
 
     function goToFulfillment() {
@@ -214,6 +243,14 @@ export function useCheckoutWizard({
             return;
         }
         activeStep.value = "fulfillment";
+    }
+
+    function goToFulfillmentBack() {
+        if (isGuestCheckout.value) {
+            activeStep.value = "guest";
+            return;
+        }
+        activeStep.value = includeUpsellStep.value ? "upsell" : "cart";
     }
 
     async function goToGuestNext() {
@@ -243,23 +280,11 @@ export function useCheckoutWizard({
             return;
         }
 
-        activeStep.value = includeDrinksStep.value ? "drinks" : "confirm";
-    }
-
-    function goToDrinks() {
-        if (!hasCartItems.value) {
-            activeStep.value = "cart";
-            return;
-        }
-        activeStep.value = includeDrinksStep.value ? "drinks" : "confirm";
-    }
-
-    function goToDrinksNext() {
         activeStep.value = "confirm";
     }
 
     function goToConfirmBack() {
-        activeStep.value = includeDrinksStep.value ? "drinks" : "fulfillment";
+        activeStep.value = "fulfillment";
     }
 
     function goToSuccess() {
@@ -314,12 +339,13 @@ export function useCheckoutWizard({
         handleContinueAsGuest,
         openProfileDock,
         goToCart,
+        goToUpsell,
+        goToUpsellNext,
         goToGuest,
         goToFulfillment,
+        goToFulfillmentBack,
         goToGuestNext,
         goToFulfillmentNext,
-        goToDrinks,
-        goToDrinksNext,
         goToConfirmBack,
         goToSuccess,
         handleConfirmOrder,

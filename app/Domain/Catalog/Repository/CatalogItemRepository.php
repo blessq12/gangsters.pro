@@ -12,7 +12,8 @@ interface CatalogItemRepository
     public function findSetById(int $id): ?ProductSet;
 
     /**
-     * Активные товары витрины (без системных).
+     * Активные товары для корзины/витрины: не-system, плюс комплектные
+     * (meta_is_complement_set), даже если is_system — их можно докупить.
      *
      * @param  list<int>  $ids
      * @return list<Product>

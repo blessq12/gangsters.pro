@@ -87,11 +87,11 @@ function linePriceLabel(item) {
         <li
             v-for="item in complementLines"
             :key="item.lineKey"
-            :class="cf.systemLineAccent"
+            :class="cf.orderLineRow"
         >
             <span :class="cf.orderLineTruncate">
                 {{ item.productSnapshot?.name || `Товар #${item.productId}` }}
-                <span :class="cf.badgeTiny">· комплект</span>
+                <span :class="cf.badgeTiny">комплект</span>
             </span>
             <span :class="cf.orderLineMuted">
                 {{ item.qty }} × {{ linePriceLabel(item) }}
@@ -101,18 +101,18 @@ function linePriceLabel(item) {
         <li
             v-for="gift in giftLineForOrder"
             :key="gift.key"
-            :class="cf.systemLineAccent"
+            :class="cf.orderLineRow"
         >
             <span :class="cf.orderLineTruncate">
                 {{ gift.name }}
-                <span :class="cf.badgeTiny">· подарок</span>
+                <span :class="cf.badgeTiny">подарок</span>
             </span>
         </li>
 
         <li
             v-for="item in autoLines"
             :key="item.lineKey"
-            :class="cf.orderLineMuted"
+            :class="cf.orderLineRow"
         >
             <span :class="cf.orderLineTruncate">
                 {{ item.productSnapshot?.name || `Товар #${item.productId}` }}

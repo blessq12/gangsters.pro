@@ -1,23 +1,25 @@
 /** Семантические группы визарда оформления. */
 export const CHECKOUT_WIZARD_GROUPS = {
     cart: "Корзина",
-    guest: "Клиент",
-    fulfillment: "Оплата и доставка",
-    drinks: "Закажите напитки",
-    confirm: "Оформление",
+    upsell: "Добавьте ещё",
+    guest: "Как с тобой связаться",
+    fulfillment: "Куда и как",
+    confirm: "Почти готово",
     success: "Готово",
 };
 
+/** Guest: upsell → контакт → доставка/оплата → confirm */
 export const CHECKOUT_WIZARD_FLOW_GUEST = Object.freeze([
+    "upsell",
     "guest",
     "fulfillment",
-    "drinks",
     "confirm",
 ]);
 
+/** Auth: upsell → доставка/оплата → confirm */
 export const CHECKOUT_WIZARD_FLOW_AUTH = Object.freeze([
+    "upsell",
     "fulfillment",
-    "drinks",
     "confirm",
 ]);
 
@@ -25,11 +27,12 @@ export const CHECKOUT_WIZARD_FLOW_AUTH = Object.freeze([
 const SERVER_STEP_TO_UI = Object.freeze({
     delivery: "fulfillment",
     payment: "fulfillment",
+    drinks: "upsell",
 });
 
 /**
  * @param {string|null|undefined} serverStep
- * @returns {'guest'|'fulfillment'|'drinks'|'confirm'|null}
+ * @returns {string|null}
  */
 export function mapServerWizardStep(serverStep) {
     if (serverStep == null || serverStep === "") {
@@ -37,12 +40,16 @@ export function mapServerWizardStep(serverStep) {
     }
 
     if (
-        serverStep === "guest"
+        serverStep === "upsell"
+        || serverStep === "guest"
         || serverStep === "fulfillment"
-        || serverStep === "drinks"
         || serverStep === "confirm"
     ) {
         return serverStep;
+    }
+
+    if (serverStep === "drinks") {
+        return "upsell";
     }
 
     return SERVER_STEP_TO_UI[serverStep] ?? null;
@@ -50,26 +57,26 @@ export function mapServerWizardStep(serverStep) {
 
 /**
  * @param {boolean} isGuestCheckout
- * @param {{ includeDrinks?: boolean }} [options]
+ * @param {{ includeUpsell?: boolean }} [options]
  * @returns {readonly string[]}
  */
 export function resolveWizardFlowSteps(isGuestCheckout, options = {}) {
-    const includeDrinks = options.includeDrinks !== false;
+    const includeUpsell = options.includeUpsell !== false;
     const base = isGuestCheckout
         ? CHECKOUT_WIZARD_FLOW_GUEST
         : CHECKOUT_WIZARD_FLOW_AUTH;
 
-    if (includeDrinks) {
+    if (includeUpsell) {
         return base;
     }
 
-    return Object.freeze(base.filter((step) => step !== "drinks"));
+    return Object.freeze(base.filter((step) => step !== "upsell"));
 }
 
 /**
  * @param {string} step
  * @param {boolean} isGuestCheckout
- * @param {{ includeDrinks?: boolean }} [options]
+ * @param {{ includeUpsell?: boolean }} [options]
  */
 export function resolveWizardStepMeta(step, isGuestCheckout, options = {}) {
     const flow = resolveWizardFlowSteps(isGuestCheckout, options);
@@ -78,11 +85,9 @@ export function resolveWizardStepMeta(step, isGuestCheckout, options = {}) {
         return null;
     }
 
-    const total = flow.length;
-
     return {
         n: index + 1,
-        total,
+        total: flow.length,
         label: CHECKOUT_WIZARD_GROUPS[step],
     };
 }

@@ -3,7 +3,7 @@
  */
 
 export const formFieldDesign = {
-    root: "space-y-1",
+    root: "min-w-0 w-full space-y-1",
     label: "mb-1 block text-xs font-medium text-app-muted",
     errorSm: "text-[11px] text-red-400",
     errorXs: "text-xs text-red-400",

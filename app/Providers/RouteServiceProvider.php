@@ -23,10 +23,10 @@ class RouteServiceProvider extends ServiceProvider
         RateLimiter::for('guest-order', function (Request $request) {
             $user = $request->user('sanctum');
             if ($user !== null) {
-                return Limit::perMinute(60)->by('client-order:'.$user->getAuthIdentifier());
+                return Limit::perMinute(60)->by('client-order:' . $user->getAuthIdentifier());
             }
 
-            return Limit::perMinute(10)->by('guest-order:'.$request->ip());
+            return Limit::perMinute(10)->by('guest-order:' . $request->ip());
         });
 
         $this->routes(function () {

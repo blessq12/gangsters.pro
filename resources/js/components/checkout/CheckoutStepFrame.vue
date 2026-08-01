@@ -1,38 +1,67 @@
 <script setup>
 import { computed } from "vue";
 import { useAppDesign } from "../../design/useAppDesign";
-import { CHECKOUT_STEP_HINTS } from "../../features/checkout/checkoutWizardLabels";
+import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
+import { CHECKOUT_WAITER_LINES } from "../../features/checkout/checkoutWizardLabels";
 
 const props = defineProps({
-    /** @type {'cart'|'guest'|'fulfillment'|'drinks'|'confirm'|'success'} */
+    /** @type {'cart'|'upsell'|'guest'|'fulfillment'|'confirm'|'success'} */
     group: {
         type: String,
         required: true,
     },
-    hint: {
+    /** Переопределение реплики официанта */
+    line: {
         type: String,
         default: null,
     },
 });
 
 const s = useAppDesign().components.checkout.shared;
+const { checkoutState } = useCheckoutFlowContext();
 
-const stepHint = computed(() => {
-    if (props.hint != null) {
-        return props.hint;
+const waiterLine = computed(() => {
+    if (props.line != null && String(props.line).trim() !== "") {
+        return String(props.line).trim();
     }
-    return CHECKOUT_STEP_HINTS[props.group] ?? null;
+    return CHECKOUT_WAITER_LINES[props.group] ?? null;
+});
+
+const stepMeta = computed(() => {
+    const bag = checkoutState.checkoutStepMeta;
+    if (!bag || typeof bag !== "object") return null;
+    return bag[props.group] ?? null;
+});
+
+const showProgress = computed(() => {
+    const meta = stepMeta.value;
+    return (
+        meta
+        && Number(meta.n) >= 1
+        && Number(meta.total) >= 1
+    );
 });
 </script>
 
 <template>
     <div :class="[s.flowBody, 'space-y-3']">
-        <p
-            v-if="stepHint"
-            :class="s.stepHint"
+        <div
+            v-if="showProgress || waiterLine"
+            :class="s.storyHeader"
         >
-            {{ stepHint }}
-        </p>
+            <p
+                v-if="showProgress"
+                :class="s.storyProgress"
+            >
+                Шаг {{ stepMeta.n }} из {{ stepMeta.total }}
+            </p>
+            <p
+                v-if="waiterLine"
+                :class="s.storyWaiterLine"
+            >
+                {{ waiterLine }}
+            </p>
+        </div>
 
         <slot />
 

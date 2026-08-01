@@ -19,6 +19,7 @@ function normalizeMobileCardViewMode(value) {
 export const useCatalogStore = defineStore("catalog", {
     state: () => ({
         categories: [],
+        accompanyingCategories: [],
         complementProducts: [],
         loading: false,
         error: null,
@@ -239,6 +240,11 @@ export const useCatalogStore = defineStore("catalog", {
                 const tree = await fetchCatalogTree();
                 this.categories = Array.isArray(tree?.categories)
                     ? tree.categories
+                    : [];
+                this.accompanyingCategories = Array.isArray(
+                    tree?.accompanyingCategories,
+                )
+                    ? tree.accompanyingCategories
                     : [];
                 this.complementProducts = Array.isArray(tree?.complementProducts)
                     ? tree.complementProducts

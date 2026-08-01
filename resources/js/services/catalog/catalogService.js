@@ -4,10 +4,25 @@ import {
     normalizeCatalogItem,
 } from "../../domain/catalog/catalogMappers";
 
-function buildProductNameIndex(categories) {
+function mapCategoryNode(item) {
+    const rawItems = Array.isArray(item?.items) ? item.items : [];
+    return {
+        category: normalizeCatalogCategory(item?.category),
+        products: rawItems
+            .map((row) => normalizeCatalogItem(row))
+            .filter(Boolean)
+            .filter(
+                (product) =>
+                    !Boolean(product?.promotion_meta?.complement_set)
+                    && !Boolean(product?.raw?.promotion_meta?.complement_set),
+            ),
+    };
+}
+
+function buildProductNameIndex(categoryNodes) {
     const nameById = new Map();
 
-    for (const entry of categories) {
+    for (const entry of categoryNodes) {
         for (const product of entry?.products || []) {
             if (product?.kind !== "product" || product.id == null) continue;
 
@@ -37,10 +52,10 @@ function enrichSetLineName(line, nameById) {
     };
 }
 
-function enrichCatalogSetLineNames(categories) {
-    const nameById = buildProductNameIndex(categories);
+function enrichCatalogSetLineNames(categoryNodes) {
+    const nameById = buildProductNameIndex(categoryNodes);
 
-    for (const entry of categories) {
+    for (const entry of categoryNodes) {
         for (const product of entry?.products || []) {
             if (product?.kind !== "set") continue;
 
@@ -61,32 +76,32 @@ function enrichCatalogSetLineNames(categories) {
         }
     }
 
-    return categories;
+    return categoryNodes;
+}
+
+function sortCategoryNodes(nodes) {
+    return [...nodes].sort(
+        (a, b) => (a.category.sort_order ?? 0) - (b.category.sort_order ?? 0),
+    );
 }
 
 export function mapCatalogTreeFromPayload(payload) {
-    const rawCategories = Array.isArray(payload?.categories)
-        ? payload.categories
-        : [];
-
-    const mapped = rawCategories.map((item) => {
-        const rawItems = Array.isArray(item?.items) ? item.items : [];
-        return {
-            category: normalizeCatalogCategory(item?.category),
-            products: rawItems
-                .map((row) => normalizeCatalogItem(row))
-                .filter(Boolean)
-                .filter(
-                    (product) =>
-                        !Boolean(product?.promotion_meta?.complement_set)
-                        && !Boolean(product?.raw?.promotion_meta?.complement_set),
-                ),
-        };
-    });
-
-    const sorted = mapped.sort(
-        (a, b) => (a.category.sort_order ?? 0) - (b.category.sort_order ?? 0),
+    const menuNodes = sortCategoryNodes(
+        (Array.isArray(payload?.categories) ? payload.categories : []).map(
+            mapCategoryNode,
+        ),
     );
+
+    const accompanyingNodes = sortCategoryNodes(
+        (
+            Array.isArray(payload?.accompanying_categories)
+                ? payload.accompanying_categories
+                : []
+        ).map(mapCategoryNode),
+    );
+
+    const nameIndexSource = [...menuNodes, ...accompanyingNodes];
+    enrichCatalogSetLineNames(nameIndexSource);
 
     const complementProducts = (
         Array.isArray(payload?.complement_products)
@@ -97,7 +112,8 @@ export function mapCatalogTreeFromPayload(payload) {
         .filter(Boolean);
 
     return {
-        categories: enrichCatalogSetLineNames(sorted),
+        categories: menuNodes,
+        accompanyingCategories: accompanyingNodes,
         complementProducts,
     };
 }
