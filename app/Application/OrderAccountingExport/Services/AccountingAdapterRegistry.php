@@ -30,6 +30,10 @@ final class AccountingAdapterRegistry
      */
     public function enabled(): array
     {
+        if (! (bool) config('order-accounting-export.enabled', true)) {
+            return [];
+        }
+
         $enabled = [];
 
         foreach ($this->adapters as $adapter) {

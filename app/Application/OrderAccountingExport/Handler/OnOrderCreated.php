@@ -18,6 +18,10 @@ final class OnOrderCreated
 
     public function handle(OrderCreated $event): void
     {
+        if (! (bool) config('order-accounting-export.enabled', true)) {
+            return;
+        }
+
         foreach ($this->adapterRegistry->enabled() as $adapter) {
             if (! $adapter->supports($event)) {
                 continue;

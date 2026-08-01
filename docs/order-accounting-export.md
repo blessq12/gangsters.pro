@@ -4,7 +4,7 @@
 
 ## Суть
 
-После создания заказа Order BC публикует событие `OrderCreated` → BC **OrderAccountingExport** нормализует снимок и отправляет по API во внешние системы учёта (Frontpad, iiko). Checkout и SPA не участвуют.
+После создания заказа Order BC публикует событие `OrderCreated` → BC **OrderAccountingExport** нормализует снимок и отправляет по API во внешние системы учёта (Frontpad). Checkout и SPA не участвуют.
 
 ## Поток
 
@@ -22,15 +22,15 @@ CreateOrderUseCase / CreateOrderFromIngressUseCase
 | Код | API | Статус |
 |-----|-----|--------|
 | `frontpad` | POST form `new_order` | приблизительная реализация |
-| `iiko` | POST `/api/1/deliveries/create` | приблизительная реализация |
 | `stub` | без HTTP (dev) | готово |
 
 ## Настройка
 
-1. Env: `OAE_{SYSTEM}_ENABLED` и credentials — см. `.env.example`
-2. Product bindings: `config/order-accounting-export.php` → `systems.{code}.product_bindings` (`product_id` → внешний код)
-3. Config: `config/order-accounting-export.php`
-4. Provider: `OrderAccountingExportServiceProvider` в `config/app.php`
+1. Env master: `OAE_ENABLED` (default `true`) — глобальный feature flag; `false` отключает весь экспорт
+2. Env per system: `OAE_{SYSTEM}_ENABLED` и credentials — см. `.env.example`
+3. Product bindings: `config/order-accounting-export.php` → `systems.{code}.product_bindings` (`product_id` → внешний код)
+4. Config: `config/order-accounting-export.php`
+5. Provider: `OrderAccountingExportServiceProvider` в `config/app.php`
 
 ## Документация по слоям
 
@@ -39,7 +39,7 @@ CreateOrderUseCase / CreateOrderFromIngressUseCase
 | Обзор BC | [overview.md](../.cursor/docs/order-accounting-export/overview.md) |
 | Pipeline | [flow.md](../.cursor/docs/order-accounting-export/flow.md) |
 | События | [events.md](../.cursor/docs/order-accounting-export/events.md) |
-| Frontpad / iiko | [systems.md](../.cursor/docs/order-accounting-export/systems.md) |
+| Frontpad | [systems.md](../.cursor/docs/order-accounting-export/systems.md) |
 | Config / env | [routing.md](../.cursor/docs/order-accounting-export/routing.md) |
 | Подключение новой системы | [application.md](../.cursor/docs/order-accounting-export/application.md) |
 

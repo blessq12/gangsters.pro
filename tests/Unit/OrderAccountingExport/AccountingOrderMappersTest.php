@@ -3,7 +3,6 @@
 namespace Tests\Unit\OrderAccountingExport;
 
 use App\Application\OrderAccountingExport\Mapper\FrontpadOrderMapper;
-use App\Application\OrderAccountingExport\Mapper\IikoOrderMapper;
 use App\Domain\Order\Enum\OrderSource;
 use App\Domain\Order\Event\OrderCreated;
 use App\Domain\Order\ValueObject\OrderCartSnapshot;
@@ -172,30 +171,6 @@ final class AccountingOrderMappersTest extends TestCase
             'Заказ #42. Без имбиря. Сдача с 2000 ₽',
             $request['descr'],
         );
-    }
-
-    #[Test]
-    public function iiko_маппер_собирает_json_тело(): void
-    {
-        config([
-            'order-accounting-export.systems.iiko.organization_id' => 'org-1',
-            'order-accounting-export.systems.iiko.terminal_group_id' => 'tg-1',
-            'order-accounting-export.systems.iiko.payment_types.card_online.kind' => 'Card',
-            'order-accounting-export.systems.iiko.payment_types.card_online.id' => 'pay-1',
-        ]);
-
-        $bindings = $this->createMock(AccountingProductBindingRepository::class);
-        $bindings->method('resolveExternalProductId')
-            ->willReturnCallback(static fn (string $system, int $productId): ?string => $system === 'iiko' && $productId === 10 ? 'prod-uuid' : null);
-
-        $request = (new IikoOrderMapper($bindings))->toRequest($this->sampleEvent());
-
-        $this->assertSame('org-1', $request['organizationId']);
-        $this->assertSame('tg-1', $request['terminalGroupId']);
-        $this->assertSame('DeliveryByCourier', $request['order']['orderServiceType']);
-        $this->assertSame('prod-uuid', $request['order']['items'][0]['productId']);
-        $this->assertSame('pay-1', $request['order']['payments'][0]['paymentTypeId']);
-        $this->assertTrue($request['order']['payments'][0]['isProcessedExternally']);
     }
 
     private function sampleEvent(?string $sku = '001'): OrderCreated
