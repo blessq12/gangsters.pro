@@ -134,24 +134,34 @@ final class QuoteOrderUseCase
                 : $rollsPerSet - $remainder;
         }
 
-        $selectedComplements = array_slice(
-            array_values(array_unique(array_map('intval', $input->complementProductIds))),
-            0,
-            max(0, $entitledSets),
+        $complementProducts = $entitledSets > 0
+            ? $this->indexProducts($this->catalogItems->findActiveComplementSetProducts())
+            : [];
+
+        foreach ($complementProducts as $complementId => $complementProduct) {
+            $products[$complementId] = $complementProduct;
+            $meta[$complementId] = [
+                'counts_as_roll' => false,
+                'complement_set' => true,
+            ];
+        }
+
+        $selectedComplementIds = $this->resolveComplementProductIds(
+            entitledSets: $entitledSets,
+            requestedIds: $input->complementProductIds,
+            availableById: $complementProducts,
         );
 
-        foreach ($selectedComplements as $complementId) {
-            $complement = $products[$complementId] ?? null;
+        $quantityByComplementId = array_count_values($selectedComplementIds);
+        foreach ($quantityByComplementId as $complementId => $quantity) {
+            $complement = $products[(int) $complementId] ?? null;
             if (! $complement instanceof Product) {
                 throw new \InvalidArgumentException(sprintf('Комплект #%d недоступен.', $complementId));
-            }
-            if (($meta[$complementId]['complement_set'] ?? false) !== true) {
-                throw new \InvalidArgumentException(sprintf('Товар #%d не является комплектом дополнений.', $complementId));
             }
 
             $cartLines[] = $this->linePayload(
                 product: $complement,
-                quantity: 1,
+                quantity: (int) $quantity,
                 unitPriceRubles: 0,
                 kind: 'complement',
             );
@@ -347,5 +357,39 @@ final class QuoteOrderUseCase
         }
 
         return [$coords['latitude'], $coords['longitude']];
+    }
+
+    /**
+     * @param  list<int>  $requestedIds
+     * @param  array<int, Product>  $availableById
+     * @return list<int>
+     */
+    private function resolveComplementProductIds(
+        int $entitledSets,
+        array $requestedIds,
+        array $availableById,
+    ): array {
+        if ($entitledSets <= 0 || $availableById === []) {
+            return [];
+        }
+
+        $chosen = [];
+        foreach ($requestedIds as $rawId) {
+            $id = (int) $rawId;
+            if ($id < 1 || ! isset($availableById[$id])) {
+                continue;
+            }
+            $chosen[] = $id;
+            if (count($chosen) >= $entitledSets) {
+                return $chosen;
+            }
+        }
+
+        $fallbackId = (int) array_key_first($availableById);
+        while (count($chosen) < $entitledSets) {
+            $chosen[] = $fallbackId;
+        }
+
+        return $chosen;
     }
 }

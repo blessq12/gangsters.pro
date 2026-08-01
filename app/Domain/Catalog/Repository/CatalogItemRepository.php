@@ -27,6 +27,13 @@ interface CatalogItemRepository
     public function findActiveSystemProducts(): array;
 
     /**
+     * Активные товары-наборы дополнений (meta_is_complement_set).
+     *
+     * @return list<Product>
+     */
+    public function findActiveComplementSetProducts(): array;
+
+    /**
      * @param  list<int>  $ids
      * @return list<ProductSet>
      */

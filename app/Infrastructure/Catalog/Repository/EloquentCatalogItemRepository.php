@@ -116,6 +116,33 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
         return $this->mapProductsPreservingOrder($rows, $ids, $tagIdsByProduct, $imagesByProduct);
     }
 
+    public function findActiveComplementSetProducts(): array
+    {
+        $rows = $this->productQuery()
+            ->where('catalog_kind', CatalogItemKind::Product->value)
+            ->where('status', ProductStatus::Active->value)
+            ->where('meta_is_complement_set', true)
+            ->whereNull('archived_at')
+            ->orderBy('id')
+            ->get();
+
+        $ids = [];
+        foreach ($rows as $row) {
+            if ($row instanceof PRD_Product) {
+                $ids[] = (int) $row->id;
+            }
+        }
+
+        if ($ids === []) {
+            return [];
+        }
+
+        $tagIdsByProduct = $this->loadTagIdsForProductIds($ids);
+        $imagesByProduct = $this->loadImagesByProductIds($ids);
+
+        return $this->mapProductsPreservingOrder($rows, $ids, $tagIdsByProduct, $imagesByProduct);
+    }
+
     public function findActiveSetsByIds(array $ids): array
     {
         $ids = $this->normalizeIds($ids);
