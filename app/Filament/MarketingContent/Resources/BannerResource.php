@@ -6,7 +6,7 @@ use App\Filament\MarketingContent\Concerns\HasMarketingHubIndexUrl;
 use App\Filament\MarketingContent\Resources\BannerResource\Pages\CreateBanner;
 use App\Filament\MarketingContent\Resources\BannerResource\Pages\EditBanner;
 use App\Filament\MarketingContent\Resources\BannerResource\Schemas\BannerForm;
-use App\Infrastructure\MarketingContent\Model\MKT_Banner;
+use App\Infrastructure\Content\Model\MKT_Banner;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;

@@ -3,8 +3,8 @@
 namespace App\Application\Order\OrderDraft\Services;
 
 use App\Domain\Order\OrderDraft\ValueObject\DeliveryAddress;
-use App\Domain\Delivery\Port\DeliveryAddressGeocoderPort;
-use App\Domain\Delivery\Repository\DeliveryConfigurationRepository;
+use App\Domain\Content\Port\DeliveryAddressGeocoderPort;
+use App\Domain\Content\Repository\DeliveryConfigurationRepository;
 use App\Shared\Enum\DeliveryMethod;
 
 /**

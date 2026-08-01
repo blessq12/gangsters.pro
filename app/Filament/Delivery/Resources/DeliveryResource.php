@@ -4,7 +4,7 @@ namespace App\Filament\Delivery\Resources;
 
 use App\Filament\Delivery\Resources\DeliveryResource\Pages\ManageDelivery;
 use App\Filament\Support\AdminNavigationGroup;
-use App\Infrastructure\Delivery\Model\DLV_Configuration;
+use App\Infrastructure\Content\Model\DLV_Configuration;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;

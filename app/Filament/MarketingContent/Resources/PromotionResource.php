@@ -6,7 +6,7 @@ use App\Filament\MarketingContent\Concerns\HasMarketingHubIndexUrl;
 use App\Filament\MarketingContent\Resources\PromotionResource\Pages\CreatePromotion;
 use App\Filament\MarketingContent\Resources\PromotionResource\Pages\EditPromotion;
 use App\Filament\MarketingContent\Resources\PromotionResource\Schemas\PromotionForm;
-use App\Infrastructure\MarketingContent\Model\MKT_Promotion;
+use App\Infrastructure\Content\Model\MKT_Promotion;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;

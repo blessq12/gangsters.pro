@@ -2,9 +2,7 @@
 
 use App\Http\Controllers\Api\CatalogController;
 use App\Http\Controllers\Api\ClientController;
-use App\Http\Controllers\Api\CompanyController;
-use App\Http\Controllers\Api\DeliveryController;
-use App\Http\Controllers\Api\MarketingContentController;
+use App\Http\Controllers\Api\ContentController;
 use App\Http\Controllers\Api\IngressController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\OrderDraftController;
@@ -26,23 +24,12 @@ Route::get('/storefront/bootstrap', [StorefrontController::class, 'bootstrap']);
 Route::get('/storefront/bootstrap/critical', [StorefrontController::class, 'bootstrapCritical']);
 Route::get('/storefront/bootstrap/deferred', [StorefrontController::class, 'bootstrapDeferred']);
 
+Route::get('/content/bootstrap', [ContentController::class, 'bootstrap']);
+
 Route::post('/order-drafts/preview', [OrderDraftController::class, 'preview']);
 Route::post('/orders', [OrderDraftController::class, 'store']);
 
 Route::get('/catalog', [CatalogController::class, 'show']);
-Route::prefix('marketing')->group(function (): void {
-    Route::get('/', [MarketingContentController::class, 'show']);
-    Route::get('/banners', [MarketingContentController::class, 'banners']);
-    Route::get('/promotions', [MarketingContentController::class, 'promotions']);
-});
-
-Route::get('/delivery', [DeliveryController::class, 'show']);
-
-Route::prefix('company')->group(function (): void {
-    Route::get('/main', [CompanyController::class, 'main']);
-    Route::get('/legals', [CompanyController::class, 'legals']);
-    Route::get('/documents', [CompanyController::class, 'documents']);
-});
 
 Route::prefix('client')->group(function (): void {
     Route::post('register', [ClientController::class, 'register']);

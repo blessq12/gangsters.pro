@@ -1,33 +1,23 @@
-import { computed, onMounted } from "vue";
+import { computed } from "vue";
 import { useMarketingStore } from "../../stores/marketingStore";
-import { isStorefrontBootstrapPending } from "../shell/isStorefrontBootstrapPending";
-import { useStorefrontStore } from "../../stores/storefrontStore";
+import { useContentStore } from "../../stores/contentStore";
 
-export function useMarketingReadModel({ autoload = true } = {}) {
+export function useMarketingReadModel(_options = {}) {
     const marketingStore = useMarketingStore();
-    const storefrontStore = useStorefrontStore();
-
-    if (autoload) {
-        onMounted(() => {
-            if (isStorefrontBootstrapPending(storefrontStore)) {
-                return;
-            }
-
-            void marketingStore.fetchAll();
-        });
-    }
+    const contentStore = useContentStore();
 
     const banners = computed(() => marketingStore.banners);
     const promotions = computed(() => marketingStore.promotions);
 
     const loading = computed(() => ({
-        banners: marketingStore.loadingBanners,
-        promotions: marketingStore.loadingPromotions,
+        banners: contentStore.loading && marketingStore.banners.length === 0,
+        promotions:
+            contentStore.loading && marketingStore.promotions.length === 0,
     }));
 
     const errors = computed(() => ({
-        banners: marketingStore.errorBanners,
-        promotions: marketingStore.errorPromotions,
+        banners: contentStore.error,
+        promotions: contentStore.error,
     }));
 
     return {
@@ -35,8 +25,8 @@ export function useMarketingReadModel({ autoload = true } = {}) {
         promotions,
         loading,
         errors,
-        refreshAll: () => marketingStore.fetchAll(),
-        refreshBanners: () => marketingStore.fetchBanners(),
-        refreshPromotions: () => marketingStore.fetchPromotions(),
+        refreshAll: () => contentStore.fetchBootstrap(),
+        refreshBanners: () => contentStore.fetchBootstrap(),
+        refreshPromotions: () => contentStore.fetchBootstrap(),
     };
 }

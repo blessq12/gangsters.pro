@@ -2,12 +2,12 @@
 
 namespace App\Filament\Company\Resources\CompanyResource\Pages;
 
-use App\Domain\Company\Repository\CompanyRepository;
+use App\Domain\Content\Repository\CompanyRepository;
 use App\Filament\Company\Resources\CompanyResource;
 use App\Filament\Company\Resources\CompanyResource\Schemas\CompanyForm;
-use App\Infrastructure\Company\Model\CMP_Company;
-use App\Infrastructure\Company\Model\CMP_CompanyDocument;
-use App\Infrastructure\Company\Model\CMP_CompanyLegal;
+use App\Infrastructure\Content\Model\CMP_Company;
+use App\Infrastructure\Content\Model\CMP_CompanyDocument;
+use App\Infrastructure\Content\Model\CMP_CompanyLegal;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;

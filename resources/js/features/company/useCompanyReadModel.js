@@ -1,36 +1,25 @@
-import { computed, onMounted } from "vue";
+import { computed } from "vue";
 import { useCompanyStore } from "../../stores/companyStore";
-import { isStorefrontBootstrapPending } from "../shell/isStorefrontBootstrapPending";
-import { useStorefrontStore } from "../../stores/storefrontStore";
+import { useContentStore } from "../../stores/contentStore";
 
-export function useCompanyReadModel({ autoload = true } = {}) {
+export function useCompanyReadModel(_options = {}) {
     const companyStore = useCompanyStore();
-    const storefrontStore = useStorefrontStore();
-
-    if (autoload) {
-        onMounted(() => {
-            if (isStorefrontBootstrapPending(storefrontStore)) {
-                return;
-            }
-
-            void companyStore.fetchAll();
-        });
-    }
+    const contentStore = useContentStore();
 
     const profile = computed(() => companyStore.profile);
     const legal = computed(() => companyStore.legal);
     const documents = computed(() => companyStore.documents);
 
     const loading = computed(() => ({
-        profile: companyStore.loadingProfile,
-        legal: companyStore.loadingLegal,
-        documents: companyStore.loadingDocuments,
+        profile: contentStore.loading && !companyStore.profile,
+        legal: contentStore.loading && !companyStore.legal,
+        documents: contentStore.loading && companyStore.documents.length === 0,
     }));
 
     const errors = computed(() => ({
-        profile: companyStore.errorProfile,
-        legal: companyStore.errorLegal,
-        documents: companyStore.errorDocuments,
+        profile: contentStore.error,
+        legal: contentStore.error,
+        documents: contentStore.error,
     }));
 
     return {
@@ -39,9 +28,9 @@ export function useCompanyReadModel({ autoload = true } = {}) {
         documents,
         loading,
         errors,
-        refreshAll: () => companyStore.fetchAll(),
-        refreshProfile: () => companyStore.fetchProfile(),
-        refreshLegal: () => companyStore.fetchLegal(),
-        refreshDocuments: () => companyStore.fetchDocuments(),
+        refreshAll: () => contentStore.fetchBootstrap(),
+        refreshProfile: () => contentStore.fetchBootstrap(),
+        refreshLegal: () => contentStore.fetchBootstrap(),
+        refreshDocuments: () => contentStore.fetchBootstrap(),
     };
 }

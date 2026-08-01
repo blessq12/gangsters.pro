@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Domain\Delivery\Repository\DeliveryConfigurationRepository;
-use App\Infrastructure\Delivery\Model\DLV_Configuration;
+use App\Domain\Content\Repository\DeliveryConfigurationRepository;
+use App\Infrastructure\Content\Model\DLV_Configuration;
 use Illuminate\Database\Seeder;
 
 class DeliverySeeder extends Seeder

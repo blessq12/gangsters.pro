@@ -2,9 +2,9 @@
 
 namespace Tests\Unit\Promotion;
 
-use App\Domain\Delivery\Entity\DeliveryConfiguration;
-use App\Domain\Delivery\Repository\DeliveryConfigurationRepository;
-use App\Domain\Delivery\ValueObject\KitchenAddress;
+use App\Domain\Content\Entity\DeliveryConfiguration;
+use App\Domain\Content\Repository\DeliveryConfigurationRepository;
+use App\Domain\Content\ValueObject\KitchenAddress;
 use App\Domain\Promotion\Entity\PromotionPolicy;
 use App\Domain\Promotion\Enum\DeliveryFeeMode;
 use App\Domain\Promotion\Enum\GiftBenefitType;

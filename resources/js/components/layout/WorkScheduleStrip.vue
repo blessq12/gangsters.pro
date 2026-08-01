@@ -14,8 +14,7 @@ import {
 } from "../../animations/animationManager";
 import { useCompanyOpenStatus } from "../../composables/system/useCompanyOpenStatus";
 import { useCompanyStore } from "../../stores/companyStore";
-import { useStorefrontStore } from "../../stores/storefrontStore";
-import { isStorefrontBootstrapPending } from "../../features/shell/isStorefrontBootstrapPending";
+import { useContentStore } from "../../stores/contentStore";
 import { getCurrentDayKey } from "../../utils/system/companyOpenStatus";
 import {
     formatTodayWorkScheduleLine,
@@ -28,7 +27,7 @@ const TOOLTIP_PAD = 12;
 const PANEL_MAX_WIDTH_PX = 20 * 16;
 
 const companyStore = useCompanyStore();
-const storefrontStore = useStorefrontStore();
+const contentStore = useContentStore();
 const ws = useAppDesign().components.workSchedule;
 
 const props = defineProps({
@@ -63,7 +62,7 @@ const panelPos = ref({
 
 const hasCompany = computed(() => companyStore.profile != null);
 const isLoading = computed(
-    () => companyStore.loadingProfile && !companyStore.profile,
+    () => contentStore.loading && !companyStore.profile,
 );
 
 const openLabel = computed(() => {
@@ -217,14 +216,6 @@ watch(expanded, (open) => {
 });
 
 onMounted(() => {
-    if (
-        !isStorefrontBootstrapPending(storefrontStore)
-        && !companyStore.profile
-        && !companyStore.loadingProfile
-    ) {
-        void companyStore.fetchProfile();
-    }
-
     nextTick(() => {
         if (!isNavbarCompact.value && stripEnterRef.value) {
             playWorkScheduleStripEnter(stripEnterRef.value);

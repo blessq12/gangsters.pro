@@ -46,6 +46,7 @@ php artisan test --filter FrontendAndAclBoundaries
 - Backend: `app/Domain/Order/` → `app/Application/Order/` → `app/Infrastructure/Order/`
 - Ingress агрегаторов: `app/Domain/AggregatorIngress/` → `app/Application/AggregatorIngress/` → `app/Infrastructure/AggregatorIngress/`
 - Frontpad export: `Domain/Order/Port/FrontpadOrderExporter` → `Infrastructure/Order/Frontpad/`
+- Content CMS: `app/Domain/Content/` → `app/Application/Content/` → `app/Infrastructure/Content/` (`GET /api/content/bootstrap` — company, marketing, delivery settings)
 - Admin: `app/Filament/Operations/`
 - Frontend shopping: `resources/js/features/checkout/` + `resources/js/stores/checkoutStore.js` + `resources/js/features/shoppingSession/`
-- Frontend bootstrap: `resources/js/stores/storefrontStore.js` + `resources/js/layouts/MainLayout*.vue`
+- Frontend bootstrap: `resources/js/stores/storefrontStore.js` (catalog/promotion) + `resources/js/stores/contentStore.js` (CMS+delivery) + `resources/js/layouts/MainLayout*.vue`

@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Domain\Company\Repository\CompanyRepository;
-use App\Infrastructure\Company\Model\CMP_Company;
-use App\Infrastructure\Company\Model\CMP_CompanyDocument;
-use App\Infrastructure\Company\Model\CMP_CompanyLegal;
+use App\Domain\Content\Repository\CompanyRepository;
+use App\Infrastructure\Content\Model\CMP_Company;
+use App\Infrastructure\Content\Model\CMP_CompanyDocument;
+use App\Infrastructure\Content\Model\CMP_CompanyLegal;
 use Illuminate\Database\Seeder;
 
 class CompanySeeder extends Seeder

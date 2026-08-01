@@ -4,8 +4,8 @@ namespace App\Filament\MarketingContent\Widgets\Tables;
 
 use App\Filament\MarketingContent\Support\MarketingHubTableActions;
 use App\Filament\MarketingContent\Support\MarketingHubTablePresentation;
-use App\Infrastructure\MarketingContent\Model\MKT_Banner;
-use App\Infrastructure\MarketingContent\Support\MarketingStoredPath;
+use App\Infrastructure\Content\Model\MKT_Banner;
+use App\Infrastructure\Content\Support\MarketingStoredPath;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;

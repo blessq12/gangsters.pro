@@ -1,8 +1,8 @@
 import { watch } from "vue";
 import { INTRO_DOCK_REVEAL_GAP_MS } from "../../animations/animationManager";
 import { useCompanyStore } from "../../stores/companyStore";
+import { useContentStore } from "../../stores/contentStore";
 import { useShellStore } from "../../stores/shellStore";
-import { useStorefrontStore } from "../../stores/storefrontStore";
 import { useUiStore } from "../../stores/uiStore";
 import { isCompanyOpenNow } from "../../utils/system/companyOpenStatus";
 import { wasClosedNoticeDismissedThisSession } from "../../utils/system/closedOrdersNotice";
@@ -17,11 +17,11 @@ export function useCompanyClosedNoticeProcess() {
     if (!processInitialized) {
         const uiStore = useUiStore();
         const companyStore = useCompanyStore();
-        const storefrontStore = useStorefrontStore();
+        const contentStore = useContentStore();
         const shellStore = useShellStore();
 
         function tryOpenNotice() {
-            if (!shellStore.isInteractive || !storefrontStore.loaded || !companyStore.profile) {
+            if (!shellStore.isInteractive || !contentStore.loaded || !companyStore.profile) {
                 return;
             }
 
@@ -45,7 +45,7 @@ export function useCompanyClosedNoticeProcess() {
                 return;
             }
 
-            if (!shellStore.isInteractive || !storefrontStore.loaded || !companyStore.profile) {
+            if (!shellStore.isInteractive || !contentStore.loaded || !companyStore.profile) {
                 return;
             }
 
@@ -59,7 +59,7 @@ export function useCompanyClosedNoticeProcess() {
         stopWatch = watch(
             () => [
                 shellStore.isInteractive,
-                storefrontStore.loaded,
+                contentStore.loaded,
                 companyStore.profile,
             ],
             () => scheduleNoticeAfterShellReady(),

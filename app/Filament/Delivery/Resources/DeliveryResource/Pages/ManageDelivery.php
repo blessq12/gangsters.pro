@@ -2,10 +2,10 @@
 
 namespace App\Filament\Delivery\Resources\DeliveryResource\Pages;
 
-use App\Domain\Delivery\Repository\DeliveryConfigurationRepository;
+use App\Domain\Content\Repository\DeliveryConfigurationRepository;
 use App\Filament\Delivery\Resources\DeliveryResource;
 use App\Filament\Delivery\Resources\DeliveryResource\Schemas\DeliveryForm;
-use App\Infrastructure\Delivery\Model\DLV_Configuration;
+use App\Infrastructure\Content\Model\DLV_Configuration;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;

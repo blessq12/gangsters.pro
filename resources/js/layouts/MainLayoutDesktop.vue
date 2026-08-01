@@ -6,6 +6,7 @@ import { useShellIntroDockTimeline } from "../composables/layout/useShellIntroDo
 import { useDockScrollScale } from "../composables/ui/useDockScrollScale";
 import { useAppDesign } from "../design/useAppDesign";
 import { useShellStore } from "../stores/shellStore";
+import { useContentStore } from "../stores/contentStore";
 import { useStorefrontStore } from "../stores/storefrontStore";
 import { useThemeStore } from "../stores/themeStore";
 import { useUiStore } from "../stores/uiStore";
@@ -17,6 +18,7 @@ const themeStore = useThemeStore();
 const userStore = useUserStore();
 const uiStore = useUiStore();
 const storefrontStore = useStorefrontStore();
+const contentStore = useContentStore();
 const shellStore = useShellStore();
 const route = useRoute();
 
@@ -84,6 +86,10 @@ onMounted(() => {
         shellStore.markDataReady();
     } else {
         void storefrontStore.fetchBootstrap();
+    }
+
+    if (!contentStore.loaded) {
+        void contentStore.fetchBootstrap();
     }
 
     void presentShellContent();

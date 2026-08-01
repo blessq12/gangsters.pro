@@ -2,8 +2,8 @@
 
 namespace App\Infrastructure\Promotion\Port;
 
-use App\Domain\Delivery\Entity\DeliveryConfiguration;
-use App\Domain\Delivery\Repository\DeliveryConfigurationRepository;
+use App\Domain\Content\Entity\DeliveryConfiguration;
+use App\Domain\Content\Repository\DeliveryConfigurationRepository;
 use App\Domain\Promotion\Entity\PromotionPolicy;
 use App\Domain\Promotion\Enum\DeliveryFeeMode;
 use App\Domain\Promotion\Port\PromotionDeliveryPricingPort;

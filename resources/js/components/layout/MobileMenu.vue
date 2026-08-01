@@ -1,10 +1,8 @@
 <script setup>
-import { computed, onMounted, onUnmounted, watch } from "vue";
+import { computed, onUnmounted, watch } from "vue";
 import { useUiStore } from "../../stores/uiStore";
 import { useCompanyStore } from "../../stores/companyStore";
 import { useDeliveryStore } from "../../stores/deliveryStore";
-import { useStorefrontStore } from "../../stores/storefrontStore";
-import { isStorefrontBootstrapPending } from "../../features/shell/isStorefrontBootstrapPending";
 import { toDeliveryFactsView } from "../../domain/delivery/deliveryMappers";
 import { useAppDesign } from "../../design/useAppDesign";
 import { NAV_LINKS_MOBILE_SHEET } from "../../design/layout/navigation.present";
@@ -18,7 +16,6 @@ import { formatRuPhone, phoneToTelHref } from "../../utils/phone/formatRuPhone";
 const uiStore = useUiStore();
 const companyStore = useCompanyStore();
 const deliveryStore = useDeliveryStore();
-const storefrontStore = useStorefrontStore();
 const mm = useAppDesign().components.navbar.mobileMenu;
 
 const profile = computed(() => companyStore.profile);
@@ -70,19 +67,6 @@ watch(
         }
     },
 );
-
-onMounted(() => {
-    if (isStorefrontBootstrapPending(storefrontStore)) {
-        return;
-    }
-
-    if (!companyStore.profile && !companyStore.loadingProfile) {
-        void companyStore.fetchProfile();
-    }
-    if (!deliveryStore.data && !deliveryStore.loading) {
-        void deliveryStore.fetchAll();
-    }
-});
 
 onUnmounted(() => {
     if (typeof window === "undefined") return;

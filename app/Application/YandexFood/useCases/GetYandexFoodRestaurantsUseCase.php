@@ -2,8 +2,8 @@
 
 namespace App\Application\YandexFood\useCases;
 
-use App\Application\Delivery\useCases\GetDeliveryDataUseCase;
-use App\Domain\Company\Repository\CompanyRepository;
+use App\Application\Content\useCases\GetDeliveryDataUseCase;
+use App\Domain\Content\Repository\CompanyRepository;
 
 final class GetYandexFoodRestaurantsUseCase
 {

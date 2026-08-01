@@ -4,9 +4,7 @@ use App\Providers\AppServiceProvider;
 use App\Providers\AuthServiceProvider;
 use App\Providers\CatalogServiceProvider;
 use App\Providers\ClientServiceProvider;
-use App\Providers\CompanyServiceProvider;
-use App\Providers\DeliveryServiceProvider;
-use App\Providers\MarketingContentServiceProvider;
+use App\Providers\ContentServiceProvider;
 use App\Providers\PromotionServiceProvider;
 use App\Providers\AggregatorIngressServiceProvider;
 use App\Providers\YandexFoodServiceProvider;
@@ -193,10 +191,8 @@ return [
         OrderServiceProvider::class,
         AggregatorIngressServiceProvider::class,
         YandexFoodServiceProvider::class,
-        DeliveryServiceProvider::class,
-        MarketingContentServiceProvider::class,
         PromotionServiceProvider::class,
-        CompanyServiceProvider::class,
+        ContentServiceProvider::class,
         AdminPanelProvider::class,
         ImageServiceProvider::class,
     ])->toArray(),

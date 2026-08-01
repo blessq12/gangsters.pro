@@ -3,8 +3,8 @@
 namespace Tests\Unit\Order\OrderDraft;
 
 use App\Application\Order\OrderDraft\Services\PrepareOrderDraftDeliveryAddress;
-use App\Domain\Delivery\Port\DeliveryAddressGeocoderPort;
-use App\Domain\Delivery\Repository\DeliveryConfigurationRepository;
+use App\Domain\Content\Port\DeliveryAddressGeocoderPort;
+use App\Domain\Content\Repository\DeliveryConfigurationRepository;
 use App\Domain\Order\OrderDraft\ValueObject\DeliveryAddress;
 use App\Shared\Enum\DeliveryMethod;
 use PHPUnit\Framework\Attributes\Test;

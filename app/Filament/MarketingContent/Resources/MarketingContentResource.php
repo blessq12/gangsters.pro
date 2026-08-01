@@ -4,7 +4,7 @@ namespace App\Filament\MarketingContent\Resources;
 
 use App\Filament\MarketingContent\Resources\MarketingContentResource\Pages\ManageMarketingContent;
 use App\Filament\Support\AdminNavigationGroup;
-use App\Infrastructure\MarketingContent\Model\MKT_Banner;
+use App\Infrastructure\Content\Model\MKT_Banner;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;

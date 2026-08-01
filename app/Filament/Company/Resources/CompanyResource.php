@@ -4,7 +4,7 @@ namespace App\Filament\Company\Resources;
 
 use App\Filament\Company\Resources\CompanyResource\Pages\ManageCompany;
 use App\Filament\Support\AdminNavigationGroup;
-use App\Infrastructure\Company\Model\CMP_Company;
+use App\Infrastructure\Content\Model\CMP_Company;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
