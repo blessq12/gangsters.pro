@@ -145,6 +145,13 @@ export const checkoutDesign = {
         giftCandidateCardSelected:
             "border-app-accent ring-1 ring-app-accent/60",
         giftCandidateCardIdle: "border-app-border-on-surface",
+        drinkUpsellList: "space-y-2 text-xs sm:text-sm text-app-canvas-fg",
+        drinkUpsellRow:
+            "flex items-center gap-3 rounded-none bg-app-accent-soft-bg px-3 py-2",
+        drinkUpsellThumb:
+            "h-12 w-12 shrink-0 object-cover bg-black/20",
+        drinkUpsellThumbPlaceholder:
+            "flex h-12 w-12 shrink-0 items-center justify-center bg-black/20 text-[10px] text-app-muted",
         giftCandidateThumbCol:
             "relative w-28 shrink-0 overflow-hidden aspect-[4/3] sm:w-32",
         giftCandidateBody:

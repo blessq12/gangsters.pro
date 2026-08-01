@@ -3,8 +3,10 @@ import { storeToRefs } from "pinia";
 import { formatMoneyRublesRu } from "../../utils/moneyFormat";
 import { formatRuPhone } from "../../utils/phone/formatRuPhone";
 import { DOMAIN_EVENTS, emitDomainEvent } from "../../shared/domainEvents";
+import { useCatalogStore } from "../../stores/catalogStore";
 import { isGuestContactComplete } from "./useCheckoutGuestStep";
 import { resolveGiftSelectionRequired } from "./giftSelectionGate";
+import { isCheckoutDrinksStepAvailable } from "./checkoutDrinksCategory";
 import { resolveWizardStepMeta } from "./checkoutWizardGroups";
 import {
     formatServerDeliveryLine,
@@ -26,6 +28,7 @@ export function useCheckoutWizard({
     isGuestCheckout,
 }) {
     const { hasCartItems } = cartView;
+    const catalogStore = useCatalogStore();
 
     const activeStep = ref("cart");
     const confirmLoading = ref(false);
@@ -34,9 +37,14 @@ export function useCheckoutWizard({
     const successSummary = ref(null);
 
     const isAuthenticated = computed(() => clientReadModel.isAuthenticated.value);
+    const includeDrinksStep = computed(() =>
+        isCheckoutDrinksStepAvailable(catalogStore.categories),
+    );
 
     const checkoutStepMeta = computed(() => {
-        const meta = resolveWizardStepMeta(activeStep.value, isGuestCheckout.value);
+        const meta = resolveWizardStepMeta(activeStep.value, isGuestCheckout.value, {
+            includeDrinks: includeDrinksStep.value,
+        });
         if (meta) {
             return { [activeStep.value]: meta };
         }
@@ -129,6 +137,12 @@ export function useCheckoutWizard({
             uiStore.openGiftSelectionModal({ source: "auto" });
         }
     }, { immediate: true });
+
+    watch(includeDrinksStep, (available) => {
+        if (!available && activeStep.value === "drinks") {
+            activeStep.value = "confirm";
+        }
+    });
 
     watch(giftSelectionRequired, (required, wasRequired) => {
         if (required && wasRequired === false && activeStep.value === "confirm") {
@@ -229,7 +243,23 @@ export function useCheckoutWizard({
             return;
         }
 
+        activeStep.value = includeDrinksStep.value ? "drinks" : "confirm";
+    }
+
+    function goToDrinks() {
+        if (!hasCartItems.value) {
+            activeStep.value = "cart";
+            return;
+        }
+        activeStep.value = includeDrinksStep.value ? "drinks" : "confirm";
+    }
+
+    function goToDrinksNext() {
         activeStep.value = "confirm";
+    }
+
+    function goToConfirmBack() {
+        activeStep.value = includeDrinksStep.value ? "drinks" : "fulfillment";
     }
 
     function goToSuccess() {
@@ -288,6 +318,9 @@ export function useCheckoutWizard({
         goToFulfillment,
         goToGuestNext,
         goToFulfillmentNext,
+        goToDrinks,
+        goToDrinksNext,
+        goToConfirmBack,
         goToSuccess,
         handleConfirmOrder,
         confirmLoading,

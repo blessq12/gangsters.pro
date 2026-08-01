@@ -31,6 +31,7 @@ const {
     checkoutState,
     goToFulfillment,
     goToGuest,
+    goToConfirmBack,
     handleConfirmOrder,
     confirmLoading,
     confirmError,
@@ -134,7 +135,7 @@ onMounted(() => {
                 :primary-busy-label="CHECKOUT_LOADING_LABELS.orderSubmit"
                 show-nav-total
                 :total-label="navTotalLabel"
-                @back="goToFulfillment"
+                @back="goToConfirmBack"
                 @primary="handleConfirmOrder"
             />
         </template>

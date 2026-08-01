@@ -1,6 +1,12 @@
 export const CHECKOUT_SESSION_KEY = "gangsters_order_draft_v1";
 
-export const CHECKOUT_WIZARD_STEPS = ["cart", "guest", "fulfillment", "confirm"];
+export const CHECKOUT_WIZARD_STEPS = [
+    "cart",
+    "guest",
+    "fulfillment",
+    "drinks",
+    "confirm",
+];
 
 export function readCheckoutSessionPayload() {
     if (typeof window === "undefined") {

@@ -10,6 +10,7 @@ export const CHECKOUT_STEP_HINTS = Object.freeze({
     cart: "Проверь состав заказа перед оформлением.",
     guest: "Позвоним для подтверждения заказа.",
     fulfillment: "Сначала оплата, затем способ и адрес получения.",
+    drinks: "Можно пропустить — напитки не обязательны.",
     confirm: "Проверь данные и отправь заказ.",
     success: null,
 });
@@ -18,6 +19,7 @@ export const CHECKOUT_NAV_LABELS = Object.freeze({
     back: "Назад",
     cartPrimary: "Оформить заказ",
     next: "Далее",
+    drinksPrimary: "Продолжить",
     confirm: "Отправить заказ",
     success: "В меню",
     authLink: "Уже есть аккаунт? Войти",

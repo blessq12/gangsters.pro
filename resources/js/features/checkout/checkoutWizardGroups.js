@@ -3,6 +3,7 @@ export const CHECKOUT_WIZARD_GROUPS = {
     cart: "Корзина",
     guest: "Клиент",
     fulfillment: "Оплата и доставка",
+    drinks: "Закажите напитки",
     confirm: "Оформление",
     success: "Готово",
 };
@@ -10,11 +11,13 @@ export const CHECKOUT_WIZARD_GROUPS = {
 export const CHECKOUT_WIZARD_FLOW_GUEST = Object.freeze([
     "guest",
     "fulfillment",
+    "drinks",
     "confirm",
 ]);
 
 export const CHECKOUT_WIZARD_FLOW_AUTH = Object.freeze([
     "fulfillment",
+    "drinks",
     "confirm",
 ]);
 
@@ -26,7 +29,7 @@ const SERVER_STEP_TO_UI = Object.freeze({
 
 /**
  * @param {string|null|undefined} serverStep
- * @returns {'guest'|'fulfillment'|'confirm'|null}
+ * @returns {'guest'|'fulfillment'|'drinks'|'confirm'|null}
  */
 export function mapServerWizardStep(serverStep) {
     if (serverStep == null || serverStep === "") {
@@ -36,6 +39,7 @@ export function mapServerWizardStep(serverStep) {
     if (
         serverStep === "guest"
         || serverStep === "fulfillment"
+        || serverStep === "drinks"
         || serverStep === "confirm"
     ) {
         return serverStep;
@@ -46,20 +50,29 @@ export function mapServerWizardStep(serverStep) {
 
 /**
  * @param {boolean} isGuestCheckout
- * @returns {readonly ('guest'|'fulfillment'|'confirm')[]}
+ * @param {{ includeDrinks?: boolean }} [options]
+ * @returns {readonly string[]}
  */
-export function resolveWizardFlowSteps(isGuestCheckout) {
-    return isGuestCheckout
+export function resolveWizardFlowSteps(isGuestCheckout, options = {}) {
+    const includeDrinks = options.includeDrinks !== false;
+    const base = isGuestCheckout
         ? CHECKOUT_WIZARD_FLOW_GUEST
         : CHECKOUT_WIZARD_FLOW_AUTH;
+
+    if (includeDrinks) {
+        return base;
+    }
+
+    return Object.freeze(base.filter((step) => step !== "drinks"));
 }
 
 /**
- * @param {'guest'|'fulfillment'|'confirm'} step
+ * @param {string} step
  * @param {boolean} isGuestCheckout
+ * @param {{ includeDrinks?: boolean }} [options]
  */
-export function resolveWizardStepMeta(step, isGuestCheckout) {
-    const flow = resolveWizardFlowSteps(isGuestCheckout);
+export function resolveWizardStepMeta(step, isGuestCheckout, options = {}) {
+    const flow = resolveWizardFlowSteps(isGuestCheckout, options);
     const index = flow.indexOf(step);
     if (index === -1) {
         return null;
