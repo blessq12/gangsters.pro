@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Infrastructure\Content\Port;
+namespace App\Infrastructure\Shared\Geo;
 
-use App\Domain\Content\Port\DeliveryAddressGeocoderPort;
+use App\Shared\Geo\AddressGeocoder;
 use Illuminate\Support\Facades\Http;
 
-final class YandexDeliveryAddressGeocoderAdapter implements DeliveryAddressGeocoderPort
+final class YandexAddressGeocoder implements AddressGeocoder
 {
-    public function geocode(string $street, string $house, ?string $city): ?array
+    public function geocode(string $street, string $house, ?string $city = null): ?array
     {
         $street = trim($street);
         $house = trim($house);
@@ -21,8 +21,13 @@ final class YandexDeliveryAddressGeocoderAdapter implements DeliveryAddressGeoco
             return null;
         }
 
+        $city = is_string($city) ? trim($city) : null;
+        if ($city === '') {
+            $city = null;
+        }
+
         $queryParts = array_filter([
-            is_string($city) ? trim($city) : null,
+            $city,
             $street,
             'д. '.$house,
         ]);

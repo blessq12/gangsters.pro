@@ -5,6 +5,7 @@ use App\Infrastructure\Content\Provider\ContentServiceProvider;
 use App\Infrastructure\Crm\Provider\CrmServiceProvider;
 use App\Infrastructure\Order\Provider\OrderServiceProvider;
 use App\Infrastructure\YandexFood\Provider\YandexFoodServiceProvider;
+use App\Shared\Provider\SharedProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\AuthServiceProvider;
 use App\Providers\Filament\AdminPanelProvider;
@@ -184,6 +185,7 @@ return [
         AppServiceProvider::class,
         AuthServiceProvider::class,
         RouteServiceProvider::class,
+        SharedProvider::class,
         CatalogServiceProvider::class,
         ContentServiceProvider::class,
         CrmServiceProvider::class,

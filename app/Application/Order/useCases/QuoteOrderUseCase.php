@@ -7,6 +7,7 @@ use App\Domain\Catalog\Entity\Product;
 use App\Domain\Catalog\Repository\CatalogItemRepository;
 use App\Domain\Order\Port\PromotionDeliveryPricingPort;
 use App\Domain\Order\Repository\PromotionPolicyRepository;
+use App\Shared\Geo\AddressGeocoder;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -18,6 +19,7 @@ final class QuoteOrderUseCase
         private readonly CatalogItemRepository $catalogItems,
         private readonly PromotionPolicyRepository $promotionPolicies,
         private readonly PromotionDeliveryPricingPort $deliveryPricing,
+        private readonly AddressGeocoder $addressGeocoder,
     ) {}
 
     /**
@@ -155,7 +157,8 @@ final class QuoteOrderUseCase
             );
         }
 
-        $inZone = $this->deliveryPricing->resolveInZone($input->latitude, $input->longitude);
+        [$latitude, $longitude] = $this->resolveCoordinates($deliveryMethod, $input);
+        $inZone = $this->deliveryPricing->resolveInZone($latitude, $longitude);
         $deliveryFeeKopecks = $this->deliveryPricing->resolveDeliveryFeeKopecks(
             promotionPolicy: $policy,
             deliveryMethod: $deliveryMethod,
@@ -313,5 +316,36 @@ final class QuoteOrderUseCase
         }
 
         return $line;
+    }
+
+    /**
+     * @return array{0: ?float, 1: ?float}
+     */
+    private function resolveCoordinates(string $deliveryMethod, QuoteOrderDto $input): array
+    {
+        $latitude = $input->latitude;
+        $longitude = $input->longitude;
+
+        if (
+            $deliveryMethod !== 'courier'
+            || ($latitude !== null && $longitude !== null)
+        ) {
+            return [$latitude, $longitude];
+        }
+
+        $address = is_array($input->address) ? $input->address : [];
+        $street = trim((string) ($address['street'] ?? ''));
+        $house = trim((string) ($address['house'] ?? ''));
+        $city = isset($address['city']) ? trim((string) $address['city']) : null;
+        if ($city === '') {
+            $city = null;
+        }
+
+        $coords = $this->addressGeocoder->geocode($street, $house, $city);
+        if ($coords === null) {
+            return [null, null];
+        }
+
+        return [$coords['latitude'], $coords['longitude']];
     }
 }
