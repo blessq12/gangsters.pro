@@ -5,11 +5,8 @@ namespace App\Infrastructure\Promotion\Port;
 use App\Domain\Content\Entity\DeliveryConfiguration;
 use App\Domain\Content\Repository\DeliveryConfigurationRepository;
 use App\Domain\Promotion\Entity\PromotionPolicy;
-use App\Domain\Promotion\Enum\DeliveryFeeMode;
 use App\Domain\Promotion\Port\PromotionDeliveryPricingPort;
 use App\Domain\Promotion\Repository\PromotionPolicyRepository;
-use App\Domain\Promotion\ValueObject\DeliveryBenefitPolicy;
-use App\Shared\Enum\DeliveryMethod;
 use App\Shared\Geo\PointInGeoJsonZone;
 
 final class PromotionDeliveryPricingAdapter implements PromotionDeliveryPricingPort
@@ -36,26 +33,22 @@ final class PromotionDeliveryPricingAdapter implements PromotionDeliveryPricingP
 
     public function resolveFreeDeliveryThresholdKopecks(): ?int
     {
-        $policy = $this->deliveryBenefitPolicy();
+        $policy = $this->deliveryBenefit();
 
-        if ($policy === null || ! $policy->isActive()) {
+        if ($policy === null || ! ($policy['is_active'] ?? false)) {
             return null;
         }
 
-        return $policy->freeDeliveryThresholdKopecks();
+        return (int) $policy['free_delivery_threshold_kopecks'];
     }
 
     public function resolveDeliveryFeeKopecks(
         ?PromotionPolicy $promotionPolicy,
-        ?DeliveryMethod $deliveryMethod,
+        ?string $deliveryMethod,
         int $currentKopecks,
         ?bool $inZone,
     ): int {
-        if ($deliveryMethod === DeliveryMethod::Pickup) {
-            return 0;
-        }
-
-        if ($deliveryMethod !== DeliveryMethod::Courier) {
+        if ($deliveryMethod === 'pickup' || $deliveryMethod !== 'courier') {
             return 0;
         }
 
@@ -66,8 +59,8 @@ final class PromotionDeliveryPricingAdapter implements PromotionDeliveryPricingP
             $configuration?->outsideZoneDeliveryFeeKopecks() ?? $baseFeeKopecks,
         );
 
-        $policy = $promotionPolicy?->deliveryBenefitPolicy();
-        if (! $policy instanceof DeliveryBenefitPolicy || ! $policy->isActive()) {
+        $policy = $promotionPolicy?->deliveryBenefit();
+        if (! is_array($policy) || ! ($policy['is_active'] ?? false)) {
             if ($inZone === false) {
                 return $baseFeeKopecks + $outsideZoneFeeKopecks;
             }
@@ -75,15 +68,16 @@ final class PromotionDeliveryPricingAdapter implements PromotionDeliveryPricingP
             return $baseFeeKopecks;
         }
 
-        $thresholdKopecks = $policy->freeDeliveryThresholdKopecks();
+        $thresholdKopecks = (int) $policy['free_delivery_threshold_kopecks'];
         $meetsThreshold = $currentKopecks >= $thresholdKopecks;
+        $surcharge = (int) $policy['outside_zone_surcharge_kopecks'];
 
         if ($inZone === false) {
             if ($meetsThreshold) {
                 return $this->resolveFeeByMode(
-                    $policy->outsideZoneAtThresholdFeeMode(),
+                    (string) $policy['outside_zone_at_threshold_fee_mode'],
                     $baseFeeKopecks,
-                    $policy->outsideZoneSurchargeKopecks(),
+                    $surcharge,
                 );
             }
 
@@ -92,34 +86,37 @@ final class PromotionDeliveryPricingAdapter implements PromotionDeliveryPricingP
 
         if ($meetsThreshold) {
             return $this->resolveFeeByMode(
-                $policy->inZoneAtThresholdFeeMode(),
+                (string) $policy['in_zone_at_threshold_fee_mode'],
                 $baseFeeKopecks,
-                $policy->outsideZoneSurchargeKopecks(),
+                $surcharge,
             );
         }
 
         return $this->resolveFeeByMode(
-            $policy->belowThresholdFeeMode(),
+            (string) $policy['below_threshold_fee_mode'],
             $baseFeeKopecks,
-            $policy->outsideZoneSurchargeKopecks(),
+            $surcharge,
         );
     }
 
-    private function deliveryBenefitPolicy(): ?DeliveryBenefitPolicy
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function deliveryBenefit(): ?array
     {
-        return $this->promotionPolicies->find()?->deliveryBenefitPolicy();
+        return $this->promotionPolicies->find()?->deliveryBenefit();
     }
 
     private function resolveFeeByMode(
-        DeliveryFeeMode $mode,
+        string $mode,
         int $baseFeeKopecks,
         int $outsideZoneSurchargeKopecks,
     ): int {
         return match ($mode) {
-            DeliveryFeeMode::Free => 0,
-            DeliveryFeeMode::BasePlusSurcharge => $baseFeeKopecks + $outsideZoneSurchargeKopecks,
-            DeliveryFeeMode::OutsideZoneSurchargeOnly => $outsideZoneSurchargeKopecks,
-            DeliveryFeeMode::BaseTariff => $baseFeeKopecks,
+            'free' => 0,
+            'base_plus_surcharge' => $baseFeeKopecks + $outsideZoneSurchargeKopecks,
+            'outside_zone_surcharge_only' => $outsideZoneSurchargeKopecks,
+            default => $baseFeeKopecks,
         };
     }
 }

@@ -3,7 +3,6 @@
 namespace App\Domain\Promotion\Port;
 
 use App\Domain\Promotion\Entity\PromotionPolicy;
-use App\Shared\Enum\DeliveryMethod;
 
 interface PromotionDeliveryPricingPort
 {
@@ -13,7 +12,7 @@ interface PromotionDeliveryPricingPort
 
     public function resolveDeliveryFeeKopecks(
         ?PromotionPolicy $promotionPolicy,
-        ?DeliveryMethod $deliveryMethod,
+        ?string $deliveryMethod,
         int $currentKopecks,
         ?bool $inZone,
     ): int;

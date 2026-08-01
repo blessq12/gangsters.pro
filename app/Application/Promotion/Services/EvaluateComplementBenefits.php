@@ -3,16 +3,11 @@
 namespace App\Application\Promotion\Services;
 
 use App\Domain\Promotion\Entity\PromotionPolicy;
-use App\Domain\Promotion\ValueObject\BenefitProductCandidate;
-use App\Domain\Promotion\ValueObject\ComplementSetBenefitRule;
 
-/**
- * Расчёт complement-бенефита и promo_state для комплекта дополнений.
- */
 final class EvaluateComplementBenefits
 {
     /**
-     * @param  list<BenefitProductCandidate>  $complementCandidates
+     * @param  list<array<string, mixed>>  $complementCandidates
      * @return array<string, mixed>
      */
     public function buildBenefit(
@@ -20,17 +15,17 @@ final class EvaluateComplementBenefits
         int $rollCount,
         array $complementCandidates,
     ): array {
-        $rule = $promotionPolicy?->complementSetBenefitRule();
+        $rule = $promotionPolicy?->complementSetBenefit();
 
         if (
-            ! $rule instanceof ComplementSetBenefitRule
-            || ! $rule->isActive()
+            ! is_array($rule)
+            || ! ($rule['is_active'] ?? false)
             || $complementCandidates === []
         ) {
             return $this->inactiveBenefit($rollCount);
         }
 
-        $rollsPerSet = $rule->rollsPerSet();
+        $rollsPerSet = (int) $rule['rolls_per_set'];
         $entitledSetCount = intdiv($rollCount, $rollsPerSet);
         $rollsTowardNextSet = $rollCount % $rollsPerSet;
         $remainingRollCount = $entitledSetCount > 0 && $rollsTowardNextSet === 0
@@ -48,36 +43,38 @@ final class EvaluateComplementBenefits
     }
 
     /**
-     * @param  list<BenefitProductCandidate>  $complementCandidates
+     * @param  array{rolls_per_set: int, is_active: bool}|null  $complementRule
+     * @param  list<array<string, mixed>>  $complementCandidates
      * @return array<string, mixed>
      */
     public function buildPromotionState(
-        ?ComplementSetBenefitRule $complementRule,
+        ?array $complementRule,
         int $rollCount,
         array $complementCandidates,
     ): array {
-        $candidateItems = array_map(
-            static fn (BenefitProductCandidate $candidate): array => [
-                'id' => $candidate->productId(),
-                'name' => $candidate->productName(),
-                'price_rub' => $candidate->priceRubles(),
-                'image_url' => $candidate->imageUrl(),
-            ],
-            $complementCandidates,
-        );
+        $candidateItems = [];
+        $candidateProductIds = [];
 
-        $candidateProductIds = array_map(
-            static fn (BenefitProductCandidate $candidate): int => $candidate->productId(),
-            $complementCandidates,
-        );
+        foreach ($complementCandidates as $candidate) {
+            $productId = (int) ($candidate['id'] ?? $candidate['product_id'] ?? 0);
+            $candidateProductIds[] = $productId;
+            $candidateItems[] = [
+                'id' => $productId,
+                'name' => (string) ($candidate['name'] ?? $candidate['product_name'] ?? ''),
+                'price_rub' => (int) ($candidate['price_rub'] ?? $candidate['price_rubles'] ?? 0),
+                'image_url' => isset($candidate['image_url']) ? (string) $candidate['image_url'] : null,
+            ];
+        }
 
-        $rollsPerSet = $complementRule?->rollsPerSet();
+        $rollsPerSet = isset($complementRule['rolls_per_set'])
+            ? (int) $complementRule['rolls_per_set']
+            : null;
         $entitledSetCount = 0;
         $remainingRollCount = 0;
 
         if (
-            $complementRule instanceof ComplementSetBenefitRule
-            && $complementRule->isActive()
+            is_array($complementRule)
+            && (bool) ($complementRule['is_active'] ?? false)
             && is_int($rollsPerSet)
             && $rollsPerSet > 0
             && $candidateProductIds !== []

@@ -4,11 +4,7 @@ namespace App\Application\Promotion\Services;
 
 use App\Application\Promotion\DTO\PromotionBenefitsInput;
 use App\Domain\Promotion\Repository\PromotionPolicyRepository;
-use App\Shared\Enum\DeliveryMethod;
 
-/**
- * Оркестрация расчёта benefits_progress, delivery_pricing и promo_state.
- */
 final class EvaluatePromotionBenefits
 {
     public function __construct(
@@ -56,7 +52,7 @@ final class EvaluatePromotionBenefits
 
         $previewDeliveryFeeKopecks = $this->deliveryBenefits->resolveDeliveryFeeKopecks(
             promotionPolicy: $promotionPolicy,
-            deliveryMethod: $input->deliveryMethod ?? DeliveryMethod::Courier,
+            deliveryMethod: $input->deliveryMethod ?? 'courier',
             currentKopecks: $input->currentKopecks,
             deliveryLatitude: $input->deliveryLatitude,
             deliveryLongitude: $input->deliveryLongitude,
@@ -76,7 +72,7 @@ final class EvaluatePromotionBenefits
         );
 
         $complementPromotion = $this->complementBenefits->buildPromotionState(
-            complementRule: $promotionPolicy?->complementSetBenefitRule(),
+            complementRule: $promotionPolicy?->complementSetBenefit(),
             rollCount: $input->rollCount,
             complementCandidates: $input->complementCandidates,
         );

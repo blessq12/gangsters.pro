@@ -3,11 +3,7 @@
 namespace App\Application\Promotion\Services;
 
 use App\Domain\Promotion\Repository\PromotionPolicyRepository;
-use App\Domain\Promotion\ValueObject\ComplementSetBenefitRule;
 
-/**
- * Сколько комплектов дополнений положено по правилам Promotion BC.
- */
 final class ResolveComplementSetEntitlement
 {
     public function __construct(
@@ -20,16 +16,17 @@ final class ResolveComplementSetEntitlement
             return 0;
         }
 
-        $rule = $this->promotionPolicies->find()?->complementSetBenefitRule();
+        $rule = $this->promotionPolicies->find()?->complementSetBenefit();
 
-        if (! $rule instanceof ComplementSetBenefitRule || ! $rule->isActive()) {
+        if (! is_array($rule) || ! ($rule['is_active'] ?? false)) {
             return 0;
         }
 
-        if ($rollCount < $rule->rollsPerSet()) {
+        $rollsPerSet = (int) ($rule['rolls_per_set'] ?? 0);
+        if ($rollCount < $rollsPerSet || $rollsPerSet < 1) {
             return 0;
         }
 
-        return intdiv($rollCount, $rule->rollsPerSet());
+        return intdiv($rollCount, $rollsPerSet);
     }
 }

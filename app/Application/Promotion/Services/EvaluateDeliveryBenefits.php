@@ -4,11 +4,7 @@ namespace App\Application\Promotion\Services;
 
 use App\Domain\Promotion\Entity\PromotionPolicy;
 use App\Domain\Promotion\Port\PromotionDeliveryPricingPort;
-use App\Shared\Enum\DeliveryMethod;
 
-/**
- * Расчёт delivery-бенефита и delivery_pricing.
- */
 final class EvaluateDeliveryBenefits
 {
     public function __construct(
@@ -20,10 +16,10 @@ final class EvaluateDeliveryBenefits
      */
     public function buildBenefit(
         ?PromotionPolicy $promotionPolicy,
-        ?DeliveryMethod $deliveryMethod,
+        ?string $deliveryMethod,
         int $currentKopecks,
     ): array {
-        if ($deliveryMethod === DeliveryMethod::Pickup) {
+        if ($deliveryMethod === 'pickup') {
             return $this->inactiveBenefit($currentKopecks);
         }
 
@@ -54,7 +50,7 @@ final class EvaluateDeliveryBenefits
 
     public function resolveDeliveryFeeKopecks(
         ?PromotionPolicy $promotionPolicy,
-        ?DeliveryMethod $deliveryMethod,
+        ?string $deliveryMethod,
         int $currentKopecks,
         ?float $deliveryLatitude,
         ?float $deliveryLongitude,
@@ -78,42 +74,38 @@ final class EvaluateDeliveryBenefits
      * @return array<string, mixed>|null
      */
     public function buildPricing(
-        ?DeliveryMethod $deliveryMethod,
+        ?string $deliveryMethod,
         int $currentKopecks,
         int $deliveryFeeKopecks,
         ?PromotionPolicy $promotionPolicy,
         ?bool $inZone = null,
     ): ?array {
         $isPreview = $deliveryMethod === null;
-        $effectiveMethod = $deliveryMethod ?? DeliveryMethod::Courier;
+        $effectiveMethod = $deliveryMethod ?? 'courier';
 
-        if (! $isPreview && $effectiveMethod === DeliveryMethod::Pickup) {
-            $method = $effectiveMethod->value;
-            $grandTotalKopecks = $currentKopecks;
-
+        if (! $isPreview && $effectiveMethod === 'pickup') {
             return [
-                'method' => $method,
+                'method' => $effectiveMethod,
                 'items_payable_kopecks' => $currentKopecks,
                 'delivery_fee_kopecks' => 0,
                 'is_free' => true,
                 'remaining_to_free_kopecks' => 0,
                 'items_total_kopecks' => $currentKopecks,
-                'grand_total_kopecks' => $grandTotalKopecks,
+                'grand_total_kopecks' => $currentKopecks,
                 'items_total_rub' => $currentKopecks / 100,
                 'delivery_fee_rub' => 0,
-                'grand_total_rub' => $grandTotalKopecks / 100,
+                'grand_total_rub' => $currentKopecks / 100,
                 'is_preview' => false,
                 'in_zone' => null,
             ];
         }
 
-        $method = $effectiveMethod->value;
         $grandTotalKopecks = $currentKopecks + $deliveryFeeKopecks;
         $freeThresholdKopecks = $this->deliveryPricing->resolveFreeDeliveryThresholdKopecks();
         $remainingToFreeKopecks = 0;
 
         if (
-            $effectiveMethod === DeliveryMethod::Courier
+            $effectiveMethod === 'courier'
             && $freeThresholdKopecks !== null
             && $currentKopecks < $freeThresholdKopecks
         ) {
@@ -123,7 +115,7 @@ final class EvaluateDeliveryBenefits
         $baseDeliveryFeeKopecks = $deliveryFeeKopecks;
         $outsideZoneSurchargeKopecks = 0;
 
-        if (! $isPreview && $effectiveMethod === DeliveryMethod::Courier && $inZone === false) {
+        if (! $isPreview && $effectiveMethod === 'courier' && $inZone === false) {
             $inZoneDeliveryFeeKopecks = $this->deliveryPricing->resolveDeliveryFeeKopecks(
                 promotionPolicy: $promotionPolicy,
                 deliveryMethod: $deliveryMethod,
@@ -135,12 +127,12 @@ final class EvaluateDeliveryBenefits
         }
 
         return [
-            'method' => $method,
+            'method' => $effectiveMethod,
             'items_payable_kopecks' => $currentKopecks,
             'delivery_fee_kopecks' => $deliveryFeeKopecks,
             'base_delivery_fee_kopecks' => $baseDeliveryFeeKopecks,
             'outside_zone_surcharge_kopecks' => $outsideZoneSurchargeKopecks,
-            'is_free' => $effectiveMethod === DeliveryMethod::Courier && $deliveryFeeKopecks === 0,
+            'is_free' => $effectiveMethod === 'courier' && $deliveryFeeKopecks === 0,
             'remaining_to_free_kopecks' => max(0, $remainingToFreeKopecks),
             'items_total_kopecks' => $currentKopecks,
             'grand_total_kopecks' => $grandTotalKopecks,

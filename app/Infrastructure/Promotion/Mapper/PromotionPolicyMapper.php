@@ -3,12 +3,6 @@
 namespace App\Infrastructure\Promotion\Mapper;
 
 use App\Domain\Promotion\Entity\PromotionPolicy;
-use App\Domain\Promotion\Enum\DeliveryFeeMode;
-use App\Domain\Promotion\Enum\GiftBenefitType;
-use App\Domain\Promotion\Enum\PromotionOrderChannel;
-use App\Domain\Promotion\ValueObject\ComplementSetBenefitRule;
-use App\Domain\Promotion\ValueObject\DeliveryBenefitPolicy;
-use App\Domain\Promotion\ValueObject\GiftBenefitRule;
 use App\Infrastructure\Promotion\Model\PRM_Configuration;
 
 final class PromotionPolicyMapper
@@ -20,46 +14,46 @@ final class PromotionPolicyMapper
         return new PromotionPolicy(
             id: (int) $row->id,
             giftRules: [
-                new GiftBenefitRule(
-                    orderChannel: PromotionOrderChannel::Pickup,
-                    minOrderAmountKopecks: $this->requiredPositiveInt(
+                [
+                    'order_channel' => 'pickup',
+                    'min_order_amount_kopecks' => $this->requiredPositiveInt(
                         $row->gift_pickup_min_order_kopecks,
                         'gift_pickup_min_order_kopecks',
                     ),
-                    benefitType: GiftBenefitType::FreeRollGift,
-                    isActive: $giftActive,
-                ),
-                new GiftBenefitRule(
-                    orderChannel: PromotionOrderChannel::Courier,
-                    minOrderAmountKopecks: $this->requiredPositiveInt(
+                    'benefit_type' => 'free_roll_gift',
+                    'is_active' => $giftActive,
+                ],
+                [
+                    'order_channel' => 'courier',
+                    'min_order_amount_kopecks' => $this->requiredPositiveInt(
                         $row->gift_courier_min_order_kopecks,
                         'gift_courier_min_order_kopecks',
                     ),
-                    benefitType: GiftBenefitType::FreeRollGift,
-                    isActive: $giftActive,
-                ),
+                    'benefit_type' => 'free_roll_gift',
+                    'is_active' => $giftActive,
+                ],
             ],
-            deliveryBenefitPolicy: new DeliveryBenefitPolicy(
-                freeDeliveryThresholdKopecks: $this->requiredNonNegativeInt(
+            deliveryBenefit: [
+                'free_delivery_threshold_kopecks' => $this->requiredNonNegativeInt(
                     $row->delivery_free_threshold_kopecks,
                     'delivery_free_threshold_kopecks',
                 ),
-                outsideZoneSurchargeKopecks: $this->requiredNonNegativeInt(
+                'outside_zone_surcharge_kopecks' => $this->requiredNonNegativeInt(
                     $row->delivery_outside_zone_surcharge_kopecks,
                     'delivery_outside_zone_surcharge_kopecks',
                 ),
-                belowThresholdFeeMode: DeliveryFeeMode::BaseTariff,
-                inZoneAtThresholdFeeMode: DeliveryFeeMode::Free,
-                outsideZoneAtThresholdFeeMode: DeliveryFeeMode::OutsideZoneSurchargeOnly,
-                isActive: (bool) $row->delivery_benefit_active,
-            ),
-            complementSetBenefitRule: new ComplementSetBenefitRule(
-                rollsPerSet: $this->requiredPositiveInt(
+                'below_threshold_fee_mode' => 'base_tariff',
+                'in_zone_at_threshold_fee_mode' => 'free',
+                'outside_zone_at_threshold_fee_mode' => 'outside_zone_surcharge_only',
+                'is_active' => (bool) $row->delivery_benefit_active,
+            ],
+            complementSetBenefit: [
+                'rolls_per_set' => $this->requiredPositiveInt(
                     $row->complement_set_rolls_per_set,
                     'complement_set_rolls_per_set',
                 ),
-                isActive: (bool) $row->complement_set_benefit_active,
-            ),
+                'is_active' => (bool) $row->complement_set_benefit_active,
+            ],
         );
     }
 

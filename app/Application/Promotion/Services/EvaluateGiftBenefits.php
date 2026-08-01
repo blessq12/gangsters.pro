@@ -3,13 +3,7 @@
 namespace App\Application\Promotion\Services;
 
 use App\Domain\Promotion\Entity\PromotionPolicy;
-use App\Domain\Promotion\Enum\PromotionOrderChannel;
-use App\Domain\Promotion\ValueObject\BenefitProductCandidate;
-use App\Domain\Promotion\ValueObject\GiftBenefitRule;
 
-/**
- * Расчёт gift-бенефита и promo_state для подарка.
- */
 final class EvaluateGiftBenefits
 {
     /**
@@ -17,16 +11,16 @@ final class EvaluateGiftBenefits
      */
     public function buildBenefit(
         ?PromotionPolicy $promotionPolicy,
-        PromotionOrderChannel $orderChannel,
+        string $orderChannel,
         int $currentKopecks,
     ): array {
         $rule = $promotionPolicy?->giftRuleForChannel($orderChannel);
 
-        if (! $rule instanceof GiftBenefitRule || ! $rule->isActive()) {
+        if (! is_array($rule) || ! ($rule['is_active'] ?? false)) {
             return $this->inactiveBenefit($currentKopecks);
         }
 
-        $thresholdKopecks = $rule->minOrderAmountKopecks();
+        $thresholdKopecks = (int) $rule['min_order_amount_kopecks'];
         $isReached = $currentKopecks > $thresholdKopecks;
         $remainingKopecks = $isReached
             ? 0
@@ -42,34 +36,36 @@ final class EvaluateGiftBenefits
     }
 
     /**
-     * @param  list<BenefitProductCandidate>  $giftCandidates
+     * @param  array<string, mixed>|null  $giftRule
+     * @param  list<array<string, mixed>>  $giftCandidates
      * @return array<string, mixed>
      */
     public function buildPromotionState(
-        ?GiftBenefitRule $giftRule,
+        ?array $giftRule,
         int $currentKopecks,
         ?int $selectedGiftProductId,
         array $giftCandidates,
     ): array {
-        $candidateItems = array_map(
-            static fn (BenefitProductCandidate $candidate): array => [
-                'id' => $candidate->productId(),
-                'name' => $candidate->productName(),
-                'price_rub' => $candidate->priceRubles(),
-                'image_url' => $candidate->imageUrl(),
-                'composition' => $candidate->composition(),
-            ],
-            $giftCandidates,
-        );
+        $candidateItems = [];
+        $candidateProductIds = [];
 
-        $candidateProductIds = array_map(
-            static fn (BenefitProductCandidate $candidate): int => $candidate->productId(),
-            $giftCandidates,
-        );
+        foreach ($giftCandidates as $candidate) {
+            $productId = (int) ($candidate['id'] ?? $candidate['product_id'] ?? 0);
+            $candidateProductIds[] = $productId;
+            $candidateItems[] = [
+                'id' => $productId,
+                'name' => (string) ($candidate['name'] ?? $candidate['product_name'] ?? ''),
+                'price_rub' => (int) ($candidate['price_rub'] ?? $candidate['price_rubles'] ?? 0),
+                'image_url' => isset($candidate['image_url']) ? (string) $candidate['image_url'] : null,
+                'composition' => is_array($candidate['composition'] ?? null)
+                    ? $candidate['composition']
+                    : [],
+            ];
+        }
 
-        $eligible = $giftRule instanceof GiftBenefitRule
-            && $giftRule->isActive()
-            && $currentKopecks > $giftRule->minOrderAmountKopecks()
+        $eligible = is_array($giftRule)
+            && (bool) ($giftRule['is_active'] ?? false)
+            && $currentKopecks > (int) ($giftRule['min_order_amount_kopecks'] ?? 0)
             && $candidateProductIds !== [];
 
         $phase = 'below_threshold';
