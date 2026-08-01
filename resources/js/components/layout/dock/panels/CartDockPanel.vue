@@ -1,6 +1,5 @@
 <script setup>
 import { computed, watch } from "vue";
-import { useAppDesign } from "../../../../design/useAppDesign";
 import { useCheckoutFlow } from "../../../../composables/checkout/useCheckoutFlow";
 import { provideCheckoutFlow } from "../../../../composables/checkout/checkoutFlowContext";
 import { resolveCheckoutDockTitle } from "../../../../features/checkout/checkoutWizardLabels";
@@ -8,14 +7,12 @@ import CheckoutWizardHost from "../../../../features/checkout/wizard/CheckoutWiz
 import { getCheckoutWizardStep } from "../../../../features/checkout/wizard/checkoutWizardRegistry";
 import { useUiStore } from "../../../../stores/uiStore";
 
-const panels = useAppDesign().components.dockPanels;
 const uiStore = useUiStore();
 
 const flow = useCheckoutFlow();
 provideCheckoutFlow(flow);
 
-const { cartStore, activeStep, handleStartCheckout } = flow;
-const c = panels.cart;
+const { activeStep, handleStartCheckout } = flow;
 
 const dockTitle = computed(
     () =>
@@ -47,12 +44,6 @@ watch(
 
 <template>
     <DockPanelLayout :title="dockTitle">
-        <template #headerActions>
-            <div :class="c.headerBadge">
-                {{ cartStore.cartTotalItems }} шт
-            </div>
-        </template>
-
         <CheckoutWizardHost />
     </DockPanelLayout>
 </template>

@@ -10,7 +10,6 @@ import {
     buildPaymentPayload,
 } from "./checkoutServerMappers";
 import {
-    clearCheckoutSessionPayload,
     normalizeCheckoutSessionForms,
     readCheckoutSessionPayload,
     writeCheckoutSessionPayload,
@@ -334,7 +333,7 @@ export async function placeOrderOnServer(store, selectedAddress = null) {
         };
 
         const data = await placeOrderRequest(body);
-        clearCheckoutSessionPayload();
+        store.clearAfterCompleted();
         return { order: data };
     } catch (e) {
         console.error("placeOrderOnServer", e);

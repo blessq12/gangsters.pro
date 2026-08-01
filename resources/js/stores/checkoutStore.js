@@ -548,9 +548,7 @@ export const useCheckoutStore = defineStore("checkout", {
             this.cartLoading = true;
             this.cartError = null;
             try {
-                this.cartItems = this.cartItems.filter((item) => item.isSystem);
-                this.itemsTotalRubles = 0;
-                this.itemsSubtotalRubles = 0;
+                this.resetQuoteState();
                 this.persistSession();
                 emitDomainEvent(DOMAIN_EVENTS.CART_CLEARED);
             } catch (e) {
@@ -560,6 +558,30 @@ export const useCheckoutStore = defineStore("checkout", {
             } finally {
                 this.cartLoading = false;
             }
+        },
+
+        /**
+         * Сброс корзины и quote-снимка (комплекты, promo, pricing).
+         * Формы доставки/оплаты/гостя не трогает.
+         */
+        resetQuoteState() {
+            this.previewRequestSeq += 1;
+            this.cartItems = [];
+            this.itemsTotalRubles = 0;
+            this.itemsSubtotalRubles = 0;
+            this.promoState = {};
+            this.deliveryPricing = null;
+            this.benefitsProgress = null;
+            this.orderPreview = null;
+            this.promotions = { freeRollGiftProductId: null };
+            this.suggestedStep = null;
+            this.wizardCanConfirm = false;
+            this.wizardMissingBlocks = [];
+            this.serverClient = null;
+            this.serverDelivery = null;
+            this.serverPayment = null;
+            this.cartError = null;
+            this.error = null;
         },
 
         async _upsertCartLine(product, quantity, payload = null) {

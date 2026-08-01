@@ -16,7 +16,6 @@ export function useSessionLifecycleProcess() {
             }),
             subscribeDomainEvent(DOMAIN_EVENTS.ORDER_CREATED, () => {
                 useCheckoutStore().clearAfterCompleted();
-                uiStore.setCheckoutWizardStep("cart");
                 uiStore.closeGiftSelectionModal({ dismissAuto: false });
                 uiStore.resetGiftAutoPromptDismissed();
                 emitDomainEvent(DOMAIN_EVENTS.CART_CLEARED);
