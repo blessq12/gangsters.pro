@@ -27,7 +27,10 @@ final class GetCatalogUseCase
     ) {}
 
     /**
-     * @return array{categories: list<array{category: array<string, mixed>, items: list<array<string, mixed>>}>}
+     * @return array{
+     *     categories: list<array{category: array<string, mixed>, items: list<array<string, mixed>>}>,
+     *     complement_products: list<array<string, mixed>>
+     * }
      */
     public function execute(): array
     {
@@ -37,7 +40,10 @@ final class GetCatalogUseCase
     /**
      * Облегчённый каталог для critical bootstrap: без description/ingredients/nutrition, thumb-only images.
      *
-     * @return array{categories: list<array{category: array<string, mixed>, items: list<array<string, mixed>>}>}
+     * @return array{
+     *     categories: list<array{category: array<string, mixed>, items: list<array<string, mixed>>}>,
+     *     complement_products: list<array<string, mixed>>
+     * }
      */
     public function executeLite(): array
     {
@@ -45,7 +51,10 @@ final class GetCatalogUseCase
     }
 
     /**
-     * @return array{categories: list<array{category: array<string, mixed>, items: list<array<string, mixed>>}>}
+     * @return array{
+     *     categories: list<array{category: array<string, mixed>, items: list<array<string, mixed>>}>,
+     *     complement_products: list<array<string, mixed>>
+     * }
      */
     private function buildCatalog(bool $lite): array
     {
@@ -61,7 +70,40 @@ final class GetCatalogUseCase
             }
         }
 
-        return ['categories' => $result];
+        return [
+            'categories' => $result,
+            'complement_products' => $this->buildComplementProducts($tagById, $lite),
+        ];
+    }
+
+    /**
+     * @param  array<int, Tag>  $tagById
+     * @return list<array<string, mixed>>
+     */
+    private function buildComplementProducts(array $tagById, bool $lite): array
+    {
+        $products = $this->catalogItems->findActiveComplementSetProducts();
+        if ($products === []) {
+            return [];
+        }
+
+        $ids = array_map(static fn (Product $product): int => $product->id(), $products);
+        $promotionMetaByProductId = $this->catalogItems->findPromotionMetaByProductIds($ids);
+
+        $items = [];
+        foreach ($products as $product) {
+            $items[] = $this->mapProduct(
+                $product,
+                $tagById,
+                $promotionMetaByProductId[$product->id()] ?? [
+                    'counts_as_roll' => false,
+                    'complement_set' => true,
+                ],
+                $lite,
+            );
+        }
+
+        return $items;
     }
 
     /**
@@ -154,9 +196,17 @@ final class GetCatalogUseCase
 
         $product = $productsById[$link->catalogItemId()] ?? null;
 
-        return $product instanceof Product
-            ? $this->mapProduct($product, $tagById, $promotionMetaByProductId[$product->id()] ?? null, $lite)
-            : null;
+        if (! $product instanceof Product) {
+            return null;
+        }
+
+        $promotionMeta = $promotionMetaByProductId[$product->id()] ?? null;
+        if ((bool) ($promotionMeta['complement_set'] ?? false)) {
+            // Комплектные товары отдаются отдельной группой, не в витрине категорий.
+            return null;
+        }
+
+        return $this->mapProduct($product, $tagById, $promotionMeta, $lite);
     }
 
     /**

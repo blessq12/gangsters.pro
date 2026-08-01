@@ -8,7 +8,7 @@ const dockChromeIslandSurface =
 
 /** Pill / icon on chrome island (dock tabs, category bar). */
 const chromePillActive =
-    "border-app-accent/70 bg-neutral-950/88 text-app-accent shadow-[0_0_18px_rgba(198,36,36,0.7)]";
+    "border-app-accent/70 bg-neutral-950/88 text-app-accent";
 const chromePillInactive =
     "border-black/20 bg-neutral-950/88 text-app-canvas-fg hover:border-app-accent/50 hover:text-app-accent";
 
@@ -22,7 +22,7 @@ export const dockDesign = {
         chromeScrollTransform:
             "transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform",
         badge:
-            "absolute -top-1.5 -right-1.5 flex min-h-[1.1rem] min-w-[1.1rem] items-center justify-center rounded-none bg-red-500 px-1 text-[10px] font-semibold text-white shadow-[0_0_8px_rgba(239,68,68,0.65)]",
+            "absolute -top-1.5 -right-1.5 flex min-h-[1.1rem] min-w-[1.1rem] items-center justify-center rounded-none bg-red-500 px-1 text-[10px] font-semibold text-white",
         panelScrim:
             "fixed inset-0 z-[25] bg-black/45 backdrop-blur-[2px]",
     },
@@ -50,11 +50,11 @@ export const dockDesign = {
 
     cartSummary: {
         root:
-            "relative flex min-w-[9.5rem] flex-col items-start justify-center gap-0.5 overflow-hidden rounded-none border px-4 py-1.5 text-left transition-[color,background-color,border-color,box-shadow] duration-200 ease-out sm:min-w-[11rem] sm:px-5",
+            "relative flex min-w-[9.5rem] flex-col items-start justify-center gap-0.5 overflow-hidden rounded-none border px-4 py-1.5 text-left transition-[color,background-color,border-color] duration-200 ease-out sm:min-w-[11rem] sm:px-5",
         rootActive: chromePillActive,
         rootInactive: chromePillInactive,
         rootFlash:
-            "border-app-accent bg-app-accent text-white shadow-[0_0_18px_rgba(198,36,36,0.7)]",
+            "border-app-accent bg-app-accent text-white",
         sheen: "dock-cart-summary-sheen pointer-events-none absolute inset-0 z-0",
         content:
             "relative z-10 flex w-full min-h-[2.5rem] flex-col items-stretch justify-center overflow-hidden",
@@ -71,6 +71,32 @@ export const dockDesign = {
         emptyWrap: "flex items-center gap-2",
         emptyIcon: "mdi mdi-cart-outline text-lg leading-none sm:text-xl",
         emptyLabel: "max-w-[7rem] text-[11px] leading-snug sm:max-w-[8rem] sm:text-xs",
+    },
+
+    /** Flash «добавлено» на табе избранного — как cartSummary, вместо текста иконка сердца. */
+    favoritesTab: {
+        wrap:
+            "relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-none border transition-[color,background-color,border-color] duration-200 ease-out sm:h-12 sm:w-12",
+        wrapFlash:
+            "border-app-accent bg-app-accent text-white",
+        idleLayer:
+            "relative flex h-full w-full items-center justify-center transition-opacity duration-200 ease-out",
+        idleLayerHidden: "pointer-events-none opacity-0",
+        flashLayer:
+            "absolute inset-0 flex items-center justify-center",
+        flashIcon: "mdi mdi-heart text-lg leading-none sm:text-xl",
+        iconMdiSize: "text-lg sm:text-xl",
+    },
+
+    /** Таб профиля: гость — outline-иконка; авторизован — красный квадрат с монограммой. */
+    profileTab: {
+        wrap:
+            "relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-none border transition-[color,background-color,border-color] duration-200 ease-out sm:h-12 sm:w-12",
+        wrapAuthed:
+            "border-app-accent bg-app-accent text-white",
+        monogram:
+            "text-sm font-semibold uppercase leading-none tracking-wide sm:text-base",
+        iconMdiSize: "text-lg sm:text-xl",
     },
 } as const;
 

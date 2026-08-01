@@ -75,7 +75,12 @@ export function mapCatalogTreeFromPayload(payload) {
             category: normalizeCatalogCategory(item?.category),
             products: rawItems
                 .map((row) => normalizeCatalogItem(row))
-                .filter(Boolean),
+                .filter(Boolean)
+                .filter(
+                    (product) =>
+                        !Boolean(product?.promotion_meta?.complement_set)
+                        && !Boolean(product?.raw?.promotion_meta?.complement_set),
+                ),
         };
     });
 
@@ -83,7 +88,18 @@ export function mapCatalogTreeFromPayload(payload) {
         (a, b) => (a.category.sort_order ?? 0) - (b.category.sort_order ?? 0),
     );
 
-    return enrichCatalogSetLineNames(sorted);
+    const complementProducts = (
+        Array.isArray(payload?.complement_products)
+            ? payload.complement_products
+            : []
+    )
+        .map((row) => normalizeCatalogItem(row))
+        .filter(Boolean);
+
+    return {
+        categories: enrichCatalogSetLineNames(sorted),
+        complementProducts,
+    };
 }
 
 export async function fetchCatalogTree() {

@@ -1,8 +1,12 @@
 <script setup>
 import { computed, ref } from "vue";
+import { storeToRefs } from "pinia";
 import { useAppDesign } from "../../design/useAppDesign";
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
 import { useOrderPreview } from "../../features/checkout/useOrderPreview";
+import { useCartCommands } from "../../features/shoppingSession/useCartCommands";
+import { useCatalogStore } from "../../stores/catalogStore";
+import { useCheckoutStore } from "../../stores/checkoutStore";
 import { useUiStore } from "../../stores/uiStore";
 import { DOMAIN_EVENTS, emitDomainEvent } from "../../shared/domainEvents";
 import CheckoutSection from "./CheckoutSection.vue";
@@ -24,6 +28,11 @@ const s = chk.shared;
 const { checkoutState } = useCheckoutFlowContext();
 const { formatPrice } = checkoutState;
 const uiStore = useUiStore();
+const catalogStore = useCatalogStore();
+const checkoutStore = useCheckoutStore();
+const cartCommands = useCartCommands();
+
+const { complementProducts } = storeToRefs(catalogStore);
 
 const {
     complementLines,
@@ -44,12 +53,17 @@ const {
 
 const cartExpanded = ref(false);
 
+const hasComplementProducts = computed(
+    () => (complementProducts.value?.length ?? 0) > 0,
+);
+
 const showCartToggle = computed(
     () =>
         props.variant === "cart"
         && (showComplementProgress.value
             || (hasRollsInCart.value && hasComplementLines.value)
-            || hasAutoLines.value),
+            || hasAutoLines.value
+            || hasComplementProducts.value),
 );
 
 const showGiftCta = computed(
@@ -58,6 +72,32 @@ const showGiftCta = computed(
         && isGiftEligible.value
         && giftCandidates.value.length > 0,
 );
+
+function paidQty(productId) {
+    return checkoutStore.cartQuantityByProduct(productId);
+}
+
+function unitPriceRub(product) {
+    const amount = product?.price?.amount ?? product?.price;
+    return Number(amount) || 0;
+}
+
+async function incrementPaidComplement(product) {
+    const id = product?.id;
+    if (id == null) return;
+
+    if (paidQty(id) <= 0) {
+        await cartCommands.addProductToCart(product, 1);
+        return;
+    }
+
+    await cartCommands.incrementProductInCart(id);
+}
+
+async function decrementPaidComplement(productId) {
+    if (productId == null) return;
+    await cartCommands.decrementProductInCart(productId);
+}
 
 function openGiftModal() {
     if (!isGiftEligible.value) {
@@ -133,6 +173,50 @@ function openGiftModal() {
                             {{ line.quantity }} ×
                             {{ line.isFree ? "Бесплатно" : `${formatPrice(line.priceRubles)} ₽` }}
                         </span>
+                    </li>
+                </ul>
+
+                <ul
+                    v-if="hasComplementProducts"
+                    :class="[c.systemList, 'space-y-2']"
+                >
+                    <li :class="s.subsectionKickerSm">
+                        Докупить
+                    </li>
+                    <li
+                        v-for="product in complementProducts"
+                        :key="`paid-complement:${product.id}`"
+                        :class="[c.userLineItem, '!mt-0']"
+                    >
+                        <div class="min-w-0">
+                            <p :class="c.lineTitle">
+                                {{ product.name || `Товар #${product.id}` }}
+                            </p>
+                            <p :class="c.lineSub">
+                                {{ formatPrice(unitPriceRub(product)) }} ₽
+                            </p>
+                        </div>
+
+                        <div :class="c.qtyBar">
+                            <button
+                                type="button"
+                                :class="c.qtyBtn"
+                                :disabled="paidQty(product.id) <= 0"
+                                @click="decrementPaidComplement(product.id)"
+                            >
+                                –
+                            </button>
+                            <span :class="c.qtyLabel">
+                                {{ paidQty(product.id) }}
+                            </span>
+                            <button
+                                type="button"
+                                :class="c.qtyBtn"
+                                @click="incrementPaidComplement(product)"
+                            >
+                                +
+                            </button>
+                        </div>
                     </li>
                 </ul>
 

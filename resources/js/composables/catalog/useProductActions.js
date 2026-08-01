@@ -50,6 +50,13 @@ export function useProductActions(productSource) {
 
     const toggleFavorite = () => {
         if (!productId.value) return;
+        const adding = !isFav.value;
+        if (adding) {
+            emitDomainEvent(DOMAIN_EVENTS.FAVORITE_ADD_REQUESTED, {
+                product: product.value,
+                source: cartEventSource,
+            });
+        }
         favoritesCommands.toggle(product.value);
     };
 

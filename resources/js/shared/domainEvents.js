@@ -14,6 +14,7 @@ export const DOMAIN_EVENTS = Object.freeze({
     CART_CHANGED: "cart.changed",
     CART_CLEARED: "cart.cleared",
     FAVORITES_CHANGED: "favorites.changed",
+    FAVORITE_ADD_REQUESTED: "favorite.add_requested",
     ORDER_CREATED: "order.created",
     BENEFIT_DELIVERY_REACHED: "benefit.delivery_reached",
     BENEFIT_DELIVERY_LOST: "benefit.delivery_lost",

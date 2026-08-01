@@ -22,9 +22,19 @@ export function useDockCartAffordance() {
         },
     );
 
+    const unsubFavAdd = subscribeDomainEvent(
+        DOMAIN_EVENTS.FAVORITE_ADD_REQUESTED,
+        (payload) => {
+            if (payload?.source !== "catalog") return;
+            if (!isHome()) return;
+            ensureDockChromeVisible(uiStore);
+        },
+    );
+
     return {
         dispose() {
             unsubAdd();
+            unsubFavAdd();
         },
     };
 }

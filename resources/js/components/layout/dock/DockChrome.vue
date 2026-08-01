@@ -1,20 +1,22 @@
 <script setup>
 import { computed } from "vue";
-import { useUiStore } from "../../../stores/uiStore";
-import { useCheckoutStore } from "../../../stores/checkoutStore";
-import { useFavoritesStore } from "../../../stores/favoritesStore";
 import {
-    playBottomBarShow,
     playBottomBarHide,
-    playDockContentShow,
+    playBottomBarShow,
     playDockContentHide,
+    playDockContentShow,
 } from "../../../animations/animationManager";
 import { useBottomDockState } from "../../../composables/ui/useBottomDockState";
 import { useDockDismiss } from "../../../composables/ui/useDockDismiss";
-import { useDockMobileInteractions } from "./composables/useDockMobileInteractions";
 import { useAppDesign } from "../../../design/useAppDesign";
+import { useCheckoutStore } from "../../../stores/checkoutStore";
+import { useFavoritesStore } from "../../../stores/favoritesStore";
+import { useUiStore } from "../../../stores/uiStore";
+import { useDockMobileInteractions } from "./composables/useDockMobileInteractions";
 import DockCartSummary from "./DockCartSummary.vue";
 import DockDismissConfirmModal from "./DockDismissConfirmModal.vue";
+import DockFavoritesTab from "./DockFavoritesTab.vue";
+import DockProfileTab from "./DockProfileTab.vue";
 
 const props = defineProps({
     dockItems: {
@@ -37,9 +39,22 @@ const { activeDockItem, getBadge, dockItems } = useBottomDockState({
     dockItems: props.dockItems,
 });
 
-/** Nav tabs only — cart opens from DockCartSummary. */
+/** Nav tabs only — cart / favorites / profile имеют свои компоненты. */
 const navDockItems = computed(() =>
-    dockItems.filter((item) => item.id !== "cart"),
+    dockItems.filter(
+        (item) =>
+            item.id !== "cart" &&
+            item.id !== "favorites" &&
+            item.id !== "profile",
+    ),
+);
+
+const favoritesDockItem = computed(
+    () => dockItems.find((item) => item.id === "favorites") ?? null,
+);
+
+const profileDockItem = computed(
+    () => dockItems.find((item) => item.id === "profile") ?? null,
 );
 
 const isMobile = computed(() => uiStore.deviceMode === "mobile");
@@ -148,10 +163,7 @@ function handlePanelLeave(el, done) {
                     <div
                         v-if="activeDockItem"
                         :key="activeDockItem.id"
-                        :class="[
-                            chrome.panelOuter,
-                            chrome.panelOuterExpanded,
-                        ]"
+                        :class="[chrome.panelOuter, chrome.panelOuterExpanded]"
                     >
                         <component :is="activeDockItem.content" />
                     </div>
@@ -163,6 +175,18 @@ function handlePanelLeave(el, done) {
                     <div :class="chrome.islandDivider" aria-hidden="true" />
 
                     <div :class="chrome.tabRow">
+                        <DockFavoritesTab
+                            v-if="favoritesDockItem"
+                            :icon-class="favoritesDockItem.iconClass"
+                            @toggle="handleDockClick('favorites')"
+                        />
+
+                        <DockProfileTab
+                            v-if="profileDockItem"
+                            :icon-class="profileDockItem.iconClass"
+                            @toggle="handleDockClick('profile')"
+                        />
+
                         <button
                             v-for="item in navDockItems"
                             :key="item.id"
