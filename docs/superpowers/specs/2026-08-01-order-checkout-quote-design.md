@@ -1,43 +1,116 @@
-# Design: OrderDraft → Checkout Quote/Place (без сущности OrderDraft)
+# Design: управляемый Checkout (Quote / Place)
 
 Дата: 2026-08-01  
-Статус: draft for review  
-Контекст: Order BC, SPA checkout
+Статус: design for review  
+Контекст: Order BC + SPA checkout  
+Связанный canvas: order-creation-flow
 
-## Цель
+## 1. Проблема
 
-Убрать фейковый domain-aggregate `OrderDraft` и HTTP `/order-drafts/*`, сохранив рабочий checkout:
+Сейчас один backend-pipeline на preview/place смешивает:
 
-- серверный пересчёт корзины (quote);
-- authoritative place заказа.
+1. цены каталога;
+2. модификацию корзины акциями (gift/complement);
+3. геокод;
+4. тариф/зону доставки;
+5. UX-состояние визарда (`suggested_step`, `can_confirm`, …).
 
-## Нецели
+Плюс фейковый Domain-aggregate `OrderDraft` (in-memory, без персистентности).
 
-- FSM / персистентный draft-заказ;
-- смена правил Promotion;
-- redesign UI визарда;
-- изменение семантики `CreateOrderUseCase` / idempotency `client_request_id`.
+Итог: любое изменение подарка/зоны/UI-шага трогает один God-object.
 
-## Решение
+## 2. Цель
 
-**Подход:** Application Checkout без Domain-сущности `OrderDraft`.
+Сделать создание заказа **управляемым**:
 
-Логика build + benefits + delivery prepare остаётся в Application как сервисы над DTO.  
-Domain Order владеет только финальным `Order` (+ ports).
+- два внешних сценария: **quote** (пересчёт) и **place** (фиксация);
+- внутри quote — **три независимых калькулятора** с чёткими границами;
+- **визард только на FE**;
+- Domain содержит только финальный `Order` (+ ports), без `OrderDraft`.
 
-## HTTP
+## 3. Нецели
+
+- FSM / персистентная серверная корзина;
+- смена бизнес-правил Promotion;
+- полный redesign UI визарда (только смена источника `canConfirm`);
+- изменение idempotency `client_request_id` / `CreateOrderUseCase`.
+
+## 4. Роли слоёв
+
+| Слой | Владеет | Не владеет |
+|------|---------|------------|
+| FE | UI-шаги, session, черновые формы, выбранный gift id, `canConfirm` по локальным правилам + данным quote | Правдой цен/акций/зоны |
+| Application Checkout | Quote/Place orchestration, 3 калькулятора, assert, map → CreateOrder | Шагами визарда |
+| Domain Order | `Order`, snapshots заказа, ports | Черновиком / wizard |
+| Promotion | Правила gift/complement/delivery benefits | HTTP checkout |
+| Content | Delivery config + geocoder port | Составом корзины |
+
+## 5. HTTP
 
 | Было | Станет |
 |------|--------|
 | `POST /api/order-drafts/preview` | `POST /api/orders/quote` |
-| `POST /api/orders` | `POST /api/orders` (без смены роли) |
+| `POST /api/orders` | `POST /api/orders` |
 
-Контроллер: `OrderController` (или `CheckoutController`) — методы `quote` / `store`.  
-`OrderDraftController` — удалить.
+Контроллер: расширить/заменить на методы `quote` + `store` (предпочтительно `OrderController` или тонкий `CheckoutController` в Http).  
+`OrderDraftController` и `/order-drafts/*` — удалить.
 
-Form requests: `QuoteOrderRequest` / `PlaceOrderRequest` (восстановить validation, если файлы уже снесены в WT).
+Validation: `QuoteOrderRequest` / `PlaceOrderRequest`.
 
-## Application layout
+## 6. Внутренний поток Quote
+
+```
+CheckoutInput
+  → 1. Pricing
+  → 2. Benefits
+  → 3. DeliveryCost
+  → CheckoutQuote (application model)
+  → Presenter JSON
+```
+
+### 6.1 Pricing
+
+- **Вход:** user lines (`product_id`, `qty`, payload без system kinds).
+- **Делает:** публичные цены через `CatalogPricingPort`.
+- **Выход:** priced user lines + subtotal.
+- **Не делает:** gift/complement, geo, delivery fee, wizard.
+
+### 6.2 Benefits
+
+- **Вход:** priced cart + `selected_gift_product_id` + канал (courier/pickup).
+- **Делает:** sync complement lines; sync gift (price 0 / remove); promo_state; benefits_progress (через Promotion evaluate **без** delivery coords, если fee считается в шаге 3 — см. ниже).
+- **Выход:** cart с system lines + promo read-model.
+- **Не делает:** geocode, UI wizard.
+
+*Уточнение по delivery fee в Promotion:* сейчас `EvaluatePromotionBenefits` принимает lat/lng. В TO-BE:
+
+- либо шаг 3 вызывает Promotion только за delivery pricing после geo;
+- либо Benefits считает gift/complement, а DeliveryCost отдельно дергает delivery-fee часть policy.
+
+Предпочтение: **Benefits = gift/complement/progress; DeliveryCost = zone/fee** (даже если внутри один Promotion service с разными entrypoints).
+
+### 6.3 DeliveryCost
+
+- **Вход:** delivery method + address; при courier — geocode здесь.
+- **Делает:** lat/lng; `delivery_pricing` (fee, zone, surcharges).
+- **Выход:** enriched delivery + pricing block.
+- **Не делает:** состав корзины, wizard.
+- **Place:** как сейчас, lat/lng **не** обязаны попадать в сохранённый `Order` address (поведение не менять без отдельного решения).
+
+## 7. Поток Place
+
+```
+PlaceOrderInput (client_request_id + CheckoutInput)
+  → тот же Pricing → Benefits → DeliveryCost
+  → Assert (cart/client/delivery/payment + gift validity)
+  → Map → CreateOrderDto
+  → CreateOrderUseCase
+  → { order } 201
+```
+
+Один shared calculator path с quote — без дублирования правил.
+
+## 8. Application layout (целевой)
 
 ```
 app/Application/Order/Checkout/
@@ -45,110 +118,87 @@ app/Application/Order/Checkout/
   useCases/PlaceOrderUseCase.php
   DTO/CheckoutInput.php
   DTO/PlaceOrderInput.php
-  Services/BuildCheckoutFromInput.php
-  Services/ProcessCheckoutPipeline.php
-  Services/ApplyComplementBenefitLines.php
-  Services/ApplyGiftBenefitLines.php
-  Services/PrepareCheckoutDeliveryAddress.php
-  Services/EvaluateCheckoutBenefits.php          # quote-only read model inputs
+  Model/CheckoutQuote.php          # результат трёх шагов (не Domain entity)
+  Services/Pricing/PriceCheckoutCart.php
+  Services/Benefits/ApplyCheckoutBenefits.php
+  Services/Delivery/ResolveCheckoutDeliveryCost.php
+  Services/AssertCheckoutReady.php
   Mapper/CheckoutToCreateOrderMapper.php
-  Mapper/CheckoutBenefitsInputMapper.php         # quote-only
   Presenter/CheckoutQuotePresenter.php
-  Presenter/CheckoutOrderPreviewPresenter.php
-  Support/… (wizard, line classifier, roll counter)
 ```
 
-Пакет `Application/Order/OrderDraft/` — удалить после переноса.
+Удалить после переноса:
 
-### Потоки
+- `Domain/Order/OrderDraft/**`
+- `Application/Order/OrderDraft/**`
+- `OrderDraftController`, старые FormRequests
 
-**Quote**
+Exceptions:
 
-1. `CheckoutInput` из request  
-2. `BuildCheckoutFromInput` (pricing ports, client resolve, gift candidate)  
-3. `ProcessCheckoutPipeline(forPlace: false)`  
-4. `CheckoutQuotePresenter` → JSON
+- `CheckoutNotReadyException`
+- `CheckoutGiftBenefitViolationException`
 
-**Place**
+(вместо OrderDraft* ; Handler мапит на те же 422.)
 
-1. `PlaceOrderInput` (`clientRequestId` + `CheckoutInput`)  
-2. Build + `ProcessCheckoutPipeline(forPlace: true)` + asserts  
-3. `CheckoutToCreateOrderMapper` → `CreateOrderDto`  
-4. `CreateOrderUseCase`  
-5. `{ order: … }` 201
+## 9. Контракт JSON Quote
 
-Shared pipeline обязателен (один источник правды по gift/complement).
-
-## Domain
-
-Удалить целиком:
-
-- `app/Domain/Order/OrderDraft/**`
-
-Исключения переименовать/перенести:
-
-- `OrderDraftNotReadyException` → `CheckoutNotReadyException` (Application или `Domain/Order/Exception`)
-- `OrderDraftGiftBenefitViolationException` → `CheckoutGiftBenefitViolationException`
-
-VO черновика не живут в Domain: либо private/application structures внутри Checkout services, либо тонкие immutable DTO в `Application/Order/Checkout/DTO` / `Model`.  
-В `CreateOrderDto` по-прежнему только `Order*Snapshot` Domain Order.
-
-`CartLinesSnapshotCodec`: убрать зависимость от `OrderDraft\CartLineSnapshot` (только `OrderLineSnapshot` / выкинуть мёртвый `deserializeToCartLine`).
-
-## Контракт quote (FE-совместимость)
-
-Ответ `POST /orders/quote` **сохраняет текущий shape preview** (поля и вложенность):
+### Обязательно сохранить (FE)
 
 - `cart` (items, totals, `promo_state`)
 - `client` / `delivery` / `payment`
 - `delivery_pricing`
 - `benefits_progress`
-- `promo_state` (если дублируется — оставить как сейчас)
-- `wizard` (`suggested_step`, `can_confirm`, `missing_blocks`)
-- `order_preview` (complement/auto lines, gift_summary/cta, totals, benefits)
+- `order_preview` (или эквивалент тоталов/gift CTA, если FE ещё читает)
 
-Ломающий change API на этом шаге **не делаем**.  
-Допускается только смена URL.
+### Убрать с бэка (после FE-правки)
 
-## Frontend
+- `wizard.suggested_step`
+- `wizard.can_confirm`
+- `wizard.missing_blocks`
 
-- `orderDraftApi.js` → `orderApi.js` (или расширить существующий):  
-  - `quoteOrderRequest` → `POST /api/orders/quote`  
-  - `placeOrderRequest` → `POST /api/orders`
-- Переименовать символы `*OrderDraft*` / `refreshOrderDraftPreview` → `*Quote*` / `refreshOrderQuote` в checkout session/store/scheduler.
-- Поведение визарда и normalizers — без смены ожидаемых полей ответа.
+**Миграция контракта (два этапа):**
 
-## Handler / errors
+| Этап | Backend | Frontend |
+|------|---------|----------|
+| A | URL `/orders/quote`, структура как preview, `wizard` ещё отдаётся | только смена URL + rename клиентских символов |
+| B | `wizard` удалён из ответа | `canConfirm` / missing — локально на FE |
 
-`Handler` мапит новые exception types на те же HTTP-коды, что сейчас для draft (422 + payload).
+Этап B входит в этот дизайн как цель; внедрение можно сразу после A в том же PR или следующим — зафиксировать при плане.
 
-## Тесты
+## 10. Frontend
 
-Минимально после переноса (если поднимется test harness):
+- API: `quoteOrderRequest` → `POST /api/orders/quote`; place без смены URL.
+- Session: `refreshOrderQuote` вместо `refreshOrderDraftPreview`.
+- После этапа B: wizard gating без `data.wizard` с сервера (поля формы + quote totals/promo достаточно).
 
-- quote возвращает 200 и ключевые ключи JSON;
-- place без обязательных блоков → 422;
-- place happy-path дергает CreateOrder (feature с БД или unit с fake ports).
+## 11. Порядок внедрения
 
-## Порядок внедрения
+1. Вынести calculator path в `Application/Order/Checkout` (3 сервиса), quote/place use cases.  
+2. Роуты + requests; удалить `/order-drafts`.  
+3. Удалить Domain/Application OrderDraft; починить codec/Handler.  
+4. FE: URL + rename.  
+5. FE: локальный `canConfirm`; убрать `wizard` из presenter.  
+6. Smoke: gift/complement/zone totals → place → Order.
 
-1. Ввести `Application/Order/Checkout/*` (перенос + rename логики).  
-2. Новые роуты + controller; старый preview route — redirect или сразу удалить.  
-3. Удалить Domain/Application OrderDraft + старый controller.  
-4. Починить codec / Handler / AGENTS.  
-5. FE: URL + rename вызовов.  
-6. Smoke: preview totals/gift → place order.
+## 12. Риски
 
-## Риски
+- Promotion сейчас монолитный evaluate — аккуратно разрезать entrypoints gift vs delivery fee.  
+- Большой diff — коммиты по этапам A затем B.  
+- FormRequests в WT могут быть уже удалены — восстановить под новыми именами.
 
-- Большой diff rename — делать атомарно по слоям (BE quote/place зелёные, потом FE).  
-- Geocode на place сейчас не пишется в Order address — поведение не менять.  
-- Working tree уже может иметь удалённые FormRequests — восстановить в новом имени.
-
-## Acceptance
+## 13. Acceptance
 
 - [ ] Нет `OrderDraft` в Domain/Application/Http  
-- [ ] `POST /api/orders/quote` кормит текущий checkout  
-- [ ] `POST /api/orders` создаёт заказ как сейчас  
-- [ ] `/api/order-drafts/*` отсутствует  
-- [ ] FE не обращается к `order-drafts`
+- [ ] Quote = Pricing → Benefits → DeliveryCost (раздельные сервисы)  
+- [ ] Geo только в DeliveryCost  
+- [ ] `POST /api/orders/quote` и `POST /api/orders` работают  
+- [ ] Нет `/api/order-drafts/*`  
+- [ ] После этапа B: бэкенд не отдаёт wizard-state; checkout подтверждаем с FE  
+- [ ] Place сохраняет idempotency и CreateOrder semantics
+
+## 14. Решения, зафиксированные заранее
+
+1. Вариант продукта: **A** — checkout остаётся рабочим с серверным quote.  
+2. Без FSM Order.  
+3. Без Domain-сущности черновика.  
+4. Wizard — не ответственность бэкенда (цель этапа B).
