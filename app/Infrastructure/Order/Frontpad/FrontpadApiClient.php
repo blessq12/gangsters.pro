@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Infrastructure\OrderAccountingExport\Client;
+namespace App\Infrastructure\Order\Frontpad;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -58,7 +58,7 @@ final class FrontpadApiClient
     private function resolveEndpoint(): string
     {
         $endpoint = (string) config(
-            'order-accounting-export.systems.frontpad.endpoint',
+            'frontpad.endpoint',
             'https://app.frontpad.ru/api/index.php?new_order',
         );
 

@@ -1,28 +1,26 @@
 <?php
 
-namespace App\Application\OrderAccountingExport\Mapper;
+namespace App\Infrastructure\Order\Frontpad;
 
 use App\Domain\Order\Event\OrderCreated;
 use App\Domain\Order\ValueObject\OrderLineSnapshot;
-use App\Domain\OrderAccountingExport\Exception\UnknownAccountingProductException;
 use App\Shared\Enum\DeliveryMethod;
 use App\Shared\Enum\PaymentMethod;
+use InvalidArgumentException;
 
 /**
- * ACL: OrderCreated → form-параметры Frontpad new_order.
- * Артикул позиции — SKU товара из каталога (снимок строки заказа).
+ * ACL: OrderCreated → Frontpad new_order form params.
+ * Line article = catalog SKU from the order line snapshot.
  */
 final class FrontpadOrderMapper
 {
-    private const SYSTEM_CODE = 'frontpad';
-
     /**
      * @return array<string, mixed>
      */
     public function toRequest(OrderCreated $event): array
     {
         $request = [
-            'secret' => (string) config('order-accounting-export.systems.frontpad.secret', ''),
+            'secret' => (string) config('frontpad.secret', ''),
             'phone' => $this->normalizePhone($event->client()->phone()),
             'name' => $this->truncate((string) ($event->client()->name() ?? ''), 50),
             'mail' => $this->truncate((string) ($event->client()->email() ?? ''), 50),
@@ -36,7 +34,7 @@ final class FrontpadOrderMapper
             'certificate' => '',
         ];
 
-        $point = config('order-accounting-export.systems.frontpad.point');
+        $point = config('frontpad.point');
         if (is_string($point) && $point !== '') {
             $request['point'] = $point;
         }
@@ -46,12 +44,12 @@ final class FrontpadOrderMapper
             $request['channel'] = $channel;
         }
 
-        $affiliate = config('order-accounting-export.systems.frontpad.affiliate');
+        $affiliate = config('frontpad.affiliate');
         if (is_string($affiliate) && $affiliate !== '') {
             $request['affiliate'] = $affiliate;
         }
 
-        $tags = config('order-accounting-export.systems.frontpad.tags');
+        $tags = config('frontpad.tags');
         if (is_array($tags) && $tags !== []) {
             $request['tags'] = array_values($tags);
         }
@@ -108,7 +106,10 @@ final class FrontpadOrderMapper
         foreach ($event->cart()->lines() as $line) {
             $article = $this->resolveProductArticle($line);
             if ($article === null || $article === '') {
-                throw UnknownAccountingProductException::missingCatalogSku(self::SYSTEM_CODE, $line->productId());
+                throw new InvalidArgumentException(sprintf(
+                    'Product #%d has no catalog SKU for Frontpad export.',
+                    $line->productId(),
+                ));
             }
 
             $products[$index] = $this->normalizeProductArticle($article);
@@ -141,7 +142,7 @@ final class FrontpadOrderMapper
         }
 
         if ($index === 0) {
-            throw new \InvalidArgumentException('Заказ не содержит позиций для экспорта в Frontpad.');
+            throw new InvalidArgumentException('Order has no lines for Frontpad export.');
         }
 
         $request['product'] = $products;
@@ -161,14 +162,14 @@ final class FrontpadOrderMapper
      */
     private function appendWebhook(array &$request): void
     {
-        $hookUrl = config('order-accounting-export.systems.frontpad.hook_url');
+        $hookUrl = config('frontpad.hook_url');
         if (! is_string($hookUrl) || $hookUrl === '') {
             $hookUrl = rtrim((string) config('app.url'), '/').'/api/orders/update';
         }
 
         $request['hook_url'] = $hookUrl;
 
-        $hookStatus = config('order-accounting-export.systems.frontpad.hook_status');
+        $hookStatus = config('frontpad.hook_status');
         if (is_array($hookStatus) && $hookStatus !== []) {
             $request['hook_status'] = array_values($hookStatus);
         }
@@ -190,7 +191,7 @@ final class FrontpadOrderMapper
 
     private function resolvePayCode(PaymentMethod $method): string
     {
-        $map = config('order-accounting-export.systems.frontpad.pay', []);
+        $map = config('frontpad.pay', []);
         if (! is_array($map)) {
             $map = [];
         }
@@ -208,7 +209,7 @@ final class FrontpadOrderMapper
 
     private function resolveChannel(OrderCreated $event): string
     {
-        $channel = config('order-accounting-export.systems.frontpad.channel');
+        $channel = config('frontpad.channel');
         if (is_string($channel) && $channel !== '') {
             return $channel;
         }
@@ -233,7 +234,7 @@ final class FrontpadOrderMapper
 
     private function resolvePersonCount(): int
     {
-        $person = config('order-accounting-export.systems.frontpad.person');
+        $person = config('frontpad.person');
 
         return min(max((int) ($person ?? 1), 1), 99);
     }
