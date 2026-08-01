@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Domain\Promotion\Entity;
+namespace App\Domain\Order\Entity;
 
 /**
  * Singleton-конфигурация коммерческих правил.

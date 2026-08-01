@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Domain\Promotion\Port;
+namespace App\Domain\Order\Port;
 
-use App\Domain\Promotion\Entity\PromotionPolicy;
+use App\Domain\Order\Entity\PromotionPolicy;
 
 interface PromotionDeliveryPricingPort
 {

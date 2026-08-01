@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Domain\Promotion\Repository;
+namespace App\Domain\Order\Repository;
 
-use App\Domain\Promotion\Entity\PromotionPolicy;
+use App\Domain\Order\Entity\PromotionPolicy;
 
 interface PromotionPolicyRepository
 {

@@ -2,10 +2,10 @@
 
 namespace App\Filament\Promotion\Resources\PromotionPolicyResource\Pages;
 
-use App\Domain\Promotion\Repository\PromotionPolicyRepository;
+use App\Domain\Order\Repository\PromotionPolicyRepository;
 use App\Filament\Promotion\Resources\PromotionPolicyResource;
 use App\Filament\Promotion\Resources\PromotionPolicyResource\Schemas\PromotionPolicyForm;
-use App\Infrastructure\Promotion\Model\PRM_Configuration;
+use App\Infrastructure\Order\Model\PRM_Configuration;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;

@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Infrastructure\Promotion\Mapper;
+namespace App\Infrastructure\Order\Mapper;
 
-use App\Domain\Promotion\Entity\PromotionPolicy;
-use App\Infrastructure\Promotion\Model\PRM_Configuration;
+use App\Domain\Order\Entity\PromotionPolicy;
+use App\Infrastructure\Order\Model\PRM_Configuration;
 
 final class PromotionPolicyMapper
 {

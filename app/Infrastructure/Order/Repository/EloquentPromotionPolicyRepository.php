@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Infrastructure\Promotion\Repository;
+namespace App\Infrastructure\Order\Repository;
 
-use App\Domain\Promotion\Entity\PromotionPolicy;
-use App\Domain\Promotion\Repository\PromotionPolicyRepository;
-use App\Infrastructure\Promotion\Mapper\PromotionPolicyMapper;
-use App\Infrastructure\Promotion\Model\PRM_Configuration;
+use App\Domain\Order\Entity\PromotionPolicy;
+use App\Domain\Order\Repository\PromotionPolicyRepository;
+use App\Infrastructure\Order\Mapper\PromotionPolicyMapper;
+use App\Infrastructure\Order\Model\PRM_Configuration;
 
 final class EloquentPromotionPolicyRepository implements PromotionPolicyRepository
 {

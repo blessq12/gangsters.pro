@@ -4,7 +4,7 @@ namespace App\Filament\Promotion\Resources;
 
 use App\Filament\Promotion\Resources\PromotionPolicyResource\Pages\ManagePromotionPolicy;
 use App\Filament\Support\AdminNavigationGroup;
-use App\Infrastructure\Promotion\Model\PRM_Configuration;
+use App\Infrastructure\Order\Model\PRM_Configuration;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;

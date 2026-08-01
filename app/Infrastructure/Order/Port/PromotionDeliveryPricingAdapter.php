@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Infrastructure\Promotion\Port;
+namespace App\Infrastructure\Order\Port;
 
 use App\Domain\Content\Entity\DeliveryConfiguration;
 use App\Domain\Content\Repository\DeliveryConfigurationRepository;
-use App\Domain\Promotion\Entity\PromotionPolicy;
-use App\Domain\Promotion\Port\PromotionDeliveryPricingPort;
-use App\Domain\Promotion\Repository\PromotionPolicyRepository;
+use App\Domain\Order\Entity\PromotionPolicy;
+use App\Domain\Order\Port\PromotionDeliveryPricingPort;
+use App\Domain\Order\Repository\PromotionPolicyRepository;
 use App\Shared\Geo\PointInGeoJsonZone;
 
 final class PromotionDeliveryPricingAdapter implements PromotionDeliveryPricingPort

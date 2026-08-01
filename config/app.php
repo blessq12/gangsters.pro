@@ -4,7 +4,6 @@ use App\Infrastructure\Catalog\Provider\CatalogServiceProvider;
 use App\Infrastructure\Content\Provider\ContentServiceProvider;
 use App\Infrastructure\Crm\Provider\CrmServiceProvider;
 use App\Infrastructure\Order\Provider\OrderServiceProvider;
-use App\Infrastructure\Promotion\Provider\PromotionServiceProvider;
 use App\Infrastructure\YandexFood\Provider\YandexFoodServiceProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\AuthServiceProvider;
@@ -189,7 +188,6 @@ return [
         ContentServiceProvider::class,
         CrmServiceProvider::class,
         OrderServiceProvider::class,
-        PromotionServiceProvider::class,
         YandexFoodServiceProvider::class,
         AdminPanelProvider::class,
         ImageServiceProvider::class,
