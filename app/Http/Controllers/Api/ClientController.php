@@ -4,12 +4,16 @@ namespace App\Http\Controllers\Api;
 
 use App\Application\Crm\Command\AddClientAddressUseCase;
 use App\Application\Crm\Command\DeleteClientAddressUseCase;
+use App\Application\Crm\Command\LoginClientUseCase;
+use App\Application\Crm\Command\MergeClientFavoritesUseCase;
+use App\Application\Crm\Command\RegisterClientUseCase;
+use App\Application\Crm\Command\RemoveClientFavoriteUseCase;
+use App\Application\Crm\Command\ToggleClientFavoriteUseCase;
+use App\Application\Crm\Command\UpdateClientProfileUseCase;
+use App\Application\Crm\Query\GetClientFavoritesUseCase;
+use App\Application\Crm\Query\GetClientOrderHistoryUseCase;
 use App\Application\Crm\Query\GetClientProfileUseCase;
 use App\Application\Crm\Query\GetRepeatableOrderLinesUseCase;
-use App\Application\Crm\Query\ListClientOrdersUseCase;
-use App\Application\Crm\Command\LoginClientUseCase;
-use App\Application\Crm\Command\RegisterClientUseCase;
-use App\Application\Crm\Command\UpdateClientProfileUseCase;
 use App\Http\Controllers\Controller;
 use App\Infrastructure\Crm\Model\CRM_Client;
 use Illuminate\Http\JsonResponse;
@@ -85,7 +89,7 @@ final class ClientController extends Controller
         return response()->json($useCase->execute($this->clientId($request), $addressId));
     }
 
-    public function orders(Request $request, ListClientOrdersUseCase $useCase): JsonResponse
+    public function orderHistory(Request $request, GetClientOrderHistoryUseCase $useCase): JsonResponse
     {
         return response()->json([
             'data' => $useCase->execute($this->clientId($request)),
@@ -98,6 +102,53 @@ final class ClientController extends Controller
         GetRepeatableOrderLinesUseCase $useCase,
     ): JsonResponse {
         return response()->json($useCase->execute($this->clientId($request), $orderId));
+    }
+
+    public function favorites(Request $request, GetClientFavoritesUseCase $useCase): JsonResponse
+    {
+        return response()->json($useCase->execute($this->clientId($request)));
+    }
+
+    public function toggleFavorite(
+        Request $request,
+        int $productId,
+        ToggleClientFavoriteUseCase $useCase,
+    ): JsonResponse {
+        $validated = $request->validate([
+            'name' => ['nullable', 'string', 'max:255'],
+            'price' => ['nullable', 'numeric'],
+            'weight' => ['nullable'],
+        ]);
+
+        return response()->json($useCase->execute(
+            $this->clientId($request),
+            $productId,
+            $validated,
+        ));
+    }
+
+    public function removeFavorite(
+        Request $request,
+        int $productId,
+        RemoveClientFavoriteUseCase $useCase,
+    ): JsonResponse {
+        return response()->json($useCase->execute($this->clientId($request), $productId));
+    }
+
+    public function mergeFavorites(Request $request, MergeClientFavoritesUseCase $useCase): JsonResponse
+    {
+        $validated = $request->validate([
+            'items' => ['nullable', 'array'],
+            'items.*.product_id' => ['required', 'integer', 'min:1'],
+            'items.*.product_name' => ['nullable', 'string', 'max:255'],
+            'items.*.price_rub' => ['nullable', 'numeric'],
+            'items.*.weight' => ['nullable'],
+        ]);
+
+        return response()->json($useCase->execute(
+            $this->clientId($request),
+            $validated['items'] ?? [],
+        ));
     }
 
     private function clientId(Request $request): int

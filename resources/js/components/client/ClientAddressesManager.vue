@@ -209,7 +209,7 @@ function useAddress(id) {
                         />
 
                         <FormField :error="fieldErrors.get('street')">
-                            <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
+                            <template #default="{ id, invalid, invalidClass, describedBy, ariaInvalid }">
                                 <input
                                     :id="id"
                                     v-model="form.street"
@@ -223,7 +223,7 @@ function useAddress(id) {
                         </FormField>
 
                         <FormField :error="fieldErrors.get('house')">
-                            <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
+                            <template #default="{ id, invalid, invalidClass, describedBy, ariaInvalid }">
                                 <input
                                     :id="id"
                                     v-model="form.house"

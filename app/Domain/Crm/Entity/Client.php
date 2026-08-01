@@ -268,6 +268,27 @@ final class Client
         ));
     }
 
+    public function toggleFavoriteProductId(int $productId): void
+    {
+        if (in_array($productId, $this->favoriteProductIds, true)) {
+            $this->removeFavoriteProductId($productId);
+
+            return;
+        }
+
+        $this->addFavoriteProductId($productId);
+    }
+
+    /**
+     * @param  list<int>  $productIds
+     */
+    public function mergeFavoriteProductIds(array $productIds): void
+    {
+        foreach ($productIds as $productId) {
+            $this->addFavoriteProductId((int) $productId);
+        }
+    }
+
     private function clearDefaultAddresses(): void
     {
         foreach ($this->addresses as $address) {

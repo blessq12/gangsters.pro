@@ -192,7 +192,7 @@ async function submitForgot() {
                 error-size="xs"
                 :error="fieldErrors.get('phone')"
             >
-                <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
+                <template #default="{ id, invalid, invalidClass, describedBy, ariaInvalid }">
                     <input
                         :id="id"
                         v-model="phoneMask.masked"
@@ -214,7 +214,7 @@ async function submitForgot() {
                 error-size="xs"
                 :error="fieldErrors.get('email')"
             >
-                <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
+                <template #default="{ id, invalid, invalidClass, describedBy, ariaInvalid }">
                     <input
                         :id="id"
                         v-model="form.email"
@@ -233,7 +233,7 @@ async function submitForgot() {
                 error-size="xs"
                 :error="fieldErrors.get('password')"
             >
-                <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
+                <template #default="{ id, invalid, invalidClass, describedBy, ariaInvalid }">
                     <input
                         :id="id"
                         v-model="form.password"
@@ -284,7 +284,7 @@ async function submitForgot() {
                     error-size="xs"
                     :error="forgotFieldErrors.get('email')"
                 >
-                    <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
+                    <template #default="{ id, invalid, invalidClass, describedBy, ariaInvalid }">
                         <input
                             :id="id"
                             v-model="forgotEmail"

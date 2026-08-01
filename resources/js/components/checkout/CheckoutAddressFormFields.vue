@@ -91,7 +91,7 @@ const s = useAppDesign().components.checkout.shared;
         label="Улица"
         :error="streetError"
     >
-        <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
+        <template #default="{ id, invalid, invalidClass, describedBy, ariaInvalid }">
             <input
                 :id="id"
                 :value="street"
@@ -110,7 +110,7 @@ const s = useAppDesign().components.checkout.shared;
             label="Дом"
             :error="houseError"
         >
-            <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
+            <template #default="{ id, invalid, invalidClass, describedBy, ariaInvalid }">
                 <input
                     :id="id"
                     :value="house"

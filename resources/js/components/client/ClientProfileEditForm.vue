@@ -107,7 +107,7 @@ async function submit() {
                 error-size="xs"
                 :error="fieldErrors.get('name')"
             >
-                <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
+                <template #default="{ id, invalid, invalidClass, describedBy, ariaInvalid }">
                     <input
                         :id="id"
                         v-model="form.name"
@@ -125,7 +125,7 @@ async function submit() {
                 error-size="xs"
                 :error="fieldErrors.get('phone')"
             >
-                <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
+                <template #default="{ id, invalid, invalidClass, describedBy, ariaInvalid }">
                     <input
                         :id="id"
                         v-model="phoneMask.masked"
@@ -146,7 +146,7 @@ async function submit() {
                 error-size="xs"
                 :error="fieldErrors.get('email')"
             >
-                <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
+                <template #default="{ id, invalid, invalidClass, describedBy, ariaInvalid }">
                     <input
                         :id="id"
                         v-model="form.email"
@@ -164,7 +164,7 @@ async function submit() {
                 error-size="xs"
                 :error="fieldErrors.get('birth_date')"
             >
-                <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
+                <template #default="{ id, invalid, invalidClass, describedBy, ariaInvalid }">
                     <input
                         :id="id"
                         v-model="form.birth_date"

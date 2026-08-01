@@ -179,7 +179,7 @@ export const useFavoritesStore = defineStore("favorites", {
                 }
             } catch (error) {
                 if (isAxiosUnauthorized(error)) {
-                    await useUserStore().clearAuth();
+                    // Не трогаем клиентскую сессию из избранного — auth живёт в userStore/profile.
                     this.error = null;
                     this.initFromStorage();
                     return;
@@ -220,7 +220,6 @@ export const useFavoritesStore = defineStore("favorites", {
                 this.clearLocalStorage();
             } catch (error) {
                 if (isAxiosUnauthorized(error)) {
-                    await useUserStore().clearAuth();
                     this.error = null;
                     this.initFromStorage();
                     return;

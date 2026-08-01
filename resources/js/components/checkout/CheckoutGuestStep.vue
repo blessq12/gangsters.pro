@@ -64,7 +64,7 @@ watch(
                 label="Имя"
                 :error="guestFieldErrors.get('name')"
             >
-                <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
+                <template #default="{ id, invalid, invalidClass, describedBy, ariaInvalid }">
                     <input
                         :id="id"
                         :value="checkoutIntent.guestContact.name"
@@ -82,7 +82,7 @@ watch(
                 label="Телефон"
                 :error="guestFieldErrors.get('phone')"
             >
-                <template #default="{ id, invalid, invalidClass, describedBy, 'aria-invalid': ariaInvalid }">
+                <template #default="{ id, invalid, invalidClass, describedBy, ariaInvalid }">
                     <input
                         :id="id"
                         v-model="phoneMask.masked"

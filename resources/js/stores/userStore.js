@@ -58,16 +58,11 @@ export const useUserStore = defineStore("user", {
                 const parsed = JSON.parse(raw);
                 if (!parsed || typeof parsed !== "object") return;
 
-                // Аккуратно мержим, чтобы не сломать структуру
                 if (parsed.profile && typeof parsed.profile === "object") {
                     this.profile = {
                         ...this.profile,
                         ...parsed.profile,
                     };
-                }
-
-                if (parsed.token) {
-                    this.setToken(parsed.token);
                 }
 
                 if (Array.isArray(parsed.addresses)) {
@@ -77,8 +72,12 @@ export const useUserStore = defineStore("user", {
                 if (parsed.selectedAddressId) {
                     this.selectedAddressId = parsed.selectedAddressId;
                 }
+
+                // Токен последним: один persist уже с полным снимком.
+                if (parsed.token) {
+                    this.setToken(parsed.token);
+                }
             } catch (e) {
-                // Если что-то пошло не так — просто не инициализируем из стораджа
                 console.error("Failed to init user store from localStorage", e);
             }
         },
@@ -225,6 +224,10 @@ export const useUserStore = defineStore("user", {
         async fetchClientProfile() {
             if (!this.token) return null;
 
+            // Запоминаем токен на старт: параллельный логин не должен снести новый сеанс
+            // из‑за 401 от устаревшего in-flight запроса.
+            const tokenAtStart = this.token;
+
             try {
                 const data = await fetchClientProfileRequest();
 
@@ -247,7 +250,9 @@ export const useUserStore = defineStore("user", {
                 return data;
             } catch (error) {
                 if (isAxiosUnauthorized(error)) {
-                    await this.clearAuth();
+                    if (this.token === tokenAtStart) {
+                        await this.clearAuth();
+                    }
                     return null;
                 }
 

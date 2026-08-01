@@ -34,8 +34,7 @@ const slotBindings = computed(() => ({
     invalid: hasError.value,
     invalidClass: ff.inputInvalid,
     describedBy: hasError.value ? errorId.value : undefined,
-    "aria-invalid": hasError.value ? true : undefined,
-    "aria-describedby": hasError.value ? errorId.value : undefined,
+    ariaInvalid: hasError.value ? true : undefined,
 }));
 </script>
 
