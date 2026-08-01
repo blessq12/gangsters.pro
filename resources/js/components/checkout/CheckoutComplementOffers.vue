@@ -17,11 +17,23 @@ const catalogStore = useCatalogStore();
 const checkoutStore = useCheckoutStore();
 const cartCommands = useCartCommands();
 const { complementProducts } = storeToRefs(catalogStore);
-const { complementLines } = useOrderPreview();
+const { complementLines, hasRollsInCart, hasCartItems } = useOrderPreview();
 
-const complementRows = computed(() =>
-    buildComplementOfferRows(complementLines.value, complementProducts.value),
-);
+const complementRows = computed(() => {
+    if (!hasCartItems.value) {
+        return [];
+    }
+
+    if (!hasRollsInCart.value && complementLines.value.length === 0) {
+        return [];
+    }
+
+    return buildComplementOfferRows(
+        complementLines.value,
+        complementProducts.value,
+        { includeCatalogProducts: hasRollsInCart.value },
+    );
+});
 
 function paidQty(productId) {
     return checkoutStore.cartQuantityByProduct(productId);

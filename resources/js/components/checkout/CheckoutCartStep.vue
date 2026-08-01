@@ -21,10 +21,7 @@ const { checkoutState, handleStartCheckout } = useCheckoutFlowContext();
 const cartStore = useCheckoutStore();
 const catalogStore = useCatalogStore();
 const cartCommands = useCartCommands();
-const {
-    cartItems,
-    userItems: userCartItems,
-} = storeToRefs(cartStore);
+const { userItems: userCartItems } = storeToRefs(cartStore);
 const { complementProducts } = storeToRefs(catalogStore);
 
 const { formatPrice } = checkoutState;
@@ -44,7 +41,9 @@ const menuUserCartItems = computed(() =>
     ),
 );
 
-const isCartEmpty = computed(() => cartItems.value.length === 0);
+const isCartEmpty = computed(
+    () => (userCartItems.value || []).length === 0,
+);
 const hasUserLines = computed(() => menuUserCartItems.value.length > 0);
 const canStartCheckout = computed(
     () => (userCartItems.value || []).length > 0,

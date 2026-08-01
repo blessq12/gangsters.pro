@@ -1,8 +1,10 @@
 /**
  * Один ряд на productId: бесплатная часть (system) + каталожный товар для докупки.
+ * Каталожные комплекты показываем только когда есть право на комплект (роллы / free lines).
  *
  * @param {unknown} complementLines
  * @param {unknown} complementProducts
+ * @param {{ includeCatalogProducts?: boolean }} [options]
  * @returns {Array<{
  *   id: number,
  *   name: string,
@@ -10,7 +12,11 @@
  *   product: object|null,
  * }>}
  */
-export function buildComplementOfferRows(complementLines, complementProducts) {
+export function buildComplementOfferRows(
+    complementLines,
+    complementProducts,
+    options = {},
+) {
     const freeById = new Map();
     const lines = Array.isArray(complementLines) ? complementLines : [];
 
@@ -27,7 +33,11 @@ export function buildComplementOfferRows(complementLines, complementProducts) {
         });
     }
 
-    const products = Array.isArray(complementProducts) ? complementProducts : [];
+    const includeCatalogProducts = options.includeCatalogProducts === true;
+    const products =
+        includeCatalogProducts && Array.isArray(complementProducts)
+            ? complementProducts
+            : [];
     const productById = new Map();
 
     for (const product of products) {
