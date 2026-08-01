@@ -1,13 +1,13 @@
 <?php
 
+use App\Infrastructure\Catalog\Provider\CatalogServiceProvider;
+use App\Infrastructure\Content\Provider\ContentServiceProvider;
+use App\Infrastructure\Crm\Provider\CrmServiceProvider;
+use App\Infrastructure\Order\Provider\OrderServiceProvider;
+use App\Infrastructure\Promotion\Provider\PromotionServiceProvider;
+use App\Infrastructure\YandexFood\Provider\YandexFoodServiceProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\AuthServiceProvider;
-use App\Providers\CatalogServiceProvider;
-use App\Providers\ClientServiceProvider;
-use App\Providers\ContentServiceProvider;
-use App\Providers\PromotionServiceProvider;
-use App\Providers\YandexFoodServiceProvider;
-use App\Providers\OrderServiceProvider;
 use App\Providers\Filament\AdminPanelProvider;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Support\Facades\Facade;
@@ -186,11 +186,11 @@ return [
         AuthServiceProvider::class,
         RouteServiceProvider::class,
         CatalogServiceProvider::class,
-        ClientServiceProvider::class,
-        OrderServiceProvider::class,
-        YandexFoodServiceProvider::class,
-        PromotionServiceProvider::class,
         ContentServiceProvider::class,
+        CrmServiceProvider::class,
+        OrderServiceProvider::class,
+        PromotionServiceProvider::class,
+        YandexFoodServiceProvider::class,
         AdminPanelProvider::class,
         ImageServiceProvider::class,
     ])->toArray(),

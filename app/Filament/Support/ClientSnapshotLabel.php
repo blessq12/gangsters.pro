@@ -2,8 +2,7 @@
 
 namespace App\Filament\Support;
 
-use App\Filament\Client\Support\ClientProfileReader;
-use App\Infrastructure\Client\Model\CLN_Client;
+use App\Shared\ValueObject\PhoneNumber;
 
 final class ClientSnapshotLabel
 {
@@ -16,7 +15,7 @@ final class ClientSnapshotLabel
 
         if ($client === []) {
             return $fallbackClientId !== null
-                ? self::fromClientId($fallbackClientId)
+                ? 'Клиент #'.$fallbackClientId
                 : '—';
         }
 
@@ -24,14 +23,7 @@ final class ClientSnapshotLabel
         $phone = trim((string) ($client['phone'] ?? ''));
         $clientId = isset($client['client_id']) ? (int) $client['client_id'] : $fallbackClientId;
 
-        if ($name === '' && $clientId !== null) {
-            $resolved = self::fromClientId($clientId);
-            if ($resolved !== '—') {
-                return $resolved;
-            }
-        }
-
-        $phoneLabel = $phone !== '' ? ClientProfileReader::formatPhone($phone) : '—';
+        $phoneLabel = $phone !== '' ? self::formatPhone($phone) : '—';
 
         if ($name !== '' && $phoneLabel !== '—') {
             return $name.' · '.$phoneLabel;
@@ -60,29 +52,11 @@ final class ClientSnapshotLabel
     {
         $digits = trim((string) $phone);
 
-        return $digits !== '' ? ClientProfileReader::formatPhone($digits) : '—';
-    }
-
-    private static function fromClientId(int $clientId): string
-    {
-        $row = CLN_Client::query()->find($clientId);
-
-        if ($row === null) {
-            return 'Клиент #'.$clientId;
+        if ($digits === '') {
+            return '—';
         }
 
-        $name = trim((string) $row->name);
-        $phone = ClientProfileReader::formatPhone((string) $row->phone);
-
-        if ($name !== '' && $phone !== '—') {
-            return $name.' · '.$phone;
-        }
-
-        if ($name !== '') {
-            return $name;
-        }
-
-        return $phone !== '—' ? $phone : 'Клиент #'.$clientId;
+        return PhoneNumber::tryFormatFromRaw($digits) ?? $digits;
     }
 
     /**
