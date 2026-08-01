@@ -5,6 +5,7 @@ namespace App\Application\Order\useCases;
 use App\Application\Order\DTO\QuoteOrderDto;
 use App\Domain\Catalog\Entity\Product;
 use App\Domain\Catalog\Repository\CatalogItemRepository;
+use App\Domain\Content\Repository\DeliveryConfigurationRepository;
 use App\Domain\Order\Port\PromotionDeliveryPricingPort;
 use App\Domain\Order\Repository\PromotionPolicyRepository;
 use App\Shared\Geo\AddressGeocoder;
@@ -20,6 +21,7 @@ final class QuoteOrderUseCase
         private readonly PromotionPolicyRepository $promotionPolicies,
         private readonly PromotionDeliveryPricingPort $deliveryPricing,
         private readonly AddressGeocoder $addressGeocoder,
+        private readonly DeliveryConfigurationRepository $deliveryConfigurations,
     ) {}
 
     /**
@@ -343,6 +345,9 @@ final class QuoteOrderUseCase
         $city = isset($address['city']) ? trim((string) $address['city']) : null;
         if ($city === '') {
             $city = null;
+        }
+        if ($city === null) {
+            $city = $this->deliveryConfigurations->findPublic()?->kitchenAddress()->city();
         }
 
         $coords = $this->addressGeocoder->geocode($street, $house, $city);
