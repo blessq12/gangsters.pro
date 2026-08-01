@@ -7,7 +7,7 @@ import { useDockScrollScale } from "../composables/ui/useDockScrollScale";
 import { useAppDesign } from "../design/useAppDesign";
 import { useShellStore } from "../stores/shellStore";
 import { useContentStore } from "../stores/contentStore";
-import { useStorefrontStore } from "../stores/storefrontStore";
+import { useAppBootstrapStore } from "../stores/appBootstrapStore";
 import { useThemeStore } from "../stores/themeStore";
 import { useUiStore } from "../stores/uiStore";
 import { useUserStore } from "../stores/userStore";
@@ -17,7 +17,7 @@ const sh = useAppDesign().components.layoutShell;
 const themeStore = useThemeStore();
 const userStore = useUserStore();
 const uiStore = useUiStore();
-const storefrontStore = useStorefrontStore();
+const appBootstrapStore = useAppBootstrapStore();
 const contentStore = useContentStore();
 const shellStore = useShellStore();
 const route = useRoute();
@@ -68,7 +68,7 @@ watch(
 );
 
 watch(
-    () => storefrontStore.loaded,
+    () => appBootstrapStore.loaded,
     (loaded) => {
         if (!loaded || !userStore.token) {
             return;
@@ -82,10 +82,10 @@ watch(
 );
 
 onMounted(() => {
-    if (storefrontStore.loaded) {
+    if (appBootstrapStore.loaded) {
         shellStore.markDataReady();
     } else {
-        void storefrontStore.fetchBootstrap();
+        void appBootstrapStore.fetchBootstrap();
     }
 
     if (!contentStore.loaded) {

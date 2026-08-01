@@ -29,7 +29,7 @@ class MarketingContentResource extends Resource
 
     protected static ?int $navigationSort = 20;
 
-    protected static string | \UnitEnum | null $navigationGroup = AdminNavigationGroup::Storefront;
+    protected static string | \UnitEnum | null $navigationGroup = AdminNavigationGroup::Merchandising;
 
     public static function form(Schema $schema): Schema
     {

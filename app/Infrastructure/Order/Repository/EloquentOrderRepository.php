@@ -30,16 +30,6 @@ final class EloquentOrderRepository implements OrderRepository
         return $row instanceof ORD_Order ? $this->mapper->toDomain($row) : null;
     }
 
-    public function findByPartnerAndExternalOrderId(string $partnerCode, string $externalOrderId): ?Order
-    {
-        $row = ORD_Order::query()
-            ->where('partner_code', $partnerCode)
-            ->where('external_order_id', $externalOrderId)
-            ->first();
-
-        return $row instanceof ORD_Order ? $this->mapper->toDomain($row) : null;
-    }
-
     public function existsByCheckoutId(string $checkoutId): bool
     {
         return ORD_Order::query()

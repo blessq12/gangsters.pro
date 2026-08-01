@@ -24,12 +24,8 @@
 ## Документация (дополнительно)
 
 - [`.cursor/docs/README.md`](.cursor/docs/README.md) — индекс bounded contexts
-- [`.cursor/docs/storefront/overview.md`](.cursor/docs/storefront/overview.md) — bootstrap витрины
-- [`.cursor/docs/storefront/spa.md`](.cursor/docs/storefront/spa.md) — bootstrap SPA
 - [`.cursor/docs/order/overview.md`](.cursor/docs/order/overview.md) — Order + OrderDraft (сайт)
 - [`.cursor/docs/order/spa.md`](.cursor/docs/order/spa.md) — корзина и визард SPA
-- [`docs/aggregator-ingress.md`](docs/aggregator-ingress.md) — приём заказов от агрегаторов (кратко)
-- [`.cursor/docs/aggregator-ingress/overview.md`](.cursor/docs/aggregator-ingress/overview.md) — BC AggregatorIngress (полностью)
 - [`docs/architecture/bounded-context-dependency-matrix.md`](docs/architecture/bounded-context-dependency-matrix.md) — границы bounded contexts
 - [`docs/admin-filament-hubs.md`](docs/admin-filament-hubs.md) — 5 admin hubs
 - [`docs/shopping-session-csrf.md`](docs/shopping-session-csrf.md) — shopping cookie / CSRF
@@ -44,9 +40,9 @@ php artisan test --filter FrontendAndAclBoundaries
 ## Эталоны кода
 
 - Backend: `app/Domain/Order/` → `app/Application/Order/` → `app/Infrastructure/Order/`
-- Ingress агрегаторов: `app/Domain/AggregatorIngress/` → `app/Application/AggregatorIngress/` → `app/Infrastructure/AggregatorIngress/`
 - Frontpad export: `Domain/Order/Port/FrontpadOrderExporter` → `Infrastructure/Order/Frontpad/`
 - Content CMS: `app/Domain/Content/` → `app/Application/Content/` → `app/Infrastructure/Content/` (`GET /api/content/bootstrap` — company, marketing, delivery settings)
+- App bootstrap (composition): `app/Support/Bootstrap/` → `GET /api/bootstrap` — catalog + promotion
 - Admin: `app/Filament/Operations/`
 - Frontend shopping: `resources/js/features/checkout/` + `resources/js/stores/checkoutStore.js` + `resources/js/features/shoppingSession/`
-- Frontend bootstrap: `resources/js/stores/storefrontStore.js` (catalog/promotion) + `resources/js/stores/contentStore.js` (CMS+delivery) + `resources/js/layouts/MainLayout*.vue`
+- Frontend bootstrap: `resources/js/stores/appBootstrapStore.js` (catalog/promotion) + `resources/js/stores/contentStore.js` (CMS+delivery) + `resources/js/layouts/MainLayout*.vue`

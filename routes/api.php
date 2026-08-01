@@ -1,12 +1,11 @@
 <?php
 
+use App\Http\Controllers\Api\AppBootstrapController;
 use App\Http\Controllers\Api\CatalogController;
 use App\Http\Controllers\Api\ClientController;
 use App\Http\Controllers\Api\ContentController;
-use App\Http\Controllers\Api\IngressController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\OrderDraftController;
-use App\Http\Controllers\Api\StorefrontController;
 use App\Http\Controllers\Api\YandexFoodController;
 use Illuminate\Support\Facades\Route;
 
@@ -20,9 +19,9 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "api" middleware group. Make something great!
 */
 
-Route::get('/storefront/bootstrap', [StorefrontController::class, 'bootstrap']);
-Route::get('/storefront/bootstrap/critical', [StorefrontController::class, 'bootstrapCritical']);
-Route::get('/storefront/bootstrap/deferred', [StorefrontController::class, 'bootstrapDeferred']);
+Route::get('/bootstrap', [AppBootstrapController::class, 'bootstrap']);
+Route::get('/bootstrap/critical', [AppBootstrapController::class, 'bootstrapCritical']);
+Route::get('/bootstrap/deferred', [AppBootstrapController::class, 'bootstrapDeferred']);
 
 Route::get('/content/bootstrap', [ContentController::class, 'bootstrap']);
 
@@ -54,8 +53,6 @@ Route::middleware('auth.client')->group(function (): void {
     Route::get('order/{orderId}', [OrderController::class, 'show']);
     Route::get('order/{orderId}/repeatable-lines', [OrderController::class, 'repeatableLines']);
 });
-
-Route::post('ingress/{partner}/orders', [IngressController::class, 'store']);
 
 Route::prefix('yandex-food')->group(function (): void {
     Route::post('/security/oauth/token', [YandexFoodController::class, 'login']);

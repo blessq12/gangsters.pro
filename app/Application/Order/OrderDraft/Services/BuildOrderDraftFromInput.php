@@ -70,7 +70,7 @@ final class BuildOrderDraftFromInput
                 continue;
             }
 
-            $quote = $this->pricing->findStorefrontProductQuote($productId);
+            $quote = $this->pricing->findPublicProductQuote($productId);
 
             if ($quote === null) {
                 throw new InvalidArgumentException('Товар недоступен для добавления в корзину.');

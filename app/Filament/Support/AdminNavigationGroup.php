@@ -10,7 +10,7 @@ use Filament\Support\Contracts\HasLabel;
  */
 enum AdminNavigationGroup: string implements HasLabel
 {
-    case Storefront = 'storefront';
+    case Merchandising = 'merchandising';
     case Service = 'service';
     case Sales = 'sales';
     case Organization = 'organization';
@@ -18,7 +18,7 @@ enum AdminNavigationGroup: string implements HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::Storefront => 'Витрина',
+            self::Merchandising => 'Витрина',
             self::Service => 'Сервис',
             self::Sales => 'Продажи',
             self::Organization => 'Компания',

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Application\Common\Exceptions\UnauthorizedException;
+use Illuminate\Auth\AuthenticationException;
 use App\Application\Order\DTO\GetOrderDto;
 use App\Application\Order\DTO\ListClientOrdersDto;
 use App\Application\Order\DTO\RepeatableOrderLinesDto;
@@ -62,7 +62,7 @@ final class OrderController extends Controller
         $client = $request->user('sanctum');
 
         if (! $client instanceof Authenticatable) {
-            throw new UnauthorizedException();
+            throw new AuthenticationException();
         }
 
         return $client;

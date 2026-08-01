@@ -2,7 +2,7 @@
 
 namespace App\Application\Order\useCases;
 
-use App\Application\Common\Exceptions\UnauthorizedException;
+use Illuminate\Auth\AuthenticationException;
 use App\Application\Order\DTO\GetOrderDto;
 use App\Application\Order\Presenter\OrderPresenter;
 use App\Domain\Order\Exception\OrderNotFoundException;
@@ -37,7 +37,7 @@ final class GetOrderUseCase
             $client->kind() !== ClientKind::Registered
             || $client->clientId() !== $input->clientId
         ) {
-            throw new UnauthorizedException();
+            throw new AuthenticationException();
         }
 
         return $this->orderPresenter->present($order);

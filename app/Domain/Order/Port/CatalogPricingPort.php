@@ -12,5 +12,5 @@ interface CatalogPricingPort
     /**
      * Товар или набор, доступные для пользовательской корзины (системные товары исключены).
      */
-    public function findStorefrontProductQuote(int $productId): ?ProductPriceQuote;
+    public function findPublicProductQuote(int $productId): ?ProductPriceQuote;
 }

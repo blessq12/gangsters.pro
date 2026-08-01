@@ -24,7 +24,7 @@ use App\Application\Client\useCases\RemoveClientFavoriteUseCase;
 use App\Application\Client\useCases\RequestPasswordResetUseCase;
 use App\Application\Client\useCases\ToggleClientFavoriteUseCase;
 use App\Application\Client\useCases\UpdateClientProfileUseCase;
-use App\Application\Common\Exceptions\UnauthorizedException;
+use Illuminate\Auth\AuthenticationException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Client\AddClientAddressRequest;
 use App\Http\Requests\Client\ChangePasswordRequest;
@@ -239,7 +239,7 @@ final class ClientController extends Controller
         $client = $request->user('sanctum');
 
         if (! $client instanceof Authenticatable) {
-            throw new UnauthorizedException();
+            throw new AuthenticationException();
         }
 
         return $client;

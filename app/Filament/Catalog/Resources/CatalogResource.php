@@ -29,7 +29,7 @@ class CatalogResource extends Resource
 
     protected static ?int $navigationSort = 10;
 
-    protected static string | \UnitEnum | null $navigationGroup = AdminNavigationGroup::Storefront;
+    protected static string | \UnitEnum | null $navigationGroup = AdminNavigationGroup::Merchandising;
 
     public static function form(Schema $schema): Schema
     {

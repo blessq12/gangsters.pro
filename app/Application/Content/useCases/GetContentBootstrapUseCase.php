@@ -3,7 +3,7 @@
 namespace App\Application\Content\useCases;
 
 /**
- * Single public content snapshot for the storefront.
+ * Single public content snapshot for the SPA.
  */
 final class GetContentBootstrapUseCase
 {

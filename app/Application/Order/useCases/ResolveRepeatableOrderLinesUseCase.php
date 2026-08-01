@@ -2,7 +2,7 @@
 
 namespace App\Application\Order\useCases;
 
-use App\Application\Common\Exceptions\UnauthorizedException;
+use Illuminate\Auth\AuthenticationException;
 use App\Application\Order\DTO\RepeatableOrderLinesDto;
 use App\Domain\Order\Enum\OrderSource;
 use App\Domain\Order\Exception\OrderNotFoundException;
@@ -55,7 +55,7 @@ final class ResolveRepeatableOrderLinesUseCase
             $client->kind() !== ClientKind::Registered
             || $client->clientId() !== $input->clientId
         ) {
-            throw new UnauthorizedException();
+            throw new AuthenticationException();
         }
 
         if ($order->source() !== OrderSource::Site) {
@@ -78,7 +78,7 @@ final class ResolveRepeatableOrderLinesUseCase
         $unavailableLines = [];
 
         foreach ($quantityByProductId as $productId => $quantity) {
-            $quote = $this->pricing->findStorefrontProductQuote($productId);
+            $quote = $this->pricing->findPublicProductQuote($productId);
             $productName = $this->resolveUserLineName($order->cart()->lines(), $productId);
 
             if ($quote === null) {

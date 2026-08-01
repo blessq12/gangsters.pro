@@ -2,8 +2,8 @@
 
 namespace App\Providers;
 
-use App\Application\Site\SitePublicConfigPresenter;
-use App\Application\Site\SiteSeoResolver;
+use App\Support\Site\SitePublicConfigPresenter;
+use App\Support\Site\SiteSeoResolver;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 

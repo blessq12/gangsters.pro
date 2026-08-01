@@ -16,15 +16,15 @@ final class CatalogPricingAdapter implements CatalogPricingPort
 
     public function findActiveProductQuote(int $productId): ?ProductPriceQuote
     {
-        return $this->resolveQuote($productId, storefrontOnly: false);
+        return $this->resolveQuote($productId, publicOnly: false);
     }
 
-    public function findStorefrontProductQuote(int $productId): ?ProductPriceQuote
+    public function findPublicProductQuote(int $productId): ?ProductPriceQuote
     {
-        return $this->resolveQuote($productId, storefrontOnly: true);
+        return $this->resolveQuote($productId, publicOnly: true);
     }
 
-    private function resolveQuote(int $productId, bool $storefrontOnly): ?ProductPriceQuote
+    private function resolveQuote(int $productId, bool $publicOnly): ?ProductPriceQuote
     {
         $product = $this->catalogItems->findProductById($productId);
 
@@ -33,7 +33,7 @@ final class CatalogPricingAdapter implements CatalogPricingPort
                 return null;
             }
 
-            if ($storefrontOnly && $product->isSystem()) {
+            if ($publicOnly && $product->isSystem()) {
                 return null;
             }
 

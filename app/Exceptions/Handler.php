@@ -2,8 +2,6 @@
 
 namespace App\Exceptions;
 
-use App\Application\Common\Exceptions\ApiException;
-use App\Application\Common\Exceptions\UnauthorizedException;
 use App\Domain\Client\Event\ClientUnauthorizedAccessDetected;
 use App\Domain\Client\Exception\ClientAddressNotFoundException;
 use App\Domain\Client\Exception\ClientFavoriteNotFoundException;
@@ -12,10 +10,6 @@ use App\Domain\Client\Exception\ClientNotFoundException;
 use App\Domain\Client\Exception\InvalidPasswordResetTokenException;
 use App\Domain\Order\OrderDraft\Exception\OrderDraftGiftBenefitViolationException;
 use App\Domain\Order\OrderDraft\Exception\OrderDraftNotReadyException;
-use App\Domain\AggregatorIngress\Exception\IngressAuthenticationFailedException;
-use App\Domain\AggregatorIngress\Exception\IngressInvariantViolation;
-use App\Domain\AggregatorIngress\Exception\PartnerNotConfiguredException;
-use App\Domain\AggregatorIngress\Exception\UnknownPartnerSkuException;
 use App\Domain\YandexFood\Exception\YandexFoodBearerTokenRejectedException;
 use App\Domain\YandexFood\Exception\YandexFoodDisabledException;
 use App\Domain\YandexFood\Exception\YandexFoodOAuthRejectedException;
@@ -32,7 +26,7 @@ class Handler extends ExceptionHandler
     /**
      * The list of the inputs that are never flashed to the session on validation exceptions.
      *
-     * @var array<int, string>
+     * @var array<string>
      */
     protected $dontFlash = [
         'current_password',
@@ -52,7 +46,7 @@ class Handler extends ExceptionHandler
 
     public function render($request, Throwable $e)
     {
-        if ($request->is('api/client/*') && $this->isClientUnauthorized($e)) {
+        if ($request->is('api/client/*') && $e instanceof AuthenticationException) {
             Event::dispatch(new ClientUnauthorizedAccessDetected(
                 path: '/'.$request->path(),
                 method: $request->method(),
@@ -61,10 +55,12 @@ class Handler extends ExceptionHandler
             ));
         }
 
-        if ($e instanceof ApiException && $request->is('api/*')) {
+        if ($e instanceof AuthenticationException && $request->is('api/*')) {
             return response()->json([
-                'message' => $e->getMessage(),
-            ], $e->statusCode());
+                'message' => $e->getMessage() !== ''
+                    ? $e->getMessage()
+                    : 'Требуется авторизация.',
+            ], 401);
         }
 
         if ($e instanceof ClientNotFoundException && $request->is('api/*')) {
@@ -127,30 +123,6 @@ class Handler extends ExceptionHandler
             ], 422);
         }
 
-        if ($e instanceof IngressAuthenticationFailedException && $request->is('api/*')) {
-            return response()->json([
-                'message' => $e->getMessage(),
-            ], 401);
-        }
-
-        if ($e instanceof PartnerNotConfiguredException && $request->is('api/*')) {
-            return response()->json([
-                'message' => $e->getMessage(),
-            ], 404);
-        }
-
-        if ($e instanceof UnknownPartnerSkuException && $request->is('api/*')) {
-            return response()->json([
-                'message' => $e->getMessage(),
-            ], 422);
-        }
-
-        if ($e instanceof IngressInvariantViolation && $request->is('api/*')) {
-            return response()->json([
-                'message' => $e->getMessage(),
-            ], 422);
-        }
-
         if ($e instanceof YandexFoodOAuthRejectedException && $request->is('api/yandex-food/*')) {
             return response()->json([
                 'code' => 100,
@@ -172,18 +144,5 @@ class Handler extends ExceptionHandler
         }
 
         return parent::render($request, $e);
-    }
-
-    private function isClientUnauthorized(Throwable $e): bool
-    {
-        if ($e instanceof AuthenticationException) {
-            return true;
-        }
-
-        if ($e instanceof UnauthorizedException) {
-            return true;
-        }
-
-        return false;
     }
 }

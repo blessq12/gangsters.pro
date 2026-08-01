@@ -33,7 +33,7 @@ final class SystemProductVisibilityTest extends TestCase
         );
 
         $this->assertContains($fixture['system_product_id'], $candidateIds);
-        $this->assertNotContains($fixture['storefront_product_id'], $candidateIds);
+        $this->assertNotContains($fixture['public_product_id'], $candidateIds);
 
         $this->cleanupFixture($fixture);
     }
@@ -57,7 +57,7 @@ final class SystemProductVisibilityTest extends TestCase
         }
 
         $this->assertNotContains($fixture['system_product_id'], $itemIds);
-        $this->assertContains($fixture['storefront_product_id'], $itemIds);
+        $this->assertContains($fixture['public_product_id'], $itemIds);
 
         $this->cleanupFixture($fixture);
     }
@@ -93,16 +93,16 @@ final class SystemProductVisibilityTest extends TestCase
      * @return array{
      *     category_id: int,
      *     system_product_id: int,
-     *     storefront_product_id: int,
+     *     public_product_id: int,
      *     system_slug: string,
-     *     storefront_slug: string
+     *     public_slug: string
      * }
      */
     private function seedSystemProductFixture(): array
     {
         $suffix = Str::lower(Str::random(8));
         $systemSlug = "system-product-{$suffix}";
-        $storefrontSlug = "storefront-product-{$suffix}";
+        $publicSlug = "public-product-{$suffix}";
         $categorySlug = "system-fixture-category-{$suffix}";
 
         $category = PRD_Category::query()->create([
@@ -121,16 +121,16 @@ final class SystemProductVisibilityTest extends TestCase
             'price' => 100,
         ]);
 
-        $storefrontProduct = PRD_Product::query()->create([
+        $publicProduct = PRD_Product::query()->create([
             'name' => "Витринный {$suffix}",
-            'slug' => $storefrontSlug,
+            'slug' => $publicSlug,
             'status' => ProductStatus::Active->value,
             'catalog_kind' => CatalogItemKind::Product->value,
             'is_system' => false,
             'price' => 200,
         ]);
 
-        foreach ([$systemProduct, $storefrontProduct] as $index => $product) {
+        foreach ([$systemProduct, $publicProduct] as $index => $product) {
             PRD_CategoryProduct::query()->create([
                 'category_id' => $category->id,
                 'product_id' => $product->id,
@@ -141,9 +141,9 @@ final class SystemProductVisibilityTest extends TestCase
         return [
             'category_id' => (int) $category->id,
             'system_product_id' => (int) $systemProduct->id,
-            'storefront_product_id' => (int) $storefrontProduct->id,
+            'public_product_id' => (int) $publicProduct->id,
             'system_slug' => $systemSlug,
-            'storefront_slug' => $storefrontSlug,
+            'public_slug' => $publicSlug,
         ];
     }
 
@@ -151,9 +151,9 @@ final class SystemProductVisibilityTest extends TestCase
      * @param  array{
      *     category_id: int,
      *     system_product_id: int,
-     *     storefront_product_id: int,
+     *     public_product_id: int,
      *     system_slug: string,
-     *     storefront_slug: string
+     *     public_slug: string
      * }  $fixture
      */
     private function cleanupFixture(array $fixture): void
@@ -163,7 +163,7 @@ final class SystemProductVisibilityTest extends TestCase
             ->delete();
 
         PRD_Product::query()
-            ->whereIn('id', [$fixture['system_product_id'], $fixture['storefront_product_id']])
+            ->whereIn('id', [$fixture['system_product_id'], $fixture['public_product_id']])
             ->delete();
 
         PRD_Category::query()

@@ -1,6 +1,6 @@
 <?php
 
-use App\Application\Site\SiteSeoResolver;
+use App\Support\Site\SiteSeoResolver;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/sitemap.xml', function () {

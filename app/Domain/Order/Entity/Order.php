@@ -61,36 +61,6 @@ final class Order
         );
     }
 
-    public static function fromIngressSnapshot(
-        OrderAggregatorReference $aggregatorReference,
-        OrderCartSnapshot $cart,
-        OrderClientSnapshot $client,
-        OrderDeliverySnapshot $delivery,
-        OrderPaymentSnapshot $payment,
-        DateTimeImmutable $createdAt,
-    ): self {
-        if ($aggregatorReference->partnerCode() === '' || $aggregatorReference->externalOrderId() === '') {
-            throw OrderInvariantViolation::invalidAggregatorReference();
-        }
-
-        if ($cart->lines() === []) {
-            throw OrderInvariantViolation::emptyCart();
-        }
-
-        return new self(
-            id: null,
-            source: OrderSource::Aggregator,
-            checkoutId: null,
-            aggregatorReference: $aggregatorReference,
-            status: OrderStatus::New,
-            cart: $cart,
-            client: $client,
-            delivery: $delivery,
-            payment: $payment,
-            createdAt: $createdAt,
-        );
-    }
-
     public static function restore(
         OrderId $id,
         OrderSource $source,

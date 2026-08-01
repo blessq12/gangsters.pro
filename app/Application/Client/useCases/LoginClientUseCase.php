@@ -5,7 +5,7 @@ namespace App\Application\Client\useCases;
 use App\Application\Client\DTO\LoginClientDto;
 use App\Application\Client\Presenter\ClientPresenter;
 use App\Domain\Client\Entity\Client;
-use App\Application\Common\Exceptions\UnauthorizedException;
+use Illuminate\Auth\AuthenticationException;
 use App\Domain\Client\Port\ClientAuthTokenPort;
 use App\Domain\Client\Repository\ClientRepository;
 use App\Domain\Client\ValueObject\PhoneNumber;
@@ -31,7 +31,7 @@ final class LoginClientUseCase
         $client = $this->findClient($input);
 
         if (! Hash::check($input->password, $client->passwordHash())) {
-            throw new UnauthorizedException('Неверный телефон, email или пароль.');
+            throw new AuthenticationException('Неверный телефон, email или пароль.');
         }
 
         $token = $this->tokens->issueToken($client->id());
@@ -56,7 +56,7 @@ final class LoginClientUseCase
             $client = $this->clients->findByPhone(PhoneNumber::fromRaw($phoneDigits));
 
             if ($client === null) {
-                throw new UnauthorizedException('Неверный телефон, email или пароль.');
+                throw new AuthenticationException('Неверный телефон, email или пароль.');
             }
 
             return $client;
@@ -66,7 +66,7 @@ final class LoginClientUseCase
             $client = $this->clients->findByEmail($email);
 
             if ($client === null) {
-                throw new UnauthorizedException('Неверный телефон, email или пароль.');
+                throw new AuthenticationException('Неверный телефон, email или пароль.');
             }
 
             return $client;

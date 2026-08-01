@@ -6,7 +6,6 @@ use App\Providers\CatalogServiceProvider;
 use App\Providers\ClientServiceProvider;
 use App\Providers\ContentServiceProvider;
 use App\Providers\PromotionServiceProvider;
-use App\Providers\AggregatorIngressServiceProvider;
 use App\Providers\YandexFoodServiceProvider;
 use App\Providers\OrderServiceProvider;
 use App\Providers\Filament\AdminPanelProvider;
@@ -189,7 +188,6 @@ return [
         CatalogServiceProvider::class,
         ClientServiceProvider::class,
         OrderServiceProvider::class,
-        AggregatorIngressServiceProvider::class,
         YandexFoodServiceProvider::class,
         PromotionServiceProvider::class,
         ContentServiceProvider::class,
