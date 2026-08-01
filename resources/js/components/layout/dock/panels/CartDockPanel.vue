@@ -4,6 +4,8 @@ import { useAppDesign } from "../../../../design/useAppDesign";
 import { useCheckoutFlow } from "../../../../composables/checkout/useCheckoutFlow";
 import { provideCheckoutFlow } from "../../../../composables/checkout/checkoutFlowContext";
 import { resolveCheckoutDockTitle } from "../../../../features/checkout/checkoutWizardLabels";
+import CheckoutWizardHost from "../../../../features/checkout/wizard/CheckoutWizardHost.vue";
+import { getCheckoutWizardStep } from "../../../../features/checkout/wizard/checkoutWizardRegistry";
 import { useUiStore } from "../../../../stores/uiStore";
 
 const panels = useAppDesign().components.dockPanels;
@@ -15,7 +17,11 @@ provideCheckoutFlow(flow);
 const { cartStore, activeStep, handleStartCheckout } = flow;
 const c = panels.cart;
 
-const dockTitle = computed(() => resolveCheckoutDockTitle(activeStep.value));
+const dockTitle = computed(
+    () =>
+        getCheckoutWizardStep(activeStep.value)?.title
+        ?? resolveCheckoutDockTitle(activeStep.value),
+);
 
 function tryConsumeCheckoutStart() {
     if (!uiStore.pendingCheckoutStart) return;
@@ -47,11 +53,7 @@ watch(
             </div>
         </template>
 
-        <CheckoutCartStep v-if="activeStep === 'cart'" />
-        <CheckoutGuestStep v-else-if="activeStep === 'guest'" />
-        <CheckoutFulfillmentStep v-else-if="activeStep === 'fulfillment'" />
-        <CheckoutConfirmStep v-else-if="activeStep === 'confirm'" />
-        <CheckoutSuccessStep v-else-if="activeStep === 'success'" />
+        <CheckoutWizardHost />
     </DockPanelLayout>
 </template>
 

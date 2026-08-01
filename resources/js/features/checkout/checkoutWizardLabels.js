@@ -1,6 +1,6 @@
 import { CHECKOUT_WIZARD_GROUPS } from "./checkoutWizardGroups";
 
-/** Заголовок dock-панели по активному шагу. */
+/** Заголовок dock-панели по активному шагу (fallback; предпочтительно title из registry). */
 export function resolveCheckoutDockTitle(step) {
     return CHECKOUT_WIZARD_GROUPS[step] ?? CHECKOUT_WIZARD_GROUPS.cart;
 }

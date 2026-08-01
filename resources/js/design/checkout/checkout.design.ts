@@ -195,16 +195,20 @@ export const checkoutDesign = {
     },
 
     nav: {
-        row: "mt-2 flex items-center justify-between gap-3",
-        backLink:
-            "text-xs text-app-muted underline-offset-2 hover:text-app-canvas-fg hover:underline",
-        primaryCluster: "flex shrink-0 items-center gap-2",
+        row: "mt-3 flex w-full items-stretch gap-2",
+        backBtn:
+            "flex h-auto w-12 shrink-0 items-center justify-center rounded-none border border-app-accent/40 bg-neutral-950/88 text-app-canvas-fg transition hover:border-app-accent/70 hover:text-app-accent",
+        backIcon: "mdi mdi-arrow-left text-xl leading-none",
+        sheen: "checkout-wizard-cta-sheen pointer-events-none absolute inset-0 z-0",
+        primaryContent:
+            "relative z-10 flex w-full items-center justify-center gap-3 px-4",
+        primaryLabel: "text-sm font-bold leading-none",
         totalLabel:
-            "inline-block min-w-[5.5rem] text-right text-xs font-semibold tabular-nums text-app-accent",
+            "text-sm font-semibold tabular-nums leading-none text-black/80",
         btnPrimary:
-            "inline-flex min-w-[8.75rem] items-center justify-center whitespace-nowrap rounded-none bg-app-accent px-3 py-1.5 text-xs font-semibold text-black shadow-[0_0_14px_rgba(198,36,36,0.7)] transition hover:bg-app-accent-hover",
+            "checkout-wizard-cta relative flex min-h-12 flex-1 items-center justify-center overflow-hidden rounded-none bg-app-accent py-3.5 text-black transition hover:bg-app-accent-hover",
         btnPrimaryBusy:
-            "inline-flex min-w-[8.75rem] items-center justify-center whitespace-nowrap rounded-none bg-app-accent px-3 py-1.5 text-xs font-semibold text-black shadow-[0_0_14px_rgba(198,36,36,0.7)] transition hover:bg-app-accent-hover disabled:opacity-60",
+            "checkout-wizard-cta relative flex min-h-12 flex-1 items-center justify-center overflow-hidden rounded-none bg-app-accent py-3.5 text-black transition hover:bg-app-accent-hover disabled:opacity-60",
     },
 
     summaryRow: {

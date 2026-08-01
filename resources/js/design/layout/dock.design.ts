@@ -35,7 +35,7 @@ export const dockDesign = {
         visibleInnerWithPanel:
             "min-h-0 max-h-[calc(100dvh-1rem-env(safe-area-inset-bottom,0px))] justify-end md:max-h-[calc(100dvh-1.5rem)]",
         panelOuter:
-            "mb-3 w-full max-w-4xl min-h-0 md:max-w-5xl",
+            "mb-3 w-full max-w-4xl min-h-0 md:max-w-2xl",
         panelOuterExpanded:
             "flex flex-1 flex-col",
         dockIsland: `${dockChromeIslandSurface} flex w-fit shrink-0 items-stretch gap-3 px-3 py-3 sm:gap-4 sm:px-4 sm:py-4 md:px-4 md:py-3.5`,

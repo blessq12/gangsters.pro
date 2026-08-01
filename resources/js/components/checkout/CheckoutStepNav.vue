@@ -60,31 +60,66 @@ const primaryText = computed(() =>
         <button
             v-if="showBack"
             type="button"
-            :class="n.backLink"
+            :class="n.backBtn"
+            :aria-label="backLabel"
+            :title="backLabel"
             @click="emit('back')"
         >
-            {{ backLabel }}
+            <i :class="n.backIcon" aria-hidden="true" />
         </button>
-        <span
-            v-else
-            aria-hidden="true"
-        />
 
-        <div :class="n.primaryCluster">
-            <span
-                v-if="showNavTotal"
-                :class="n.totalLabel"
-            >
-                {{ totalLabel }}
+        <button
+            type="button"
+            :class="primaryClass"
+            :disabled="primaryLoading || primaryDisabled"
+            @click="emit('primary')"
+        >
+            <span :class="n.sheen" aria-hidden="true" />
+            <span :class="n.primaryContent">
+                <span :class="n.primaryLabel">{{ primaryText }}</span>
+                <span
+                    v-if="showNavTotal && totalLabel"
+                    :class="n.totalLabel"
+                >
+                    {{ totalLabel }}
+                </span>
             </span>
-            <button
-                type="button"
-                :class="primaryClass"
-                :disabled="primaryLoading || primaryDisabled"
-                @click="emit('primary')"
-            >
-                {{ primaryText }}
-            </button>
-        </div>
+        </button>
     </div>
 </template>
+
+<style scoped>
+.checkout-wizard-cta-sheen::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    width: 45%;
+    background: linear-gradient(
+        105deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.12) 35%,
+        rgba(255, 255, 255, 0.38) 50%,
+        rgba(255, 255, 255, 0.12) 65%,
+        transparent 100%
+    );
+    transform: translateX(-140%) skewX(-18deg);
+    animation: checkout-wizard-cta-sheen-move 2.8s ease-in-out infinite;
+}
+
+@keyframes checkout-wizard-cta-sheen-move {
+    0% {
+        transform: translateX(-140%) skewX(-18deg);
+    }
+    55%,
+    100% {
+        transform: translateX(260%) skewX(-18deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .checkout-wizard-cta-sheen::before {
+        animation: none;
+        display: none;
+    }
+}
+</style>

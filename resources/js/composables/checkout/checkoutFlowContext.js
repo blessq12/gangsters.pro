@@ -124,6 +124,8 @@ export function useCheckoutFlowContext() {
         cartStore,
         userStore,
         checkoutState,
+        activeStep,
+        isGuestCheckout,
         checkoutStepMeta,
         handleStartCheckout,
         handleContinueAsGuest,
