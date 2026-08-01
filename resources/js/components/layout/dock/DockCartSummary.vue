@@ -6,7 +6,7 @@ import { useCheckoutStore } from "../../../stores/checkoutStore";
 import { useUiStore } from "../../../stores/uiStore";
 import { formatMoneyRublesRu } from "../../../utils/moneyFormat";
 
-const FLASH_MS = 3000;
+const FLASH_MS = 1000;
 
 const emit = defineEmits({
     toggle: () => true,
@@ -87,25 +87,37 @@ onUnmounted(() => {
         "
         :aria-pressed="isActive"
         data-dock-target="cart"
-        data-dock-bump-root="cart"
         @click="onClick"
     >
         <span :class="ds.sheen" aria-hidden="true" />
 
         <span :class="ds.content">
-            <template v-if="justAdded">
-                <span :class="ds.flashLabel">добавлено</span>
-            </template>
-            <template v-else-if="isEmpty">
-                <span :class="ds.emptyWrap">
-                    <i :class="ds.emptyIcon" aria-hidden="true" />
-                    <span :class="ds.emptyLabel">Корзина пуста</span>
+            <span
+                :class="[
+                    ds.idleLayer,
+                    justAdded ? ds.idleLayerHidden : '',
+                ]"
+            >
+                <template v-if="isEmpty">
+                    <span :class="ds.emptyWrap">
+                        <i :class="ds.emptyIcon" aria-hidden="true" />
+                        <span :class="ds.emptyLabel">Корзина пуста</span>
+                    </span>
+                </template>
+                <template v-else>
+                    <span :class="ds.amount">{{ amountLabel }}</span>
+                    <span :class="ds.qty">{{ qtyLabel }}</span>
+                </template>
+            </span>
+
+            <Transition name="dock-cart-added">
+                <span
+                    v-if="justAdded"
+                    :class="ds.flashLayer"
+                >
+                    <span :class="ds.flashLabel">добавлено</span>
                 </span>
-            </template>
-            <template v-else>
-                <span :class="ds.amount">{{ amountLabel }}</span>
-                <span :class="ds.qty">{{ qtyLabel }}</span>
-            </template>
+            </Transition>
         </span>
     </button>
 </template>
@@ -138,10 +150,33 @@ onUnmounted(() => {
     }
 }
 
+.dock-cart-added-enter-active,
+.dock-cart-added-leave-active {
+    transition: transform 0.22s ease;
+}
+
+.dock-cart-added-enter-from {
+    transform: translateY(-100%);
+}
+
+.dock-cart-added-leave-to {
+    transform: translateY(100%);
+}
+
+.dock-cart-added-enter-to,
+.dock-cart-added-leave-from {
+    transform: translateY(0);
+}
+
 @media (prefers-reduced-motion: reduce) {
     .dock-cart-summary-sheen::before {
         animation: none;
         display: none;
+    }
+
+    .dock-cart-added-enter-active,
+    .dock-cart-added-leave-active {
+        transition: none;
     }
 }
 </style>

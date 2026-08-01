@@ -66,6 +66,9 @@ export async function mountYandexDeliveryZoneReadonlyMap(container, options) {
     const mapCenter = resolveMapCenter(center, geometry);
     const canShowPolygon = ring.length >= 3 && ringIsNearTomsk(ring);
 
+    // API 2.1 has no native dark theme; tiles are darkened via CSS on this class.
+    container.classList.add("yandex-map-theme-dark");
+
     const map = new window.ymaps.Map(
         container,
         {
@@ -112,6 +115,7 @@ export async function mountYandexDeliveryZoneReadonlyMap(container, options) {
         refit,
         destroy() {
             map.destroy();
+            container.classList.remove("yandex-map-theme-dark");
         },
     };
 }

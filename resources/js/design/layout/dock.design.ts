@@ -50,13 +50,19 @@ export const dockDesign = {
 
     cartSummary: {
         root:
-            "relative flex min-w-[9.5rem] flex-col items-start justify-center gap-0.5 overflow-hidden rounded-none border px-4 py-1.5 text-left transition-colors sm:min-w-[11rem] sm:px-5",
+            "relative flex min-w-[9.5rem] flex-col items-start justify-center gap-0.5 overflow-hidden rounded-none border px-4 py-1.5 text-left transition-[color,background-color,border-color,box-shadow] duration-200 ease-out sm:min-w-[11rem] sm:px-5",
         rootActive: chromePillActive,
         rootInactive: chromePillInactive,
         rootFlash:
             "border-app-accent bg-app-accent text-white shadow-[0_0_18px_rgba(198,36,36,0.7)]",
         sheen: "dock-cart-summary-sheen pointer-events-none absolute inset-0 z-0",
-        content: "relative z-10 flex w-full flex-col items-start justify-center gap-0.5",
+        content:
+            "relative z-10 flex w-full min-h-[2.5rem] flex-col items-stretch justify-center overflow-hidden",
+        idleLayer:
+            "flex w-full flex-col items-start justify-center gap-0.5 transition-opacity duration-200 ease-out",
+        idleLayerHidden: "pointer-events-none opacity-0",
+        flashLayer:
+            "absolute inset-0 flex items-center justify-center",
         amount:
             "text-sm font-semibold leading-tight tabular-nums sm:text-base",
         qty: "text-[11px] leading-tight text-app-muted tabular-nums sm:text-xs",

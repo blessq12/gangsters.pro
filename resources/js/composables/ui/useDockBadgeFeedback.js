@@ -1,22 +1,13 @@
 import { watch } from "vue";
 import { playDockTabBump } from "../../animations/animationManager";
-import { useCheckoutStore } from "../../stores/checkoutStore";
 import { useFavoritesStore } from "../../stores/favoritesStore";
 
 /**
- * Bump dock badges when cart / favorites counts grow.
+ * Bump dock badges when favorites count grows.
+ * Cart uses DockCartSummary flash instead of tab bump.
  */
 export function useDockBadgeFeedback() {
-    const cartStore = useCheckoutStore();
     const favoritesStore = useFavoritesStore();
-
-    const stopCart = watch(
-        () => cartStore.cartTotalItems,
-        (count, prev) => {
-            if (count <= 0 || prev == null || count <= prev) return;
-            playDockTabBump("cart");
-        },
-    );
 
     const stopFav = watch(
         () => favoritesStore.count,
@@ -28,7 +19,6 @@ export function useDockBadgeFeedback() {
 
     return {
         dispose() {
-            stopCart();
             stopFav();
         },
     };

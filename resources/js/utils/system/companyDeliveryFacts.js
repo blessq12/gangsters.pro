@@ -197,7 +197,7 @@ const DEFAULT_DELIVERY_MAP_CITY = "Томск";
 export function buildYandexMapWidgetSearchUrl(company) {
     const city = safeTrim(company?.city) || DEFAULT_DELIVERY_MAP_CITY;
     const text = encodeURIComponent(city);
-    return `https://yandex.ru/map-widget/v1/?mode=search&text=${text}&z=12`;
+    return `https://yandex.ru/map-widget/v1/?mode=search&text=${text}&z=12&theme=dark`;
 }
 
 const KITCHEN_ADDRESS_FALLBACK = "Томск, ул. Говорова 50";

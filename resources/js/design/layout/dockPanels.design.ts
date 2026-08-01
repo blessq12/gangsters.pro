@@ -2,12 +2,13 @@
  * Dock content panels (Cart / Profile / Favorites).
  * Components: resources/js/components/layout/dock/panels/*.vue
  * Shell: DockPanelLayout + shared.layout.
+ * Background: canvas gray + pattern (`.dock-panel-shell` in style.css), same stack as `.app-shell`.
  */
 
 import { shellColorRoles, shellTypography } from "./shell.design";
 
 const dockPanelCardSurface =
-    "rounded-none border border-app-accent/30 bg-[rgba(0,0,0,0.88)] shadow-[0_0_26px_rgba(0,0,0,0.85)] backdrop-blur";
+    "dock-panel-shell rounded-none border border-app-accent/30 bg-app-canvas shadow-[0_0_26px_rgba(0,0,0,0.85)]";
 
 const dockPanelShell =
     `relative flex w-full min-w-0 max-w-full flex-col gap-3 min-h-0 h-full max-h-full overflow-hidden ${dockPanelCardSurface} px-4 py-4 sm:px-6 lg:px-8`;
@@ -16,14 +17,14 @@ export const dockPanelsDesign = {
     shared: {
         layout: {
             root: dockPanelShell,
-            header: "shrink-0 space-y-2",
+            header: "relative z-[1] shrink-0 space-y-2",
             headerRow:
                 "flex min-w-0 items-start justify-between gap-3",
             title: `font-heading ${shellTypography.scale.heading.section} ${shellColorRoles.accent}`,
             description: `${shellTypography.body.secondaryDescription} ${shellColorRoles.muted}`,
-            body: "min-h-0 flex-1 touch-pan-y space-y-4 overflow-y-auto text-xs text-app-canvas-fg sm:text-sm",
+            body: "relative z-[1] min-h-0 flex-1 touch-pan-y space-y-4 overflow-y-auto overscroll-contain bg-transparent text-xs text-app-canvas-fg sm:text-sm",
             footer:
-                "shrink-0 border-t border-app-accent/15 pt-3 mt-1",
+                "relative z-[1] shrink-0 border-t border-app-accent/15 bg-transparent pt-3 mt-1",
         },
         typography: {
             metaLine: "text-[11px] text-app-muted",
