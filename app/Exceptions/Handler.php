@@ -2,7 +2,6 @@
 
 namespace App\Exceptions;
 
-use App\Domain\Order\Exception\OrderNotFoundException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
@@ -33,12 +32,6 @@ class Handler extends ExceptionHandler
                     ? $e->getMessage()
                     : 'Требуется авторизация.',
             ], 401);
-        }
-
-        if ($e instanceof OrderNotFoundException && $request->is('api/*')) {
-            return response()->json([
-                'message' => $e->getMessage(),
-            ], 404);
         }
 
         if ($e instanceof \InvalidArgumentException && $request->is('api/*')) {
