@@ -15,5 +15,5 @@ export const closedNoticeDesign = {
         "mt-2 font-heading text-lg font-normal text-app-accent sm:text-xl",
     actions: "mt-8",
     confirmBtn:
-        "inline-flex w-full items-center justify-center rounded-none bg-app-accent px-5 py-2.5 text-sm font-semibold text-black shadow-[0_0_18px_rgba(198,36,36,0.75)] transition hover:bg-app-accent-hover",
+        "inline-flex w-full items-center justify-center rounded-none bg-app-accent px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-app-accent-hover",
 } as const;

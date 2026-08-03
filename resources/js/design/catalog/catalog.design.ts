@@ -17,7 +17,7 @@ export const catalogDesign = {
     categories: {
         outer: "relative mb-10 w-full min-w-0 max-w-full",
         island:
-            "min-w-0 max-w-full rounded-none border border-app-accent/40 bg-app-canvas shadow-[0_0_25px_rgba(0,0,0,0.7)] backdrop-blur",
+            "min-w-0 max-w-full rounded-none border border-app-accent/40 bg-app-canvas backdrop-blur",
         islandPaddingMobile: "px-4 py-4",
         islandPaddingDesktop: "px-4 py-3.5 lg:px-8",
         rowMobile:

@@ -127,7 +127,7 @@ export function buildUpdateClientProfilePayload(data = {}) {
 export function buildClientAddressPayload(data = {}) {
     return {
         type: data.type ?? undefined,
-        title: data.title ?? null,
+        title: null,
         street: data.street ?? "",
         house: data.house ?? "",
         entrance: data.entrance ?? null,

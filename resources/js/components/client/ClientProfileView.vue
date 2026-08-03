@@ -3,97 +3,49 @@ import { computed } from "vue";
 import { storeToRefs } from "pinia";
 import { useOrdersReadModel } from "../../modules/client/application/useOrdersReadModel";
 import { useUserStore } from "../../modules/client/store/userStore";
-import { formatOrderDate, formatOrderMoneyRubles } from "../../modules/client/application/orderDisplay";
+import {
+    formatMembershipDurationRu,
+    formatOrderMoneyRubles,
+} from "../../modules/client/application/orderDisplay";
 import { useAppDesign } from "../../design/useAppDesign";
-
-const emit = defineEmits(["logout"]);
 
 const pv = useAppDesign().components.client.profileView;
 
 const userStore = useUserStore();
-const { profile, token } = storeToRefs(userStore);
+const { profile } = storeToRefs(userStore);
 const { stats, loading, error } = useOrdersReadModel({ autoload: true });
 
-const isAuthenticated = computed(
-    () => Boolean(token.value) && Boolean(profile.value?.id),
+const membershipLabel = computed(() =>
+    formatMembershipDurationRu(profile.value?.created_at),
 );
-const fullName = computed(() => profile.value?.name || "Гость Gangsters");
-const phone = computed(() => profile.value?.phone || "+7 (___) ___-__-__");
-const email = computed(() => profile.value?.email || "email не указан");
 
-function handleLogoutClick() {
-    userStore.clearAuth();
-    emit("logout");
-}
+const averageCheckLabel = computed(() => {
+    if (!stats.value.count) {
+        return "—";
+    }
+    return `${formatOrderMoneyRubles(stats.value.averageOrderRubles)} ₽`;
+});
 </script>
 
 <template>
     <div :class="pv.root">
-        <p :class="pv.sectionKicker">
-            Контакты в профиле
+        <p :class="pv.welcome">
+            Спасибо, что ты с нами. Мы это ценим.
         </p>
 
-        <div :class="pv.headerRow">
-            <div :class="pv.userRow">
-                <div :class="pv.avatar">
-                    {{ fullName[0] ?? "G" }}
-                </div>
-                <div :class="pv.userTextCol">
-                    <p :class="pv.nameStrong">
-                        {{ fullName }}
-                    </p>
-                    <p :class="pv.phoneLine">
-                        {{ phone }}
-                    </p>
-                    <p :class="pv.emailLine">
-                        {{ email }}
-                    </p>
-                </div>
-            </div>
-
-            <button
-                v-if="isAuthenticated"
-                type="button"
-                :class="pv.btnLogout"
-                @click="handleLogoutClick"
-            >
-                Выйти
-            </button>
-        </div>
-
-        <div
-            v-if="isAuthenticated"
-            :class="pv.statsSection"
-        >
-            <p :class="pv.sectionKicker">
-                Статистика заказов
-            </p>
-            <p :class="pv.statsHint">
-                Считаем все оформленные заказы из твоей истории (без фильтра по статусу).
-            </p>
-
+        <div :class="pv.statsSection">
             <div
                 v-if="loading && !stats.count"
                 :class="pv.statLoading"
             >
-                Считаем вашу историю…
+                Считаем…
             </div>
 
             <div
                 v-else-if="error && !stats.count"
                 :class="pv.statError"
             >
-                <span :class="pv.statErrorAccent">{{ error }}</span>
-                <span :class="pv.statErrorSub">
-                    Статистика появится после успешной загрузки списка заказов.
-                </span>
-            </div>
-
-            <div
-                v-else-if="!stats.count"
-                :class="pv.statEmpty"
-            >
-                Заказов ещё не было. Первый заказ — и тут оживут суммы и счётчики.
+                {{ error }}
             </div>
 
             <div
@@ -102,45 +54,39 @@ function handleLogoutClick() {
             >
                 <div :class="pv.statCard">
                     <p :class="pv.statLabel">
-                        Заказов всего
+                        С нами
+                    </p>
+                    <p :class="pv.statValueMain">
+                        {{ membershipLabel || "—" }}
+                    </p>
+                </div>
+                <div :class="pv.statCard">
+                    <p :class="pv.statLabel">
+                        Заказов
                     </p>
                     <p :class="pv.statValueAccent">
                         {{ stats.count }}
                     </p>
                 </div>
-                <div :class="pv.statCard">
+                <div :class="pv.statCardWide">
                     <p :class="pv.statLabel">
-                        Сумма заказов
+                        Средний чек
                     </p>
                     <p :class="pv.statValueMain">
-                        {{ formatOrderMoneyRubles(stats.totalOrderSpendRubles) }}&nbsp;₽
+                        {{ averageCheckLabel }}
                     </p>
-                </div>
-                <div :class="pv.statCardWide">
-                    <div :class="pv.statLastRow">
-                        <div>
-                            <p :class="pv.statLabel">
-                                Последний заказ
-                            </p>
-                            <p :class="pv.statDateLine">
-                                {{ formatOrderDate(stats.lastOrderAt) }}
-                            </p>
-                        </div>
-                        <div :class="pv.statRightCol">
-                            <p :class="pv.statLabel">
-                                Средний чек
-                            </p>
-                            <p :class="pv.avgValue">
-                                {{ formatOrderMoneyRubles(stats.averageOrderRubles) }}&nbsp;₽
-                            </p>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
 
-        <p :class="pv.footerHint">
-            Адреса — вкладка «Адреса», список заказов — «Заказы», правки контактов — «Данные».
-        </p>
+        <div :class="pv.offersBlock">
+            <p :class="pv.offersTitle">
+                Персональные предложения
+            </p>
+            <p :class="pv.offersHint">
+                Проверяй этот блок — тут будут появляться предложения, доступные
+                только тебе.
+            </p>
+        </div>
     </div>
 </template>

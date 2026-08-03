@@ -30,52 +30,71 @@ const {
 const s = panels.shared;
 const p = panels.profile;
 
-const panelTitle = computed(
-    () => userStore.profile.name || "Гость Gangsters",
-);
-
-const panelDescription = computed(() =>
+const panelTitle = computed(() =>
     isAuthenticated.value
-        ? "Личный кабинет"
-        : "Войдите или зарегистрируйтесь",
+        ? userStore.profile.name || "Гость"
+        : "Стань частью семьи",
 );
 
-function profileTabClasses(name) {
-    const tabs = p.tabs;
+const panelSubtitle = computed(() => {
+    if (!isAuthenticated.value) {
+        return "";
+    }
+    return userStore.profile.phone || "";
+});
+
+function segmentCellClasses(name) {
+    const a = p.segmentSelector;
     return [
-        tabs.base,
-        activeTab.value === name ? tabs.active : tabs.inactive,
+        a.cell,
+        a.cellDivider,
+        activeTab.value === name ? a.cellSelected : a.cellIdle,
     ];
+}
+
+function logout() {
+    userStore.clearAuth();
+    handleLoggedOut();
 }
 </script>
 
 <template>
     <DockPanelLayout
         :title="panelTitle"
-        :description="panelDescription"
+        :description="panelSubtitle"
     >
-        <template #headerActions>
-            <div :class="p.headerIdentity">
-                <div :class="p.avatar">
-                    {{ userStore.profile.name?.[0] || "G" }}
-                </div>
-            </div>
-        </template>
-
-        <div
-            v-if="!isAuthenticated"
-            :class="p.tabRow"
+        <template
+            v-if="isAuthenticated"
+            #headerActions
         >
             <button
                 type="button"
-                :class="profileTabClasses(PROFILE_TAB_LOGIN)"
+                :class="p.headerLogout"
+                @click="logout"
+            >
+                Выйти
+            </button>
+        </template>
+        <div
+            v-if="!isAuthenticated"
+            :class="[p.segmentSelector.shell, p.segmentSelector.shellGuest]"
+            role="tablist"
+            aria-label="Вход или регистрация"
+        >
+            <button
+                type="button"
+                role="tab"
+                :aria-selected="activeTab === PROFILE_TAB_LOGIN"
+                :class="segmentCellClasses(PROFILE_TAB_LOGIN)"
                 @click="activeTab = PROFILE_TAB_LOGIN"
             >
                 Вход
             </button>
             <button
                 type="button"
-                :class="profileTabClasses(PROFILE_TAB_REGISTER)"
+                role="tab"
+                :aria-selected="activeTab === PROFILE_TAB_REGISTER"
+                :class="segmentCellClasses(PROFILE_TAB_REGISTER)"
                 @click="activeTab = PROFILE_TAB_REGISTER"
             >
                 Регистрация
@@ -84,32 +103,42 @@ function profileTabClasses(name) {
 
         <div
             v-else
-            :class="p.tabRow"
+            :class="p.segmentSelector.shell"
+            role="tablist"
+            aria-label="Личный кабинет"
         >
             <button
                 type="button"
-                :class="profileTabClasses(PROFILE_TAB_OVERVIEW)"
+                role="tab"
+                :aria-selected="activeTab === PROFILE_TAB_OVERVIEW"
+                :class="segmentCellClasses(PROFILE_TAB_OVERVIEW)"
                 @click="switchToOverview"
             >
                 Обзор
             </button>
             <button
                 type="button"
-                :class="profileTabClasses(PROFILE_TAB_ADDRESSES)"
+                role="tab"
+                :aria-selected="activeTab === PROFILE_TAB_ADDRESSES"
+                :class="segmentCellClasses(PROFILE_TAB_ADDRESSES)"
                 @click="activeTab = PROFILE_TAB_ADDRESSES"
             >
                 Адреса
             </button>
             <button
                 type="button"
-                :class="profileTabClasses(PROFILE_TAB_ORDERS)"
+                role="tab"
+                :aria-selected="activeTab === PROFILE_TAB_ORDERS"
+                :class="segmentCellClasses(PROFILE_TAB_ORDERS)"
                 @click="activeTab = PROFILE_TAB_ORDERS"
             >
                 Заказы
             </button>
             <button
                 type="button"
-                :class="profileTabClasses(PROFILE_TAB_EDIT)"
+                role="tab"
+                :aria-selected="activeTab === PROFILE_TAB_EDIT"
+                :class="segmentCellClasses(PROFILE_TAB_EDIT)"
                 @click="switchToEdit"
             >
                 Данные
@@ -120,6 +149,7 @@ function profileTabClasses(name) {
             <ClientLoginForm
                 v-if="activeTab === PROFILE_TAB_LOGIN"
                 @logged-in="handleLoggedIn"
+                @go-register="activeTab = PROFILE_TAB_REGISTER"
             />
 
             <ClientRegisterForm
@@ -129,15 +159,11 @@ function profileTabClasses(name) {
 
             <ClientProfileView
                 v-else-if="activeTab === PROFILE_TAB_OVERVIEW"
-                @logout="handleLoggedOut"
             />
 
-            <div v-else-if="activeTab === PROFILE_TAB_ADDRESSES">
-                <p :class="s.typography.sectionLabelUppercase">
-                    Адреса доставки
-                </p>
-                <ClientAddressesManager />
-            </div>
+            <ClientAddressesManager
+                v-else-if="activeTab === PROFILE_TAB_ADDRESSES"
+            />
 
             <div
                 v-else-if="activeTab === PROFILE_TAB_ORDERS"
@@ -149,6 +175,7 @@ function profileTabClasses(name) {
             <ClientProfileEditForm
                 v-else-if="activeTab === PROFILE_TAB_EDIT"
                 @updated="handleUpdated"
+                @logout="handleLoggedOut"
             />
         </div>
     </DockPanelLayout>

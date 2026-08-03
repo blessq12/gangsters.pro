@@ -8,7 +8,7 @@
 import { shellColorRoles, shellTypography } from "./shell.design";
 
 const dockPanelCardSurface =
-    "dock-panel-shell rounded-none border border-app-accent/30 bg-app-canvas shadow-[0_0_26px_rgba(0,0,0,0.85)]";
+    "dock-panel-shell rounded-none border border-app-accent/30 bg-app-canvas ";
 
 const dockPanelShell =
     `relative flex w-full min-w-0 max-w-full flex-col gap-3 min-h-0 h-full max-h-full overflow-hidden ${dockPanelCardSurface} px-4 py-4 sm:px-6 lg:px-8`;
@@ -43,16 +43,25 @@ export const dockPanelsDesign = {
     profile: {
         headerIdentity: "flex min-w-0 items-center gap-2",
         avatar:
-            "flex h-10 w-10 shrink-0 items-center justify-center rounded-none border border-app-accent/40 bg-neutral-950/88 text-sm font-semibold text-app-accent shadow-[0_0_16px_rgba(198,36,36,0.6)]",
+            "flex h-10 w-10 shrink-0 items-center justify-center rounded-none border border-app-accent/40 bg-neutral-950/88 text-sm font-semibold text-app-accent ",
         nameLine: "text-xs font-semibold text-app-canvas-fg",
-        tabRow: "flex flex-wrap gap-2 text-[11px] font-medium",
-        tabs: {
-            base: "rounded-none px-3 py-1 transition",
-            active:
-                "bg-app-accent text-black shadow-[0_0_14px_rgba(198,36,36,0.7)]",
-            inactive: "bg-black/5 text-app-canvas-fg hover:bg-black/8",
+        /**
+         * Segment control: гость (Вход|Регистрация) и ЛК (Обзор|Адреса|Заказы|Данные).
+         */
+        segmentSelector: {
+            shell:
+                "flex w-full flex-row overflow-hidden rounded-none border border-app-accent/35 bg-black/10",
+            shellGuest: "md:w-1/2",
+            cell:
+                "relative flex min-h-[2.5rem] flex-1 items-center justify-center px-2 py-2 text-xs font-semibold tracking-wide transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-app-accent/60 sm:px-3 sm:text-sm",
+            cellIdle:
+                "bg-transparent text-app-muted hover:bg-black/10 hover:text-app-canvas-fg",
+            cellSelected: "bg-app-accent text-white",
+            cellDivider: "border-r border-app-border-on-surface last:border-r-0",
         },
         ordersMinHeight: "min-h-[12rem]",
+        headerLogout:
+            "shrink-0 rounded-none border border-red-600 bg-red-500 px-2.5 py-1 text-[11px] font-semibold text-white transition hover:bg-red-600 hover:text-white",
     },
 
     favorites: {

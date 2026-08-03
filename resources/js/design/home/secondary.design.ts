@@ -10,12 +10,9 @@ const islandPad = secondarySurfaces.islandPad;
 export const secondaryMarketingDesign = {
     contentBlock: {
         section: `relative overflow-hidden ${island} ${islandPad}`,
-        glowLayer:
-            "pointer-events-none absolute inset-0 opacity-40 mix-blend-screen",
-        glowAmberTR:
-            "absolute -top-10 -right-10 h-32 w-32 rounded-full bg-app-accent/10 blur-3xl",
-        glowRoseBL:
-            "absolute bottom-0 left-0 h-24 w-24 rounded-full bg-app-accent/12 blur-3xl",
+        glowLayer: "hidden",
+        glowAmberTR: "hidden",
+        glowRoseBL: "hidden",
         inner: "relative",
         headerRow:
             "mb-5 flex flex-col gap-3 border-b border-app-accent/20 pb-4 sm:flex-row sm:items-end sm:justify-between",

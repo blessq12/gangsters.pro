@@ -11,7 +11,7 @@ export const PROFILE_TAB_ORDERS = "orders";
 export const PROFILE_TAB_EDIT = "edit";
 
 /**
- * Состояние вкладок дока профиля: гость (вход/регистрация) или ЛК (обзор/адреса/заказы/редактирование).
+ * Состояние вкладок дока профиля: гость (вход/регистрация) или ЛК (обзор/адреса/заказы/данные).
  */
 export function useProfileDockTabs(userStore) {
     const activeTab = ref(PROFILE_TAB_LOGIN);
@@ -48,7 +48,7 @@ export function useProfileDockTabs(userStore) {
         isAuthenticated,
         handleLoggedIn: goOverview,
         handleRegistered: goOverview,
-        handleUpdated: goOverview,
+        handleUpdated: goEdit,
         handleLoggedOut: goLogin,
         switchToOverview: goOverview,
         switchToEdit: goEdit,

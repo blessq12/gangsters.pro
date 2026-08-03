@@ -22,8 +22,7 @@ export const catalogSearchDesign = {
     bodyInner: "mx-auto w-full max-w-7xl",
     panelHero:
         "relative mx-auto max-w-lg overflow-hidden py-10 text-center sm:py-16",
-    panelGlow:
-        "pointer-events-none absolute inset-x-8 bottom-0 top-1/3 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(198,36,36,0.16),transparent_68%)]",
+    panelGlow: "hidden",
     panelContent: "relative z-[1]",
     kicker: "font-heading text-3xl font-normal text-app-accent sm:text-4xl",
     title: "mt-3 text-xl font-normal text-app-canvas-fg sm:text-2xl",

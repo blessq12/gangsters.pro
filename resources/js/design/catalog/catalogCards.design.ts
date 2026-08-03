@@ -91,7 +91,7 @@ export const catalogCardsDesign = {
             "shrink-0 flex h-9 w-9 items-center justify-center border border-transparent bg-neutral-950/85 text-[15px] text-app-canvas-fg transition-colors hover:border-app-accent hover:text-app-accent sm:h-8 sm:w-8",
         favBtnActive: "border-app-accent text-app-accent",
         addBtn:
-            "inline-flex min-h-10 flex-1 items-center justify-center bg-app-accent px-3 py-2 text-xs font-semibold text-black shadow-[0_0_12px_rgba(198,36,36,0.45)] transition-transform hover:scale-[1.02] sm:min-h-0 sm:py-1.5 sm:text-sm",
+            "inline-flex min-h-10 flex-1 items-center justify-center bg-app-accent px-3 py-2 text-xs font-semibold text-black transition-transform hover:scale-[1.02] sm:min-h-0 sm:py-1.5 sm:text-sm",
         qtyBar:
             "inline-flex min-h-10 flex-1 items-center justify-between border border-app-accent/60 bg-neutral-950/88 px-2 py-1 text-xs text-app-canvas-fg",
         qtyBtn:

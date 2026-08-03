@@ -135,14 +135,6 @@ async function submit() {
         :class="s.formRoot"
         @submit.prevent="submit"
     >
-        <h3 :class="s.headingH3">
-            Регистрация
-        </h3>
-
-        <p :class="s.leadMuted">
-            Создаём аккаунт, чтобы сохранять адреса и заказы.
-        </p>
-
         <div :class="s.fieldStack">
             <FormField
                 label="Имя"

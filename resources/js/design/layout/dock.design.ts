@@ -5,7 +5,7 @@
 
 /** Same as `navbar.*.bar`: dense island on canvas. */
 const dockChromeIslandSurface =
-    "rounded-none border border-app-accent/40 bg-app-canvas shadow-[0_0_25px_rgba(0,0,0,0.7)] backdrop-blur";
+    "rounded-none border border-app-accent/40 bg-app-canvas backdrop-blur";
 
 /** Pill / icon on chrome island (dock tabs, category bar). */
 const chromePillActive =

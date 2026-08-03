@@ -74,7 +74,7 @@ export const shellTypography = {
 
 /**
  * Алиасы Tailwind для семантики `app-*` (hex только на `.app-shell` в MainLayout*).
- * Перебитие в доменных `*.design.ts` допускается точечно (ошибки `red-*`, контраст на кнопках `text-black`).
+ * Перебитие в доменных `*.design.ts` допускается точечно (ошибки `red-*`, контраст на кнопках `text-white`).
  */
 export const shellColorRoles = {
     canvasFg: "text-app-canvas-fg",
@@ -137,23 +137,18 @@ export const layoutShellDesign = {
     /** SecondaryPageLayout: крупный hero вторичных страниц */
     secondaryPage: {
         section: "relative mt-12 mb-12",
-        outerGlowWrap:
-            "pointer-events-none absolute inset-0 opacity-40 mix-blend-screen",
-        outerGlowTL:
-            "absolute -top-24 -left-10 h-56 w-56 rounded-full bg-app-accent/15 blur-3xl",
-        outerGlowBR:
-            "absolute -bottom-24 right-0 h-64 w-64 rounded-full bg-app-accent/12 blur-3xl",
+        outerGlowWrap: "hidden",
+        outerGlowTL: "hidden",
+        outerGlowBR: "hidden",
         heroCard:
             "relative overflow-hidden rounded-none border border-app-accent/20 bg-neutral-950/72 shadow-[0_20px_80px_rgba(0,0,0,0.55)]",
         heroImageLayer: "absolute inset-0",
         heroImage: "h-full w-full object-cover opacity-55",
         heroScrim:
             "absolute inset-0 bg-[linear-gradient(135deg,rgba(0,0,0,0.92)_0%,rgba(0,0,0,0.66)_45%,rgba(0,0,0,0.4)_100%)]",
-        innerAmbient: "absolute inset-0",
-        innerGlowA:
-            "absolute -left-20 top-10 h-52 w-52 rounded-full bg-app-accent/10 blur-3xl",
-        innerGlowB:
-            "absolute top-0 right-0 h-60 w-60 rounded-full bg-app-accent/12 blur-3xl",
+        innerAmbient: "hidden",
+        innerGlowA: "hidden",
+        innerGlowB: "hidden",
         contentPad:
             "relative px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12",
         textCol: "min-w-0",

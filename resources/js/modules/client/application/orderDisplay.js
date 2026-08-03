@@ -53,3 +53,53 @@ export function formatOrderDate(iso) {
         return String(iso);
     }
 }
+
+function pluralRu(n, one, few, many) {
+    const abs = Math.abs(n) % 100;
+    const n1 = abs % 10;
+    if (abs > 10 && abs < 20) return many;
+    if (n1 === 1) return one;
+    if (n1 >= 2 && n1 <= 4) return few;
+    return many;
+}
+
+/** Сколько клиент с нами (по created_at профиля). */
+export function formatMembershipDurationRu(iso) {
+    if (!iso) return null;
+    const start = new Date(iso);
+    const now = new Date();
+    if (Number.isNaN(start.getTime())) return null;
+
+    let months =
+        (now.getFullYear() - start.getFullYear()) * 12 +
+        (now.getMonth() - start.getMonth());
+    if (now.getDate() < start.getDate()) {
+        months -= 1;
+    }
+    if (months < 0) {
+        months = 0;
+    }
+
+    if (months === 0) {
+        const days = Math.max(
+            0,
+            Math.floor((now.getTime() - start.getTime()) / 86_400_000),
+        );
+        if (days <= 0) {
+            return "сегодня";
+        }
+        return `${days} ${pluralRu(days, "день", "дня", "дней")}`;
+    }
+
+    if (months < 12) {
+        return `${months} ${pluralRu(months, "месяц", "месяца", "месяцев")}`;
+    }
+
+    const years = Math.floor(months / 12);
+    const remMonths = months % 12;
+    const yearsPart = `${years} ${pluralRu(years, "год", "года", "лет")}`;
+    if (remMonths === 0) {
+        return yearsPart;
+    }
+    return `${yearsPart} ${remMonths} ${pluralRu(remMonths, "месяц", "месяца", "месяцев")}`;
+}

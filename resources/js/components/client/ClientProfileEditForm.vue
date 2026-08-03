@@ -1,22 +1,23 @@
 <script setup>
 import { ref, watch } from "vue";
-import { useUserStore } from "../../modules/client/store/userStore";
+import { useAppDesign } from "../../design/useAppDesign";
 import { useRuPhoneModel } from "../../modules/client/application/useRuPhoneModel";
-import { useFormFieldErrors } from "../../platform/useFormFieldErrors";
+import { useUserStore } from "../../modules/client/store/userStore";
+import { applyApiFieldErrors } from "../../platform/extractApiFieldErrors";
+import { mapApiError } from "../../platform/mapApiError";
 import {
     RU_PHONE_MASKA_PATTERN,
     RU_PHONE_MASKA_TOKENS_ATTR,
     validateRuPhoneForSubmit,
 } from "../../platform/ruPhone";
-import { mapApiError } from "../../platform/mapApiError";
-import { applyApiFieldErrors } from "../../platform/extractApiFieldErrors";
-import { useAppDesign } from "../../design/useAppDesign";
+import { useFormFieldErrors } from "../../platform/useFormFieldErrors";
 import FormField from "../ui/FormField.vue";
 
-const emit = defineEmits(["updated"]);
+const emit = defineEmits(["updated", "logout"]);
 
 const cli = useAppDesign().components.client;
 const s = cli.shared;
+const pv = cli.profileView;
 
 const userStore = useUserStore();
 const fieldErrors = useFormFieldErrors();
@@ -90,24 +91,30 @@ async function submit() {
         loading.value = false;
     }
 }
+
+function handleLogoutClick() {
+    userStore.clearAuth();
+    emit("logout");
+}
 </script>
 
 <template>
-    <form
-        :class="s.formRoot"
-        @submit.prevent="submit"
-    >
-        <h3 :class="s.headingH3">
-            Редактирование профиля
-        </h3>
-
+    <form :class="s.formRoot" @submit.prevent="submit">
         <div :class="s.fieldStack">
             <FormField
                 label="Имя"
                 error-size="xs"
                 :error="fieldErrors.get('name')"
             >
-                <template #default="{ id, invalid, invalidClass, describedBy, ariaInvalid }">
+                <template
+                    #default="{
+                        id,
+                        invalid,
+                        invalidClass,
+                        describedBy,
+                        ariaInvalid,
+                    }"
+                >
                     <input
                         :id="id"
                         v-model="form.name"
@@ -125,7 +132,15 @@ async function submit() {
                 error-size="xs"
                 :error="fieldErrors.get('phone')"
             >
-                <template #default="{ id, invalid, invalidClass, describedBy, ariaInvalid }">
+                <template
+                    #default="{
+                        id,
+                        invalid,
+                        invalidClass,
+                        describedBy,
+                        ariaInvalid,
+                    }"
+                >
                     <input
                         :id="id"
                         v-model="phoneMask.masked"
@@ -146,7 +161,15 @@ async function submit() {
                 error-size="xs"
                 :error="fieldErrors.get('email')"
             >
-                <template #default="{ id, invalid, invalidClass, describedBy, ariaInvalid }">
+                <template
+                    #default="{
+                        id,
+                        invalid,
+                        invalidClass,
+                        describedBy,
+                        ariaInvalid,
+                    }"
+                >
                     <input
                         :id="id"
                         v-model="form.email"
@@ -164,7 +187,15 @@ async function submit() {
                 error-size="xs"
                 :error="fieldErrors.get('birth_date')"
             >
-                <template #default="{ id, invalid, invalidClass, describedBy, ariaInvalid }">
+                <template
+                    #default="{
+                        id,
+                        invalid,
+                        invalidClass,
+                        describedBy,
+                        ariaInvalid,
+                    }"
+                >
                     <input
                         :id="id"
                         v-model="form.birth_date"
@@ -177,18 +208,11 @@ async function submit() {
             </FormField>
         </div>
 
-        <p
-            v-if="fieldErrors.formError"
-            :class="s.errorXs"
-        >
+        <p v-if="fieldErrors.formError" :class="s.errorXs">
             {{ fieldErrors.formError }}
         </p>
 
-        <button
-            type="submit"
-            :disabled="loading"
-            :class="s.btnPrimaryWide"
-        >
+        <button type="submit" :disabled="loading" :class="s.btnPrimaryWide">
             <span v-if="!loading">Сохранить</span>
             <span v-else>Сохраняем…</span>
         </button>

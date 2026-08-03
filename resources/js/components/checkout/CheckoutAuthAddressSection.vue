@@ -56,11 +56,9 @@ function formatAddressLine(address) {
         </p>
 
         <CheckoutAddressFormFields
-            show-title
             show-comment
             comment-placeholder="Заметка к адресу в профиле (необязательно)"
             show-default-checkbox
-            :title="newAddressForm.title"
             :street="newAddressForm.street"
             :house="newAddressForm.house"
             :entrance="newAddressForm.entrance"
@@ -69,7 +67,6 @@ function formatAddressLine(address) {
             :make-default="newAddressForm.make_default"
             :street-error="newAddressFieldErrors.get('street')"
             :house-error="newAddressFieldErrors.get('house')"
-            @update:title="newAddressForm.title = $event"
             @update:street="newAddressForm.street = $event"
             @update:house="newAddressForm.house = $event"
             @update:entrance="newAddressForm.entrance = $event"
@@ -130,13 +127,6 @@ function formatAddressLine(address) {
                         </span>
                         <span :class="o.addressInner">
                             <span :class="o.addressTitle">
-                                {{
-                                    address.title ||
-                                        address.label ||
-                                        `Адрес #${address.id}`
-                                }}
-                            </span>
-                            <span :class="o.addressMeta">
                                 {{ formatAddressLine(address) }}
                             </span>
                         </span>
@@ -163,10 +153,8 @@ function formatAddressLine(address) {
                     :class="[s.newAddressWrap, s.sectionInset]"
                 >
                     <CheckoutAddressFormFields
-                        show-title
                         show-comment
                         show-default-checkbox
-                        :title="newAddressForm.title"
                         :street="newAddressForm.street"
                         :house="newAddressForm.house"
                         :entrance="newAddressForm.entrance"
@@ -175,7 +163,6 @@ function formatAddressLine(address) {
                         :make-default="newAddressForm.make_default"
                         :street-error="newAddressFieldErrors.get('street')"
                         :house-error="newAddressFieldErrors.get('house')"
-                        @update:title="newAddressForm.title = $event"
                         @update:street="newAddressForm.street = $event"
                         @update:house="newAddressForm.house = $event"
                         @update:entrance="newAddressForm.entrance = $event"

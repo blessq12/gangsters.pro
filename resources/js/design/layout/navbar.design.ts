@@ -19,7 +19,7 @@ export const navbarDesign = {
 
     responsive: {
         inner: "mx-auto max-w-7xl px-4 sm:px-6 lg:px-8",
-        bar: "flex h-[70px] min-h-[70px] items-center justify-between gap-4 overflow-visible rounded-none border border-app-accent/40 bg-app-canvas px-4 py-0 shadow-[0_0_25px_rgba(0,0,0,0.7)] backdrop-blur sm:px-6 lg:px-8",
+        bar: "flex h-[70px] min-h-[70px] items-center justify-between gap-4 overflow-visible rounded-none border border-app-accent/40 bg-app-canvas px-4 py-0 backdrop-blur sm:px-6 lg:px-8",
         leftZone:
             "flex min-w-0 items-center gap-2 sm:gap-3 w-24 sm:w-auto",
         balanceSpacer: "w-10 shrink-0 md:hidden",
@@ -27,7 +27,7 @@ export const navbarDesign = {
         navLeft: `flex items-center gap-4 ${shellTypography.body.navRow}`,
         logoRow: `${shellTypography.heading.logoMark} relative z-[2] min-w-0 flex-1 self-stretch`,
         logoImg:
-            "mx-auto h-[6.25rem] w-auto max-w-[10.5rem] object-contain drop-shadow-[0_0_15px_rgba(198,36,36,0.45)] transition-transform duration-200 group-hover:scale-105 group-hover:drop-shadow-[0_0_22px_rgba(198,36,36,0.7)] sm:h-[7rem] sm:max-w-[12rem] md:h-[7.75rem] md:max-w-[13.5rem]",
+            "mx-auto h-[6.25rem] w-auto max-w-[10.5rem] object-contain transition-transform duration-200 group-hover:scale-105 sm:h-[7rem] sm:max-w-[12rem] md:h-[7.75rem] md:max-w-[13.5rem]",
         rightZone:
             "flex items-center justify-end gap-2 sm:gap-3 w-24 sm:w-auto",
         burgerButton:
@@ -37,26 +37,26 @@ export const navbarDesign = {
 
     desktop: {
         inner: "mx-auto max-w-7xl px-6 lg:px-8",
-        bar: "flex h-[70px] min-h-[70px] items-center justify-between gap-4 overflow-visible rounded-none border border-app-accent/40 bg-app-canvas px-4 py-0 shadow-[0_0_25px_rgba(0,0,0,0.7)] backdrop-blur sm:px-6 lg:px-8",
+        bar: "flex h-[70px] min-h-[70px] items-center justify-between gap-4 overflow-visible rounded-none border border-app-accent/40 bg-app-canvas px-4 py-0 backdrop-blur sm:px-6 lg:px-8",
         leftZone: "flex min-w-0 items-center",
         navLeft: `flex items-center gap-4 ${shellTypography.body.navRow}`,
         logoRow: `${shellTypography.heading.logoMark} relative z-[2] min-w-0 flex-1 self-stretch`,
         logoImg:
-            "mx-auto h-[7rem] w-auto max-w-[12rem] object-contain drop-shadow-[0_0_15px_rgba(198,36,36,0.45)] transition-transform duration-200 group-hover:scale-105 group-hover:drop-shadow-[0_0_22px_rgba(198,36,36,0.7)] lg:h-[7.75rem] lg:max-w-[14rem]",
+            "mx-auto h-[7rem] w-auto max-w-[12rem] object-contain transition-transform duration-200 group-hover:scale-105 lg:h-[7.75rem] lg:max-w-[14rem]",
         rightZone: "flex items-center justify-end gap-4 w-48",
         navRight: `flex items-center gap-4 ${shellTypography.body.navRow}`,
     },
 
     mobile: {
         inner: "mx-auto max-w-7xl px-4",
-        bar: "flex h-[70px] min-h-[70px] items-center justify-between gap-4 overflow-visible rounded-none border border-app-accent/40 bg-app-canvas px-4 py-0 shadow-[0_0_25px_rgba(0,0,0,0.7)] backdrop-blur",
+        bar: "flex h-[70px] min-h-[70px] items-center justify-between gap-4 overflow-visible rounded-none border border-app-accent/40 bg-app-canvas px-4 py-0 backdrop-blur",
         scheduleZone:
             "flex shrink-0 items-center justify-start pr-1",
         logoRow: `${shellTypography.heading.logoMark} relative z-[2] min-w-0 flex-1 self-stretch`,
         logoPulseWrap:
             "inline-flex origin-center will-change-transform",
         logoImg:
-            "mx-auto h-[6.25rem] w-auto max-w-[10rem] object-contain drop-shadow-[0_0_12px_rgba(198,36,36,0.4)] transition-transform duration-200 group-hover:scale-105 sm:h-[7rem] sm:max-w-[12rem]",
+            "mx-auto h-[6.25rem] w-auto max-w-[10rem] object-contain transition-transform duration-200 group-hover:scale-105 sm:h-[7rem] sm:max-w-[12rem]",
         burgerZone: "flex items-center justify-end gap-2",
         burgerButton:
             "flex h-9 w-9 items-center justify-center rounded-none border border-black/20 bg-neutral-950/88 text-app-canvas-fg transition-colors",

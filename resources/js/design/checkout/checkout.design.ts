@@ -27,8 +27,7 @@ export const checkoutDesign = {
             "pt-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-app-muted",
         pillRound: "rounded-none px-3 py-1 transition",
         pillRoundText: "rounded-none px-3 py-1 text-xs transition",
-        pillActive:
-            "bg-app-accent text-black shadow-[0_0_14px_rgba(198,36,36,0.7)]",
+        pillActive: "bg-app-accent text-white",
         pillInactive: "bg-black/5 text-app-canvas-fg hover:bg-black/8",
         introMuted: "text-sm text-app-muted",
         stepHint: "text-sm leading-snug text-app-muted",
@@ -66,7 +65,7 @@ export const checkoutDesign = {
         registerPitchListItem: "flex gap-2",
         registerPitchListMark: "mt-0.5 shrink-0 text-app-accent",
         registerPitchBtn:
-            "inline-flex w-full items-center justify-center rounded-none bg-app-accent px-4 py-3 text-sm font-bold text-black transition hover:bg-app-accent-hover",
+            "inline-flex w-full items-center justify-center rounded-none bg-app-accent px-4 py-3 text-sm font-bold text-white transition hover:bg-app-accent-hover",
         sectionInset: `${nestedCard} space-y-2 px-3 py-3`,
         /** Светлая панель формы адреса (курьер) — без тёмного glass-island. */
         sectionForm:
@@ -104,16 +103,16 @@ export const checkoutDesign = {
         linkUnderline:
             "text-sm underline-offset-2 hover:underline text-app-accent hover:text-app-accent",
         btnPrimarySm:
-            "inline-flex items-center justify-center rounded-none bg-app-accent px-3 py-2 text-sm font-semibold text-black shadow-[0_0_14px_rgba(198,36,36,0.7)] transition hover:bg-app-accent-hover",
+            "inline-flex items-center justify-center rounded-none bg-app-accent px-3 py-2 text-sm font-semibold text-white transition hover:bg-app-accent-hover",
         btnPrimarySmBusy:
-            "inline-flex items-center justify-center rounded-none bg-app-accent px-3 py-2 text-sm font-semibold text-black shadow-[0_0_14px_rgba(198,36,36,0.7)] transition hover:bg-app-accent-hover disabled:opacity-60",
+            "inline-flex items-center justify-center rounded-none bg-app-accent px-3 py-2 text-sm font-semibold text-white transition hover:bg-app-accent-hover disabled:opacity-60",
         /** Единая primary-кнопка навигации визарда (nav footer, success). */
         btnPrimaryNav:
-            "inline-flex items-center justify-center rounded-none bg-app-accent px-4 py-2.5 text-sm font-bold text-black shadow-[0_0_14px_rgba(198,36,36,0.7)] transition hover:bg-app-accent-hover disabled:opacity-60",
+            "inline-flex items-center justify-center rounded-none bg-app-accent px-4 py-2.5 text-sm font-bold text-white transition hover:bg-app-accent-hover disabled:opacity-60",
         btnPrimaryNavBusy:
-            "inline-flex items-center justify-center rounded-none bg-app-accent px-4 py-2.5 text-sm font-bold text-black shadow-[0_0_14px_rgba(198,36,36,0.7)] transition hover:bg-app-accent-hover disabled:opacity-60",
+            "inline-flex items-center justify-center rounded-none bg-app-accent px-4 py-2.5 text-sm font-bold text-white transition hover:bg-app-accent-hover disabled:opacity-60",
         btnPrimaryMd:
-            "inline-flex items-center justify-center rounded-none bg-app-accent px-4 py-2.5 text-sm font-bold text-black shadow-[0_0_18px_rgba(198,36,36,0.7)] transition hover:bg-app-accent-hover",
+            "inline-flex items-center justify-center rounded-none bg-app-accent px-4 py-2.5 text-sm font-bold text-white transition hover:bg-app-accent-hover",
         btnAuthSecondary:
             "inline-flex w-full items-center justify-center rounded-none border border-black/15 bg-black/5 px-4 py-2.5 text-sm font-medium text-app-canvas-fg transition hover:bg-black/8",
         btnSecondaryOutline:
@@ -169,7 +168,7 @@ export const checkoutDesign = {
         giftCta: `shrink-0 ${chromePillInactive} px-3 py-1.5 text-xs font-bold text-app-accent`,
         authActions: "mt-3 flex flex-col gap-2",
         authCtaBtn:
-            "checkout-auth-cta relative inline-flex w-full items-center justify-center overflow-hidden rounded-none bg-app-accent px-4 py-3 text-sm font-bold text-black shadow-[0_0_22px_rgba(198,36,36,0.75)] transition hover:bg-app-accent-hover",
+            "checkout-auth-cta relative inline-flex w-full items-center justify-center overflow-hidden rounded-none bg-app-accent px-4 py-3 text-sm font-bold text-white transition hover:bg-app-accent-hover",
         complementProgressCard:
             "mt-3 space-y-1 rounded-none border border-app-accent/25 bg-app-accent/8 px-3 py-2",
         zoneStatusIn:
@@ -206,7 +205,7 @@ export const checkoutDesign = {
             "flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between",
         giftFooterHint: "text-xs text-app-muted",
         giftApplyBtn:
-            "inline-flex items-center justify-center rounded-none bg-app-accent px-4 py-2 text-xs font-semibold text-black transition hover:bg-app-accent-hover disabled:cursor-not-allowed disabled:opacity-60 w-full",
+            "inline-flex items-center justify-center rounded-none bg-app-accent px-4 py-2 text-xs font-semibold text-white transition hover:bg-app-accent-hover disabled:cursor-not-allowed disabled:opacity-60 w-full",
     },
 
     inlineOption: {
@@ -237,7 +236,7 @@ export const checkoutDesign = {
         listStack: "flex flex-col gap-2",
         card: "group relative flex w-full cursor-pointer border text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-accent/60",
         cardSelected:
-            "border-app-accent bg-app-accent/10 ring-1 ring-app-accent/50 shadow-[0_0_18px_rgba(198,36,36,0.25)]",
+            "border-app-accent bg-app-accent/10 ring-1 ring-app-accent/50 ",
         cardIdle:
             "border-app-border-on-surface bg-app-glass-fill hover:border-app-accent/40 hover:bg-black/5",
         inner: "flex w-full items-start gap-3 px-3 py-3 sm:px-4 sm:py-3.5",
@@ -267,11 +266,11 @@ export const checkoutDesign = {
             "relative z-10 flex w-full items-center justify-center gap-3 px-4",
         primaryLabel: "text-base font-bold leading-none",
         totalLabel:
-            "text-base font-bold tabular-nums leading-none text-black/85",
+            "text-base font-bold tabular-nums leading-none text-white/85",
         btnPrimary:
-            "checkout-wizard-cta relative flex min-h-14 flex-1 items-center justify-center overflow-hidden rounded-none bg-app-accent py-4 text-black transition hover:bg-app-accent-hover",
+            "checkout-wizard-cta relative flex min-h-14 flex-1 items-center justify-center overflow-hidden rounded-none bg-app-accent py-4 text-white transition hover:bg-app-accent-hover",
         btnPrimaryBusy:
-            "checkout-wizard-cta relative flex min-h-14 flex-1 items-center justify-center overflow-hidden rounded-none bg-app-accent py-4 text-black transition hover:bg-app-accent-hover disabled:opacity-60",
+            "checkout-wizard-cta relative flex min-h-14 flex-1 items-center justify-center overflow-hidden rounded-none bg-app-accent py-4 text-white transition hover:bg-app-accent-hover disabled:opacity-60",
     },
 
     summaryRow: {
@@ -309,7 +308,7 @@ export const checkoutDesign = {
         profileLink:
             "text-sm text-app-accent underline-offset-2 hover:underline",
         savePrimaryBtn:
-            "inline-flex w-full items-center justify-center rounded-none bg-app-accent px-3 py-2.5 text-sm font-bold text-black shadow-[0_0_14px_rgba(198,36,36,0.7)] transition hover:bg-app-accent-hover disabled:opacity-60",
+            "inline-flex w-full items-center justify-center rounded-none bg-app-accent px-3 py-2.5 text-sm font-bold text-white transition hover:bg-app-accent-hover disabled:opacity-60",
         listSection: "space-y-2",
     },
 

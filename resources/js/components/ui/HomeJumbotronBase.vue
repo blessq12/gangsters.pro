@@ -104,7 +104,7 @@ const swiperBreakpoints = computed(() =>
 );
 
 const handleSwiperInit = (swiper) => {
-    if (!swiper) return;
+    if (!swiper || swiper.destroyed) return;
     swiperRef.value = swiper;
     // Do not call slideTo on init: with speed 0, transitionend may never fire
     // and Autoplay stays paused after beforeTransitionStart.
@@ -116,7 +116,7 @@ const handleSwiperInit = (swiper) => {
 const goPrev = () => {
     const swiper = swiperRef.value;
     const total = slides.value.length;
-    if (!swiper || total < 2) return;
+    if (!swiper || swiper.destroyed || total < 2) return;
 
     const targetIndex = (swiper.realIndex - 1 + total) % total;
     if (loopReady.value) {
@@ -130,7 +130,7 @@ const goPrev = () => {
 const goNext = () => {
     const swiper = swiperRef.value;
     const total = slides.value.length;
-    if (!swiper || total < 2) return;
+    if (!swiper || swiper.destroyed || total < 2) return;
 
     const targetIndex = (swiper.realIndex + 1) % total;
     if (loopReady.value) {
@@ -146,10 +146,7 @@ const swiperRemountKey = computed(
 );
 
 onBeforeUnmount(() => {
-    const swiper = swiperRef.value;
-    if (!swiper?.destroyed) {
-        swiper.destroy(true, true);
-    }
+    // swiper/vue сам destroy'ит инстанс; ручной destroy на HMR гоняется с updated.
     swiperRef.value = null;
 });
 </script>

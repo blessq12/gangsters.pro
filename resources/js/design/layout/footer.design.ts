@@ -5,7 +5,7 @@
 export const footerDesign = {
     footer: "relative z-[1] mt-10 pb-6",
     inner: "mx-auto max-w-7xl px-4 sm:px-6 lg:px-8",
-    bar: "flex flex-wrap items-center justify-end gap-x-4 gap-y-2 rounded-none border border-app-accent/30 bg-app-canvas px-4 py-4 text-sm shadow-[0_0_22px_rgba(0,0,0,0.65)] backdrop-blur sm:px-6 lg:px-8",
+    bar: "flex flex-wrap items-center justify-end gap-x-4 gap-y-2 rounded-none border border-app-accent/30 bg-app-canvas px-4 py-4 text-sm backdrop-blur sm:px-6 lg:px-8",
     legalLinks: "flex flex-wrap gap-3 text-app-muted/85",
     legalButton:
         "hover:text-app-accent transition-colors duration-200",

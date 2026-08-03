@@ -1,10 +1,10 @@
 <script setup>
 import { computed, ref, watch } from "vue";
+import { useAppDesign } from "../../design/useAppDesign";
 import { useUserStore } from "../../modules/client/store/userStore";
-import { useFormFieldErrors } from "../../platform/useFormFieldErrors";
 import { applyApiFieldErrors } from "../../platform/extractApiFieldErrors";
 import { mapApiError } from "../../platform/mapApiError";
-import { useAppDesign } from "../../design/useAppDesign";
+import { useFormFieldErrors } from "../../platform/useFormFieldErrors";
 import FormField from "../ui/FormField.vue";
 
 const userStore = useUserStore();
@@ -15,7 +15,6 @@ const s = cli.shared;
 const ad = cli.addresses;
 
 const form = ref({
-    title: "",
     street: "",
     house: "",
     entrance: "",
@@ -30,7 +29,16 @@ const hasAddresses = computed(
     () => Array.isArray(userStore.addresses) && userStore.addresses.length > 0,
 );
 
-const isAddOpen = ref(false);
+/** Аккордеон только когда адреса уже есть; без адресов форма всегда открыта. */
+const isAddOpen = ref(!hasAddresses.value);
+
+watch(hasAddresses, (has) => {
+    if (!has) {
+        isAddOpen.value = true;
+    }
+});
+
+const showAddForm = computed(() => !hasAddresses.value || isAddOpen.value);
 
 watch(
     () => form.value.street,
@@ -40,6 +48,17 @@ watch(
     () => form.value.house,
     () => fieldErrors.clearField("house"),
 );
+
+function resetForm() {
+    form.value = {
+        street: "",
+        house: "",
+        entrance: "",
+        apartment: "",
+        comment: "",
+        make_default: false,
+    };
+}
 
 async function addAddress() {
     fieldErrors.clearAll();
@@ -58,7 +77,6 @@ async function addAddress() {
 
     try {
         await userStore.addClientAddress({
-            title: form.value.title || null,
             street: form.value.street,
             house: form.value.house,
             entrance: form.value.entrance || null,
@@ -67,15 +85,8 @@ async function addAddress() {
             make_default: form.value.make_default,
         });
 
-        form.value = {
-            title: "",
-            street: "",
-            house: "",
-            entrance: "",
-            apartment: "",
-            comment: "",
-            make_default: false,
-        };
+        resetForm();
+        isAddOpen.value = false;
     } catch (e) {
         console.error(e);
         if (
@@ -85,10 +96,7 @@ async function addAddress() {
             })
         ) {
             fieldErrors.setFormError(
-                mapApiError(
-                    e,
-                    "Не удалось сохранить адрес. Попробуй ещё раз.",
-                ),
+                mapApiError(e, "Не удалось сохранить адрес. Попробуй ещё раз."),
             );
         }
     } finally {
@@ -102,10 +110,7 @@ async function removeAddress(id) {
     } catch (e) {
         console.error(e);
         fieldErrors.setFormError(
-            mapApiError(
-                e,
-                "Не удалось удалить адрес. Попробуй ещё раз.",
-            ),
+            mapApiError(e, "Не удалось удалить адрес. Попробуй ещё раз."),
         );
     }
 }
@@ -117,10 +122,7 @@ function useAddress(id) {
 
 <template>
     <div :class="ad.root">
-        <div
-            v-if="hasAddresses"
-            :class="ad.listStack"
-        >
+        <div v-if="hasAddresses" :class="ad.listStack">
             <div
                 v-for="address in userStore.addresses"
                 :key="address.id"
@@ -129,15 +131,20 @@ function useAddress(id) {
                 <div :class="ad.cardRow">
                     <div>
                         <p :class="ad.titleStrong">
-                            {{ address.title || "Адрес #" + address.id }}
-                        </p>
-                        <p :class="ad.metaLine">
                             {{ address.street }}, д. {{ address.house }}
+                        </p>
+                        <p
+                            v-if="address.entrance || address.apartment"
+                            :class="ad.metaLine"
+                        >
                             <span v-if="address.entrance">
-                                , подъезд {{ address.entrance }}
+                                подъезд {{ address.entrance }}
+                            </span>
+                            <span v-if="address.entrance && address.apartment">
+                                ,
                             </span>
                             <span v-if="address.apartment">
-                                , кв. {{ address.apartment }}
+                                кв. {{ address.apartment }}
                             </span>
                         </p>
                     </div>
@@ -147,7 +154,11 @@ function useAddress(id) {
                             :class="ad.btnSelect"
                             @click="useAddress(address.id)"
                         >
-                            {{ userStore.selectedAddressId === address.id ? "Выбран" : "Выбрать" }}
+                            {{
+                                userStore.selectedAddressId === address.id
+                                    ? "Выбран"
+                                    : "Выбрать"
+                            }}
                         </button>
                         <button
                             type="button"
@@ -158,25 +169,19 @@ function useAddress(id) {
                         </button>
                     </div>
                 </div>
-                <p
-                    v-if="address.comment"
-                    :class="ad.commentLine"
-                >
+                <p v-if="address.comment" :class="ad.commentLine">
                     {{ address.comment }}
                 </p>
             </div>
         </div>
 
-        <p
-            v-else
-            :class="ad.emptyHint"
-        >
-            Адреса ещё не добавлены. Укажи адрес здесь или при оформлении заказа — мы его
-            запомним.
+        <p v-else :class="ad.emptyHint">
+            Добавь адрес один раз — при следующих заказах не придётся вводить
+            его снова.
         </p>
 
         <p
-            v-if="fieldErrors.formError && hasAddresses"
+            v-if="fieldErrors.formError && hasAddresses && !showAddForm"
             :class="s.error11"
         >
             {{ fieldErrors.formError }}
@@ -184,6 +189,7 @@ function useAddress(id) {
 
         <div :class="ad.addSection">
             <button
+                v-if="hasAddresses"
                 type="button"
                 :class="ad.expandBtn"
                 @click="isAddOpen = !isAddOpen"
@@ -196,40 +202,53 @@ function useAddress(id) {
 
             <Transition name="fade">
                 <form
-                    v-if="isAddOpen"
+                    v-if="showAddForm"
                     :class="ad.addForm"
                     @submit.prevent="addAddress"
                 >
-                    <div :class="s.addressGrid">
-                        <input
-                            v-model="form.title"
-                            type="text"
-                            placeholder="Название (дом, работа)"
-                            :class="s.inputCol2"
-                        />
+                    <FormField :error="fieldErrors.get('street')">
+                        <template
+                            #default="{
+                                id,
+                                invalid,
+                                invalidClass,
+                                describedBy,
+                                ariaInvalid,
+                            }"
+                        >
+                            <input
+                                :id="id"
+                                v-model="form.street"
+                                type="text"
+                                placeholder="Улица"
+                                :class="[s.input, invalid && invalidClass]"
+                                :aria-invalid="ariaInvalid"
+                                :aria-describedby="describedBy"
+                            />
+                        </template>
+                    </FormField>
 
-                        <FormField :error="fieldErrors.get('street')">
-                            <template #default="{ id, invalid, invalidClass, describedBy, ariaInvalid }">
-                                <input
-                                    :id="id"
-                                    v-model="form.street"
-                                    type="text"
-                                    placeholder="Улица"
-                                    :class="[s.inputCol2, invalid && invalidClass]"
-                                    :aria-invalid="ariaInvalid"
-                                    :aria-describedby="describedBy"
-                                />
-                            </template>
-                        </FormField>
-
+                    <div :class="s.addressDetailsGrid">
                         <FormField :error="fieldErrors.get('house')">
-                            <template #default="{ id, invalid, invalidClass, describedBy, ariaInvalid }">
+                            <template
+                                #default="{
+                                    id,
+                                    invalid,
+                                    invalidClass,
+                                    describedBy,
+                                    ariaInvalid,
+                                }"
+                            >
                                 <input
                                     :id="id"
                                     v-model="form.house"
                                     type="text"
                                     placeholder="Дом"
-                                    :class="[s.inputGrid11, invalid && invalidClass]"
+                                    :class="[
+                                        s.inputGrid11,
+                                        'w-full',
+                                        invalid && invalidClass,
+                                    ]"
                                     :aria-invalid="ariaInvalid"
                                     :aria-describedby="describedBy"
                                 />
@@ -240,13 +259,13 @@ function useAddress(id) {
                             v-model="form.entrance"
                             type="text"
                             placeholder="Подъезд"
-                            :class="s.inputGrid11"
+                            :class="[s.inputGrid11, 'w-full']"
                         />
                         <input
                             v-model="form.apartment"
                             type="text"
                             placeholder="Квартира"
-                            :class="s.inputGrid11"
+                            :class="[s.inputGrid11, 'w-full']"
                         />
                     </div>
 
@@ -258,17 +277,11 @@ function useAddress(id) {
                     />
 
                     <label :class="s.checkboxRow11">
-                        <AppCheckbox
-                            v-model="form.make_default"
-                            size="sm"
-                        />
+                        <AppCheckbox v-model="form.make_default" size="sm" />
                         <span>Сделать основным адресом</span>
                     </label>
 
-                    <p
-                        v-if="fieldErrors.formError"
-                        :class="s.error11"
-                    >
+                    <p v-if="fieldErrors.formError" :class="s.error11">
                         {{ fieldErrors.formError }}
                     </p>
 

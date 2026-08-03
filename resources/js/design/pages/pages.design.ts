@@ -56,7 +56,7 @@ export const pagesDesign = {
         lead: "mt-3 text-sm text-app-muted",
         actions: "mt-8 flex flex-wrap items-center justify-center gap-3",
         primaryBtn:
-            "inline-flex items-center justify-center rounded-none bg-app-accent px-5 py-2.5 text-sm font-semibold text-black shadow-[0_0_18px_rgba(198,36,36,0.75)] transition hover:bg-app-accent-hover",
+            "inline-flex items-center justify-center rounded-none bg-app-accent px-5 py-2.5 text-sm font-semibold text-black transition hover:bg-app-accent-hover",
         secondaryBtn:
             "inline-flex items-center justify-center rounded-none border border-app-border-on-surface bg-app-glass-fill px-5 py-2.5 text-sm font-medium text-app-canvas-fg backdrop-blur-md transition hover:border-app-accent/40 hover:text-app-accent",
     },
@@ -72,7 +72,7 @@ export const pagesDesign = {
             "w-full rounded-none border border-app-border-on-surface bg-app-glass-fill px-3 py-2 text-sm text-app-canvas-fg placeholder:text-app-muted focus:border-app-accent focus:outline-none focus:ring-1 focus:ring-app-accent/60",
         error: "text-xs text-red-400",
         submitBtn:
-            "inline-flex w-full items-center justify-center rounded-none bg-app-accent px-4 py-2 text-sm font-semibold text-black shadow-[0_0_18px_rgba(198,36,36,0.75)] transition hover:bg-app-accent-hover disabled:opacity-60",
+            "inline-flex w-full items-center justify-center rounded-none bg-app-accent px-4 py-2 text-sm font-semibold text-black transition hover:bg-app-accent-hover disabled:opacity-60",
         noTokenCard:
             `rounded-none border border-red-500/30 bg-app-glass-fill px-4 py-5 text-sm backdrop-blur-md ${nestedFg}`,
         noTokenLead: "mb-3",

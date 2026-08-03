@@ -28,6 +28,7 @@ final class ClientPresenter
             'phone' => $client->phone(),
             'email' => $client->email(),
             'birth_date' => $client->birthDate()?->format('Y-m-d'),
+            'created_at' => $client->createdAt()->format(DATE_ATOM),
             'consent_personal_data' => $client->consentPersonalData(),
             'consent_marketing' => $client->consentMarketing(),
             'addresses' => $addresses,

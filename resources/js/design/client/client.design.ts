@@ -15,13 +15,12 @@ export const clientDesign = {
         headingH3: "text-lg font-normal text-app-canvas-fg sm:text-xl",
         leadMuted: "text-xs text-app-muted",
         tabRow: "flex flex-wrap gap-2",
-        tabPillBase: "rounded-none px-3 py-1 text-[11px] font-medium transition",
-        tabPillActive:
-            "bg-app-accent text-black shadow-[0_0_14px_rgba(198,36,36,0.7)]",
+        tabPillBase:
+            "rounded-none px-3 py-1 text-[11px] font-medium transition",
+        tabPillActive: "bg-app-accent text-white ",
         tabPillInactive: "bg-black/5 text-app-canvas-fg hover:bg-black/8",
         label: "mb-1 block text-xs font-medium text-app-muted",
-        input:
-            "w-full rounded-none border border-app-border-on-surface bg-app-glass-fill px-3 py-2 text-sm text-app-canvas-fg placeholder:text-app-muted focus:border-app-accent focus:outline-none focus:ring-1 focus:ring-app-accent/60",
+        input: "w-full rounded-none border border-app-border-on-surface bg-app-glass-fill px-3 py-2 text-sm text-app-canvas-fg placeholder:text-app-muted focus:border-app-accent focus:outline-none focus:ring-1 focus:ring-app-accent/60",
         inputGrid11:
             "rounded-none border border-app-border-on-surface bg-app-glass-fill px-3 py-2 text-[11px] text-app-canvas-fg placeholder:text-app-muted focus:border-app-accent focus:outline-none focus:ring-1 focus:ring-app-accent/60",
         inputCol2:
@@ -34,9 +33,9 @@ export const clientDesign = {
         errorXs: "text-xs text-red-400",
         error11: "text-[11px] text-red-400",
         btnPrimaryWide:
-            "inline-flex w-full items-center justify-center rounded-none bg-app-accent px-4 py-2 text-sm font-semibold text-black shadow-[0_0_18px_rgba(198,36,36,0.75)] transition hover:bg-app-accent-hover disabled:opacity-60 disabled:shadow-none",
+            "inline-flex w-full items-center justify-center rounded-none bg-app-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-app-accent-hover disabled:opacity-60",
         btnPrimaryCompact:
-            "inline-flex w-full items-center justify-center rounded-none bg-app-accent px-3 py-1.5 text-[11px] font-semibold text-black shadow-[0_0_14px_rgba(198,36,36,0.7)] transition hover:bg-app-accent-hover disabled:opacity-60 disabled:shadow-none",
+            "inline-flex w-full items-center justify-center rounded-none bg-app-accent px-3 py-1.5 text-[11px] font-semibold text-white transition hover:bg-app-accent-hover disabled:opacity-60",
         forgotSectionTop: `space-y-2 border-t ${profileDivider} pt-3`,
         forgotToggle:
             "text-[11px] text-app-accent/90 underline-offset-2 hover:text-app-accent hover:underline",
@@ -44,45 +43,35 @@ export const clientDesign = {
         forgotHint: "text-[11px] text-app-muted",
         forgotSubmitBtn:
             "inline-flex w-full items-center justify-center rounded-none border border-app-accent/50 bg-transparent px-3 py-1.5 text-xs font-medium text-app-accent hover:bg-app-accent/10 disabled:opacity-50",
+        loginFooter: "flex flex-wrap items-center gap-x-2 gap-y-1",
+        loginFooterLink:
+            "text-[11px] text-app-accent/90 underline-offset-2 hover:text-app-accent hover:underline",
+        loginFooterSep: "text-[11px] text-app-muted",
         addressGrid: "grid grid-cols-2 gap-2",
+        addressDetailsGrid: "grid grid-cols-3 gap-2",
     },
 
     profileView: {
         root: "space-y-4 text-app-canvas-fg",
-        sectionKicker:
-            "text-xs font-medium uppercase tracking-wide text-app-muted",
-        headerRow: "flex items-center justify-between gap-3",
-        userRow: "flex items-center gap-3",
-        avatar:
-            "flex h-12 w-12 items-center justify-center rounded-none border border-app-accent/40 bg-neutral-950/88 text-base font-semibold text-app-accent shadow-[0_0_20px_rgba(198,36,36,0.6)]",
-        userTextCol: "min-w-0",
-        nameStrong: "text-sm font-semibold text-app-canvas-fg",
-        phoneLine: "text-xs text-app-muted/85",
-        emailLine: "text-xs text-app-muted",
-        btnLogout:
-            "ml-3 inline-flex items-center rounded-none border border-red-500/70 bg-red-500/10 px-3 py-1 text-[11px] font-semibold text-red-200 transition hover:bg-red-500/20 hover:text-red-100",
+        welcome: "text-sm leading-relaxed text-app-canvas-fg",
         statsSection: "space-y-2",
-        statsHint: "text-[10px] leading-snug text-app-muted",
         statLoading: `${nestedCard} px-3 py-4 text-center text-xs text-app-muted`,
         statError:
             "rounded-none border border-red-500/40 bg-red-950/40 px-3 py-3 text-[11px] text-red-200",
-        statErrorAccent: "text-app-accent/90",
-        statErrorSub: "mt-1 block text-app-muted",
-        statEmpty: `${profileStateEmpty} px-3 py-4 text-center text-xs text-app-muted`,
         statGrid: "grid grid-cols-2 gap-2",
         statCard: `${nestedCard} px-3 py-3`,
         statCardWide: `col-span-2 ${nestedCard} px-3 py-3`,
         statLabel:
             "text-[10px] font-medium uppercase tracking-wide text-app-muted",
-        statValueAccent: "mt-1 text-xl font-semibold tabular-nums text-app-accent",
-        statValueMain: "mt-1 text-lg font-semibold tabular-nums text-app-canvas-fg",
-        statLastRow:
-            "flex flex-wrap items-baseline justify-between gap-2",
-        statDateLine: "mt-0.5 text-xs text-app-canvas-fg",
-        statRightCol: "text-right",
-        avgValue:
-            "mt-0.5 text-sm font-semibold tabular-nums text-app-accent/95",
-        footerHint: "text-[11px] leading-relaxed text-app-muted",
+        statValueAccent:
+            "mt-1 text-xl font-semibold tabular-nums text-app-accent",
+        statValueMain:
+            "mt-1 text-lg font-semibold tabular-nums text-app-canvas-fg",
+        offersBlock: `${profileStateEmpty} space-y-1.5 px-3 py-4`,
+        offersTitle: "text-xs font-medium text-app-muted",
+        offersHint: "text-[11px] leading-snug text-app-muted/80",
+        btnLogout:
+            "inline-flex w-full items-center justify-center rounded-none border border-red-600 bg-red-500 px-3 py-2 text-sm font-semibold text-white transition hover:bg-red-600 hover:text-white",
     },
 
     orderHistory: {
@@ -112,7 +101,7 @@ export const clientDesign = {
         paymentFoot: `mt-3 border-t ${profileDivider} pt-2 text-[11px] text-app-muted`,
         moreHint: "text-center text-[11px] text-app-muted",
         repeatBtn:
-            "mt-3 inline-flex w-full items-center justify-center rounded-none bg-app-accent px-3 py-2 text-[11px] font-semibold text-black shadow-[0_0_14px_rgba(198,36,36,0.7)] transition hover:bg-app-accent-hover disabled:opacity-60 disabled:shadow-none",
+            "mt-3 inline-flex w-full items-center justify-center rounded-none bg-app-accent px-3 py-2 text-[11px] font-semibold text-white transition hover:bg-app-accent-hover disabled:opacity-60",
         promoBadge: "text-[10px] text-app-muted",
     },
 

@@ -48,7 +48,6 @@ export function useCheckoutDeliveryStep({
     const newAddressFieldErrors = useFormFieldErrors();
 
     const newAddressForm = ref({
-        title: "",
         street: "",
         house: "",
         entrance: "",
@@ -289,7 +288,6 @@ export function useCheckoutDeliveryStep({
 
         try {
             const data = await userStore.addClientAddress({
-                title: newAddressForm.value.title || null,
                 street: newAddressForm.value.street,
                 house: newAddressForm.value.house,
                 entrance: newAddressForm.value.entrance || null,
@@ -311,7 +309,6 @@ export function useCheckoutDeliveryStep({
             }
 
             newAddressForm.value = {
-                title: "",
                 street: "",
                 house: "",
                 entrance: "",

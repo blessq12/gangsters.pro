@@ -178,17 +178,14 @@ function handleDecrement() {
     0% {
         opacity: 0;
         transform: scale(0.88);
-        box-shadow: 0 0 0 0 transparent;
     }
     45% {
         opacity: 1;
         transform: scale(1);
-        box-shadow: 0 0 22px var(--app-accent-glow-mid);
     }
     100% {
         opacity: 0;
         transform: scale(1.05);
-        box-shadow: 0 0 0 0 transparent;
     }
 }
 </style>

@@ -30,6 +30,7 @@ export const useUserStore = defineStore("user", {
             name: "",
             phone: "",
             email: "",
+            created_at: null,
         },
         // Токен авторизации клиента
         token: null,
@@ -105,6 +106,7 @@ export const useUserStore = defineStore("user", {
                 name: "",
                 phone: "",
                 email: "",
+                created_at: null,
             };
             this.addresses = [];
             this.selectedAddressId = null;
@@ -158,6 +160,7 @@ export const useUserStore = defineStore("user", {
                 name: "",
                 phone: "",
                 email: "",
+                created_at: null,
             };
             this.token = null;
             setClientAuthToken(null);
@@ -179,6 +182,7 @@ export const useUserStore = defineStore("user", {
                     name: data.client.name ?? "",
                     phone: data.client.phone ?? "",
                     email: data.client.email ?? "",
+                    created_at: data.client.created_at ?? null,
                 });
                 if (Array.isArray(data.client.addresses)) {
                     this.setAddresses(data.client.addresses);
@@ -205,6 +209,7 @@ export const useUserStore = defineStore("user", {
                     name: data.client.name ?? "",
                     phone: data.client.phone ?? "",
                     email: data.client.email ?? "",
+                    created_at: data.client.created_at ?? null,
                 });
                 if (Array.isArray(data.client.addresses)) {
                     this.setAddresses(data.client.addresses);
@@ -237,6 +242,7 @@ export const useUserStore = defineStore("user", {
                         name: data.client.name ?? "",
                         phone: data.client.phone ?? "",
                         email: data.client.email ?? "",
+                        created_at: data.client.created_at ?? null,
                     });
                     if (Array.isArray(data.client.addresses)) {
                         this.setAddresses(data.client.addresses);
@@ -269,6 +275,7 @@ export const useUserStore = defineStore("user", {
                     name: data.client.name ?? "",
                     phone: data.client.phone ?? "",
                     email: data.client.email ?? "",
+                    created_at: data.client.created_at ?? null,
                 });
                 if (Array.isArray(data.client.addresses)) {
                     this.setAddresses(data.client.addresses);

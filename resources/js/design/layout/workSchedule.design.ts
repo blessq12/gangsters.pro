@@ -24,8 +24,8 @@ export const workScheduleDesign = {
     dot: {
         loading: "bg-slate-400/90 shadow-none animate-pulse",
         noCompany: "bg-slate-500 shadow-none",
-        open: "bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.7)]",
-        closed: "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.7)]",
+        open: "bg-emerald-400 ",
+        closed: "bg-red-500 ",
     },
 
     summaryTruncate:
@@ -64,7 +64,7 @@ export const workScheduleDesign = {
 
     theme: {
         barSurface:
-            "border-black/12 bg-app-canvas shadow-[0_0_20px_rgba(0,0,0,0.45)] hover:bg-black/[0.06]",
+            "border-black/12 bg-app-canvas hover:bg-black/[0.06]",
         panelSurface:
             "border-app-border-on-surface bg-[rgba(0,0,0,0.88)] shadow-xl backdrop-blur-lg",
         panelDivide: "divide-black/15",

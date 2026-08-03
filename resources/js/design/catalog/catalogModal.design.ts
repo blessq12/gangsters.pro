@@ -68,7 +68,7 @@ export const catalogModalDesign = {
         controlsRow:
             "flex w-full min-w-0 shrink-0 flex-nowrap items-center justify-start gap-2",
         actionIsland:
-            "relative flex w-fit shrink-0 flex-nowrap items-center gap-1.5 bg-[rgba(0,0,0,0.78)] px-2 py-1 shadow-[0_0_24px_rgba(0,0,0,0.7)] backdrop-blur-xl",
+            "relative flex w-fit shrink-0 flex-nowrap items-center gap-1.5 bg-[rgba(0,0,0,0.78)] px-2 py-1 backdrop-blur-xl",
         favBtn:
             "flex h-11 w-11 shrink-0 items-center justify-center border border-transparent bg-neutral-950/85 text-app-canvas-fg transition-colors hover:border-app-accent/60 hover:text-app-accent",
         favBtnActive: "border-app-accent/60 text-app-accent",

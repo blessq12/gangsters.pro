@@ -165,12 +165,7 @@ onUnmounted(() => {
 .intro-radial-glow {
     --intro-radial-x: 65%;
     --intro-radial-y: 47.5%;
-    background: radial-gradient(
-        ellipse var(--intro-radial-x) var(--intro-radial-y) at 50% 100%,
-        color-mix(in srgb, var(--app-accent) 42%, transparent) 0%,
-        color-mix(in srgb, var(--app-accent) 14%, transparent) 48%,
-        transparent 72%
-    );
+    background: transparent;
 }
 
 .app-shell.theme-dark {
