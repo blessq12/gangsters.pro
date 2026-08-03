@@ -1,7 +1,6 @@
 <script setup>
-import { computed, onMounted, ref } from "vue";
+import { computed } from "vue";
 import { RouterLink } from "vue-router";
-import { playBannerSticks } from "../animations/animationManager";
 import { useAppDesign } from "../design/useAppDesign";
 
 const sp = useAppDesign().components.layoutShell.secondaryPage;
@@ -38,16 +37,7 @@ const props = defineProps({
     },
 });
 
-const leftStickRef = ref(null);
-const rightStickRef = ref(null);
 const heroStats = computed(() => props.stats.slice(0, 3));
-
-onMounted(() => {
-    playBannerSticks({
-        left: leftStickRef.value,
-        right: rightStickRef.value,
-    });
-});
 </script>
 
 <template>
@@ -76,21 +66,6 @@ onMounted(() => {
             </div>
 
             <div :class="sp.contentPad">
-                <div :class="sp.sticksWrap">
-                    <img
-                        ref="leftStickRef"
-                        src="/images/stick.png"
-                        alt=""
-                        :class="sp.stickLeft"
-                    />
-                    <img
-                        ref="rightStickRef"
-                        src="/images/stick.png"
-                        alt=""
-                        :class="sp.stickRight"
-                    />
-                </div>
-
                 <div :class="sp.textCol">
                     <nav
                         v-if="breadcrumbs.length"

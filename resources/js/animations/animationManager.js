@@ -285,40 +285,6 @@ export function playPageLeave(el, done) {
     });
 }
 
-export function playBannerSticks({ left, right }) {
-    if (!left && !right) return;
-
-    if (left) {
-        gsap.fromTo(
-            left,
-            { y: -10, rotate: -10 },
-            {
-                y: 5,
-                rotate: -2,
-                duration: 2.2,
-                ease: "sine.inOut",
-                yoyo: true,
-                repeat: -1,
-            },
-        );
-    }
-
-    if (right) {
-        gsap.fromTo(
-            right,
-            { y: 10, rotate: 8 },
-            {
-                y: -4,
-                rotate: 2,
-                duration: 2.4,
-                ease: "sine.inOut",
-                yoyo: true,
-                repeat: -1,
-            },
-        );
-    }
-}
-
 export function playFloatLoop({ elements, options = {} }) {
     const targets = (elements || []).filter(Boolean);
     if (!targets.length) {

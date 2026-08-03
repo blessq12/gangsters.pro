@@ -156,11 +156,6 @@ export const layoutShellDesign = {
             "absolute top-0 right-0 h-60 w-60 rounded-full bg-app-accent/12 blur-3xl",
         contentPad:
             "relative px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12",
-        sticksWrap: "rotate-15",
-        stickLeft:
-            "pointer-events-none absolute -bottom-2 right-6 h-3 w-auto",
-        stickRight:
-            "pointer-events-none absolute bottom-1 right-3 h-3 w-auto",
         textCol: "min-w-0",
         breadcrumbsNav: `${shellTypography.body.breadcrumbsRow} ${shellColorRoles.muted}`,
         breadcrumbHomeLink:
