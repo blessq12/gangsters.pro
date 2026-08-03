@@ -17,13 +17,6 @@ use Filament\Support\Icons\Heroicon;
 
 final class CompanyForm
 {
-    /** @var list<string> */
-    public const DOCUMENT_KEYS = [
-        'privacy_policy',
-        'terms_of_use',
-        'user_agreement',
-    ];
-
     public static function configure(Schema $schema): Schema
     {
         return $schema
@@ -48,10 +41,6 @@ final class CompanyForm
                             ->label('Юрлицо')
                             ->icon(Heroicon::OutlinedDocumentText)
                             ->schema(self::legalSchema()),
-                        'documents' => Tab::make('documents')
-                            ->label('Документы')
-                            ->icon(Heroicon::OutlinedBookOpen)
-                            ->schema(self::documentsSchema()),
                     ]),
             ]);
     }
@@ -217,42 +206,6 @@ final class CompanyForm
                     TextInput::make('legal_checking_account')->label('Расчётный счёт')->maxLength(20),
                     TextInput::make('legal_correspondent_account')->label('Корр. счёт')->maxLength(20),
                 ]),
-        ];
-    }
-
-    /**
-     * @return list<Component>
-     */
-    private static function documentsSchema(): array
-    {
-        $sections = [];
-
-        foreach (self::documentDefinitions() as $key => $label) {
-            $sections[] = Section::make($label)
-                ->columnSpanFull()
-                ->schema([
-                    TextInput::make("document_{$key}_title")
-                        ->label('Заголовок')
-                        ->required()
-                        ->maxLength(255),
-                    Textarea::make("document_{$key}_content")
-                        ->label('Содержимое (HTML)')
-                        ->rows(8),
-                ]);
-        }
-
-        return $sections;
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    public static function documentDefinitions(): array
-    {
-        return [
-            'privacy_policy' => 'Политика конфиденциальности',
-            'terms_of_use' => 'Условия использования',
-            'user_agreement' => 'Пользовательское соглашение',
         ];
     }
 

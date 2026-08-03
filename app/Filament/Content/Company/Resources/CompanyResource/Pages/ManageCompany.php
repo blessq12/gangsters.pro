@@ -6,7 +6,6 @@ use App\Domain\Content\Repository\CompanyRepository;
 use App\Filament\Content\Company\Resources\CompanyResource;
 use App\Filament\Content\Company\Resources\CompanyResource\Schemas\CompanyForm;
 use App\Infrastructure\Content\Model\CMP_Company;
-use App\Infrastructure\Content\Model\CMP_CompanyDocument;
 use App\Infrastructure\Content\Model\CMP_CompanyLegal;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
@@ -24,9 +23,6 @@ class ManageCompany extends EditRecord
     /** @var array<string, mixed> */
     private array $legalPayload = [];
 
-    /** @var array<string, array{title: string, content: string|null}> */
-    private array $documentsPayload = [];
-
     public function mount(int|string $record = CompanyRepository::SINGLETON_ID): void
     {
         CMP_Company::query()->firstOrCreate(
@@ -38,7 +34,6 @@ class ManageCompany extends EditRecord
         );
 
         $this->ensureLegalRecord();
-        $this->ensureDocuments();
 
         parent::mount($record);
     }
@@ -64,16 +59,6 @@ class ManageCompany extends EditRecord
             }
         }
 
-        foreach (CompanyForm::documentDefinitions() as $key => $defaultTitle) {
-            $document = CMP_CompanyDocument::query()
-                ->where('company_id', CompanyRepository::SINGLETON_ID)
-                ->where('key', $key)
-                ->first();
-
-            $data["document_{$key}_title"] = $document?->title ?? $defaultTitle;
-            $data["document_{$key}_content"] = $document?->content;
-        }
-
         if (! is_array($data['work_schedule'] ?? null) || $data['work_schedule'] === []) {
             $data['work_schedule'] = $this->defaultWorkSchedule();
         }
@@ -88,7 +73,6 @@ class ManageCompany extends EditRecord
     protected function mutateFormDataBeforeSave(array $data): array
     {
         $this->legalPayload = $this->extractLegalPayload($data);
-        $this->documentsPayload = $this->extractDocumentsPayload($data);
 
         return array_intersect_key(
             $data,
@@ -102,19 +86,6 @@ class ManageCompany extends EditRecord
             ['company_id' => CompanyRepository::SINGLETON_ID],
             $this->legalPayload,
         );
-
-        foreach ($this->documentsPayload as $key => $payload) {
-            CMP_CompanyDocument::query()->updateOrCreate(
-                [
-                    'company_id' => CompanyRepository::SINGLETON_ID,
-                    'key' => $key,
-                ],
-                [
-                    'title' => $payload['title'],
-                    'content' => $payload['content'],
-                ],
-            );
-        }
     }
 
     protected function getHeaderActions(): array
@@ -151,22 +122,6 @@ class ManageCompany extends EditRecord
         );
     }
 
-    private function ensureDocuments(): void
-    {
-        foreach (CompanyForm::documentDefinitions() as $key => $title) {
-            CMP_CompanyDocument::query()->firstOrCreate(
-                [
-                    'company_id' => CompanyRepository::SINGLETON_ID,
-                    'key' => $key,
-                ],
-                [
-                    'title' => $title,
-                    'content' => null,
-                ],
-            );
-        }
-    }
-
     /**
      * @return list<array{day: string, work: string, is_day_off: bool}>
      */
@@ -199,28 +154,6 @@ class ManageCompany extends EditRecord
             }
 
             $payload[$field] = $data[$formKey];
-        }
-
-        return $payload;
-    }
-
-    /**
-     * @param  array<string, mixed>  $data
-     * @return array<string, array{title: string, content: string|null}>
-     */
-    private function extractDocumentsPayload(array $data): array
-    {
-        $payload = [];
-
-        foreach (array_keys(CompanyForm::documentDefinitions()) as $key) {
-            $title = trim((string) ($data["document_{$key}_title"] ?? ''));
-            $content = $data["document_{$key}_content"] ?? null;
-            $content = is_string($content) && trim($content) !== '' ? $content : null;
-
-            $payload[$key] = [
-                'title' => $title !== '' ? $title : (CompanyForm::documentDefinitions()[$key] ?? $key),
-                'content' => $content,
-            ];
         }
 
         return $payload;

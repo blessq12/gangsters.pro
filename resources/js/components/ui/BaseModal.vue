@@ -1,5 +1,5 @@
 <script setup>
-import { nextTick, onBeforeUnmount, ref, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
 import { playModalClose, playModalOpen } from "../../animations/animationManager";
 import {
     pushBodyScrollLock,
@@ -16,11 +16,22 @@ const props = defineProps({
         type: Boolean,
         default: true,
     },
+    /** md — компактное окно; lg — шире + скролл тела */
+    size: {
+        type: String,
+        default: "md",
+        validator: (value) => value === "md" || value === "lg",
+    },
 });
 
 const emit = defineEmits(["update:modelValue"]);
 
 const dm = useAppDesign().components.uiPrimitives.modal;
+
+const sizeClasses = computed(() => {
+    const sizes = dm.sizes;
+    return sizes[props.size] || sizes.md;
+});
 
 const isVisible = ref(false);
 const backdropRef = ref(null);
@@ -88,8 +99,8 @@ onBeforeUnmount(() => {
                 @click="props.closable ? close() : undefined"
             />
             <div :class="dm.content">
-                <div :class="dm.innerWrap">
-                    <div ref="cardRef" :class="dm.card">
+                <div :class="sizeClasses.innerWrap">
+                    <div ref="cardRef" :class="sizeClasses.card">
                         <div
                             v-if="$slots.header || props.closable"
                             :class="dm.headerRow"
@@ -107,7 +118,7 @@ onBeforeUnmount(() => {
                             </button>
                         </div>
 
-                        <div :class="dm.body">
+                        <div :class="sizeClasses.body">
                             <slot />
                         </div>
 

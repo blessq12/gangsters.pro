@@ -10,7 +10,7 @@ defineProps({
         type: String,
         required: true,
     },
-    /** @type {{ useHtml: boolean; html?: string; paragraphs?: string[] }} */
+    /** @type {{ useHtml: boolean; html?: string; empty?: boolean }} */
     doc: {
         type: Object,
         required: true,
@@ -25,6 +25,7 @@ const footer = useAppDesign().components.footer;
 <template>
     <BaseModal
         :model-value="modelValue"
+        size="lg"
         @update:model-value="$emit('update:modelValue', $event)"
     >
         <template #header>{{ title }}</template>
@@ -33,16 +34,11 @@ const footer = useAppDesign().components.footer;
             :class="footer.legalHtml"
             v-html="doc.html"
         />
-        <div
+        <p
             v-else
             :class="footer.modalFallback"
         >
-            <p
-                v-for="(para, i) in doc.paragraphs"
-                :key="i"
-            >
-                {{ para }}
-            </p>
-        </div>
+            Документ временно недоступен
+        </p>
     </BaseModal>
 </template>

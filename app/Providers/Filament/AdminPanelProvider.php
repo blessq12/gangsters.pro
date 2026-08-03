@@ -19,6 +19,7 @@ use App\Filament\Content\MarketingContent\Resources\MarketingContentResource;
 use App\Filament\Content\MarketingContent\Resources\PromotionResource;
 use App\Filament\Content\MarketingContent\Widgets\Tables\BannersHubTable;
 use App\Filament\Content\MarketingContent\Widgets\Tables\PromotionsHubTable;
+use App\Filament\Content\Company\Resources\CompanyDocumentResource;
 use App\Filament\Content\Company\Resources\CompanyResource;
 use App\Filament\Content\Company\Resources\OperatorResource;
 use App\Filament\Order\Resources\OrderResource;
@@ -72,6 +73,7 @@ class AdminPanelProvider extends PanelProvider
                 OrderResource::class,
                 ClientResource::class,
                 CompanyResource::class,
+                CompanyDocumentResource::class,
                 OperatorResource::class,
             ])
             ->livewireComponents([

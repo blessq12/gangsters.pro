@@ -2,7 +2,6 @@
 import { computed, ref } from "vue";
 import { useEnterSlide } from "../../composables/animations/useEnterSlide";
 import { useAppDesign } from "../../design/useAppDesign";
-import { getLegalTexts } from "../../content/legalTexts";
 import { useCompanyReadModel } from "../../features/company/useCompanyReadModel";
 import { hasDocumentBody } from "../../utils/system/documentBody";
 
@@ -12,10 +11,15 @@ const FOOTER_DOC_KEYS = {
     agreement: "user_agreement",
 };
 
+const FOOTER_DOC_TITLES = {
+    privacy_policy: "Политика конфиденциальности",
+    terms_of_use: "Правила использования",
+    user_agreement: "Пользовательское соглашение",
+};
+
 const footer = useAppDesign().components.footer;
 
 const year = new Date().getFullYear();
-const fallbackLegal = getLegalTexts();
 const { documents } = useCompanyReadModel({ autoload: true });
 
 const showPrivacy = ref(false);
@@ -29,13 +33,14 @@ useEnterSlide(containerRef, {
     delay: 1.2,
 });
 
-function resolveFooterDoc(key, fallbackBlock) {
+function resolveFooterDoc(key) {
     const docs = documents.value || [];
     const doc = docs.find((d) => d.key === key);
     const title =
         doc?.title && String(doc.title).trim()
             ? String(doc.title).trim()
-            : fallbackBlock.title;
+            : FOOTER_DOC_TITLES[key] || key;
+
     if (doc && hasDocumentBody(doc.content)) {
         return {
             title,
@@ -43,21 +48,18 @@ function resolveFooterDoc(key, fallbackBlock) {
             html: doc.content,
         };
     }
+
     return {
         title,
         useHtml: false,
-        paragraphs: fallbackBlock.content,
+        empty: true,
     };
 }
 
-const privacyDoc = computed(() =>
-    resolveFooterDoc(FOOTER_DOC_KEYS.privacy, fallbackLegal.privacy),
-);
-const rulesDoc = computed(() =>
-    resolveFooterDoc(FOOTER_DOC_KEYS.rules, fallbackLegal.rules),
-);
+const privacyDoc = computed(() => resolveFooterDoc(FOOTER_DOC_KEYS.privacy));
+const rulesDoc = computed(() => resolveFooterDoc(FOOTER_DOC_KEYS.rules));
 const agreementDoc = computed(() =>
-    resolveFooterDoc(FOOTER_DOC_KEYS.agreement, fallbackLegal.agreement),
+    resolveFooterDoc(FOOTER_DOC_KEYS.agreement),
 );
 </script>
 
