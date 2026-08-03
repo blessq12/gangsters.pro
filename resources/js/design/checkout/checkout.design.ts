@@ -73,7 +73,7 @@ export const checkoutDesign = {
             "space-y-2.5 rounded-none border border-app-accent/25 bg-white/[0.07] px-3.5 py-3.5",
         fieldLabel: "text-sm font-medium text-app-canvas-fg",
         guestIsland: `${nestedCard} space-y-2 px-3 py-3`,
-        grid2: "grid grid-cols-2 gap-2",
+        grid2: "grid grid-cols-1 gap-2 md:grid-cols-2",
         grid3: "grid grid-cols-3 gap-2",
         addressEmptyHint: `${nestedCard} border-dashed border-neutral-500/60 px-4 py-3 text-sm text-app-muted`,
         addressLi: `flex items-center gap-2 ${nestedCard} px-3 py-2`,
@@ -224,13 +224,13 @@ export const checkoutDesign = {
         shell:
             "flex flex-row overflow-hidden rounded-none border border-app-accent/35 bg-black/10",
         cell:
-            "relative flex min-h-[3.75rem] flex-1 flex-row items-center justify-center gap-2 px-3 py-3 text-center transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-app-accent/60",
+            "relative flex min-h-[2.75rem] flex-1 flex-row items-center justify-center gap-1.5 px-2 py-2 text-center transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-app-accent/60 md:min-h-[3.75rem] md:gap-2 md:px-3 md:py-3",
         cellIdle:
             "bg-transparent text-app-muted hover:bg-black/10 hover:text-app-canvas-fg",
         cellSelected: "bg-app-accent text-white",
         cellDivider: "border-r border-app-border-on-surface last:border-r-0",
-        icon: "shrink-0 text-2xl leading-none",
-        label: "text-sm font-bold leading-none tracking-wide",
+        icon: "shrink-0 text-lg leading-none md:text-2xl",
+        label: "text-xs font-bold leading-none tracking-wide md:text-sm",
     },
 
     optionCard: {
