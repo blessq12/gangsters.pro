@@ -16,12 +16,10 @@ export const catalogDesign = {
     /** CatalogCategoriesBase: остров и пиллы категорий (desktop/mobile через variant). */
     categories: {
         outer: "relative mb-10 w-full min-w-0 max-w-full",
-        island:
-            "min-w-0 max-w-full rounded-none border border-app-accent/40 bg-app-canvas backdrop-blur",
+        island: "min-w-0 max-w-full rounded-none border border-app-accent/40 bg-app-canvas backdrop-blur",
         islandPaddingMobile: "px-4 py-4",
         islandPaddingDesktop: "px-4 py-3.5 lg:px-8",
-        rowMobile:
-            "cats-scroll flex items-center gap-2 overflow-x-auto py-2",
+        rowMobile: "cats-scroll flex items-center gap-2 overflow-x-auto py-2",
         rowDesktop: "flex flex-wrap items-center gap-2 pb-1.5",
         pillBase: categoryPillBase,
         pillSizingMobile: "px-4 py-2 text-xs",
@@ -38,7 +36,7 @@ export const catalogDesign = {
                 "inline-flex items-center gap-2 bg-app-glass-fill p-1 backdrop-blur",
             label: "px-2 text-xs font-medium text-app-muted",
             btn: "px-3 py-1.5 text-xs font-semibold transition",
-            btnActive: "bg-app-accent text-black",
+            btnActive: "bg-app-accent text-white",
             btnInactive:
                 "text-app-muted hover:bg-black/8 hover:text-app-canvas-fg",
         },
@@ -46,7 +44,7 @@ export const catalogDesign = {
             wrapper:
                 "inline-flex w-full items-center bg-app-glass-fill p-1 backdrop-blur",
             btn: "flex-1 px-3 py-2 text-xs font-semibold transition",
-            btnActive: "bg-app-accent text-black",
+            btnActive: "bg-app-accent text-white",
             btnInactive:
                 "text-app-muted hover:bg-black/8 hover:text-app-canvas-fg",
         },

@@ -12,7 +12,9 @@ export function navbarEnterCompleteDelay() {
     return NAVBAR_ENTER_DELAY + NAVBAR_ENTER_DURATION;
 }
 
-/** Сцена интро: логотип + оверлей + опциональный радиальный глоу снизу. */
+/**
+ * Сцена интро: логотип + оверлей + полицейские маячки (red/blue) с дрейфом.
+ */
 export const INTRO_LOGO_IN_DURATION = 0.7;
 export const INTRO_LOGO_HOLD_DURATION = 0.6;
 export const INTRO_LOGO_OUT_DURATION = 0.65;
@@ -97,24 +99,99 @@ export function playIntroScene({
         return;
     }
 
+    const holdStart = INTRO_LOGO_IN_DURATION;
+    const outStart = INTRO_LOGO_IN_DURATION + INTRO_LOGO_HOLD_DURATION;
+
+    const redSpot = introGlow?.querySelector?.('[data-intro-glow="red"]') ?? null;
+    const blueSpot =
+        introGlow?.querySelector?.('[data-intro-glow="blue"]') ?? null;
+
     const tl = gsap.timeline();
 
     if (introGlow) {
         tl.fromTo(
             introGlow,
-            {
-                opacity: 0,
-                "--intro-radial-x": "65%",
-                "--intro-radial-y": "47.5%",
-            },
+            { opacity: 0 },
             {
                 opacity: 1,
-                "--intro-radial-x": "130%",
-                "--intro-radial-y": "95%",
                 duration: INTRO_LOGO_IN_DURATION,
-                ease: "back.out(1.7)",
+                ease: "power2.out",
             },
             0,
+        );
+    }
+
+    if (redSpot) {
+        tl.fromTo(
+            redSpot,
+            {
+                "--intro-glow-x": "18%",
+                "--intro-glow-y": "42%",
+            },
+            {
+                "--intro-glow-x": "38%",
+                "--intro-glow-y": "68%",
+                duration: INTRO_LOGO_IN_DURATION,
+                ease: "power2.out",
+            },
+            0,
+        );
+        tl.to(
+            redSpot,
+            {
+                "--intro-glow-x": "46%",
+                "--intro-glow-y": "56%",
+                duration: INTRO_LOGO_HOLD_DURATION,
+                ease: "sine.inOut",
+            },
+            holdStart,
+        );
+        tl.to(
+            redSpot,
+            {
+                "--intro-glow-x": "22%",
+                "--intro-glow-y": "48%",
+                duration: INTRO_LOGO_OUT_DURATION,
+                ease: "power2.in",
+            },
+            outStart,
+        );
+    }
+
+    if (blueSpot) {
+        tl.fromTo(
+            blueSpot,
+            {
+                "--intro-glow-x": "82%",
+                "--intro-glow-y": "38%",
+            },
+            {
+                "--intro-glow-x": "62%",
+                "--intro-glow-y": "72%",
+                duration: INTRO_LOGO_IN_DURATION,
+                ease: "power2.out",
+            },
+            0,
+        );
+        tl.to(
+            blueSpot,
+            {
+                "--intro-glow-x": "54%",
+                "--intro-glow-y": "52%",
+                duration: INTRO_LOGO_HOLD_DURATION,
+                ease: "sine.inOut",
+            },
+            holdStart,
+        );
+        tl.to(
+            blueSpot,
+            {
+                "--intro-glow-x": "78%",
+                "--intro-glow-y": "44%",
+                duration: INTRO_LOGO_OUT_DURATION,
+                ease: "power2.in",
+            },
+            outStart,
         );
     }
 
@@ -128,24 +205,27 @@ export function playIntroScene({
             ease: "back.out(1.7)",
         },
         0,
-    )
-        .to(introLogo, { duration: INTRO_LOGO_HOLD_DURATION })
-        .to(introLogo, {
+    );
+    tl.to(introLogo, { duration: INTRO_LOGO_HOLD_DURATION }, holdStart);
+    tl.to(
+        introLogo,
+        {
             scale: 0,
             duration: INTRO_LOGO_OUT_DURATION,
             ease: "power2.out",
-        });
+        },
+        outStart,
+    );
 
     if (introGlow) {
         tl.to(
             introGlow,
             {
-                "--intro-radial-x": "65%",
-                "--intro-radial-y": "47.5%",
+                opacity: 0,
                 duration: INTRO_LOGO_OUT_DURATION,
                 ease: "power2.out",
             },
-            "<",
+            outStart,
         );
     }
 
@@ -156,7 +236,7 @@ export function playIntroScene({
             duration: INTRO_MAIN_FADE_DURATION,
             ease: "power2.out",
         },
-        `-=${INTRO_MAIN_FADE_OVERLAP}`,
+        outStart + INTRO_LOGO_OUT_DURATION - INTRO_MAIN_FADE_OVERLAP,
     ).to(
         introOverlay,
         {

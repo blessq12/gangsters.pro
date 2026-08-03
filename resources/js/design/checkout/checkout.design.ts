@@ -60,8 +60,7 @@ export const checkoutDesign = {
             "text-[11px] font-bold uppercase tracking-[0.14em] text-app-accent",
         registerPitchTitle:
             "text-base font-semibold leading-snug text-app-canvas-fg",
-        registerPitchList:
-            "space-y-1.5 text-sm leading-snug text-app-muted",
+        registerPitchList: "space-y-1.5 text-sm leading-snug text-app-muted",
         registerPitchListItem: "flex gap-2",
         registerPitchListMark: "mt-0.5 shrink-0 text-app-accent",
         registerPitchBtn:
@@ -205,7 +204,7 @@ export const checkoutDesign = {
             "flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between",
         giftFooterHint: "text-xs text-app-muted",
         giftApplyBtn:
-            "inline-flex items-center justify-center rounded-none bg-app-accent px-4 py-2 text-xs font-semibold text-white transition hover:bg-app-accent-hover disabled:cursor-not-allowed disabled:opacity-60 w-full",
+            "relative flex min-h-14 flex-1 items-center justify-center overflow-hidden rounded-none bg-app-accent py-4 text-white transition hover:bg-app-accent-hover",
     },
 
     inlineOption: {
@@ -220,10 +219,8 @@ export const checkoutDesign = {
 
     /** Один dual-state контрол (оплата / получение), не набор чипов. */
     methodState: {
-        shell:
-            "flex flex-row overflow-hidden rounded-none border border-app-accent/35 bg-black/10",
-        cell:
-            "relative flex min-h-[2.75rem] flex-1 flex-row items-center justify-center gap-1.5 px-2 py-2 text-center transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-app-accent/60 md:min-h-[3.75rem] md:gap-2 md:px-3 md:py-3",
+        shell: "flex flex-row overflow-hidden rounded-none border border-app-accent/35 bg-black/10",
+        cell: "relative flex min-h-[2.75rem] flex-1 flex-row items-center justify-center gap-1.5 px-2 py-2 text-center transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-app-accent/60 md:min-h-[3.75rem] md:gap-2 md:px-3 md:py-3",
         cellIdle:
             "bg-transparent text-app-muted hover:bg-black/10 hover:text-app-canvas-fg",
         cellSelected: "bg-app-accent text-white",
@@ -322,7 +319,8 @@ export const checkoutDesign = {
         benefitLine: "text-sm text-app-canvas-fg",
         benefitLineMuted: "text-sm text-app-muted",
         orderList: "divide-y divide-app-divider-on-canvas text-sm",
-        orderLineRow: "flex items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0",
+        orderLineRow:
+            "flex items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0",
         orderLineTruncate: "min-w-0 truncate text-base text-app-canvas-fg",
         orderLineMuted: "shrink-0 text-sm tabular-nums text-app-muted",
         systemLineAccent:

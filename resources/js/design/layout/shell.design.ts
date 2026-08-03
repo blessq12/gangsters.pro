@@ -111,9 +111,13 @@ export const layoutShellDesign = {
         themeDark: "theme-dark text-app-canvas-fg",
         introOverlay:
             "pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-app-canvas",
-        /** Хук для scoped radial-gradient (`--app-accent`); слой под логотипом интро. */
+        /** Контейнер полицейских маячков (red/blue radial) под логотипом интро. */
         introRadialGlow:
-            "intro-radial-glow pointer-events-none absolute inset-0 z-0",
+            "intro-police-glow pointer-events-none absolute inset-0 z-0 overflow-hidden",
+        introPoliceSpotRed:
+            "intro-police-glow__spot intro-police-glow__spot--red",
+        introPoliceSpotBlue:
+            "intro-police-glow__spot intro-police-glow__spot--blue",
         mainGrow: "relative z-[1] flex-1",
     },
 
