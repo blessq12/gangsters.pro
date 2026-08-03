@@ -5,7 +5,27 @@ import { mapApiError } from "../../platform/mapApiError";
 
 const CATALOG_STORAGE_KEY = "gangsters_catalog";
 const DESKTOP_CARDS_PER_ROW_DEFAULT = 4;
-const MOBILE_CARD_VIEW_MODE_DEFAULT = "grid";
+/** Sync with uiStore / Tailwind `md`. */
+const DESKTOP_MEDIA_QUERY = "(min-width: 768px)";
+
+/**
+ * Дефолт mobile-вида каталога: на узком экране — горизонтальный список,
+ * на desktop (поле почти не используется) — grid.
+ * @returns {"grid"|"horizontal"}
+ */
+function resolveDefaultMobileCardViewMode() {
+    if (typeof window === "undefined") {
+        return "horizontal";
+    }
+
+    try {
+        return window.matchMedia(DESKTOP_MEDIA_QUERY).matches
+            ? "grid"
+            : "horizontal";
+    } catch {
+        return "horizontal";
+    }
+}
 
 function normalizeDesktopCardsPerRow(value) {
     return value === 3 || value === 4 ? value : DESKTOP_CARDS_PER_ROW_DEFAULT;
@@ -14,7 +34,7 @@ function normalizeDesktopCardsPerRow(value) {
 function normalizeMobileCardViewMode(value) {
     return value === "grid" || value === "horizontal"
         ? value
-        : MOBILE_CARD_VIEW_MODE_DEFAULT;
+        : resolveDefaultMobileCardViewMode();
 }
 
 export const useCatalogStore = defineStore("catalog", {
@@ -29,7 +49,7 @@ export const useCatalogStore = defineStore("catalog", {
         hasLoaded: false,
         selectedTag: null,
         desktopCardsPerRow: DESKTOP_CARDS_PER_ROW_DEFAULT,
-        mobileCardViewMode: MOBILE_CARD_VIEW_MODE_DEFAULT,
+        mobileCardViewMode: resolveDefaultMobileCardViewMode(),
     }),
     getters: {
         flatProducts(state) {
@@ -133,10 +153,18 @@ export const useCatalogStore = defineStore("catalog", {
 
             try {
                 const raw = window.localStorage.getItem(CATALOG_STORAGE_KEY);
-                if (!raw) return;
+                if (!raw) {
+                    this.mobileCardViewMode = resolveDefaultMobileCardViewMode();
+                    this.persist();
+                    return;
+                }
 
                 const parsed = JSON.parse(raw);
-                if (!parsed || typeof parsed !== "object") return;
+                if (!parsed || typeof parsed !== "object") {
+                    this.mobileCardViewMode = resolveDefaultMobileCardViewMode();
+                    this.persist();
+                    return;
+                }
 
                 if ("selectedCategoryId" in parsed) {
                     this.selectedCategoryId = parsed.selectedCategoryId ?? null;
@@ -149,6 +177,9 @@ export const useCatalogStore = defineStore("catalog", {
                 }
                 if ("mobileCardViewMode" in parsed) {
                     this.mobileCardViewMode = normalizeMobileCardViewMode(parsed.mobileCardViewMode);
+                } else {
+                    this.mobileCardViewMode = resolveDefaultMobileCardViewMode();
+                    this.persist();
                 }
 
             } catch (e) {
