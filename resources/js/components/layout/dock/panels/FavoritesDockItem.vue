@@ -1,10 +1,10 @@
 <script setup>
 import { computed, ref } from "vue";
 import { useAppDesign } from "../../../../design/useAppDesign";
-import { useCheckoutSession } from "../../../../features/checkout/useCheckoutSession";
-import { useCheckoutStore } from "../../../../stores/checkoutStore";
-import { useFavoritesStore } from "../../../../stores/favoritesStore";
-import { formatMoneyRublesRu } from "../../../../utils/moneyFormat";
+import { useCheckoutSession } from "../../../../modules/checkout/application/session";
+import { useCheckoutStore } from "../../../../modules/checkout/store";
+import { useFavoritesStore } from "../../../../modules/client/store/favoritesStore";
+import { formatMoneyRublesRu } from "../../../../platform/moneyFormat";
 
 const props = defineProps({
     item: {

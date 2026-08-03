@@ -2,16 +2,16 @@
 import { onMounted, onUnmounted, watch } from "vue";
 import { useRoute } from "vue-router";
 import { playPageEnter, playPageLeave } from "../animations/animationManager";
-import { useShellIntroDockTimeline } from "../composables/layout/useShellIntroDockTimeline";
-import { useDockScrollScale } from "../composables/ui/useDockScrollScale";
+import { useShellIntroDockTimeline } from "../modules/shell/application/dockIntro";
+import { useDockScrollScale } from "../modules/shell/application/dockUi";
 import { useAppDesign } from "../design/useAppDesign";
-import { useShellStore } from "../stores/shellStore";
-import { useContentStore } from "../stores/contentStore";
-import { useCatalogStore } from "../stores/catalogStore";
-import { useThemeStore } from "../stores/themeStore";
-import { useUiStore } from "../stores/uiStore";
-import { useUserStore } from "../stores/userStore";
-import { scheduleIdlePrefetchDockPanels } from "../features/shell/prefetchDockPanels";
+import { useShellStore } from "../modules/shell/store/shellStore";
+import { useContentStore } from "../modules/content/store";
+import { useCatalogStore } from "../modules/catalog/store";
+import { useThemeStore } from "../modules/shell/store/themeStore";
+import { useUiStore } from "../modules/shell/store/uiStore";
+import { useUserStore } from "../modules/client/store/userStore";
+import { scheduleIdlePrefetchDockPanels } from "../modules/shell/application/useAppBootstrap";
 
 const sh = useAppDesign().components.layoutShell;
 

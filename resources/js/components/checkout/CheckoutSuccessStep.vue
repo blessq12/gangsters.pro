@@ -1,8 +1,8 @@
 <script setup>
 import { computed } from "vue";
 import { useAppDesign } from "../../design/useAppDesign";
-import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
-import { CHECKOUT_NAV_LABELS } from "../../features/checkout/checkoutWizardLabels";
+import { useCheckoutFlowContext } from "../../modules/checkout/application/flowContext";
+import { CHECKOUT_NAV_LABELS } from "../../modules/checkout/application/session";
 import CheckoutStepFrame from "./CheckoutStepFrame.vue";
 import CheckoutStepNav from "./CheckoutStepNav.vue";
 

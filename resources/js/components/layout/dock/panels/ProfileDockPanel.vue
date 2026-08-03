@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from "vue";
 import { useAppDesign } from "../../../../design/useAppDesign";
-import { useUserStore } from "../../../../stores/userStore";
+import { useUserStore } from "../../../../modules/client/store/userStore";
 import {
     PROFILE_TAB_ADDRESSES,
     PROFILE_TAB_EDIT,

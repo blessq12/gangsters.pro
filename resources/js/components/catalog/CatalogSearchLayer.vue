@@ -14,13 +14,13 @@ import {
     playSearchPanelCrossfade,
 } from "../../animations/animationManager";
 import { useAppDesign } from "../../design/useAppDesign";
-import { CatalogSearchActionSourceKey } from "../../features/catalog/catalogSearchContext";
-import { useCatalogSearch } from "../../features/catalog/useCatalogSearch";
-import { useUiStore } from "../../stores/uiStore";
+import { CatalogSearchActionSourceKey } from "../../modules/catalog/application/search";
+import { useCatalogSearch } from "../../modules/catalog/application/search";
+import { useUiStore } from "../../modules/shell/store/uiStore";
 import {
     pushBodyScrollLock,
     popBodyScrollLock,
-} from "../../utils/system/bodyScrollLock";
+} from "../../platform/document";
 import CatalogSearchDiscoverFeed from "./CatalogSearchDiscoverFeed.vue";
 import CatalogSearchEmptyPanel from "./CatalogSearchEmptyPanel.vue";
 import CatalogSearchIdlePanel from "./CatalogSearchIdlePanel.vue";

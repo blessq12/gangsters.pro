@@ -2,7 +2,7 @@ import { watch, onBeforeUnmount, unref } from "vue";
 import {
     pushBodyScrollLock,
     popBodyScrollLock,
-} from "../../../../utils/system/bodyScrollLock";
+} from "../../../../platform/document";
 
 /**
  * Body scroll lock for open dock panel (mobile).

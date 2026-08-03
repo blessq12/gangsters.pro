@@ -1,15 +1,15 @@
 <script setup>
 import { computed } from "vue";
 import { storeToRefs } from "pinia";
-import { useContentStore } from "../stores/contentStore";
-import { formatRuPhone, phoneToTelHref } from "../utils/phone/formatRuPhone";
-import { formatAverageDeliveryLine } from "../utils/system/companyDeliveryFacts";
+import { useContentStore } from "../modules/content/store";
+import { formatRuPhone, phoneToTelHref } from "../platform/ruPhone";
+import { formatAverageDeliveryLine } from "../modules/content/application/company";
 import {
     formatCompanyAddressLine,
     getWorkScheduleRows,
     safeTrim,
-} from "../utils/system/companyDisplay";
-import { getCurrentDayKey } from "../utils/system/companyOpenStatus";
+} from "../modules/content/application/company";
+import { getCurrentDayKey } from "../modules/content/application/company";
 import { useAppDesign } from "../design/useAppDesign";
 
 const contentStore = useContentStore();

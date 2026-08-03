@@ -1,3 +1,4 @@
+import { onBeforeUnmount, onMounted } from "vue";
 import { gsap } from "gsap";
 
 /** Тайминг входа основного блока навбара (см. useEnterSlide в AppNavbar*). */
@@ -584,3 +585,45 @@ export function playSearchPanelCrossfade(panel, onComplete) {
     );
 }
 
+
+export function useEnterSlide(targetRef, options = {}) {
+    onMounted(() => {
+        if (!targetRef.value) return;
+
+        const {
+            y = NAVBAR_ENTER_Y,
+            opacity = 0,
+            duration = NAVBAR_ENTER_DURATION,
+            delay = NAVBAR_ENTER_DELAY,
+            ease = NAVBAR_ENTER_EASE,
+        } = options;
+
+        gsap.from(targetRef.value, {
+            y,
+            opacity,
+            duration,
+            delay,
+            ease,
+        });
+    });
+}
+
+
+
+export function useFloatLoop(targetsRef, options = {}) {
+    let controller = null;
+
+    onMounted(() => {
+        controller = playFloatLoop({
+            elements: targetsRef?.value,
+            options,
+        });
+    });
+
+    onBeforeUnmount(() => {
+        if (controller && typeof controller.kill === "function") {
+            controller.kill();
+            controller = null;
+        }
+    });
+}

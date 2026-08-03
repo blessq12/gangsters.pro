@@ -1,11 +1,11 @@
 <script setup>
 import { computed, watch } from "vue";
-import { useCheckout } from "../../../../features/checkout/useCheckout";
-import { provideCheckoutFlow } from "../../../../composables/checkout/checkoutFlowContext";
-import { resolveCheckoutDockTitle } from "../../../../features/checkout/checkoutWizardLabels";
-import CheckoutWizardHost from "../../../../features/checkout/wizard/CheckoutWizardHost.vue";
-import { getCheckoutWizardStep } from "../../../../features/checkout/wizard/checkoutWizardRegistry";
-import { useUiStore } from "../../../../stores/uiStore";
+import { useCheckout } from "../../../../modules/checkout/application/wizard";
+import { provideCheckoutFlow } from "../../../../modules/checkout/application/flowContext";
+import { resolveCheckoutDockTitle } from "../../../../modules/checkout/application/wizard";
+import CheckoutWizardHost from "../../../../modules/checkout/application/CheckoutWizardHost.vue";
+import { getCheckoutWizardStep } from "../../../../modules/checkout/application/wizard";
+import { useUiStore } from "../../../../modules/shell/store/uiStore";
 
 const uiStore = useUiStore();
 

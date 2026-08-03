@@ -2,9 +2,9 @@
 import { computed } from "vue";
 import { storeToRefs } from "pinia";
 import { useAppDesign } from "../../design/useAppDesign";
-import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
-import { CHECKOUT_LOADING_LABELS } from "../../features/checkout/checkoutLoadingLabels";
-import { useUserStore } from "../../stores/userStore";
+import { useCheckoutFlowContext } from "../../modules/checkout/application/flowContext";
+import { CHECKOUT_LOADING_LABELS } from "../../modules/checkout/application/session";
+import { useUserStore } from "../../modules/client/store/userStore";
 import FormField from "../ui/FormField.vue";
 import CheckoutAddressFormFields from "./CheckoutAddressFormFields.vue";
 import CheckoutSection from "./CheckoutSection.vue";

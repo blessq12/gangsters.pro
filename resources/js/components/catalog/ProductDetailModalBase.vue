@@ -5,10 +5,10 @@ import {
     playModalOpen,
     playProductDetailInfoEnter,
 } from "../../animations/animationManager";
-import { buildProductGallerySlides } from "../../utils/catalog/productMedia";
-import { pushBodyScrollLock, popBodyScrollLock } from "../../utils/system/bodyScrollLock";
-import { useProductActions } from "../../composables/catalog/useProductActions";
-import { useSwipeDownToClose } from "../../composables/ui/useSwipeDownToClose";
+import { buildProductGallerySlides } from "../../modules/catalog/domain/productView";
+import { pushBodyScrollLock, popBodyScrollLock } from "../../platform/document";
+import { useProductActions } from "../../modules/catalog/application/models";
+import { useSwipeDownToClose } from "../../modules/shell/application/dockUi";
 import { useAppDesign } from "../../design/useAppDesign";
 
 const props = defineProps({

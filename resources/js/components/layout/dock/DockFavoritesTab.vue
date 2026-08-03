@@ -1,8 +1,8 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { useAppDesign } from "../../../design/useAppDesign";
-import { DOMAIN_EVENTS, subscribeDomainEvent } from "../../../shared/domainEvents";
-import { useUiStore } from "../../../stores/uiStore";
+import { DOMAIN_EVENTS, subscribeDomainEvent } from "../../../platform/domainEvents";
+import { useUiStore } from "../../../modules/shell/store/uiStore";
 
 const FLASH_MS = 1000;
 

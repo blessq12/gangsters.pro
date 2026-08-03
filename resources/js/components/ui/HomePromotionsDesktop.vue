@@ -1,9 +1,9 @@
 <script setup>
 import { computed, ref } from "vue";
-import { useFloatLoop } from "../../composables/animations/useFloatLoop";
+import { useFloatLoop } from "../../animations/animationManager";
 import { storeToRefs } from "pinia";
-import { useContentStore } from "../../stores/contentStore";
-import { hasDocumentBody } from "../../utils/system/documentBody";
+import { useContentStore } from "../../modules/content/store";
+import { hasDocumentBody } from "../../platform/document";
 import { useAppDesign } from "../../design/useAppDesign";
 
 const contentStore = useContentStore();

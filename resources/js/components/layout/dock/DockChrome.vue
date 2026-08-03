@@ -6,12 +6,12 @@ import {
     playDockContentHide,
     playDockContentShow,
 } from "../../../animations/animationManager";
-import { useBottomDockState } from "../../../composables/ui/useBottomDockState";
-import { useDockDismiss } from "../../../composables/ui/useDockDismiss";
+import { useBottomDockState } from "../../../modules/shell/application/dockUi";
+import { useDockDismiss } from "../../../modules/shell/application/dockUi";
 import { useAppDesign } from "../../../design/useAppDesign";
-import { useCheckoutStore } from "../../../stores/checkoutStore";
-import { useFavoritesStore } from "../../../stores/favoritesStore";
-import { useUiStore } from "../../../stores/uiStore";
+import { useCheckoutStore } from "../../../modules/checkout/store";
+import { useFavoritesStore } from "../../../modules/client/store/favoritesStore";
+import { useUiStore } from "../../../modules/shell/store/uiStore";
 import { useDockMobileInteractions } from "./composables/useDockMobileInteractions";
 import DockCartSummary from "./DockCartSummary.vue";
 import DockDismissConfirmModal from "./DockDismissConfirmModal.vue";

@@ -1,13 +1,13 @@
 <script setup>
 import { computed, unref } from "vue";
 import { useAppDesign } from "../../design/useAppDesign";
-import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
-import { useSelectedGiftSummary } from "../../features/checkout/useSelectedGiftSummary";
+import { useCheckoutFlowContext } from "../../modules/checkout/application/flowContext";
+import { useSelectedGiftSummary } from "../../modules/checkout/application/preview";
 import {
     isComplementCartLine,
     isGiftCartLine,
     wizardNonComplementSystemItems,
-} from "../../domain/order/normalizeCheckoutCart";
+} from "../../modules/checkout/domain/normalizeCheckoutCart";
 
 const cf = useAppDesign().components.checkout.confirm;
 const s = useAppDesign().components.checkout.shared;

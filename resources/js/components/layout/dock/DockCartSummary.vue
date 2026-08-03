@@ -1,10 +1,10 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { useAppDesign } from "../../../design/useAppDesign";
-import { DOMAIN_EVENTS, subscribeDomainEvent } from "../../../shared/domainEvents";
-import { useCheckoutStore } from "../../../stores/checkoutStore";
-import { useUiStore } from "../../../stores/uiStore";
-import { formatMoneyRublesRu } from "../../../utils/moneyFormat";
+import { DOMAIN_EVENTS, subscribeDomainEvent } from "../../../platform/domainEvents";
+import { useCheckoutStore } from "../../../modules/checkout/store";
+import { useUiStore } from "../../../modules/shell/store/uiStore";
+import { formatMoneyRublesRu } from "../../../platform/moneyFormat";
 
 const FLASH_MS = 1000;
 

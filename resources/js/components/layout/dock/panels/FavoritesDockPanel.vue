@@ -1,7 +1,7 @@
 <script setup>
 import { storeToRefs } from "pinia";
 import { useAppDesign } from "../../../../design/useAppDesign";
-import { useFavoritesStore } from "../../../../stores/favoritesStore";
+import { useFavoritesStore } from "../../../../modules/client/store/favoritesStore";
 import FavoritesDockItem from "./FavoritesDockItem.vue";
 
 const panels = useAppDesign().components.dockPanels;

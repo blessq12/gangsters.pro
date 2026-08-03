@@ -2,12 +2,12 @@
 import { computed } from "vue";
 import BaseModal from "../ui/BaseModal.vue";
 import { useAppDesign } from "../../design/useAppDesign";
-import { useContentStore } from "../../stores/contentStore";
-import { useUiStore } from "../../stores/uiStore";
+import { useContentStore } from "../../modules/content/store";
+import { useUiStore } from "../../modules/shell/store/uiStore";
 import {
     buildClosedOrdersNotice,
     markClosedNoticeDismissedThisSession,
-} from "../../utils/system/closedOrdersNotice";
+} from "../../modules/content/application/company";
 
 const cn = useAppDesign().components.closedNotice;
 const contentStore = useContentStore();

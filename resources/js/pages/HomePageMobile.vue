@@ -1,5 +1,5 @@
 <script setup>
-import { useCatalogPageModel } from "../composables/catalog/useCatalogPageModel";
+import { useCatalogPageModel } from "../modules/catalog/application/models";
 import { useAppDesign } from "../design/useAppDesign";
 
 const m = useAppDesign().components.pages.home.mobile;

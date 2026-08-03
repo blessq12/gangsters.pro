@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
-import { applyPageHead } from "../features/seo/usePageHead";
+import { applyPageHead } from "../modules/shell/application/usePageHead";
 import { routeRecords } from "./routeRecords.js";
 
 const router = createRouter({

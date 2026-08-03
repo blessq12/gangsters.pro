@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from "vue";
-import { useEnterSlide } from "../../composables/animations/useEnterSlide";
+import { useEnterSlide } from "../../animations/animationManager";
 import { useAppDesign } from "../../design/useAppDesign";
 import {
     NAV_LINKS_LEFT_PRIMARY,

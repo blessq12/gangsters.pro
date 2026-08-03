@@ -2,8 +2,8 @@
 import { computed } from "vue";
 import { storeToRefs } from "pinia";
 import { useAppDesign } from "../../../design/useAppDesign";
-import { useUiStore } from "../../../stores/uiStore";
-import { useUserStore } from "../../../stores/userStore";
+import { useUiStore } from "../../../modules/shell/store/uiStore";
+import { useUserStore } from "../../../modules/client/store/userStore";
 
 const props = defineProps({
     iconClass: {

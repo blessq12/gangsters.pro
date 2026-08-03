@@ -4,7 +4,7 @@ import { useAppDesign } from "../../design/useAppDesign";
 import {
     DELIVERY_ZONE_PHASE,
     useDeliveryZoneStatus,
-} from "../../features/checkout/useDeliveryZoneStatus";
+} from "../../modules/checkout/application/delivery";
 
 const c = useAppDesign().components.checkout.cart;
 const d = useAppDesign().components.checkout.delivery;

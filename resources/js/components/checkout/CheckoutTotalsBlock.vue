@@ -1,8 +1,8 @@
 <script setup>
 import { computed } from "vue";
 import { useAppDesign } from "../../design/useAppDesign";
-import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
-import { useOrderPreview } from "../../features/checkout/useOrderPreview";
+import { useCheckoutFlowContext } from "../../modules/checkout/application/flowContext";
+import { useOrderPreview } from "../../modules/checkout/application/preview";
 import CheckoutSection from "./CheckoutSection.vue";
 
 const props = defineProps({

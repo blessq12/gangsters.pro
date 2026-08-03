@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from "vue";
 import { useAppDesign } from "../../design/useAppDesign";
-import { CHECKOUT_NAV_LABELS } from "../../features/checkout/checkoutWizardLabels";
+import { CHECKOUT_NAV_LABELS } from "../../modules/checkout/application/session";
 
 const props = defineProps({
     showBack: {

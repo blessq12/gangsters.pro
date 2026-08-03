@@ -2,10 +2,10 @@
 import { computed, onUnmounted, provide } from "vue";
 import { appDesign } from "./design/app.design";
 import { AppDesignInjectionKey } from "./design/injectionKeys";
-import { useUiStore } from "./stores/uiStore";
+import { useUiStore } from "./modules/shell/store/uiStore";
 import MainLayoutMobile from "./layouts/MainLayoutMobile.vue";
 import MainLayoutDesktop from "./layouts/MainLayoutDesktop.vue";
-import { useAppBootstrap } from "./processes/bootstrap/useAppBootstrap";
+import { useAppBootstrap } from "./modules/shell/application/useAppBootstrap";
 import ClosedForOrdersModal from "./components/company/ClosedForOrdersModal.vue";
 import CatalogSearchLayer from "./components/catalog/CatalogSearchLayer.vue";
 

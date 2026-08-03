@@ -1,16 +1,16 @@
 <script setup>
 import { ref, watch } from "vue";
 import { useToast } from "vue-toastification";
-import { useUserStore } from "../../stores/userStore";
-import { useRuPhoneModel } from "../../composables/client/useRuPhoneModel";
-import { useFormFieldErrors } from "../../composables/forms/useFormFieldErrors";
+import { useUserStore } from "../../modules/client/store/userStore";
+import { useRuPhoneModel } from "../../modules/client/application/useRuPhoneModel";
+import { useFormFieldErrors } from "../../platform/useFormFieldErrors";
 import {
     RU_PHONE_MASKA_PATTERN,
     RU_PHONE_MASKA_TOKENS_ATTR,
     validateRuPhoneForSubmit,
-} from "../../validation/ruPhone";
-import { mapApiError } from "../../utils/api/mapApiError";
-import { applyApiFieldErrors } from "../../utils/api/extractApiFieldErrors";
+} from "../../platform/ruPhone";
+import { mapApiError } from "../../platform/mapApiError";
+import { applyApiFieldErrors } from "../../platform/extractApiFieldErrors";
 import { useAppDesign } from "../../design/useAppDesign";
 import FormField from "../ui/FormField.vue";
 

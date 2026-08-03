@@ -4,7 +4,7 @@ import { computed, onBeforeUnmount, ref, watch } from "vue";
 import { Autoplay } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { storeToRefs } from "pinia";
-import { useContentStore } from "../../stores/contentStore";
+import { useContentStore } from "../../modules/content/store";
 import { useAppDesign } from "../../design/useAppDesign";
 
 const AUTOPLAY_INTERVAL_MS = 30000;

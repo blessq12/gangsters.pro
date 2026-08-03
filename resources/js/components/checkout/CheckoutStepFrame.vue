@@ -1,8 +1,8 @@
 <script setup>
 import { computed } from "vue";
 import { useAppDesign } from "../../design/useAppDesign";
-import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
-import { CHECKOUT_WAITER_LINES } from "../../features/checkout/checkoutWizardLabels";
+import { useCheckoutFlowContext } from "../../modules/checkout/application/flowContext";
+import { CHECKOUT_WAITER_LINES } from "../../modules/checkout/application/session";
 
 const props = defineProps({
     /** @type {'cart'|'upsell'|'guest'|'fulfillment'|'confirm'|'success'} */

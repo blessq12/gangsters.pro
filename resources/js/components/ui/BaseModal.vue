@@ -4,7 +4,7 @@ import { playModalClose, playModalOpen } from "../../animations/animationManager
 import {
     pushBodyScrollLock,
     popBodyScrollLock,
-} from "../../utils/system/bodyScrollLock";
+} from "../../platform/document";
 import { useAppDesign } from "../../design/useAppDesign";
 
 const props = defineProps({

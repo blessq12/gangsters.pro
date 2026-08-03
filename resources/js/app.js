@@ -5,7 +5,7 @@ import { createApp, defineAsyncComponent } from "vue";
 import VueLazyload from "vue-lazyload";
 import "../css/vue-toastification.css";
 import "./bootstrap";
-import { applyPageHead } from "./features/seo/usePageHead";
+import { applyPageHead } from "./modules/shell/application/usePageHead";
 import router from "./router";
 import App from "./App.vue";
 

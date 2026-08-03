@@ -1,9 +1,9 @@
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick } from "vue";
 import { playMobileNavbarLogoPulse } from "../../animations/animationManager";
-import { useEnterSlide } from "../../composables/animations/useEnterSlide";
+import { useEnterSlide } from "../../animations/animationManager";
 import { useAppDesign } from "../../design/useAppDesign";
-import { useUiStore } from "../../stores/uiStore";
+import { useUiStore } from "../../modules/shell/store/uiStore";
 const uiStore = useUiStore();
 const navbar = useAppDesign().components.navbar;
 

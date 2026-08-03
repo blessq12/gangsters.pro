@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from "vue";
 import { storeToRefs } from "pinia";
-import { useContentStore } from "../stores/contentStore";
+import { useContentStore } from "../modules/content/store";
 import {
     buildCheckoutAlignedPaymentInfoBlocks,
     buildDeliveryHeroStats,
@@ -13,8 +13,8 @@ import {
     formatDeliveryFeeRublesLine,
     formatMinOrderRublesLine,
     kopecksToRublesOptional,
-} from "../utils/system/companyDeliveryFacts";
-import { safeTrim } from "../utils/system/companyDisplay";
+} from "../modules/content/application/company";
+import { safeTrim } from "../modules/content/application/company";
 import { useAppDesign } from "../design/useAppDesign";
 
 const contentStore = useContentStore();

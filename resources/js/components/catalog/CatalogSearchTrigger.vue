@@ -1,6 +1,6 @@
 <script setup>
 import { useAppDesign } from "../../design/useAppDesign";
-import { useCatalogSearch } from "../../features/catalog/useCatalogSearch";
+import { useCatalogSearch } from "../../modules/catalog/application/search";
 
 const cs = useAppDesign().components.catalog.search;
 const { openSearch } = useCatalogSearch();

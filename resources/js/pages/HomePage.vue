@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from "vue";
-import { useUiStore } from "../stores/uiStore";
+import { useUiStore } from "../modules/shell/store/uiStore";
 import HomePageMobile from "./HomePageMobile.vue";
 import HomePageDesktop from "./HomePageDesktop.vue";
 

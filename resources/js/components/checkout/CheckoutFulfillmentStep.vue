@@ -2,19 +2,19 @@
 import { computed, onMounted } from "vue";
 import { storeToRefs } from "pinia";
 import { useAppDesign } from "../../design/useAppDesign";
-import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
-import { CHECKOUT_NAV_LABELS } from "../../features/checkout/checkoutWizardLabels";
-import { useCheckoutNavTotal } from "../../features/checkout/useCheckoutNavTotal";
+import { useCheckoutFlowContext } from "../../modules/checkout/application/flowContext";
+import { CHECKOUT_NAV_LABELS } from "../../modules/checkout/application/session";
+import { useCheckoutNavTotal } from "../../modules/checkout/application/preview";
 import {
     CHECKOUT_DELIVERY_METHOD_IDS,
     CHECKOUT_DELIVERY_METHOD_META,
-} from "../../features/checkout/checkoutDeliveryMethods";
+} from "../../modules/checkout/domain/checkoutServerMappers";
 import {
     CHECKOUT_PAYMENT_METHOD_IDS,
     CHECKOUT_PAYMENT_METHOD_META,
-} from "../../features/checkout/checkoutPaymentMethods";
-import { useContentStore } from "../../stores/contentStore";
-import { kitchenAddressLabelOrFallback } from "../../utils/system/companyDeliveryFacts";
+} from "../../modules/checkout/domain/checkoutServerMappers";
+import { useContentStore } from "../../modules/content/store";
+import { kitchenAddressLabelOrFallback } from "../../modules/content/application/company";
 import FormField from "../ui/FormField.vue";
 import ContactsKitchenMap from "../contacts/ContactsKitchenMap.vue";
 import CheckoutAddressFormFields from "./CheckoutAddressFormFields.vue";

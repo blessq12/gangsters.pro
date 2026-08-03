@@ -2,9 +2,9 @@
 import { storeToRefs } from "pinia";
 import { computed, ref, watch } from "vue";
 import { useAppDesign } from "../../design/useAppDesign";
-import { resolveGiftSelectionRequired } from "../../features/checkout/giftSelectionGate";
-import { useCheckoutStore } from "../../stores/checkoutStore";
-import { useUiStore } from "../../stores/uiStore";
+import { resolveGiftSelectionRequired } from "../../modules/checkout/application/preview";
+import { useCheckoutStore } from "../../modules/checkout/store";
+import { useUiStore } from "../../modules/shell/store/uiStore";
 import GiftCandidateCard from "./GiftCandidateCard.vue";
 
 const chk = useAppDesign().components.checkout;

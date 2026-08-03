@@ -2,12 +2,12 @@
 import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 import { useAppDesign } from "../../design/useAppDesign";
-import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
-import { useOrderPreview } from "../../features/checkout/useOrderPreview";
-import { useCatalogStore } from "../../stores/catalogStore";
-import { useCheckoutStore } from "../../stores/checkoutStore";
-import { useUiStore } from "../../stores/uiStore";
-import { DOMAIN_EVENTS, emitDomainEvent } from "../../shared/domainEvents";
+import { useCheckoutFlowContext } from "../../modules/checkout/application/flowContext";
+import { useOrderPreview } from "../../modules/checkout/application/preview";
+import { useCatalogStore } from "../../modules/catalog/store";
+import { useCheckoutStore } from "../../modules/checkout/store";
+import { useUiStore } from "../../modules/shell/store/uiStore";
+import { DOMAIN_EVENTS, emitDomainEvent } from "../../platform/domainEvents";
 import CheckoutSection from "./CheckoutSection.vue";
 
 const props = defineProps({

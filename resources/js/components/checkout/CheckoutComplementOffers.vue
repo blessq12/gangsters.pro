@@ -1,12 +1,12 @@
 <script setup>
 import { storeToRefs } from "pinia";
 import { computed } from "vue";
-import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
+import { useCheckoutFlowContext } from "../../modules/checkout/application/flowContext";
 import { useAppDesign } from "../../design/useAppDesign";
-import { buildComplementOfferRows } from "../../features/checkout/buildComplementOfferRows";
-import { useOrderPreview } from "../../features/checkout/useOrderPreview";
-import { useCatalogStore } from "../../stores/catalogStore";
-import { useCheckoutStore } from "../../stores/checkoutStore";
+import { buildComplementOfferRows } from "../../modules/checkout/application/preview";
+import { useOrderPreview } from "../../modules/checkout/application/preview";
+import { useCatalogStore } from "../../modules/catalog/store";
+import { useCheckoutStore } from "../../modules/checkout/store";
 import CheckoutSection from "./CheckoutSection.vue";
 
 const chk = useAppDesign().components.checkout;

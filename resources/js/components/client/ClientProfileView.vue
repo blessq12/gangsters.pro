@@ -1,9 +1,9 @@
 <script setup>
 import { computed } from "vue";
 import { storeToRefs } from "pinia";
-import { useOrdersReadModel } from "../../features/orders/useOrdersReadModel";
-import { useUserStore } from "../../stores/userStore";
-import { formatOrderDate, formatOrderMoneyRubles } from "../../utils/order/orderDisplay";
+import { useOrdersReadModel } from "../../modules/client/application/useOrdersReadModel";
+import { useUserStore } from "../../modules/client/store/userStore";
+import { formatOrderDate, formatOrderMoneyRubles } from "../../modules/client/application/orderDisplay";
 import { useAppDesign } from "../../design/useAppDesign";
 
 const emit = defineEmits(["logout"]);

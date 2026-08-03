@@ -1,8 +1,8 @@
 <script setup>
 import { storeToRefs } from "pinia";
 import { useAppDesign } from "../../design/useAppDesign";
-import { useContentStore } from "../../stores/contentStore";
-import { useKitchenAddressReadonlyMap } from "../../features/delivery/useKitchenAddressReadonlyMap";
+import { useContentStore } from "../../modules/content/store";
+import { useKitchenAddressReadonlyMap } from "../../modules/content/application/maps";
 
 const cm = useAppDesign().components.pages.contacts;
 

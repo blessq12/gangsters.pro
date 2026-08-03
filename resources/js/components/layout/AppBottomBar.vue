@@ -1,6 +1,6 @@
 <script setup>
 import DockChrome from "./dock/DockChrome.vue";
-import { dockItems } from "./dock/dockRegistry";
+import { dockItems } from "./dock/dockKit";
 </script>
 
 <template>

@@ -2,8 +2,8 @@
 import { computed } from "vue";
 import { useAppDesign } from "../../design/useAppDesign";
 import { storeToRefs } from "pinia";
-import { useContentStore } from "../../stores/contentStore";
-import { useDeliveryZoneReadonlyMap } from "../../features/delivery/useDeliveryZoneReadonlyMap";
+import { useContentStore } from "../../modules/content/store";
+import { useDeliveryZoneReadonlyMap } from "../../modules/content/application/maps";
 
 const dm = useAppDesign().components.pages.delivery;
 

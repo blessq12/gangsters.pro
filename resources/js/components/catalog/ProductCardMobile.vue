@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from "vue";
-import { useCatalogCardView } from "../../composables/catalog/useCatalogCardView";
-import { useProductActions } from "../../composables/catalog/useProductActions";
+import { useCatalogCardView } from "../../modules/catalog/application/models";
+import { useProductActions } from "../../modules/catalog/application/models";
 import { useAppDesign } from "../../design/useAppDesign";
 
 const props = defineProps({

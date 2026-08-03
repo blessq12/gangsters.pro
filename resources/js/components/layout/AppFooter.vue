@@ -1,10 +1,10 @@
 <script setup>
 import { computed, ref } from "vue";
-import { useEnterSlide } from "../../composables/animations/useEnterSlide";
+import { useEnterSlide } from "../../animations/animationManager";
 import { useAppDesign } from "../../design/useAppDesign";
 import { storeToRefs } from "pinia";
-import { useContentStore } from "../../stores/contentStore";
-import { hasDocumentBody } from "../../utils/system/documentBody";
+import { useContentStore } from "../../modules/content/store";
+import { hasDocumentBody } from "../../platform/document";
 
 const FOOTER_DOC_KEYS = {
     privacy: "privacy_policy",

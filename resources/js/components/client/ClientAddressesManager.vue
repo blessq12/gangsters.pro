@@ -1,9 +1,9 @@
 <script setup>
 import { computed, ref, watch } from "vue";
-import { useUserStore } from "../../stores/userStore";
-import { useFormFieldErrors } from "../../composables/forms/useFormFieldErrors";
-import { applyApiFieldErrors } from "../../utils/api/extractApiFieldErrors";
-import { mapApiError } from "../../utils/api/mapApiError";
+import { useUserStore } from "../../modules/client/store/userStore";
+import { useFormFieldErrors } from "../../platform/useFormFieldErrors";
+import { applyApiFieldErrors } from "../../platform/extractApiFieldErrors";
+import { mapApiError } from "../../platform/mapApiError";
 import { useAppDesign } from "../../design/useAppDesign";
 import FormField from "../ui/FormField.vue";
 

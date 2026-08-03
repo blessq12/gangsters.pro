@@ -1,14 +1,14 @@
 <script setup>
 import { ref, watch } from "vue";
 import { useAppDesign } from "../../design/useAppDesign";
-import { useRuPhoneModel } from "../../composables/client/useRuPhoneModel";
-import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
-import { CHECKOUT_NAV_LABELS } from "../../features/checkout/checkoutWizardLabels";
+import { useRuPhoneModel } from "../../modules/client/application/useRuPhoneModel";
+import { useCheckoutFlowContext } from "../../modules/checkout/application/flowContext";
+import { CHECKOUT_NAV_LABELS } from "../../modules/checkout/application/session";
 import {
     formatRuPhoneCanonical,
     RU_PHONE_MASKA_PATTERN,
     RU_PHONE_MASKA_TOKENS_ATTR,
-} from "../../validation/ruPhone";
+} from "../../platform/ruPhone";
 import FormField from "../ui/FormField.vue";
 import CheckoutSection from "./CheckoutSection.vue";
 import CheckoutStepFrame from "./CheckoutStepFrame.vue";

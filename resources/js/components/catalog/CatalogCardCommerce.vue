@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from "vue";
-import { formatMoneyRublesRu } from "../../utils/moneyFormat";
+import { formatMoneyRublesRu } from "../../platform/moneyFormat";
 import { useAppDesign } from "../../design/useAppDesign";
 
 const props = defineProps({

@@ -2,11 +2,11 @@
 import { computed } from "vue";
 import { storeToRefs } from "pinia";
 import { useAppDesign } from "../../design/useAppDesign";
-import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
-import { CHECKOUT_NAV_LABELS } from "../../features/checkout/checkoutWizardLabels";
-import { useCheckoutNavTotal } from "../../features/checkout/useCheckoutNavTotal";
-import { useCatalogStore } from "../../stores/catalogStore";
-import { useCheckoutStore } from "../../stores/checkoutStore";
+import { useCheckoutFlowContext } from "../../modules/checkout/application/flowContext";
+import { CHECKOUT_NAV_LABELS } from "../../modules/checkout/application/session";
+import { useCheckoutNavTotal } from "../../modules/checkout/application/preview";
+import { useCatalogStore } from "../../modules/catalog/store";
+import { useCheckoutStore } from "../../modules/checkout/store";
 import CheckoutSection from "./CheckoutSection.vue";
 import CheckoutStepFrame from "./CheckoutStepFrame.vue";
 import CheckoutStepNav from "./CheckoutStepNav.vue";

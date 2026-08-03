@@ -7,8 +7,8 @@ import {
     ref,
 } from "vue";
 import { playTooltipClose, playTooltipOpen } from "../../animations/animationManager";
-import { useCatalogItemDisplay } from "../../composables/catalog/useCatalogItemDisplay";
-import { useProductMeta } from "../../composables/catalog/useProductMeta";
+import { useCatalogItemDisplay } from "../../modules/catalog/application/models";
+import { useProductMeta } from "../../modules/catalog/application/models";
 import { useAppDesign } from "../../design/useAppDesign";
 
 const props = defineProps({

@@ -1,14 +1,14 @@
 <script setup>
 import { computed, ref } from "vue";
-import { useOrdersReadModel } from "../../features/orders/useOrdersReadModel";
-import { useRepeatOrder } from "../../features/orders/useRepeatOrder";
+import { useOrdersReadModel } from "../../modules/client/application/useOrdersReadModel";
+import { useRepeatOrder } from "../../modules/client/application/repeatOrder";
 import {
     formatDeliveryMethodRu,
     formatOrderDate,
     formatOrderMoneyRubles,
     formatOrderStatusRu,
     formatPaymentMethodRu,
-} from "../../utils/order/orderDisplay";
+} from "../../modules/client/application/orderDisplay";
 import { useAppDesign } from "../../design/useAppDesign";
 import RepeatOrderCartChoiceModal from "./RepeatOrderCartChoiceModal.vue";
 

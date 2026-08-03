@@ -21,3 +21,13 @@ export function readYandexMapsApiKey() {
     const key = import.meta.env?.VITE_YANDEX_MAPS_API_KEY;
     return typeof key === "string" && key.trim() !== "" ? key.trim() : null;
 }
+
+
+export const siteMeta = {
+    defaultTitle: site.defaultTitle,
+    defaultDescription: site.defaultDescription,
+    themeColor: site.themeColor,
+    ogImagePath: site.ogImagePath,
+    ogImageSocialPath: site.ogImageSocialPath,
+    defaultRobots: site.defaultRobots,
+};

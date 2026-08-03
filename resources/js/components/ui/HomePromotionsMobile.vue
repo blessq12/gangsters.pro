@@ -4,8 +4,8 @@ import "swiper/css";
 import { Autoplay } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { storeToRefs } from "pinia";
-import { useContentStore } from "../../stores/contentStore";
-import { hasDocumentBody } from "../../utils/system/documentBody";
+import { useContentStore } from "../../modules/content/store";
+import { hasDocumentBody } from "../../platform/document";
 import { useAppDesign } from "../../design/useAppDesign";
 
 const contentStore = useContentStore();

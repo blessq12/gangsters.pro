@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from "vue";
-import { useCatalogItemDisplay } from "../../composables/catalog/useCatalogItemDisplay";
-import { formatMoneyRublesRu } from "../../utils/moneyFormat";
+import { useCatalogItemDisplay } from "../../modules/catalog/application/models";
+import { formatMoneyRublesRu } from "../../platform/moneyFormat";
 import { useAppDesign } from "../../design/useAppDesign";
 
 const props = defineProps({

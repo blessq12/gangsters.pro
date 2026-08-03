@@ -2,8 +2,8 @@
 import { computed, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
-import { useUserStore } from "../stores/userStore";
-import { mapApiError } from "../utils/api/mapApiError";
+import { useUserStore } from "../modules/client/store/userStore";
+import { mapApiError } from "../platform/mapApiError";
 import { useAppDesign } from "../design/useAppDesign";
 
 const route = useRoute();

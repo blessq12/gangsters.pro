@@ -12,14 +12,14 @@ import {
     playTooltipOpen,
     playWorkScheduleStripEnter,
 } from "../../animations/animationManager";
-import { useCompanyOpenStatus } from "../../composables/system/useCompanyOpenStatus";
-import { useContentStore } from "../../stores/contentStore";
-import { getCurrentDayKey } from "../../utils/system/companyOpenStatus";
+import { useCompanyOpenStatus } from "../../modules/content/application/company";
+import { useContentStore } from "../../modules/content/store";
+import { getCurrentDayKey } from "../../modules/content/application/company";
 import {
     formatTodayWorkScheduleLine,
     getWorkScheduleRows,
     safeTrim,
-} from "../../utils/system/companyDisplay";
+} from "../../modules/content/application/company";
 import { useAppDesign } from "../../design/useAppDesign";
 
 const TOOLTIP_PAD = 12;

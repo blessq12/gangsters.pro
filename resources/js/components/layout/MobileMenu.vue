@@ -1,15 +1,15 @@
 <script setup>
 import { computed, onUnmounted, watch } from "vue";
-import { useUiStore } from "../../stores/uiStore";
-import { useContentStore } from "../../stores/contentStore";
+import { useUiStore } from "../../modules/shell/store/uiStore";
+import { useContentStore } from "../../modules/content/store";
 import { useAppDesign } from "../../design/useAppDesign";
 import { NAV_LINKS_MOBILE_SHEET } from "../../design/layout/navigation.present";
 import {
     safeTrim,
     formatTodayWorkScheduleLine,
     formatCompanyAddressLine,
-} from "../../utils/system/companyDisplay";
-import { formatRuPhone, phoneToTelHref } from "../../utils/phone/formatRuPhone";
+} from "../../modules/content/application/company";
+import { formatRuPhone, phoneToTelHref } from "../../platform/ruPhone";
 
 const uiStore = useUiStore();
 const contentStore = useContentStore();

@@ -2,20 +2,22 @@
 import { computed, onMounted } from "vue";
 import { storeToRefs } from "pinia";
 import { useAppDesign } from "../../design/useAppDesign";
-import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
-import { CHECKOUT_LOADING_LABELS } from "../../features/checkout/checkoutLoadingLabels";
-import { CHECKOUT_NAV_LABELS } from "../../features/checkout/checkoutWizardLabels";
+import { useCheckoutFlowContext } from "../../modules/checkout/application/flowContext";
+import {
+    CHECKOUT_LOADING_LABELS,
+    CHECKOUT_NAV_LABELS,
+} from "../../modules/checkout/application/session";
 import {
     CHECKOUT_DELIVERY_METHOD_META,
-} from "../../features/checkout/checkoutDeliveryMethods";
+} from "../../modules/checkout/domain/checkoutServerMappers";
 import {
     formatServerDeliveryLine,
     formatServerPaymentLine,
-} from "../../domain/order/checkoutServerMappers";
-import { refreshOrderDraftPreview } from "../../features/checkout/checkoutSessionService";
-import { useCheckoutStore } from "../../stores/checkoutStore";
-import { useOrderPreview } from "../../features/checkout/useOrderPreview";
-import { useCheckoutNavTotal } from "../../features/checkout/useCheckoutNavTotal";
+} from "../../modules/checkout/domain/checkoutServerMappers";
+import { refreshOrderDraftPreview } from "../../modules/checkout/application/session";
+import { useCheckoutStore } from "../../modules/checkout/store";
+import { useOrderPreview } from "../../modules/checkout/application/preview";
+import { useCheckoutNavTotal } from "../../modules/checkout/application/preview";
 import CheckoutOrderReview from "./CheckoutOrderReview.vue";
 import CheckoutPromoStrip from "./CheckoutPromoStrip.vue";
 import CheckoutSection from "./CheckoutSection.vue";
