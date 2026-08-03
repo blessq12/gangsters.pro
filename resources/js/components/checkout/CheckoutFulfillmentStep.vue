@@ -1,6 +1,6 @@
 <script setup>
-import { storeToRefs } from "pinia";
 import { computed, onMounted } from "vue";
+import { storeToRefs } from "pinia";
 import { useAppDesign } from "../../design/useAppDesign";
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
 import { CHECKOUT_NAV_LABELS } from "../../features/checkout/checkoutWizardLabels";
@@ -13,7 +13,7 @@ import {
     CHECKOUT_PAYMENT_METHOD_IDS,
     CHECKOUT_PAYMENT_METHOD_META,
 } from "../../features/checkout/checkoutPaymentMethods";
-import { useDeliveryReadModel } from "../../features/delivery/useDeliveryReadModel";
+import { useContentStore } from "../../stores/contentStore";
 import { kitchenAddressLabelOrFallback } from "../../utils/system/companyDeliveryFacts";
 import FormField from "../ui/FormField.vue";
 import ContactsKitchenMap from "../contacts/ContactsKitchenMap.vue";
@@ -39,7 +39,7 @@ const {
     setPaymentMethod,
 } = useCheckoutFlowContext();
 
-const { facts: deliveryFacts } = useDeliveryReadModel({ autoload: true });
+const { deliveryFacts } = storeToRefs(useContentStore());
 
 onMounted(() => {
     scheduleDeliveryPreview();

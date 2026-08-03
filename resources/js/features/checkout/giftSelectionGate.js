@@ -1,4 +1,4 @@
-import { selectedGiftCartLine } from "./normalizeCheckoutCart";
+import { selectedGiftCartLine } from "../../domain/order/normalizeCheckoutCart";
 
 /**
  * @param {{ eligible?: boolean, phase?: string|null, selectedProductId?: number|null }|null|undefined} giftCta

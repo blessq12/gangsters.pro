@@ -1,12 +1,15 @@
 import { defineStore } from "pinia";
 import { fetchContentBootstrapRequest } from "../api/contentApi";
-import { useCompanyStore } from "./companyStore";
-import { useDeliveryStore } from "./deliveryStore";
-import { useMarketingStore } from "./marketingStore";
+import {
+    normalizeCompanyDocument,
+    normalizeCompanyLegal,
+    normalizeCompanyProfile,
+} from "../domain/company/companyMappers";
+import { toDeliveryFactsView } from "../domain/delivery/deliveryMappers";
 import { mapApiError } from "../utils/api/mapApiError";
 
 /**
- * Content bootstrap: company + marketing + delivery settings.
+ * Content bootstrap: company + marketing + delivery (один store = один GET /api/content).
  */
 export const useContentStore = defineStore("content", {
     state: () => ({
@@ -16,8 +19,60 @@ export const useContentStore = defineStore("content", {
         error: null,
         /** @type {Promise<void> | null} */
         inflight: null,
+
+        profile: null,
+        legal: null,
+        documents: [],
+        banners: [],
+        promotions: [],
+        delivery: null,
     }),
+    getters: {
+        deliveryFacts: (state) => toDeliveryFactsView(state.delivery),
+    },
     actions: {
+        applyCompany(companyPayload) {
+            if (!companyPayload || typeof companyPayload !== "object") {
+                return;
+            }
+            if (Object.prototype.hasOwnProperty.call(companyPayload, "main")) {
+                this.profile = companyPayload.main
+                    ? normalizeCompanyProfile(companyPayload.main)
+                    : null;
+            }
+            if (Object.prototype.hasOwnProperty.call(companyPayload, "legals")) {
+                this.legal = companyPayload.legals
+                    ? normalizeCompanyLegal(companyPayload.legals)
+                    : null;
+            }
+            if (Object.prototype.hasOwnProperty.call(companyPayload, "documents")) {
+                this.documents = Array.isArray(companyPayload.documents)
+                    ? companyPayload.documents
+                          .map(normalizeCompanyDocument)
+                          .filter(Boolean)
+                    : [];
+            }
+        },
+
+        applyMarketing(marketingPayload) {
+            if (!marketingPayload || typeof marketingPayload !== "object") {
+                return;
+            }
+            if (Array.isArray(marketingPayload.banners)) {
+                this.banners = marketingPayload.banners;
+            }
+            if (Array.isArray(marketingPayload.promotions)) {
+                this.promotions = marketingPayload.promotions;
+            }
+        },
+
+        applyDelivery(deliveryPayload) {
+            if (deliveryPayload == null) {
+                return;
+            }
+            this.delivery = deliveryPayload;
+        },
+
         applyBootstrap(payload) {
             if (!payload || typeof payload !== "object") {
                 return;
@@ -26,19 +81,14 @@ export const useContentStore = defineStore("content", {
             if (payload.version != null) {
                 this.version = payload.version;
             }
-
-            const companyStore = useCompanyStore();
-            const marketingStore = useMarketingStore();
-            const deliveryStore = useDeliveryStore();
-
             if (payload.company != null) {
-                companyStore.applyBootstrap(payload.company);
+                this.applyCompany(payload.company);
             }
             if (payload.marketing != null) {
-                marketingStore.applyBootstrap(payload.marketing);
+                this.applyMarketing(payload.marketing);
             }
             if (Object.prototype.hasOwnProperty.call(payload, "delivery")) {
-                deliveryStore.applyBootstrap(payload.delivery);
+                this.applyDelivery(payload.delivery);
             }
         },
 

@@ -1,7 +1,6 @@
 import { onBeforeUnmount, ref, watch } from "vue";
 import { useFormFieldErrors } from "../../composables/forms/useFormFieldErrors";
 import { applyApiFieldErrors } from "../../utils/api/extractApiFieldErrors";
-import { useClientCommands } from "../client/useClient";
 import { useClientAddressSelectionModel } from "../client/useClientAddressSelectionModel";
 import { createOrderDraftPreviewScheduler } from "./orderDraftPreviewScheduler";
 
@@ -37,7 +36,6 @@ export function useCheckoutDeliveryStep({
     isAuthenticated,
 }) {
     const addressSelection = useClientAddressSelectionModel();
-    const clientCommands = useClientCommands();
     const previewScheduler = createOrderDraftPreviewScheduler(checkoutIntent);
     const deliveryFieldErrors = useFormFieldErrors();
     const newAddressFieldErrors = useFormFieldErrors();
@@ -230,7 +228,7 @@ export function useCheckoutDeliveryStep({
     }
 
     function selectAddress(addressId) {
-        clientCommands.selectAddress(addressId);
+        userStore.selectAddress(addressId);
         deliveryFieldErrors.clearField("selectedAddress");
         previewScheduler.schedule(resolvePreviewAddress(), 200);
     }
@@ -283,7 +281,7 @@ export function useCheckoutDeliveryStep({
         newAddressLoading.value = true;
 
         try {
-            const data = await clientCommands.addAddress({
+            const data = await userStore.addClientAddress({
                 title: newAddressForm.value.title || null,
                 street: newAddressForm.value.street,
                 house: newAddressForm.value.house,
@@ -301,7 +299,7 @@ export function useCheckoutDeliveryStep({
                     data?.client?.default_address_id ??
                     userStore.addresses[userStore.addresses.length - 1]?.id;
                 if (fallbackId != null) {
-                    clientCommands.selectAddress(fallbackId);
+                    userStore.selectAddress(fallbackId);
                 }
             }
 

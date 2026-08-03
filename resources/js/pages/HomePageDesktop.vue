@@ -20,7 +20,7 @@ const {
 </script>
 
 <template>
-    <HomeJumbotron />
+    <HomeJumbotronBase variant="desktop" />
 
     <div :class="d.root">
         <HomePromotionsDesktop />
@@ -46,33 +46,37 @@ const {
                 </div>
             </header>
 
-            <CatalogCategoriesDesktop
+            <CatalogCategoriesBase
                 v-model="selectedCategoryId"
                 :categories="categoryTabs"
+                variant="desktop"
             />
-            <CatalogCategoriesDesktop
+            <CatalogCategoriesBase
                 v-model="selectedTag"
                 :categories="tagTabs"
                 all-label="Все теги"
+                variant="desktop"
             />
 
             <div :class="d.catalogControlsRow">
                 <CatalogViewControlsDesktop v-model:cards-per-row="desktopCardsPerRow" />
             </div>
 
-            <CatalogProductsDesktop
+            <CatalogProductsBase
                 :sections="menuSections"
                 :loading="loading"
                 :empty-message="catalogEmptyMessage"
                 :cards-per-row="desktopCardsPerRow"
+                variant="desktop"
                 @product-image-click="openProductDetail"
             />
         </section>
     </div>
 
-    <ProductDetailModal
+    <ProductDetailModalBase
         v-model="showProductDetailModal"
         :product="selectedProduct"
+        variant="desktop"
     />
 </template>
 

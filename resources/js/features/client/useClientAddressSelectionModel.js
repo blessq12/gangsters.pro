@@ -1,20 +1,17 @@
 import { computed } from "vue";
-import { useClientCommands, useClientReadModel } from "./useClient";
+import { useUserStore } from "../../stores/userStore";
 import { mapApiError } from "../../utils/api/mapApiError";
 
 export function useClientAddressSelectionModel() {
-    const clientCommands = useClientCommands();
-    const clientReadModel = useClientReadModel();
+    const userStore = useUserStore();
 
-    const selectedAddress = computed(() => clientReadModel.selectedAddress.value);
-    const selectedAddressId = computed(
-        () => clientReadModel.selectedAddressId.value,
-    );
-    const addresses = computed(() => clientReadModel.addresses.value);
+    const selectedAddress = computed(() => userStore.selectedAddress);
+    const selectedAddressId = computed(() => userStore.selectedAddressId);
+    const addresses = computed(() => userStore.addresses);
 
     async function createAddress(payload) {
         try {
-            return await clientCommands.addAddress(payload);
+            return await userStore.addClientAddress(payload);
         } catch (error) {
             throw new Error(
                 mapApiError(
@@ -26,7 +23,7 @@ export function useClientAddressSelectionModel() {
     }
 
     function selectAddress(id) {
-        clientCommands.selectAddress(id);
+        userStore.selectAddress(id);
     }
 
     return {

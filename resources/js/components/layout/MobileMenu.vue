@@ -1,9 +1,7 @@
 <script setup>
 import { computed, onUnmounted, watch } from "vue";
 import { useUiStore } from "../../stores/uiStore";
-import { useCompanyStore } from "../../stores/companyStore";
-import { useDeliveryStore } from "../../stores/deliveryStore";
-import { toDeliveryFactsView } from "../../domain/delivery/deliveryMappers";
+import { useContentStore } from "../../stores/contentStore";
 import { useAppDesign } from "../../design/useAppDesign";
 import { NAV_LINKS_MOBILE_SHEET } from "../../design/layout/navigation.present";
 import {
@@ -14,14 +12,11 @@ import {
 import { formatRuPhone, phoneToTelHref } from "../../utils/phone/formatRuPhone";
 
 const uiStore = useUiStore();
-const companyStore = useCompanyStore();
-const deliveryStore = useDeliveryStore();
+const contentStore = useContentStore();
 const mm = useAppDesign().components.navbar.mobileMenu;
 
-const profile = computed(() => companyStore.profile);
-const deliveryFacts = computed(() =>
-    toDeliveryFactsView(deliveryStore.data),
-);
+const profile = computed(() => contentStore.profile);
+const deliveryFacts = computed(() => contentStore.deliveryFacts);
 
 const companyTitle = computed(() => {
     const c = profile.value;

@@ -1,5 +1,5 @@
 import { computed } from "vue";
-import { resolveSelectedGiftSummary } from "./normalizeCheckoutCart";
+import { resolveSelectedGiftSummary } from "../../domain/order/normalizeCheckoutCart";
 import { useCheckoutSession } from "./useCheckoutSession";
 import { useCheckoutStore } from "../../stores/checkoutStore";
 

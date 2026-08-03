@@ -7,7 +7,7 @@ import {
     isComplementCartLine,
     isGiftCartLine,
     wizardNonComplementSystemItems,
-} from "../../features/checkout/normalizeCheckoutCart";
+} from "../../domain/order/normalizeCheckoutCart";
 
 const cf = useAppDesign().components.checkout.confirm;
 const s = useAppDesign().components.checkout.shared;

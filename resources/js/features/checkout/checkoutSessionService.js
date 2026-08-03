@@ -1,20 +1,20 @@
 import {
     placeOrderRequest,
     quoteOrderRequest,
-} from "../../api/orderDraftApi";
+} from "../../api/orderApi";
 import { useUserStore } from "../../stores/userStore";
-import { adaptQuoteToCheckoutSnapshot } from "./adaptQuoteToCheckoutSnapshot";
+import { adaptQuoteToCheckoutSnapshot } from "../../domain/order/adaptQuoteToCheckoutSnapshot";
 import {
     buildClientPayload,
     buildDeliveryPayload,
     buildPaymentPayload,
-} from "./checkoutServerMappers";
+} from "../../domain/order/checkoutServerMappers";
 import {
     normalizeCheckoutSessionForms,
     readCheckoutSessionPayload,
     writeCheckoutSessionPayload,
 } from "./checkoutSessionStorage";
-import { isComplementCartLine } from "./normalizeCheckoutCart";
+import { isComplementCartLine } from "../../domain/order/normalizeCheckoutCart";
 import { roundRubles2 } from "../../utils/moneyFormat";
 
 export function resolveClientRequestId() {

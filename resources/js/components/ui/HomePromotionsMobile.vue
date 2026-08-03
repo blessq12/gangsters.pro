@@ -3,11 +3,13 @@ import { computed, ref } from "vue";
 import "swiper/css";
 import { Autoplay } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/vue";
-import { useMarketingReadModel } from "../../features/marketing/useMarketingReadModel";
+import { storeToRefs } from "pinia";
+import { useContentStore } from "../../stores/contentStore";
 import { hasDocumentBody } from "../../utils/system/documentBody";
 import { useAppDesign } from "../../design/useAppDesign";
 
-const { promotions, loading } = useMarketingReadModel({ autoload: true });
+const contentStore = useContentStore();
+const { promotions, loading } = storeToRefs(contentStore);
 
 const hp = useAppDesign().components.home.promotions;
 const hpShared = hp.shared;
@@ -27,7 +29,9 @@ const promos = computed(() =>
 const loopReady = computed(() => promos.value.length >= 3);
 const rewindEnabled = computed(() => promos.value.length > 1 && !loopReady.value);
 
-const isLoading = computed(() => loading.value.promotions);
+const isLoading = computed(
+    () => loading.value && promotions.value.length === 0,
+);
 
 const showModal = ref(false);
 const activePromo = ref(null);

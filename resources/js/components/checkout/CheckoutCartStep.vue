@@ -4,7 +4,6 @@ import { storeToRefs } from "pinia";
 import { useAppDesign } from "../../design/useAppDesign";
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
 import { CHECKOUT_NAV_LABELS } from "../../features/checkout/checkoutWizardLabels";
-import { useCartCommands } from "../../features/shoppingSession/useCartCommands";
 import { useCatalogStore } from "../../stores/catalogStore";
 import { useCheckoutStore } from "../../stores/checkoutStore";
 import CheckoutComplementOffers from "./CheckoutComplementOffers.vue";
@@ -18,9 +17,8 @@ const c = chk.cart;
 
 const { checkoutState, handleStartCheckout } = useCheckoutFlowContext();
 
-const cartStore = useCheckoutStore();
 const catalogStore = useCatalogStore();
-const cartCommands = useCartCommands();
+const cartStore = useCheckoutStore();
 const { userItems: userCartItems } = storeToRefs(cartStore);
 const { complementProducts } = storeToRefs(catalogStore);
 
@@ -50,15 +48,15 @@ const canStartCheckout = computed(
 );
 
 function decrementCart(productId) {
-    void cartCommands.decrementProductInCart(productId);
+    void cartStore.decrementCart(productId);
 }
 
 function incrementCart(productId) {
-    void cartCommands.incrementProductInCart(productId);
+    void cartStore.incrementCart(productId);
 }
 
 function removeFromCart(productId) {
-    void cartCommands.removeProductFromCart(productId);
+    void cartStore.removeFromCart(productId);
 }
 
 function unitPriceRub(item) {

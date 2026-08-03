@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { DOMAIN_EVENTS, emitDomainEvent } from "../shared/domainEvents";
-import { fetchOrdersRequest } from "../api/orderApi";
+import { fetchOrdersRequest } from "../api/clientApi";
 
 export const useOrderStore = defineStore("order", {
     state: () => ({

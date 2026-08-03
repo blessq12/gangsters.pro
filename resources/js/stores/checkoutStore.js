@@ -16,19 +16,19 @@ import {
     mapDeliveryToLocal,
     mapPaymentToLocal,
     normalizePaymentPatch,
-} from "../features/checkout/checkoutServerMappers";
+} from "../domain/order/checkoutServerMappers";
 import {
     buildCheckoutSessionSnapshot,
     CHECKOUT_WIZARD_STEPS,
     clearCheckoutSessionPayload,
 } from "../features/checkout/checkoutSessionStorage";
 import { mapServerWizardStep } from "../features/checkout/checkoutWizardGroups";
-import { normalizeBenefitsProgress } from "../features/checkout/normalizeBenefitsProgress";
-import { normalizeOrderPreview } from "../features/checkout/normalizeOrderPreview";
+import { normalizeBenefitsProgress } from "../domain/order/normalizeBenefitsProgress";
+import { normalizeOrderPreview } from "../domain/order/normalizeOrderPreview";
 import {
     normalizeCheckoutCartBlock,
     selectedGiftCartLine,
-} from "../features/checkout/normalizeCheckoutCart";
+} from "../domain/order/normalizeCheckoutCart";
 import { DOMAIN_EVENTS, emitDomainEvent } from "../shared/domainEvents";
 import { roundRubles2 } from "../utils/moneyFormat";
 import { useCatalogStore } from "./catalogStore";

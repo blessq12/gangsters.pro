@@ -5,7 +5,6 @@ import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowC
 import { useAppDesign } from "../../design/useAppDesign";
 import { buildComplementOfferRows } from "../../features/checkout/buildComplementOfferRows";
 import { useOrderPreview } from "../../features/checkout/useOrderPreview";
-import { useCartCommands } from "../../features/shoppingSession/useCartCommands";
 import { useCatalogStore } from "../../stores/catalogStore";
 import { useCheckoutStore } from "../../stores/checkoutStore";
 import CheckoutSection from "./CheckoutSection.vue";
@@ -18,8 +17,7 @@ const { checkoutState } = useCheckoutFlowContext();
 const { formatPrice } = checkoutState;
 
 const catalogStore = useCatalogStore();
-const checkoutStore = useCheckoutStore();
-const cartCommands = useCartCommands();
+const cartStore = useCheckoutStore();
 const { complementProducts } = storeToRefs(catalogStore);
 const {
     complementLines,
@@ -67,7 +65,7 @@ const showBlock = computed(
 );
 
 function paidQty(productId) {
-    return checkoutStore.cartQuantityByProduct(productId);
+    return cartStore.cartQuantityByProduct(productId);
 }
 
 function freeQty(row) {
@@ -113,15 +111,15 @@ async function incrementProduct(product) {
     const id = product?.id;
     if (id == null) return;
     if (paidQty(id) <= 0) {
-        await cartCommands.addProductToCart(product, 1);
+        await cartStore.addToCart(product, 1);
         return;
     }
-    await cartCommands.incrementProductInCart(id);
+    await cartStore.incrementCart(id);
 }
 
 async function decrementProduct(row) {
     if (!canDecrement(row)) return;
-    await cartCommands.decrementProductInCart(row.id);
+    await cartStore.decrementCart(row.id);
 }
 </script>
 

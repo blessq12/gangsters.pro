@@ -5,7 +5,6 @@ import { useAppDesign } from "../../design/useAppDesign";
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
 import { CHECKOUT_NAV_LABELS } from "../../features/checkout/checkoutWizardLabels";
 import { useCheckoutNavTotal } from "../../features/checkout/useCheckoutNavTotal";
-import { useCartCommands } from "../../features/shoppingSession/useCartCommands";
 import { useCatalogStore } from "../../stores/catalogStore";
 import { useCheckoutStore } from "../../stores/checkoutStore";
 import CheckoutSection from "./CheckoutSection.vue";
@@ -21,8 +20,7 @@ const { formatPrice } = checkoutState;
 const { navTotalLabel } = useCheckoutNavTotal();
 
 const catalogStore = useCatalogStore();
-const checkoutStore = useCheckoutStore();
-const cartCommands = useCartCommands();
+const cartStore = useCheckoutStore();
 const { accompanyingCategories } = storeToRefs(catalogStore);
 
 const accompanyingSections = computed(() =>
@@ -41,7 +39,7 @@ const primaryLabel = computed(() => {
 });
 
 function paidQty(productId) {
-    return checkoutStore.cartQuantityByProduct(productId);
+    return cartStore.cartQuantityByProduct(productId);
 }
 
 function unitPriceRub(product) {
@@ -61,15 +59,15 @@ async function incrementProduct(product) {
     const id = product?.id;
     if (id == null) return;
     if (paidQty(id) <= 0) {
-        await cartCommands.addProductToCart(product, 1);
+        await cartStore.addToCart(product, 1);
         return;
     }
-    await cartCommands.incrementProductInCart(id);
+    await cartStore.incrementCart(id);
 }
 
 async function decrementProduct(productId) {
     if (productId == null) return;
-    await cartCommands.decrementProductInCart(productId);
+    await cartStore.decrementCart(productId);
 }
 </script>
 

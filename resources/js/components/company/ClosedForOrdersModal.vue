@@ -2,7 +2,7 @@
 import { computed } from "vue";
 import BaseModal from "../ui/BaseModal.vue";
 import { useAppDesign } from "../../design/useAppDesign";
-import { useCompanyStore } from "../../stores/companyStore";
+import { useContentStore } from "../../stores/contentStore";
 import { useUiStore } from "../../stores/uiStore";
 import {
     buildClosedOrdersNotice,
@@ -10,7 +10,7 @@ import {
 } from "../../utils/system/closedOrdersNotice";
 
 const cn = useAppDesign().components.closedNotice;
-const companyStore = useCompanyStore();
+const contentStore = useContentStore();
 const uiStore = useUiStore();
 
 const isOpen = computed({
@@ -27,7 +27,7 @@ const isOpen = computed({
 });
 
 const notice = computed(() =>
-    buildClosedOrdersNotice(companyStore.profile, new Date()),
+    buildClosedOrdersNotice(contentStore.profile, new Date()),
 );
 
 function dismiss() {

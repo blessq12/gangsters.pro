@@ -1,6 +1,5 @@
 import { watch } from "vue";
 import { INTRO_DOCK_REVEAL_GAP_MS } from "../../animations/animationManager";
-import { useCompanyStore } from "../../stores/companyStore";
 import { useContentStore } from "../../stores/contentStore";
 import { useShellStore } from "../../stores/shellStore";
 import { useUiStore } from "../../stores/uiStore";
@@ -16,16 +15,15 @@ let noticeScheduled = false;
 export function useCompanyClosedNoticeProcess() {
     if (!processInitialized) {
         const uiStore = useUiStore();
-        const companyStore = useCompanyStore();
         const contentStore = useContentStore();
         const shellStore = useShellStore();
 
         function tryOpenNotice() {
-            if (!shellStore.isInteractive || !contentStore.loaded || !companyStore.profile) {
+            if (!shellStore.isInteractive || !contentStore.loaded || !contentStore.profile) {
                 return;
             }
 
-            if (isCompanyOpenNow(companyStore.profile)) {
+            if (isCompanyOpenNow(contentStore.profile)) {
                 return;
             }
 
@@ -45,7 +43,7 @@ export function useCompanyClosedNoticeProcess() {
                 return;
             }
 
-            if (!shellStore.isInteractive || !contentStore.loaded || !companyStore.profile) {
+            if (!shellStore.isInteractive || !contentStore.loaded || !contentStore.profile) {
                 return;
             }
 
@@ -60,7 +58,7 @@ export function useCompanyClosedNoticeProcess() {
             () => [
                 shellStore.isInteractive,
                 contentStore.loaded,
-                companyStore.profile,
+                contentStore.profile,
             ],
             () => scheduleNoticeAfterShellReady(),
             { immediate: true },

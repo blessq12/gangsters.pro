@@ -1,8 +1,9 @@
 <script setup>
 import { computed } from "vue";
+import { storeToRefs } from "pinia";
 import { useAppDesign } from "../../../design/useAppDesign";
-import { useClientReadModel } from "../../../features/client/useClient";
 import { useUiStore } from "../../../stores/uiStore";
+import { useUserStore } from "../../../stores/userStore";
 
 const props = defineProps({
     iconClass: {
@@ -18,7 +19,12 @@ const emit = defineEmits({
 const dock = useAppDesign().components.dock;
 const pt = dock.profileTab;
 const uiStore = useUiStore();
-const { isAuthenticated, profile } = useClientReadModel();
+const userStore = useUserStore();
+const { profile, token } = storeToRefs(userStore);
+
+const isAuthenticated = computed(
+    () => Boolean(token.value) && Boolean(profile.value?.id),
+);
 
 const isActive = computed(() => uiStore.dockActiveId === "profile");
 

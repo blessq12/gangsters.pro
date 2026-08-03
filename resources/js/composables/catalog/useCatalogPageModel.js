@@ -1,5 +1,5 @@
-import { computed, ref, watch } from "vue";
-import { useCatalogReadModel } from "../../features/catalog/useCatalogReadModel";
+import { computed, onMounted, ref, watch } from "vue";
+import { storeToRefs } from "pinia";
 import { useCatalogStore } from "../../stores/catalogStore";
 
 export function useCatalogPageModel() {
@@ -10,7 +10,13 @@ export function useCatalogPageModel() {
         categoryTabs,
         tagTabs,
         loading,
-    } = useCatalogReadModel({ autoload: true });
+    } = storeToRefs(catalogStore);
+
+    onMounted(() => {
+        if (!catalogStore.hasLoaded && !catalogStore.loading) {
+            void catalogStore.fetchAll();
+        }
+    });
 
     const showProductDetailModal = ref(false);
 

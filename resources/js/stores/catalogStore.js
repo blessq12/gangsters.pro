@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { fetchCatalogTree } from "../services/catalog/catalogService";
+import { fetchCatalogTree } from "../domain/catalog/buildCatalogTree";
 import { mapApiError } from "../utils/api/mapApiError";
 
 const CATALOG_STORAGE_KEY = "gangsters_catalog";

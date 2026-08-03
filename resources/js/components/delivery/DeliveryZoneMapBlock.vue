@@ -1,16 +1,14 @@
 <script setup>
 import { computed } from "vue";
 import { useAppDesign } from "../../design/useAppDesign";
-import { useDeliveryReadModel } from "../../features/delivery/useDeliveryReadModel";
+import { storeToRefs } from "pinia";
+import { useContentStore } from "../../stores/contentStore";
 import { useDeliveryZoneReadonlyMap } from "../../features/delivery/useDeliveryZoneReadonlyMap";
 
 const dm = useAppDesign().components.pages.delivery;
 
-const { facts: factsRef, loading: deliveryLoading } = useDeliveryReadModel({
-    autoload: true,
-});
-
-const facts = computed(() => factsRef.value);
+const contentStore = useContentStore();
+const { deliveryFacts: facts, loading: deliveryLoading } = storeToRefs(contentStore);
 
 const {
     mapUrl,

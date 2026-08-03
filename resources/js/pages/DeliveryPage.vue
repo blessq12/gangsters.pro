@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from "vue";
-import { useCompanyReadModel } from "../features/company/useCompanyReadModel";
-import { useDeliveryReadModel } from "../features/delivery/useDeliveryReadModel";
+import { storeToRefs } from "pinia";
+import { useContentStore } from "../stores/contentStore";
 import {
     buildCheckoutAlignedPaymentInfoBlocks,
     buildDeliveryHeroStats,
@@ -17,15 +17,10 @@ import {
 import { safeTrim } from "../utils/system/companyDisplay";
 import { useAppDesign } from "../design/useAppDesign";
 
-const { profile: profileRef } = useCompanyReadModel({ autoload: true });
-const { facts: factsRef, loading: deliveryLoading } = useDeliveryReadModel({
-    autoload: true,
-});
+const contentStore = useContentStore();
+const { profile, deliveryFacts: facts, loading: deliveryLoading } = storeToRefs(contentStore);
 
 const dv = useAppDesign().components.pages.delivery;
-
-const profile = computed(() => profileRef.value);
-const facts = computed(() => factsRef.value);
 
 const heroDescription = computed(() => {
     const c = profile.value;

@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from "vue";
-import { useCompanyReadModel } from "../features/company/useCompanyReadModel";
-import { useDeliveryReadModel } from "../features/delivery/useDeliveryReadModel";
+import { storeToRefs } from "pinia";
+import { useContentStore } from "../stores/contentStore";
 import { formatRuPhone, phoneToTelHref } from "../utils/phone/formatRuPhone";
 import { formatAverageDeliveryLine } from "../utils/system/companyDeliveryFacts";
 import {
@@ -12,18 +12,16 @@ import {
 import { getCurrentDayKey } from "../utils/system/companyOpenStatus";
 import { useAppDesign } from "../design/useAppDesign";
 
-const { profile: profileRef, loading, errors } = useCompanyReadModel({
-    autoload: true,
-});
-const { facts: factsRef, loading: deliveryLoading } = useDeliveryReadModel({
-    autoload: true,
-});
+const contentStore = useContentStore();
+const { profile, deliveryFacts: facts, loading, error } = storeToRefs(contentStore);
 
-const loadingProfile = computed(() => loading.value.profile);
-const loadingDelivery = computed(() => deliveryLoading.value);
-
-const profile = computed(() => profileRef.value);
-const facts = computed(() => factsRef.value);
+const loadingProfile = computed(() => loading.value && !profile.value);
+const loadingDelivery = computed(() => loading.value && !facts.value);
+const errors = computed(() => ({
+    profile: error.value,
+    legal: error.value,
+    documents: error.value,
+}));
 
 const heroDescription = computed(() => {
     const c = profile.value;

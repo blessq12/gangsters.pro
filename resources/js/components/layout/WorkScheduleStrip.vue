@@ -13,7 +13,6 @@ import {
     playWorkScheduleStripEnter,
 } from "../../animations/animationManager";
 import { useCompanyOpenStatus } from "../../composables/system/useCompanyOpenStatus";
-import { useCompanyStore } from "../../stores/companyStore";
 import { useContentStore } from "../../stores/contentStore";
 import { getCurrentDayKey } from "../../utils/system/companyOpenStatus";
 import {
@@ -26,7 +25,6 @@ import { useAppDesign } from "../../design/useAppDesign";
 const TOOLTIP_PAD = 12;
 const PANEL_MAX_WIDTH_PX = 20 * 16;
 
-const companyStore = useCompanyStore();
 const contentStore = useContentStore();
 const ws = useAppDesign().components.workSchedule;
 
@@ -45,7 +43,7 @@ const stripRootClass = computed(() =>
 );
 
 const { openNow, statusHint } = useCompanyOpenStatus(
-    () => companyStore.profile,
+    () => contentStore.profile,
 );
 
 const stripEnterRef = ref(null);
@@ -60,9 +58,9 @@ const panelPos = ref({
     maxHeight: "70vh",
 });
 
-const hasCompany = computed(() => companyStore.profile != null);
+const hasCompany = computed(() => contentStore.profile != null);
 const isLoading = computed(
-    () => contentStore.loading && !companyStore.profile,
+    () => contentStore.loading && !contentStore.profile,
 );
 
 const openLabel = computed(() => {
@@ -82,7 +80,7 @@ const summaryLine = computed(() => {
     const base = openLabel.value;
     if (hint) return `${base} · ${hint}`;
     const today = formatTodayWorkScheduleLine(
-        companyStore.profile,
+        contentStore.profile,
         new Date(),
     );
     return today || base;
@@ -115,7 +113,7 @@ const dotClass = computed(() => {
 const currentDayKey = computed(() => getCurrentDayKey(new Date()));
 
 const scheduleRows = computed(() => {
-    const c = companyStore.profile;
+    const c = contentStore.profile;
     if (!c) return [];
     const rows = getWorkScheduleRows(c.work_schedule);
     if (rows.length) return rows;
@@ -136,7 +134,7 @@ const scheduleRows = computed(() => {
 
 const todayLine = computed(() =>
     hasCompany.value
-        ? formatTodayWorkScheduleLine(companyStore.profile, new Date())
+        ? formatTodayWorkScheduleLine(contentStore.profile, new Date())
         : "",
 );
 

@@ -25,8 +25,7 @@ import CatalogSearchDiscoverFeed from "./CatalogSearchDiscoverFeed.vue";
 import CatalogSearchEmptyPanel from "./CatalogSearchEmptyPanel.vue";
 import CatalogSearchIdlePanel from "./CatalogSearchIdlePanel.vue";
 import CatalogSearchResults from "./CatalogSearchResults.vue";
-import ProductDetailModal from "./ProductDetailModal.vue";
-import ProductDetailModalMobile from "./ProductDetailModalMobile.vue";
+import ProductDetailModalBase from "./ProductDetailModalBase.vue";
 
 provide(CatalogSearchActionSourceKey, "catalog-search");
 
@@ -323,15 +322,10 @@ defineExpose({ openSearch: _openSearch });
                 </div>
             </div>
 
-            <ProductDetailModal
-                v-if="isDesktop"
+            <ProductDetailModalBase
                 v-model="showProductDetailModal"
                 :product="selectedProduct"
-            />
-            <ProductDetailModalMobile
-                v-else
-                v-model="showProductDetailModal"
-                :product="selectedProduct"
+                :variant="isDesktop ? 'desktop' : 'mobile'"
             />
         </div>
     </teleport>

@@ -1,15 +1,14 @@
 import { computed, inject, unref } from "vue";
 import { CatalogSearchActionSourceKey } from "../../features/catalog/catalogSearchContext";
-import { useCartCommands } from "../../features/shoppingSession/useCartCommands";
 import { useCheckoutSession } from "../../features/checkout/useCheckoutSession";
-import { useFavoritesCommands, useFavoritesReadModel } from "../../features/favorites/useFavorites";
+import { useCheckoutStore } from "../../stores/checkoutStore";
+import { useFavoritesStore } from "../../stores/favoritesStore";
 import { DOMAIN_EVENTS, emitDomainEvent } from "../../shared/domainEvents";
 
 export function useProductActions(productSource) {
-    const cartCommands = useCartCommands();
+    const checkoutStore = useCheckoutStore();
     const cartReadModel = useCheckoutSession();
-    const favoritesCommands = useFavoritesCommands();
-    const favoritesReadModel = useFavoritesReadModel();
+    const favoritesStore = useFavoritesStore();
     const searchActionSource = inject(CatalogSearchActionSourceKey, null);
     const cartEventSource = searchActionSource ?? "catalog";
 
@@ -21,7 +20,7 @@ export function useProductActions(productSource) {
     );
 
     const isFav = computed(() =>
-        productId.value ? favoritesReadModel.isFavorite(productId.value) : false,
+        productId.value ? favoritesStore.isFavorite(productId.value) : false,
     );
 
     const addToCart = async (qty = 1) => {
@@ -31,7 +30,7 @@ export function useProductActions(productSource) {
             qty,
             source: cartEventSource,
         });
-        await cartCommands.addProductToCart(product.value, qty);
+        await checkoutStore.addToCart(product.value, qty);
     };
 
     const incrementCart = async () => {
@@ -40,12 +39,12 @@ export function useProductActions(productSource) {
             productId: productId.value,
             source: cartEventSource,
         });
-        await cartCommands.incrementProductInCart(productId.value);
+        await checkoutStore.incrementCart(productId.value);
     };
 
     const decrementCart = async () => {
         if (!productId.value) return;
-        await cartCommands.decrementProductInCart(productId.value);
+        await checkoutStore.decrementCart(productId.value);
     };
 
     const toggleFavorite = () => {
@@ -57,7 +56,7 @@ export function useProductActions(productSource) {
                 source: cartEventSource,
             });
         }
-        favoritesCommands.toggle(product.value);
+        void favoritesStore.toggleFavorite(product.value);
     };
 
     return {

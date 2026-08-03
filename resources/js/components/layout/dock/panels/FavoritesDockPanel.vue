@@ -1,13 +1,12 @@
 <script setup>
-import { computed } from "vue";
+import { storeToRefs } from "pinia";
 import { useAppDesign } from "../../../../design/useAppDesign";
-import { useFavoritesReadModel } from "../../../../features/favorites/useFavorites";
+import { useFavoritesStore } from "../../../../stores/favoritesStore";
 import FavoritesDockItem from "./FavoritesDockItem.vue";
 
 const panels = useAppDesign().components.dockPanels;
-const favoritesReadModel = useFavoritesReadModel();
-
-const favoriteItems = computed(() => favoritesReadModel.items.value);
+const favoritesStore = useFavoritesStore();
+const { favorites: favoriteItems } = storeToRefs(favoritesStore);
 
 const f = panels.favorites;
 </script>

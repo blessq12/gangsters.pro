@@ -1,0 +1,1 @@
+import{c as u,A as e}from"./vue-core-CmFpRI6y.js";import{u as n}from"./checkoutFlowContext-DLU-iRb9.js";import{u as c}from"./useOrderPreview-DWWkcnBj.js";function p(){const{checkoutState:r}=n(),{formatPrice:o}=r,{displayGrandTotalRubles:a,hasCartItems:s}=c();return{navTotalLabel:u(()=>{if(!e(s))return"";const t=e(a);return Number.isFinite(t)?`${o(t)} ₽`:""})}}export{p as u};

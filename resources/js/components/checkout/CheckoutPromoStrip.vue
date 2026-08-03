@@ -4,7 +4,6 @@ import { storeToRefs } from "pinia";
 import { useAppDesign } from "../../design/useAppDesign";
 import { useCheckoutFlowContext } from "../../composables/checkout/checkoutFlowContext";
 import { useOrderPreview } from "../../features/checkout/useOrderPreview";
-import { useCartCommands } from "../../features/shoppingSession/useCartCommands";
 import { useCatalogStore } from "../../stores/catalogStore";
 import { useCheckoutStore } from "../../stores/checkoutStore";
 import { useUiStore } from "../../stores/uiStore";
@@ -29,8 +28,7 @@ const { checkoutState } = useCheckoutFlowContext();
 const { formatPrice } = checkoutState;
 const uiStore = useUiStore();
 const catalogStore = useCatalogStore();
-const checkoutStore = useCheckoutStore();
-const cartCommands = useCartCommands();
+const cartStore = useCheckoutStore();
 
 const { complementProducts } = storeToRefs(catalogStore);
 
@@ -68,7 +66,7 @@ const showGiftCta = computed(
 );
 
 function paidQty(productId) {
-    return checkoutStore.cartQuantityByProduct(productId);
+    return cartStore.cartQuantityByProduct(productId);
 }
 
 function unitPriceRub(product) {
@@ -81,16 +79,16 @@ async function incrementPaidComplement(product) {
     if (id == null) return;
 
     if (paidQty(id) <= 0) {
-        await cartCommands.addProductToCart(product, 1);
+        await cartStore.addToCart(product, 1);
         return;
     }
 
-    await cartCommands.incrementProductInCart(id);
+    await cartStore.incrementCart(id);
 }
 
 async function decrementPaidComplement(productId) {
     if (productId == null) return;
-    await cartCommands.decrementProductInCart(productId);
+    await cartStore.decrementCart(productId);
 }
 
 function openGiftModal() {

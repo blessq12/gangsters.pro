@@ -1,7 +1,8 @@
 <script setup>
 import { computed } from "vue";
-import { useClientCommands, useClientReadModel } from "../../features/client/useClient";
+import { storeToRefs } from "pinia";
 import { useOrdersReadModel } from "../../features/orders/useOrdersReadModel";
+import { useUserStore } from "../../stores/userStore";
 import { formatOrderDate, formatOrderMoneyRubles } from "../../utils/order/orderDisplay";
 import { useAppDesign } from "../../design/useAppDesign";
 
@@ -9,23 +10,19 @@ const emit = defineEmits(["logout"]);
 
 const pv = useAppDesign().components.client.profileView;
 
-const clientReadModel = useClientReadModel();
-const clientCommands = useClientCommands();
+const userStore = useUserStore();
+const { profile, token } = storeToRefs(userStore);
 const { stats, loading, error } = useOrdersReadModel({ autoload: true });
 
-const fullName = computed(
-    () => clientReadModel.profile.value.name || "Гость Gangsters",
+const isAuthenticated = computed(
+    () => Boolean(token.value) && Boolean(profile.value?.id),
 );
-const phone = computed(
-    () => clientReadModel.profile.value.phone || "+7 (___) ___-__-__",
-);
-const email = computed(
-    () => clientReadModel.profile.value.email || "email не указан",
-);
-const isAuthenticated = computed(() => clientReadModel.isAuthenticated.value);
+const fullName = computed(() => profile.value?.name || "Гость Gangsters");
+const phone = computed(() => profile.value?.phone || "+7 (___) ___-__-__");
+const email = computed(() => profile.value?.email || "email не указан");
 
 function handleLogoutClick() {
-    clientCommands.clearAuth();
+    userStore.clearAuth();
     emit("logout");
 }
 </script>

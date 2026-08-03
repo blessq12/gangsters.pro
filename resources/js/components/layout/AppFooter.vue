@@ -2,7 +2,8 @@
 import { computed, ref } from "vue";
 import { useEnterSlide } from "../../composables/animations/useEnterSlide";
 import { useAppDesign } from "../../design/useAppDesign";
-import { useCompanyReadModel } from "../../features/company/useCompanyReadModel";
+import { storeToRefs } from "pinia";
+import { useContentStore } from "../../stores/contentStore";
 import { hasDocumentBody } from "../../utils/system/documentBody";
 
 const FOOTER_DOC_KEYS = {
@@ -20,7 +21,8 @@ const FOOTER_DOC_TITLES = {
 const footer = useAppDesign().components.footer;
 
 const year = new Date().getFullYear();
-const { documents } = useCompanyReadModel({ autoload: true });
+const contentStore = useContentStore();
+const { documents } = storeToRefs(contentStore);
 
 const showPrivacy = ref(false);
 const showRules = ref(false);

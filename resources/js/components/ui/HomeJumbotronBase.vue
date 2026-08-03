@@ -3,7 +3,8 @@ import "swiper/css";
 import { computed, onBeforeUnmount, ref, watch } from "vue";
 import { Autoplay } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/vue";
-import { useMarketingReadModel } from "../../features/marketing/useMarketingReadModel";
+import { storeToRefs } from "pinia";
+import { useContentStore } from "../../stores/contentStore";
 import { useAppDesign } from "../../design/useAppDesign";
 
 const AUTOPLAY_INTERVAL_MS = 30000;
@@ -17,7 +18,8 @@ const props = defineProps({
     },
 });
 
-const { banners, loading } = useMarketingReadModel({ autoload: true });
+const contentStore = useContentStore();
+const { banners, loading } = storeToRefs(contentStore);
 const isMobile = computed(() => props.variant === "mobile");
 
 const j = useAppDesign().components.home.jumbotron;
@@ -67,7 +69,7 @@ const slides = computed(() =>
     })),
 );
 
-const isLoading = computed(() => loading.value.banners);
+const isLoading = computed(() => loading.value && banners.value.length === 0);
 const swiperRef = ref(null);
 const loopReady = computed(() => slides.value.length >= 3);
 const rewindEnabled = computed(() => slides.value.length > 1 && !loopReady.value);

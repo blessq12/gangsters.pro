@@ -11,7 +11,7 @@ import {
 import {
     formatServerDeliveryLine,
     formatServerPaymentLine,
-} from "../../features/checkout/checkoutServerMappers";
+} from "../../domain/order/checkoutServerMappers";
 import { refreshOrderDraftPreview } from "../../features/checkout/checkoutSessionService";
 import { useCheckoutStore } from "../../stores/checkoutStore";
 import { useOrderPreview } from "../../features/checkout/useOrderPreview";

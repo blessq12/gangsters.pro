@@ -1,6 +1,4 @@
 <script setup>
-import CatalogCategoriesMobile from "../components/catalog/CatalogCategoriesMobile.vue";
-import CatalogProductsMobile from "../components/catalog/CatalogProductsMobile.vue";
 import { useCatalogPageModel } from "../composables/catalog/useCatalogPageModel";
 import { useAppDesign } from "../design/useAppDesign";
 
@@ -22,7 +20,7 @@ const {
 </script>
 
 <template>
-    <HomeJumbotronMobile />
+    <HomeJumbotronBase variant="mobile" />
 
     <div :class="m.root">
         <HomePromotionsMobile />
@@ -48,14 +46,16 @@ const {
                 </div>
             </header>
 
-            <CatalogCategoriesMobile
+            <CatalogCategoriesBase
                 v-model="selectedCategoryId"
                 :categories="categoryTabs"
+                variant="mobile"
             />
-            <CatalogCategoriesMobile
+            <CatalogCategoriesBase
                 v-model="selectedTag"
                 :categories="tagTabs"
                 all-label="Все теги"
+                variant="mobile"
             />
 
             <CatalogViewControlsMobile
@@ -63,19 +63,21 @@ const {
                 v-model:view-mode="mobileCardViewMode"
             />
 
-            <CatalogProductsMobile
+            <CatalogProductsBase
                 :sections="menuSections"
                 :loading="loading"
                 :empty-message="catalogEmptyMessage"
                 :mobile-card-view-mode="mobileCardViewMode"
+                variant="mobile"
                 @product-image-click="openProductDetail"
             />
         </section>
     </div>
 
-    <ProductDetailModalMobile
+    <ProductDetailModalBase
         v-model="showProductDetailModal"
         :product="selectedProduct"
+        variant="mobile"
     />
 </template>
 

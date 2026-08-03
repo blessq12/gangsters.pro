@@ -2,8 +2,8 @@
 import { computed, ref } from "vue";
 import { useAppDesign } from "../../../../design/useAppDesign";
 import { useCheckoutSession } from "../../../../features/checkout/useCheckoutSession";
-import { useCartCommands } from "../../../../features/shoppingSession/useCartCommands";
-import { useFavoritesCommands } from "../../../../features/favorites/useFavorites";
+import { useCheckoutStore } from "../../../../stores/checkoutStore";
+import { useFavoritesStore } from "../../../../stores/favoritesStore";
 import { formatMoneyRublesRu } from "../../../../utils/moneyFormat";
 
 const props = defineProps({
@@ -17,9 +17,9 @@ const panels = useAppDesign().components.dockPanels;
 const s = panels.shared;
 const f = panels.favorites;
 
-const cartCommands = useCartCommands();
+const cartStore = useCheckoutStore();
 const checkoutSession = useCheckoutSession();
-const favoritesCommands = useFavoritesCommands();
+const favoritesStore = useFavoritesStore();
 
 const productId = computed(() => props.item.productId);
 const qtyInCart = computed(() => checkoutSession.quantityByProduct(productId.value));
@@ -39,17 +39,17 @@ function runQtyPulse() {
 function handleAddToCart() {
     const snapshot = props.item?.productSnapshot;
     if (!snapshot?.id) return;
-    void cartCommands.addProductToCart(snapshot, 1).then(runQtyPulse);
+    void cartStore.addToCart(snapshot, 1).then(runQtyPulse);
 }
 
 function handleIncrement() {
     if (!productId.value) return;
-    void cartCommands.incrementProductInCart(productId.value).then(runQtyPulse);
+    void cartStore.incrementCart(productId.value).then(runQtyPulse);
 }
 
 function handleDecrement() {
     if (!productId.value) return;
-    void cartCommands.decrementProductInCart(productId.value);
+    void cartStore.decrementCart(productId.value);
 }
 
 const formatPrice = (value) => formatMoneyRublesRu(value);
@@ -110,7 +110,7 @@ const formatPrice = (value) => formatMoneyRublesRu(value);
             <button
                 type="button"
                 :class="f.actionRemove"
-                @click="favoritesCommands.remove(item.productId)"
+                @click="favoritesStore.removeFavorite(item.productId)"
             >
                 Убрать
             </button>

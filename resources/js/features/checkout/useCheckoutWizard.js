@@ -11,7 +11,7 @@ import { resolveWizardStepMeta } from "./checkoutWizardGroups";
 import {
     formatServerDeliveryLine,
     formatServerPaymentLine,
-} from "./checkoutServerMappers";
+} from "../../domain/order/checkoutServerMappers";
 import { CHECKOUT_PAYMENT_METHOD_LABELS } from "./checkoutPaymentMethods";
 import { CHECKOUT_DELIVERY_METHOD_META } from "./checkoutDeliveryMethods";
 
@@ -20,7 +20,7 @@ export function useCheckoutWizard({
     orderStore,
     userStore,
     uiStore,
-    clientReadModel,
+    isAuthenticated,
     cartView,
     guestStep,
     deliveryStep,
@@ -35,8 +35,6 @@ export function useCheckoutWizard({
     const confirmError = ref(null);
     const lastCreatedOrder = ref(null);
     const successSummary = ref(null);
-
-    const isAuthenticated = computed(() => clientReadModel.isAuthenticated.value);
     const includeUpsellStep = computed(() =>
         isCheckoutUpsellStepAvailable(catalogStore.accompanyingCategories),
     );

@@ -1,6 +1,6 @@
 import { ref } from "vue";
 import { useToast } from "vue-toastification";
-import { fetchRepeatableOrderLinesRequest } from "../../api/orderApi";
+import { fetchRepeatableOrderLinesRequest } from "../../api/clientApi";
 import { useCheckoutStore } from "../../stores/checkoutStore";
 import { useUiStore } from "../../stores/uiStore";
 import {
