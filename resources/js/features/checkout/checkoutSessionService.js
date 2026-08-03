@@ -191,9 +191,13 @@ export async function refreshOrderDraftPreview(store, selectedAddress = null, op
         store.persistSession();
         return quote;
     } catch (e) {
-        console.error("refreshOrderDraftPreview", e);
+        const status = e?.response?.status;
         store.error =
             e?.response?.data?.message || "Не удалось пересчитать оформление.";
+        // 422 — ожидаемая валидация неполного черновика, не логируем и не валим UI.
+        if (status === 422) {
+            return null;
+        }
         throw e;
     } finally {
         store.flushing = false;

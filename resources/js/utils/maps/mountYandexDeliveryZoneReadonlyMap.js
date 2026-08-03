@@ -145,6 +145,9 @@ export async function mountYandexKitchenPlacemarkReadonlyMap(container, options)
         center && isNearTomskArea(center) ? center : TOMSK_CENTER;
     const canShowPlacemark = center != null && isNearTomskArea(center);
 
+    // API 2.1 has no native dark theme; tiles are darkened via CSS on this class.
+    container.classList.add("yandex-map-theme-dark");
+
     const map = new window.ymaps.Map(
         container,
         {
@@ -179,6 +182,7 @@ export async function mountYandexKitchenPlacemarkReadonlyMap(container, options)
         refit,
         destroy() {
             map.destroy();
+            container.classList.remove("yandex-map-theme-dark");
         },
     };
 }

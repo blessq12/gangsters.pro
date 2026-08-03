@@ -4,6 +4,8 @@ namespace App\Application\Order\Query;
 
 use App\Application\Order\DTO\QuoteOrderDto;
 use App\Domain\Catalog\Entity\Product;
+use App\Domain\Catalog\Entity\ProductSet;
+use App\Domain\Catalog\Enum\CatalogItemKind;
 use App\Domain\Catalog\Repository\CatalogItemRepository;
 use App\Domain\Content\Repository\DeliveryConfigurationRepository;
 use App\Domain\Order\Port\PromotionDeliveryPricingPort;
@@ -43,51 +45,77 @@ final class QuoteOrderUseCase
         $deliveryMethod = $input->deliveryMethod === 'pickup' ? 'pickup' : 'courier';
         $orderChannel = $deliveryMethod;
 
-        $productIds = [];
+        $lineCatalogIds = [];
         foreach ($input->lines as $line) {
             $productId = (int) ($line['product_id'] ?? 0);
             $quantity = (int) ($line['quantity'] ?? 0);
             if ($productId < 1 || $quantity < 1) {
                 throw new \InvalidArgumentException('Некорректная строка корзины.');
             }
-            $productIds[] = $productId;
+            $lineCatalogIds[] = $productId;
         }
 
+        $productLookupIds = $lineCatalogIds;
         foreach ($input->complementProductIds as $complementId) {
-            $productIds[] = (int) $complementId;
+            $productLookupIds[] = (int) $complementId;
         }
 
         $products = $this->indexProducts(
-            $this->catalogItems->findActiveProductsByIds(array_values(array_unique($productIds))),
+            $this->catalogItems->findActiveProductsByIds(array_values(array_unique($productLookupIds))),
         );
-        $meta = $this->catalogItems->findPromotionMetaByProductIds(array_keys($products));
+        $sets = $this->indexSets(
+            $this->catalogItems->findActiveSetsByIds(array_values(array_unique($lineCatalogIds))),
+        );
+
+        $metaProductIds = array_keys($products);
+        foreach ($sets as $set) {
+            foreach ($set->lines() as $setLine) {
+                $metaProductIds[] = $setLine->productId();
+            }
+        }
+        $meta = $this->catalogItems->findPromotionMetaByProductIds(
+            array_values(array_unique($metaProductIds)),
+        );
 
         $cartLines = [];
         $itemsTotalRubles = 0;
         $rollCount = 0;
 
         foreach ($input->lines as $line) {
-            $productId = (int) $line['product_id'];
+            $catalogId = (int) $line['product_id'];
             $quantity = (int) $line['quantity'];
-            $product = $products[$productId] ?? null;
-            if (! $product instanceof Product) {
-                throw new \InvalidArgumentException(sprintf('Товар #%d недоступен.', $productId));
+            $product = $products[$catalogId] ?? null;
+            $set = $sets[$catalogId] ?? null;
+
+            if ($product instanceof Product) {
+                $unit = $product->price()->amountRubles();
+                $itemsTotalRubles += $unit * $quantity;
+                $rollCount += $this->rollCountForProduct($catalogId, $quantity, $meta);
+                $cartLines[] = $this->linePayload(
+                    product: $product,
+                    quantity: $quantity,
+                    unitPriceRubles: $unit,
+                    kind: 'user',
+                );
+
+                continue;
             }
 
-            $unit = $product->price()->amountRubles();
-            $lineTotal = $unit * $quantity;
-            $itemsTotalRubles += $lineTotal;
+            if ($set instanceof ProductSet) {
+                $unit = $set->price()->amountRubles();
+                $itemsTotalRubles += $unit * $quantity;
+                $rollCount += $this->rollCountForSet($set, $quantity, $meta);
+                $cartLines[] = $this->setLinePayload(
+                    set: $set,
+                    quantity: $quantity,
+                    unitPriceRubles: $unit,
+                    kind: 'user',
+                );
 
-            if (($meta[$productId]['counts_as_roll'] ?? false) === true) {
-                $rollCount += $quantity;
+                continue;
             }
 
-            $cartLines[] = $this->linePayload(
-                product: $product,
-                quantity: $quantity,
-                unitPriceRubles: $unit,
-                kind: 'user',
-            );
+            throw new \InvalidArgumentException(sprintf('Товар #%d недоступен.', $catalogId));
         }
 
         $policy = $this->promotionPolicies->find();
@@ -299,6 +327,53 @@ final class QuoteOrderUseCase
     }
 
     /**
+     * @param  list<ProductSet>  $sets
+     * @return array<int, ProductSet>
+     */
+    private function indexSets(array $sets): array
+    {
+        $indexed = [];
+        foreach ($sets as $set) {
+            $indexed[$set->id()] = $set;
+        }
+
+        return $indexed;
+    }
+
+    /**
+     * @param  array<int, array{counts_as_roll: bool, complement_set: bool}>  $meta
+     */
+    private function rollCountForProduct(int $productId, int $quantity, array $meta): int
+    {
+        if (($meta[$productId]['counts_as_roll'] ?? false) !== true) {
+            return 0;
+        }
+
+        return $quantity;
+    }
+
+    /**
+     * Роллы внутри набора: quantity компонента × qty набора.
+     *
+     * @param  array<int, array{counts_as_roll: bool, complement_set: bool}>  $meta
+     */
+    private function rollCountForSet(ProductSet $set, int $setQuantity, array $meta): int
+    {
+        $rolls = 0;
+
+        foreach ($set->lines() as $setLine) {
+            $componentId = $setLine->productId();
+            if (($meta[$componentId]['counts_as_roll'] ?? false) !== true) {
+                continue;
+            }
+
+            $rolls += $setLine->quantity() * $setQuantity;
+        }
+
+        return $rolls;
+    }
+
+    /**
      * @return array<string, mixed>
      */
     private function linePayload(
@@ -313,7 +388,10 @@ final class QuoteOrderUseCase
             'quantity' => $quantity,
             'unit_price_rubles' => $unitPriceRubles,
             'line_total_rubles' => $unitPriceRubles * $quantity,
-            'payload' => ['kind' => $kind],
+            'payload' => [
+                'kind' => $kind,
+                'catalog_kind' => CatalogItemKind::Product->value,
+            ],
         ];
 
         $sku = $product->sku();
@@ -322,6 +400,37 @@ final class QuoteOrderUseCase
         }
 
         return $line;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function setLinePayload(
+        ProductSet $set,
+        int $quantity,
+        int $unitPriceRubles,
+        string $kind,
+    ): array {
+        $composition = [];
+        foreach ($set->lines() as $setLine) {
+            $composition[] = [
+                'product_id' => $setLine->productId(),
+                'quantity' => $setLine->quantity(),
+            ];
+        }
+
+        return [
+            'product_id' => $set->id(),
+            'product_name' => $set->name(),
+            'quantity' => $quantity,
+            'unit_price_rubles' => $unitPriceRubles,
+            'line_total_rubles' => $unitPriceRubles * $quantity,
+            'payload' => [
+                'kind' => $kind,
+                'catalog_kind' => CatalogItemKind::Set->value,
+                'composition' => $composition,
+            ],
+        ];
     }
 
     /**

@@ -219,7 +219,7 @@ export function kitchenAddressLabelOrFallback(company) {
  */
 export function buildYandexMapKitchenPointWidgetUrl(company) {
     const text = encodeURIComponent(kitchenAddressLabelOrFallback(company));
-    return `https://yandex.ru/map-widget/v1/?mode=search&text=${text}&z=16`;
+    return `https://yandex.ru/map-widget/v1/?mode=search&text=${text}&z=16&theme=dark`;
 }
 
 /**

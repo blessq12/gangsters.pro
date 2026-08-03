@@ -1,1 +1,0 @@
-import{m as a}from"./app-BLbH84R2.js";function n(){const t=a();return{cartStore:t,addProductToCart(r,e=1){return t.addToCart(r,e)},incrementProductInCart(r){return t.incrementCart(r)},decrementProductInCart(r){return t.decrementCart(r)},removeProductFromCart(r){return t.removeFromCart(r)},clearCart(){return t.clearCart()}}}export{n as u};
