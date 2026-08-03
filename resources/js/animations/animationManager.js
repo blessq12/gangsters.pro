@@ -15,15 +15,21 @@ export function navbarEnterCompleteDelay() {
 /**
  * Сцена интро: логотип + оверлей + полицейские маячки (red/blue) с дрейфом.
  */
-export const INTRO_LOGO_IN_DURATION = 0.7;
-export const INTRO_LOGO_HOLD_DURATION = 0.6;
-export const INTRO_LOGO_OUT_DURATION = 0.65;
+export const INTRO_LOGO_IN_DURATION = 0.85;
+export const INTRO_LOGO_HOLD_DURATION = 1.85;
+export const INTRO_LOGO_OUT_DURATION = 0.75;
 export const INTRO_MAIN_FADE_DURATION = 0.55;
 export const INTRO_OVERLAY_FADE_DURATION = 0.55;
 /** Секунды: fade main начинает до конца предыдущего блока. */
 export const INTRO_MAIN_FADE_OVERLAP = 0.38;
 /** Секунды: fade оверлея — overlap к предыдущему tween. */
 export const INTRO_OVERLAY_FADE_OVERLAP = 0.42;
+/** Цикл strobe маячков (red/blue). */
+export const INTRO_POLICE_STROBE_DURATION = 0.95;
+export const INTRO_POLICE_STROBE_OPACITY_DIM = 0.15;
+export const INTRO_POLICE_STROBE_OPACITY_PEAK = 0.72;
+export const INTRO_POLICE_STROBE_OPACITY_MID = 0.56;
+export const INTRO_POLICE_STROBE_REDUCED_OPACITY = 0.44;
 
 /**
  * Пауза после onComplete fade оверлея интро (оверлей полностью скрыт) до reveal dock.
@@ -81,46 +87,80 @@ export function revealShellMainContent(mainEl, { animate = false } = {}) {
     gsap.set(mainEl, { opacity: 1 });
 }
 
-export function playIntroScene({
-    introOverlay,
-    introLogo,
-    main,
-    introGlow,
-    onComplete,
-}) {
-    if (!main) {
-        onComplete?.();
-        return;
+/**
+ * Strobe маячков интро (police lights). Возвращает dispose.
+ * @param {Element | null} redSpot
+ * @param {Element | null} blueSpot
+ * @returns {() => void}
+ */
+function startIntroPoliceStrobe(redSpot, blueSpot) {
+    const tweens = [];
+
+    if (prefersReducedMotion()) {
+        if (redSpot) {
+            gsap.set(redSpot, { opacity: INTRO_POLICE_STROBE_REDUCED_OPACITY });
+        }
+        if (blueSpot) {
+            gsap.set(blueSpot, { opacity: INTRO_POLICE_STROBE_REDUCED_OPACITY });
+        }
+        return () => {};
     }
 
-    if (!introOverlay || !introLogo) {
-        revealShellMainContent(main);
-        onComplete?.();
-        return;
-    }
+    const d = INTRO_POLICE_STROBE_DURATION;
+    const dim = INTRO_POLICE_STROBE_OPACITY_DIM;
+    const peak = INTRO_POLICE_STROBE_OPACITY_PEAK;
+    const mid = INTRO_POLICE_STROBE_OPACITY_MID;
 
-    const holdStart = INTRO_LOGO_IN_DURATION;
-    const outStart = INTRO_LOGO_IN_DURATION + INTRO_LOGO_HOLD_DURATION;
-
-    const redSpot = introGlow?.querySelector?.('[data-intro-glow="red"]') ?? null;
-    const blueSpot =
-        introGlow?.querySelector?.('[data-intro-glow="blue"]') ?? null;
-
-    const tl = gsap.timeline();
-
-    if (introGlow) {
-        tl.fromTo(
-            introGlow,
-            { opacity: 0 },
-            {
-                opacity: 1,
-                duration: INTRO_LOGO_IN_DURATION,
-                ease: "power2.out",
-            },
-            0,
+    if (redSpot) {
+        gsap.set(redSpot, { opacity: dim });
+        tweens.push(
+            gsap.to(redSpot, {
+                keyframes: [
+                    { opacity: peak, duration: d * 0.12, ease: "power1.inOut" },
+                    { opacity: dim + 0.03, duration: d * 0.12, ease: "power1.inOut" },
+                    { opacity: dim + 0.03, duration: d * 0.24, ease: "none" },
+                    { opacity: mid, duration: d * 0.12, ease: "power1.inOut" },
+                    { opacity: dim, duration: d * 0.12, ease: "power1.inOut" },
+                    { opacity: dim, duration: d * 0.28, ease: "none" },
+                ],
+                repeat: -1,
+            }),
         );
     }
 
+    if (blueSpot) {
+        gsap.set(blueSpot, { opacity: dim });
+        tweens.push(
+            gsap.to(blueSpot, {
+                keyframes: [
+                    { opacity: dim, duration: d * 0.36, ease: "none" },
+                    { opacity: peak, duration: d * 0.12, ease: "power1.inOut" },
+                    { opacity: dim + 0.05, duration: d * 0.12, ease: "power1.inOut" },
+                    { opacity: mid + 0.04, duration: d * 0.12, ease: "power1.inOut" },
+                    { opacity: dim, duration: d * 0.12, ease: "power1.inOut" },
+                    { opacity: dim, duration: d * 0.16, ease: "none" },
+                ],
+                repeat: -1,
+            }),
+        );
+    }
+
+    return () => {
+        for (const tween of tweens) {
+            tween.kill();
+        }
+    };
+}
+
+/**
+ * Дрейф позиций маячков на timeline интро (in → hold → out).
+ * @param {gsap.core.Timeline} tl
+ * @param {Element | null} redSpot
+ * @param {Element | null} blueSpot
+ * @param {number} holdStart
+ * @param {number} outStart
+ */
+function addIntroPoliceGlowMotion(tl, redSpot, blueSpot, holdStart, outStart) {
     if (redSpot) {
         tl.fromTo(
             redSpot,
@@ -194,6 +234,55 @@ export function playIntroScene({
             outStart,
         );
     }
+}
+
+export function playIntroScene({
+    introOverlay,
+    introLogo,
+    main,
+    introGlow,
+    onComplete,
+}) {
+    if (!main) {
+        onComplete?.();
+        return;
+    }
+
+    if (!introOverlay || !introLogo) {
+        revealShellMainContent(main);
+        onComplete?.();
+        return;
+    }
+
+    const holdStart = INTRO_LOGO_IN_DURATION;
+    const outStart = INTRO_LOGO_IN_DURATION + INTRO_LOGO_HOLD_DURATION;
+
+    const redSpot = introGlow?.querySelector?.('[data-intro-glow="red"]') ?? null;
+    const blueSpot =
+        introGlow?.querySelector?.('[data-intro-glow="blue"]') ?? null;
+
+    const stopPoliceStrobe = startIntroPoliceStrobe(redSpot, blueSpot);
+
+    const tl = gsap.timeline({
+        onComplete: () => {
+            stopPoliceStrobe();
+        },
+    });
+
+    if (introGlow) {
+        tl.fromTo(
+            introGlow,
+            { opacity: 0 },
+            {
+                opacity: 1,
+                duration: INTRO_LOGO_IN_DURATION,
+                ease: "power2.out",
+            },
+            0,
+        );
+    }
+
+    addIntroPoliceGlowMotion(tl, redSpot, blueSpot, holdStart, outStart);
 
     tl.fromTo(
         introLogo,
@@ -243,7 +332,10 @@ export function playIntroScene({
             opacity: 0,
             duration: INTRO_OVERLAY_FADE_DURATION,
             ease: "power2.out",
-            onComplete,
+            onComplete: () => {
+                stopPoliceStrobe();
+                onComplete?.();
+            },
         },
         `-=${INTRO_OVERLAY_FADE_OVERLAP}`,
     );

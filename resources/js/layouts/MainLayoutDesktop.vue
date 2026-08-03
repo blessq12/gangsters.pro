@@ -179,6 +179,7 @@ onUnmounted(() => {
     pointer-events: none;
     position: absolute;
     inset: -35%;
+    opacity: 0.15;
     mix-blend-mode: screen;
     will-change: opacity, --intro-glow-x, --intro-glow-y;
     background: radial-gradient(
@@ -192,66 +193,13 @@ onUnmounted(() => {
 .intro-police-glow__spot--red {
     --intro-glow-x: 30%;
     --intro-glow-y: 50%;
-    --intro-glow-color: rgba(239, 68, 68, 0.48);
-    animation: intro-police-strobe-red 0.95s ease-in-out infinite;
+    --intro-glow-color: rgba(239, 68, 68, 0.6);
 }
 
 .intro-police-glow__spot--blue {
     --intro-glow-x: 70%;
     --intro-glow-y: 48%;
-    --intro-glow-color: rgba(59, 130, 246, 0.42);
-    animation: intro-police-strobe-blue 0.95s ease-in-out infinite;
-}
-
-@keyframes intro-police-strobe-red {
-    0%,
-    100% {
-        opacity: 0.12;
-    }
-    12% {
-        opacity: 0.58;
-    }
-    24%,
-    48% {
-        opacity: 0.14;
-    }
-    60% {
-        opacity: 0.45;
-    }
-    72% {
-        opacity: 0.12;
-    }
-}
-
-@keyframes intro-police-strobe-blue {
-    0%,
-    100% {
-        opacity: 0.12;
-    }
-    12%,
-    36% {
-        opacity: 0.12;
-    }
-    48% {
-        opacity: 0.58;
-    }
-    60% {
-        opacity: 0.16;
-    }
-    72% {
-        opacity: 0.48;
-    }
-    84% {
-        opacity: 0.12;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .intro-police-glow__spot--red,
-    .intro-police-glow__spot--blue {
-        animation: none;
-        opacity: 0.35;
-    }
+    --intro-glow-color: rgba(59, 130, 246, 0.52);
 }
 
 .app-shell.theme-dark {
