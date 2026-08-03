@@ -3,7 +3,6 @@ import { useFavoritesStore } from "../../stores/favoritesStore";
 import { useUiStore } from "../../stores/uiStore";
 import { useUserStore } from "../../stores/userStore";
 import { useDockCartAffordance } from "../../composables/cart/useDockCartAffordance";
-import { useDockBadgeFeedback } from "../../composables/ui/useDockBadgeFeedback";
 import { useSessionLifecycleProcess } from "../session/useSessionLifecycleProcess";
 import { useGiftAutoPromptProcess } from "../benefits/useGiftAutoPromptProcess";
 import { useCompanyClosedNoticeProcess } from "../company/useCompanyClosedNoticeProcess";
@@ -34,7 +33,6 @@ export function useAppBootstrap() {
             useCompanyClosedNoticeProcess(),
             useClientFavoritesProcess(),
             useDockCartAffordance(),
-            useDockBadgeFeedback(),
         ];
 
         void bootstrapCheckoutSession();

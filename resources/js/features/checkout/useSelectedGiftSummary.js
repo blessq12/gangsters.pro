@@ -1,6 +1,6 @@
 import { computed } from "vue";
 import { resolveSelectedGiftSummary } from "./normalizeCheckoutCart";
-import { useCartReadModel } from "../shoppingSession/useCartReadModel";
+import { useCheckoutSession } from "./useCheckoutSession";
 import { useCheckoutStore } from "../../stores/checkoutStore";
 
 function resolveGiftNameFromPromo(promoState, productId) {
@@ -14,12 +14,12 @@ function resolveGiftNameFromPromo(promoState, productId) {
 }
 
 export function useSelectedGiftSummary() {
-    const cartReadModel = useCartReadModel();
+    const checkoutSession = useCheckoutSession();
     const checkoutStore = useCheckoutStore();
 
     return computed(() => {
-        const promoState = cartReadModel.promoState.value;
-        const cartItems = cartReadModel.items.value;
+        const promoState = checkoutSession.promoState.value;
+        const cartItems = checkoutSession.items.value;
 
         const fromCartOrPromo = resolveSelectedGiftSummary({
             cartItems,

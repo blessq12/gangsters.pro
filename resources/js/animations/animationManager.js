@@ -28,21 +28,6 @@ export const INTRO_OVERLAY_FADE_OVERLAP = 0.42;
  */
 export const INTRO_DOCK_REVEAL_GAP_MS = 450;
 
-/** @deprecated Используйте INTRO_DOCK_REVEAL_GAP_MS */
-export const INTRO_BOTTOM_BAR_DELAY_MS = INTRO_DOCK_REVEAL_GAP_MS;
-
-/**
- * Длительность playIntroScene до onComplete (сек), по константам overlap.
- */
-export function getIntroSceneDurationSec() {
-    const logoEnd =
-        INTRO_LOGO_IN_DURATION +
-        INTRO_LOGO_HOLD_DURATION +
-        INTRO_LOGO_OUT_DURATION;
-    const mainEnd = logoEnd - INTRO_MAIN_FADE_OVERLAP + INTRO_MAIN_FADE_DURATION;
-    return mainEnd - INTRO_OVERLAY_FADE_OVERLAP + INTRO_OVERLAY_FADE_DURATION;
-}
-
 /**
  * @param {() => void} onReveal
  * @returns {ReturnType<typeof setTimeout>|undefined}
@@ -410,72 +395,6 @@ export function playBottomBarHide(bar, onComplete, variant = "mobile") {
 export function prefersReducedMotion() {
     if (typeof window === "undefined") return false;
     return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-}
-
-/**
- * Noticeable dock tab bump: pill tabIconWrap + badge (not .mdi).
- * @param {"cart"|"favorites"|string} dockId
- */
-export function playDockTabBump(dockId) {
-    if (typeof document === "undefined" || prefersReducedMotion()) return;
-
-    const bumpRoot = document.querySelector(`[data-dock-bump-root="${dockId}"]`);
-    const badge = document.querySelector(`[data-dock-badge="${dockId}"]`);
-    const tabBtn = document.querySelector(`[data-dock-target="${dockId}"]`);
-
-    const tabEl =
-        bumpRoot?.isConnected ? bumpRoot : tabBtn?.isConnected ? tabBtn : null;
-
-    if (tabEl) {
-        gsap.killTweensOf(tabEl);
-        gsap.fromTo(
-            tabEl,
-            { scale: 1, y: 0, transformOrigin: "50% 50%", force3D: true },
-            {
-                scale: 1.2,
-                y: -6,
-                duration: 0.18,
-                ease: "power2.out",
-                yoyo: true,
-                repeat: 1,
-            },
-        );
-    }
-
-    if (badge?.isConnected) {
-        gsap.killTweensOf(badge);
-        gsap.fromTo(
-            badge,
-            {
-                scale: 1,
-                transformOrigin: "50% 50%",
-                force3D: true,
-                boxShadow: "0 0 8px rgba(239,68,68,0.65)",
-            },
-            {
-                scale: 1.45,
-                boxShadow: "0 0 16px rgba(239,68,68,0.95)",
-                duration: 0.2,
-                ease: "back.out(1.6)",
-                yoyo: true,
-                repeat: 1,
-            },
-        );
-    }
-}
-
-/** @deprecated Use playDockTabBump */
-export function playDockBadgeBump(dockId) {
-    playDockTabBump(dockId);
-}
-
-/**
- * @param {HTMLElement|null|undefined} targetEl
- */
-export function playDockCartTabBump(targetEl) {
-    if (!targetEl?.isConnected || prefersReducedMotion()) return;
-    const dockId = targetEl.getAttribute("data-dock-target") || "cart";
-    playDockTabBump(dockId);
 }
 
 /**

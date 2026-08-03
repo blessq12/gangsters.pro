@@ -11,7 +11,6 @@ import { navbarDesign } from "./layout/navbar.design";
 import { workScheduleDesign } from "./layout/workSchedule.design";
 import { closedNoticeDesign } from "./layout/closedNotice.design";
 import { dockDismissConfirmDesign } from "./layout/dockDismissConfirm.design";
-import { pwaInstallDesign } from "./layout/pwaInstall.design";
 import { uiPrimitivesDesign } from "./ui/uiPrimitives.design";
 
 export const appDesign = {
@@ -27,7 +26,6 @@ export const appDesign = {
         dockPanels: dockPanelsDesign,
         workSchedule: workScheduleDesign,
         closedNotice: closedNoticeDesign,
-        pwaInstall: pwaInstallDesign,
         layoutShell: layoutShellDesign,
         catalog: catalogDesign,
         uiPrimitives: uiPrimitivesDesign,

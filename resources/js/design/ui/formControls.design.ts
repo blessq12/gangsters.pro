@@ -1,8 +1,8 @@
 /**
- * Брендовые checkbox / radio (без системных белых галочек).
+ * Брендовые checkbox (без системных белых галочек).
  * Поверхность и focus — как у публичных полей (client.shared.input).
  * Border unchecked: canvas-fg/30 — читаемость на тёмных островах (dock).
- * peer-checked на decor; маркер (i / dot) — через [&_i] / [&_span] (не на вложенных peer).
+ * peer-checked на decor; маркер (i) — через [&_i] (не на вложенных peer).
  */
 
 const controlSurface =
@@ -29,11 +29,6 @@ export const formControlsDesign = {
         "mdi mdi-check text-sm leading-none text-white opacity-0 transition-opacity",
     checkIconSm:
         "mdi mdi-check text-[10px] leading-none text-white opacity-0 transition-opacity",
-    radioDecor: `${controlSurface} ${controlFocus} rounded-full`,
-    radioCheckedPeer:
-        "peer-checked:border-app-accent peer-checked:bg-app-accent peer-checked:[&_span]:opacity-100",
-    radioDot:
-        "h-1.5 w-1.5 shrink-0 rounded-full bg-white opacity-0 transition-opacity",
 } as const;
 
 export type FormControlsDesign = typeof formControlsDesign;

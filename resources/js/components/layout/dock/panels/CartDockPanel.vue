@@ -1,6 +1,6 @@
 <script setup>
 import { computed, watch } from "vue";
-import { useCheckoutFlow } from "../../../../composables/checkout/useCheckoutFlow";
+import { useCheckout } from "../../../../features/checkout/useCheckout";
 import { provideCheckoutFlow } from "../../../../composables/checkout/checkoutFlowContext";
 import { resolveCheckoutDockTitle } from "../../../../features/checkout/checkoutWizardLabels";
 import CheckoutWizardHost from "../../../../features/checkout/wizard/CheckoutWizardHost.vue";
@@ -9,7 +9,7 @@ import { useUiStore } from "../../../../stores/uiStore";
 
 const uiStore = useUiStore();
 
-const flow = useCheckoutFlow();
+const flow = useCheckout();
 provideCheckoutFlow(flow);
 
 const { activeStep, handleStartCheckout } = flow;

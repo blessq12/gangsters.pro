@@ -1,6 +1,6 @@
 /**
  * Единый список маршрутов SPA: path, name, component и meta для публичной навигации.
- * Подписи ссылок шапки/футера — только в meta (см. resources/js/router/publicNav.ts).
+ * Подписи ссылок шапки — только в meta (см. resources/js/router/publicNav.ts).
  * SEO — resources/js/config/seoPages.js.
  */
 
@@ -24,7 +24,6 @@ export const routeRecords = [
         meta: {
             navLabel: "О компании",
             navHeaderLeftOrder: 1,
-            navFooterOrder: 0,
             seo: seoForPath("/about"),
         },
     },
@@ -35,7 +34,6 @@ export const routeRecords = [
         meta: {
             navLabel: "Доставка",
             navHeaderRightOrder: 0,
-            navFooterOrder: 1,
             seo: seoForPath("/delivery"),
         },
     },
@@ -46,7 +44,6 @@ export const routeRecords = [
         meta: {
             navLabel: "Контакты",
             navHeaderRightOrder: 1,
-            navFooterOrder: 2,
             seo: seoForPath("/contacts"),
         },
     },

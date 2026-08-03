@@ -1,11 +1,10 @@
 import { routeRecords } from "./routeRecords.js";
 
-/** Поля meta, относящиеся к публичным ссылкам (шапка / футер). */
+/** Поля meta, относящиеся к публичным ссылкам шапки / mobile sheet. */
 type PublicNavRouteMeta = {
     navLabel?: string;
     navHeaderLeftOrder?: number;
     navHeaderRightOrder?: number;
-    navFooterOrder?: number;
 };
 
 type RouteRecordLike = (typeof routeRecords)[number];
@@ -22,11 +21,6 @@ export type PublicNavRouteName = "home" | "about" | "delivery" | "contacts";
 
 export type NavLinkItem = {
     routeName: PublicNavRouteName;
-    label: string;
-};
-
-export type FooterPrimaryNavItem = {
-    routeName: Extract<PublicNavRouteName, "about" | "delivery" | "contacts">;
     label: string;
 };
 
@@ -67,6 +61,3 @@ export const NAV_LINKS_MOBILE_SHEET: readonly NavLinkItem[] = [
     ...NAV_LINKS_LEFT_PRIMARY,
     ...NAV_LINKS_RIGHT_PRIMARY,
 ];
-
-export const FOOTER_PRIMARY_NAV: readonly FooterPrimaryNavItem[] =
-    buildNavByOrder((m) => m.navFooterOrder) as readonly FooterPrimaryNavItem[];

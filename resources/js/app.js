@@ -3,29 +3,13 @@ import { vMaska } from "maska";
 import { createPinia } from "pinia";
 import { createApp, defineAsyncComponent } from "vue";
 import VueLazyload from "vue-lazyload";
-import { useToast } from "vue-toastification";
 import "../css/vue-toastification.css";
 import "./bootstrap";
 import { applyPageHead } from "./features/seo/usePageHead";
 import router from "./router";
 import App from "./App.vue";
 
-/**
- * Next, we will create a fresh Vue application instance. You may then begin
- * registering components with the application instance so they are ready
- * to use in your application's views. An example is included for you.
- */
-
 const app = createApp(App);
-const toast = useToast({
-    position: "top-right",
-    timeout: 5000,
-    closeOnClick: true,
-    pauseOnHover: true,
-    draggable: true,
-    draggablePercent: 0.6,
-    showCloseButtonOnHover: false,
-});
 
 app.use(VueLazyload, {
     lazyComponent: true,
@@ -39,7 +23,6 @@ app.use(VueLazyload, {
         threshold: 0.1,
     },
 });
-app.config.globalProperties.$toast = toast;
 
 app.use(createPinia());
 app.use(router);

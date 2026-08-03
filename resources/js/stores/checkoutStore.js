@@ -653,6 +653,3 @@ export const useCheckoutStore = defineStore("checkout", {
         },
     },
 });
-
-/** @deprecated Используйте useCheckoutStore */
-export const useCheckoutPricingStore = useCheckoutStore;

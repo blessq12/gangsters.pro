@@ -31,17 +31,6 @@ export const catalogDesign = {
         pillInactive: chromePillInactive,
     },
 
-    /** Устаревший CatalogCategories.vue (responsive без Base) — отдельные пиллы. */
-    categoriesLegacy: {
-        outer: "relative mb-10 w-full min-w-0 max-w-full",
-        island:
-            "min-w-0 max-w-full rounded-none border border-app-accent/40 bg-app-canvas px-4 sm:px-6 lg:px-8 py-3.5 shadow-[0_0_25px_rgba(0,0,0,0.7)] backdrop-blur",
-        row: "flex flex-wrap items-center gap-3 pb-1.5",
-        pillBase: `${categoryPillBase} px-5 py-2 text-xs sm:text-sm md:text-[0.9rem]`,
-        pillActive: chromePillActive,
-        pillInactive: chromePillInactive,
-    },
-
     /** CatalogViewControls * */
     viewControls: {
         desktop: {
@@ -73,15 +62,6 @@ export const catalogDesign = {
         sectionsStack: "space-y-7",
         sectionTitle:
             "mb-4 text-xl font-bold uppercase tracking-wider text-app-accent sm:text-2xl sm:mb-5",
-    },
-
-    /** CatalogProducts.vue: плоский список (masonry — scoped в SFC). */
-    productsFlat: {
-        root: "space-y-4",
-        loading: "text-sm text-app-muted",
-        empty: "text-sm text-app-muted",
-        loadingText: "Загружаем вкусняшки…",
-        emptyText: "Тут пока тихо. Выберите другую категорию.",
     },
 
     cards: catalogCardsDesign,
