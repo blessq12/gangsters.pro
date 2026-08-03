@@ -1,16 +1,15 @@
 <script setup>
-import { computed } from "vue";
 import { storeToRefs } from "pinia";
+import { computed } from "vue";
 import { useAppDesign } from "../../design/useAppDesign";
+import { useCatalogStore } from "../../modules/catalog/store";
 import { useCheckoutFlowContext } from "../../modules/checkout/application/flowContext";
 import { CHECKOUT_NAV_LABELS } from "../../modules/checkout/application/session";
-import { useCatalogStore } from "../../modules/catalog/store";
 import { useCheckoutStore } from "../../modules/checkout/store";
 import CheckoutComplementOffers from "./CheckoutComplementOffers.vue";
 import CheckoutSection from "./CheckoutSection.vue";
 import CheckoutStepFrame from "./CheckoutStepFrame.vue";
 import CheckoutStepNav from "./CheckoutStepNav.vue";
-import CheckoutTotalsBlock from "./CheckoutTotalsBlock.vue";
 
 const chk = useAppDesign().components.checkout;
 const c = chk.cart;
@@ -39,13 +38,9 @@ const menuUserCartItems = computed(() =>
     ),
 );
 
-const isCartEmpty = computed(
-    () => (userCartItems.value || []).length === 0,
-);
+const isCartEmpty = computed(() => (userCartItems.value || []).length === 0);
 const hasUserLines = computed(() => menuUserCartItems.value.length > 0);
-const canStartCheckout = computed(
-    () => (userCartItems.value || []).length > 0,
-);
+const canStartCheckout = computed(() => (userCartItems.value || []).length > 0);
 
 function decrementCart(productId) {
     void cartStore.decrementCart(productId);
@@ -68,17 +63,9 @@ function unitPriceRub(item) {
 
 <template>
     <CheckoutStepFrame group="cart">
-        <div
-            v-if="isCartEmpty"
-            :class="c.emptyState"
-        >
-            Корзина пуста
-        </div>
+        <div v-if="isCartEmpty" :class="c.emptyState">Корзина пуста</div>
 
-        <CheckoutSection
-            v-else-if="hasUserLines"
-            title="Товары"
-        >
+        <CheckoutSection v-else-if="hasUserLines" title="">
             <ul :class="c.userList">
                 <li
                     v-for="item in menuUserCartItems"
@@ -87,7 +74,10 @@ function unitPriceRub(item) {
                 >
                     <div class="min-w-0">
                         <p :class="c.lineTitle">
-                            {{ item.productSnapshot?.name || `Товар #${item.productId}` }}
+                            {{
+                                item.productSnapshot?.name ||
+                                `Товар #${item.productId}`
+                            }}
                         </p>
                         <p :class="c.lineSub">
                             {{ formatPrice(unitPriceRub(item)) }} ₽
@@ -127,20 +117,13 @@ function unitPriceRub(item) {
             </ul>
         </CheckoutSection>
 
-        <p
-            v-else-if="!isCartEmpty"
-            :class="chk.shared.introMuted"
-        >
+        <p v-else-if="!isCartEmpty" :class="chk.shared.introMuted">
             Добавь блюда из меню
         </p>
 
         <CheckoutComplementOffers />
-        <CheckoutTotalsBlock depth="items" />
 
-        <template
-            v-if="canStartCheckout"
-            #nav
-        >
+        <template v-if="canStartCheckout" #nav>
             <CheckoutStepNav
                 :show-back="false"
                 :primary-label="CHECKOUT_NAV_LABELS.cartPrimary"

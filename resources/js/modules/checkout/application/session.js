@@ -1,15 +1,18 @@
-import { placeOrderRequest, quoteOrderRequest } from "../api";
+import { computed } from "vue";
+import {
+    formatKopecksToRub,
+    roundRubles2,
+} from "../../../platform/moneyFormat";
 import { useUserStore } from "../../client/store/userStore";
-import { adaptQuoteToCheckoutSnapshot } from "../domain/normalizeOrderPreview";
+import { placeOrderRequest, quoteOrderRequest } from "../api";
 import {
     buildClientPayload,
     buildDeliveryPayload,
     buildPaymentPayload,
 } from "../domain/checkoutServerMappers";
 import { isComplementCartLine } from "../domain/normalizeCheckoutCart";
-import { roundRubles2, formatKopecksToRub } from "../../../platform/moneyFormat";
+import { adaptQuoteToCheckoutSnapshot } from "../domain/normalizeOrderPreview";
 import { useCheckoutStore } from "../store";
-import { computed } from "vue";
 
 export const CHECKOUT_LOADING_LABELS = Object.freeze({
     zoneCheck: "Проверяем адрес…",
@@ -28,7 +31,7 @@ export const CHECKOUT_WIZARD_GROUPS = {
 };
 
 export const CHECKOUT_WAITER_LINES = Object.freeze({
-    cart: "Проверьте состав заказа перед оформлением",
+    cart: "",
     upsell: "Удобно добавить к заказу сейчас — всё приедет вместе",
     guest: "Вход сохраняет контакты и адреса — следующее оформление быстрее",
     fulfillment: "Способ оплаты и получение заказа",
@@ -50,8 +53,7 @@ export const CHECKOUT_NAV_LABELS = Object.freeze({
     authLink: "Уже есть аккаунт? Войти",
     authRegisterCta: "Войти или зарегистрироваться",
     authRegisterEyebrow: "Удобство сервиса",
-    authRegisterPitch:
-        "Контакты и адреса сохраняются для следующих заказов",
+    authRegisterPitch: "Контакты и адреса сохраняются для следующих заказов",
     authRegisterBenefits: Object.freeze([
         "Быстрее оформление без повторного ввода",
         "Адреса доставки под рукой",
@@ -93,7 +95,10 @@ export function writeCheckoutSessionPayload(payload) {
         return;
     }
 
-    window.sessionStorage.setItem(CHECKOUT_SESSION_KEY, JSON.stringify(payload));
+    window.sessionStorage.setItem(
+        CHECKOUT_SESSION_KEY,
+        JSON.stringify(payload),
+    );
 }
 
 export function clearCheckoutSessionPayload() {
@@ -123,7 +128,8 @@ export function normalizeCheckoutSessionForms(forms) {
 
     if (legacyComment) {
         const delivery =
-            normalized.deliveryInfo && typeof normalized.deliveryInfo === "object"
+            normalized.deliveryInfo &&
+            typeof normalized.deliveryInfo === "object"
                 ? { ...normalized.deliveryInfo }
                 : {};
         const existing = String(delivery.comment || "").trim();
@@ -250,8 +256,9 @@ function resolveComplementProductIds(store) {
 
 function resolveCoords(selectedAddress, store) {
     const source =
-        selectedAddress
-        ?? (store.deliveryInfo?.address && typeof store.deliveryInfo.address === "object"
+        selectedAddress ??
+        (store.deliveryInfo?.address &&
+        typeof store.deliveryInfo.address === "object"
             ? store.deliveryInfo.address
             : null);
 
@@ -259,8 +266,7 @@ function resolveCoords(selectedAddress, store) {
         return { latitude: null, longitude: null };
     }
 
-    const latitude =
-        source.latitude != null ? Number(source.latitude) : null;
+    const latitude = source.latitude != null ? Number(source.latitude) : null;
     const longitude =
         source.longitude != null ? Number(source.longitude) : null;
 
@@ -270,7 +276,11 @@ function resolveCoords(selectedAddress, store) {
     };
 }
 
-export function buildQuoteOrderPayload(store, selectedAddress = null, options = {}) {
+export function buildQuoteOrderPayload(
+    store,
+    selectedAddress = null,
+    options = {},
+) {
     const userLines = store.userItems.map((item) => ({
         product_id: item.productId,
         quantity: item.qty,
@@ -278,8 +288,8 @@ export function buildQuoteOrderPayload(store, selectedAddress = null, options = 
 
     const clientId = resolveRegisteredClientId(store, options);
     const isGuest = Boolean(
-        options.isGuest
-        || (store.guestContact?.name && store.guestContact?.phone),
+        options.isGuest ||
+        (store.guestContact?.name && store.guestContact?.phone),
     );
 
     const clientPayload = buildClientPayload(store, {
@@ -300,7 +310,8 @@ export function buildQuoteOrderPayload(store, selectedAddress = null, options = 
 
     return {
         lines: userLines,
-        delivery_method: deliveryPayload?.method ?? store.deliveryInfo.method ?? "courier",
+        delivery_method:
+            deliveryPayload?.method ?? store.deliveryInfo.method ?? "courier",
         client: clientPayload,
         address: deliveryPayload?.address ?? null,
         delivery_comment: deliveryPayload?.comment,
@@ -315,11 +326,19 @@ export function buildQuoteOrderPayload(store, selectedAddress = null, options = 
 }
 
 /** @deprecated используй buildQuoteOrderPayload */
-export function buildOrderDraftPayload(store, selectedAddress = null, options = {}) {
+export function buildOrderDraftPayload(
+    store,
+    selectedAddress = null,
+    options = {},
+) {
     return buildQuoteOrderPayload(store, selectedAddress, options);
 }
 
-export async function refreshOrderDraftPreview(store, selectedAddress = null, options = {}) {
+export async function refreshOrderDraftPreview(
+    store,
+    selectedAddress = null,
+    options = {},
+) {
     ensureCheckoutSessionActive(store);
 
     const requestSeq = ++store.previewRequestSeq;
@@ -382,7 +401,9 @@ export async function bootstrapCheckoutStoreSession(store) {
 export function buildLocalCartItem(product, qty, payload = null) {
     const productId = Number(product?.id);
     const quantity = Math.max(1, Number(qty) || 1);
-    const unitRub = roundRubles2(Number(product?.price?.amount ?? product?.price) || 0);
+    const unitRub = roundRubles2(
+        Number(product?.price?.amount ?? product?.price) || 0,
+    );
     const unitKopecks = Math.round(unitRub * 100);
     const lineKopecks = unitKopecks * quantity;
 
@@ -436,7 +457,8 @@ export function upsertLocalCartLine(store, product, quantity, payload = null) {
 export async function setCheckoutPromotionGift(store, productId) {
     store.patchLocal({
         promotions: {
-            freeRollGiftProductId: productId != null ? Number(productId) || null : null,
+            freeRollGiftProductId:
+                productId != null ? Number(productId) || null : null,
         },
     });
     store.persistSession();
@@ -479,7 +501,8 @@ export async function placeOrderOnServer(store, selectedAddress = null) {
         );
 
         const body = {
-            client_request_id: store.clientRequestId || resolveClientRequestId(),
+            client_request_id:
+                store.clientRequestId || resolveClientRequestId(),
             cart: quote.cart,
             client: quote.client,
             delivery: quote.delivery,
@@ -522,7 +545,9 @@ export function createOrderDraftPreviewScheduler(store) {
         schedule(selectedAddress = null, delayMs = 700) {
             clearTimeout(timer);
             timer = setTimeout(() => {
-                void refreshOrderDraftPreview(store, selectedAddress).catch(() => {});
+                void refreshOrderDraftPreview(store, selectedAddress).catch(
+                    () => {},
+                );
             }, delayMs);
         },
 
@@ -570,7 +595,9 @@ export function useCheckoutSession() {
     const deliveryPricing = computed(() => session.deliveryPricing);
     const itemsTotalAmount = computed(() => session.itemsTotalAmount);
     const deliveryFeeAmount = computed(() => session.deliveryFeeAmount);
-    const grandTotalWithDelivery = computed(() => session.grandTotalWithDelivery);
+    const grandTotalWithDelivery = computed(
+        () => session.grandTotalWithDelivery,
+    );
     const isDeliveryFree = computed(() => session.isDeliveryFree);
     const hasDeliveryPricing = computed(() => session.hasDeliveryPricing);
     const benefitsProgress = computed(() => session.benefitsProgress);
@@ -581,12 +608,17 @@ export function useCheckoutSession() {
     const delivery = computed(
         () => benefitsProgress.value?.delivery ?? emptyMoneyBenefit(),
     );
-    const gift = computed(() => benefitsProgress.value?.gift ?? emptyMoneyBenefit());
-    const hasActiveBenefits = computed(
-        () => Boolean(delivery.value.isActive || gift.value.isActive),
+    const gift = computed(
+        () => benefitsProgress.value?.gift ?? emptyMoneyBenefit(),
+    );
+    const hasActiveBenefits = computed(() =>
+        Boolean(delivery.value.isActive || gift.value.isActive),
     );
     const canShowBenefitsBanner = computed(
-        () => totalItems.value > 0 && hasBenefitsProgress.value && hasActiveBenefits.value,
+        () =>
+            totalItems.value > 0 &&
+            hasBenefitsProgress.value &&
+            hasActiveBenefits.value,
     );
 
     const deliveryProgressPercent = computed(() => {
@@ -595,7 +627,10 @@ export function useCheckoutSession() {
         if (!Number.isFinite(threshold) || threshold <= 0) {
             return delivery.value.isReached ? 100 : 0;
         }
-        return Math.min(100, Math.max(0, Math.round((current / threshold) * 100)));
+        return Math.min(
+            100,
+            Math.max(0, Math.round((current / threshold) * 100)),
+        );
     });
 
     const giftProgressPercent = computed(() => {
@@ -604,7 +639,10 @@ export function useCheckoutSession() {
         if (!Number.isFinite(threshold) || threshold <= 0) {
             return gift.value.isReached ? 100 : 0;
         }
-        return Math.min(100, Math.max(0, Math.round((current / threshold) * 100)));
+        return Math.min(
+            100,
+            Math.max(0, Math.round((current / threshold) * 100)),
+        );
     });
 
     const deliveryLabel = computed(() => {
