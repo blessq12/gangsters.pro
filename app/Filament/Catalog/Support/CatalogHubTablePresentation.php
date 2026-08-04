@@ -18,14 +18,11 @@ final class CatalogHubTablePresentation
             ->label('SKU')
             ->placeholder('—')
             ->searchable()
-            ->rules([
+            ->rules(fn (TextInputColumn $column): array => [
                 'nullable',
                 'string',
                 'max:128',
-                fn (TextInputColumn $column): \Illuminate\Validation\Rules\Unique => Rule::unique(
-                    'PRD_products',
-                    'sku',
-                )->ignore($column->getRecord()?->getKey()),
+                Rule::unique('PRD_products', 'sku')->ignore($column->getRecord()?->getKey()),
             ])
             ->updateStateUsing(function (mixed $state, Model $record): ?string {
                 $sku = is_string($state) ? trim($state) : '';
