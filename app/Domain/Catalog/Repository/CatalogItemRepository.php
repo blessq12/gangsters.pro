@@ -51,4 +51,11 @@ interface CatalogItemRepository
      * @return array<int, array{counts_as_roll: bool, complement_set: bool}>
      */
     public function findPromotionMetaByProductIds(array $ids): array;
+
+    /**
+     * Архивные товары — для выгрузки недоступных позиций во внешние меню.
+     *
+     * @return list<int>
+     */
+    public function findArchivedProductIds(): array;
 }

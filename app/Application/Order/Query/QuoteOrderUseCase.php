@@ -3,12 +3,8 @@
 namespace App\Application\Order\Query;
 
 use App\Application\Order\DTO\QuoteOrderDto;
-use App\Domain\Catalog\Entity\Product;
-use App\Domain\Catalog\Entity\ProductSet;
-use App\Domain\Catalog\Enum\CatalogItemKind;
-use App\Domain\Catalog\Repository\CatalogItemRepository;
-use App\Domain\Content\Repository\DeliveryConfigurationRepository;
-use App\Domain\Crm\Repository\ClientRepository;
+use App\Domain\Order\Port\OrderCatalogPort;
+use App\Domain\Order\Port\OrderClientLookupPort;
 use App\Domain\Order\Port\PromotionDeliveryPricingPort;
 use App\Domain\Order\Repository\PromotionPolicyRepository;
 use App\Shared\Geo\AddressGeocoder;
@@ -20,12 +16,11 @@ use Illuminate\Support\Facades\Storage;
 final class QuoteOrderUseCase
 {
     public function __construct(
-        private readonly CatalogItemRepository $catalogItems,
+        private readonly OrderCatalogPort $catalog,
         private readonly PromotionPolicyRepository $promotionPolicies,
         private readonly PromotionDeliveryPricingPort $deliveryPricing,
         private readonly AddressGeocoder $addressGeocoder,
-        private readonly DeliveryConfigurationRepository $deliveryConfigurations,
-        private readonly ClientRepository $clients,
+        private readonly OrderClientLookupPort $clientLookup,
     ) {}
 
     /**
@@ -62,20 +57,20 @@ final class QuoteOrderUseCase
             $productLookupIds[] = (int) $complementId;
         }
 
-        $products = $this->indexProducts(
-            $this->catalogItems->findActiveProductsByIds(array_values(array_unique($productLookupIds))),
+        $products = $this->indexById(
+            $this->catalog->findActiveProductsByIds(array_values(array_unique($productLookupIds))),
         );
-        $sets = $this->indexSets(
-            $this->catalogItems->findActiveSetsByIds(array_values(array_unique($lineCatalogIds))),
+        $sets = $this->indexById(
+            $this->catalog->findActiveSetsByIds(array_values(array_unique($lineCatalogIds))),
         );
 
         $metaProductIds = array_keys($products);
         foreach ($sets as $set) {
-            foreach ($set->lines() as $setLine) {
-                $metaProductIds[] = $setLine->productId();
+            foreach ($set['lines'] as $setLine) {
+                $metaProductIds[] = $setLine['product_id'];
             }
         }
-        $meta = $this->catalogItems->findPromotionMetaByProductIds(
+        $meta = $this->catalog->findPromotionMetaByProductIds(
             array_values(array_unique($metaProductIds)),
         );
 
@@ -89,8 +84,8 @@ final class QuoteOrderUseCase
             $product = $products[$catalogId] ?? null;
             $set = $sets[$catalogId] ?? null;
 
-            if ($product instanceof Product) {
-                $unit = $product->price()->amountRubles();
+            if ($product !== null) {
+                $unit = (int) $product['price_rubles'];
                 $itemsTotalRubles += $unit * $quantity;
                 $rollCount += $this->rollCountForProduct($catalogId, $quantity, $meta);
                 $cartLines[] = $this->linePayload(
@@ -103,8 +98,8 @@ final class QuoteOrderUseCase
                 continue;
             }
 
-            if ($set instanceof ProductSet) {
-                $unit = $set->price()->amountRubles();
+            if ($set !== null) {
+                $unit = (int) $set['price_rubles'];
                 $itemsTotalRubles += $unit * $quantity;
                 $rollCount += $this->rollCountForSet($set, $quantity, $meta);
                 $cartLines[] = $this->setLinePayload(
@@ -132,7 +127,7 @@ final class QuoteOrderUseCase
 
         $giftCandidates = [];
         if ($giftEligible) {
-            foreach ($this->catalogItems->findActiveSystemProducts() as $systemProduct) {
+            foreach ($this->catalog->findActiveSystemProducts() as $systemProduct) {
                 $giftCandidates[] = $this->giftCandidatePayload($systemProduct);
             }
         }
@@ -140,7 +135,7 @@ final class QuoteOrderUseCase
         $selectedGiftProductId = null;
         if ($giftEligible && $input->giftProductId !== null) {
             $gift = $this->resolveGiftProduct($input->giftProductId);
-            $selectedGiftProductId = $gift->id();
+            $selectedGiftProductId = (int) $gift['id'];
 
             $cartLines[] = $this->linePayload(
                 product: $gift,
@@ -167,7 +162,7 @@ final class QuoteOrderUseCase
         }
 
         $complementProducts = $entitledSets > 0
-            ? $this->indexProducts($this->catalogItems->findActiveComplementSetProducts())
+            ? $this->indexById($this->catalog->findActiveComplementSetProducts())
             : [];
 
         foreach ($complementProducts as $complementId => $complementProduct) {
@@ -273,13 +268,16 @@ final class QuoteOrderUseCase
         ];
     }
 
-    private function resolveGiftProduct(int $giftProductId): Product
+    /**
+     * @return array<string, mixed>
+     */
+    private function resolveGiftProduct(int $giftProductId): array
     {
-        $gift = $this->catalogItems->findProductById($giftProductId);
+        $gift = $this->catalog->findProductById($giftProductId);
         if (
-            ! $gift instanceof Product
-            || ! $gift->isActive()
-            || ! $gift->isSystem()
+            $gift === null
+            || ($gift['is_active'] ?? false) !== true
+            || ($gift['is_system'] ?? false) !== true
         ) {
             throw new \InvalidArgumentException('Подарок недоступен.');
         }
@@ -288,13 +286,13 @@ final class QuoteOrderUseCase
     }
 
     /**
+     * @param  array<string, mixed>  $product
      * @return array<string, mixed>
      */
-    private function giftCandidatePayload(Product $product): array
+    private function giftCandidatePayload(array $product): array
     {
         $imageUrl = null;
-        foreach ($product->images() as $image) {
-            $path = $image->path();
+        foreach ($product['image_paths'] as $path) {
             if ($path === '') {
                 continue;
             }
@@ -303,37 +301,23 @@ final class QuoteOrderUseCase
         }
 
         return [
-            'id' => $product->id(),
-            'name' => $product->name(),
+            'id' => $product['id'],
+            'name' => $product['name'],
             'price_rub' => 0,
             'image_url' => $imageUrl,
-            'composition' => $product->ingredients(),
+            'composition' => $product['ingredients'],
         ];
     }
 
     /**
-     * @param  list<Product>  $products
-     * @return array<int, Product>
+     * @param  list<array<string, mixed>>  $items
+     * @return array<int, array<string, mixed>>
      */
-    private function indexProducts(array $products): array
+    private function indexById(array $items): array
     {
         $indexed = [];
-        foreach ($products as $product) {
-            $indexed[$product->id()] = $product;
-        }
-
-        return $indexed;
-    }
-
-    /**
-     * @param  list<ProductSet>  $sets
-     * @return array<int, ProductSet>
-     */
-    private function indexSets(array $sets): array
-    {
-        $indexed = [];
-        foreach ($sets as $set) {
-            $indexed[$set->id()] = $set;
+        foreach ($items as $item) {
+            $indexed[(int) $item['id']] = $item;
         }
 
         return $indexed;
@@ -354,46 +338,48 @@ final class QuoteOrderUseCase
     /**
      * Роллы внутри набора: quantity компонента × qty набора.
      *
+     * @param  array<string, mixed>  $set
      * @param  array<int, array{counts_as_roll: bool, complement_set: bool}>  $meta
      */
-    private function rollCountForSet(ProductSet $set, int $setQuantity, array $meta): int
+    private function rollCountForSet(array $set, int $setQuantity, array $meta): int
     {
         $rolls = 0;
 
-        foreach ($set->lines() as $setLine) {
-            $componentId = $setLine->productId();
+        foreach ($set['lines'] as $setLine) {
+            $componentId = (int) $setLine['product_id'];
             if (($meta[$componentId]['counts_as_roll'] ?? false) !== true) {
                 continue;
             }
 
-            $rolls += $setLine->quantity() * $setQuantity;
+            $rolls += (int) $setLine['quantity'] * $setQuantity;
         }
 
         return $rolls;
     }
 
     /**
+     * @param  array<string, mixed>  $product
      * @return array<string, mixed>
      */
     private function linePayload(
-        Product $product,
+        array $product,
         int $quantity,
         int $unitPriceRubles,
         string $kind,
     ): array {
         $line = [
-            'product_id' => $product->id(),
-            'product_name' => $product->name(),
+            'product_id' => $product['id'],
+            'product_name' => $product['name'],
             'quantity' => $quantity,
             'unit_price_rubles' => $unitPriceRubles,
             'line_total_rubles' => $unitPriceRubles * $quantity,
             'payload' => [
                 'kind' => $kind,
-                'catalog_kind' => CatalogItemKind::Product->value,
+                'catalog_kind' => 'product',
             ],
         ];
 
-        $sku = $product->sku();
+        $sku = $product['sku'] ?? null;
         if (is_string($sku) && $sku !== '') {
             $line['sku'] = $sku;
         }
@@ -402,36 +388,37 @@ final class QuoteOrderUseCase
     }
 
     /**
+     * @param  array<string, mixed>  $set
      * @return array<string, mixed>
      */
     private function setLinePayload(
-        ProductSet $set,
+        array $set,
         int $quantity,
         int $unitPriceRubles,
         string $kind,
     ): array {
         $composition = [];
-        foreach ($set->lines() as $setLine) {
+        foreach ($set['lines'] as $setLine) {
             $composition[] = [
-                'product_id' => $setLine->productId(),
-                'quantity' => $setLine->quantity(),
+                'product_id' => (int) $setLine['product_id'],
+                'quantity' => (int) $setLine['quantity'],
             ];
         }
 
         $line = [
-            'product_id' => $set->id(),
-            'product_name' => $set->name(),
+            'product_id' => $set['id'],
+            'product_name' => $set['name'],
             'quantity' => $quantity,
             'unit_price_rubles' => $unitPriceRubles,
             'line_total_rubles' => $unitPriceRubles * $quantity,
             'payload' => [
                 'kind' => $kind,
-                'catalog_kind' => CatalogItemKind::Set->value,
+                'catalog_kind' => 'set',
                 'composition' => $composition,
             ],
         ];
 
-        $sku = $set->sku();
+        $sku = $set['sku'] ?? null;
         if (is_string($sku) && $sku !== '') {
             $line['sku'] = $sku;
         }
@@ -451,16 +438,16 @@ final class QuoteOrderUseCase
         $clientId = isset($client['client_id']) ? (int) $client['client_id'] : 0;
 
         if ($kind === 'registered' && $clientId > 0) {
-            $entity = $this->clients->findById($clientId);
-            if ($entity !== null) {
+            $found = $this->clientLookup->findSnapshotById($clientId);
+            if ($found !== null) {
                 $snapshot = [
                     'kind' => 'registered',
-                    'client_id' => $entity->id(),
-                    'name' => $entity->name(),
-                    'phone' => $entity->phone(),
+                    'client_id' => $found['id'],
+                    'name' => $found['name'],
+                    'phone' => $found['phone'],
                 ];
 
-                $email = $entity->email();
+                $email = $found['email'];
                 if (is_string($email) && $email !== '') {
                     $snapshot['email'] = $email;
                 }
@@ -499,7 +486,7 @@ final class QuoteOrderUseCase
             $city = null;
         }
         if ($city === null) {
-            $city = $this->deliveryConfigurations->findPublic()?->kitchenAddress()->city();
+            $city = $this->deliveryPricing->resolveKitchenCity();
         }
 
         $coords = $this->addressGeocoder->geocode($street, $house, $city);
@@ -514,8 +501,8 @@ final class QuoteOrderUseCase
      * Все активные наборы дополнений (или явный whitelist с FE), каждый × entitledSets.
      *
      * @param  list<int>  $requestedIds
-     * @param  array<int, Product>  $availableById
-     * @return list<Product>
+     * @param  array<int, array<string, mixed>>  $availableById
+     * @return list<array<string, mixed>>
      */
     private function resolveComplementProducts(
         int $entitledSets,

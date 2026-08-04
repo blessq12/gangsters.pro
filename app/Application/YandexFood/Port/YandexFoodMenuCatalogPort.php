@@ -6,8 +6,16 @@ interface YandexFoodMenuCatalogPort
 {
     /**
      * @return array{
-     *     categories: list<array{category: \App\Domain\Catalog\Entity\Category, has_items: bool}>,
-     *     products: list<array{category_id: int, product: \App\Domain\Catalog\Entity\Product, sort_order: int}>
+     *     categories: list<array{id: int, name: string, sort_order: int, has_items: bool}>,
+     *     products: list<array{
+     *         id: int,
+     *         category_id: int,
+     *         name: string,
+     *         description: string,
+     *         price_rubles: int,
+     *         sort_order: int,
+     *         image_paths: list<string>
+     *     }>
      * }
      */
     public function readCompositionCatalog(): array;

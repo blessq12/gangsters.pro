@@ -2,9 +2,13 @@
 
 namespace App\Infrastructure\Order\Provider;
 
+use App\Domain\Order\Port\OrderCatalogPort;
+use App\Domain\Order\Port\OrderClientLookupPort;
 use App\Domain\Order\Port\PromotionDeliveryPricingPort;
 use App\Domain\Order\Repository\OrderRepository;
 use App\Domain\Order\Repository\PromotionPolicyRepository;
+use App\Infrastructure\Order\Port\OrderCatalogAdapter;
+use App\Infrastructure\Order\Port\OrderClientLookupAdapter;
 use App\Infrastructure\Order\Port\PromotionDeliveryPricingAdapter;
 use App\Infrastructure\Order\Repository\EloquentOrderRepository;
 use App\Infrastructure\Order\Repository\EloquentPromotionPolicyRepository;
@@ -17,5 +21,7 @@ final class OrderServiceProvider extends ServiceProvider
         $this->app->bind(OrderRepository::class, EloquentOrderRepository::class);
         $this->app->bind(PromotionPolicyRepository::class, EloquentPromotionPolicyRepository::class);
         $this->app->bind(PromotionDeliveryPricingPort::class, PromotionDeliveryPricingAdapter::class);
+        $this->app->bind(OrderCatalogPort::class, OrderCatalogAdapter::class);
+        $this->app->bind(OrderClientLookupPort::class, OrderClientLookupAdapter::class);
     }
 }

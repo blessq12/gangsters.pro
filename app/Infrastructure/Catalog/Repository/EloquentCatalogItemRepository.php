@@ -227,6 +227,17 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
         return $names;
     }
 
+    public function findArchivedProductIds(): array
+    {
+        return $this->productQuery()
+            ->where('catalog_kind', CatalogItemKind::Product->value)
+            ->where('status', ProductStatus::Archived->value)
+            ->orderBy('id')
+            ->pluck('id')
+            ->map(static fn (mixed $id): int => (int) $id)
+            ->all();
+    }
+
     private function productQuery()
     {
         return PRD_Product::query();

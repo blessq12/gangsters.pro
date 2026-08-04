@@ -2,16 +2,14 @@
 
 namespace App\Application\YandexFood\Presenter;
 
-use App\Domain\Catalog\Entity\Category;
-use App\Domain\Catalog\Entity\Product;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\Storage;
 
 final class YandexFoodMenuPresenter
 {
     /**
-     * @param  list<array{category: Category, has_items: bool}>  $categories
-     * @param  list<array{category_id: int, product: Product, sort_order: int}>  $products
+     * @param  list<array{id: int, name: string, sort_order: int, has_items: bool}>  $categories
+     * @param  list<array<string, mixed>>  $products
      * @return array{categories: list<array<string, mixed>>, items: list<array<string, mixed>>, lastChange: string}
      */
     public function presentComposition(
@@ -21,39 +19,37 @@ final class YandexFoodMenuPresenter
     ): array {
         $categoriesOutput = [];
 
-        foreach ($categories as $row) {
-            if (! $row['has_items']) {
+        foreach ($categories as $category) {
+            if (! $category['has_items']) {
                 continue;
             }
 
-            $category = $row['category'];
             $categoriesOutput[] = [
-                'id' => (string) $category->id(),
-                'name' => $category->name(),
+                'id' => (string) $category['id'],
+                'name' => $category['name'],
                 'parentId' => null,
-                'sortOrder' => $category->sortOrder(),
+                'sortOrder' => $category['sort_order'],
                 'images' => [],
             ];
         }
 
         $items = [];
 
-        foreach ($products as $row) {
-            $product = $row['product'];
+        foreach ($products as $product) {
             $items[] = [
-                'id' => (string) $product->id(),
-                'categoryId' => (string) $row['category_id'],
-                'name' => $product->name(),
-                'description' => $product->description() ?? '',
-                'price' => (float) $product->price()->amountRubles(),
+                'id' => (string) $product['id'],
+                'categoryId' => (string) $product['category_id'],
+                'name' => $product['name'],
+                'description' => $product['description'],
+                'price' => (float) $product['price_rubles'],
                 'vat' => 0,
                 'isCatchweight' => false,
                 'measure' => 0,
                 'weightQuantum' => null,
                 'measureUnit' => 'г',
-                'sortOrder' => $row['sort_order'],
+                'sortOrder' => $product['sort_order'],
                 'modifierGroups' => [],
-                'images' => $this->mapImages($product),
+                'images' => $this->mapImages($product['image_paths']),
             ];
         }
 
@@ -96,14 +92,14 @@ final class YandexFoodMenuPresenter
     }
 
     /**
+     * @param  list<string>  $imagePaths
      * @return list<array{hash: string, url: string}>
      */
-    private function mapImages(Product $product): array
+    private function mapImages(array $imagePaths): array
     {
         $mapped = [];
 
-        foreach ($product->images() as $image) {
-            $path = $image->path();
+        foreach ($imagePaths as $path) {
             if ($path === '') {
                 continue;
             }

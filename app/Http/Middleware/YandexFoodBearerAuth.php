@@ -3,8 +3,8 @@
 namespace App\Http\Middleware;
 
 use App\Application\YandexFood\Port\YandexFoodAuthenticator;
-use App\Domain\YandexFood\Exception\YandexFoodBearerTokenRejectedException;
-use App\Domain\YandexFood\Exception\YandexFoodDisabledException;
+use App\Infrastructure\YandexFood\Exception\YandexFoodBearerTokenRejectedException;
+use App\Infrastructure\YandexFood\Exception\YandexFoodDisabledException;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;

@@ -10,6 +10,8 @@ interface PromotionDeliveryPricingPort
 
     public function resolveFreeDeliveryThresholdKopecks(): ?int;
 
+    public function resolveKitchenCity(): ?string;
+
     public function resolveDeliveryFeeKopecks(
         ?PromotionPolicy $promotionPolicy,
         ?string $deliveryMethod,

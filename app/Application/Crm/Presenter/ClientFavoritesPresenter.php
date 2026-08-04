@@ -2,10 +2,8 @@
 
 namespace App\Application\Crm\Presenter;
 
-use App\Domain\Catalog\Entity\Product;
-use App\Domain\Catalog\Entity\ProductSet;
-use App\Domain\Catalog\Repository\CatalogItemRepository;
 use App\Domain\Crm\Entity\Client;
+use App\Domain\Crm\Port\CrmCatalogSnapshotsPort;
 
 /**
  * Контракт избранного для FE (favoritesStore.applyServerSnapshot).
@@ -13,7 +11,7 @@ use App\Domain\Crm\Entity\Client;
 final class ClientFavoritesPresenter
 {
     public function __construct(
-        private readonly CatalogItemRepository $catalogItems,
+        private readonly CrmCatalogSnapshotsPort $catalogSnapshots,
     ) {}
 
     /**
@@ -23,20 +21,20 @@ final class ClientFavoritesPresenter
     public function present(Client $client, array $snapshotOverrides = []): array
     {
         $ids = $client->favoriteProductIds();
-        $catalogById = $this->indexCatalog($ids);
+        $catalogById = $this->catalogSnapshots->snapshotsByIds($ids);
 
         $favorites = [];
         foreach ($ids as $productId) {
             $override = $snapshotOverrides[$productId] ?? [];
-            $catalogItem = $catalogById[$productId] ?? null;
+            $snapshot = $catalogById[$productId] ?? null;
 
             $name = is_string($override['name'] ?? null) && $override['name'] !== ''
                 ? (string) $override['name']
-                : ($catalogItem?->name() ?? ('Товар #'.$productId));
+                : ($snapshot['name'] ?? ('Товар #'.$productId));
 
             $price = array_key_exists('price', $override) && $override['price'] !== null
                 ? (float) $override['price']
-                : ($catalogItem !== null ? $catalogItem->price()->amountRubles() : 0);
+                : ($snapshot['price_rubles'] ?? 0);
 
             $weight = $override['weight'] ?? null;
 
@@ -52,26 +50,5 @@ final class ClientFavoritesPresenter
         }
 
         return ['favorites' => $favorites];
-    }
-
-    /**
-     * @param  list<int>  $ids
-     * @return array<int, Product|ProductSet>
-     */
-    private function indexCatalog(array $ids): array
-    {
-        if ($ids === []) {
-            return [];
-        }
-
-        $indexed = [];
-        foreach ($this->catalogItems->findActiveProductsByIds($ids) as $product) {
-            $indexed[$product->id()] = $product;
-        }
-        foreach ($this->catalogItems->findActiveSetsByIds($ids) as $set) {
-            $indexed[$set->id()] = $set;
-        }
-
-        return $indexed;
     }
 }

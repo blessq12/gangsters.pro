@@ -42,6 +42,11 @@ final class PromotionDeliveryPricingAdapter implements PromotionDeliveryPricingP
         return (int) $policy['free_delivery_threshold_kopecks'];
     }
 
+    public function resolveKitchenCity(): ?string
+    {
+        return $this->deliveryConfigurations->findPublic()?->kitchenAddress()->city();
+    }
+
     public function resolveDeliveryFeeKopecks(
         ?PromotionPolicy $promotionPolicy,
         ?string $deliveryMethod,

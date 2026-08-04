@@ -2,16 +2,15 @@
 
 namespace App\Application\Crm\Query;
 
-use App\Domain\Catalog\Repository\CatalogItemRepository;
-use App\Domain\Order\Entity\Order;
-use App\Domain\Order\Repository\OrderRepository;
+use App\Domain\Crm\Port\CrmCatalogAvailabilityPort;
+use App\Domain\Crm\Port\CrmClientOrdersPort;
 use Illuminate\Auth\AuthenticationException;
 
 final class GetRepeatableOrderLinesUseCase
 {
     public function __construct(
-        private readonly OrderRepository $orders,
-        private readonly CatalogItemRepository $catalogItems,
+        private readonly CrmClientOrdersPort $orders,
+        private readonly CrmCatalogAvailabilityPort $catalogAvailability,
     ) {}
 
     /**
@@ -19,35 +18,30 @@ final class GetRepeatableOrderLinesUseCase
      */
     public function execute(int $clientId, int $orderId): array
     {
-        $order = $this->orders->findById($orderId);
-        if (
-            ! $order instanceof Order
-            || $order->clientId() !== $clientId
-        ) {
+        $order = $this->orders->findByIdForClient($orderId, $clientId);
+        if ($order === null) {
             throw new AuthenticationException();
         }
 
         $items = [];
-        foreach ($order->cart()['lines'] ?? [] as $line) {
+        foreach ($order['lines'] ?? [] as $line) {
             if (! is_array($line)) {
                 continue;
             }
 
-            $payload = is_array($line['payload'] ?? null) ? $line['payload'] : [];
-            $kind = (string) ($payload['kind'] ?? 'user');
+            $kind = (string) ($line['kind'] ?? 'user');
             if ($kind === 'gift' || $kind === 'complement') {
                 continue;
             }
 
             $productId = (int) ($line['product_id'] ?? 0);
-            $quantity = max(1, (int) ($line['quantity'] ?? 1));
-            $unitPrice = (int) ($line['unit_price_rubles'] ?? 0);
+            $productName = (string) ($line['product_name'] ?? '');
 
             $items[] = [
                 'product_id' => $productId,
-                'product_name' => (string) ($line['product_name'] ?? ('Товар #'.$productId)),
-                'quantity' => $quantity,
-                'unit_price_rubles' => $unitPrice,
+                'product_name' => $productName !== '' ? $productName : ('Товар #'.$productId),
+                'quantity' => max(1, (int) ($line['quantity'] ?? 1)),
+                'unit_price_rubles' => (int) ($line['unit_price_rubles'] ?? 0),
             ];
         }
 
@@ -56,28 +50,20 @@ final class GetRepeatableOrderLinesUseCase
             static fn (int $id): bool => $id > 0,
         )));
 
-        $availableCatalog = [];
-        foreach ($this->catalogItems->findActiveProductsByIds($productIds) as $product) {
-            $availableCatalog[$product->id()] = $product;
-        }
-        foreach ($this->catalogItems->findActiveSetsByIds($productIds) as $set) {
-            $availableCatalog[$set->id()] = $set;
-        }
+        $kinds = $this->catalogAvailability->activeCatalogKindsByIds($productIds);
 
         $available = [];
         $unavailable = [];
 
         foreach ($items as $item) {
             $productId = $item['product_id'];
-            $catalogItem = $availableCatalog[$productId] ?? null;
+            $catalogKind = $kinds[$productId] ?? null;
             $line = [
                 ...$item,
-                'catalog_kind' => $catalogItem !== null
-                    ? $catalogItem->kind()->value
-                    : 'product',
+                'catalog_kind' => $catalogKind ?? 'product',
             ];
 
-            if ($productId > 0 && $catalogItem !== null) {
+            if ($productId > 0 && $catalogKind !== null) {
                 $available[] = $line;
             } else {
                 $unavailable[] = $line;

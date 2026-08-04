@@ -3,9 +3,9 @@
 namespace App\Infrastructure\YandexFood\Auth;
 
 use App\Application\YandexFood\Port\YandexFoodAuthenticator;
-use App\Domain\YandexFood\Exception\YandexFoodBearerTokenRejectedException;
-use App\Domain\YandexFood\Exception\YandexFoodDisabledException;
-use App\Domain\YandexFood\Exception\YandexFoodOAuthRejectedException;
+use App\Infrastructure\YandexFood\Exception\YandexFoodBearerTokenRejectedException;
+use App\Infrastructure\YandexFood\Exception\YandexFoodDisabledException;
+use App\Infrastructure\YandexFood\Exception\YandexFoodOAuthRejectedException;
 
 final class ConfigYandexFoodAuthenticator implements YandexFoodAuthenticator
 {

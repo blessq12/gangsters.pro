@@ -3,13 +3,10 @@
 namespace App\Infrastructure\YandexFood\Reader;
 
 use App\Application\YandexFood\Port\YandexFoodMenuCatalogPort;
-use App\Domain\Catalog\Entity\Category;
 use App\Domain\Catalog\Entity\Product;
 use App\Domain\Catalog\Enum\CatalogItemKind;
-use App\Domain\Catalog\Enum\ProductStatus;
 use App\Domain\Catalog\Repository\CatalogItemRepository;
 use App\Domain\Catalog\Repository\CategoryRepository;
-use App\Infrastructure\Catalog\Model\PRD_Product;
 
 final class YandexFoodCatalogReader implements YandexFoodMenuCatalogPort
 {
@@ -18,12 +15,6 @@ final class YandexFoodCatalogReader implements YandexFoodMenuCatalogPort
         private readonly CatalogItemRepository $catalogItems,
     ) {}
 
-    /**
-     * @return array{
-     *     categories: list<array{category: Category, has_items: bool}>,
-     *     products: list<array{category_id: int, product: Product, sort_order: int}>
-     * }
-     */
     public function readCompositionCatalog(): array
     {
         $categoriesOutput = [];
@@ -69,15 +60,21 @@ final class YandexFoodCatalogReader implements YandexFoodMenuCatalogPort
 
                 $categoryHasItems = true;
                 $productsOutput[] = [
+                    'id' => $product->id(),
                     'category_id' => $category->id(),
-                    'product' => $product,
+                    'name' => $product->name(),
+                    'description' => $product->description() ?? '',
+                    'price_rubles' => $product->price()->amountRubles(),
                     'sort_order' => $sortOrders[$productId] ?? 100,
+                    'image_paths' => $this->imagePaths($product),
                 ];
             }
 
             if ($categoryHasItems) {
                 $categoriesOutput[] = [
-                    'category' => $category,
+                    'id' => $category->id(),
+                    'name' => $category->name(),
+                    'sort_order' => $category->sortOrder(),
                     'has_items' => true,
                 ];
             }
@@ -89,18 +86,31 @@ final class YandexFoodCatalogReader implements YandexFoodMenuCatalogPort
         ];
     }
 
+    public function readUnavailableProductIds(): array
+    {
+        return array_map(
+            static fn (int $id): string => (string) $id,
+            $this->catalogItems->findArchivedProductIds(),
+        );
+    }
+
     /**
      * @return list<string>
      */
-    public function readUnavailableProductIds(): array
+    private function imagePaths(Product $product): array
     {
-        return PRD_Product::query()
-            ->where('catalog_kind', CatalogItemKind::Product->value)
-            ->where('status', ProductStatus::Archived->value)
-            ->orderBy('id')
-            ->pluck('id')
-            ->map(static fn (mixed $id): string => (string) $id)
-            ->all();
+        $paths = [];
+
+        foreach ($product->images() as $image) {
+            $path = $image->path();
+            if ($path === '') {
+                continue;
+            }
+
+            $paths[] = $path;
+        }
+
+        return $paths;
     }
 
     /**
