@@ -126,16 +126,7 @@ onUnmounted(() => {
                 ref="introGlowRef"
                 :class="sh.shared.introRadialGlow"
                 aria-hidden="true"
-            >
-                <div
-                    :class="sh.shared.introPoliceSpotRed"
-                    data-intro-glow="red"
-                />
-                <div
-                    :class="sh.shared.introPoliceSpotBlue"
-                    data-intro-glow="blue"
-                />
-            </div>
+            />
             <img
                 ref="introLogoRef"
                 src="/images/load_logo.svg"
@@ -171,35 +162,15 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-.intro-police-glow {
-    opacity: 0;
-}
-
-.intro-police-glow__spot {
-    pointer-events: none;
-    position: absolute;
-    inset: -35%;
-    opacity: 0.15;
-    mix-blend-mode: screen;
-    will-change: opacity, --intro-glow-x, --intro-glow-y;
+.intro-radial-glow {
+    --intro-radial-x: 65%;
+    --intro-radial-y: 47.5%;
     background: radial-gradient(
-        ellipse 72% 64% at var(--intro-glow-x, 50%) var(--intro-glow-y, 50%),
-        var(--intro-glow-color) 0%,
-        color-mix(in srgb, var(--intro-glow-color) 45%, transparent) 28%,
+        ellipse var(--intro-radial-x) var(--intro-radial-y) at 50% 100%,
+        color-mix(in srgb, var(--app-accent) 42%, transparent) 0%,
+        color-mix(in srgb, var(--app-accent) 14%, transparent) 48%,
         transparent 72%
     );
-}
-
-.intro-police-glow__spot--red {
-    --intro-glow-x: 30%;
-    --intro-glow-y: 50%;
-    --intro-glow-color: rgba(239, 68, 68, 0.6);
-}
-
-.intro-police-glow__spot--blue {
-    --intro-glow-x: 70%;
-    --intro-glow-y: 48%;
-    --intro-glow-color: rgba(59, 130, 246, 0.52);
 }
 
 .app-shell.theme-dark {

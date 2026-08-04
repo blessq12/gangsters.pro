@@ -24,6 +24,11 @@ final class ProductSetForm
                     ->maxLength(255),
             ),
             FilamentSlugField::make(),
+            TextInput::make('sku')
+                ->label('Артикул (SKU)')
+                ->maxLength(128)
+                ->unique(ignoreRecord: true)
+                ->helperText('Уникальный артикул набора для внешних систем учёта.'),
             Textarea::make('description')
                 ->label('Описание')
                 ->columnSpanFull()

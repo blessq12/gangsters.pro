@@ -8,6 +8,7 @@ use App\Domain\Catalog\Entity\ProductSet;
 use App\Domain\Catalog\Enum\CatalogItemKind;
 use App\Domain\Catalog\Repository\CatalogItemRepository;
 use App\Domain\Content\Repository\DeliveryConfigurationRepository;
+use App\Domain\Crm\Repository\ClientRepository;
 use App\Domain\Order\Port\PromotionDeliveryPricingPort;
 use App\Domain\Order\Repository\PromotionPolicyRepository;
 use App\Shared\Geo\AddressGeocoder;
@@ -24,6 +25,7 @@ final class QuoteOrderUseCase
         private readonly PromotionDeliveryPricingPort $deliveryPricing,
         private readonly AddressGeocoder $addressGeocoder,
         private readonly DeliveryConfigurationRepository $deliveryConfigurations,
+        private readonly ClientRepository $clients,
     ) {}
 
     /**
@@ -201,10 +203,7 @@ final class QuoteOrderUseCase
         );
         $deliveryFeeRubles = intdiv($deliveryFeeKopecks, 100);
 
-        $client = $input->client;
-        if (($client['kind'] ?? null) !== 'registered') {
-            $client['kind'] = 'guest';
-        }
+        $client = $this->resolveClientSnapshot($input->client);
 
         $delivery = [
             'method' => $deliveryMethod,
@@ -419,7 +418,7 @@ final class QuoteOrderUseCase
             ];
         }
 
-        return [
+        $line = [
             'product_id' => $set->id(),
             'product_name' => $set->name(),
             'quantity' => $quantity,
@@ -431,6 +430,50 @@ final class QuoteOrderUseCase
                 'composition' => $composition,
             ],
         ];
+
+        $sku = $set->sku();
+        if (is_string($sku) && $sku !== '') {
+            $line['sku'] = $sku;
+        }
+
+        return $line;
+    }
+
+    /**
+     * Snapshot клиента для quote/place: registered берём из CRM по client_id.
+     *
+     * @param  array<string, mixed>  $client
+     * @return array<string, mixed>
+     */
+    private function resolveClientSnapshot(array $client): array
+    {
+        $kind = $client['kind'] ?? null;
+        $clientId = isset($client['client_id']) ? (int) $client['client_id'] : 0;
+
+        if ($kind === 'registered' && $clientId > 0) {
+            $entity = $this->clients->findById($clientId);
+            if ($entity !== null) {
+                $snapshot = [
+                    'kind' => 'registered',
+                    'client_id' => $entity->id(),
+                    'name' => $entity->name(),
+                    'phone' => $entity->phone(),
+                ];
+
+                $email = $entity->email();
+                if (is_string($email) && $email !== '') {
+                    $snapshot['email'] = $email;
+                }
+
+                return $snapshot;
+            }
+        }
+
+        if ($kind !== 'registered') {
+            $client['kind'] = 'guest';
+        }
+
+        return $client;
     }
 
     /**

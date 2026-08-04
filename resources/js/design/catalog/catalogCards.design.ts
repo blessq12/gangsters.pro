@@ -5,11 +5,11 @@
 import { shellColorRoles } from "../layout/shell.design";
 
 const mediaFooterGradient =
-    "pointer-events-none absolute inset-x-0 bottom-0 z-[2] h-[55%] bg-gradient-to-t from-black/92 via-black/50 to-transparent";
+    "pointer-events-none absolute inset-x-0 bottom-0 z-[2] h-[52%] bg-gradient-to-t from-black/80 via-black/40 to-transparent";
 const mediaFooterStack =
     "absolute inset-x-0 bottom-0 z-10 flex flex-col gap-2 px-3 pb-3 pt-2 sm:inset-x-3 sm:pb-3";
 
-const titleUnderPhotoBase = `font-heading font-normal leading-snug line-clamp-2 sm:line-clamp-3 ${shellColorRoles.canvasFg}`;
+const titleUnderPhotoBase = `font-heading font-normal leading-snug line-clamp-2 sm:line-clamp-3 drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)] ${shellColorRoles.canvasFg}`;
 /** Единый заголовок mobile grid + horizontal list. */
 const catalogProductTitleMobile = `${titleUnderPhotoBase} text-[13px] sm:text-sm`;
 
@@ -57,7 +57,7 @@ export const catalogCardsDesign = {
         setBadge:
             "inline-flex w-fit items-center border border-violet-400/50 bg-violet-500/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-100 backdrop-blur sm:text-[11px]",
         setCountPill:
-            "inline-flex w-fit items-center bg-[rgba(0,0,0,0.75)] px-2 py-1 text-[10px] font-medium text-app-canvas-fg backdrop-blur sm:px-2.5 sm:text-[11px]",
+            "inline-flex w-fit items-center bg-black/55 px-2 py-1 text-[10px] font-medium text-app-canvas-fg backdrop-blur sm:px-2.5 sm:text-[11px]",
     },
 
     desktop: {
@@ -67,13 +67,12 @@ export const catalogCardsDesign = {
             "relative w-full overflow-hidden aspect-[4/3] sm:aspect-[5/4] lg:h-full lg:aspect-auto",
         img: "absolute inset-0 h-full w-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105",
         placeholder:
-            "absolute inset-0 flex items-center justify-center bg-neutral-950/75 text-xs text-app-muted",
-        gradient:
-            "pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/45 to-black/10",
+            "absolute inset-0 flex items-center justify-center bg-neutral-950/50 text-xs text-app-muted",
+        gradient: "pointer-events-none absolute inset-0 hidden",
         badgesCol:
             "absolute left-2.5 top-2.5 z-10 flex max-w-[70%] flex-col gap-1 sm:left-3 sm:top-3",
         weightPill:
-            "inline-flex w-fit items-center bg-[rgba(0,0,0,0.75)] px-2 py-1 text-[10px] font-medium text-app-canvas-fg backdrop-blur sm:px-2.5 sm:text-[11px]",
+            "inline-flex w-fit items-center bg-black/55 px-2 py-1 text-[10px] font-medium text-app-canvas-fg backdrop-blur sm:px-2.5 sm:text-[11px]",
         tagsRow: "flex flex-wrap gap-1",
         tagPill:
             "inline-flex items-center px-2 py-0.5 text-[10px] font-medium backdrop-blur",
@@ -88,14 +87,14 @@ export const catalogCardsDesign = {
         titleText: "min-w-0 flex-1",
         titleUnderPhoto: `${titleUnderPhotoBase} text-sm sm:text-base`,
         favBtn:
-            "shrink-0 flex h-9 w-9 items-center justify-center border border-transparent bg-neutral-950/85 text-[15px] text-app-canvas-fg transition-colors hover:border-app-accent hover:text-app-accent sm:h-8 sm:w-8",
+            "shrink-0 flex h-9 w-9 items-center justify-center border border-transparent bg-black/45 text-[15px] text-app-canvas-fg backdrop-blur transition-colors hover:border-app-accent hover:text-app-accent sm:h-8 sm:w-8",
         favBtnActive: "border-app-accent text-app-accent",
         addBtn:
             "inline-flex min-h-10 flex-1 items-center justify-center bg-app-accent px-3 py-2 text-xs font-semibold text-black transition-transform hover:scale-[1.02] sm:min-h-0 sm:py-1.5 sm:text-sm",
         qtyBar:
-            "inline-flex min-h-10 flex-1 items-center justify-between border border-app-accent/60 bg-neutral-950/88 px-2 py-1 text-xs text-app-canvas-fg",
+            "inline-flex min-h-10 flex-1 items-center justify-between border border-app-accent/60 bg-black/45 px-2 py-1 text-xs text-app-canvas-fg backdrop-blur",
         qtyBtn:
-            "flex h-8 w-8 items-center justify-center bg-neutral-950/88 text-[16px] sm:h-6 sm:w-6 sm:text-[14px]",
+            "flex h-8 w-8 items-center justify-center bg-transparent text-[16px] sm:h-6 sm:w-6 sm:text-[14px]",
         qtyLabel:
             "px-1 text-xs sm:text-sm font-semibold",
     },
@@ -108,20 +107,19 @@ export const catalogCardsDesign = {
             "relative w-full overflow-hidden aspect-[4/3] lg:h-full lg:aspect-auto",
         img: "absolute inset-0 h-full w-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105",
         placeholder:
-            "absolute inset-0 flex items-center justify-center bg-neutral-950/75 text-xs text-app-muted",
-        gradient:
-            "pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/45 to-black/10",
+            "absolute inset-0 flex items-center justify-center bg-neutral-950/50 text-xs text-app-muted",
+        gradient: "pointer-events-none absolute inset-0 hidden",
         imageHit:
             "absolute inset-0 z-[1] cursor-pointer",
         badgesCol:
             "absolute left-3 top-3 z-10 flex max-w-[70%] flex-col gap-1",
         weightPill:
-            "inline-flex items-center bg-[rgba(0,0,0,0.75)] px-2.5 py-1 text-[10px] font-medium text-app-canvas-fg backdrop-blur",
+            "inline-flex items-center bg-black/55 px-2.5 py-1 text-[10px] font-medium text-app-canvas-fg backdrop-blur",
         tagsRow: "flex flex-wrap gap-1",
         tagPill:
             "inline-flex items-center px-2 py-0.5 text-[10px] font-medium backdrop-blur",
         favFab:
-            "absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center border border-transparent bg-neutral-950/85 text-app-canvas-fg transition-[transform,box-shadow,border-color,color] duration-300 ease-out hover:border-app-accent/60 hover:text-app-accent",
+            "absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center border border-transparent bg-black/45 text-app-canvas-fg backdrop-blur transition-[transform,box-shadow,border-color,color] duration-300 ease-out hover:border-app-accent/60 hover:text-app-accent",
         favFabActive: "border-app-accent/60 text-app-accent",
         favFabIcon:
             "mdi text-xl transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
@@ -137,9 +135,9 @@ export const catalogCardsDesign = {
         feedbackCartRing:
             "pc-feedback-ring pc-feedback-ring--cart pointer-events-none absolute -inset-1 ring-2 ring-app-accent/55",
         qtyCluster:
-            "flex h-10 items-center gap-0.5 border border-app-accent/50 bg-neutral-950/85 px-0.5 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+            "flex h-10 items-center gap-0.5 border border-app-accent/50 bg-black/45 px-0.5 backdrop-blur transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
         qtyMiniBtn:
-            "flex h-9 w-9 shrink-0 items-center justify-center bg-neutral-950/85 text-base font-semibold leading-none text-app-canvas-fg transition-colors hover:bg-neutral-950/88",
+            "flex h-9 w-9 shrink-0 items-center justify-center bg-transparent text-base font-semibold leading-none text-app-canvas-fg transition-colors hover:bg-black/20",
         qtyNum:
             "min-w-[1.5rem] px-0.5 text-center text-[12px] font-semibold tabular-nums text-app-accent",
     },
@@ -152,9 +150,8 @@ export const catalogCardsDesign = {
         thumbImg:
             "h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105",
         thumbPlaceholder:
-            "flex h-full w-full items-center justify-center bg-neutral-950/75 text-xs text-app-muted",
-        thumbGradient:
-            "pointer-events-none absolute inset-0 bg-gradient-to-r from-black/5 via-black/20 to-black/50",
+            "flex h-full w-full items-center justify-center bg-neutral-950/50 text-xs text-app-muted",
+        thumbGradient: "pointer-events-none absolute inset-0 hidden",
         body: "flex min-w-0 flex-1 flex-col justify-center gap-1.5 p-2.5 sm:p-3",
         titleRow: "flex min-w-0 items-baseline gap-2",
         title: `min-w-0 flex-1 ${catalogProductTitleMobile}`,
@@ -165,16 +162,16 @@ export const catalogCardsDesign = {
         actionsBar:
             "flex w-full min-w-0 shrink-0 flex-nowrap items-center gap-2",
         favBtn:
-            "flex h-9 w-9 shrink-0 items-center justify-center border border-transparent bg-neutral-950/85 text-app-canvas-fg transition hover:border-app-accent/60 hover:text-app-accent",
+            "flex h-9 w-9 shrink-0 items-center justify-center border border-transparent bg-black/45 text-app-canvas-fg backdrop-blur transition hover:border-app-accent/60 hover:text-app-accent",
         favBtnActive: "border-app-accent/60 text-app-accent",
         favIcon: "mdi text-lg",
         cartAddIconBtn:
             "relative inline-flex h-9 w-9 items-center justify-center bg-app-accent text-black transition hover:scale-[1.03]",
         cartAddIcon: "mdi mdi-cart-outline text-lg",
         qtyCluster:
-            "flex h-9 shrink-0 items-center gap-0.5 border border-app-accent/50 bg-neutral-950/85 px-0.5",
+            "flex h-9 shrink-0 items-center gap-0.5 border border-app-accent/50 bg-black/45 px-0.5 backdrop-blur",
         qtyMiniBtn:
-            "flex h-8 w-8 shrink-0 items-center justify-center text-sm font-semibold text-app-canvas-fg transition-colors hover:bg-neutral-950/88",
+            "flex h-8 w-8 shrink-0 items-center justify-center text-sm font-semibold text-app-canvas-fg transition-colors hover:bg-black/20",
         qtyNum:
             "min-w-[1.25rem] px-0.5 text-center text-[11px] font-semibold tabular-nums text-app-accent",
     },

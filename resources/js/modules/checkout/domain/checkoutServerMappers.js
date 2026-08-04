@@ -128,14 +128,18 @@ export function mapPaymentToLocal(payment) {
     };
 }
 
-export function buildClientPayload(store, { clientId = null, isGuest = false } = {}) {
+export function buildClientPayload(store, { clientId = null, isGuest = false, profile = null } = {}) {
     if (clientId != null) {
+        const name = String(profile?.name || store.guestContact?.name || "").trim();
+        const phone = String(profile?.phone || store.guestContact?.phone || "").trim();
+        const email = String(profile?.email || store.guestContact?.email || "").trim();
+
         return {
             kind: "registered",
             client_id: Number(clientId),
-            name: store.guestContact.name || undefined,
-            phone: store.guestContact.phone || undefined,
-            email: store.guestContact.email || undefined,
+            ...(name !== "" ? { name } : {}),
+            ...(phone !== "" ? { phone } : {}),
+            ...(email !== "" ? { email } : {}),
         };
     }
 

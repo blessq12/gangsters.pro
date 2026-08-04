@@ -8,7 +8,6 @@ import { useContentStore } from "../../modules/content/store";
 import { useAppDesign } from "../../design/useAppDesign";
 
 const AUTOPLAY_INTERVAL_MS = 30000;
-const ZOOM_SCALE = 1.12;
 
 const props = defineProps({
     variant: {
@@ -84,11 +83,6 @@ const autoplayOptions = computed(() =>
         : false,
 );
 
-const zoomStyle = computed(() => ({
-    "--home-jumbotron-naplyv-duration": `${AUTOPLAY_INTERVAL_MS}ms`,
-    "--home-jumbotron-naplyv-scale": String(ZOOM_SCALE),
-}));
-
 const swiperBreakpoints = computed(() =>
     isMobile.value
         ? {
@@ -152,10 +146,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <section
-        :class="jVar.sectionRoot"
-        :style="zoomStyle"
-    >
+    <section :class="jVar.sectionRoot">
         <div :class="jShared.backdropLayer">
             <div :class="jVar.glowLeft"></div>
             <div :class="jVar.glowRight"></div>
@@ -203,12 +194,11 @@ onBeforeUnmount(() => {
                                 <img
                                     :src="slide.image"
                                     :alt="`Баннер ${index + 1}`"
-                                    :class="[
+                                    :class="
                                         isMobile
                                             ? jShared.slideImageMobile
-                                            : jShared.slideImageDesktop,
-                                        'home-jumbotron-naplyv',
-                                    ]"
+                                            : jShared.slideImageDesktop
+                                    "
                                     :width="isMobile ? 900 : 1920"
                                     :height="isMobile ? 1200 : 1080"
                                     :loading="index === 0 ? 'eager' : 'lazy'"
@@ -257,38 +247,10 @@ onBeforeUnmount(() => {
 .home-jumbotron {
     --app-slide-border-dim: color-mix(in srgb, var(--app-canvas-fg, #ececec) 12%, transparent);
     --app-slide-border-accent: color-mix(in srgb, var(--app-accent, #c62424) 50%, transparent);
-    --home-jumbotron-naplyv-duration: 30000ms;
-    --home-jumbotron-naplyv-scale: 1.12;
 }
 
 .home-jumbotron-media {
     overflow: hidden;
-}
-
-.home-jumbotron-naplyv {
-    transform: scale(1);
-    transform-origin: center center;
-    will-change: transform;
-}
-
-.home-jumbotron :deep(.swiper-slide-active) .home-jumbotron-naplyv {
-    animation: home-jumbotron-naplyv var(--home-jumbotron-naplyv-duration) linear forwards;
-}
-
-@keyframes home-jumbotron-naplyv {
-    from {
-        transform: scale(1);
-    }
-
-    to {
-        transform: scale(var(--home-jumbotron-naplyv-scale));
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .home-jumbotron :deep(.swiper-slide-active) .home-jumbotron-naplyv {
-        animation: none;
-    }
 }
 
 /*

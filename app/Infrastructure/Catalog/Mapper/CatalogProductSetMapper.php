@@ -27,6 +27,7 @@ final class CatalogProductSetMapper
             id: (int) $row->id,
             name: (string) $row->name,
             slug: (string) $row->slug,
+            sku: $this->resolveSku($row),
             status: $this->resolveStatus($row),
             price: Money::rubles((int) ($row->price ?? 0)),
             description: $row->description !== null ? (string) $row->description : null,
@@ -42,6 +43,13 @@ final class CatalogProductSetMapper
             productId: (int) $row->product_id,
             quantity: (int) $row->quantity,
         );
+    }
+
+    private function resolveSku(PRD_Product $row): ?string
+    {
+        $sku = trim((string) ($row->sku ?? ''));
+
+        return $sku !== '' ? $sku : null;
     }
 
     private function resolveStatus(PRD_Product $row): ProductStatus

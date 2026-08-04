@@ -1,11 +1,13 @@
 <script setup>
 import { storeToRefs } from "pinia";
 import { computed } from "vue";
-import { useCheckoutFlowContext } from "../../modules/checkout/application/flowContext";
 import { useAppDesign } from "../../design/useAppDesign";
-import { buildComplementOfferRows } from "../../modules/checkout/application/preview";
-import { useOrderPreview } from "../../modules/checkout/application/preview";
 import { useCatalogStore } from "../../modules/catalog/store";
+import { useCheckoutFlowContext } from "../../modules/checkout/application/flowContext";
+import {
+    buildComplementOfferRows,
+    useOrderPreview,
+} from "../../modules/checkout/application/preview";
 import { useCheckoutStore } from "../../modules/checkout/store";
 import CheckoutSection from "./CheckoutSection.vue";
 
@@ -140,7 +142,7 @@ async function decrementProduct(row) {
                             v-if="showFreeBadge(row)"
                             :class="s.offerFreeBadge"
                         >
-                            FREE
+                            0 ₽
                         </span>
                         <span
                             v-else-if="paidBadgeLabel(row)"

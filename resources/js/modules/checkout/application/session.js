@@ -292,9 +292,12 @@ export function buildQuoteOrderPayload(
         (store.guestContact?.name && store.guestContact?.phone),
     );
 
+    const userStore = useUserStore();
     const clientPayload = buildClientPayload(store, {
         clientId,
         isGuest: isGuest || clientId == null,
+        profile:
+            clientId != null && userStore.token ? userStore.profile : null,
     });
 
     const deliveryPayload = store.deliveryInfo.method

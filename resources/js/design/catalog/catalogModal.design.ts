@@ -18,18 +18,18 @@ export const catalogModalDesign = {
         panelMobile:
             "relative h-[92dvh] max-h-[100dvh] w-full min-h-0 overflow-hidden bg-[rgba(31,31,35,0.65)] shadow-[0_25px_60px_rgba(0,0,0,0.92)]",
         closeBtn:
-            "absolute right-4 top-4 z-[3] flex h-9 w-9 items-center justify-center border border-transparent bg-neutral-950/85 text-xl text-app-muted transition-colors hover:border-app-accent/50 hover:text-app-accent",
+            "absolute right-4 top-4 z-[3] flex h-9 w-9 items-center justify-center border border-transparent bg-black/45 text-xl text-app-muted backdrop-blur transition-colors hover:border-app-accent/50 hover:text-app-accent",
         closeBtnInline:
-            "flex h-9 w-9 shrink-0 items-center justify-center border border-transparent bg-neutral-950/85 text-xl text-app-muted transition-colors hover:border-app-accent/50 hover:text-app-accent",
+            "flex h-9 w-9 shrink-0 items-center justify-center border border-transparent bg-black/45 text-xl text-app-muted backdrop-blur transition-colors hover:border-app-accent/50 hover:text-app-accent",
         closeIcon: "mdi mdi-close",
         body: "absolute inset-0 z-0",
         /** Зона галереи: отдельный градиентный оверлей в шаблоне (дочерний div). */
         mediaZone:
             "absolute inset-0 z-0 [&_.product-gallery]:h-full [&_.product-gallery]:min-h-full [&_.product-gallery]:w-full",
         mediaOverlayDesktop:
-            "pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-black/95 via-black/55 to-transparent",
+            "pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-black/50 via-black/20 to-transparent",
         mediaOverlayMobile:
-            "pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-black/95 via-black/60 to-transparent",
+            "pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-black/50 via-black/20 to-transparent",
         emptyCopy: "Нет данных о товаре.",
         empty:
             "absolute inset-0 z-[1] m-0 flex items-center justify-center p-8 text-base text-app-muted",
@@ -68,31 +68,31 @@ export const catalogModalDesign = {
         controlsRow:
             "flex w-full min-w-0 shrink-0 flex-nowrap items-center justify-start gap-2",
         actionIsland:
-            "relative flex w-fit shrink-0 flex-nowrap items-center gap-1.5 bg-[rgba(0,0,0,0.78)] px-2 py-1 backdrop-blur-xl",
+            "relative flex w-fit shrink-0 flex-nowrap items-center gap-1.5 bg-black/45 px-2 py-1 backdrop-blur-xl",
         favBtn:
-            "flex h-11 w-11 shrink-0 items-center justify-center border border-transparent bg-neutral-950/85 text-app-canvas-fg transition-colors hover:border-app-accent/60 hover:text-app-accent",
+            "flex h-11 w-11 shrink-0 items-center justify-center border border-transparent bg-transparent text-app-canvas-fg transition-colors hover:border-app-accent/60 hover:text-app-accent",
         favBtnActive: "border-app-accent/60 text-app-accent",
         favIcon: "mdi text-xl",
         nutritionBtn:
-            "flex h-10 w-10 shrink-0 items-center justify-center border border-app-accent/40 bg-neutral-950/85 text-app-accent transition-colors hover:border-app-accent/70 hover:text-app-accent",
+            "flex h-10 w-10 shrink-0 items-center justify-center border border-app-accent/40 bg-transparent text-app-accent transition-colors hover:border-app-accent/70 hover:text-app-accent",
         nutritionIcon: "mdi mdi-fire-circle text-xl",
         ingredientsBtn:
-            "flex h-10 w-10 shrink-0 items-center justify-center border border-transparent bg-neutral-950/85 text-app-canvas-fg transition-colors hover:border-app-accent/50 hover:text-app-accent",
+            "flex h-10 w-10 shrink-0 items-center justify-center border border-transparent bg-transparent text-app-canvas-fg transition-colors hover:border-app-accent/50 hover:text-app-accent",
         ingredientsIcon: "mdi mdi-information-outline text-xl",
         cartIconOuter: "flex h-10 shrink-0 items-center",
         cartAddIconBtn:
             "inline-flex h-10 shrink-0 items-center justify-center bg-app-accent px-4 py-2 text-xs font-bold uppercase tracking-wide text-black transition-transform hover:scale-[1.03] sm:text-sm",
         cartIcon: "mdi mdi-cart-outline text-xl",
         qtyCluster:
-            "flex h-10 shrink-0 items-center gap-0.5 border border-app-accent/50 bg-neutral-950/85 px-0.5",
+            "flex h-10 shrink-0 items-center gap-0.5 border border-app-accent/50 bg-transparent px-0.5",
         qtyMiniBtn:
-            "flex h-9 w-9 shrink-0 items-center justify-center bg-neutral-950/85 text-base font-semibold leading-none text-app-canvas-fg",
+            "flex h-9 w-9 shrink-0 items-center justify-center bg-transparent text-base font-semibold leading-none text-app-canvas-fg",
         qtyNum:
             "min-w-[1.5rem] px-0.5 text-center text-sm font-semibold tabular-nums text-app-accent",
         priceBtn:
             "ml-auto flex min-h-10 shrink-0 items-center whitespace-nowrap bg-app-accent px-3 py-1.5 text-sm font-semibold text-black transition-transform duration-200 hover:scale-[1.03] cursor-pointer",
         teleportTooltipBase:
-            "fixed z-[10000] bg-[rgba(0,0,0,0.95)] px-3 py-2.5 shadow-xl backdrop-blur max-h-44 overflow-y-auto",
+            "fixed z-[10000] bg-black/80 px-3 py-2.5 shadow-xl backdrop-blur max-h-44 overflow-y-auto",
         tooltipWide: "w-[260px]",
         tooltipNarrow: "w-[240px]",
         nutritionBlock: "space-y-2 text-xs text-app-canvas-fg",
@@ -109,7 +109,7 @@ export const catalogModalDesign = {
         description:
             "text-xs leading-relaxed text-app-canvas-fg/85 line-clamp-4",
         compositionBtn:
-            "flex h-10 w-10 shrink-0 items-center justify-center border border-violet-400/40 bg-neutral-950/85 text-violet-200 transition-colors hover:border-violet-400/70 hover:text-violet-100",
+            "flex h-10 w-10 shrink-0 items-center justify-center border border-violet-400/40 bg-transparent text-violet-200 transition-colors hover:border-violet-400/70 hover:text-violet-100",
         compositionIcon: "mdi mdi-format-list-bulleted text-xl",
         compositionBlock: "space-y-2 text-xs text-app-canvas-fg",
         compositionHeading:
