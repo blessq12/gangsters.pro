@@ -35,6 +35,7 @@ class ProductSetsHubTable extends TableWidget
                     TextColumn::make('slug')
                         ->label('Слаг')
                         ->searchable(),
+                    CatalogHubTablePresentation::catalogItemSkuColumn(),
                     TextColumn::make('set_lines_count')
                         ->label('Позиций в наборе')
                         ->sortable(),

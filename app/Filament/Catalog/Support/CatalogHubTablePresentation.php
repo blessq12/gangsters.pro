@@ -4,11 +4,38 @@ namespace App\Filament\Catalog\Support;
 
 use App\Domain\Catalog\Enum\ProductStatus;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\TextInputColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Validation\Rule;
 
 final class CatalogHubTablePresentation
 {
+    public static function catalogItemSkuColumn(): TextInputColumn
+    {
+        return TextInputColumn::make('sku')
+            ->label('SKU')
+            ->placeholder('—')
+            ->searchable()
+            ->rules([
+                'nullable',
+                'string',
+                'max:128',
+                fn (TextInputColumn $column): \Illuminate\Validation\Rules\Unique => Rule::unique(
+                    'PRD_products',
+                    'sku',
+                )->ignore($column->getRecord()?->getKey()),
+            ])
+            ->updateStateUsing(function (mixed $state, Model $record): ?string {
+                $sku = is_string($state) ? trim($state) : '';
+                $sku = $sku !== '' ? $sku : null;
+                $record->update(['sku' => $sku]);
+
+                return $sku;
+            });
+    }
+
     public static function categoryStatusColumn(): TextColumn
     {
         return TextColumn::make('is_active')

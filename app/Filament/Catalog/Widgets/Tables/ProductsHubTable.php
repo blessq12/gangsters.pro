@@ -34,10 +34,7 @@ class ProductsHubTable extends TableWidget
                     TextColumn::make('slug')
                         ->label('Слаг')
                         ->searchable(),
-                    TextColumn::make('sku')
-                        ->label('SKU')
-                        ->searchable()
-                        ->placeholder('—'),
+                    CatalogHubTablePresentation::catalogItemSkuColumn(),
                     TextColumn::make('price')
                         ->label('Цена, ₽')
                         ->formatStateUsing(fn (?int $state): string => $state === null ? '—' : number_format($state, 0, ',', ' ').' ₽')
