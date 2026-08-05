@@ -3,7 +3,7 @@ import { onMounted, onUnmounted, watch } from "vue";
 import { useRoute } from "vue-router";
 import { playPageEnter, playPageLeave } from "../animations/animationManager";
 import { useShellIntroDockTimeline } from "../modules/shell/application/dockIntro";
-import { useDockScrollScale } from "../modules/shell/application/dockUi";
+import { useChromeScrollDim } from "../modules/shell/application/dockUi";
 import { useAppDesign } from "../design/useAppDesign";
 import { useShellStore } from "../modules/shell/store/shellStore";
 import { useContentStore } from "../modules/content/store";
@@ -38,7 +38,6 @@ function syncBottomNavForRoute() {
     }
 
     uiStore.setShowBottomNav(false);
-    uiStore.setDockChromeScrollScale(1);
 }
 
 const {
@@ -55,9 +54,8 @@ const {
     onDockReveal: syncBottomNavForRoute,
 });
 
-useDockScrollScale({
+useChromeScrollDim({
     uiStore,
-    bottomBarReady,
     isHome,
 });
 

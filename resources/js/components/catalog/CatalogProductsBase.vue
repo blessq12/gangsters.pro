@@ -54,6 +54,10 @@ const isDesktopCardCompact = computed(
     () => props.variant === "desktop" && props.cardsPerRow === 4,
 );
 
+defineExpose({
+    sectionsRoot: containerRef,
+});
+
 function catalogItemsInContainer(container) {
     if (!container?.isConnected) return [];
     return Array.from(container.querySelectorAll(".catalog-item"));
@@ -108,8 +112,13 @@ watch(
             v-else
             ref="containerRef"
             :class="dp.sectionsStack"
+            data-catalog-products-root
         >
-            <section v-for="section in sections" :key="section.id ?? section.name">
+            <section
+                v-for="section in sections"
+                :key="section.id ?? section.name"
+                :data-catalog-category-section="section.id ?? ''"
+            >
                 <h3 :class="dp.sectionTitle">
                     {{ section.name }}
                 </h3>

@@ -1,6 +1,5 @@
 import { computed, onMounted, onUnmounted, ref, unref, watch } from "vue";
 import { useRoute } from "vue-router";
-import { prefersReducedMotion } from "../../../animations/animationManager";
 import { DOMAIN_EVENTS, subscribeDomainEvent } from "../../../platform/domainEvents";
 import { useCheckoutStore } from "../../checkout/store";
 import { useUiStore } from "../store/uiStore";
@@ -10,7 +9,7 @@ import { useUiStore } from "../store/uiStore";
  */
 export function ensureDockChromeVisible(uiStore) {
     uiStore.setShowBottomNav(true);
-    uiStore.setDockChromeScrollScale(1);
+    uiStore.setChromeScrollDimmed(false);
 }
 
 export const DOCK_DISMISS_KIND = Object.freeze({
@@ -314,72 +313,55 @@ export function useSwipeDownToClose({ boundaryRef, enabled, onClose }) {
     };
 }
 
-const SCROLL_STOP_MS = 420;
-const SCROLL_DELTA_PX = 10;
-const COMPACT_SCALE = {
-    mobile: 0.78,
-    desktop: 0.86,
-};
+const SCROLL_DIM_STOP_MS = 420;
+const SCROLL_DIM_DELTA_PX = 8;
 
 /**
- * Home: при любом вертикальном скролле уменьшаем chrome dock (scale), после остановки — scale 1.
- * Не зависит от корзины. Панель dock открыта — всегда scale 1.
+ * Home: при вертикальном скролле приглушает док и бар категорий (opacity).
+ * После остановки скролла — снова полностью непрозрачные.
  *
  * @param {object} options
  * @param {object} options.uiStore
- * @param {import('vue').Ref<boolean> | boolean} options.bottomBarReady
  * @param {() => boolean} options.isHome
  */
-export function useDockScrollScale({ uiStore, bottomBarReady, isHome }) {
+export function useChromeScrollDim({ uiStore, isHome }) {
     let lastScrollY = 0;
     let ticking = false;
     /** @type {ReturnType<typeof setTimeout> | null} */
     let scrollStopTimer = null;
 
-    function compactScale() {
-        return uiStore.deviceMode === "desktop"
-            ? COMPACT_SCALE.desktop
-            : COMPACT_SCALE.mobile;
+    function clearDim() {
+        uiStore.setChromeScrollDimmed(false);
     }
 
-    function resetScale() {
-        uiStore.setDockChromeScrollScale(1);
-    }
-
-    function scheduleScaleRestore() {
+    function scheduleClearDim() {
         if (scrollStopTimer) clearTimeout(scrollStopTimer);
         scrollStopTimer = setTimeout(() => {
             scrollStopTimer = null;
-            resetScale();
-        }, SCROLL_STOP_MS);
+            clearDim();
+        }, SCROLL_DIM_STOP_MS);
     }
 
     function applyScrollLogic() {
         if (typeof window === "undefined") return;
-        if (!unref(bottomBarReady)) return;
 
         if (!isHome()) {
-            resetScale();
+            clearDim();
             return;
         }
 
+        // Панель дока открыта — не мешаем чтению/оформлению.
         if (uiStore.dockActiveId !== null) {
-            resetScale();
-            return;
-        }
-
-        if (prefersReducedMotion()) {
-            resetScale();
+            clearDim();
             return;
         }
 
         const y = window.scrollY;
         const dy = y - lastScrollY;
+        scheduleClearDim();
 
-        scheduleScaleRestore();
-
-        if (Math.abs(dy) >= SCROLL_DELTA_PX) {
-            uiStore.setDockChromeScrollScale(compactScale());
+        if (Math.abs(dy) >= SCROLL_DIM_DELTA_PX) {
+            uiStore.setChromeScrollDimmed(true);
         }
 
         lastScrollY = y;
@@ -407,39 +389,27 @@ export function useDockScrollScale({ uiStore, bottomBarReady, isHome }) {
     onUnmounted(() => {
         window.removeEventListener("scroll", onScroll);
         if (scrollStopTimer) clearTimeout(scrollStopTimer);
+        clearDim();
     });
 
     watch(
         () => isHome(),
-        () => {
+        (home) => {
             syncLastScrollY();
-            if (!isHome()) {
-                resetScale();
-            }
+            if (!home) clearDim();
         },
     );
 
     watch(
         () => uiStore.dockActiveId,
         (id) => {
-            if (id) {
-                resetScale();
-            }
-        },
-    );
-
-    watch(
-        () => unref(bottomBarReady),
-        (ready) => {
-            if (ready) {
-                syncLastScrollY();
-            }
+            if (id) clearDim();
         },
     );
 }
 
 /**
- * Home: при add из каталога — показать dock и сбросить scale до fly/add.
+ * Home: при add из каталога — показать dock chrome.
  */
 export function useDockCartAffordance() {
     const uiStore = useUiStore();

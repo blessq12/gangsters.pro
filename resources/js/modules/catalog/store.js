@@ -76,7 +76,8 @@ export const useCatalogStore = defineStore("catalog", {
             return entry.products || [];
         },
         /**
-         * Лента меню: фильтр по категории и тегу.
+         * Лента меню: все категории; фильтр только по тегу.
+         * Активная категория бара — scroll-spy, не фильтр ленты.
          */
         menuSections(state) {
             const selectedTag = this.selectedTag;
@@ -86,19 +87,6 @@ export const useCatalogStore = defineStore("catalog", {
                 return tags.some((tag) => String(tag?.code) === String(selectedTag));
             };
 
-            const sourceCategories =
-                state.selectedCategoryId == null || state.selectedCategoryId === ""
-                    ? state.categories
-                    : state.categories.filter((entry) => {
-                          const id = entry.category?.id;
-                          const slug = entry.category?.slug;
-                          const selected = state.selectedCategoryId;
-                          return (
-                              (id != null && Number(selected) === Number(id)) ||
-                              (slug && String(selected) === String(slug))
-                          );
-                      });
-
             const orderMap = new Map(
                 state.categories.map((entry, index) => [
                     entry?.category?.id ?? entry?.category?.slug ?? null,
@@ -106,7 +94,7 @@ export const useCatalogStore = defineStore("catalog", {
                 ]),
             );
 
-            return sourceCategories
+            return state.categories
                 .map((entry) => {
                     const base = Array.isArray(entry?.products) ? entry.products : [];
                     const products = base.filter((p) => byTag(p));

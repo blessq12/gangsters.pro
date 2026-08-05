@@ -72,19 +72,13 @@ useDockMobileInteractions(uiStore, () => isMobile.value);
 
 const isPanelOpen = computed(() => Boolean(activeDockItem.value));
 
-const chromeScaleStyle = computed(() => {
-    if (isPanelOpen.value) {
-        return {};
-    }
-    const scale = uiStore.dockChromeScrollScale;
-    const opacity = scale < 1 ? 0.88 : 1;
-
-    return {
-        transform: `scale(${scale})`,
-        transformOrigin: "bottom center",
-        opacity,
-    };
-});
+const dockIslandClasses = computed(() => [
+    chrome.dockIsland,
+    dock.shared.scrollDimTransition,
+    uiStore.chromeScrollDimmed && !isPanelOpen.value
+        ? dock.shared.scrollDimmed
+        : "",
+]);
 
 function tabIconTone(id) {
     return uiStore.dockActiveId === id
@@ -150,9 +144,7 @@ function handlePanelLeave(el, done) {
                 :class="[
                     chrome.visibleInner,
                     isPanelOpen ? chrome.visibleInnerWithPanel : '',
-                    !isPanelOpen ? dock.shared.chromeScrollTransform : '',
                 ]"
-                :style="isPanelOpen ? undefined : chromeScaleStyle"
             >
                 <Transition
                     name="dock-panel"
@@ -169,7 +161,7 @@ function handlePanelLeave(el, done) {
                     </div>
                 </Transition>
 
-                <div :class="chrome.dockIsland">
+                <div :class="dockIslandClasses">
                     <DockCartSummary @toggle="handleDockClick('cart')" />
 
                     <div :class="chrome.islandDivider" aria-hidden="true" />

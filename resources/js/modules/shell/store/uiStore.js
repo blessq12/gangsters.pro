@@ -15,8 +15,8 @@ let deviceListenerAttached = false;
 export const useUiStore = defineStore("ui", {
     state: () => ({
         showBottomNav: false,
-        /** Home scroll: масштаб chrome dock (1 = полный, <1 = компакт при скролле). Не persist. */
-        dockChromeScrollScale: 1,
+        /** Home scroll: полупрозрачность chrome (док + бар категорий). Не persist. */
+        chromeScrollDimmed: false,
         isMobileMenuOpen: false,
         deviceMode: "mobile",
         dockActiveId: null,
@@ -88,11 +88,8 @@ export const useUiStore = defineStore("ui", {
                 }),
             );
         },
-        setDockChromeScrollScale(value) {
-            const next = Number(value);
-            this.dockChromeScrollScale = Number.isFinite(next)
-                ? Math.min(1, Math.max(0.5, next))
-                : 1;
+        setChromeScrollDimmed(value) {
+            this.chromeScrollDimmed = Boolean(value);
         },
         setShowBottomNav(value) {
             this.showBottomNav = Boolean(value);
@@ -115,7 +112,7 @@ export const useUiStore = defineStore("ui", {
             this.dockActiveId = this.dockActiveId === id ? null : id;
             if (this.dockActiveId) {
                 this.showBottomNav = true;
-                this.dockChromeScrollScale = 1;
+                this.chromeScrollDimmed = false;
             }
             this.persist();
         },
@@ -213,7 +210,7 @@ export const useUiStore = defineStore("ui", {
         },
         clear() {
             this.showBottomNav = false;
-            this.dockChromeScrollScale = 1;
+            this.chromeScrollDimmed = false;
             this.isMobileMenuOpen = false;
             this.dockActiveId = null;
             this.dockBadges = { ...DEFAULT_DOCK_BADGES };

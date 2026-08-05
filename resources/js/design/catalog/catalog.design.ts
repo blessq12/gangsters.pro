@@ -8,15 +8,23 @@ import { catalogCardsDesign } from "./catalogCards.design";
 import { catalogModalDesign } from "./catalogModal.design";
 import { catalogSearchDesign } from "./catalogSearch.design";
 
-const { chromePillActive, chromePillInactive } = dockDesign.shared;
+const { chromePillInactive } = dockDesign.shared;
 const categoryPillBase =
     "whitespace-nowrap rounded-none border transition-colors backdrop-blur";
+/** Активная категория: красный фон, белый текст — сильный акцент. */
+const categoryPillActive =
+    "border-app-accent bg-app-accent font-semibold text-white";
 
 export const catalogDesign = {
     /** CatalogCategoriesBase: остров и пиллы категорий (desktop/mobile через variant). */
     categories: {
         outer: "relative mb-10 w-full min-w-0 max-w-full",
-        island: "min-w-0 max-w-full rounded-none border border-app-accent/40 bg-app-canvas backdrop-blur",
+        island:
+            "min-w-0 max-w-full rounded-none border border-app-accent/40 bg-app-canvas backdrop-blur",
+        /** Fixed-копия при pinOnScroll (геометрия — inline style). */
+        islandFixed: "pointer-events-auto fixed z-20 shadow-lg shadow-black/40",
+        islandScrollDimTransition: "transition-opacity duration-300 ease-out",
+        islandScrollDimmed: "opacity-40",
         islandPaddingMobile: "px-4 py-4",
         islandPaddingDesktop: "px-4 py-3.5 lg:px-8",
         rowMobile: "cats-scroll flex items-center gap-2 overflow-x-auto py-2",
@@ -24,8 +32,8 @@ export const catalogDesign = {
         pillBase: categoryPillBase,
         pillSizingMobile: "px-4 py-2 text-xs",
         pillSizingDesktop: "px-5 py-2 text-sm",
-        pillActiveMobile: chromePillActive,
-        pillActiveDesktop: chromePillActive,
+        pillActiveMobile: categoryPillActive,
+        pillActiveDesktop: categoryPillActive,
         pillInactive: chromePillInactive,
     },
 

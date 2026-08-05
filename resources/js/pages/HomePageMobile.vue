@@ -1,5 +1,7 @@
 <script setup>
+import { computed, nextTick, ref, unref, watch } from "vue";
 import { useCatalogPageModel } from "../modules/catalog/application/models";
+import { useCatalogCategoryScrollSpy } from "../modules/catalog/application/useCatalogCategoryScrollSpy";
 import { useAppDesign } from "../design/useAppDesign";
 
 const m = useAppDesign().components.pages.home.mobile;
@@ -17,6 +19,40 @@ const {
     loading,
     catalogEmptyMessage,
 } = useCatalogPageModel();
+
+const categoryBarRef = ref(null);
+const productsCompRef = ref(null);
+
+const barRef = computed(() => {
+    const bar = categoryBarRef.value;
+    if (!bar) return null;
+    const pinned = Boolean(unref(bar.isPinned));
+    if (pinned) {
+        return unref(bar.pinnedIslandEl) ?? unref(bar.islandEl) ?? null;
+    }
+    return unref(bar.islandEl) ?? null;
+});
+const productsRef = computed(() => unref(productsCompRef.value?.sectionsRoot) ?? null);
+
+const { scrollToCategory, reconnect } = useCatalogCategoryScrollSpy({
+    productsRef,
+    barRef,
+    activeId: selectedCategoryId,
+    syncPillScroll: true,
+});
+
+function onCategoryChange(id) {
+    scrollToCategory(id);
+}
+
+watch(
+    [menuSections, loading],
+    async () => {
+        await nextTick();
+        reconnect();
+    },
+    { flush: "post" },
+);
 </script>
 
 <template>
@@ -47,9 +83,13 @@ const {
             </header>
 
             <CatalogCategoriesBase
+                ref="categoryBarRef"
                 v-model="selectedCategoryId"
                 :categories="categoryTabs"
                 variant="mobile"
+                :show-all="false"
+                pin-on-scroll
+                @change="onCategoryChange"
             />
             <CatalogCategoriesBase
                 v-model="selectedTag"
@@ -64,6 +104,7 @@ const {
             />
 
             <CatalogProductsBase
+                ref="productsCompRef"
                 :sections="menuSections"
                 :loading="loading"
                 :empty-message="catalogEmptyMessage"
