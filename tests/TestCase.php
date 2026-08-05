@@ -18,7 +18,7 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * Запрет RefreshDatabase: тесты не должны дропать/мигрировать рабочую БД.
+     * Forbid RefreshDatabase: tests must not drop/migrate the working database.
      */
     private function assertRefreshDatabaseTraitIsNotUsed(): void
     {
@@ -26,7 +26,7 @@ abstract class TestCase extends BaseTestCase
 
         if (in_array(RefreshDatabase::class, $traits, true)) {
             throw new RuntimeException(
-                'Трейт RefreshDatabase запрещён в тестах. Используй ApiTestCase::skipUnlessTablesExist() и точечные фикстуры.',
+                'RefreshDatabase trait is forbidden. Use ApiTestCase::skipUnlessTablesExist() and point fixtures.',
             );
         }
     }

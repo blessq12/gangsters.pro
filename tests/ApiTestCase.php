@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Testing\TestResponse;
 
 /**
- * База feature-тестов API: транзакции вместо RefreshDatabase, точечные фикстуры.
+ * Feature API test base: DatabaseTransactions instead of RefreshDatabase, point fixtures.
  */
 abstract class ApiTestCase extends TestCase
 {
@@ -17,7 +17,7 @@ abstract class ApiTestCase extends TestCase
     /**
      * @var list<string>
      */
-    protected array $обязательныеТаблицы = [
+    protected array $requiredTables = [
         'CRM_clients',
         'ORD_orders',
         'PRD_products',
@@ -31,69 +31,69 @@ abstract class ApiTestCase extends TestCase
     {
         parent::setUp();
 
-        $this->пропуститьЕслиНетТаблиц($this->обязательныеТаблицы);
+        $this->skipUnlessTablesExist($this->requiredTables);
     }
 
     /**
-     * @param  list<string>  $таблицы
+     * @param  list<string>  $tables
      */
-    protected function пропуститьЕслиНетТаблиц(array $таблицы): void
+    protected function skipUnlessTablesExist(array $tables): void
     {
-        foreach ($таблицы as $таблица) {
-            if (! Schema::hasTable($таблица)) {
-                $this->markTestSkipped("Таблица «{$таблица}» отсутствует — пропуск feature-теста.");
+        foreach ($tables as $table) {
+            if (! Schema::hasTable($table)) {
+                $this->markTestSkipped("Table \"{$table}\" is missing — skipping feature test.");
             }
         }
     }
 
-    protected function уникальныйТелефон(): string
+    protected function uniquePhone(): string
     {
-        // 9XX… — мобильный; иначе PhoneNumber срежет ведущую 7 как код страны ещё раз.
-        $хвост = '9'.str_pad((string) random_int(0, 999999999), 9, '0', STR_PAD_LEFT);
+        // 9XX… mobile; otherwise PhoneNumber strips leading 7 as country code again.
+        $digits = '9'.str_pad((string) random_int(0, 999999999), 9, '0', STR_PAD_LEFT);
 
         return sprintf(
             '+7 (%s) %s-%s-%s',
-            substr($хвост, 0, 3),
-            substr($хвост, 3, 3),
-            substr($хвост, 6, 2),
-            substr($хвост, 8, 2),
+            substr($digits, 0, 3),
+            substr($digits, 3, 3),
+            substr($digits, 6, 2),
+            substr($digits, 8, 2),
         );
     }
 
     /**
      * @return array{token: string, client: array<string, mixed>, password: string, phone: string}
      */
-    protected function зарегистрироватьКлиента(?string $телефон = null, ?string $пароль = null): array
+    protected function registerClient(?string $phone = null, ?string $password = null): array
     {
-        $телефон ??= $this->уникальныйТелефон();
-        $пароль ??= 'secret12';
+        $phone ??= $this->uniquePhone();
+        $password ??= 'secret12';
 
-        $ответ = $this->postJson('/api/client/register', [
-            'name' => 'Тестовый Клиент',
-            'phone' => $телефон,
+        $response = $this->postJson('/api/client/register', [
+            'name' => 'Test Client',
+            'phone' => $phone,
             'email' => null,
-            'password' => $пароль,
+            'password' => $password,
             'consent_personal_data' => true,
             'consent_marketing' => false,
         ]);
 
-        $ответ->assertCreated()
+        $response->assertCreated()
             ->assertJsonStructure(['token', 'client' => ['id', 'phone', 'name']]);
 
         return [
-            'token' => (string) $ответ->json('token'),
-            'client' => $ответ->json('client'),
-            'password' => $пароль,
-            'phone' => $телефон,
+            'token' => (string) $response->json('token'),
+            'client' => $response->json('client'),
+            'password' => $password,
+            'phone' => $phone,
         ];
     }
 
-    protected function сТокеном(string $токен): static
+    protected function withBearer(string $token): static
     {
-        return $this->withToken($токен);
+        return $this->withToken($token);
     }
 
-    protected function idАктивногоТовара(): int
+    protected function activeProductId(): int
     {
         $id = DB::table('PRD_products')
             ->where('status', 'active')
@@ -103,20 +103,20 @@ abstract class ApiTestCase extends TestCase
             ->value('id');
 
         if ($id === null) {
-            $this->markTestSkipped('Нет активного товара в каталоге.');
+            $this->markTestSkipped('No active product in catalog.');
         }
 
         return (int) $id;
     }
 
     /**
-     * Quote + place для зарегистрированного клиента (pickup — без геокодера).
+     * Quote + place for a registered client (pickup — no geocoder).
      *
      * @return array{quote: array<string, mixed>, place: TestResponse, order_id: int}
      */
-    protected function оформитьЗаказДляКлиента(string $токен, int $clientId, int $productId): array
+    protected function placeOrderForClient(string $token, int $clientId, int $productId): array
     {
-        $quoteОтвет = $this->postJson('/api/order/quote', [
+        $quoteResponse = $this->postJson('/api/order/quote', [
             'lines' => [
                 ['product_id' => $productId, 'quantity' => 1],
             ],
@@ -128,14 +128,14 @@ abstract class ApiTestCase extends TestCase
             ],
         ]);
 
-        $quoteОтвет->assertOk()->assertJsonStructure([
+        $quoteResponse->assertOk()->assertJsonStructure([
             'data' => ['cart', 'client', 'delivery', 'payment', 'totals'],
         ]);
 
-        $quote = $quoteОтвет->json('data');
+        $quote = $quoteResponse->json('data');
         $clientRequestId = 'phpunit-'.bin2hex(random_bytes(8));
 
-        $placeОтвет = $this->postJson('/api/order/', [
+        $placeResponse = $this->postJson('/api/order/', [
             'client_request_id' => $clientRequestId,
             'cart' => $quote['cart'],
             'client' => $quote['client'],
@@ -143,13 +143,13 @@ abstract class ApiTestCase extends TestCase
             'payment' => $quote['payment'],
         ]);
 
-        $placeОтвет->assertCreated()
+        $placeResponse->assertCreated()
             ->assertJsonPath('data.client_request_id', $clientRequestId);
 
         return [
             'quote' => $quote,
-            'place' => $placeОтвет,
-            'order_id' => (int) $placeОтвет->json('data.id'),
+            'place' => $placeResponse,
+            'order_id' => (int) $placeResponse->json('data.id'),
         ];
     }
 }

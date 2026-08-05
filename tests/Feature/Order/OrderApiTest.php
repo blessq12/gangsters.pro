@@ -4,13 +4,13 @@ namespace Tests\Feature\Order;
 
 use Tests\ApiTestCase;
 
-final class ЗаказApiTest extends ApiTestCase
+final class OrderApiTest extends ApiTestCase
 {
-    public function test_quote_считает_корзину_для_pickup(): void
+    public function test_quote_prices_cart_for_pickup(): void
     {
-        $productId = $this->idАктивногоТовара();
+        $productId = $this->activeProductId();
 
-        $ответ = $this->postJson('/api/order/quote', [
+        $response = $this->postJson('/api/order/quote', [
             'lines' => [
                 ['product_id' => $productId, 'quantity' => 2],
             ],
@@ -18,12 +18,12 @@ final class ЗаказApiTest extends ApiTestCase
             'payment_method' => 'cash',
             'client' => [
                 'kind' => 'guest',
-                'name' => 'Гость',
+                'name' => 'Guest',
                 'phone' => '+7 (900) 111-22-33',
             ],
         ]);
 
-        $ответ->assertOk()
+        $response->assertOk()
             ->assertJsonStructure([
                 'data' => [
                     'cart' => ['lines'],
@@ -39,25 +39,25 @@ final class ЗаказApiTest extends ApiTestCase
                 ],
             ]);
 
-        $this->assertSame('pickup', $ответ->json('data.delivery.method'));
-        $this->assertGreaterThan(0, (int) $ответ->json('data.totals.items_rubles'));
-        $this->assertCount(1, $ответ->json('data.cart.lines'));
-        $this->assertSame(2, (int) $ответ->json('data.cart.lines.0.quantity'));
+        $this->assertSame('pickup', $response->json('data.delivery.method'));
+        $this->assertGreaterThan(0, (int) $response->json('data.totals.items_rubles'));
+        $this->assertCount(1, $response->json('data.cart.lines'));
+        $this->assertSame(2, (int) $response->json('data.cart.lines.0.quantity'));
     }
 
-    public function test_quote_отклоняет_пустую_корзину(): void
+    public function test_quote_rejects_empty_cart(): void
     {
-        $ответ = $this->postJson('/api/order/quote', [
+        $response = $this->postJson('/api/order/quote', [
             'lines' => [],
             'delivery_method' => 'pickup',
         ]);
 
-        $ответ->assertStatus(422);
+        $response->assertStatus(422);
     }
 
-    public function test_place_создаёт_заказ_из_quote_снимка(): void
+    public function test_place_creates_order_from_quote_snapshot(): void
     {
-        $productId = $this->idАктивногоТовара();
+        $productId = $this->activeProductId();
         $clientRequestId = 'phpunit-place-'.bin2hex(random_bytes(6));
 
         $quote = $this->postJson('/api/order/quote', [
@@ -68,12 +68,12 @@ final class ЗаказApiTest extends ApiTestCase
             'payment_method' => 'cash',
             'client' => [
                 'kind' => 'guest',
-                'name' => 'Гость Заказ',
+                'name' => 'Guest Order',
                 'phone' => '+7 (900) 222-33-44',
             ],
         ])->json('data');
 
-        $ответ = $this->postJson('/api/order/', [
+        $response = $this->postJson('/api/order/', [
             'client_request_id' => $clientRequestId,
             'cart' => $quote['cart'],
             'client' => $quote['client'],
@@ -81,7 +81,7 @@ final class ЗаказApiTest extends ApiTestCase
             'payment' => $quote['payment'],
         ]);
 
-        $ответ->assertCreated()
+        $response->assertCreated()
             ->assertJsonPath('data.client_request_id', $clientRequestId)
             ->assertJsonPath('data.status', 'new')
             ->assertJsonStructure([
@@ -98,13 +98,13 @@ final class ЗаказApiTest extends ApiTestCase
                 ],
             ]);
 
-        $this->assertGreaterThan(0, (int) $ответ->json('data.id'));
-        $this->assertNotEmpty($ответ->json('data.items'));
+        $this->assertGreaterThan(0, (int) $response->json('data.id'));
+        $this->assertNotEmpty($response->json('data.items'));
     }
 
-    public function test_place_идемпотентен_по_client_request_id(): void
+    public function test_place_is_idempotent_by_client_request_id(): void
     {
-        $productId = $this->idАктивногоТовара();
+        $productId = $this->activeProductId();
         $clientRequestId = 'phpunit-idem-'.bin2hex(random_bytes(6));
 
         $quote = $this->postJson('/api/order/quote', [
@@ -115,7 +115,7 @@ final class ЗаказApiTest extends ApiTestCase
             'payment_method' => 'cash',
             'client' => [
                 'kind' => 'guest',
-                'name' => 'Гость Идемпотентность',
+                'name' => 'Guest Idempotency',
                 'phone' => '+7 (900) 333-44-55',
             ],
         ])->json('data');
@@ -128,15 +128,15 @@ final class ЗаказApiTest extends ApiTestCase
             'payment' => $quote['payment'],
         ];
 
-        $первый = $this->postJson('/api/order/', $payload);
-        $первый->assertCreated();
+        $first = $this->postJson('/api/order/', $payload);
+        $first->assertCreated();
 
-        $второй = $this->postJson('/api/order/', $payload);
-        $второй->assertCreated();
+        $second = $this->postJson('/api/order/', $payload);
+        $second->assertCreated();
 
         $this->assertSame(
-            (int) $первый->json('data.id'),
-            (int) $второй->json('data.id'),
+            (int) $first->json('data.id'),
+            (int) $second->json('data.id'),
         );
     }
 }
