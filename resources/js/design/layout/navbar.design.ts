@@ -66,9 +66,9 @@ export const navbarDesign = {
         overlayRoot:
             "pointer-events-none fixed inset-x-0 top-0 z-30 md:hidden pt-28 sm:pt-32",
         innerContainer:
-            "pointer-events-auto mx-auto mt-3 max-w-7xl px-4 sm:px-6 lg:px-8",
+            "mx-auto mt-3 max-w-7xl px-4 sm:px-6 lg:px-8",
         sheetNav:
-            "overflow-hidden rounded-none border border-app-border-on-surface bg-app-canvas text-sm font-medium text-app-canvas-fg shadow-[0_20px_50px_rgba(0,0,0,0.75)]",
+            "pointer-events-auto overflow-hidden rounded-none border border-app-border-on-surface bg-app-canvas text-sm font-medium text-app-canvas-fg shadow-[0_20px_50px_rgba(0,0,0,0.75)]",
         companySection: "border-b border-app-border-on-surface px-4 py-3",
         companyTitle: `${shellTypography.heading.mobileMenuCompany} ${shellColorRoles.canvasFg}`,
         companyTagline: `${shellTypography.body.mobileMenuTagline} ${shellColorRoles.muted}`,

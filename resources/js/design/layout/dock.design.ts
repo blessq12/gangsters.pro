@@ -30,12 +30,12 @@ export const dockDesign = {
         fixedRoot:
             "pointer-events-none fixed inset-x-0 bottom-4 z-30 md:bottom-6",
         visibleInner:
-            "pointer-events-auto mx-auto flex w-full max-w-7xl flex-col items-center px-4 sm:px-6 md:px-6 lg:px-8",
+            "mx-auto flex w-full max-w-7xl flex-col items-center px-4 sm:px-6 md:px-6 lg:px-8",
         visibleInnerWithPanel:
             "min-h-0 max-h-[calc(100dvh-1rem-env(safe-area-inset-bottom,0px))] justify-end md:max-h-[calc(100dvh-1.5rem)]",
-        panelOuter: "mb-3 w-full max-w-4xl min-h-0 md:max-w-2xl",
+        panelOuter: "pointer-events-auto mb-3 w-full max-w-4xl min-h-0 md:max-w-2xl",
         panelOuterExpanded: "flex flex-1 flex-col",
-        dockIsland: `${dockChromeIslandSurface} flex w-full shrink-0 items-stretch justify-between gap-3 px-3 py-3 sm:gap-4 sm:px-4 sm:py-4 md:w-fit md:justify-start md:px-4 md:py-3.5`,
+        dockIsland: `pointer-events-auto ${dockChromeIslandSurface} flex w-full shrink-0 items-stretch justify-between gap-3 px-3 py-3 sm:gap-4 sm:px-4 sm:py-4 md:w-fit md:justify-start md:px-4 md:py-3.5`,
         islandDivider: "w-px shrink-0 self-stretch bg-app-accent/25",
         tabRow: "flex shrink-0 items-center gap-2.5 sm:gap-3",
         tabButton: "group flex items-center justify-center transition-colors",

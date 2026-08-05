@@ -123,7 +123,7 @@ function handleModalIncrement() {
             />
 
             <div
-                :class="[ds.content, isMobile ? ds.contentMobile : '']"
+                :class="[ds.content, isMobile ? ds.contentMobile : ds.contentDesktop]"
             >
                 <div :class="[ds.wrapper, isMobile ? ds.wrapperMobile : '']">
                     <div

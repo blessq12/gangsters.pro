@@ -9,14 +9,15 @@ export const catalogModalDesign = {
         backdrop: "absolute inset-0 bg-neutral-950/85",
         backdropMobile: "absolute inset-0 bg-neutral-950/85",
         content:
-            "relative z-[1] flex w-full max-h-screen items-center justify-center overflow-hidden p-6 lg:p-8",
+            "pointer-events-none relative z-[1] flex w-full max-h-screen items-center justify-center overflow-visible",
+        contentDesktop: "p-6 lg:p-8",
         contentMobile: "p-[0.35rem_0.6rem]",
         wrapper: "m-auto w-full max-w-5xl",
         wrapperMobile: "m-auto w-full max-w-full",
         panel:
-            "relative aspect-video max-h-[90vh] w-full overflow-hidden bg-[rgba(20,20,20,0.88)] shadow-[0_25px_60px_rgba(0,0,0,0.9)]",
+            "pointer-events-auto relative aspect-video max-h-[90vh] w-full overflow-hidden bg-[rgba(20,20,20,0.88)] shadow-[0_25px_60px_rgba(0,0,0,0.9)]",
         panelMobile:
-            "relative h-[92dvh] max-h-[100dvh] w-full min-h-0 overflow-hidden bg-[rgba(31,31,35,0.65)] shadow-[0_25px_60px_rgba(0,0,0,0.92)]",
+            "pointer-events-auto relative h-[92dvh] max-h-[100dvh] w-full min-h-0 overflow-hidden bg-[rgba(31,31,35,0.65)] shadow-[0_25px_60px_rgba(0,0,0,0.92)]",
         closeBtn:
             "absolute right-4 top-4 z-[3] flex h-9 w-9 items-center justify-center border border-transparent bg-black/45 text-xl text-app-muted backdrop-blur transition-colors hover:border-app-accent/50 hover:text-app-accent",
         closeBtnInline:
