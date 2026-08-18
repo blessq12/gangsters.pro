@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="description" content="@yield('desc')">
+    <meta name="yandex-verification" content="636b80119679b3bc" />
+    <script src="https://analytics.ahrefs.com/analytics.js" data-key="PxdjW7ifwlYeLIKMykwLkw" async></script>
     <title>@yield('title')</title>
     @include('inc/favicon')
     @include('inc/cdn')
