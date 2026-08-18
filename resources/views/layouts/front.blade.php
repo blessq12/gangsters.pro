@@ -8,6 +8,7 @@
     <meta name="description" content="@yield('desc')">
     <meta name="yandex-verification" content="636b80119679b3bc" />
     <script src="https://analytics.ahrefs.com/analytics.js" data-key="PxdjW7ifwlYeLIKMykwLkw" async></script>
+    <meta name="google-site-verification" content="05wqFmUG5VbvFUFGjYi-dXDSL_a0ts7FVzr5v0edg8Y" />
     <title>@yield('title')</title>
     @include('inc/favicon')
     @include('inc/cdn')
