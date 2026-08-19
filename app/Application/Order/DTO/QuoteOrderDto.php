@@ -7,6 +7,7 @@ final readonly class QuoteOrderDto
     /**
      * @param  list<array{product_id: int, quantity: int}>  $lines
      * @param  list<int>  $complementProductIds
+     * @param  array<int, int>  $complementSelections
      * @param  array<string, mixed>  $client
      * @param  array<string, mixed>|null  $address
      */
@@ -21,6 +22,7 @@ final readonly class QuoteOrderDto
         public ?int $changeFromRubles = null,
         public ?int $giftProductId = null,
         public array $complementProductIds = [],
+        public array $complementSelections = [],
         public ?float $latitude = null,
         public ?float $longitude = null,
     ) {}

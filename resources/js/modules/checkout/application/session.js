@@ -164,6 +164,8 @@ export function buildCheckoutSessionSnapshot(store) {
     return {
         clientRequestId: store.clientRequestId,
         localCart: store.cartItems.filter((item) => !item.isSystem),
+        complementSelections: store.complementSelections,
+        complementEntitledSnapshot: store.complementEntitledSnapshot,
         forms: {
             deliveryInfo: deliveryInfoForSession,
             paymentInfo: store.paymentInfo,
@@ -276,6 +278,15 @@ function resolveCoords(selectedAddress, store) {
     };
 }
 
+function resolveComplementSelections(store) {
+    return Object.entries(store.complementSelections || {})
+        .map(([productId, quantity]) => ({
+            product_id: Number(productId),
+            quantity: Math.max(0, Number(quantity) || 0),
+        }))
+        .filter((row) => Number.isFinite(row.product_id) && row.product_id > 0);
+}
+
 export function buildQuoteOrderPayload(
     store,
     selectedAddress = null,
@@ -323,6 +334,7 @@ export function buildQuoteOrderPayload(
         change_from_rubles: paymentPayload?.change_from_rubles,
         gift_product_id: giftProductId != null ? Number(giftProductId) : null,
         complement_product_ids: resolveComplementProductIds(store),
+        complement_selections: resolveComplementSelections(store),
         latitude: coords.latitude,
         longitude: coords.longitude,
     };
@@ -387,6 +399,16 @@ export async function bootstrapCheckoutStoreSession(store) {
     }
     if (saved?.forms) {
         store.patchLocal(normalizeCheckoutSessionForms(saved.forms));
+    }
+    if (
+        saved?.complementSelections
+        && typeof saved.complementSelections === "object"
+    ) {
+        store.complementSelections = { ...saved.complementSelections };
+    }
+    if (saved?.complementEntitledSnapshot != null) {
+        store.complementEntitledSnapshot =
+            Number(saved.complementEntitledSnapshot) || 0;
     }
 
     store.clientRequestId = saved?.clientRequestId ?? resolveClientRequestId();

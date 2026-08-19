@@ -220,20 +220,26 @@ export function useOrderPreview() {
     const complementProgressPercent = computed(() => {
         const rollsPerSet = Number(complement.value.rollsPerSet);
         const currentRollCount = Number(complement.value.currentRollCount) || 0;
+        const remaining = Number(complement.value.remainingRollCount) || 0;
 
         if (!Number.isFinite(rollsPerSet) || rollsPerSet <= 0) {
             return complement.value.isReached ? 100 : 0;
         }
 
-        const progressInSet = currentRollCount % rollsPerSet;
+        if (currentRollCount <= 0) {
+            return 0;
+        }
 
-        if (complement.value.entitledSetCount > 0 && progressInSet === 0) {
+        if (remaining <= 0) {
             return 100;
         }
 
         return Math.min(
             100,
-            Math.max(0, Math.round((progressInSet / rollsPerSet) * 100)),
+            Math.max(
+                0,
+                Math.round(((rollsPerSet - remaining) / rollsPerSet) * 100),
+            ),
         );
     });
 
@@ -275,7 +281,7 @@ export function useOrderPreview() {
 
         const remaining = Number(complement.value.remainingRollCount) || rollsPerSet;
 
-        return `Ещё ${remaining} ${rollWord(remaining)} до комплекта (${rollsPerSet} = 1 комплект)`;
+        return `Ещё ${remaining} ${rollWord(remaining)} до комплекта (${rollsPerSet} ролла = 1 комплект, неполная пара тоже считается)`;
     });
 
     const inZoneLabel = computed(() => {
@@ -373,8 +379,8 @@ export function useOrderPreview() {
 /**
  * Ряды комплекта: free qty из quote + каталог для докупки.
  *
- * Правило бэка: entitledSets = floor(rollCount / rollsPerSet), по умолчанию
- * rollsPerSet = 2 → 2 ролла = 1 набор (freeQty на каждый комплектный товар).
+ * Правило бэка: entitledSets = ceil(rollCount / rollsPerSet), по умолчанию
+ * rollsPerSet = 2 → 1–2 ролла = 1 набор, 3–4 = 2, 5–6 = 3 (freeQty на каждый комплектный товар).
  * Каталог для докупки подключать только при entitledSets >= 1.
  *
  * @param {unknown} complementLines

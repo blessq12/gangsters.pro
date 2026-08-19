@@ -45,6 +45,9 @@ final class OrderController extends Controller
             'gift_product_id' => ['nullable', 'integer', 'min:1'],
             'complement_product_ids' => ['nullable', 'array'],
             'complement_product_ids.*' => ['integer', 'min:1'],
+            'complement_selections' => ['nullable', 'array'],
+            'complement_selections.*.product_id' => ['required', 'integer', 'min:1'],
+            'complement_selections.*.quantity' => ['required', 'integer', 'min:0'],
             'latitude' => ['nullable', 'numeric'],
             'longitude' => ['nullable', 'numeric'],
         ]);
@@ -78,11 +81,34 @@ final class OrderController extends Controller
                 'intval',
                 $validated['complement_product_ids'] ?? [],
             ),
+            complementSelections: self::mapComplementSelections(
+                $validated['complement_selections'] ?? [],
+            ),
             latitude: isset($validated['latitude']) ? (float) $validated['latitude'] : null,
             longitude: isset($validated['longitude']) ? (float) $validated['longitude'] : null,
         ));
 
         return response()->json(['data' => $quote]);
+    }
+
+    /**
+     * @param  list<array{product_id?: int, quantity?: int}>  $rows
+     * @return array<int, int>
+     */
+    private static function mapComplementSelections(array $rows): array
+    {
+        $selections = [];
+
+        foreach ($rows as $row) {
+            $productId = (int) ($row['product_id'] ?? 0);
+            if ($productId < 1) {
+                continue;
+            }
+
+            $selections[$productId] = max(0, (int) ($row['quantity'] ?? 0));
+        }
+
+        return $selections;
     }
 
     public function place(Request $request): JsonResponse

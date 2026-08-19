@@ -152,13 +152,16 @@ final class QuoteOrderUseCase
         $complementActive = is_array($complementRule)
             && ($complementRule['is_active'] ?? false)
             && $rollsPerSet > 0;
-        $entitledSets = $complementActive ? intdiv($rollCount, $rollsPerSet) : 0;
+        $entitledSets = $complementActive && $rollCount > 0
+            ? (int) ceil($rollCount / $rollsPerSet)
+            : 0;
         $remainingRollCount = 0;
         if ($complementActive) {
-            $remainder = $rollCount % $rollsPerSet;
-            $remainingRollCount = $remainder === 0 && $rollCount > 0
-                ? 0
-                : $rollsPerSet - $remainder;
+            $remainingRollCount = $this->remainingRollCountForComplement(
+                rollCount: $rollCount,
+                entitledSets: $entitledSets,
+                rollsPerSet: $rollsPerSet,
+            );
         }
 
         $complementProducts = $entitledSets > 0
@@ -180,9 +183,20 @@ final class QuoteOrderUseCase
                 availableById: $complementProducts,
             ) as $complement
         ) {
+            $complementId = (int) $complement['id'];
+            $selectedQty = $this->resolveComplementQuantity(
+                productId: $complementId,
+                entitledSets: $entitledSets,
+                selectionsById: $input->complementSelections,
+            );
+
+            if ($selectedQty <= 0) {
+                continue;
+            }
+
             $cartLines[] = $this->linePayload(
                 product: $complement,
-                quantity: $entitledSets,
+                quantity: $selectedQty,
                 unitPriceRubles: 0,
                 kind: 'complement',
             );
@@ -498,7 +512,43 @@ final class QuoteOrderUseCase
     }
 
     /**
-     * Все активные наборы дополнений (или явный whitelist с FE), каждый × entitledSets.
+     * Роллов до следующего комплекта при округлении вверх (ceil).
+     */
+    private function remainingRollCountForComplement(
+        int $rollCount,
+        int $entitledSets,
+        int $rollsPerSet,
+    ): int {
+        if ($rollCount <= 0) {
+            return $rollsPerSet > 0 ? 1 : 0;
+        }
+
+        $nextThreshold = ($entitledSets * $rollsPerSet) + 1;
+
+        return max(0, $nextThreshold - $rollCount);
+    }
+
+    /**
+     * @param  array<int, int>  $selectionsById
+     */
+    private function resolveComplementQuantity(
+        int $productId,
+        int $entitledSets,
+        array $selectionsById,
+    ): int {
+        if ($entitledSets <= 0) {
+            return 0;
+        }
+
+        if (array_key_exists($productId, $selectionsById)) {
+            return min(max(0, $selectionsById[$productId]), $entitledSets);
+        }
+
+        return $entitledSets;
+    }
+
+    /**
+     * Все активные наборы дополнений (или явный whitelist с FE), каждый × selected qty.
      *
      * @param  list<int>  $requestedIds
      * @param  array<int, array<string, mixed>>  $availableById

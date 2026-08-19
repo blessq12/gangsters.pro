@@ -31,10 +31,13 @@ const {
     showComplementProgress,
 } = useOrderPreview();
 
-/** 2 ролла = 1 набор: показываем товары только при entitledSets >= 1. */
+const entitledSetCount = computed(
+    () => Number(complement.value?.entitledSetCount) || 0,
+);
+
+/** ceil(rollCount / 2): показываем товары при entitledSets >= 1. */
 const hasEntitledComplementSet = computed(() => {
-    const entitled = Number(complement.value?.entitledSetCount) || 0;
-    if (entitled > 0) {
+    if (entitledSetCount.value > 0) {
         return true;
     }
     return complementLines.value.some(
@@ -56,10 +59,10 @@ const complementRows = computed(() => {
 
 const showApproachProgress = computed(
     () =>
-        hasCartItems.value &&
-        showComplementProgress.value &&
-        !hasEntitledComplementSet.value &&
-        hasRollsInCart.value,
+        hasCartItems.value
+        && showComplementProgress.value
+        && !hasEntitledComplementSet.value
+        && hasRollsInCart.value,
 );
 
 const showBlock = computed(
@@ -70,17 +73,17 @@ function paidQty(productId) {
     return cartStore.cartQuantityByProduct(productId);
 }
 
-function freeQty(row) {
-    return Number(row.freeQty) || 0;
+function selectedFreeQty(row) {
+    return cartStore.complementSelectionQty(row.id);
 }
 
 function displayQty(row) {
-    return freeQty(row) + paidQty(row.id);
+    return selectedFreeQty(row) + paidQty(row.id);
 }
 
 /** FREE — только бесплатная часть комплекта, без докупки. */
 function showFreeBadge(row) {
-    return freeQty(row) > 0 && paidQty(row.id) <= 0;
+    return selectedFreeQty(row) > 0 && paidQty(row.id) <= 0;
 }
 
 function unitPriceRub(row) {
@@ -102,26 +105,47 @@ function paidBadgeLabel(row) {
 }
 
 function canDecrement(row) {
-    return paidQty(row.id) > 0;
+    return selectedFreeQty(row) > 0 || paidQty(row.id) > 0;
+}
+
+function canIncrementFree(row) {
+    return selectedFreeQty(row) < entitledSetCount.value;
 }
 
 function canIncrement(row) {
-    return Boolean(row.product);
+    return Boolean(row.product) && (canIncrementFree(row) || paidQty(row.id) >= 0);
 }
 
-async function incrementProduct(product) {
-    const id = product?.id;
-    if (id == null) return;
-    if (paidQty(id) <= 0) {
-        await cartStore.addToCart(product, 1);
+async function incrementProduct(row) {
+    const id = row.product?.id ?? row.id;
+    if (id == null) {
         return;
     }
+
+    if (canIncrementFree(row)) {
+        await cartStore.setComplementSelection(id, selectedFreeQty(row) + 1);
+        return;
+    }
+
+    if (paidQty(id) <= 0) {
+        await cartStore.addToCart(row.product, 1);
+        return;
+    }
+
     await cartStore.incrementCart(id);
 }
 
 async function decrementProduct(row) {
-    if (!canDecrement(row)) return;
-    await cartStore.decrementCart(row.id);
+    const id = row.id;
+
+    if (selectedFreeQty(row) > 0) {
+        await cartStore.setComplementSelection(id, selectedFreeQty(row) - 1);
+        return;
+    }
+
+    if (paidQty(id) > 0) {
+        await cartStore.decrementCart(id);
+    }
 }
 </script>
 
@@ -172,7 +196,7 @@ async function decrementProduct(row) {
                         type="button"
                         :class="c.qtyBtn"
                         :disabled="!canIncrement(row)"
-                        @click="incrementProduct(row.product)"
+                        @click="incrementProduct(row)"
                     >
                         +
                     </button>

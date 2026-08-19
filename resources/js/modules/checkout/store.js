@@ -72,6 +72,10 @@ export const useCheckoutStore = defineStore("checkout", {
         promotions: {
             freeRollGiftProductId: null,
         },
+        /** Выбор бесплатных комплектов: productId → qty (0…entitled). */
+        complementSelections: {},
+        /** Снимок entitled для авто-донабора при росте роллов. */
+        complementEntitledSnapshot: 0,
         promoState: {},
         deliveryPricing: null,
         benefitsProgress: null,
@@ -126,6 +130,13 @@ export const useCheckoutStore = defineStore("checkout", {
                 (entry) => entry.productId === id && !entry.isSystem,
             );
             return item ? item.qty : 0;
+        },
+        complementSelectionQty: (state) => (productId) => {
+            const id = Number(productId);
+            if (!Number.isFinite(id) || id < 1) {
+                return 0;
+            }
+            return Number(state.complementSelections[id]) || 0;
         },
         cartSystemItemsCount(state) {
             return state.cartItems.reduce(
@@ -226,6 +237,8 @@ export const useCheckoutStore = defineStore("checkout", {
             if (Object.prototype.hasOwnProperty.call(data, "order_preview")) {
                 this._applyOrderPreviewSnapshot(data.order_preview);
             }
+
+            this._syncComplementSelections();
 
             this.persistSession();
 
@@ -338,6 +351,54 @@ export const useCheckoutStore = defineStore("checkout", {
             this.orderPreview = normalizeOrderPreview(orderPreview);
         },
 
+        _syncComplementSelections() {
+            const entitled =
+                Number(this.benefitsProgress?.complement?.entitledSetCount)
+                || Number(this.orderPreview?.benefits?.complement?.entitledSetCount)
+                || 0;
+            const prevEntitled = Number(this.complementEntitledSnapshot) || 0;
+            const catalogStore = useCatalogStore();
+            const productIds = (catalogStore.complementProducts || [])
+                .map((product) => Number(product?.id))
+                .filter((id) => Number.isFinite(id) && id > 0);
+
+            if (entitled <= 0) {
+                this.complementSelections = {};
+                this.complementEntitledSnapshot = 0;
+                return;
+            }
+
+            if (productIds.length === 0) {
+                return;
+            }
+
+            const next = { ...this.complementSelections };
+
+            for (const id of productIds) {
+                let selected = next[id];
+
+                if (selected === undefined) {
+                    selected = entitled;
+                } else if (selected > entitled) {
+                    selected = entitled;
+                } else if (entitled > prevEntitled && selected === prevEntitled) {
+                    selected = entitled;
+                }
+
+                next[id] = selected;
+            }
+
+            for (const rawId of Object.keys(next)) {
+                const id = Number(rawId);
+                if (!productIds.includes(id)) {
+                    delete next[id];
+                }
+            }
+
+            this.complementSelections = next;
+            this.complementEntitledSnapshot = entitled;
+        },
+
         setSuggestedStep(step) {
             const mapped = mapServerWizardStep(step);
             if (mapped && CHECKOUT_WIZARD_STEPS.includes(mapped)) {
@@ -407,6 +468,28 @@ export const useCheckoutStore = defineStore("checkout", {
             };
             this.guestContact = { name: "", phone: "", email: "" };
             this.promotions = { freeRollGiftProductId: null };
+            this.complementSelections = {};
+            this.complementEntitledSnapshot = 0;
+        },
+
+        async setComplementSelection(productId, quantity) {
+            const id = Number(productId);
+            if (!Number.isFinite(id) || id < 1) {
+                return;
+            }
+
+            const entitled =
+                Number(this.benefitsProgress?.complement?.entitledSetCount)
+                || Number(this.orderPreview?.benefits?.complement?.entitledSetCount)
+                || 0;
+            const nextQty = Math.max(0, Math.min(entitled, Number(quantity) || 0));
+
+            this.complementSelections = {
+                ...this.complementSelections,
+                [id]: nextQty,
+            };
+            this.persistSession();
+            await refreshOrderDraftPreview(this);
         },
 
         patchLocal(partial) {
@@ -602,6 +685,8 @@ export const useCheckoutStore = defineStore("checkout", {
             this.deliveryPricing = null;
             this.benefitsProgress = null;
             this.orderPreview = null;
+            this.complementSelections = {};
+            this.complementEntitledSnapshot = 0;
             this.promotions = { freeRollGiftProductId: null };
             this.suggestedStep = null;
             this.wizardCanConfirm = false;
