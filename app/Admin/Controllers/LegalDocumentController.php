@@ -30,9 +30,17 @@ class LegalDocumentController extends AdminController
         $grid->column('published_at', __('Опубликовано'));
         $grid->column('created_at', __('Создано'));
 
+        $grid->filter(function ($filter) {
+            $filter->disableIdFilter();
+            $filter->equal('type', 'Тип')->select(LegalDocumentType::LABELS);
+            $filter->equal('is_current', 'Текущая')->select([
+                1 => 'Да',
+                0 => 'Нет',
+            ]);
+        });
+
         $grid->disableExport();
         $grid->actions(function ($actions) {
-            $actions->disableEdit();
             $actions->disableDelete();
         });
         $grid->disableBatchActions();
@@ -45,17 +53,22 @@ class LegalDocumentController extends AdminController
         $show = new Show(LegalDocument::findOrFail($id));
 
         $show->field('id', __('ID'));
-        $show->field('type', __('Тип'));
+        $show->field('type', __('Тип'))->as(function ($type) {
+            return LegalDocumentType::LABELS[$type] ?? $type;
+        });
         $show->field('version', __('Версия'));
         $show->field('title', __('Заголовок'));
-        $show->field('body_html', __('HTML'));
+        $show->field('body_html', __('HTML'))->unescape()->as(function ($html) {
+            return '<div class="legal-document-preview" style="max-width:100%;overflow:auto;border:1px solid #eee;padding:16px;background:#fff">'
+                . $html
+                . '</div>';
+        });
         $show->field('is_current', __('Текущая'));
         $show->field('published_at', __('Опубликовано'));
         $show->field('created_at', __('Создано'));
         $show->field('updated_at', __('Обновлено'));
 
         $show->panel()->tools(function ($tools) {
-            $tools->disableEdit();
             $tools->disableDelete();
         });
 
@@ -66,15 +79,35 @@ class LegalDocumentController extends AdminController
     {
         $form = new Form(new LegalDocument());
 
-        $form->select('type', __('Тип'))
-            ->options(LegalDocumentType::LABELS)
-            ->required()
-            ->help('Создание всегда публикует новую иммутабельную версию');
+        if ($form->isEditing()) {
+            $form->select('type', __('Тип'))
+                ->options(LegalDocumentType::LABELS)
+                ->readOnly()
+                ->help('Тип нельзя сменить. Сохранение опубликует новую версию.');
+            $form->display('version', __('Версия-источник'));
+            $form->html(
+                '<div class="alert alert-info" style="margin-bottom:15px">Сохранение опубликует <strong>новую</strong> версию этого типа. Старая запись останется в истории.</div>'
+            );
+        } else {
+            $form->select('type', __('Тип'))
+                ->options(LegalDocumentType::LABELS)
+                ->required()
+                ->help('При сохранении создаётся новая версия документа выбранного типа.');
+        }
+
         $form->text('title', __('Заголовок'))->required();
-        $form->textarea('body_html', __('HTML текст'))->rows(20)->required();
+        $form->htmlEditor('body_html', __('Содержимое'))
+            ->required()
+            ->help('Визуальный HTML-редактор. Кнопка Source — правка исходного HTML.');
 
         $form->tools(function (Form\Tools $tools) {
             $tools->disableDelete();
+        });
+
+        $form->footer(function ($footer) {
+            $footer->disableViewCheck();
+            $footer->disableEditingCheck();
+            $footer->disableCreatingCheck();
         });
 
         return $form;
@@ -82,30 +115,43 @@ class LegalDocumentController extends AdminController
 
     public function store()
     {
-        $data = request()->validate([
-            'type' => 'required|string|in:' . implode(',', LegalDocumentType::ALL),
-            'title' => 'required|string|max:255',
-            'body_html' => 'required|string',
-        ]);
-
-        $document = app(LegalDocumentRepository::class)->publishNewVersion(
-            $data['type'],
-            $data['title'],
-            $data['body_html']
-        );
-
-        admin_toastr('Новая версия опубликована');
-
-        return redirect(admin_url('legal-documents/' . $document->id));
+        return $this->publishFromRequest();
     }
 
     public function update($id)
     {
-        return response('Редактирование запрещено: создайте новую версию через «Создать»', 405);
+        $existing = LegalDocument::query()->findOrFail($id);
+
+        return $this->publishFromRequest($existing->type);
     }
 
     public function destroy($id)
     {
         return response('Удаление запрещено', 405);
+    }
+
+    private function publishFromRequest(?string $forcedType = null)
+    {
+        $rules = [
+            'title' => 'required|string|max:255',
+            'body_html' => 'required|string',
+        ];
+
+        if ($forcedType === null) {
+            $rules['type'] = 'required|string|in:' . implode(',', LegalDocumentType::ALL);
+        }
+
+        $data = request()->validate($rules);
+        $type = $forcedType ?? $data['type'];
+
+        $document = app(LegalDocumentRepository::class)->publishNewVersion(
+            $type,
+            $data['title'],
+            $data['body_html']
+        );
+
+        admin_toastr('Новая версия v' . $document->version . ' опубликована');
+
+        return redirect(admin_url('legal-documents/' . $document->id));
     }
 }

@@ -19,3 +19,5 @@
  */
 
 Encore\Admin\Form::forget(['map', 'editor']);
+
+Encore\Admin\Form::extend('htmlEditor', \App\Admin\Extensions\Form\HtmlEditor::class);
