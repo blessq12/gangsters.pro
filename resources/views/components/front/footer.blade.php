@@ -1,183 +1,143 @@
-<footer class="bg-gradient-to-br from-gray-900 to-gray-800 text-white py-16 relative overflow-hidden">
-    <div class="absolute inset-0 bg-grid-white/[0.05] bg-[size:16px_16px]"></div>
-    <div class=" mx-auto max-w-7xl  px-4 md:px-6  relative z-10">
-        <!-- Первая строка: три колонки -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-12 mb-16">
-            <!-- О компании -->
-            <div class="space-y-6">
-                <a href="{{ route('main.index') }}" class="text-white inline-block group">
-                    <div class="flex items-center space-x-4 transform transition duration-300 group-hover:translate-x-2">
-                        <div class="bg-white/10 p-3 rounded-xl backdrop-blur-sm shadow-xl">
-                            <img src="/uploads/{{ $company->logo ? $company->logo : 'http://via.placeholder.com/50x50' }}"
-                                alt="{{ $company->name }}" class="w-12 h-12 object-contain filter drop-shadow-lg">
-                        </div>
-                        <span class="text-lg sm:text-xl font-bold tracking-tight text-white/95">
-                            {{ $company->name }}
-                        </span>
-                    </div>
+<footer class="relative overflow-hidden bg-[#111827] text-white">
+    <div class="pointer-events-none absolute inset-0 opacity-[0.04]"
+        style="background-image: radial-gradient(circle at 1px 1px, #fff 1px, transparent 0); background-size: 20px 20px;">
+    </div>
+
+    <div class="relative z-10 mx-auto max-w-7xl px-4 py-14 md:px-6 md:py-16">
+        <div class="grid grid-cols-1 gap-10 md:grid-cols-12 md:gap-8">
+            {{-- Бренд --}}
+            <div class="md:col-span-4 space-y-5">
+                <a href="{{ route('main.index') }}" class="inline-flex items-center gap-3 group">
+                    <img src="/uploads/{{ $company->logo ? $company->logo : 'http://via.placeholder.com/50x50' }}"
+                        alt="{{ $company->name }}"
+                        class="h-11 w-11 rounded-lg object-contain bg-white/5 p-1.5 transition group-hover:bg-white/10">
+                    <span class="text-lg font-semibold tracking-tight text-white/95">
+                        {{ $company->name }}
+                    </span>
                 </a>
                 @if ($company->description !== '')
-                    <div class="mt-4">
-                        <p class="text-sm sm:text-base text-gray-300 leading-relaxed">
-                            {{ $company->description }}
-                        </p>
+                    <p class="max-w-sm text-sm leading-relaxed text-gray-400">
+                        {{ $company->description }}
+                    </p>
+                @endif
+                @if ($company->legals)
+                    <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
+                        <span>ИНН {{ $company->legals->inn }}</span>
+                        <span>ОГРН {{ $company->legals->ogrn }}</span>
                     </div>
                 @endif
             </div>
 
-            <!-- Ссылки -->
-            <div class="space-y-6">
-                <h5
-                    class="text-lg sm:text-xl font-bold tracking-tight relative inline-block after:content-[''] after:absolute after:w-1/2 after:h-1 after:-bottom-2 after:left-0 after:bg-blue-500/80 text-white/95">
-                    Ссылки</h5>
-                <ul class="space-y-2">
+            {{-- Навигация --}}
+            <div class="md:col-span-3">
+                <h5 class="mb-4 text-xs font-semibold uppercase tracking-[0.14em] text-gray-500">Навигация</h5>
+                <ul class="space-y-2.5 text-sm">
                     @if (Route::currentRouteName() !== 'main.index')
-                        <a href="{{ route('main.index') }}" class="block">
-                            <li
-                                class="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors duration-300 py-2 hover:translate-x-2 transform text-sm sm:text-base">
-                                <i class="mdi mdi-home text-xl"></i>
-                                <span>Главная</span>
-                            </li>
-                        </a>
+                        <li>
+                            <a href="{{ route('main.index') }}"
+                                class="text-gray-300 transition hover:text-white">Главная</a>
+                        </li>
                     @endif
-                    <a href="{{ route('main.about') }}" class="block">
-                        <li
-                            class="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors duration-300 py-2 hover:translate-x-2 transform text-sm sm:text-base">
-                            <i class="mdi mdi-information text-xl"></i>
-                            <span>О компании</span>
-                        </li>
-                    </a>
-
-                    <a href="{{ route('main.purchaseAndDelivery') }}" class="block">
-                        <li
-                            class="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors duration-300 py-2 hover:translate-x-2 transform text-sm sm:text-base">
-                            <i class="mdi mdi-truck-delivery text-xl"></i>
-                            <span>Оплата и доставка</span>
-                        </li>
-                    </a>
-                    <a href="{{ route('main.contact') }}" class="block">
-                        <li
-                            class="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors duration-300 py-2 hover:translate-x-2 transform text-sm sm:text-base">
-                            <i class="mdi mdi-contacts text-xl"></i>
-                            <span>Контакты</span>
-                        </li>
-                    </a>
+                    <li>
+                        <a href="{{ route('main.about') }}"
+                            class="text-gray-300 transition hover:text-white">О компании</a>
+                    </li>
+                    <li>
+                        <a href="{{ route('main.purchaseAndDelivery') }}"
+                            class="text-gray-300 transition hover:text-white">Оплата и доставка</a>
+                    </li>
+                    <li>
+                        <a href="{{ route('main.contact') }}"
+                            class="text-gray-300 transition hover:text-white">Контакты</a>
+                    </li>
+                    <li>
+                        <a href="{{ route('main.seller') }}"
+                            class="text-gray-300 transition hover:text-white">Реквизиты</a>
+                    </li>
                 </ul>
             </div>
 
-            <!-- Социальные сети -->
-            @if ($company->vk || $company->inst)
-                <div class="space-y-6">
-                    <h5
-                        class="text-lg sm:text-xl font-bold tracking-tight relative inline-block after:content-[''] after:absolute after:w-1/2 after:h-1 after:-bottom-2 after:left-0 after:bg-blue-500/80 text-white/95">
-                        Соц сети</h5>
-                    <ul class="space-y-4">
+            {{-- Документы --}}
+            <div class="md:col-span-2">
+                <h5 class="mb-4 text-xs font-semibold uppercase tracking-[0.14em] text-gray-500">Документы</h5>
+                <ul class="space-y-2.5 text-sm">
+                    <li>
+                        <a href="{{ route('main.offer') }}"
+                            class="text-gray-300 transition hover:text-white">Публичная оферта</a>
+                    </li>
+                    <li>
+                        <a href="{{ route('main.terms') }}"
+                            class="text-gray-300 transition hover:text-white">Пользовательское соглашение</a>
+                    </li>
+                    <li>
+                        <a href="{{ route('main.privacy') }}"
+                            class="text-gray-300 transition hover:text-white">Конфиденциальность</a>
+                    </li>
+                    <li>
+                        <a href="{{ route('main.pdnConsent') }}"
+                            class="text-gray-300 transition hover:text-white">Согласие на ПДн</a>
+                    </li>
+                    <li>
+                        <a href="{{ route('main.cookies') }}"
+                            class="text-gray-300 transition hover:text-white">Cookie</a>
+                    </li>
+                </ul>
+            </div>
+
+            {{-- Контакты и соцсети --}}
+            <div class="md:col-span-3 space-y-5">
+                <h5 class="mb-4 text-xs font-semibold uppercase tracking-[0.14em] text-gray-500">Связь</h5>
+                <ul class="space-y-3 text-sm text-gray-300">
+                    <li>
+                        <a href="tel:{{ $company->phone }}" class="transition hover:text-white">
+                            {{ $company->phone }}
+                        </a>
+                    </li>
+                    <li>
+                        <a href="mailto:{{ $company->email_address }}" class="transition hover:text-white break-all">
+                            {{ $company->email_address }}
+                        </a>
+                    </li>
+                    <li class="text-gray-400">
+                        {{ $company->street }}, {{ $company->house }}
+                    </li>
+                </ul>
+
+                @if ($company->vk || $company->inst)
+                    <div class="flex flex-wrap gap-3 pt-1">
                         @if ($company->vk)
-                            <a href="{{ $company->vk }}" target="_blank" class="block group">
-                                <li
-                                    class="flex items-center space-x-3 rounded-lg transition duration-300 hover:bg-white/5 backdrop-blur-sm">
-                                    <div
-                                        class="w-10 h-10 flex items-center justify-center rounded-full bg-blue-500/10 text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition duration-300 shadow-lg">
-                                        <img src="/vk.svg" class="w-6 h-6">
-                                    </div>
-                                    <span class="text-sm sm:text-base text-gray-300 group-hover:text-white">Группа
-                                        Вконтакте</span>
-                                </li>
+                            <a href="{{ $company->vk }}" target="_blank" rel="noopener noreferrer"
+                                class="inline-flex items-center gap-2 rounded-md border border-white/10 px-3 py-2 text-sm text-gray-300 transition hover:border-white/25 hover:text-white">
+                                <img src="/vk.svg" alt="" class="h-4 w-4">
+                                <span>ВКонтакте</span>
                             </a>
                         @endif
                         @if ($company->inst)
-                            <a href="{{ $company->inst }}" target="_blank" class="block group">
-                                <li
-                                    class="flex items-center space-x-3 rounded-lg transition duration-300 hover:bg-white/5 backdrop-blur-sm">
-                                    <div
-                                        class="w-10 h-10 flex items-center justify-center rounded-full bg-blue-500/10 text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition duration-300 shadow-lg">
-                                        <i class="mdi mdi-instagram text-2xl"></i>
-                                    </div>
-                                    <span class="text-sm sm:text-base text-gray-300 group-hover:text-white">Профиль
-                                        Instagram</span>
-                                </li>
+                            <a href="{{ $company->inst }}" target="_blank" rel="noopener noreferrer"
+                                class="inline-flex items-center gap-2 rounded-md border border-white/10 px-3 py-2 text-sm text-gray-300 transition hover:border-white/25 hover:text-white">
+                                <i class="mdi mdi-instagram text-base"></i>
+                                <span>Instagram*</span>
                             </a>
                         @endif
-                    </ul>
-                </div>
-            @endif
+                    </div>
+                @endif
+            </div>
         </div>
 
-        <!-- Вторая строка: контакты в ряд -->
-        <div class="border-t border-white/10 pt-12 pb-8">
+        <div class="mt-12 border-t border-white/10 pt-6 space-y-4">
             <div
-                class="flex flex-col md:flex-row flex-wrap justify-center md:justify-between items-start md:items-center gap-8">
-                <a href="tel:{{ $company->phone }}"
-                    class="flex items-center space-x-3 text-gray-300 hover:text-white transition-colors duration-300 text-sm sm:text-base">
-                    <div class="w-10 h-10 flex items-center justify-center rounded-full bg-blue-500/10 text-blue-400">
-                        <i class="mdi mdi-phone text-xl"></i>
-                    </div>
-                    <span>{{ $company->phone }}</span>
-                </a>
-
-                <a href="https://yandex.ru/maps/67/tomsk/?ll=84.986330%2C56.513423&mode=routes&rtext=~56.513356%2C84.986301&rtt=auto&ruri=~ymapsbm1%3A%2F%2Forg%3Foid%3D82888444717&z=16.7"
-                    class="flex items-center space-x-3 text-gray-300 hover:text-white transition-colors duration-300 text-sm sm:text-base">
-                    <div class="w-10 h-10 flex items-center justify-center rounded-full bg-blue-500/10 text-blue-400">
-                        <i class="mdi mdi-map-marker text-xl"></i>
-                    </div>
-                    <span>{{ $company->street }}, {{ $company->house }}</span>
-                </a>
-
-                <a href="mailto:{{ $company->email_address }}"
-                    class="flex items-center space-x-3 text-gray-300 hover:text-white transition-colors duration-300 text-sm sm:text-base">
-                    <div class="w-10 h-10 flex items-center justify-center rounded-full bg-blue-500/10 text-blue-400">
-                        <i class="mdi mdi-email text-xl"></i>
-                    </div>
-                    <span>{{ $company->email_address }}</span>
-                </a>
+                class="flex flex-col gap-3 text-xs text-gray-500 sm:flex-row sm:items-center sm:justify-between">
+                <p>© {{ date('Y') }} {{ $company->name }}</p>
+                <p class="sm:text-right">Доставка готовой еды в Томске</p>
             </div>
-        </div>
 
-        <!-- Подвал футера -->
-        <div class="border-t border-white/10 pt-8">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-4 text-xs sm:text-sm text-gray-400">
-                <div class="flex flex-wrap items-center gap-x-2 gap-y-2">
-                    <p class="flex items-center space-x-2">
-                        <i class="mdi mdi-identifier text-xs text-blue-400"></i>
-                        <span>ИНН: {{ $company->legals->inn }}</span>
-                    </p>
-                    <p class="flex items-center space-x-2">
-                        <i class="mdi mdi-card-account-details-outline text-xs text-blue-400"></i>
-                        <span>ОГРН: {{ $company->legals->ogrn }}</span>
-                    </p>
-                </div>
-                <div class="flex flex-wrap items-center gap-x-4 gap-y-2 justify-center md:justify-end">
-                    <a href="{{ route('main.seller') }}"
-                        class="flex items-center space-x-2 hover:text-white transition-colors duration-300">
-                        <i class="mdi mdi-briefcase-account text-xs"></i>
-                        <span>Реквизиты</span>
-                    </a>
-                    <a href="{{ route('main.offer') }}"
-                        class="flex items-center space-x-2 hover:text-white transition-colors duration-300">
-                        <i class="mdi mdi-file-document-outline text-xs"></i>
-                        <span>Оферта</span>
-                    </a>
-                    <a href="{{ route('main.terms') }}"
-                        class="flex items-center space-x-2 hover:text-white transition-colors duration-300">
-                        <i class="mdi mdi-file-sign text-xs"></i>
-                        <span>Соглашение</span>
-                    </a>
-                    <a href="{{ route('main.privacy') }}"
-                        class="flex items-center space-x-2 hover:text-white transition-colors duration-300">
-                        <i class="mdi mdi-shield-lock text-xs"></i>
-                        <span>Конфиденциальность</span>
-                    </a>
-                    <a href="{{ route('main.cookies') }}"
-                        class="flex items-center space-x-2 hover:text-white transition-colors duration-300">
-                        <i class="mdi mdi-cookie text-xs"></i>
-                        <span>Cookie</span>
-                    </a>
-                    <p class="flex items-center space-x-2">
-                        <i class="mdi mdi-copyright text-xs"></i>
-                        <span>{{ date('Y') }} {{ $company->name }}</span>
-                    </p>
-                </div>
-            </div>
+            @if ($company->inst)
+                <p class="text-[11px] leading-relaxed text-gray-500 max-w-4xl">
+                    * Meta Platforms Inc. (социальные сети Facebook и Instagram) — организация,
+                    деятельность которой признана экстремистской и запрещена на территории
+                    Российской Федерации.
+                </p>
+            @endif
         </div>
     </div>
 </footer>
