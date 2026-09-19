@@ -9,44 +9,41 @@ class HtmlEditor extends Field
     protected $view = 'admin::form.editor';
 
     protected static $js = [
-        'https://cdn.jsdelivr.net/npm/ckeditor4@4.22.1/ckeditor.js',
+        'https://cdn.jsdelivr.net/npm/tinymce@7.6.0/tinymce.min.js',
     ];
 
     public function render()
     {
         $config = json_encode([
+            'selector' => '#' . $this->id,
+            'base_url' => 'https://cdn.jsdelivr.net/npm/tinymce@7.6.0',
+            'suffix' => '.min',
             'height' => 480,
-            'language' => 'ru',
-            'allowedContent' => true,
-            'extraAllowedContent' => '*(*);*{*}',
-            'removePlugins' => 'exportpdf',
-            'toolbar' => [
-                ['name' => 'document', 'items' => ['Source', '-', 'Preview']],
-                ['name' => 'clipboard', 'items' => ['Undo', 'Redo']],
-                ['name' => 'basicstyles', 'items' => ['Bold', 'Italic', 'Underline', 'Strike', 'RemoveFormat']],
-                ['name' => 'paragraph', 'items' => ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote']],
-                ['name' => 'links', 'items' => ['Link', 'Unlink']],
-                ['name' => 'insert', 'items' => ['Table', 'HorizontalRule']],
-                ['name' => 'styles', 'items' => ['Format', 'Styles']],
-            ],
+            'menubar' => false,
+            'branding' => false,
+            'promotion' => false,
+            'plugins' => 'lists link table code preview autoresize',
+            'toolbar' => 'undo redo | blocks | bold italic underline strikethrough | bullist numlist | outdent indent | link table | removeformat | code preview',
+            'block_formats' => 'Paragraph=p; Heading 1=h1; Heading 2=h2; Heading 3=h3; Heading 4=h4',
+            'content_style' => 'body { font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif; font-size: 14px; }',
+            'convert_urls' => false,
+            'relative_urls' => false,
+            'entity_encoding' => 'raw',
+            'valid_elements' => '*[*]',
+            'extended_valid_elements' => '*[*]',
+            'license_key' => 'gpl',
         ], JSON_UNESCAPED_UNICODE);
 
         $this->script = <<<SCRIPT
 (function () {
-    if (typeof CKEDITOR === 'undefined') {
+    if (typeof tinymce === 'undefined') {
         return;
     }
-    if (CKEDITOR.instances['{$this->id}']) {
-        CKEDITOR.instances['{$this->id}'].destroy(true);
-    }
-    var editor = CKEDITOR.replace('{$this->id}', {$config});
+    tinymce.remove('#{$this->id}');
+    tinymce.init({$config});
     var \$form = \$('#{$this->id}').closest('form');
-    \$form.on('submit', function () {
-        for (var name in CKEDITOR.instances) {
-            if (CKEDITOR.instances.hasOwnProperty(name)) {
-                CKEDITOR.instances[name].updateElement();
-            }
-        }
+    \$form.off('submit.htmlEditor').on('submit.htmlEditor', function () {
+        tinymce.triggerSave();
     });
 })();
 SCRIPT;
