@@ -83,7 +83,7 @@ class CompanyLegalController extends AdminController
         $form->text('inn', __('ИНН'))->required();
         $form->text('ogrn', __('ОГРН'))->required();
         $form->text('okpo', __('ОКПО'))->required();
-        $form->text('kpp', __('КПП'))->required();
+        $form->text('kpp', __('КПП'));
         $form->text('registration_address', __('Адрес регистрации'))->required();
 
         return $form;

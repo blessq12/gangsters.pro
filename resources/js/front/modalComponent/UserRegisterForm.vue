@@ -170,10 +170,28 @@ export default {
             </label>
         </div>
 
+        <label class="flex items-start gap-2 text-sm text-gray-700">
+            <input
+                type="checkbox"
+                class="mt-1 form-checkbox h-4 w-4 text-primary-600"
+                v-model="data.acceptPdn"
+            />
+            <span>
+                Даю
+                <a
+                    href="/pdn-consent"
+                    target="_blank"
+                    class="text-primary-600 underline"
+                    >согласие на обработку персональных данных</a
+                >
+            </span>
+        </label>
+
         <div class="mt-6">
             <button
                 type="submit"
-                class="w-full flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-black hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                class="w-full flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-black hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
+                :disabled="!data.acceptPdn"
             >
                 <i class="mdi mdi-account-plus mr-2"></i>
                 Зарегистрироваться

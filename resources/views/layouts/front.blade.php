@@ -7,7 +7,6 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="description" content="@yield('desc')">
     <meta name="yandex-verification" content="636b80119679b3bc" />
-    <script src="https://analytics.ahrefs.com/analytics.js" data-key="PxdjW7ifwlYeLIKMykwLkw" async></script>
     <meta name="google-site-verification" content="05wqFmUG5VbvFUFGjYi-dXDSL_a0ts7FVzr5v0edg8Y" />
     <title>@yield('title')</title>
     @include('inc/favicon')
@@ -27,35 +26,6 @@
         <holiday-schedule></holiday-schedule>
         <x-front.footer />
     </div>
-    <!-- Yandex.Metrika counter -->
-    <script type="text/javascript">
-        (function(m, e, t, r, i, k, a) {
-            m[i] = m[i] || function() {
-                (m[i].a = m[i].a || []).push(arguments)
-            };
-            m[i].l = 1 * new Date();
-            for (var j = 0; j < document.scripts.length; j++) {
-                if (document.scripts[j].src === r) {
-                    return;
-                }
-            }
-            k = e.createElement(t), a = e.getElementsByTagName(t)[0], k.async = 1, k.src = r, a.parentNode.insertBefore(
-                k, a)
-        })
-        (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
-
-        ym(57393940, "init", {
-            clickmap: true,
-            trackLinks: true,
-            accurateTrackBounce: true,
-            ecommerce: "dataLayer"
-        });
-    </script>
-    <noscript>
-        <div><img src="https://mc.yandex.ru/watch/57393940" style="position:absolute; left:-9999px;" alt="" />
-        </div>
-    </noscript>
-    <!-- /Yandex.Metrika counter -->
 </body>
 
 </html>

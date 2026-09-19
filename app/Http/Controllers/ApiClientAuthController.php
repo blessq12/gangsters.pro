@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ApiRegisterRequest;
 use App\Models\User;
+use App\Services\LegalConsentService;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
@@ -13,11 +14,13 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\RegisterMail;
 use Illuminate\Support\Facades\Validator;
+use InvalidArgumentException;
 
 class ApiClientAuthController extends Controller
 {
-    public function __construct()
-    {
+    public function __construct(
+        private LegalConsentService $legalConsents
+    ) {
         $this->middleware('auth:sanctum', ['only' => [
             'updateUser',
             'getUser',
@@ -64,7 +67,14 @@ class ApiClientAuthController extends Controller
             return response(['status' => false, 'message' => 'Пользователь с таким номером телефона уже существует'], 400);
         }
 
-        $user = User::create($request->all());
+        $pdnDocumentId = (int) $request->input('pdn_document_id', 0);
+        try {
+            $this->legalConsents->assertPdnConsent($pdnDocumentId);
+        } catch (InvalidArgumentException $e) {
+            return response(['status' => false, 'message' => $e->getMessage()], 422);
+        }
+
+        $user = User::create($request->only(['name', 'email', 'tel', 'password']));
 
         if (!$user->save()) {
             \App\Facades\TelegramMessage::sendMessage([
@@ -75,6 +85,8 @@ class ApiClientAuthController extends Controller
             ], 'error');
             return response(['status' => false, 'errors' => $user->errors(), 'message' => 'Не удалось зарегистрировать пользователя'], 400);
         }
+
+        $this->legalConsents->recordRegisterPdnConsent($user, $pdnDocumentId, $request);
 
         \App\Facades\TelegramMessage::sendMessage([
             '✅ Регистрация нового пользователя: ' . $user->email . "\n",

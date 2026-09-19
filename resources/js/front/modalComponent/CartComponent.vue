@@ -5,6 +5,7 @@ import { mapStores } from "pinia";
 import { useToast } from "vue-toastification";
 import { object, string } from "yup";
 import { appStore } from "../../stores/appStorage";
+import { legalStore } from "../../stores/legalStore";
 import { localStore } from "../../stores/localStore";
 import { userStore } from "../../stores/userStore";
 
@@ -13,9 +14,10 @@ export default {
     mounted() {
         this.initializeFormData();
         this.initializeAnimations();
+        this.legalStore.loadCurrent();
     },
     computed: {
-        ...mapStores(localStore, userStore, appStore),
+        ...mapStores(localStore, userStore, appStore, legalStore),
     },
     data() {
         return {
@@ -32,6 +34,8 @@ export default {
             validatorBag: {},
             checkPerformed: false,
             payType: "cash", // Общее поле для типа оплаты
+            acceptOffer: false,
+            acceptPdn: false,
         };
     },
     methods: {
@@ -136,6 +140,20 @@ export default {
             });
         },
         validate(form) {
+            if (!this.acceptOffer || !this.acceptPdn) {
+                this.toast.error(
+                    "Примите оферту и согласие на обработку персональных данных"
+                );
+                return;
+            }
+            if (!this.legalStore.offerId || !this.legalStore.pdnId) {
+                this.toast.error(
+                    "Не удалось загрузить юридические документы. Обновите страницу."
+                );
+                this.legalStore.loadCurrent();
+                return;
+            }
+
             const schema = form === "delivery" ? this.schema : this.noDelSchema;
             const formData =
                 form === "delivery" ? this.formData : this.noDelForm;
@@ -174,11 +192,21 @@ export default {
                     })
                 ),
                 order: orderData,
+                consents: {
+                    offer_document_id: this.legalStore.offerId,
+                    pdn_document_id: this.legalStore.pdnId,
+                },
             };
 
             this.localStore
                 .createOrder(req)
-                .then(() => {
+                .then((ok) => {
+                    if (!ok) {
+                        this.toast.error(
+                            "Не удалось оформить заказ. Проверьте согласия и данные."
+                        );
+                        return;
+                    }
                     this.orderCreated = true;
                     this.userStore.loadStore();
                 })
@@ -377,8 +405,45 @@ export default {
                             />
                         </div>
 
+                        <div class="space-y-3 text-sm text-gray-700">
+                            <label class="flex items-start gap-2">
+                                <input
+                                    type="checkbox"
+                                    class="mt-1 form-checkbox h-4 w-4 text-primary-600"
+                                    v-model="acceptOffer"
+                                />
+                                <span>
+                                    Я принимаю
+                                    <a
+                                        :href="legalStore.offerUrl"
+                                        target="_blank"
+                                        class="text-primary-600 underline"
+                                        >публичную оферту</a
+                                    >
+                                </span>
+                            </label>
+                            <label class="flex items-start gap-2">
+                                <input
+                                    type="checkbox"
+                                    class="mt-1 form-checkbox h-4 w-4 text-primary-600"
+                                    v-model="acceptPdn"
+                                />
+                                <span>
+                                    Даю
+                                    <a
+                                        :href="legalStore.pdnUrl"
+                                        target="_blank"
+                                        class="text-primary-600 underline"
+                                        >согласие на обработку персональных
+                                        данных</a
+                                    >
+                                </span>
+                            </label>
+                        </div>
+
                         <button
-                            class="w-full btn bg-green-500 hover:bg-green-600 text-white rounded-xl py-4 transition-colors duration-200 font-semibold shadow-md hover:shadow-lg"
+                            class="w-full btn bg-green-500 hover:bg-green-600 text-white rounded-xl py-4 transition-colors duration-200 font-semibold shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                            :disabled="!acceptOffer || !acceptPdn"
                             @click="
                                 delivery
                                     ? validate('delivery')

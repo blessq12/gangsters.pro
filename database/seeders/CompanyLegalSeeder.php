@@ -21,7 +21,7 @@ class CompanyLegalSeeder extends Seeder
             'inn' => '701711541008',
             'ogrn' => '319703100092535',
             'okpo' => '0174847807',
-            'kpp' => '4567456',
+            'kpp' => null,
             'registration_address' => 'ОБЛАСТЬ ТОМСКАЯ, район Асиновский, село Ново-Кусково',
         ]);
     }

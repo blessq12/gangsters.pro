@@ -82,5 +82,7 @@ export default {
     },
 };
 </script>
-<template></template>
+<template>
+    <cookie-banner />
+</template>
 <style lang="sass" scoped></style>

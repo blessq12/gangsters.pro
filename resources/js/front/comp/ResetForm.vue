@@ -13,7 +13,7 @@ export default {
             data: {
                 password: "",
                 password_confirmation: "",
-                privacy: true,
+                acceptTerms: false,
                 passwordVisible: false,
             },
             schema: object({
@@ -118,15 +118,15 @@ export default {
                         <input
                             type="checkbox"
                             class="form-checkbox h-4 w-4 text-primary-600 transition duration-150 ease-in-out"
-                            v-model="data.privacy"
+                            v-model="data.acceptTerms"
                         />
                         <span class="ml-2 text-sm text-gray-600">
                             Я прочитал и принимаю
                             <a
-                                href="/privacy"
+                                href="/terms"
                                 target="_blank"
                                 class="text-primary-600 hover:text-primary-700"
-                                >условия использования</a
+                                >пользовательское соглашение</a
                             >
                         </span>
                     </label>
@@ -136,7 +136,7 @@ export default {
                             type="submit"
                             class="flex-1 flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
                             :disabled="
-                                !data.privacy ||
+                                !data.acceptTerms ||
                                 !data.password ||
                                 !data.password_confirmation ||
                                 data.password !== data.password_confirmation ||

@@ -98,9 +98,15 @@ export const localStore = defineStore("local", {
         },
         async createOrder(data) {
             try {
-                const response = await axios.post("/api/orders/create", data);
+                await axios.post("/api/orders/create", data);
                 return true;
             } catch (error) {
+                const message =
+                    error?.response?.data ||
+                    "Ошибка при создании заказа";
+                if (typeof message === "string") {
+                    toast.error(message);
+                }
                 return false;
             }
         },

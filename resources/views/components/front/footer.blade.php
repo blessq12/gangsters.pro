@@ -146,11 +146,31 @@
                         <span>ОГРН: {{ $company->legals->ogrn }}</span>
                     </p>
                 </div>
-                <div class="flex flex-wrap items-center gap-4">
+                <div class="flex flex-wrap items-center gap-x-4 gap-y-2 justify-center md:justify-end">
+                    <a href="{{ route('main.seller') }}"
+                        class="flex items-center space-x-2 hover:text-white transition-colors duration-300">
+                        <i class="mdi mdi-briefcase-account text-xs"></i>
+                        <span>Реквизиты</span>
+                    </a>
+                    <a href="{{ route('main.offer') }}"
+                        class="flex items-center space-x-2 hover:text-white transition-colors duration-300">
+                        <i class="mdi mdi-file-document-outline text-xs"></i>
+                        <span>Оферта</span>
+                    </a>
+                    <a href="{{ route('main.terms') }}"
+                        class="flex items-center space-x-2 hover:text-white transition-colors duration-300">
+                        <i class="mdi mdi-file-sign text-xs"></i>
+                        <span>Соглашение</span>
+                    </a>
                     <a href="{{ route('main.privacy') }}"
-                        class="flex items-center space-x-2 hover:text-white transition-colors duration-300 text-sm sm:text-base">
+                        class="flex items-center space-x-2 hover:text-white transition-colors duration-300">
                         <i class="mdi mdi-shield-lock text-xs"></i>
-                        <span>Политика конфиденциальности</span>
+                        <span>Конфиденциальность</span>
+                    </a>
+                    <a href="{{ route('main.cookies') }}"
+                        class="flex items-center space-x-2 hover:text-white transition-colors duration-300">
+                        <i class="mdi mdi-cookie text-xs"></i>
+                        <span>Cookie</span>
                     </a>
                     <p class="flex items-center space-x-2">
                         <i class="mdi mdi-copyright text-xs"></i>

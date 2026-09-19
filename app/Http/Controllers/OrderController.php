@@ -6,16 +6,19 @@ use Illuminate\Support\Facades\Log;
 use App\Facades\Frontpad;
 use App\Models\Order;
 use App\Models\Product;
+use App\Services\LegalConsentService;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use InvalidArgumentException;
 
 class OrderController extends Controller
 {
 
     protected $user = null;
 
-    public function __construct()
-    {
+    public function __construct(
+        private LegalConsentService $legalConsents
+    ) {
         $this->middleware('auth:sanctum', ['only' => [
             'getMyOrders',
             'getMyCoins'
@@ -54,6 +57,13 @@ class OrderController extends Controller
             'cart_count' => count($request->cart ?? [])
         ]);
 
+        $consents = $request->input('consents', []);
+        try {
+            $this->legalConsents->assertOrderConsents(is_array($consents) ? $consents : []);
+        } catch (InvalidArgumentException $e) {
+            return response($e->getMessage(), 422);
+        }
+
         $cart = [];
         foreach ($request->cart as $item) {
             $cart[] = $item['sku'];
@@ -69,6 +79,8 @@ class OrderController extends Controller
         if (!$this->addCartItems($order, $request->cart)) {
             return response('Ошибка при добавлении товаров в заказ', 500);
         }
+
+        $this->legalConsents->recordOrderConsents($order, $consents, $request);
 
         Frontpad::createOrder($order);
 

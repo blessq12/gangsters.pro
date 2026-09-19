@@ -19,6 +19,8 @@ Route::group([
     $router->resource('banners', BannerController::class);
     $router->resource('companies', CompanyController::class);
     $router->resource('company-legals', CompanyLegalController::class);
+    $router->resource('legal-documents', LegalDocumentController::class);
+    $router->resource('legal-consents', LegalConsentController::class);
     $router->resource('product-categories', ProductCategoryController::class);
     $router->resource('products', ProductController::class);
     $router->resource('users', ClientController::class);

@@ -19,6 +19,8 @@ use App\Http\Controllers\TelegramBotController;
 */
 
 
+Route::get('/legal/current', [\App\Http\Controllers\LegalDocumentController::class, 'current']);
+
 Route::controller(ApiClientAuthController::class)->prefix('auth')->group(function () {
     Route::post('/login', 'clientLogin');
     Route::post('/register', 'clientRegister');

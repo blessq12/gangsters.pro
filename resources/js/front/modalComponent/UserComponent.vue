@@ -1,16 +1,18 @@
 <script>
 import gsap from "gsap";
 import { mapStores } from "pinia";
-import { object, string } from "yup";
+import { boolean, object, string } from "yup";
 import { appStore } from "../../stores/appStorage";
+import { legalStore } from "../../stores/legalStore";
 import { userStore } from "../../stores/userStore";
+import { useToast } from "vue-toastification";
 
 export default {
     mounted() {
-        // this.initializeAnimations();
+        this.legalStore.loadCurrent();
     },
     computed: {
-        ...mapStores(userStore, appStore),
+        ...mapStores(userStore, appStore, legalStore),
     },
     data() {
         return {
@@ -20,6 +22,7 @@ export default {
             loginSchema: this.getLoginSchema(),
             registerSchema: this.getRegisterSchema(),
             errors: [],
+            toast: useToast(),
         };
     },
     methods: {
@@ -36,6 +39,7 @@ export default {
                 email: "",
                 password: "",
                 password_confirmation: "",
+                acceptPdn: false,
             };
         },
         getLoginSchema() {
@@ -70,6 +74,9 @@ export default {
                     .required("Обязательное поле")
                     .min(6, "Минимум 6 символов")
                     .max(255, "Максимум 255 символов"),
+                acceptPdn: boolean()
+                    .oneOf([true], "Нужно согласие на обработку ПДн")
+                    .required(),
             });
         },
         validate(form) {
@@ -82,6 +89,22 @@ export default {
                 .then((res) => {
                     this.errors = [];
                     this.updateInputs();
+                    if (form === "register") {
+                        if (!this.legalStore.pdnId) {
+                            this.toast.error(
+                                "Не удалось загрузить согласие на ПДн. Обновите страницу."
+                            );
+                            this.legalStore.loadCurrent();
+                            return;
+                        }
+                        const payload = {
+                            ...res,
+                            pdn_document_id: this.legalStore.pdnId,
+                        };
+                        delete payload.acceptPdn;
+                        this.userStore.auth(form, payload);
+                        return;
+                    }
                     this.userStore.auth(form, data);
                 })
                 .catch((err) => {
