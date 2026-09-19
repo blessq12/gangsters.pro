@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             CompanySeeder::class,
             CompanyLegalSeeder::class,
             LegalDocumentSeeder::class,
+            AdminLegalMenuSeeder::class,
             ProductCategorySeeder::class,
             ProductSeeder::class,
         ]);
