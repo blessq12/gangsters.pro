@@ -11,4 +11,14 @@ final class LegalConsentType
         self::OFFER,
         self::PDN,
     ];
+
+    public const LABELS = [
+        self::OFFER => 'Публичная оферта',
+        self::PDN => 'Согласие на обработку ПДн',
+    ];
+
+    public static function label(string $type): string
+    {
+        return self::LABELS[$type] ?? $type;
+    }
 }

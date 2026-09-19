@@ -405,38 +405,43 @@ export default {
                             />
                         </div>
 
-                        <div class="space-y-3 text-sm text-gray-700">
+                        <div class="space-y-3 text-sm text-gray-700 leading-snug">
                             <label class="flex items-start gap-2">
                                 <input
                                     type="checkbox"
-                                    class="mt-1 form-checkbox h-4 w-4 text-primary-600"
+                                    class="mt-1 form-checkbox h-4 w-4 text-primary-600 shrink-0"
                                     v-model="acceptOffer"
                                 />
                                 <span>
-                                    Я принимаю
+                                    Я принимаю условия публичной оферты и
+                                    подтверждаю оформление заказа на условиях,
+                                    изложенных в
                                     <a
                                         :href="legalStore.offerUrl"
                                         target="_blank"
+                                        rel="noopener noreferrer"
                                         class="text-primary-600 underline"
-                                        >публичную оферту</a
-                                    >
+                                        >публичной оферте</a
+                                    >.
                                 </span>
                             </label>
                             <label class="flex items-start gap-2">
                                 <input
                                     type="checkbox"
-                                    class="mt-1 form-checkbox h-4 w-4 text-primary-600"
+                                    class="mt-1 form-checkbox h-4 w-4 text-primary-600 shrink-0"
                                     v-model="acceptPdn"
                                 />
                                 <span>
-                                    Даю
+                                    Я даю согласие на обработку персональных
+                                    данных для оформления и выполнения заказа по
                                     <a
                                         :href="legalStore.pdnUrl"
                                         target="_blank"
+                                        rel="noopener noreferrer"
                                         class="text-primary-600 underline"
-                                        >согласие на обработку персональных
+                                        >Согласию на обработку персональных
                                         данных</a
-                                    >
+                                    >.
                                 </span>
                             </label>
                         </div>

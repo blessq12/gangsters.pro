@@ -2,6 +2,8 @@
 
 namespace App\Admin\Controllers;
 
+use App\Enums\LegalConsentType;
+use App\Enums\LegalDocumentType;
 use App\Models\LegalConsent;
 use Encore\Admin\Controllers\AdminController;
 use Encore\Admin\Grid;
@@ -9,23 +11,56 @@ use Encore\Admin\Show;
 
 class LegalConsentController extends AdminController
 {
-    protected $title = 'Согласия (аудит)';
+    protected $title = 'Согласия';
 
     protected function grid()
     {
         $grid = new Grid(new LegalConsent());
 
-        $grid->model()->orderByDesc('accepted_at');
+        $grid->model()
+            ->with(['user', 'order', 'document'])
+            ->orderByDesc('accepted_at');
 
-        $grid->column('id', __('ID'));
-        $grid->column('consent_type', __('Тип согласия'));
-        $grid->column('user_id', __('User ID'));
-        $grid->column('order_id', __('Order ID'));
-        $grid->column('legal_document_id', __('Документ'));
-        $grid->column('document.version', __('Версия'));
-        $grid->column('document.type', __('Тип документа'));
-        $grid->column('ip', __('IP'));
-        $grid->column('accepted_at', __('Принято'));
+        $grid->column('id', '№');
+        $grid->column('consent_type', 'Тип согласия')->display(function ($type) {
+            return LegalConsentType::label((string) $type);
+        });
+        $grid->column('user_id', 'Пользователь')->display(function ($userId) {
+            if (!$userId) {
+                return 'Гость';
+            }
+            $user = $this->user;
+            if (!$user) {
+                return 'Пользователь №' . $userId;
+            }
+            $parts = array_filter([$user->name, $user->tel, $user->email]);
+
+            return $parts !== [] ? implode(' · ', $parts) : 'Пользователь №' . $userId;
+        });
+        $grid->column('order_id', 'Заказ')->display(function ($orderId) {
+            return $orderId ? 'Заказ №' . $orderId : '—';
+        });
+        $grid->column('document.type', 'Документ')->display(function ($type) {
+            return LegalDocumentType::LABELS[$type] ?? ($type ?: '—');
+        });
+        $grid->column('document.version', 'Версия документа')->display(function ($version) {
+            return $version !== null ? 'Версия ' . $version : '—';
+        });
+        $grid->column('ip', 'IP-адрес')->display(function ($ip) {
+            return $ip ?: '—';
+        });
+        $grid->column('accepted_at', 'Дата и время принятия')->display(function ($value) {
+            return $value ? date('d.m.Y H:i', strtotime((string) $value)) : '—';
+        });
+
+        $grid->filter(function ($filter) {
+            $filter->disableIdFilter();
+            $filter->equal('consent_type', 'Тип согласия')->select(LegalConsentType::LABELS);
+            $filter->equal('document.type', 'Тип документа')->select(LegalDocumentType::LABELS);
+            $filter->equal('order_id', 'Номер заказа');
+            $filter->equal('user_id', 'Номер пользователя');
+            $filter->between('accepted_at', 'Период принятия')->datetime();
+        });
 
         $grid->disableCreateButton();
         $grid->disableExport();
@@ -35,25 +70,69 @@ class LegalConsentController extends AdminController
             $actions->disableDelete();
         });
 
+        $grid->tools(function ($tools) {
+            $tools->append(
+                '<span class="pull-right" style="margin:7px 12px 0 0;color:#777">'
+                . 'Журнал зафиксированных согласий. Только просмотр.'
+                . '</span>'
+            );
+        });
+
         return $grid;
     }
 
     protected function detail($id)
     {
-        $show = new Show(LegalConsent::findOrFail($id));
+        $consent = LegalConsent::query()
+            ->with(['user', 'order', 'document'])
+            ->findOrFail($id);
 
-        $show->field('id', __('ID'));
-        $show->field('consent_type', __('Тип согласия'));
-        $show->field('user_id', __('User ID'));
-        $show->field('order_id', __('Order ID'));
-        $show->field('legal_document_id', __('Документ ID'));
-        $show->field('document.type', __('Тип документа'));
-        $show->field('document.version', __('Версия'));
-        $show->field('document.title', __('Заголовок'));
-        $show->field('ip', __('IP'));
-        $show->field('user_agent', __('User-Agent'));
-        $show->field('accepted_at', __('Принято'));
-        $show->field('created_at', __('Создано'));
+        $show = new Show($consent);
+
+        $show->field('id', 'Номер записи');
+        $show->field('consent_type', 'Тип согласия')->as(function ($type) {
+            return LegalConsentType::label((string) $type);
+        });
+        $show->field('user_id', 'Пользователь')->as(function ($userId) use ($consent) {
+            if (!$userId) {
+                return 'Гость (без учётной записи)';
+            }
+            $user = $consent->user;
+            if (!$user) {
+                return 'Пользователь №' . $userId . ' (запись не найдена)';
+            }
+
+            return trim(sprintf(
+                '№%s · %s · %s · %s',
+                $user->id,
+                $user->name ?: 'без имени',
+                $user->tel ?: 'без телефона',
+                $user->email ?: 'без почты'
+            ));
+        });
+        $show->field('order_id', 'Заказ')->as(function ($orderId) {
+            return $orderId ? 'Заказ №' . $orderId : 'Не привязан к заказу';
+        });
+        $show->field('document.type', 'Тип документа')->as(function ($type) {
+            return LegalDocumentType::LABELS[$type] ?? ($type ?: '—');
+        });
+        $show->field('document.version', 'Версия документа')->as(function ($version) {
+            return $version !== null ? 'Версия ' . $version : '—';
+        });
+        $show->field('document.title', 'Заголовок документа');
+        $show->field('legal_document_id', 'Номер документа в базе');
+        $show->field('ip', 'IP-адрес')->as(function ($ip) {
+            return $ip ?: 'Не зафиксирован';
+        });
+        $show->field('user_agent', 'Браузер / устройство')->as(function ($ua) {
+            return $ua ?: 'Не зафиксирован';
+        });
+        $show->field('accepted_at', 'Дата и время принятия')->as(function ($value) {
+            return $value ? date('d.m.Y H:i:s', strtotime((string) $value)) : '—';
+        });
+        $show->field('created_at', 'Запись создана')->as(function ($value) {
+            return $value ? date('d.m.Y H:i:s', strtotime((string) $value)) : '—';
+        });
 
         $show->panel()->tools(function ($tools) {
             $tools->disableEdit();
@@ -65,6 +144,6 @@ class LegalConsentController extends AdminController
 
     protected function form()
     {
-        abort(405, 'Согласия только для просмотра');
+        abort(405, 'Согласия доступны только для просмотра');
     }
 }

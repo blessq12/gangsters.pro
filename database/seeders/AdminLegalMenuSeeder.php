@@ -65,7 +65,7 @@ class AdminLegalMenuSeeder extends Seeder
             [
                 'parent_id' => $parentId,
                 'order' => ((int) $this->db()->table('admin_menu')->max('order')) + 2,
-                'title' => 'Согласия (аудит)',
+                'title' => 'Согласия',
                 'icon' => 'fa-check-square-o',
                 'uri' => 'legal-consents',
                 'permission' => null,

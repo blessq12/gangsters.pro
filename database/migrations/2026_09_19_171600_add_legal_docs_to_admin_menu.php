@@ -56,7 +56,7 @@ return new class extends Migration
                 [
                     'parent_id' => $parentId,
                     'order' => $this->nextOrder(),
-                    'title' => 'Согласия (аудит)',
+                    'title' => 'Согласия',
                     'icon' => 'fa-check-square-o',
                     'uri' => 'legal-consents',
                     'permission' => null,
@@ -86,7 +86,7 @@ return new class extends Migration
                 $this->db()->table('admin_menu')->insert([
                     'parent_id' => $parentId,
                     'order' => $this->nextOrder(),
-                    'title' => 'Согласия (аудит)',
+                    'title' => 'Согласия',
                     'icon' => 'fa-check-square-o',
                     'uri' => 'legal-consents',
                     'permission' => null,

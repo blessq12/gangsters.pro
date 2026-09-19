@@ -170,20 +170,22 @@ export default {
             </label>
         </div>
 
-        <label class="flex items-start gap-2 text-sm text-gray-700">
+        <label class="flex items-start gap-2 text-sm text-gray-700 leading-snug">
             <input
                 type="checkbox"
-                class="mt-1 form-checkbox h-4 w-4 text-primary-600"
+                class="mt-1 form-checkbox h-4 w-4 text-primary-600 shrink-0"
                 v-model="data.acceptPdn"
             />
             <span>
-                Даю
+                Я даю согласие на обработку персональных данных для регистрации
+                учётной записи и использования личного кабинета по
                 <a
                     href="/pdn-consent"
                     target="_blank"
+                    rel="noopener noreferrer"
                     class="text-primary-600 underline"
-                    >согласие на обработку персональных данных</a
-                >
+                    >Согласию на обработку персональных данных</a
+                >.
             </span>
         </label>
 
