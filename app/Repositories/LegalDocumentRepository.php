@@ -10,11 +10,15 @@ use InvalidArgumentException;
 
 class LegalDocumentRepository
 {
+    /**
+     * Актуальный документ для публички = последняя версия по номеру.
+     */
     public function findCurrent(string $type): ?LegalDocument
     {
         return LegalDocument::query()
             ->where('type', $type)
-            ->where('is_current', true)
+            ->orderByDesc('version')
+            ->orderByDesc('id')
             ->first();
     }
 
@@ -34,11 +38,16 @@ class LegalDocumentRepository
      */
     public function allCurrent(): Collection
     {
-        return LegalDocument::query()
-            ->where('is_current', true)
-            ->whereIn('type', LegalDocumentType::ALL)
-            ->get()
-            ->keyBy('type');
+        $result = collect();
+
+        foreach (LegalDocumentType::ALL as $type) {
+            $document = $this->findCurrent($type);
+            if ($document) {
+                $result->put($type, $document);
+            }
+        }
+
+        return $result;
     }
 
     public function publishNewVersion(string $type, string $title, string $bodyHtml): LegalDocument
@@ -52,10 +61,9 @@ class LegalDocumentRepository
 
             LegalDocument::query()
                 ->where('type', $type)
-                ->where('is_current', true)
                 ->update(['is_current' => false]);
 
-            return LegalDocument::query()->create([
+            $document = LegalDocument::query()->create([
                 'type' => $type,
                 'version' => $nextVersion,
                 'title' => $title,
@@ -63,15 +71,48 @@ class LegalDocumentRepository
                 'is_current' => true,
                 'published_at' => now(),
             ]);
+
+            $this->syncCurrentFlag($type);
+
+            return $document->fresh();
         });
     }
 
     public function isCurrentDocument(int $documentId, string $type): bool
     {
-        return LegalDocument::query()
-            ->where('id', $documentId)
+        $current = $this->findCurrent($type);
+
+        return $current !== null && (int) $current->id === (int) $documentId;
+    }
+
+    /**
+     * is_current только у строки с максимальной version (на случай рассинхрона).
+     */
+    public function syncCurrentFlag(string $type): void
+    {
+        $latest = LegalDocument::query()
             ->where('type', $type)
-            ->where('is_current', true)
-            ->exists();
+            ->orderByDesc('version')
+            ->orderByDesc('id')
+            ->first();
+
+        if (!$latest) {
+            return;
+        }
+
+        LegalDocument::query()
+            ->where('type', $type)
+            ->update(['is_current' => false]);
+
+        LegalDocument::query()
+            ->where('id', $latest->id)
+            ->update(['is_current' => true]);
+    }
+
+    public function syncAllCurrentFlags(): void
+    {
+        foreach (LegalDocumentType::ALL as $type) {
+            $this->syncCurrentFlag($type);
+        }
     }
 }
