@@ -106,9 +106,9 @@ export function normalizeCompanyDocument(apiDocument) {
         return null;
     }
 
-    const key = safeTrim(apiDocument.key);
-    const title = safeTrim(apiDocument.title);
-    if (!key || !title) {
+    const slug = safeTrim(apiDocument.slug);
+    const name = safeTrim(apiDocument.name);
+    if (!slug || !name) {
         return null;
     }
 
@@ -120,8 +120,8 @@ export function normalizeCompanyDocument(apiDocument) {
 
     return {
         id: apiDocument.id ?? null,
-        key,
-        title,
+        slug,
+        name,
         content: normalizedContent,
     };
 }

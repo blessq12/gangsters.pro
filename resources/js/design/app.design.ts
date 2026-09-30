@@ -10,6 +10,7 @@ import { pagesDesign } from "./pages/pages.design";
 import { navbarDesign } from "./layout/navbar.design";
 import { workScheduleDesign } from "./layout/workSchedule.design";
 import { closedNoticeDesign } from "./layout/closedNotice.design";
+import { siteConsentNoticeDesign } from "./layout/siteConsentNotice.design";
 import { dockDismissConfirmDesign } from "./layout/dockDismissConfirm.design";
 import { uiPrimitivesDesign } from "./ui/uiPrimitives.design";
 
@@ -26,6 +27,7 @@ export const appDesign = {
         dockPanels: dockPanelsDesign,
         workSchedule: workScheduleDesign,
         closedNotice: closedNoticeDesign,
+        siteConsentNotice: siteConsentNoticeDesign,
         layoutShell: layoutShellDesign,
         catalog: catalogDesign,
         uiPrimitives: uiPrimitivesDesign,

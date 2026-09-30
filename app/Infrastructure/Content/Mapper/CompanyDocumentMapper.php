@@ -11,8 +11,8 @@ final class CompanyDocumentMapper
     {
         return new CompanyDocument(
             id: (int) $row->id,
-            key: (string) $row->key,
-            title: (string) $row->title,
+            slug: (string) $row->slug,
+            name: (string) $row->name,
             content: $row->content !== null ? (string) $row->content : null,
         );
     }

@@ -71,6 +71,15 @@ export default defineConfig({
             },
         }),
     ],
+    server: {
+        // Совпадает с APP_URL (127.0.0.1) — иначе Safari content blocker режет [::1]:5173.
+        host: "127.0.0.1",
+        port: 5173,
+        strictPort: true,
+        hmr: {
+            host: "127.0.0.1",
+        },
+    },
     resolve: {
         alias: {
             vue: "vue/dist/vue.esm-bundler.js",

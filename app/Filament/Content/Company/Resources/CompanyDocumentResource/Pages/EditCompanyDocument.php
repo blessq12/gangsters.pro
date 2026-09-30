@@ -3,6 +3,7 @@
 namespace App\Filament\Content\Company\Resources\CompanyDocumentResource\Pages;
 
 use App\Filament\Content\Company\Resources\CompanyDocumentResource;
+use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 
@@ -14,7 +15,10 @@ class EditCompanyDocument extends EditRecord
 
     protected function getHeaderActions(): array
     {
-        return [];
+        return [
+            DeleteAction::make()
+                ->label('Удалить'),
+        ];
     }
 
     /**

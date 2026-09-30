@@ -3,7 +3,10 @@
 namespace App\Filament\Content\Company\Resources\CompanyDocumentResource\Tables;
 
 use App\Filament\Content\Company\Resources\CompanyDocumentResource;
+use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -11,19 +14,15 @@ final class CompanyDocumentsTable
 {
     public static function configure(Table $table): Table
     {
-        $labels = CompanyDocumentResource::documentDefinitions();
-
         return $table
-            ->defaultSort('key')
+            ->defaultSort('name')
             ->columns([
-                TextColumn::make('key')
-                    ->label('Тип')
-                    ->formatStateUsing(
-                        fn (?string $state): string => $labels[$state] ?? (string) $state,
-                    )
+                TextColumn::make('name')
+                    ->label('Название')
+                    ->searchable()
                     ->sortable(),
-                TextColumn::make('title')
-                    ->label('Заголовок')
+                TextColumn::make('slug')
+                    ->label('Слаг')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('updated_at')
@@ -32,10 +31,18 @@ final class CompanyDocumentsTable
                     ->sortable(),
             ])
             ->emptyStateHeading('Документы не найдены')
-            ->emptyStateDescription('Документы появятся после инициализации компании.')
+            ->emptyStateDescription('Создайте юридический документ.')
+            ->headerActions([
+                Action::make('create')
+                    ->label('Создать')
+                    ->icon(Heroicon::Plus)
+                    ->url(fn (): string => CompanyDocumentResource::getUrl('create')),
+            ])
             ->recordActions([
                 EditAction::make()
                     ->label('Редактировать'),
+                DeleteAction::make()
+                    ->label('Удалить'),
             ]);
     }
 }

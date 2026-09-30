@@ -15,27 +15,14 @@ import { hasDocumentBody } from "../../platform/document";
 import { formatRuPhone, phoneToTelHref } from "../../platform/ruPhone";
 import FooterLegalModal from "./FooterLegalModal.vue";
 
-const FOOTER_DOC_KEYS = {
-    privacy: "privacy_policy",
-    rules: "terms_of_use",
-    agreement: "user_agreement",
-};
-
-const FOOTER_DOC_TITLES = {
-    privacy_policy: "Политика конфиденциальности",
-    terms_of_use: "Правила использования",
-    user_agreement: "Пользовательское соглашение",
-};
-
 const footer = useAppDesign().components.footer;
 
 const year = new Date().getFullYear();
 const contentStore = useContentStore();
 const { documents, profile, deliveryFacts, legal } = storeToRefs(contentStore);
 
-const showPrivacy = ref(false);
-const showRules = ref(false);
-const showAgreement = ref(false);
+/** @type {import("vue").Ref<object|null>} */
+const activeDocument = ref(null);
 
 const containerRef = ref(null);
 
@@ -44,34 +31,42 @@ useEnterSlide(containerRef, {
     delay: 1.2,
 });
 
-function resolveFooterDoc(key) {
-    const docs = documents.value || [];
-    const doc = docs.find((d) => d.key === key);
-    const title =
-        doc?.title && String(doc.title).trim()
-            ? String(doc.title).trim()
-            : FOOTER_DOC_TITLES[key] || key;
+const legalDocuments = computed(() => documents.value || []);
 
+const legalModalOpen = computed({
+    get: () => activeDocument.value != null,
+    set: (open) => {
+        if (!open) {
+            activeDocument.value = null;
+        }
+    },
+});
+
+const activeLegalModalTitle = computed(
+    () => safeTrim(activeDocument.value?.name) || "",
+);
+
+const activeLegalModalDoc = computed(() => {
+    const doc = activeDocument.value;
     if (doc && hasDocumentBody(doc.content)) {
         return {
-            title,
             useHtml: true,
             html: doc.content,
         };
     }
 
     return {
-        title,
         useHtml: false,
         empty: true,
     };
-}
+});
 
-const privacyDoc = computed(() => resolveFooterDoc(FOOTER_DOC_KEYS.privacy));
-const rulesDoc = computed(() => resolveFooterDoc(FOOTER_DOC_KEYS.rules));
-const agreementDoc = computed(() =>
-    resolveFooterDoc(FOOTER_DOC_KEYS.agreement),
-);
+/**
+ * @param {object} doc
+ */
+function openLegalDocument(doc) {
+    activeDocument.value = doc;
+}
 
 const companyTitle = computed(() => {
     const c = profile.value;
@@ -193,31 +188,22 @@ const copyrightName = computed(
         <div :class="footer.inner">
             <div ref="containerRef" :class="footer.bar">
                 <div :class="footer.columns">
-                    <div :class="footer.column">
+                    <div
+                        v-if="legalDocuments.length"
+                        :class="footer.column"
+                    >
                         <p :class="footer.columnTitle">
                             Юридическая информация
                         </p>
                         <div :class="footer.linkStack">
                             <button
+                                v-for="doc in legalDocuments"
+                                :key="doc.id ?? doc.slug"
                                 type="button"
                                 :class="footer.linkItem"
-                                @click="showPrivacy = true"
+                                @click="openLegalDocument(doc)"
                             >
-                                {{ privacyDoc.title }}
-                            </button>
-                            <button
-                                type="button"
-                                :class="footer.linkItem"
-                                @click="showRules = true"
-                            >
-                                {{ rulesDoc.title }}
-                            </button>
-                            <button
-                                type="button"
-                                :class="footer.linkItem"
-                                @click="showAgreement = true"
-                            >
-                                {{ agreementDoc.title }}
+                                {{ doc.name }}
                             </button>
                         </div>
                     </div>
@@ -344,19 +330,9 @@ const copyrightName = computed(
         </div>
 
         <FooterLegalModal
-            v-model="showPrivacy"
-            :title="privacyDoc.title"
-            :doc="privacyDoc"
-        />
-        <FooterLegalModal
-            v-model="showRules"
-            :title="rulesDoc.title"
-            :doc="rulesDoc"
-        />
-        <FooterLegalModal
-            v-model="showAgreement"
-            :title="agreementDoc.title"
-            :doc="agreementDoc"
+            v-model="legalModalOpen"
+            :title="activeLegalModalTitle"
+            :doc="activeLegalModalDoc"
         />
     </footer>
 </template>

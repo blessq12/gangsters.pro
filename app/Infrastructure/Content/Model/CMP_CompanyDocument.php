@@ -11,8 +11,8 @@ class CMP_CompanyDocument extends Model
 
     protected $fillable = [
         'company_id',
-        'key',
-        'title',
+        'slug',
+        'name',
         'content',
     ];
 

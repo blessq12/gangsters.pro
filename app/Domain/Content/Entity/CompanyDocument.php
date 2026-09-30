@@ -9,8 +9,8 @@ final class CompanyDocument
 {
     public function __construct(
         private readonly int $id,
-        private readonly string $key,
-        private readonly string $title,
+        private readonly string $slug,
+        private readonly string $name,
         private readonly ?string $content,
     ) {}
 
@@ -19,14 +19,14 @@ final class CompanyDocument
         return $this->id;
     }
 
-    public function key(): string
+    public function slug(): string
     {
-        return $this->key;
+        return $this->slug;
     }
 
-    public function title(): string
+    public function name(): string
     {
-        return $this->title;
+        return $this->name;
     }
 
     public function content(): ?string

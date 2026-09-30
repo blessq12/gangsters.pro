@@ -7,6 +7,7 @@ import MainLayoutMobile from "./layouts/MainLayoutMobile.vue";
 import MainLayoutDesktop from "./layouts/MainLayoutDesktop.vue";
 import { useAppBootstrap } from "./modules/shell/application/useAppBootstrap";
 import ClosedForOrdersModal from "./components/company/ClosedForOrdersModal.vue";
+import SiteConsentNotice from "./components/layout/SiteConsentNotice.vue";
 import CatalogSearchLayer from "./components/catalog/CatalogSearchLayer.vue";
 
 const uiStore = useUiStore();
@@ -30,6 +31,7 @@ onUnmounted(() => {
 <template>
     <component :is="layoutComponent" />
     <ScrollToTopButton />
+    <SiteConsentNotice />
     <ClosedForOrdersModal />
     <CatalogSearchLayer />
 </template>

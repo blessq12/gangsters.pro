@@ -105,8 +105,8 @@ final class GetBootstrapUseCase
     {
         return [
             'id' => $document->id(),
-            'key' => $document->key(),
-            'title' => $document->title(),
+            'slug' => $document->slug(),
+            'name' => $document->name(),
             'content' => $document->content(),
         ];
     }

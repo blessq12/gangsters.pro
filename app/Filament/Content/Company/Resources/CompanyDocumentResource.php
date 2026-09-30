@@ -2,6 +2,7 @@
 
 namespace App\Filament\Content\Company\Resources;
 
+use App\Filament\Content\Company\Resources\CompanyDocumentResource\Pages\CreateCompanyDocument;
 use App\Filament\Content\Company\Resources\CompanyDocumentResource\Pages\EditCompanyDocument;
 use App\Filament\Content\Company\Resources\CompanyDocumentResource\Pages\ListCompanyDocuments;
 use App\Filament\Content\Company\Resources\CompanyDocumentResource\Schemas\CompanyDocumentForm;
@@ -13,7 +14,6 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Model;
 
 class CompanyDocumentResource extends Resource
 {
@@ -23,7 +23,7 @@ class CompanyDocumentResource extends Resource
 
     protected static ?string $slug = 'company-documents';
 
-    protected static ?string $recordTitleAttribute = 'title';
+    protected static ?string $recordTitleAttribute = 'name';
 
     protected static ?string $modelLabel = 'Документ';
 
@@ -36,18 +36,6 @@ class CompanyDocumentResource extends Resource
     protected static ?int $navigationSort = 15;
 
     protected static string | \UnitEnum | null $navigationGroup = AdminNavigationGroup::Organization;
-
-    /**
-     * @return array<string, string>
-     */
-    public static function documentDefinitions(): array
-    {
-        return [
-            'privacy_policy' => 'Политика конфиденциальности',
-            'terms_of_use' => 'Правила использования',
-            'user_agreement' => 'Пользовательское соглашение',
-        ];
-    }
 
     public static function form(Schema $schema): Schema
     {
@@ -63,22 +51,8 @@ class CompanyDocumentResource extends Resource
     {
         return [
             'index' => ListCompanyDocuments::route('/'),
+            'create' => CreateCompanyDocument::route('/create'),
             'edit' => EditCompanyDocument::route('/{record}/edit'),
         ];
-    }
-
-    public static function canCreate(): bool
-    {
-        return false;
-    }
-
-    public static function canDelete(Model $record): bool
-    {
-        return false;
-    }
-
-    public static function canDeleteAny(): bool
-    {
-        return false;
     }
 }
