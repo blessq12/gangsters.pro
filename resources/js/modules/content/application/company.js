@@ -37,7 +37,10 @@ export function parseWorkWindow(workRaw) {
     if (workRaw == null || typeof workRaw !== "string") return null;
     const s = workRaw.trim();
     if (!s) return null;
-    const parts = s.split(/[-–—]/u).map((p) => p.trim()).filter(Boolean);
+    const parts = s
+        .split(/[-–—]/u)
+        .map((p) => p.trim())
+        .filter(Boolean);
     if (parts.length < 2) return null;
     const start = parseHHMM(parts[0]);
     const end = parseHHMM(parts[1]);
@@ -126,8 +129,7 @@ export function isCompanyOpenNow(company, now = new Date()) {
         if (win) {
             return isTimeWithinWorkWindow(now, win.start, win.end);
         }
-        const workStr =
-            typeof row.work === "string" ? row.work.trim() : "";
+        const workStr = typeof row.work === "string" ? row.work.trim() : "";
         if (!workStr) {
             return isOpenByWeekendFallback(now);
         }
@@ -152,28 +154,8 @@ export function isCompanyOpenNow(company, now = new Date()) {
  */
 export function getCompanyOpenStatusHint(company, now = new Date()) {
     const open = isCompanyOpenNow(company, now);
-    const dayKey = getCurrentDayKey(now);
-    const row = findScheduleRowForDay(companyScheduleOf(company), dayKey);
-
-    if (row && isScheduleDayOff(row)) {
-        return { open: false, hint: "Выходной" };
-    }
-
-    const w =
-        row && row.work != null ? parseWorkWindow(row.work) : null;
-    if (w) {
-        if (open) {
-            const eh = String(Math.floor(w.end / 60)).padStart(2, "0");
-            const em = String(w.end % 60).padStart(2, "0");
-            return { open: true, hint: `До ${eh}:${em}` };
-        }
-        return { open: false, hint: "Вне часов работы" };
-    }
-
-    if (open) {
-        return { open: true, hint: "Работаем" };
-    }
-    return { open: false, hint: "Закрыто" };
+    // Статус «Открыто/Закрыто» рисует UI; доп. hint (время) не отдаём.
+    return { open, hint: "" };
 }
 
 const DAY_LABELS = {
@@ -238,10 +220,8 @@ export function getWorkScheduleRows(schedule) {
     const rows = list
         .map((row) => {
             if (!row || typeof row !== "object") return null;
-            const dayKey =
-                typeof row.day === "string" ? row.day : null;
-            const dayLabel =
-                (dayKey && DAY_LABELS[dayKey]) || dayKey || "—";
+            const dayKey = typeof row.day === "string" ? row.day : null;
+            const dayLabel = (dayKey && DAY_LABELS[dayKey]) || dayKey || "—";
             const off =
                 row.is_day_off === "1" ||
                 row.is_day_off === 1 ||
@@ -365,8 +345,7 @@ export function formatCompanyAddressLine(company) {
     const street = safeTrim(company.street);
     const house = safeTrim(company.house);
     const line = [street, house].filter(Boolean).join(" ");
-    const core =
-        city && line ? `${city}, ${line}` : city || line || "";
+    const core = city && line ? `${city}, ${line}` : city || line || "";
 
     const comment = safeTrim(company.address_comment);
     if (!core) {
@@ -619,7 +598,8 @@ export function buildCheckoutAlignedPaymentInfoBlocks() {
     ];
 }
 
-export const CLOSED_NOTICE_DISMISSED_KEY = "gangsters_closed_notice_dismissed_v1";
+export const CLOSED_NOTICE_DISMISSED_KEY =
+    "gangsters_closed_notice_dismissed_v1";
 
 export function wasClosedNoticeDismissedThisSession() {
     if (typeof window === "undefined") {

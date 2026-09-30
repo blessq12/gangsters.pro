@@ -1,25 +1,17 @@
 <script setup>
-import {
-    computed,
-    nextTick,
-    onMounted,
-    onUnmounted,
-    ref,
-    watch,
-} from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import {
     playTooltipClose,
     playTooltipOpen,
     playWorkScheduleStripEnter,
 } from "../../animations/animationManager";
-import { useCompanyOpenStatus } from "../../modules/content/application/company";
-import { useContentStore } from "../../modules/content/store";
-import { getCurrentDayKey } from "../../modules/content/application/company";
-import {
-    formatTodayWorkScheduleLine,
-    getWorkScheduleRows,
-} from "../../modules/content/application/company";
 import { useAppDesign } from "../../design/useAppDesign";
+import {
+    getCurrentDayKey,
+    getWorkScheduleRows,
+    useCompanyOpenStatus,
+} from "../../modules/content/application/company";
+import { useContentStore } from "../../modules/content/store";
 
 const TOOLTIP_PAD = 12;
 const PANEL_MAX_WIDTH_PX = 20 * 16;
@@ -58,9 +50,7 @@ const panelPos = ref({
 });
 
 const hasCompany = computed(() => contentStore.profile != null);
-const isLoading = computed(
-    () => contentStore.loading && !contentStore.profile,
-);
+const isLoading = computed(() => contentStore.loading && !contentStore.profile);
 
 const openLabel = computed(() => {
     if (!hasCompany.value) return "";
@@ -78,11 +68,7 @@ const summaryLine = computed(() => {
     const hint = secondaryLine.value;
     const base = openLabel.value;
     if (hint) return `${base} · ${hint}`;
-    const today = formatTodayWorkScheduleLine(
-        contentStore.profile,
-        new Date(),
-    );
-    return today || base;
+    return base;
 });
 
 const titleAttr = computed(() => {
@@ -116,12 +102,6 @@ const scheduleRows = computed(() => {
     if (!c) return [];
     return getWorkScheduleRows(c.schedule);
 });
-
-const todayLine = computed(() =>
-    hasCompany.value
-        ? formatTodayWorkScheduleLine(contentStore.profile, new Date())
-        : "",
-);
 
 function isScheduleToday(dayKey) {
     return dayKey != null && dayKey === currentDayKey.value;
@@ -235,10 +215,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div
-        ref="stripEnterRef"
-        :class="stripRootClass"
-    >
+    <div ref="stripEnterRef" :class="stripRootClass">
         <template v-if="!isNavbarCompact">
             <div :class="ws.outerRow">
                 <button
@@ -252,17 +229,17 @@ onUnmounted(() => {
                     :aria-expanded="expanded"
                     @click.stop="toggleExpanded"
                 >
-                    <span
-                        :class="[ws.dotSize, dotClass]"
-                        role="presentation"
-                    />
+                    <span :class="[ws.dotSize, dotClass]" role="presentation" />
                     <span
                         :class="[ws.summaryTruncate, scheduleTheme.summaryLine]"
                     >
                         {{ summaryLine }}
                     </span>
                     <span
-                        :class="[ws.accentToggleHidden, scheduleTheme.panelAccent]"
+                        :class="[
+                            ws.accentToggleHidden,
+                            scheduleTheme.panelAccent,
+                        ]"
                     >
                         {{ expanded ? "Свернуть" : "Неделя" }}
                     </span>
@@ -285,10 +262,7 @@ onUnmounted(() => {
                 :aria-expanded="expanded"
                 @click.stop="toggleExpanded"
             >
-                <span
-                    :class="[ws.dotSize, dotClass]"
-                    role="presentation"
-                />
+                <span :class="[ws.dotSize, dotClass]" role="presentation" />
                 <i
                     class="mdi mdi-clock-outline shrink-0 text-base text-app-canvas-fg"
                     aria-hidden="true"
@@ -312,24 +286,9 @@ onUnmounted(() => {
                 @click.stop
             >
                 <p
-                    v-if="todayLine && !scheduleRows[0]?.isFallbackString"
-                    :class="[
-                        ws.panelParagraphToday,
-                        scheduleTheme.panelHeaderBorder,
-                        scheduleTheme.panelMutedText,
-                    ]"
-                >
-                    {{ todayLine }}
-                </p>
-                <p
-                    v-else-if="scheduleRows.length && !scheduleRows[0]?.isFallbackString"
-                    :class="[ws.panelParagraphByDays, scheduleTheme.panelMutedText]"
-                >
-                    По дням
-                </p>
-
-                <p
-                    v-if="scheduleRows.length && scheduleRows[0].isFallbackString"
+                    v-if="
+                        scheduleRows.length && scheduleRows[0].isFallbackString
+                    "
                     :class="[
                         ws.panelFallbackParagraph,
                         scheduleTheme.panelPrimaryText,
@@ -359,13 +318,17 @@ onUnmounted(() => {
                             <span
                                 v-if="isScheduleToday(row.dayKey)"
                                 :class="ws.srOnlyToday"
-                            > (сегодня)</span>
+                            >
+                                (сегодня)</span
+                            >
                         </span>
                         <span
                             :class="[
                                 ws.workCell,
                                 scheduleTheme.panelPrimaryText,
-                                isScheduleToday(row.dayKey) ? 'font-medium' : '',
+                                isScheduleToday(row.dayKey)
+                                    ? 'font-medium'
+                                    : '',
                             ]"
                         >
                             <template v-if="row.isDayOff">Выходной</template>
