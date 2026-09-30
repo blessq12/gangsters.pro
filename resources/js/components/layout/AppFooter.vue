@@ -66,7 +66,10 @@ const agreementDoc = computed(() =>
 </script>
 
 <template>
-    <footer :class="footer.footer">
+    <footer
+        data-app-footer
+        :class="footer.footer"
+    >
         <div :class="footer.inner">
             <div
                 ref="containerRef"

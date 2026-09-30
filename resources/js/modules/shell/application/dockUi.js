@@ -408,6 +408,128 @@ export function useChromeScrollDim({ uiStore, isHome }) {
     );
 }
 
+/** Высота зоны дока (остров + bottom offset) для IO rootMargin / scroll-end ε. */
+const DOCK_FOOTER_COLLISION_PX = 112;
+const FOOTER_SELECTOR = "footer[data-app-footer]";
+
+/**
+ * Home: скрыть dock chrome у футера (IO) и на коротких страницах (scroll-end).
+ * Открытая панель дока — приоритетнее, блокер не включаем.
+ *
+ * @param {object} options
+ * @param {object} options.uiStore
+ * @param {() => boolean} options.isHome
+ */
+export function useDockFooterCollision({ uiStore, isHome }) {
+    let ioHits = false;
+    let scrollEndHits = false;
+    let ticking = false;
+    /** @type {IntersectionObserver | null} */
+    let observer = null;
+
+    function clearBlock() {
+        ioHits = false;
+        scrollEndHits = false;
+        uiStore.setDockBlockedByFooter(false);
+    }
+
+    function applyBlock() {
+        if (typeof window === "undefined") return;
+
+        if (!isHome() || uiStore.dockActiveId !== null) {
+            uiStore.setDockBlockedByFooter(false);
+            return;
+        }
+
+        uiStore.setDockBlockedByFooter(ioHits || scrollEndHits);
+    }
+
+    function measureScrollEnd() {
+        if (typeof window === "undefined" || typeof document === "undefined") {
+            return false;
+        }
+
+        const doc = document.documentElement;
+        const scrollHeight = Math.max(doc.scrollHeight, document.body?.scrollHeight ?? 0);
+        const y = window.scrollY || window.pageYOffset || 0;
+        const viewport = window.innerHeight || doc.clientHeight || 0;
+
+        return y + viewport >= scrollHeight - DOCK_FOOTER_COLLISION_PX;
+    }
+
+    function recompute() {
+        scrollEndHits = measureScrollEnd();
+        applyBlock();
+    }
+
+    function onScrollOrResize() {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => {
+            ticking = false;
+            recompute();
+        });
+    }
+
+    function bindObserver() {
+        if (typeof window === "undefined" || typeof IntersectionObserver === "undefined") {
+            return;
+        }
+
+        const footer = document.querySelector(FOOTER_SELECTOR);
+        if (!footer) return;
+
+        observer?.disconnect();
+        observer = new IntersectionObserver(
+            (entries) => {
+                const entry = entries[0];
+                ioHits = Boolean(entry?.isIntersecting);
+                applyBlock();
+            },
+            {
+                root: null,
+                threshold: 0,
+                rootMargin: `0px 0px -${DOCK_FOOTER_COLLISION_PX}px 0px`,
+            },
+        );
+        observer.observe(footer);
+    }
+
+    onMounted(() => {
+        bindObserver();
+        recompute();
+        window.addEventListener("scroll", onScrollOrResize, { passive: true });
+        window.addEventListener("resize", onScrollOrResize, { passive: true });
+    });
+
+    onUnmounted(() => {
+        window.removeEventListener("scroll", onScrollOrResize);
+        window.removeEventListener("resize", onScrollOrResize);
+        observer?.disconnect();
+        observer = null;
+        clearBlock();
+    });
+
+    watch(
+        () => isHome(),
+        (home) => {
+            if (!home) {
+                clearBlock();
+                return;
+            }
+            bindObserver();
+            recompute();
+        },
+    );
+
+    watch(
+        () => uiStore.dockActiveId,
+        () => {
+            applyBlock();
+        },
+    );
+}
+
 /**
  * Home: при add из каталога — показать dock chrome.
  */

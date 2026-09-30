@@ -72,6 +72,10 @@ useDockMobileInteractions(uiStore, () => isMobile.value);
 
 const isPanelOpen = computed(() => Boolean(activeDockItem.value));
 
+const isDockChromeVisible = computed(
+    () => uiStore.showBottomNav && !uiStore.dockBlockedByFooter,
+);
+
 const dockIslandClasses = computed(() => [
     chrome.dockIsland,
     dock.shared.scrollDimTransition,
@@ -140,7 +144,7 @@ function handlePanelLeave(el, done) {
             @leave="handleChromeLeave"
         >
             <div
-                v-if="uiStore.showBottomNav"
+                v-if="isDockChromeVisible"
                 :class="[
                     chrome.visibleInner,
                     isPanelOpen ? chrome.visibleInnerWithPanel : '',

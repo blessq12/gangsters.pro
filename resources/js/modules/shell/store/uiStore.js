@@ -17,6 +17,8 @@ export const useUiStore = defineStore("ui", {
         showBottomNav: false,
         /** Home scroll: полупрозрачность chrome (док + бар категорий). Не persist. */
         chromeScrollDimmed: false,
+        /** Home: док скрыт из‑за футера / конца страницы. Не persist. */
+        dockBlockedByFooter: false,
         isMobileMenuOpen: false,
         deviceMode: "mobile",
         dockActiveId: null,
@@ -91,6 +93,9 @@ export const useUiStore = defineStore("ui", {
         setChromeScrollDimmed(value) {
             this.chromeScrollDimmed = Boolean(value);
         },
+        setDockBlockedByFooter(value) {
+            this.dockBlockedByFooter = Boolean(value);
+        },
         setShowBottomNav(value) {
             this.showBottomNav = Boolean(value);
             this.persist();
@@ -113,6 +118,7 @@ export const useUiStore = defineStore("ui", {
             if (this.dockActiveId) {
                 this.showBottomNav = true;
                 this.chromeScrollDimmed = false;
+                this.dockBlockedByFooter = false;
             }
             this.persist();
         },
@@ -211,6 +217,7 @@ export const useUiStore = defineStore("ui", {
         clear() {
             this.showBottomNav = false;
             this.chromeScrollDimmed = false;
+            this.dockBlockedByFooter = false;
             this.isMobileMenuOpen = false;
             this.dockActiveId = null;
             this.dockBadges = { ...DEFAULT_DOCK_BADGES };
