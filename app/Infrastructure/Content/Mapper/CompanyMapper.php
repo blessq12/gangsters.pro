@@ -3,78 +3,66 @@
 namespace App\Infrastructure\Content\Mapper;
 
 use App\Domain\Content\Entity\Company;
-use App\Domain\Content\ValueObject\CompanyContact;
-use App\Domain\Content\ValueObject\CompanySchedule;
-use App\Domain\Content\ValueObject\WorkScheduleRow;
+use App\Domain\Content\ValueObject\CompanySocials;
 use App\Infrastructure\Content\Model\CMP_Company;
 
 final class CompanyMapper
 {
-    private const VALID_DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+    private const DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
 
     public function toDomain(CMP_Company $row): Company
     {
         return new Company(
             id: (int) $row->id,
             name: (string) $row->name,
-            brandName: $this->nullableString($row->brand_name),
             description: $this->nullableString($row->description),
-            tagline: $this->nullableString($row->tagline),
-            contact: new CompanyContact(
-                phone: $this->nullableString($row->phone),
-                phoneAdditional: $this->nullableString($row->phone_additional),
-                supportPhone: $this->nullableString($row->support_phone),
-                whatsappPhone: $this->nullableString($row->whatsapp_phone),
-                emailAddress: $this->nullableString($row->email_address),
-                publicEmail: $this->nullableString($row->public_email),
-            ),
-            schedule: new CompanySchedule(
-                workHours: $this->nullableString($row->work_hours),
-                workSchedule: $this->mapWorkSchedule($row->work_schedule),
-            ),
-            logo: $this->nullableString($row->logo),
-            telegram: $this->nullableString($row->telegram),
-            siteUrl: $this->nullableString($row->site_url),
-            vk: $this->nullableString($row->vk),
-            inst: $this->nullableString($row->inst),
+            phone: $this->nullableString($row->phone),
+            email: $this->nullableString($row->email),
+            socials: $this->mapSocials($row->socials),
+            schedule: $this->mapSchedule($row->schedule),
+        );
+    }
+
+    private function mapSocials(mixed $raw): CompanySocials
+    {
+        $data = is_array($raw) ? $raw : [];
+
+        return new CompanySocials(
+            telegram: $this->nullableString($data['telegram'] ?? null),
+            vk: $this->nullableString($data['vk'] ?? null),
+            inst: $this->nullableString($data['inst'] ?? null),
+            siteUrl: $this->nullableString($data['site_url'] ?? null),
+            whatsapp: $this->nullableString($data['whatsapp'] ?? null),
         );
     }
 
     /**
-     * @return list<WorkScheduleRow>
+     * @return array<string, array{work: ?string, is_day_off: bool}>
      */
-    private function mapWorkSchedule(mixed $value): array
+    private function mapSchedule(mixed $raw): array
     {
-        if (! is_array($value)) {
-            return [];
-        }
+        $data = is_array($raw) ? $raw : [];
+        $out = [];
 
-        $rows = [];
-
-        foreach ($value as $item) {
-            if (! is_array($item)) {
+        foreach (self::DAYS as $day) {
+            $row = $data[$day] ?? null;
+            if (! is_array($row)) {
+                $out[$day] = [
+                    'work' => null,
+                    'is_day_off' => false,
+                ];
                 continue;
             }
 
-            $day = isset($item['day']) ? strtolower(trim((string) $item['day'])) : '';
-            if (! in_array($day, self::VALID_DAYS, true)) {
-                continue;
-            }
-
-            $isDayOff = $item['is_day_off'] === true
-                || $item['is_day_off'] === 1
-                || $item['is_day_off'] === '1';
-
-            $work = $this->nullableString($item['work'] ?? null);
-
-            $rows[] = new WorkScheduleRow(
-                day: $day,
-                work: $work,
-                isDayOff: $isDayOff,
-            );
+            $out[$day] = [
+                'work' => $this->nullableString($row['work'] ?? null),
+                'is_day_off' => $row['is_day_off'] === true
+                    || $row['is_day_off'] === 1
+                    || $row['is_day_off'] === '1',
+            ];
         }
 
-        return $rows;
+        return $out;
     }
 
     private function nullableString(mixed $value): ?string

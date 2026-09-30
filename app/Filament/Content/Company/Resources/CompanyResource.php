@@ -3,6 +3,7 @@
 namespace App\Filament\Content\Company\Resources;
 
 use App\Filament\Content\Company\Resources\CompanyResource\Pages\ManageCompany;
+use App\Filament\Content\Company\Resources\CompanyResource\Schemas\CompanyForm;
 use App\Filament\Support\AdminNavigationGroup;
 use App\Infrastructure\Content\Model\CMP_Company;
 use BackedEnum;
@@ -33,7 +34,7 @@ class CompanyResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        return $schema;
+        return CompanyForm::configure($schema);
     }
 
     public static function table(Table $table): Table

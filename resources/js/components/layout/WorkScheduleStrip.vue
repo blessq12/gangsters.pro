@@ -18,7 +18,6 @@ import { getCurrentDayKey } from "../../modules/content/application/company";
 import {
     formatTodayWorkScheduleLine,
     getWorkScheduleRows,
-    safeTrim,
 } from "../../modules/content/application/company";
 import { useAppDesign } from "../../design/useAppDesign";
 
@@ -115,21 +114,7 @@ const currentDayKey = computed(() => getCurrentDayKey(new Date()));
 const scheduleRows = computed(() => {
     const c = contentStore.profile;
     if (!c) return [];
-    const rows = getWorkScheduleRows(c.work_schedule);
-    if (rows.length) return rows;
-    const wh = safeTrim(c.work_hours);
-    if (wh) {
-        return [
-            {
-                dayKey: null,
-                dayLabel: "",
-                isDayOff: false,
-                work: wh,
-                isFallbackString: true,
-            },
-        ];
-    }
-    return [];
+    return getWorkScheduleRows(c.schedule);
 });
 
 const todayLine = computed(() =>

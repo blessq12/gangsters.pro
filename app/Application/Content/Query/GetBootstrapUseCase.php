@@ -14,10 +14,7 @@ use App\Domain\Content\Repository\CompanyLegalRepository;
 use App\Domain\Content\Repository\CompanyRepository;
 use App\Domain\Content\Repository\DeliveryConfigurationRepository;
 use App\Domain\Content\Repository\PromotionRepository;
-use App\Domain\Content\ValueObject\CompanyContact;
-use App\Domain\Content\ValueObject\CompanySchedule;
 use App\Domain\Content\ValueObject\KitchenAddress;
-use App\Domain\Content\ValueObject\WorkScheduleRow;
 
 /**
  * Single public entry of Content BC: SPA content snapshot.
@@ -73,52 +70,17 @@ final class GetBootstrapUseCase
      */
     private function mapCompany(Company $company): array
     {
+        $socials = $company->socials()->toArray();
+        $socials['whatsapp'] = self::formatOptionalPhone($socials['whatsapp']);
+
         return [
             'id' => $company->id(),
             'name' => $company->name(),
-            'brand_name' => $company->brandName(),
             'description' => $company->description(),
-            'tagline' => $company->tagline(),
-            ...$this->mapContact($company->contact()),
-            ...$this->mapSchedule($company->schedule()),
-            'logo' => $company->logo(),
-            'telegram' => $company->telegram(),
-            'site_url' => $company->siteUrl(),
-            'vk' => $company->vk(),
-            'inst' => $company->inst(),
-        ];
-    }
-
-    /**
-     * @return array<string, string|null>
-     */
-    private function mapContact(CompanyContact $contact): array
-    {
-        return [
-            'phone' => self::formatOptionalPhone($contact->phone()),
-            'phone_additional' => self::formatOptionalPhone($contact->phoneAdditional()),
-            'support_phone' => self::formatOptionalPhone($contact->supportPhone()),
-            'whatsapp_phone' => self::formatOptionalPhone($contact->whatsappPhone()),
-            'email_address' => $contact->emailAddress(),
-            'public_email' => $contact->publicEmail(),
-        ];
-    }
-
-    /**
-     * @return array{work_hours: string|null, work_schedule: list<array<string, mixed>>}
-     */
-    private function mapSchedule(CompanySchedule $schedule): array
-    {
-        return [
-            'work_hours' => $schedule->workHours(),
-            'work_schedule' => array_map(
-                fn (WorkScheduleRow $row): array => [
-                    'day' => $row->day(),
-                    'work' => $row->work(),
-                    'is_day_off' => $row->isDayOff(),
-                ],
-                $schedule->workSchedule(),
-            ),
+            'phone' => self::formatOptionalPhone($company->phone()),
+            'email' => $company->email(),
+            'socials' => $socials,
+            'schedule' => $company->schedule(),
         ];
     }
 
@@ -131,29 +93,8 @@ final class GetBootstrapUseCase
             'id' => $legal->id(),
             'company_id' => $legal->companyId(),
             'full_name' => $legal->fullName(),
-            'short_name' => $legal->shortName(),
-            'legal_form' => $legal->legalForm(),
-            'legal_email' => $legal->legalEmail(),
-            'contracts_email' => $legal->contractsEmail(),
-            'legal_phone' => self::formatOptionalPhone($legal->legalPhone()),
-            'owner' => $legal->owner(),
-            'responsible_person' => $legal->responsiblePerson(),
-            'responsible_position' => $legal->responsiblePosition(),
             'inn' => $legal->inn(),
             'ogrn' => $legal->ogrn(),
-            'ogrnip' => $legal->ogrnip(),
-            'okpo' => $legal->okpo(),
-            'kpp' => $legal->kpp(),
-            'tax_system' => $legal->taxSystem(),
-            'is_vat_payer' => $legal->isVatPayer(),
-            'vat_rate_default' => $legal->vatRateDefault(),
-            'registration_address' => $legal->registrationAddress(),
-            'actual_address' => $legal->actualAddress(),
-            'postal_address' => $legal->postalAddress(),
-            'bank_name' => $legal->bankName(),
-            'bik' => $legal->bik(),
-            'checking_account' => $legal->checkingAccount(),
-            'correspondent_account' => $legal->correspondentAccount(),
         ];
     }
 

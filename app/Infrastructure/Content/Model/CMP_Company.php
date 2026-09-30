@@ -12,26 +12,16 @@ class CMP_Company extends Model
 
     protected $fillable = [
         'name',
-        'brand_name',
         'description',
-        'tagline',
         'phone',
-        'phone_additional',
-        'support_phone',
-        'whatsapp_phone',
-        'email_address',
-        'public_email',
-        'work_hours',
-        'work_schedule',
-        'logo',
-        'telegram',
-        'site_url',
-        'vk',
-        'inst',
+        'email',
+        'socials',
+        'schedule',
     ];
 
     protected $casts = [
-        'work_schedule' => 'array',
+        'socials' => 'array',
+        'schedule' => 'array',
     ];
 
     public function legal(): HasOne

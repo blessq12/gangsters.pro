@@ -3,7 +3,7 @@ import { formatMoneyRublesRu } from "../../../platform/moneyFormat";
 
 /**
  * Логика «сейчас открыто» по данным компании из API.
- * Опирается на work_schedule: массив { day, work, is_day_off }.
+ * Опирается на schedule: объект { mon: { work, is_day_off }, … }.
  * Время в work парсится как «10:00-22:00» (дефис или длинное тире).
  * Часовой пояс — локальный (браузер пользователя).
  */
@@ -55,12 +55,37 @@ export function isScheduleDayOff(row) {
 }
 
 /**
- * @param {unknown} schedule
+ * @param {unknown} schedule — объект по дням или (legacy) массив
  * @param {string} dayKey
  */
 export function findScheduleRowForDay(schedule, dayKey) {
-    if (!Array.isArray(schedule) || !dayKey) return null;
-    return schedule.find((r) => r && typeof r === "object" && r.day === dayKey) || null;
+    if (!schedule || !dayKey) return null;
+
+    if (Array.isArray(schedule)) {
+        return (
+            schedule.find(
+                (r) => r && typeof r === "object" && r.day === dayKey,
+            ) || null
+        );
+    }
+
+    if (typeof schedule !== "object") return null;
+    const cell = schedule[dayKey];
+    if (!cell || typeof cell !== "object") return null;
+
+    return {
+        day: dayKey,
+        work: cell.work ?? null,
+        is_day_off: cell.is_day_off,
+    };
+}
+
+/**
+ * @param {object|null|undefined} company
+ * @returns {unknown}
+ */
+export function companyScheduleOf(company) {
+    return company?.schedule ?? null;
 }
 
 /**
@@ -90,7 +115,7 @@ export function isOpenByWeekendFallback(now) {
  */
 export function isCompanyOpenNow(company, now = new Date()) {
     const dayKey = getCurrentDayKey(now);
-    const schedule = company?.work_schedule;
+    const schedule = companyScheduleOf(company);
     const row = findScheduleRowForDay(schedule, dayKey);
 
     if (row) {
@@ -109,7 +134,11 @@ export function isCompanyOpenNow(company, now = new Date()) {
         return isOpenByWeekendFallback(now);
     }
 
-    if (Array.isArray(schedule) && schedule.length > 0) {
+    if (
+        schedule &&
+        typeof schedule === "object" &&
+        Object.keys(schedule).length > 0
+    ) {
         return isOpenByWeekendFallback(now);
     }
 
@@ -124,7 +153,7 @@ export function isCompanyOpenNow(company, now = new Date()) {
 export function getCompanyOpenStatusHint(company, now = new Date()) {
     const open = isCompanyOpenNow(company, now);
     const dayKey = getCurrentDayKey(now);
-    const row = findScheduleRowForDay(company?.work_schedule, dayKey);
+    const row = findScheduleRowForDay(companyScheduleOf(company), dayKey);
 
     if (row && isScheduleDayOff(row)) {
         return { open: false, hint: "Выходной" };
@@ -183,9 +212,30 @@ export function getWorkScheduleRows(schedule) {
             },
         ];
     }
-    if (!Array.isArray(schedule) || schedule.length === 0) return [];
 
-    const rows = schedule
+    /** @type {Array<{ day: string, work: unknown, is_day_off: unknown }>} */
+    let list = [];
+    if (Array.isArray(schedule)) {
+        list = schedule.filter((r) => r && typeof r === "object");
+    } else if (typeof schedule === "object") {
+        list = DAY_ORDER.map((day) => {
+            const cell = schedule[day];
+            if (!cell || typeof cell !== "object") {
+                return { day, work: null, is_day_off: false };
+            }
+            return {
+                day,
+                work: cell.work ?? null,
+                is_day_off: cell.is_day_off,
+            };
+        });
+    } else {
+        return [];
+    }
+
+    if (list.length === 0) return [];
+
+    const rows = list
         .map((row) => {
             if (!row || typeof row !== "object") return null;
             const dayKey =
@@ -258,12 +308,18 @@ export function getWorkScheduleLines(schedule) {
         const t = schedule.trim();
         return t ? [t] : [];
     }
-    if (!Array.isArray(schedule) || schedule.length === 0) return [];
-    return schedule.map(scheduleRowToDisplayLine).filter(Boolean);
+
+    const rows = getWorkScheduleRows(schedule);
+    return rows.map((row) => {
+        const day = row.dayLabel || "—";
+        if (row.isDayOff) return `${day}: выходной`;
+        if (row.work) return `${day}: ${row.work}`;
+        return `${day}: —`;
+    });
 }
 
 /**
- * Расписание из API: массив { day, work, is_day_off } или строка.
+ * Расписание из API: объект по дням (или legacy-массив).
  */
 export function formatWorkScheduleForDisplay(schedule) {
     const lines = getWorkScheduleLines(schedule);
@@ -280,15 +336,10 @@ export function formatTodayWorkScheduleLine(company, date = new Date()) {
 
     const dayKey = getCurrentDayKey(date);
     const dayLabel = DAY_LABELS[dayKey] || dayKey;
-    const schedule = company.work_schedule;
-    const row =
-        Array.isArray(schedule) && schedule.length > 0
-            ? findScheduleRowForDay(schedule, dayKey)
-            : null;
+    const row = findScheduleRowForDay(companyScheduleOf(company), dayKey);
 
     if (!row) {
-        const wh = safeTrim(company.work_hours);
-        return wh ? `Сегодня: ${wh}` : "";
+        return "";
     }
 
     if (isScheduleDayOff(row)) {
@@ -597,15 +648,11 @@ export function markClosedNoticeDismissedThisSession() {
  */
 export function buildClosedOrdersNotice(company, now = new Date()) {
     const todayLine = formatTodayWorkScheduleLine(company, now) || null;
-    const workHours =
-        typeof company?.work_hours === "string" ? company.work_hours.trim() : "";
 
-    const scheduleFallback =
-        todayLine ||
-        (workHours ? `Режим работы: ${workHours}` : null);
+    const scheduleFallback = todayLine;
 
     const dayKey = getCurrentDayKey(now);
-    const row = findScheduleRowForDay(company?.work_schedule, dayKey);
+    const row = findScheduleRowForDay(companyScheduleOf(company), dayKey);
     let lead =
         "Сейчас мы не принимаем и не обрабатываем заказы. Оформи заказ в рабочие часы — тогда всё уйдёт на кухню без задержек.";
 

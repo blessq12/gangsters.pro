@@ -76,21 +76,21 @@ const agreementDoc = computed(() =>
 const companyTitle = computed(() => {
     const c = profile.value;
     if (!c) return "";
-    return safeTrim(c.brand_name) || safeTrim(c.name) || "";
+    return safeTrim(c.name) || "";
 });
 
 const todayScheduleLine = computed(() =>
     formatTodayWorkScheduleLine(profile.value, new Date()),
 );
 
-const phoneRaw = computed(
-    () => profile.value?.phone || profile.value?.support_phone || "",
-);
+const phoneRaw = computed(() => profile.value?.phone || "");
 const phoneDisplay = computed(() => formatRuPhone(phoneRaw.value));
 const phoneHref = computed(() => phoneToTelHref(phoneRaw.value));
 
+const socials = computed(() => profile.value?.socials || {});
+
 const telegramLabel = computed(() => {
-    const t = profile.value?.telegram;
+    const t = socials.value.telegram;
     if (!t) return "";
     const s = String(t).trim();
     if (s.startsWith("http")) return s.replace(/^https?:\/\/t\.me\//i, "@");
@@ -98,7 +98,7 @@ const telegramLabel = computed(() => {
 });
 
 const telegramHref = computed(() => {
-    const t = profile.value?.telegram;
+    const t = socials.value.telegram;
     if (!t) return null;
     const s = String(t).trim();
     if (/^https?:\/\//i.test(s)) return s;
@@ -106,10 +106,7 @@ const telegramHref = computed(() => {
     return u ? `https://t.me/${u}` : null;
 });
 
-const emailDisplay = computed(() => {
-    const c = profile.value;
-    return safeTrim(c?.public_email) || safeTrim(c?.email_address) || "";
-});
+const emailDisplay = computed(() => safeTrim(profile.value?.email) || "");
 
 const emailHref = computed(() => {
     const e = emailDisplay.value;
@@ -117,7 +114,7 @@ const emailHref = computed(() => {
 });
 
 const whatsappHref = computed(() => {
-    const w = profile.value?.whatsapp_phone;
+    const w = socials.value.whatsapp;
     if (!w) return null;
     const digits = String(w).replace(/\D/g, "");
     if (digits.length < 10) return null;
@@ -141,10 +138,12 @@ function socialProfileHref(raw, host) {
     return path ? `https://${host}/${path}` : null;
 }
 
-const vkHref = computed(() => socialProfileHref(profile.value?.vk, "vk.com"));
+const vkHref = computed(() =>
+    socialProfileHref(socials.value.vk, "vk.com"),
+);
 
 const instHref = computed(() =>
-    socialProfileHref(profile.value?.inst, "instagram.com"),
+    socialProfileHref(socials.value.inst, "instagram.com"),
 );
 
 const addressLine = computed(() =>
@@ -155,27 +154,11 @@ const deliveryStats = computed(() =>
     buildDefinedDeliveryStats(deliveryFacts.value),
 );
 
-const legalName = computed(() => {
-    const l = legal.value;
-    if (!l) return "";
-    return safeTrim(l.full_name) || safeTrim(l.short_name) || "";
-});
+const legalName = computed(() => safeTrim(legal.value?.full_name) || "");
 
 const legalInn = computed(() => safeTrim(legal.value?.inn) || "");
 
-const legalOgrnLabel = computed(() => {
-    const l = legal.value;
-    if (!l) return "";
-    if (safeTrim(l.ogrn)) return "ОГРН";
-    if (safeTrim(l.ogrnip)) return "ОГРНИП";
-    return "";
-});
-
-const legalOgrnValue = computed(() => {
-    const l = legal.value;
-    if (!l) return "";
-    return safeTrim(l.ogrn) || safeTrim(l.ogrnip) || "";
-});
+const legalOgrnValue = computed(() => safeTrim(legal.value?.ogrn) || "");
 
 const hasContactsCol = computed(
     () =>
@@ -342,7 +325,7 @@ const copyrightName = computed(
                         <p v-if="hasLegalIds" :class="footer.legalIds">
                             <span v-if="legalInn">ИНН {{ legalInn }}</span>
                             <span v-if="legalOgrnValue">
-                                {{ legalOgrnLabel }} {{ legalOgrnValue }}
+                                ОГРН {{ legalOgrnValue }}
                             </span>
                         </p>
                         <p :class="footer.copyright">

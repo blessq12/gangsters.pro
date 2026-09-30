@@ -24,8 +24,6 @@ const dv = useAppDesign().components.pages.delivery;
 
 const heroDescription = computed(() => {
     const c = profile.value;
-    const tag = safeTrim(c?.tagline);
-    if (tag) return tag;
     const desc = safeTrim(c?.description);
     if (desc) return desc;
     return "Условия доставки и оплаты зависят от адреса и состава заказа — актуальные значения видно при оформлении. Ниже — ориентиры из настроек сервиса.";

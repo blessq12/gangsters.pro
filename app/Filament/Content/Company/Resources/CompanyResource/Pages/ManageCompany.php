@@ -29,7 +29,8 @@ class ManageCompany extends EditRecord
             ['id' => CompanyRepository::SINGLETON_ID],
             [
                 'name' => 'Gangsters',
-                'work_schedule' => $this->defaultWorkSchedule(),
+                'schedule' => $this->defaultScheduleObject(),
+                'socials' => $this->emptySocials(),
             ],
         );
 
@@ -59,9 +60,12 @@ class ManageCompany extends EditRecord
             }
         }
 
-        if (! is_array($data['work_schedule'] ?? null) || $data['work_schedule'] === []) {
-            $data['work_schedule'] = $this->defaultWorkSchedule();
+        $socials = is_array($data['socials'] ?? null) ? $data['socials'] : [];
+        foreach (CompanyForm::socialFieldKeys() as $key) {
+            $data['social_'.$key] = $socials[$key] ?? null;
         }
+
+        $data['schedule_rows'] = $this->scheduleObjectToRows($data['schedule'] ?? null);
 
         return $data;
     }
@@ -74,10 +78,14 @@ class ManageCompany extends EditRecord
     {
         $this->legalPayload = $this->extractLegalPayload($data);
 
-        return array_intersect_key(
-            $data,
-            array_flip(CompanyForm::companyFieldNames()),
-        );
+        return [
+            'name' => $data['name'] ?? null,
+            'description' => $this->nullableString($data['description'] ?? null),
+            'phone' => $this->nullableString($data['phone'] ?? null),
+            'email' => $this->nullableString($data['email'] ?? null),
+            'socials' => $this->extractSocialsPayload($data),
+            'schedule' => $this->scheduleRowsToObject($data['schedule_rows'] ?? null),
+        ];
     }
 
     protected function afterSave(): void
@@ -123,20 +131,96 @@ class ManageCompany extends EditRecord
     }
 
     /**
-     * @return list<array{day: string, work: string, is_day_off: bool}>
+     * @return array<string, array{work: string|null, is_day_off: bool}>
      */
-    private function defaultWorkSchedule(): array
+    private function defaultScheduleObject(): array
     {
-        $days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
-
-        return array_map(
-            static fn (string $day) => [
-                'day' => $day,
-                'work' => $day === 'sun' ? '' : '10:00–22:00',
+        $out = [];
+        foreach (CompanyForm::DAYS as $day) {
+            $out[$day] = [
+                'work' => $day === 'sun' ? null : '10:00–22:00',
                 'is_day_off' => $day === 'sun',
-            ],
-            $days,
-        );
+            ];
+        }
+
+        return $out;
+    }
+
+    /**
+     * @return array{telegram: null, vk: null, inst: null, site_url: null, whatsapp: null}
+     */
+    private function emptySocials(): array
+    {
+        return [
+            'telegram' => null,
+            'vk' => null,
+            'inst' => null,
+            'site_url' => null,
+            'whatsapp' => null,
+        ];
+    }
+
+    /**
+     * @return list<array{day: string, day_label: string, work: string|null, is_day_off: bool}>
+     */
+    private function scheduleObjectToRows(mixed $schedule): array
+    {
+        $obj = is_array($schedule) ? $schedule : [];
+        $rows = [];
+
+        foreach (CompanyForm::DAYS as $day) {
+            $cell = $obj[$day] ?? null;
+            $rows[] = [
+                'day' => $day,
+                'day_label' => CompanyForm::DAY_LABELS[$day] ?? $day,
+                'work' => is_array($cell) ? $this->nullableString($cell['work'] ?? null) : null,
+                'is_day_off' => is_array($cell) ? $this->toBool($cell['is_day_off'] ?? false) : false,
+            ];
+        }
+
+        return $rows;
+    }
+
+    /**
+     * @return array<string, array{work: string|null, is_day_off: bool}>
+     */
+    private function scheduleRowsToObject(mixed $rows): array
+    {
+        $out = $this->defaultScheduleObject();
+        if (! is_array($rows)) {
+            return $out;
+        }
+
+        foreach ($rows as $row) {
+            if (! is_array($row)) {
+                continue;
+            }
+            $day = strtolower(trim((string) ($row['day'] ?? '')));
+            if (! in_array($day, CompanyForm::DAYS, true)) {
+                continue;
+            }
+            $out[$day] = [
+                'work' => $this->nullableString($row['work'] ?? null),
+                'is_day_off' => $this->toBool($row['is_day_off'] ?? false),
+            ];
+        }
+
+        return $out;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, string|null>
+     */
+    private function extractSocialsPayload(array $data): array
+    {
+        $payload = $this->emptySocials();
+
+        foreach (CompanyForm::socialFieldKeys() as $key) {
+            $payload[$key] = $this->nullableString($data['social_'.$key] ?? null);
+        }
+
+        return $payload;
     }
 
     /**
@@ -153,9 +237,25 @@ class ManageCompany extends EditRecord
                 continue;
             }
 
-            $payload[$field] = $data[$formKey];
+            $payload[$field] = $this->nullableString($data[$formKey]);
         }
 
         return $payload;
+    }
+
+    private function nullableString(mixed $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $trimmed = trim((string) $value);
+
+        return $trimmed !== '' ? $trimmed : null;
+    }
+
+    private function toBool(mixed $value): bool
+    {
+        return $value === true || $value === 1 || $value === '1';
     }
 }

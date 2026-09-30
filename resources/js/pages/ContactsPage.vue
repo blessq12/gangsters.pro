@@ -6,6 +6,7 @@ import { formatRuPhone, phoneToTelHref } from "../platform/ruPhone";
 import { formatAverageDeliveryLine } from "../modules/content/application/company";
 import {
     formatCompanyAddressLine,
+    formatTodayWorkScheduleLine,
     getWorkScheduleRows,
     safeTrim,
 } from "../modules/content/application/company";
@@ -25,8 +26,6 @@ const errors = computed(() => ({
 
 const heroDescription = computed(() => {
     const c = profile.value;
-    const tag = safeTrim(c?.tagline);
-    if (tag) return tag;
     const desc = safeTrim(c?.description);
     if (desc) return desc;
     return "Нужен заказ, уточнение по доставке или партнёрский вопрос — каналы связи и режим работы с актуальными данными.";
@@ -35,10 +34,11 @@ const heroDescription = computed(() => {
 const heroStats = computed(() => {
     const c = profile.value;
     const d = facts.value;
+    const today = formatTodayWorkScheduleLine(c, new Date()) || "—";
     return [
         {
             label: "Режим",
-            value: safeTrim(c?.work_hours) || "—",
+            value: today,
         },
         {
             label: "Доставка",
@@ -48,25 +48,16 @@ const heroStats = computed(() => {
 });
 
 const phoneDisplay = computed(() => {
-    const c = profile.value;
-    const raw = c?.phone || c?.support_phone;
+    const raw = profile.value?.phone;
     return raw ? formatRuPhone(raw) : "";
 });
 
-const phoneTel = computed(() => {
-    const c = profile.value;
-    return phoneToTelHref(c?.phone || c?.support_phone);
-});
+const phoneTel = computed(() => phoneToTelHref(profile.value?.phone));
 
-const phoneExtra = computed(() => {
-    const c = profile.value;
-    if (!c?.phone || !c?.support_phone) return "";
-    if (String(c.phone) === String(c.support_phone)) return "";
-    return formatRuPhone(c.support_phone);
-});
+const socials = computed(() => profile.value?.socials || {});
 
 const telegramLabel = computed(() => {
-    const t = profile.value?.telegram;
+    const t = socials.value.telegram;
     if (!t) return "";
     const s = String(t).trim();
     if (s.startsWith("http")) return s.replace(/^https?:\/\/t\.me\//i, "@");
@@ -74,7 +65,7 @@ const telegramLabel = computed(() => {
 });
 
 const telegramHref = computed(() => {
-    const t = profile.value?.telegram;
+    const t = socials.value.telegram;
     if (!t) return null;
     const s = String(t).trim();
     if (/^https?:\/\//i.test(s)) return s;
@@ -82,10 +73,7 @@ const telegramHref = computed(() => {
     return u ? `https://t.me/${u}` : null;
 });
 
-const emailDisplay = computed(() => {
-    const c = profile.value;
-    return safeTrim(c?.public_email) || safeTrim(c?.email_address) || "";
-});
+const emailDisplay = computed(() => safeTrim(profile.value?.email) || "");
 
 const emailHref = computed(() => {
     const e = emailDisplay.value;
@@ -105,21 +93,7 @@ const hasAddress = computed(() => addressLines.value.length > 0);
 const scheduleRows = computed(() => {
     const c = profile.value;
     if (!c) return [];
-    const rows = getWorkScheduleRows(c.work_schedule);
-    if (rows.length) return rows;
-    const wh = safeTrim(c.work_hours);
-    if (wh) {
-        return [
-            {
-                dayKey: null,
-                dayLabel: "",
-                isDayOff: false,
-                work: wh,
-                isFallbackString: true,
-            },
-        ];
-    }
-    return [];
+    return getWorkScheduleRows(c.schedule);
 });
 
 const currentDayKey = computed(() => getCurrentDayKey(new Date()));
@@ -128,10 +102,10 @@ function isScheduleToday(dayKey) {
     return dayKey != null && dayKey === currentDayKey.value;
 }
 
-const siteUrl = computed(() => safeTrim(profile.value?.site_url));
+const siteUrl = computed(() => safeTrim(socials.value.site_url));
 
 const whatsappHref = computed(() => {
-    const w = profile.value?.whatsapp_phone;
+    const w = socials.value.whatsapp;
     if (!w) return null;
     const digits = String(w).replace(/\D/g, "");
     if (digits.length < 10) return null;
@@ -186,12 +160,6 @@ const co = useAppDesign().components.pages.contacts;
                             v-else
                             :class="co.channelMutedValue"
                         >Уточняется</span>
-                    </p>
-                    <p
-                        v-if="phoneExtra"
-                        :class="co.channelSubMuted"
-                    >
-                        Поддержка: {{ phoneExtra }}
                     </p>
                 </template>
                 <p :class="co.channelLead">

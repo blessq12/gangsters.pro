@@ -21,10 +21,8 @@ const deliveryFacts = computed(() => contentStore.deliveryFacts);
 const companyTitle = computed(() => {
     const c = profile.value;
     if (!c) return "";
-    return safeTrim(c.brand_name) || safeTrim(c.name) || "";
+    return safeTrim(c.name) || "";
 });
-
-const companyTagline = computed(() => safeTrim(profile.value?.tagline));
 
 const todayScheduleLine = computed(() =>
     formatTodayWorkScheduleLine(profile.value, new Date()),
@@ -84,7 +82,6 @@ function handleNavClick() {
                     <div
                         v-if="
                             companyTitle ||
-                            companyTagline ||
                             todayScheduleLine ||
                             addressLine ||
                             phoneHref
@@ -96,12 +93,6 @@ function handleNavClick() {
                             :class="mm.companyTitle"
                         >
                             {{ companyTitle }}
-                        </p>
-                        <p
-                            v-if="companyTagline"
-                            :class="mm.companyTagline"
-                        >
-                            {{ companyTagline }}
                         </p>
 
                         <p

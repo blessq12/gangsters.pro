@@ -2,27 +2,24 @@
 
 namespace App\Domain\Content\Entity;
 
-use App\Domain\Content\ValueObject\CompanyContact;
-use App\Domain\Content\ValueObject\CompanySchedule;
+use App\Domain\Content\ValueObject\CompanySocials;
 
 /**
  * Публичный профиль компании.
  */
 final class Company
 {
+    /**
+     * @param  array<string, array{work: ?string, is_day_off: bool}>  $schedule
+     */
     public function __construct(
         private readonly int $id,
         private readonly string $name,
-        private readonly ?string $brandName,
         private readonly ?string $description,
-        private readonly ?string $tagline,
-        private readonly CompanyContact $contact,
-        private readonly CompanySchedule $schedule,
-        private readonly ?string $logo,
-        private readonly ?string $telegram,
-        private readonly ?string $siteUrl,
-        private readonly ?string $vk,
-        private readonly ?string $inst,
+        private readonly ?string $phone,
+        private readonly ?string $email,
+        private readonly CompanySocials $socials,
+        private readonly array $schedule,
     ) {}
 
     public function id(): int
@@ -35,53 +32,31 @@ final class Company
         return $this->name;
     }
 
-    public function brandName(): ?string
-    {
-        return $this->brandName;
-    }
-
     public function description(): ?string
     {
         return $this->description;
     }
 
-    public function tagline(): ?string
+    public function phone(): ?string
     {
-        return $this->tagline;
+        return $this->phone;
     }
 
-    public function contact(): CompanyContact
+    public function email(): ?string
     {
-        return $this->contact;
+        return $this->email;
     }
 
-    public function schedule(): CompanySchedule
+    public function socials(): CompanySocials
+    {
+        return $this->socials;
+    }
+
+    /**
+     * @return array<string, array{work: ?string, is_day_off: bool}>
+     */
+    public function schedule(): array
     {
         return $this->schedule;
-    }
-
-    public function logo(): ?string
-    {
-        return $this->logo;
-    }
-
-    public function telegram(): ?string
-    {
-        return $this->telegram;
-    }
-
-    public function siteUrl(): ?string
-    {
-        return $this->siteUrl;
-    }
-
-    public function vk(): ?string
-    {
-        return $this->vk;
-    }
-
-    public function inst(): ?string
-    {
-        return $this->inst;
     }
 }

@@ -14,37 +14,30 @@ class CompanySeeder extends Seeder
     {
         $companyId = CompanyRepository::SINGLETON_ID;
 
-        $workHours = '10:00–20:00';
-        $workSchedule = collect(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'])
-            ->map(fn (string $day): array => [
-                'day' => $day,
-                'work' => $workHours,
+        $work = '10:00–20:00';
+        $schedule = [];
+        foreach (['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as $day) {
+            $schedule[$day] = [
+                'work' => $work,
                 'is_day_off' => false,
-            ])
-            ->all();
-
-        $address = 'Россия, Томская область, Томск, ул. Говорова, 50';
+            ];
+        }
 
         CMP_Company::query()->updateOrCreate(
             ['id' => $companyId],
             [
                 'name' => 'Гангстерс Суши',
-                'brand_name' => "Gangster's Sushi",
                 'description' => 'Мы предлагаем свежие и вкусные блюда, приготовленные с любовью и вниманием к деталям. Наслаждайтесь японской кухней, не выходя из дома! Быстрая доставка и отличное качество',
-                'tagline' => 'Еда с характером',
                 'phone' => '+7 (983) 234-84-84',
-                'phone_additional' => '+7 (983) 234-34-38',
-                'support_phone' => null,
-                'whatsapp_phone' => null,
-                'email_address' => 'gangstasushi@mail.ru',
-                'public_email' => 'gangstasushi@mail.ru',
-                'work_hours' => $workHours,
-                'work_schedule' => $workSchedule,
-                'logo' => '/images/logo.png',
-                'telegram' => null,
-                'site_url' => null,
-                'vk' => 'https://vk.com/gangsters_sushi',
-                'inst' => 'https://www.instagram.com/gangsters_sushi',
+                'email' => 'gangstasushi@mail.ru',
+                'socials' => [
+                    'telegram' => null,
+                    'vk' => 'https://vk.com/gangsters_sushi',
+                    'inst' => 'https://www.instagram.com/gangsters_sushi',
+                    'site_url' => null,
+                    'whatsapp' => null,
+                ],
+                'schedule' => $schedule,
             ],
         );
 
@@ -52,29 +45,8 @@ class CompanySeeder extends Seeder
             ['company_id' => $companyId],
             [
                 'full_name' => "Gangster's Sushi",
-                'short_name' => 'Пятчин Никита Романович',
-                'legal_form' => 'ИП',
-                'legal_email' => 'gangstasushi@mail.ru',
-                'contracts_email' => 'gangstasushi@mail.ru',
-                'legal_phone' => '+7 (983) 234-84-84',
-                'owner' => 'Пятчин Никита Романович',
-                'responsible_person' => 'Пятчин Никита Романович',
-                'responsible_position' => 'Ответственный',
                 'inn' => '701717375759',
-                'ogrn' => null,
-                'ogrnip' => '325700000011686',
-                'okpo' => '2040573992',
-                'kpp' => null,
-                'tax_system' => 'УСН',
-                'is_vat_payer' => false,
-                'vat_rate_default' => 0,
-                'registration_address' => $address,
-                'actual_address' => $address,
-                'postal_address' => $address,
-                'bank_name' => null,
-                'bik' => null,
-                'checking_account' => null,
-                'correspondent_account' => null,
+                'ogrn' => '325700000011686',
             ],
         );
 
