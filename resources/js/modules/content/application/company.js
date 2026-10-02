@@ -576,24 +576,35 @@ export function buildYandexMapKitchenPointWidgetUrl(company) {
 }
 
 /**
- * Способы оплаты при оформлении (cash / card), согласовано с PaymentMethod::placementValues.
- * @returns {{ id: string, title: string, description: string, icon: string }[]}
+ * Способы оплаты на странице доставки (инфо-блоки).
+ * @returns {{ id: string, title: string, description: string, icon: string, unavailable?: boolean }[]}
  */
 export function buildCheckoutAlignedPaymentInfoBlocks() {
     return [
         {
             id: "cash",
-            title: "Наличными",
-            description:
-                "Удобно, если предпочитаете рассчитаться при получении заказа.",
+            title: "Наличными при получении",
+            description: "Оплата курьеру при доставке заказа.",
             icon: "mdi mdi-cash",
         },
         {
-            id: "card",
-            title: "Банковской картой",
-            description:
-                "При оформлении или при получении — в зависимости от доступных вариантов.",
+            id: "card_online",
+            title: "Банковской картой онлайн",
+            description: "Оплата картой на сайте.",
+            icon: "mdi mdi-credit-card-wireless-outline",
+            unavailable: true,
+        },
+        {
+            id: "card_courier",
+            title: "Банковской картой при получении",
+            description: "Оплата картой курьеру при доставке.",
             icon: "mdi mdi-credit-card-outline",
+        },
+        {
+            id: "qr",
+            title: "По QR-коду",
+            description: "Оплата по QR-коду при получении заказа.",
+            icon: "mdi mdi-qrcode",
         },
     ];
 }

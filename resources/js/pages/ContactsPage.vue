@@ -14,22 +14,21 @@ import { getCurrentDayKey } from "../modules/content/application/company";
 import { useAppDesign } from "../design/useAppDesign";
 
 const contentStore = useContentStore();
-const { profile, deliveryFacts: facts, loading, error } = storeToRefs(contentStore);
+const { profile, deliveryFacts: facts, legal, loading, error } = storeToRefs(contentStore);
 
 const loadingProfile = computed(() => loading.value && !profile.value);
 const loadingDelivery = computed(() => loading.value && !facts.value);
+const loadingLegal = computed(() => loading.value && !legal.value);
 const errors = computed(() => ({
     profile: error.value,
-    legal: error.value,
-    documents: error.value,
 }));
 
-const heroDescription = computed(() => {
-    const c = profile.value;
-    const desc = safeTrim(c?.description);
-    if (desc) return desc;
-    return "Нужен заказ, уточнение по доставке или партнёрский вопрос — каналы связи и режим работы с актуальными данными.";
-});
+const legalName = computed(() => safeTrim(legal.value?.full_name) || "");
+const legalInn = computed(() => safeTrim(legal.value?.inn) || "");
+const legalOgrn = computed(() => safeTrim(legal.value?.ogrn) || "");
+const hasLegal = computed(
+    () => Boolean(legalName.value) || Boolean(legalInn.value) || Boolean(legalOgrn.value),
+);
 
 const heroStats = computed(() => {
     const c = profile.value;
@@ -120,7 +119,7 @@ const co = useAppDesign().components.pages.contacts;
     <SecondaryPageLayout
         title="Контакты"
         eyebrow="Связаться с нами"
-        :description="heroDescription"
+        description="Телефон, мессенджеры, адрес кухни и режим работы."
         :breadcrumbs="['Главная', 'Контакты']"
         hero-image="/images/contact_banner.jpg"
         :stats="heroStats"
@@ -162,9 +161,6 @@ const co = useAppDesign().components.pages.contacts;
                         >Уточняется</span>
                     </p>
                 </template>
-                <p :class="co.channelLead">
-                    Для заказов, уточнений по доставке и быстрых вопросов по меню.
-                </p>
             </article>
 
             <article :class="co.channelArticle">
@@ -197,9 +193,6 @@ const co = useAppDesign().components.pages.contacts;
                         v-else
                         :class="co.channelMutedValue"
                     >Уточняется</span>
-                </p>
-                <p :class="co.channelLead">
-                    Самый быстрый канал для связи и актуальных акций.
                 </p>
                 <p
                     v-if="whatsappHref"
@@ -245,17 +238,11 @@ const co = useAppDesign().components.pages.contacts;
                         :class="co.channelMutedValue"
                     >Уточняется</span>
                 </p>
-                <p :class="co.channelLead">
-                    Для партнёрств и предложений, где важны детали в переписке.
-                </p>
             </article>
         </div>
 
         <div :class="co.mainGrid">
-            <SecondaryContentBlock
-                title="Где мы находимся"
-                subtitle="БАЗА КУХНИ"
-            >
+            <SecondaryContentBlock title="Адрес">
                 <template v-if="loadingDelivery && !hasAddress">
                     <p :class="co.addressLoading">
                         Загрузка адреса…
@@ -271,7 +258,7 @@ const co = useAppDesign().components.pages.contacts;
                     </p>
                 </template>
                 <p v-else>
-                    Адрес уточняется. Свяжитесь с нами по телефону или в мессенджере.
+                    Адрес уточняется.
                 </p>
 
                 <ContactsKitchenMap />
@@ -291,10 +278,7 @@ const co = useAppDesign().components.pages.contacts;
                 </p>
             </SecondaryContentBlock>
 
-            <SecondaryContentBlock
-                title="Режим работы"
-                subtitle="РЕЖИМ РАБОТЫ"
-            >
+            <SecondaryContentBlock title="Режим работы">
                 <p
                     v-if="loadingProfile && !scheduleRows.length"
                     :class="co.scheduleLoading"
@@ -341,15 +325,12 @@ const co = useAppDesign().components.pages.contacts;
                     v-else
                     :class="co.scheduleEmpty"
                 >
-                    Заказы принимаем в заявленном режиме. Уточнения — по телефону или в мессенджере.
+                    Режим уточняется.
                 </p>
             </SecondaryContentBlock>
         </div>
 
-        <SecondaryContentBlock
-            title="Как лучше связаться"
-            subtitle="КАК С НАМИ СВЯЗАТЬСЯ"
-        >
+        <SecondaryContentBlock title="Как лучше связаться">
             <div :class="co.tipsGrid">
                 <div :class="co.tipTile">
                     <p :class="co.tipKicker">
@@ -359,7 +340,7 @@ const co = useAppDesign().components.pages.contacts;
                         По заказу
                     </p>
                     <p :class="co.tipBody">
-                        Звонок или Telegram — самый короткий путь, если вопрос срочный.
+                        Сайт или телефон.
                     </p>
                 </div>
                 <div :class="co.tipTile">
@@ -370,7 +351,7 @@ const co = useAppDesign().components.pages.contacts;
                         По сотрудничеству
                     </p>
                     <p :class="co.tipBody">
-                        Лучше писать на email, чтобы не потерялись детали и контакты.
+                        Электронная почта.
                     </p>
                 </div>
                 <div :class="co.tipTile">
@@ -378,15 +359,54 @@ const co = useAppDesign().components.pages.contacts;
                         03
                     </p>
                     <p :class="co.tipTitle">
-                        По акциям и новостям
+                        По информации
                     </p>
                     <p :class="co.tipBody">
-                        Удобнее всего следить в Telegram и на сайте.
+                        Telegram-канал или Telegram-бот.
                     </p>
                 </div>
             </div>
         </SecondaryContentBlock>
+
+        <SecondaryContentBlock title="Юридическая информация">
+            <p
+                v-if="loadingLegal && !hasLegal"
+                :class="co.legalLoading"
+            >
+                Загрузка…
+            </p>
+            <div
+                v-else-if="hasLegal"
+                :class="co.legalList"
+            >
+                <div
+                    v-if="legalName"
+                    :class="co.legalRow"
+                >
+                    <span :class="co.legalLabel">Наименование</span>
+                    <span :class="co.legalValue">{{ legalName }}</span>
+                </div>
+                <div
+                    v-if="legalInn"
+                    :class="co.legalRow"
+                >
+                    <span :class="co.legalLabel">ИНН</span>
+                    <span :class="co.legalValue">{{ legalInn }}</span>
+                </div>
+                <div
+                    v-if="legalOgrn"
+                    :class="co.legalRow"
+                >
+                    <span :class="co.legalLabel">ОГРН</span>
+                    <span :class="co.legalValue">{{ legalOgrn }}</span>
+                </div>
+            </div>
+            <p
+                v-else
+                :class="co.legalEmpty"
+            >
+                Юридические реквизиты уточняются.
+            </p>
+        </SecondaryContentBlock>
     </SecondaryPageLayout>
 </template>
-
-<style scoped></style>

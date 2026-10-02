@@ -81,41 +81,42 @@ export const pagesDesign = {
     },
 
     about: {
-        gridTop:
-            "grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)]",
-        asideStack: "grid gap-4",
-        spotlightArticle:
-            "overflow-hidden rounded-none border border-app-border-on-surface bg-app-glass-fill p-5 shadow-[0_16px_50px_rgba(0,0,0,0.35)]",
-        spotlightHeader: "mb-4 flex items-center justify-between",
-        eyebrowTag:
-            "inline-flex rounded-none border border-app-accent/30 bg-app-accent-soft-bg px-3 py-1 text-[11px] uppercase tracking-[0.24em] text-app-accent",
-        spotlightTitle:
-            "font-heading text-xl font-normal text-app-accent sm:text-2xl",
-        spotlightBody: "mt-2 text-sm leading-relaxed text-app-muted",
-        tagsArticle:
-            "rounded-none border border-app-border-on-surface bg-app-accent-soft-bg p-5",
-        tagsKicker: "text-xs uppercase tracking-[0.24em] text-app-muted",
-        tagsRow: "mt-4 flex flex-wrap gap-2",
-        tagPill: `${nestedCard} px-3 py-1.5 text-xs ${nestedFg}`,
-        principlesGrid: "grid gap-4 md:grid-cols-3",
-        pillarCard: `${nestedCard} p-5`,
-        pillarIconWrap:
-            "mb-4 flex h-11 w-11 items-center justify-center rounded-none bg-app-accent text-black",
-        pillarTitle: `text-lg font-normal ${nestedFg} sm:text-xl`,
-        pillarText: "mt-2 text-sm text-app-muted",
-        gridBottom:
-            "grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]",
-        moodArticle: `${gradientIsland} p-6`,
-        moodEyebrow: "text-xs uppercase tracking-[0.26em] text-app-accent",
-        moodTitle:
-            "font-heading mt-4 text-3xl font-normal leading-tight text-app-accent sm:text-4xl",
-        moodBody: "mt-3 text-sm leading-relaxed text-app-muted",
-        stepsGridInner: "grid gap-3 sm:grid-cols-2",
-        stepMiniCard: `${nestedCard} p-4`,
-        stepMiniKicker:
-            "text-[11px] uppercase tracking-[0.22em] text-app-muted",
-        stepMiniTitle: `mt-2 font-medium ${nestedFg}`,
-        stepMiniBody: "mt-1 text-sm text-app-muted",
+        stack: "space-y-14 sm:space-y-16",
+        brandPanel: `${nestedCard} grid gap-6 p-5 sm:gap-8 sm:p-8 lg:grid-cols-[minmax(0,14rem)_minmax(0,1fr)] lg:items-center`,
+        brandLogoWrap: "flex items-center justify-center lg:justify-start",
+        brandLogo: "h-28 w-auto sm:h-32 lg:h-36",
+        brandCopy: "min-w-0",
+        brandOverline:
+            "mb-3 text-[11px] uppercase tracking-[0.28em] text-app-accent",
+        brandTitle:
+            "font-heading text-3xl font-normal leading-tight text-app-canvas-fg sm:text-4xl",
+        brandBody:
+            "mt-3 max-w-2xl text-sm leading-relaxed text-app-muted sm:text-base",
+        sectionHead: "mb-8 max-w-2xl sm:mb-10",
+        sectionOverline:
+            "mb-3 text-[11px] uppercase tracking-[0.28em] text-app-accent",
+        sectionTitle:
+            "font-heading text-3xl font-normal leading-tight text-app-canvas-fg sm:text-4xl lg:text-5xl",
+        offerList: "grid gap-4 sm:grid-cols-2 lg:grid-cols-3",
+        offerCard: `${nestedCard} group flex h-full flex-col p-5 sm:p-6`,
+        offerIndex:
+            "font-heading text-4xl font-normal leading-none text-app-accent/45 transition-colors group-hover:text-app-accent sm:text-5xl",
+        offerTitle:
+            "mt-5 text-xl font-normal text-app-canvas-fg sm:text-2xl",
+        offerBody: "mt-2 text-sm leading-relaxed text-app-muted sm:text-base",
+        qualityPanel: `${gradientIsland} px-4 py-8 sm:px-8 sm:py-10 lg:px-10`,
+        qualityGrid:
+            "mt-8 grid gap-8 border-t border-app-accent/20 pt-8 md:grid-cols-3 md:gap-0 md:divide-x md:divide-app-accent/20",
+        qualityCol: "md:px-6 lg:px-8 first:md:pl-0 last:md:pr-0",
+        qualityTitle:
+            "font-heading text-2xl font-normal text-app-accent sm:text-3xl",
+        qualityBody: "mt-3 text-sm leading-relaxed text-app-muted sm:text-base",
+        stepsGrid: "grid gap-4 sm:grid-cols-2 lg:grid-cols-4",
+        stepCard: `${nestedCard} flex h-full flex-col p-5`,
+        stepIconWrap:
+            "mb-4 flex h-10 w-10 items-center justify-center rounded-none bg-app-accent text-black",
+        stepTitle: `font-medium ${nestedFg}`,
+        stepBody: "mt-2 text-sm text-app-muted",
     },
 
     delivery: {
@@ -138,8 +139,11 @@ export const pagesDesign = {
         gridBottom:
             "grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]",
         paymentRow: `flex items-start gap-4 ${nestedCard} p-4`,
+        paymentRowUnavailable: `flex items-start gap-4 ${nestedCard} p-4 opacity-55`,
         paymentTitle: `font-medium ${nestedFg}`,
         paymentBody: "mt-1 text-sm text-app-muted",
+        paymentBadge:
+            "mt-2 inline-flex text-[11px] uppercase tracking-[0.18em] text-app-accent",
         importantArticle: `${gradientIsland} p-6`,
         importantEyebrow: "text-xs uppercase tracking-[0.26em] text-app-accent",
         importantTitle:
@@ -217,5 +221,12 @@ export const pagesDesign = {
             "text-[11px] uppercase tracking-[0.22em] text-app-muted",
         tipTitle: `mt-2 font-medium ${nestedFg}`,
         tipBody: "mt-1 text-sm text-app-muted",
+        legalList: "space-y-3",
+        legalRow: "grid gap-1 sm:grid-cols-[8rem_minmax(0,1fr)] sm:items-baseline sm:gap-4",
+        legalLabel:
+            "text-[11px] uppercase tracking-[0.22em] text-app-muted",
+        legalValue: `text-sm sm:text-base ${nestedFg}`,
+        legalEmpty: "text-sm text-app-muted",
+        legalLoading: "text-sm text-app-muted",
     },
 } as const;

@@ -2,168 +2,171 @@
 import { useAppDesign } from "../design/useAppDesign";
 
 const a = useAppDesign().components.pages.about;
+
+const offer = [
+    {
+        index: "01",
+        title: "Полный комплект",
+        body: "Васаби, имбирь и палочки в заказе — без доплат.",
+    },
+    {
+        index: "02",
+        title: "Большие порции",
+        body: "Адекватный вес, крупные куски, без воздуха в коробке.",
+    },
+    {
+        index: "03",
+        title: "Лосось без экономии",
+        body: "Больше филе — больше вкуса.",
+    },
+];
+
+const quality = [
+    {
+        title: "Не экономим",
+        body: "На продуктах не режем — вкус держится на нормальном сырье.",
+    },
+    {
+        title: "Поставщики",
+        body: "Работаем с проверенными поставщиками.",
+    },
+    {
+        title: "Свежесть",
+        body: "Только свежие ингредиенты — стабильное качество из заказа в заказ.",
+    },
+];
+
+const orderSteps = [
+    {
+        icon: "mdi mdi-cart-outline",
+        title: "1. Оформление",
+        body: "Собираете заказ, указываете адрес и сразу видите условия доставки.",
+    },
+    {
+        icon: "mdi mdi-check-decagram-outline",
+        title: "2. Подтверждение",
+        body: "Заказ принят после подтверждения оператором или системой.",
+    },
+    {
+        icon: "mdi mdi-fire-circle",
+        title: "3. Приготовление",
+        body: "Кухня готовит и собирает заказ, чтобы не терять качество.",
+    },
+    {
+        icon: "mdi mdi-moped-outline",
+        title: "4. Доставка",
+        body: "Курьер везёт заказ в согласованное время.",
+    },
+];
 </script>
 
 <template>
     <SecondaryPageLayout
         title="О компании"
-        eyebrow="История бренда"
-        description="Gangsters — это доставка с характером: тёмная эстетика, сочные позиции в меню и сервис, который не рассыпается на мелочах."
+        eyebrow="7+ лет на рынке"
+        description="Готовим и доставляем роллы, горячее и комбо уже больше семи лет."
         :breadcrumbs="['Главная', 'О компании']"
         hero-image="/images/about_us_banner.jpg"
         :stats="[
-            { label: 'Кухни', value: '3 направления' },
-            { label: 'Фокус', value: 'Скорость и вкус' },
-            { label: 'Тон', value: 'Гангстерский вайб' },
+            { label: 'На рынке', value: '7+ лет' },
+            { label: 'Клиентов', value: '2000+' },
+            { label: 'Комплект', value: 'Без доплат' },
         ]"
     >
-        <div :class="a.gridTop">
-            <SecondaryContentBlock
-                title="Кто мы такие"
-                subtitle="ГАСТРО-АТМОСФЕРА"
-            >
-                <p>
-                    Gangsters собрали под одним брендом несколько гастро-настроений:
-                    роллы, горячие позиции, комбо и ночные заказы. Нам важен не
-                    только вкус, но и то, как человек чувствует себя, когда
-                    открывает заказ.
-                </p>
-                <p>
-                    Поэтому у нас всё работает в одной системе: графитовый визуал,
-                    тёплые янтарные акценты, читаемое меню, живая подача и сервис
-                    без хаоса. Короче, не пластиковая витрина, а еда с характером.
-                </p>
-            </SecondaryContentBlock>
-
-            <div :class="a.asideStack">
-                <article :class="a.spotlightArticle">
-                    <div :class="a.spotlightHeader">
-                        <span :class="a.eyebrowTag">
-                            Характер
-                        </span>
-                        <i class="mdi mdi-crown-outline text-2xl text-app-accent"></i>
-                    </div>
-                    <p :class="a.spotlightTitle">
-                        Вкус, скорость и атмосфера.
-                    </p>
-                    <p :class="a.spotlightBody">
-                        Мы строим продукт так, чтобы он был заметным визуально и
-                        понятным в использовании: без лишней мишуры, но с жирным
-                        акцентом на качестве.
-                    </p>
-                </article>
-
-                <article :class="a.tagsArticle">
-                    <p :class="a.tagsKicker">
-                        Что отличает
-                    </p>
-                    <div :class="a.tagsRow">
-                        <span :class="a.tagPill">
-                            Яркие комбо
-                        </span>
-                        <span :class="a.tagPill">
-                            Ночной режим
-                        </span>
-                        <span :class="a.tagPill">
-                            Живой брендинг
-                        </span>
-                        <span :class="a.tagPill">
-                            Быстрая сборка
-                        </span>
-                    </div>
-                </article>
-            </div>
-        </div>
-
-        <SecondaryContentBlock
-            title="Наши принципы"
-            subtitle="НАШИ ПРИНЦИПЫ"
-        >
-            <div :class="a.principlesGrid">
-                <article :class="a.pillarCard">
-                    <div :class="a.pillarIconWrap">
-                        <i class="mdi mdi-silverware-fork-knife text-xl"></i>
-                    </div>
-                    <h3 :class="a.pillarTitle">Качество</h3>
-                    <p :class="a.pillarText">
-                        Ингредиенты и сборка заказа не должны проваливаться даже в
-                        час пик. Если блюдо не выглядит аппетитно, оно не должно ехать к гостю.
-                    </p>
-                </article>
-
-                <article :class="a.pillarCard">
-                    <div :class="a.pillarIconWrap">
-                        <i class="mdi mdi-lightning-bolt-outline text-xl"></i>
-                    </div>
-                    <h3 :class="a.pillarTitle">Скорость</h3>
-                    <p :class="a.pillarText">
-                        Мы проектируем процессы так, чтобы путь от оформления до двери
-                        был коротким и понятным. Без лишней ебанины внутри системы.
-                    </p>
-                </article>
-
-                <article :class="a.pillarCard">
-                    <div :class="a.pillarIconWrap">
-                        <i class="mdi mdi-movie-open-outline text-xl"></i>
-                    </div>
-                    <h3 :class="a.pillarTitle">Атмосфера</h3>
-                    <p :class="a.pillarText">
-                        У Gangsters есть настроение: от главной страницы до упаковки.
-                        Заказ должен ощущаться как часть вечера, а не просто чек в пакете.
-                    </p>
-                </article>
-            </div>
-        </SecondaryContentBlock>
-
-        <div :class="a.gridBottom">
-            <article :class="a.moodArticle">
-                <p :class="a.moodEyebrow">
-                    Атмосфера Gangsters
-                </p>
-                <p :class="a.moodTitle">
-                    Мы не пытаемся быть «как все доставки». И в этом весь прикол.
-                </p>
-                <p :class="a.moodBody">
-                    Бренд держится на контрасте: тёмный фон, золото, аппетитные
-                    фото, мягкое стекло и понятные сценарии взаимодействия.
-                </p>
-            </article>
-
-            <SecondaryContentBlock
-                title="Как строим сервис"
-                subtitle="ОТ ЗАКАЗА ДО ДОСТАВКИ"
-            >
-                <div :class="a.stepsGridInner">
-                    <div :class="a.stepMiniCard">
-                        <p :class="a.stepMiniKicker">01</p>
-                        <p :class="a.stepMiniTitle">Понятный выбор</p>
-                        <p :class="a.stepMiniBody">
-                            Каталог и акции помогают быстро собрать заказ без лишних кликов.
-                        </p>
-                    </div>
-                    <div :class="a.stepMiniCard">
-                        <p :class="a.stepMiniKicker">02</p>
-                        <p :class="a.stepMiniTitle">Чёткая сборка</p>
-                        <p :class="a.stepMiniBody">
-                            Кухня и логистика синхронизированы, чтобы не терять темп.
-                        </p>
-                    </div>
-                    <div :class="a.stepMiniCard">
-                        <p :class="a.stepMiniKicker">03</p>
-                        <p :class="a.stepMiniTitle">Контроль качества</p>
-                        <p :class="a.stepMiniBody">
-                            Следим за внешним видом, температурой и полнотой заказа.
-                        </p>
-                    </div>
-                    <div :class="a.stepMiniCard">
-                        <p :class="a.stepMiniKicker">04</p>
-                        <p :class="a.stepMiniTitle">Нормальный финиш</p>
-                        <p :class="a.stepMiniBody">
-                            У гостя должно остаться ощущение, что всё отработало красиво.
-                        </p>
-                    </div>
+        <div :class="a.stack">
+            <section :class="a.brandPanel">
+                <div :class="a.brandLogoWrap">
+                    <img
+                        src="/images/load_logo.svg"
+                        alt="Gangsters"
+                        :class="a.brandLogo"
+                    />
                 </div>
-            </SecondaryContentBlock>
+                <div :class="a.brandCopy">
+                    <p :class="a.brandOverline">Gangsters</p>
+                    <h2 :class="a.brandTitle">
+                        Своя кухня. Свои правила.
+                    </h2>
+                    <p :class="a.brandBody">
+                        Предлагаем свежие и вкусные блюда японской кухни —
+                        с любовью к делу и вниманием к деталям. Готовим из
+                        продуктов проверенных поставщиков, следим за качеством
+                        и весом порций: в коробке еда, а не воздух, плюс полный
+                        комплект к заказу. Быстрая доставка — не выходя из дома.
+                    </p>
+                </div>
+            </section>
+
+            <section>
+                <header :class="a.sectionHead">
+                    <h2 :class="a.sectionTitle">Что получаете</h2>
+                </header>
+
+                <ul :class="a.offerList">
+                    <li
+                        v-for="item in offer"
+                        :key="item.index"
+                        :class="a.offerCard"
+                    >
+                        <span :class="a.offerIndex">{{ item.index }}</span>
+                        <h3 :class="a.offerTitle">
+                            {{ item.title }}
+                        </h3>
+                        <p :class="a.offerBody">
+                            {{ item.body }}
+                        </p>
+                    </li>
+                </ul>
+            </section>
+
+            <section :class="a.qualityPanel">
+                <header :class="a.sectionHead">
+                    <p :class="a.sectionOverline">Качество</p>
+                    <h2 :class="a.sectionTitle">Как держим уровень</h2>
+                </header>
+
+                <div :class="a.qualityGrid">
+                    <article
+                        v-for="item in quality"
+                        :key="item.title"
+                        :class="a.qualityCol"
+                    >
+                        <h3 :class="a.qualityTitle">
+                            {{ item.title }}
+                        </h3>
+                        <p :class="a.qualityBody">
+                            {{ item.body }}
+                        </p>
+                    </article>
+                </div>
+            </section>
+
+            <section>
+                <header :class="a.sectionHead">
+                    <h2 :class="a.sectionTitle">Как проходит заказ</h2>
+                </header>
+
+                <div :class="a.stepsGrid">
+                    <article
+                        v-for="step in orderSteps"
+                        :key="step.title"
+                        :class="a.stepCard"
+                    >
+                        <div :class="a.stepIconWrap">
+                            <i
+                                class="text-xl"
+                                :class="step.icon"
+                            ></i>
+                        </div>
+                        <p :class="a.stepTitle">
+                            {{ step.title }}
+                        </p>
+                        <p :class="a.stepBody">
+                            {{ step.body }}
+                        </p>
+                    </article>
+                </div>
+            </section>
         </div>
     </SecondaryPageLayout>
 </template>
