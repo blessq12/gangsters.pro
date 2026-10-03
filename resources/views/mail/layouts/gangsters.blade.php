@@ -1,6 +1,9 @@
 @php
     $logoUrl = url('/favicon/apple-touch-icon.png');
-    $brandName = 'Gangsters';
+    $brandName = trim((string) ($brandName ?? ''));
+    if ($brandName === '') {
+        $brandName = \App\Mail\Support\MailBrandName::resolve();
+    }
 @endphp
 <!DOCTYPE html>
 <html lang="ru">
@@ -44,7 +47,11 @@
                     </tr>
                     <tr>
                         <td style="padding:14px 24px;background-color:#191919;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.4;color:#a3a3a3;text-align:center;">
-                            © {{ date('Y') }} {{ $brandName }}
+                            @if ($brandName !== '')
+                                © {{ date('Y') }} {{ $brandName }}
+                            @else
+                                © {{ date('Y') }}
+                            @endif
                         </td>
                     </tr>
                 </table>

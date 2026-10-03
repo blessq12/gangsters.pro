@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Mail\Support\MailBrandName;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -33,6 +34,7 @@ final class ClientPasswordResetMail extends Mailable
             with: [
                 'clientName' => $this->clientName,
                 'plainPassword' => $this->plainPassword,
+                'brandName' => MailBrandName::resolve(),
             ],
         );
     }

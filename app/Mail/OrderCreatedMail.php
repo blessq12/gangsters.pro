@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Mail\Support\MailBrandName;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -44,6 +45,7 @@ final class OrderCreatedMail extends Mailable
                 'totalRubles' => $this->totalRubles,
                 'deliveryMethod' => $this->deliveryMethod,
                 'paymentMethod' => $this->paymentMethod,
+                'brandName' => MailBrandName::resolve(),
             ],
         );
     }

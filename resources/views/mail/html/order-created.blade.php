@@ -1,5 +1,6 @@
 @component('mail.layouts.gangsters', [
     'title' => 'Заказ №'.$orderId,
+    'brandName' => $brandName,
     'footer' => 'Если есть вопросы — напишите или позвоните нам.',
 ])
     <p style="margin:0 0 16px 0;">

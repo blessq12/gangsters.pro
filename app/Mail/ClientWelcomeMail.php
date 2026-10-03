@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Mail\Support\MailBrandName;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -19,8 +20,12 @@ final class ClientWelcomeMail extends Mailable
 
     public function envelope(): Envelope
     {
+        $brandName = MailBrandName::resolve();
+
         return new Envelope(
-            subject: 'Добро пожаловать в Gangsters',
+            subject: $brandName !== ''
+                ? 'Добро пожаловать в '.$brandName
+                : 'Добро пожаловать',
         );
     }
 
@@ -31,6 +36,7 @@ final class ClientWelcomeMail extends Mailable
             text: 'mail.client-welcome',
             with: [
                 'clientName' => $this->clientName,
+                'brandName' => MailBrandName::resolve(),
             ],
         );
     }

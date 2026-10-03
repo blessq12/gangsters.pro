@@ -1,12 +1,13 @@
 @component('mail.layouts.gangsters', [
     'title' => 'Новый пароль',
+    'brandName' => $brandName,
     'footer' => 'Если вы не запрашивали сброс — смените пароль после входа или напишите в поддержку.',
 ])
     <p style="margin:0 0 16px 0;">
         Здравствуйте{{ $clientName !== '' ? ', '.$clientName : '' }}!
     </p>
     <p style="margin:0 0 16px 0;">
-        Мы сгенерировали новый пароль для входа в личный кабинет:
+        Мы сгенерировали новый пароль для входа в личный кабинет{{ $brandName !== '' ? ' '.$brandName : '' }}:
     </p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 16px 0;">
         <tr>
