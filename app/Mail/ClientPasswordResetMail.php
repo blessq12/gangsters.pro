@@ -28,6 +28,7 @@ final class ClientPasswordResetMail extends Mailable
     public function content(): Content
     {
         return new Content(
+            html: 'mail.html.client-password-reset',
             text: 'mail.client-password-reset',
             with: [
                 'clientName' => $this->clientName,

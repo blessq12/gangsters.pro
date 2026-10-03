@@ -35,6 +35,7 @@ final class OrderCreatedMail extends Mailable
     public function content(): Content
     {
         return new Content(
+            html: 'mail.html.order-created',
             text: 'mail.order-created',
             with: [
                 'orderId' => $this->orderId,

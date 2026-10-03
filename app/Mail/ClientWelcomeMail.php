@@ -27,6 +27,7 @@ final class ClientWelcomeMail extends Mailable
     public function content(): Content
     {
         return new Content(
+            html: 'mail.html.client-welcome',
             text: 'mail.client-welcome',
             with: [
                 'clientName' => $this->clientName,
