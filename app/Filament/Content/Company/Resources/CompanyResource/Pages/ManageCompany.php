@@ -78,13 +78,17 @@ class ManageCompany extends EditRecord
     {
         $this->legalPayload = $this->extractLegalPayload($data);
 
+        $schedule = array_key_exists('schedule_rows', $data)
+            ? $this->scheduleRowsToObject($data['schedule_rows'])
+            : $this->existingScheduleOrDefault();
+
         return [
             'name' => $data['name'] ?? null,
             'description' => $this->nullableString($data['description'] ?? null),
             'phone' => $this->nullableString($data['phone'] ?? null),
             'email' => $this->nullableString($data['email'] ?? null),
             'socials' => $this->extractSocialsPayload($data),
-            'schedule' => $this->scheduleRowsToObject($data['schedule_rows'] ?? null),
+            'schedule' => $schedule,
         ];
     }
 
@@ -186,22 +190,67 @@ class ManageCompany extends EditRecord
      */
     private function scheduleRowsToObject(mixed $rows): array
     {
-        $out = $this->defaultScheduleObject();
+        $out = $this->existingScheduleOrDefault();
         if (! is_array($rows)) {
             return $out;
         }
 
-        foreach ($rows as $row) {
+        // Repeater отдаёт UUID-ключи; day в hidden иногда теряется при dehydrate.
+        // Порядок строк фиксирован (add/delete/reorder выключены) → маппим по индексу.
+        $indexed = array_values($rows);
+
+        foreach (CompanyForm::DAYS as $index => $day) {
+            $row = $indexed[$index] ?? null;
             if (! is_array($row)) {
                 continue;
             }
-            $day = strtolower(trim((string) ($row['day'] ?? '')));
-            if (! in_array($day, CompanyForm::DAYS, true)) {
-                continue;
+
+            $dayFromRow = strtolower(trim((string) ($row['day'] ?? '')));
+            if ($dayFromRow !== '' && in_array($dayFromRow, CompanyForm::DAYS, true)) {
+                $day = $dayFromRow;
             }
+
             $out[$day] = [
                 'work' => $this->nullableString($row['work'] ?? null),
                 'is_day_off' => $this->toBool($row['is_day_off'] ?? false),
+            ];
+        }
+
+        return $out;
+    }
+
+    /**
+     * @return array<string, array{work: string|null, is_day_off: bool}>
+     */
+    private function existingScheduleOrDefault(): array
+    {
+        $record = $this->record ?? null;
+        if ($record instanceof CMP_Company && is_array($record->schedule) && $record->schedule !== []) {
+            return $this->scheduleRowsToObjectFromStored($record->schedule);
+        }
+
+        return $this->defaultScheduleObject();
+    }
+
+    /**
+     * Нормализация уже сохранённого JSON schedule (без дефолтного затирания часов).
+     *
+     * @param  array<string, mixed>  $schedule
+     * @return array<string, array{work: string|null, is_day_off: bool}>
+     */
+    private function scheduleRowsToObjectFromStored(array $schedule): array
+    {
+        $out = $this->defaultScheduleObject();
+
+        foreach (CompanyForm::DAYS as $day) {
+            $cell = $schedule[$day] ?? null;
+            if (! is_array($cell)) {
+                continue;
+            }
+
+            $out[$day] = [
+                'work' => $this->nullableString($cell['work'] ?? null),
+                'is_day_off' => $this->toBool($cell['is_day_off'] ?? false),
             ];
         }
 

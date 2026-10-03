@@ -142,13 +142,16 @@ final class CompanyForm
                                 ->dehydrated(false),
                             TextInput::make('day')
                                 ->hidden()
+                                ->dehydrated()
                                 ->required(),
                             TextInput::make('work')
                                 ->label('Часы')
                                 ->placeholder('10:00–22:00')
-                                ->maxLength(64),
+                                ->maxLength(64)
+                                ->dehydrated(),
                             Toggle::make('is_day_off')
-                                ->label('Выходной'),
+                                ->label('Выходной')
+                                ->dehydrated(),
                         ])
                         ->columns(3),
                 ]),
