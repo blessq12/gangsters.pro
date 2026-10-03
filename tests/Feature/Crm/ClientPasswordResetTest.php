@@ -97,24 +97,25 @@ final class ClientPasswordResetTest extends ApiTestCase
 
     public function test_forgot_password_mail_failure_keeps_old_password(): void
     {
-        Mail::shouldReceive('to')
-            ->once()
-            ->andThrow(new TransportException('SMTP down'));
-
         $email = 'reset-fail.'.bin2hex(random_bytes(4)).'@example.test';
         $oldPassword = 'secret12';
         $phone = $this->uniquePhone();
 
+        // Без email на регистрации — welcome не дергает Mail до мока сбоя.
         $this->postJson('/api/client/register', [
             'name' => 'Reset Fail User',
             'phone' => $phone,
-            'email' => $email,
             'password' => $oldPassword,
             'consent_personal_data' => true,
         ])->assertCreated();
 
-        $clientId = (int) DB::table('CRM_clients')->where('email', $email)->value('id');
+        $clientId = (int) DB::table('CRM_clients')->where('phone', $phone)->value('id');
+        DB::table('CRM_clients')->where('id', $clientId)->update(['email' => $email]);
         $oldHash = (string) DB::table('CRM_clients')->where('id', $clientId)->value('password');
+
+        Mail::shouldReceive('to')
+            ->once()
+            ->andThrow(new TransportException('SMTP down'));
 
         $this->postJson('/api/client/forgot-password', [
             'email' => $email,
