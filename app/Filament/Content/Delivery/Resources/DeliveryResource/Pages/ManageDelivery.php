@@ -82,6 +82,18 @@ class ManageDelivery extends EditRecord
     }
 
     /**
+     * Явный sync из iframe-моста (без гонки с $wire.set + save).
+     *
+     * @param  mixed  $zones
+     */
+    public function syncDeliveryZones(mixed $zones): void
+    {
+        $normalized = $this->normalizeZones($zones);
+
+        data_set($this->data, 'delivery_zones', $normalized);
+    }
+
+    /**
      * @param  array<string, mixed>  $data
      * @return array<string, mixed>
      */

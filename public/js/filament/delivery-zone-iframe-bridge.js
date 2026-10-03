@@ -25,7 +25,7 @@
 
         try {
             return JSON.parse(JSON.stringify(value));
-        } catch {
+        } catch (e) {
             return null;
         }
     }
@@ -55,10 +55,12 @@
             init() {
                 window.__activeDeliveryZoneBridge = this;
 
-                if (this.$wire && this.zonesStatePath) {
-                    this.state = this.$wire.$entangle(this.zonesStatePath).live;
-                } else if (Array.isArray(this.initialPayload?.zones)) {
-                    this.state = this.initialPayload.zones;
+                // Не entangle GeoJSON: на стенде $wire.set().live + save() гоняются
+                // и в БД уезжает старый fill («Основная»).
+                if (Array.isArray(this.initialPayload?.zones)) {
+                    this.state = cloneForPostMessage(this.initialPayload.zones) || [];
+                } else {
+                    this.state = [];
                 }
 
                 this.$nextTick(() => {
@@ -76,8 +78,8 @@
                 const observer = new IntersectionObserver((entries) => {
                     // Только первый показ — повторный INIT затирает правки в iframe.
                     if (
-                        !this.iframeInitialized
-                        && entries.some((entry) => entry.isIntersecting)
+                        !this.iframeInitialized &&
+                        entries.some((entry) => entry.isIntersecting)
                     ) {
                         this.pushInitToIframe();
                     }
@@ -177,22 +179,16 @@
                 this.pushInitToIframe();
             },
 
-            applyPayloadToWire(payload) {
+            async applyPayloadToWire(payload) {
                 const zones = Array.isArray(payload?.zones)
                     ? payload.zones
                     : [];
 
-                const applied = this.applyZonesToWire(zones);
-                if (!applied) {
-                    return false;
-                }
-
-                // Координаты кухни редактор зон больше не меняет — только читает.
-                return true;
+                return await this.applyZonesToWire(zones);
             },
 
-            applyZonesToWire(zones) {
-                if (!this.$wire?.set) {
+            async applyZonesToWire(zones) {
+                if (!this.$wire) {
                     this.statusMessage =
                         "Нет связи с формой. Обновите страницу.";
                     return false;
@@ -200,8 +196,40 @@
 
                 const plainZones = cloneForPostMessage(zones) || [];
                 this.state = plainZones;
-                this.$wire.set(this.zonesStatePath, plainZones);
-                return true;
+
+                try {
+                    if (typeof this.$wire.syncDeliveryZones === "function") {
+                        await this.$wire.syncDeliveryZones(plainZones);
+                        return true;
+                    }
+
+                    // live=false: без отдельного commit — уедет вместе с save().
+                    if (typeof this.$wire.set === "function") {
+                        await this.$wire.set(
+                            this.zonesStatePath,
+                            plainZones,
+                            false,
+                        );
+                        return true;
+                    }
+
+                    if (typeof this.$wire.$set === "function") {
+                        await this.$wire.$set(
+                            this.zonesStatePath,
+                            plainZones,
+                            false,
+                        );
+                        return true;
+                    }
+                } catch (e) {
+                    this.statusMessage =
+                        "Не удалось записать зоны в форму. Попробуйте ещё раз.";
+                    return false;
+                }
+
+                this.statusMessage =
+                    "Нет связи с формой. Обновите страницу.";
+                return false;
             },
 
             syncFromIframe(timeoutMs = 2500) {
@@ -226,7 +254,7 @@
                 });
             },
 
-            onMessage(event) {
+            async onMessage(event) {
                 if (event.origin !== window.location.origin) {
                     return;
                 }
@@ -245,7 +273,7 @@
 
                 if (data.type === MSG.CHANGE) {
                     this.iframeInitialized = true;
-                    const applied = this.applyPayloadToWire(
+                    const applied = await this.applyPayloadToWire(
                         data.payload ?? {},
                     );
 
@@ -258,14 +286,14 @@
                         : 0;
                     this.statusMessage =
                         count === 0
-                            ? "Зоны очищены."
+                            ? "Зоны очищены в форме. Нажмите «Сохранить» внизу страницы."
                             : `Зон: ${count}. Нажмите «Сохранить» внизу страницы.`;
                     return;
                 }
 
                 if (data.type === MSG.SNAPSHOT) {
                     this.iframeInitialized = true;
-                    const applied = this.applyPayloadToWire(
+                    const applied = await this.applyPayloadToWire(
                         data.payload ?? {},
                     );
 
@@ -287,10 +315,16 @@
             const zones = bridge.resolveZones();
             const hasZones = Array.isArray(zones) && zones.length > 0;
 
-            // Sync упал и в форме пусто — не пишем [] поверх данных (типичный сбой origin/iframe).
+            // Sync упал и в форме пусто — не пишем старый fill поверх правок.
             if (!synced && !hasZones) {
                 bridge.statusMessage =
                     "Не удалось синхронизировать зоны с картой. Сохранение отменено. Проверь, что редактор загрузился на том же домене, что и админка.";
+                return;
+            }
+
+            // Ещё раз явно кладём зоны в Livewire перед save (на случай гонки).
+            const applied = await bridge.applyZonesToWire(zones);
+            if (!applied) {
                 return;
             }
         }
