@@ -29,5 +29,6 @@ final class GetBootstrapTest extends ApiTestCase
         $this->assertNotNull($response->json('delivery'));
         $this->assertArrayHasKey('settings', $response->json('delivery'));
         $this->assertArrayHasKey('zone', $response->json('delivery'));
+        $this->assertArrayHasKey('delivery_zones', $response->json('delivery.zone'));
     }
 }

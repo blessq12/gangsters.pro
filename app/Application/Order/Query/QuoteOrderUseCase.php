@@ -203,12 +203,18 @@ final class QuoteOrderUseCase
         }
 
         [$latitude, $longitude] = $this->resolveCoordinates($deliveryMethod, $input);
-        $inZone = $this->deliveryPricing->resolveInZone($latitude, $longitude);
+        $zone = $this->deliveryPricing->resolveZone($latitude, $longitude);
+        [$deliveryAvailable, $inZone] = $this->resolveDeliveryAvailability(
+            deliveryMethod: $deliveryMethod,
+            latitude: $latitude,
+            longitude: $longitude,
+            zoneMatched: $zone !== null,
+        );
         $deliveryFeeKopecks = $this->deliveryPricing->resolveDeliveryFeeKopecks(
             promotionPolicy: $policy,
             deliveryMethod: $deliveryMethod,
             currentKopecks: $itemsTotalKopecks,
-            inZone: $inZone,
+            zone: $zone,
         );
         $deliveryFeeRubles = intdiv($deliveryFeeKopecks, 100);
 
@@ -220,7 +226,11 @@ final class QuoteOrderUseCase
             'comment' => $input->deliveryComment,
             'scheduled_at' => $input->scheduledAt,
             'delivery_fee_rubles' => $deliveryFeeRubles,
+            'delivery_available' => $deliveryAvailable,
             'in_zone' => $inZone,
+            'zone_id' => $zone?->id(),
+            'zone_name' => $zone?->name(),
+            'is_remote' => $zone?->isRemote(),
         ];
 
         $payment = [
@@ -475,6 +485,30 @@ final class QuoteOrderUseCase
         }
 
         return $client;
+    }
+
+    /**
+     * @return array{0: ?bool, 1: ?bool} [delivery_available, in_zone]
+     */
+    private function resolveDeliveryAvailability(
+        string $deliveryMethod,
+        ?float $latitude,
+        ?float $longitude,
+        bool $zoneMatched,
+    ): array {
+        if ($deliveryMethod !== 'courier') {
+            return [true, null];
+        }
+
+        if ($latitude === null || $longitude === null) {
+            return [null, null];
+        }
+
+        if ($zoneMatched) {
+            return [true, true];
+        }
+
+        return [false, false];
     }
 
     /**

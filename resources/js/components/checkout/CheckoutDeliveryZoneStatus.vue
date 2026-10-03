@@ -17,14 +17,21 @@ const panelClass = computed(() => {
             return d.zoneStatusIdle;
         case DELIVERY_ZONE_PHASE.PENDING:
             return d.zoneStatusPending;
-        case DELIVERY_ZONE_PHASE.IN_ZONE:
-            return c.zoneStatusIn;
-        case DELIVERY_ZONE_PHASE.OUT_OF_ZONE:
-            return c.zoneStatusOut;
+        case DELIVERY_ZONE_PHASE.FREE:
+            return d.zoneStatusFree ?? c.zoneStatusIn;
+        case DELIVERY_ZONE_PHASE.REMOTE:
+            return d.zoneStatusRemote ?? c.zoneStatusOut;
+        case DELIVERY_ZONE_PHASE.PAID:
+            return d.zoneStatusPaid ?? c.zoneStatusIn;
+        case DELIVERY_ZONE_PHASE.UNAVAILABLE:
+            return d.zoneStatusUnavailable ?? c.zoneStatusOut;
         case DELIVERY_ZONE_PHASE.UNKNOWN:
             return d.zoneStatusUnknown;
-        default:
+        default: {
+            const _exhaustive = phase.value;
+            void _exhaustive;
             return d.zoneStatusIdle;
+        }
     }
 });
 </script>

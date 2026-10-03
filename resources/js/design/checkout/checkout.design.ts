@@ -298,6 +298,14 @@ export const checkoutDesign = {
             "border-app-border-on-surface bg-black/5 text-app-muted",
         zoneStatusPending:
             "border-app-border-on-surface bg-black/5 text-app-muted animate-pulse",
+        zoneStatusFree:
+            "border-emerald-500/30 bg-emerald-950/20 text-emerald-200",
+        zoneStatusRemote:
+            "border-orange-500/35 bg-orange-950/25 text-orange-100",
+        zoneStatusPaid:
+            "border-sky-500/30 bg-sky-950/20 text-sky-100",
+        zoneStatusUnavailable:
+            "border-rose-500/35 bg-rose-950/25 text-rose-100",
         zoneStatusUnknown: "border-amber-500/30 bg-amber-950/20 text-amber-100",
         emptyHero: `${nestedCard} space-y-3 border border-app-accent/25 bg-app-accent/8 px-4 py-4`,
         emptyTitle: `${shellTypography.body.checkoutHeadingSm} ${shellColorRoles.accent}`,

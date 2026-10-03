@@ -135,6 +135,7 @@ export function useOrderPreview() {
                 isDeliveryFree: false,
                 isDeliveryPreview: false,
                 inZone: null,
+                isRemote: false,
             },
     );
 
@@ -167,11 +168,7 @@ export function useOrderPreview() {
             !totals.value.isDeliveryPreview
             && totals.value.deliveryFeeRubles != null,
     );
-    const showOutsideZoneSurcharge = computed(
-        () =>
-            totals.value.inZone === false
-            && (totals.value.outsideZoneSurchargeRubles ?? 0) > 0,
-    );
+    const showOutsideZoneSurcharge = computed(() => false);
     const showBaseDeliveryFee = computed(() => {
         if (!hasDeliveryPricing.value) {
             return false;
@@ -289,15 +286,29 @@ export function useOrderPreview() {
             return null;
         }
 
-        if (totals.value.inZone === true) {
-            return "Адрес в зоне доставки";
-        }
-
         if (totals.value.inZone === false) {
-            return "Адрес вне зоны — доплата за отдалённый район";
+            return "Доставка недоступна";
         }
 
-        return null;
+        if (totals.value.inZone !== true) {
+            return null;
+        }
+
+        if (totals.value.isRemote) {
+            const fee = Number(totals.value.deliveryFeeRubles);
+            return Number.isFinite(fee) && fee > 0
+                ? `Доплата за отдалённый район — ${fee} ₽`
+                : "Доплата за отдалённый район";
+        }
+
+        if (totals.value.isDeliveryFree || Number(totals.value.deliveryFeeRubles) <= 0) {
+            return "Доставка бесплатная";
+        }
+
+        const fee = Number(totals.value.deliveryFeeRubles);
+        return Number.isFinite(fee) && fee > 0
+            ? `Доставка — ${fee} ₽`
+            : "Доставка платная";
     });
 
     const canShowBenefits = computed(() => {

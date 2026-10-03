@@ -21,6 +21,7 @@ class DLV_Configuration extends Model
         'kitchen_latitude',
         'kitchen_longitude',
         'delivery_zone_geojson',
+        'delivery_zones',
     ];
 
     protected $casts = [
@@ -31,5 +32,6 @@ class DLV_Configuration extends Model
         'kitchen_latitude' => 'float',
         'kitchen_longitude' => 'float',
         'delivery_zone_geojson' => 'array',
+        'delivery_zones' => 'array',
     ];
 }

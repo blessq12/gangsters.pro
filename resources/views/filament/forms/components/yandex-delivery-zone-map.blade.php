@@ -3,8 +3,7 @@
     $editorUrl = route('filament.admin.delivery-zone-map-editor');
     $record = $getRecord();
     $initialPayload = [
-        'geometry' => $getState(),
-        'address' => $record?->kitchen_address,
+        'zones' => $getState() ?? [],
         'kitchenLatitude' => $record?->kitchen_latitude,
         'kitchenLongitude' => $record?->kitchen_longitude,
     ];
@@ -14,7 +13,7 @@
     <div
         wire:ignore
         x-data="deliveryZoneBridge({
-            geometryStatePath: @js($getStatePath()),
+            zonesStatePath: @js($getStatePath()),
             kitchenAddressPath: @js($field->getKitchenAddressStatePath()),
             kitchenLatPath: @js($field->getKitchenLatitudeStatePath()),
             kitchenLngPath: @js($field->getKitchenLongitudeStatePath()),
@@ -25,9 +24,9 @@
         <iframe
             x-ref="zoneIframe"
             src="{{ $editorUrl }}"
-            style="display:block;width:100%;height:480px;min-height:480px;border:0;"
+            style="display:block;width:100%;height:720px;min-height:720px;border:0;"
             class="rounded-lg border border-gray-300 dark:border-gray-700"
-            title="Редактор зоны доставки"
+            title="Редактор зон доставки"
             @load="onIframeLoad()"
         ></iframe>
         <p class="text-sm text-gray-500" x-text="statusMessage"></p>

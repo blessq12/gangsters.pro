@@ -8,13 +8,42 @@ import {
 
 /**
  * @param {object|null|undefined} company
+ * @returns {object[]}
+ */
+export function resolveDeliveryZoneGeometries(company) {
+    const zones = Array.isArray(company?.delivery_zones)
+        ? company.delivery_zones
+        : [];
+    const fromZones = zones
+        .map((zone) => zone?.geometry)
+        .filter(
+            (geometry) =>
+                geometry
+                && typeof geometry === "object"
+                && (geometry.type === "Polygon" || geometry.type === "MultiPolygon"),
+        );
+
+    if (fromZones.length > 0) {
+        return fromZones;
+    }
+
+    const geometry = company?.delivery_zone_geojson;
+    if (
+        geometry
+        && typeof geometry === "object"
+        && (geometry.type === "Polygon" || geometry.type === "MultiPolygon")
+    ) {
+        return [geometry];
+    }
+
+    return [];
+}
+
+/**
+ * @param {object|null|undefined} company
  */
 export function hasDeliveryZoneGeometry(company) {
-    const geometry = company?.delivery_zone_geojson;
-    if (!geometry || typeof geometry !== "object") {
-        return false;
-    }
-    return geometry.type === "Polygon" || geometry.type === "MultiPolygon";
+    return resolveDeliveryZoneGeometries(company).length > 0;
 }
 
 /**
@@ -40,13 +69,12 @@ export async function mountCompanyDeliveryZoneReadonlyMap(container, company) {
         return null;
     }
 
-    const geometry = hasDeliveryZoneGeometry(company)
-        ? company?.delivery_zone_geojson ?? null
-        : null;
+    const geometries = resolveDeliveryZoneGeometries(company);
 
     return mountYandexDeliveryZoneReadonlyMap(container, {
         apiKey,
-        geometry,
+        geometries,
+        geometry: geometries[0] ?? null,
         center: kitchenMapCenterOrNull(company),
     });
 }
@@ -267,17 +295,38 @@ function resolveMapCenter(explicitCenter, geometry) {
 
 /**
  * @param {HTMLElement} container
- * @param {{ apiKey: string, geometry?: object|null, center?: [number, number]|null, zoom?: number }} options
+ * @param {{
+ *   apiKey: string,
+ *   geometry?: object|null,
+ *   geometries?: object[],
+ *   center?: [number, number]|null,
+ *   zoom?: number
+ * }} options
  * @returns {Promise<{ destroy: () => void, refit: () => void, polygonShown: boolean }>}
  */
 export async function mountYandexDeliveryZoneReadonlyMap(container, options) {
-    const { apiKey, geometry = null, center = null, zoom = 12 } = options;
+    const {
+        apiKey,
+        geometry = null,
+        geometries = null,
+        center = null,
+        zoom = 12,
+    } = options;
 
     await loadYandexMapsApi(apiKey);
 
-    const ring = geometry ? geometryToYmapsRing(geometry) : [];
-    const mapCenter = resolveMapCenter(center, geometry);
-    const canShowPolygon = ring.length >= 3 && ringIsNearTomsk(ring);
+    const zoneGeometries = Array.isArray(geometries) && geometries.length > 0
+        ? geometries
+        : geometry
+          ? [geometry]
+          : [];
+    const rings = zoneGeometries
+        .map((item) => geometryToYmapsRing(item))
+        .filter((ring) => ring.length >= 3);
+    const primaryGeometry = zoneGeometries[0] ?? null;
+    const mapCenter = resolveMapCenter(center, primaryGeometry);
+    const nearTomskRings = rings.filter((ring) => ringIsNearTomsk(ring));
+    const canShowPolygon = nearTomskRings.length > 0;
 
     // API 2.1 has no native dark theme; tiles are darkened via CSS on this class.
     container.classList.add("yandex-map-theme-dark");
@@ -301,22 +350,29 @@ export async function mountYandexDeliveryZoneReadonlyMap(container, options) {
     refit();
 
     if (canShowPolygon) {
-        const polygon = new window.ymaps.Polygon(
-            [ring],
-            {},
-            {
-                fillColor: "#C6242444",
-                strokeColor: "#C62424",
-                strokeWidth: 2,
-                interactive: false,
-            },
-        );
-        map.geoObjects.add(polygon);
-        map.setBounds(polygon.geometry.getBounds(), {
-            checkZoomRange: true,
-            zoomMargin: 32,
+        const colors = ["#C62424", "#2563EB", "#059669", "#D97706", "#7C3AED"];
+        nearTomskRings.forEach((ring, index) => {
+            const color = colors[index % colors.length];
+            const polygon = new window.ymaps.Polygon(
+                [ring],
+                {},
+                {
+                    fillColor: `${color}44`,
+                    strokeColor: color,
+                    strokeWidth: 2,
+                    interactive: false,
+                },
+            );
+            map.geoObjects.add(polygon);
         });
-    } else if (ring.length >= 3 && !warnedPolygonOutsideTomsk) {
+        const bounds = map.geoObjects.getBounds();
+        if (bounds) {
+            map.setBounds(bounds, {
+                checkZoomRange: true,
+                zoomMargin: 32,
+            });
+        }
+    } else if (rings.length > 0 && !warnedPolygonOutsideTomsk) {
         warnedPolygonOutsideTomsk = true;
         console.warn(
             "Delivery zone map: polygon is outside Tomsk area or invalid — showing map without zone.",

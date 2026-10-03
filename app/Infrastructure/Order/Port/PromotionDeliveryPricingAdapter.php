@@ -4,10 +4,11 @@ namespace App\Infrastructure\Order\Port;
 
 use App\Domain\Content\Entity\DeliveryConfiguration;
 use App\Domain\Content\Repository\DeliveryConfigurationRepository;
+use App\Domain\Content\ValueObject\DeliveryZone;
 use App\Domain\Order\Entity\PromotionPolicy;
 use App\Domain\Order\Port\PromotionDeliveryPricingPort;
 use App\Domain\Order\Repository\PromotionPolicyRepository;
-use App\Shared\Geo\PointInGeoJsonZone;
+use App\Shared\Geo\DeliveryZoneMatcher;
 
 final class PromotionDeliveryPricingAdapter implements PromotionDeliveryPricingPort
 {
@@ -16,7 +17,7 @@ final class PromotionDeliveryPricingAdapter implements PromotionDeliveryPricingP
         private readonly PromotionPolicyRepository $promotionPolicies,
     ) {}
 
-    public function resolveInZone(?float $latitude, ?float $longitude): ?bool
+    public function resolveZone(?float $latitude, ?float $longitude): ?DeliveryZone
     {
         $configuration = $this->deliveryConfigurations->findPublic();
 
@@ -24,8 +25,8 @@ final class PromotionDeliveryPricingAdapter implements PromotionDeliveryPricingP
             return null;
         }
 
-        return PointInGeoJsonZone::contains(
-            $configuration->deliveryZoneGeoJson(),
+        return DeliveryZoneMatcher::match(
+            $configuration->zones(),
             $latitude,
             $longitude,
         );
@@ -51,57 +52,31 @@ final class PromotionDeliveryPricingAdapter implements PromotionDeliveryPricingP
         ?PromotionPolicy $promotionPolicy,
         ?string $deliveryMethod,
         int $currentKopecks,
-        ?bool $inZone,
+        ?DeliveryZone $zone,
     ): int {
         if ($deliveryMethod === 'pickup' || $deliveryMethod !== 'courier') {
             return 0;
         }
 
-        $configuration = $this->deliveryConfigurations->findPublic();
-        $baseFeeKopecks = max(0, $configuration?->deliveryFeeKopecks() ?? 0);
-        $outsideZoneFeeKopecks = max(
-            0,
-            $configuration?->outsideZoneDeliveryFeeKopecks() ?? $baseFeeKopecks,
-        );
+        if (! $zone instanceof DeliveryZone) {
+            return 0;
+        }
 
+        $zoneFeeKopecks = max(0, $zone->deliveryFeeKopecks());
         $policy = $promotionPolicy?->deliveryBenefit();
-        if (! is_array($policy) || ! ($policy['is_active'] ?? false)) {
-            if ($inZone === false) {
-                return $baseFeeKopecks + $outsideZoneFeeKopecks;
-            }
 
-            return $baseFeeKopecks;
+        if (! is_array($policy) || ! ($policy['is_active'] ?? false)) {
+            return $zoneFeeKopecks;
         }
 
         $thresholdKopecks = (int) $policy['free_delivery_threshold_kopecks'];
         $meetsThreshold = $currentKopecks >= $thresholdKopecks;
-        $surcharge = (int) $policy['outside_zone_surcharge_kopecks'];
 
-        if ($inZone === false) {
-            if ($meetsThreshold) {
-                return $this->resolveFeeByMode(
-                    (string) $policy['outside_zone_at_threshold_fee_mode'],
-                    $baseFeeKopecks,
-                    $surcharge,
-                );
-            }
-
-            return $baseFeeKopecks + $outsideZoneFeeKopecks;
+        if ($meetsThreshold && ! $zone->isRemote()) {
+            return 0;
         }
 
-        if ($meetsThreshold) {
-            return $this->resolveFeeByMode(
-                (string) $policy['in_zone_at_threshold_fee_mode'],
-                $baseFeeKopecks,
-                $surcharge,
-            );
-        }
-
-        return $this->resolveFeeByMode(
-            (string) $policy['below_threshold_fee_mode'],
-            $baseFeeKopecks,
-            $surcharge,
-        );
+        return $zoneFeeKopecks;
     }
 
     /**
@@ -110,18 +85,5 @@ final class PromotionDeliveryPricingAdapter implements PromotionDeliveryPricingP
     private function deliveryBenefit(): ?array
     {
         return $this->promotionPolicies->find()?->deliveryBenefit();
-    }
-
-    private function resolveFeeByMode(
-        string $mode,
-        int $baseFeeKopecks,
-        int $outsideZoneSurchargeKopecks,
-    ): int {
-        return match ($mode) {
-            'free' => 0,
-            'base_plus_surcharge' => $baseFeeKopecks + $outsideZoneSurchargeKopecks,
-            'outside_zone_surcharge_only' => $outsideZoneSurchargeKopecks,
-            default => $baseFeeKopecks,
-        };
     }
 }

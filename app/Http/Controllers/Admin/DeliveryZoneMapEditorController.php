@@ -11,7 +11,6 @@ final class DeliveryZoneMapEditorController extends Controller
     {
         return view('admin.delivery-zone-map-editor', [
             'mapsApiKey' => config('services.yandex_maps.api_key'),
-            'geocoderApiKey' => config('services.yandex_maps.geocoder_api_key'),
         ]);
     }
 }

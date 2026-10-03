@@ -10,6 +10,7 @@ use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Str;
 
 class ManageDelivery extends EditRecord
 {
@@ -28,6 +29,7 @@ class ManageDelivery extends EditRecord
                 'delivery_fee_kopecks' => null,
                 'outside_zone_delivery_fee_kopecks' => null,
                 'average_delivery_time_minutes' => null,
+                'delivery_zones' => [],
             ],
         );
 
@@ -58,28 +60,152 @@ class ManageDelivery extends EditRecord
      * @param  array<string, mixed>  $data
      * @return array<string, mixed>
      */
-    protected function mutateFormDataBeforeSave(array $data): array
+    protected function mutateFormDataBeforeFill(array $data): array
     {
-        $geoJson = $data['delivery_zone_geojson'] ?? null;
-
-        if ($geoJson === null || $geoJson === '') {
-            $data['delivery_zone_geojson'] = null;
-
-            return $data;
-        }
-
-        if (! is_array($geoJson)) {
-            $data['delivery_zone_geojson'] = null;
-
-            return $data;
-        }
-
-        $type = $geoJson['type'] ?? null;
-        if (! is_string($type) || ! in_array($type, ['Polygon', 'MultiPolygon'], true)) {
-            $data['delivery_zone_geojson'] = null;
+        $zones = $data['delivery_zones'] ?? null;
+        if (! is_array($zones) || $zones === []) {
+            $legacy = $data['delivery_zone_geojson'] ?? null;
+            if (is_array($legacy) && isset($legacy['type'])) {
+                $data['delivery_zones'] = [[
+                    'id' => (string) Str::uuid(),
+                    'name' => 'Основная',
+                    'delivery_fee_kopecks' => max(0, (int) ($data['delivery_fee_kopecks'] ?? 0)),
+                    'is_remote' => false,
+                    'geometry' => $legacy,
+                ]];
+            } else {
+                $data['delivery_zones'] = [];
+            }
         }
 
         return $data;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        $zones = $this->normalizeZones($data['delivery_zones'] ?? null);
+        $data['delivery_zones'] = $zones;
+        $data['delivery_zone_geojson'] = $this->combinedGeoJson($zones);
+        $data['delivery_fee_kopecks'] = $this->minFeeKopecks($zones);
+        $data['outside_zone_delivery_fee_kopecks'] = null;
+
+        return $data;
+    }
+
+    /**
+     * @return list<array{
+     *     id: string,
+     *     name: string,
+     *     delivery_fee_kopecks: int,
+     *     is_remote: bool,
+     *     geometry: array<string, mixed>
+     * }>
+     */
+    private function normalizeZones(mixed $rawZones): array
+    {
+        if (! is_array($rawZones)) {
+            return [];
+        }
+
+        $zones = [];
+
+        foreach ($rawZones as $raw) {
+            if (! is_array($raw)) {
+                continue;
+            }
+
+            $geometry = $raw['geometry'] ?? null;
+            if (! is_array($geometry)) {
+                continue;
+            }
+
+            $type = $geometry['type'] ?? null;
+            if (! is_string($type) || ! in_array($type, ['Polygon', 'MultiPolygon'], true)) {
+                continue;
+            }
+
+            $coordinates = $geometry['coordinates'] ?? null;
+            if (! is_array($coordinates) || $coordinates === []) {
+                continue;
+            }
+
+            $id = trim((string) ($raw['id'] ?? ''));
+            if ($id === '') {
+                $id = (string) Str::uuid();
+            }
+
+            $name = trim((string) ($raw['name'] ?? ''));
+            if ($name === '') {
+                $name = 'Зона';
+            }
+
+            $zones[] = [
+                'id' => $id,
+                'name' => $name,
+                'delivery_fee_kopecks' => max(0, (int) ($raw['delivery_fee_kopecks'] ?? 0)),
+                'is_remote' => (bool) ($raw['is_remote'] ?? false),
+                'geometry' => $geometry,
+            ];
+        }
+
+        return $zones;
+    }
+
+    /**
+     * @param  list<array{geometry: array<string, mixed>, delivery_fee_kopecks: int}>  $zones
+     * @return array<string, mixed>|null
+     */
+    private function combinedGeoJson(array $zones): ?array
+    {
+        $polygons = [];
+
+        foreach ($zones as $zone) {
+            $geometry = $zone['geometry'];
+            $type = $geometry['type'] ?? null;
+
+            if ($type === 'Polygon') {
+                $polygons[] = $geometry['coordinates'] ?? [];
+            } elseif ($type === 'MultiPolygon') {
+                foreach ($geometry['coordinates'] ?? [] as $polygonCoordinates) {
+                    $polygons[] = $polygonCoordinates;
+                }
+            }
+        }
+
+        if ($polygons === []) {
+            return null;
+        }
+
+        if (count($polygons) === 1) {
+            return [
+                'type' => 'Polygon',
+                'coordinates' => $polygons[0],
+            ];
+        }
+
+        return [
+            'type' => 'MultiPolygon',
+            'coordinates' => $polygons,
+        ];
+    }
+
+    /**
+     * @param  list<array{delivery_fee_kopecks: int}>  $zones
+     */
+    private function minFeeKopecks(array $zones): ?int
+    {
+        if ($zones === []) {
+            return null;
+        }
+
+        return min(array_map(
+            static fn (array $zone): int => (int) $zone['delivery_fee_kopecks'],
+            $zones,
+        ));
     }
 
     protected function getRedirectUrl(): ?string

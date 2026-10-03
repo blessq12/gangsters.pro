@@ -27,7 +27,7 @@ final class DeliveryForm
                             ->icon(Heroicon::OutlinedCog6Tooth)
                             ->schema(self::settingsSchema()),
                         'zone' => Tab::make('zone')
-                            ->label('Зона доставки')
+                            ->label('Зоны доставки')
                             ->icon(Heroicon::OutlinedMap)
                             ->schema(self::zoneSchema()),
                     ]),
@@ -45,8 +45,6 @@ final class DeliveryForm
                 ->columns(2)
                 ->schema([
                     self::moneyInput('min_order_amount_kopecks', 'Минимальная сумма заказа'),
-                    self::moneyInput('delivery_fee_kopecks', 'Стоимость доставки'),
-                    self::moneyInput('outside_zone_delivery_fee_kopecks', 'Доставка за пределами зоны'),
                     TextInput::make('average_delivery_time_minutes')
                         ->label('Среднее время доставки')
                         ->numeric()
@@ -87,11 +85,12 @@ final class DeliveryForm
                     Hidden::make('kitchen_latitude'),
                     Hidden::make('kitchen_longitude'),
                 ]),
-            Section::make('Полигон зоны')
+            Section::make('Полигоны зон')
+                ->description('У каждой зоны своя цена и флаг «отдалённый район». Вне всех зон доставка недоступна.')
                 ->columnSpanFull()
                 ->schema([
-                    YandexDeliveryZoneMap::make('delivery_zone_geojson')
-                        ->label('Зона доставки')
+                    YandexDeliveryZoneMap::make('delivery_zones')
+                        ->label('Зоны доставки')
                         ->columnSpanFull(),
                 ]),
         ];

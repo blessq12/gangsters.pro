@@ -154,5 +154,8 @@ export function toDeliveryFactsView(delivery) {
         kitchen_latitude: zone.kitchen_latitude ?? null,
         kitchen_longitude: zone.kitchen_longitude ?? null,
         delivery_zone_geojson: zone.delivery_zone_geojson ?? null,
+        delivery_zones: Array.isArray(zone.delivery_zones)
+            ? zone.delivery_zones
+            : [],
     };
 }

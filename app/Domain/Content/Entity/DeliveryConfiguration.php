@@ -2,26 +2,25 @@
 
 namespace App\Domain\Content\Entity;
 
+use App\Domain\Content\ValueObject\DeliveryZone;
 use App\Domain\Content\ValueObject\KitchenAddress;
 
 /**
- * Публичная конфигурация доставки: тарифы и зона.
+ * Публичная конфигурация доставки: кухня и список зон.
  */
 final class DeliveryConfiguration
 {
     /**
-     * @param  array<string, mixed>|null  $deliveryZoneGeoJson
+     * @param  list<DeliveryZone>  $zones
      */
     public function __construct(
         private readonly int $id,
         private readonly ?int $minOrderAmountKopecks,
-        private readonly ?int $deliveryFeeKopecks,
-        private readonly ?int $outsideZoneDeliveryFeeKopecks,
         private readonly ?int $averageDeliveryTimeMinutes,
         private readonly KitchenAddress $kitchenAddress,
         private readonly ?float $kitchenLatitude,
         private readonly ?float $kitchenLongitude,
-        private readonly ?array $deliveryZoneGeoJson,
+        private readonly array $zones,
     ) {}
 
     public function id(): int
@@ -32,16 +31,6 @@ final class DeliveryConfiguration
     public function minOrderAmountKopecks(): ?int
     {
         return $this->minOrderAmountKopecks;
-    }
-
-    public function deliveryFeeKopecks(): ?int
-    {
-        return $this->deliveryFeeKopecks;
-    }
-
-    public function outsideZoneDeliveryFeeKopecks(): ?int
-    {
-        return $this->outsideZoneDeliveryFeeKopecks;
     }
 
     public function averageDeliveryTimeMinutes(): ?int
@@ -65,10 +54,66 @@ final class DeliveryConfiguration
     }
 
     /**
+     * @return list<DeliveryZone>
+     */
+    public function zones(): array
+    {
+        return $this->zones;
+    }
+
+    /**
+     * Минимальный тариф среди зон — для публичного «доставка от».
+     */
+    public function minDeliveryFeeKopecks(): ?int
+    {
+        if ($this->zones === []) {
+            return null;
+        }
+
+        $fees = array_map(
+            static fn (DeliveryZone $zone): int => $zone->deliveryFeeKopecks(),
+            $this->zones,
+        );
+
+        return min($fees);
+    }
+
+    /**
+     * Объединённый MultiPolygon всех зон (для карт / legacy).
+     *
      * @return array<string, mixed>|null
      */
     public function deliveryZoneGeoJson(): ?array
     {
-        return $this->deliveryZoneGeoJson;
+        $polygons = [];
+
+        foreach ($this->zones as $zone) {
+            $geometry = $zone->geometry();
+            $type = $geometry['type'] ?? null;
+
+            if ($type === 'Polygon') {
+                $polygons[] = $geometry['coordinates'] ?? [];
+            } elseif ($type === 'MultiPolygon') {
+                foreach ($geometry['coordinates'] ?? [] as $polygonCoordinates) {
+                    $polygons[] = $polygonCoordinates;
+                }
+            }
+        }
+
+        if ($polygons === []) {
+            return null;
+        }
+
+        if (count($polygons) === 1) {
+            return [
+                'type' => 'Polygon',
+                'coordinates' => $polygons[0],
+            ];
+        }
+
+        return [
+            'type' => 'MultiPolygon',
+            'coordinates' => $polygons,
+        ];
     }
 }

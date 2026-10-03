@@ -308,6 +308,7 @@ export const useCheckoutStore = defineStore("checkout", {
                         : deliveryPricing.in_zone === false
                           ? false
                           : null,
+                isRemote: Boolean(deliveryPricing.is_remote),
                 remainingToFreeKopecks: Number(deliveryPricing.remaining_to_free_kopecks) || 0,
                 itemsTotalKopecks,
                 grandTotalKopecks,

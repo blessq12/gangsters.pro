@@ -102,6 +102,39 @@ final class OrderApiTest extends ApiTestCase
         $this->assertNotEmpty($response->json('data.items'));
     }
 
+    public function test_quote_marks_courier_unavailable_outside_zones(): void
+    {
+        if (! \Illuminate\Support\Facades\Schema::hasColumn('DLV_configuration', 'delivery_zones')) {
+            $this->markTestSkipped('Column delivery_zones is missing — run migrations.');
+        }
+
+        $productId = $this->activeProductId();
+
+        $response = $this->postJson('/api/order/quote', [
+            'lines' => [
+                ['product_id' => $productId, 'quantity' => 1],
+            ],
+            'delivery_method' => 'courier',
+            'payment_method' => 'cash',
+            'address' => [
+                'street' => 'ул. Тестовая',
+                'house' => '1',
+            ],
+            'latitude' => 0.1,
+            'longitude' => 0.1,
+            'client' => [
+                'kind' => 'guest',
+                'name' => 'Guest Outside',
+                'phone' => '+7 (900) 444-55-66',
+            ],
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('data.delivery.delivery_available', false)
+            ->assertJsonPath('data.delivery.in_zone', false)
+            ->assertJsonPath('data.delivery.delivery_fee_rubles', 0);
+    }
+
     public function test_place_is_idempotent_by_client_request_id(): void
     {
         $productId = $this->activeProductId();

@@ -1,5 +1,5 @@
 /**
- * Мост postMessage между Filament-формой и iframe редактора зоны.
+ * Мост postMessage между Filament-формой и iframe редактора зон.
  */
 (function () {
     const MSG = {
@@ -11,11 +11,7 @@
     };
 
     function cloneForPostMessage(value) {
-        if (value === undefined) {
-            return null;
-        }
-
-        if (value === null) {
+        if (value === undefined || value === null) {
             return null;
         }
 
@@ -44,9 +40,7 @@
         Alpine.data("deliveryZoneBridge", (config = {}) => ({
             state: null,
             initialPayload: config.initialPayload ?? null,
-            geometryStatePath:
-                config.geometryStatePath ?? "data.delivery_zone_geojson",
-            kitchenAddress: "",
+            zonesStatePath: config.zonesStatePath ?? "data.delivery_zones",
             kitchenAddressPath:
                 config.kitchenAddressPath ?? "data.kitchen_address",
             kitchenLatPath:
@@ -54,26 +48,17 @@
             kitchenLngPath:
                 config.kitchenLngPath ?? "data.kitchen_longitude",
             iframeReady: false,
-            iframeDomReady: false,
+            iframeInitialized: false,
             statusMessage: "",
             pendingSnapshotResolver: null,
-            readyHeartbeatTimer: null,
 
             init() {
                 window.__activeDeliveryZoneBridge = this;
 
-                if (this.$wire) {
-                    if (this.geometryStatePath) {
-                        this.state = this.$wire.$entangle(
-                            this.geometryStatePath,
-                        ).live;
-                    }
-
-                    this.kitchenAddress = this.$wire.$entangle(
-                        this.kitchenAddressPath,
-                    ).live;
-                } else if (this.initialPayload?.geometry) {
-                    this.state = this.initialPayload.geometry;
+                if (this.$wire && this.zonesStatePath) {
+                    this.state = this.$wire.$entangle(this.zonesStatePath).live;
+                } else if (Array.isArray(this.initialPayload?.zones)) {
+                    this.state = this.initialPayload.zones;
                 }
 
                 this.$nextTick(() => {
@@ -89,7 +74,11 @@
                 }
 
                 const observer = new IntersectionObserver((entries) => {
-                    if (entries.some((entry) => entry.isIntersecting)) {
+                    // Только первый показ — повторный INIT затирает правки в iframe.
+                    if (
+                        !this.iframeInitialized
+                        && entries.some((entry) => entry.isIntersecting)
+                    ) {
                         this.pushInitToIframe();
                     }
                 });
@@ -114,47 +103,26 @@
                 return this.$wire?.data?.[key] ?? null;
             },
 
-            resolveGeometry() {
-                if (
-                    this.initialPayload?.geometry &&
-                    typeof this.initialPayload.geometry === "object" &&
-                    this.initialPayload.geometry.type
-                ) {
-                    return cloneForPostMessage(this.initialPayload.geometry);
+            resolveZones() {
+                const fromWire = this.readWireValue(this.zonesStatePath);
+                if (Array.isArray(fromWire)) {
+                    return cloneForPostMessage(fromWire) || [];
                 }
 
-                const fromWire = this.readWireValue(this.geometryStatePath);
-                if (
-                    fromWire &&
-                    typeof fromWire === "object" &&
-                    fromWire.type
-                ) {
-                    return cloneForPostMessage(fromWire);
+                if (Array.isArray(this.state)) {
+                    return cloneForPostMessage(this.state) || [];
                 }
 
-                const fromEntangle = this.state;
-                if (
-                    fromEntangle &&
-                    typeof fromEntangle === "object" &&
-                    fromEntangle.type
-                ) {
-                    return cloneForPostMessage(fromEntangle);
+                if (Array.isArray(this.initialPayload?.zones)) {
+                    return cloneForPostMessage(this.initialPayload.zones) || [];
                 }
 
-                return null;
+                return [];
             },
 
             buildInitPayload() {
-                const data = this.$wire?.data ?? {};
-
                 return {
-                    geometry: this.resolveGeometry(),
-                    address: String(
-                        this.kitchenAddress ??
-                            data.kitchen_address ??
-                            this.initialPayload?.address ??
-                            "",
-                    ),
+                    zones: this.resolveZones(),
                     kitchenLatitude: cloneForPostMessage(
                         this.readWireValue(this.kitchenLatPath) ??
                             this.initialPayload?.kitchenLatitude ??
@@ -181,7 +149,11 @@
 
             markIframeReady() {
                 this.iframeReady = true;
-                this.pushInitToIframe();
+                if (!this.iframeInitialized) {
+                    this.pushInitToIframe();
+                    // Сразу помечаем: повторный INIT затрёт правки в iframe.
+                    this.iframeInitialized = true;
+                }
             },
 
             postToIframe(type, payload = {}) {
@@ -200,61 +172,36 @@
             },
 
             onIframeLoad() {
-                this.iframeDomReady = true;
+                this.iframeInitialized = false;
+                this.iframeReady = false;
                 this.pushInitToIframe();
             },
 
             applyPayloadToWire(payload) {
-                const geometry = payload?.geometry ?? null;
+                const zones = Array.isArray(payload?.zones)
+                    ? payload.zones
+                    : [];
 
-                if (geometry == null) {
-                    this.applyGeometryToWire(null);
-                } else {
-                    const applied = this.applyGeometryToWire(geometry);
-                    if (!applied) {
-                        return false;
-                    }
+                const applied = this.applyZonesToWire(zones);
+                if (!applied) {
+                    return false;
                 }
 
-                this.applyKitchenCoords(
-                    payload?.kitchenLatitude ?? null,
-                    payload?.kitchenLongitude ?? null,
-                );
-
+                // Координаты кухни редактор зон больше не меняет — только читает.
                 return true;
             },
 
-            applyGeometryToWire(geometry) {
+            applyZonesToWire(zones) {
                 if (!this.$wire?.set) {
                     this.statusMessage =
                         "Нет связи с формой. Обновите страницу.";
                     return false;
                 }
 
-                if (geometry == null || geometry === "") {
-                    this.state = null;
-                    this.$wire.set(this.geometryStatePath, null);
-                    return true;
-                }
-
-                const plainGeometry = cloneForPostMessage(geometry);
-                this.state = plainGeometry;
-                this.$wire.set(this.geometryStatePath, plainGeometry);
+                const plainZones = cloneForPostMessage(zones) || [];
+                this.state = plainZones;
+                this.$wire.set(this.zonesStatePath, plainZones);
                 return true;
-            },
-
-            applyKitchenCoords(lat, lng) {
-                if (!this.$wire?.set) {
-                    return;
-                }
-
-                if (lat != null) {
-                    this.$wire.set(this.kitchenLatPath, lat);
-                }
-
-                if (lng != null) {
-                    this.$wire.set(this.kitchenLngPath, lng);
-                }
             },
 
             syncFromIframe(timeoutMs = 2500) {
@@ -292,11 +239,12 @@
                 if (data.type === MSG.READY) {
                     this.markIframeReady();
                     this.statusMessage =
-                        "Редактор готов. Нарисуйте зону и нажмите «Сохранить» — геометрия подтянется автоматически.";
+                        "Редактор готов: список зон слева, карта Томска справа. После правок нажмите «Сохранить» в редакторе, затем «Сохранить» внизу страницы.";
                     return;
                 }
 
                 if (data.type === MSG.CHANGE) {
+                    this.iframeInitialized = true;
                     const applied = this.applyPayloadToWire(
                         data.payload ?? {},
                     );
@@ -305,14 +253,18 @@
                         return;
                     }
 
+                    const count = Array.isArray(data.payload?.zones)
+                        ? data.payload.zones.length
+                        : 0;
                     this.statusMessage =
-                        data.payload?.geometry == null
-                            ? "Зона очищена."
-                            : "Зона обновлена. Нажмите «Сохранить» внизу страницы.";
+                        count === 0
+                            ? "Зоны очищены."
+                            : `Зон: ${count}. Нажмите «Сохранить» внизу страницы.`;
                     return;
                 }
 
                 if (data.type === MSG.SNAPSHOT) {
+                    this.iframeInitialized = true;
                     const applied = this.applyPayloadToWire(
                         data.payload ?? {},
                     );

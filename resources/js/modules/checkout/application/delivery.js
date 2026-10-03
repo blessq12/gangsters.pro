@@ -379,20 +379,15 @@ export const DELIVERY_ZONE_PHASE = Object.freeze({
     PICKUP: "pickup",
     IDLE: "idle",
     PENDING: "pending",
-    IN_ZONE: "in_zone",
-    OUT_OF_ZONE: "out_of_zone",
+    FREE: "free",
+    REMOTE: "remote",
+    PAID: "paid",
+    UNAVAILABLE: "unavailable",
+    /** @deprecated alias для совместимости */
+    OUT_OF_ZONE: "unavailable",
+    /** @deprecated alias для совместимости */
+    IN_ZONE: "free",
     UNKNOWN: "unknown",
-});
-
-export const DELIVERY_ZONE_MESSAGES = Object.freeze({
-    [DELIVERY_ZONE_PHASE.IDLE]:
-        "Укажи улицу и дом — проверим зону и стоимость доставки.",
-    [DELIVERY_ZONE_PHASE.PENDING]: CHECKOUT_LOADING_LABELS.zoneCheck,
-    [DELIVERY_ZONE_PHASE.IN_ZONE]: "Адрес в зоне доставки",
-    [DELIVERY_ZONE_PHASE.OUT_OF_ZONE]:
-        "Адрес вне зоны — доплата за отдалённый район",
-    [DELIVERY_ZONE_PHASE.UNKNOWN]:
-        "Не удалось проверить адрес. Уточним доставку при подтверждении заказа.",
 });
 
 /**
@@ -401,6 +396,9 @@ export const DELIVERY_ZONE_MESSAGES = Object.freeze({
  *   addressReady: boolean,
  *   previewLoading: boolean,
  *   inZone: boolean | null | undefined,
+ *   isRemote?: boolean,
+ *   isDeliveryFree?: boolean,
+ *   deliveryFeeRubles?: number | null,
  * }} input
  * @returns {string}
  */
@@ -409,6 +407,9 @@ export function resolveDeliveryZonePhase({
     addressReady,
     previewLoading,
     inZone,
+    isRemote = false,
+    isDeliveryFree = false,
+    deliveryFeeRubles = null,
 }) {
     if (method === "pickup") {
         return DELIVERY_ZONE_PHASE.PICKUP;
@@ -426,15 +427,68 @@ export function resolveDeliveryZonePhase({
         return DELIVERY_ZONE_PHASE.PENDING;
     }
 
-    if (inZone === true) {
-        return DELIVERY_ZONE_PHASE.IN_ZONE;
+    if (inZone === false) {
+        return DELIVERY_ZONE_PHASE.UNAVAILABLE;
     }
 
-    if (inZone === false) {
-        return DELIVERY_ZONE_PHASE.OUT_OF_ZONE;
+    if (inZone === true) {
+        if (isRemote) {
+            return DELIVERY_ZONE_PHASE.REMOTE;
+        }
+
+        const fee = Number(deliveryFeeRubles);
+        if (isDeliveryFree || (Number.isFinite(fee) && fee <= 0)) {
+            return DELIVERY_ZONE_PHASE.FREE;
+        }
+
+        return DELIVERY_ZONE_PHASE.PAID;
     }
 
     return DELIVERY_ZONE_PHASE.UNKNOWN;
+}
+
+/**
+ * @param {{
+ *   phase: string,
+ *   deliveryFeeRubles?: number | null,
+ *   formatPrice?: (value: number) => string,
+ * }} input
+ * @returns {string | null}
+ */
+export function resolveDeliveryZoneMessage({
+    phase,
+    deliveryFeeRubles = null,
+    formatPrice = null,
+}) {
+    const fee = Number(deliveryFeeRubles);
+    const feeLabel = Number.isFinite(fee) && fee > 0
+        ? (typeof formatPrice === "function"
+            ? `${formatPrice(fee)} ₽`
+            : `${Math.round(fee)} ₽`)
+        : null;
+
+    switch (phase) {
+        case DELIVERY_ZONE_PHASE.IDLE:
+            return "Укажи улицу и дом — проверим зону и стоимость доставки.";
+        case DELIVERY_ZONE_PHASE.PENDING:
+            return CHECKOUT_LOADING_LABELS.zoneCheck;
+        case DELIVERY_ZONE_PHASE.FREE:
+            return "Доставка бесплатная";
+        case DELIVERY_ZONE_PHASE.REMOTE:
+            return feeLabel
+                ? `Доплата за отдалённый район — ${feeLabel}`
+                : "Доплата за отдалённый район";
+        case DELIVERY_ZONE_PHASE.PAID:
+            return feeLabel
+                ? `Доставка — ${feeLabel}`
+                : "Доставка платная";
+        case DELIVERY_ZONE_PHASE.UNAVAILABLE:
+            return "Доставка недоступна";
+        case DELIVERY_ZONE_PHASE.UNKNOWN:
+            return "Не удалось проверить адрес. Уточним доставку при подтверждении заказа.";
+        default:
+            return null;
+    }
 }
 
 export function useDeliveryZoneStatus() {
@@ -443,6 +497,7 @@ export function useDeliveryZoneStatus() {
     const { checkoutState } = useCheckoutFlowContext();
     const { deliveryInfo, flushing } = storeToRefs(checkoutStore);
     const { totals, previewLoading } = useOrderPreview();
+    const { formatPrice } = checkoutState;
 
     const addressReady = computed(() => {
         if (deliveryInfo.value.method !== "courier") {
@@ -466,15 +521,25 @@ export function useDeliveryZoneStatus() {
             addressReady: addressReady.value,
             previewLoading: previewLoading.value || flushing.value,
             inZone: totals.value.inZone,
+            isRemote: Boolean(totals.value.isRemote),
+            isDeliveryFree: Boolean(totals.value.isDeliveryFree),
+            deliveryFeeRubles: totals.value.deliveryFeeRubles,
         }),
     );
 
-    const message = computed(() => DELIVERY_ZONE_MESSAGES[phase.value] ?? null);
+    const message = computed(() =>
+        resolveDeliveryZoneMessage({
+            phase: phase.value,
+            deliveryFeeRubles: totals.value.deliveryFeeRubles,
+            formatPrice,
+        }),
+    );
 
     const showPanel = computed(
         () =>
             deliveryInfo.value.method === "courier"
-            && phase.value !== DELIVERY_ZONE_PHASE.HIDDEN,
+            && phase.value !== DELIVERY_ZONE_PHASE.HIDDEN
+            && phase.value !== DELIVERY_ZONE_PHASE.PICKUP,
     );
 
     return {

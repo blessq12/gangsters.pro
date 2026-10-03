@@ -3,8 +3,10 @@
 namespace App\Infrastructure\Content\Mapper;
 
 use App\Domain\Content\Entity\DeliveryConfiguration;
+use App\Domain\Content\ValueObject\DeliveryZone;
 use App\Domain\Content\ValueObject\KitchenAddress;
 use App\Infrastructure\Content\Model\DLV_Configuration;
+use Illuminate\Support\Str;
 
 final class DeliveryConfigurationMapper
 {
@@ -13,8 +15,6 @@ final class DeliveryConfigurationMapper
         return new DeliveryConfiguration(
             id: (int) $row->id,
             minOrderAmountKopecks: $this->nullableInt($row->min_order_amount_kopecks),
-            deliveryFeeKopecks: $this->nullableInt($row->delivery_fee_kopecks),
-            outsideZoneDeliveryFeeKopecks: $this->nullableInt($row->outside_zone_delivery_fee_kopecks),
             averageDeliveryTimeMinutes: $this->nullableInt($row->average_delivery_time_minutes),
             kitchenAddress: new KitchenAddress(
                 city: $this->nullableString($row->kitchen_city),
@@ -25,7 +25,74 @@ final class DeliveryConfigurationMapper
             ),
             kitchenLatitude: $this->nullableFloat($row->kitchen_latitude),
             kitchenLongitude: $this->nullableFloat($row->kitchen_longitude),
-            deliveryZoneGeoJson: $this->resolveGeoJson($row->delivery_zone_geojson),
+            zones: $this->resolveZones($row),
+        );
+    }
+
+    /**
+     * @return list<DeliveryZone>
+     */
+    private function resolveZones(DLV_Configuration $row): array
+    {
+        $rawZones = $row->delivery_zones;
+        if (is_array($rawZones) && $rawZones !== []) {
+            $zones = [];
+            foreach ($rawZones as $rawZone) {
+                $zone = $this->mapZone($rawZone);
+                if ($zone instanceof DeliveryZone) {
+                    $zones[] = $zone;
+                }
+            }
+
+            if ($zones !== []) {
+                return $zones;
+            }
+        }
+
+        // Legacy fallback: один полигон + скалярный тариф.
+        $geometry = $this->resolveGeoJson($row->delivery_zone_geojson);
+        if ($geometry === null) {
+            return [];
+        }
+
+        return [
+            new DeliveryZone(
+                id: (string) Str::uuid(),
+                name: 'Основная',
+                deliveryFeeKopecks: max(0, (int) ($row->delivery_fee_kopecks ?? 0)),
+                isRemote: false,
+                geometry: $geometry,
+            ),
+        ];
+    }
+
+    private function mapZone(mixed $raw): ?DeliveryZone
+    {
+        if (! is_array($raw)) {
+            return null;
+        }
+
+        $geometry = $this->resolveGeoJson($raw['geometry'] ?? null);
+        if ($geometry === null) {
+            return null;
+        }
+
+        $id = trim((string) ($raw['id'] ?? ''));
+        if ($id === '') {
+            $id = (string) Str::uuid();
+        }
+
+        $name = trim((string) ($raw['name'] ?? ''));
+        if ($name === '') {
+            $name = 'Зона';
+        }
+
+        return new DeliveryZone(
+            id: $id,
+            name: $name,
+            deliveryFeeKopecks: max(0, (int) ($raw['delivery_fee_kopecks'] ?? 0)),
+            isRemote: (bool) ($raw['is_remote'] ?? false),
+            geometry: $geometry,
         );
     }
 

@@ -118,11 +118,16 @@ final class GetBootstrapUseCase
     {
         $address = $config->kitchenAddress();
 
+        $zones = array_map(
+            static fn ($zone): array => $zone->toArray(),
+            $config->zones(),
+        );
+
         return [
             'settings' => [
                 'min_order_amount_kopecks' => $config->minOrderAmountKopecks(),
-                'delivery_fee_kopecks' => $config->deliveryFeeKopecks(),
-                'outside_zone_delivery_fee_kopecks' => $config->outsideZoneDeliveryFeeKopecks(),
+                'delivery_fee_kopecks' => $config->minDeliveryFeeKopecks(),
+                'outside_zone_delivery_fee_kopecks' => null,
                 'average_delivery_time_minutes' => $config->averageDeliveryTimeMinutes(),
             ],
             'zone' => [
@@ -130,6 +135,7 @@ final class GetBootstrapUseCase
                 'kitchen_latitude' => $config->kitchenLatitude(),
                 'kitchen_longitude' => $config->kitchenLongitude(),
                 'delivery_zone_geojson' => $config->deliveryZoneGeoJson(),
+                'delivery_zones' => $zones,
             ],
         ];
     }

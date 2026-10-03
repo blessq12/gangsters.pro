@@ -99,6 +99,7 @@ function normalizeTotals(totals) {
             isDeliveryFree: false,
             isDeliveryPreview: false,
             inZone: null,
+            isRemote: false,
         };
     }
 
@@ -133,6 +134,7 @@ function normalizeTotals(totals) {
                 : totals.in_zone === false
                   ? false
                   : null,
+        isRemote: Boolean(totals.is_remote),
     };
 }
 
@@ -305,6 +307,9 @@ export function adaptQuoteToCheckoutSnapshot(quote) {
     ) {
         missingBlocks.push("delivery");
     }
+    if (delivery.method === "courier" && inZone === false) {
+        missingBlocks.push("delivery_zone");
+    }
     if (!payment.method) {
         missingBlocks.push("payment");
     }
@@ -330,9 +335,18 @@ export function adaptQuoteToCheckoutSnapshot(quote) {
             items_payable_kopecks: itemsTotalKopecks,
             delivery_fee_kopecks: deliveryFeeKopecks,
             grand_total_kopecks: grandTotalKopecks,
-            is_free: deliveryFeeKopecks === 0 && delivery.method === "courier",
+            is_free: deliveryFeeKopecks === 0 && delivery.method === "courier" && inZone === true,
             is_preview: delivery.method !== "pickup" && inZone == null,
             in_zone: inZone,
+            delivery_available:
+                delivery.delivery_available === true
+                    ? true
+                    : delivery.delivery_available === false
+                      ? false
+                      : inZone,
+            zone_id: delivery.zone_id ?? null,
+            zone_name: delivery.zone_name ?? null,
+            is_remote: delivery.is_remote === true,
             remaining_to_free_kopecks: remainingToFree,
             items_total_rub: itemsRubles,
             delivery_fee_rub: deliveryFeeRubles,
@@ -378,9 +392,13 @@ export function adaptQuoteToCheckoutSnapshot(quote) {
                 items_total_rubles: itemsRubles,
                 delivery_fee_rubles: deliveryFeeRubles,
                 grand_total_rubles: grandTotalRubles,
-                is_delivery_free: deliveryFeeKopecks === 0 && delivery.method === "courier",
+                is_delivery_free:
+                    deliveryFeeKopecks === 0
+                    && delivery.method === "courier"
+                    && inZone === true,
                 is_delivery_preview: delivery.method !== "pickup" && inZone == null,
                 in_zone: inZone,
+                is_remote: delivery.is_remote === true,
             },
             benefits: {
                 delivery: {

@@ -2,11 +2,12 @@
 
 namespace App\Domain\Order\Port;
 
+use App\Domain\Content\ValueObject\DeliveryZone;
 use App\Domain\Order\Entity\PromotionPolicy;
 
 interface PromotionDeliveryPricingPort
 {
-    public function resolveInZone(?float $latitude, ?float $longitude): ?bool;
+    public function resolveZone(?float $latitude, ?float $longitude): ?DeliveryZone;
 
     public function resolveFreeDeliveryThresholdKopecks(): ?int;
 
@@ -16,6 +17,6 @@ interface PromotionDeliveryPricingPort
         ?PromotionPolicy $promotionPolicy,
         ?string $deliveryMethod,
         int $currentKopecks,
-        ?bool $inZone,
+        ?DeliveryZone $zone,
     ): int;
 }
