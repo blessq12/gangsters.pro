@@ -287,7 +287,7 @@ export function useOrderPreview() {
         }
 
         if (totals.value.inZone === false) {
-            return "Доставка недоступна";
+            return "Доставка невозможна — укажи адрес ближе или самовывоз";
         }
 
         if (totals.value.inZone !== true) {

@@ -483,13 +483,19 @@ export function resolveDeliveryZoneMessage({
                 ? `Доставка — ${feeLabel}`
                 : "Доставка платная";
         case DELIVERY_ZONE_PHASE.UNAVAILABLE:
-            return "Доставка недоступна";
+            return "Доставка по этому адресу невозможна. Укажи адрес ближе к зоне доставки или забери заказ самовывозом.";
         case DELIVERY_ZONE_PHASE.UNKNOWN:
             return "Не удалось проверить адрес. Уточним доставку при подтверждении заказа.";
         default:
             return null;
     }
 }
+
+export const DELIVERY_UNAVAILABLE_COPY = Object.freeze({
+    title: "Доставка невозможна",
+    body: "Этот адрес вне зон доставки. Укажи адрес ближе или забери заказ самовывозом.",
+    pickupCta: "Забрать самовывозом",
+});
 
 export function useDeliveryZoneStatus() {
     const checkoutStore = useCheckoutStore();

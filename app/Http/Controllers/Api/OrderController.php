@@ -122,6 +122,20 @@ final class OrderController extends Controller
             'payment' => ['required', 'array'],
         ]);
 
+        $delivery = $validated['delivery'];
+        $method = (string) ($delivery['method'] ?? '');
+        $deliveryAvailable = $delivery['delivery_available'] ?? null;
+        $inZone = $delivery['in_zone'] ?? null;
+
+        if (
+            $method === 'courier'
+            && ($deliveryAvailable === false || $inZone === false)
+        ) {
+            return response()->json([
+                'message' => 'Доставка по этому адресу невозможна. Укажи адрес ближе или выбери самовывоз.',
+            ], 422);
+        }
+
         $order = $this->createOrder->execute(new CreateOrderDto(
             clientRequestId: (string) $validated['client_request_id'],
             cart: $validated['cart'],

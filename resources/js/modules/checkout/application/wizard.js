@@ -331,6 +331,17 @@ export function useCheckoutWizard({
             return;
         }
 
+        const deliveryMethod = checkoutIntent.deliveryInfo?.method;
+        const inZone = orderPreview.value?.totals?.inZone
+            ?? checkoutIntent.deliveryPricing?.inZone
+            ?? null;
+        if (deliveryMethod === "courier" && inZone === false) {
+            deliveryStep.deliveryFieldErrors.setFormError(
+                "Доставка по этому адресу невозможна. Укажи адрес ближе или выбери самовывоз.",
+            );
+            return;
+        }
+
         activeStep.value = "confirm";
     }
 
@@ -351,6 +362,12 @@ export function useCheckoutWizard({
         }
 
         if (!canConfirmOrder.value) {
+            if (wizardMissingBlocks.value.includes("delivery_zone")) {
+                confirmError.value =
+                    "Доставка по этому адресу невозможна. Укажи адрес ближе или выбери самовывоз.";
+                activeStep.value = "fulfillment";
+                return;
+            }
             confirmError.value = "Заполни все шаги оформления.";
             return;
         }

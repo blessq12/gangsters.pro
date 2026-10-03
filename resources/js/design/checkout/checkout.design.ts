@@ -305,7 +305,11 @@ export const checkoutDesign = {
         zoneStatusPaid:
             "border-sky-500/30 bg-sky-950/20 text-sky-100",
         zoneStatusUnavailable:
-            "border-rose-500/35 bg-rose-950/25 text-rose-100",
+            "space-y-2 border-rose-500/35 bg-rose-950/25 text-rose-100",
+        zoneUnavailableTitle: "text-sm font-bold text-rose-50",
+        zoneUnavailableBody: "text-sm leading-snug text-rose-100/90",
+        zoneUnavailableCta:
+            "inline-flex w-full items-center justify-center rounded-none bg-rose-100 px-3 py-2 text-sm font-bold text-rose-950 transition hover:bg-white",
         zoneStatusUnknown: "border-amber-500/30 bg-amber-950/20 text-amber-100",
         emptyHero: `${nestedCard} space-y-3 border border-app-accent/25 bg-app-accent/8 px-4 py-4`,
         emptyTitle: `${shellTypography.body.checkoutHeadingSm} ${shellColorRoles.accent}`,

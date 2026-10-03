@@ -525,6 +525,29 @@ export async function placeOrderOnServer(store, selectedAddress = null) {
             buildQuoteOrderPayload(store, previewAddress),
         );
 
+        const delivery = quote?.delivery && typeof quote.delivery === "object"
+            ? quote.delivery
+            : {};
+        const deliveryUnavailable =
+            delivery.method === "courier"
+            && (
+                delivery.delivery_available === false
+                || delivery.in_zone === false
+            );
+
+        if (deliveryUnavailable) {
+            const error = new Error(
+                "Доставка по этому адресу невозможна. Укажи адрес ближе или выбери самовывоз.",
+            );
+            error.response = {
+                data: {
+                    message:
+                        "Доставка по этому адресу невозможна. Укажи адрес ближе или выбери самовывоз.",
+                },
+            };
+            throw error;
+        }
+
         const body = {
             client_request_id:
                 store.clientRequestId || resolveClientRequestId(),

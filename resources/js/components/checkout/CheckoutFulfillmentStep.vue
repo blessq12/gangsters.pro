@@ -24,6 +24,7 @@ import CheckoutInlineOptionSelect from "./CheckoutInlineOptionSelect.vue";
 import CheckoutSection from "./CheckoutSection.vue";
 import CheckoutStepFrame from "./CheckoutStepFrame.vue";
 import CheckoutStepNav from "./CheckoutStepNav.vue";
+import { useOrderPreview } from "../../modules/checkout/application/preview";
 
 const s = useAppDesign().components.checkout.shared;
 
@@ -38,6 +39,7 @@ const {
     scheduleDeliveryPreview,
     setPaymentMethod,
 } = useCheckoutFlowContext();
+const { totals } = useOrderPreview();
 
 const { deliveryFacts } = storeToRefs(useContentStore());
 
@@ -86,6 +88,10 @@ const deliveryOptions = computed(() =>
             icon: meta.icon,
         };
     }),
+);
+
+const deliveryUnavailable = computed(
+    () => isCourier.value && totals.value.inZone === false,
 );
 </script>
 
@@ -175,6 +181,7 @@ const deliveryOptions = computed(() =>
             <CheckoutStepNav
                 :primary-label="CHECKOUT_NAV_LABELS.next"
                 :primary-loading="flushing"
+                :primary-disabled="deliveryUnavailable"
                 show-nav-total
                 :total-label="navTotalLabel"
                 @back="goToFulfillmentBack"

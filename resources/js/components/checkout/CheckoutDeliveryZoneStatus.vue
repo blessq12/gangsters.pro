@@ -2,14 +2,21 @@
 import { computed } from "vue";
 import { useAppDesign } from "../../design/useAppDesign";
 import {
+    DELIVERY_UNAVAILABLE_COPY,
     DELIVERY_ZONE_PHASE,
     useDeliveryZoneStatus,
 } from "../../modules/checkout/application/delivery";
+import { useCheckoutFlowContext } from "../../modules/checkout/application/flowContext";
 
 const c = useAppDesign().components.checkout.cart;
 const d = useAppDesign().components.checkout.delivery;
 
 const { phase, message, showPanel } = useDeliveryZoneStatus();
+const { setDeliveryMethod } = useCheckoutFlowContext();
+
+const isUnavailable = computed(
+    () => phase.value === DELIVERY_ZONE_PHASE.UNAVAILABLE,
+);
 
 const panelClass = computed(() => {
     switch (phase.value) {
@@ -34,6 +41,10 @@ const panelClass = computed(() => {
         }
     }
 });
+
+function switchToPickup() {
+    setDeliveryMethod("pickup");
+}
 </script>
 
 <template>
@@ -43,6 +54,23 @@ const panelClass = computed(() => {
         role="status"
         aria-live="polite"
     >
-        {{ message }}
+        <template v-if="isUnavailable">
+            <p :class="d.zoneUnavailableTitle">
+                {{ DELIVERY_UNAVAILABLE_COPY.title }}
+            </p>
+            <p :class="d.zoneUnavailableBody">
+                {{ DELIVERY_UNAVAILABLE_COPY.body }}
+            </p>
+            <button
+                type="button"
+                :class="d.zoneUnavailableCta"
+                @click="switchToPickup"
+            >
+                {{ DELIVERY_UNAVAILABLE_COPY.pickupCta }}
+            </button>
+        </template>
+        <template v-else>
+            {{ message }}
+        </template>
     </div>
 </template>

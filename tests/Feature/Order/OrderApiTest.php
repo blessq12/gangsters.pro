@@ -135,6 +135,48 @@ final class OrderApiTest extends ApiTestCase
             ->assertJsonPath('data.delivery.delivery_fee_rubles', 0);
     }
 
+    public function test_place_rejects_courier_outside_delivery_zones(): void
+    {
+        $productId = $this->activeProductId();
+        $clientRequestId = 'phpunit-outzone-'.bin2hex(random_bytes(6));
+
+        $quote = $this->postJson('/api/order/quote', [
+            'lines' => [
+                ['product_id' => $productId, 'quantity' => 1],
+            ],
+            'delivery_method' => 'pickup',
+            'payment_method' => 'cash',
+            'client' => [
+                'kind' => 'guest',
+                'name' => 'Guest Blocked',
+                'phone' => '+7 (900) 555-66-77',
+            ],
+        ])->json('data');
+
+        $delivery = $quote['delivery'];
+        $delivery['method'] = 'courier';
+        $delivery['delivery_available'] = false;
+        $delivery['in_zone'] = false;
+        $delivery['address'] = [
+            'street' => 'ул. Тестовая',
+            'house' => '1',
+        ];
+
+        $response = $this->postJson('/api/order/', [
+            'client_request_id' => $clientRequestId,
+            'cart' => $quote['cart'],
+            'client' => $quote['client'],
+            'delivery' => $delivery,
+            'payment' => $quote['payment'],
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonPath(
+                'message',
+                'Доставка по этому адресу невозможна. Укажи адрес ближе или выбери самовывоз.',
+            );
+    }
+
     public function test_place_is_idempotent_by_client_request_id(): void
     {
         $productId = $this->activeProductId();
