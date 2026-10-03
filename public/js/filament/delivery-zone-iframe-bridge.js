@@ -283,7 +283,16 @@
         const bridge = window.__activeDeliveryZoneBridge;
 
         if (bridge) {
-            await bridge.syncFromIframe();
+            const synced = await bridge.syncFromIframe();
+            const zones = bridge.resolveZones();
+            const hasZones = Array.isArray(zones) && zones.length > 0;
+
+            // Sync упал и в форме пусто — не пишем [] поверх данных (типичный сбой origin/iframe).
+            if (!synced && !hasZones) {
+                bridge.statusMessage =
+                    "Не удалось синхронизировать зоны с картой. Сохранение отменено. Проверь, что редактор загрузился на том же домене, что и админка.";
+                return;
+            }
         }
 
         wire.save();

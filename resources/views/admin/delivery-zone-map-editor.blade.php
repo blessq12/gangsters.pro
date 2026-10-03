@@ -250,7 +250,7 @@
     </div>
 </div>
 
-<script src="{{ asset('js/maps/yandexGeoJsonCoords.js') }}"></script>
+<script src="/js/maps/yandexGeoJsonCoords.js"></script>
 @if(filled($mapsApiKey))
 <script src="https://api-maps.yandex.ru/2.1/?apikey={{ urlencode($mapsApiKey) }}&lang=ru_RU&load=package.full"></script>
 @endif

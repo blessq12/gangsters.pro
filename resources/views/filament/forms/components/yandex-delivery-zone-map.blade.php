@@ -1,6 +1,7 @@
 @php
     /** @var \App\Filament\Content\Delivery\Forms\Components\YandexDeliveryZoneMap $field */
-    $editorUrl = route('filament.admin.delivery-zone-map-editor');
+    {{-- relative: иначе при APP_URL ≠ URL браузера iframe уходит на другой origin и postMessage молча мёртв --}}
+    $editorUrl = route('filament.admin.delivery-zone-map-editor', absolute: false);
     $record = $getRecord();
     $initialPayload = [
         'zones' => $getState() ?? [],

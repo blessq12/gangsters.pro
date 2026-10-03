@@ -107,7 +107,7 @@ class AdminPanelProvider extends PanelProvider
                     ->name('delivery-zone-map-editor');
             })
             ->assets([
-                Js::make('delivery-zone-bridge', asset('js/filament/delivery-zone-iframe-bridge.js')),
+                Js::make('delivery-zone-bridge', '/js/filament/delivery-zone-iframe-bridge.js'),
             ]);
     }
 }
