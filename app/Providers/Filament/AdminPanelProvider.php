@@ -43,6 +43,7 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\HtmlString;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
@@ -107,7 +108,12 @@ class AdminPanelProvider extends PanelProvider
                     ->name('delivery-zone-map-editor');
             })
             ->assets([
-                Js::make('delivery-zone-bridge', '/js/filament/delivery-zone-iframe-bridge.js'),
+                // Относительный src с того же хоста. Голый путь Filament не считает remote
+                // и подменяет на js/{package}/{id}.js → 404 HTML → SyntaxError в консоли.
+                Js::make('delivery-zone-bridge', asset('js/filament/delivery-zone-iframe-bridge.js'))
+                    ->html(new HtmlString(
+                        '<script src="/js/filament/delivery-zone-iframe-bridge.js" data-navigate-track></script>',
+                    )),
             ]);
     }
 }
