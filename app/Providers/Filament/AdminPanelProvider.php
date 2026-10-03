@@ -36,14 +36,12 @@ use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
-use Filament\Support\Assets\Js;
 use Filament\Support\Colors\Color;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\HtmlString;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
@@ -106,14 +104,6 @@ class AdminPanelProvider extends PanelProvider
             ->routes(function (): void {
                 Route::get('/delivery-zone-map-editor', DeliveryZoneMapEditorController::class)
                     ->name('delivery-zone-map-editor');
-            })
-            ->assets([
-                // Относительный src с того же хоста. Голый путь Filament не считает remote
-                // и подменяет на js/{package}/{id}.js → 404 HTML → SyntaxError в консоли.
-                Js::make('delivery-zone-bridge', asset('js/filament/delivery-zone-iframe-bridge.js'))
-                    ->html(new HtmlString(
-                        '<script src="/js/filament/delivery-zone-iframe-bridge.js" data-navigate-track></script>',
-                    )),
-            ]);
+            });
     }
 }

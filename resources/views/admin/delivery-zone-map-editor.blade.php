@@ -300,7 +300,18 @@
     }
 
     function post(type, payload = {}) {
-        window.parent.postMessage({ type, payload }, window.location.origin);
+        // Prefer parent origin from referrer (shared hosting / proxy), fallback to *.
+        let targetOrigin = '*';
+        try {
+            if (document.referrer) {
+                targetOrigin = new URL(document.referrer).origin;
+            } else if (window.location.origin && window.location.origin !== 'null') {
+                targetOrigin = window.location.origin;
+            }
+        } catch (e) {
+            targetOrigin = '*';
+        }
+        window.parent.postMessage({ type, payload }, targetOrigin);
     }
 
     function signalReady() {
@@ -931,7 +942,8 @@
     }
 
     window.addEventListener('message', (event) => {
-        if (event.origin !== window.location.origin) {
+        const fromParent = event.source === window.parent;
+        if (!fromParent && event.origin !== window.location.origin) {
             return;
         }
         const data = event.data;
