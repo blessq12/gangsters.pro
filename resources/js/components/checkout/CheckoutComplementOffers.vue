@@ -138,13 +138,14 @@ async function incrementProduct(row) {
 async function decrementProduct(row) {
     const id = row.id;
 
-    if (selectedFreeQty(row) > 0) {
-        await cartStore.setComplementSelection(id, selectedFreeQty(row) - 1);
+    // Сначала платные (бьют в сумму), бесплатные — только после обнуления paid.
+    if (paidQty(id) > 0) {
+        await cartStore.decrementCart(id);
         return;
     }
 
-    if (paidQty(id) > 0) {
-        await cartStore.decrementCart(id);
+    if (selectedFreeQty(row) > 0) {
+        await cartStore.setComplementSelection(id, selectedFreeQty(row) - 1);
     }
 }
 </script>
