@@ -48,14 +48,6 @@ export const routeRecords = [
         },
     },
     {
-        path: "/reset-password",
-        name: "client-reset-password",
-        component: () => import("../pages/ClientResetPasswordPage.vue"),
-        meta: {
-            seo: seoForPath("/reset-password"),
-        },
-    },
-    {
         path: "/:pathMatch(.*)*",
         name: "not-found",
         component: () => import("../pages/NotFoundPage.vue"),

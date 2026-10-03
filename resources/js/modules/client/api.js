@@ -63,14 +63,6 @@ export async function requestPasswordResetRequest(email) {
     return response.data;
 }
 
-export async function changePasswordWithTokenRequest({ token, password }) {
-    const response = await httpClient.post("/api/client/change-password", {
-        token,
-        password,
-    });
-    return response.data;
-}
-
 export async function fetchOrdersRequest() {
     const response = await httpClient.get("/api/client/orders");
     return response.data;

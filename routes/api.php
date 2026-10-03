@@ -13,6 +13,8 @@ Route::get('/catalog', [CatalogController::class, 'show']);
 Route::prefix('client')->group(function (): void {
     Route::post('register', [ClientController::class, 'register']);
     Route::post('login', [ClientController::class, 'login']);
+    Route::post('forgot-password', [ClientController::class, 'forgotPassword'])
+        ->middleware('throttle:5,1');
 
     Route::middleware('auth:sanctum')->group(function (): void {
         Route::get('profile', [ClientController::class, 'profile']);

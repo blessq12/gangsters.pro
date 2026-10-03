@@ -7,6 +7,7 @@ use App\Application\Crm\Command\DeleteClientAddressUseCase;
 use App\Application\Crm\Command\LoginClientUseCase;
 use App\Application\Crm\Command\MergeClientFavoritesUseCase;
 use App\Application\Crm\Command\RegisterClientUseCase;
+use App\Application\Crm\Command\RequestPasswordResetUseCase;
 use App\Application\Crm\Command\RemoveClientFavoriteUseCase;
 use App\Application\Crm\Command\ToggleClientFavoriteUseCase;
 use App\Application\Crm\Command\UpdateClientProfileUseCase;
@@ -18,6 +19,7 @@ use App\Http\Controllers\Controller;
 use App\Infrastructure\Crm\Model\CRM_Client;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use RuntimeException;
 
 final class ClientController extends Controller
 {
@@ -45,6 +47,25 @@ final class ClientController extends Controller
         ]);
 
         return response()->json($useCase->execute($validated));
+    }
+
+    public function forgotPassword(Request $request, RequestPasswordResetUseCase $useCase): JsonResponse
+    {
+        $validated = $request->validate([
+            'email' => ['required', 'string', 'email', 'max:255'],
+        ]);
+
+        try {
+            $useCase->execute((string) $validated['email']);
+        } catch (RuntimeException) {
+            return response()->json([
+                'message' => 'Не удалось отправить письмо. Попробуй позже.',
+            ], 503);
+        }
+
+        return response()->json([
+            'message' => 'Если такой аккаунт есть, мы отправили письмо с новым паролем.',
+        ]);
     }
 
     public function profile(Request $request, GetClientProfileUseCase $useCase): JsonResponse

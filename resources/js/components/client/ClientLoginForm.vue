@@ -99,7 +99,7 @@ async function submitForgot() {
     try {
         await userStore.requestPasswordReset(emailTrim);
         toast.info(
-            "Если такой аккаунт есть, мы отправили письмо со ссылкой для сброса пароля.",
+            "Если такой аккаунт есть, мы отправили письмо с новым паролем.",
         );
         showForgot.value = false;
         forgotEmail.value = "";

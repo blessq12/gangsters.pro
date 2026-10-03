@@ -15,7 +15,6 @@ import {
     addClientAddressRequest,
     deleteClientAddressRequest,
     requestPasswordResetRequest,
-    changePasswordWithTokenRequest,
 } from "../api";
 import { isAxiosUnauthorized } from "../../../platform/mapApiError";
 
@@ -324,12 +323,6 @@ export const useUserStore = defineStore("user", {
         },
         async requestPasswordReset(email) {
             return requestPasswordResetRequest(email);
-        },
-        async changePasswordWithToken({ token, password }) {
-            return changePasswordWithTokenRequest({
-                token,
-                password,
-            });
         },
     },
 });

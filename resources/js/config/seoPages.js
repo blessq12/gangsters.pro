@@ -27,11 +27,6 @@ export const seoPages = {
             "Телефон, адрес и режим работы Gangster's Sushi в Томске. Свяжись с нами по заказу и вопросам доставки.",
         robots: "index,follow",
     },
-    "/reset-password": {
-        title: "Сброс пароля | Gangster's Sushi",
-        description: "Установи новый пароль для личного кабинета Gangster's Sushi.",
-        robots: "noindex,nofollow",
-    },
     "/404": {
         title: "Страница не найдена | Gangster's Sushi",
         description:

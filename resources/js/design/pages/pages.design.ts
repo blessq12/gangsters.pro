@@ -61,25 +61,6 @@ export const pagesDesign = {
             "inline-flex items-center justify-center rounded-none border border-app-border-on-surface bg-app-glass-fill px-5 py-2.5 text-sm font-medium text-app-canvas-fg backdrop-blur-md transition hover:border-app-accent/40 hover:text-app-accent",
     },
 
-    resetPassword: {
-        pageWrap: "mx-auto max-w-md py-8 text-app-canvas-fg",
-        title: "mb-1 text-xl font-normal text-app-accent sm:text-2xl",
-        lead: "mb-6 text-xs text-app-muted",
-        form:
-            "space-y-4 rounded-none border border-app-accent/20 bg-app-glass-fill px-4 py-5 backdrop-blur-md",
-        label: "mb-1 block text-xs font-medium text-app-muted",
-        input:
-            "w-full rounded-none border border-app-border-on-surface bg-app-glass-fill px-3 py-2 text-sm text-app-canvas-fg placeholder:text-app-muted focus:border-app-accent focus:outline-none focus:ring-1 focus:ring-app-accent/60",
-        error: "text-xs text-red-400",
-        submitBtn:
-            "inline-flex w-full items-center justify-center rounded-none bg-app-accent px-4 py-2 text-sm font-semibold text-black transition hover:bg-app-accent-hover disabled:opacity-60",
-        noTokenCard:
-            `rounded-none border border-red-500/30 bg-app-glass-fill px-4 py-5 text-sm backdrop-blur-md ${nestedFg}`,
-        noTokenLead: "mb-3",
-        homeLink:
-            "text-sm font-medium text-app-accent hover:text-app-accent",
-    },
-
     about: {
         stack: "space-y-14 sm:space-y-16",
         brandPanel: `${nestedCard} grid gap-6 p-5 sm:gap-8 sm:p-8 lg:grid-cols-[minmax(0,14rem)_minmax(0,1fr)] lg:items-center`,
