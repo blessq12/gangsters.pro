@@ -62,28 +62,37 @@ final class DeliveryForm
     {
         return [
             Section::make('Адрес кухни')
+                ->description('После изменения адреса координаты пересчитываются (геокодер). Точка на карте зон обновится после blur поля или сохранения.')
                 ->columnSpanFull()
                 ->columns(2)
                 ->schema([
                     TextInput::make('kitchen_address')
                         ->label('Адрес для поиска на карте')
                         ->columnSpanFull()
-                        ->maxLength(500),
+                        ->maxLength(500)
+                        ->live(onBlur: true)
+                        ->afterStateUpdated(fn (...$args) => self::refreshKitchenOnLivewire($args)),
                     TextInput::make('kitchen_city')
                         ->label('Город')
-                        ->maxLength(255),
+                        ->maxLength(255)
+                        ->live(onBlur: true)
+                        ->afterStateUpdated(fn (...$args) => self::refreshKitchenOnLivewire($args)),
                     TextInput::make('kitchen_street')
                         ->label('Улица')
-                        ->maxLength(255),
+                        ->maxLength(255)
+                        ->live(onBlur: true)
+                        ->afterStateUpdated(fn (...$args) => self::refreshKitchenOnLivewire($args)),
                     TextInput::make('kitchen_house')
                         ->label('Дом')
-                        ->maxLength(63),
+                        ->maxLength(63)
+                        ->live(onBlur: true)
+                        ->afterStateUpdated(fn (...$args) => self::refreshKitchenOnLivewire($args)),
                     TextInput::make('kitchen_address_comment')
                         ->label('Комментарий к адресу')
                         ->columnSpanFull()
                         ->maxLength(255),
-                    Hidden::make('kitchen_latitude'),
-                    Hidden::make('kitchen_longitude'),
+                    Hidden::make('kitchen_latitude')->dehydrated(),
+                    Hidden::make('kitchen_longitude')->dehydrated(),
                 ]),
             Section::make('Полигоны зон')
                 ->description('У каждой зоны своя цена и флаг «отдалённый район». Вне всех зон доставка недоступна.')
@@ -117,5 +126,19 @@ final class DeliveryForm
 
                 return (int) round(((float) $state) * 100);
             });
+    }
+
+    /**
+     * @param  list<mixed>  $args
+     */
+    private static function refreshKitchenOnLivewire(array $args): void
+    {
+        foreach ($args as $arg) {
+            if (is_object($arg) && method_exists($arg, 'refreshKitchenCoordinates')) {
+                $arg->refreshKitchenCoordinates();
+
+                return;
+            }
+        }
     }
 }

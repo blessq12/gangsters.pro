@@ -6,6 +6,7 @@ use App\Domain\Content\Repository\DeliveryConfigurationRepository;
 use App\Filament\Content\Delivery\Resources\DeliveryResource;
 use App\Filament\Content\Delivery\Resources\DeliveryResource\Schemas\DeliveryForm;
 use App\Infrastructure\Content\Model\DLV_Configuration;
+use App\Shared\Geo\AddressGeocoder;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
@@ -94,6 +95,22 @@ class ManageDelivery extends EditRecord
     }
 
     /**
+     * Пересчитать lat/lng кухни по полям адреса (blur / кнопка / перед save).
+     */
+    public function refreshKitchenCoordinates(): void
+    {
+        $coords = $this->geocodeKitchenFromData(is_array($this->data) ? $this->data : []);
+        if ($coords === null) {
+            return;
+        }
+
+        data_set($this->data, 'kitchen_latitude', $coords['latitude']);
+        data_set($this->data, 'kitchen_longitude', $coords['longitude']);
+
+        $this->js('window.__activeDeliveryZoneBridge && window.__activeDeliveryZoneBridge.pushKitchenFromWire && window.__activeDeliveryZoneBridge.pushKitchenFromWire()');
+    }
+
+    /**
      * @param  array<string, mixed>  $data
      * @return array<string, mixed>
      */
@@ -105,7 +122,38 @@ class ManageDelivery extends EditRecord
         $data['delivery_fee_kopecks'] = $this->minFeeKopecks($zones);
         $data['outside_zone_delivery_fee_kopecks'] = null;
 
+        $coords = $this->geocodeKitchenFromData($data);
+        if ($coords !== null) {
+            $data['kitchen_latitude'] = $coords['latitude'];
+            $data['kitchen_longitude'] = $coords['longitude'];
+        }
+
         return $data;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array{latitude: float, longitude: float}|null
+     */
+    private function geocodeKitchenFromData(array $data): ?array
+    {
+        $street = trim((string) ($data['kitchen_street'] ?? ''));
+        $house = trim((string) ($data['kitchen_house'] ?? ''));
+        $city = trim((string) ($data['kitchen_city'] ?? ''));
+        $searchLine = trim((string) ($data['kitchen_address'] ?? ''));
+
+        /** @var AddressGeocoder $geocoder */
+        $geocoder = app(AddressGeocoder::class);
+
+        if ($street !== '' && $house !== '') {
+            return $geocoder->geocode($street, $house, $city !== '' ? $city : null);
+        }
+
+        if ($searchLine !== '') {
+            return $geocoder->geocodeQuery($searchLine);
+        }
+
+        return null;
     }
 
     /**

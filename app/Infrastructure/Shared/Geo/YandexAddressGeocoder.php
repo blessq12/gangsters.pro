@@ -16,11 +16,6 @@ final class YandexAddressGeocoder implements AddressGeocoder
             return null;
         }
 
-        $apiKey = config('services.yandex_maps.geocoder_api_key');
-        if (! is_string($apiKey) || $apiKey === '') {
-            return null;
-        }
-
         $city = is_string($city) ? trim($city) : null;
         if ($city === '') {
             $city = null;
@@ -32,9 +27,32 @@ final class YandexAddressGeocoder implements AddressGeocoder
             'д. '.$house,
         ]);
 
+        return $this->request(implode(', ', $queryParts));
+    }
+
+    public function geocodeQuery(string $query): ?array
+    {
+        $query = trim($query);
+        if ($query === '') {
+            return null;
+        }
+
+        return $this->request($query);
+    }
+
+    /**
+     * @return array{latitude: float, longitude: float}|null
+     */
+    private function request(string $geocode): ?array
+    {
+        $apiKey = config('services.yandex_maps.geocoder_api_key');
+        if (! is_string($apiKey) || $apiKey === '') {
+            return null;
+        }
+
         $response = Http::timeout(5)->get('https://geocode-maps.yandex.ru/1.x/', [
             'apikey' => $apiKey,
-            'geocode' => implode(', ', $queryParts),
+            'geocode' => $geocode,
             'format' => 'json',
             'lang' => 'ru_RU',
             'results' => 1,

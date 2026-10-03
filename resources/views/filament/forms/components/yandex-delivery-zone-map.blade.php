@@ -50,6 +50,7 @@
             CHANGE: 'delivery-zone:change',
             REQUEST_SNAPSHOT: 'delivery-zone:request-snapshot',
             SNAPSHOT: 'delivery-zone:snapshot',
+            KITCHEN: 'delivery-zone:kitchen',
         };
 
         function cloneForPostMessage(value) {
@@ -186,6 +187,23 @@
                 }
                 this.postToIframe(MSG.INIT, this.buildInitPayload());
                 return true;
+            },
+
+            pushKitchenFromWire() {
+                const lat = cloneForPostMessage(
+                    this.readWireValue(this.kitchenLatPath),
+                );
+                const lng = cloneForPostMessage(
+                    this.readWireValue(this.kitchenLngPath),
+                );
+                this.postToIframe(MSG.KITCHEN, {
+                    kitchenLatitude: lat,
+                    kitchenLongitude: lng,
+                });
+                this.statusMessage =
+                    lat != null && lng != null
+                        ? 'Точка кухни на карте обновлена.'
+                        : 'Координаты кухни не получены — проверьте адрес и ключ геокодера.';
             },
 
             markIframeReady() {

@@ -261,6 +261,7 @@
         CHANGE: 'delivery-zone:change',
         REQUEST_SNAPSHOT: 'delivery-zone:request-snapshot',
         SNAPSHOT: 'delivery-zone:snapshot',
+        KITCHEN: 'delivery-zone:kitchen',
     };
 
     const COORDS = window.GangstersMapsCoords;
@@ -746,6 +747,14 @@
         map.geoObjects.add(kitchenPlacemark);
     }
 
+    function payloadNumberOrNull(value) {
+        if (value === null || value === undefined || value === '') {
+            return null;
+        }
+        const n = Number(value);
+        return Number.isFinite(n) ? n : null;
+    }
+
     function setKitchenCoords(lat, lng) {
         kitchenCoords.lat = lat;
         kitchenCoords.lng = lng;
@@ -953,6 +962,15 @@
 
         if (data.type === MSG.REQUEST_SNAPSHOT) {
             post(MSG.SNAPSHOT, zonesPayload());
+            return;
+        }
+
+        if (data.type === MSG.KITCHEN) {
+            setKitchenCoords(
+                payloadNumberOrNull(data.payload?.kitchenLatitude),
+                payloadNumberOrNull(data.payload?.kitchenLongitude),
+            );
+            setStatus('Точка кухни обновлена по адресу из формы.');
             return;
         }
 
