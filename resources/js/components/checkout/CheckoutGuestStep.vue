@@ -9,6 +9,7 @@ import {
     RU_PHONE_MASKA_PATTERN,
     RU_PHONE_MASKA_TOKENS_ATTR,
 } from "../../platform/ruPhone";
+import { CONSENT_PERSONAL_DATA_LABEL } from "../../platform/consentPersonalData";
 import FormField from "../ui/FormField.vue";
 import CheckoutSection from "./CheckoutSection.vue";
 import CheckoutStepFrame from "./CheckoutStepFrame.vue";
@@ -22,6 +23,7 @@ const {
     goToGuestNext,
     openProfileDock,
     setGuestContact,
+    setConsentPersonalData,
 } = useCheckoutFlowContext();
 
 const { checkoutIntent, guestFieldErrors } = checkoutState;
@@ -128,6 +130,21 @@ watch(
                         :aria-invalid="ariaInvalid"
                         :aria-describedby="describedBy"
                     />
+                </template>
+            </FormField>
+
+            <FormField
+                error-size="xs"
+                :error="guestFieldErrors.get('consent_personal_data')"
+            >
+                <template #default>
+                    <label :class="s.checkboxLabelRow">
+                        <AppCheckbox
+                            :model-value="checkoutState.consentPersonalData"
+                            @update:model-value="setConsentPersonalData"
+                        />
+                        <span>{{ CONSENT_PERSONAL_DATA_LABEL }}</span>
+                    </label>
                 </template>
             </FormField>
         </CheckoutSection>

@@ -1,5 +1,8 @@
 import { computed, ref, watch } from "vue";
 import { useFormFieldErrors } from "../../../platform/useFormFieldErrors";
+import {
+    CONSENT_PERSONAL_DATA_REQUIRED_MESSAGE,
+} from "../../../platform/consentPersonalData";
 import { validateRuPhoneForSubmit } from "../../../platform/ruPhone";
 import { isCheckoutPaymentMethod, normalizeCheckoutPaymentMethod } from "../domain/checkoutServerMappers";
 import { storeToRefs } from "pinia";
@@ -504,6 +507,7 @@ export function isGuestContactComplete(guestContact) {
 
 export function useCheckoutGuestStep(checkoutIntent) {
     const guestFieldErrors = useFormFieldErrors();
+    const consentPersonalData = ref(true);
 
     function validateGuestStep() {
         guestFieldErrors.clearAll();
@@ -516,6 +520,13 @@ export function useCheckoutGuestStep(checkoutIntent) {
         const phoneCheck = validateRuPhoneForSubmit(guestContact?.phone);
         if (!phoneCheck.ok) {
             guestFieldErrors.setFieldError("phone", phoneCheck.message);
+        }
+
+        if (!consentPersonalData.value) {
+            guestFieldErrors.setFieldError(
+                "consent_personal_data",
+                CONSENT_PERSONAL_DATA_REQUIRED_MESSAGE,
+            );
         }
 
         return !guestFieldErrors.hasAny.value;
@@ -531,9 +542,16 @@ export function useCheckoutGuestStep(checkoutIntent) {
         }
     }
 
+    function setConsentPersonalData(value) {
+        consentPersonalData.value = Boolean(value);
+        guestFieldErrors.clearField("consent_personal_data");
+    }
+
     return {
         guestFieldErrors,
+        consentPersonalData,
         validateGuestStep,
         setGuestContact,
+        setConsentPersonalData,
     };
 }

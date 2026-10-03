@@ -10,6 +10,10 @@ import {
 } from "../../platform/ruPhone";
 import { mapApiError } from "../../platform/mapApiError";
 import { applyApiFieldErrors } from "../../platform/extractApiFieldErrors";
+import {
+    CONSENT_PERSONAL_DATA_LABEL,
+    CONSENT_PERSONAL_DATA_REQUIRED_MESSAGE,
+} from "../../platform/consentPersonalData";
 import { useAppDesign } from "../../design/useAppDesign";
 import FormField from "../ui/FormField.vue";
 
@@ -93,7 +97,7 @@ async function submit() {
     if (!form.value.consent_personal_data) {
         fieldErrors.setFieldError(
             "consent_personal_data",
-            "Нужно согласиться на обработку персональных данных",
+            CONSENT_PERSONAL_DATA_REQUIRED_MESSAGE,
         );
     }
 
@@ -238,7 +242,7 @@ async function submit() {
                     <template #default>
                         <label :class="s.checkboxRow">
                             <AppCheckbox v-model="form.consent_personal_data" />
-                            <span>Согласен на обработку персональных данных</span>
+                            <span>{{ CONSENT_PERSONAL_DATA_LABEL }}</span>
                         </label>
                     </template>
                 </FormField>
