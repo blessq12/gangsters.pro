@@ -6,17 +6,19 @@
     $deliveryProductOptions = \App\Infrastructure\Catalog\Model\PRD_Product::query()
         ->where('catalog_kind', \App\Domain\Catalog\Enum\CatalogItemKind::Product->value)
         ->where('status', \App\Domain\Catalog\Enum\ProductStatus::Active->value)
-        ->where('is_system', true)
         ->whereNull('archived_at')
         ->whereNotNull('sku')
         ->where('sku', '!=', '')
         ->orderBy('name')
-        ->get(['id', 'name', 'sku'])
+        ->get(['id', 'name', 'sku', 'is_system'])
         ->map(static function (\App\Infrastructure\Catalog\Model\PRD_Product $product): array {
             $sku = trim((string) ($product->sku ?? ''));
             $label = (string) $product->name;
             if ($sku !== '') {
                 $label .= ' · '.$sku;
+            }
+            if ((bool) $product->is_system) {
+                $label .= ' · system';
             }
 
             return [

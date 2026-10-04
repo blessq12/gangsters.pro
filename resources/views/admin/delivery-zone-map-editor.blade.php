@@ -238,7 +238,7 @@
                     <option value="">— не выбран —</option>
                 </select>
             </div>
-            <p class="hint">System-товар с SKU: неявно попадёт в заказ при платной доставке по зоне.</p>
+            <p class="hint">Активный товар с SKU: неявно попадёт в заказ при платной доставке по зоне.</p>
         </section>
 
         <div class="actions">
