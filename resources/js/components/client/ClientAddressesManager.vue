@@ -19,7 +19,6 @@ const form = ref({
     house: "",
     entrance: "",
     apartment: "",
-    comment: "",
     make_default: false,
 });
 
@@ -55,7 +54,6 @@ function resetForm() {
         house: "",
         entrance: "",
         apartment: "",
-        comment: "",
         make_default: false,
     };
 }
@@ -81,7 +79,6 @@ async function addAddress() {
             house: form.value.house,
             entrance: form.value.entrance || null,
             apartment: form.value.apartment || null,
-            comment: form.value.comment || null,
             make_default: form.value.make_default,
         });
 
@@ -268,13 +265,6 @@ function useAddress(id) {
                             :class="[s.inputGrid11, 'w-full']"
                         />
                     </div>
-
-                    <textarea
-                        v-model="form.comment"
-                        rows="2"
-                        placeholder="Комментарий для курьера (подъезд, код, ориентир)"
-                        :class="s.textarea"
-                    />
 
                     <label :class="s.checkboxRow11">
                         <AppCheckbox v-model="form.make_default" size="sm" />

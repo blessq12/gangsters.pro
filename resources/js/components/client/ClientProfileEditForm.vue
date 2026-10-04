@@ -26,7 +26,7 @@ const form = ref({
     name: userStore.profile.name || "",
     phone: userStore.profile.phone || "",
     email: userStore.profile.email || "",
-    birth_date: "",
+    birth_date: userStore.profile.birth_date || "",
 });
 
 const { phoneMask } = useRuPhoneModel(form, "phone");

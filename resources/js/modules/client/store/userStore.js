@@ -20,17 +20,36 @@ import { isAxiosUnauthorized } from "../../../platform/mapApiError";
 
 const USER_KEY = "gangsters_user";
 
+function emptyClientProfile() {
+    return {
+        id: null,
+        name: "",
+        phone: "",
+        email: "",
+        birth_date: null,
+        created_at: null,
+    };
+}
+
+/**
+ * @param {object|null|undefined} client
+ */
+function mapClientToProfile(client) {
+    return {
+        id: client?.id ?? null,
+        name: client?.name ?? "",
+        phone: client?.phone ?? "",
+        email: client?.email ?? "",
+        birth_date: client?.birth_date ?? null,
+        created_at: client?.created_at ?? null,
+    };
+}
+
 // --- Payload builders for API contracts ---
 export const useUserStore = defineStore("user", {
     state: () => ({
         // Основная информация о клиенте
-        profile: {
-            id: null,
-            name: "",
-            phone: "",
-            email: "",
-            created_at: null,
-        },
+        profile: emptyClientProfile(),
         // Токен авторизации клиента
         token: null,
         // Выбранный адрес доставки
@@ -100,13 +119,7 @@ export const useUserStore = defineStore("user", {
         },
         async clearAuth() {
             this.setToken(null);
-            this.profile = {
-                id: null,
-                name: "",
-                phone: "",
-                email: "",
-                created_at: null,
-            };
+            this.profile = emptyClientProfile();
             this.addresses = [];
             this.selectedAddressId = null;
             this.persist();
@@ -154,13 +167,7 @@ export const useUserStore = defineStore("user", {
             emitDomainEvent(DOMAIN_EVENTS.CLIENT_ADDRESS_SELECTED, { id });
         },
         clear() {
-            this.profile = {
-                id: null,
-                name: "",
-                phone: "",
-                email: "",
-                created_at: null,
-            };
+            this.profile = emptyClientProfile();
             this.token = null;
             setClientAuthToken(null);
             this.addresses = [];
@@ -176,13 +183,7 @@ export const useUserStore = defineStore("user", {
             const data = await registerClientRequest(body);
 
             if (data?.client) {
-                this.setProfile({
-                    id: data.client.id ?? null,
-                    name: data.client.name ?? "",
-                    phone: data.client.phone ?? "",
-                    email: data.client.email ?? "",
-                    created_at: data.client.created_at ?? null,
-                });
+                this.setProfile(mapClientToProfile(data.client));
                 if (Array.isArray(data.client.addresses)) {
                     this.setAddresses(data.client.addresses);
                 }
@@ -203,13 +204,7 @@ export const useUserStore = defineStore("user", {
             const data = await loginClientRequest(body);
 
             if (data?.client) {
-                this.setProfile({
-                    id: data.client.id ?? null,
-                    name: data.client.name ?? "",
-                    phone: data.client.phone ?? "",
-                    email: data.client.email ?? "",
-                    created_at: data.client.created_at ?? null,
-                });
+                this.setProfile(mapClientToProfile(data.client));
                 if (Array.isArray(data.client.addresses)) {
                     this.setAddresses(data.client.addresses);
                 }
@@ -236,13 +231,7 @@ export const useUserStore = defineStore("user", {
                 const data = await fetchClientProfileRequest();
 
                 if (data?.client) {
-                    this.setProfile({
-                        id: data.client.id ?? null,
-                        name: data.client.name ?? "",
-                        phone: data.client.phone ?? "",
-                        email: data.client.email ?? "",
-                        created_at: data.client.created_at ?? null,
-                    });
+                    this.setProfile(mapClientToProfile(data.client));
                     if (Array.isArray(data.client.addresses)) {
                         this.setAddresses(data.client.addresses);
                     }
@@ -269,13 +258,7 @@ export const useUserStore = defineStore("user", {
             const data = await updateClientProfileRequest(body);
 
             if (data?.client) {
-                this.setProfile({
-                    id: data.client.id ?? null,
-                    name: data.client.name ?? "",
-                    phone: data.client.phone ?? "",
-                    email: data.client.email ?? "",
-                    created_at: data.client.created_at ?? null,
-                });
+                this.setProfile(mapClientToProfile(data.client));
                 if (Array.isArray(data.client.addresses)) {
                     this.setAddresses(data.client.addresses);
                 }
