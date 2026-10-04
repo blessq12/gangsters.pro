@@ -6,6 +6,7 @@ import {
     selectedGiftCartLine,
     resolveSelectedGiftSummary,
 } from "../domain/normalizeCheckoutCart";
+import { giftCourierWeekdaysLabel } from "../domain/giftWeekdaysLabel";
 import { useCheckoutSession } from "./session";
 import { useCheckoutFlowContext } from "./flowContext";
 
@@ -256,6 +257,9 @@ export function useOrderPreview() {
     const giftLabel = computed(() => {
         if (!gift.value.isActive) {
             return null;
+        }
+        if (gift.value.weekdayOk === false) {
+            return giftCourierWeekdaysLabel(gift.value.allowedWeekdays);
         }
         if (gift.value.isReached) {
             return "Подарок доступен";

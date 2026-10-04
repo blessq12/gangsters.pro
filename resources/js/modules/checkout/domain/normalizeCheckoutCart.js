@@ -11,6 +11,14 @@ function emptyMoneyBenefit() {
     };
 }
 
+function emptyGiftBenefit() {
+    return {
+        ...emptyMoneyBenefit(),
+        weekdayOk: true,
+        allowedWeekdays: [],
+    };
+}
+
 function emptyComplementBenefit() {
     return {
         isActive: false,
@@ -34,6 +42,23 @@ function normalizeMoneyBenefit(raw) {
         currentKopecks: Number(raw.currentKopecks ?? raw.current_kopecks) || 0,
         remainingKopecks: Number(raw.remainingKopecks ?? raw.remaining_kopecks) || 0,
         isPreview: Boolean(raw.isPreview ?? raw.is_preview),
+    };
+}
+
+function normalizeGiftBenefit(raw) {
+    if (!raw || typeof raw !== "object") {
+        return emptyGiftBenefit();
+    }
+
+    const weekdaysRaw = raw.allowedWeekdays ?? raw.allowed_weekdays;
+    const allowedWeekdays = Array.isArray(weekdaysRaw)
+        ? weekdaysRaw.map((day) => Number(day)).filter((day) => day >= 1 && day <= 7)
+        : [];
+
+    return {
+        ...normalizeMoneyBenefit(raw),
+        weekdayOk: (raw.weekdayOk ?? raw.weekday_ok) !== false,
+        allowedWeekdays,
     };
 }
 
@@ -62,7 +87,7 @@ export function normalizeBenefitsProgress(benefitsProgress) {
 
     return {
         delivery: normalizeMoneyBenefit(benefitsProgress.delivery),
-        gift: normalizeMoneyBenefit(benefitsProgress.gift),
+        gift: normalizeGiftBenefit(benefitsProgress.gift),
         complement: normalizeComplementBenefit(benefitsProgress.complement),
     };
 }

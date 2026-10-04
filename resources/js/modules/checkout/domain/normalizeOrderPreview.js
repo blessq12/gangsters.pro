@@ -368,6 +368,10 @@ export function adaptQuoteToCheckoutSnapshot(quote) {
                 current_kopecks: giftCurrentKopecks,
                 remaining_kopecks: giftRemainingKopecks,
                 is_preview: false,
+                weekday_ok: benefits.gift_weekday_ok !== false,
+                allowed_weekdays: Array.isArray(benefits.gift_allowed_weekdays)
+                    ? benefits.gift_allowed_weekdays
+                    : [],
             },
             complement: {
                 is_active: complementActive,
@@ -416,6 +420,10 @@ export function adaptQuoteToCheckoutSnapshot(quote) {
                     current_kopecks: giftCurrentKopecks,
                     remaining_kopecks: giftRemainingKopecks,
                     is_preview: false,
+                    weekday_ok: benefits.gift_weekday_ok !== false,
+                    allowed_weekdays: Array.isArray(benefits.gift_allowed_weekdays)
+                        ? benefits.gift_allowed_weekdays
+                        : [],
                 },
                 complement: {
                     is_active: complementActive,

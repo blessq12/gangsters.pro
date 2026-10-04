@@ -7,6 +7,9 @@ use App\Infrastructure\Order\Model\PRM_Configuration;
 
 final class PromotionPolicyMapper
 {
+    /** @var list<int> */
+    private const DEFAULT_COURIER_WEEKDAYS = [1, 2, 3, 4];
+
     public function toDomain(PRM_Configuration $row): PromotionPolicy
     {
         $giftActive = (bool) $row->gift_benefit_active;
@@ -22,6 +25,7 @@ final class PromotionPolicyMapper
                     ),
                     'benefit_type' => 'free_roll_gift',
                     'is_active' => $giftActive,
+                    'allowed_weekdays' => [],
                 ],
                 [
                     'order_channel' => 'courier',
@@ -31,6 +35,10 @@ final class PromotionPolicyMapper
                     ),
                     'benefit_type' => 'free_roll_gift',
                     'is_active' => $giftActive,
+                    'allowed_weekdays' => $this->normalizeWeekdays(
+                        $row->gift_courier_weekdays,
+                        self::DEFAULT_COURIER_WEEKDAYS,
+                    ),
                 ],
             ],
             deliveryBenefit: [
@@ -55,6 +63,35 @@ final class PromotionPolicyMapper
                 'is_active' => (bool) $row->complement_set_benefit_active,
             ],
         );
+    }
+
+    /**
+     * @param  mixed  $raw
+     * @param  list<int>  $fallback
+     * @return list<int>
+     */
+    private function normalizeWeekdays(mixed $raw, array $fallback): array
+    {
+        if (! is_array($raw) || $raw === []) {
+            return $fallback;
+        }
+
+        $days = [];
+        foreach ($raw as $day) {
+            $int = (int) $day;
+            if ($int >= 1 && $int <= 7) {
+                $days[$int] = $int;
+            }
+        }
+
+        if ($days === []) {
+            return $fallback;
+        }
+
+        $list = array_values($days);
+        sort($list);
+
+        return $list;
     }
 
     private function requiredPositiveInt(mixed $value, string $field): int

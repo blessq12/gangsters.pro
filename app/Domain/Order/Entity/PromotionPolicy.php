@@ -2,6 +2,8 @@
 
 namespace App\Domain\Order\Entity;
 
+use Carbon\Carbon;
+
 /**
  * Singleton-конфигурация коммерческих правил.
  */
@@ -12,7 +14,8 @@ final class PromotionPolicy
      *     order_channel: string,
      *     min_order_amount_kopecks: int,
      *     benefit_type: string,
-     *     is_active: bool
+     *     is_active: bool,
+     *     allowed_weekdays: list<int>
      * }>  $giftRules
      * @param  array{
      *     free_delivery_threshold_kopecks: int,
@@ -41,7 +44,8 @@ final class PromotionPolicy
      *     order_channel: string,
      *     min_order_amount_kopecks: int,
      *     benefit_type: string,
-     *     is_active: bool
+     *     is_active: bool,
+     *     allowed_weekdays: list<int>
      * }>
      */
     public function giftRules(): array
@@ -77,7 +81,8 @@ final class PromotionPolicy
      *     order_channel: string,
      *     min_order_amount_kopecks: int,
      *     benefit_type: string,
-     *     is_active: bool
+     *     is_active: bool,
+     *     allowed_weekdays: list<int>
      * }|null
      */
     public function giftRuleForChannel(string $channel): ?array
@@ -89,5 +94,45 @@ final class PromotionPolicy
         }
 
         return null;
+    }
+
+    /**
+     * Пустой allowed_weekdays = без ограничения по дням.
+     * Дни: ISO-8601 (1 = пн … 7 = вс).
+     *
+     * @param  array{
+     *     order_channel?: string,
+     *     min_order_amount_kopecks?: int,
+     *     benefit_type?: string,
+     *     is_active?: bool,
+     *     allowed_weekdays?: list<int>
+     * }  $rule
+     */
+    public function isGiftRuleAllowedOnDate(array $rule, \DateTimeInterface $at, string $timezone): bool
+    {
+        if (! ($rule['is_active'] ?? false)) {
+            return false;
+        }
+
+        $days = $rule['allowed_weekdays'] ?? [];
+        if (! is_array($days) || $days === []) {
+            return true;
+        }
+
+        $normalized = [];
+        foreach ($days as $day) {
+            $int = (int) $day;
+            if ($int >= 1 && $int <= 7) {
+                $normalized[$int] = $int;
+            }
+        }
+
+        if ($normalized === []) {
+            return true;
+        }
+
+        $isoWeekday = Carbon::parse($at)->timezone($timezone)->isoWeekday();
+
+        return isset($normalized[$isoWeekday]);
     }
 }

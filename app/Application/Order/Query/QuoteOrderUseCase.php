@@ -8,6 +8,7 @@ use App\Domain\Order\Port\OrderClientLookupPort;
 use App\Domain\Order\Port\PromotionDeliveryPricingPort;
 use App\Domain\Order\Repository\PromotionPolicyRepository;
 use App\Shared\Geo\AddressGeocoder;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -122,8 +123,21 @@ final class QuoteOrderUseCase
         $giftThresholdKopecks = is_array($giftRule)
             ? (int) ($giftRule['min_order_amount_kopecks'] ?? 0)
             : 0;
+        $giftAllowedWeekdays = is_array($giftRule) && is_array($giftRule['allowed_weekdays'] ?? null)
+            ? array_values(array_map('intval', $giftRule['allowed_weekdays']))
+            : [];
+        $giftEvaluationAt = $this->resolveGiftEvaluationAt($input->scheduledAt);
+        $giftWeekdayOk = is_array($giftRule) && $policy !== null
+            ? $policy->isGiftRuleAllowedOnDate(
+                $giftRule,
+                $giftEvaluationAt,
+                $this->appTimezone(),
+            )
+            : false;
         $giftActive = is_array($giftRule) && ($giftRule['is_active'] ?? false);
-        $giftEligible = $giftActive && $itemsTotalKopecks > $giftThresholdKopecks;
+        $giftEligible = $giftActive
+            && $giftWeekdayOk
+            && $itemsTotalKopecks > $giftThresholdKopecks;
 
         $giftCandidates = [];
         if ($giftEligible) {
@@ -286,6 +300,8 @@ final class QuoteOrderUseCase
                 'gift_current_kopecks' => $itemsTotalKopecks,
                 'gift_remaining_kopecks' => $giftRemaining,
                 'gift_active' => $giftActive,
+                'gift_weekday_ok' => $giftWeekdayOk,
+                'gift_allowed_weekdays' => $giftAllowedWeekdays,
                 'gift_candidates' => $giftCandidates,
                 'complement_entitled' => $entitledSets,
                 'complement_active' => $complementActive,
@@ -546,6 +562,38 @@ final class QuoteOrderUseCase
         }
 
         return [false, false];
+    }
+
+    /**
+     * День для gift: scheduled_at заказа, иначе текущий момент (TZ приложения).
+     */
+    private function resolveGiftEvaluationAt(?string $scheduledAt): Carbon
+    {
+        $timezone = $this->appTimezone();
+
+        if (is_string($scheduledAt) && trim($scheduledAt) !== '') {
+            try {
+                return Carbon::parse($scheduledAt)->timezone($timezone);
+            } catch (\Throwable) {
+                // fallback ниже
+            }
+        }
+
+        return Carbon::now($timezone);
+    }
+
+    private function appTimezone(): string
+    {
+        try {
+            $timezone = config('app.timezone', 'Asia/Tomsk');
+            if (is_string($timezone) && $timezone !== '') {
+                return $timezone;
+            }
+        } catch (\Throwable) {
+            // unit-тесты без контейнера
+        }
+
+        return 'Asia/Tomsk';
     }
 
     /**

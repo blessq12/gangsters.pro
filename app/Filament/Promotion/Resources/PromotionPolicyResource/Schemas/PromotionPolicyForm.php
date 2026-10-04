@@ -2,6 +2,7 @@
 
 namespace App\Filament\Promotion\Resources\PromotionPolicyResource\Schemas;
 
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Component;
@@ -45,7 +46,7 @@ final class PromotionPolicyForm
         return [
             Section::make('Ролл в подарок')
                 ->columnSpanFull()
-                ->description('Кандидаты на подарок помечаются в каталоге (поле «Кандидат на подарок»). Подарок доступен при сумме корзины строго выше порога.')
+                ->description('Кандидаты на подарок помечаются в каталоге (поле «Кандидат на подарок»). Подарок доступен при сумме корзины строго выше порога. Для доставки дополнительно ограничение по дням недели.')
                 ->columns(2)
                 ->schema([
                     Toggle::make('gift_benefit_active')
@@ -53,6 +54,44 @@ final class PromotionPolicyForm
                         ->columnSpanFull(),
                     self::moneyInput('gift_pickup_min_order_kopecks', 'Порог при самовывозе'),
                     self::moneyInput('gift_courier_min_order_kopecks', 'Порог при доставке'),
+                    CheckboxList::make('gift_courier_weekdays')
+                        ->label('Дни подарка при доставке')
+                        ->options([
+                            1 => 'Пн',
+                            2 => 'Вт',
+                            3 => 'Ср',
+                            4 => 'Чт',
+                            5 => 'Пт',
+                            6 => 'Сб',
+                            7 => 'Вс',
+                        ])
+                        ->columns(7)
+                        ->required()
+                        ->default([1, 2, 3, 4])
+                        ->helperText('День считается по времени доставки (если указано), иначе по текущему времени (Asia/Tomsk).')
+                        ->columnSpanFull()
+                        ->dehydrateStateUsing(static function (mixed $state): array {
+                            if (! is_array($state)) {
+                                return [1, 2, 3, 4];
+                            }
+
+                            $days = [];
+                            foreach ($state as $day) {
+                                $int = (int) $day;
+                                if ($int >= 1 && $int <= 7) {
+                                    $days[$int] = $int;
+                                }
+                            }
+
+                            if ($days === []) {
+                                return [1, 2, 3, 4];
+                            }
+
+                            $list = array_values($days);
+                            sort($list);
+
+                            return $list;
+                        }),
                 ]),
         ];
     }

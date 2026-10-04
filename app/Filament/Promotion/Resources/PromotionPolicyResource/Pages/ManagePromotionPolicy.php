@@ -26,6 +26,7 @@ class ManagePromotionPolicy extends EditRecord
             [
                 'gift_pickup_min_order_kopecks' => 100_000,
                 'gift_courier_min_order_kopecks' => 180_000,
+                'gift_courier_weekdays' => [1, 2, 3, 4],
                 'gift_benefit_active' => true,
                 'delivery_free_threshold_kopecks' => 100_000,
                 'delivery_outside_zone_surcharge_kopecks' => 20_000,

@@ -13,6 +13,7 @@ import {
     normalizePersonsCount,
 } from "../domain/checkoutServerMappers";
 import { isComplementCartLine } from "../domain/normalizeCheckoutCart";
+import { giftCourierWeekdaysLabel } from "../domain/giftWeekdaysLabel";
 import { adaptQuoteToCheckoutSnapshot } from "../domain/normalizeOrderPreview";
 import { useCheckoutStore } from "../store";
 
@@ -722,6 +723,9 @@ export function useCheckoutSession() {
     const giftLabel = computed(() => {
         if (!gift.value.isActive) {
             return null;
+        }
+        if (gift.value.weekdayOk === false) {
+            return giftCourierWeekdaysLabel(gift.value.allowedWeekdays);
         }
         if (gift.value.isReached) {
             return "Подарок доступен";

@@ -11,6 +11,7 @@ class PRM_Configuration extends Model
     protected $fillable = [
         'gift_pickup_min_order_kopecks',
         'gift_courier_min_order_kopecks',
+        'gift_courier_weekdays',
         'gift_benefit_active',
         'delivery_free_threshold_kopecks',
         'delivery_outside_zone_surcharge_kopecks',
@@ -22,6 +23,7 @@ class PRM_Configuration extends Model
     protected $casts = [
         'gift_pickup_min_order_kopecks' => 'integer',
         'gift_courier_min_order_kopecks' => 'integer',
+        'gift_courier_weekdays' => 'array',
         'gift_benefit_active' => 'boolean',
         'delivery_free_threshold_kopecks' => 'integer',
         'delivery_outside_zone_surcharge_kopecks' => 'integer',
