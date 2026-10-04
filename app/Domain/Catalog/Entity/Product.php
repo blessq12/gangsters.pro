@@ -32,6 +32,7 @@ final class Product implements CatalogItem
         private readonly array $tagIds,
         private readonly array $ingredients = [],
         private readonly array $images = [],
+        private readonly ?int $paidTwinProductId = null,
     ) {}
 
     public function id(): int
@@ -111,5 +112,13 @@ final class Product implements CatalogItem
     public function images(): array
     {
         return $this->images;
+    }
+
+    /**
+     * Платный близнец комплектного товара (докупка сверх entitled).
+     */
+    public function paidTwinProductId(): ?int
+    {
+        return $this->paidTwinProductId;
     }
 }

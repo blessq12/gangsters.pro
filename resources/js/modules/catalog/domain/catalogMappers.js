@@ -138,6 +138,21 @@ export function normalizeCatalogProduct(apiProduct) {
               }
             : null;
 
+    const paidTwinRaw = apiProduct.paid_twin ?? apiProduct.paidTwin ?? null;
+    const paidTwin =
+        paidTwinRaw && typeof paidTwinRaw === "object"
+            ? normalizeCatalogProduct(paidTwinRaw)
+            : null;
+    const paidTwinProductIdRaw =
+        apiProduct.paid_twin_product_id ?? apiProduct.paidTwinProductId ?? null;
+    const paidTwinProductId = Number(paidTwinProductIdRaw);
+    const resolvedPaidTwinProductId =
+        Number.isFinite(paidTwinProductId) && paidTwinProductId > 0
+            ? paidTwinProductId
+            : paidTwin?.id != null
+              ? Number(paidTwin.id)
+              : null;
+
     return {
         id,
         kind: "product",
@@ -149,6 +164,12 @@ export function normalizeCatalogProduct(apiProduct) {
         images: imageUrl ? [imageUrl] : [],
         imageSrcset,
         nutrition,
+        paidTwinProductId:
+            Number.isFinite(resolvedPaidTwinProductId) &&
+            resolvedPaidTwinProductId > 0
+                ? resolvedPaidTwinProductId
+                : null,
+        paidTwin,
         raw: apiProduct,
     };
 }

@@ -62,12 +62,16 @@ final class GetCatalogUseCase
     private function buildCatalog(bool $lite): array
     {
         $tagById = $this->loadActiveTagsIndexed();
+        $paidTwinIdSet = array_fill_keys(
+            $this->catalogItems->findPaidTwinProductIds(),
+            true,
+        );
 
         $menuCategories = [];
         $accompanyingCategories = [];
 
         foreach ($this->categories->findAllOrdered() as $category) {
-            $node = $this->buildCategoryNode($category, $tagById, $lite);
+            $node = $this->buildCategoryNode($category, $tagById, $lite, $paidTwinIdSet);
             if ($node['items'] === []) {
                 continue;
             }
@@ -100,9 +104,21 @@ final class GetCatalogUseCase
         $ids = array_map(static fn (Product $product): int => $product->id(), $products);
         $promotionMetaByProductId = $this->catalogItems->findPromotionMetaByProductIds($ids);
 
+        $twinIds = [];
+        foreach ($products as $product) {
+            $twinId = $product->paidTwinProductId();
+            if ($twinId !== null) {
+                $twinIds[] = $twinId;
+            }
+        }
+
+        $twinsById = $this->indexProducts(
+            $this->catalogItems->findActiveProductsByIds(array_values(array_unique($twinIds))),
+        );
+
         $items = [];
         foreach ($products as $product) {
-            $items[] = $this->mapProduct(
+            $mapped = $this->mapProduct(
                 $product,
                 $tagById,
                 $promotionMetaByProductId[$product->id()] ?? [
@@ -111,6 +127,18 @@ final class GetCatalogUseCase
                 ],
                 $lite,
             );
+
+            $twinId = $product->paidTwinProductId();
+            $mapped['paid_twin_product_id'] = $twinId;
+            $twin = $twinId !== null ? ($twinsById[$twinId] ?? null) : null;
+            $mapped['paid_twin'] = $twin instanceof Product
+                ? $this->mapProduct($twin, $tagById, [
+                    'counts_as_roll' => false,
+                    'complement_set' => false,
+                ], $lite)
+                : null;
+
+            $items[] = $mapped;
         }
 
         return $items;
@@ -120,8 +148,15 @@ final class GetCatalogUseCase
      * @param  array<int, Tag>  $tagById
      * @return array{category: array<string, mixed>, items: list<array<string, mixed>>}
      */
-    private function buildCategoryNode(Category $category, array $tagById, bool $lite): array
-    {
+    /**
+     * @param  array<int, true>  $paidTwinIdSet
+     */
+    private function buildCategoryNode(
+        Category $category,
+        array $tagById,
+        bool $lite,
+        array $paidTwinIdSet,
+    ): array {
         $links = $this->categories->findItemsByCategoryId($category->id());
 
         $productIds = [];
@@ -168,6 +203,7 @@ final class GetCatalogUseCase
                 $lineProductNames,
                 $promotionMetaByProductId,
                 $lite,
+                $paidTwinIdSet,
             );
             if ($item !== null) {
                 $items[] = $item;
@@ -187,6 +223,9 @@ final class GetCatalogUseCase
      * @param  array<int, string>  $lineProductNames
      * @return array<string, mixed>|null
      */
+    /**
+     * @param  array<int, true>  $paidTwinIdSet
+     */
     private function resolveCategoryItem(
         CategoryItem $link,
         array $productsById,
@@ -195,6 +234,7 @@ final class GetCatalogUseCase
         array $lineProductNames,
         array $promotionMetaByProductId,
         bool $lite,
+        array $paidTwinIdSet,
     ): ?array {
         if ($link->kind() === CatalogItemKind::Set) {
             $set = $setsById[$link->catalogItemId()] ?? null;
@@ -213,6 +253,11 @@ final class GetCatalogUseCase
         $promotionMeta = $promotionMetaByProductId[$product->id()] ?? null;
         if ((bool) ($promotionMeta['complement_set'] ?? false)) {
             // Комплектные товары отдаются отдельной группой, не в витрине категорий.
+            return null;
+        }
+
+        if (isset($paidTwinIdSet[$product->id()])) {
+            // Платный близнец комплекта — только докупка сверх entitled, не витрина.
             return null;
         }
 

@@ -2,14 +2,17 @@
 
 namespace App\Filament\Catalog\Resources\ProductResource\Schemas;
 
+use App\Domain\Catalog\Enum\CatalogItemKind;
 use App\Domain\Catalog\Enum\ProductStatus;
 use App\Filament\Catalog\Support\FilamentSlugField;
+use App\Infrastructure\Catalog\Model\PRD_Product;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -194,7 +197,49 @@ final class ProductForm
                 ->helperText('Учитывается при расчёте комплекта дополнений в корзине.'),
             Toggle::make('meta_is_complement_set')
                 ->label('Набор дополнений')
-                ->helperText('Автодобавление комплекта при достижении порога роллов.'),
+                ->helperText('Автодобавление комплекта при достижении порога роллов.')
+                ->live(),
+            Select::make('paid_twin_product_id')
+                ->label('Платный близнец')
+                ->helperText('Товар с другим артикулом для докупки сверх комплекта. Не показывается в меню.')
+                ->searchable()
+                ->preload()
+                ->nullable()
+                ->visible(fn (Get $get): bool => (bool) $get('meta_is_complement_set'))
+                ->options(function (?PRD_Product $record): array {
+                    $query = PRD_Product::query()
+                        ->where('catalog_kind', CatalogItemKind::Product->value)
+                        ->where('meta_is_complement_set', false)
+                        ->whereNull('archived_at')
+                        ->orderBy('name');
+
+                    if ($record?->id) {
+                        $query->where('id', '!=', $record->id);
+                    }
+
+                    return $query
+                        ->get(['id', 'name', 'sku'])
+                        ->mapWithKeys(static function (PRD_Product $product): array {
+                            $sku = trim((string) ($product->sku ?? ''));
+                            $label = (string) $product->name;
+                            if ($sku !== '') {
+                                $label .= ' · '.$sku;
+                            }
+
+                            return [(int) $product->id => $label];
+                        })
+                        ->all();
+                })
+                ->dehydrated(fn (Get $get): bool => (bool) $get('meta_is_complement_set'))
+                ->dehydrateStateUsing(function (mixed $state, Get $get): ?int {
+                    if (! (bool) $get('meta_is_complement_set')) {
+                        return null;
+                    }
+
+                    $id = (int) $state;
+
+                    return $id > 0 ? $id : null;
+                }),
         ];
     }
 }

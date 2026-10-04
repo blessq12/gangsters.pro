@@ -402,6 +402,8 @@ export function useOrderPreview() {
  *   name: string,
  *   freeQty: number,
  *   product: object|null,
+ *   paidTwinProductId: number|null,
+ *   paidTwin: object|null,
  * }>}
  */
 export function buildComplementOfferRows(
@@ -448,12 +450,21 @@ export function buildComplementOfferRows(
             String(product?.name || "").trim()
             || free?.name
             || `Товар #${id}`;
+        const paidTwin = product?.paidTwin ?? null;
+        const paidTwinProductIdRaw =
+            product?.paidTwinProductId ?? paidTwin?.id ?? null;
+        const paidTwinProductId = Number(paidTwinProductIdRaw);
 
         rows.push({
             id,
             name,
             freeQty: free?.freeQty || 0,
             product,
+            paidTwinProductId:
+                Number.isFinite(paidTwinProductId) && paidTwinProductId > 0
+                    ? paidTwinProductId
+                    : null,
+            paidTwin,
         });
     }
 

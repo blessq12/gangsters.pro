@@ -23,18 +23,20 @@ const { complementProducts } = storeToRefs(catalogStore);
 
 const { formatPrice } = checkoutState;
 
-const complementProductIds = computed(() => {
+const complementRelatedProductIds = computed(() => {
     const ids = new Set();
     for (const product of complementProducts.value || []) {
         if (product?.id != null) ids.add(Number(product.id));
+        const twinId = Number(product?.paidTwinProductId);
+        if (Number.isFinite(twinId) && twinId > 0) ids.add(twinId);
     }
     return ids;
 });
 
-/** Комплектные не дублируем в «Товары» — только в блоке комплекта. */
+/** Комплектные и их платные близнецы — только в блоке комплекта. */
 const menuUserCartItems = computed(() =>
     (userCartItems.value || []).filter(
-        (item) => !complementProductIds.value.has(Number(item.productId)),
+        (item) => !complementRelatedProductIds.value.has(Number(item.productId)),
     ),
 );
 

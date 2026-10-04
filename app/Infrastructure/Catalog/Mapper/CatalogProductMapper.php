@@ -17,6 +17,10 @@ final class CatalogProductMapper
      */
     public function toDomain(PRD_Product $row, array $tagIds = [], array $images = []): Product
     {
+        $paidTwinId = $row->paid_twin_product_id !== null
+            ? (int) $row->paid_twin_product_id
+            : null;
+
         return new Product(
             id: (int) $row->id,
             name: (string) $row->name,
@@ -30,6 +34,7 @@ final class CatalogProductMapper
             tagIds: $tagIds,
             ingredients: $this->resolveIngredients($row),
             images: $images,
+            paidTwinProductId: $paidTwinId !== null && $paidTwinId > 0 ? $paidTwinId : null,
         );
     }
 

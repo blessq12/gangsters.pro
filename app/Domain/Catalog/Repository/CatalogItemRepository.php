@@ -13,12 +13,19 @@ interface CatalogItemRepository
 
     /**
      * Активные товары для корзины/витрины: не-system, плюс комплектные
-     * (meta_is_complement_set), даже если is_system — их можно докупить.
+     * (meta_is_complement_set) и их платные близнецы (paid_twin), даже если is_system.
      *
      * @param  list<int>  $ids
      * @return list<Product>
      */
     public function findActiveProductsByIds(array $ids): array;
+
+    /**
+     * Id товаров, на которые ссылаются комплектные как на платного близнеца.
+     *
+     * @return list<int>
+     */
+    public function findPaidTwinProductIds(): array;
 
     /**
      * Активные системные товары (кандидаты подарка).

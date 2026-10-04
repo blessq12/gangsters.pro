@@ -69,8 +69,21 @@ const showBlock = computed(
     () => complementRows.value.length > 0 || showApproachProgress.value,
 );
 
-function paidQty(productId) {
-    return cartStore.cartQuantityByProduct(productId);
+function paidTwinId(row) {
+    const id = Number(row?.paidTwinProductId);
+    return Number.isFinite(id) && id > 0 ? id : null;
+}
+
+function paidTwinProduct(row) {
+    return row?.paidTwin ?? null;
+}
+
+function paidQty(row) {
+    const twinId = paidTwinId(row);
+    if (twinId == null) {
+        return 0;
+    }
+    return cartStore.cartQuantityByProduct(twinId);
 }
 
 function selectedFreeQty(row) {
@@ -78,16 +91,16 @@ function selectedFreeQty(row) {
 }
 
 function displayQty(row) {
-    return selectedFreeQty(row) + paidQty(row.id);
+    return selectedFreeQty(row) + paidQty(row);
 }
 
 /** FREE — только бесплатная часть комплекта, без докупки. */
 function showFreeBadge(row) {
-    return selectedFreeQty(row) > 0 && paidQty(row.id) <= 0;
+    return selectedFreeQty(row) > 0 && paidQty(row) <= 0;
 }
 
 function unitPriceRub(row) {
-    const product = row.product;
+    const product = paidTwinProduct(row);
     if (!product) {
         return 0;
     }
@@ -96,7 +109,7 @@ function unitPriceRub(row) {
 
 /** Стоимость сверх комплекта — бейдж на месте FREE. */
 function paidBadgeLabel(row) {
-    const paid = paidQty(row.id);
+    const paid = paidQty(row);
     if (paid <= 0) {
         return "";
     }
@@ -105,15 +118,19 @@ function paidBadgeLabel(row) {
 }
 
 function canDecrement(row) {
-    return selectedFreeQty(row) > 0 || paidQty(row.id) > 0;
+    return selectedFreeQty(row) > 0 || paidQty(row) > 0;
 }
 
 function canIncrementFree(row) {
     return selectedFreeQty(row) < entitledSetCount.value;
 }
 
+function canIncrementPaid(row) {
+    return paidTwinId(row) != null && Boolean(paidTwinProduct(row));
+}
+
 function canIncrement(row) {
-    return Boolean(row.product) && (canIncrementFree(row) || paidQty(row.id) >= 0);
+    return Boolean(row.product) && (canIncrementFree(row) || canIncrementPaid(row));
 }
 
 async function incrementProduct(row) {
@@ -127,25 +144,31 @@ async function incrementProduct(row) {
         return;
     }
 
-    if (paidQty(id) <= 0) {
-        await cartStore.addToCart(row.product, 1);
+    const twinId = paidTwinId(row);
+    const twinProduct = paidTwinProduct(row);
+    if (twinId == null || !twinProduct) {
         return;
     }
 
-    await cartStore.incrementCart(id);
+    if (paidQty(row) <= 0) {
+        await cartStore.addToCart(twinProduct, 1);
+        return;
+    }
+
+    await cartStore.incrementCart(twinId);
 }
 
 async function decrementProduct(row) {
-    const id = row.id;
+    const twinId = paidTwinId(row);
 
     // Сначала платные (бьют в сумму), бесплатные — только после обнуления paid.
-    if (paidQty(id) > 0) {
-        await cartStore.decrementCart(id);
+    if (twinId != null && paidQty(row) > 0) {
+        await cartStore.decrementCart(twinId);
         return;
     }
 
     if (selectedFreeQty(row) > 0) {
-        await cartStore.setComplementSelection(id, selectedFreeQty(row) - 1);
+        await cartStore.setComplementSelection(row.id, selectedFreeQty(row) - 1);
     }
 }
 </script>

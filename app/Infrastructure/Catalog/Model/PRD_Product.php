@@ -27,6 +27,7 @@ class PRD_Product extends Model
         'ingredients',
         'meta_counts_as_roll',
         'meta_is_complement_set',
+        'paid_twin_product_id',
         'archived_at',
     ];
 

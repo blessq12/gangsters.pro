@@ -75,14 +75,20 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
             return [];
         }
 
+        $paidTwinIds = $this->findPaidTwinProductIds();
+
         $rows = $this->productQuery()
             ->where('catalog_kind', CatalogItemKind::Product->value)
             ->where('status', ProductStatus::Active->value)
             ->whereNull('archived_at')
             ->whereIn('id', $ids)
-            ->where(function ($query): void {
+            ->where(function ($query) use ($paidTwinIds): void {
                 $query->where('is_system', false)
                     ->orWhere('meta_is_complement_set', true);
+
+                if ($paidTwinIds !== []) {
+                    $query->orWhereIn('id', $paidTwinIds);
+                }
             })
             ->get();
 
@@ -90,6 +96,22 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
         $imagesByProduct = $this->loadImagesByProductIds($ids);
 
         return $this->mapProductsPreservingOrder($rows, $ids, $tagIdsByProduct, $imagesByProduct);
+    }
+
+    public function findPaidTwinProductIds(): array
+    {
+        $ids = $this->productQuery()
+            ->where('catalog_kind', CatalogItemKind::Product->value)
+            ->where('meta_is_complement_set', true)
+            ->whereNotNull('paid_twin_product_id')
+            ->pluck('paid_twin_product_id')
+            ->map(static fn (mixed $id): int => (int) $id)
+            ->filter(static fn (int $id): bool => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+
+        return $ids;
     }
 
     public function findActiveSystemProducts(): array
