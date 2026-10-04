@@ -1,6 +1,5 @@
 <script setup>
 import { ref, watch } from "vue";
-import { useToast } from "vue-toastification";
 import { useUserStore } from "../../modules/client/store/userStore";
 import { useFormFieldErrors } from "../../platform/useFormFieldErrors";
 import { mapApiError } from "../../platform/mapApiError";
@@ -14,7 +13,6 @@ const cli = useAppDesign().components.client;
 const s = cli.shared;
 
 const userStore = useUserStore();
-const toast = useToast();
 const fieldErrors = useFormFieldErrors();
 
 const email = ref("");
@@ -38,11 +36,8 @@ async function submit() {
     loading.value = true;
     try {
         await userStore.requestPasswordReset(emailTrim);
-        toast.info(
-            "Если такой аккаунт есть, мы отправили письмо с новым паролем.",
-        );
         email.value = "";
-        emit("go-login");
+        emit("go-login", { passwordResetSent: true });
     } catch (e) {
         console.error(e);
         if (!applyApiFieldErrors(fieldErrors, e)) {

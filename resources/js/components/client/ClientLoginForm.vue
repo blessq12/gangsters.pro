@@ -7,7 +7,19 @@ import { applyApiFieldErrors } from "../../platform/extractApiFieldErrors";
 import { useAppDesign } from "../../design/useAppDesign";
 import FormField from "../ui/FormField.vue";
 
-const emit = defineEmits(["logged-in", "go-register", "go-forgot"]);
+const props = defineProps({
+    passwordResetNotice: {
+        type: Boolean,
+        default: false,
+    },
+});
+
+const emit = defineEmits([
+    "logged-in",
+    "go-register",
+    "go-forgot",
+    "clear-password-reset-notice",
+]);
 
 const cli = useAppDesign().components.client;
 const s = cli.shared;
@@ -33,6 +45,9 @@ watch(
 
 async function submit() {
     fieldErrors.clearAll();
+    if (props.passwordResetNotice) {
+        emit("clear-password-reset-notice");
+    }
 
     const emailTrim = (form.value.email || "").trim();
     if (!emailTrim) {
@@ -80,6 +95,14 @@ async function submit() {
         :class="s.formRoot"
         @submit.prevent="submit"
     >
+        <p
+            v-if="passwordResetNotice"
+            :class="s.passwordResetNotice"
+            role="status"
+        >
+            Письмо отправлено — проверь почту и войди с новым паролем.
+        </p>
+
         <div :class="s.fieldStack">
             <FormField
                 label="Email"

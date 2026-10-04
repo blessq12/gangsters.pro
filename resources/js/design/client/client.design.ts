@@ -47,6 +47,7 @@ export const clientDesign = {
         loginFooterLink:
             "text-[11px] text-app-accent/90 underline-offset-2 hover:text-app-accent hover:underline",
         loginFooterSep: "text-[11px] text-app-muted",
+        passwordResetNotice: "text-sm leading-relaxed text-app-accent",
         addressGrid: "grid grid-cols-2 gap-2",
         addressDetailsGrid: "grid grid-cols-3 gap-2",
     },

@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
 import { useAppDesign } from "../../../../design/useAppDesign";
 import { useUserStore } from "../../../../modules/client/store/userStore";
 import {
@@ -30,6 +30,29 @@ const {
 
 const s = panels.shared;
 const p = panels.profile;
+
+const passwordResetNotice = ref(false);
+
+watch(activeTab, (tab) => {
+    if (tab !== PROFILE_TAB_LOGIN) {
+        passwordResetNotice.value = false;
+    }
+});
+
+function goLoginFromForgot(payload) {
+    passwordResetNotice.value = Boolean(payload?.passwordResetSent);
+    activeTab.value = PROFILE_TAB_LOGIN;
+}
+
+function openRegister() {
+    passwordResetNotice.value = false;
+    activeTab.value = PROFILE_TAB_REGISTER;
+}
+
+function openForgot() {
+    passwordResetNotice.value = false;
+    activeTab.value = PROFILE_TAB_FORGOT;
+}
 
 const panelTitle = computed(() =>
     isAuthenticated.value
@@ -159,9 +182,11 @@ function logout() {
         <div :class="s.contentStack">
             <ClientLoginForm
                 v-if="activeTab === PROFILE_TAB_LOGIN"
+                :password-reset-notice="passwordResetNotice"
                 @logged-in="handleLoggedIn"
-                @go-register="activeTab = PROFILE_TAB_REGISTER"
-                @go-forgot="activeTab = PROFILE_TAB_FORGOT"
+                @go-register="openRegister"
+                @go-forgot="openForgot"
+                @clear-password-reset-notice="passwordResetNotice = false"
             />
 
             <ClientRegisterForm
@@ -171,7 +196,7 @@ function logout() {
 
             <ClientForgotPasswordForm
                 v-else-if="activeTab === PROFILE_TAB_FORGOT"
-                @go-login="activeTab = PROFILE_TAB_LOGIN"
+                @go-login="goLoginFromForgot"
             />
 
             <ClientProfileView
