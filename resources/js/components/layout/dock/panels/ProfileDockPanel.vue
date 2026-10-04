@@ -5,6 +5,7 @@ import { useUserStore } from "../../../../modules/client/store/userStore";
 import {
     PROFILE_TAB_ADDRESSES,
     PROFILE_TAB_EDIT,
+    PROFILE_TAB_FORGOT,
     PROFILE_TAB_LOGIN,
     PROFILE_TAB_ORDERS,
     PROFILE_TAB_OVERVIEW,
@@ -43,12 +44,22 @@ const panelSubtitle = computed(() => {
     return userStore.profile.phone || "";
 });
 
+function isSegmentSelected(name) {
+    if (name === PROFILE_TAB_LOGIN) {
+        return (
+            activeTab.value === PROFILE_TAB_LOGIN ||
+            activeTab.value === PROFILE_TAB_FORGOT
+        );
+    }
+    return activeTab.value === name;
+}
+
 function segmentCellClasses(name) {
     const a = p.segmentSelector;
     return [
         a.cell,
         a.cellDivider,
-        activeTab.value === name ? a.cellSelected : a.cellIdle,
+        isSegmentSelected(name) ? a.cellSelected : a.cellIdle,
     ];
 }
 
@@ -84,7 +95,7 @@ function logout() {
             <button
                 type="button"
                 role="tab"
-                :aria-selected="activeTab === PROFILE_TAB_LOGIN"
+                :aria-selected="isSegmentSelected(PROFILE_TAB_LOGIN)"
                 :class="segmentCellClasses(PROFILE_TAB_LOGIN)"
                 @click="activeTab = PROFILE_TAB_LOGIN"
             >
@@ -93,7 +104,7 @@ function logout() {
             <button
                 type="button"
                 role="tab"
-                :aria-selected="activeTab === PROFILE_TAB_REGISTER"
+                :aria-selected="isSegmentSelected(PROFILE_TAB_REGISTER)"
                 :class="segmentCellClasses(PROFILE_TAB_REGISTER)"
                 @click="activeTab = PROFILE_TAB_REGISTER"
             >
@@ -102,7 +113,7 @@ function logout() {
         </div>
 
         <div
-            v-else
+            v-else-if="isAuthenticated"
             :class="p.segmentSelector.shell"
             role="tablist"
             aria-label="Личный кабинет"
@@ -150,11 +161,17 @@ function logout() {
                 v-if="activeTab === PROFILE_TAB_LOGIN"
                 @logged-in="handleLoggedIn"
                 @go-register="activeTab = PROFILE_TAB_REGISTER"
+                @go-forgot="activeTab = PROFILE_TAB_FORGOT"
             />
 
             <ClientRegisterForm
                 v-else-if="activeTab === PROFILE_TAB_REGISTER"
                 @registered="handleRegistered"
+            />
+
+            <ClientForgotPasswordForm
+                v-else-if="activeTab === PROFILE_TAB_FORGOT"
+                @go-login="activeTab = PROFILE_TAB_LOGIN"
             />
 
             <ClientProfileView

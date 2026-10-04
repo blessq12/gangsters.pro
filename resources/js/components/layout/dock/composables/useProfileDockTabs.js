@@ -3,6 +3,7 @@ import { computed, ref, watch } from "vue";
 /** Гость */
 export const PROFILE_TAB_LOGIN = "login";
 export const PROFILE_TAB_REGISTER = "register";
+export const PROFILE_TAB_FORGOT = "forgot";
 
 /** Авторизованный пользователь — один уровень вкладок в доке */
 export const PROFILE_TAB_OVERVIEW = "overview";
@@ -11,7 +12,7 @@ export const PROFILE_TAB_ORDERS = "orders";
 export const PROFILE_TAB_EDIT = "edit";
 
 /**
- * Состояние вкладок дока профиля: гость (вход/регистрация) или ЛК (обзор/адреса/заказы/данные).
+ * Состояние вкладок дока профиля: гость (вход/регистрация/восстановление) или ЛК (обзор/адреса/заказы/данные).
  */
 export function useProfileDockTabs(userStore) {
     const activeTab = ref(PROFILE_TAB_LOGIN);

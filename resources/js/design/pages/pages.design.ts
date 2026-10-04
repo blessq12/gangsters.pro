@@ -142,6 +142,9 @@ export const pagesDesign = {
         zoneMapLoading:
             "grid min-h-[22rem] place-content-center bg-app-glass-fill text-sm text-app-muted sm:min-h-[26rem]",
         zoneMapHint: "mt-3 text-xs text-app-muted",
+        pickupCaption: "mt-3 space-y-1",
+        pickupCaptionNote: "text-xs text-app-muted",
+        pickupCaptionAddress: "text-sm text-app-canvas-fg",
     },
 
     contacts: {

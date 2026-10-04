@@ -1,5 +1,6 @@
 <script setup>
 import { ref, watch } from "vue";
+import { useToast } from "vue-toastification";
 import { useUserStore } from "../../modules/client/store/userStore";
 import { useFormFieldErrors } from "../../platform/useFormFieldErrors";
 import { mapApiError } from "../../platform/mapApiError";
@@ -7,65 +8,48 @@ import { applyApiFieldErrors } from "../../platform/extractApiFieldErrors";
 import { useAppDesign } from "../../design/useAppDesign";
 import FormField from "../ui/FormField.vue";
 
-const emit = defineEmits(["logged-in", "go-register", "go-forgot"]);
+const emit = defineEmits(["go-login"]);
 
 const cli = useAppDesign().components.client;
 const s = cli.shared;
 
 const userStore = useUserStore();
+const toast = useToast();
 const fieldErrors = useFormFieldErrors();
 
-const form = ref({
-    email: "",
-    password: "",
-});
-
+const email = ref("");
 const loading = ref(false);
 
-watch(
-    () => form.value.email,
-    () => fieldErrors.clearField("email"),
-);
-watch(
-    () => form.value.password,
-    () => fieldErrors.clearField("password"),
-);
+watch(email, () => fieldErrors.clearField("email"));
 
 async function submit() {
     fieldErrors.clearAll();
 
-    const emailTrim = (form.value.email || "").trim();
+    const emailTrim = (email.value || "").trim();
     if (!emailTrim) {
         fieldErrors.setFieldError("email", "Введите email");
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrim)) {
+        return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrim)) {
         fieldErrors.setFieldError("email", "Некорректный формат email");
-    }
-
-    if (!form.value.password) {
-        fieldErrors.setFieldError("password", "Введите пароль");
-    }
-
-    if (fieldErrors.hasAny.value) {
         return;
     }
 
     loading.value = true;
-
     try {
-        await userStore.loginClient({
-            phone: null,
-            email: emailTrim,
-            password: form.value.password,
-        });
-
-        emit("logged-in");
+        await userStore.requestPasswordReset(emailTrim);
+        toast.info(
+            "Если такой аккаунт есть, мы отправили письмо с новым паролем.",
+        );
+        email.value = "";
+        emit("go-login");
     } catch (e) {
         console.error(e);
         if (!applyApiFieldErrors(fieldErrors, e)) {
             fieldErrors.setFormError(
                 mapApiError(
                     e,
-                    "Не удалось выполнить вход. Проверьте данные и попробуйте ещё раз.",
+                    "Не удалось отправить запрос. Попробуй позже.",
                 ),
             );
         }
@@ -89,29 +73,10 @@ async function submit() {
                 <template #default="{ id, invalid, invalidClass, describedBy, ariaInvalid }">
                     <input
                         :id="id"
-                        v-model="form.email"
+                        v-model="email"
                         type="email"
-                        autocomplete="username"
+                        autocomplete="email"
                         placeholder="you@example.com"
-                        :class="[s.input, invalid && invalidClass]"
-                        :aria-invalid="ariaInvalid"
-                        :aria-describedby="describedBy"
-                    />
-                </template>
-            </FormField>
-
-            <FormField
-                label="Пароль"
-                error-size="xs"
-                :error="fieldErrors.get('password')"
-            >
-                <template #default="{ id, invalid, invalidClass, describedBy, ariaInvalid }">
-                    <input
-                        :id="id"
-                        v-model="form.password"
-                        type="password"
-                        autocomplete="current-password"
-                        placeholder="••••••••"
                         :class="[s.input, invalid && invalidClass]"
                         :aria-invalid="ariaInvalid"
                         :aria-describedby="describedBy"
@@ -132,25 +97,17 @@ async function submit() {
             :disabled="loading"
             :class="s.btnPrimaryWide"
         >
-            <span v-if="!loading">Войти</span>
-            <span v-else>Входим…</span>
+            <span v-if="!loading">Отправить</span>
+            <span v-else>Отправляем…</span>
         </button>
 
         <div :class="s.loginFooter">
             <button
                 type="button"
                 :class="s.loginFooterLink"
-                @click="emit('go-forgot')"
+                @click="emit('go-login')"
             >
-                Забыли пароль?
-            </button>
-            <span :class="s.loginFooterSep" aria-hidden="true">·</span>
-            <button
-                type="button"
-                :class="s.loginFooterLink"
-                @click="emit('go-register')"
-            >
-                Регистрация
+                Назад ко входу
             </button>
         </div>
     </form>

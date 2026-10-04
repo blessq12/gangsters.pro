@@ -60,7 +60,7 @@ export function kitchenMapCenterOrNull(company) {
 /**
  * @param {HTMLElement} container
  * @param {object|null|undefined} company
- * @returns {Promise<{ destroy: () => void, refit: () => void, polygonShown: boolean }|null>}
+ * @returns {Promise<{ destroy: () => void, refit: () => void, polygonShown: boolean, placemarkShown: boolean }|null>}
  */
 export async function mountCompanyDeliveryZoneReadonlyMap(container, company) {
     const apiKey = readYandexMapsApiKeyFromSite();
@@ -76,6 +76,9 @@ export async function mountCompanyDeliveryZoneReadonlyMap(container, company) {
         geometries,
         geometry: geometries[0] ?? null,
         center: kitchenMapCenterOrNull(company),
+        kitchenPlacemark: true,
+        balloonContentHeader: "Самовывоз",
+        balloonContentBody: kitchenAddressLabelOrFallback(company),
     });
 }
 
@@ -300,9 +303,13 @@ function resolveMapCenter(explicitCenter, geometry) {
  *   geometry?: object|null,
  *   geometries?: object[],
  *   center?: [number, number]|null,
- *   zoom?: number
+ *   zoom?: number,
+ *   kitchenPlacemark?: boolean,
+ *   balloonContent?: string,
+ *   balloonContentHeader?: string,
+ *   balloonContentBody?: string,
  * }} options
- * @returns {Promise<{ destroy: () => void, refit: () => void, polygonShown: boolean }>}
+ * @returns {Promise<{ destroy: () => void, refit: () => void, polygonShown: boolean, placemarkShown: boolean }>}
  */
 export async function mountYandexDeliveryZoneReadonlyMap(container, options) {
     const {
@@ -311,6 +318,10 @@ export async function mountYandexDeliveryZoneReadonlyMap(container, options) {
         geometries = null,
         center = null,
         zoom = 12,
+        kitchenPlacemark = false,
+        balloonContent = "",
+        balloonContentHeader = "",
+        balloonContentBody = "",
     } = options;
 
     await loadYandexMapsApi(apiKey);
@@ -327,6 +338,10 @@ export async function mountYandexDeliveryZoneReadonlyMap(container, options) {
     const mapCenter = resolveMapCenter(center, primaryGeometry);
     const nearTomskRings = rings.filter((ring) => ringIsNearTomsk(ring));
     const canShowPolygon = nearTomskRings.length > 0;
+    const canShowPlacemark =
+        kitchenPlacemark === true
+        && center != null
+        && isNearTomskArea(center);
 
     // API 2.1 has no native dark theme; tiles are darkened via CSS on this class.
     container.classList.add("yandex-map-theme-dark");
@@ -365,13 +380,6 @@ export async function mountYandexDeliveryZoneReadonlyMap(container, options) {
             );
             map.geoObjects.add(polygon);
         });
-        const bounds = map.geoObjects.getBounds();
-        if (bounds) {
-            map.setBounds(bounds, {
-                checkZoomRange: true,
-                zoomMargin: 32,
-            });
-        }
     } else if (rings.length > 0 && !warnedPolygonOutsideTomsk) {
         warnedPolygonOutsideTomsk = true;
         console.warn(
@@ -379,8 +387,33 @@ export async function mountYandexDeliveryZoneReadonlyMap(container, options) {
         );
     }
 
+    if (canShowPlacemark) {
+        const placemark = new window.ymaps.Placemark(
+            center,
+            {
+                balloonContentHeader: balloonContentHeader || undefined,
+                balloonContentBody:
+                    balloonContentBody || balloonContent || undefined,
+                balloonContent: balloonContent || undefined,
+            },
+            {
+                preset: "islands#redDotIcon",
+            },
+        );
+        map.geoObjects.add(placemark);
+    }
+
+    const bounds = map.geoObjects.getBounds();
+    if (bounds && (canShowPolygon || canShowPlacemark)) {
+        map.setBounds(bounds, {
+            checkZoomRange: true,
+            zoomMargin: 32,
+        });
+    }
+
     return {
         polygonShown: canShowPolygon,
+        placemarkShown: canShowPlacemark,
         refit,
         destroy() {
             map.destroy();
@@ -496,21 +529,35 @@ export function useDeliveryZoneReadonlyMap({
     );
 
     const mapContainerRef = ref(null);
-    /** @type {import('vue').Ref<{ destroy: () => void, refit: () => void, polygonShown?: boolean }|null>} */
+    /** @type {import('vue').Ref<{ destroy: () => void, refit: () => void, polygonShown?: boolean, placemarkShown?: boolean }|null>} */
     const zoneMapController = ref(null);
     const zoneMapMountFailed = ref(false);
     const zonePolygonShown = ref(false);
+    const kitchenPlacemarkShown = ref(false);
 
     /** @type {import('vue').Ref<ResizeObserver|null>} */
     const mapResizeObserver = ref(null);
     /** @type {ReturnType<typeof setTimeout>|null} */
     let mountDelayTimer = null;
 
+    const hasKitchenCoords = computed(
+        () => kitchenMapCenterOrNull(facts.value) != null,
+    );
+
     const showZonePolygonHint = computed(
         () =>
             mapDisplayMode.value === "zone-sdk" &&
             hasZoneGeometry.value &&
             !zonePolygonShown.value &&
+            !zoneMapMountFailed.value &&
+            zoneMapController.value != null,
+    );
+
+    const showKitchenPlacemarkHint = computed(
+        () =>
+            mapDisplayMode.value === "zone-sdk" &&
+            hasKitchenCoords.value &&
+            !kitchenPlacemarkShown.value &&
             !zoneMapMountFailed.value &&
             zoneMapController.value != null,
     );
@@ -543,6 +590,7 @@ export function useDeliveryZoneReadonlyMap({
         zoneMapController.value?.destroy();
         zoneMapController.value = null;
         zonePolygonShown.value = false;
+        kitchenPlacemarkShown.value = false;
     }
 
     async function syncZoneMap() {
@@ -564,6 +612,7 @@ export function useDeliveryZoneReadonlyMap({
             }
             zoneMapController.value = controller;
             zonePolygonShown.value = controller.polygonShown === true;
+            kitchenPlacemarkShown.value = controller.placemarkShown === true;
             connectResizeObserver();
             controller.refit?.();
         } catch (error) {
@@ -613,6 +662,7 @@ export function useDeliveryZoneReadonlyMap({
         mapContainerRef,
         zoneMapMountFailed,
         showZonePolygonHint,
+        showKitchenPlacemarkHint,
     };
 }
 
