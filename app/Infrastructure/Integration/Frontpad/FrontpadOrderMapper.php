@@ -90,6 +90,11 @@ final class FrontpadOrderMapper
             $request['pod'] = $this->truncate($entrance, 2);
         }
 
+        $floor = $address['floor'] ?? null;
+        if (is_string($floor) && $floor !== '') {
+            $request['et'] = $this->truncate($floor, 2);
+        }
+
         $apartment = $address['apartment'] ?? null;
         if (is_string($apartment) && $apartment !== '') {
             $request['apart'] = $this->truncate($apartment, 50);

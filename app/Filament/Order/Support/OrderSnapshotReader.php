@@ -43,6 +43,7 @@ final class OrderSnapshotReader
             'delivery_street' => (string) ($address['street'] ?? '—'),
             'delivery_house' => (string) ($address['house'] ?? '—'),
             'delivery_entrance' => (string) ($address['entrance'] ?? '—'),
+            'delivery_floor' => (string) ($address['floor'] ?? '—'),
             'delivery_apartment' => (string) ($address['apartment'] ?? '—'),
             'delivery_comment' => (string) ($delivery['comment'] ?? '—'),
             'delivery_persons' => isset($delivery['persons'])

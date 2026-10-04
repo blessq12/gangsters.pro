@@ -37,6 +37,7 @@ final class OrderController extends Controller
             'address.street' => ['nullable', 'string', 'max:255'],
             'address.house' => ['nullable', 'string', 'max:64'],
             'address.entrance' => ['nullable', 'string', 'max:64'],
+            'address.floor' => ['nullable', 'string', 'max:64'],
             'address.apartment' => ['nullable', 'string', 'max:64'],
             'delivery_comment' => ['nullable', 'string', 'max:1000'],
             'persons' => ['nullable', 'integer', 'min:1', 'max:99'],

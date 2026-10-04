@@ -22,6 +22,7 @@ function createEmptyGuestAddressDraft() {
         street: "",
         house: "",
         entrance: "",
+        floor: "",
         apartment: "",
     };
 }
@@ -36,6 +37,7 @@ function readGuestAddressDraftFromStore(checkoutIntent) {
         street: address.street ?? "",
         house: address.house ?? "",
         entrance: address.entrance ?? "",
+        floor: address.floor ?? "",
         apartment: address.apartment ?? "",
     };
 }
@@ -55,6 +57,7 @@ export function useCheckoutDeliveryStep({
         street: "",
         house: "",
         entrance: "",
+        floor: "",
         apartment: "",
         comment: "",
         make_default: true,
@@ -303,6 +306,7 @@ export function useCheckoutDeliveryStep({
                 street: newAddressForm.value.street,
                 house: newAddressForm.value.house,
                 entrance: newAddressForm.value.entrance || null,
+                floor: newAddressForm.value.floor || null,
                 apartment: newAddressForm.value.apartment || null,
                 comment: newAddressForm.value.comment || null,
                 make_default: newAddressForm.value.make_default,
@@ -324,6 +328,7 @@ export function useCheckoutDeliveryStep({
                 street: "",
                 house: "",
                 entrance: "",
+                floor: "",
                 apartment: "",
                 comment: "",
                 make_default: true,

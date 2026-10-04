@@ -15,6 +15,10 @@ defineProps({
         type: String,
         default: "",
     },
+    floor: {
+        type: String,
+        default: "",
+    },
     apartment: {
         type: String,
         default: "",
@@ -61,6 +65,7 @@ const emit = defineEmits([
     "update:street",
     "update:house",
     "update:entrance",
+    "update:floor",
     "update:apartment",
     "update:title",
     "update:comment",
@@ -105,7 +110,7 @@ const s = useAppDesign().components.checkout.shared;
         </template>
     </FormField>
 
-    <div :class="s.grid3">
+    <div :class="s.grid4">
         <FormField
             label="Дом"
             :error="houseError"
@@ -133,6 +138,19 @@ const s = useAppDesign().components.checkout.shared;
                     placeholder="1"
                     :class="s.inputFieldGridCell"
                     @input="emit('update:entrance', $event.target.value)"
+                />
+            </template>
+        </FormField>
+
+        <FormField label="Этаж">
+            <template #default="{ id }">
+                <input
+                    :id="id"
+                    :value="floor"
+                    type="text"
+                    placeholder="3"
+                    :class="s.inputFieldGridCell"
+                    @input="emit('update:floor', $event.target.value)"
                 />
             </template>
         </FormField>

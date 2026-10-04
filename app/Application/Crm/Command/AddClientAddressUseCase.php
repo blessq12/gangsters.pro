@@ -33,6 +33,7 @@ final class AddClientAddressUseCase
             street: (string) ($input['street'] ?? ''),
             house: (string) ($input['house'] ?? ''),
             entrance: isset($input['entrance']) ? (string) $input['entrance'] : null,
+            floor: isset($input['floor']) ? (string) $input['floor'] : null,
             apartment: isset($input['apartment']) ? (string) $input['apartment'] : null,
             comment: isset($input['comment']) ? (string) $input['comment'] : null,
             makeDefault: $makeDefault,

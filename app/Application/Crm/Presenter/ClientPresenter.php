@@ -49,6 +49,7 @@ final class ClientPresenter
             'street' => $address->street(),
             'house' => $address->house(),
             'entrance' => $address->entrance(),
+            'floor' => $address->floor(),
             'apartment' => $address->apartment(),
             'comment' => $address->comment(),
             'is_default' => $address->isDefault(),

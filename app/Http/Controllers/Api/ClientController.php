@@ -94,6 +94,7 @@ final class ClientController extends Controller
             'street' => ['required', 'string', 'max:255'],
             'house' => ['required', 'string', 'max:64'],
             'entrance' => ['nullable', 'string', 'max:64'],
+            'floor' => ['nullable', 'string', 'max:64'],
             'apartment' => ['nullable', 'string', 'max:64'],
             'comment' => ['nullable', 'string', 'max:1000'],
             'make_default' => ['nullable', 'boolean'],

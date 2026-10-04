@@ -123,6 +123,7 @@ export function buildClientAddressPayload(data = {}) {
         street: data.street ?? "",
         house: data.house ?? "",
         entrance: data.entrance ?? null,
+        floor: data.floor ?? null,
         apartment: data.apartment ?? null,
         comment: data.comment ?? null,
         make_default:

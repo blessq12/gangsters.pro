@@ -12,6 +12,7 @@ final class ClientAddress
         private string $street,
         private string $house,
         private ?string $entrance,
+        private ?string $floor,
         private ?string $apartment,
         private ?string $comment,
         private bool $isDefault,
@@ -23,6 +24,7 @@ final class ClientAddress
         string $street,
         string $house,
         ?string $entrance,
+        ?string $floor,
         ?string $apartment,
         ?string $comment,
         bool $makeDefault,
@@ -41,6 +43,7 @@ final class ClientAddress
             street: $street,
             house: $house,
             entrance: self::normalizeOptional($entrance),
+            floor: self::normalizeOptional($floor),
             apartment: self::normalizeOptional($apartment),
             comment: self::normalizeOptional($comment),
             isDefault: $makeDefault,
@@ -54,6 +57,7 @@ final class ClientAddress
         string $street,
         string $house,
         ?string $entrance,
+        ?string $floor,
         ?string $apartment,
         ?string $comment,
         bool $isDefault,
@@ -69,6 +73,7 @@ final class ClientAddress
             street: $street,
             house: $house,
             entrance: $entrance,
+            floor: $floor,
             apartment: $apartment,
             comment: $comment,
             isDefault: $isDefault,
@@ -105,6 +110,11 @@ final class ClientAddress
         return $this->entrance;
     }
 
+    public function floor(): ?string
+    {
+        return $this->floor;
+    }
+
     public function apartment(): ?string
     {
         return $this->apartment;
@@ -126,6 +136,7 @@ final class ClientAddress
         string $street,
         string $house,
         ?string $entrance,
+        ?string $floor,
         ?string $apartment,
         ?string $comment,
     ): void {
@@ -141,6 +152,7 @@ final class ClientAddress
         $this->street = $street;
         $this->house = $house;
         $this->entrance = self::normalizeOptional($entrance);
+        $this->floor = self::normalizeOptional($floor);
         $this->apartment = self::normalizeOptional($apartment);
         $this->comment = self::normalizeOptional($comment);
     }

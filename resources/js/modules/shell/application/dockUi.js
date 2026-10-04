@@ -70,6 +70,7 @@ function isDeliveryStepDirty(checkoutStore) {
         hasText(address.street)
         || hasText(address.house)
         || hasText(address.entrance)
+        || hasText(address.floor)
         || hasText(address.apartment)
     );
 }

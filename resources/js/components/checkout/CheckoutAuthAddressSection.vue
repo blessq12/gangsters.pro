@@ -38,6 +38,7 @@ function formatAddressLine(address) {
         address.street,
         address.house && `д. ${address.house}`,
         address.entrance && `подъезд ${address.entrance}`,
+        address.floor && `эт. ${address.floor}`,
         address.apartment && `кв. ${address.apartment}`,
     ]
         .filter(Boolean)
@@ -62,6 +63,7 @@ function formatAddressLine(address) {
             :street="newAddressForm.street"
             :house="newAddressForm.house"
             :entrance="newAddressForm.entrance"
+            :floor="newAddressForm.floor"
             :apartment="newAddressForm.apartment"
             :comment="newAddressForm.comment"
             :make-default="newAddressForm.make_default"
@@ -70,6 +72,7 @@ function formatAddressLine(address) {
             @update:street="newAddressForm.street = $event"
             @update:house="newAddressForm.house = $event"
             @update:entrance="newAddressForm.entrance = $event"
+            @update:floor="newAddressForm.floor = $event"
             @update:apartment="newAddressForm.apartment = $event"
             @update:comment="newAddressForm.comment = $event"
             @update:make-default="newAddressForm.make_default = $event"
@@ -158,6 +161,7 @@ function formatAddressLine(address) {
                         :street="newAddressForm.street"
                         :house="newAddressForm.house"
                         :entrance="newAddressForm.entrance"
+                        :floor="newAddressForm.floor"
                         :apartment="newAddressForm.apartment"
                         :comment="newAddressForm.comment"
                         :make-default="newAddressForm.make_default"
@@ -166,6 +170,7 @@ function formatAddressLine(address) {
                         @update:street="newAddressForm.street = $event"
                         @update:house="newAddressForm.house = $event"
                         @update:entrance="newAddressForm.entrance = $event"
+                        @update:floor="newAddressForm.floor = $event"
                         @update:apartment="newAddressForm.apartment = $event"
                         @update:comment="newAddressForm.comment = $event"
                         @update:make-default="newAddressForm.make_default = $event"

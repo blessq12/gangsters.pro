@@ -193,6 +193,7 @@ function buildDeliveryAddressPayload(source) {
         street: source.street ?? "",
         house: source.house ?? "",
         entrance: source.entrance ?? null,
+        floor: source.floor ?? null,
         apartment: source.apartment ?? null,
     };
 }
@@ -257,6 +258,7 @@ export function formatServerDeliveryLine(delivery) {
     return [
         address.street,
         address.house && `д. ${address.house}`,
+        address.floor && `эт. ${address.floor}`,
         address.apartment && `кв. ${address.apartment}`,
     ]
         .filter(Boolean)

@@ -145,6 +145,8 @@ final class OrderViewSchema
                 ->label('Дом'),
             TextInput::make('delivery_entrance')
                 ->label('Подъезд'),
+            TextInput::make('delivery_floor')
+                ->label('Этаж'),
             TextInput::make('delivery_apartment')
                 ->label('Квартира'),
             TextInput::make('delivery_scheduled_at')

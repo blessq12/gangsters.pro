@@ -70,6 +70,9 @@ final class ClientViewSchema
                                 TextInput::make('entrance')
                                     ->label('Подъезд')
                                     ->placeholder('—'),
+                                TextInput::make('floor')
+                                    ->label('Этаж')
+                                    ->placeholder('—'),
                                 TextInput::make('apartment')
                                     ->label('Квартира')
                                     ->placeholder('—'),

@@ -150,12 +150,14 @@ const canIncrementPersons = computed(
                 :street="guestAddressDraft.street"
                 :house="guestAddressDraft.house"
                 :entrance="guestAddressDraft.entrance"
+                :floor="guestAddressDraft.floor"
                 :apartment="guestAddressDraft.apartment"
                 :street-error="deliveryFieldErrors.get('street')"
                 :house-error="deliveryFieldErrors.get('house')"
                 @update:street="patchGuestAddressDraft({ street: $event })"
                 @update:house="patchGuestAddressDraft({ house: $event })"
                 @update:entrance="patchGuestAddressDraft({ entrance: $event })"
+                @update:floor="patchGuestAddressDraft({ floor: $event })"
                 @update:apartment="patchGuestAddressDraft({ apartment: $event })"
             />
         </CheckoutSection>

@@ -73,6 +73,7 @@ export const checkoutDesign = {
         guestIsland: `${nestedCard} space-y-2 px-3 py-3`,
         grid2: "grid grid-cols-1 gap-2 md:grid-cols-2",
         grid3: "grid grid-cols-3 gap-2",
+        grid4: "grid grid-cols-2 gap-2 sm:grid-cols-4",
         addressEmptyHint: `${nestedCard} border-dashed border-neutral-500/60 px-4 py-3 text-sm text-app-muted`,
         addressLi: `flex items-center gap-2 ${nestedCard} px-3 py-2`,
         labelAddress: "flex-1 cursor-pointer text-sm text-app-canvas-fg",

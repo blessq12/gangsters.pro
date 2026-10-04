@@ -18,6 +18,7 @@ const form = ref({
     street: "",
     house: "",
     entrance: "",
+    floor: "",
     apartment: "",
     make_default: false,
 });
@@ -53,6 +54,7 @@ function resetForm() {
         street: "",
         house: "",
         entrance: "",
+        floor: "",
         apartment: "",
         make_default: false,
     };
@@ -78,6 +80,7 @@ async function addAddress() {
             street: form.value.street,
             house: form.value.house,
             entrance: form.value.entrance || null,
+            floor: form.value.floor || null,
             apartment: form.value.apartment || null,
             make_default: form.value.make_default,
         });
@@ -131,13 +134,23 @@ function useAddress(id) {
                             {{ address.street }}, д. {{ address.house }}
                         </p>
                         <p
-                            v-if="address.entrance || address.apartment"
+                            v-if="address.entrance || address.floor || address.apartment"
                             :class="ad.metaLine"
                         >
                             <span v-if="address.entrance">
                                 подъезд {{ address.entrance }}
                             </span>
-                            <span v-if="address.entrance && address.apartment">
+                            <span
+                                v-if="address.entrance && (address.floor || address.apartment)"
+                            >
+                                ,
+                            </span>
+                            <span v-if="address.floor">
+                                эт. {{ address.floor }}
+                            </span>
+                            <span
+                                v-if="address.floor && address.apartment"
+                            >
                                 ,
                             </span>
                             <span v-if="address.apartment">
@@ -256,6 +269,12 @@ function useAddress(id) {
                             v-model="form.entrance"
                             type="text"
                             placeholder="Подъезд"
+                            :class="[s.inputGrid11, 'w-full']"
+                        />
+                        <input
+                            v-model="form.floor"
+                            type="text"
+                            placeholder="Этаж"
                             :class="[s.inputGrid11, 'w-full']"
                         />
                         <input

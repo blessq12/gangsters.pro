@@ -70,6 +70,8 @@ final class ClientApiTest extends ApiTestCase
             ->postJson('/api/client/addresses', [
                 'street' => 'Main Street',
                 'house' => '10',
+                'entrance' => '2',
+                'floor' => '4',
                 'apartment' => '5',
                 'make_default' => true,
             ]);
@@ -79,6 +81,9 @@ final class ClientApiTest extends ApiTestCase
         $this->assertCount(1, $addresses);
         $addressId = $addresses[0]['id'];
         $this->assertTrue($addresses[0]['is_default']);
+        $this->assertSame('2', $addresses[0]['entrance']);
+        $this->assertSame('4', $addresses[0]['floor']);
+        $this->assertSame('5', $addresses[0]['apartment']);
 
         $delete = $this->withBearer($account['token'])
             ->deleteJson('/api/client/addresses/'.$addressId);

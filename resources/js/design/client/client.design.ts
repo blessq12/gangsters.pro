@@ -49,7 +49,7 @@ export const clientDesign = {
         loginFooterSep: "text-[11px] text-app-muted",
         passwordResetNotice: "text-sm leading-relaxed text-app-accent",
         addressGrid: "grid grid-cols-2 gap-2",
-        addressDetailsGrid: "grid grid-cols-3 gap-2",
+        addressDetailsGrid: "grid grid-cols-2 gap-2 sm:grid-cols-4",
     },
 
     profileView: {
