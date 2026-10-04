@@ -11,6 +11,10 @@ import {
     CHECKOUT_LOADING_LABELS,
     createOrderDraftPreviewScheduler,
 } from "./session";
+import {
+    normalizeDeliveryComment,
+    normalizePersonsCount,
+} from "../domain/checkoutServerMappers";
 const GUEST_ADDRESS_ZONE_KEYS = new Set(["street", "house"]);
 
 function createEmptyGuestAddressDraft() {
@@ -201,7 +205,15 @@ export function useCheckoutDeliveryStep({
     }
 
     function setDeliveryComment(comment) {
-        checkoutIntent.setDeliveryInfo({ comment });
+        checkoutIntent.setDeliveryInfo({
+            comment: normalizeDeliveryComment(comment),
+        });
+    }
+
+    function setDeliveryPersons(persons) {
+        checkoutIntent.setDeliveryInfo({
+            persons: normalizePersonsCount(persons),
+        });
     }
 
     function patchGuestAddressDraft(partial) {
@@ -366,6 +378,7 @@ export function useCheckoutDeliveryStep({
         setDeliveryMethod,
         toggleNewAddressOpen,
         setDeliveryComment,
+        setDeliveryPersons,
         patchGuestAddressDraft,
         selectAddress,
         handleCreateAddress,

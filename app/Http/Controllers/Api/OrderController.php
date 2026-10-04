@@ -39,6 +39,7 @@ final class OrderController extends Controller
             'address.entrance' => ['nullable', 'string', 'max:64'],
             'address.apartment' => ['nullable', 'string', 'max:64'],
             'delivery_comment' => ['nullable', 'string', 'max:1000'],
+            'persons' => ['nullable', 'integer', 'min:1', 'max:99'],
             'scheduled_at' => ['nullable', 'string', 'max:64'],
             'payment_method' => ['nullable', 'string', 'max:32'],
             'change_from_rubles' => ['nullable', 'integer', 'min:0'],
@@ -69,6 +70,7 @@ final class OrderController extends Controller
             client: $client,
             address: is_array($validated['address'] ?? null) ? $validated['address'] : null,
             deliveryComment: $validated['delivery_comment'] ?? null,
+            persons: isset($validated['persons']) ? (int) $validated['persons'] : 1,
             scheduledAt: $validated['scheduled_at'] ?? null,
             paymentMethod: (string) ($validated['payment_method'] ?? 'cash'),
             changeFromRubles: isset($validated['change_from_rubles'])

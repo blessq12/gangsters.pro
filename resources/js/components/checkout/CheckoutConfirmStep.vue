@@ -89,6 +89,14 @@ const deliveryComment = computed(() => {
         : null;
 });
 
+const personsLabel = computed(() => {
+    const persons = Number(serverDelivery.value?.persons);
+    if (!Number.isFinite(persons) || persons < 1) {
+        return null;
+    }
+    return String(Math.trunc(persons));
+});
+
 onMounted(() => {
     if (checkoutStore.hasCartItems) {
         void refreshOrderDraftPreview(checkoutStore).catch(() => {});
@@ -127,6 +135,12 @@ onMounted(() => {
                         v-if="isCourierDelivery"
                         label="Адрес"
                         :value="deliveryAddressLine || '—'"
+                        @edit="goToFulfillment"
+                    />
+                    <CheckoutSummaryRow
+                        v-if="personsLabel"
+                        label="Персон"
+                        :value="personsLabel"
                         @edit="goToFulfillment"
                     />
                     <CheckoutSummaryRow

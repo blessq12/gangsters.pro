@@ -3,6 +3,7 @@
 namespace App\Infrastructure\Integration\Frontpad;
 
 use App\Domain\Order\Event\OrderCreated;
+use App\Shared\ValueObject\PhoneNumber;
 use InvalidArgumentException;
 
 /**
@@ -26,7 +27,7 @@ final class FrontpadOrderMapper
             'mail' => $this->truncate((string) ($client['email'] ?? ''), 50),
             'descr' => $this->buildDescription($event),
             'pay' => $this->resolvePayCode((string) ($payment['method'] ?? 'cash')),
-            'person' => $this->resolvePersonCount(),
+            'person' => $this->resolvePersonCount($delivery),
             'score' => 0,
             'sale' => 0,
             'sale_amount' => 0,
@@ -240,11 +241,25 @@ final class FrontpadOrderMapper
         return $sku !== '' ? $sku : null;
     }
 
-    private function resolvePersonCount(): int
+    /**
+     * @param  array<string, mixed>  $delivery
+     */
+    private function resolvePersonCount(array $delivery): int
     {
-        $person = config('frontpad.person');
+        if (! array_key_exists('persons', $delivery) || ! is_numeric($delivery['persons'])) {
+            throw new InvalidArgumentException(
+                'delivery.persons обязателен для выгрузки заказа в Frontpad.',
+            );
+        }
 
-        return min(max((int) ($person ?? 1), 1), 99);
+        $person = (int) $delivery['persons'];
+        if ($person < 1 || $person > 99) {
+            throw new InvalidArgumentException(
+                'delivery.persons должен быть в диапазоне 1–99.',
+            );
+        }
+
+        return $person;
     }
 
     private function normalizeProductArticle(string $article): int|string
@@ -258,9 +273,12 @@ final class FrontpadOrderMapper
 
     private function normalizePhone(?string $phone): string
     {
-        $digits = preg_replace('/\D+/', '', (string) $phone) ?? '';
+        $formatted = PhoneNumber::tryFormatFromRaw($phone);
+        if ($formatted !== null) {
+            return $formatted;
+        }
 
-        return $this->truncate($digits, 50);
+        return $this->truncate(trim((string) $phone), 50);
     }
 
     private function formatScheduledAt(string $scheduledAt): string

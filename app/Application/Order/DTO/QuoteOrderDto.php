@@ -17,6 +17,7 @@ final readonly class QuoteOrderDto
         public array $client,
         public ?array $address = null,
         public ?string $deliveryComment = null,
+        public int $persons = 1,
         public ?string $scheduledAt = null,
         public string $paymentMethod = 'cash',
         public ?int $changeFromRubles = null,

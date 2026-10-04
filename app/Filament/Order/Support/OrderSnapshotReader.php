@@ -45,6 +45,9 @@ final class OrderSnapshotReader
             'delivery_entrance' => (string) ($address['entrance'] ?? '—'),
             'delivery_apartment' => (string) ($address['apartment'] ?? '—'),
             'delivery_comment' => (string) ($delivery['comment'] ?? '—'),
+            'delivery_persons' => isset($delivery['persons'])
+                ? (string) (int) $delivery['persons']
+                : '—',
             'delivery_scheduled_at' => (string) ($delivery['scheduled_at'] ?? '—'),
             'payment_method' => self::paymentMethodLabel((string) ($payment['method'] ?? '')),
             'payment_change_from' => isset($payment['change_from_rubles'])

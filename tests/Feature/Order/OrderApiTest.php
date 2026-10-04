@@ -40,9 +40,52 @@ final class OrderApiTest extends ApiTestCase
             ]);
 
         $this->assertSame('pickup', $response->json('data.delivery.method'));
+        $this->assertSame(1, (int) $response->json('data.delivery.persons'));
         $this->assertGreaterThan(0, (int) $response->json('data.totals.items_rubles'));
         $this->assertCount(1, $response->json('data.cart.lines'));
         $this->assertSame(2, (int) $response->json('data.cart.lines.0.quantity'));
+    }
+
+    public function test_quote_accepts_persons_count(): void
+    {
+        $productId = $this->activeProductId();
+
+        $response = $this->postJson('/api/order/quote', [
+            'lines' => [
+                ['product_id' => $productId, 'quantity' => 1],
+            ],
+            'delivery_method' => 'pickup',
+            'payment_method' => 'cash',
+            'persons' => 3,
+            'client' => [
+                'kind' => 'guest',
+                'name' => 'Guest',
+                'phone' => '+7 (900) 111-22-33',
+            ],
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('data.delivery.persons', 3);
+    }
+
+    public function test_quote_rejects_persons_out_of_range(): void
+    {
+        $productId = $this->activeProductId();
+
+        $response = $this->postJson('/api/order/quote', [
+            'lines' => [
+                ['product_id' => $productId, 'quantity' => 1],
+            ],
+            'delivery_method' => 'pickup',
+            'persons' => 100,
+            'client' => [
+                'kind' => 'guest',
+                'name' => 'Guest',
+                'phone' => '+7 (900) 111-22-33',
+            ],
+        ]);
+
+        $response->assertStatus(422);
     }
 
     public function test_quote_rejects_empty_cart(): void

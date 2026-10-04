@@ -224,6 +224,7 @@ final class QuoteOrderUseCase
             'method' => $deliveryMethod,
             'address' => $deliveryMethod === 'courier' ? $input->address : null,
             'comment' => $input->deliveryComment,
+            'persons' => $input->persons,
             'scheduled_at' => $input->scheduledAt,
             'delivery_fee_rubles' => $deliveryFeeRubles,
             'delivery_available' => $deliveryAvailable,

@@ -12,6 +12,7 @@ import {
 } from "./application/session";
 import {
     buildCatalogCartLinePayload,
+    CHECKOUT_PERSONS_DEFAULT,
     mapClientToGuestContact,
     mapDeliveryToLocal,
     mapPaymentToLocal,
@@ -58,6 +59,7 @@ export const useCheckoutStore = defineStore("checkout", {
             method: null,
             address: null,
             comment: "",
+            persons: CHECKOUT_PERSONS_DEFAULT,
             scheduledAt: null,
         },
         paymentInfo: {
@@ -207,6 +209,8 @@ export const useCheckoutStore = defineStore("checkout", {
                             ...this.deliveryInfo,
                             method: mapped.method ?? this.deliveryInfo.method,
                             comment: mapped.comment ?? this.deliveryInfo.comment,
+                            persons:
+                                mapped.persons ?? this.deliveryInfo.persons,
                             scheduledAt:
                                 mapped.scheduledAt ?? this.deliveryInfo.scheduledAt,
                         };
@@ -461,6 +465,7 @@ export const useCheckoutStore = defineStore("checkout", {
                 method: null,
                 address: null,
                 comment: "",
+                persons: CHECKOUT_PERSONS_DEFAULT,
                 scheduledAt: null,
             };
             this.paymentInfo = {

@@ -149,6 +149,8 @@ final class OrderViewSchema
                 ->label('Квартира'),
             TextInput::make('delivery_scheduled_at')
                 ->label('Время доставки'),
+            TextInput::make('delivery_persons')
+                ->label('Персон'),
             TextInput::make('delivery_comment')
                 ->label('Комментарий')
                 ->columnSpanFull(),

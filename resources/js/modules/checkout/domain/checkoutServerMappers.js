@@ -93,12 +93,34 @@ export function mapClientToGuestContact(client) {
     };
 }
 
+export const CHECKOUT_PERSONS_MIN = 1;
+export const CHECKOUT_PERSONS_MAX = 99;
+export const CHECKOUT_PERSONS_DEFAULT = 1;
+export const CHECKOUT_DELIVERY_COMMENT_MAX = 100;
+
+export function normalizeDeliveryComment(value) {
+    return String(value ?? "").slice(0, CHECKOUT_DELIVERY_COMMENT_MAX);
+}
+
+export function normalizePersonsCount(value) {
+    const n = Number(value);
+    if (!Number.isFinite(n)) {
+        return CHECKOUT_PERSONS_DEFAULT;
+    }
+
+    return Math.min(
+        CHECKOUT_PERSONS_MAX,
+        Math.max(CHECKOUT_PERSONS_MIN, Math.trunc(n)),
+    );
+}
+
 export function mapDeliveryToLocal(delivery) {
     if (!delivery || typeof delivery !== "object") {
         return {
             method: null,
             address: null,
             comment: "",
+            persons: CHECKOUT_PERSONS_DEFAULT,
             scheduledAt: null,
         };
     }
@@ -106,7 +128,8 @@ export function mapDeliveryToLocal(delivery) {
     return {
         method: delivery.method ?? null,
         address: delivery.address ?? null,
-        comment: delivery.comment ?? "",
+        comment: normalizeDeliveryComment(delivery.comment),
+        persons: normalizePersonsCount(delivery.persons),
         scheduledAt: delivery.scheduled_at ?? null,
     };
 }
@@ -187,7 +210,10 @@ export function buildDeliveryPayload(store, selectedAddress = null) {
     return {
         method,
         address: method === "courier" ? address : null,
-        comment: String(store.deliveryInfo.comment || "").trim() || undefined,
+        comment:
+            normalizeDeliveryComment(store.deliveryInfo.comment).trim() ||
+            undefined,
+        persons: normalizePersonsCount(store.deliveryInfo.persons),
         scheduled_at: store.deliveryInfo.scheduledAt || undefined,
     };
 }

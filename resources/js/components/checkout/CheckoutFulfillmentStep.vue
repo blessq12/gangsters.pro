@@ -6,12 +6,13 @@ import { useCheckoutFlowContext } from "../../modules/checkout/application/flowC
 import { CHECKOUT_NAV_LABELS } from "../../modules/checkout/application/session";
 import { useCheckoutNavTotal } from "../../modules/checkout/application/preview";
 import {
+    CHECKOUT_DELIVERY_COMMENT_MAX,
     CHECKOUT_DELIVERY_METHOD_IDS,
     CHECKOUT_DELIVERY_METHOD_META,
-} from "../../modules/checkout/domain/checkoutServerMappers";
-import {
     CHECKOUT_PAYMENT_METHOD_IDS,
     CHECKOUT_PAYMENT_METHOD_META,
+    CHECKOUT_PERSONS_MAX,
+    CHECKOUT_PERSONS_MIN,
 } from "../../modules/checkout/domain/checkoutServerMappers";
 import { useContentStore } from "../../modules/content/store";
 import { kitchenAddressLabelOrFallback } from "../../modules/content/application/company";
@@ -26,7 +27,9 @@ import CheckoutStepFrame from "./CheckoutStepFrame.vue";
 import CheckoutStepNav from "./CheckoutStepNav.vue";
 import { useOrderPreview } from "../../modules/checkout/application/preview";
 
-const s = useAppDesign().components.checkout.shared;
+const checkoutDesign = useAppDesign().components.checkout;
+const s = checkoutDesign.shared;
+const c = checkoutDesign.cart;
 
 const {
     checkoutState,
@@ -34,6 +37,7 @@ const {
     goToFulfillmentNext,
     setDeliveryMethod,
     setDeliveryComment,
+    setDeliveryPersons,
     guestAddressDraft,
     patchGuestAddressDraft,
     scheduleDeliveryPreview,
@@ -92,6 +96,18 @@ const deliveryOptions = computed(() =>
 
 const deliveryUnavailable = computed(
     () => isCourier.value && totals.value.inZone === false,
+);
+
+const personsCount = computed(() =>
+    Number(checkoutIntent.deliveryInfo.persons) || CHECKOUT_PERSONS_MIN,
+);
+
+const canDecrementPersons = computed(
+    () => personsCount.value > CHECKOUT_PERSONS_MIN,
+);
+
+const canIncrementPersons = computed(
+    () => personsCount.value < CHECKOUT_PERSONS_MAX,
 );
 </script>
 
@@ -160,11 +176,36 @@ const deliveryUnavailable = computed(
             <ContactsKitchenMap />
         </CheckoutSection>
 
+        <CheckoutSection title="Количество персон">
+            <div :class="c.qtyBar">
+                <button
+                    type="button"
+                    :class="c.qtyBtn"
+                    :disabled="!canDecrementPersons"
+                    @click="setDeliveryPersons(personsCount - 1)"
+                >
+                    –
+                </button>
+                <span :class="c.qtyLabel">
+                    {{ personsCount }}
+                </span>
+                <button
+                    type="button"
+                    :class="c.qtyBtn"
+                    :disabled="!canIncrementPersons"
+                    @click="setDeliveryPersons(personsCount + 1)"
+                >
+                    +
+                </button>
+            </div>
+        </CheckoutSection>
+
         <CheckoutSection title="Пожелания к заказу">
             <textarea
                 rows="2"
                 :class="s.textareaFlow"
                 placeholder="Время, упаковка, звонок перед доставкой"
+                :maxlength="CHECKOUT_DELIVERY_COMMENT_MAX"
                 :value="checkoutIntent.deliveryInfo.comment"
                 @input="setDeliveryComment($event.target.value)"
             />

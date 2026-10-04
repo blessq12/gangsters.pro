@@ -9,6 +9,8 @@ import {
     buildClientPayload,
     buildDeliveryPayload,
     buildPaymentPayload,
+    normalizeDeliveryComment,
+    normalizePersonsCount,
 } from "../domain/checkoutServerMappers";
 import { isComplementCartLine } from "../domain/normalizeCheckoutCart";
 import { adaptQuoteToCheckoutSnapshot } from "../domain/normalizeOrderPreview";
@@ -144,6 +146,14 @@ export function normalizeCheckoutSessionForms(forms) {
     }
 
     delete normalized.customerComment;
+
+    const deliveryInfo =
+        normalized.deliveryInfo && typeof normalized.deliveryInfo === "object"
+            ? { ...normalized.deliveryInfo }
+            : {};
+    deliveryInfo.persons = normalizePersonsCount(deliveryInfo.persons);
+    deliveryInfo.comment = normalizeDeliveryComment(deliveryInfo.comment);
+    normalized.deliveryInfo = deliveryInfo;
 
     return normalized;
 }
@@ -329,6 +339,9 @@ export function buildQuoteOrderPayload(
         client: clientPayload,
         address: deliveryPayload?.address ?? null,
         delivery_comment: deliveryPayload?.comment,
+        persons:
+            deliveryPayload?.persons ??
+            normalizePersonsCount(store.deliveryInfo?.persons),
         scheduled_at: deliveryPayload?.scheduled_at,
         payment_method: paymentPayload?.method ?? "cash",
         change_from_rubles: paymentPayload?.change_from_rubles,
