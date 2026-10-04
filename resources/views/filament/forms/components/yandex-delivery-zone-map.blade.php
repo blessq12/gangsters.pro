@@ -3,10 +3,34 @@
     // Relative URL: same origin as admin (APP_URL mismatch breaks postMessage).
     $editorUrl = route('filament.admin.delivery-zone-map-editor', [], false);
     $record = $getRecord();
+    $deliveryProductOptions = \App\Infrastructure\Catalog\Model\PRD_Product::query()
+        ->where('catalog_kind', \App\Domain\Catalog\Enum\CatalogItemKind::Product->value)
+        ->where('status', \App\Domain\Catalog\Enum\ProductStatus::Active->value)
+        ->where('is_system', true)
+        ->whereNull('archived_at')
+        ->whereNotNull('sku')
+        ->where('sku', '!=', '')
+        ->orderBy('name')
+        ->get(['id', 'name', 'sku'])
+        ->map(static function (\App\Infrastructure\Catalog\Model\PRD_Product $product): array {
+            $sku = trim((string) ($product->sku ?? ''));
+            $label = (string) $product->name;
+            if ($sku !== '') {
+                $label .= ' · '.$sku;
+            }
+
+            return [
+                'id' => (int) $product->id,
+                'label' => $label,
+            ];
+        })
+        ->values()
+        ->all();
     $initialPayload = [
         'zones' => $getState() ?? [],
         'kitchenLatitude' => $record?->kitchen_latitude,
         'kitchenLongitude' => $record?->kitchen_longitude,
+        'deliveryProductOptions' => $deliveryProductOptions,
     ];
     $zonesStatePath = $getStatePath();
     $kitchenAddressPath = $field->getKitchenAddressStatePath();
@@ -176,6 +200,9 @@
                         this.readWireValue(this.kitchenLngPath) ??
                             this.initialPayload?.kitchenLongitude ??
                             null,
+                    ),
+                    deliveryProductOptions: cloneForPostMessage(
+                        this.initialPayload?.deliveryProductOptions ?? [],
                     ),
                 };
             },

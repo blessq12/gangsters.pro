@@ -218,6 +218,13 @@ final class QuoteOrderUseCase
         );
         $deliveryFeeRubles = intdiv($deliveryFeeKopecks, 100);
 
+        if ($deliveryFeeRubles > 0 && $zone !== null) {
+            $deliveryLine = $this->resolveDeliveryFeeLine($zone->deliveryProductId());
+            if ($deliveryLine !== null) {
+                $cartLines[] = $deliveryLine;
+            }
+        }
+
         $client = $this->resolveClientSnapshot($input->client);
 
         $delivery = [
@@ -308,6 +315,35 @@ final class QuoteOrderUseCase
         }
 
         return $gift;
+    }
+
+    /**
+     * Неявная линия доставки для Frontpad. Без товара/SKU — null (заказ всё равно ок).
+     *
+     * @return array<string, mixed>|null
+     */
+    private function resolveDeliveryFeeLine(?int $deliveryProductId): ?array
+    {
+        if ($deliveryProductId === null || $deliveryProductId < 1) {
+            return null;
+        }
+
+        $product = $this->catalog->findProductById($deliveryProductId);
+        if ($product === null || ($product['is_active'] ?? false) !== true) {
+            return null;
+        }
+
+        $sku = $product['sku'] ?? null;
+        if (! is_string($sku) || trim($sku) === '') {
+            return null;
+        }
+
+        return $this->linePayload(
+            product: $product,
+            quantity: 1,
+            unitPriceRubles: (int) ($product['price_rubles'] ?? 0),
+            kind: 'delivery',
+        );
     }
 
     /**

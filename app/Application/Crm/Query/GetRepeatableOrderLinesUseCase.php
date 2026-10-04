@@ -29,8 +29,9 @@ final class GetRepeatableOrderLinesUseCase
                 continue;
             }
 
-            $kind = (string) ($line['kind'] ?? 'user');
-            if ($kind === 'gift' || $kind === 'complement') {
+            $payload = is_array($line['payload'] ?? null) ? $line['payload'] : [];
+            $kind = (string) ($line['kind'] ?? $payload['kind'] ?? 'user');
+            if ($kind === 'gift' || $kind === 'complement' || $kind === 'delivery') {
                 continue;
             }
 

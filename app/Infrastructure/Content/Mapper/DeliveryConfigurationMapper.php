@@ -87,12 +87,17 @@ final class DeliveryConfigurationMapper
             $name = 'Зона';
         }
 
+        $deliveryProductId = isset($raw['delivery_product_id'])
+            ? (int) $raw['delivery_product_id']
+            : 0;
+
         return new DeliveryZone(
             id: $id,
             name: $name,
             deliveryFeeKopecks: max(0, (int) ($raw['delivery_fee_kopecks'] ?? 0)),
             isRemote: (bool) ($raw['is_remote'] ?? false),
             geometry: $geometry,
+            deliveryProductId: $deliveryProductId > 0 ? $deliveryProductId : null,
         );
     }
 

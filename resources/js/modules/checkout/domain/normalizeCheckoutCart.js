@@ -108,6 +108,26 @@ export function isGiftCartLine(item) {
 }
 
 /**
+ * @param {object|null|undefined} item
+ */
+export function isDeliveryCartLine(item) {
+    if (!item || typeof item !== "object") {
+        return false;
+    }
+
+    if (item.lineKind === "delivery") {
+        return true;
+    }
+
+    const payloadKind = item.payload?.kind;
+    if (payloadKind === "delivery") {
+        return true;
+    }
+
+    return String(item.lineKey || "").startsWith("delivery:");
+}
+
+/**
  * Системные строки визарда без подарка (подарок — в саммари).
  *
  * @param {object[]|null|undefined} items
@@ -117,7 +137,9 @@ export function wizardVisibleSystemItems(items) {
         return [];
     }
 
-    return items.filter((item) => !isGiftCartLine(item));
+    return items.filter(
+        (item) => !isGiftCartLine(item) && !isDeliveryCartLine(item),
+    );
 }
 
 /**
@@ -128,7 +150,12 @@ export function wizardNonComplementSystemItems(items) {
         return [];
     }
 
-    return items.filter((item) => !isComplementCartLine(item) && !isGiftCartLine(item));
+    return items.filter(
+        (item) =>
+            !isComplementCartLine(item)
+            && !isGiftCartLine(item)
+            && !isDeliveryCartLine(item),
+    );
 }
 
 /**
@@ -231,8 +258,13 @@ export function normalizeCheckoutCartBlock(cart) {
                 ? "gift"
                 : payload?.kind === "complement"
                   ? "complement"
-                  : "user";
-            const isSystem = lineKind === "gift" || lineKind === "complement";
+                  : payload?.kind === "delivery"
+                    ? "delivery"
+                    : "user";
+            const isSystem =
+                lineKind === "gift"
+                || lineKind === "complement"
+                || lineKind === "delivery";
 
             return {
                 lineKey: `${lineKind}:${productId}`,

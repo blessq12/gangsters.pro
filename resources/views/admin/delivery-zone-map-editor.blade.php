@@ -232,6 +232,13 @@
                 Отдалённый район
             </label>
             <p class="hint">Если зона отдалённая — бесплатная доставка от порога на неё не действует.</p>
+            <div class="field">
+                <label for="zoneDeliveryProduct">Товар доставки (Frontpad)</label>
+                <select id="zoneDeliveryProduct" disabled>
+                    <option value="">— не выбран —</option>
+                </select>
+            </div>
+            <p class="hint">System-товар с SKU: неявно попадёт в заказ при платной доставке по зоне.</p>
         </section>
 
         <div class="actions">
@@ -286,12 +293,15 @@
     let initialized = false;
     let drawing = false;
     let dirty = false;
+    /** @type {Array<{id: number, label: string}>} */
+    let deliveryProductOptions = [];
 
     const statusEl = document.getElementById('status');
     const zoneListEl = document.getElementById('zoneList');
     const zoneName = document.getElementById('zoneName');
     const zoneFee = document.getElementById('zoneFee');
     const zoneRemote = document.getElementById('zoneRemote');
+    const zoneDeliveryProduct = document.getElementById('zoneDeliveryProduct');
     const deleteZoneBtn = document.getElementById('deleteZoneBtn');
     const redrawBtn = document.getElementById('redrawBtn');
     const saveBtn = document.getElementById('saveBtn');
@@ -368,13 +378,45 @@
 
         return rawZones
             .filter((z) => z && typeof z === 'object' && z.geometry && z.geometry.type)
-            .map((z, index) => ({
-                id: String(z.id || createZoneId()),
-                name: String(z.name || ('Зона ' + (index + 1))),
-                delivery_fee_kopecks: Math.max(0, Number(z.delivery_fee_kopecks) || 0),
-                is_remote: Boolean(z.is_remote),
-                geometry: z.geometry,
-            }));
+            .map((z, index) => {
+                const productId = Number(z.delivery_product_id);
+                return {
+                    id: String(z.id || createZoneId()),
+                    name: String(z.name || ('Зона ' + (index + 1))),
+                    delivery_fee_kopecks: Math.max(0, Number(z.delivery_fee_kopecks) || 0),
+                    is_remote: Boolean(z.is_remote),
+                    delivery_product_id:
+                        Number.isFinite(productId) && productId > 0 ? productId : null,
+                    geometry: z.geometry,
+                };
+            });
+    }
+
+    function renderDeliveryProductOptions() {
+        const current = zoneDeliveryProduct.value;
+        zoneDeliveryProduct.innerHTML = '';
+        const empty = document.createElement('option');
+        empty.value = '';
+        empty.textContent = '— не выбран —';
+        zoneDeliveryProduct.appendChild(empty);
+
+        deliveryProductOptions.forEach((option) => {
+            const id = Number(option?.id);
+            if (!Number.isFinite(id) || id < 1) {
+                return;
+            }
+            const el = document.createElement('option');
+            el.value = String(id);
+            el.textContent = String(option.label || ('#' + id));
+            zoneDeliveryProduct.appendChild(el);
+        });
+
+        if (
+            current &&
+            Array.from(zoneDeliveryProduct.options).some((opt) => opt.value === current)
+        ) {
+            zoneDeliveryProduct.value = current;
+        }
     }
 
     function zonesPayload() {
@@ -387,6 +429,7 @@
                 name: z.name,
                 delivery_fee_kopecks: z.delivery_fee_kopecks,
                 is_remote: z.is_remote,
+                delivery_product_id: z.delivery_product_id || null,
                 geometry: z.geometry,
             })),
             kitchenLatitude: kitchenCoords.lat,
@@ -432,6 +475,7 @@
         zoneName.disabled = !enabled;
         zoneFee.disabled = !enabled;
         zoneRemote.disabled = !enabled;
+        zoneDeliveryProduct.disabled = !enabled;
         deleteZoneBtn.disabled = !enabled;
         redrawBtn.disabled = !enabled;
     }
@@ -442,6 +486,7 @@
             zoneName.value = '';
             zoneFee.value = '';
             zoneRemote.checked = false;
+            zoneDeliveryProduct.value = '';
             setFormEnabled(false);
             return;
         }
@@ -450,6 +495,9 @@
         zoneName.value = zone.name;
         zoneFee.value = String(Math.round(zone.delivery_fee_kopecks / 100));
         zoneRemote.checked = zone.is_remote;
+        const productId = Number(zone.delivery_product_id);
+        zoneDeliveryProduct.value =
+            Number.isFinite(productId) && productId > 0 ? String(productId) : '';
     }
 
     function applySelectedFieldsToZone() {
@@ -464,6 +512,9 @@
             ? Math.max(0, Math.round(feeRub * 100))
             : zone.delivery_fee_kopecks;
         zone.is_remote = zoneRemote.checked;
+        const productId = Number(zoneDeliveryProduct.value);
+        zone.delivery_product_id =
+            Number.isFinite(productId) && productId > 0 ? productId : null;
     }
 
     function zoneColor(index) {
@@ -782,6 +833,7 @@
             name: 'Зона ' + (zones.length + 1),
             delivery_fee_kopecks: 40000,
             is_remote: false,
+            delivery_product_id: null,
             geometry: {
                 type: 'Polygon',
                 coordinates: [],
@@ -889,6 +941,11 @@
                 payload.kitchenLatitude ?? null,
                 payload.kitchenLongitude ?? null,
             );
+
+            deliveryProductOptions = Array.isArray(payload.deliveryProductOptions)
+                ? payload.deliveryProductOptions
+                : [];
+            renderDeliveryProductOptions();
 
             // Всегда стартуем с Томска — не «прыгаем» на мир.
             focusTomsk();
@@ -1008,6 +1065,12 @@
     });
 
     zoneRemote.addEventListener('change', () => {
+        applySelectedFieldsToZone();
+        renderZoneList();
+        notifyChange(true);
+    });
+
+    zoneDeliveryProduct.addEventListener('change', () => {
         applySelectedFieldsToZone();
         renderZoneList();
         notifyChange(true);

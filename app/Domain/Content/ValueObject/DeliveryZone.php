@@ -16,6 +16,7 @@ final class DeliveryZone
         private readonly int $deliveryFeeKopecks,
         private readonly bool $isRemote,
         private readonly array $geometry,
+        private readonly ?int $deliveryProductId = null,
     ) {}
 
     public function id(): string
@@ -39,6 +40,14 @@ final class DeliveryZone
     }
 
     /**
+     * System-товар доставки для Frontpad (SKU зоны). Null — линия не добавляется.
+     */
+    public function deliveryProductId(): ?int
+    {
+        return $this->deliveryProductId;
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function geometry(): array
@@ -52,6 +61,7 @@ final class DeliveryZone
      *     name: string,
      *     delivery_fee_kopecks: int,
      *     is_remote: bool,
+     *     delivery_product_id: int|null,
      *     geometry: array<string, mixed>
      * }
      */
@@ -62,6 +72,7 @@ final class DeliveryZone
             'name' => $this->name,
             'delivery_fee_kopecks' => $this->deliveryFeeKopecks,
             'is_remote' => $this->isRemote,
+            'delivery_product_id' => $this->deliveryProductId,
             'geometry' => $this->geometry,
         ];
     }

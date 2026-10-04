@@ -215,7 +215,7 @@ final class Order
                 ? (string) (($line['payload']['kind'] ?? '') ?: 'user')
                 : 'user';
 
-            if (in_array($kind, ['gift', 'complement'], true)) {
+            if (in_array($kind, ['gift', 'complement', 'delivery'], true)) {
                 continue;
             }
 

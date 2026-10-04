@@ -72,6 +72,7 @@ class ManageDelivery extends EditRecord
                     'name' => 'Основная',
                     'delivery_fee_kopecks' => max(0, (int) ($data['delivery_fee_kopecks'] ?? 0)),
                     'is_remote' => false,
+                    'delivery_product_id' => null,
                     'geometry' => $legacy,
                 ]];
             } else {
@@ -203,11 +204,16 @@ class ManageDelivery extends EditRecord
                 $name = 'Зона';
             }
 
+            $deliveryProductId = isset($raw['delivery_product_id'])
+                ? (int) $raw['delivery_product_id']
+                : 0;
+
             $zones[] = [
                 'id' => $id,
                 'name' => $name,
                 'delivery_fee_kopecks' => max(0, (int) ($raw['delivery_fee_kopecks'] ?? 0)),
                 'is_remote' => (bool) ($raw['is_remote'] ?? false),
+                'delivery_product_id' => $deliveryProductId > 0 ? $deliveryProductId : null,
                 'geometry' => $geometry,
             ];
         }
