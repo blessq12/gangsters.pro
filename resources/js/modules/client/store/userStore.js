@@ -17,6 +17,7 @@ import {
     requestPasswordResetRequest,
 } from "../api";
 import { isAxiosUnauthorized } from "../../../platform/mapApiError";
+import { resolvePreferredAddressId } from "../application/resolvePreferredAddressId";
 
 const USER_KEY = "gangsters_user";
 
@@ -92,6 +93,8 @@ export const useUserStore = defineStore("user", {
                     this.selectedAddressId = parsed.selectedAddressId;
                 }
 
+                this.ensureSelectedAddress({ persist: false, emit: false });
+
                 // Токен последним: один persist уже с полным снимком.
                 if (parsed.token) {
                     this.setToken(parsed.token);
@@ -134,7 +137,39 @@ export const useUserStore = defineStore("user", {
         },
         setAddresses(addresses) {
             this.addresses = Array.isArray(addresses) ? addresses : [];
-            this.persist();
+            this.ensureSelectedAddress();
+        },
+        /**
+         * Гарантирует выбранный адрес: current → default → первый.
+         * @param {{ persist?: boolean, emit?: boolean }} [options]
+         * @returns {string|number|null}
+         */
+        ensureSelectedAddress(options = {}) {
+            const persist = options.persist !== false;
+            const emit = options.emit !== false;
+            const nextId = resolvePreferredAddressId(
+                this.addresses,
+                this.selectedAddressId,
+            );
+
+            if (this.selectedAddressId === nextId) {
+                if (persist) {
+                    this.persist();
+                }
+                return nextId;
+            }
+
+            this.selectedAddressId = nextId;
+            if (persist) {
+                this.persist();
+            }
+            if (emit && nextId != null) {
+                emitDomainEvent(DOMAIN_EVENTS.CLIENT_ADDRESS_SELECTED, {
+                    id: nextId,
+                });
+            }
+
+            return nextId;
         },
         upsertAddress(address) {
             if (!address || typeof address !== "object") return;
@@ -148,18 +183,11 @@ export const useUserStore = defineStore("user", {
                 this.addresses[idx] = { ...this.addresses[idx], ...address, id };
             }
 
-            if (!this.selectedAddressId) {
-                this.selectedAddressId = id;
-            }
-
-            this.persist();
+            this.ensureSelectedAddress();
         },
         removeAddress(id) {
             this.addresses = this.addresses.filter((a) => a.id !== id);
-            if (this.selectedAddressId === id) {
-                this.selectedAddressId = this.addresses[0]?.id ?? null;
-            }
-            this.persist();
+            this.ensureSelectedAddress();
         },
         selectAddress(id) {
             this.selectedAddressId = id;
@@ -278,6 +306,8 @@ export const useUserStore = defineStore("user", {
                 this.setAddresses(data.client.addresses);
                 if (data.client.default_address_id) {
                     this.selectAddress(data.client.default_address_id);
+                } else {
+                    this.ensureSelectedAddress();
                 }
             }
 
@@ -294,6 +324,8 @@ export const useUserStore = defineStore("user", {
                 this.setAddresses(data.client.addresses);
                 if (data.client.default_address_id) {
                     this.selectAddress(data.client.default_address_id);
+                } else {
+                    this.ensureSelectedAddress();
                 }
             }
 

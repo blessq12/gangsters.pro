@@ -26,11 +26,16 @@ export function useClientAddressSelectionModel() {
         userStore.selectAddress(id);
     }
 
+    function ensureSelectedAddress() {
+        return userStore.ensureSelectedAddress();
+    }
+
     return {
         addresses,
         selectedAddress,
         selectedAddressId,
         createAddress,
         selectAddress,
+        ensureSelectedAddress,
     };
 }

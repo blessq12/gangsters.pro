@@ -189,6 +189,12 @@ export function useCheckoutDeliveryStep({
         }
         const addressCount = userStore.addresses?.length ?? 0;
         isNewAddressOpen.value = addressCount === 0;
+
+        const selectedId = userStore.ensureSelectedAddress();
+        if (selectedId != null) {
+            deliveryFieldErrors.clearField("selectedAddress");
+            scheduleDeliveryPreview();
+        }
     }
 
     async function setDeliveryMethod(method) {
