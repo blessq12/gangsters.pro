@@ -4,6 +4,7 @@ namespace App\Infrastructure\Content\Mapper;
 
 use App\Domain\Content\Entity\Banner;
 use App\Infrastructure\Content\Model\MKT_Banner;
+use App\Infrastructure\Content\Support\PublicMediaUrl;
 
 final class BannerMapper
 {
@@ -11,8 +12,8 @@ final class BannerMapper
     {
         return new Banner(
             id: (int) $row->id,
-            imageDesktop: $this->nullableString($row->image_desktop),
-            imageMobile: $this->nullableString($row->image_mobile),
+            imageDesktop: PublicMediaUrl::resolve($this->nullableString($row->image_desktop)),
+            imageMobile: PublicMediaUrl::resolve($this->nullableString($row->image_mobile)),
             sortOrder: (int) ($row->sort_order ?? 0),
             isActive: (bool) $row->is_active,
         );

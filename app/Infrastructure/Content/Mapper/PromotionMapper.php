@@ -4,6 +4,7 @@ namespace App\Infrastructure\Content\Mapper;
 
 use App\Domain\Content\Entity\Promotion;
 use App\Infrastructure\Content\Model\MKT_Promotion;
+use App\Infrastructure\Content\Support\PublicMediaUrl;
 
 final class PromotionMapper
 {
@@ -13,7 +14,7 @@ final class PromotionMapper
             id: (int) $row->id,
             title: (string) $row->title,
             body: $this->nullableString($row->body),
-            image: $this->nullableString($row->image),
+            image: PublicMediaUrl::resolve($this->nullableString($row->image)),
             sortOrder: (int) ($row->sort_order ?? 0),
             isActive: (bool) $row->is_active,
         );
