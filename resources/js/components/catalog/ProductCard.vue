@@ -24,8 +24,6 @@ const {
     primaryThumb,
     imageSrcset,
     primaryTag,
-    isSet,
-    setCountLabel,
 } = useCatalogCardView(computed(() => props.product));
 
 const imageSizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw";
@@ -66,8 +64,6 @@ function handleIncrement() {
 
             <CatalogCardBadges
                 :product="product"
-                :is-set="isSet"
-                :set-count-label="setCountLabel"
                 :primary-tag="primaryTag"
                 variant="desktop"
             />
