@@ -25,7 +25,7 @@ final class PromotionPolicy
      *     outside_zone_at_threshold_fee_mode: string,
      *     is_active: bool
      * }  $deliveryBenefit
-     * @param  array{rolls_per_set: int, is_active: bool}  $complementSetBenefit
+     * @param  array{rolls_per_set: int, max_sets: int, is_active: bool}  $complementSetBenefit
      */
     public function __construct(
         private readonly int $id,
@@ -69,7 +69,7 @@ final class PromotionPolicy
     }
 
     /**
-     * @return array{rolls_per_set: int, is_active: bool}
+     * @return array{rolls_per_set: int, max_sets: int, is_active: bool}
      */
     public function complementSetBenefit(): array
     {

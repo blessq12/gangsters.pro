@@ -33,6 +33,7 @@ class ManagePromotionPolicy extends EditRecord
                 'delivery_benefit_active' => true,
                 'complement_set_benefit_active' => true,
                 'complement_set_rolls_per_set' => 2,
+                'complement_set_max_sets' => 3,
             ],
         );
 

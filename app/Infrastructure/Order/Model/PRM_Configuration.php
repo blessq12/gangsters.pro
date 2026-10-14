@@ -18,6 +18,7 @@ class PRM_Configuration extends Model
         'delivery_benefit_active',
         'complement_set_benefit_active',
         'complement_set_rolls_per_set',
+        'complement_set_max_sets',
     ];
 
     protected $casts = [
@@ -30,5 +31,6 @@ class PRM_Configuration extends Model
         'delivery_benefit_active' => 'boolean',
         'complement_set_benefit_active' => 'boolean',
         'complement_set_rolls_per_set' => 'integer',
+        'complement_set_max_sets' => 'integer',
     ];
 }

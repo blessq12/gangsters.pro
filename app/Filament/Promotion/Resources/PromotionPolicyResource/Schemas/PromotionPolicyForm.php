@@ -124,7 +124,7 @@ final class PromotionPolicyForm
         return [
             Section::make('Комплект дополнений')
                 ->columnSpanFull()
-                ->description('Роллы помечаются в каталоге («Считается как ролл»). Наборы дополнений — («Набор дополнений»). За каждые N роллов в корзине клиенту добавляется один комплект.')
+                ->description('Роллы помечаются в каталоге («Считается как ролл»). Наборы дополнений — («Набор дополнений»). За каждые N роллов в корзине клиенту добавляется один комплект, но не больше максимума.')
                 ->columns(2)
                 ->schema([
                     Toggle::make('complement_set_benefit_active')
@@ -136,6 +136,12 @@ final class PromotionPolicyForm
                         ->minValue(1)
                         ->required()
                         ->default(2),
+                    TextInput::make('complement_set_max_sets')
+                        ->label('Макс. комплектов')
+                        ->numeric()
+                        ->minValue(1)
+                        ->required()
+                        ->default(3),
                 ]),
         ];
     }

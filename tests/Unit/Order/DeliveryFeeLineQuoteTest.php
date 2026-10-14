@@ -204,6 +204,7 @@ final class DeliveryFeeLineQuoteTest extends TestCase
                     ],
                     complementSetBenefit: [
                         'rolls_per_set' => 2,
+                        'max_sets' => 3,
                         'is_active' => false,
                     ],
                 );

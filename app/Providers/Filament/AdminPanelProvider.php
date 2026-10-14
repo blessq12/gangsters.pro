@@ -29,7 +29,7 @@ use App\Filament\Crm\Resources\ClientResource\RelationManagers\OrderHistoryRelat
 use App\Filament\Promotion\Resources\PromotionPolicyResource;
 use App\Filament\Support\AdminNavigationGroup;
 use App\Http\Controllers\Admin\DeliveryZoneMapEditorController;
-use App\Http\Middleware\VerifyCsrfToken;
+use App\Http\Middleware\PreventRequestForgery;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -93,7 +93,7 @@ class AdminPanelProvider extends PanelProvider
                 StartSession::class,
                 AuthenticateSession::class,
                 ShareErrorsFromSession::class,
-                VerifyCsrfToken::class,
+                PreventRequestForgery::class,
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
