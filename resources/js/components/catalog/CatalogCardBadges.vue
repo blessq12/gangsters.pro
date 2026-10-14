@@ -6,14 +6,6 @@ const props = defineProps({
         type: Object,
         required: true,
     },
-    isSet: {
-        type: Boolean,
-        default: false,
-    },
-    setCountLabel: {
-        type: String,
-        default: null,
-    },
     primaryTag: {
         type: Object,
         default: null,
@@ -36,20 +28,8 @@ function tagToneClass(color) {
 
 <template>
     <div :class="tokens.badgesCol">
-        <span
-            v-if="isSet"
-            :class="cs.setBadge"
-        >
-            Набор
-        </span>
         <div
-            v-if="isSet && setCountLabel"
-            :class="cs.setCountPill"
-        >
-            {{ setCountLabel }}
-        </div>
-        <div
-            v-else-if="product.weight"
+            v-if="product.weight"
             :class="tokens.weightPill"
         >
             {{ product.weight }} г

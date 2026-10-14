@@ -20,8 +20,6 @@ const {
     primaryThumb,
     imageSrcset,
     primaryTag,
-    isSet,
-    setCountLabel,
 } = useCatalogCardView(computed(() => props.product));
 
 const imageSizes = "(max-width: 640px) 40vw, 240px";
@@ -70,12 +68,6 @@ function tagToneClass(color) {
 
         <div :class="h.body">
             <div :class="h.titleRow">
-                <span
-                    v-if="isSet"
-                    :class="h.setBadgeInline"
-                >
-                    Набор
-                </span>
                 <p
                     :class="h.title"
                     :title="product.name"
@@ -83,13 +75,7 @@ function tagToneClass(color) {
                     {{ product.name }}
                 </p>
                 <span
-                    v-if="isSet && setCountLabel"
-                    :class="h.weightInline"
-                >
-                    {{ setCountLabel }}
-                </span>
-                <span
-                    v-else-if="product.weight"
+                    v-if="product.weight"
                     :class="h.weightInline"
                 >
                     {{ product.weight }}&nbsp;г
