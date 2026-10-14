@@ -18,6 +18,7 @@ const {
     zoneMapMountFailed,
     showZonePolygonHint,
     showKitchenPlacemarkHint,
+    showZoneClickHint,
 } = useDeliveryZoneReadonlyMap({
     facts,
     deliveryLoading,
@@ -94,6 +95,12 @@ const hasKitchenAddress = computed(() => kitchenAddress.value.trim() !== "");
             </p>
         </div>
 
+        <p
+            v-if="showZoneClickHint"
+            :class="dm.zoneMapHint"
+        >
+            Нажмите на зону, чтобы увидеть стоимость и условия.
+        </p>
         <p
             v-if="showZonePolygonHint"
             :class="dm.zoneMapHint"

@@ -408,6 +408,61 @@ export function formatDeliveryFeeRublesLine(company) {
 }
 
 /**
+ * @param {string} value
+ * @returns {string}
+ */
+function escapeHtmlForBalloon(value) {
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+}
+
+/**
+ * Текст Yandex balloon для зоны доставки на инфо-странице.
+ * Показывает base fee зоны (без порога бесплатной доставки из акций).
+ *
+ * @param {object|null|undefined} zone
+ * @param {{ min_order_amount_kopecks?: unknown }|null|undefined} [options]
+ * @returns {{ header: string, body: string }}
+ */
+export function buildDeliveryZoneBalloonContent(zone, options = {}) {
+    const headerRaw = safeTrim(zone?.name) || "Зона доставки";
+    const header = escapeHtmlForBalloon(headerRaw);
+
+    const feeRub = kopecksToRublesOptional(zone?.delivery_fee_kopecks);
+    let feeLine;
+    if (feeRub == null) {
+        feeLine = "Стоимость: уточняйте при заказе";
+    } else if (feeRub === 0) {
+        feeLine = "Доставка: бесплатно";
+    } else {
+        feeLine = `Доставка: ${formatMoneyRublesRu(feeRub)} ₽`;
+    }
+
+    const lines = [feeLine];
+
+    if (zone?.is_remote === true) {
+        lines.push(
+            "Удалённая зона — порог бесплатной доставки по акциям не применяется.",
+        );
+    }
+
+    const minRub = kopecksToRublesOptional(options?.min_order_amount_kopecks);
+    if (minRub != null) {
+        lines.push(`Минимальный заказ: ${formatMoneyRublesRu(minRub)} ₽`);
+    }
+
+    lines.push("Итоговая сумма в заказе может зависеть от акций.");
+
+    return {
+        header,
+        body: lines.map(escapeHtmlForBalloon).join("<br/>"),
+    };
+}
+
+/**
  * @param {object|null|undefined} company
  */
 export function hasAverageDelivery(company) {

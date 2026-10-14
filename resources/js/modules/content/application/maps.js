@@ -1,42 +1,63 @@
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import { readYandexMapsApiKey } from "../../../config/site";
 import {
+    buildDeliveryZoneBalloonContent,
     buildYandexMapKitchenPointWidgetUrl,
     buildYandexMapWidgetSearchUrl,
     kitchenAddressLabelOrFallback,
 } from "./company";
 
 /**
+ * @param {unknown} geometry
+ * @returns {boolean}
+ */
+function isPolygonGeometry(geometry) {
+    return (
+        geometry
+        && typeof geometry === "object"
+        && (geometry.type === "Polygon" || geometry.type === "MultiPolygon")
+    );
+}
+
+/**
+ * Зоны доставки целиком (geometry + meta). Fallback — union geojson.
+ *
  * @param {object|null|undefined} company
  * @returns {object[]}
  */
-export function resolveDeliveryZoneGeometries(company) {
+export function resolveDeliveryZones(company) {
     const zones = Array.isArray(company?.delivery_zones)
         ? company.delivery_zones
         : [];
-    const fromZones = zones
-        .map((zone) => zone?.geometry)
-        .filter(
-            (geometry) =>
-                geometry
-                && typeof geometry === "object"
-                && (geometry.type === "Polygon" || geometry.type === "MultiPolygon"),
-        );
+    const fromZones = zones.filter((zone) => isPolygonGeometry(zone?.geometry));
 
     if (fromZones.length > 0) {
         return fromZones;
     }
 
     const geometry = company?.delivery_zone_geojson;
-    if (
-        geometry
-        && typeof geometry === "object"
-        && (geometry.type === "Polygon" || geometry.type === "MultiPolygon")
-    ) {
-        return [geometry];
+    if (isPolygonGeometry(geometry)) {
+        return [
+            {
+                name: "Зона доставки",
+                delivery_fee_kopecks: company?.delivery_fee_kopecks ?? null,
+                is_remote: false,
+                geometry,
+            },
+        ];
     }
 
     return [];
+}
+
+/**
+ * @param {object|null|undefined} company
+ * @returns {object[]}
+ */
+export function resolveDeliveryZoneGeometries(company) {
+    return resolveDeliveryZones(company)
+        .map((zone) => zone?.geometry)
+        .filter((geometry) => isPolygonGeometry(geometry));
 }
 
 /**
@@ -69,16 +90,21 @@ export async function mountCompanyDeliveryZoneReadonlyMap(container, company) {
         return null;
     }
 
-    const geometries = resolveDeliveryZoneGeometries(company);
+    const zones = resolveDeliveryZones(company);
+    const geometries = zones
+        .map((zone) => zone?.geometry)
+        .filter((geometry) => isPolygonGeometry(geometry));
 
     return mountYandexDeliveryZoneReadonlyMap(container, {
         apiKey,
+        zones,
         geometries,
         geometry: geometries[0] ?? null,
         center: kitchenMapCenterOrNull(company),
         kitchenPlacemark: true,
         balloonContentHeader: "Самовывоз",
         balloonContentBody: kitchenAddressLabelOrFallback(company),
+        minOrderAmountKopecks: company?.min_order_amount_kopecks ?? null,
     });
 }
 
@@ -302,12 +328,14 @@ function resolveMapCenter(explicitCenter, geometry) {
  *   apiKey: string,
  *   geometry?: object|null,
  *   geometries?: object[],
+ *   zones?: object[],
  *   center?: [number, number]|null,
  *   zoom?: number,
  *   kitchenPlacemark?: boolean,
  *   balloonContent?: string,
  *   balloonContentHeader?: string,
  *   balloonContentBody?: string,
+ *   minOrderAmountKopecks?: unknown,
  * }} options
  * @returns {Promise<{ destroy: () => void, refit: () => void, polygonShown: boolean, placemarkShown: boolean }>}
  */
@@ -316,28 +344,43 @@ export async function mountYandexDeliveryZoneReadonlyMap(container, options) {
         apiKey,
         geometry = null,
         geometries = null,
+        zones = null,
         center = null,
         zoom = 12,
         kitchenPlacemark = false,
         balloonContent = "",
         balloonContentHeader = "",
         balloonContentBody = "",
+        minOrderAmountKopecks = null,
     } = options;
 
     await loadYandexMapsApi(apiKey);
 
-    const zoneGeometries = Array.isArray(geometries) && geometries.length > 0
-        ? geometries
-        : geometry
-          ? [geometry]
-          : [];
-    const rings = zoneGeometries
-        .map((item) => geometryToYmapsRing(item))
-        .filter((ring) => ring.length >= 3);
-    const primaryGeometry = zoneGeometries[0] ?? null;
+    const resolvedZones = Array.isArray(zones) && zones.length > 0
+        ? zones.filter((zone) => isPolygonGeometry(zone?.geometry))
+        : (Array.isArray(geometries) && geometries.length > 0
+            ? geometries
+            : geometry
+              ? [geometry]
+              : []
+          ).map((item) =>
+              isPolygonGeometry(item)
+                  ? { geometry: item, name: "Зона доставки" }
+                  : null,
+          ).filter(Boolean);
+
+    const drawableZones = resolvedZones
+        .map((zone) => ({
+            zone,
+            ring: geometryToYmapsRing(zone.geometry),
+        }))
+        .filter(({ ring }) => ring.length >= 3);
+    const primaryGeometry = drawableZones[0]?.zone?.geometry ?? null;
     const mapCenter = resolveMapCenter(center, primaryGeometry);
-    const nearTomskRings = rings.filter((ring) => ringIsNearTomsk(ring));
-    const canShowPolygon = nearTomskRings.length > 0;
+    const nearTomskZones = drawableZones.filter(({ ring }) =>
+        ringIsNearTomsk(ring),
+    );
+    const canShowPolygon = nearTomskZones.length > 0;
     const canShowPlacemark =
         kitchenPlacemark === true
         && center != null
@@ -366,21 +409,32 @@ export async function mountYandexDeliveryZoneReadonlyMap(container, options) {
 
     if (canShowPolygon) {
         const colors = ["#C62424", "#2563EB", "#059669", "#D97706", "#7C3AED"];
-        nearTomskRings.forEach((ring, index) => {
+        nearTomskZones.forEach(({ zone, ring }, index) => {
             const color = colors[index % colors.length];
+            const balloon = buildDeliveryZoneBalloonContent(zone, {
+                min_order_amount_kopecks: minOrderAmountKopecks,
+            });
             const polygon = new window.ymaps.Polygon(
                 [ring],
-                {},
+                {
+                    balloonContentHeader: balloon.header,
+                    balloonContentBody: balloon.body,
+                    hintContent: balloon.header,
+                },
                 {
                     fillColor: `${color}44`,
                     strokeColor: color,
                     strokeWidth: 2,
-                    interactive: false,
+                    interactive: true,
+                    cursor: "pointer",
                 },
             );
+            polygon.events.add("click", (event) => {
+                event.get("target").balloon.open();
+            });
             map.geoObjects.add(polygon);
         });
-    } else if (rings.length > 0 && !warnedPolygonOutsideTomsk) {
+    } else if (drawableZones.length > 0 && !warnedPolygonOutsideTomsk) {
         warnedPolygonOutsideTomsk = true;
         console.warn(
             "Delivery zone map: polygon is outside Tomsk area or invalid — showing map without zone.",
@@ -562,6 +616,13 @@ export function useDeliveryZoneReadonlyMap({
             zoneMapController.value != null,
     );
 
+    const showZoneClickHint = computed(
+        () =>
+            mapDisplayMode.value === "zone-sdk" &&
+            zonePolygonShown.value === true &&
+            !zoneMapMountFailed.value,
+    );
+
     function disconnectResizeObserver() {
         mapResizeObserver.value?.disconnect();
         mapResizeObserver.value = null;
@@ -663,6 +724,7 @@ export function useDeliveryZoneReadonlyMap({
         zoneMapMountFailed,
         showZonePolygonHint,
         showKitchenPlacemarkHint,
+        showZoneClickHint,
     };
 }
 
