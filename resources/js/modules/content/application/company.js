@@ -421,7 +421,7 @@ function escapeHtmlForBalloon(value) {
 
 /**
  * Текст Yandex balloon для зоны доставки на инфо-странице.
- * Коротко: название + стоимость (+ мин. заказ, если задан).
+ * Понятно клиенту: название, стоимость доставки, мин. заказ.
  *
  * @param {object|null|undefined} zone
  * @param {{ min_order_amount_kopecks?: unknown }|null|undefined} [options]
@@ -434,18 +434,22 @@ export function buildDeliveryZoneBalloonContent(zone, options = {}) {
     const feeRub = kopecksToRublesOptional(zone?.delivery_fee_kopecks);
     let feeLine;
     if (feeRub == null) {
-        feeLine = "Стоимость уточняйте при заказе";
+        feeLine = "Стоимость доставки уточняйте при заказе";
     } else if (feeRub === 0) {
-        feeLine = "Бесплатно";
+        feeLine = "Доставка бесплатная";
     } else {
-        feeLine = `${formatMoneyRublesRu(feeRub)} ₽`;
+        feeLine = `Стоимость доставки: ${formatMoneyRublesRu(feeRub)} ₽`;
     }
 
     const lines = [feeLine];
 
+    if (zone?.is_remote === true) {
+        lines.push("Удалённая зона");
+    }
+
     const minRub = kopecksToRublesOptional(options?.min_order_amount_kopecks);
     if (minRub != null) {
-        lines.push(`От ${formatMoneyRublesRu(minRub)} ₽`);
+        lines.push(`Минимальный заказ: ${formatMoneyRublesRu(minRub)} ₽`);
     }
 
     return {
