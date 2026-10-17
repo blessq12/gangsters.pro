@@ -88,6 +88,7 @@ function emptyComplementBenefit() {
         isActive: false,
         isReached: false,
         rollsPerSet: null,
+        maxSets: null,
         currentRollCount: 0,
         entitledSetCount: 0,
         remainingRollCount: 0,
@@ -394,8 +395,9 @@ export function useOrderPreview() {
 /**
  * Ряды комплекта: free qty из quote + каталог для докупки.
  *
- * Правило бэка: entitledSets = ceil(rollCount / rollsPerSet), по умолчанию
- * rollsPerSet = 2 → 1–2 ролла = 1 набор, 3–4 = 2, 5–6 = 3 (freeQty на каждый комплектный товар).
+ * Правило бэка: entitledSets = min(ceil(rollCount / rollsPerSet), maxSets),
+ * по умолчанию rollsPerSet = 2, maxSets = 3 → 1–2 ролла = 1 набор, …, 6+ = макс. 3
+ * (freeQty на каждый комплектный товар). На потолке remaining_roll_count = 0.
  * Каталог для докупки подключать только при entitledSets >= 1.
  *
  * @param {unknown} complementLines

@@ -163,11 +163,15 @@ final class QuoteOrderUseCase
         $rollsPerSet = is_array($complementRule)
             ? (int) ($complementRule['rolls_per_set'] ?? 0)
             : 0;
+        $maxSets = is_array($complementRule)
+            ? (int) ($complementRule['max_sets'] ?? 0)
+            : 0;
         $complementActive = is_array($complementRule)
             && ($complementRule['is_active'] ?? false)
-            && $rollsPerSet > 0;
+            && $rollsPerSet > 0
+            && $maxSets > 0;
         $entitledSets = $complementActive && $rollCount > 0
-            ? (int) ceil($rollCount / $rollsPerSet)
+            ? min((int) ceil($rollCount / $rollsPerSet), $maxSets)
             : 0;
         $remainingRollCount = 0;
         if ($complementActive) {
@@ -175,6 +179,7 @@ final class QuoteOrderUseCase
                 rollCount: $rollCount,
                 entitledSets: $entitledSets,
                 rollsPerSet: $rollsPerSet,
+                maxSets: $maxSets,
             );
         }
 
@@ -306,6 +311,7 @@ final class QuoteOrderUseCase
                 'complement_entitled' => $entitledSets,
                 'complement_active' => $complementActive,
                 'rolls_per_set' => $rollsPerSet,
+                'complement_max_sets' => $maxSets,
                 'roll_count' => $rollCount,
                 'remaining_roll_count' => $remainingRollCount,
                 'free_delivery_threshold_kopecks' => $freeThreshold,
@@ -632,12 +638,18 @@ final class QuoteOrderUseCase
 
     /**
      * Роллов до следующего комплекта при округлении вверх (ceil).
+     * На потолке max_sets — 0 (больше бесплатных комплектов не будет).
      */
     private function remainingRollCountForComplement(
         int $rollCount,
         int $entitledSets,
         int $rollsPerSet,
+        int $maxSets,
     ): int {
+        if ($maxSets > 0 && $entitledSets >= $maxSets) {
+            return 0;
+        }
+
         if ($rollCount <= 0) {
             return $rollsPerSet > 0 ? 1 : 0;
         }

@@ -275,6 +275,10 @@ export function adaptQuoteToCheckoutSnapshot(quote) {
 
     const rollsPerSet =
         benefits.rolls_per_set != null ? Number(benefits.rolls_per_set) : null;
+    const maxSets =
+        benefits.complement_max_sets != null
+            ? Number(benefits.complement_max_sets)
+            : null;
     const rollCount = Number(benefits.roll_count) || 0;
     const entitledSets = Number(benefits.complement_entitled) || 0;
     const remainingRollCount = Number(benefits.remaining_roll_count) || 0;
@@ -377,6 +381,7 @@ export function adaptQuoteToCheckoutSnapshot(quote) {
                 is_active: complementActive,
                 is_reached: entitledSets > 0,
                 rolls_per_set: rollsPerSet,
+                max_sets: maxSets,
                 current_roll_count: rollCount,
                 entitled_set_count: entitledSets,
                 remaining_roll_count: remainingRollCount,
@@ -429,6 +434,7 @@ export function adaptQuoteToCheckoutSnapshot(quote) {
                     is_active: complementActive,
                     is_reached: entitledSets > 0,
                     rolls_per_set: rollsPerSet,
+                    max_sets: maxSets,
                     current_roll_count: rollCount,
                     entitled_set_count: entitledSets,
                     remaining_roll_count: remainingRollCount,

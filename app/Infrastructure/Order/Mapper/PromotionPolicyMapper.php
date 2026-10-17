@@ -60,6 +60,10 @@ final class PromotionPolicyMapper
                     $row->complement_set_rolls_per_set,
                     'complement_set_rolls_per_set',
                 ),
+                'max_sets' => $this->requiredPositiveInt(
+                    $row->complement_set_max_sets,
+                    'complement_set_max_sets',
+                ),
                 'is_active' => (bool) $row->complement_set_benefit_active,
             ],
         );
