@@ -2,6 +2,7 @@
 
 namespace App\Domain\Order\Entity;
 
+use App\Domain\Order\Enum\OrderStatus;
 use DateTimeImmutable;
 
 /**
@@ -27,6 +28,7 @@ final class Order
         private readonly array $delivery,
         private readonly array $payment,
         private readonly DateTimeImmutable $createdAt,
+        private readonly ?string $frontpadOrderId,
     ) {}
 
     /**
@@ -64,6 +66,7 @@ final class Order
             delivery: $delivery,
             payment: $payment,
             createdAt: $createdAt,
+            frontpadOrderId: null,
         );
     }
 
@@ -85,6 +88,7 @@ final class Order
         array $delivery,
         array $payment,
         DateTimeImmutable $createdAt,
+        ?string $frontpadOrderId = null,
     ): self {
         return new self(
             id: $id,
@@ -98,6 +102,7 @@ final class Order
             delivery: $delivery,
             payment: $payment,
             createdAt: $createdAt,
+            frontpadOrderId: $frontpadOrderId,
         );
     }
 
@@ -156,6 +161,21 @@ final class Order
     public function status(): string
     {
         return $this->status;
+    }
+
+    public function frontpadOrderId(): ?string
+    {
+        return $this->frontpadOrderId;
+    }
+
+    public function withFrontpadOrderId(string $frontpadOrderId): self
+    {
+        return $this->copyWith(frontpadOrderId: $frontpadOrderId);
+    }
+
+    public function withStatus(OrderStatus|string $status): self
+    {
+        return $this->copyWith(status: self::normalizeStatus($status));
     }
 
     /**
@@ -223,5 +243,36 @@ final class Order
         }
 
         return $total;
+    }
+
+    private function copyWith(?string $status = null, ?string $frontpadOrderId = null): self
+    {
+        return new self(
+            id: $this->id,
+            source: $this->source,
+            checkoutId: $this->checkoutId,
+            partnerCode: $this->partnerCode,
+            externalOrderId: $this->externalOrderId,
+            status: $status ?? $this->status,
+            cart: $this->cart,
+            client: $this->client,
+            delivery: $this->delivery,
+            payment: $this->payment,
+            createdAt: $this->createdAt,
+            frontpadOrderId: $frontpadOrderId ?? $this->frontpadOrderId,
+        );
+    }
+
+    private static function normalizeStatus(OrderStatus|string $status): string
+    {
+        if ($status instanceof OrderStatus) {
+            return $status->value;
+        }
+
+        try {
+            return OrderStatus::from($status)->value;
+        } catch (\ValueError) {
+            throw new \InvalidArgumentException('Недопустимый статус заказа: '.$status);
+        }
     }
 }

@@ -181,12 +181,36 @@ final class FrontpadOrderMapper
             $hookUrl = rtrim((string) config('app.url'), '/').'/api/orders/update';
         }
 
-        $request['hook_url'] = $hookUrl;
+        $request['hook_url'] = $this->ensureHookUrlSecret($hookUrl);
 
         $hookStatus = config('frontpad.hook_status');
         if (is_array($hookStatus) && $hookStatus !== []) {
             $request['hook_status'] = array_values($hookStatus);
         }
+    }
+
+    private function ensureHookUrlSecret(string $hookUrl): string
+    {
+        $secret = (string) config('frontpad.secret', '');
+        if ($secret === '') {
+            return $hookUrl;
+        }
+
+        $base = $hookUrl;
+        $query = [];
+
+        if (str_contains($hookUrl, '?')) {
+            [$base, $queryString] = explode('?', $hookUrl, 2);
+            parse_str($queryString, $query);
+        }
+
+        if (isset($query['secret']) && (string) $query['secret'] !== '') {
+            return $hookUrl;
+        }
+
+        $query['secret'] = $secret;
+
+        return $base.'?'.http_build_query($query);
     }
 
     private function buildDescription(OrderCreated $event): string
