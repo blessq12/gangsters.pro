@@ -39,10 +39,7 @@ class ProductSetsHubTable extends TableWidget
                     TextColumn::make('set_lines_count')
                         ->label('Позиций в наборе')
                         ->sortable(),
-                    TextColumn::make('price')
-                        ->label('Цена, ₽')
-                        ->formatStateUsing(fn (?int $state): string => $state === null ? '—' : number_format($state, 0, ',', ' ').' ₽')
-                        ->sortable(),
+                    CatalogHubTablePresentation::catalogItemPriceColumn(),
                     CatalogHubTablePresentation::catalogItemStatusColumn(),
                 ])
                 ->filters([
