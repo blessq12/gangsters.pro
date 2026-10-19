@@ -19,7 +19,7 @@ final class ChangeOrderStatusFromFrontpadUseCaseTest extends TestCase
     public function test_throws_when_frontpad_status_unknown(): void
     {
         $useCase = new ChangeOrderStatusFromFrontpadUseCase(
-            $this->createMock(OrderRepository::class),
+            $this->createStub(OrderRepository::class),
             new FrontpadStatusMapper(),
         );
 
