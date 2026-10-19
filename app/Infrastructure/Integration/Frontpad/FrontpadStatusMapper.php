@@ -2,9 +2,10 @@
 
 namespace App\Infrastructure\Integration\Frontpad;
 
+use App\Application\Order\Port\FrontpadStatusMapping;
 use App\Domain\Order\Enum\OrderStatus;
 
-final class FrontpadStatusMapper
+final class FrontpadStatusMapper implements FrontpadStatusMapping
 {
     public function toDomain(int $frontpadStatus): ?OrderStatus
     {

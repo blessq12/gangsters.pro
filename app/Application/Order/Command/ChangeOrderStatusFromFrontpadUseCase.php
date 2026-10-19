@@ -4,9 +4,9 @@ namespace App\Application\Order\Command;
 
 use App\Application\Order\Exception\OrderNotFoundForFrontpad;
 use App\Application\Order\Exception\UnknownFrontpadStatus;
+use App\Application\Order\Port\FrontpadStatusMapping;
 use App\Domain\Order\Event\OrderStatusChanged;
 use App\Domain\Order\Repository\OrderRepository;
-use App\Infrastructure\Integration\Frontpad\FrontpadStatusMapper;
 use DateTimeImmutable;
 use Illuminate\Support\Facades\Event;
 
@@ -14,7 +14,7 @@ final class ChangeOrderStatusFromFrontpadUseCase
 {
     public function __construct(
         private readonly OrderRepository $orders,
-        private readonly FrontpadStatusMapper $statusMapper,
+        private readonly FrontpadStatusMapping $statusMapper,
     ) {}
 
     public function handle(string $frontpadOrderId, int $frontpadStatus, ?DateTimeImmutable $changedAt): void

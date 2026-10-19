@@ -10,6 +10,17 @@ use Tests\ApiTestCase;
 
 final class FrontpadStatusWebhookTest extends ApiTestCase
 {
+    public function test_rejects_wrong_query_secret(): void
+    {
+        config(['frontpad.secret' => 's3cret']);
+
+        $this->postJson('/api/orders/update?secret=wrong', [
+            'action' => 'change_status',
+            'order_id' => 1,
+            'status' => 3,
+        ])->assertUnauthorized();
+    }
+
     public function test_rejects_without_secret(): void
     {
         $this->postJson('/api/orders/update', [
@@ -38,6 +49,42 @@ final class FrontpadStatusWebhookTest extends ApiTestCase
             'status' => 'preparing',
         ]);
         Event::assertDispatched(OrderStatusChanged::class);
+    }
+
+    public function test_updates_status_with_header_secret(): void
+    {
+        config(['frontpad.secret' => 's3cret']);
+        $this->seedOrderWithFrontpad('87654321', 'new');
+        Event::fake([OrderStatusChanged::class]);
+
+        $this->postJson('/api/orders/update', [
+            'action' => 'change_status',
+            'order_id' => 87654321,
+            'status' => 3,
+            'datetime' => '2020-08-21 12:03:00',
+        ], [
+            'X-Frontpad-Secret' => 's3cret',
+        ])->assertOk()->assertJson(['ok' => true]);
+
+        $this->assertDatabaseHas('ORD_orders', [
+            'frontpad_order_id' => '87654321',
+            'status' => 'preparing',
+        ]);
+        Event::assertDispatched(OrderStatusChanged::class);
+    }
+
+    public function test_form_post_validation_failure_returns_json_not_redirect(): void
+    {
+        config(['frontpad.secret' => 's3cret']);
+
+        $response = $this->post('/api/orders/update?secret=s3cret', [
+            'action' => 'change_status',
+            'status' => 3,
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonStructure(['message', 'errors']);
+        $this->assertNotEquals(302, $response->status());
     }
 
     public function test_unknown_frontpad_status_returns_422(): void

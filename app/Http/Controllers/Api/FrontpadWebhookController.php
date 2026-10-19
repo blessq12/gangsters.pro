@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use DateTimeImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 final class FrontpadWebhookController extends Controller
 {
@@ -29,11 +30,20 @@ final class FrontpadWebhookController extends Controller
             return response()->json(['message' => 'Bad Request'], 400);
         }
 
-        $validated = $request->validate([
+        $validator = Validator::make($request->all(), [
             'order_id' => ['required'],
             'status' => ['required', 'integer'],
             'datetime' => ['nullable', 'string'],
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'The given data was invalid.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $validated = $validator->validated();
 
         $changedAt = null;
         $datetime = $validated['datetime'] ?? null;
