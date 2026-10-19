@@ -61,9 +61,12 @@ final class OrderSnapshotReader
     {
         return match ($status) {
             'new' => 'Новый',
-            'preparing' => 'Готовится',
-            'in_transit' => 'В доставке',
-            'delivered' => 'Доставлен',
+            'preorder' => 'Предзаказ',
+            'preparing' => 'В производстве',
+            'ready' => 'Произведен',
+            'in_transit' => 'В пути',
+            'cancelled' => 'Списан',
+            'delivered' => 'Выполнен',
             default => $status !== '' ? $status : '—',
         };
     }
