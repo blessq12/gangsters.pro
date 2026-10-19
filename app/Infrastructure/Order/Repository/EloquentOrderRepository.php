@@ -29,6 +29,15 @@ final class EloquentOrderRepository implements OrderRepository
         return $row instanceof ORD_Order ? $this->mapper->toDomain($row) : null;
     }
 
+    public function findByFrontpadOrderId(string $frontpadOrderId): ?Order
+    {
+        $row = ORD_Order::query()
+            ->where('frontpad_order_id', $frontpadOrderId)
+            ->first();
+
+        return $row instanceof ORD_Order ? $this->mapper->toDomain($row) : null;
+    }
+
     public function listByClientId(int $clientId): array
     {
         /** @var \Illuminate\Database\Eloquent\Collection<int, ORD_Order> $rows */
