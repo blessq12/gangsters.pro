@@ -18,6 +18,7 @@ final class ORD_Order extends Model
         'checkout_id',
         'partner_code',
         'external_order_id',
+        'frontpad_order_id',
         'status',
         'client_id',
         'total_rubles',
