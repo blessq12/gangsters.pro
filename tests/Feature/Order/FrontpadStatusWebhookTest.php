@@ -88,6 +88,44 @@ final class FrontpadStatusWebhookTest extends ApiTestCase
         Event::assertDispatched(OrderStatusChanged::class);
     }
 
+    public function test_updates_status_with_secret_in_form_body(): void
+    {
+        config(['frontpad.secret' => 's3cret']);
+        $this->seedOrderWithFrontpad('49670745', 'new');
+        Event::fake([OrderStatusChanged::class]);
+
+        // Как Frontpad: form POST, secret в body (query может отсутствовать/быть битым)
+        $this->post('/api/order/update', [
+            'action' => 'change_status',
+            'order_id' => '49670745',
+            'status' => '3',
+            'datetime' => '2026-10-20 13:24:11',
+            'secret' => 's3cret',
+        ])->assertOk()->assertJson(['ok' => true]);
+
+        $this->assertDatabaseHas('ORD_orders', [
+            'frontpad_order_id' => '49670745',
+            'status' => 'preparing',
+        ]);
+        Event::assertDispatched(OrderStatusChanged::class);
+    }
+
+    public function test_accepts_body_secret_when_query_secret_wrong(): void
+    {
+        config(['frontpad.secret' => 's3cret']);
+        $this->seedOrderWithFrontpad('11112222', 'new');
+        Event::fake([OrderStatusChanged::class]);
+
+        $this->post('/api/order/update?secret=wrong-from-url', [
+            'action' => 'change_status',
+            'order_id' => '11112222',
+            'status' => '3',
+            'secret' => 's3cret',
+        ])->assertOk()->assertJson(['ok' => true]);
+
+        Event::assertDispatched(OrderStatusChanged::class);
+    }
+
     public function test_form_post_validation_failure_returns_json_not_redirect(): void
     {
         config(['frontpad.secret' => 's3cret']);
