@@ -178,7 +178,7 @@ final class FrontpadOrderMapper
     {
         $hookUrl = config('frontpad.hook_url');
         if (! is_string($hookUrl) || $hookUrl === '') {
-            $hookUrl = rtrim((string) config('app.url'), '/').'/api/orders/update';
+            $hookUrl = rtrim((string) config('app.url'), '/').'/api/order/update';
         }
 
         $request['hook_url'] = $this->ensureHookUrlSecret($hookUrl);

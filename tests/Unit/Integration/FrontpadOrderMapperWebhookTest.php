@@ -21,7 +21,7 @@ final class FrontpadOrderMapperWebhookTest extends TestCase
         $request = (new FrontpadOrderMapper())->toRequest($this->minimalEvent());
 
         $this->assertSame(
-            'https://shop.test/api/orders/update?secret=s3cret',
+            'https://shop.test/api/order/update?secret=s3cret',
             $request['hook_url'],
         );
         $this->assertSame([1, 13, 3, 12, 4, 11, 10], $request['hook_status']);

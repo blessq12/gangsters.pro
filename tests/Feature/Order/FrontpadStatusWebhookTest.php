@@ -10,6 +10,21 @@ use Tests\ApiTestCase;
 
 final class FrontpadStatusWebhookTest extends ApiTestCase
 {
+    public function test_probe_get_order_update_returns_200_without_secret(): void
+    {
+        $this->getJson('/api/order/update')->assertOk()->assertJson(['ok' => true]);
+    }
+
+    public function test_probe_get_orders_update_alias_returns_200(): void
+    {
+        $this->getJson('/api/orders/update')->assertOk()->assertJson(['ok' => true]);
+    }
+
+    public function test_probe_post_without_change_status_returns_200(): void
+    {
+        $this->postJson('/api/order/update', [])->assertOk()->assertJson(['ok' => true]);
+    }
+
     public function test_rejects_wrong_query_secret(): void
     {
         config(['frontpad.secret' => 's3cret']);
