@@ -4,7 +4,6 @@
 @if (is_array($yandexCounters) && $yandexCounters !== [])
     <script>
         window.dataLayer = window.dataLayer || [];
-        window.__YANDEX_METRIKA_COUNTERS__ = @json(array_values(array_map('strval', $yandexCounters)));
     </script>
     <!-- Yandex.Metrika counter -->
     <script type="text/javascript">
