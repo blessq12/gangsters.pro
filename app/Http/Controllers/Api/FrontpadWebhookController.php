@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Validator;
 
 /**
  * Frontpad требует HTTP 200 на любой метод при проверке hook_url в панели.
- * Реальная смена статуса — только POST с action=change_status + secret.
+ * Реальная смена статуса — POST с action=change_status (по доке FP без secret).
  */
 final class FrontpadWebhookController extends Controller
 {
@@ -51,25 +51,6 @@ final class FrontpadWebhookController extends Controller
             'query' => FrontpadLogger::sanitizePayload($request->query()),
             'body' => $body,
         ]);
-
-        if (! $this->isAuthorized($request)) {
-            $configuredSecret = trim((string) config('frontpad.secret'));
-
-            FrontpadLogger::warning('Frontpad webhook unauthorized', [
-                'direction' => 'inbound',
-                'operation' => 'webhook.change_status',
-                'http_status' => 401,
-                'secret_sources' => $this->secretSourceFlags($request),
-                'secret_lengths' => [
-                    'configured' => strlen($configuredSecret),
-                    'body' => $this->secretLength($request->input('secret')),
-                    'query' => $this->secretLength($request->query('secret')),
-                    'header' => $this->secretLength($request->header('X-Frontpad-Secret')),
-                ],
-            ]);
-
-            return response()->json(['message' => 'Unauthorized'], 401);
-        }
 
         $validator = Validator::make($request->all(), [
             'order_id' => ['required'],
@@ -139,89 +120,5 @@ final class FrontpadWebhookController extends Controller
         ]);
 
         return response()->json(['ok' => true]);
-    }
-
-    /**
-     * Frontpad шлёт secret в form-body и/или в query hook_url.
-     * Принимаем, если хоть один кандидат совпал с FRONTPAD_SECRET.
-     */
-    private function isAuthorized(Request $request): bool
-    {
-        $configuredSecret = trim((string) config('frontpad.secret'));
-        if ($configuredSecret === '') {
-            return false;
-        }
-
-        foreach ($this->secretCandidates($request) as $candidate) {
-            if (hash_equals($configuredSecret, $candidate)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function secretCandidates(Request $request): array
-    {
-        $raw = [
-            $request->input('secret'),
-            $request->query('secret'),
-            $request->header('X-Frontpad-Secret'),
-        ];
-
-        $candidates = [];
-        foreach ($raw as $value) {
-            if (is_array($value)) {
-                $value = $value[0] ?? null;
-            }
-
-            if (! is_string($value) && ! is_numeric($value)) {
-                continue;
-            }
-
-            $trimmed = trim((string) $value);
-            if ($trimmed !== '') {
-                $candidates[] = $trimmed;
-            }
-        }
-
-        return array_values(array_unique($candidates));
-    }
-
-    /**
-     * @return array{body: bool, query: bool, header: bool}
-     */
-    private function secretSourceFlags(Request $request): array
-    {
-        $body = $request->input('secret');
-        $query = $request->query('secret');
-        $header = $request->header('X-Frontpad-Secret');
-
-        return [
-            'body' => $this->nonEmptySecret($body),
-            'query' => $this->nonEmptySecret($query),
-            'header' => $this->nonEmptySecret($header),
-        ];
-    }
-
-    private function nonEmptySecret(mixed $value): bool
-    {
-        return $this->secretLength($value) > 0;
-    }
-
-    private function secretLength(mixed $value): int
-    {
-        if (is_array($value)) {
-            $value = $value[0] ?? null;
-        }
-
-        if (! is_string($value) && ! is_numeric($value)) {
-            return 0;
-        }
-
-        return strlen(trim((string) $value));
     }
 }
