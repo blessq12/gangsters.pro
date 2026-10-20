@@ -38,9 +38,12 @@ Route::prefix('client')->group(function (): void {
 Route::prefix('order')->group(function (): void {
     Route::post('quote', [OrderController::class, 'quote']);
     Route::post('/', [OrderController::class, 'place']);
+    // Frontpad hook_url: панель шлёт probe любым методом и ждёт HTTP 200
+    Route::any('update', [FrontpadWebhookController::class, 'handle']);
 });
 
-Route::post('/orders/update', [FrontpadWebhookController::class, 'changeStatus']);
+// Alias: старый path из export (orders plural)
+Route::any('/orders/update', [FrontpadWebhookController::class, 'handle']);
 
 Route::prefix('yandex-food')->group(function (): void {
     Route::post('/security/oauth/token', [YandexFoodController::class, 'login']);
