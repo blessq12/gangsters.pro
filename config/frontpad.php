@@ -18,9 +18,10 @@ return [
 
     'hook_url' => env('FRONTPAD_HOOK_URL'),
 
+    // FP: hook_status не более 5 кодов. Без 1/13 — new/preorder локально и так.
     'hook_status' => array_values(array_filter(array_map(
         static fn (string $value): int => (int) trim($value),
-        explode(',', (string) env('FRONTPAD_HOOK_STATUS', '1,13,3,12,4,11,10')),
+        explode(',', (string) env('FRONTPAD_HOOK_STATUS', '3,12,4,11,10')),
     ))),
 
     'tags' => array_values(array_filter(array_map(
