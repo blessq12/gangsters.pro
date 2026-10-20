@@ -6,6 +6,7 @@ use App\Application\Order\Command\ChangeOrderStatusFromFrontpadUseCase;
 use App\Application\Order\Exception\OrderNotFoundForFrontpad;
 use App\Application\Order\Exception\UnknownFrontpadStatus;
 use App\Http\Controllers\Controller;
+use App\Infrastructure\Integration\Frontpad\FrontpadLogger;
 use DateTimeImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -27,15 +28,40 @@ final class FrontpadWebhookController extends Controller
             return $this->changeStatus($request);
         }
 
+        FrontpadLogger::info('Frontpad webhook probe', [
+            'direction' => 'inbound',
+            'operation' => 'webhook.probe',
+            'method' => $request->method(),
+            'path' => $request->path(),
+            'query' => FrontpadLogger::sanitizePayload($request->query()),
+        ]);
+
         return response()->json(['ok' => true], 200);
     }
 
     private function changeStatus(Request $request): JsonResponse
     {
+        $body = FrontpadLogger::sanitizePayload($request->all());
+
+        FrontpadLogger::info('Frontpad webhook change_status received', [
+            'direction' => 'inbound',
+            'operation' => 'webhook.change_status',
+            'method' => $request->method(),
+            'path' => $request->path(),
+            'query' => FrontpadLogger::sanitizePayload($request->query()),
+            'body' => $body,
+        ]);
+
         $configuredSecret = (string) config('frontpad.secret');
         $providedSecret = (string) ($request->query('secret') ?? $request->header('X-Frontpad-Secret') ?? '');
 
         if ($configuredSecret === '' || ! hash_equals($configuredSecret, $providedSecret)) {
+            FrontpadLogger::warning('Frontpad webhook unauthorized', [
+                'direction' => 'inbound',
+                'operation' => 'webhook.change_status',
+                'http_status' => 401,
+            ]);
+
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
@@ -46,6 +72,13 @@ final class FrontpadWebhookController extends Controller
         ]);
 
         if ($validator->fails()) {
+            FrontpadLogger::warning('Frontpad webhook validation failed', [
+                'direction' => 'inbound',
+                'operation' => 'webhook.change_status',
+                'http_status' => 422,
+                'errors' => $validator->errors()->toArray(),
+            ]);
+
             return response()->json([
                 'message' => 'The given data was invalid.',
                 'errors' => $validator->errors(),
@@ -70,10 +103,34 @@ final class FrontpadWebhookController extends Controller
                 $changedAt,
             );
         } catch (OrderNotFoundForFrontpad) {
+            FrontpadLogger::warning('Frontpad webhook order not found', [
+                'direction' => 'inbound',
+                'operation' => 'webhook.change_status',
+                'http_status' => 404,
+                'frontpad_order_id' => (string) $validated['order_id'],
+                'frontpad_status' => (int) $validated['status'],
+            ]);
+
             return response()->json(['message' => 'Not Found'], 404);
         } catch (UnknownFrontpadStatus) {
+            FrontpadLogger::warning('Frontpad webhook unknown status', [
+                'direction' => 'inbound',
+                'operation' => 'webhook.change_status',
+                'http_status' => 422,
+                'frontpad_order_id' => (string) $validated['order_id'],
+                'frontpad_status' => (int) $validated['status'],
+            ]);
+
             return response()->json(['message' => 'Unprocessable Entity'], 422);
         }
+
+        FrontpadLogger::info('Frontpad webhook change_status applied', [
+            'direction' => 'inbound',
+            'operation' => 'webhook.change_status',
+            'http_status' => 200,
+            'frontpad_order_id' => (string) $validated['order_id'],
+            'frontpad_status' => (int) $validated['status'],
+        ]);
 
         return response()->json(['ok' => true]);
     }

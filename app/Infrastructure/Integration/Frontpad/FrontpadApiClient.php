@@ -3,7 +3,6 @@
 namespace App\Infrastructure\Integration\Frontpad;
 
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 
 final class FrontpadApiClient
 {
@@ -15,9 +14,11 @@ final class FrontpadApiClient
     {
         $endpoint = $this->resolveEndpoint();
 
-        Log::info('Frontpad API request', [
+        FrontpadLogger::info('Frontpad API request', [
+            'direction' => 'outbound',
+            'operation' => 'new_order',
             'endpoint' => $endpoint,
-            'payload' => $this->sanitizePayloadForLog($formParams),
+            'payload' => FrontpadLogger::sanitizePayload($formParams),
         ]);
 
         $response = Http::timeout(15)
@@ -25,7 +26,9 @@ final class FrontpadApiClient
             ->post($endpoint, $formParams);
 
         if (! $response->successful()) {
-            Log::error('Frontpad API HTTP error', [
+            FrontpadLogger::error('Frontpad API HTTP error', [
+                'direction' => 'outbound',
+                'operation' => 'new_order',
                 'status' => $response->status(),
                 'body' => $response->body(),
             ]);
@@ -39,7 +42,9 @@ final class FrontpadApiClient
 
         $decoded = $response->json();
         if (! is_array($decoded)) {
-            Log::error('Frontpad API invalid response', [
+            FrontpadLogger::error('Frontpad API invalid response', [
+                'direction' => 'outbound',
+                'operation' => 'new_order',
                 'body' => $response->body(),
             ]);
 
@@ -50,7 +55,11 @@ final class FrontpadApiClient
             ];
         }
 
-        Log::debug('Frontpad API response', $decoded);
+        FrontpadLogger::info('Frontpad API response', [
+            'direction' => 'outbound',
+            'operation' => 'new_order',
+            'response' => $decoded,
+        ]);
 
         return $decoded;
     }
@@ -67,20 +76,5 @@ final class FrontpadApiClient
         }
 
         return rtrim($endpoint, '/').'?new_order';
-    }
-
-    /**
-     * @param  array<string, mixed>  $formParams
-     * @return array<string, mixed>
-     */
-    private function sanitizePayloadForLog(array $formParams): array
-    {
-        $payload = $formParams;
-
-        if (array_key_exists('secret', $payload)) {
-            $payload['secret'] = '***';
-        }
-
-        return $payload;
     }
 }
