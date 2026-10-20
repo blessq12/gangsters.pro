@@ -3,8 +3,8 @@
 namespace App\Integration\Frontpad\Listener;
 
 use App\Domain\Order\Event\OrderCreated;
+use App\Infrastructure\Integration\Frontpad\FrontpadLogger;
 use App\Integration\Frontpad\FrontpadOrderExporter;
-use Illuminate\Support\Facades\Log;
 use Throwable;
 
 final class OnOrderCreated
@@ -18,7 +18,9 @@ final class OnOrderCreated
         try {
             $this->frontpadOrderExporter->export($event);
         } catch (Throwable $exception) {
-            Log::error('Frontpad export failed after OrderCreated', [
+            FrontpadLogger::error('Frontpad export failed after OrderCreated', [
+                'direction' => 'outbound',
+                'operation' => 'new_order',
                 'order_id' => $event->orderId(),
                 'message' => $exception->getMessage(),
             ]);

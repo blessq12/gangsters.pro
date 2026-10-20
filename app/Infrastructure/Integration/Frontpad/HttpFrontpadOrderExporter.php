@@ -5,7 +5,6 @@ namespace App\Infrastructure\Integration\Frontpad;
 use App\Domain\Order\Event\OrderCreated;
 use App\Domain\Order\Repository\OrderRepository;
 use App\Integration\Frontpad\FrontpadOrderExporter;
-use Illuminate\Support\Facades\Log;
 use Throwable;
 
 final class HttpFrontpadOrderExporter implements FrontpadOrderExporter
@@ -19,7 +18,9 @@ final class HttpFrontpadOrderExporter implements FrontpadOrderExporter
     public function export(OrderCreated $event): void
     {
         if (! $this->isEnabled()) {
-            Log::debug('Frontpad export skipped (disabled or secret empty)', [
+            FrontpadLogger::debug('Frontpad export skipped (disabled or secret empty)', [
+                'direction' => 'outbound',
+                'operation' => 'new_order',
                 'order_id' => $event->orderId(),
             ]);
 
@@ -32,7 +33,9 @@ final class HttpFrontpadOrderExporter implements FrontpadOrderExporter
         if (($response['result'] ?? null) !== 'success') {
             $error = (string) ($response['error'] ?? $response['message'] ?? 'unknown_error');
 
-            Log::error('Frontpad export rejected', [
+            FrontpadLogger::error('Frontpad export rejected', [
+                'direction' => 'outbound',
+                'operation' => 'new_order',
                 'order_id' => $event->orderId(),
                 'error' => $error,
                 'response' => $response,
@@ -42,13 +45,17 @@ final class HttpFrontpadOrderExporter implements FrontpadOrderExporter
         }
 
         if (isset($response['warnings'])) {
-            Log::warning('Frontpad export warnings', [
+            FrontpadLogger::warning('Frontpad export warnings', [
+                'direction' => 'outbound',
+                'operation' => 'new_order',
                 'order_id' => $event->orderId(),
                 'warnings' => $response['warnings'],
             ]);
         }
 
-        Log::info('Frontpad order created', [
+        FrontpadLogger::info('Frontpad order created', [
+            'direction' => 'outbound',
+            'operation' => 'new_order',
             'order_id' => $event->orderId(),
             'frontpad_order_id' => $response['order_id'] ?? null,
             'frontpad_order_number' => $response['order_number'] ?? null,
@@ -79,7 +86,9 @@ final class HttpFrontpadOrderExporter implements FrontpadOrderExporter
 
             $this->orders->save($order->withFrontpadOrderId($frontpadId));
         } catch (Throwable $exception) {
-            Log::error('Frontpad order id persist failed', [
+            FrontpadLogger::error('Frontpad order id persist failed', [
+                'direction' => 'outbound',
+                'operation' => 'new_order',
                 'order_id' => $event->orderId(),
                 'frontpad_order_id' => $frontpadId,
                 'exception' => $exception->getMessage(),
