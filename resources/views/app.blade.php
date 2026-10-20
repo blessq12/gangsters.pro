@@ -15,6 +15,7 @@
 
 <body>
     <div id="app"></div>
+    @include('inc.yandex-metrika')
 </body>
 
 </html>
