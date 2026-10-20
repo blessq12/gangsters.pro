@@ -3,6 +3,7 @@
 return [
     'enabled' => filter_var(env('FRONTPAD_ENABLED', false), FILTER_VALIDATE_BOOLEAN),
 
+    // Секрет из кабинета FP («Общие») — только для исходящих вызовов API.
     'secret' => env('FRONTPAD_SECRET', ''),
 
     'endpoint' => env('FRONTPAD_ENDPOINT', 'https://app.frontpad.ru/api/index.php?new_order'),

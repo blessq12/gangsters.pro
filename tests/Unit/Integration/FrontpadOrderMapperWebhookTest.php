@@ -9,7 +9,7 @@ use Tests\TestCase;
 
 final class FrontpadOrderMapperWebhookTest extends TestCase
 {
-    public function test_append_webhook_includes_secret_and_all_statuses(): void
+    public function test_append_webhook_includes_plain_url_and_all_statuses(): void
     {
         config([
             'app.url' => 'https://shop.test',
@@ -21,7 +21,7 @@ final class FrontpadOrderMapperWebhookTest extends TestCase
         $request = (new FrontpadOrderMapper())->toRequest($this->minimalEvent());
 
         $this->assertSame(
-            'https://shop.test/api/order/update?secret=s3cret',
+            'https://shop.test/api/order/update',
             $request['hook_url'],
         );
         $this->assertSame([1, 13, 3, 12, 4, 11, 10], $request['hook_status']);
