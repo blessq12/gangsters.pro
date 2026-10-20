@@ -15,7 +15,7 @@ final class FrontpadOrderMapperWebhookTest extends TestCase
             'app.url' => 'https://shop.test',
             'frontpad.secret' => 's3cret',
             'frontpad.hook_url' => null,
-            'frontpad.hook_status' => [1, 13, 3, 12, 4, 11, 10],
+            'frontpad.hook_status' => [3, 12, 4, 11, 10],
         ]);
 
         $request = (new FrontpadOrderMapper())->toRequest($this->minimalEvent());
@@ -24,7 +24,7 @@ final class FrontpadOrderMapperWebhookTest extends TestCase
             'https://shop.test/api/order/update',
             $request['hook_url'],
         );
-        $this->assertSame([1, 13, 3, 12, 4, 11, 10], $request['hook_status']);
+        $this->assertSame([3, 12, 4, 11, 10], $request['hook_status']);
     }
 
     private function minimalEvent(): OrderCreated
