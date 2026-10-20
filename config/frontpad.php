@@ -19,7 +19,7 @@ return [
 
     'hook_status' => array_values(array_filter(array_map(
         static fn (string $value): int => (int) trim($value),
-        explode(',', (string) env('FRONTPAD_HOOK_STATUS', '1,10,11')),
+        explode(',', (string) env('FRONTPAD_HOOK_STATUS', '1,13,3,12,4,11,10')),
     ))),
 
     'tags' => array_values(array_filter(array_map(

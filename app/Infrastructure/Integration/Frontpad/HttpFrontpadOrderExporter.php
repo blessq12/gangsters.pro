@@ -3,14 +3,17 @@
 namespace App\Infrastructure\Integration\Frontpad;
 
 use App\Domain\Order\Event\OrderCreated;
+use App\Domain\Order\Repository\OrderRepository;
 use App\Integration\Frontpad\FrontpadOrderExporter;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 final class HttpFrontpadOrderExporter implements FrontpadOrderExporter
 {
     public function __construct(
         private readonly FrontpadOrderMapper $mapper,
         private readonly FrontpadApiClient $client,
+        private readonly OrderRepository $orders,
     ) {}
 
     public function export(OrderCreated $event): void
@@ -50,6 +53,38 @@ final class HttpFrontpadOrderExporter implements FrontpadOrderExporter
             'frontpad_order_id' => $response['order_id'] ?? null,
             'frontpad_order_number' => $response['order_number'] ?? null,
         ]);
+
+        $this->persistFrontpadOrderId($event, $response);
+    }
+
+    /**
+     * @param  array<string, mixed>  $response
+     */
+    private function persistFrontpadOrderId(OrderCreated $event, array $response): void
+    {
+        if (! isset($response['order_id'])) {
+            return;
+        }
+
+        $frontpadId = (string) $response['order_id'];
+        if ($frontpadId === '') {
+            return;
+        }
+
+        try {
+            $order = $this->orders->findById($event->orderId());
+            if ($order === null) {
+                return;
+            }
+
+            $this->orders->save($order->withFrontpadOrderId($frontpadId));
+        } catch (Throwable $exception) {
+            Log::error('Frontpad order id persist failed', [
+                'order_id' => $event->orderId(),
+                'frontpad_order_id' => $frontpadId,
+                'exception' => $exception->getMessage(),
+            ]);
+        }
     }
 
     private function isEnabled(): bool

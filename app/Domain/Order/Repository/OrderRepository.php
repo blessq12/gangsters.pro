@@ -10,6 +10,8 @@ interface OrderRepository
 
     public function findByClientRequestId(string $clientRequestId): ?Order;
 
+    public function findByFrontpadOrderId(string $frontpadOrderId): ?Order;
+
     /**
      * @return list<Order>
      */

@@ -29,9 +29,12 @@ final class OrdersTable
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => OrderSnapshotReader::statusLabel($state))
                     ->color(fn (string $state): string => match ($state) {
-                        'new' => 'info',
+                        'new' => 'gray',
+                        'preorder' => 'info',
                         'preparing' => 'warning',
-                        'in_transit' => 'primary',
+                        'ready' => 'primary',
+                        'in_transit' => 'info',
+                        'cancelled' => 'danger',
                         'delivered' => 'success',
                         default => 'gray',
                     })
@@ -93,10 +96,13 @@ final class OrdersTable
                 SelectFilter::make('status')
                     ->label('Статус')
                     ->options([
-                        'new' => 'Новый',
-                        'preparing' => 'Готовится',
-                        'in_transit' => 'В доставке',
-                        'delivered' => 'Доставлен',
+                        'new' => OrderSnapshotReader::statusLabel('new'),
+                        'preorder' => OrderSnapshotReader::statusLabel('preorder'),
+                        'preparing' => OrderSnapshotReader::statusLabel('preparing'),
+                        'ready' => OrderSnapshotReader::statusLabel('ready'),
+                        'in_transit' => OrderSnapshotReader::statusLabel('in_transit'),
+                        'cancelled' => OrderSnapshotReader::statusLabel('cancelled'),
+                        'delivered' => OrderSnapshotReader::statusLabel('delivered'),
                     ]),
             ])
             ->recordActions([
