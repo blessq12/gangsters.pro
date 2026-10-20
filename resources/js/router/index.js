@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { applyPageHead } from "../modules/shell/application/usePageHead";
-import { trackYandexMetrikaSpaHit } from "../modules/shell/application/yandexMetrika";
 import { routeRecords } from "./routeRecords.js";
 
 const router = createRouter({
@@ -13,7 +12,6 @@ const router = createRouter({
 
 router.afterEach((to) => {
     applyPageHead(to);
-    trackYandexMetrikaSpaHit(to.fullPath);
 });
 
 export default router;
