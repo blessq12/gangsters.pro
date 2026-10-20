@@ -8,6 +8,7 @@
     {{-- Shell defaults; SPA перезапишет через usePageHead + resources/js/config/site.js --}}
     <title>Доставка суши и роллов в Томске | Gangster's Sushi</title>
     @include('inc.head-meta')
+    @include('inc.verification')
     @include('inc.favicon')
     {{-- Метрика в head: _ym_status-check / отладка требуют ранней загрузки tag.js --}}
     @include('inc.yandex-metrika')
