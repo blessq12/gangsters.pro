@@ -1,4 +1,4 @@
-{{-- Статический shell до гидрации SPA. Актуальные SEO — resources/js/config/seoPages.js --}}
+{{-- Статический shell до гидрации SPA. Актуальные SEO — resources/js/public/config/seoPages.js --}}
 <meta name="description"
     content="Закажи суши, роллы и горячие блюда с доставкой по Томску. Gangster's Sushi — быстрая доставка и актуальное меню онлайн.">
 <meta name="color-scheme" content="dark">

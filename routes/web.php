@@ -30,4 +30,6 @@ Route::get('/favicon/{asset}', function (string $asset) {
     return response()->file($path);
 })->where('asset', '[a-zA-Z0-9\-\.]+');
 
+Route::view('/backoffice/{any?}', 'backoffice')->where('any', '.*');
+
 Route::view('/{any?}', 'app')->where('any', '.*');

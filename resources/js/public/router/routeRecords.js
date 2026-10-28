@@ -1,0 +1,58 @@
+/**
+ * Единый список маршрутов SPA: path, name, component и meta для публичной навигации.
+ * Подписи ссылок шапки — только в meta (см. resources/js/public/router/publicNav.ts).
+ * SEO — resources/js/public/config/seoPages.js.
+ */
+
+import { seoForPath } from "../config/seoPages";
+
+export const routeRecords = [
+    {
+        path: "/",
+        name: "home",
+        component: () => import("../pages/HomePage.vue"),
+        meta: {
+            navLabel: "Главная",
+            navHeaderLeftOrder: 0,
+            seo: seoForPath("/"),
+        },
+    },
+    {
+        path: "/about",
+        name: "about",
+        component: () => import("../pages/AboutPage.vue"),
+        meta: {
+            navLabel: "О компании",
+            navHeaderLeftOrder: 1,
+            seo: seoForPath("/about"),
+        },
+    },
+    {
+        path: "/delivery",
+        name: "delivery",
+        component: () => import("../pages/DeliveryPage.vue"),
+        meta: {
+            navLabel: "Доставка",
+            navHeaderRightOrder: 0,
+            seo: seoForPath("/delivery"),
+        },
+    },
+    {
+        path: "/contacts",
+        name: "contacts",
+        component: () => import("../pages/ContactsPage.vue"),
+        meta: {
+            navLabel: "Контакты",
+            navHeaderRightOrder: 1,
+            seo: seoForPath("/contacts"),
+        },
+    },
+    {
+        path: "/:pathMatch(.*)*",
+        name: "not-found",
+        component: () => import("../pages/NotFoundPage.vue"),
+        meta: {
+            seo: seoForPath("/404"),
+        },
+    },
+];

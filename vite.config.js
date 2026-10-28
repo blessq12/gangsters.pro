@@ -59,7 +59,11 @@ export default defineConfig({
     plugins: [
         tailwindcss(),
         laravel({
-            input: ["resources/js/app.js", "resources/css/style.css"],
+            input: [
+                "resources/js/public/app.js",
+                "resources/js/backoffice/app.js",
+                "resources/css/style.css",
+            ],
             refresh: true,
         }),
         vue({
