@@ -113,7 +113,7 @@
     "src": "node_modules/@mdi/font/fonts/materialdesignicons-webfont.woff2"
   },
   "resources/css/style.css": {
-    "file": "assets/style-DEJArhzn.css",
+    "file": "assets/style-BxDCrmWq.css",
     "src": "resources/css/style.css",
     "isEntry": true
   },
@@ -236,7 +236,7 @@
     ]
   },
   "resources/js/backoffice/app.js": {
-    "file": "assets/app-Dy04GcqH.js",
+    "file": "assets/app-DN2INITZ.js",
     "name": "app",
     "src": "resources/js/backoffice/app.js",
     "isEntry": true,
