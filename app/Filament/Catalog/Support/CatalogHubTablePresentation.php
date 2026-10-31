@@ -56,6 +56,28 @@ final class CatalogHubTablePresentation
             });
     }
 
+    public static function catalogItemOldPriceColumn(): TextInputColumn
+    {
+        return TextInputColumn::make('old_price')
+            ->label('Старая цена, ₽')
+            ->type('number')
+            ->placeholder('—')
+            ->sortable()
+            ->rules(['nullable', 'integer', 'min:0'])
+            ->updateStateUsing(function (mixed $state, Model $record): ?int {
+                if ($state === null || $state === '') {
+                    $record->update(['old_price' => null]);
+
+                    return null;
+                }
+
+                $oldPrice = (int) $state;
+                $record->update(['old_price' => $oldPrice]);
+
+                return $oldPrice;
+            });
+    }
+
     public static function categoryStatusColumn(): ToggleColumn
     {
         return ToggleColumn::make('is_active')

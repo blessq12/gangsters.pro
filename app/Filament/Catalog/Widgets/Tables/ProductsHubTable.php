@@ -36,6 +36,7 @@ class ProductsHubTable extends TableWidget
                         ->searchable(),
                     CatalogHubTablePresentation::catalogItemSkuColumn(),
                     CatalogHubTablePresentation::catalogItemPriceColumn(),
+                    CatalogHubTablePresentation::catalogItemOldPriceColumn(),
                     CatalogHubTablePresentation::catalogItemStatusColumn(),
                     CatalogHubTablePresentation::productSystemColumn(),
                 ])
