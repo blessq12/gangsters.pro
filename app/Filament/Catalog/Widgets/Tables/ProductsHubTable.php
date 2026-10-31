@@ -37,6 +37,7 @@ class ProductsHubTable extends TableWidget
                     CatalogHubTablePresentation::catalogItemSkuColumn(),
                     CatalogHubTablePresentation::catalogItemPriceColumn(),
                     CatalogHubTablePresentation::catalogItemOldPriceColumn(),
+                    CatalogHubTablePresentation::catalogItemWeightColumn(),
                     CatalogHubTablePresentation::catalogItemStatusColumn(),
                     CatalogHubTablePresentation::productSystemColumn(),
                 ])

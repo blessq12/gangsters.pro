@@ -121,6 +121,12 @@ final class ProductForm
                 ->minValue(0)
                 ->suffix('₽')
                 ->helperText('Только витрина: зачёркнутая цена, если больше актуальной. На заказ не влияет.'),
+            TextInput::make('weight')
+                ->label('Вес, г')
+                ->numeric()
+                ->minValue(0)
+                ->suffix('г')
+                ->helperText('Вес порции в граммах. У наборов считается как сумма позиций.'),
         ];
     }
 

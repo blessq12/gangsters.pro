@@ -34,6 +34,7 @@ final class Product implements CatalogItem
         private readonly array $images = [],
         private readonly ?int $paidTwinProductId = null,
         private readonly ?Money $oldPrice = null,
+        private readonly ?int $weight = null,
     ) {}
 
     public function id(): int
@@ -87,6 +88,14 @@ final class Product implements CatalogItem
     public function oldPrice(): ?Money
     {
         return $this->oldPrice;
+    }
+
+    /**
+     * Вес порции в граммах. null — не задан.
+     */
+    public function weight(): ?int
+    {
+        return $this->weight;
     }
 
     public function description(): ?string

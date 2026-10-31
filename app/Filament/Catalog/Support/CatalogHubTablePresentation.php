@@ -78,6 +78,28 @@ final class CatalogHubTablePresentation
             });
     }
 
+    public static function catalogItemWeightColumn(): TextInputColumn
+    {
+        return TextInputColumn::make('weight')
+            ->label('Вес, г')
+            ->type('number')
+            ->placeholder('—')
+            ->sortable()
+            ->rules(['nullable', 'integer', 'min:0'])
+            ->updateStateUsing(function (mixed $state, Model $record): ?int {
+                if ($state === null || $state === '') {
+                    $record->update(['weight' => null]);
+
+                    return null;
+                }
+
+                $weight = (int) $state;
+                $record->update(['weight' => $weight > 0 ? $weight : null]);
+
+                return $weight > 0 ? $weight : null;
+            });
+    }
+
     public static function categoryStatusColumn(): ToggleColumn
     {
         return ToggleColumn::make('is_active')

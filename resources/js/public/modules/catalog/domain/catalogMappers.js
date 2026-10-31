@@ -1,14 +1,14 @@
 import { toCatalogStorageUrl } from "./productView";
 import { roundRubles2 } from "../../../platform/moneyFormat";
 
-function extractWeightGrams(text) {
-    if (!text || typeof text !== "string") return null;
-
-    const raw = text.replace(",", ".").toLowerCase();
-    const match = raw.match(/(\d+(?:\.\d+)?)\s*(г|гр|грамм|g)\b/iu);
-    if (!match) return null;
-
-    const grams = Number(match[1]);
+/**
+ * Вес из API (граммы). null / 0 → null.
+ * @param {unknown} weight
+ * @returns {number|null}
+ */
+export function parseCatalogWeightGrams(weight) {
+    if (weight == null || weight === "") return null;
+    const grams = Number(weight);
     if (!Number.isFinite(grams) || grams <= 0) return null;
     return Math.round(grams);
 }
@@ -155,10 +155,7 @@ export function normalizeCatalogProduct(apiProduct) {
         ),
     );
     const { imageUrl, imageSrcset } = normalizeCatalogImages(apiProduct.images);
-
-    const derivedWeight =
-        extractWeightGrams(apiProduct.weight ?? apiProduct.description) ||
-        extractWeightGrams(apiProduct.name);
+    const weight = parseCatalogWeightGrams(apiProduct.weight);
 
     const nutrition =
         apiProduct.nutrition && typeof apiProduct.nutrition === "object"
@@ -193,7 +190,7 @@ export function normalizeCatalogProduct(apiProduct) {
         name: apiProduct.name || "",
         price,
         oldPrice,
-        weight: derivedWeight,
+        weight,
         tags: normalizeProductTags(apiProduct.tags),
         images: imageUrl ? [imageUrl] : [],
         imageSrcset,
@@ -255,7 +252,7 @@ export function normalizeCatalogSet(apiSet) {
         name: apiSet.name || "",
         price,
         oldPrice,
-        weight: null,
+        weight: parseCatalogWeightGrams(apiSet.weight),
         description,
         tags: normalizeProductTags(apiSet.tags),
         images: imageUrl ? [imageUrl] : [],

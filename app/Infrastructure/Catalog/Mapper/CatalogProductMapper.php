@@ -36,7 +36,19 @@ final class CatalogProductMapper
             ingredients: $this->resolveIngredients($row),
             images: $images,
             paidTwinProductId: $paidTwinId !== null && $paidTwinId > 0 ? $paidTwinId : null,
+            weight: $this->resolveWeight($row),
         );
+    }
+
+    private function resolveWeight(PRD_Product $row): ?int
+    {
+        if ($row->weight === null) {
+            return null;
+        }
+
+        $grams = (int) $row->weight;
+
+        return $grams > 0 ? $grams : null;
     }
 
     private function resolveOldPrice(PRD_Product $row): ?Money

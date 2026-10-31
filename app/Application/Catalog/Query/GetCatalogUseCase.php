@@ -186,8 +186,10 @@ final class GetCatalogUseCase
             }
         }
 
-        $lineProductNames = $this->catalogItems->findProductNamesByIds(
-            array_values(array_unique($lineProductIds)),
+        $uniqueLineProductIds = array_values(array_unique($lineProductIds));
+        $lineProductNames = $this->catalogItems->findProductNamesByIds($uniqueLineProductIds);
+        $lineProductsById = $this->indexProducts(
+            $this->catalogItems->findActiveProductsByIds($uniqueLineProductIds),
         );
 
         $promotionMetaByProductId = $this->catalogItems->findPromotionMetaByProductIds($productIds);
@@ -201,6 +203,7 @@ final class GetCatalogUseCase
                 $setsById,
                 $tagById,
                 $lineProductNames,
+                $lineProductsById,
                 $promotionMetaByProductId,
                 $lite,
                 $paidTwinIdSet,
@@ -221,10 +224,9 @@ final class GetCatalogUseCase
      * @param  array<int, ProductSet>  $setsById
      * @param  array<int, Tag>  $tagById
      * @param  array<int, string>  $lineProductNames
-     * @return array<string, mixed>|null
-     */
-    /**
+     * @param  array<int, Product>  $lineProductsById
      * @param  array<int, true>  $paidTwinIdSet
+     * @return array<string, mixed>|null
      */
     private function resolveCategoryItem(
         CategoryItem $link,
@@ -232,6 +234,7 @@ final class GetCatalogUseCase
         array $setsById,
         array $tagById,
         array $lineProductNames,
+        array $lineProductsById,
         array $promotionMetaByProductId,
         bool $lite,
         array $paidTwinIdSet,
@@ -240,7 +243,7 @@ final class GetCatalogUseCase
             $set = $setsById[$link->catalogItemId()] ?? null;
 
             return $set instanceof ProductSet
-                ? $this->mapProductSet($set, $tagById, $lineProductNames, $lite)
+                ? $this->mapProductSet($set, $tagById, $lineProductNames, $lineProductsById, $lite)
                 : null;
         }
 
@@ -338,6 +341,7 @@ final class GetCatalogUseCase
             'status' => $product->status()->value,
             'price' => $this->mapMoney($product->price()),
             'old_price' => $this->mapOptionalMoney($product->oldPrice()),
+            'weight' => $product->weight(),
             'tags' => $this->mapTags($product->tagIds(), $tagById),
             'images' => $this->mapImages($product->images(), $lite),
             'promotion_meta' => $this->mapPromotionMeta($promotionMeta),
@@ -369,11 +373,17 @@ final class GetCatalogUseCase
 
     /**
      * @param  array<int, string>  $lineProductNames
+     * @param  array<int, Product>  $lineProductsById
      * @param  array<int, Tag>  $tagById
      * @return array<string, mixed>
      */
-    private function mapProductSet(ProductSet $set, array $tagById, array $lineProductNames, bool $lite): array
-    {
+    private function mapProductSet(
+        ProductSet $set,
+        array $tagById,
+        array $lineProductNames,
+        array $lineProductsById,
+        bool $lite,
+    ): array {
         $lines = [];
 
         foreach ($set->lines() as $line) {
@@ -394,6 +404,7 @@ final class GetCatalogUseCase
             'status' => $set->status()->value,
             'price' => $this->mapMoney($set->price()),
             'old_price' => $this->mapOptionalMoney($set->oldPrice()),
+            'weight' => $this->resolveSetWeightGrams($set, $lineProductsById),
             'lines' => $lines,
             'tags' => $this->mapTags($set->tagIds(), $tagById),
             'images' => $this->mapImages($set->images(), $lite),
@@ -487,6 +498,34 @@ final class GetCatalogUseCase
         }
 
         return $this->mapMoney($money);
+    }
+
+    /**
+     * Вес набора = сумма (вес товара × qty). Если ни у одной линии веса нет — null.
+     *
+     * @param  array<int, Product>  $lineProductsById
+     */
+    private function resolveSetWeightGrams(ProductSet $set, array $lineProductsById): ?int
+    {
+        $total = 0;
+        $hasAny = false;
+
+        foreach ($set->lines() as $line) {
+            $product = $lineProductsById[$line->productId()] ?? null;
+            if (! $product instanceof Product) {
+                continue;
+            }
+
+            $grams = $product->weight();
+            if ($grams === null || $grams <= 0) {
+                continue;
+            }
+
+            $hasAny = true;
+            $total += $grams * $line->quantity();
+        }
+
+        return $hasAny ? $total : null;
     }
 
     /**
