@@ -30,6 +30,10 @@ Route::get('/favicon/{asset}', function (string $asset) {
     return response()->file($path);
 })->where('asset', '[a-zA-Z0-9\-\.]+');
 
-Route::view('/backoffice/{any?}', 'backoffice')->where('any', '.*');
+Route::get('/backoffice/{any?}', static function () {
+    abort_unless((bool) config('backoffice.enabled'), 404);
+
+    return view('backoffice');
+})->where('any', '.*');
 
 Route::view('/{any?}', 'app')->where('any', '.*');
