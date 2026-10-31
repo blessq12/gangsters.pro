@@ -29,6 +29,7 @@ final class CatalogProductMapper
             status: $this->resolveStatus($row),
             isSystem: (bool) $row->is_system,
             price: Money::rubles((int) ($row->price ?? 0)),
+            oldPrice: $this->resolveOldPrice($row),
             description: $row->description !== null ? (string) $row->description : null,
             nutrition: $this->resolveNutrition($row),
             tagIds: $tagIds,
@@ -36,6 +37,21 @@ final class CatalogProductMapper
             images: $images,
             paidTwinProductId: $paidTwinId !== null && $paidTwinId > 0 ? $paidTwinId : null,
         );
+    }
+
+    private function resolveOldPrice(PRD_Product $row): ?Money
+    {
+        if ($row->old_price === null) {
+            return null;
+        }
+
+        $amount = (int) $row->old_price;
+
+        if ($amount <= 0) {
+            return null;
+        }
+
+        return Money::rubles($amount);
     }
 
     private function resolveSku(PRD_Product $row): ?string

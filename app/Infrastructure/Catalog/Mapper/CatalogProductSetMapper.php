@@ -30,6 +30,7 @@ final class CatalogProductSetMapper
             sku: $this->resolveSku($row),
             status: $this->resolveStatus($row),
             price: Money::rubles((int) ($row->price ?? 0)),
+            oldPrice: $this->resolveOldPrice($row),
             description: $row->description !== null ? (string) $row->description : null,
             lines: $lines,
             tagIds: $tagIds,
@@ -43,6 +44,21 @@ final class CatalogProductSetMapper
             productId: (int) $row->product_id,
             quantity: (int) $row->quantity,
         );
+    }
+
+    private function resolveOldPrice(PRD_Product $row): ?Money
+    {
+        if ($row->old_price === null) {
+            return null;
+        }
+
+        $amount = (int) $row->old_price;
+
+        if ($amount <= 0) {
+            return null;
+        }
+
+        return Money::rubles($amount);
     }
 
     private function resolveSku(PRD_Product $row): ?string

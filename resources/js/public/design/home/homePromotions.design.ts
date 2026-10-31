@@ -5,9 +5,8 @@
 export const homePromotionsDesign = {
     shared: {
         section: "my-12",
-        thumbWrap: "w-full overflow-hidden rounded-none",
-        thumbImg:
-            "block h-auto w-full max-w-full object-contain grayscale transition-transform duration-500 ease-out group-hover:scale-105 group-hover:grayscale-0",
+        thumbWrap: "w-full rounded-none",
+        thumbImg: "block h-auto w-full max-w-full object-contain",
         modalStack: "space-y-3",
         modalMedia: "w-full overflow-hidden rounded-none",
         modalImg: "mx-auto block h-auto w-full max-w-full max-h-[70vh] object-contain",
@@ -25,13 +24,13 @@ export const homePromotionsDesign = {
         mobileSkeletonOuter:
             "snap-start flex-none w-[18rem] rounded-none border border-black/12 bg-neutral-900/65 animate-pulse",
         mobileArticle:
-            "snap-start group relative flex-none w-[18rem] cursor-pointer rounded-none",
+            "snap-start relative flex-none w-[18rem] cursor-pointer rounded-none transition-transform duration-500 ease-out hover:scale-[1.03]",
         desktopGrid:
             "mx-auto grid grid-cols-4 justify-items-center gap-4",
         desktopSkeleton:
             "min-h-[8rem] w-full max-w-xs rounded-none border border-black/12 bg-neutral-900/65 animate-pulse",
         desktopArticle:
-            "group relative w-full max-w-xs cursor-pointer rounded-none",
+            "relative w-full max-w-xs cursor-pointer rounded-none transition-transform duration-500 ease-out hover:scale-[1.03]",
         emptyDesktopSpan: "col-span-4 py-4 text-center text-xs text-app-muted",
     },
 
@@ -41,7 +40,7 @@ export const homePromotionsDesign = {
         skeleton:
             "min-h-[8rem] w-full max-w-xs rounded-none border border-black/12 bg-neutral-900/65 animate-pulse",
         article:
-            "group relative w-full max-w-xs cursor-pointer rounded-none",
+            "relative w-full max-w-xs cursor-pointer rounded-none transition-transform duration-500 ease-out hover:scale-[1.03]",
         emptySpan: "col-span-4 py-4 text-center text-xs text-app-muted",
     },
 
@@ -51,6 +50,6 @@ export const homePromotionsDesign = {
         loadingCard:
             "flex-none w-[18rem] rounded-none border border-black/12 bg-neutral-900/65 animate-pulse",
         article:
-            "group relative cursor-pointer overflow-hidden rounded-none",
+            "relative cursor-pointer rounded-none transition-transform duration-500 ease-out hover:scale-[1.03]",
     },
 } as const;

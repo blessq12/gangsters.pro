@@ -103,6 +103,7 @@ function handleIncrement() {
 
                 <CatalogCardCommerce
                     :price="product.price"
+                    :old-price="product.oldPrice"
                     :qty-in-cart="qtyInCart"
                     variant="desktop"
                     :compact="compact"

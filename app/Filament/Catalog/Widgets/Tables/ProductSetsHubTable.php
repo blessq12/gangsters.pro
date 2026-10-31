@@ -40,6 +40,7 @@ class ProductSetsHubTable extends TableWidget
                         ->label('Позиций в наборе')
                         ->sortable(),
                     CatalogHubTablePresentation::catalogItemPriceColumn(),
+                    CatalogHubTablePresentation::catalogItemOldPriceColumn(),
                     CatalogHubTablePresentation::catalogItemStatusColumn(),
                 ])
                 ->filters([

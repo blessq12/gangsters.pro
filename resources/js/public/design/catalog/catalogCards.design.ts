@@ -25,21 +25,37 @@ export const catalogCardsDesign = {
             horizontal:
                 "flex min-w-0 flex-1 flex-nowrap items-center gap-2",
         },
+        priceChip: {
+            desktop:
+                "ml-auto inline-flex shrink-0 items-baseline gap-1.5 whitespace-nowrap bg-app-accent/15 px-2.5 py-1.5 sm:px-3",
+            mobileGrid:
+                "ml-auto inline-flex min-h-10 shrink-0 items-baseline gap-1.5 whitespace-nowrap bg-app-accent/15 px-3 py-1.5",
+            horizontal:
+                "ml-auto inline-flex h-9 shrink-0 items-baseline gap-1 whitespace-nowrap bg-app-accent/15 px-2.5 py-1.5",
+        },
+        oldPrice: {
+            desktop:
+                "whitespace-nowrap text-[11px] font-medium tabular-nums text-app-muted line-through sm:text-xs",
+            mobileGrid:
+                "whitespace-nowrap text-[10px] font-medium tabular-nums text-app-muted line-through",
+            horizontal:
+                "whitespace-nowrap text-[10px] font-medium tabular-nums text-app-muted line-through",
+        },
         priceIdle: {
             desktop:
-                "shrink-0 whitespace-nowrap text-sm font-semibold tabular-nums text-app-accent sm:text-base",
+                "whitespace-nowrap text-sm font-semibold tabular-nums text-app-accent sm:text-base",
             mobileGrid:
-                "ml-auto flex min-h-10 shrink-0 items-center whitespace-nowrap bg-app-accent/15 px-3 py-1.5 text-[12px] font-semibold tabular-nums text-app-accent",
+                "whitespace-nowrap text-[12px] font-semibold tabular-nums text-app-accent",
             horizontal:
-                "ml-auto flex h-9 shrink-0 items-center whitespace-nowrap bg-app-accent/15 px-2.5 py-1.5 text-[11px] font-semibold tabular-nums text-app-accent sm:text-xs",
+                "whitespace-nowrap text-[11px] font-semibold tabular-nums text-app-accent sm:text-xs",
         },
         priceInCart: {
             desktop:
-                "shrink-0 whitespace-nowrap text-xs font-semibold tabular-nums text-app-muted sm:text-sm",
+                "whitespace-nowrap text-xs font-semibold tabular-nums text-app-muted sm:text-sm",
             mobileGrid:
-                "ml-auto flex min-h-10 shrink-0 items-center whitespace-nowrap px-2 text-[12px] font-semibold tabular-nums text-app-muted",
+                "whitespace-nowrap text-[12px] font-semibold tabular-nums text-app-muted",
             horizontal:
-                "ml-auto flex h-9 shrink-0 items-center whitespace-nowrap px-2 text-[11px] font-semibold tabular-nums text-app-muted sm:text-xs",
+                "whitespace-nowrap text-[11px] font-semibold tabular-nums text-app-muted sm:text-xs",
         },
     },
 

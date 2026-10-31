@@ -30,6 +30,7 @@ final class ProductSet implements CatalogItem
         private readonly array $lines,
         private readonly array $tagIds,
         private readonly array $images = [],
+        private readonly ?Money $oldPrice = null,
     ) {
         if ($lines === []) {
             throw new \InvalidArgumentException('Набор должен содержать хотя бы один товар.');
@@ -74,6 +75,14 @@ final class ProductSet implements CatalogItem
     public function price(): Money
     {
         return $this->price;
+    }
+
+    /**
+     * Старая цена для витрины (зачёркнутый display-only). null — не показывать.
+     */
+    public function oldPrice(): ?Money
+    {
+        return $this->oldPrice;
     }
 
     public function description(): ?string

@@ -26,6 +26,15 @@ const tagTone = useAppDesign().components.catalog.cards.shared.tagTone;
 
 const { description } = useCatalogItemDisplay(computed(() => props.product));
 
+const formattedOldPrice = computed(() => {
+    const current = Number(props.product?.price) || 0;
+    const previous = Number(props.product?.oldPrice);
+    if (!Number.isFinite(previous) || previous <= 0 || previous <= current) {
+        return null;
+    }
+    return `${formatMoneyRublesRu(previous)}\u00a0₽`;
+});
+
 const tags = computed(() => {
     const source = Array.isArray(props.product?.tags)
         ? props.product.tags
@@ -102,15 +111,25 @@ function handleDecrement() {
 
         <div :class="di.controlsRow">
             <div :class="di.actionIsland">
-                <button
+                <div
                     v-if="product.price != null"
-                    type="button"
-                    :class="di.priceHeaderBtn"
-                    :aria-label="qtyInCart === 0 ? 'Добавить в корзину' : 'Увеличить количество'"
-                    @click.stop="handlePriceClick"
+                    :class="di.priceHeaderChip"
                 >
-                    {{ formatMoneyRublesRu(product.price) }}&nbsp;₽
-                </button>
+                    <span
+                        v-if="formattedOldPrice"
+                        :class="di.oldPriceHeader"
+                    >
+                        {{ formattedOldPrice }}
+                    </span>
+                    <button
+                        type="button"
+                        :class="di.priceHeaderBtn"
+                        :aria-label="qtyInCart === 0 ? 'Добавить в корзину' : 'Увеличить количество'"
+                        @click.stop="handlePriceClick"
+                    >
+                        {{ formatMoneyRublesRu(product.price) }}&nbsp;₽
+                    </button>
+                </div>
 
                 <div :class="di.cartIconOuter">
                     <button

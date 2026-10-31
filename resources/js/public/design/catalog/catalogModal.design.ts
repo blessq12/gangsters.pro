@@ -61,8 +61,12 @@ export const catalogModalDesign = {
         metaLinkActive: "text-app-accent underline",
         metaLinkMuted:
             "block text-xs font-medium text-app-canvas-fg/70 sm:text-sm",
+        priceHeaderChip:
+            "inline-flex shrink-0 items-baseline gap-2 whitespace-nowrap bg-app-accent/15 px-3 py-1.5 sm:min-h-11 sm:px-4 sm:py-2",
+        oldPriceHeader:
+            "whitespace-nowrap text-xs font-medium tabular-nums text-app-canvas-fg/55 line-through sm:text-sm",
         priceHeaderBtn:
-            "inline-flex shrink-0 min-h-10 items-center whitespace-nowrap px-3 py-1.5 text-base font-bold tabular-nums text-white transition-transform duration-200 hover:scale-[1.02] sm:min-h-11 sm:px-4 sm:py-2 sm:text-xl lg:text-2xl",
+            "inline-flex shrink-0 items-center whitespace-nowrap text-base font-bold tabular-nums text-app-accent transition-transform duration-200 hover:scale-[1.02] sm:text-xl lg:text-2xl",
         tagsRow: "mb-2 flex flex-wrap gap-1.5",
         tagPill:
             "inline-flex items-center px-2 py-0.5 text-[11px] font-medium backdrop-blur",

@@ -47,6 +47,33 @@ export function parseCatalogPriceRubles(price) {
 }
 
 /**
+ * Опциональная цена из API. null / 0 → null.
+ * @param {unknown} price
+ * @returns {number|null}
+ */
+export function parseOptionalCatalogPriceRubles(price) {
+    if (price == null) return null;
+    const amount = parseCatalogPriceRubles(price);
+    return amount > 0 ? amount : null;
+}
+
+/**
+ * Старая цена для витрины: только если строго больше актуальной.
+ * @param {number} price
+ * @param {number|null|undefined} oldPrice
+ * @returns {number|null}
+ */
+export function resolveDisplayOldPrice(price, oldPrice) {
+    if (oldPrice == null) return null;
+    const current = Number(price) || 0;
+    const previous = Number(oldPrice);
+    if (!Number.isFinite(previous) || previous <= 0 || previous <= current) {
+        return null;
+    }
+    return roundRubles2(previous);
+}
+
+/**
  * @param {unknown} apiImages
  * @returns {{ imageUrl: string|null, imageSrcset: Array<{ url: string, width: number }> }}
  */
@@ -121,6 +148,12 @@ export function normalizeCatalogProduct(apiProduct) {
     if (!id) return null;
 
     const price = parseCatalogPriceRubles(apiProduct.price);
+    const oldPrice = resolveDisplayOldPrice(
+        price,
+        parseOptionalCatalogPriceRubles(
+            apiProduct.old_price ?? apiProduct.oldPrice,
+        ),
+    );
     const { imageUrl, imageSrcset } = normalizeCatalogImages(apiProduct.images);
 
     const derivedWeight =
@@ -159,6 +192,7 @@ export function normalizeCatalogProduct(apiProduct) {
         slug: String(apiProduct.slug || "").trim(),
         name: apiProduct.name || "",
         price,
+        oldPrice,
         weight: derivedWeight,
         tags: normalizeProductTags(apiProduct.tags),
         images: imageUrl ? [imageUrl] : [],
@@ -185,6 +219,10 @@ export function normalizeCatalogSet(apiSet) {
     if (!id) return null;
 
     const price = parseCatalogPriceRubles(apiSet.price);
+    const oldPrice = resolveDisplayOldPrice(
+        price,
+        parseOptionalCatalogPriceRubles(apiSet.old_price ?? apiSet.oldPrice),
+    );
     const { imageUrl, imageSrcset } = normalizeCatalogImages(apiSet.images);
 
     const lines = Array.isArray(apiSet.lines)
@@ -216,6 +254,7 @@ export function normalizeCatalogSet(apiSet) {
         slug: String(apiSet.slug || "").trim(),
         name: apiSet.name || "",
         price,
+        oldPrice,
         weight: null,
         description,
         tags: normalizeProductTags(apiSet.tags),

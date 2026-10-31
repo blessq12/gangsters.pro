@@ -101,6 +101,7 @@ function tagToneClass(color) {
 
                 <CatalogCardCommerce
                     :price="product.price"
+                    :old-price="product.oldPrice"
                     :qty-in-cart="qtyInCart"
                     variant="horizontal"
                     @add-to-cart="handleAddToCart"

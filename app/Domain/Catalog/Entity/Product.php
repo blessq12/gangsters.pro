@@ -33,6 +33,7 @@ final class Product implements CatalogItem
         private readonly array $ingredients = [],
         private readonly array $images = [],
         private readonly ?int $paidTwinProductId = null,
+        private readonly ?Money $oldPrice = null,
     ) {}
 
     public function id(): int
@@ -78,6 +79,14 @@ final class Product implements CatalogItem
     public function price(): Money
     {
         return $this->price;
+    }
+
+    /**
+     * Старая цена для витрины (зачёркнутый display-only). null — не показывать.
+     */
+    public function oldPrice(): ?Money
+    {
+        return $this->oldPrice;
     }
 
     public function description(): ?string

@@ -19,6 +19,7 @@ class PRD_Product extends Model
         'catalog_kind',
         'is_system',
         'price',
+        'old_price',
         'calories',
         'proteins',
         'fats',
@@ -33,6 +34,7 @@ class PRD_Product extends Model
 
     protected $casts = [
         'price' => 'integer',
+        'old_price' => 'integer',
         'calories' => 'float',
         'proteins' => 'float',
         'fats' => 'float',
