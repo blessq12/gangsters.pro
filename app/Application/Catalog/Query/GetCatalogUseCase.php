@@ -501,31 +501,30 @@ final class GetCatalogUseCase
     }
 
     /**
-     * Вес набора = сумма (вес товара × qty). Если ни у одной линии веса нет — null.
+     * Вес набора = сумма (вес товара × qty).
+     * Только если вес проставлен у каждой позиции набора; иначе null.
      *
      * @param  array<int, Product>  $lineProductsById
      */
     private function resolveSetWeightGrams(ProductSet $set, array $lineProductsById): ?int
     {
         $total = 0;
-        $hasAny = false;
 
         foreach ($set->lines() as $line) {
             $product = $lineProductsById[$line->productId()] ?? null;
             if (! $product instanceof Product) {
-                continue;
+                return null;
             }
 
             $grams = $product->weight();
             if ($grams === null || $grams <= 0) {
-                continue;
+                return null;
             }
 
-            $hasAny = true;
             $total += $grams * $line->quantity();
         }
 
-        return $hasAny ? $total : null;
+        return $total > 0 ? $total : null;
     }
 
     /**

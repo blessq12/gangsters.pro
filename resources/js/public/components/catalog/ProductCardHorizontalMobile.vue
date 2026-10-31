@@ -27,6 +27,12 @@ const imageSizes = "(max-width: 640px) 40vw, 240px";
 const { qtyInCart, isFav, addToCart, incrementCart, decrementCart, toggleFavorite } =
     useProductActions(computed(() => props.product));
 
+const displayWeight = computed(() => {
+    const grams = Number(props.product?.weight);
+    if (!Number.isFinite(grams) || grams <= 0) return null;
+    return Math.round(grams);
+});
+
 function handleAddToCart() {
     addToCart(1);
 }
@@ -75,10 +81,10 @@ function tagToneClass(color) {
                     {{ product.name }}
                 </p>
                 <span
-                    v-if="product.weight"
+                    v-if="displayWeight != null"
                     :class="h.weightInline"
                 >
-                    {{ product.weight }}&nbsp;г
+                    {{ displayWeight }}&nbsp;г
                 </span>
             </div>
 

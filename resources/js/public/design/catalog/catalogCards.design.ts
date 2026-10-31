@@ -86,9 +86,9 @@ export const catalogCardsDesign = {
             "absolute inset-0 flex items-center justify-center bg-neutral-950/50 text-xs text-app-muted",
         gradient: "pointer-events-none absolute inset-0 hidden",
         badgesCol:
-            "absolute left-2.5 top-2.5 z-10 flex max-w-[70%] flex-col gap-1 sm:left-3 sm:top-3",
+            "pointer-events-none absolute left-2.5 top-2.5 z-20 flex max-w-[70%] flex-col gap-1 sm:left-3 sm:top-3",
         weightPill:
-            "inline-flex w-fit items-center bg-black/55 px-2 py-1 text-[10px] font-medium text-app-canvas-fg backdrop-blur sm:px-2.5 sm:text-[11px]",
+            "inline-flex w-fit items-center bg-black/70 px-2 py-1 text-[10px] font-semibold tabular-nums text-app-canvas-fg backdrop-blur sm:px-2.5 sm:text-[11px]",
         tagsRow: "flex flex-wrap gap-1",
         tagPill:
             "inline-flex items-center px-2 py-0.5 text-[10px] font-medium backdrop-blur",
@@ -128,9 +128,9 @@ export const catalogCardsDesign = {
         imageHit:
             "absolute inset-0 z-[1] cursor-pointer",
         badgesCol:
-            "absolute left-3 top-3 z-10 flex max-w-[70%] flex-col gap-1",
+            "pointer-events-none absolute left-3 top-3 z-20 flex max-w-[70%] flex-col gap-1",
         weightPill:
-            "inline-flex items-center bg-black/55 px-2.5 py-1 text-[10px] font-medium text-app-canvas-fg backdrop-blur",
+            "inline-flex items-center bg-black/70 px-2.5 py-1 text-[10px] font-semibold tabular-nums text-app-canvas-fg backdrop-blur",
         tagsRow: "flex flex-wrap gap-1",
         tagPill:
             "inline-flex items-center px-2 py-0.5 text-[10px] font-medium backdrop-blur",
@@ -171,7 +171,8 @@ export const catalogCardsDesign = {
         body: "flex min-w-0 flex-1 flex-col justify-center gap-1.5 p-2.5 sm:p-3",
         titleRow: "flex min-w-0 items-baseline gap-2",
         title: `min-w-0 flex-1 ${catalogProductTitleMobile}`,
-        weightInline: "shrink-0 text-[11px] text-app-muted",
+        weightInline:
+            "shrink-0 text-[11px] font-semibold tabular-nums text-app-canvas-fg/85",
         setBadgeInline:
             "shrink-0 inline-flex w-fit items-center border border-violet-400/50 bg-violet-500/20 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-100",
         primaryTagInline: "self-start",

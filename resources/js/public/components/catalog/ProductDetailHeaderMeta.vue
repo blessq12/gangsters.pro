@@ -32,8 +32,15 @@ const {
     hasSetComposition,
 } = useCatalogItemDisplay(productRef);
 
+const displayWeight = computed(() => {
+    const grams = Number(props.product?.weight);
+    if (!Number.isFinite(grams) || grams <= 0) return null;
+    return Math.round(grams);
+});
+
 const showMetaRow = computed(
     () =>
+        displayWeight.value != null ||
         (isProduct.value &&
             (hasNutrition.value || ingredients.value.length > 0)) ||
         (isSet.value && (hasSetComposition.value || setCountLabel.value)),
@@ -172,6 +179,12 @@ onUnmounted(() => {
         v-if="showMetaRow"
         :class="di.metaLinksRow"
     >
+        <span
+            v-if="displayWeight != null"
+            :class="di.weightMeta"
+        >
+            {{ displayWeight }}&nbsp;г
+        </span>
         <button
             v-if="hasNutrition && isProduct"
             type="button"

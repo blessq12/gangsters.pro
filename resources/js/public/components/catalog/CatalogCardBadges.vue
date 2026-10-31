@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from "vue";
 import { useAppDesign } from "../../design/useAppDesign";
 
 const props = defineProps({
@@ -20,6 +21,12 @@ const props = defineProps({
 const cs = useAppDesign().components.catalog.cards.shared;
 const tokens = useAppDesign().components.catalog.cards[props.variant === "desktop" ? "desktop" : "mobileGrid"];
 
+const displayWeight = computed(() => {
+    const grams = Number(props.product?.weight);
+    if (!Number.isFinite(grams) || grams <= 0) return null;
+    return Math.round(grams);
+});
+
 function tagToneClass(color) {
     const c = String(color || "").trim().toLowerCase();
     return cs.tagTone[c] ?? cs.tagTone.default;
@@ -29,10 +36,10 @@ function tagToneClass(color) {
 <template>
     <div :class="tokens.badgesCol">
         <div
-            v-if="product.weight"
+            v-if="displayWeight != null"
             :class="tokens.weightPill"
         >
-            {{ product.weight }} г
+            {{ displayWeight }}&nbsp;г
         </div>
         <span
             v-if="primaryTag"

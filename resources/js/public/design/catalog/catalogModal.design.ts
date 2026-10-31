@@ -61,6 +61,8 @@ export const catalogModalDesign = {
         metaLinkActive: "text-app-accent underline",
         metaLinkMuted:
             "block text-xs font-medium text-app-canvas-fg/70 sm:text-sm",
+        weightMeta:
+            "block text-xs font-semibold tabular-nums text-app-canvas-fg/90 sm:text-sm",
         priceHeaderChip:
             "inline-flex shrink-0 items-baseline gap-2 whitespace-nowrap bg-app-accent/15 px-3 py-1.5 sm:min-h-11 sm:px-4 sm:py-2",
         oldPriceHeader:
