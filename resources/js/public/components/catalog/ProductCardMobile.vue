@@ -148,6 +148,7 @@ function handleDecrement() {
 
                 <CatalogCardCommerce
                     :price="product.price"
+                    :old-price="product.oldPrice"
                     :qty-in-cart="qtyInCart"
                     variant="mobileGrid"
                     @add-to-cart="handleAddToCart"

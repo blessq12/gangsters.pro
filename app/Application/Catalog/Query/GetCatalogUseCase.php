@@ -337,6 +337,7 @@ final class GetCatalogUseCase
             'slug' => $product->slug(),
             'status' => $product->status()->value,
             'price' => $this->mapMoney($product->price()),
+            'old_price' => $this->mapOptionalMoney($product->oldPrice()),
             'tags' => $this->mapTags($product->tagIds(), $tagById),
             'images' => $this->mapImages($product->images(), $lite),
             'promotion_meta' => $this->mapPromotionMeta($promotionMeta),
@@ -392,6 +393,7 @@ final class GetCatalogUseCase
             'slug' => $set->slug(),
             'status' => $set->status()->value,
             'price' => $this->mapMoney($set->price()),
+            'old_price' => $this->mapOptionalMoney($set->oldPrice()),
             'lines' => $lines,
             'tags' => $this->mapTags($set->tagIds(), $tagById),
             'images' => $this->mapImages($set->images(), $lite),
@@ -473,6 +475,18 @@ final class GetCatalogUseCase
             'amount' => $money->amountRubles(),
             'currency' => $money->currency(),
         ];
+    }
+
+    /**
+     * @return array{amount: int, currency: string}|null
+     */
+    private function mapOptionalMoney(?Money $money): ?array
+    {
+        if (! $money instanceof Money || $money->isZero()) {
+            return null;
+        }
+
+        return $this->mapMoney($money);
     }
 
     /**

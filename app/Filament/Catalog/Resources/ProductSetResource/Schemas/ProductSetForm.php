@@ -45,7 +45,14 @@ final class ProductSetForm
                 ->label('Цена, ₽')
                 ->numeric()
                 ->minValue(0)
-                ->suffix('₽'),
+                ->suffix('₽')
+                ->helperText('Актуальная цена продажи в рублях.'),
+            TextInput::make('old_price')
+                ->label('Старая цена, ₽')
+                ->numeric()
+                ->minValue(0)
+                ->suffix('₽')
+                ->helperText('Только витрина: зачёркнутая цена, если больше актуальной. На заказ не влияет.'),
         ];
     }
 

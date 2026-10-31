@@ -114,7 +114,13 @@ final class ProductForm
                 ->numeric()
                 ->minValue(0)
                 ->suffix('₽')
-                ->helperText('Цена в рублях. Можно указать позже.'),
+                ->helperText('Актуальная цена продажи в рублях. Можно указать позже.'),
+            TextInput::make('old_price')
+                ->label('Старая цена, ₽')
+                ->numeric()
+                ->minValue(0)
+                ->suffix('₽')
+                ->helperText('Только витрина: зачёркнутая цена, если больше актуальной. На заказ не влияет.'),
         ];
     }
 

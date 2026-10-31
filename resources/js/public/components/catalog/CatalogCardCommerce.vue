@@ -8,6 +8,10 @@ const props = defineProps({
         type: Number,
         default: null,
     },
+    oldPrice: {
+        type: Number,
+        default: null,
+    },
     qtyInCart: {
         type: Number,
         default: 0,
@@ -76,6 +80,16 @@ const formattedPrice = computed(() =>
     props.price != null ? `${formatMoneyRublesRu(props.price)}\u00a0₽` : null,
 );
 
+const formattedOldPrice = computed(() => {
+    if (props.oldPrice == null) return null;
+    const current = Number(props.price) || 0;
+    const previous = Number(props.oldPrice);
+    if (!Number.isFinite(previous) || previous <= 0 || previous <= current) {
+        return null;
+    }
+    return `${formatMoneyRublesRu(previous)}\u00a0₽`;
+});
+
 const justAddedToCart = ref(false);
 const justChangedQty = ref(false);
 let justAddedTimer = null;
@@ -143,12 +157,20 @@ function handleDecrement() {
                 <span v-if="showAddLabel">В корзину</span>
             </button>
 
-            <span
+            <div
                 v-if="formattedPrice"
-                :class="commerce.priceIdle[variant]"
+                :class="commerce.priceChip[variant]"
             >
-                {{ formattedPrice }}
-            </span>
+                <span
+                    v-if="formattedOldPrice"
+                    :class="commerce.oldPrice[variant]"
+                >
+                    {{ formattedOldPrice }}
+                </span>
+                <span :class="commerce.priceIdle[variant]">
+                    {{ formattedPrice }}
+                </span>
+            </div>
         </template>
 
         <template v-else>
@@ -180,12 +202,20 @@ function handleDecrement() {
                 </button>
             </div>
 
-            <span
+            <div
                 v-if="formattedPrice"
-                :class="commerce.priceInCart[variant]"
+                :class="commerce.priceChip[variant]"
             >
-                {{ formattedPrice }}
-            </span>
+                <span
+                    v-if="formattedOldPrice"
+                    :class="commerce.oldPrice[variant]"
+                >
+                    {{ formattedOldPrice }}
+                </span>
+                <span :class="commerce.priceInCart[variant]">
+                    {{ formattedPrice }}
+                </span>
+            </div>
         </template>
     </div>
 </template>
