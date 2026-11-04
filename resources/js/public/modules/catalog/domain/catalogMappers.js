@@ -1,4 +1,4 @@
-import { toCatalogStorageUrl } from "./productView";
+import { normalizeImageFocus, toCatalogStorageUrl } from "./productView";
 import { roundRubles2 } from "../../../platform/moneyFormat";
 
 /**
@@ -75,17 +75,29 @@ export function resolveDisplayOldPrice(price, oldPrice) {
 
 /**
  * @param {unknown} apiImages
- * @returns {{ imageUrl: string|null, imageSrcset: Array<{ url: string, width: number }> }}
+ * @returns {{
+ *   imageUrl: string|null,
+ *   imageSrcset: Array<{ url: string, width: number }>,
+ *   imageFocus: { x: number, y: number }
+ * }}
  */
 function normalizeCatalogImages(apiImages) {
+    const empty = {
+        imageUrl: null,
+        imageSrcset: [],
+        imageFocus: { x: 50, y: 50 },
+    };
+
     if (!Array.isArray(apiImages) || apiImages.length === 0) {
-        return { imageUrl: null, imageSrcset: [] };
+        return empty;
     }
 
     const firstImage = apiImages[0];
     if (!firstImage || typeof firstImage !== "object") {
-        return { imageUrl: null, imageSrcset: [] };
+        return empty;
     }
+
+    const imageFocus = normalizeImageFocus(firstImage.focus);
 
     if (Array.isArray(firstImage.variants)) {
         const variants = firstImage.variants;
@@ -119,6 +131,7 @@ function normalizeCatalogImages(apiImages) {
             return {
                 imageUrl: imageUrl || null,
                 imageSrcset,
+                imageFocus,
             };
         }
     }
@@ -131,10 +144,11 @@ function normalizeCatalogImages(apiImages) {
         return {
             imageUrl,
             imageSrcset: imageUrl ? [{ url: imageUrl, width: 800 }] : [],
+            imageFocus,
         };
     }
 
-    return { imageUrl: null, imageSrcset: [] };
+    return empty;
 }
 
 /**
@@ -154,7 +168,9 @@ export function normalizeCatalogProduct(apiProduct) {
             apiProduct.old_price ?? apiProduct.oldPrice,
         ),
     );
-    const { imageUrl, imageSrcset } = normalizeCatalogImages(apiProduct.images);
+    const { imageUrl, imageSrcset, imageFocus } = normalizeCatalogImages(
+        apiProduct.images,
+    );
     const weight = parseCatalogWeightGrams(apiProduct.weight);
 
     const nutrition =
@@ -194,6 +210,7 @@ export function normalizeCatalogProduct(apiProduct) {
         tags: normalizeProductTags(apiProduct.tags),
         images: imageUrl ? [imageUrl] : [],
         imageSrcset,
+        imageFocus,
         nutrition,
         paidTwinProductId:
             Number.isFinite(resolvedPaidTwinProductId) &&
@@ -220,7 +237,9 @@ export function normalizeCatalogSet(apiSet) {
         price,
         parseOptionalCatalogPriceRubles(apiSet.old_price ?? apiSet.oldPrice),
     );
-    const { imageUrl, imageSrcset } = normalizeCatalogImages(apiSet.images);
+    const { imageUrl, imageSrcset, imageFocus } = normalizeCatalogImages(
+        apiSet.images,
+    );
 
     const lines = Array.isArray(apiSet.lines)
         ? apiSet.lines
@@ -257,6 +276,7 @@ export function normalizeCatalogSet(apiSet) {
         tags: normalizeProductTags(apiSet.tags),
         images: imageUrl ? [imageUrl] : [],
         imageSrcset,
+        imageFocus,
         nutrition: null,
         lines,
         raw: apiSet,

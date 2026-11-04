@@ -19,6 +19,7 @@ const cs = useAppDesign().components.catalog.cards.shared;
 const {
     primaryThumb,
     imageSrcset,
+    imageObjectPosition,
     primaryTag,
 } = useCatalogCardView(computed(() => props.product));
 
@@ -86,6 +87,7 @@ function handleDecrement() {
                 :sizes="imageSrcset ? imageSizes : undefined"
                 alt=""
                 :class="m.img"
+                :style="{ objectPosition: imageObjectPosition || '50% 50%' }"
                 loading="lazy"
                 fetchpriority="low"
             />

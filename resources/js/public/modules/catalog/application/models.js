@@ -191,6 +191,16 @@ export function useCatalogCardView(productSource) {
             .join(", ");
     });
 
+    const imageObjectPosition = computed(() => {
+        const focus = product.value?.imageFocus;
+        const x = Number(focus?.x);
+        const y = Number(focus?.y);
+        const px = Number.isFinite(x) && x >= 0 && x <= 100 ? x : 50;
+        const py = Number.isFinite(y) && y >= 0 && y <= 100 ? y : 50;
+
+        return `${px}% ${py}%`;
+    });
+
     const primaryTag = computed(() => normalizeProductTags(product.value)[0] ?? null);
 
     const {
@@ -203,6 +213,7 @@ export function useCatalogCardView(productSource) {
         product,
         primaryThumb,
         imageSrcset,
+        imageObjectPosition,
         primaryTag,
         isSet,
         isProduct,

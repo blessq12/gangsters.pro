@@ -13,8 +13,40 @@ export function toCatalogStorageUrl(path) {
 }
 
 /**
- * Слайды для галереи модалки: из raw.images (варианты) или из нормализованного product.images.
- * @returns {{ url: string }[]}
+ * @param {unknown} rawFocus
+ * @returns {{ x: number, y: number }}
+ */
+export function normalizeImageFocus(rawFocus) {
+    const fallback = { x: 50, y: 50 };
+    if (!rawFocus || typeof rawFocus !== "object") {
+        return fallback;
+    }
+
+    const x = Number(rawFocus.x);
+    const y = Number(rawFocus.y);
+    if (!Number.isFinite(x) || !Number.isFinite(y)) {
+        return fallback;
+    }
+    if (x < 0 || x > 100 || y < 0 || y > 100) {
+        return fallback;
+    }
+
+    return { x, y };
+}
+
+/**
+ * CSS object-position из focus {x,y}.
+ * @param {unknown} rawFocus
+ * @returns {string}
+ */
+export function focusToObjectPosition(rawFocus) {
+    const focus = normalizeImageFocus(rawFocus);
+    return `${focus.x}% ${focus.y}%`;
+}
+
+/**
+ * Слайды для галереи модалки: из raw.images (варианты + focus) или из нормализованного product.images.
+ * @returns {{ url: string, objectPosition: string }[]}
  */
 export function buildProductGallerySlides(product) {
     if (!product) return [];
@@ -31,19 +63,32 @@ export function buildProductGallerySlides(product) {
                     bySize("thumb") ||
                     variants[0];
                 const url = v ? toCatalogStorageUrl(v.path) : null;
-                return url ? { url } : null;
+                if (!url) return null;
+
+                return {
+                    url,
+                    objectPosition: focusToObjectPosition(img?.focus),
+                };
             })
             .filter(Boolean);
     }
     if (Array.isArray(product.images) && product.images.length) {
+        const fallbackPosition = focusToObjectPosition(product.imageFocus);
         return product.images
-            .map((url) =>
-                typeof url === "string"
-                    ? { url }
-                    : url?.url
-                      ? { url: url.url }
-                      : null,
-            )
+            .map((entry) => {
+                if (typeof entry === "string") {
+                    return { url: entry, objectPosition: fallbackPosition };
+                }
+                if (entry?.url) {
+                    return {
+                        url: entry.url,
+                        objectPosition: focusToObjectPosition(
+                            entry.focus ?? product.imageFocus,
+                        ),
+                    };
+                }
+                return null;
+            })
             .filter(Boolean);
     }
     return [];

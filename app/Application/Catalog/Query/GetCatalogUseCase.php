@@ -447,7 +447,7 @@ final class GetCatalogUseCase
 
     /**
      * @param  list<ProductImage>  $images
-     * @return list<array{variants: list<array{size: string, path: string, width: int}>}>
+     * @return list<array{variants: list<array{size: string, path: string, width: int}>, focus: array{x: float, y: float}}>
      */
     private function mapImages(array $images, bool $lite = false): array
     {
@@ -471,6 +471,7 @@ final class GetCatalogUseCase
                         ['size' => 'medium', 'path' => $path, 'width' => 800],
                         ['size' => 'large', 'path' => $path, 'width' => 1200],
                     ],
+                'focus' => $image->focusPayload(),
             ];
         }
 

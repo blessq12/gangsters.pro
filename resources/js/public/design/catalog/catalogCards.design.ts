@@ -81,7 +81,7 @@ export const catalogCardsDesign = {
             "relative z-[1] group flex h-full flex-col overflow-hidden bg-app-glass-fill shadow-[0_18px_45px_rgba(0,0,0,0.85)] transition duration-300 hover:-translate-y-1 hover:bg-app-accent-soft-bg",
         mediaWrap:
             "relative w-full overflow-hidden aspect-[4/3] sm:aspect-[5/4] lg:h-full lg:aspect-auto",
-        img: "absolute inset-0 h-full w-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105",
+        img: "absolute inset-0 h-full w-full object-contain object-center transition-transform duration-500 ease-out group-hover:scale-105",
         placeholder:
             "absolute inset-0 flex items-center justify-center bg-neutral-950/50 text-xs text-app-muted",
         gradient: "pointer-events-none absolute inset-0 hidden",
@@ -121,7 +121,7 @@ export const catalogCardsDesign = {
         srOnlyAria: "sr-only",
         mediaWrap:
             "relative w-full overflow-hidden aspect-[4/3] lg:h-full lg:aspect-auto",
-        img: "absolute inset-0 h-full w-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105",
+        img: "absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105",
         placeholder:
             "absolute inset-0 flex items-center justify-center bg-neutral-950/50 text-xs text-app-muted",
         gradient: "pointer-events-none absolute inset-0 hidden",
@@ -162,9 +162,9 @@ export const catalogCardsDesign = {
         article:
             "relative z-[1] group flex overflow-hidden bg-app-glass-fill shadow-[0_10px_32px_rgba(0,0,0,0.7)]",
         thumbCol:
-            "relative w-28 shrink-0 cursor-pointer overflow-hidden sm:w-32",
+            "relative w-28 min-h-[7.5rem] shrink-0 cursor-pointer overflow-hidden self-stretch sm:w-32 sm:min-h-[8.5rem]",
         thumbImg:
-            "h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105",
+            "absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105",
         thumbPlaceholder:
             "flex h-full w-full items-center justify-center bg-neutral-950/50 text-xs text-app-muted",
         thumbGradient: "pointer-events-none absolute inset-0 hidden",

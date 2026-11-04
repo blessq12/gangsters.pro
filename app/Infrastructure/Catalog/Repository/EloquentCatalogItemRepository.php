@@ -346,9 +346,12 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
 
             $productId = (int) $row->product_id;
             $map[$productId] ??= [];
+            [$focusX, $focusY] = $this->resolveImageFocus($row);
             $map[$productId][] = new ProductImage(
                 path: $path,
                 sortOrder: (int) $row->sort_order,
+                focusX: $focusX,
+                focusY: $focusY,
             );
         }
 
@@ -415,5 +418,31 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
                 ],
             ])
             ->all();
+    }
+
+    /**
+     * @return array{0: ?float, 1: ?float}
+     */
+    private function resolveImageFocus(PRD_ProductImage $row): array
+    {
+        $rawX = $row->focus_x;
+        $rawY = $row->focus_y;
+
+        if ($rawX === null && $rawY === null) {
+            return [null, null];
+        }
+
+        if ($rawX === null || $rawY === null) {
+            return [null, null];
+        }
+
+        $focusX = (float) $rawX;
+        $focusY = (float) $rawY;
+
+        if ($focusX < 0.0 || $focusX > 100.0 || $focusY < 0.0 || $focusY > 100.0) {
+            return [null, null];
+        }
+
+        return [$focusX, $focusY];
     }
 }

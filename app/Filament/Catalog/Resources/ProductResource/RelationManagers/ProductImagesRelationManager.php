@@ -2,6 +2,7 @@
 
 namespace App\Filament\Catalog\Resources\ProductResource\RelationManagers;
 
+use App\Filament\Catalog\Forms\Components\FocalPointPicker;
 use App\Infrastructure\Catalog\Model\PRD_ProductImage;
 use App\Infrastructure\Catalog\Support\CatalogStoredImagePath;
 use Filament\Actions\CreateAction;
@@ -9,6 +10,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Hidden;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -34,7 +36,7 @@ class ProductImagesRelationManager extends RelationManager
             ->columns(1)
             ->components([
                 FileUpload::make('path')
-                    ->label('Изображение')
+                    ->label('Файл')
                     ->image()
                     ->disk('public')
                     ->directory(fn (): string => 'products/'.$this->getOwnerRecord()->getKey())
@@ -44,14 +46,19 @@ class ProductImagesRelationManager extends RelationManager
                         'image/png',
                         'image/webp',
                     ])
-                    ->imagePreviewHeight('220')
-                    ->panelLayout('integrated')
-                    ->openable()
-                    ->downloadable()
-                    ->previewable()
+                    ->panelLayout('compact')
+                    ->previewable(false)
+                    ->live()
                     ->required()
-                    ->maxSize(5120)
-                    ->helperText('JPEG, PNG или WebP. До 5 МБ.'),
+                    ->maxSize(5120),
+                Hidden::make('focus_x'),
+                Hidden::make('focus_y'),
+                FocalPointPicker::make('focus_picker')
+                    ->label('Фокус')
+                    ->imageField('path')
+                    ->focusXField('focus_x')
+                    ->focusYField('focus_y')
+                    ->imageDisk('public'),
             ]);
     }
 
@@ -76,33 +83,35 @@ class ProductImagesRelationManager extends RelationManager
                     ->visibility('public')
                     ->checkFileExistence(false)
                     ->imageHeight(140)
-                    ->extraImgAttributes([
-                        'class' => 'rounded-md object-contain bg-zinc-100 dark:bg-zinc-800',
+                    ->extraImgAttributes(fn (PRD_ProductImage $record): array => [
+                        'class' => 'rounded-md object-cover bg-zinc-100 dark:bg-zinc-800',
+                        'style' => $this->previewObjectPositionStyle($record),
                     ]),
                 TextColumn::make('sort_order')
                     ->label('Порядок')
                     ->badge()
                     ->sortable(),
+                TextColumn::make('focus_x')
+                    ->label('Фокус')
+                    ->badge()
+                    ->getStateUsing(function (PRD_ProductImage $record): string {
+                        if ($record->focus_x === null || $record->focus_y === null) {
+                            return 'центр';
+                        }
+
+                        return rtrim(rtrim(number_format((float) $record->focus_x, 2, '.', ''), '0'), '.').'% × '
+                            .rtrim(rtrim(number_format((float) $record->focus_y, 2, '.', ''), '0'), '.').'%';
+                    }),
             ])
             ->headerActions([
                 CreateAction::make()
                     ->label('Добавить изображение')
-                    ->mutateFormDataUsing(function (array $data): array {
-                        $data['disk'] = 'public';
-                        $data['path'] = CatalogStoredImagePath::normalize($data['path'] ?? null);
-
-                        return $data;
-                    }),
+                    ->mutateFormDataUsing(fn (array $data): array => $this->normalizeImageFormData($data)),
             ])
             ->recordActions([
                 EditAction::make()
-                    ->label('Заменить файл')
-                    ->mutateFormDataUsing(function (array $data): array {
-                        $data['disk'] = 'public';
-                        $data['path'] = CatalogStoredImagePath::normalize($data['path'] ?? null);
-
-                        return $data;
-                    }),
+                    ->label('Изменить')
+                    ->mutateFormDataUsing(fn (array $data): array => $this->normalizeImageFormData($data)),
                 DeleteAction::make()
                     ->label('Удалить'),
             ])
@@ -115,5 +124,53 @@ class ProductImagesRelationManager extends RelationManager
     protected function canReorder(): bool
     {
         return true;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function normalizeImageFormData(array $data): array
+    {
+        $data['disk'] = 'public';
+        $data['path'] = CatalogStoredImagePath::normalize($data['path'] ?? null);
+        unset($data['focus_picker']);
+
+        $x = $data['focus_x'] ?? null;
+        $y = $data['focus_y'] ?? null;
+
+        if ($x === null || $x === '' || $y === null || $y === '') {
+            $data['focus_x'] = null;
+            $data['focus_y'] = null;
+
+            return $data;
+        }
+
+        $focusX = (float) $x;
+        $focusY = (float) $y;
+
+        if ($focusX < 0.0 || $focusX > 100.0 || $focusY < 0.0 || $focusY > 100.0) {
+            $data['focus_x'] = null;
+            $data['focus_y'] = null;
+
+            return $data;
+        }
+
+        $data['focus_x'] = round($focusX, 2);
+        $data['focus_y'] = round($focusY, 2);
+
+        return $data;
+    }
+
+    private function previewObjectPositionStyle(PRD_ProductImage $record): string
+    {
+        if ($record->focus_x === null || $record->focus_y === null) {
+            return 'object-position: 50% 50%;';
+        }
+
+        $x = rtrim(rtrim(number_format((float) $record->focus_x, 2, '.', ''), '0'), '.');
+        $y = rtrim(rtrim(number_format((float) $record->focus_y, 2, '.', ''), '0'), '.');
+
+        return "object-position: {$x}% {$y}%;";
     }
 }

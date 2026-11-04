@@ -15,10 +15,14 @@ class PRD_ProductImage extends Model
         'disk',
         'path',
         'sort_order',
+        'focus_x',
+        'focus_y',
     ];
 
     protected $casts = [
         'sort_order' => 'integer',
+        'focus_x' => 'float',
+        'focus_y' => 'float',
     ];
 
     protected static function booted(): void

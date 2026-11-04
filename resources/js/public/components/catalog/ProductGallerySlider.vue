@@ -29,18 +29,30 @@ onMounted(() => {
     });
 });
 
-const slideUrls = computed(() => {
+const slides = computed(() => {
     const list = props.images;
     if (!Array.isArray(list)) return [];
+
     return list
-        .map((item) => (typeof item === "string" ? item : item?.url))
+        .map((item) => {
+            if (typeof item === "string") {
+                return { url: item, objectPosition: "50% 50%" };
+            }
+            const url = item?.url;
+            if (!url) return null;
+            const objectPosition =
+                typeof item.objectPosition === "string" && item.objectPosition.trim()
+                    ? item.objectPosition
+                    : "50% 50%";
+            return { url, objectPosition };
+        })
         .filter(Boolean);
 });
 </script>
 
 <template>
     <div :class="dg.root">
-        <div v-if="!slideUrls.length" :class="dg.noPhoto">
+        <div v-if="!slides.length" :class="dg.noPhoto">
             {{ dg.noPhotoLabel }}
         </div>
         <!-- Слайдер монтируем после nextTick, чтобы контейнер уже был в DOM (модалка не падает) -->
@@ -49,29 +61,31 @@ const slideUrls = computed(() => {
                 :modules="swiperModules"
                 :slides-per-view="1"
                 :space-between="0"
-                :loop="slideUrls.length > 1"
-                :navigation="slideUrls.length > 1"
+                :loop="slides.length > 1"
+                :navigation="slides.length > 1"
                 :autoplay="{ delay: 3500, disableOnInteraction: false }"
                 :class="dg.swiper"
             >
                 <SwiperSlide
-                    v-for="(url, index) in slideUrls"
-                    :key="index"
+                    v-for="(slide, index) in slides"
+                    :key="`${slide.url}-${index}`"
                     :class="dg.slide"
                 >
                     <img
-                        :src="url"
+                        :src="slide.url"
                         :alt="alt ? `${alt} — фото ${index + 1}` : ''"
                         :class="dg.img"
+                        :style="{ objectPosition: slide.objectPosition }"
                     />
                 </SwiperSlide>
             </Swiper>
         </template>
         <div v-else :class="dg.wrap">
             <img
-                :src="slideUrls[0]"
+                :src="slides[0].url"
                 :alt="alt || 'Фото товара'"
                 :class="dg.img"
+                :style="{ objectPosition: slides[0].objectPosition }"
             />
         </div>
     </div>

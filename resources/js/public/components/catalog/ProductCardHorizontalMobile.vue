@@ -19,6 +19,7 @@ const cs = useAppDesign().components.catalog.cards.shared;
 const {
     primaryThumb,
     imageSrcset,
+    imageObjectPosition,
     primaryTag,
 } = useCatalogCardView(computed(() => props.product));
 
@@ -60,6 +61,7 @@ function tagToneClass(color) {
                 :sizes="imageSrcset ? imageSizes : undefined"
                 alt=""
                 :class="h.thumbImg"
+                :style="{ objectPosition: imageObjectPosition || '50% 50%' }"
                 loading="lazy"
                 fetchpriority="low"
             />

@@ -135,7 +135,7 @@ export const catalogModalDesign = {
         swiper: "product-gallery__swiper w-full h-full",
         slide: "product-gallery__slide w-full h-full",
         wrap: "product-gallery__wrap w-full h-full",
-        img: "product-gallery__img w-full h-full object-cover object-center",
+        img: "product-gallery__img w-full h-full object-cover",
     },
 } as const;
 
