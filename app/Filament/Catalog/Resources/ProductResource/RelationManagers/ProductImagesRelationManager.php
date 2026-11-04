@@ -2,15 +2,14 @@
 
 namespace App\Filament\Catalog\Resources\ProductResource\RelationManagers;
 
-use App\Filament\Catalog\Forms\Components\FocalPointPicker;
 use App\Infrastructure\Catalog\Model\PRD_ProductImage;
 use App\Infrastructure\Catalog\Support\CatalogStoredImagePath;
+use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Hidden;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -36,7 +35,7 @@ class ProductImagesRelationManager extends RelationManager
             ->columns(1)
             ->components([
                 FileUpload::make('path')
-                    ->label('Файл')
+                    ->label('Изображение')
                     ->image()
                     ->disk('public')
                     ->directory(fn (): string => 'products/'.$this->getOwnerRecord()->getKey())
@@ -46,19 +45,14 @@ class ProductImagesRelationManager extends RelationManager
                         'image/png',
                         'image/webp',
                     ])
-                    ->panelLayout('compact')
-                    ->previewable(false)
-                    ->live()
+                    ->imagePreviewHeight('220')
+                    ->panelLayout('integrated')
+                    ->openable()
+                    ->downloadable()
+                    ->previewable()
                     ->required()
-                    ->maxSize(5120),
-                Hidden::make('focus_x'),
-                Hidden::make('focus_y'),
-                FocalPointPicker::make('focus_picker')
-                    ->label('Фокус')
-                    ->imageField('path')
-                    ->focusXField('focus_x')
-                    ->focusYField('focus_y')
-                    ->imageDisk('public'),
+                    ->maxSize(5120)
+                    ->helperText('JPEG, PNG или WebP. До 5 МБ.'),
             ]);
     }
 
@@ -109,8 +103,24 @@ class ProductImagesRelationManager extends RelationManager
                     ->mutateFormDataUsing(fn (array $data): array => $this->normalizeImageFormData($data)),
             ])
             ->recordActions([
+                Action::make('setMobileFocus')
+                    ->label('Фокус')
+                    ->icon(Heroicon::OutlinedViewfinderCircle)
+                    ->modalHeading('Фокус для мобилки')
+                    ->modalWidth('7xl')
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Закрыть')
+                    ->modalContent(function (PRD_ProductImage $record) {
+                        $editorPath = resource_path('views/admin/product-image-focus-editor.blade.php');
+
+                        return view('filament.catalog.product-image-focus-modal', [
+                            'editorUrl' => route('filament.admin.product-image-focus-editor', [
+                                'image' => $record,
+                            ], false).'?v='.filemtime($editorPath),
+                        ]);
+                    }),
                 EditAction::make()
-                    ->label('Изменить')
+                    ->label('Заменить файл')
                     ->mutateFormDataUsing(fn (array $data): array => $this->normalizeImageFormData($data)),
                 DeleteAction::make()
                     ->label('Удалить'),
@@ -134,30 +144,6 @@ class ProductImagesRelationManager extends RelationManager
     {
         $data['disk'] = 'public';
         $data['path'] = CatalogStoredImagePath::normalize($data['path'] ?? null);
-        unset($data['focus_picker']);
-
-        $x = $data['focus_x'] ?? null;
-        $y = $data['focus_y'] ?? null;
-
-        if ($x === null || $x === '' || $y === null || $y === '') {
-            $data['focus_x'] = null;
-            $data['focus_y'] = null;
-
-            return $data;
-        }
-
-        $focusX = (float) $x;
-        $focusY = (float) $y;
-
-        if ($focusX < 0.0 || $focusX > 100.0 || $focusY < 0.0 || $focusY > 100.0) {
-            $data['focus_x'] = null;
-            $data['focus_y'] = null;
-
-            return $data;
-        }
-
-        $data['focus_x'] = round($focusX, 2);
-        $data['focus_y'] = round($focusY, 2);
 
         return $data;
     }

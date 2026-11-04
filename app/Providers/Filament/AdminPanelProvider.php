@@ -29,6 +29,7 @@ use App\Filament\Crm\Resources\ClientResource\RelationManagers\OrderHistoryRelat
 use App\Filament\Promotion\Resources\PromotionPolicyResource;
 use App\Filament\Support\AdminNavigationGroup;
 use App\Http\Controllers\Admin\DeliveryZoneMapEditorController;
+use App\Http\Controllers\Admin\ProductImageFocusEditorController;
 use App\Http\Middleware\PreventRequestForgery;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -104,6 +105,12 @@ class AdminPanelProvider extends PanelProvider
             ->routes(function (): void {
                 Route::get('/delivery-zone-map-editor', DeliveryZoneMapEditorController::class)
                     ->name('delivery-zone-map-editor');
+
+                Route::get('/product-images/{image}/focus-editor', [ProductImageFocusEditorController::class, 'show'])
+                    ->name('product-image-focus-editor');
+
+                Route::post('/product-images/{image}/focus-editor', [ProductImageFocusEditorController::class, 'save'])
+                    ->name('product-image-focus-editor.save');
             });
     }
 }
