@@ -2,9 +2,7 @@
 import { RouterLink } from "vue-router";
 
 const links = [
-    { name: "production-catalog", label: "Catalog" },
-    { name: "production-production", label: "Production" },
-    { name: "production-order", label: "Order" },
+    { name: "production-production", label: "Очередь" },
 ];
 </script>
 

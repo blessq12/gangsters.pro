@@ -2,7 +2,7 @@
 import { RouterLink } from "vue-router";
 
 const links = [
-    { name: "courier-delivery", label: "Delivery" },
+    { name: "courier-delivery", label: "Листы" },
 ];
 </script>
 

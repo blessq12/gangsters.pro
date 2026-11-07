@@ -1,16 +1,9 @@
 <script setup>
 import { RouterLink } from "vue-router";
 
-/** Пункты = Domain BC (без Shared). */
+/** Nav items are domain bounded contexts, without Shared. */
 const links = [
-    { name: "administrator-catalog", label: "Catalog" },
-    { name: "administrator-content", label: "Content" },
-    { name: "administrator-crm", label: "Crm" },
-    { name: "administrator-delivery", label: "Delivery" },
-    { name: "administrator-order", label: "Order" },
-    { name: "administrator-production", label: "Production" },
-    { name: "administrator-staff", label: "Staff" },
-    { name: "administrator-warehouse", label: "Warehouse" },
+    { name: "administrator-order", label: "Заказы" },
 ];
 </script>
 

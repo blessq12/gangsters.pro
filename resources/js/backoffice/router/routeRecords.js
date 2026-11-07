@@ -1,12 +1,12 @@
 /**
- * Маршруты backoffice SPA.
+ * Backoffice SPA routes.
  * Base path: /backoffice
  */
 
 export const routeRecords = [
     {
         path: "/",
-        redirect: { name: "administrator-catalog" },
+        redirect: { name: "administrator-order" },
     },
     {
         path: "/courier",
@@ -93,7 +93,7 @@ export const routeRecords = [
         children: [
             {
                 path: "",
-                redirect: { name: "administrator-catalog" },
+                redirect: { name: "administrator-order" },
             },
             {
                 path: "catalog",
