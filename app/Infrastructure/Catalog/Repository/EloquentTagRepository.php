@@ -68,6 +68,33 @@ final class EloquentTagRepository implements TagRepository
         return $this->findTagIdsByCatalogItemId($setId);
     }
 
+    public function save(?int $id, string $code, string $label, string $color, bool $isActive): Tag
+    {
+        $code = trim($code);
+        $exists = PRD_Tag::query()
+            ->where('code', $code)
+            ->when($id !== null, fn ($query) => $query->where('id', '!=', $id))
+            ->exists();
+        if ($exists) {
+            throw new \InvalidArgumentException('Такой код тега уже есть.');
+        }
+
+        $row = $id === null ? new PRD_Tag() : PRD_Tag::query()->find($id);
+        if (! $row instanceof PRD_Tag) {
+            throw new \InvalidArgumentException('Тег не найден.');
+        }
+
+        $row->fill([
+            'code' => $code,
+            'label' => $label,
+            'color' => $color,
+            'is_active' => $isActive,
+        ]);
+        $row->save();
+
+        return $this->mapper->toDomain($row);
+    }
+
     /**
      * @return list<int>
      */

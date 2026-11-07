@@ -96,7 +96,7 @@ function toggleProduct(id) {
                 v-for="item in tabs"
                 :key="item.id"
                 type="button"
-                class="rounded px-3 py-1.5 text-sm"
+                class="inline-flex h-9 items-center rounded px-3 text-sm"
                 :class="tab === item.id ? 'bg-neutral-900 text-white' : 'bg-white text-neutral-700'"
                 @click="tab = item.id"
             >

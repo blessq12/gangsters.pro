@@ -51,12 +51,28 @@ final class ChangeAdminOrderStatusUseCase
             return $order->withCancelled((string) $reason);
         }
 
+        if ($status === OrderStatus::Preparing->value && $current === OrderStatus::Confirmed->value) {
+            return $order->withKitchenStarted(new DateTimeImmutable());
+        }
+
+        if ($status === OrderStatus::Ready->value && $current === OrderStatus::Preparing->value) {
+            return $order->withStatus(OrderStatus::Ready);
+        }
+
         if ($status === OrderStatus::Delivered->value && $current === OrderStatus::Ready->value && $method === 'pickup') {
             return $order->withStatus(OrderStatus::Delivered);
         }
 
         if ($status === OrderStatus::InTransit->value && $current === OrderStatus::Ready->value && $method === 'courier') {
             return $order->withStatus(OrderStatus::InTransit);
+        }
+
+        if ($status === OrderStatus::Delivered->value && $current === OrderStatus::InTransit->value) {
+            return $order->withStatus(OrderStatus::Delivered);
+        }
+
+        if ($status === OrderStatus::Ready->value && $current === OrderStatus::InTransit->value) {
+            return $order->withStatus(OrderStatus::Ready);
         }
 
         throw new AdminOrderTransitionException('Этот переход статуса заказу недоступен.');

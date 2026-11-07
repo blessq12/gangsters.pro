@@ -7,12 +7,14 @@ use App\Domain\Content\Repository\CompanyDocumentRepository;
 use App\Domain\Content\Repository\CompanyLegalRepository;
 use App\Domain\Content\Repository\CompanyRepository;
 use App\Domain\Content\Repository\DeliveryConfigurationRepository;
+use App\Domain\Content\Repository\OperatorRepository;
 use App\Domain\Content\Repository\PromotionRepository;
 use App\Infrastructure\Content\Repository\EloquentBannerRepository;
 use App\Infrastructure\Content\Repository\EloquentCompanyDocumentRepository;
 use App\Infrastructure\Content\Repository\EloquentCompanyLegalRepository;
 use App\Infrastructure\Content\Repository\EloquentCompanyRepository;
 use App\Infrastructure\Content\Repository\EloquentDeliveryConfigurationRepository;
+use App\Infrastructure\Content\Repository\EloquentOperatorRepository;
 use App\Infrastructure\Content\Repository\EloquentPromotionRepository;
 use Illuminate\Support\ServiceProvider;
 
@@ -26,5 +28,6 @@ final class ContentServiceProvider extends ServiceProvider
         $this->app->bind(BannerRepository::class, EloquentBannerRepository::class);
         $this->app->bind(PromotionRepository::class, EloquentPromotionRepository::class);
         $this->app->bind(DeliveryConfigurationRepository::class, EloquentDeliveryConfigurationRepository::class);
+        $this->app->bind(OperatorRepository::class, EloquentOperatorRepository::class);
     }
 }

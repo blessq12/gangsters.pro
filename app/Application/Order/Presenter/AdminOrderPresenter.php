@@ -25,6 +25,7 @@ final class AdminOrderPresenter
             'status' => $order->status(),
             'total' => $order->totalRubles(),
             'created_at' => $order->createdAt()->format(DATE_ATOM),
+            'kitchen_started_at' => $this->kitchenStartedAt($delivery),
             'client' => [
                 'kind' => is_string($client['kind'] ?? null) ? $client['kind'] : 'guest',
                 'client_id' => isset($client['client_id']) ? (int) $client['client_id'] : null,
@@ -56,6 +57,16 @@ final class AdminOrderPresenter
             'reject_reason' => is_string($reason) && $reason !== '' ? $reason : null,
             'lines' => $this->lines($order),
         ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $delivery
+     */
+    private function kitchenStartedAt(array $delivery): ?string
+    {
+        $startedAt = $delivery['kitchen_started_at'] ?? null;
+
+        return is_string($startedAt) && $startedAt !== '' ? $startedAt : null;
     }
 
     /**

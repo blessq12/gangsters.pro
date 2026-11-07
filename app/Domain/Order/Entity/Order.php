@@ -178,6 +178,27 @@ final class Order
         return $this->copyWith(status: self::normalizeStatus($status));
     }
 
+    public function withKitchenStarted(DateTimeImmutable $startedAt): self
+    {
+        $delivery = $this->delivery;
+        $delivery['kitchen_started_at'] = $startedAt->format(DATE_ATOM);
+
+        return new self(
+            id: $this->id,
+            source: $this->source,
+            checkoutId: $this->checkoutId,
+            partnerCode: $this->partnerCode,
+            externalOrderId: $this->externalOrderId,
+            status: OrderStatus::Preparing->value,
+            cart: $this->cart,
+            client: $this->client,
+            delivery: $delivery,
+            payment: $this->payment,
+            createdAt: $this->createdAt,
+            frontpadOrderId: $this->frontpadOrderId,
+        );
+    }
+
     public function withCancelled(string $reason): self
     {
         $reason = trim($reason);

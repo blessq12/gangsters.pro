@@ -6,10 +6,13 @@ import {
     deliveryMethodLabel,
     paymentMethodLabel,
     sourceLabel,
-    statusColor,
     statusLabel,
     useOpsBoard,
 } from "./opsBoard";
+
+defineProps({
+    readOnly: { type: Boolean, default: false },
+});
 
 const board = useOpsBoard();
 const { journalOrders, journalPage, journalTotal, journalReady, journalCounts } = storeToRefs(board);
@@ -31,9 +34,6 @@ const statusOptions = [
     { id: "cancelled", label: statusLabel("cancelled") },
     { id: "delivered", label: statusLabel("delivered") },
 ];
-
-const rowColumns = "9rem minmax(0,1.15fr) minmax(0,1.45fr) 9.5rem 9rem 6.5rem 10rem";
-const cartColumns = "minmax(0,1fr) 6rem 7rem";
 
 const detailTabs = [
     { id: "overview", label: "Общее" },
@@ -91,18 +91,6 @@ function statusCount(status) {
     return Number(journalCounts.value[status] || 0);
 }
 
-function statusMark(status) {
-    return { borderLeft: `4px solid ${statusColor(status)}` };
-}
-
-function statusPillStyle(status, active) {
-    const color = statusColor(status);
-    if (active) {
-        return { backgroundColor: color, color: "#ffffff" };
-    }
-    return { backgroundColor: "#ffffff", color: "#404040", boxShadow: `inset 0 0 0 1px ${color}` };
-}
-
 function dash(value) {
     if (value == null || value === "") {
         return "—";
@@ -128,9 +116,8 @@ async function submitReject(id) {
                 v-for="option in statusOptions"
                 :key="option.id"
                 type="button"
-                class="rounded-full px-3 py-1 text-sm"
-                :class="option.id === '' && statusFilter === option.id ? 'bg-neutral-900 text-white' : option.id === '' ? 'bg-white text-neutral-700' : ''"
-                :style="option.id === '' ? undefined : statusPillStyle(option.id, statusFilter === option.id)"
+                class="inline-flex h-9 items-center rounded px-3 text-sm"
+                :class="statusFilter === option.id ? 'bg-neutral-900 text-white' : 'bg-white text-neutral-700'"
                 @click="statusFilter = option.id"
             >
                 {{ option.label }}
@@ -153,66 +140,102 @@ async function submitReject(id) {
 
         <div
             v-else
-            class="space-y-3"
+            class="overflow-x-auto rounded border border-neutral-200 bg-white"
         >
-            <div
-                class="grid items-end gap-x-8 px-5 text-xs text-neutral-500"
-                :style="{ gridTemplateColumns: rowColumns }"
-            >
-                <span>Заказ</span>
-                <span>Клиент</span>
-                <span>Получение</span>
-                <span>Оплата</span>
-                <span>Статус</span>
-                <span class="text-right">Сумма</span>
-                <span />
-            </div>
-            <ul class="space-y-3">
-            <li
-                v-for="order in journalOrders"
-                :key="order.id"
-                class="rounded border border-neutral-200 bg-white"
-                :style="statusMark(order.status)"
-            >
-                <div
-                    class="grid items-center gap-x-8 px-5 py-4"
-                    :style="{ gridTemplateColumns: rowColumns }"
-                >
-                    <button
-                        type="button"
-                        class="col-span-6 grid grid-cols-subgrid items-center gap-x-8 text-left"
-                        :aria-expanded="isOpen(order.id)"
-                        @click="toggle(order.id)"
+            <table class="w-full min-w-[980px] text-left text-sm">
+                <thead class="border-b border-neutral-200 bg-neutral-50 text-xs text-neutral-500">
+                    <tr>
+                        <th class="px-3 py-2 font-medium">ID</th>
+                        <th class="px-3 py-2 font-medium">Источник</th>
+                        <th class="px-3 py-2 font-medium">Статус</th>
+                        <th class="px-3 py-2 font-medium">Сумма, ₽</th>
+                        <th class="px-3 py-2 font-medium">Клиент</th>
+                        <th class="px-3 py-2 font-medium">Доставка</th>
+                        <th class="px-3 py-2 font-medium">Оплата</th>
+                        <th
+                            v-if="readOnly"
+                            class="px-3 py-2 font-medium"
+                        >
+                            Оформление
+                        </th>
+                        <th
+                            v-if="readOnly"
+                            class="px-3 py-2 font-medium"
+                        >
+                            Партнёр
+                        </th>
+                        <th
+                            v-if="readOnly"
+                            class="px-3 py-2 font-medium"
+                        >
+                            Внешний ID
+                        </th>
+                        <th class="px-3 py-2 font-medium">Создан</th>
+                        <th
+                            v-if="!readOnly"
+                            class="px-3 py-2 font-medium"
+                        />
+                    </tr>
+                </thead>
+                <tbody>
+                    <template
+                        v-for="order in journalOrders"
+                        :key="order.id"
                     >
-                        <span class="min-w-0">
-                            <span class="block">#{{ order.id }}</span>
-                            <span class="mt-1 block text-neutral-500">{{ dash(order.createdAt) }}</span>
-                            <span class="mt-1 block text-neutral-500">{{ sourceLabel(order.source ?? "site") }}</span>
-                        </span>
-                        <span class="min-w-0">
-                            <span class="block truncate">{{ order.clientName }}</span>
-                            <span class="mt-1 block text-neutral-500">{{ dash(order.phone) }}</span>
-                        </span>
-                        <span class="min-w-0">
-                            <span class="block">{{ deliveryMethodLabel(order.deliveryMethod) }}</span>
-                            <span class="mt-1 block truncate text-neutral-500">{{ order.deliveryMethod === "courier" ? dash(order.address) : "—" }}</span>
-                        </span>
-                        <span class="min-w-0">{{ paymentMethodLabel(order.payment) }}</span>
-                        <span>
-                            <span
-                                class="inline-flex rounded-full px-2 py-0.5 text-white"
-                                :style="{ backgroundColor: statusColor(order.status) }"
+                        <tr
+                            class="cursor-pointer border-b border-neutral-100 align-top hover:bg-neutral-50"
+                            :class="isOpen(order.id) ? 'bg-neutral-50' : ''"
+                            @click="toggle(order.id)"
+                        >
+                            <td class="px-3 py-2">
+                                <button
+                                    type="button"
+                                    class="mr-2 text-neutral-500"
+                                    :aria-expanded="isOpen(order.id)"
+                                    @click.stop="toggle(order.id)"
+                                >
+                                    {{ isOpen(order.id) ? "▾" : "▸" }}
+                                </button>
+                                {{ order.id }}
+                            </td>
+                            <td class="px-3 py-2">{{ sourceLabel(order.source ?? "site") }}</td>
+                            <td class="px-3 py-2">{{ statusLabel(order.status) }}</td>
+                            <td class="px-3 py-2">{{ order.total }}</td>
+                            <td class="px-3 py-2">
+                                {{ order.clientName }}
+                                <span class="text-neutral-500">{{ dash(order.phone) }}</span>
+                            </td>
+                            <td class="px-3 py-2">{{ deliveryMethodLabel(order.deliveryMethod) }}</td>
+                            <td class="px-3 py-2">{{ paymentMethodLabel(order.payment) }}</td>
+                            <td
+                                v-if="readOnly"
+                                class="px-3 py-2"
                             >
-                                {{ statusLabel(order.status) }}
-                            </span>
-                        </span>
-                        <span class="text-right">{{ order.total }} ₽</span>
-                    </button>
-                    <div class="flex flex-col gap-2">
+                                {{ dash(order.checkoutId) }}
+                            </td>
+                            <td
+                                v-if="readOnly"
+                                class="px-3 py-2"
+                            >
+                                {{ dash(order.partnerCode) }}
+                            </td>
+                            <td
+                                v-if="readOnly"
+                                class="px-3 py-2"
+                            >
+                                {{ dash(order.externalOrderId) }}
+                            </td>
+                            <td class="px-3 py-2">{{ dash(order.createdAt) }}</td>
+                            <td
+                                v-if="!readOnly"
+                                class="px-3 py-2"
+                                @click.stop
+                            >
+                                <div class="flex flex-wrap gap-2">
                         <button
                             v-if="order.status === 'new' || order.status === 'preorder'"
                             type="button"
-                            class="rounded bg-neutral-900 px-2 py-1 text-white"
+                            class="inline-flex h-9 items-center rounded bg-neutral-900 px-3 text-sm text-white"
                             @click="confirm(order.id)"
                         >
                             Подтвердить
@@ -220,7 +243,7 @@ async function submitReject(id) {
                         <button
                             v-if="order.status === 'new' || order.status === 'preorder'"
                             type="button"
-                            class="rounded border border-neutral-300 px-2 py-1"
+                            class="inline-flex h-9 items-center rounded border border-neutral-300 px-3 text-sm"
                             @click="rejectTargetId = order.id"
                         >
                             Отклонить
@@ -228,7 +251,7 @@ async function submitReject(id) {
                         <button
                             v-if="order.status === 'ready' && order.deliveryMethod === 'pickup'"
                             type="button"
-                            class="rounded bg-neutral-900 px-2 py-1 text-white"
+                            class="inline-flex h-9 items-center rounded bg-neutral-900 px-3 text-sm text-white"
                             @click="handoff(order.id)"
                         >
                             Выдан
@@ -243,27 +266,32 @@ async function submitReject(id) {
                                 required
                                 type="text"
                                 placeholder="Причина"
-                                class="rounded border border-neutral-300 px-2 py-1"
+                                class="h-9 rounded border border-neutral-300 px-3 text-sm"
                             >
                             <button
                                 type="submit"
-                                class="rounded bg-red-700 px-2 py-1 text-white"
+                                class="inline-flex h-9 items-center rounded bg-red-700 px-3 text-sm text-white"
                             >
                                 Списать
                             </button>
                         </form>
-                    </div>
-                </div>
-                <div
-                    v-if="isOpen(order.id)"
-                    class="border-t border-neutral-100 bg-neutral-50 px-5 py-5"
-                >
-                    <div class="mb-5 flex flex-wrap gap-2">
+                                </div>
+                            </td>
+                        </tr>
+                        <tr
+                            v-if="isOpen(order.id)"
+                            class="border-b border-neutral-100 bg-neutral-50"
+                        >
+                            <td
+                                :colspan="readOnly ? 11 : 9"
+                                class="px-3 py-3"
+                            >
+                    <div class="mb-3 flex flex-wrap gap-1">
                         <button
                             v-for="item in detailTabs"
                             :key="item.id"
                             type="button"
-                            class="rounded px-3 py-1.5 text-sm"
+                            class="inline-flex h-9 items-center rounded px-3 text-sm"
                             :class="detailTab === item.id ? 'bg-neutral-900 text-white' : 'bg-white text-neutral-700'"
                             @click="detailTab = item.id"
                         >
@@ -272,137 +300,131 @@ async function submitReject(id) {
                     </div>
                     <dl
                         v-if="detailTab === 'overview'"
-                        class="grid grid-cols-2 gap-x-8 gap-y-5 lg:grid-cols-4"
+                        class="grid gap-3 text-sm sm:grid-cols-2"
                     >
                         <div>
                             <dt class="text-xs text-neutral-500">Идентификатор</dt>
-                            <dd class="mt-1">#{{ order.id }}</dd>
+                            <dd>#{{ order.id }}</dd>
                         </div>
                         <div>
                             <dt class="text-xs text-neutral-500">Источник</dt>
-                            <dd class="mt-1">{{ sourceLabel(order.source ?? "site") }}</dd>
+                            <dd>{{ sourceLabel(order.source ?? "site") }}</dd>
                         </div>
                         <div>
                             <dt class="text-xs text-neutral-500">Оформление</dt>
-                            <dd class="mt-1">{{ dash(order.checkoutId) }}</dd>
+                            <dd>{{ dash(order.checkoutId) }}</dd>
                         </div>
                         <div>
                             <dt class="text-xs text-neutral-500">Партнёр</dt>
-                            <dd class="mt-1">{{ dash(order.partnerCode) }}</dd>
+                            <dd>{{ dash(order.partnerCode) }}</dd>
                         </div>
                         <div>
                             <dt class="text-xs text-neutral-500">Внешний ID заказа</dt>
-                            <dd class="mt-1">{{ dash(order.externalOrderId) }}</dd>
+                            <dd>{{ dash(order.externalOrderId) }}</dd>
                         </div>
                         <div>
                             <dt class="text-xs text-neutral-500">Статус</dt>
-                            <dd class="mt-1">
-                                <span
-                                    class="inline-flex rounded-full px-2 py-0.5 text-white"
-                                    :style="{ backgroundColor: statusColor(order.status) }"
-                                >
-                                    {{ statusLabel(order.status) }}
-                                </span>
-                            </dd>
+                            <dd>{{ statusLabel(order.status) }}</dd>
                         </div>
                         <div>
                             <dt class="text-xs text-neutral-500">Сумма товаров</dt>
-                            <dd class="mt-1">{{ order.total }} ₽</dd>
+                            <dd>{{ order.total }} ₽</dd>
                         </div>
                         <div>
                             <dt class="text-xs text-neutral-500">Создан</dt>
-                            <dd class="mt-1">{{ dash(order.createdAt) }}</dd>
+                            <dd>{{ dash(order.createdAt) }}</dd>
                         </div>
                     </dl>
-                    <div
+                    <table
                         v-else-if="detailTab === 'cart'"
-                        class="space-y-3"
+                        class="w-full text-left text-sm"
                     >
-                        <div
-                            class="grid gap-x-8 text-xs text-neutral-500"
-                            :style="{ gridTemplateColumns: cartColumns }"
-                        >
-                            <span>Название</span>
-                            <span>Кол-во</span>
-                            <span class="text-right">Сумма</span>
-                        </div>
-                        <div
-                            v-for="line in order.lines"
-                            :key="line.name"
-                            class="grid items-center gap-x-8 rounded border border-neutral-200 bg-white px-4 py-3"
-                            :style="{ gridTemplateColumns: cartColumns }"
-                        >
-                            <span class="min-w-0 truncate">{{ line.name }}</span>
-                            <span>{{ line.qty }}</span>
-                            <span class="text-right">{{ line.total ?? "—" }}</span>
-                        </div>
-                    </div>
+                        <thead class="text-xs text-neutral-500">
+                            <tr>
+                                <th class="py-1 pr-3 font-medium">Название</th>
+                                <th class="py-1 pr-3 font-medium">Кол-во</th>
+                                <th class="py-1 font-medium">Сумма</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr
+                                v-for="line in order.lines"
+                                :key="line.name"
+                            >
+                                <td class="py-1 pr-3">{{ line.name }}</td>
+                                <td class="py-1 pr-3">{{ line.qty }}</td>
+                                <td class="py-1">{{ line.total ?? "—" }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
                     <dl
                         v-else-if="detailTab === 'client'"
-                        class="grid grid-cols-2 gap-x-8 gap-y-5 lg:grid-cols-4"
+                        class="grid gap-3 text-sm sm:grid-cols-2"
                     >
                         <div>
                             <dt class="text-xs text-neutral-500">Тип клиента</dt>
-                            <dd class="mt-1">{{ order.clientKind === "registered" ? "Авторизованный клиент" : "Гость" }}</dd>
+                            <dd>{{ order.clientKind === "registered" ? "Авторизованный клиент" : "Гость" }}</dd>
                         </div>
                         <div>
                             <dt class="text-xs text-neutral-500">ID клиента</dt>
-                            <dd class="mt-1">{{ dash(order.clientId) }}</dd>
+                            <dd>{{ dash(order.clientId) }}</dd>
                         </div>
                         <div>
                             <dt class="text-xs text-neutral-500">Имя</dt>
-                            <dd class="mt-1">{{ order.clientName }}</dd>
+                            <dd>{{ order.clientName }}</dd>
                         </div>
                         <div>
                             <dt class="text-xs text-neutral-500">Телефон</dt>
-                            <dd class="mt-1">{{ dash(order.phone) }}</dd>
+                            <dd>{{ dash(order.phone) }}</dd>
                         </div>
                         <div>
                             <dt class="text-xs text-neutral-500">Email</dt>
-                            <dd class="mt-1">{{ dash(order.email) }}</dd>
+                            <dd>{{ dash(order.email) }}</dd>
                         </div>
                     </dl>
                     <dl
                         v-else-if="detailTab === 'delivery'"
-                        class="grid grid-cols-2 gap-x-8 gap-y-5 lg:grid-cols-4"
+                        class="grid gap-3 text-sm sm:grid-cols-2"
                     >
                         <div>
                             <dt class="text-xs text-neutral-500">Способ доставки</dt>
-                            <dd class="mt-1">{{ deliveryMethodLabel(order.deliveryMethod) }}</dd>
+                            <dd>{{ deliveryMethodLabel(order.deliveryMethod) }}</dd>
                         </div>
-                        <div class="col-span-2">
+                        <div class="sm:col-span-2">
                             <dt class="text-xs text-neutral-500">Адрес</dt>
-                            <dd class="mt-1">{{ dash(order.address) }}</dd>
+                            <dd>{{ dash(order.address) }}</dd>
                         </div>
                         <div>
                             <dt class="text-xs text-neutral-500">Время доставки</dt>
-                            <dd class="mt-1">{{ dash(order.scheduledAt) }}</dd>
+                            <dd>{{ dash(order.scheduledAt) }}</dd>
                         </div>
                         <div>
                             <dt class="text-xs text-neutral-500">Персон</dt>
-                            <dd class="mt-1">{{ dash(order.persons) }}</dd>
+                            <dd>{{ dash(order.persons) }}</dd>
                         </div>
-                        <div class="col-span-2 lg:col-span-3">
+                        <div class="sm:col-span-2">
                             <dt class="text-xs text-neutral-500">Комментарий</dt>
-                            <dd class="mt-1">{{ dash(order.comment) }}</dd>
+                            <dd>{{ dash(order.comment) }}</dd>
                         </div>
                     </dl>
                     <dl
                         v-else
-                        class="grid grid-cols-2 gap-x-8 gap-y-5 lg:grid-cols-4"
+                        class="grid gap-3 text-sm sm:grid-cols-2"
                     >
                         <div>
                             <dt class="text-xs text-neutral-500">Способ оплаты</dt>
-                            <dd class="mt-1">{{ paymentMethodLabel(order.payment) }}</dd>
+                            <dd>{{ paymentMethodLabel(order.payment) }}</dd>
                         </div>
                         <div>
                             <dt class="text-xs text-neutral-500">Сдача с</dt>
-                            <dd class="mt-1">{{ dash(order.changeFrom) }}</dd>
+                            <dd>{{ dash(order.changeFrom) }}</dd>
                         </div>
                     </dl>
-                </div>
-            </li>
-            </ul>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
         </div>
         <Pager
             :page="journalPage"

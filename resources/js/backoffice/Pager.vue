@@ -28,7 +28,7 @@ const pages = computed(() => Math.max(1, Math.ceil(props.total / props.perPage))
     >
         <button
             type="button"
-            class="rounded border border-neutral-300 bg-white px-3 py-1.5 disabled:opacity-40"
+            class="inline-flex h-9 items-center rounded border border-neutral-300 bg-white px-3 text-sm disabled:opacity-40"
             :disabled="page <= 1"
             @click="emit('update:page', page - 1)"
         >
@@ -37,7 +37,7 @@ const pages = computed(() => Math.max(1, Math.ceil(props.total / props.perPage))
         <span>{{ page }} / {{ pages }}</span>
         <button
             type="button"
-            class="rounded border border-neutral-300 bg-white px-3 py-1.5 disabled:opacity-40"
+            class="inline-flex h-9 items-center rounded border border-neutral-300 bg-white px-3 text-sm disabled:opacity-40"
             :disabled="page >= pages"
             @click="emit('update:page', page + 1)"
         >

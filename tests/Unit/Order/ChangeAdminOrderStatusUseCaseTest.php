@@ -46,6 +46,42 @@ final class ChangeAdminOrderStatusUseCaseTest extends TestCase
         (new ChangeAdminOrderStatusUseCase($repository))->execute(42, OrderStatus::Confirmed->value);
     }
 
+    public function test_starts_kitchen_work_from_confirmed(): void
+    {
+        Event::fake([OrderStatusChanged::class]);
+
+        $repository = $this->createMock(OrderRepository::class);
+        $repository->method('findById')->willReturn($this->order(OrderStatus::Confirmed->value));
+        $repository->expects($this->once())
+            ->method('save')
+            ->with($this->callback(function (Order $saved): bool {
+                $startedAt = $saved->delivery()['kitchen_started_at'] ?? null;
+
+                return $saved->status() === OrderStatus::Preparing->value
+                    && is_string($startedAt)
+                    && $startedAt !== '';
+            }));
+
+        $updated = (new ChangeAdminOrderStatusUseCase($repository))->execute(42, OrderStatus::Preparing->value);
+
+        $this->assertSame(OrderStatus::Preparing->value, $updated->status());
+    }
+
+    public function test_marks_a_preparing_order_ready(): void
+    {
+        Event::fake([OrderStatusChanged::class]);
+
+        $repository = $this->createMock(OrderRepository::class);
+        $repository->method('findById')->willReturn($this->order(OrderStatus::Preparing->value));
+        $repository->expects($this->once())
+            ->method('save')
+            ->with($this->callback(function (Order $saved): bool {
+                return $saved->status() === OrderStatus::Ready->value;
+            }));
+
+        (new ChangeAdminOrderStatusUseCase($repository))->execute(42, OrderStatus::Ready->value);
+    }
+
     public function test_stores_the_cancel_reason(): void
     {
         Event::fake([OrderStatusChanged::class]);

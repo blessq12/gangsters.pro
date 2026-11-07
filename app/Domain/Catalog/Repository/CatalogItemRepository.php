@@ -75,4 +75,31 @@ interface CatalogItemRepository
      * @return list<ProductSet>
      */
     public function listAllSets(): array;
+
+    public function saveProduct(
+        ?int $id,
+        string $name,
+        int $price,
+        ?int $oldPrice,
+        ?int $weight,
+        string $status,
+        ?string $description,
+        ?string $sku,
+    ): int;
+
+    public function saveSet(
+        ?int $id,
+        string $name,
+        ?string $sku,
+        int $price,
+        ?int $oldPrice,
+        string $status,
+    ): int;
+
+    /**
+     * @return list<array{id: int, url: string, focus_x: float|null, focus_y: float|null}>
+     */
+    public function listProductImages(int $productId): array;
+
+    public function addProductImage(int $productId, string $path): void;
 }

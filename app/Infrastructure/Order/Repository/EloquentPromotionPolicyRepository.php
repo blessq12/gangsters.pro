@@ -19,4 +19,18 @@ final class EloquentPromotionPolicyRepository implements PromotionPolicyReposito
 
         return $row instanceof PRM_Configuration ? $this->mapper->toDomain($row) : null;
     }
+
+    public function save(array $fields): PromotionPolicy
+    {
+        $row = PRM_Configuration::query()->find(self::SINGLETON_ID);
+        if (! $row instanceof PRM_Configuration) {
+            $row = new PRM_Configuration();
+            $row->id = self::SINGLETON_ID;
+        }
+
+        $row->fill($fields);
+        $row->save();
+
+        return $this->mapper->toDomain($row);
+    }
 }

@@ -98,5 +98,6 @@ export const useCatalog = defineStore("catalog-board", () => {
         catalogReady,
         categoryName,
         productsInCategory,
+        loadCatalog,
     };
 });

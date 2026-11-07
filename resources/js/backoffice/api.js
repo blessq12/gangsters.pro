@@ -43,6 +43,29 @@ export async function backofficeRequest(method, path, body) {
     return payload;
 }
 
+export async function backofficeForm(path, formData) {
+    const headers = {
+        Accept: "application/json",
+        "X-Requested-With": "XMLHttpRequest",
+    };
+    const token = readCookie("XSRF-TOKEN");
+    if (token !== "") {
+        headers["X-XSRF-TOKEN"] = token;
+    }
+
+    const response = await fetch(path, {
+        method: "POST",
+        credentials: "same-origin",
+        headers,
+        body: formData,
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+        throw new Error(messageFrom(payload));
+    }
+    return payload;
+}
+
 export function formatDateTime(value) {
     if (!value) {
         return "—";

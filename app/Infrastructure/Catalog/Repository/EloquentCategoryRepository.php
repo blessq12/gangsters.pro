@@ -10,6 +10,7 @@ use App\Infrastructure\Catalog\Mapper\CatalogCategoryMapper;
 use App\Infrastructure\Catalog\Model\PRD_Category;
 use App\Infrastructure\Catalog\Model\PRD_CategoryProduct;
 use App\Infrastructure\Catalog\Model\PRD_Product;
+use Illuminate\Support\Str;
 
 final class EloquentCategoryRepository implements CategoryRepository
 {
@@ -86,5 +87,43 @@ final class EloquentCategoryRepository implements CategoryRepository
         }
 
         return $items;
+    }
+
+    public function save(?int $id, string $name, bool $isActive, bool $isAccompanying): Category
+    {
+        $row = $id === null ? new PRD_Category() : PRD_Category::query()->find($id);
+        if (! $row instanceof PRD_Category) {
+            throw new \InvalidArgumentException('Категория не найдена.');
+        }
+
+        if ($id === null) {
+            $row->slug = $this->uniqueSlug($name);
+        }
+
+        $row->fill([
+            'name' => $name,
+            'is_active' => $isActive,
+            'is_accompanying' => $isAccompanying,
+        ]);
+        $row->save();
+
+        return $this->mapper->toDomain($row);
+    }
+
+    private function uniqueSlug(string $name): string
+    {
+        $base = Str::slug($name);
+        if ($base === '') {
+            $base = 'category';
+        }
+
+        $slug = $base;
+        $suffix = 2;
+        while (PRD_Category::query()->where('slug', $slug)->exists()) {
+            $slug = $base.'-'.$suffix;
+            $suffix++;
+        }
+
+        return $slug;
     }
 }

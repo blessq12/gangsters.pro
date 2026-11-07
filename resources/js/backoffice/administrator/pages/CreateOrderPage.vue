@@ -176,7 +176,7 @@ async function submitOrder() {
                         v-for="group in groups"
                         :key="group.id"
                         type="button"
-                        class="rounded px-3 py-2 text-left text-base"
+                        class="flex h-9 items-center rounded px-3 text-left text-base"
                         :class="activeCategoryId === group.id && query.trim() === '' ? 'bg-neutral-900 text-white' : 'bg-white text-neutral-700'"
                         @click="categoryId = group.id; query = ''"
                     >
@@ -189,11 +189,11 @@ async function submitOrder() {
                             v-model="query"
                             type="search"
                             placeholder="Поиск"
-                            class="min-w-0 flex-1 rounded border border-neutral-300 bg-white px-3 py-2 text-base"
+                            class="min-w-0 flex-1 rounded border border-neutral-300 bg-white h-9 px-3 text-base"
                         >
                         <button
                             type="button"
-                            class="shrink-0 rounded bg-neutral-900 px-3 py-2 text-base text-white"
+                            class="inline-flex h-9 shrink-0 items-center rounded bg-neutral-900 px-3 text-base text-white"
                             @click="cartOpen = true"
                         >
                             Корзина<span v-if="pieceCount"> · {{ pieceCount }} · {{ total }} ₽</span>
@@ -234,7 +234,7 @@ async function submitOrder() {
         />
         <aside
             aria-label="Корзина"
-            class="fixed inset-y-0 right-0 z-50 flex w-96 max-w-full flex-col bg-white shadow-xl transition-transform duration-200"
+            class="fixed inset-y-0 right-0 z-50 flex w-96 max-w-full flex-col border-l border-neutral-200 bg-white transition-transform duration-200"
             :class="cartOpen ? 'translate-x-0' : 'translate-x-full'"
         >
             <form
@@ -279,7 +279,7 @@ async function submitOrder() {
                         <div class="flex shrink-0 items-center gap-1">
                             <button
                                 type="button"
-                                class="h-8 w-8 rounded border border-neutral-300"
+                                class="h-9 w-9 rounded border border-neutral-300"
                                 @click="changeQty(line.productId, -1)"
                             >
                                 −
@@ -287,7 +287,7 @@ async function submitOrder() {
                             <span class="w-6 text-center">{{ line.qty }}</span>
                             <button
                                 type="button"
-                                class="h-8 w-8 rounded border border-neutral-300"
+                                class="h-9 w-9 rounded border border-neutral-300"
                                 @click="changeQty(line.productId, 1)"
                             >
                                 +
@@ -301,18 +301,18 @@ async function submitOrder() {
                         required
                         type="text"
                         placeholder="Клиент"
-                        class="w-full rounded border border-neutral-300 px-3 py-2 text-base"
+                        class="w-full rounded border border-neutral-300 h-9 px-3 text-base"
                     >
                     <input
                         v-model="phone"
                         required
                         type="text"
                         placeholder="Телефон"
-                        class="w-full rounded border border-neutral-300 px-3 py-2 text-base"
+                        class="w-full rounded border border-neutral-300 h-9 px-3 text-base"
                     >
                     <select
                         v-model="deliveryMethod"
-                        class="w-full rounded border border-neutral-300 px-3 py-2 text-base"
+                        class="w-full rounded border border-neutral-300 h-9 px-3 text-base"
                     >
                         <option value="pickup">Самовывоз</option>
                         <option value="courier">Курьер</option>
@@ -323,11 +323,11 @@ async function submitOrder() {
                         required
                         type="text"
                         placeholder="Адрес"
-                        class="w-full rounded border border-neutral-300 px-3 py-2 text-base"
+                        class="w-full rounded border border-neutral-300 h-9 px-3 text-base"
                     >
                     <select
                         v-model="payment"
-                        class="w-full rounded border border-neutral-300 px-3 py-2 text-base"
+                        class="w-full rounded border border-neutral-300 h-9 px-3 text-base"
                     >
                         <option value="наличные">Наличные</option>
                         <option value="карта">Карта</option>
@@ -345,7 +345,7 @@ async function submitOrder() {
                     </div>
                     <button
                         type="submit"
-                        class="w-full rounded bg-neutral-900 py-2.5 text-base text-white disabled:opacity-40"
+                        class="inline-flex h-9 w-full items-center justify-center rounded bg-neutral-900 text-base text-white disabled:opacity-40"
                         :disabled="submitting || lines.length === 0"
                     >
                         Создать заказ

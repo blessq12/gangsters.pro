@@ -1,78 +1,160 @@
 <script setup>
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { storeToRefs } from "pinia";
 import StopsMap from "../../StopsMap.vue";
-import { useOpsBoard } from "../../opsBoard";
+import { paymentMethodLabel, useOpsBoard } from "../../opsBoard";
 
 const board = useOpsBoard();
-const { releasedRuns } = storeToRefs(board);
+const { routeSheets } = storeToRefs(board);
 const openRunId = ref(null);
 const failReasons = ref({});
+const pageError = ref("");
 
+const waiting = computed(() => routeSheets.value.filter((sheet) => sheet.status === "released"));
+const delivering = computed(() => routeSheets.value.filter((sheet) => sheet.status === "in_delivery"));
 const run = computed(() =>
-    releasedRuns.value.find((entry) => entry.id === openRunId.value) ?? null,
+    delivering.value.find((entry) => entry.id === openRunId.value) ?? null,
 );
-
+const canComplete = computed(() =>
+    run.value != null && run.value.stops.every((stop) => stop.outcome !== "pending"),
+);
 const runPoints = computed(() =>
     (run.value?.stops ?? [])
-        .filter((stop) => stop.outcome === "pending")
-        .map((stop) => board.findOrder(stop.orderId))
-        .filter((order) => order != null)
-        .map((order) => ({
-            lat: order.lat,
-            lng: order.lng,
-            label: `#${order.id}`,
+        .filter((stop) => stop.outcome === "pending" && stop.lat != null && stop.lng != null)
+        .map((stop) => ({
+            lat: stop.lat,
+            lng: stop.lng,
+            label: `#${stop.orderId}`,
         })),
 );
+
+onMounted(async () => {
+    try {
+        await board.loadRouteSheets();
+    } catch (error) {
+        pageError.value = error instanceof Error ? error.message : "Не удалось связаться с сервером.";
+    }
+});
 
 function reasonKey(orderId) {
     return `${openRunId.value}:${orderId}`;
 }
 
-function markFailed(orderId) {
+async function take(id) {
+    pageError.value = "";
+    try {
+        await board.takeRouteSheet(id);
+        openRunId.value = id;
+    } catch (error) {
+        pageError.value = error instanceof Error ? error.message : "Не удалось взять лист.";
+    }
+}
+
+async function settle(orderId, outcome, reason) {
     if (openRunId.value == null) {
         return;
     }
-    board.settleStop(
-        openRunId.value,
-        orderId,
-        "failed",
-        failReasons.value[reasonKey(orderId)] ?? "",
-    );
+    pageError.value = "";
+    try {
+        await board.settleStop(openRunId.value, orderId, outcome, reason);
+    } catch (error) {
+        pageError.value = error instanceof Error ? error.message : "Не удалось сохранить статус.";
+    }
+}
+
+async function complete() {
+    if (openRunId.value == null) {
+        return;
+    }
+    pageError.value = "";
+    try {
+        await board.completeRouteSheet(openRunId.value);
+        openRunId.value = null;
+    } catch (error) {
+        pageError.value = error instanceof Error ? error.message : "Не удалось завершить лист.";
+    }
 }
 </script>
 
 <template>
     <section class="space-y-4">
         <h1 class="text-xl">Транспортные листы</h1>
+        <p
+            v-if="pageError"
+            class="text-sm text-red-700"
+        >
+            {{ pageError }}
+        </p>
 
-        <div v-if="!run" class="space-y-2">
-            <p
-                v-if="releasedRuns.length === 0"
-                class="text-sm text-neutral-500"
-            >
-                Активных листов нет.
-            </p>
-            <button
-                v-for="entry in releasedRuns"
-                :key="entry.id"
-                type="button"
-                class="block w-full rounded border border-neutral-200 bg-white px-3 py-3 text-left text-sm"
-                @click="openRunId = entry.id"
-            >
-                Рейс #{{ entry.id }} · остановок {{ entry.stops.length }}
-            </button>
+        <div
+            v-if="!run"
+            class="space-y-4"
+        >
+            <div class="space-y-2">
+                <h2 class="text-sm font-medium">Ждёт курьера</h2>
+                <p
+                    v-if="waiting.length === 0"
+                    class="text-sm text-neutral-500"
+                >
+                    Листов нет.
+                </p>
+                <div
+                    v-for="entry in waiting"
+                    :key="entry.id"
+                    class="flex items-center justify-between gap-3 rounded border border-neutral-200 bg-white px-3 py-3 text-sm"
+                >
+                    <span>Лист #{{ entry.id }} · остановок {{ entry.stops.length }}</span>
+                    <button
+                        type="button"
+                        class="inline-flex h-9 items-center rounded bg-neutral-900 px-3 text-sm text-white"
+                        @click="take(entry.id)"
+                    >
+                        В доставку
+                    </button>
+                </div>
+            </div>
+            <div class="space-y-2">
+                <h2 class="text-sm font-medium">В доставке</h2>
+                <p
+                    v-if="delivering.length === 0"
+                    class="text-sm text-neutral-500"
+                >
+                    Взятых листов нет.
+                </p>
+                <button
+                    v-for="entry in delivering"
+                    :key="entry.id"
+                    type="button"
+                    class="block w-full rounded border border-neutral-200 bg-white px-3 py-3 text-left text-sm"
+                    @click="openRunId = entry.id"
+                >
+                    Лист #{{ entry.id }} · остановок {{ entry.stops.length }}
+                </button>
+            </div>
         </div>
 
-        <div v-else class="space-y-4">
+        <div
+            v-else
+            class="space-y-4"
+        >
             <button
                 type="button"
-                class="text-sm text-neutral-600"
+                class="inline-flex h-9 items-center text-sm text-neutral-600"
                 @click="openRunId = null"
             >
-                ← Все листы
+                Все листы
             </button>
-            <h2 class="text-lg">Рейс #{{ run.id }}</h2>
+            <div class="flex items-center justify-between gap-3">
+                <h2 class="text-lg">Лист #{{ run.id }}</h2>
+                <button
+                    type="button"
+                    class="inline-flex h-9 items-center rounded bg-neutral-900 px-3 text-sm text-white disabled:opacity-40"
+                    :disabled="!canComplete"
+                    @click="complete"
+                >
+                    Завершить лист
+                </button>
+            </div>
             <StopsMap :points="runPoints" />
             <div class="overflow-x-auto rounded border border-neutral-200 bg-white">
                 <table class="w-full min-w-[720px] text-left text-sm">
@@ -93,18 +175,18 @@ function markFailed(orderId) {
                         >
                             <td class="px-3 py-2">{{ index + 1 }}</td>
                             <td class="px-3 py-2">
-                                <div>#{{ stop.orderId }} {{ board.findOrder(stop.orderId)?.clientName }}</div>
-                                <div class="text-xs text-neutral-500">{{ board.findOrder(stop.orderId)?.phone }}</div>
+                                <div>#{{ stop.orderId }} {{ stop.clientName }}</div>
+                                <div class="text-xs text-neutral-500">{{ stop.phone }}</div>
                             </td>
-                            <td class="px-3 py-2">{{ board.findOrder(stop.orderId)?.address }}</td>
+                            <td class="px-3 py-2">{{ stop.address }}</td>
                             <td class="whitespace-nowrap px-3 py-2">
-                                <div>{{ board.findOrder(stop.orderId)?.total }} ₽</div>
-                                <div class="text-xs text-neutral-500">{{ board.findOrder(stop.orderId)?.payment }}</div>
+                                <div>{{ stop.total }} ₽</div>
+                                <div class="text-xs text-neutral-500">{{ paymentMethodLabel(stop.payment) }}</div>
                             </td>
                             <td class="px-3 py-2">
                                 <p
                                     v-if="stop.outcome !== 'pending'"
-                                    class="text-xs"
+                                    class="text-sm"
                                 >
                                     {{ stop.outcome === "delivered" ? "Выдан" : `Не выдан: ${stop.reason}` }}
                                 </p>
@@ -114,25 +196,25 @@ function markFailed(orderId) {
                                 >
                                     <button
                                         type="button"
-                                        class="rounded bg-neutral-900 px-3 py-1.5 text-white"
-                                        @click="board.settleStop(run.id, stop.orderId, 'delivered', '')"
+                                        class="inline-flex h-9 items-center rounded bg-neutral-900 px-3 text-sm text-white"
+                                        @click="settle(stop.orderId, 'delivered', '')"
                                     >
                                         Выдан
                                     </button>
                                     <form
                                         class="flex gap-2"
-                                        @submit.prevent="markFailed(stop.orderId)"
+                                        @submit.prevent="settle(stop.orderId, 'failed', failReasons[reasonKey(stop.orderId)] ?? '')"
                                     >
                                         <input
                                             v-model="failReasons[reasonKey(stop.orderId)]"
                                             type="text"
                                             required
                                             placeholder="Почему не выдан"
-                                            class="min-w-0 flex-1 rounded border border-neutral-300 px-2 py-1"
+                                            class="h-9 min-w-0 flex-1 rounded border border-neutral-300 px-3 text-sm"
                                         >
                                         <button
                                             type="submit"
-                                            class="rounded border border-neutral-300 px-3 py-1.5"
+                                            class="inline-flex h-9 items-center rounded border border-neutral-300 px-3 text-sm"
                                         >
                                             Не выдан
                                         </button>

@@ -103,6 +103,28 @@ export function paymentMethodLabel(method) {
     return PAYMENT_LABELS[method] ?? method;
 }
 
+function mapRouteSheet(row) {
+    return {
+        id: row.id,
+        status: row.status,
+        stops: Array.isArray(row.stops)
+            ? row.stops.map((stop) => ({
+                orderId: stop.order_id,
+                position: stop.position,
+                outcome: stop.outcome,
+                reason: stop.reason ?? "",
+                clientName: stop.client_name ?? "",
+                phone: stop.phone ?? "",
+                address: stop.address ?? "",
+                total: stop.total ?? 0,
+                payment: stop.payment ?? "",
+                lat: stop.latitude ?? null,
+                lng: stop.longitude ?? null,
+            }))
+            : [],
+    };
+}
+
 function mapOrder(row) {
     const client = row.client ?? {};
     const delivery = row.delivery ?? {};
@@ -130,6 +152,9 @@ function mapOrder(row) {
         partnerCode: row.partner_code ?? null,
         externalOrderId: row.external_order_id ?? null,
         createdAt: formatDateTime(row.created_at),
+        kitchenStartedAt: typeof row.kitchen_started_at === "string" && row.kitchen_started_at !== ""
+            ? row.kitchen_started_at
+            : null,
         rejectReason: row.reject_reason ?? "",
         lines: Array.isArray(row.lines)
             ? row.lines.map((line) => ({
@@ -156,6 +181,12 @@ export const useOpsBoard = defineStore("ops-board", () => {
     const journalStatus = ref("");
     const journalReady = ref(false);
     const journalCounts = ref({});
+    const kitchenConfirmed = ref([]);
+    const kitchenPreparing = ref([]);
+    const kitchenLoaded = ref(false);
+    const kitchenError = ref("");
+    const routeSheets = ref([]);
+    const readyCourier = ref([]);
     const nextRunId = ref(1);
     const runs = ref([]);
 
@@ -200,12 +231,7 @@ export const useOpsBoard = defineStore("ops-board", () => {
     });
 
     const courierPool = computed(() =>
-        orders.value.filter(
-            (order) =>
-                order.status === "ready"
-                && order.deliveryMethod === "courier"
-                && !draftOrderIds.value.has(order.id),
-        ),
+        readyCourier.value.filter((order) => !draftOrderIds.value.has(order.id)),
     );
 
     function findOrder(id) {
@@ -344,20 +370,35 @@ export const useOpsBoard = defineStore("ops-board", () => {
         }
     }
 
-    function startPreparing(id) {
-        const order = findOrder(id);
-        if (!order || order.status !== "confirmed") {
-            return;
+    async function loadKitchen() {
+        try {
+            const [confirmed, preparing] = await Promise.all([
+                backofficeRequest("GET", "/api/backoffice/orders?page=1&per_page=100&status=confirmed"),
+                backofficeRequest("GET", "/api/backoffice/orders?page=1&per_page=100&status=preparing"),
+            ]);
+            kitchenConfirmed.value = Array.isArray(confirmed.orders) ? confirmed.orders.map(mapOrder) : [];
+            kitchenPreparing.value = Array.isArray(preparing.orders) ? preparing.orders.map(mapOrder) : [];
+            kitchenError.value = "";
+        } catch (error) {
+            kitchenError.value = error instanceof Error ? error.message : "Не удалось связаться с сервером.";
+        } finally {
+            kitchenLoaded.value = true;
         }
-        order.status = "preparing";
     }
 
-    function markReady(id) {
-        const order = findOrder(id);
-        if (!order || order.status !== "preparing") {
-            return;
-        }
-        order.status = "ready";
+    async function startPreparing(id) {
+        const payload = await backofficeRequest("POST", `/api/backoffice/orders/${id}/status`, {
+            status: "preparing",
+            reason: null,
+        });
+        replaceOrder(payload.order);
+        await loadKitchen();
+        return mapOrder(payload.order);
+    }
+
+    async function markReady(id) {
+        await changeStatus(id, "ready");
+        await loadKitchen();
     }
 
     async function handoffPickup(id) {
@@ -387,8 +428,33 @@ export const useOpsBoard = defineStore("ops-board", () => {
         return run;
     }
 
+    async function loadRouteSheets() {
+        const payload = await backofficeRequest("GET", "/api/backoffice/route-sheets");
+        routeSheets.value = Array.isArray(payload.route_sheets) ? payload.route_sheets.map(mapRouteSheet) : [];
+    }
+
+    async function loadReadyCourier() {
+        const payload = await backofficeRequest("GET", "/api/backoffice/orders?page=1&per_page=100&status=ready");
+        const mapped = Array.isArray(payload.orders) ? payload.orders.map(mapOrder) : [];
+        readyCourier.value = mapped.filter((order) => order.deliveryMethod === "courier");
+        for (const order of readyCourier.value) {
+            if (!orders.value.some((item) => item.id === order.id)) {
+                orders.value.push(order);
+            }
+        }
+    }
+
+    async function loadLogistics() {
+        try {
+            await Promise.all([loadReadyCourier(), loadRouteSheets()]);
+            ordersError.value = "";
+        } catch (error) {
+            ordersError.value = error instanceof Error ? error.message : "Не удалось связаться с сервером.";
+        }
+    }
+
     function addToDraft(orderId) {
-        const order = findOrder(orderId);
+        const order = readyCourier.value.find((item) => item.id === orderId) ?? findOrder(orderId);
         if (
             !order
             || order.status !== "ready"
@@ -434,49 +500,35 @@ export const useOpsBoard = defineStore("ops-board", () => {
             return;
         }
         try {
-            for (const stop of run.stops) {
-                const order = findOrder(stop.orderId);
-                if (order && order.status === "ready") {
-                    await changeStatus(order.id, "in_transit");
-                }
-            }
-            run.status = "released";
+            await backofficeRequest("POST", "/api/backoffice/route-sheets", {
+                order_ids: run.stops.map((stop) => stop.orderId),
+            });
+            runs.value = runs.value.filter((item) => item.id !== run.id);
+            ordersError.value = "";
+            await loadLogistics();
+            await loadOrders();
         } catch (error) {
             ordersError.value = error instanceof Error ? error.message : "Не удалось связаться с сервером.";
-            await loadOrders();
         }
     }
 
-    function settleStop(runId, orderId, outcome, reason) {
-        const run = findRun(runId);
-        if (!run || run.status !== "released") {
-            return;
-        }
-        const stop = run.stops.find(
-            (entry) => entry.orderId === orderId && entry.outcome === "pending",
-        );
-        const order = findOrder(orderId);
-        if (!stop || !order) {
-            return;
-        }
-        if (outcome === "delivered") {
-            stop.outcome = "delivered";
-            stop.reason = "";
-            order.status = "delivered";
-        } else if (outcome === "failed") {
-            const text = typeof reason === "string" ? reason.trim() : "";
-            if (text === "") {
-                return;
-            }
-            stop.outcome = "failed";
-            stop.reason = text;
-            order.status = "ready";
-        } else {
-            return;
-        }
-        if (run.stops.every((entry) => entry.outcome !== "pending")) {
-            run.status = "closed";
-        }
+    async function takeRouteSheet(id) {
+        await backofficeRequest("POST", `/api/backoffice/route-sheets/${id}/take`);
+        await loadRouteSheets();
+    }
+
+    async function settleStop(runId, orderId, outcome, reason) {
+        await backofficeRequest("POST", `/api/backoffice/route-sheets/${runId}/stops/${orderId}`, {
+            outcome,
+            reason: reason ?? null,
+        });
+        await loadRouteSheets();
+        await loadOrders();
+    }
+
+    async function completeRouteSheet(id) {
+        await backofficeRequest("POST", `/api/backoffice/route-sheets/${id}/complete`);
+        await loadRouteSheets();
     }
 
     loadOrders();
@@ -492,7 +544,17 @@ export const useOpsBoard = defineStore("ops-board", () => {
         journalReady,
         journalCounts,
         loadJournal,
+        kitchenConfirmed,
+        kitchenPreparing,
+        kitchenLoaded,
+        kitchenError,
+        loadKitchen,
         runs,
+        routeSheets,
+        loadRouteSheets,
+        loadLogistics,
+        takeRouteSheet,
+        completeRouteSheet,
         incoming,
         inProgress,
         kitchenQueue,

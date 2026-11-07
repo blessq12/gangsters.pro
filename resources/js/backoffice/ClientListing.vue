@@ -97,7 +97,7 @@ function addressLine(address) {
                                     v-for="item in detailTabs"
                                     :key="item.id"
                                     type="button"
-                                    class="rounded px-2 py-1 text-xs"
+                                    class="inline-flex h-9 items-center rounded px-3 text-sm"
                                     :class="detailTab === item.id ? 'bg-neutral-900 text-white' : 'bg-white text-neutral-700'"
                                     @click="detailTab = item.id"
                                 >

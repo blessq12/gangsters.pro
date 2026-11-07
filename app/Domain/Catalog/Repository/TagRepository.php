@@ -18,6 +18,8 @@ interface TagRepository
 
     public function findById(int $id): ?Tag;
 
+    public function save(?int $id, string $code, string $label, string $color, bool $isActive): Tag;
+
     /**
      * @param  list<int>  $ids
      * @return list<Tag>

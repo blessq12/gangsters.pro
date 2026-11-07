@@ -78,7 +78,7 @@ final class BackofficeOrderController extends Controller
     public function updateStatus(Request $request, int $order): JsonResponse
     {
         $validated = $request->validate([
-            'status' => ['required', 'string', 'in:confirmed,cancelled,delivered,in_transit'],
+            'status' => ['required', 'string', 'in:confirmed,cancelled,delivered,in_transit,preparing,ready'],
             'reason' => ['nullable', 'string', 'max:500'],
         ]);
 
