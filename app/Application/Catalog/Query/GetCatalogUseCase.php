@@ -76,10 +76,10 @@ final class GetCatalogUseCase
                 continue;
             }
 
+            $menuCategories[] = $node;
+
             if ($category->isAccompanying()) {
                 $accompanyingCategories[] = $node;
-            } else {
-                $menuCategories[] = $node;
             }
         }
 

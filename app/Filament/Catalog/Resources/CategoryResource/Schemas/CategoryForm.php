@@ -27,7 +27,7 @@ final class CategoryForm
                 ->default(true),
             Toggle::make('is_accompanying')
                 ->label('Сопутствующее')
-                ->helperText('Не в меню каталога — только шаг «Добавьте ещё» в оформлении')
+                ->helperText('В меню каталога и на шаге «Добавьте ещё» в оформлении')
                 ->default(false),
         ];
     }
