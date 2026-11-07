@@ -249,6 +249,63 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
         return $names;
     }
 
+    public function listAllProducts(): array
+    {
+        $rows = $this->productQuery()
+            ->where('catalog_kind', CatalogItemKind::Product->value)
+            ->orderBy('id')
+            ->get();
+
+        $ids = $rows
+            ->map(static fn (PRD_Product $row): int => (int) $row->id)
+            ->all();
+        $tagIds = $this->loadTagIdsForProductIds($ids);
+        $products = [];
+
+        foreach ($rows as $row) {
+            if (! $row instanceof PRD_Product) {
+                continue;
+            }
+
+            $id = (int) $row->id;
+            $products[] = $this->productMapper->toDomain($row, $tagIds[$id] ?? [], []);
+        }
+
+        return $products;
+    }
+
+    public function listAllSets(): array
+    {
+        $rows = $this->productQuery()
+            ->where('catalog_kind', CatalogItemKind::Set->value)
+            ->with('setLines')
+            ->orderBy('id')
+            ->get();
+
+        $ids = $rows
+            ->map(static fn (PRD_Product $row): int => (int) $row->id)
+            ->all();
+        $tagIds = $this->loadTagIdsForProductIds($ids);
+        $sets = [];
+
+        foreach ($rows as $row) {
+            if (! $row instanceof PRD_Product) {
+                continue;
+            }
+
+            $lines = $row->setLines
+                ->map(fn (PRD_ProductSetLine $line) => $this->setMapper->mapLine($line))
+                ->all();
+            $id = (int) $row->id;
+            $set = $this->setMapper->toDomain($row, $lines, $tagIds[$id] ?? [], []);
+            if ($set !== null) {
+                $sets[] = $set;
+            }
+        }
+
+        return $sets;
+    }
+
     public function findArchivedProductIds(): array
     {
         return $this->productQuery()

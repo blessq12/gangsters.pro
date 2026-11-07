@@ -3,7 +3,10 @@ import { RouterLink } from "vue-router";
 
 /** Nav items are domain bounded contexts, without Shared. */
 const links = [
+    { name: "administrator-catalog", label: "Каталог" },
     { name: "administrator-order", label: "Заказы" },
+    { name: "administrator-logistics", label: "Логистика" },
+    { name: "administrator-clients", label: "Клиенты" },
 ];
 </script>
 

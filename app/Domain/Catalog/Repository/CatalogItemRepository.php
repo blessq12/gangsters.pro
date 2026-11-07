@@ -65,4 +65,14 @@ interface CatalogItemRepository
      * @return list<int>
      */
     public function findArchivedProductIds(): array;
+
+    /**
+     * @return list<Product>
+     */
+    public function listAllProducts(): array;
+
+    /**
+     * @return list<ProductSet>
+     */
+    public function listAllSets(): array;
 }

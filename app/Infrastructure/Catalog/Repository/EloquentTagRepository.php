@@ -25,6 +25,16 @@ final class EloquentTagRepository implements TagRepository
             ->all();
     }
 
+    public function findAllOrdered(): array
+    {
+        return PRD_Tag::query()
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get()
+            ->map(fn (PRD_Tag $row) => $this->mapper->toDomain($row))
+            ->all();
+    }
+
     public function findById(int $id): ?Tag
     {
         $row = PRD_Tag::query()->find($id);

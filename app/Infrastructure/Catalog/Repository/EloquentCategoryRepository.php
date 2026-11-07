@@ -28,6 +28,16 @@ final class EloquentCategoryRepository implements CategoryRepository
             ->all();
     }
 
+    public function findAllIncludingInactive(): array
+    {
+        return PRD_Category::query()
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get()
+            ->map(fn (PRD_Category $row) => $this->mapper->toDomain($row))
+            ->all();
+    }
+
     public function findById(int $id): ?Category
     {
         $row = PRD_Category::query()->find($id);

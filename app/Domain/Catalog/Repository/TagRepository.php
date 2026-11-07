@@ -11,6 +11,11 @@ interface TagRepository
      */
     public function findAllActiveOrdered(): array;
 
+    /**
+     * @return list<Tag>
+     */
+    public function findAllOrdered(): array;
+
     public function findById(int $id): ?Tag;
 
     /**

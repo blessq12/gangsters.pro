@@ -62,6 +62,7 @@ final class OrderSnapshotReader
         return match ($status) {
             'new' => 'Новый',
             'preorder' => 'Предзаказ',
+            'confirmed' => 'Подтверждён',
             'preparing' => 'В производстве',
             'ready' => 'Произведен',
             'in_transit' => 'В пути',

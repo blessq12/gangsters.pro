@@ -6,6 +6,7 @@ enum OrderStatus: string
 {
     case New = 'new';
     case Preorder = 'preorder';
+    case Confirmed = 'confirmed';
     case Preparing = 'preparing';
     case Ready = 'ready';
     case InTransit = 'in_transit';

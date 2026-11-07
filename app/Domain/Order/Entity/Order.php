@@ -178,6 +178,32 @@ final class Order
         return $this->copyWith(status: self::normalizeStatus($status));
     }
 
+    public function withCancelled(string $reason): self
+    {
+        $reason = trim($reason);
+        if ($reason === '') {
+            throw new \InvalidArgumentException('Причина списания обязательна.');
+        }
+
+        $delivery = $this->delivery;
+        $delivery['cancel_reason'] = $reason;
+
+        return new self(
+            id: $this->id,
+            source: $this->source,
+            checkoutId: $this->checkoutId,
+            partnerCode: $this->partnerCode,
+            externalOrderId: $this->externalOrderId,
+            status: OrderStatus::Cancelled->value,
+            cart: $this->cart,
+            client: $this->client,
+            delivery: $delivery,
+            payment: $this->payment,
+            createdAt: $this->createdAt,
+            frontpadOrderId: $this->frontpadOrderId,
+        );
+    }
+
     /**
      * @return array<string, mixed>
      */

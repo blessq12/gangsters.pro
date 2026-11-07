@@ -121,6 +121,16 @@ export const routeRecords = [
                 component: () => import("../administrator/pages/OrderPage.vue"),
             },
             {
+                path: "clients",
+                name: "administrator-clients",
+                component: () => import("../administrator/pages/ClientsPage.vue"),
+            },
+            {
+                path: "logistics",
+                name: "administrator-logistics",
+                component: () => import("../administrator/pages/LogisticsPage.vue"),
+            },
+            {
                 path: "production",
                 name: "administrator-production",
                 component: () => import("../administrator/pages/ProductionPage.vue"),

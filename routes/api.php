@@ -1,12 +1,25 @@
 <?php
 
+use App\Http\Controllers\Api\BackofficeCatalogController;
+use App\Http\Controllers\Api\BackofficeClientController;
+use App\Http\Controllers\Api\BackofficeOrderController;
 use App\Http\Controllers\Api\CatalogController;
+use App\Http\Middleware\EnsureBackofficeEnabled;
 use App\Http\Controllers\Api\ClientController;
 use App\Http\Controllers\Api\ContentController;
 use App\Http\Controllers\Api\FrontpadWebhookController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\YandexFoodController;
 use Illuminate\Support\Facades\Route;
+
+Route::prefix('backoffice')->middleware(EnsureBackofficeEnabled::class)->group(function (): void {
+    Route::get('orders', [BackofficeOrderController::class, 'index']);
+    Route::post('orders', [BackofficeOrderController::class, 'store']);
+    Route::post('orders/{order}/status', [BackofficeOrderController::class, 'updateStatus'])
+        ->whereNumber('order');
+    Route::get('clients', [BackofficeClientController::class, 'index']);
+    Route::get('catalog', [BackofficeCatalogController::class, 'index']);
+});
 
 Route::get('/content', [ContentController::class, 'show']);
 Route::get('/catalog', [CatalogController::class, 'show']);
