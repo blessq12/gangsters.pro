@@ -17,5 +17,17 @@ interface OrderRepository
      */
     public function listByClientId(int $clientId): array;
 
+    public function count(?string $status = null): int;
+
+    /**
+     * @return array<string, int>
+     */
+    public function countByStatus(): array;
+
+    /**
+     * @return list<Order>
+     */
+    public function listPage(int $offset, int $limit, ?string $status = null): array;
+
     public function save(Order $order): void;
 }

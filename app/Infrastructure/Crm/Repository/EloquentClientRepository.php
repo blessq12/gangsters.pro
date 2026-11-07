@@ -65,4 +65,20 @@ final class EloquentClientRepository implements ClientRepository
             ->where('phone', $phone)
             ->exists();
     }
+
+    public function count(): int
+    {
+        return CRM_Client::query()->count();
+    }
+
+    public function listPage(int $offset, int $limit): array
+    {
+        return CRM_Client::query()
+            ->orderByDesc('id')
+            ->offset(max(0, $offset))
+            ->limit(max(1, $limit))
+            ->get()
+            ->map(fn (CRM_Client $row): Client => $this->mapper->toDomain($row))
+            ->all();
+    }
 }

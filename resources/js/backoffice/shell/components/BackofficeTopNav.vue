@@ -4,7 +4,7 @@ import { RouterLink } from "vue-router";
 const roles = [
     { path: "/courier", label: "Курьер" },
     { path: "/production", label: "Кухня" },
-    { path: "/manager", label: "Менеджер" },
+    { path: "/owner", label: "Владелец" },
     { path: "/administrator", label: "Администратор" },
 ];
 </script>
@@ -19,7 +19,7 @@ const roles = [
                 v-for="role in roles"
                 :key="role.path"
                 :to="role.path"
-                class="rounded px-3 py-1.5 text-sm text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900"
+                class="inline-flex h-9 items-center rounded px-3 text-sm text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900"
                 active-class="bg-neutral-200 font-medium text-neutral-900"
             >
                 {{ role.label }}

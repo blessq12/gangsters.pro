@@ -12,7 +12,16 @@ interface CategoryRepository
      */
     public function findAllOrdered(): array;
 
+    /**
+     * Every category, including inactive ones.
+     *
+     * @return list<Category>
+     */
+    public function findAllIncludingInactive(): array;
+
     public function findById(int $id): ?Category;
+
+    public function save(?int $id, string $name, bool $isActive, bool $isAccompanying): Category;
 
     /**
      * @return list<CategoryItem>

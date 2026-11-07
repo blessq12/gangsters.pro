@@ -14,6 +14,8 @@ use App\Infrastructure\Catalog\Model\PRD_ProductImage;
 use App\Infrastructure\Catalog\Model\PRD_ProductSetLine;
 use App\Infrastructure\Catalog\Support\CatalogStoredImagePath;
 use App\Domain\Catalog\ValueObject\ProductImage;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 final class EloquentCatalogItemRepository implements CatalogItemRepository
 {
@@ -249,6 +251,63 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
         return $names;
     }
 
+    public function listAllProducts(): array
+    {
+        $rows = $this->productQuery()
+            ->where('catalog_kind', CatalogItemKind::Product->value)
+            ->orderBy('id')
+            ->get();
+
+        $ids = $rows
+            ->map(static fn (PRD_Product $row): int => (int) $row->id)
+            ->all();
+        $tagIds = $this->loadTagIdsForProductIds($ids);
+        $products = [];
+
+        foreach ($rows as $row) {
+            if (! $row instanceof PRD_Product) {
+                continue;
+            }
+
+            $id = (int) $row->id;
+            $products[] = $this->productMapper->toDomain($row, $tagIds[$id] ?? [], []);
+        }
+
+        return $products;
+    }
+
+    public function listAllSets(): array
+    {
+        $rows = $this->productQuery()
+            ->where('catalog_kind', CatalogItemKind::Set->value)
+            ->with('setLines')
+            ->orderBy('id')
+            ->get();
+
+        $ids = $rows
+            ->map(static fn (PRD_Product $row): int => (int) $row->id)
+            ->all();
+        $tagIds = $this->loadTagIdsForProductIds($ids);
+        $sets = [];
+
+        foreach ($rows as $row) {
+            if (! $row instanceof PRD_Product) {
+                continue;
+            }
+
+            $lines = $row->setLines
+                ->map(fn (PRD_ProductSetLine $line) => $this->setMapper->mapLine($line))
+                ->all();
+            $id = (int) $row->id;
+            $set = $this->setMapper->toDomain($row, $lines, $tagIds[$id] ?? [], []);
+            if ($set !== null) {
+                $sets[] = $set;
+            }
+        }
+
+        return $sets;
+    }
+
     public function findArchivedProductIds(): array
     {
         return $this->productQuery()
@@ -444,5 +503,156 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
         }
 
         return [$focusX, $focusY];
+    }
+
+    public function saveProduct(
+        ?int $id,
+        string $name,
+        int $price,
+        ?int $oldPrice,
+        ?int $weight,
+        string $status,
+        ?string $description,
+        ?string $sku,
+    ): int {
+        return $this->saveItem($id, CatalogItemKind::Product, $name, $price, $oldPrice, $weight, $status, $description, $sku);
+    }
+
+    public function saveSet(
+        ?int $id,
+        string $name,
+        ?string $sku,
+        int $price,
+        ?int $oldPrice,
+        string $status,
+    ): int {
+        return $this->saveItem($id, CatalogItemKind::Set, $name, $price, $oldPrice, null, $status, null, $sku);
+    }
+
+    public function listProductImages(int $productId): array
+    {
+        $this->requireItem($productId);
+
+        return PRD_ProductImage::query()
+            ->where('product_id', $productId)
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get()
+            ->map(function (PRD_ProductImage $row): array {
+                $path = CatalogStoredImagePath::normalize($row->path) ?? '';
+
+                return [
+                    'id' => (int) $row->id,
+                    'url' => $this->imageUrl($path),
+                    'focus_x' => $row->focus_x !== null ? (float) $row->focus_x : null,
+                    'focus_y' => $row->focus_y !== null ? (float) $row->focus_y : null,
+                ];
+            })
+            ->all();
+    }
+
+    public function addProductImage(int $productId, string $path): void
+    {
+        $this->requireItem($productId);
+        PRD_ProductImage::query()->create([
+            'product_id' => $productId,
+            'disk' => 'public',
+            'path' => $path,
+        ]);
+    }
+
+    private function saveItem(
+        ?int $id,
+        CatalogItemKind $kind,
+        string $name,
+        int $price,
+        ?int $oldPrice,
+        ?int $weight,
+        string $status,
+        ?string $description,
+        ?string $sku,
+    ): int {
+        if (ProductStatus::tryFrom($status) === null) {
+            throw new \InvalidArgumentException('Недопустимый статус.');
+        }
+
+        $row = $id === null ? new PRD_Product() : $this->requireKind($id, $kind);
+        if ($id === null) {
+            $row->slug = $this->uniqueProductSlug($name);
+            $row->catalog_kind = $kind->value;
+            $row->is_system = false;
+        }
+
+        $fields = [
+            'name' => $name,
+            'price' => $price,
+            'old_price' => $oldPrice,
+            'status' => $status,
+        ];
+        if ($kind === CatalogItemKind::Product) {
+            $fields['weight'] = $weight;
+            $fields['description'] = $description;
+        }
+        $row->fill($fields);
+        if ($sku !== null && trim($sku) !== '') {
+            $row->sku = trim($sku);
+        } elseif ($id === null) {
+            $row->sku = $row->slug;
+        }
+        $row->save();
+
+        return (int) $row->id;
+    }
+
+    private function requireKind(int $id, CatalogItemKind $kind): PRD_Product
+    {
+        $row = PRD_Product::query()
+            ->whereKey($id)
+            ->where('catalog_kind', $kind->value)
+            ->first();
+        if (! $row instanceof PRD_Product) {
+            throw new \InvalidArgumentException($kind === CatalogItemKind::Set ? 'Набор не найден.' : 'Товар не найден.');
+        }
+
+        return $row;
+    }
+
+    private function requireItem(int $productId): PRD_Product
+    {
+        $row = PRD_Product::query()->find($productId);
+        if (! $row instanceof PRD_Product) {
+            throw new \InvalidArgumentException('Товар не найден.');
+        }
+
+        return $row;
+    }
+
+    private function uniqueProductSlug(string $name): string
+    {
+        $base = Str::slug($name);
+        if ($base === '') {
+            $base = 'item';
+        }
+
+        $slug = $base;
+        $suffix = 2;
+        while (PRD_Product::query()->where('slug', $slug)->exists()) {
+            $slug = $base.'-'.$suffix;
+            $suffix++;
+        }
+
+        return $slug;
+    }
+
+    private function imageUrl(string $path): string
+    {
+        if ($path === '') {
+            return '';
+        }
+        if (preg_match('#^https?://#i', $path) === 1) {
+            return $path;
+        }
+
+        return Storage::disk('public')->url(ltrim($path, '/'));
     }
 }

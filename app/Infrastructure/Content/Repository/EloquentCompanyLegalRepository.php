@@ -22,4 +22,17 @@ final class EloquentCompanyLegalRepository implements CompanyLegalRepository
 
         return $row instanceof CMP_CompanyLegal ? $this->mapper->toDomain($row) : null;
     }
+
+    public function save(CompanyLegalInfo $info): void
+    {
+        $row = CMP_CompanyLegal::query()->firstOrNew([
+            'company_id' => CompanyRepository::SINGLETON_ID,
+        ]);
+        $row->fill([
+            'full_name' => $info->fullName(),
+            'inn' => $info->inn(),
+            'ogrn' => $info->ogrn(),
+        ]);
+        $row->save();
+    }
 }

@@ -15,4 +15,11 @@ interface ClientRepository
     public function findByEmail(string $email): ?Client;
 
     public function existsByPhone(string $phone): bool;
+
+    public function count(): int;
+
+    /**
+     * @return list<Client>
+     */
+    public function listPage(int $offset, int $limit): array;
 }

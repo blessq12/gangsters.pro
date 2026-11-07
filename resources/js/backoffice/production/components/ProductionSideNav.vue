@@ -2,9 +2,7 @@
 import { RouterLink } from "vue-router";
 
 const links = [
-    { name: "production-catalog", label: "Catalog" },
-    { name: "production-production", label: "Production" },
-    { name: "production-order", label: "Order" },
+    { name: "production-production", label: "Очередь" },
 ];
 </script>
 
@@ -18,7 +16,7 @@ const links = [
                 v-for="link in links"
                 :key="link.name"
                 :to="{ name: link.name }"
-                class="rounded px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-200"
+                class="flex h-9 items-center rounded px-3 text-sm text-neutral-700 hover:bg-neutral-200"
                 active-class="bg-neutral-200 font-medium text-neutral-900"
             >
                 {{ link.label }}
