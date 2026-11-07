@@ -31,12 +31,7 @@ class ProductsHubTable extends TableWidget
                         ->label('Название')
                         ->searchable()
                         ->sortable(),
-                    TextColumn::make('slug')
-                        ->label('Слаг')
-                        ->searchable(),
-                    CatalogHubTablePresentation::catalogItemSkuColumn(),
                     CatalogHubTablePresentation::catalogItemPriceColumn(),
-                    CatalogHubTablePresentation::catalogItemOldPriceColumn(),
                     CatalogHubTablePresentation::catalogItemWeightColumn(),
                     CatalogHubTablePresentation::catalogItemStatusColumn(),
                     CatalogHubTablePresentation::productSystemColumn(),

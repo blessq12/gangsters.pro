@@ -28,13 +28,11 @@ class CategoriesHubTable extends TableWidget
                     TextColumn::make('name')
                         ->label('Название')
                         ->searchable(),
-                    TextColumn::make('slug')
-                        ->label('Слаг')
-                        ->searchable(),
                     TextColumn::make('category_products_count')
                         ->label('Позиций')
                         ->counts('categoryProducts'),
                     CatalogHubTablePresentation::categoryStatusColumn(),
+                    CatalogHubTablePresentation::categoryAccompanyingColumn(),
                 ])
                 ->filters([
                     CatalogHubTablePresentation::categoryStatusFilter(),

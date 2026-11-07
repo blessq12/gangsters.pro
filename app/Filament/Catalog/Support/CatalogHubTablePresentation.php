@@ -114,6 +114,20 @@ final class CatalogHubTablePresentation
             });
     }
 
+    public static function categoryAccompanyingColumn(): ToggleColumn
+    {
+        return ToggleColumn::make('is_accompanying')
+            ->label('Сопутствующее')
+            ->onColor('success')
+            ->offColor('gray')
+            ->updateStateUsing(function (mixed $state, Model $record): bool {
+                $isAccompanying = (bool) $state;
+                $record->update(['is_accompanying' => $isAccompanying]);
+
+                return $isAccompanying;
+            });
+    }
+
     public static function tagStatusColumn(): TextColumn
     {
         return TextColumn::make('is_active')

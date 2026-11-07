@@ -76,6 +76,7 @@ async function decrementProduct(productId) {
         <CheckoutSection
             v-for="entry in accompanyingSections"
             :key="`accompanying:${entry.category?.id ?? entry.category?.slug}`"
+            :title="entry.category?.name ?? ''"
         >
             <ul class="space-y-2">
                 <li
