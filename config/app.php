@@ -4,12 +4,12 @@ use App\Infrastructure\Catalog\Provider\CatalogServiceProvider;
 use App\Infrastructure\Content\Provider\ContentServiceProvider;
 use App\Infrastructure\Crm\Provider\CrmServiceProvider;
 use App\Infrastructure\Order\Provider\OrderServiceProvider;
+use App\Infrastructure\Staff\Provider\StaffServiceProvider;
 use App\Infrastructure\YandexFood\Provider\YandexFoodServiceProvider;
 use App\Integration\Frontpad\Provider\FrontpadServiceProvider;
 use App\Shared\Provider\SharedProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\AuthServiceProvider;
-use App\Providers\Filament\AdminPanelProvider;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\ServiceProvider;
@@ -192,8 +192,8 @@ return [
         ContentServiceProvider::class,
         CrmServiceProvider::class,
         OrderServiceProvider::class,
+        StaffServiceProvider::class,
         YandexFoodServiceProvider::class,
-        AdminPanelProvider::class,
         ImageServiceProvider::class,
     ])->toArray(),
 

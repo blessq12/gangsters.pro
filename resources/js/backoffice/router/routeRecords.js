@@ -5,7 +5,20 @@
 
 export const routeRecords = [
     {
+        path: "/login",
+        name: "backoffice-login",
+        component: () => import("../shell/pages/LoginPage.vue"),
+        meta: { guest: true },
+    },
+    {
+        path: "/forgot-password",
+        name: "backoffice-forgot-password",
+        component: () => import("../shell/pages/ForgotPasswordPage.vue"),
+        meta: { guest: true },
+    },
+    {
         path: "/",
+        name: "backoffice-root",
         redirect: { name: "administrator-order" },
     },
     {
@@ -27,7 +40,7 @@ export const routeRecords = [
     {
         path: "/production",
         component: () => import("../production/layouts/ProductionLayout.vue"),
-        meta: { role: "production" },
+        meta: { role: "kitchen" },
         children: [
             {
                 path: "",
@@ -104,9 +117,9 @@ export const routeRecords = [
                 component: () => import("../owner/pages/DocumentsPage.vue"),
             },
             {
-                path: "operators",
-                name: "owner-operators",
-                component: () => import("../owner/pages/OperatorsPage.vue"),
+                path: "employees",
+                name: "owner-employees",
+                component: () => import("../owner/pages/EmployeesPage.vue"),
             },
         ],
     },
@@ -162,7 +175,7 @@ export const routeRecords = [
             {
                 path: "staff",
                 name: "administrator-staff",
-                component: () => import("../administrator/pages/StaffPage.vue"),
+                component: () => import("../owner/pages/EmployeesPage.vue"),
             },
             {
                 path: "warehouse",

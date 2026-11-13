@@ -7,7 +7,7 @@ use Illuminate\Support\Arr;
 final class MarketingStoredPath
 {
     /**
-     * Путь относительно public disk для Filament ImageColumn (без второго Storage::url).
+     * Путь относительно public disk (без второго Storage::url).
      */
     public static function normalizePublicDiskPath(mixed $path): ?string
     {
@@ -38,30 +38,6 @@ final class MarketingStoredPath
         $path = ltrim($path, '/');
 
         return $path !== '' ? $path : null;
-    }
-
-    /**
-     * State для Filament: disk-relative или абсолютный URL (сидер /images, вне storage).
-     */
-    public static function filamentImageState(?string $path): ?string
-    {
-        $diskPath = self::normalizePublicDiskPath($path);
-
-        if ($diskPath !== null) {
-            return $diskPath;
-        }
-
-        $resolved = PublicMediaUrl::resolve($path);
-
-        if ($resolved === null) {
-            return null;
-        }
-
-        if (filter_var($resolved, FILTER_VALIDATE_URL) !== false) {
-            return $resolved;
-        }
-
-        return url($resolved);
     }
 
     private static function normalizeRaw(mixed $path): ?string

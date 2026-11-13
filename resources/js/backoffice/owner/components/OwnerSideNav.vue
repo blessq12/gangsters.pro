@@ -28,7 +28,7 @@ const groups = [
         links: [
             { name: "owner-company", label: "Компания" },
             { name: "owner-documents", label: "Документы" },
-            { name: "owner-operators", label: "Операторы" },
+            { name: "owner-employees", label: "Сотрудники" },
         ],
     },
 ];
