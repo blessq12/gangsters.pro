@@ -40,7 +40,7 @@ final class DeliveryZone
     }
 
     /**
-     * System-товар доставки для Frontpad (SKU зоны). Null — линия не добавляется.
+     * System-товар доставки (SKU зоны). Null — линия не добавляется.
      */
     public function deliveryProductId(): ?int
     {

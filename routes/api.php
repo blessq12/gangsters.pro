@@ -14,9 +14,7 @@ use App\Http\Controllers\Api\CatalogController;
 use App\Http\Middleware\EnsureBackofficeEnabled;
 use App\Http\Controllers\Api\ClientController;
 use App\Http\Controllers\Api\ContentController;
-use App\Http\Controllers\Api\FrontpadWebhookController;
 use App\Http\Controllers\Api\OrderController;
-use App\Http\Controllers\Api\YandexFoodController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('backoffice')->middleware(EnsureBackofficeEnabled::class)->group(function (): void {
@@ -115,20 +113,4 @@ Route::prefix('client')->group(function (): void {
 Route::prefix('order')->group(function (): void {
     Route::post('quote', [OrderController::class, 'quote']);
     Route::post('/', [OrderController::class, 'place']);
-    // Frontpad hook_url: панель шлёт probe любым методом и ждёт HTTP 200
-    Route::any('update', [FrontpadWebhookController::class, 'handle']);
-});
-
-// Alias: старый path из export (orders plural)
-Route::any('/orders/update', [FrontpadWebhookController::class, 'handle']);
-
-Route::prefix('yandex-food')->group(function (): void {
-    Route::post('/security/oauth/token', [YandexFoodController::class, 'login']);
-
-    Route::middleware('yandex.food.auth')->group(function (): void {
-        Route::get('/menu/{id}/composition', [YandexFoodController::class, 'getMenuComposition']);
-        Route::get('/menu/{id}/availability', [YandexFoodController::class, 'getMenuAvailability']);
-        Route::get('/menu/{id}/promos', [YandexFoodController::class, 'getMenuPromos']);
-        Route::get('/restaurants', [YandexFoodController::class, 'getRestaurants']);
-    });
 });

@@ -5,8 +5,6 @@ use App\Infrastructure\Content\Provider\ContentServiceProvider;
 use App\Infrastructure\Crm\Provider\CrmServiceProvider;
 use App\Infrastructure\Order\Provider\OrderServiceProvider;
 use App\Infrastructure\Staff\Provider\StaffServiceProvider;
-use App\Infrastructure\YandexFood\Provider\YandexFoodServiceProvider;
-use App\Integration\Frontpad\Provider\FrontpadServiceProvider;
 use App\Shared\Provider\SharedProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\AuthServiceProvider;
@@ -187,13 +185,11 @@ return [
         AuthServiceProvider::class,
         RouteServiceProvider::class,
         SharedProvider::class,
-        FrontpadServiceProvider::class,
         CatalogServiceProvider::class,
         ContentServiceProvider::class,
         CrmServiceProvider::class,
         OrderServiceProvider::class,
         StaffServiceProvider::class,
-        YandexFoodServiceProvider::class,
         ImageServiceProvider::class,
     ])->toArray(),
 

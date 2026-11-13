@@ -340,7 +340,7 @@ final class QuoteOrderUseCase
     }
 
     /**
-     * Неявная линия доставки для Frontpad. Без товара/SKU — null (заказ всё равно ок).
+     * Неявная линия доставки. Без товара/SKU — null (заказ всё равно ок).
      *
      * @return array<string, mixed>|null
      */

@@ -26,9 +26,6 @@ final class OrderMapper
             delivery: is_array($row->delivery_snapshot) ? $row->delivery_snapshot : [],
             payment: is_array($row->payment_snapshot) ? $row->payment_snapshot : [],
             createdAt: new DateTimeImmutable((string) $row->created_at),
-            frontpadOrderId: isset($row->frontpad_order_id) && (string) $row->frontpad_order_id !== ''
-                ? (string) $row->frontpad_order_id
-                : null,
         );
     }
 
@@ -43,7 +40,6 @@ final class OrderMapper
             'checkout_id' => $order->checkoutId(),
             'partner_code' => $order->partnerCode(),
             'external_order_id' => $order->externalOrderId(),
-            'frontpad_order_id' => $order->frontpadOrderId(),
             'status' => $order->status(),
             'client_id' => $order->clientId(),
             'total_rubles' => $order->totalRubles(),
