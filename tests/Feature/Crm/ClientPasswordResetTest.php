@@ -19,7 +19,7 @@ final class ClientPasswordResetTest extends ApiTestCase
         $oldPassword = 'secret12';
         $phone = $this->uniquePhone();
 
-        $this->postJson('/api/client/register', [
+        $this->postJson('/api/public/client/register', [
             'name' => 'Reset User',
             'phone' => $phone,
             'email' => $email,
@@ -31,7 +31,7 @@ final class ClientPasswordResetTest extends ApiTestCase
         $this->assertGreaterThan(0, $clientId);
         $oldHash = (string) DB::table('CRM_clients')->where('id', $clientId)->value('password');
 
-        $response = $this->postJson('/api/client/forgot-password', [
+        $response = $this->postJson('/api/public/client/forgot-password', [
             'email' => $email,
         ]);
 
@@ -59,12 +59,12 @@ final class ClientPasswordResetTest extends ApiTestCase
         $this->assertInstanceOf(ClientPasswordResetMail::class, $sent);
         $this->assertTrue(Hash::check($sent->plainPassword, $newHash));
 
-        $this->postJson('/api/client/login', [
+        $this->postJson('/api/public/client/login', [
             'email' => $email,
             'password' => $oldPassword,
         ])->assertStatus(422);
 
-        $this->postJson('/api/client/login', [
+        $this->postJson('/api/public/client/login', [
             'email' => $email,
             'password' => $sent->plainPassword,
         ])->assertOk()
@@ -75,7 +75,7 @@ final class ClientPasswordResetTest extends ApiTestCase
     {
         Mail::fake();
 
-        $response = $this->postJson('/api/client/forgot-password', [
+        $response = $this->postJson('/api/public/client/forgot-password', [
             'email' => 'missing.'.bin2hex(random_bytes(4)).'@example.test',
         ]);
 
@@ -90,7 +90,7 @@ final class ClientPasswordResetTest extends ApiTestCase
 
     public function test_forgot_password_requires_email(): void
     {
-        $this->postJson('/api/client/forgot-password', [])
+        $this->postJson('/api/public/client/forgot-password', [])
             ->assertStatus(422)
             ->assertJsonValidationErrors(['email']);
     }
@@ -102,7 +102,7 @@ final class ClientPasswordResetTest extends ApiTestCase
         $phone = $this->uniquePhone();
 
         // Без email на регистрации — welcome не дергает Mail до мока сбоя.
-        $this->postJson('/api/client/register', [
+        $this->postJson('/api/public/client/register', [
             'name' => 'Reset Fail User',
             'phone' => $phone,
             'password' => $oldPassword,
@@ -117,7 +117,7 @@ final class ClientPasswordResetTest extends ApiTestCase
             ->once()
             ->andThrow(new TransportException('SMTP down'));
 
-        $this->postJson('/api/client/forgot-password', [
+        $this->postJson('/api/public/client/forgot-password', [
             'email' => $email,
         ])->assertStatus(503)
             ->assertJsonPath('message', 'Не удалось отправить письмо. Попробуй позже.');
@@ -125,7 +125,7 @@ final class ClientPasswordResetTest extends ApiTestCase
         $newHash = (string) DB::table('CRM_clients')->where('id', $clientId)->value('password');
         $this->assertSame($oldHash, $newHash);
 
-        $this->postJson('/api/client/login', [
+        $this->postJson('/api/public/client/login', [
             'email' => $email,
             'password' => $oldPassword,
         ])->assertOk();

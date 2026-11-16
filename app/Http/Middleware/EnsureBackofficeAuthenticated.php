@@ -4,9 +4,10 @@ namespace App\Http\Middleware;
 
 use App\Domain\Staff\Entity\Employee;
 use App\Domain\Staff\Repository\EmployeeRepository;
+use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Laravel\Sanctum\PersonalAccessToken;
 use Symfony\Component\HttpFoundation\Response;
 
 final class EnsureBackofficeAuthenticated
@@ -24,15 +25,21 @@ final class EnsureBackofficeAuthenticated
             return $next($request);
         }
 
-        $userId = Auth::guard('web')->id();
-        if ($userId === null) {
+        $user = $request->user('sanctum');
+        if (! $user instanceof User) {
             return response()->json(['message' => 'Требуется вход.'], 401);
         }
 
-        $employee = $this->employees->findById((int) $userId);
-        if (! $employee instanceof Employee || ! $employee->isActive()) {
-            Auth::guard('web')->logout();
+        $token = $user->currentAccessToken();
+        if (
+            ! $token instanceof PersonalAccessToken
+            || ! PersonalAccessToken::query()->whereKey($token->getKey())->exists()
+        ) {
+            return response()->json(['message' => 'Требуется вход.'], 401);
+        }
 
+        $employee = $this->employees->findById((int) $user->id);
+        if (! $employee instanceof Employee || ! $employee->isActive()) {
             return response()->json(['message' => 'Требуется вход.'], 401);
         }
 

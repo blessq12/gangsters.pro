@@ -4,7 +4,10 @@ namespace App\Domain\Staff\Port;
 
 interface StaffSessionPort
 {
-    public function login(int $employeeId): void;
+    /**
+     * Issue a Sanctum personal access token for the employee.
+     */
+    public function login(int $employeeId): string;
 
     public function logout(): void;
 

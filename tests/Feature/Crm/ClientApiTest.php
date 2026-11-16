@@ -10,7 +10,7 @@ final class ClientApiTest extends ApiTestCase
     {
         $phone = $this->uniquePhone();
 
-        $response = $this->postJson('/api/client/register', [
+        $response = $this->postJson('/api/public/client/register', [
             'name' => 'Anna Test',
             'phone' => $phone,
             'password' => 'secret12',
@@ -31,7 +31,7 @@ final class ClientApiTest extends ApiTestCase
     {
         $account = $this->registerClient();
 
-        $response = $this->postJson('/api/client/login', [
+        $response = $this->postJson('/api/public/client/login', [
             'phone' => $account['phone'],
             'password' => $account['password'],
         ]);
@@ -46,13 +46,13 @@ final class ClientApiTest extends ApiTestCase
         $account = $this->registerClient();
 
         $read = $this->withBearer($account['token'])
-            ->getJson('/api/client/profile');
+            ->getJson('/api/public/client/profile');
 
         $read->assertOk()
             ->assertJsonPath('client.id', $account['client']['id']);
 
         $update = $this->withBearer($account['token'])
-            ->patchJson('/api/client/profile', [
+            ->patchJson('/api/public/client/profile', [
                 'name' => 'New Name',
                 'consent_marketing' => true,
             ]);
@@ -67,7 +67,7 @@ final class ClientApiTest extends ApiTestCase
         $account = $this->registerClient();
 
         $create = $this->withBearer($account['token'])
-            ->postJson('/api/client/addresses', [
+            ->postJson('/api/public/client/addresses', [
                 'street' => 'Main Street',
                 'house' => '10',
                 'entrance' => '2',
@@ -86,7 +86,7 @@ final class ClientApiTest extends ApiTestCase
         $this->assertSame('5', $addresses[0]['apartment']);
 
         $delete = $this->withBearer($account['token'])
-            ->deleteJson('/api/client/addresses/'.$addressId);
+            ->deleteJson('/api/public/client/addresses/'.$addressId);
 
         $delete->assertOk();
         $this->assertSame([], $delete->json('client.addresses'));
@@ -99,7 +99,7 @@ final class ClientApiTest extends ApiTestCase
         $otherProductId = $productId + 1;
 
         $toggle = $this->withBearer($account['token'])
-            ->postJson('/api/client/favorites/'.$productId, [
+            ->postJson('/api/public/client/favorites/'.$productId, [
                 'name' => 'Test Roll',
                 'price' => 500,
             ]);
@@ -109,13 +109,13 @@ final class ClientApiTest extends ApiTestCase
         $this->assertSame($productId, (int) $toggle->json('favorites.0.productId'));
 
         $list = $this->withBearer($account['token'])
-            ->getJson('/api/client/favorites');
+            ->getJson('/api/public/client/favorites');
 
         $list->assertOk()
             ->assertJsonCount(1, 'favorites');
 
         $merge = $this->withBearer($account['token'])
-            ->postJson('/api/client/favorites/merge', [
+            ->postJson('/api/public/client/favorites/merge', [
                 'items' => [
                     [
                         'product_id' => $otherProductId,
@@ -129,7 +129,7 @@ final class ClientApiTest extends ApiTestCase
         $this->assertGreaterThanOrEqual(2, count($merge->json('favorites')));
 
         $remove = $this->withBearer($account['token'])
-            ->deleteJson('/api/client/favorites/'.$productId);
+            ->deleteJson('/api/public/client/favorites/'.$productId);
 
         $remove->assertOk();
         $remaining = collect($remove->json('favorites'))
@@ -152,7 +152,7 @@ final class ClientApiTest extends ApiTestCase
         );
 
         $history = $this->withBearer($account['token'])
-            ->getJson('/api/client/orders');
+            ->getJson('/api/public/client/orders');
 
         $history->assertOk()
             ->assertJsonStructure(['data']);
@@ -164,7 +164,7 @@ final class ClientApiTest extends ApiTestCase
         $this->assertContains($order['order_id'], $ids);
 
         $repeatable = $this->withBearer($account['token'])
-            ->getJson('/api/client/orders/'.$order['order_id'].'/repeatable-lines');
+            ->getJson('/api/public/client/orders/'.$order['order_id'].'/repeatable-lines');
 
         $repeatable->assertOk()
             ->assertJsonStructure([
@@ -181,8 +181,8 @@ final class ClientApiTest extends ApiTestCase
 
     public function test_protected_endpoints_without_token_return_401(): void
     {
-        $this->getJson('/api/client/profile')->assertUnauthorized();
-        $this->getJson('/api/client/favorites')->assertUnauthorized();
-        $this->getJson('/api/client/orders')->assertUnauthorized();
+        $this->getJson('/api/public/client/profile')->assertUnauthorized();
+        $this->getJson('/api/public/client/favorites')->assertUnauthorized();
+        $this->getJson('/api/public/client/orders')->assertUnauthorized();
     }
 }

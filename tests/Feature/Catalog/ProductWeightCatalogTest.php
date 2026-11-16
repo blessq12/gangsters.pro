@@ -45,7 +45,7 @@ final class ProductWeightCatalogTest extends ApiTestCase
             'sort_order' => 0,
         ]);
 
-        $response = $this->getJson('/api/catalog');
+        $response = $this->getJson('/api/public/catalog');
         $response->assertOk();
 
         $match = $this->findCatalogItemById($response->json('categories') ?? [], (int) $product->id);
@@ -133,7 +133,7 @@ final class ProductWeightCatalogTest extends ApiTestCase
             'sort_order' => 0,
         ]);
 
-        $response = $this->getJson('/api/catalog');
+        $response = $this->getJson('/api/public/catalog');
         $response->assertOk();
 
         $match = $this->findCatalogItemById($response->json('categories') ?? [], (int) $set->id);
@@ -223,7 +223,7 @@ final class ProductWeightCatalogTest extends ApiTestCase
             'sort_order' => 0,
         ]);
 
-        $response = $this->getJson('/api/catalog');
+        $response = $this->getJson('/api/public/catalog');
         $response->assertOk();
 
         $match = $this->findCatalogItemById($response->json('categories') ?? [], (int) $set->id);

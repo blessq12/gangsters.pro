@@ -8,7 +8,7 @@ final class GetCatalogTest extends ApiTestCase
 {
     public function test_catalog_returns_storefront_snapshot(): void
     {
-        $response = $this->getJson('/api/catalog');
+        $response = $this->getJson('/api/public/catalog');
 
         $response->assertOk()
             ->assertJsonStructure([

@@ -14,7 +14,7 @@ final class ClientWelcomeMailTest extends ApiTestCase
 
         $email = 'welcome.'.bin2hex(random_bytes(4)).'@example.test';
 
-        $this->postJson('/api/client/register', [
+        $this->postJson('/api/public/client/register', [
             'name' => 'Welcome User',
             'phone' => $this->uniquePhone(),
             'email' => $email,
@@ -32,7 +32,7 @@ final class ClientWelcomeMailTest extends ApiTestCase
     {
         Mail::fake();
 
-        $this->postJson('/api/client/register', [
+        $this->postJson('/api/public/client/register', [
             'name' => 'No Email User',
             'phone' => $this->uniquePhone(),
             'password' => 'secret12',

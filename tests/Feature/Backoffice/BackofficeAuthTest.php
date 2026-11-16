@@ -10,7 +10,7 @@ use Tests\ApiTestCase;
 final class BackofficeAuthTest extends ApiTestCase
 {
     /** @var list<string> */
-    protected array $requiredTables = ['users'];
+    protected array $requiredTables = ['users', 'personal_access_tokens'];
 
     protected function setUp(): void
     {
@@ -36,32 +36,43 @@ final class BackofficeAuthTest extends ApiTestCase
             'is_active' => true,
         ]);
 
-        $login = $this->withSession([])->postJson('/api/backoffice/auth/login', [
+        $login = $this->postJson('/api/backoffice/auth/login', [
             'email' => $user->email,
             'password' => 'secret12',
         ]);
 
         $login->assertOk()
+            ->assertJsonStructure(['token', 'employee'])
             ->assertJsonPath('employee.id', $user->id)
             ->assertJsonPath('employee.role', 'administrator');
 
-        $this->getJson('/api/backoffice/auth/me')
+        $token = (string) $login->json('token');
+        $this->assertNotSame('', $token);
+
+        $this->withBearer($token)
+            ->getJson('/api/backoffice/auth/me')
             ->assertOk()
             ->assertJsonPath('employee.id', $user->id)
             ->assertJsonPath('auth_required', true);
 
-        $this->postJson('/api/backoffice/auth/logout')
+        $this->withBearer($token)
+            ->postJson('/api/backoffice/auth/logout')
             ->assertOk()
             ->assertJsonPath('ok', true);
 
-        $this->getJson('/api/backoffice/auth/me')
+        $this->withBearer($token)
+            ->getJson('/api/backoffice/auth/me')
             ->assertOk()
             ->assertJsonPath('employee', null);
+
+        $this->withBearer($token)
+            ->getJson('/api/backoffice/ping')
+            ->assertUnauthorized();
     }
 
     public function test_protected_route_requires_auth_when_flag_on(): void
     {
-        $this->getJson('/api/backoffice/employees')
+        $this->getJson('/api/backoffice/ping')
             ->assertUnauthorized();
     }
 
@@ -69,9 +80,9 @@ final class BackofficeAuthTest extends ApiTestCase
     {
         config(['backoffice.auth_required' => false]);
 
-        $this->getJson('/api/backoffice/employees')
+        $this->getJson('/api/backoffice/ping')
             ->assertOk()
-            ->assertJsonStructure(['employees']);
+            ->assertJsonPath('ok', true);
     }
 
     public function test_forgot_password_stub(): void

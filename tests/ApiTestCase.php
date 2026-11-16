@@ -68,7 +68,7 @@ abstract class ApiTestCase extends TestCase
         $phone ??= $this->uniquePhone();
         $password ??= 'secret12';
 
-        $response = $this->postJson('/api/client/register', [
+        $response = $this->postJson('/api/public/client/register', [
             'name' => 'Test Client',
             'phone' => $phone,
             'email' => null,
@@ -116,7 +116,7 @@ abstract class ApiTestCase extends TestCase
      */
     protected function placeOrderForClient(string $token, int $clientId, int $productId): array
     {
-        $quoteResponse = $this->postJson('/api/order/quote', [
+        $quoteResponse = $this->postJson('/api/public/order/quote', [
             'lines' => [
                 ['product_id' => $productId, 'quantity' => 1],
             ],
@@ -135,7 +135,7 @@ abstract class ApiTestCase extends TestCase
         $quote = $quoteResponse->json('data');
         $clientRequestId = 'phpunit-'.bin2hex(random_bytes(8));
 
-        $placeResponse = $this->postJson('/api/order/', [
+        $placeResponse = $this->postJson('/api/public/order/', [
             'client_request_id' => $clientRequestId,
             'cart' => $quote['cart'],
             'client' => $quote['client'],

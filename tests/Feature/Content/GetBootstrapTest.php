@@ -8,7 +8,7 @@ final class GetBootstrapTest extends ApiTestCase
 {
     public function test_content_returns_bootstrap_snapshot(): void
     {
-        $response = $this->getJson('/api/content');
+        $response = $this->getJson('/api/public/content');
 
         $response->assertOk()
             ->assertJsonStructure([

@@ -39,7 +39,7 @@ final class ComplementPaidTwinCatalogTest extends ApiTestCase
             'paid_twin_product_id' => $twin->id,
         ]);
 
-        $response = $this->getJson('/api/catalog');
+        $response = $this->getJson('/api/public/catalog');
         $response->assertOk();
 
         $complementProducts = $response->json('complement_products') ?? [];

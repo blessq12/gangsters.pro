@@ -34,11 +34,12 @@ final class LoginEmployeeUseCaseTest extends TestCase
             ->willReturn($employee);
 
         $session = $this->createMock(StaffSessionPort::class);
-        $session->expects($this->once())->method('login')->with(5);
+        $session->expects($this->once())->method('login')->with(5)->willReturn('test-token');
 
         $useCase = new LoginEmployeeUseCase($repository, $session, new EmployeePresenter());
         $result = $useCase->execute('anna@gangsta.local', 'secret12');
 
+        $this->assertSame('test-token', $result['token']);
         $this->assertSame(5, $result['employee']['id']);
         $this->assertSame('administrator', $result['employee']['role']);
     }

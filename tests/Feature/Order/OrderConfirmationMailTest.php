@@ -16,7 +16,7 @@ final class OrderConfirmationMailTest extends ApiTestCase
         $email = 'order.'.bin2hex(random_bytes(4)).'@example.test';
         $phone = $this->uniquePhone();
 
-        $register = $this->postJson('/api/client/register', [
+        $register = $this->postJson('/api/public/client/register', [
             'name' => 'Order Mail User',
             'phone' => $phone,
             'email' => $email,

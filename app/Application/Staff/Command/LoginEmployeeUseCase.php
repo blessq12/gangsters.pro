@@ -18,7 +18,7 @@ final class LoginEmployeeUseCase
     ) {}
 
     /**
-     * @return array{employee: array{id: int, name: string, email: string, phone: ?string, role: string, is_active: bool}}
+     * @return array{token: string, employee: array{id: int, name: string, email: string, phone: ?string, role: string, is_active: bool}}
      */
     public function execute(string $email, string $password): array
     {
@@ -35,9 +35,10 @@ final class LoginEmployeeUseCase
             ]);
         }
 
-        $this->session->login($employee->id());
+        $token = $this->session->login($employee->id());
 
         return [
+            'token' => $token,
             'employee' => $this->presenter->present($employee),
         ];
     }

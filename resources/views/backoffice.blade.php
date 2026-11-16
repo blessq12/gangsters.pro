@@ -11,7 +11,7 @@
             'authRequired' => (bool) config('backoffice.auth_required'),
         ]);
     </script>
-    @vite(['resources/css/style.css', 'resources/js/backoffice/app.js'])
+    @vite(['apps/backoffice/app.js'], 'build/backoffice')
 </head>
 
 <body>

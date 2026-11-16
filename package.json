@@ -2,8 +2,14 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "dev": "vite",
-        "build": "vite build"
+        "dev": "npm run dev:public",
+        "dev:public": "vite --config apps/public/vite.config.js",
+        "dev:backoffice": "vite --config apps/backoffice/vite.config.js",
+        "build:public": "vite build --config apps/public/vite.config.js && npm run sync:pwa:public",
+        "build:backoffice": "vite build --config apps/backoffice/vite.config.js && npm run sync:pwa:backoffice",
+        "build": "npm run build:public && npm run build:backoffice",
+        "sync:pwa:public": "mkdir -p public/pwa/public && cp apps/public/pwa/manifest.webmanifest apps/public/pwa/sw.js public/pwa/public/",
+        "sync:pwa:backoffice": "mkdir -p public/pwa/backoffice && cp apps/backoffice/pwa/manifest.webmanifest apps/backoffice/pwa/sw.js public/pwa/backoffice/"
     },
     "devDependencies": {
         "@vitejs/plugin-vue": "^4.0.0",

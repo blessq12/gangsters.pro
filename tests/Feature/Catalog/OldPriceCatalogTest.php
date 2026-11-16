@@ -45,7 +45,7 @@ final class OldPriceCatalogTest extends ApiTestCase
             'sort_order' => 0,
         ]);
 
-        $response = $this->getJson('/api/catalog');
+        $response = $this->getJson('/api/public/catalog');
         $response->assertOk();
 
         $match = null;
@@ -99,7 +99,7 @@ final class OldPriceCatalogTest extends ApiTestCase
             'sort_order' => 0,
         ]);
 
-        $response = $this->getJson('/api/catalog');
+        $response = $this->getJson('/api/public/catalog');
         $response->assertOk();
 
         $match = null;

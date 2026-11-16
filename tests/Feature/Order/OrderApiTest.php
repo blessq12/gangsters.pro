@@ -10,7 +10,7 @@ final class OrderApiTest extends ApiTestCase
     {
         $productId = $this->activeProductId();
 
-        $response = $this->postJson('/api/order/quote', [
+        $response = $this->postJson('/api/public/order/quote', [
             'lines' => [
                 ['product_id' => $productId, 'quantity' => 2],
             ],
@@ -50,7 +50,7 @@ final class OrderApiTest extends ApiTestCase
     {
         $productId = $this->activeProductId();
 
-        $response = $this->postJson('/api/order/quote', [
+        $response = $this->postJson('/api/public/order/quote', [
             'lines' => [
                 ['product_id' => $productId, 'quantity' => 1],
             ],
@@ -72,7 +72,7 @@ final class OrderApiTest extends ApiTestCase
     {
         $productId = $this->activeProductId();
 
-        $response = $this->postJson('/api/order/quote', [
+        $response = $this->postJson('/api/public/order/quote', [
             'lines' => [
                 ['product_id' => $productId, 'quantity' => 1],
             ],
@@ -90,7 +90,7 @@ final class OrderApiTest extends ApiTestCase
 
     public function test_quote_rejects_empty_cart(): void
     {
-        $response = $this->postJson('/api/order/quote', [
+        $response = $this->postJson('/api/public/order/quote', [
             'lines' => [],
             'delivery_method' => 'pickup',
         ]);
@@ -103,7 +103,7 @@ final class OrderApiTest extends ApiTestCase
         $productId = $this->activeProductId();
         $clientRequestId = 'phpunit-place-'.bin2hex(random_bytes(6));
 
-        $quote = $this->postJson('/api/order/quote', [
+        $quote = $this->postJson('/api/public/order/quote', [
             'lines' => [
                 ['product_id' => $productId, 'quantity' => 1],
             ],
@@ -116,7 +116,7 @@ final class OrderApiTest extends ApiTestCase
             ],
         ])->json('data');
 
-        $response = $this->postJson('/api/order/', [
+        $response = $this->postJson('/api/public/order/', [
             'client_request_id' => $clientRequestId,
             'cart' => $quote['cart'],
             'client' => $quote['client'],
@@ -153,7 +153,7 @@ final class OrderApiTest extends ApiTestCase
 
         $productId = $this->activeProductId();
 
-        $response = $this->postJson('/api/order/quote', [
+        $response = $this->postJson('/api/public/order/quote', [
             'lines' => [
                 ['product_id' => $productId, 'quantity' => 1],
             ],
@@ -183,7 +183,7 @@ final class OrderApiTest extends ApiTestCase
         $productId = $this->activeProductId();
         $clientRequestId = 'phpunit-outzone-'.bin2hex(random_bytes(6));
 
-        $quote = $this->postJson('/api/order/quote', [
+        $quote = $this->postJson('/api/public/order/quote', [
             'lines' => [
                 ['product_id' => $productId, 'quantity' => 1],
             ],
@@ -205,7 +205,7 @@ final class OrderApiTest extends ApiTestCase
             'house' => '1',
         ];
 
-        $response = $this->postJson('/api/order/', [
+        $response = $this->postJson('/api/public/order/', [
             'client_request_id' => $clientRequestId,
             'cart' => $quote['cart'],
             'client' => $quote['client'],
@@ -225,7 +225,7 @@ final class OrderApiTest extends ApiTestCase
         $productId = $this->activeProductId();
         $clientRequestId = 'phpunit-idem-'.bin2hex(random_bytes(6));
 
-        $quote = $this->postJson('/api/order/quote', [
+        $quote = $this->postJson('/api/public/order/quote', [
             'lines' => [
                 ['product_id' => $productId, 'quantity' => 1],
             ],
@@ -246,10 +246,10 @@ final class OrderApiTest extends ApiTestCase
             'payment' => $quote['payment'],
         ];
 
-        $first = $this->postJson('/api/order/', $payload);
+        $first = $this->postJson('/api/public/order/', $payload);
         $first->assertCreated();
 
-        $second = $this->postJson('/api/order/', $payload);
+        $second = $this->postJson('/api/public/order/', $payload);
         $second->assertCreated();
 
         $this->assertSame(

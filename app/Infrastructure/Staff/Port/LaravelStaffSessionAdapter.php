@@ -5,34 +5,50 @@ namespace App\Infrastructure\Staff\Port;
 use App\Domain\Staff\Port\StaffSessionPort;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Laravel\Sanctum\PersonalAccessToken;
 
 final class LaravelStaffSessionAdapter implements StaffSessionPort
 {
-    public function login(int $employeeId): void
+    public function login(int $employeeId): string
     {
         $user = User::query()->find($employeeId);
         if (! $user instanceof User) {
             throw new \InvalidArgumentException('Сотрудник не найден.');
         }
 
-        Auth::guard('web')->login($user);
+        return $user->createToken('backoffice')->plainTextToken;
     }
 
     public function logout(): void
     {
-        Auth::guard('web')->logout();
-
-        $request = request();
-        if ($request->hasSession()) {
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
+        $user = request()->user('sanctum');
+        if (! $user instanceof User) {
+            return;
         }
+
+        $token = $user->currentAccessToken();
+        if ($token instanceof PersonalAccessToken) {
+            $token->delete();
+        }
+
+        Auth::guard('sanctum')->forgetUser();
     }
 
     public function currentEmployeeId(): ?int
     {
-        $id = Auth::guard('web')->id();
+        $user = request()->user('sanctum');
+        if (! $user instanceof User) {
+            return null;
+        }
 
-        return $id === null ? null : (int) $id;
+        $token = $user->currentAccessToken();
+        if (
+            ! $token instanceof PersonalAccessToken
+            || ! PersonalAccessToken::query()->whereKey($token->getKey())->exists()
+        ) {
+            return null;
+        }
+
+        return (int) $user->id;
     }
 }
