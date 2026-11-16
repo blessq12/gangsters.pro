@@ -1,7 +1,7 @@
 <script setup>
-import BackofficeLayout from "./shell/layouts/BackofficeLayout.vue";
+import ShellLayout from "./shell/layouts/ShellLayout.vue";
 </script>
 
 <template>
-    <BackofficeLayout />
+    <ShellLayout />
 </template>

@@ -8,6 +8,22 @@ import { fileURLToPath } from "node:url";
 const appRoot = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(appRoot, "../..");
 
+function manualChunks(id) {
+    if (id.includes("/roles/courier/")) {
+        return "role-courier";
+    }
+    if (id.includes("/roles/production/")) {
+        return "role-production";
+    }
+    if (id.includes("/roles/owner/")) {
+        return "role-owner";
+    }
+    if (id.includes("/roles/administrator/")) {
+        return "role-administrator";
+    }
+    return undefined;
+}
+
 export default defineConfig({
     plugins: [
         tailwindcss(),
@@ -43,5 +59,10 @@ export default defineConfig({
     build: {
         emptyOutDir: true,
         chunkSizeWarningLimit: 600,
+        rollupOptions: {
+            output: {
+                manualChunks,
+            },
+        },
     },
 });

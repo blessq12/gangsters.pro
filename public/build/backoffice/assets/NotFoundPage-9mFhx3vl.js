@@ -1,1 +1,0 @@
-import{_ as o,c as n,a as t,o as r}from"./app-BmHuCLWw.js";const s={};function a(c,e){return r(),n("section",null,e[0]||(e[0]=[t("h1",null,"Страница не найдена",-1)]))}const _=o(s,[["render",a]]);export{_ as default};

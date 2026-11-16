@@ -2,9 +2,13 @@
 import { ref } from "vue";
 import { RouterLink, useRouter, useRoute } from "vue-router";
 import { useAuthStore } from "../store/authStore";
-import { homeRoute } from "../authConfig";
+import { useSessionStore } from "../store/sessionStore";
+import { isRegisteredRole } from "../roles/registry";
+import UiButton from "../components/ui/UiButton.vue";
+import UiInput from "../components/ui/UiInput.vue";
 
 const auth = useAuthStore();
+const session = useSessionStore();
 const router = useRouter();
 const route = useRoute();
 
@@ -17,15 +21,20 @@ async function submit() {
     error.value = "";
     submitting.value = true;
     try {
-        await auth.login(email.value.trim(), password.value);
+        const employee = await auth.login(email.value.trim(), password.value);
+        const role = employee?.role;
+        if (!isRegisteredRole(role)) {
+            throw new Error("Unknown employee role.");
+        }
+        const module = await session.activateRole(role, router);
         const redirect = typeof route.query.redirect === "string" ? route.query.redirect : null;
-        if (redirect && redirect.startsWith("/")) {
+        if (redirect && redirect.startsWith("/") && router.resolve(redirect).name) {
             await router.replace(redirect);
             return;
         }
-        await router.replace(homeRoute());
+        await router.replace({ name: module.home });
     } catch (reason) {
-        error.value = reason instanceof Error ? reason.message : "Не удалось войти.";
+        error.value = reason instanceof Error ? reason.message : "Login failed.";
     } finally {
         submitting.value = false;
     }
@@ -34,8 +43,8 @@ async function submit() {
 
 <template>
     <section class="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-10">
-        <h1 class="text-xl font-medium">Вход в backoffice</h1>
-        <p class="mt-2 text-sm text-neutral-500">Каркас: доступ по Bearer для сотрудников.</p>
+        <h1 class="text-xl font-medium">Backoffice login</h1>
+        <p class="mt-2 text-sm text-slate-500">Staff only. Role modules load after login.</p>
         <p
             v-if="error"
             class="mt-4 text-sm text-red-700"
@@ -47,39 +56,36 @@ async function submit() {
             @submit.prevent="submit"
         >
             <label class="block text-sm">
-                <span class="text-neutral-600">Email</span>
-                <input
+                <span class="text-slate-600">Email</span>
+                <UiInput
                     v-model="email"
                     type="email"
                     required
                     autocomplete="username"
-                    class="mt-1 w-full rounded border border-neutral-300 bg-white px-3 py-2"
-                >
+                />
             </label>
             <label class="block text-sm">
-                <span class="text-neutral-600">Пароль</span>
-                <input
+                <span class="text-slate-600">Password</span>
+                <UiInput
                     v-model="password"
                     type="password"
                     required
                     autocomplete="current-password"
-                    class="mt-1 w-full rounded border border-neutral-300 bg-white px-3 py-2"
-                >
+                />
             </label>
-            <button
+            <UiButton
                 type="submit"
-                class="inline-flex h-10 items-center rounded bg-neutral-900 px-4 text-sm text-white disabled:opacity-50"
                 :disabled="submitting"
             >
-                Войти
-            </button>
+                Sign in
+            </UiButton>
         </form>
         <p class="mt-4 text-sm">
             <RouterLink
                 :to="{ name: 'backoffice-forgot-password' }"
-                class="text-neutral-600 underline"
+                class="text-slate-600 underline"
             >
-                Забыли пароль?
+                Forgot password?
             </RouterLink>
         </p>
     </section>

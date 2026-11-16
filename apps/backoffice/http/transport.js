@@ -1,6 +1,13 @@
-import { getBackofficeAuthToken } from "../shell/authToken";
+import { getBackofficeAuthToken, persistBackofficeAuthToken } from "../shell/authToken";
 
 const API_BASE = "/api/backoffice";
+
+/** @type {null | (() => void)} */
+let unauthorizedHandler = null;
+
+export function setUnauthorizedHandler(handler) {
+    unauthorizedHandler = typeof handler === "function" ? handler : null;
+}
 
 function messageFrom(payload) {
     if (typeof payload?.message === "string" && payload.message !== "") {
@@ -37,6 +44,17 @@ function buildHeaders(extra = {}) {
     return headers;
 }
 
+function handleHttpError(status, payload) {
+    if (status === 401) {
+        persistBackofficeAuthToken(null);
+        unauthorizedHandler?.();
+    }
+    if (status === 403) {
+        throw new Error(payload?.message || "Forbidden.");
+    }
+    throw new Error(messageFrom(payload));
+}
+
 /**
  * HTTP transport for the backoffice SPA (own contour, base /api/backoffice).
  */
@@ -52,7 +70,7 @@ export async function request(method, path, body) {
     });
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) {
-        throw new Error(messageFrom(payload));
+        handleHttpError(response.status, payload);
     }
     return payload;
 }
@@ -65,7 +83,7 @@ export async function requestForm(path, formData) {
     });
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) {
-        throw new Error(messageFrom(payload));
+        handleHttpError(response.status, payload);
     }
     return payload;
 }

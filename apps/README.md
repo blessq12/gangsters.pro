@@ -1,18 +1,20 @@
-# Client applications (option A)
+# Client applications
 
-Two independent SPA/PWA clients against one Laravel core. No shared frontend code between them.
+Two independent SPA/PWA clients against one Laravel core.
 
-| App | Sources | Vite | Build output | PWA | HTTP | API contract |
-|---|---|---|---|---|---|---|
-| Public | `apps/public` | `apps/public/vite.config.js` | `public/build/public` | `public/pwa/public` | `apps/public/http/` | `/api/public/*` |
-| Backoffice | `apps/backoffice` (shell skeleton) | `apps/backoffice/vite.config.js` | `public/build/backoffice` | `public/pwa/backoffice` | `apps/backoffice/http/` | `/api/backoffice/*` (auth + ping) |
+| App | Sources | Vite | Build | HTTP | API |
+|---|---|---|---|---|---|
+| Public | `apps/public` | `apps/public/vite.config.js` | `public/build/public` | `apps/public/http/` | `/api/public/*` |
+| Backoffice | `apps/backoffice` | `apps/backoffice/vite.config.js` | `public/build/backoffice` | `apps/backoffice/http/` | `/api/backoffice/*` (auth + ping) |
+
+## Backoffice: shell + role modules
+
+- `shell/**` — auth, transport, guard, topbar layout, primitives, role registry
+- `roles/{owner,administrator,production,courier}` — isolated modules (home, nav, routes, optional layout)
+- Linking point: `shell/roles/registry.js` only (`kitchen` API role → `roles/production`)
+- Adding a role: new folder under `roles/` + one registry line
 
 Rules:
-- no imports between `apps/public` and `apps/backoffice`
-- no shared HTTP/API client; each app owns its `http/transport` and `api/*`
-
-Scripts from repo root:
-
-- `npm run dev:public` / `npm run build:public`
-- `npm run dev:backoffice` / `npm run build:backoffice`
-- `npm run build` — both builds + PWA sync
+- no imports between role folders
+- shell must not import `roles/*` except via registry
+- role routes load lazily (dynamic import)

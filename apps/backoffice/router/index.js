@@ -1,11 +1,13 @@
 import { createRouter, createWebHistory } from "vue-router";
-import { routeRecords } from "./routeRecords.js";
+import { shellRoutes } from "./shellRoutes.js";
 import { useAuthStore } from "../shell/store/authStore";
-import { homeRoute } from "../shell/authConfig";
+import { useSessionStore } from "../shell/store/sessionStore";
+import { resolveGuardTarget } from "../shell/guard/resolveGuardTarget";
+import { isForeignRolePath, isRegisteredRole } from "../shell/roles/registry";
 
 const router = createRouter({
     history: createWebHistory("/backoffice"),
-    routes: routeRecords,
+    routes: shellRoutes,
     scrollBehavior() {
         return { top: 0 };
     },
@@ -13,24 +15,42 @@ const router = createRouter({
 
 router.beforeEach(async (to) => {
     const auth = useAuthStore();
+    const session = useSessionStore();
     await auth.bootstrap();
 
-    if (!auth.authRequired) {
-        return true;
-    }
-
-    if (to.meta.guest) {
-        if (auth.isAuthenticated) {
-            return homeRoute();
+    if (auth.authRequired && auth.isAuthenticated && auth.role && isRegisteredRole(auth.role)) {
+        if (session.routesMountedFor !== auth.role) {
+            await session.activateRole(auth.role, router);
         }
-        return true;
+        if (session.homeRouteName && isForeignRolePath(auth.role, to.path)) {
+            return { name: session.homeRouteName };
+        }
     }
 
-    if (!auth.isAuthenticated) {
-        return {
-            name: "backoffice-login",
-            query: { redirect: to.fullPath },
-        };
+    const decision = resolveGuardTarget({
+        authRequired: auth.authRequired,
+        isAuthenticated: auth.isAuthenticated,
+        isGuestRoute: Boolean(to.meta.guest),
+        role: auth.role,
+        homeRouteName: session.homeRouteName,
+        routeName: typeof to.name === "string" ? to.name : null,
+        allowedRouteNames: new Set([
+            ...session.allowedRouteNames,
+            "backoffice-login",
+            "backoffice-forgot-password",
+            "backoffice-root",
+            "backoffice-not-found",
+        ]),
+    });
+
+    if (decision.type === "redirect") {
+        if (decision.name === "backoffice-login") {
+            return {
+                name: "backoffice-login",
+                query: { redirect: to.fullPath },
+            };
+        }
+        return { name: decision.name };
     }
 
     return true;

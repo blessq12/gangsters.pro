@@ -9,9 +9,12 @@
         "build:backoffice": "vite build --config apps/backoffice/vite.config.js && npm run sync:pwa:backoffice",
         "build": "npm run build:public && npm run build:backoffice",
         "sync:pwa:public": "mkdir -p public/pwa/public && cp apps/public/pwa/manifest.webmanifest apps/public/pwa/sw.js public/pwa/public/",
-        "sync:pwa:backoffice": "mkdir -p public/pwa/backoffice && cp apps/backoffice/pwa/manifest.webmanifest apps/backoffice/pwa/sw.js public/pwa/backoffice/"
+        "sync:pwa:backoffice": "mkdir -p public/pwa/backoffice && cp apps/backoffice/pwa/manifest.webmanifest apps/backoffice/pwa/sw.js public/pwa/backoffice/",
+        "test:backoffice-guard": "node --test apps/backoffice/shell/guard/resolveGuardTarget.test.js",
+        "lint:backoffice-roles": "eslint \"apps/backoffice/roles/**/*.js\" \"apps/backoffice/shell/**/*.js\" \"apps/backoffice/router/**/*.js\" apps/backoffice/app.js"
     },
     "devDependencies": {
+        "@eslint/js": "^9.39.5",
         "@vitejs/plugin-vue": "^4.0.0",
         "axios": "^1.6.1",
         "eslint": "^9.11.1",
