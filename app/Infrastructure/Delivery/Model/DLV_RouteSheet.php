@@ -16,6 +16,7 @@ final class DLV_RouteSheet extends Model
      */
     protected $fillable = [
         'status',
+        'courier_id',
         'created_at',
     ];
 
@@ -23,6 +24,7 @@ final class DLV_RouteSheet extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'courier_id' => 'integer',
         'created_at' => 'datetime',
     ];
 

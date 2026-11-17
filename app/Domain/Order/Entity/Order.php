@@ -6,7 +6,7 @@ use App\Domain\Order\Enum\OrderStatus;
 use DateTimeImmutable;
 
 /**
- * Агрегат заказа — неизменяемый снимок подтверждённого оформления.
+ * Агрегат заказа — снимок подтверждённого оформления + статусы жизненного цикла.
  */
 final class Order
 {
@@ -22,7 +22,7 @@ final class Order
         private readonly ?string $checkoutId,
         private readonly ?string $partnerCode,
         private readonly ?string $externalOrderId,
-        private readonly string $status,
+        private OrderStatus $status,
         private readonly array $cart,
         private readonly array $client,
         private readonly array $delivery,
@@ -59,7 +59,7 @@ final class Order
             checkoutId: $clientRequestId,
             partnerCode: null,
             externalOrderId: null,
-            status: 'new',
+            status: OrderStatus::New,
             cart: $cart,
             client: $client,
             delivery: $delivery,
@@ -80,7 +80,7 @@ final class Order
         ?string $checkoutId,
         ?string $partnerCode,
         ?string $externalOrderId,
-        string $status,
+        OrderStatus|string $status,
         array $cart,
         array $client,
         array $delivery,
@@ -93,7 +93,7 @@ final class Order
             checkoutId: $checkoutId,
             partnerCode: $partnerCode,
             externalOrderId: $externalOrderId,
-            status: $status,
+            status: self::normalizeStatus($status),
             cart: $cart,
             client: $client,
             delivery: $delivery,
@@ -154,59 +154,57 @@ final class Order
         return $this->externalOrderId;
     }
 
-    public function status(): string
+    public function status(): OrderStatus
     {
         return $this->status;
     }
 
-    public function withStatus(OrderStatus|string $status): self
+    public function accept(): void
     {
-        return $this->copyWith(status: self::normalizeStatus($status));
+        $this->transition(OrderStatus::New, OrderStatus::Confirmed, 'accept');
     }
 
-    public function withKitchenStarted(DateTimeImmutable $startedAt): self
+    public function startPreparing(): void
     {
-        $delivery = $this->delivery;
-        $delivery['kitchen_started_at'] = $startedAt->format(DATE_ATOM);
-
-        return new self(
-            id: $this->id,
-            source: $this->source,
-            checkoutId: $this->checkoutId,
-            partnerCode: $this->partnerCode,
-            externalOrderId: $this->externalOrderId,
-            status: OrderStatus::Preparing->value,
-            cart: $this->cart,
-            client: $this->client,
-            delivery: $delivery,
-            payment: $this->payment,
-            createdAt: $this->createdAt,
-        );
+        $this->transition(OrderStatus::Confirmed, OrderStatus::Preparing, 'startPreparing');
     }
 
-    public function withCancelled(string $reason): self
+    public function markReady(): void
     {
-        $reason = trim($reason);
-        if ($reason === '') {
-            throw new \InvalidArgumentException('Причина списания обязательна.');
+        $this->transition(OrderStatus::Preparing, OrderStatus::Ready, 'markReady');
+    }
+
+    public function markInTransit(): void
+    {
+        $this->transition(OrderStatus::Ready, OrderStatus::InTransit, 'markInTransit');
+    }
+
+    public function markDelivered(): void
+    {
+        $this->transition(OrderStatus::InTransit, OrderStatus::Delivered, 'markDelivered');
+    }
+
+    public function completePickup(): void
+    {
+        $this->transition(OrderStatus::Ready, OrderStatus::Completed, 'completePickup');
+    }
+
+    public function cancel(): void
+    {
+        $allowed = [
+            OrderStatus::New,
+            OrderStatus::Confirmed,
+            OrderStatus::Preparing,
+            OrderStatus::Ready,
+        ];
+
+        if (! in_array($this->status, $allowed, true)) {
+            throw new \InvalidArgumentException(
+                sprintf('Нельзя отменить заказ в статусе «%s».', $this->status->value),
+            );
         }
 
-        $delivery = $this->delivery;
-        $delivery['cancel_reason'] = $reason;
-
-        return new self(
-            id: $this->id,
-            source: $this->source,
-            checkoutId: $this->checkoutId,
-            partnerCode: $this->partnerCode,
-            externalOrderId: $this->externalOrderId,
-            status: OrderStatus::Cancelled->value,
-            cart: $this->cart,
-            client: $this->client,
-            delivery: $delivery,
-            payment: $this->payment,
-            createdAt: $this->createdAt,
-        );
+        $this->status = OrderStatus::Cancelled;
     }
 
     /**
@@ -255,6 +253,11 @@ final class Order
 
     public function totalRubles(): int
     {
+        $totals = $this->cart['totals'] ?? null;
+        if (is_array($totals) && isset($totals['grand_total_rubles'])) {
+            return (int) $totals['grand_total_rubles'];
+        }
+
         $total = 0;
 
         foreach ($this->cart['lines'] ?? [] as $line) {
@@ -276,31 +279,30 @@ final class Order
         return $total;
     }
 
-    private function copyWith(?string $status = null): self
+    private function transition(OrderStatus $from, OrderStatus $to, string $action): void
     {
-        return new self(
-            id: $this->id,
-            source: $this->source,
-            checkoutId: $this->checkoutId,
-            partnerCode: $this->partnerCode,
-            externalOrderId: $this->externalOrderId,
-            status: $status ?? $this->status,
-            cart: $this->cart,
-            client: $this->client,
-            delivery: $this->delivery,
-            payment: $this->payment,
-            createdAt: $this->createdAt,
-        );
+        if ($this->status !== $from) {
+            throw new \InvalidArgumentException(
+                sprintf(
+                    'Действие «%s» недопустимо из статуса «%s» (ожидался «%s»).',
+                    $action,
+                    $this->status->value,
+                    $from->value,
+                ),
+            );
+        }
+
+        $this->status = $to;
     }
 
-    private static function normalizeStatus(OrderStatus|string $status): string
+    private static function normalizeStatus(OrderStatus|string $status): OrderStatus
     {
         if ($status instanceof OrderStatus) {
-            return $status->value;
+            return $status;
         }
 
         try {
-            return OrderStatus::from($status)->value;
+            return OrderStatus::from($status);
         } catch (\ValueError) {
             throw new \InvalidArgumentException('Недопустимый статус заказа: '.$status);
         }

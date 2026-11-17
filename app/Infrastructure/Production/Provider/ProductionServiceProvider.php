@@ -2,12 +2,14 @@
 
 namespace App\Infrastructure\Production\Provider;
 
+use App\Domain\Production\Repository\KitchenTicketRepository;
+use App\Infrastructure\Production\Repository\EloquentKitchenTicketRepository;
 use Illuminate\Support\ServiceProvider;
 
-/**
- * Контекст Production: Infra-реализации появятся вместе с таблицами тикетов кухни.
- */
 final class ProductionServiceProvider extends ServiceProvider
 {
-    public function register(): void {}
+    public function register(): void
+    {
+        $this->app->bind(KitchenTicketRepository::class, EloquentKitchenTicketRepository::class);
+    }
 }

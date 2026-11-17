@@ -5,15 +5,17 @@ namespace App\Http\Controllers\Api\Backoffice;
 use App\Application\Staff\Command\LoginEmployeeUseCase;
 use App\Application\Staff\Command\LogoutEmployeeUseCase;
 use App\Application\Staff\Command\RequestEmployeePasswordResetUseCase;
+use App\Application\Staff\DTO\LoginEmployeeDto;
 use App\Application\Staff\Query\GetCurrentEmployeeUseCase;
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
+use InvalidArgumentException;
 
 final class AuthController extends Controller
 {
-    public function login(Request $request, LoginEmployeeUseCase $login): JsonResponse
+    public function login(Request $request, LoginEmployeeUseCase $useCase): JsonResponse
     {
         $validated = $request->validate([
             'email' => ['required', 'email', 'max:255'],
@@ -21,41 +23,48 @@ final class AuthController extends Controller
         ]);
 
         try {
-            $result = $login->execute($validated['email'], $validated['password']);
-        } catch (ValidationException $exception) {
-            throw $exception;
-        }
-
-        if ($request->hasSession()) {
-            $request->session()->regenerate();
+            $result = $useCase->execute(new LoginEmployeeDto(
+                email: $validated['email'],
+                password: $validated['password'],
+            ));
+        } catch (InvalidArgumentException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
         }
 
         return response()->json($result);
     }
 
-    public function logout(Request $request, LogoutEmployeeUseCase $logout): JsonResponse
+    public function logout(Request $request, LogoutEmployeeUseCase $useCase): JsonResponse
     {
-        $logout->execute();
+        $user = $request->user('sanctum');
 
-        return response()->json(['ok' => true]);
+        return response()->json(
+            $useCase->execute($user instanceof User ? $user : null),
+        );
     }
 
-    public function me(GetCurrentEmployeeUseCase $current): JsonResponse
+    public function me(Request $request, GetCurrentEmployeeUseCase $useCase): JsonResponse
     {
-        return response()->json([
-            'employee' => $current->execute(),
-            'auth_required' => (bool) config('backoffice.auth_required'),
-        ]);
+        $user = $request->user('sanctum');
+        $userId = $user instanceof User ? (int) $user->id : null;
+
+        return response()->json($useCase->execute($userId));
     }
 
     public function forgotPassword(
         Request $request,
-        RequestEmployeePasswordResetUseCase $reset,
+        RequestEmployeePasswordResetUseCase $useCase,
     ): JsonResponse {
         $validated = $request->validate([
             'email' => ['required', 'email', 'max:255'],
         ]);
 
-        return response()->json($reset->execute($validated['email']));
+        try {
+            $result = $useCase->execute($validated['email']);
+        } catch (InvalidArgumentException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
+
+        return response()->json($result);
     }
 }

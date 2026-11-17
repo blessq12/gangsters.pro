@@ -2,154 +2,94 @@
 
 namespace App\Http\Controllers\Api\PublicApi;
 
+use App\Application\Order\Command\CreateOrderUseCase;
 use App\Application\Order\DTO\CreateOrderDto;
 use App\Application\Order\DTO\QuoteOrderDto;
-use App\Application\Order\Presenter\OrderPresenter;
-use App\Application\Order\Command\CreateOrderUseCase;
 use App\Application\Order\Query\QuoteOrderUseCase;
 use App\Http\Controllers\Controller;
-use DateTimeImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use InvalidArgumentException;
 
 final class OrderController extends Controller
 {
-    public function __construct(
-        private readonly QuoteOrderUseCase $quoteOrder,
-        private readonly CreateOrderUseCase $createOrder,
-        private readonly OrderPresenter $orderPresenter,
-    ) {}
-
-    public function quote(Request $request): JsonResponse
+    public function quote(Request $request, QuoteOrderUseCase $useCase): JsonResponse
     {
         $validated = $request->validate([
             'lines' => ['required', 'array', 'min:1'],
             'lines.*.product_id' => ['required', 'integer', 'min:1'],
             'lines.*.quantity' => ['required', 'integer', 'min:1'],
-            'delivery_method' => ['nullable', 'string', 'in:pickup,courier'],
-            'client' => ['nullable', 'array'],
-            'client.name' => ['nullable', 'string', 'max:255'],
-            'client.phone' => ['nullable', 'string', 'max:32'],
-            'client.email' => ['nullable', 'string', 'max:255'],
-            'client.kind' => ['nullable', 'string', 'in:guest,registered'],
-            'client.client_id' => ['nullable', 'integer', 'min:1'],
+            'deliveryMethod' => ['required', 'string', 'in:pickup,courier'],
             'address' => ['nullable', 'array'],
             'address.street' => ['nullable', 'string', 'max:255'],
             'address.house' => ['nullable', 'string', 'max:64'],
             'address.entrance' => ['nullable', 'string', 'max:64'],
             'address.floor' => ['nullable', 'string', 'max:64'],
             'address.apartment' => ['nullable', 'string', 'max:64'],
-            'delivery_comment' => ['nullable', 'string', 'max:1000'],
-            'persons' => ['nullable', 'integer', 'min:1', 'max:99'],
-            'scheduled_at' => ['nullable', 'string', 'max:64'],
-            'payment_method' => ['nullable', 'string', 'max:32'],
-            'change_from_rubles' => ['nullable', 'integer', 'min:0'],
-            'gift_product_id' => ['nullable', 'integer', 'min:1'],
-            'complement_product_ids' => ['nullable', 'array'],
-            'complement_product_ids.*' => ['integer', 'min:1'],
-            'complement_selections' => ['nullable', 'array'],
-            'complement_selections.*.product_id' => ['required', 'integer', 'min:1'],
-            'complement_selections.*.quantity' => ['required', 'integer', 'min:0'],
-            'latitude' => ['nullable', 'numeric'],
-            'longitude' => ['nullable', 'numeric'],
+            'address.comment' => ['nullable', 'string', 'max:1000'],
+            'address.lat' => ['nullable', 'numeric'],
+            'address.lng' => ['nullable', 'numeric'],
+            'scheduledAt' => ['nullable', 'string', 'max:64'],
+            'client' => ['required', 'array'],
+            'client.kind' => ['required', 'string', 'in:guest,client'],
+            'client.id' => ['nullable', 'integer', 'min:1'],
+            'client.name' => ['nullable', 'string', 'max:255'],
+            'client.phone' => ['nullable', 'string', 'max:32'],
+            'client.email' => ['nullable', 'string', 'max:255'],
+            'paymentMethod' => ['required', 'string', 'in:cash,card_courier,card_online'],
+            'changeFrom' => ['nullable', 'integer', 'min:0'],
+            'giftProductId' => ['nullable', 'integer', 'min:1'],
+            'complementSelections' => ['nullable', 'array'],
+            'promoCode' => ['nullable', 'string', 'max:64'],
         ]);
 
-        $client = is_array($validated['client'] ?? null) ? $validated['client'] : [];
-        if (! isset($client['phone']) || ! is_string($client['phone']) || $client['phone'] === '') {
-            $client['phone'] = '+7 (000) 000-00-00';
+        $complementSelections = [];
+        foreach ($validated['complementSelections'] ?? [] as $productId => $qty) {
+            $complementSelections[(int) $productId] = (int) $qty;
         }
 
-        $quote = $this->quoteOrder->execute(new QuoteOrderDto(
-            lines: array_map(
-                static fn (array $line): array => [
-                    'product_id' => (int) $line['product_id'],
-                    'quantity' => (int) $line['quantity'],
-                ],
-                $validated['lines'],
-            ),
-            deliveryMethod: (string) ($validated['delivery_method'] ?? 'courier'),
-            client: $client,
-            address: is_array($validated['address'] ?? null) ? $validated['address'] : null,
-            deliveryComment: $validated['delivery_comment'] ?? null,
-            persons: isset($validated['persons']) ? (int) $validated['persons'] : 1,
-            scheduledAt: $validated['scheduled_at'] ?? null,
-            paymentMethod: (string) ($validated['payment_method'] ?? 'cash'),
-            changeFromRubles: isset($validated['change_from_rubles'])
-                ? (int) $validated['change_from_rubles']
-                : null,
-            giftProductId: isset($validated['gift_product_id'])
-                ? (int) $validated['gift_product_id']
-                : null,
-            complementProductIds: array_map(
-                'intval',
-                $validated['complement_product_ids'] ?? [],
-            ),
-            complementSelections: self::mapComplementSelections(
-                $validated['complement_selections'] ?? [],
-            ),
-            latitude: isset($validated['latitude']) ? (float) $validated['latitude'] : null,
-            longitude: isset($validated['longitude']) ? (float) $validated['longitude'] : null,
-        ));
-
-        return response()->json(['data' => $quote]);
-    }
-
-    /**
-     * @param  list<array{product_id?: int, quantity?: int}>  $rows
-     * @return array<int, int>
-     */
-    private static function mapComplementSelections(array $rows): array
-    {
-        $selections = [];
-
-        foreach ($rows as $row) {
-            $productId = (int) ($row['product_id'] ?? 0);
-            if ($productId < 1) {
-                continue;
-            }
-
-            $selections[$productId] = max(0, (int) ($row['quantity'] ?? 0));
+        try {
+            $result = $useCase->execute(new QuoteOrderDto(
+                lines: array_map(
+                    static fn (array $line): array => [
+                        'product_id' => (int) $line['product_id'],
+                        'quantity' => (int) $line['quantity'],
+                    ],
+                    $validated['lines'],
+                ),
+                deliveryMethod: $validated['deliveryMethod'],
+                client: $validated['client'],
+                address: $validated['address'] ?? null,
+                scheduledAt: $validated['scheduledAt'] ?? null,
+                paymentMethod: $validated['paymentMethod'],
+                changeFrom: isset($validated['changeFrom']) ? (int) $validated['changeFrom'] : null,
+                giftProductId: isset($validated['giftProductId']) ? (int) $validated['giftProductId'] : null,
+                complementSelections: $complementSelections,
+                promoCode: $validated['promoCode'] ?? null,
+            ));
+        } catch (InvalidArgumentException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
         }
 
-        return $selections;
+        return response()->json($result);
     }
 
-    public function place(Request $request): JsonResponse
+    public function store(Request $request, CreateOrderUseCase $useCase): JsonResponse
     {
         $validated = $request->validate([
             'client_request_id' => ['required', 'string', 'max:128'],
-            'cart' => ['required', 'array'],
-            'cart.lines' => ['required', 'array', 'min:1'],
-            'client' => ['required', 'array'],
-            'delivery' => ['required', 'array'],
-            'payment' => ['required', 'array'],
+            'quote_snapshot' => ['required', 'array'],
         ]);
 
-        $delivery = $validated['delivery'];
-        $method = (string) ($delivery['method'] ?? '');
-        $deliveryAvailable = $delivery['delivery_available'] ?? null;
-        $inZone = $delivery['in_zone'] ?? null;
-
-        if (
-            $method === 'courier'
-            && ($deliveryAvailable === false || $inZone === false)
-        ) {
-            return response()->json([
-                'message' => 'Доставка по этому адресу невозможна. Укажи адрес ближе или выбери самовывоз.',
-            ], 422);
+        try {
+            $result = $useCase->execute(new CreateOrderDto(
+                clientRequestId: $validated['client_request_id'],
+                quoteSnapshot: $validated['quote_snapshot'],
+            ));
+        } catch (InvalidArgumentException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
         }
 
-        $order = $this->createOrder->execute(new CreateOrderDto(
-            clientRequestId: (string) $validated['client_request_id'],
-            cart: $validated['cart'],
-            client: $validated['client'],
-            delivery: $validated['delivery'],
-            payment: $validated['payment'],
-            createdAt: new DateTimeImmutable(),
-        ));
-
-        return response()->json([
-            'data' => $this->orderPresenter->present($order),
-        ], 201);
+        return response()->json($result, 201);
     }
 }

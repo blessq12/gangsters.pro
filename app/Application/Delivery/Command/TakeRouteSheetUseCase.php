@@ -1,0 +1,58 @@
+<?php
+
+namespace App\Application\Delivery\Command;
+
+use App\Application\Delivery\DTO\TakeRouteSheetDto;
+use App\Application\Delivery\Presenter\RouteSheetPresenter;
+use App\Domain\Delivery\Repository\RouteSheetRepository;
+use App\Domain\Order\Repository\OrderRepository;
+use App\Domain\Staff\Enum\StaffRole;
+use App\Domain\Staff\Repository\EmployeeRepository;
+
+final class TakeRouteSheetUseCase
+{
+    public function __construct(
+        private readonly RouteSheetRepository $sheets,
+        private readonly OrderRepository $orders,
+        private readonly EmployeeRepository $employees,
+        private readonly RouteSheetPresenter $presenter,
+    ) {}
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function execute(TakeRouteSheetDto $dto): array
+    {
+        $courier = $this->employees->findById($dto->courierId);
+        if ($courier === null) {
+            throw new \InvalidArgumentException('Курьер не найден.');
+        }
+        if ($courier->role() !== StaffRole::Courier) {
+            throw new \InvalidArgumentException('Сотрудник не является курьером.');
+        }
+        if (! $courier->isActive()) {
+            throw new \InvalidArgumentException('Курьер деактивирован.');
+        }
+
+        $sheet = $this->sheets->findById($dto->sheetId);
+        if ($sheet === null) {
+            throw new \InvalidArgumentException('Маршрутный лист не найден.');
+        }
+
+        $sheet = $sheet->take($dto->courierId);
+        $this->sheets->save($sheet);
+
+        foreach ($sheet->stops() as $stop) {
+            $order = $this->orders->findById($stop->orderId());
+            if ($order === null) {
+                throw new \InvalidArgumentException(
+                    sprintf('Заказ #%d не найден.', $stop->orderId()),
+                );
+            }
+            $order->markInTransit();
+            $this->orders->save($order);
+        }
+
+        return $this->presenter->present($sheet);
+    }
+}

@@ -2,17 +2,71 @@
 
 namespace App\Infrastructure\Promotion\Repository;
 
-use App\Domain\Catalog\Enum\CatalogItemKind;
-use App\Domain\Catalog\Enum\ProductStatus;
+use App\Domain\Promotion\Entity\ProductPromotionRole;
+use App\Domain\Promotion\Enum\ProductPromotionRoleKind;
 use App\Domain\Promotion\Repository\ProductPromotionRoleRepository;
-use App\Infrastructure\Catalog\Model\PRD_Product;
+use App\Infrastructure\Promotion\Mapper\ProductPromotionRoleMapper;
+use App\Infrastructure\Promotion\Model\PRM_ProductRole;
 
-/**
- * Роли товаров в акциях: читает колонки meta_* / paid_twin_product_id / is_system из PRD_Product.
- * Физический вынос колонок — отдельный план миграций.
- */
 final class EloquentProductPromotionRoleRepository implements ProductPromotionRoleRepository
 {
+    public function __construct(
+        private readonly ProductPromotionRoleMapper $mapper,
+    ) {}
+
+    public function findAll(): array
+    {
+        return PRM_ProductRole::query()
+            ->orderBy('role')
+            ->orderBy('product_id')
+            ->get()
+            ->map(fn (PRM_ProductRole $row) => $this->mapper->toDomain($row))
+            ->all();
+    }
+
+    public function findByProductIds(array $productIds): array
+    {
+        $ids = $this->normalizeIds($productIds);
+        if ($ids === []) {
+            return [];
+        }
+
+        return PRM_ProductRole::query()
+            ->whereIn('product_id', $ids)
+            ->orderBy('role')
+            ->orderBy('product_id')
+            ->get()
+            ->map(fn (PRM_ProductRole $row) => $this->mapper->toDomain($row))
+            ->all();
+    }
+
+    public function findByRole(ProductPromotionRoleKind $role): array
+    {
+        return PRM_ProductRole::query()
+            ->where('role', $role->value)
+            ->orderBy('product_id')
+            ->get()
+            ->map(fn (PRM_ProductRole $row) => $this->mapper->toDomain($row))
+            ->all();
+    }
+
+    public function save(ProductPromotionRole $role): ProductPromotionRole
+    {
+        $row = PRM_ProductRole::query()->firstOrNew([
+            'product_id' => $role->productId(),
+            'role' => $role->role()->value,
+        ]);
+
+        $row->fill([
+            'name' => $role->name(),
+            'price_kopecks' => $role->priceKopecks(),
+            'paid_twin_product_id' => $role->paidTwinProductId(),
+        ]);
+        $row->save();
+
+        return $this->mapper->toDomain($row);
+    }
+
     public function findMetaByProductIds(array $ids): array
     {
         $ids = $this->normalizeIds($ids);
@@ -20,62 +74,27 @@ final class EloquentProductPromotionRoleRepository implements ProductPromotionRo
             return [];
         }
 
-        return PRD_Product::query()
-            ->where('catalog_kind', CatalogItemKind::Product->value)
-            ->whereIn('id', $ids)
-            ->get(['id', 'meta_counts_as_roll', 'meta_is_complement_set', 'paid_twin_product_id'])
-            ->mapWithKeys(static function (PRD_Product $row): array {
-                $paidTwinId = $row->paid_twin_product_id !== null ? (int) $row->paid_twin_product_id : 0;
+        $meta = [];
+        foreach ($ids as $id) {
+            $meta[$id] = [
+                'counts_as_roll' => false,
+                'complement_set' => false,
+                'paid_twin_product_id' => null,
+            ];
+        }
 
-                return [
-                    (int) $row->id => [
-                        'counts_as_roll' => (bool) $row->meta_counts_as_roll,
-                        'complement_set' => (bool) $row->meta_is_complement_set,
-                        'paid_twin_product_id' => $paidTwinId > 0 ? $paidTwinId : null,
-                    ],
-                ];
-            })
-            ->all();
-    }
+        foreach ($this->findByProductIds($ids) as $role) {
+            $productId = $role->productId();
+            if ($role->countsAsRoll()) {
+                $meta[$productId]['counts_as_roll'] = true;
+            }
+            if ($role->isComplementSet()) {
+                $meta[$productId]['complement_set'] = true;
+                $meta[$productId]['paid_twin_product_id'] = $role->paidTwinProductId();
+            }
+        }
 
-    public function findPaidTwinProductIds(): array
-    {
-        return PRD_Product::query()
-            ->where('catalog_kind', CatalogItemKind::Product->value)
-            ->where('meta_is_complement_set', true)
-            ->whereNotNull('paid_twin_product_id')
-            ->pluck('paid_twin_product_id')
-            ->map(static fn (mixed $id): int => (int) $id)
-            ->filter(static fn (int $id): bool => $id > 0)
-            ->unique()
-            ->values()
-            ->all();
-    }
-
-    public function findActiveGiftCandidateProductIds(): array
-    {
-        return PRD_Product::query()
-            ->where('catalog_kind', CatalogItemKind::Product->value)
-            ->where('status', ProductStatus::Active->value)
-            ->where('is_system', true)
-            ->whereNull('archived_at')
-            ->orderBy('id')
-            ->pluck('id')
-            ->map(static fn (mixed $id): int => (int) $id)
-            ->all();
-    }
-
-    public function findActiveComplementSetProductIds(): array
-    {
-        return PRD_Product::query()
-            ->where('catalog_kind', CatalogItemKind::Product->value)
-            ->where('status', ProductStatus::Active->value)
-            ->where('meta_is_complement_set', true)
-            ->whereNull('archived_at')
-            ->orderBy('id')
-            ->pluck('id')
-            ->map(static fn (mixed $id): int => (int) $id)
-            ->all();
+        return $meta;
     }
 
     /**
@@ -85,12 +104,10 @@ final class EloquentProductPromotionRoleRepository implements ProductPromotionRo
     private function normalizeIds(array $ids): array
     {
         $normalized = [];
-
         foreach ($ids as $id) {
             if (! is_numeric($id)) {
                 continue;
             }
-
             $intId = (int) $id;
             if ($intId > 0) {
                 $normalized[] = $intId;

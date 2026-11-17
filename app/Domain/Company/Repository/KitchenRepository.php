@@ -14,4 +14,9 @@ interface KitchenRepository
      * @return list<Kitchen>
      */
     public function listByCompany(int $companyId): array;
+
+    /**
+     * Создать (id &lt; 1) или обновить кухню. Возвращает сохранённую сущность с id.
+     */
+    public function save(Kitchen $kitchen): Kitchen;
 }

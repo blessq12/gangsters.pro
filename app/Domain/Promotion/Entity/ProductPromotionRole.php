@@ -2,33 +2,31 @@
 
 namespace App\Domain\Promotion\Entity;
 
+use App\Domain\Promotion\Enum\ProductPromotionRoleKind;
+
 /**
- * Роль товара в акциях: ролл, комплемент-сет, платный «близнец», кандидат в подарок.
+ * Роль товара в акциях + снимок name/price на момент назначения.
  */
 final class ProductPromotionRole
 {
     public function __construct(
         private readonly int $productId,
-        private readonly bool $countsAsRoll,
-        private readonly bool $isComplementSet,
-        private readonly ?int $paidTwinProductId,
-        private readonly bool $isGiftCandidate,
-    ) {}
+        private readonly ProductPromotionRoleKind $role,
+        private readonly string $name,
+        private readonly int $priceKopecks,
+        private readonly ?int $paidTwinProductId = null,
+    ) {
+        if ($this->productId < 1) {
+            throw new \InvalidArgumentException('product_id должен быть положительным.');
+        }
 
-    public static function restore(
-        int $productId,
-        bool $countsAsRoll,
-        bool $isComplementSet,
-        ?int $paidTwinProductId,
-        bool $isGiftCandidate,
-    ): self {
-        return new self(
-            $productId,
-            $countsAsRoll,
-            $isComplementSet,
-            $paidTwinProductId,
-            $isGiftCandidate,
-        );
+        if (trim($this->name) === '') {
+            throw new \InvalidArgumentException('Нужно название снимка товара.');
+        }
+
+        if ($this->priceKopecks < 0) {
+            throw new \InvalidArgumentException('Цена снимка не может быть отрицательной.');
+        }
     }
 
     public function productId(): int
@@ -36,14 +34,19 @@ final class ProductPromotionRole
         return $this->productId;
     }
 
-    public function countsAsRoll(): bool
+    public function role(): ProductPromotionRoleKind
     {
-        return $this->countsAsRoll;
+        return $this->role;
     }
 
-    public function isComplementSet(): bool
+    public function name(): string
     {
-        return $this->isComplementSet;
+        return $this->name;
+    }
+
+    public function priceKopecks(): int
+    {
+        return $this->priceKopecks;
     }
 
     public function paidTwinProductId(): ?int
@@ -51,8 +54,18 @@ final class ProductPromotionRole
         return $this->paidTwinProductId;
     }
 
+    public function countsAsRoll(): bool
+    {
+        return $this->role === ProductPromotionRoleKind::Roll;
+    }
+
+    public function isComplementSet(): bool
+    {
+        return $this->role === ProductPromotionRoleKind::Complement;
+    }
+
     public function isGiftCandidate(): bool
     {
-        return $this->isGiftCandidate;
+        return $this->role === ProductPromotionRoleKind::Gift;
     }
 }

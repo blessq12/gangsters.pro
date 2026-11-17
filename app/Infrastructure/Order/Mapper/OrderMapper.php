@@ -40,7 +40,7 @@ final class OrderMapper
             'checkout_id' => $order->checkoutId(),
             'partner_code' => $order->partnerCode(),
             'external_order_id' => $order->externalOrderId(),
-            'status' => $order->status(),
+            'status' => $order->status()->value,
             'client_id' => $order->clientId(),
             'total_rubles' => $order->totalRubles(),
             'cart_snapshot' => $order->cart(),

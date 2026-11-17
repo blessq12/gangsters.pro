@@ -10,6 +10,7 @@ enum OrderStatus: string
     case Preparing = 'preparing';
     case Ready = 'ready';
     case InTransit = 'in_transit';
-    case Cancelled = 'cancelled';
     case Delivered = 'delivered';
+    case Completed = 'completed';
+    case Cancelled = 'cancelled';
 }

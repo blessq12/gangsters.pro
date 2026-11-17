@@ -8,12 +8,8 @@ use Illuminate\Http\JsonResponse;
 
 final class CatalogController extends Controller
 {
-    public function __construct(
-        private readonly GetCatalogUseCase $getCatalog,
-    ) {}
-
-    public function show(): JsonResponse
+    public function show(GetCatalogUseCase $useCase): JsonResponse
     {
-        return response()->json($this->getCatalog->execute());
+        return response()->json($useCase->execute());
     }
 }
