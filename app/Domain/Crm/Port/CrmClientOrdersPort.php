@@ -5,6 +5,9 @@ namespace App\Domain\Crm\Port;
 /**
  * Заказы клиента для CRM: только массивы, без сущностей Order.
  *
+ * Канонический (единственный) API истории заказов клиента в Crm.
+ * Данные читаются из контекста Order через адаптер (реализация — позже).
+ *
  * Снимок заказа: {id, source, status, total_rubles, created_at, delivery_method, payment_method, lines}
  * Строка: {product_id, product_name, quantity, unit_price_rubles, line_total_rubles, kind}
  */

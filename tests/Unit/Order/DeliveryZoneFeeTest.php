@@ -2,12 +2,12 @@
 
 namespace Tests\Unit\Order;
 
-use App\Domain\Content\Entity\DeliveryConfiguration;
-use App\Domain\Content\Repository\DeliveryConfigurationRepository;
-use App\Domain\Content\ValueObject\DeliveryZone;
-use App\Domain\Order\Entity\PromotionPolicy;
-use App\Domain\Order\Repository\PromotionPolicyRepository;
-use App\Infrastructure\Order\Port\PromotionDeliveryPricingAdapter;
+use App\Domain\Delivery\Entity\DeliveryConfiguration;
+use App\Domain\Delivery\Repository\DeliveryConfigurationRepository;
+use App\Domain\Delivery\ValueObject\DeliveryZone;
+use App\Domain\Promotion\Entity\PromotionPolicy;
+use App\Domain\Promotion\Repository\PromotionPolicyRepository;
+use App\Infrastructure\Promotion\Port\PromotionDeliveryPricingAdapter;
 use PHPUnit\Framework\TestCase;
 
 final class DeliveryZoneFeeTest extends TestCase

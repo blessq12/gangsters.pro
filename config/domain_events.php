@@ -3,7 +3,6 @@
 use App\Domain\Crm\Event\ClientCreated;
 use App\Domain\Crm\Event\ClientPasswordChanged;
 use App\Domain\Order\Event\OrderCreated;
-use App\Infrastructure\Crm\Listener\RecordOrderHistoryOnCreated;
 use App\Infrastructure\Crm\Listener\SendWelcomeMailOnClientCreated;
 use App\Infrastructure\Order\Listener\SendOrderConfirmationMailOnOrderCreated;
 
@@ -19,7 +18,6 @@ use App\Infrastructure\Order\Listener\SendOrderConfirmationMailOnOrderCreated;
 return [
     'listen' => [
         OrderCreated::class => [
-            RecordOrderHistoryOnCreated::class,
             SendOrderConfirmationMailOnOrderCreated::class,
         ],
 

@@ -29,32 +29,11 @@ final class OrderCatalogAdapter implements OrderCatalogPort
         );
     }
 
-    public function findActiveSystemProducts(): array
-    {
-        return array_map(
-            fn (Product $product): array => $this->mapProduct($product),
-            $this->catalogItems->findActiveSystemProducts(),
-        );
-    }
-
-    public function findActiveComplementSetProducts(): array
-    {
-        return array_map(
-            fn (Product $product): array => $this->mapProduct($product),
-            $this->catalogItems->findActiveComplementSetProducts(),
-        );
-    }
-
     public function findProductById(int $id): ?array
     {
         $product = $this->catalogItems->findProductById($id);
 
         return $product instanceof Product ? $this->mapProduct($product) : null;
-    }
-
-    public function findPromotionMetaByProductIds(array $ids): array
-    {
-        return $this->catalogItems->findPromotionMetaByProductIds($ids);
     }
 
     /**

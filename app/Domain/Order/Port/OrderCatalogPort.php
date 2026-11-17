@@ -23,23 +23,7 @@ interface OrderCatalogPort
     public function findActiveSetsByIds(array $ids): array;
 
     /**
-     * @return list<array<string, mixed>>
-     */
-    public function findActiveSystemProducts(): array;
-
-    /**
-     * @return list<array<string, mixed>>
-     */
-    public function findActiveComplementSetProducts(): array;
-
-    /**
      * @return array<string, mixed>|null
      */
     public function findProductById(int $id): ?array;
-
-    /**
-     * @param  list<int>  $ids
-     * @return array<int, array{counts_as_roll: bool, complement_set: bool}>
-     */
-    public function findPromotionMetaByProductIds(array $ids): array;
 }

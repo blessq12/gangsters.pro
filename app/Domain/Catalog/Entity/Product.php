@@ -32,8 +32,6 @@ final class Product implements CatalogItem
         private readonly array $tagIds,
         private readonly array $ingredients = [],
         private readonly array $images = [],
-        private readonly ?int $paidTwinProductId = null,
-        private readonly ?Money $oldPrice = null,
         private readonly ?int $weight = null,
     ) {}
 
@@ -83,14 +81,6 @@ final class Product implements CatalogItem
     }
 
     /**
-     * Старая цена для витрины (зачёркнутый display-only). null — не показывать.
-     */
-    public function oldPrice(): ?Money
-    {
-        return $this->oldPrice;
-    }
-
-    /**
      * Вес порции в граммах. null — не задан.
      */
     public function weight(): ?int
@@ -130,13 +120,5 @@ final class Product implements CatalogItem
     public function images(): array
     {
         return $this->images;
-    }
-
-    /**
-     * Платный близнец комплектного товара (докупка сверх entitled).
-     */
-    public function paidTwinProductId(): ?int
-    {
-        return $this->paidTwinProductId;
     }
 }

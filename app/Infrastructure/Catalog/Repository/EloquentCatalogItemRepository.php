@@ -77,92 +77,12 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
             return [];
         }
 
-        $paidTwinIds = $this->findPaidTwinProductIds();
-
         $rows = $this->productQuery()
             ->where('catalog_kind', CatalogItemKind::Product->value)
             ->where('status', ProductStatus::Active->value)
             ->whereNull('archived_at')
             ->whereIn('id', $ids)
-            ->where(function ($query) use ($paidTwinIds): void {
-                $query->where('is_system', false)
-                    ->orWhere('meta_is_complement_set', true);
-
-                if ($paidTwinIds !== []) {
-                    $query->orWhereIn('id', $paidTwinIds);
-                }
-            })
             ->get();
-
-        $tagIdsByProduct = $this->loadTagIdsForProductIds($ids);
-        $imagesByProduct = $this->loadImagesByProductIds($ids);
-
-        return $this->mapProductsPreservingOrder($rows, $ids, $tagIdsByProduct, $imagesByProduct);
-    }
-
-    public function findPaidTwinProductIds(): array
-    {
-        $ids = $this->productQuery()
-            ->where('catalog_kind', CatalogItemKind::Product->value)
-            ->where('meta_is_complement_set', true)
-            ->whereNotNull('paid_twin_product_id')
-            ->pluck('paid_twin_product_id')
-            ->map(static fn (mixed $id): int => (int) $id)
-            ->filter(static fn (int $id): bool => $id > 0)
-            ->unique()
-            ->values()
-            ->all();
-
-        return $ids;
-    }
-
-    public function findActiveSystemProducts(): array
-    {
-        $rows = $this->productQuery()
-            ->where('catalog_kind', CatalogItemKind::Product->value)
-            ->where('status', ProductStatus::Active->value)
-            ->where('is_system', true)
-            ->whereNull('archived_at')
-            ->orderBy('id')
-            ->get();
-
-        $ids = [];
-        foreach ($rows as $row) {
-            if ($row instanceof PRD_Product) {
-                $ids[] = (int) $row->id;
-            }
-        }
-
-        if ($ids === []) {
-            return [];
-        }
-
-        $tagIdsByProduct = $this->loadTagIdsForProductIds($ids);
-        $imagesByProduct = $this->loadImagesByProductIds($ids);
-
-        return $this->mapProductsPreservingOrder($rows, $ids, $tagIdsByProduct, $imagesByProduct);
-    }
-
-    public function findActiveComplementSetProducts(): array
-    {
-        $rows = $this->productQuery()
-            ->where('catalog_kind', CatalogItemKind::Product->value)
-            ->where('status', ProductStatus::Active->value)
-            ->where('meta_is_complement_set', true)
-            ->whereNull('archived_at')
-            ->orderBy('id')
-            ->get();
-
-        $ids = [];
-        foreach ($rows as $row) {
-            if ($row instanceof PRD_Product) {
-                $ids[] = (int) $row->id;
-            }
-        }
-
-        if ($ids === []) {
-            return [];
-        }
 
         $tagIdsByProduct = $this->loadTagIdsForProductIds($ids);
         $imagesByProduct = $this->loadImagesByProductIds($ids);
@@ -456,30 +376,6 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
     }
 
     /**
-     * @param  list<int>  $ids
-     * @return array<int, array{counts_as_roll: bool, complement_set: bool}>
-     */
-    public function findPromotionMetaByProductIds(array $ids): array
-    {
-        $ids = $this->normalizeIds($ids);
-        if ($ids === []) {
-            return [];
-        }
-
-        return PRD_Product::query()
-            ->where('catalog_kind', CatalogItemKind::Product->value)
-            ->whereIn('id', $ids)
-            ->get(['id', 'meta_counts_as_roll', 'meta_is_complement_set'])
-            ->mapWithKeys(static fn (PRD_Product $row): array => [
-                (int) $row->id => [
-                    'counts_as_roll' => (bool) $row->meta_counts_as_roll,
-                    'complement_set' => (bool) $row->meta_is_complement_set,
-                ],
-            ])
-            ->all();
-    }
-
-    /**
      * @return array{0: ?float, 1: ?float}
      */
     private function resolveImageFocus(PRD_ProductImage $row): array
@@ -509,13 +405,12 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
         ?int $id,
         string $name,
         int $price,
-        ?int $oldPrice,
         ?int $weight,
         string $status,
         ?string $description,
         ?string $sku,
     ): int {
-        return $this->saveItem($id, CatalogItemKind::Product, $name, $price, $oldPrice, $weight, $status, $description, $sku);
+        return $this->saveItem($id, CatalogItemKind::Product, $name, $price, $weight, $status, $description, $sku);
     }
 
     public function saveSet(
@@ -523,10 +418,9 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
         string $name,
         ?string $sku,
         int $price,
-        ?int $oldPrice,
         string $status,
     ): int {
-        return $this->saveItem($id, CatalogItemKind::Set, $name, $price, $oldPrice, null, $status, null, $sku);
+        return $this->saveItem($id, CatalogItemKind::Set, $name, $price, null, $status, null, $sku);
     }
 
     public function listProductImages(int $productId): array
@@ -566,7 +460,6 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
         CatalogItemKind $kind,
         string $name,
         int $price,
-        ?int $oldPrice,
         ?int $weight,
         string $status,
         ?string $description,
@@ -586,7 +479,6 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
         $fields = [
             'name' => $name,
             'price' => $price,
-            'old_price' => $oldPrice,
             'status' => $status,
         ];
         if ($kind === CatalogItemKind::Product) {

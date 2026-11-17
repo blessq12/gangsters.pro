@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Order;
 
-use App\Domain\Order\Entity\PromotionPolicy;
+use App\Domain\Promotion\Entity\PromotionPolicy;
 use Carbon\Carbon;
 use PHPUnit\Framework\TestCase;
 

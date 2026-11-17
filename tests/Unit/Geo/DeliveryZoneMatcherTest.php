@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Geo;
 
-use App\Domain\Content\ValueObject\DeliveryZone;
+use App\Domain\Delivery\ValueObject\DeliveryZone;
 use App\Shared\Geo\DeliveryZoneMatcher;
 use PHPUnit\Framework\TestCase;
 

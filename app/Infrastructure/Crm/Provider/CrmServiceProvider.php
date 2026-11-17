@@ -7,12 +7,10 @@ use App\Domain\Crm\Port\CrmCatalogAvailabilityPort;
 use App\Domain\Crm\Port\CrmCatalogSnapshotsPort;
 use App\Domain\Crm\Port\CrmClientOrdersPort;
 use App\Domain\Crm\Repository\ClientRepository;
-use App\Domain\Crm\Repository\OrderHistoryRepository;
 use App\Infrastructure\Crm\Port\CrmCatalogAdapter;
 use App\Infrastructure\Crm\Port\CrmClientOrdersAdapter;
 use App\Infrastructure\Crm\Port\SanctumClientAccessTokenIssuer;
 use App\Infrastructure\Crm\Repository\EloquentClientRepository;
-use App\Infrastructure\Crm\Repository\EloquentOrderHistoryRepository;
 use Illuminate\Support\ServiceProvider;
 
 final class CrmServiceProvider extends ServiceProvider
@@ -20,7 +18,6 @@ final class CrmServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(ClientRepository::class, EloquentClientRepository::class);
-        $this->app->bind(OrderHistoryRepository::class, EloquentOrderHistoryRepository::class);
         $this->app->bind(ClientAccessTokenIssuer::class, SanctumClientAccessTokenIssuer::class);
         $this->app->bind(CrmClientOrdersPort::class, CrmClientOrdersAdapter::class);
         $this->app->bind(CrmCatalogAvailabilityPort::class, CrmCatalogAdapter::class);
