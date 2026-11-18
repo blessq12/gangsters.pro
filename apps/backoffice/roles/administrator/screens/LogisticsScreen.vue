@@ -191,10 +191,10 @@ async function confirmProblem() {
     problemOpen.value = false;
     try {
         sheet.value = await actionApi.run(() => settleStop(sheet.value.id, orderId, {
-            outcome: "failed",
+            outcome: "written_off",
             reason: problemReason.value.trim(),
         }));
-        toast.success(`#${orderId}: проблема`);
+        toast.success(`#${orderId}: списан`);
         await loadSheets();
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Ошибка");
@@ -205,8 +205,8 @@ onMounted(loadSheets);
 </script>
 
 <template>
-    <div class="space-y-4 p-4 md:p-6">
-        <UiCard title="Logistics">
+    <div class="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
+        <UiCard title="Логистика">
             <template #actions>
                 <UiButton @click="openCreate">+ Маршрут</UiButton>
             </template>
@@ -229,11 +229,11 @@ onMounted(loadSheets);
 
         <UiModal :open="createOpen" title="Новый маршрутный лист" @close="createOpen = false">
             <div class="space-y-2 text-sm">
-                <p class="text-slate-600">Заказы в статусе ready:</p>
+                <p class="text-bo-muted">Заказы в статусе ready:</p>
                 <label
                     v-for="order in readyOrders"
                     :key="order.id"
-                    class="flex items-center gap-2 rounded border border-slate-100 px-2 py-1"
+                    class="flex items-center gap-2 border border-bo-border bg-white/[0.03] px-3 py-2"
                 >
                     <input
                         type="checkbox"
@@ -242,7 +242,7 @@ onMounted(loadSheets);
                     >
                     #{{ order.id }} · {{ order.client?.name || "—" }} · {{ order.delivery?.method || "—" }}
                 </label>
-                <p v-if="readyOrders.length === 0" class="text-slate-500">
+                <p v-if="readyOrders.length === 0" class="text-bo-muted">
                     Нет ready-заказов
                 </p>
             </div>
@@ -255,20 +255,20 @@ onMounted(loadSheets);
         </UiModal>
 
         <UiModal :open="detailOpen" title="Маршрутный лист" @close="detailOpen = false">
-            <div v-if="detailApi.loading" class="text-sm text-slate-500">
+            <div v-if="detailApi.loading" class="text-sm text-bo-muted">
                 Загрузка…
             </div>
-            <div v-else-if="sheet" class="space-y-3 text-sm">
-                <p><span class="text-slate-500">ID:</span> {{ sheet.id }}</p>
-                <p><span class="text-slate-500">Статус:</span> {{ sheet.status }}</p>
-                <p><span class="text-slate-500">Курьер:</span> {{ sheet.courier_id ?? "—" }}</p>
+            <div v-else-if="sheet" class="space-y-4 text-sm">
+                <p><span class="text-bo-muted">ID:</span> {{ sheet.id }}</p>
+                <p><span class="text-bo-muted">Статус:</span> {{ sheet.status }}</p>
+                <p><span class="text-bo-muted">Курьер:</span> {{ sheet.courier_id ?? "—" }}</p>
 
-                <div v-if="sheet.status === 'released'" class="space-y-2 rounded border border-slate-100 p-3">
+                <div v-if="sheet.status === 'released'" class="space-y-2 border border-bo-border bg-white/[0.03] p-4">
                     <p class="font-medium">Назначить курьера</p>
                     <UiFormField v-if="couriers.length" label="Курьер">
                         <select
                             v-model="courierId"
-                            class="mt-1 w-full rounded border border-slate-300 bg-white px-3 py-2"
+                            class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 transition-colors hover:border-bo-border-strong focus:border-bo-accent focus:outline-none"
                         >
                             <option value="">—</option>
                             <option
@@ -294,7 +294,7 @@ onMounted(loadSheets);
                         <li
                             v-for="stop in (sheet.stops ?? [])"
                             :key="`${stop.order_id}-${stop.position}`"
-                            class="rounded border border-slate-100 px-2 py-2"
+                            class="border border-bo-border bg-white/[0.03] px-3 py-2.5"
                         >
                             <div class="flex flex-wrap items-center justify-between gap-2">
                                 <span>

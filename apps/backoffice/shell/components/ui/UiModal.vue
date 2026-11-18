@@ -20,33 +20,33 @@ watch(
     <Teleport to="body">
         <div
             v-if="open"
-            class="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/40 p-4"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-md sm:p-6"
             @click.self="emit('close')"
         >
             <div
-                class="max-h-[90vh] w-full max-w-lg overflow-auto rounded-lg bg-white shadow-xl"
+                class="max-h-[90vh] w-full max-w-xl overflow-auto border border-bo-border-strong bg-bo-elevated text-bo-fg shadow-bo-lg"
                 role="dialog"
                 aria-modal="true"
             >
-                <header class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
-                    <h3 class="text-base font-semibold text-slate-900">
+                <header class="flex items-center justify-between px-6 pb-2 pt-6">
+                    <h3 class="text-lg font-semibold tracking-tight text-bo-fg">
                         {{ title }}
                     </h3>
                     <button
                         type="button"
-                        class="rounded px-2 py-1 text-slate-500 hover:bg-slate-100"
+                        class="flex h-9 w-9 items-center justify-center text-xl text-bo-muted transition-colors hover:bg-white/[0.06] hover:text-bo-fg"
                         aria-label="Закрыть"
                         @click="emit('close')"
                     >
                         ×
                     </button>
                 </header>
-                <div class="px-4 py-3">
+                <div class="px-6 py-5">
                     <slot />
                 </div>
                 <footer
                     v-if="$slots.footer"
-                    class="flex justify-end gap-2 border-t border-slate-100 px-4 py-3"
+                    class="flex justify-end gap-3 border-t border-bo-border px-6 py-4"
                 >
                     <slot name="footer" />
                 </footer>

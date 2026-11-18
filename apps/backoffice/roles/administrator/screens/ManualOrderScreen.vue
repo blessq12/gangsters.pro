@@ -156,7 +156,7 @@ onMounted(loadCatalog);
 </script>
 
 <template>
-    <div class="space-y-4 p-4 md:p-6">
+    <div class="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
         <UiCard title="Ручной заказ">
             <div class="space-y-4">
                 <div class="grid gap-3 md:grid-cols-2">
@@ -175,7 +175,7 @@ onMounted(loadCatalog);
                     <UiFormField label="Доставка" required>
                         <select
                             v-model="form.method"
-                            class="mt-1 w-full rounded border border-slate-300 bg-white px-3 py-2"
+                            class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 transition-colors hover:border-bo-border-strong focus:border-bo-accent focus:outline-none"
                         >
                             <option value="pickup">pickup</option>
                             <option value="courier">courier</option>
@@ -205,7 +205,7 @@ onMounted(loadCatalog);
                     >
                         <select
                             v-model="form.payment_method"
-                            class="mt-1 w-full rounded border border-slate-300 bg-white px-3 py-2"
+                            class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 transition-colors hover:border-bo-border-strong focus:border-bo-accent focus:outline-none"
                         >
                             <option value="cash">cash</option>
                             <option value="card">card</option>
@@ -219,10 +219,10 @@ onMounted(loadCatalog);
 
                 <div class="space-y-2">
                     <div class="flex items-center justify-between">
-                        <p class="text-sm font-medium text-slate-700">Позиции</p>
+                        <p class="text-sm font-medium text-bo-fg">Позиции</p>
                         <UiButton @click="addLine">+ Строка</UiButton>
                     </div>
-                    <p v-if="fieldErrors.lines" class="text-xs text-rose-600">
+                    <p v-if="fieldErrors.lines" class="text-xs text-red-300">
                         {{ fieldErrors.lines }}
                     </p>
                     <div
@@ -232,7 +232,7 @@ onMounted(loadCatalog);
                     >
                         <select
                             v-model="line.product_id"
-                            class="rounded border border-slate-300 bg-white px-3 py-2 text-sm"
+                            class="border border-bo-border bg-bo-field px-4 py-2.5 transition-colors hover:border-bo-border-strong focus:border-bo-accent focus:outline-none text-sm"
                         >
                             <option value="">Товар</option>
                             <option

@@ -97,7 +97,7 @@ watch(page, load);
 </script>
 
 <template>
-    <div class="space-y-4 p-4 md:p-6">
+    <div class="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
         <UiCard title="Заказы">
             <UiTable
                 :columns="columns"
@@ -113,7 +113,7 @@ watch(page, load);
                     />
                 </template>
             </UiTable>
-            <div class="mt-4">
+            <div class="mt-6">
                 <UiPagination
                     :page="page"
                     :per-page="perPage"
@@ -128,26 +128,26 @@ watch(page, load);
             title="Заказ"
             @close="detailOpen = false"
         >
-            <div v-if="detailApi.loading" class="text-sm text-slate-500">
+            <div v-if="detailApi.loading" class="text-sm text-bo-muted">
                 Загрузка…
             </div>
-            <div v-else-if="detail" class="space-y-3 text-sm text-slate-800">
-                <p><span class="text-slate-500">ID:</span> {{ detail.id }}</p>
+            <div v-else-if="detail" class="space-y-4 text-sm text-bo-fg">
+                <p><span class="text-bo-muted">ID:</span> {{ detail.id }}</p>
                 <p>
-                    <span class="text-slate-500">Статус:</span>
+                    <span class="text-bo-muted">Статус:</span>
                     <UiBadge
                         class="ml-2"
                         :variant="statusVariant[detail.status] || 'neutral'"
                         :text="String(detail.status)"
                     />
                 </p>
-                <p><span class="text-slate-500">Клиент:</span> {{ detail.client?.name || '—' }} · {{ detail.client?.phone || '' }}</p>
-                <p><span class="text-slate-500">Доставка:</span> {{ detail.delivery?.method || '—' }}</p>
-                <p><span class="text-slate-500">Сумма:</span> {{ formatTotal(detail) }}</p>
-                <p><span class="text-slate-500">Создан:</span> {{ formatDate(detail.created_at) }}</p>
+                <p><span class="text-bo-muted">Клиент:</span> {{ detail.client?.name || '—' }} · {{ detail.client?.phone || '' }}</p>
+                <p><span class="text-bo-muted">Доставка:</span> {{ detail.delivery?.method || '—' }}</p>
+                <p><span class="text-bo-muted">Сумма:</span> {{ formatTotal(detail) }}</p>
+                <p><span class="text-bo-muted">Создан:</span> {{ formatDate(detail.created_at) }}</p>
                 <div>
-                    <p class="mb-1 font-medium text-slate-700">Позиции</p>
-                    <ul class="list-inside list-disc text-slate-600">
+                    <p class="mb-1 font-medium text-bo-fg">Позиции</p>
+                    <ul class="list-inside list-disc text-bo-muted">
                         <li v-for="(line, idx) in detailLines" :key="idx">
                             {{ line.product_name || line.product_id }} × {{ line.quantity }}
                             ({{ line.line_total_rubles ?? 0 }} ₽)

@@ -44,9 +44,10 @@ final class EloquentKitchenTicketRepository implements KitchenTicketRepository
             ->update($this->mapper->toPersistence($ticket));
     }
 
-    public function listActive(): array
+    public function listActiveByKitchen(int $kitchenId): array
     {
         return KIT_Ticket::query()
+            ->where('kitchen_id', $kitchenId)
             ->whereIn('status', [
                 KitchenTicketStatus::Queued->value,
                 KitchenTicketStatus::Started->value,

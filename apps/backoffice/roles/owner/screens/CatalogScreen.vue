@@ -256,7 +256,7 @@ onMounted(loadCatalog);
 </script>
 
 <template>
-    <div class="space-y-4 p-4 md:p-6">
+    <div class="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
         <UiCard title="Каталог">
             <template #actions>
                 <UiButton @click="openCreate('product')">+ Товар</UiButton>
@@ -265,15 +265,15 @@ onMounted(loadCatalog);
                 <UiButton @click="openCreate('tag')">+ Тег</UiButton>
             </template>
 
-            <div class="mb-4 flex flex-wrap gap-2">
+            <div class="mb-8 flex flex-wrap gap-2">
                 <button
                     v-for="item in tabs"
                     :key="item.id"
                     type="button"
-                    class="rounded px-3 py-1.5 text-sm"
+                    class="h-10 px-4 text-sm font-medium transition-colors duration-150"
                     :class="tab === item.id
-                        ? 'bg-slate-900 text-white'
-                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
+                        ? 'bg-bo-accent text-white'
+                        : 'bg-white/[0.04] text-bo-muted hover:bg-white/[0.08] hover:text-bo-fg'"
                     @click="tab = item.id"
                 >
                     {{ item.label }}
@@ -314,7 +314,7 @@ onMounted(loadCatalog);
         </UiCard>
 
         <UiModal :open="modalOpen" :title="modalTitle" @close="modalOpen = false">
-            <div class="space-y-3">
+            <div class="space-y-5">
                 <template v-if="modalKind === 'product' || modalKind === 'set' || modalKind === 'category'">
                     <UiFormField label="Название" required :error="fieldErrors.name">
                         <UiInput v-model="form.name" />
@@ -331,7 +331,7 @@ onMounted(loadCatalog);
                     <UiFormField label="Статус" required :error="fieldErrors.status">
                         <select
                             v-model="form.status"
-                            class="mt-1 w-full rounded border border-slate-300 bg-white px-3 py-2"
+                            class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 transition-colors hover:border-bo-border-strong focus:border-bo-accent focus:outline-none"
                         >
                             <option value="active">active</option>
                             <option value="archived">archived</option>
@@ -347,7 +347,7 @@ onMounted(loadCatalog);
                         <textarea
                             v-model="form.description"
                             rows="3"
-                            class="mt-1 w-full rounded border border-slate-300 bg-white px-3 py-2"
+                            class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 transition-colors hover:border-bo-border-strong focus:border-bo-accent focus:outline-none"
                         />
                     </UiFormField>
                 </template>

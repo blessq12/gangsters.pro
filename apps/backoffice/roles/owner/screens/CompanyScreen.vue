@@ -307,24 +307,24 @@ onMounted(loadCompany);
 </script>
 
 <template>
-    <div class="space-y-4 p-4 md:p-6">
+    <div class="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
         <UiCard title="Компания">
-            <div class="mb-4 flex flex-wrap gap-2">
+            <div class="mb-8 flex flex-wrap gap-2">
                 <button
                     v-for="item in tabs"
                     :key="item.id"
                     type="button"
-                    class="rounded px-3 py-1.5 text-sm"
+                    class="h-10 px-4 text-sm font-medium transition-colors duration-150"
                     :class="tab === item.id
-                        ? 'bg-slate-900 text-white'
-                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
+                        ? 'bg-bo-accent text-white'
+                        : 'bg-white/[0.04] text-bo-muted hover:bg-white/[0.08] hover:text-bo-fg'"
                     @click="tab = item.id"
                 >
                     {{ item.label }}
                 </button>
             </div>
 
-            <div v-if="tab === 'company'" class="space-y-3">
+            <div v-if="tab === 'company'" class="space-y-5">
                 <UiFormField label="Название" required :error="companyErrors.name">
                     <UiInput v-model="companyForm.name" />
                 </UiFormField>
@@ -332,7 +332,7 @@ onMounted(loadCompany);
                     <textarea
                         v-model="companyForm.description"
                         rows="3"
-                        class="mt-1 w-full rounded border border-slate-300 bg-white px-3 py-2"
+                        class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 transition-colors hover:border-bo-border-strong focus:border-bo-accent focus:outline-none"
                     />
                 </UiFormField>
                 <UiFormField label="Телефон">
@@ -362,7 +362,7 @@ onMounted(loadCompany);
                     <textarea
                         v-model="companyForm.scheduleJson"
                         rows="8"
-                        class="mt-1 w-full rounded border border-slate-300 bg-white px-3 py-2 font-mono text-xs"
+                        class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 transition-colors hover:border-bo-border-strong focus:border-bo-accent focus:outline-none font-mono text-xs"
                     />
                 </UiFormField>
                 <UiButton :disabled="saveApi.loading" @click="saveCompanyForm">
@@ -370,7 +370,7 @@ onMounted(loadCompany);
                 </UiButton>
             </div>
 
-            <div v-else-if="tab === 'branches'" class="space-y-3">
+            <div v-else-if="tab === 'branches'" class="space-y-5">
                 <div class="flex justify-end">
                     <UiButton @click="openCreate('branch')">+ Филиал</UiButton>
                 </div>
@@ -392,7 +392,7 @@ onMounted(loadCompany);
                 </UiTable>
             </div>
 
-            <div v-else-if="tab === 'kitchens'" class="space-y-3">
+            <div v-else-if="tab === 'kitchens'" class="space-y-5">
                 <div class="flex justify-end">
                     <UiButton @click="openCreate('kitchen')">+ Кухня</UiButton>
                 </div>
@@ -408,7 +408,7 @@ onMounted(loadCompany);
                 </UiTable>
             </div>
 
-            <div v-else class="space-y-3">
+            <div v-else class="space-y-5">
                 <div class="flex justify-end">
                     <UiButton @click="openCreate('document')">+ Документ</UiButton>
                 </div>
@@ -426,7 +426,7 @@ onMounted(loadCompany);
         </UiCard>
 
         <UiModal :open="modalOpen" :title="modalTitle" @close="modalOpen = false">
-            <div class="space-y-3">
+            <div class="space-y-5">
                 <template v-if="modalKind === 'branch'">
                     <UiFormField label="Название" required :error="fieldErrors.name">
                         <UiInput v-model="form.name" />
@@ -440,7 +440,7 @@ onMounted(loadCompany);
                     <UiFormField label="Филиал (branch_id)" required :error="fieldErrors.branch_id">
                         <select
                             v-model="form.branch_id"
-                            class="mt-1 w-full rounded border border-slate-300 bg-white px-3 py-2"
+                            class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 transition-colors hover:border-bo-border-strong focus:border-bo-accent focus:outline-none"
                         >
                             <option value="">—</option>
                             <option
@@ -485,7 +485,7 @@ onMounted(loadCompany);
                         <textarea
                             v-model="form.content"
                             rows="6"
-                            class="mt-1 w-full rounded border border-slate-300 bg-white px-3 py-2"
+                            class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 transition-colors hover:border-bo-border-strong focus:border-bo-accent focus:outline-none"
                         />
                     </UiFormField>
                 </template>

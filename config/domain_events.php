@@ -1,10 +1,26 @@
 <?php
 
-use App\Domain\Crm\Event\ClientCreated;
-use App\Domain\Crm\Event\ClientPasswordChanged;
-use App\Domain\Order\Event\OrderCreated;
-use App\Infrastructure\Crm\Listener\SendWelcomeMailOnClientCreated;
-use App\Infrastructure\Order\Listener\SendOrderConfirmationMailOnOrderCreated;
+use App\Domain\Catalog\Event\CatalogItemPriceChanged;
+use App\Domain\Delivery\Event\DeliveryZonesChanged;
+use App\Domain\Delivery\Event\OrderAssignedToRoute;
+use App\Domain\Delivery\Event\RouteSheetTaken;
+use App\Domain\Delivery\Event\RouteStopSettled;
+use App\Domain\Order\Event\OrderCancelled;
+use App\Domain\Order\Event\OrderPlaced;
+use App\Domain\Payment\Event\PaymentInitiated;
+use App\Domain\Production\Event\KitchenTicketCompleted;
+use App\Domain\Production\Event\KitchenTicketStarted;
+use App\Infrastructure\Delivery\Listener\CancelRouteStopOnOrderCancelled;
+use App\Infrastructure\Order\Listener\AttachPaymentOnPaymentInitiated;
+use App\Infrastructure\Order\Listener\MarkOrderAssignedToRouteOnOrderAssignedToRoute;
+use App\Infrastructure\Payment\Listener\InitiatePaymentOnOrderPlaced;
+use App\Infrastructure\Order\Listener\MarkOrderPreparingOnKitchenTicketStarted;
+use App\Infrastructure\Order\Listener\MarkOrderReadyOnKitchenTicketCompleted;
+use App\Infrastructure\Order\Listener\MarkOrdersInTransitOnRouteSheetTaken;
+use App\Infrastructure\Order\Listener\SettleOrderOnRouteStopSettled;
+use App\Infrastructure\Production\Listener\CancelKitchenTicketOnOrderCancelled;
+use App\Infrastructure\Promotion\Listener\RefreshRoleSnapshotsOnCatalogItemPriceChanged;
+use App\Infrastructure\Promotion\Listener\ReplaceZoneSnapshotsOnDeliveryZonesChanged;
 
 /**
  * Матрица подписок: доменное событие → слушатели Infrastructure.
@@ -17,16 +33,45 @@ use App\Infrastructure\Order\Listener\SendOrderConfirmationMailOnOrderCreated;
  */
 return [
     'listen' => [
-        OrderCreated::class => [
-            SendOrderConfirmationMailOnOrderCreated::class,
+        KitchenTicketStarted::class => [
+            MarkOrderPreparingOnKitchenTicketStarted::class,
         ],
 
-        ClientCreated::class => [
-            SendWelcomeMailOnClientCreated::class,
+        KitchenTicketCompleted::class => [
+            MarkOrderReadyOnKitchenTicketCompleted::class,
         ],
 
-        ClientPasswordChanged::class => [
-            // слушатели подписок CRM
+        OrderCancelled::class => [
+            CancelKitchenTicketOnOrderCancelled::class,
+            CancelRouteStopOnOrderCancelled::class,
+        ],
+
+        OrderAssignedToRoute::class => [
+            MarkOrderAssignedToRouteOnOrderAssignedToRoute::class,
+        ],
+
+        RouteSheetTaken::class => [
+            MarkOrdersInTransitOnRouteSheetTaken::class,
+        ],
+
+        RouteStopSettled::class => [
+            SettleOrderOnRouteStopSettled::class,
+        ],
+
+        CatalogItemPriceChanged::class => [
+            RefreshRoleSnapshotsOnCatalogItemPriceChanged::class,
+        ],
+
+        DeliveryZonesChanged::class => [
+            ReplaceZoneSnapshotsOnDeliveryZonesChanged::class,
+        ],
+
+        OrderPlaced::class => [
+            InitiatePaymentOnOrderPlaced::class,
+        ],
+
+        PaymentInitiated::class => [
+            AttachPaymentOnPaymentInitiated::class,
         ],
     ],
 ];

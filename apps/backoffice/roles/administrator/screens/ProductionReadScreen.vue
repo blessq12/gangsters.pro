@@ -18,9 +18,9 @@ const detailOpen = ref(false);
 const detail = ref(null);
 
 const columns = [
-    { key: "order_id", label: "Order", width: "90px" },
+    { key: "order_id", label: "Заказ", width: "90px" },
     { key: "status", label: "Тикет", width: "120px" },
-    { key: "started_at", label: "Started" },
+    { key: "started_at", label: "Начат" },
     { key: "order_status", label: "Заказ", width: "120px" },
 ];
 
@@ -80,8 +80,8 @@ onMounted(load);
 </script>
 
 <template>
-    <div class="space-y-4 p-4 md:p-6">
-        <UiCard title="Production (read)">
+    <div class="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
+        <UiCard title="Производство (просмотр)">
             <UiTable
                 :columns="columns"
                 :rows="tableRows"
@@ -102,19 +102,19 @@ onMounted(load);
         </UiCard>
 
         <UiModal :open="detailOpen" title="Тикет" @close="detailOpen = false">
-            <div v-if="detailApi.loading" class="text-sm text-slate-500">
+            <div v-if="detailApi.loading" class="text-sm text-bo-muted">
                 Загрузка…
             </div>
             <div v-else-if="detail" class="space-y-2 text-sm">
-                <p><span class="text-slate-500">Ticket ID:</span> {{ detail.id }}</p>
-                <p><span class="text-slate-500">Order ID:</span> {{ detail.order_id }}</p>
-                <p><span class="text-slate-500">Статус тикета:</span> {{ detail.status }}</p>
-                <p><span class="text-slate-500">Started:</span> {{ formatDate(detail.started_at) }}</p>
-                <p><span class="text-slate-500">Completed:</span> {{ formatDate(detail.completed_at) }}</p>
-                <p><span class="text-slate-500">Статус заказа:</span> {{ detail.order?.status ?? "—" }}</p>
+                <p><span class="text-bo-muted">ID тикета:</span> {{ detail.id }}</p>
+                <p><span class="text-bo-muted">ID заказа:</span> {{ detail.order_id }}</p>
+                <p><span class="text-bo-muted">Статус тикета:</span> {{ detail.status }}</p>
+                <p><span class="text-bo-muted">Начат:</span> {{ formatDate(detail.started_at) }}</p>
+                <p><span class="text-bo-muted">Завершён:</span> {{ formatDate(detail.completed_at) }}</p>
+                <p><span class="text-bo-muted">Статус заказа:</span> {{ detail.order?.status ?? "—" }}</p>
                 <div v-if="detail.order?.lines?.length">
                     <p class="mb-1 font-medium">Позиции</p>
-                    <ul class="list-inside list-disc text-slate-600">
+                    <ul class="list-inside list-disc text-bo-muted">
                         <li
                             v-for="(line, idx) in detail.order.lines"
                             :key="idx"

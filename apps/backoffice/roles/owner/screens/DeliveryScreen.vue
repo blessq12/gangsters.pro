@@ -9,6 +9,7 @@ import {
     updateDelivery,
     updateZone,
 } from "../../../api/delivery.js";
+import { getCompany } from "../../../api/company.js";
 import { useApi } from "../../../shell/composables/useApi.js";
 import { useToast } from "../../../shell/composables/useToast.js";
 import UiBadge from "../../../shell/components/ui/UiBadge.vue";
@@ -27,6 +28,7 @@ const detailApi = useApi();
 const tab = ref("settings");
 const deliveryExists = ref(false);
 const zones = ref([]);
+const kitchens = ref([]);
 const routeSheets = ref([]);
 const sheetDetail = ref(null);
 const sheetModalOpen = ref(false);
@@ -34,11 +36,7 @@ const sheetModalOpen = ref(false);
 const settingsForm = reactive({
     min_order_rubles: "",
     average_delivery_time_minutes: "",
-    city: "",
-    street: "",
-    house: "",
-    comment: "",
-    search_line: "",
+    kitchen_id: "",
 });
 const settingsErrors = reactive({});
 
@@ -91,8 +89,16 @@ function clearErrors(target) {
     });
 }
 
+function kitchenLabel(kitchen) {
+    const parts = [kitchen?.city, kitchen?.street, kitchen?.house]
+        .map((part) => String(part || "").trim())
+        .filter(Boolean);
+    const address = parts.join(", ");
+    return address !== "" ? `#${kitchen.id} — ${address}` : `Кухня #${kitchen.id}`;
+}
+
 function applyDelivery(payload) {
-    deliveryExists.value = Boolean(payload?.settings || payload?.kitchen_address);
+    deliveryExists.value = Boolean(payload?.settings || payload?.kitchen_id);
     settingsForm.min_order_rubles =
         payload?.settings?.min_order_rubles != null
             ? String(payload.settings.min_order_rubles)
@@ -101,17 +107,18 @@ function applyDelivery(payload) {
         payload?.settings?.average_delivery_time_minutes != null
             ? String(payload.settings.average_delivery_time_minutes)
             : "";
-    settingsForm.city = payload?.kitchen_address?.city ?? "";
-    settingsForm.street = payload?.kitchen_address?.street ?? "";
-    settingsForm.house = payload?.kitchen_address?.house ?? "";
-    settingsForm.comment = payload?.kitchen_address?.comment ?? "";
-    settingsForm.search_line = payload?.kitchen_address?.search_line ?? "";
+    settingsForm.kitchen_id =
+        payload?.kitchen_id != null ? String(payload.kitchen_id) : "";
     zones.value = payload?.zones ?? [];
 }
 
 async function loadDelivery() {
     try {
-        const payload = await loadApi.run(() => getDelivery());
+        const [payload, company] = await Promise.all([
+            loadApi.run(() => getDelivery()),
+            loadApi.run(() => getCompany()).catch(() => null),
+        ]);
+        kitchens.value = Array.isArray(company?.kitchens) ? company.kitchens : [];
         applyDelivery(payload);
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось загрузить доставку");
@@ -154,13 +161,9 @@ async function saveSettings() {
         average_delivery_time_minutes: settingsForm.average_delivery_time_minutes === ""
             ? null
             : Number(settingsForm.average_delivery_time_minutes),
-        kitchen: {
-            city: settingsForm.city || null,
-            street: settingsForm.street || null,
-            house: settingsForm.house || null,
-            comment: settingsForm.comment || null,
-            search_line: settingsForm.search_line || null,
-        },
+        kitchen_id: settingsForm.kitchen_id === ""
+            ? null
+            : Number(settingsForm.kitchen_id),
     };
 
     try {
@@ -275,24 +278,24 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="space-y-4 p-4 md:p-6">
+    <div class="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
         <UiCard title="Доставка">
-            <div class="mb-4 flex flex-wrap gap-2">
+            <div class="mb-8 flex flex-wrap gap-2">
                 <button
                     v-for="item in tabs"
                     :key="item.id"
                     type="button"
-                    class="rounded px-3 py-1.5 text-sm"
+                    class="h-10 px-4 text-sm font-medium transition-colors duration-150"
                     :class="tab === item.id
-                        ? 'bg-slate-900 text-white'
-                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
+                        ? 'bg-bo-accent text-white'
+                        : 'bg-white/[0.04] text-bo-muted hover:bg-white/[0.08] hover:text-bo-fg'"
                     @click="onTab(item.id)"
                 >
                     {{ item.label }}
                 </button>
             </div>
 
-            <div v-if="tab === 'settings'" class="space-y-3">
+            <div v-if="tab === 'settings'" class="space-y-5">
                 <UiFormField
                     label="Мин. заказ (₽)"
                     :error="settingsErrors.min_order_rubles"
@@ -308,27 +311,27 @@ onMounted(async () => {
                         type="number"
                     />
                 </UiFormField>
-                <UiFormField label="Кухня: город">
-                    <UiInput v-model="settingsForm.city" />
-                </UiFormField>
-                <UiFormField label="Кухня: улица">
-                    <UiInput v-model="settingsForm.street" />
-                </UiFormField>
-                <UiFormField label="Кухня: дом">
-                    <UiInput v-model="settingsForm.house" />
-                </UiFormField>
-                <UiFormField label="Кухня: комментарий">
-                    <UiInput v-model="settingsForm.comment" />
-                </UiFormField>
-                <UiFormField label="Кухня: search_line">
-                    <UiInput v-model="settingsForm.search_line" />
+                <UiFormField label="Кухня (Company)" :error="settingsErrors.kitchen_id">
+                    <select
+                        v-model="settingsForm.kitchen_id"
+                        class="w-full border border-bo-border bg-bo-field px-4 py-2.5 transition-colors hover:border-bo-border-strong focus:border-bo-accent focus:outline-none text-sm"
+                    >
+                        <option value="">Не выбрана</option>
+                        <option
+                            v-for="kitchen in kitchens"
+                            :key="kitchen.id"
+                            :value="String(kitchen.id)"
+                        >
+                            {{ kitchenLabel(kitchen) }}
+                        </option>
+                    </select>
                 </UiFormField>
                 <UiButton :disabled="saveApi.loading" @click="saveSettings">
                     Сохранить
                 </UiButton>
             </div>
 
-            <div v-else-if="tab === 'zones'" class="space-y-3">
+            <div v-else-if="tab === 'zones'" class="space-y-5">
                 <div class="flex justify-end">
                     <UiButton @click="openCreateZone">+ Зона</UiButton>
                 </div>
@@ -350,7 +353,7 @@ onMounted(async () => {
                 </UiTable>
             </div>
 
-            <div v-else class="space-y-3">
+            <div v-else class="space-y-5">
                 <UiTable
                     :columns="routeColumns"
                     :rows="routeRows"
@@ -370,7 +373,7 @@ onMounted(async () => {
             :title="zoneModalTitle"
             @close="zoneModalOpen = false"
         >
-            <div class="space-y-3">
+            <div class="space-y-5">
                 <UiFormField label="Название" required :error="zoneErrors.name">
                     <UiInput v-model="zoneForm.name" />
                 </UiFormField>
@@ -388,7 +391,7 @@ onMounted(async () => {
                     <textarea
                         v-model="zoneForm.geometryJson"
                         rows="8"
-                        class="mt-1 w-full rounded border border-slate-300 bg-white px-3 py-2 font-mono text-xs"
+                        class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 transition-colors hover:border-bo-border-strong focus:border-bo-accent focus:outline-none font-mono text-xs"
                     />
                 </UiFormField>
             </div>
@@ -403,20 +406,20 @@ onMounted(async () => {
             title="Маршрутный лист"
             @close="sheetModalOpen = false"
         >
-            <div v-if="detailApi.loading" class="text-sm text-slate-500">
+            <div v-if="detailApi.loading" class="text-sm text-bo-muted">
                 Загрузка…
             </div>
             <div v-else-if="sheetDetail" class="space-y-2 text-sm">
-                <p><span class="text-slate-500">ID:</span> {{ sheetDetail.id }}</p>
-                <p><span class="text-slate-500">Статус:</span> {{ sheetDetail.status }}</p>
-                <p><span class="text-slate-500">Курьер:</span> {{ sheetDetail.courier_id ?? "—" }}</p>
+                <p><span class="text-bo-muted">ID:</span> {{ sheetDetail.id }}</p>
+                <p><span class="text-bo-muted">Статус:</span> {{ sheetDetail.status }}</p>
+                <p><span class="text-bo-muted">Курьер:</span> {{ sheetDetail.courier_id ?? "—" }}</p>
                 <div>
                     <p class="mb-1 font-medium">Остановки</p>
                     <ul class="space-y-1">
                         <li
                             v-for="stop in (sheetDetail.stops ?? [])"
                             :key="`${stop.order_id}-${stop.position}`"
-                            class="rounded border border-slate-100 px-2 py-1"
+                            class="border border-bo-border bg-white/[0.03] px-3 py-2"
                         >
                             #{{ stop.order_id }}
                             · pos {{ stop.position }}

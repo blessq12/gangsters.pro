@@ -27,14 +27,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('MKT_contact_blocks', function (Blueprint $table): void {
-            $table->id();
-            $table->string('phone')->nullable();
-            $table->string('email')->nullable();
-            $table->json('extra')->nullable();
-            $table->timestamps();
-        });
-
         Schema::create('MKT_delivery_conditions', function (Blueprint $table): void {
             $table->id();
             $table->text('body');
@@ -46,7 +38,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('MKT_delivery_conditions');
-        Schema::dropIfExists('MKT_contact_blocks');
         Schema::dropIfExists('MKT_promotions');
         Schema::dropIfExists('MKT_banners');
     }

@@ -118,19 +118,19 @@ onMounted(load);
 <template>
     <div class="space-y-6">
         <UiButton
-            class="!h-14 !bg-slate-700 !px-6 !text-xl !text-white"
+            class="!h-14 !bg-white/10 !px-6 !text-xl !text-white"
             @click="goQueue"
         >
             ← Назад к очереди
         </UiButton>
 
-        <div v-if="detailApi.loading" class="text-3xl text-slate-400">
+        <div v-if="detailApi.loading" class="text-3xl text-bo-muted">
             Загрузка…
         </div>
 
         <UiCard
             v-else-if="ticket"
-            class="!border-slate-700 !bg-slate-900 !text-slate-50 !shadow-none"
+            class="!border-bo-border !bg-bo-elevated !text-bo-fg !shadow-none"
         >
             <div class="space-y-8">
                 <div class="flex flex-wrap items-center gap-4">
@@ -146,28 +146,28 @@ onMounted(load);
                 </div>
 
                 <div class="space-y-3">
-                    <p class="text-2xl font-semibold text-slate-300">Состав</p>
+                    <p class="text-2xl font-semibold text-bo-muted">Состав</p>
                     <ul class="space-y-3">
                         <li
                             v-for="(line, idx) in lines"
                             :key="idx"
-                            class="rounded-xl border border-slate-700 bg-slate-950/50 px-4 py-3 text-3xl font-semibold"
+                            class="rounded-none border border-bo-border bg-black/40 px-4 py-3 text-3xl font-semibold"
                         >
                             {{ line.product_name || line.product_id }}
                             <span class="text-amber-300">× {{ line.quantity }}</span>
                         </li>
                     </ul>
-                    <p v-if="lines.length === 0" class="text-2xl text-slate-500">
+                    <p v-if="lines.length === 0" class="text-2xl text-bo-muted">
                         Нет позиций
                     </p>
                 </div>
 
-                <div v-if="comment" class="rounded-xl border border-amber-700/40 bg-amber-950/30 px-4 py-3">
+                <div v-if="comment" class="rounded-none border border-amber-700/40 bg-amber-950/30 px-4 py-3">
                     <p class="mb-1 text-lg text-amber-200">Комментарий</p>
                     <p class="text-2xl text-amber-50">{{ comment }}</p>
                 </div>
 
-                <div class="space-y-1 text-xl text-slate-400">
+                <div class="space-y-1 text-xl text-bo-muted">
                     <p>Заказ: {{ ticket.order?.status ?? "—" }}</p>
                     <p>Старт: {{ formatDate(ticket.started_at) }}</p>
                     <p v-if="ticket.completed_at">
@@ -194,7 +194,7 @@ onMounted(load);
                     </UiButton>
                     <UiButton
                         v-if="ticket.status === 'queued' || ticket.status === 'started'"
-                        class="!h-16 !min-w-[12rem] !bg-rose-600 !px-8 !text-2xl !font-bold !text-white"
+                        class="!h-16 !min-w-[12rem] !bg-bo-accent !px-8 !text-2xl !font-bold !text-white"
                         :disabled="actionApi.loading"
                         @click="askCancel"
                     >

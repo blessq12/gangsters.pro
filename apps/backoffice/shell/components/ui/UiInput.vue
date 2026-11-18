@@ -14,7 +14,7 @@ defineEmits(["update:modelValue"]);
         :value="modelValue"
         :required="required"
         :autocomplete="autocomplete"
-        class="mt-1 w-full rounded border border-slate-300 bg-white px-3 py-2 text-slate-900"
+        class="mt-2 h-11 w-full border border-bo-border bg-bo-field px-4 text-bo-fg transition-colors placeholder:text-bo-muted/60 hover:border-bo-border-strong focus:border-bo-accent focus:outline-none"
         @input="$emit('update:modelValue', $event.target.value)"
     >
 </template>

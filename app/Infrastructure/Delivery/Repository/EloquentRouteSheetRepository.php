@@ -7,7 +7,6 @@ use App\Domain\Delivery\Entity\RouteStop;
 use App\Domain\Delivery\Repository\RouteSheetRepository;
 use App\Infrastructure\Delivery\Model\DLV_RouteSheet;
 use App\Infrastructure\Delivery\Model\DLV_RouteStop;
-use DateTimeImmutable;
 
 final class EloquentRouteSheetRepository implements RouteSheetRepository
 {
@@ -22,7 +21,7 @@ final class EloquentRouteSheetRepository implements RouteSheetRepository
     {
         $stop = DLV_RouteStop::query()
             ->where('order_id', $orderId)
-            ->where('outcome', 'pending')
+            ->where('status', 'pending')
             ->whereHas('sheet', function ($query): void {
                 $query->whereIn('status', ['released', 'in_delivery']);
             })
@@ -55,7 +54,6 @@ final class EloquentRouteSheetRepository implements RouteSheetRepository
             $row = DLV_RouteSheet::query()->create([
                 'status' => $sheet->status(),
                 'courier_id' => $sheet->courierId(),
-                'created_at' => new DateTimeImmutable(),
             ]);
             $sheet->assignId((int) $row->id);
         } else {
@@ -71,8 +69,8 @@ final class EloquentRouteSheetRepository implements RouteSheetRepository
                 'route_sheet_id' => $sheet->id(),
                 'order_id' => $stop->orderId(),
                 'position' => $stop->position(),
-                'outcome' => $stop->outcome(),
-                'reason' => $stop->reason(),
+                'status' => $stop->outcome(),
+                'settlement_note' => $stop->reason() !== '' ? $stop->reason() : null,
             ]);
         }
     }
@@ -84,8 +82,8 @@ final class EloquentRouteSheetRepository implements RouteSheetRepository
             $stops[] = new RouteStop(
                 (int) $stop->order_id,
                 (int) $stop->position,
-                (string) $stop->outcome,
-                (string) $stop->reason,
+                (string) $stop->status,
+                (string) ($stop->settlement_note ?? ''),
             );
         }
 

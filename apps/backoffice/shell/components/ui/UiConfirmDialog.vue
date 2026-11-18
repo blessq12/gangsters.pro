@@ -13,7 +13,7 @@ const emit = defineEmits(["confirm", "cancel"]);
 
 <template>
     <UiModal :open="open" :title="title" @close="emit('cancel')">
-        <p class="text-sm text-slate-700">
+        <p class="text-sm text-bo-fg">
             {{ message }}
         </p>
         <template #footer>

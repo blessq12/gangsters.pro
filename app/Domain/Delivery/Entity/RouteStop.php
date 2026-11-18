@@ -4,6 +4,9 @@ namespace App\Domain\Delivery\Entity;
 
 final class RouteStop
 {
+    /** Заказ отменён после выпуска листа: курьер его не везёт. */
+    public const OUTCOME_CANCELLED = 'cancelled';
+
     public function __construct(
         private readonly int $orderId,
         private readonly int $position,

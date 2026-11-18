@@ -4,6 +4,7 @@ namespace App\Application\Catalog\Command;
 
 use App\Application\Catalog\DTO\SaveSetDto;
 use App\Domain\Catalog\Enum\ProductStatus;
+use App\Domain\Catalog\Event\CatalogItemPriceChanged;
 use App\Domain\Catalog\Repository\CatalogItemRepository;
 
 final class SaveSetUseCase
@@ -33,6 +34,9 @@ final class SaveSetUseCase
 
         $sku = $dto->sku !== null ? trim($dto->sku) : null;
 
+        $before = $dto->id !== null ? $this->items->findSetById($dto->id) : null;
+        $priceBefore = $before?->regularPrice()?->amountKopecks();
+
         $id = $this->items->saveSet(
             $dto->id,
             $name,
@@ -40,6 +44,15 @@ final class SaveSetUseCase
             $dto->price,
             $status->value,
         );
+
+        $priceAfter = $this->items->findSetById($id)?->regularPrice()?->amountKopecks();
+        if ($before !== null && $priceAfter !== null && $priceAfter !== $priceBefore) {
+            event(new CatalogItemPriceChanged(
+                catalogItemId: $id,
+                name: $name,
+                regularPriceKopecks: $priceAfter,
+            ));
+        }
 
         return ['id' => $id];
     }

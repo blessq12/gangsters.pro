@@ -57,17 +57,17 @@ onMounted(load);
 </script>
 
 <template>
-    <div class="space-y-4 p-4 md:p-6">
-        <UiCard title="Catalog (read)">
-            <div class="mb-4 flex flex-wrap gap-2">
+    <div class="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
+        <UiCard title="Каталог (просмотр)">
+            <div class="mb-8 flex flex-wrap gap-2">
                 <button
                     v-for="item in tabs"
                     :key="item.id"
                     type="button"
-                    class="rounded px-3 py-1.5 text-sm"
+                    class="h-10 px-4 text-sm font-medium transition-colors duration-150"
                     :class="tab === item.id
-                        ? 'bg-slate-900 text-white'
-                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
+                        ? 'bg-bo-accent text-white'
+                        : 'bg-white/[0.04] text-bo-muted hover:bg-white/[0.08] hover:text-bo-fg'"
                     @click="tab = item.id"
                 >
                     {{ item.label }}

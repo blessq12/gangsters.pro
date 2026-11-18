@@ -22,7 +22,7 @@ final class CompletePickupOrderUseCase
             throw new \InvalidArgumentException('Заказ не найден.');
         }
 
-        $order->completePickup();
+        $order->markDeliveredPickup();
         $this->orders->save($order);
 
         return $this->presenter->present($order);

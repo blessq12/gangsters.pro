@@ -285,24 +285,24 @@ onMounted(loadAll);
 </script>
 
 <template>
-    <div class="space-y-4 p-4 md:p-6">
+    <div class="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
         <UiCard title="Склад">
-            <div class="mb-4 flex flex-wrap gap-2">
+            <div class="mb-8 flex flex-wrap gap-2">
                 <button
                     v-for="item in tabs"
                     :key="item.id"
                     type="button"
-                    class="rounded px-3 py-1.5 text-sm"
+                    class="h-10 px-4 text-sm font-medium transition-colors duration-150"
                     :class="tab === item.id
-                        ? 'bg-slate-900 text-white'
-                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
+                        ? 'bg-bo-accent text-white'
+                        : 'bg-white/[0.04] text-bo-muted hover:bg-white/[0.08] hover:text-bo-fg'"
                     @click="tab = item.id"
                 >
                     {{ item.label }}
                 </button>
             </div>
 
-            <div v-if="tab === 'ingredients'" class="space-y-3">
+            <div v-if="tab === 'ingredients'" class="space-y-5">
                 <div class="flex justify-end">
                     <UiButton @click="openCreateIngredient">+ Ингредиент</UiButton>
                 </div>
@@ -318,7 +318,7 @@ onMounted(loadAll);
                 </UiTable>
             </div>
 
-            <div v-else-if="tab === 'stock'" class="space-y-3">
+            <div v-else-if="tab === 'stock'" class="space-y-5">
                 <UiTable
                     :columns="stockColumns"
                     :rows="stockRows"
@@ -331,7 +331,7 @@ onMounted(loadAll);
                 </UiTable>
             </div>
 
-            <div v-else class="space-y-3">
+            <div v-else class="space-y-5">
                 <div class="flex justify-end">
                     <UiButton @click="openWriteOff">+ Списание</UiButton>
                 </div>
@@ -349,7 +349,7 @@ onMounted(loadAll);
             :title="editingIngredientId ? 'Редактировать ингредиент' : 'Новый ингредиент'"
             @close="ingredientModalOpen = false"
         >
-            <div class="space-y-3">
+            <div class="space-y-5">
                 <UiFormField label="Название" required :error="ingredientErrors.name">
                     <UiInput v-model="ingredientForm.name" />
                 </UiFormField>
@@ -371,11 +371,11 @@ onMounted(loadAll);
             title="Корректировка остатка"
             @close="adjustModalOpen = false"
         >
-            <div class="space-y-3">
+            <div class="space-y-5">
                 <UiFormField label="ingredient_id" required :error="adjustErrors.ingredient_id">
                     <select
                         v-model="adjustForm.ingredient_id"
-                        class="mt-1 w-full rounded border border-slate-300 bg-white px-3 py-2"
+                        class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 transition-colors hover:border-bo-border-strong focus:border-bo-accent focus:outline-none"
                     >
                         <option
                             v-for="item in ingredients"
@@ -401,11 +401,11 @@ onMounted(loadAll);
             title="Новое списание"
             @close="writeOffModalOpen = false"
         >
-            <div class="space-y-3">
+            <div class="space-y-5">
                 <UiFormField label="Ингредиент" required :error="writeOffErrors.ingredient_id">
                     <select
                         v-model="writeOffForm.ingredient_id"
-                        class="mt-1 w-full rounded border border-slate-300 bg-white px-3 py-2"
+                        class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 transition-colors hover:border-bo-border-strong focus:border-bo-accent focus:outline-none"
                     >
                         <option
                             v-for="item in ingredients"

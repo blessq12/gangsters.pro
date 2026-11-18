@@ -22,7 +22,6 @@ final class GetPublicMarketingUseCase
         return $this->presenter->present(
             banners: $this->banners->findActiveOrdered(),
             promotions: $this->promotions->findActiveOrdered(),
-            contact: null,
             deliveryConditions: null,
         );
     }

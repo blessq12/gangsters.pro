@@ -16,10 +16,13 @@ final class RouteSheetPresenter
     /**
      * @return array<string, mixed>
      */
-    public function present(RouteSheet $sheet): array
+    public function present(RouteSheet $sheet, bool $hideCancelled = false): array
     {
         $stops = [];
         foreach ($sheet->stops() as $stop) {
+            if ($hideCancelled && $stop->outcome() === RouteStop::OUTCOME_CANCELLED) {
+                continue;
+            }
             $stops[] = $this->presentStop($stop);
         }
 
@@ -35,11 +38,11 @@ final class RouteSheetPresenter
      * @param  list<RouteSheet>  $sheets
      * @return list<array<string, mixed>>
      */
-    public function presentList(array $sheets): array
+    public function presentList(array $sheets, bool $hideCancelled = false): array
     {
         $result = [];
         foreach ($sheets as $sheet) {
-            $result[] = $this->present($sheet);
+            $result[] = $this->present($sheet, $hideCancelled);
         }
 
         return $result;

@@ -7,6 +7,9 @@ use App\Application\Production\Presenter\KitchenTicketPresenter;
 use App\Domain\Order\Repository\OrderRepository;
 use App\Domain\Production\Repository\KitchenTicketRepository;
 
+/**
+ * Завершение работы кухни. Order → Ready через KitchenTicketCompleted → listener.
+ */
 final class CompleteWorkUseCase
 {
     public function __construct(
@@ -33,13 +36,14 @@ final class CompleteWorkUseCase
 
         $this->tickets->save($ticket);
 
+        foreach ($ticket->pullDomainEvents() as $event) {
+            event($event);
+        }
+
         $order = $this->orders->findById($dto->orderId);
         if ($order === null) {
             throw new \InvalidArgumentException('Заказ не найден.');
         }
-
-        $order->markReady();
-        $this->orders->save($order);
 
         return $this->presenter->present($ticket, $order);
     }

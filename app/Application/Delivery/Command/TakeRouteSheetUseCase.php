@@ -5,15 +5,16 @@ namespace App\Application\Delivery\Command;
 use App\Application\Delivery\DTO\TakeRouteSheetDto;
 use App\Application\Delivery\Presenter\RouteSheetPresenter;
 use App\Domain\Delivery\Repository\RouteSheetRepository;
-use App\Domain\Order\Repository\OrderRepository;
 use App\Domain\Staff\Enum\StaffRole;
 use App\Domain\Staff\Repository\EmployeeRepository;
 
+/**
+ * Курьер берёт лист. Order переводит заказы в InTransit по RouteSheetTaken.
+ */
 final class TakeRouteSheetUseCase
 {
     public function __construct(
         private readonly RouteSheetRepository $sheets,
-        private readonly OrderRepository $orders,
         private readonly EmployeeRepository $employees,
         private readonly RouteSheetPresenter $presenter,
     ) {}
@@ -42,15 +43,8 @@ final class TakeRouteSheetUseCase
         $sheet = $sheet->take($dto->courierId);
         $this->sheets->save($sheet);
 
-        foreach ($sheet->stops() as $stop) {
-            $order = $this->orders->findById($stop->orderId());
-            if ($order === null) {
-                throw new \InvalidArgumentException(
-                    sprintf('Заказ #%d не найден.', $stop->orderId()),
-                );
-            }
-            $order->markInTransit();
-            $this->orders->save($order);
+        foreach ($sheet->pullDomainEvents() as $event) {
+            event($event);
         }
 
         return $this->presenter->present($sheet);

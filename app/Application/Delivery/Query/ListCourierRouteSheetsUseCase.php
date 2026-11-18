@@ -28,6 +28,6 @@ final class ListCourierRouteSheetsUseCase
             }
         }
 
-        return $this->presenter->presentList($own);
+        return $this->presenter->presentList($own, hideCancelled: true);
     }
 }

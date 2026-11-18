@@ -26,8 +26,10 @@ final class OrderMapper
             cart: is_array($row->cart_snapshot) ? $row->cart_snapshot : [],
             client: is_array($row->client_snapshot) ? $row->client_snapshot : [],
             delivery: is_array($row->delivery_snapshot) ? $row->delivery_snapshot : [],
-            payment: is_array($row->payment_snapshot) ? $row->payment_snapshot : [],
             createdAt: new DateTimeImmutable((string) $row->created_at),
+            kitchenId: $row->kitchen_id !== null ? (int) $row->kitchen_id : null,
+            branchId: $row->branch_id !== null ? (int) $row->branch_id : null,
+            paymentId: $row->payment_id !== null ? (int) $row->payment_id : null,
         );
     }
 
@@ -44,11 +46,13 @@ final class OrderMapper
             'external_order_id' => $order->externalOrderId(),
             'status' => $order->status()->value,
             'client_id' => $order->clientId(),
+            'kitchen_id' => $order->kitchenId(),
+            'branch_id' => $order->branchId(),
+            'payment_id' => $order->paymentId(),
             'total_kopecks' => max(0, $order->totalRubles()) * self::KOPECKS_IN_RUBLE,
             'cart_snapshot' => $order->cart(),
             'client_snapshot' => $order->client(),
             'delivery_snapshot' => $order->delivery(),
-            'payment_snapshot' => $order->payment(),
             'created_at' => $order->createdAt(),
         ];
     }

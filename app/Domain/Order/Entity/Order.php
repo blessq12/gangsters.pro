@@ -3,18 +3,24 @@
 namespace App\Domain\Order\Entity;
 
 use App\Domain\Order\Enum\OrderStatus;
+use App\Domain\Order\Event\OrderCancelled;
+use App\Shared\Enum\DeliveryMethod;
 use DateTimeImmutable;
 
 /**
  * Агрегат заказа — снимок подтверждённого оформления + статусы жизненного цикла.
+ * kitchenId / branchId — ссылки на Company, без копирования адреса.
+ * paymentId — ссылка на Payment: способ, сумма и статус оплаты живут там.
  */
 final class Order
 {
+    /** @var list<object> */
+    private array $domainEvents = [];
+
     /**
      * @param  array<string, mixed>  $cart
      * @param  array<string, mixed>  $client
      * @param  array<string, mixed>  $delivery
-     * @param  array<string, mixed>  $payment
      */
     private function __construct(
         private ?int $id,
@@ -26,23 +32,26 @@ final class Order
         private readonly array $cart,
         private readonly array $client,
         private readonly array $delivery,
-        private readonly array $payment,
         private readonly DateTimeImmutable $createdAt,
+        private ?int $kitchenId = null,
+        private ?int $branchId = null,
+        private ?int $paymentId = null,
     ) {}
 
     /**
+     * Желаемое время в будущем → Preorder, иначе New.
+     *
      * @param  array<string, mixed>  $cart
      * @param  array<string, mixed>  $client
      * @param  array<string, mixed>  $delivery
-     * @param  array<string, mixed>  $payment
      */
     public static function fromCheckoutSnapshot(
         string $clientRequestId,
         array $cart,
         array $client,
         array $delivery,
-        array $payment,
         DateTimeImmutable $createdAt,
+        ?DateTimeImmutable $scheduledAt = null,
     ): self {
         if ($clientRequestId === '') {
             throw new \InvalidArgumentException('Заказ нельзя создать без ссылки на чекаут.');
@@ -53,18 +62,24 @@ final class Order
             throw new \InvalidArgumentException('Заказ нельзя создать с пустой корзиной.');
         }
 
+        self::resolveDeliveryMethod($delivery);
+
         return new self(
             id: null,
             source: 'site',
             checkoutId: $clientRequestId,
             partnerCode: null,
             externalOrderId: null,
-            status: OrderStatus::New,
+            status: $scheduledAt !== null && $scheduledAt > $createdAt
+                ? OrderStatus::Preorder
+                : OrderStatus::New,
             cart: $cart,
             client: $client,
             delivery: $delivery,
-            payment: $payment,
             createdAt: $createdAt,
+            kitchenId: null,
+            branchId: null,
+            paymentId: null,
         );
     }
 
@@ -72,7 +87,6 @@ final class Order
      * @param  array<string, mixed>  $cart
      * @param  array<string, mixed>  $client
      * @param  array<string, mixed>  $delivery
-     * @param  array<string, mixed>  $payment
      */
     public static function restore(
         int $id,
@@ -84,8 +98,10 @@ final class Order
         array $cart,
         array $client,
         array $delivery,
-        array $payment,
         DateTimeImmutable $createdAt,
+        ?int $kitchenId = null,
+        ?int $branchId = null,
+        ?int $paymentId = null,
     ): self {
         return new self(
             id: $id,
@@ -97,8 +113,10 @@ final class Order
             cart: $cart,
             client: $client,
             delivery: $delivery,
-            payment: $payment,
             createdAt: $createdAt,
+            kitchenId: $kitchenId,
+            branchId: $branchId,
+            paymentId: $paymentId,
         );
     }
 
@@ -159,9 +177,43 @@ final class Order
         return $this->status;
     }
 
+    public function kitchenId(): ?int
+    {
+        return $this->kitchenId;
+    }
+
+    public function branchId(): ?int
+    {
+        return $this->branchId;
+    }
+
+    /**
+     * Назначение / переназначение кухни (ссылки на Company).
+     * Вызывается при подтверждении и при переназначении, пока тикет не Started/Completed.
+     */
+    public function assignKitchen(int $kitchenId, int $branchId): void
+    {
+        if ($kitchenId < 1 || $branchId < 1) {
+            throw new \InvalidArgumentException('kitchenId и branchId должны быть положительными.');
+        }
+
+        if ($this->status !== OrderStatus::Confirmed) {
+            throw new \InvalidArgumentException(
+                'Кухню можно назначить только подтверждённому заказу.',
+            );
+        }
+
+        $this->kitchenId = $kitchenId;
+        $this->branchId = $branchId;
+    }
+
     public function accept(): void
     {
-        $this->transition(OrderStatus::New, OrderStatus::Confirmed, 'accept');
+        $this->transitionFrom(
+            [OrderStatus::New, OrderStatus::Preorder],
+            OrderStatus::Confirmed,
+            'accept',
+        );
     }
 
     public function startPreparing(): void
@@ -174,28 +226,64 @@ final class Order
         $this->transition(OrderStatus::Preparing, OrderStatus::Ready, 'markReady');
     }
 
-    public function markInTransit(): void
+    public function deliveryMethod(): DeliveryMethod
     {
-        $this->transition(OrderStatus::Ready, OrderStatus::InTransit, 'markInTransit');
+        return self::resolveDeliveryMethod($this->delivery);
     }
 
+    public function canBeAssignedToRoute(): bool
+    {
+        return $this->status === OrderStatus::Ready
+            && $this->deliveryMethod() === DeliveryMethod::Courier;
+    }
+
+    /** Доставка: Ready → AssignedToRoute */
+    public function assignToRoute(): void
+    {
+        if ($this->deliveryMethod() !== DeliveryMethod::Courier) {
+            throw new \InvalidArgumentException('Заказ на самовывоз нельзя класть в маршрутный лист.');
+        }
+
+        $this->transition(OrderStatus::Ready, OrderStatus::AssignedToRoute, 'assignToRoute');
+    }
+
+    /** Самовывоз: Ready → Delivered */
+    public function markDeliveredPickup(): void
+    {
+        if ($this->deliveryMethod() !== DeliveryMethod::Pickup) {
+            throw new \InvalidArgumentException('Заказ с доставкой нельзя выдать как самовывоз.');
+        }
+
+        $this->transition(OrderStatus::Ready, OrderStatus::Delivered, 'markDeliveredPickup');
+    }
+
+    /** Курьер взял лист: AssignedToRoute → InTransit */
+    public function markInTransit(): void
+    {
+        $this->transition(OrderStatus::AssignedToRoute, OrderStatus::InTransit, 'markInTransit');
+    }
+
+    /** InTransit → Delivered */
     public function markDelivered(): void
     {
         $this->transition(OrderStatus::InTransit, OrderStatus::Delivered, 'markDelivered');
     }
 
-    public function completePickup(): void
+    /** InTransit → WrittenOff */
+    public function writeOff(): void
     {
-        $this->transition(OrderStatus::Ready, OrderStatus::Completed, 'completePickup');
+        $this->transition(OrderStatus::InTransit, OrderStatus::WrittenOff, 'writeOff');
     }
 
     public function cancel(): void
     {
         $allowed = [
             OrderStatus::New,
+            OrderStatus::Preorder,
             OrderStatus::Confirmed,
             OrderStatus::Preparing,
             OrderStatus::Ready,
+            OrderStatus::AssignedToRoute,
         ];
 
         if (! in_array($this->status, $allowed, true)) {
@@ -205,6 +293,21 @@ final class Order
         }
 
         $this->status = OrderStatus::Cancelled;
+
+        if ($this->id !== null) {
+            $this->record(new OrderCancelled(orderId: $this->id));
+        }
+    }
+
+    /**
+     * @return list<object>
+     */
+    public function pullDomainEvents(): array
+    {
+        $events = $this->domainEvents;
+        $this->domainEvents = [];
+
+        return $events;
     }
 
     /**
@@ -231,12 +334,22 @@ final class Order
         return $this->delivery;
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    public function payment(): array
+    public function paymentId(): ?int
     {
-        return $this->payment;
+        return $this->paymentId;
+    }
+
+    public function attachPayment(int $paymentId): void
+    {
+        if ($paymentId < 1) {
+            throw new \InvalidArgumentException('paymentId должен быть положительным.');
+        }
+
+        if ($this->paymentId !== null && $this->paymentId !== $paymentId) {
+            throw new \LogicException('К заказу уже привязан другой платёж.');
+        }
+
+        $this->paymentId = $paymentId;
     }
 
     public function createdAt(): DateTimeImmutable
@@ -281,18 +394,49 @@ final class Order
 
     private function transition(OrderStatus $from, OrderStatus $to, string $action): void
     {
-        if ($this->status !== $from) {
+        $this->transitionFrom([$from], $to, $action);
+    }
+
+    /**
+     * @param  list<OrderStatus>  $from
+     */
+    private function transitionFrom(array $from, OrderStatus $to, string $action): void
+    {
+        if (! in_array($this->status, $from, true)) {
+            $expected = implode('|', array_map(
+                static fn (OrderStatus $status): string => $status->value,
+                $from,
+            ));
+
             throw new \InvalidArgumentException(
                 sprintf(
                     'Действие «%s» недопустимо из статуса «%s» (ожидался «%s»).',
                     $action,
                     $this->status->value,
-                    $from->value,
+                    $expected,
                 ),
             );
         }
 
         $this->status = $to;
+    }
+
+    private function record(object $event): void
+    {
+        $this->domainEvents[] = $event;
+    }
+
+    /**
+     * @param  array<string, mixed>  $delivery
+     */
+    private static function resolveDeliveryMethod(array $delivery): DeliveryMethod
+    {
+        $method = DeliveryMethod::tryFrom((string) ($delivery['method'] ?? ''));
+        if ($method === null) {
+            throw new \InvalidArgumentException('В заказе не указан способ получения.');
+        }
+
+        return $method;
     }
 
     private static function normalizeStatus(OrderStatus|string $status): OrderStatus

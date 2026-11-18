@@ -5,12 +5,12 @@ const module = {
     role: "administrator",
     home: "administrator-live-orders",
     nav: [
-        { label: "Live orders", routeName: "administrator-live-orders", order: 1 },
-        { label: "Manual order", routeName: "administrator-manual-order", order: 2 },
-        { label: "Logistics", routeName: "administrator-logistics", order: 3 },
-        { label: "Clients", routeName: "administrator-clients", order: 4 },
-        { label: "Production", routeName: "administrator-production", order: 5 },
-        { label: "Catalog", routeName: "administrator-catalog", order: 6 },
+        { label: "Заказы онлайн", routeName: "administrator-live-orders", icon: "live", order: 1 },
+        { label: "Ручной заказ", routeName: "administrator-manual-order", icon: "manual-order", order: 2 },
+        { label: "Логистика", routeName: "administrator-logistics", icon: "logistics", order: 3 },
+        { label: "Клиенты", routeName: "administrator-clients", icon: "clients", order: 4 },
+        { label: "Производство", routeName: "administrator-production", icon: "production", order: 5 },
+        { label: "Каталог", routeName: "administrator-catalog", icon: "catalog", order: 6 },
     ],
     routes: [
         {

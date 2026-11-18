@@ -42,6 +42,10 @@ final class CancelTicketUseCase
 
         $this->tickets->save($ticket);
 
+        foreach ($ticket->pullDomainEvents() as $event) {
+            event($event);
+        }
+
         return $this->presenter->present($ticket, $order);
     }
 }

@@ -3,7 +3,8 @@
 namespace App\Domain\Company\Entity;
 
 /**
- * Кухня филиала: адрес и координаты. Зоны доставки сюда не входят — ими владеет Delivery.
+ * Кухня всегда принадлежит одному Branch (branchId).
+ * Адрес и координаты живут только в Company; другие BC хранят kitchenId.
  */
 final class Kitchen
 {
@@ -16,7 +17,11 @@ final class Kitchen
         private readonly ?string $comment,
         private readonly ?float $latitude,
         private readonly ?float $longitude,
-    ) {}
+    ) {
+        if ($this->branchId < 1) {
+            throw new \InvalidArgumentException('Kitchen всегда принадлежит Branch (branchId > 0).');
+        }
+    }
 
     public function id(): int
     {

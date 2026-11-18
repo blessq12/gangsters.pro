@@ -3,14 +3,19 @@
 namespace App\Application\Delivery\Command;
 
 use App\Application\Delivery\DTO\SaveDeliveryConfigurationDto;
+use App\Application\Delivery\Event\DeliveryZonesChangedFactory;
 use App\Application\Delivery\Presenter\DeliveryPresenter;
+use App\Domain\Company\Entity\Kitchen;
+use App\Domain\Company\Repository\KitchenRepository;
 use App\Domain\Delivery\Repository\DeliveryConfigurationRepository;
 
 final class SaveDeliveryConfigurationUseCase
 {
     public function __construct(
         private readonly DeliveryConfigurationRepository $delivery,
+        private readonly KitchenRepository $kitchens,
         private readonly DeliveryPresenter $presenter,
+        private readonly DeliveryZonesChangedFactory $zonesChanged,
     ) {}
 
     /**
@@ -24,6 +29,18 @@ final class SaveDeliveryConfigurationUseCase
 
         if ($dto->averageDeliveryTimeMinutes !== null && $dto->averageDeliveryTimeMinutes < 0) {
             throw new \InvalidArgumentException('Среднее время доставки не может быть отрицательным.');
+        }
+
+        $kitchenId = $dto->kitchenId;
+        $kitchen = null;
+        if ($kitchenId !== null) {
+            if ($kitchenId < 1) {
+                throw new \InvalidArgumentException('Некорректный kitchen_id.');
+            }
+            $kitchen = $this->kitchens->findById($kitchenId);
+            if (! $kitchen instanceof Kitchen) {
+                throw new \InvalidArgumentException('Кухня не найдена.');
+            }
         }
 
         $zones = [];
@@ -51,25 +68,20 @@ final class SaveDeliveryConfigurationUseCase
             ];
         }
 
-        $kitchen = $dto->kitchen;
+        $zonesBefore = $this->zonesChanged->snapshot($this->delivery->findPublic());
+
         $configuration = $this->delivery->saveSettings(
             minOrderAmountKopecks: $dto->minOrderRubles === null ? null : $dto->minOrderRubles * 100,
             averageDeliveryTimeMinutes: $dto->averageDeliveryTimeMinutes,
-            city: $this->nullable($kitchen['city'] ?? null),
-            street: $this->nullable($kitchen['street'] ?? null),
-            house: $this->nullable($kitchen['house'] ?? null),
-            comment: $this->nullable($kitchen['comment'] ?? null),
-            searchLine: $this->nullable($kitchen['search_line'] ?? null),
+            kitchenId: $kitchenId,
             zones: $zones,
         );
 
-        return $this->presenter->present($configuration);
-    }
+        $event = $this->zonesChanged->createIfChanged($zonesBefore, $configuration);
+        if ($event !== null) {
+            event($event);
+        }
 
-    private function nullable(mixed $value): ?string
-    {
-        $trimmed = trim((string) ($value ?? ''));
-
-        return $trimmed !== '' ? $trimmed : null;
+        return $this->presenter->present($configuration, $kitchen);
     }
 }

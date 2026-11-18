@@ -12,10 +12,10 @@ const toast = useToast();
         <div
             v-for="item in toast.items"
             :key="item.id"
-            class="pointer-events-auto rounded border px-3 py-2 text-sm shadow"
+            class="pointer-events-auto border bg-bo-canvas px-3 py-2 text-sm shadow-bo"
             :class="item.variant === 'success'
-                ? 'border-emerald-200 bg-emerald-50 text-emerald-900'
-                : 'border-rose-200 bg-rose-50 text-rose-900'"
+                ? 'border-emerald-500/50 text-emerald-300'
+                : 'border-bo-accent/60 text-red-300'"
         >
             {{ item.message }}
         </div>

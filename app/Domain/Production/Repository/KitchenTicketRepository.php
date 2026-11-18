@@ -14,9 +14,9 @@ interface KitchenTicketRepository
     public function save(KitchenTicket $ticket): void;
 
     /**
-     * Тикеты в статусе Queued + Started.
+     * Тикеты кухни в статусе Queued + Started.
      *
      * @return list<KitchenTicket>
      */
-    public function listActive(): array;
+    public function listActiveByKitchen(int $kitchenId): array;
 }

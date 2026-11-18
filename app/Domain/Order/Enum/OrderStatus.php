@@ -9,8 +9,9 @@ enum OrderStatus: string
     case Confirmed = 'confirmed';
     case Preparing = 'preparing';
     case Ready = 'ready';
+    case AssignedToRoute = 'assigned_to_route';
     case InTransit = 'in_transit';
     case Delivered = 'delivered';
-    case Completed = 'completed';
+    case WrittenOff = 'written_off';
     case Cancelled = 'cancelled';
 }

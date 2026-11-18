@@ -3,10 +3,10 @@
 namespace App\Domain\Delivery\Entity;
 
 use App\Domain\Delivery\ValueObject\DeliveryZone;
-use App\Domain\Delivery\ValueObject\KitchenAddress;
 
 /**
- * Публичная конфигурация доставки: кухня и список зон.
+ * Публичная конфигурация доставки: ссылка на кухню Company и список зон.
+ * Адрес/координаты кухни здесь не хранятся — только kitchenId.
  */
 final class DeliveryConfiguration
 {
@@ -17,9 +17,7 @@ final class DeliveryConfiguration
         private readonly int $id,
         private readonly ?int $minOrderAmountKopecks,
         private readonly ?int $averageDeliveryTimeMinutes,
-        private readonly KitchenAddress $kitchenAddress,
-        private readonly ?float $kitchenLatitude,
-        private readonly ?float $kitchenLongitude,
+        private readonly ?int $kitchenId,
         private readonly array $zones,
     ) {}
 
@@ -38,19 +36,9 @@ final class DeliveryConfiguration
         return $this->averageDeliveryTimeMinutes;
     }
 
-    public function kitchenAddress(): KitchenAddress
+    public function kitchenId(): ?int
     {
-        return $this->kitchenAddress;
-    }
-
-    public function kitchenLatitude(): ?float
-    {
-        return $this->kitchenLatitude;
-    }
-
-    public function kitchenLongitude(): ?float
-    {
-        return $this->kitchenLongitude;
+        return $this->kitchenId;
     }
 
     /**

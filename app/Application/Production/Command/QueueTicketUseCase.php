@@ -31,12 +31,17 @@ final class QueueTicketUseCase
             throw new \InvalidArgumentException('В очередь можно поставить только подтверждённый заказ.');
         }
 
+        $kitchenId = $order->kitchenId();
+        if ($kitchenId === null) {
+            throw new \InvalidArgumentException('Заказу не назначена кухня.');
+        }
+
         $existing = $this->tickets->findByOrderId($dto->orderId);
         if ($existing !== null) {
             return $this->presenter->present($existing, $order);
         }
 
-        $ticket = KitchenTicket::queue($dto->orderId);
+        $ticket = KitchenTicket::queue($dto->orderId, $kitchenId);
         $this->tickets->enqueue($ticket);
 
         return $this->presenter->present($ticket, $order);

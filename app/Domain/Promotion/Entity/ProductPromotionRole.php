@@ -54,6 +54,17 @@ final class ProductPromotionRole
         return $this->paidTwinProductId;
     }
 
+    public function withSnapshot(string $name, int $priceKopecks): self
+    {
+        return new self(
+            productId: $this->productId,
+            role: $this->role,
+            name: $name,
+            priceKopecks: $priceKopecks,
+            paidTwinProductId: $this->paidTwinProductId,
+        );
+    }
+
     public function countsAsRoll(): bool
     {
         return $this->role === ProductPromotionRoleKind::Roll;

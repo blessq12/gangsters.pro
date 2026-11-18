@@ -114,8 +114,15 @@ final class QuoteOrderUseCase
             'grand_total_rubles' => $grandTotalRubles,
         ];
 
-        $kitchen = $deliveryConfig->kitchenAddress();
         $companySnapshot = $this->resolveCompanySnapshot();
+        $kitchenId = $deliveryConfig->kitchenId() ?? $companySnapshot['kitchen_id'];
+        $branchId = $companySnapshot['branch_id'];
+        if ($kitchenId !== null) {
+            $kitchen = $this->kitchens->findById($kitchenId);
+            if ($kitchen !== null) {
+                $branchId = $kitchen->branchId();
+            }
+        }
 
         $client = $this->resolveClientSnapshot($dto->client);
 
@@ -138,17 +145,8 @@ final class QuoteOrderUseCase
             'is_remote' => $zone?->isRemote(),
             'fee' => $deliveryFeeKopecks,
             'min_order_kopecks' => $deliveryConfig->minOrderAmountKopecks(),
-            'kitchen_address' => [
-                'city' => $kitchen->city(),
-                'street' => $kitchen->street(),
-                'house' => $kitchen->house(),
-                'comment' => $kitchen->comment(),
-                'search_line' => $kitchen->searchLine(),
-                'latitude' => $deliveryConfig->kitchenLatitude(),
-                'longitude' => $deliveryConfig->kitchenLongitude(),
-            ],
-            'branch_id' => $companySnapshot['branch_id'],
-            'kitchen_id' => $companySnapshot['kitchen_id'],
+            'branch_id' => $branchId,
+            'kitchen_id' => $kitchenId,
             'latitude' => $latitude,
             'longitude' => $longitude,
         ];
@@ -460,7 +458,11 @@ final class QuoteOrderUseCase
             throw new \InvalidArgumentException('Для курьера нужны street и house.');
         }
 
-        $city = $config->kitchenAddress()->city();
+        $city = null;
+        if ($config->kitchenId() !== null) {
+            $kitchen = $this->kitchens->findById($config->kitchenId());
+            $city = $kitchen?->city();
+        }
         $coords = $this->geocoder->geocode($street, $house, $city);
 
         return [$coords['latitude'] ?? null, $coords['longitude'] ?? null];

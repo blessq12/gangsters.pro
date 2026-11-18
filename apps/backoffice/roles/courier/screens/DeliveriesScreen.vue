@@ -46,13 +46,13 @@ const sheetStatusVariant = {
 const outcomeLabel = {
     pending: "Ожидает",
     delivered: "Доставлен",
-    failed: "Проблема",
+    written_off: "Списан",
 };
 
 const outcomeVariant = {
     pending: "neutral",
     delivered: "success",
-    failed: "danger",
+    written_off: "danger",
 };
 
 function asList(payload) {
@@ -129,10 +129,10 @@ async function confirmProblem() {
     problemOpen.value = false;
     try {
         await actionApi.run(() => settleStop(sheetId, orderId, {
-            outcome: "failed",
+            outcome: "written_off",
             reason: problemReason.value.trim(),
         }));
-        toast.success(`#${orderId}: проблема`);
+        toast.success(`#${orderId}: списан`);
         await load(true);
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Ошибка");
@@ -153,14 +153,14 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="space-y-4 p-4">
-        <h1 class="text-2xl font-bold text-slate-900">
+    <div class="space-y-6 px-4 py-6 sm:px-6">
+        <h1 class="text-2xl font-bold text-bo-fg">
             Мои доставки
         </h1>
 
         <div
             v-if="!listApi.loading && sheets.length === 0"
-            class="rounded-2xl border border-slate-200 bg-white px-6 py-16 text-center text-2xl font-semibold text-slate-500"
+            class="rounded-none border border-bo-border bg-bo-elevated px-6 py-16 text-center text-2xl font-semibold text-bo-muted"
         >
             Нет активных маршрутов
         </div>
@@ -175,10 +175,10 @@ onUnmounted(() => {
                 <div class="space-y-4">
                     <div class="flex items-start justify-between gap-3">
                         <div>
-                            <p class="text-3xl font-black text-slate-900">
+                            <p class="text-3xl font-black text-bo-fg">
                                 #{{ sheet.id }}
                             </p>
-                            <p class="mt-1 text-sm text-slate-500">
+                            <p class="mt-1 text-sm text-bo-muted">
                                 Стопов: {{ (sheet.stops ?? []).length }}
                             </p>
                         </div>
@@ -193,13 +193,13 @@ onUnmounted(() => {
                         <div
                             v-for="stop in (sheet.stops ?? [])"
                             :key="`${sheet.id}-${stop.order_id}-${stop.position}`"
-                            class="rounded-xl border border-slate-100 bg-slate-50 px-3 py-3"
+                            class="border border-bo-border bg-white/[0.03] p-4"
                         >
                             <div class="flex flex-wrap items-center justify-between gap-2">
                                 <div class="space-y-1">
-                                    <p class="text-lg font-semibold text-slate-900">
+                                    <p class="text-lg font-semibold text-bo-fg">
                                         Заказ #{{ stop.order_id }}
-                                        <span class="text-sm font-normal text-slate-500">
+                                        <span class="text-sm font-normal text-bo-muted">
                                             · pos {{ stop.position }}
                                         </span>
                                     </p>
@@ -221,7 +221,7 @@ onUnmounted(() => {
                                         Доставлен
                                     </UiButton>
                                     <UiButton
-                                        class="!h-14 !flex-1 !bg-rose-600 !text-lg !font-bold sm:!min-w-[9rem]"
+                                        class="!h-14 !flex-1 !bg-bo-accent !text-lg !font-bold sm:!min-w-[9rem]"
                                         :disabled="actionApi.loading"
                                         @click="askProblem(sheet.id, stop.order_id, $event)"
                                     >
@@ -232,7 +232,7 @@ onUnmounted(() => {
 
                             <div
                                 v-if="expandedId === sheet.id && stop.order"
-                                class="mt-2 text-sm text-slate-600"
+                                class="mt-2 text-sm text-bo-muted"
                             >
                                 <p>{{ stop.order.client?.name || "—" }} · {{ stop.order.client?.phone || "" }}</p>
                                 <p v-if="stop.order.address">
@@ -246,7 +246,7 @@ onUnmounted(() => {
 
                     <div v-if="sheet.status === 'released'" @click.stop>
                         <UiButton
-                            class="!h-14 !w-full !bg-sky-600 !text-xl !font-bold"
+                            class="!h-14 !w-full !bg-bo-accent !text-xl !font-bold"
                             :disabled="actionApi.loading"
                             @click="onTake(sheet.id, $event)"
                         >
@@ -266,14 +266,14 @@ onUnmounted(() => {
                 <textarea
                     v-model="problemReason"
                     rows="4"
-                    class="mt-1 w-full rounded border border-slate-300 bg-white px-3 py-2 text-base"
+                    class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 transition-colors hover:border-bo-border-strong focus:border-bo-accent focus:outline-none text-base"
                     placeholder="Что случилось?"
                 />
             </UiFormField>
             <template #footer>
                 <UiButton @click="problemOpen = false">Отмена</UiButton>
                 <UiButton
-                    class="!bg-rose-600"
+                    class="!bg-bo-accent"
                     :disabled="actionApi.loading"
                     @click="confirmProblem"
                 >

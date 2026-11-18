@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\Backoffice\DeliveryController;
 use App\Http\Controllers\Api\Backoffice\EmployeeController;
 use App\Http\Controllers\Api\Backoffice\MarketingController;
 use App\Http\Controllers\Api\Backoffice\OrderController;
+use App\Http\Controllers\Api\Backoffice\PaymentController;
 use App\Http\Controllers\Api\Backoffice\ProductionController;
 use App\Http\Controllers\Api\Backoffice\PromotionController;
 use App\Http\Controllers\Api\Backoffice\WarehouseController;
@@ -47,6 +48,8 @@ Route::prefix('backoffice')->middleware(EnsureBackofficeEnabled::class)->group(f
             Route::post('orders', [OrderController::class, 'store']);
             Route::get('orders/{id}', [OrderController::class, 'show'])->whereNumber('id');
             Route::post('orders/{id}/accept', [OrderController::class, 'accept'])->whereNumber('id');
+            Route::post('orders/{id}/reassign-kitchen', [OrderController::class, 'reassignKitchen'])
+                ->whereNumber('id');
             Route::post('orders/{id}/status', [OrderController::class, 'changeStatus'])->whereNumber('id');
             Route::post('orders/{id}/complete-pickup', [OrderController::class, 'completePickup'])
                 ->whereNumber('id');
@@ -62,6 +65,13 @@ Route::prefix('backoffice')->middleware(EnsureBackofficeEnabled::class)->group(f
                 ->whereNumber('orderId');
             Route::post('production/tickets/{orderId}/cancel', [ProductionController::class, 'cancel'])
                 ->whereNumber('orderId');
+
+            Route::get('payments/{id}', [PaymentController::class, 'show'])
+                ->whereNumber('id');
+            Route::post('payments/{id}/paid', [PaymentController::class, 'markPaid'])
+                ->whereNumber('id');
+            Route::post('payments/{id}/refund', [PaymentController::class, 'refund'])
+                ->whereNumber('id');
 
             Route::get('catalog', [CatalogController::class, 'show']);
 
@@ -130,8 +140,6 @@ Route::prefix('backoffice')->middleware(EnsureBackofficeEnabled::class)->group(f
             Route::post('marketing/promotions', [MarketingController::class, 'storePromotion']);
             Route::put('marketing/promotions/{id}', [MarketingController::class, 'updatePromotion'])
                 ->whereNumber('id');
-            Route::post('marketing/contact', [MarketingController::class, 'saveContact']);
-            Route::put('marketing/contact', [MarketingController::class, 'saveContact']);
             Route::post('marketing/delivery-conditions', [MarketingController::class, 'saveDeliveryConditions']);
             Route::put('marketing/delivery-conditions', [MarketingController::class, 'saveDeliveryConditions']);
 

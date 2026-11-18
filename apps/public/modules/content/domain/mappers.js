@@ -138,7 +138,7 @@ export function toDeliveryFactsView(delivery) {
 
     const settings = delivery.settings || {};
     const zone = delivery.zone || {};
-    const kitchen = zone.kitchen_address || {};
+    const kitchen = delivery.kitchen_address || zone.kitchen_address || {};
 
     return {
         min_order_amount_kopecks: settings.min_order_amount_kopecks ?? null,
@@ -151,11 +151,14 @@ export function toDeliveryFactsView(delivery) {
         street: kitchen.street,
         house: kitchen.house,
         address_comment: kitchen.comment,
-        kitchen_latitude: zone.kitchen_latitude ?? null,
-        kitchen_longitude: zone.kitchen_longitude ?? null,
-        delivery_zone_geojson: zone.delivery_zone_geojson ?? null,
-        delivery_zones: Array.isArray(zone.delivery_zones)
-            ? zone.delivery_zones
-            : [],
+        kitchen_latitude: kitchen.latitude ?? zone.kitchen_latitude ?? null,
+        kitchen_longitude: kitchen.longitude ?? zone.kitchen_longitude ?? null,
+        delivery_zone_geojson:
+            delivery.zone_geojson ?? zone.delivery_zone_geojson ?? null,
+        delivery_zones: Array.isArray(delivery.zones)
+            ? delivery.zones
+            : Array.isArray(zone.delivery_zones)
+              ? zone.delivery_zones
+              : [],
     };
 }

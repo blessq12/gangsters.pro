@@ -8,6 +8,7 @@ use App\Domain\Catalog\Entity\Product;
 use App\Domain\Catalog\Entity\ProductSet;
 use App\Domain\Catalog\Entity\Tag;
 use App\Domain\Catalog\Enum\CatalogItemKind;
+use App\Domain\Catalog\Enum\PriceType;
 use App\Domain\Catalog\ValueObject\Nutrition;
 use App\Domain\Catalog\ValueObject\ProductImage;
 use App\Shared\ValueObject\Money;
@@ -47,6 +48,7 @@ final class CatalogPresenter
             'status' => $product->status()->value,
             'is_system' => $product->isSystem(),
             'price' => $this->money($product->regularPrice()),
+            'old_price' => $this->optionalMoney($product->price(PriceType::Old)),
             'prices' => $this->prices($product->prices()),
             'weight' => $product->weight(),
             'description' => $product->description(),
@@ -87,6 +89,7 @@ final class CatalogPresenter
             'sku' => $set->sku(),
             'status' => $set->status()->value,
             'price' => $this->money($set->regularPrice()),
+            'old_price' => $this->optionalMoney($set->price(PriceType::Old)),
             'prices' => $this->prices($set->prices()),
             'weight' => $this->setWeightGrams($set, $lineProductsById),
             'description' => $set->description(),
@@ -210,6 +213,18 @@ final class CatalogPresenter
             'amount' => $price?->amountRubles() ?? 0,
             'currency' => Money::CURRENCY,
         ];
+    }
+
+    /**
+     * @return array{amount: int, currency: string}|null
+     */
+    private function optionalMoney(?Price $price): ?array
+    {
+        if (! $price instanceof Price || $price->amountKopecks() <= 0) {
+            return null;
+        }
+
+        return $this->money($price);
     }
 
     /**

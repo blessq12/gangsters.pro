@@ -22,7 +22,6 @@ final class GetAdminMarketingUseCase
         return $this->presenter->present(
             banners: $this->banners->findAllOrdered(),
             promotions: $this->promotions->findAllOrdered(),
-            contact: null,
             deliveryConditions: null,
         );
     }

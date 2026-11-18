@@ -124,7 +124,7 @@ onUnmounted(() => {
 
         <div
             v-if="!listApi.loading && tickets.length === 0"
-            class="rounded-2xl border border-slate-700 bg-slate-900/60 px-8 py-16 text-center text-4xl font-semibold text-slate-300 md:text-5xl"
+            class="rounded-none border border-bo-border bg-bo-elevated px-8 py-16 text-center text-4xl font-semibold text-bo-muted md:text-5xl"
         >
             Очередь пуста
         </div>
@@ -136,7 +136,7 @@ onUnmounted(() => {
             <UiCard
                 v-for="ticket in tickets"
                 :key="ticket.order_id"
-                class="!cursor-pointer !border-slate-700 !bg-slate-900 !text-slate-50 !shadow-none transition hover:!border-slate-500"
+                class="!cursor-pointer !border-bo-border !bg-bo-elevated !text-bo-fg !shadow-none transition hover:!border-bo-accent"
                 @click="openTicket(ticket.order_id)"
             >
                 <div class="space-y-5">
@@ -154,7 +154,7 @@ onUnmounted(() => {
 
                     <p
                         v-if="ticket.status === 'started' && ticket.started_at"
-                        class="text-xl text-slate-300"
+                        class="text-xl text-bo-muted"
                     >
                         Старт {{ formatDate(ticket.started_at) }}
                     </p>

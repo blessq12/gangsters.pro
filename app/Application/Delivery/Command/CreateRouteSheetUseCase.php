@@ -6,9 +6,11 @@ use App\Application\Delivery\DTO\CreateRouteSheetDto;
 use App\Application\Delivery\Presenter\RouteSheetPresenter;
 use App\Domain\Delivery\Entity\RouteSheet;
 use App\Domain\Delivery\Repository\RouteSheetRepository;
-use App\Domain\Order\Enum\OrderStatus;
 use App\Domain\Order\Repository\OrderRepository;
 
+/**
+ * Выпуск маршрутного листа. Статусы заказов меняет Order по OrderAssignedToRoute.
+ */
 final class CreateRouteSheetUseCase
 {
     public function __construct(
@@ -41,9 +43,9 @@ final class CreateRouteSheetUseCase
             if ($order === null) {
                 throw new \InvalidArgumentException(sprintf('Заказ #%d не найден.', $orderId));
             }
-            if ($order->status() !== OrderStatus::Ready) {
+            if (! $order->canBeAssignedToRoute()) {
                 throw new \InvalidArgumentException(
-                    sprintf('Заказ #%d должен быть в статусе ready.', $orderId),
+                    sprintf('Заказ #%d должен быть готовым заказом с доставкой.', $orderId),
                 );
             }
             if ($this->sheets->findOpenByOrderId($orderId) !== null) {
@@ -55,6 +57,10 @@ final class CreateRouteSheetUseCase
 
         $sheet = RouteSheet::release($orderIds);
         $this->sheets->save($sheet);
+
+        foreach ($sheet->pullDomainEvents() as $event) {
+            event($event);
+        }
 
         return $this->presenter->present($sheet);
     }

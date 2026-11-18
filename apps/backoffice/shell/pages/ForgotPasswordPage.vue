@@ -2,6 +2,8 @@
 import { ref } from "vue";
 import { RouterLink } from "vue-router";
 import { useAuthStore } from "../store/authStore";
+import UiButton from "../components/ui/UiButton.vue";
+import UiInput from "../components/ui/UiInput.vue";
 
 const auth = useAuthStore();
 const email = ref("");
@@ -17,7 +19,7 @@ async function submit() {
         const payload = await auth.requestPasswordReset(email.value.trim());
         message.value = payload.message ?? "Запрос принят.";
     } catch (reason) {
-        error.value = reason instanceof Error ? reason.message : "Не удалось отправить request.";
+        error.value = reason instanceof Error ? reason.message : "Не удалось отправить запрос.";
     } finally {
         submitting.value = false;
     }
@@ -25,18 +27,18 @@ async function submit() {
 </script>
 
 <template>
-    <section class="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-10">
-        <h1 class="text-xl font-medium">Восстановление пароля</h1>
-        <p class="mt-2 text-sm text-neutral-500">Пока заглушка — письмо не отправляется.</p>
+    <section class="w-full max-w-sm border border-bo-border bg-bo-glass p-6 shadow-bo-lg backdrop-blur-md sm:p-8">
+        <h1 class="text-xl font-semibold text-bo-fg">Восстановление пароля</h1>
+        <p class="mt-1 text-sm text-bo-muted">Пока заглушка — письмо не отправляется.</p>
         <p
             v-if="error"
-            class="mt-4 text-sm text-red-700"
+            class="mt-4 border border-red-500/40 bg-red-950/40 px-3 py-2 text-sm text-red-200"
         >
             {{ error }}
         </p>
         <p
             v-if="message"
-            class="mt-4 text-sm text-neutral-700"
+            class="mt-4 border border-bo-border px-3 py-2 text-sm text-bo-fg"
         >
             {{ message }}
         </p>
@@ -45,26 +47,25 @@ async function submit() {
             @submit.prevent="submit"
         >
             <label class="block text-sm">
-                <span class="text-neutral-600">Email</span>
-                <input
+                <span class="text-bo-muted">Email</span>
+                <UiInput
                     v-model="email"
                     type="email"
                     required
-                    class="mt-1 w-full rounded border border-neutral-300 bg-white px-3 py-2"
-                >
+                />
             </label>
-            <button
+            <UiButton
                 type="submit"
-                class="inline-flex h-10 items-center rounded bg-neutral-900 px-4 text-sm text-white disabled:opacity-50"
+                class="w-full justify-center"
                 :disabled="submitting"
             >
                 Отправить
-            </button>
+            </UiButton>
         </form>
         <p class="mt-4 text-sm">
             <RouterLink
                 :to="{ name: 'backoffice-login' }"
-                class="text-neutral-600 underline"
+                class="text-bo-muted underline transition-colors hover:text-bo-accent"
             >
                 Назад ко входу
             </RouterLink>

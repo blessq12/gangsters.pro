@@ -5,13 +5,14 @@ namespace App\Application\Delivery\Command;
 use App\Application\Delivery\DTO\SettleStopDto;
 use App\Application\Delivery\Presenter\RouteSheetPresenter;
 use App\Domain\Delivery\Repository\RouteSheetRepository;
-use App\Domain\Order\Repository\OrderRepository;
 
+/**
+ * Курьер фиксирует исход остановки. Order меняет статус по RouteStopSettled.
+ */
 final class SettleStopUseCase
 {
     public function __construct(
         private readonly RouteSheetRepository $sheets,
-        private readonly OrderRepository $orders,
         private readonly RouteSheetPresenter $presenter,
     ) {}
 
@@ -31,15 +32,6 @@ final class SettleStopUseCase
             (string) ($dto->reason ?? ''),
         );
 
-        if (trim($dto->outcome) === 'delivered') {
-            $order = $this->orders->findById($dto->orderId);
-            if ($order === null) {
-                throw new \InvalidArgumentException('Заказ не найден.');
-            }
-            $order->markDelivered();
-            $this->orders->save($order);
-        }
-
         $allSettled = true;
         foreach ($sheet->stops() as $stop) {
             if ($stop->outcome() === 'pending') {
@@ -53,6 +45,10 @@ final class SettleStopUseCase
         }
 
         $this->sheets->save($sheet);
+
+        foreach ($sheet->pullDomainEvents() as $event) {
+            event($event);
+        }
 
         return $this->presenter->present($sheet);
     }

@@ -108,7 +108,7 @@ final class DeliveryController extends Controller
         SettleStopUseCase $useCase,
     ): JsonResponse {
         $validated = $request->validate([
-            'outcome' => ['required', 'string', 'in:delivered,failed'],
+            'outcome' => ['required', 'string', 'in:delivered,written_off'],
             'reason' => ['nullable', 'string', 'max:500'],
         ]);
 
@@ -134,12 +134,7 @@ final class DeliveryController extends Controller
         $validated = $request->validate([
             'min_order_rubles' => ['nullable', 'integer', 'min:0'],
             'average_delivery_time_minutes' => ['nullable', 'integer', 'min:0'],
-            'kitchen' => ['sometimes', 'array'],
-            'kitchen.city' => ['nullable', 'string', 'max:255'],
-            'kitchen.street' => ['nullable', 'string', 'max:255'],
-            'kitchen.house' => ['nullable', 'string', 'max:64'],
-            'kitchen.comment' => ['nullable', 'string'],
-            'kitchen.search_line' => ['nullable', 'string', 'max:255'],
+            'kitchen_id' => ['nullable', 'integer', 'min:1'],
             'zones' => ['sometimes', 'array'],
             'zones.*.id' => ['required', 'string', 'max:64'],
             'zones.*.name' => ['required', 'string', 'max:255'],
@@ -156,7 +151,7 @@ final class DeliveryController extends Controller
                 averageDeliveryTimeMinutes: isset($validated['average_delivery_time_minutes'])
                     ? (int) $validated['average_delivery_time_minutes']
                     : null,
-                kitchen: is_array($validated['kitchen'] ?? null) ? $validated['kitchen'] : [],
+                kitchenId: isset($validated['kitchen_id']) ? (int) $validated['kitchen_id'] : null,
                 zones: is_array($validated['zones'] ?? null) ? $validated['zones'] : [],
             ));
         } catch (InvalidArgumentException $exception) {

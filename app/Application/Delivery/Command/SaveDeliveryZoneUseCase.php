@@ -3,6 +3,7 @@
 namespace App\Application\Delivery\Command;
 
 use App\Application\Delivery\DTO\SaveDeliveryZoneDto;
+use App\Application\Delivery\Event\DeliveryZonesChangedFactory;
 use App\Application\Delivery\Presenter\DeliveryPresenter;
 use App\Domain\Delivery\Repository\DeliveryConfigurationRepository;
 use App\Domain\Delivery\ValueObject\DeliveryZone;
@@ -13,6 +14,7 @@ final class SaveDeliveryZoneUseCase
     public function __construct(
         private readonly DeliveryConfigurationRepository $delivery,
         private readonly DeliveryPresenter $presenter,
+        private readonly DeliveryZonesChangedFactory $zonesChanged,
     ) {}
 
     /**
@@ -46,36 +48,56 @@ final class SaveDeliveryZoneUseCase
             throw new \InvalidArgumentException('Настройки доставки не найдены.');
         }
 
-        if (! $isCreate) {
-            $exists = false;
-            foreach ($current->zones() as $zone) {
-                if ($zone->id() === $id) {
-                    $exists = true;
-                    break;
-                }
+        $zones = [];
+        $exists = false;
+        foreach ($current->zones() as $zone) {
+            if ($zone->id() === $id) {
+                $exists = true;
+                $zones[] = [
+                    'id' => $id,
+                    'name' => $name,
+                    'fee_rubles' => $dto->feeRubles,
+                    'is_remote' => $dto->isRemote,
+                    'geometry' => $dto->geometry ?? $zone->geometry(),
+                ];
+
+                continue;
             }
-            if (! $exists) {
-                throw new \InvalidArgumentException('Зона не найдена.');
-            }
+
+            $zones[] = [
+                'id' => $zone->id(),
+                'name' => $zone->name(),
+                'fee_rubles' => intdiv($zone->deliveryFeeKopecks(), 100),
+                'is_remote' => $zone->isRemote(),
+                'geometry' => $zone->geometry(),
+            ];
         }
 
-        $kitchen = $current->kitchenAddress();
-        $configuration = $this->delivery->saveSettings(
-            minOrderAmountKopecks: $current->minOrderAmountKopecks(),
-            averageDeliveryTimeMinutes: $current->averageDeliveryTimeMinutes(),
-            city: $kitchen->city(),
-            street: $kitchen->street(),
-            house: $kitchen->house(),
-            comment: $kitchen->comment(),
-            searchLine: $kitchen->searchLine(),
-            zones: [[
+        if (! $isCreate && ! $exists) {
+            throw new \InvalidArgumentException('Зона не найдена.');
+        }
+
+        if ($isCreate) {
+            $zones[] = [
                 'id' => $id,
                 'name' => $name,
                 'fee_rubles' => $dto->feeRubles,
                 'is_remote' => $dto->isRemote,
                 'geometry' => $dto->geometry,
-            ]],
+            ];
+        }
+
+        $configuration = $this->delivery->saveSettings(
+            minOrderAmountKopecks: $current->minOrderAmountKopecks(),
+            averageDeliveryTimeMinutes: $current->averageDeliveryTimeMinutes(),
+            kitchenId: $current->kitchenId(),
+            zones: $zones,
         );
+
+        $event = $this->zonesChanged->createIfChanged($this->zonesChanged->snapshot($current), $configuration);
+        if ($event !== null) {
+            event($event);
+        }
 
         $matched = null;
         foreach ($configuration->zones() as $zone) {

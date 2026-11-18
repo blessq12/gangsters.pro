@@ -17,6 +17,7 @@ final class KitchenTicketMapper
         return KitchenTicket::restore(
             id: (int) $row->id,
             orderId: (int) $row->order_id,
+            kitchenId: (int) $row->kitchen_id,
             status: $status,
             startedAt: $row->started_at !== null
                 ? DateTimeImmutable::createFromInterface($row->started_at)
@@ -34,6 +35,7 @@ final class KitchenTicketMapper
     {
         return [
             'order_id' => $ticket->orderId(),
+            'kitchen_id' => $ticket->kitchenId(),
             'status' => $ticket->status()->value,
             'started_at' => $ticket->startedAt(),
             'completed_at' => $ticket->completedAt(),

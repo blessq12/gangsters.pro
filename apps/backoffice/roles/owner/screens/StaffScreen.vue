@@ -186,7 +186,7 @@ onMounted(loadEmployees);
 </script>
 
 <template>
-    <div class="space-y-4 p-4 md:p-6">
+    <div class="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
         <UiCard title="Сотрудники">
             <template #actions>
                 <UiButton @click="openCreate">+ Сотрудник</UiButton>
@@ -224,7 +224,7 @@ onMounted(loadEmployees);
             :title="editingId ? 'Редактировать сотрудника' : 'Новый сотрудник'"
             @close="modalOpen = false"
         >
-            <div class="space-y-3">
+            <div class="space-y-5">
                 <UiFormField label="Имя" required :error="fieldErrors.name">
                     <UiInput v-model="form.name" />
                 </UiFormField>
@@ -237,7 +237,7 @@ onMounted(loadEmployees);
                 <UiFormField label="Роль" required :error="fieldErrors.role">
                     <select
                         v-model="form.role"
-                        class="mt-1 w-full rounded border border-slate-300 bg-white px-3 py-2"
+                        class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 transition-colors hover:border-bo-border-strong focus:border-bo-accent focus:outline-none"
                     >
                         <option v-for="role in roles" :key="role" :value="role">
                             {{ role }}

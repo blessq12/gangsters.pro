@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Backoffice | Gangster's Sushi</title>
+    <title>Бэкофис | Gangster's Sushi</title>
     <script>
         window.__BACKOFFICE__ = @json([
             'authRequired' => (bool) config('backoffice.auth_required'),

@@ -25,11 +25,6 @@ export function updatePromotion(id, data) {
 }
 
 /** @param {Record<string, unknown>} data */
-export function saveContact(data) {
-    return request("PUT", "/marketing/contact", data);
-}
-
-/** @param {Record<string, unknown>} data */
 export function saveDeliveryConditions(data) {
     return request("PUT", "/marketing/delivery-conditions", data);
 }

@@ -22,8 +22,10 @@ final class ORD_Order extends Model
         'cart_snapshot',
         'client_snapshot',
         'delivery_snapshot',
-        'payment_snapshot',
         'client_id',
+        'kitchen_id',
+        'branch_id',
+        'payment_id',
         'total_kopecks',
         'created_at',
     ];
@@ -35,8 +37,10 @@ final class ORD_Order extends Model
         'cart_snapshot' => 'array',
         'client_snapshot' => 'array',
         'delivery_snapshot' => 'array',
-        'payment_snapshot' => 'array',
         'client_id' => 'integer',
+        'kitchen_id' => 'integer',
+        'branch_id' => 'integer',
+        'payment_id' => 'integer',
         'total_kopecks' => 'integer',
         'created_at' => 'datetime',
     ];

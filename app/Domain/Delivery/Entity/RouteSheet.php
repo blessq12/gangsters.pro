@@ -2,16 +2,22 @@
 
 namespace App\Domain\Delivery\Entity;
 
+use App\Domain\Delivery\Event\OrderAssignedToRoute;
+use App\Domain\Delivery\Event\RouteSheetTaken;
+use App\Domain\Delivery\Event\RouteStopSettled;
+
 final class RouteSheet
 {
     /**
      * @param  list<RouteStop>  $stops
+     * @param  list<object>  $domainEvents
      */
     private function __construct(
         private ?int $id,
         private readonly string $status,
         private readonly array $stops,
         private readonly ?int $courierId,
+        private array $domainEvents = [],
     ) {}
 
     /**
@@ -53,6 +59,9 @@ final class RouteSheet
         return $this->id !== null;
     }
 
+    /**
+     * Факт «заказ назначен на маршрут» возникает, когда выпущенный лист получает идентичность.
+     */
     public function assignId(int $id): void
     {
         if ($this->id !== null) {
@@ -60,6 +69,15 @@ final class RouteSheet
         }
 
         $this->id = $id;
+
+        if ($this->status === 'released') {
+            foreach ($this->stops as $stop) {
+                $this->domainEvents[] = new OrderAssignedToRoute(
+                    orderId: $stop->orderId(),
+                    routeSheetId: $id,
+                );
+            }
+        }
     }
 
     public function status(): string
@@ -90,7 +108,18 @@ final class RouteSheet
             throw new \InvalidArgumentException('courierId должен быть положительным.');
         }
 
-        return new self($this->id, 'in_delivery', $this->stops, $courierId);
+        $orderIds = array_map(
+            static fn (RouteStop $stop): int => $stop->orderId(),
+            $this->stops,
+        );
+
+        return new self(
+            $this->id,
+            'in_delivery',
+            $this->stops,
+            $courierId,
+            [...$this->domainEvents, new RouteSheetTaken(routeSheetId: $this->id(), orderIds: $orderIds)],
+        );
     }
 
     public function settle(int $orderId, string $outcome, string $reason): self
@@ -99,13 +128,13 @@ final class RouteSheet
             throw new \InvalidArgumentException('Статусы ставятся на листе, который курьер уже взял.');
         }
 
-        if (! in_array($outcome, ['delivered', 'failed'], true)) {
+        if (! in_array($outcome, [RouteStopSettled::OUTCOME_DELIVERED, RouteStopSettled::OUTCOME_WRITTEN_OFF], true)) {
             throw new \InvalidArgumentException('Недопустимый исход остановки.');
         }
 
         $reason = trim($reason);
-        if ($outcome === 'failed' && $reason === '') {
-            throw new \InvalidArgumentException('Нужна причина, почему заказ не выдан.');
+        if ($outcome === RouteStopSettled::OUTCOME_WRITTEN_OFF && $reason === '') {
+            throw new \InvalidArgumentException('Нужна причина списания заказа.');
         }
 
         $found = false;
@@ -123,7 +152,7 @@ final class RouteSheet
                 $stop->orderId(),
                 $stop->position(),
                 $outcome,
-                $outcome === 'failed' ? $reason : '',
+                $outcome === RouteStopSettled::OUTCOME_WRITTEN_OFF ? $reason : '',
             );
         }
 
@@ -131,7 +160,50 @@ final class RouteSheet
             throw new \InvalidArgumentException('Этого заказа нет в маршрутном листе.');
         }
 
-        return new self($this->id, $this->status, $stops, $this->courierId);
+        return new self(
+            $this->id,
+            $this->status,
+            $stops,
+            $this->courierId,
+            [...$this->domainEvents, new RouteStopSettled(
+                routeSheetId: $this->id(),
+                orderId: $orderId,
+                outcome: $outcome,
+                reason: $outcome === RouteStopSettled::OUTCOME_WRITTEN_OFF ? $reason : null,
+            )],
+        );
+    }
+
+    /**
+     * Заказ отменён: остановка помечается отменённой, лист остаётся.
+     */
+    public function cancelStop(int $orderId): self
+    {
+        if (! in_array($this->status, ['released', 'in_delivery'], true)) {
+            throw new \InvalidArgumentException('Лист уже закрыт.');
+        }
+
+        $found = false;
+        $stops = [];
+        foreach ($this->stops as $stop) {
+            if ($stop->orderId() !== $orderId || $stop->outcome() !== 'pending') {
+                $stops[] = $stop;
+                continue;
+            }
+            $found = true;
+            $stops[] = new RouteStop(
+                $stop->orderId(),
+                $stop->position(),
+                RouteStop::OUTCOME_CANCELLED,
+                '',
+            );
+        }
+
+        if (! $found) {
+            throw new \InvalidArgumentException('Этого заказа нет среди ожидающих остановок листа.');
+        }
+
+        return new self($this->id, $this->status, $stops, $this->courierId, $this->domainEvents);
     }
 
     public function complete(): self
@@ -146,6 +218,17 @@ final class RouteSheet
             }
         }
 
-        return new self($this->id, 'completed', $this->stops, $this->courierId);
+        return new self($this->id, 'completed', $this->stops, $this->courierId, $this->domainEvents);
+    }
+
+    /**
+     * @return list<object>
+     */
+    public function pullDomainEvents(): array
+    {
+        $events = $this->domainEvents;
+        $this->domainEvents = [];
+
+        return $events;
     }
 }

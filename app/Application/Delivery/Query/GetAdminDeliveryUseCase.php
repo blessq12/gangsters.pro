@@ -3,25 +3,23 @@
 namespace App\Application\Delivery\Query;
 
 use App\Application\Delivery\Presenter\DeliveryPresenter;
+use App\Domain\Company\Repository\KitchenRepository;
 use App\Domain\Delivery\Repository\DeliveryConfigurationRepository;
 
 /**
- * Админский срез доставки. Outside-zone surcharge в Domain нет — отдаём тот же снимок.
+ * Админский срез доставки.
+ * Адрес кухни при необходимости читается из Company.
  */
 final class GetAdminDeliveryUseCase
 {
     public function __construct(
         private readonly DeliveryConfigurationRepository $delivery,
+        private readonly KitchenRepository $kitchens,
         private readonly DeliveryPresenter $presenter,
     ) {}
 
     /**
-     * @return array{
-     *     settings: array<string, mixed>,
-     *     zones: list<array<string, mixed>>,
-     *     zone_geojson: array<string, mixed>|null,
-     *     kitchen_address: array<string, mixed>
-     * }
+     * @return array<string, mixed>
      */
     public function execute(): array
     {
@@ -30,6 +28,10 @@ final class GetAdminDeliveryUseCase
             throw new \InvalidArgumentException('Настройки доставки не найдены.');
         }
 
-        return $this->presenter->present($configuration);
+        $kitchen = $configuration->kitchenId() !== null
+            ? $this->kitchens->findById($configuration->kitchenId())
+            : null;
+
+        return $this->presenter->present($configuration, $kitchen);
     }
 }

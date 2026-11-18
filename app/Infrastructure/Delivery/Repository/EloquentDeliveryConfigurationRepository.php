@@ -37,21 +37,13 @@ final class EloquentDeliveryConfigurationRepository implements DeliveryConfigura
     public function saveSettings(
         ?int $minOrderAmountKopecks,
         ?int $averageDeliveryTimeMinutes,
-        ?string $city,
-        ?string $street,
-        ?string $house,
-        ?string $comment,
-        ?string $searchLine,
+        ?int $kitchenId,
         array $zones,
     ): DeliveryConfiguration {
         return DB::transaction(function () use (
             $minOrderAmountKopecks,
             $averageDeliveryTimeMinutes,
-            $city,
-            $street,
-            $house,
-            $comment,
-            $searchLine,
+            $kitchenId,
             $zones,
         ): DeliveryConfiguration {
             $row = DLV_Configuration::query()->find(self::SINGLETON_ID);
@@ -63,13 +55,7 @@ final class EloquentDeliveryConfigurationRepository implements DeliveryConfigura
             $row->fill([
                 'min_order_amount_kopecks' => $minOrderAmountKopecks,
                 'average_delivery_time_minutes' => $averageDeliveryTimeMinutes,
-                'kitchen_address' => [
-                    'city' => $city,
-                    'street' => $street,
-                    'house' => $house,
-                    'comment' => $comment,
-                    'search_line' => $searchLine,
-                ],
+                'company_kitchen_id' => $kitchenId !== null && $kitchenId > 0 ? $kitchenId : null,
             ]);
             $row->save();
 

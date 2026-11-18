@@ -22,6 +22,10 @@ return [
         ['method' => 'GET', 'path' => 'production/queue', 'roles' => ['owner', 'administrator', 'kitchen']],
         ['method' => 'GET', 'path' => 'production/tickets/*', 'roles' => ['owner', 'administrator', 'kitchen']],
 
+        // payments
+        ['method' => 'POST', 'path' => 'payments/*/*', 'roles' => ['administrator']],
+        ['method' => 'GET', 'path' => 'payments/*', 'roles' => ['owner', 'administrator']],
+
         // catalog
         ['method' => 'POST', 'path' => 'catalog/*', 'roles' => ['owner']],
         ['method' => 'PUT', 'path' => 'catalog/*/*', 'roles' => ['owner']],

@@ -19,11 +19,11 @@ final class ListQueueUseCase
      *
      * @return list<array<string, mixed>>
      */
-    public function execute(): array
+    public function execute(int $kitchenId): array
     {
         $result = [];
 
-        foreach ($this->tickets->listActive() as $ticket) {
+        foreach ($this->tickets->listActiveByKitchen($kitchenId) as $ticket) {
             $order = $this->orders->findById($ticket->orderId());
             $result[] = $this->presenter->present($ticket, $order);
         }

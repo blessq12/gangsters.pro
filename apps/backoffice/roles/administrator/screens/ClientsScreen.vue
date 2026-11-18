@@ -102,9 +102,9 @@ onMounted(load);
 </script>
 
 <template>
-    <div class="space-y-4 p-4 md:p-6">
+    <div class="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
         <UiCard title="Клиенты">
-            <div class="mb-4 max-w-md">
+            <div class="mb-6 max-w-md">
                 <UiInput
                     v-model="q"
                     placeholder="Поиск: имя / телефон / email"
@@ -119,7 +119,7 @@ onMounted(load);
                 @row-click="openDetail"
             />
 
-            <div class="mt-4">
+            <div class="mt-6">
                 <UiPagination
                     :page="page"
                     :per-page="perPage"
@@ -134,17 +134,17 @@ onMounted(load);
             title="Клиент"
             @close="detailOpen = false"
         >
-            <div v-if="detailApi.loading" class="text-sm text-slate-500">
+            <div v-if="detailApi.loading" class="text-sm text-bo-muted">
                 Загрузка…
             </div>
             <div v-else-if="detailClient" class="space-y-4 text-sm">
                 <div class="space-y-1">
-                    <p><span class="text-slate-500">ID:</span> {{ detailClient.id }}</p>
-                    <p><span class="text-slate-500">Имя:</span> {{ detailClient.name }}</p>
-                    <p><span class="text-slate-500">Телефон:</span> {{ detailClient.phone }}</p>
-                    <p><span class="text-slate-500">Email:</span> {{ detailClient.email ?? "—" }}</p>
+                    <p><span class="text-bo-muted">ID:</span> {{ detailClient.id }}</p>
+                    <p><span class="text-bo-muted">Имя:</span> {{ detailClient.name }}</p>
+                    <p><span class="text-bo-muted">Телефон:</span> {{ detailClient.phone }}</p>
+                    <p><span class="text-bo-muted">Email:</span> {{ detailClient.email ?? "—" }}</p>
                     <p>
-                        <span class="text-slate-500">Создан:</span>
+                        <span class="text-bo-muted">Создан:</span>
                         {{ formatDate(detailClient.created_at) }}
                     </p>
                 </div>

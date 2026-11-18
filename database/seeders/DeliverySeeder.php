@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Domain\Delivery\Repository\DeliveryConfigurationRepository;
+use App\Infrastructure\Company\Model\CMP_Kitchen;
 use App\Infrastructure\Delivery\Model\DLV_Configuration;
 use App\Infrastructure\Delivery\Model\DLV_Zone;
 use Illuminate\Database\Seeder;
@@ -12,8 +13,9 @@ class DeliverySeeder extends Seeder
 {
     public function run(): void
     {
-        $kitchenLatitude = 56.5129000;
-        $kitchenLongitude = 84.9861000;
+        $kitchen = CMP_Kitchen::query()->orderBy('id')->first();
+        $kitchenLatitude = $kitchen?->latitude !== null ? (float) $kitchen->latitude : 56.5129000;
+        $kitchenLongitude = $kitchen?->longitude !== null ? (float) $kitchen->longitude : 84.9861000;
 
         $geometry = [
             'type' => 'Polygon',
@@ -28,22 +30,13 @@ class DeliverySeeder extends Seeder
             ],
         ];
 
-        DB::transaction(function () use ($kitchenLatitude, $kitchenLongitude, $geometry): void {
+        DB::transaction(function () use ($kitchen, $geometry): void {
             $config = DLV_Configuration::query()->updateOrCreate(
                 ['id' => DeliveryConfigurationRepository::SINGLETON_ID],
                 [
                     'min_order_amount_kopecks' => 100_000,
                     'average_delivery_time_minutes' => 90,
-                    'kitchen_address' => [
-                        'city' => 'Томск',
-                        'street' => 'ул. Говорова',
-                        'house' => '50',
-                        'comment' => null,
-                        'search_line' => 'Россия, Томская область, Томск, ул. Говорова, 50',
-                    ],
-                    'kitchen_latitude' => $kitchenLatitude,
-                    'kitchen_longitude' => $kitchenLongitude,
-                    'company_kitchen_id' => null,
+                    'company_kitchen_id' => $kitchen?->id,
                 ],
             );
 

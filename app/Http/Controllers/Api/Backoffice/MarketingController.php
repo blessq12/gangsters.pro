@@ -3,11 +3,9 @@
 namespace App\Http\Controllers\Api\Backoffice;
 
 use App\Application\Marketing\Command\SaveBannerUseCase;
-use App\Application\Marketing\Command\SaveContactBlockUseCase;
 use App\Application\Marketing\Command\SaveDeliveryConditionsTextUseCase;
 use App\Application\Marketing\Command\SavePromotionMediaUseCase;
 use App\Application\Marketing\DTO\SaveBannerDto;
-use App\Application\Marketing\DTO\SaveContactBlockDto;
 use App\Application\Marketing\DTO\SaveDeliveryConditionsTextDto;
 use App\Application\Marketing\DTO\SavePromotionMediaDto;
 use App\Application\Marketing\Query\GetAdminMarketingUseCase;
@@ -41,29 +39,6 @@ final class MarketingController extends Controller
     public function updatePromotion(Request $request, int $id, SavePromotionMediaUseCase $useCase): JsonResponse
     {
         return $this->savePromotion($request, $useCase, $id);
-    }
-
-    public function saveContact(Request $request, SaveContactBlockUseCase $useCase): JsonResponse
-    {
-        $validated = $request->validate([
-            'id' => ['nullable', 'integer', 'min:1'],
-            'phone' => ['nullable', 'string', 'max:32'],
-            'email' => ['nullable', 'string', 'max:255'],
-            'extra' => ['sometimes', 'array'],
-        ]);
-
-        try {
-            $result = $useCase->execute(new SaveContactBlockDto(
-                id: isset($validated['id']) ? (int) $validated['id'] : null,
-                phone: $validated['phone'] ?? null,
-                email: $validated['email'] ?? null,
-                extra: is_array($validated['extra'] ?? null) ? $validated['extra'] : [],
-            ));
-        } catch (InvalidArgumentException $exception) {
-            return response()->json(['message' => $exception->getMessage()], 422);
-        }
-
-        return response()->json($result);
     }
 
     public function saveDeliveryConditions(

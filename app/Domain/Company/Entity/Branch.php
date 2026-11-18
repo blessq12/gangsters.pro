@@ -3,7 +3,8 @@
 namespace App\Domain\Company\Entity;
 
 /**
- * Филиал компании.
+ * Филиал компании. Адреса и координаты не копируются в другие BC —
+ * физическая точка (кухня) принадлежит филиалу через Kitchen.branchId.
  */
 final class Branch
 {

@@ -11,28 +11,28 @@ defineEmits(["row-click"]);
 </script>
 
 <template>
-    <div class="overflow-x-auto rounded border border-slate-200 bg-white">
-        <div v-if="loading" class="p-6 text-center text-sm text-slate-500">
+    <div class="overflow-x-auto border border-bo-border">
+        <div v-if="loading" class="px-6 py-12 text-center text-sm text-bo-muted">
             Загрузка…
         </div>
         <table v-else class="min-w-full text-left text-sm">
-            <thead class="border-b border-slate-200 bg-slate-50 text-slate-600">
+            <thead class="border-b border-bo-border bg-white/[0.02]">
                 <tr>
                     <th
                         v-for="col in columns"
                         :key="col.key"
-                        class="px-3 py-2 font-medium"
+                        class="whitespace-nowrap px-4 py-3 text-[11px] font-medium uppercase tracking-[0.12em] text-bo-muted"
                         :style="col.width ? { width: col.width } : undefined"
                     >
                         {{ col.label }}
                     </th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody class="divide-y divide-bo-border">
                 <tr v-if="rows.length === 0">
                     <td
                         :colspan="columns.length"
-                        class="px-3 py-8 text-center text-slate-500"
+                        class="px-4 py-12 text-center text-bo-muted"
                     >
                         {{ emptyText }}
                     </td>
@@ -40,13 +40,13 @@ defineEmits(["row-click"]);
                 <tr
                     v-for="(row, index) in rows"
                     :key="row[rowKey] ?? index"
-                    class="cursor-pointer border-b border-slate-100 hover:bg-slate-50"
+                    class="cursor-pointer transition-colors duration-150 hover:bg-white/[0.03]"
                     @click="$emit('row-click', row)"
                 >
                     <td
                         v-for="col in columns"
                         :key="col.key"
-                        class="px-3 py-2 align-middle text-slate-900"
+                        class="px-4 py-3.5 align-middle text-bo-fg"
                     >
                         <slot
                             :name="`cell-${col.key}`"

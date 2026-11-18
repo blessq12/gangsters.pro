@@ -5,7 +5,7 @@ const module = {
     role: "courier",
     home: "courier-deliveries",
     nav: [
-        { label: "Deliveries", routeName: "courier-deliveries", order: 1 },
+        { label: "Доставки", routeName: "courier-deliveries", icon: "delivery", order: 1 },
     ],
     layout: CourierLayout,
     routes: [

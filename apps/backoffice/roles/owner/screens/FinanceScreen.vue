@@ -4,7 +4,7 @@ import StubScreen from "../../../shell/pages/StubScreen.vue";
 
 <template>
     <StubScreen
-        title="Finance pulse"
-        hint="Owner stub: revenue snapshot."
+        title="Финансы"
+        hint="Заглушка: сводка по выручке."
     />
 </template>

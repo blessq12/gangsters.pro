@@ -5,14 +5,19 @@ namespace App\Application\Order\Command;
 use App\Application\Order\DTO\CreateOrderDto;
 use App\Application\Order\Presenter\OrderPresenter;
 use App\Domain\Order\Entity\Order;
+use App\Domain\Order\Event\OrderPlaced;
 use App\Domain\Order\Repository\OrderRepository;
+use App\Shared\Transaction\TransactionManager;
 use DateTimeImmutable;
 
 final class CreateOrderUseCase
 {
+    private const KOPECKS_IN_RUBLE = 100;
+
     public function __construct(
         private readonly OrderRepository $orders,
         private readonly OrderPresenter $presenter,
+        private readonly TransactionManager $transaction,
     ) {}
 
     /**
@@ -54,13 +59,42 @@ final class CreateOrderUseCase
             cart: $cart,
             client: $client,
             delivery: $delivery,
-            payment: $payment,
             createdAt: new DateTimeImmutable(),
+            scheduledAt: $this->parseScheduledAt($delivery['scheduled_at'] ?? null),
         );
 
-        $this->orders->save($order);
+        return $this->transaction->run(function () use ($order, $payment): array {
+            $this->orders->save($order);
 
-        return $this->presenter->present($order);
+            event(new OrderPlaced(
+                orderId: $order->id(),
+                amountKopecks: max(0, $order->totalRubles()) * self::KOPECKS_IN_RUBLE,
+                paymentMethod: (string) ($payment['method'] ?? ''),
+                changeFromRubles: isset($payment['change_from_rubles'])
+                    ? (int) $payment['change_from_rubles']
+                    : null,
+            ));
+
+            $saved = $this->orders->findById($order->id());
+            if ($saved === null) {
+                throw new \RuntimeException('Заказ не сохранился.');
+            }
+
+            return $this->presenter->present($saved);
+        });
+    }
+
+    private function parseScheduledAt(mixed $raw): ?DateTimeImmutable
+    {
+        if ($raw === null || trim((string) $raw) === '') {
+            return null;
+        }
+
+        try {
+            return new DateTimeImmutable(trim((string) $raw));
+        } catch (\Exception) {
+            throw new \InvalidArgumentException('Некорректное желаемое время заказа.');
+        }
     }
 
     /**

@@ -24,7 +24,7 @@ async function submit() {
         const employee = await auth.login(email.value.trim(), password.value);
         const role = employee?.role;
         if (!isRegisteredRole(role)) {
-            throw new Error("Unknown employee role.");
+            throw new Error("Неизвестная роль сотрудника.");
         }
         const module = await session.activateRole(role, router);
         const redirect = typeof route.query.redirect === "string" ? route.query.redirect : null;
@@ -34,7 +34,7 @@ async function submit() {
         }
         await router.replace({ name: module.home });
     } catch (reason) {
-        error.value = reason instanceof Error ? reason.message : "Login failed.";
+        error.value = reason instanceof Error ? reason.message : "Не удалось войти.";
     } finally {
         submitting.value = false;
     }
@@ -42,12 +42,12 @@ async function submit() {
 </script>
 
 <template>
-    <section class="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-10">
-        <h1 class="text-xl font-medium">Backoffice login</h1>
-        <p class="mt-2 text-sm text-slate-500">Staff only. Role modules load after login.</p>
+    <section class="w-full max-w-sm border border-bo-border bg-bo-glass p-6 shadow-bo-lg backdrop-blur-md sm:p-8">
+        <h1 class="text-xl font-semibold text-bo-fg">Вход в бэкофис</h1>
+        <p class="mt-1 text-sm text-bo-muted">Только для сотрудников.</p>
         <p
             v-if="error"
-            class="mt-4 text-sm text-red-700"
+            class="mt-4 border border-red-500/40 bg-red-950/40 px-3 py-2 text-sm text-red-200"
         >
             {{ error }}
         </p>
@@ -56,7 +56,7 @@ async function submit() {
             @submit.prevent="submit"
         >
             <label class="block text-sm">
-                <span class="text-slate-600">Email</span>
+                <span class="text-bo-muted">Email</span>
                 <UiInput
                     v-model="email"
                     type="email"
@@ -65,7 +65,7 @@ async function submit() {
                 />
             </label>
             <label class="block text-sm">
-                <span class="text-slate-600">Password</span>
+                <span class="text-bo-muted">Пароль</span>
                 <UiInput
                     v-model="password"
                     type="password"
@@ -75,17 +75,18 @@ async function submit() {
             </label>
             <UiButton
                 type="submit"
+                class="w-full justify-center"
                 :disabled="submitting"
             >
-                Sign in
+                Войти
             </UiButton>
         </form>
         <p class="mt-4 text-sm">
             <RouterLink
                 :to="{ name: 'backoffice-forgot-password' }"
-                class="text-slate-600 underline"
+                class="text-bo-muted underline transition-colors hover:text-bo-accent"
             >
-                Forgot password?
+                Забыли пароль?
             </RouterLink>
         </p>
     </section>

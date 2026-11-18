@@ -13,13 +13,18 @@ use App\Application\Production\Query\GetTicketUseCase;
 use App\Application\Production\Query\ListQueueUseCase;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use InvalidArgumentException;
 
 final class ProductionController extends Controller
 {
-    public function queue(ListQueueUseCase $useCase): JsonResponse
+    public function queue(Request $request, ListQueueUseCase $useCase): JsonResponse
     {
-        return response()->json($useCase->execute());
+        $validated = $request->validate([
+            'kitchen_id' => ['required', 'integer', 'min:1'],
+        ]);
+
+        return response()->json($useCase->execute((int) $validated['kitchen_id']));
     }
 
     public function show(int $orderId, GetTicketUseCase $useCase): JsonResponse

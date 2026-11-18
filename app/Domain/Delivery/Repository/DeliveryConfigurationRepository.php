@@ -16,11 +16,7 @@ interface DeliveryConfigurationRepository
     public function saveSettings(
         ?int $minOrderAmountKopecks,
         ?int $averageDeliveryTimeMinutes,
-        ?string $city,
-        ?string $street,
-        ?string $house,
-        ?string $comment,
-        ?string $searchLine,
+        ?int $kitchenId,
         array $zones,
     ): DeliveryConfiguration;
 }

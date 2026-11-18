@@ -5,7 +5,7 @@ const module = {
     role: "kitchen",
     home: "production-queue",
     nav: [
-        { label: "Queue", routeName: "production-queue", order: 1 },
+        { label: "Очередь", routeName: "production-queue", icon: "queue", order: 1 },
     ],
     layout: ProductionLayout,
     routes: [
