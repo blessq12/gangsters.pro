@@ -12,34 +12,12 @@ interface CatalogItemRepository
     public function findSetById(int $id): ?ProductSet;
 
     /**
-     * Активные товары для корзины/витрины: не-system, плюс комплектные
-     * (meta_is_complement_set) и их платные близнецы (paid_twin), даже если is_system.
+     * Активные не архивные товары по статусу.
      *
      * @param  list<int>  $ids
      * @return list<Product>
      */
     public function findActiveProductsByIds(array $ids): array;
-
-    /**
-     * Id товаров, на которые ссылаются комплектные как на платного близнеца.
-     *
-     * @return list<int>
-     */
-    public function findPaidTwinProductIds(): array;
-
-    /**
-     * Активные системные товары (кандидаты подарка).
-     *
-     * @return list<Product>
-     */
-    public function findActiveSystemProducts(): array;
-
-    /**
-     * Активные товары-наборы дополнений (meta_is_complement_set).
-     *
-     * @return list<Product>
-     */
-    public function findActiveComplementSetProducts(): array;
 
     /**
      * @param  list<int>  $ids
@@ -52,12 +30,6 @@ interface CatalogItemRepository
      * @return array<int, string>
      */
     public function findProductNamesByIds(array $ids): array;
-
-    /**
-     * @param  list<int>  $ids
-     * @return array<int, array{counts_as_roll: bool, complement_set: bool}>
-     */
-    public function findPromotionMetaByProductIds(array $ids): array;
 
     /**
      * Архивные товары — для выгрузки недоступных позиций во внешние меню.
@@ -80,7 +52,6 @@ interface CatalogItemRepository
         ?int $id,
         string $name,
         int $price,
-        ?int $oldPrice,
         ?int $weight,
         string $status,
         ?string $description,
@@ -92,7 +63,6 @@ interface CatalogItemRepository
         string $name,
         ?string $sku,
         int $price,
-        ?int $oldPrice,
         string $status,
     ): int;
 

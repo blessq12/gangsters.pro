@@ -1,0 +1,38 @@
+<?php
+
+namespace App\Infrastructure\Warehouse\Mapper;
+
+use App\Domain\Warehouse\Entity\StockWriteOff;
+use App\Infrastructure\Warehouse\Model\WH_StockWriteOff;
+use DateTimeImmutable;
+
+final class StockWriteOffMapper
+{
+    public function toDomain(WH_StockWriteOff $row): StockWriteOff
+    {
+        return StockWriteOff::restore(
+            id: (int) $row->id,
+            ingredientId: (int) $row->ingredient_id,
+            quantity: (float) $row->quantity,
+            reason: (string) $row->reason,
+            kitchenTicketId: $row->kitchen_ticket_id !== null ? (int) $row->kitchen_ticket_id : null,
+            occurredAt: $row->occurred_at !== null
+                ? DateTimeImmutable::createFromInterface($row->occurred_at)
+                : new DateTimeImmutable(),
+        );
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function toPersistence(StockWriteOff $writeOff): array
+    {
+        return [
+            'ingredient_id' => $writeOff->ingredientId(),
+            'quantity' => $writeOff->quantity(),
+            'reason' => $writeOff->reason(),
+            'kitchen_ticket_id' => $writeOff->kitchenTicketId(),
+            'occurred_at' => $writeOff->occurredAt(),
+        ];
+    }
+}

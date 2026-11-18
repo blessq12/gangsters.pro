@@ -2,66 +2,77 @@
 
 namespace App\Application\Crm\Query;
 
-use App\Application\Crm\Presenter\ClientPresenter;
+use App\Application\Crm\Presenter\AdminClientPresenter;
 use App\Domain\Crm\Entity\Client;
 use App\Domain\Crm\Repository\ClientRepository;
-use App\Domain\Crm\Repository\OrderHistoryRepository;
 
 final class ListAdminClientsUseCase
 {
     public function __construct(
         private readonly ClientRepository $clients,
-        private readonly OrderHistoryRepository $history,
-        private readonly ClientPresenter $presenter,
+        private readonly AdminClientPresenter $presenter,
     ) {}
 
     /**
-     * @return array{clients: list<array<string, mixed>>, page: int, per_page: int, total: int}
+     * @return array{items: list<array<string, mixed>>, total: int, offset: int, limit: int}
      */
-    public function execute(int $page, int $perPage): array
+    public function execute(int $offset = 0, int $limit = 50, ?string $q = null): array
     {
-        $perPage = max(1, min(100, $perPage));
-        $total = $this->clients->count();
-        $pages = max(1, (int) ceil($total / $perPage));
-        $page = min(max(1, $page), $pages);
+        $offset = max(0, $offset);
+        $limit = max(1, min(200, $limit));
+        $query = trim((string) ($q ?? ''));
 
-        $rows = [];
-        foreach ($this->clients->listPage(($page - 1) * $perPage, $perPage) as $client) {
-            $rows[] = $this->present($client);
+        if ($query === '') {
+            return [
+                'items' => $this->presenter->presentList(
+                    $this->clients->listPage($offset, $limit),
+                ),
+                'total' => $this->clients->count(),
+                'offset' => $offset,
+                'limit' => $limit,
+            ];
         }
 
+        $all = $this->clients->listPage(0, max(1, $this->clients->count()));
+        $filtered = array_values(array_filter(
+            $all,
+            fn (Client $client): bool => $this->matches($client, $query),
+        ));
+
+        $total = count($filtered);
+        $page = array_slice($filtered, $offset, $limit);
+
         return [
-            'clients' => $rows,
-            'page' => $page,
-            'per_page' => $perPage,
+            'items' => $this->presenter->presentList($page),
             'total' => $total,
+            'offset' => $offset,
+            'limit' => $limit,
         ];
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    private function present(Client $client): array
+    private function matches(Client $client, string $query): bool
     {
-        $profile = $this->presenter->present($client);
-        $history = [];
+        $needle = mb_strtolower($query);
+        $haystacks = [
+            mb_strtolower($client->name()),
+            mb_strtolower($client->phone()),
+            mb_strtolower((string) ($client->email() ?? '')),
+        ];
 
-        if ($client->hasId()) {
-            foreach ($this->history->listByClientId($client->id()) as $entry) {
-                $snapshot = $entry->orderSnapshot();
-                $orderId = $snapshot['id'] ?? null;
-                $total = $snapshot['total'] ?? null;
-                $history[] = [
-                    'id' => $entry->id(),
-                    'placed_at' => $entry->placedAt()->format(DATE_ATOM),
-                    'summary' => 'заказ #'.(is_scalar($orderId) ? (string) $orderId : '—')
-                        .' · '.(is_numeric($total) ? (string) (int) $total : '0').' ₽',
-                ];
+        foreach ($haystacks as $haystack) {
+            if ($haystack !== '' && mb_strpos($haystack, $needle) !== false) {
+                return true;
             }
         }
 
-        $profile['order_history'] = $history;
+        $digitsNeedle = preg_replace('/\D+/', '', $query) ?? '';
+        if ($digitsNeedle !== '') {
+            $phoneDigits = preg_replace('/\D+/', '', $client->phone()) ?? '';
+            if ($phoneDigits !== '' && str_contains($phoneDigits, $digitsNeedle)) {
+                return true;
+            }
+        }
 
-        return $profile;
+        return false;
     }
 }

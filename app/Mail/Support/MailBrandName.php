@@ -2,7 +2,7 @@
 
 namespace App\Mail\Support;
 
-use App\Domain\Content\Repository\CompanyRepository;
+use App\Domain\Company\Repository\CompanyRepository;
 
 /**
  * Имя бренда для писем: компания из БД, иначе mail.from.name / app.name.

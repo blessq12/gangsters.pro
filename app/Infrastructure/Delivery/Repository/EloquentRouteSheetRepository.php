@@ -54,12 +54,14 @@ final class EloquentRouteSheetRepository implements RouteSheetRepository
         if (! $sheet->hasId()) {
             $row = DLV_RouteSheet::query()->create([
                 'status' => $sheet->status(),
+                'courier_id' => $sheet->courierId(),
                 'created_at' => new DateTimeImmutable(),
             ]);
             $sheet->assignId((int) $row->id);
         } else {
             DLV_RouteSheet::query()->whereKey($sheet->id())->update([
                 'status' => $sheet->status(),
+                'courier_id' => $sheet->courierId(),
             ]);
             DLV_RouteStop::query()->where('route_sheet_id', $sheet->id())->delete();
         }
@@ -87,6 +89,11 @@ final class EloquentRouteSheetRepository implements RouteSheetRepository
             );
         }
 
-        return RouteSheet::restore((int) $row->id, (string) $row->status, $stops);
+        return RouteSheet::restore(
+            (int) $row->id,
+            (string) $row->status,
+            $stops,
+            $row->courier_id !== null ? (int) $row->courier_id : null,
+        );
     }
 }

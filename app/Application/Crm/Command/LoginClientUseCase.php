@@ -2,61 +2,64 @@
 
 namespace App\Application\Crm\Command;
 
+use App\Application\Crm\DTO\LoginClientDto;
 use App\Application\Crm\Presenter\ClientPresenter;
+use App\Application\Crm\Support\ClientAccessToken;
 use App\Domain\Crm\Entity\Client;
-use App\Domain\Crm\Port\ClientAccessTokenIssuer;
 use App\Domain\Crm\Repository\ClientRepository;
 use App\Shared\ValueObject\PhoneNumber;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
 
 final class LoginClientUseCase
 {
     public function __construct(
         private readonly ClientRepository $clients,
-        private readonly ClientAccessTokenIssuer $tokens,
         private readonly ClientPresenter $presenter,
     ) {}
 
     /**
-     * @param  array{phone?: string|null, email?: string|null, password: string}  $input
      * @return array{token: string, client: array<string, mixed>}
      */
-    public function execute(array $input): array
+    public function execute(LoginClientDto $dto): array
     {
-        $password = (string) ($input['password'] ?? '');
-        $phoneRaw = $input['phone'] ?? null;
-        $emailRaw = $input['email'] ?? null;
-
-        $client = null;
-        if (is_string($phoneRaw) && trim($phoneRaw) !== '') {
-            $phone = PhoneNumber::tryFormatFromRaw($phoneRaw);
-            if ($phone === null) {
-                throw ValidationException::withMessages([
-                    'phone' => ['Некорректный телефон.'],
-                ]);
-            }
-            $client = $this->clients->findByPhone($phone);
-        } elseif (is_string($emailRaw) && trim($emailRaw) !== '') {
-            $client = $this->clients->findByEmail(trim($emailRaw));
-        } else {
-            throw ValidationException::withMessages([
-                'phone' => ['Укажите телефон или email.'],
-            ]);
+        $client = $this->resolveClient($dto);
+        if (! $client instanceof Client) {
+            throw new \InvalidArgumentException('Неверный логин или пароль.');
         }
 
-        if (
-            ! $client instanceof Client
-            || ! Hash::check($password, $client->passwordHash())
-        ) {
-            throw ValidationException::withMessages([
-                'password' => ['Неверный логин или пароль.'],
-            ]);
+        if (! Hash::check($dto->password, $client->passwordHash())) {
+            throw new \InvalidArgumentException('Неверный логин или пароль.');
         }
 
         return [
-            'token' => $this->tokens->issue($client->id()),
+            'token' => ClientAccessToken::issue($client->id()),
             'client' => $this->presenter->present($client),
         ];
+    }
+
+    private function resolveClient(LoginClientDto $dto): ?Client
+    {
+        $phone = $this->nullable($dto->phone);
+        if ($phone !== null) {
+            try {
+                return $this->clients->findByPhone(PhoneNumber::formatFromRaw($phone));
+            } catch (\InvalidArgumentException) {
+                return null;
+            }
+        }
+
+        $email = $this->nullable($dto->email);
+        if ($email !== null) {
+            return $this->clients->findByEmail($email);
+        }
+
+        throw new \InvalidArgumentException('Нужен phone или email.');
+    }
+
+    private function nullable(?string $value): ?string
+    {
+        $trimmed = trim((string) ($value ?? ''));
+
+        return $trimmed !== '' ? $trimmed : null;
     }
 }

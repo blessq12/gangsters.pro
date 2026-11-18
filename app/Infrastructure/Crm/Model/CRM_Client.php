@@ -2,7 +2,6 @@
 
 namespace App\Infrastructure\Crm\Model;
 
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
 
@@ -45,11 +44,6 @@ final class CRM_Client extends Authenticatable
         'addresses' => 'array',
         'favorite_product_ids' => 'array',
     ];
-
-    public function orderHistory(): HasMany
-    {
-        return $this->hasMany(CRM_OrderHistory::class, 'client_id');
-    }
 
     public function getAuthPassword(): string
     {

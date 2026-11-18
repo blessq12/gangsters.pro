@@ -2,36 +2,36 @@
 
 namespace App\Application\Crm\Command;
 
-use App\Application\Crm\Presenter\ClientFavoritesPresenter;
+use App\Application\Crm\DTO\ToggleFavoriteDto;
 use App\Domain\Crm\Repository\ClientRepository;
-use Illuminate\Auth\AuthenticationException;
 
 final class ToggleClientFavoriteUseCase
 {
     public function __construct(
         private readonly ClientRepository $clients,
-        private readonly ClientFavoritesPresenter $presenter,
     ) {}
 
     /**
-     * @param  array{name?: string|null, price?: float|int|null, weight?: mixed}  $snapshot
-     * @return array{favorites: list<array<string, mixed>>}
+     * @return array{product_id: int, name: ?string, price_kopecks: ?int, added: bool}
      */
-    public function execute(int $clientId, int $productId, array $snapshot = []): array
+    public function execute(int $clientId, ToggleFavoriteDto $dto): array
     {
         $client = $this->clients->findById($clientId);
         if ($client === null) {
-            throw new AuthenticationException();
+            throw new \InvalidArgumentException('Клиент не найден.');
         }
 
-        $client->toggleFavoriteProductId($productId);
+        $wasFavorite = in_array($dto->productId, $client->favoriteProductIds(), true);
+        $client->toggleFavoriteProductId($dto->productId);
         $this->clients->save($client);
 
-        $overrides = [];
-        if ($snapshot !== []) {
-            $overrides[$productId] = $snapshot;
-        }
+        $added = ! $wasFavorite;
 
-        return $this->presenter->present($client, $overrides);
+        return [
+            'product_id' => $dto->productId,
+            'name' => $dto->name,
+            'price_kopecks' => $dto->priceKopecks,
+            'added' => $added,
+        ];
     }
 }

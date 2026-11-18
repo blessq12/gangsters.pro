@@ -5,11 +5,9 @@
          colors="true"
 >
     <testsuites>
-        <testsuite name="Unit">
-            <directory>tests/Unit</directory>
-        </testsuite>
-        <testsuite name="Feature">
-            <directory>tests/Feature</directory>
+        <testsuite name="Application">
+            <directory>tests</directory>
+            <exclude>tests/.gitkeep</exclude>
         </testsuite>
     </testsuites>
     <source>
@@ -22,18 +20,8 @@
         <env name="APP_ENV" value="testing"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="CACHE_DRIVER" value="array"/>
-        <!-- <env name="DB_CONNECTION" value="sqlite"/> -->
-        <!-- <env name="DB_DATABASE" value=":memory:"/> -->
-        <!-- Для изоляции от dev: раскомментируй и создай БД gangsters_test + migrate (RefreshDatabase в проекте запрещён). -->
-        <!-- <env name="DB_DATABASE" value="gangsters_test"/> -->
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
-        <env name="YANDEX_EDA_AUTH_TOKEN" value="phpunit-yandex-bearer-token"/>
-        <env name="YANDEX_FOOD_ENABLED" value="true"/>
-        <env name="YANDEX_CLIENT_ID" value="phpunit-yandex-client-id"/>
-        <env name="YANDEX_CLIENT_SECRET" value="phpunit-yandex-client-secret"/>
-        <env name="INTERNAL_API_TOKEN" value="phpunit-internal-token"/>
-        <env name="FRONTPAD_ENABLED" value="false"/>
     </php>
 </phpunit>

@@ -3,7 +3,6 @@
 namespace App\Application\Order\Query;
 
 use App\Application\Order\Presenter\AdminOrderPresenter;
-use App\Domain\Order\Enum\OrderStatus;
 use App\Domain\Order\Repository\OrderRepository;
 
 final class ListAdminOrdersUseCase
@@ -14,50 +13,21 @@ final class ListAdminOrdersUseCase
     ) {}
 
     /**
-     * @return array{orders: list<array<string, mixed>>, page: int, per_page: int, total: int, counts: array<string, int>}
+     * @return array{items: list<array<string, mixed>>, total: int, offset: int, limit: int}
      */
-    public function execute(int $page, int $perPage, ?string $status = null): array
+    public function execute(?string $status = null, int $offset = 0, int $limit = 50): array
     {
-        $status = $this->statusFilter($status);
-        $perPage = max(1, min(100, $perPage));
-        $total = $this->orders->count($status);
-        $pages = max(1, (int) ceil($total / $perPage));
-        $page = min(max(1, $page), $pages);
-
-        $rows = [];
-        foreach ($this->orders->listPage(($page - 1) * $perPage, $perPage, $status) as $order) {
-            $rows[] = $this->presenter->present($order);
-        }
+        $limit = max(1, min(200, $limit));
+        $offset = max(0, $offset);
+        $statusFilter = $status !== null && trim($status) !== '' ? trim($status) : null;
 
         return [
-            'orders' => $rows,
-            'page' => $page,
-            'per_page' => $perPage,
-            'total' => $total,
-            'counts' => $this->counts(),
+            'items' => $this->presenter->presentList(
+                $this->orders->listPage($offset, $limit, $statusFilter),
+            ),
+            'total' => $this->orders->count($statusFilter),
+            'offset' => $offset,
+            'limit' => $limit,
         ];
-    }
-
-    /**
-     * @return array<string, int>
-     */
-    private function counts(): array
-    {
-        $grouped = $this->orders->countByStatus();
-        $counts = [];
-        foreach (OrderStatus::cases() as $case) {
-            $counts[$case->value] = (int) ($grouped[$case->value] ?? 0);
-        }
-
-        return $counts;
-    }
-
-    private function statusFilter(?string $status): ?string
-    {
-        if ($status === null || $status === '') {
-            return null;
-        }
-
-        return OrderStatus::tryFrom($status)?->value;
     }
 }

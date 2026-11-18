@@ -33,18 +33,6 @@ return [
             'days' => (int) env('LOG_DAILY_DAYS', 14),
         ],
 
-        /*
-         * Frontpad outbound (new_order) + inbound webhooks.
-         * Не дублируется в laravel.log — только этот канал.
-         */
-        'frontpad' => [
-            'driver' => 'daily',
-            'path' => storage_path('logs/frontpad.log'),
-            'level' => env('LOG_FRONTPAD_LEVEL', env('LOG_LEVEL', 'debug')),
-            'days' => (int) env('LOG_FRONTPAD_DAYS', 30),
-            'replace_placeholders' => true,
-        ],
-
         'null' => [
             'driver' => 'monolog',
             'handler' => NullHandler::class,

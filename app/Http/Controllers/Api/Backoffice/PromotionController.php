@@ -1,0 +1,113 @@
+<?php
+
+namespace App\Http\Controllers\Api\Backoffice;
+
+use App\Application\Promotion\Command\AssignProductPromotionRoleUseCase;
+use App\Application\Promotion\Command\SavePromotionPolicyUseCase;
+use App\Application\Promotion\Command\SyncPromotionZonesUseCase;
+use App\Application\Promotion\DTO\AssignProductPromotionRoleDto;
+use App\Application\Promotion\DTO\SavePromotionPolicyDto;
+use App\Application\Promotion\Query\GetAdminPromotionPolicyUseCase;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use InvalidArgumentException;
+
+final class PromotionController extends Controller
+{
+    public function show(GetAdminPromotionPolicyUseCase $useCase): JsonResponse
+    {
+        try {
+            return response()->json($useCase->execute());
+        } catch (InvalidArgumentException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 404);
+        }
+    }
+
+    public function store(Request $request, SavePromotionPolicyUseCase $useCase): JsonResponse
+    {
+        return $this->savePolicy($request, $useCase, 201);
+    }
+
+    public function update(Request $request, SavePromotionPolicyUseCase $useCase): JsonResponse
+    {
+        return $this->savePolicy($request, $useCase, 200);
+    }
+
+    public function assignRole(Request $request, AssignProductPromotionRoleUseCase $useCase): JsonResponse
+    {
+        $validated = $request->validate([
+            'product_id' => ['required', 'integer', 'min:1'],
+            'role' => ['required', 'string', 'in:roll,gift,complement'],
+            'name' => ['required', 'string', 'max:255'],
+            'price_kopecks' => ['required', 'integer', 'min:0'],
+            'paid_twin_product_id' => ['nullable', 'integer', 'min:1'],
+        ]);
+
+        try {
+            $result = $useCase->execute(new AssignProductPromotionRoleDto(
+                productId: (int) $validated['product_id'],
+                role: $validated['role'],
+                name: $validated['name'],
+                priceKopecks: (int) $validated['price_kopecks'],
+                paidTwinProductId: isset($validated['paid_twin_product_id'])
+                    ? (int) $validated['paid_twin_product_id']
+                    : null,
+            ));
+        } catch (InvalidArgumentException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
+
+        return response()->json($result, 201);
+    }
+
+    public function syncZones(SyncPromotionZonesUseCase $useCase): JsonResponse
+    {
+        try {
+            return response()->json($useCase->execute());
+        } catch (InvalidArgumentException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
+    }
+
+    private function savePolicy(
+        Request $request,
+        SavePromotionPolicyUseCase $useCase,
+        int $status,
+    ): JsonResponse {
+        $validated = $request->validate([
+            'gift_pickup_min_order_kopecks' => ['required', 'integer', 'min:0'],
+            'gift_courier_min_order_kopecks' => ['required', 'integer', 'min:0'],
+            'gift_courier_weekdays' => ['sometimes', 'array'],
+            'gift_courier_weekdays.*' => ['integer', 'min:1', 'max:7'],
+            'gift_benefit_active' => ['required', 'boolean'],
+            'delivery_free_threshold_kopecks' => ['required', 'integer', 'min:0'],
+            'delivery_outside_zone_surcharge_kopecks' => ['required', 'integer', 'min:0'],
+            'delivery_benefit_active' => ['required', 'boolean'],
+            'complement_set_benefit_active' => ['required', 'boolean'],
+            'complement_set_rolls_per_set' => ['required', 'integer', 'min:1'],
+            'complement_set_max_sets' => ['required', 'integer', 'min:1'],
+        ]);
+
+        try {
+            $result = $useCase->execute(new SavePromotionPolicyDto(
+                giftPickupMinOrderKopecks: (int) $validated['gift_pickup_min_order_kopecks'],
+                giftCourierMinOrderKopecks: (int) $validated['gift_courier_min_order_kopecks'],
+                giftCourierWeekdays: is_array($validated['gift_courier_weekdays'] ?? null)
+                    ? $validated['gift_courier_weekdays']
+                    : [],
+                giftBenefitActive: (bool) $validated['gift_benefit_active'],
+                deliveryFreeThresholdKopecks: (int) $validated['delivery_free_threshold_kopecks'],
+                deliveryOutsideZoneSurchargeKopecks: (int) $validated['delivery_outside_zone_surcharge_kopecks'],
+                deliveryBenefitActive: (bool) $validated['delivery_benefit_active'],
+                complementSetBenefitActive: (bool) $validated['complement_set_benefit_active'],
+                complementSetRollsPerSet: (int) $validated['complement_set_rolls_per_set'],
+                complementSetMaxSets: (int) $validated['complement_set_max_sets'],
+            ));
+        } catch (InvalidArgumentException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
+
+        return response()->json($result, $status);
+    }
+}

@@ -2,10 +2,10 @@
 
 namespace App\Application\Crm\Command;
 
+use App\Application\Crm\DTO\AddClientAddressDto;
 use App\Application\Crm\Presenter\ClientPresenter;
 use App\Domain\Crm\Entity\ClientAddress;
 use App\Domain\Crm\Repository\ClientRepository;
-use Illuminate\Auth\AuthenticationException;
 
 final class AddClientAddressUseCase
 {
@@ -15,33 +15,30 @@ final class AddClientAddressUseCase
     ) {}
 
     /**
-     * @param  array<string, mixed>  $input
-     * @return array{client: array<string, mixed>}
+     * @return array<string, mixed>
      */
-    public function execute(int $clientId, array $input): array
+    public function execute(int $clientId, AddClientAddressDto $dto): array
     {
         $client = $this->clients->findById($clientId);
         if ($client === null) {
-            throw new AuthenticationException();
+            throw new \InvalidArgumentException('Клиент не найден.');
         }
 
-        $makeDefault = (bool) ($input['make_default'] ?? $client->addresses() === []);
-
         $address = ClientAddress::create(
-            type: isset($input['type']) ? (string) $input['type'] : null,
-            title: isset($input['title']) ? (string) $input['title'] : null,
-            street: (string) ($input['street'] ?? ''),
-            house: (string) ($input['house'] ?? ''),
-            entrance: isset($input['entrance']) ? (string) $input['entrance'] : null,
-            floor: isset($input['floor']) ? (string) $input['floor'] : null,
-            apartment: isset($input['apartment']) ? (string) $input['apartment'] : null,
-            comment: isset($input['comment']) ? (string) $input['comment'] : null,
-            makeDefault: $makeDefault,
+            type: $dto->type,
+            title: $dto->title,
+            street: $dto->street,
+            house: $dto->house,
+            entrance: $dto->entrance,
+            floor: $dto->floor,
+            apartment: $dto->apartment,
+            comment: $dto->comment,
+            makeDefault: $dto->makeDefault || $client->addresses() === [],
         );
 
         $client->addAddress($address);
         $this->clients->save($client);
 
-        return ['client' => $this->presenter->present($client)];
+        return $this->presenter->address($address);
     }
 }

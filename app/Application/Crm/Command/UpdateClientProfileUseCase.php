@@ -2,12 +2,11 @@
 
 namespace App\Application\Crm\Command;
 
+use App\Application\Crm\DTO\UpdateClientProfileDto;
 use App\Application\Crm\Presenter\ClientPresenter;
 use App\Domain\Crm\Repository\ClientRepository;
 use App\Shared\ValueObject\PhoneNumber;
 use DateTimeImmutable;
-use Illuminate\Auth\AuthenticationException;
-use Illuminate\Validation\ValidationException;
 
 final class UpdateClientProfileUseCase
 {
@@ -17,56 +16,58 @@ final class UpdateClientProfileUseCase
     ) {}
 
     /**
-     * @param  array<string, mixed>  $input
-     * @return array{client: array<string, mixed>}
+     * @return array<string, mixed>
      */
-    public function execute(int $clientId, array $input): array
+    public function execute(int $clientId, UpdateClientProfileDto $dto): array
     {
         $client = $this->clients->findById($clientId);
         if ($client === null) {
-            throw new AuthenticationException();
+            throw new \InvalidArgumentException('Клиент не найден.');
         }
 
-        $name = array_key_exists('name', $input)
-            ? (string) $input['name']
-            : $client->name();
+        $name = $dto->name !== null ? trim($dto->name) : $client->name();
+        $phoneRaw = $dto->phone !== null ? trim($dto->phone) : $client->phone();
+        $phone = PhoneNumber::formatFromRaw($phoneRaw);
 
-        $phone = $client->phone();
-        if (array_key_exists('phone', $input)) {
-            $phone = PhoneNumber::formatFromRaw((string) $input['phone']);
-            $existing = $this->clients->findByPhone($phone);
+        if ($phone !== $client->phone() && $this->clients->existsByPhone($phone)) {
+            throw new \InvalidArgumentException('Клиент с таким телефоном уже зарегистрирован.');
+        }
+
+        $email = $dto->email !== null ? $this->nullable($dto->email) : $client->email();
+        if ($email !== null && ! filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            throw new \InvalidArgumentException('Некорректный email.');
+        }
+        if ($email !== null && $email !== $client->email()) {
+            $existing = $this->clients->findByEmail($email);
             if ($existing !== null && $existing->id() !== $clientId) {
-                throw ValidationException::withMessages([
-                    'phone' => ['Этот телефон уже занят.'],
-                ]);
+                throw new \InvalidArgumentException('Клиент с таким email уже зарегистрирован.');
             }
         }
 
-        $email = array_key_exists('email', $input)
-            ? ($input['email'] !== null ? (string) $input['email'] : null)
-            : $client->email();
-
         $birthDate = $client->birthDate();
-        if (array_key_exists('birth_date', $input)) {
-            $birthDate = $input['birth_date']
-                ? new DateTimeImmutable((string) $input['birth_date'])
-                : null;
+        if ($dto->birthDate !== null) {
+            $birthDate = trim($dto->birthDate) === ''
+                ? null
+                : new DateTimeImmutable(trim($dto->birthDate));
         }
-
-        $consentMarketing = array_key_exists('consent_marketing', $input)
-            ? (bool) $input['consent_marketing']
-            : null;
 
         $client->updateProfile(
             name: $name,
             phone: $phone,
             email: $email,
             birthDate: $birthDate,
-            consentMarketing: $consentMarketing,
+            consentMarketing: $dto->consentMarketing,
         );
 
         $this->clients->save($client);
 
-        return ['client' => $this->presenter->present($client)];
+        return $this->presenter->present($client);
+    }
+
+    private function nullable(?string $value): ?string
+    {
+        $trimmed = trim((string) ($value ?? ''));
+
+        return $trimmed !== '' ? $trimmed : null;
     }
 }

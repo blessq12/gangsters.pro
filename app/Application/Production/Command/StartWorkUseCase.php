@@ -1,0 +1,46 @@
+<?php
+
+namespace App\Application\Production\Command;
+
+use App\Application\Production\DTO\StartWorkDto;
+use App\Application\Production\Presenter\KitchenTicketPresenter;
+use App\Domain\Order\Repository\OrderRepository;
+use App\Domain\Production\Repository\KitchenTicketRepository;
+
+final class StartWorkUseCase
+{
+    public function __construct(
+        private readonly KitchenTicketRepository $tickets,
+        private readonly OrderRepository $orders,
+        private readonly KitchenTicketPresenter $presenter,
+    ) {}
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function execute(StartWorkDto $dto): array
+    {
+        $ticket = $this->tickets->findByOrderId($dto->orderId);
+        if ($ticket === null) {
+            throw new \InvalidArgumentException('Тикет не найден.');
+        }
+
+        try {
+            $ticket->start();
+        } catch (\LogicException $exception) {
+            throw new \InvalidArgumentException($exception->getMessage(), 0, $exception);
+        }
+
+        $this->tickets->save($ticket);
+
+        $order = $this->orders->findById($dto->orderId);
+        if ($order === null) {
+            throw new \InvalidArgumentException('Заказ не найден.');
+        }
+
+        $order->startPreparing();
+        $this->orders->save($order);
+
+        return $this->presenter->present($ticket, $order);
+    }
+}

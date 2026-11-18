@@ -2,77 +2,25 @@
 
 namespace App\Application\Crm\Command;
 
-use App\Domain\Crm\Entity\Client;
-use App\Domain\Crm\Event\ClientPasswordChanged;
-use App\Domain\Crm\Repository\ClientRepository;
-use App\Mail\ClientPasswordResetMail;
-use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
-use RuntimeException;
-use Throwable;
-
 /**
- * Сценарий: сгенерировать новый пароль и отправить его на email клиента.
+ * Заглушка: письмо сброса пароля подключим позже.
  */
 final class RequestPasswordResetUseCase
 {
-    public function __construct(
-        private readonly ClientRepository $clients,
-    ) {}
-
     /**
-     * Всегда «успех» с точки зрения API (anti-enumeration),
-     * кроме сбоя доставки письма — тогда пароль не меняем.
-     *
-     * @throws RuntimeException если письмо не удалось отправить
+     * @return array{message: string}
      */
-    public function execute(string $email): void
+    public function execute(?string $phone, ?string $email): array
     {
-        $email = trim($email);
-        if ($email === '') {
-            return;
+        $phone = trim((string) ($phone ?? ''));
+        $email = trim((string) ($email ?? ''));
+
+        if ($phone === '' && $email === '') {
+            throw new \InvalidArgumentException('Нужен phone или email.');
         }
 
-        $client = $this->clients->findByEmail($email);
-        if (! $client instanceof Client) {
-            return;
-        }
-
-        $plainPassword = $this->generatePassword();
-
-        try {
-            Mail::to($email)->send(new ClientPasswordResetMail(
-                clientName: $client->name(),
-                plainPassword: $plainPassword,
-            ));
-        } catch (Throwable $e) {
-            Log::error('Не удалось отправить письмо восстановления пароля', [
-                'email' => $email,
-                'exception' => $e::class,
-                'message' => $e->getMessage(),
-            ]);
-
-            throw new RuntimeException('Не удалось отправить письмо с новым паролем.', 0, $e);
-        }
-
-        $client->changePassword(Hash::make($plainPassword));
-        $this->clients->save($client);
-
-        Event::dispatch(ClientPasswordChanged::fromClient($client));
-    }
-
-    private function generatePassword(): string
-    {
-        // Читаемый пароль без неоднозначных символов.
-        return Str::password(
-            length: 12,
-            letters: true,
-            numbers: true,
-            symbols: false,
-            spaces: false,
-        );
+        return [
+            'message' => 'Если такой аккаунт есть, мы отправим инструкцию по восстановлению пароля.',
+        ];
     }
 }

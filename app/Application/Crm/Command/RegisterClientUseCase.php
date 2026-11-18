@@ -2,76 +2,82 @@
 
 namespace App\Application\Crm\Command;
 
+use App\Application\Crm\DTO\RegisterClientDto;
 use App\Application\Crm\Presenter\ClientPresenter;
+use App\Application\Crm\Support\ClientAccessToken;
 use App\Domain\Crm\Entity\Client;
-use App\Domain\Crm\Event\ClientCreated;
-use App\Domain\Crm\Port\ClientAccessTokenIssuer;
 use App\Domain\Crm\Repository\ClientRepository;
 use App\Shared\ValueObject\PhoneNumber;
 use DateTimeImmutable;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
 
 final class RegisterClientUseCase
 {
     public function __construct(
         private readonly ClientRepository $clients,
-        private readonly ClientAccessTokenIssuer $tokens,
         private readonly ClientPresenter $presenter,
     ) {}
 
     /**
-     * @param  array{
-     *     name: string,
-     *     phone: string,
-     *     email?: string|null,
-     *     birth_date?: string|null,
-     *     password: string,
-     *     consent_personal_data: bool,
-     *     consent_marketing?: bool
-     * }  $input
      * @return array{token: string, client: array<string, mixed>}
      */
-    public function execute(array $input): array
+    public function execute(RegisterClientDto $dto): array
     {
-        $phone = PhoneNumber::formatFromRaw($input['phone'] ?? null);
-
-        if ($this->clients->existsByPhone($phone)) {
-            throw ValidationException::withMessages([
-                'phone' => ['Клиент с таким телефоном уже зарегистрирован.'],
-            ]);
+        $name = trim($dto->name);
+        if ($name === '') {
+            throw new \InvalidArgumentException('Имя обязательно.');
         }
 
-        $password = (string) ($input['password'] ?? '');
-        if (strlen($password) < 6) {
-            throw ValidationException::withMessages([
-                'password' => ['Пароль должен быть не короче 6 символов.'],
-            ]);
+        if (! $dto->consentPersonalData) {
+            throw new \InvalidArgumentException('Согласие на ПДн обязательно.');
+        }
+
+        if (strlen($dto->password) < 6) {
+            throw new \InvalidArgumentException('Пароль должен быть не короче 6 символов.');
+        }
+
+        $phone = PhoneNumber::formatFromRaw($dto->phone);
+        if ($this->clients->existsByPhone($phone)) {
+            throw new \InvalidArgumentException('Клиент с таким телефоном уже зарегистрирован.');
+        }
+
+        $email = $this->nullable($dto->email);
+        if ($email !== null) {
+            if (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                throw new \InvalidArgumentException('Некорректный email.');
+            }
+            if ($this->clients->findByEmail($email) !== null) {
+                throw new \InvalidArgumentException('Клиент с таким email уже зарегистрирован.');
+            }
         }
 
         $birthDate = null;
-        if (! empty($input['birth_date'])) {
-            $birthDate = new DateTimeImmutable((string) $input['birth_date']);
+        if ($dto->birthDate !== null && trim($dto->birthDate) !== '') {
+            $birthDate = new DateTimeImmutable(trim($dto->birthDate));
         }
 
         $client = Client::register(
-            name: (string) ($input['name'] ?? ''),
+            name: $name,
             phone: $phone,
-            email: isset($input['email']) ? (string) $input['email'] : null,
+            email: $email,
             birthDate: $birthDate,
-            passwordHash: Hash::make($password),
-            consentPersonalData: (bool) ($input['consent_personal_data'] ?? false),
-            consentMarketing: (bool) ($input['consent_marketing'] ?? false),
+            passwordHash: Hash::make($dto->password),
+            consentPersonalData: true,
+            consentMarketing: $dto->consentMarketing,
         );
 
         $this->clients->save($client);
 
-        Event::dispatch(ClientCreated::fromClient($client));
-
         return [
-            'token' => $this->tokens->issue($client->id()),
+            'token' => ClientAccessToken::issue($client->id()),
             'client' => $this->presenter->present($client),
         ];
+    }
+
+    private function nullable(?string $value): ?string
+    {
+        $trimmed = trim((string) ($value ?? ''));
+
+        return $trimmed !== '' ? $trimmed : null;
     }
 }

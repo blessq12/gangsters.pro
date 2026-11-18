@@ -1,15 +1,18 @@
 <?php
 
 use App\Infrastructure\Catalog\Provider\CatalogServiceProvider;
-use App\Infrastructure\Content\Provider\ContentServiceProvider;
+use App\Infrastructure\Company\Provider\CompanyServiceProvider;
 use App\Infrastructure\Crm\Provider\CrmServiceProvider;
+use App\Infrastructure\Delivery\Provider\DeliveryServiceProvider;
+use App\Infrastructure\Marketing\Provider\MarketingServiceProvider;
 use App\Infrastructure\Order\Provider\OrderServiceProvider;
-use App\Infrastructure\YandexFood\Provider\YandexFoodServiceProvider;
-use App\Integration\Frontpad\Provider\FrontpadServiceProvider;
+use App\Infrastructure\Production\Provider\ProductionServiceProvider;
+use App\Infrastructure\Promotion\Provider\PromotionServiceProvider;
+use App\Infrastructure\Staff\Provider\StaffServiceProvider;
+use App\Infrastructure\Warehouse\Provider\WarehouseServiceProvider;
 use App\Shared\Provider\SharedProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\AuthServiceProvider;
-use App\Providers\Filament\AdminPanelProvider;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\ServiceProvider;
@@ -187,13 +190,16 @@ return [
         AuthServiceProvider::class,
         RouteServiceProvider::class,
         SharedProvider::class,
-        FrontpadServiceProvider::class,
         CatalogServiceProvider::class,
-        ContentServiceProvider::class,
+        CompanyServiceProvider::class,
+        MarketingServiceProvider::class,
+        DeliveryServiceProvider::class,
+        PromotionServiceProvider::class,
         CrmServiceProvider::class,
         OrderServiceProvider::class,
-        YandexFoodServiceProvider::class,
-        AdminPanelProvider::class,
+        ProductionServiceProvider::class,
+        WarehouseServiceProvider::class,
+        StaffServiceProvider::class,
         ImageServiceProvider::class,
     ])->toArray(),
 

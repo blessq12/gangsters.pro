@@ -16,10 +16,15 @@ final class ClientPresenter
         $defaultAddressId = null;
 
         foreach ($client->addresses() as $address) {
-            $addresses[] = $this->presentAddress($address);
+            $addresses[] = $this->address($address);
             if ($address->isDefault()) {
                 $defaultAddressId = $address->id();
             }
+        }
+
+        $favorites = [];
+        foreach ($client->favoriteProductIds() as $productId) {
+            $favorites[] = ['product_id' => $productId];
         }
 
         return [
@@ -33,6 +38,7 @@ final class ClientPresenter
             'consent_marketing' => $client->consentMarketing(),
             'addresses' => $addresses,
             'default_address_id' => $defaultAddressId,
+            'favorites' => $favorites,
             'favorite_product_ids' => $client->favoriteProductIds(),
         ];
     }
@@ -40,7 +46,7 @@ final class ClientPresenter
     /**
      * @return array<string, mixed>
      */
-    private function presentAddress(ClientAddress $address): array
+    public function address(ClientAddress $address): array
     {
         return [
             'id' => $address->id(),

@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Infrastructure\Content\Model\MKT_Banner;
-use App\Infrastructure\Content\Model\MKT_Promotion;
+use App\Infrastructure\Marketing\Model\MKT_Banner;
+use App\Infrastructure\Marketing\Model\MKT_Promotion;
 use Illuminate\Database\Seeder;
 
 class MarketingContentSeeder extends Seeder

@@ -4,7 +4,6 @@ namespace App\Application\Crm\Query;
 
 use App\Application\Crm\Presenter\ClientPresenter;
 use App\Domain\Crm\Repository\ClientRepository;
-use Illuminate\Auth\AuthenticationException;
 
 final class GetClientProfileUseCase
 {
@@ -14,15 +13,15 @@ final class GetClientProfileUseCase
     ) {}
 
     /**
-     * @return array{client: array<string, mixed>}
+     * @return array<string, mixed>
      */
     public function execute(int $clientId): array
     {
         $client = $this->clients->findById($clientId);
         if ($client === null) {
-            throw new AuthenticationException();
+            throw new \InvalidArgumentException('Клиент не найден.');
         }
 
-        return ['client' => $this->presenter->present($client)];
+        return $this->presenter->present($client);
     }
 }

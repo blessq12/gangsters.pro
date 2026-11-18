@@ -1,0 +1,25 @@
+{
+  "name": "Gangster's Sushi",
+  "short_name": "Gangsters",
+  "description": "Публичный клиент — прототип мобильного приложения",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#191919",
+  "theme_color": "#191919",
+  "lang": "ru",
+  "icons": [
+    {
+      "src": "/favicon/web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

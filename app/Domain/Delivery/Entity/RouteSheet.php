@@ -11,6 +11,7 @@ final class RouteSheet
         private ?int $id,
         private readonly string $status,
         private readonly array $stops,
+        private readonly ?int $courierId,
     ) {}
 
     /**
@@ -27,15 +28,15 @@ final class RouteSheet
             $stops[] = new RouteStop($orderId, $index + 1, 'pending', '');
         }
 
-        return new self(null, 'released', $stops);
+        return new self(null, 'released', $stops, null);
     }
 
     /**
      * @param  list<RouteStop>  $stops
      */
-    public static function restore(int $id, string $status, array $stops): self
+    public static function restore(int $id, string $status, array $stops, ?int $courierId = null): self
     {
-        return new self($id, $status, $stops);
+        return new self($id, $status, $stops, $courierId);
     }
 
     public function id(): int
@@ -66,6 +67,11 @@ final class RouteSheet
         return $this->status;
     }
 
+    public function courierId(): ?int
+    {
+        return $this->courierId;
+    }
+
     /**
      * @return list<RouteStop>
      */
@@ -74,13 +80,17 @@ final class RouteSheet
         return $this->stops;
     }
 
-    public function take(): self
+    public function take(int $courierId): self
     {
         if ($this->status !== 'released') {
             throw new \InvalidArgumentException('Этот лист нельзя взять в доставку.');
         }
 
-        return new self($this->id, 'in_delivery', $this->stops);
+        if ($courierId < 1) {
+            throw new \InvalidArgumentException('courierId должен быть положительным.');
+        }
+
+        return new self($this->id, 'in_delivery', $this->stops, $courierId);
     }
 
     public function settle(int $orderId, string $outcome, string $reason): self
@@ -121,7 +131,7 @@ final class RouteSheet
             throw new \InvalidArgumentException('Этого заказа нет в маршрутном листе.');
         }
 
-        return new self($this->id, $this->status, $stops);
+        return new self($this->id, $this->status, $stops, $this->courierId);
     }
 
     public function complete(): self
@@ -136,6 +146,6 @@ final class RouteSheet
             }
         }
 
-        return new self($this->id, 'completed', $this->stops);
+        return new self($this->id, 'completed', $this->stops, $this->courierId);
     }
 }

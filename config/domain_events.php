@@ -3,13 +3,11 @@
 use App\Domain\Crm\Event\ClientCreated;
 use App\Domain\Crm\Event\ClientPasswordChanged;
 use App\Domain\Order\Event\OrderCreated;
-use App\Infrastructure\Crm\Listener\RecordOrderHistoryOnCreated;
 use App\Infrastructure\Crm\Listener\SendWelcomeMailOnClientCreated;
 use App\Infrastructure\Order\Listener\SendOrderConfirmationMailOnOrderCreated;
-use App\Integration\Frontpad\Listener\OnOrderCreated;
 
 /**
- * Матрица подписок: доменное событие → слушатели Integration / Infrastructure.
+ * Матрица подписок: доменное событие → слушатели Infrastructure.
  *
  * Слушатель: class-string с методом handle, или [class-string, 'method'].
  *
@@ -20,8 +18,6 @@ use App\Integration\Frontpad\Listener\OnOrderCreated;
 return [
     'listen' => [
         OrderCreated::class => [
-            OnOrderCreated::class, // frontpad integration
-            RecordOrderHistoryOnCreated::class,
             SendOrderConfirmationMailOnOrderCreated::class,
         ],
 
