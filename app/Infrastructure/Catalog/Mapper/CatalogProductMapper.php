@@ -2,20 +2,23 @@
 
 namespace App\Infrastructure\Catalog\Mapper;
 
+use App\Domain\Catalog\Entity\Price;
 use App\Domain\Catalog\Entity\Product;
+use App\Domain\Catalog\Enum\PriceType;
 use App\Domain\Catalog\Enum\ProductStatus;
 use App\Domain\Catalog\ValueObject\Nutrition;
 use App\Domain\Catalog\ValueObject\ProductImage;
-use App\Infrastructure\Catalog\Model\PRD_Product;
-use App\Shared\ValueObject\Money;
+use App\Infrastructure\Catalog\Model\CAT_Item;
+use App\Infrastructure\Catalog\Model\CAT_Price;
 
 final class CatalogProductMapper
 {
     /**
      * @param  list<int>  $tagIds
      * @param  list<ProductImage>  $images
+     * @param  list<Price>  $prices
      */
-    public function toDomain(PRD_Product $row, array $tagIds = [], array $images = []): Product
+    public function toDomain(CAT_Item $row, array $tagIds = [], array $images = [], array $prices = []): Product
     {
         return new Product(
             id: (int) $row->id,
@@ -24,7 +27,7 @@ final class CatalogProductMapper
             sku: $this->resolveSku($row),
             status: $this->resolveStatus($row),
             isSystem: (bool) $row->is_system,
-            price: Money::rubles((int) ($row->price ?? 0)),
+            prices: $prices !== [] ? $prices : $this->mapPrices($row),
             description: $row->description !== null ? (string) $row->description : null,
             nutrition: $this->resolveNutrition($row),
             tagIds: $tagIds,
@@ -34,7 +37,37 @@ final class CatalogProductMapper
         );
     }
 
-    private function resolveWeight(PRD_Product $row): ?int
+    /**
+     * @return list<Price>
+     */
+    public function mapPrices(CAT_Item $row): array
+    {
+        $priceRows = $row->relationLoaded('prices')
+            ? $row->prices
+            : CAT_Price::query()->where('item_id', $row->id)->get();
+
+        $prices = [];
+        foreach ($priceRows as $priceRow) {
+            if (! $priceRow instanceof CAT_Price) {
+                continue;
+            }
+
+            $type = PriceType::tryFrom((string) $priceRow->type);
+            if ($type === null) {
+                continue;
+            }
+
+            $prices[] = Price::of(
+                type: $type,
+                amountKopecks: max(0, (int) $priceRow->amount_kopecks),
+                id: (int) $priceRow->id,
+            );
+        }
+
+        return $prices;
+    }
+
+    private function resolveWeight(CAT_Item $row): ?int
     {
         if ($row->weight === null) {
             return null;
@@ -45,14 +78,17 @@ final class CatalogProductMapper
         return $grams > 0 ? $grams : null;
     }
 
-    private function resolveSku(PRD_Product $row): ?string
+    private function resolveSku(CAT_Item $row): ?string
     {
         $sku = trim((string) ($row->sku ?? ''));
 
         return $sku !== '' ? $sku : null;
     }
 
-    private function resolveIngredients(PRD_Product $row): array
+    /**
+     * @return list<string>
+     */
+    private function resolveIngredients(CAT_Item $row): array
     {
         $raw = $row->ingredients;
 
@@ -75,7 +111,7 @@ final class CatalogProductMapper
         return $ingredients;
     }
 
-    private function resolveStatus(PRD_Product $row): ProductStatus
+    private function resolveStatus(CAT_Item $row): ProductStatus
     {
         if ($row->archived_at !== null) {
             return ProductStatus::Archived;
@@ -88,23 +124,28 @@ final class CatalogProductMapper
             : ProductStatus::Archived;
     }
 
-    private function resolveNutrition(PRD_Product $row): ?Nutrition
+    private function resolveNutrition(CAT_Item $row): ?Nutrition
     {
-        $hasValues = ((float) $row->calories) > 0
-            || ((float) $row->proteins) > 0
-            || ((float) $row->fats) > 0
-            || ((float) $row->carbs) > 0;
+        $raw = $row->nutrition;
+        if (! is_array($raw)) {
+            return null;
+        }
 
-        if (! $hasValues) {
+        $calories = (float) ($raw['calories'] ?? 0);
+        $proteins = (float) ($raw['proteins'] ?? 0);
+        $fats = (float) ($raw['fats'] ?? 0);
+        $carbs = (float) ($raw['carbs'] ?? 0);
+
+        if ($calories <= 0 && $proteins <= 0 && $fats <= 0 && $carbs <= 0) {
             return null;
         }
 
         return new Nutrition(
-            calories: (float) $row->calories,
-            proteins: (float) $row->proteins,
-            fats: (float) $row->fats,
-            carbs: (float) $row->carbs,
-            basis: (string) ($row->nutrition_basis ?: 'per_100g'),
+            calories: $calories,
+            proteins: $proteins,
+            fats: $fats,
+            carbs: $carbs,
+            basis: (string) ($raw['basis'] ?? 'per_100g'),
         );
     }
 }

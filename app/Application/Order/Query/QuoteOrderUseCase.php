@@ -209,7 +209,7 @@ final class QuoteOrderUseCase
 
             if (isset($products[$catalogId])) {
                 $product = $products[$catalogId];
-                $unit = $product->price()->amountRubles();
+                $unit = $product->regularPrice()?->amountRubles() ?? 0;
                 $itemsTotalRubles += $unit * $quantity;
                 $cartLines[] = $this->productLine($product, $quantity, $unit, 'user');
                 $promoLines[] = ['product_id' => $catalogId, 'quantity' => $quantity];
@@ -219,7 +219,7 @@ final class QuoteOrderUseCase
 
             if (isset($sets[$catalogId])) {
                 $set = $sets[$catalogId];
-                $unit = $set->price()->amountRubles();
+                $unit = $set->regularPrice()?->amountRubles() ?? 0;
                 $itemsTotalRubles += $unit * $quantity;
                 $cartLines[] = $this->setLine($set, $quantity, $unit, 'user');
                 $promoLines[] = ['product_id' => $catalogId, 'quantity' => $quantity];
@@ -344,7 +344,7 @@ final class QuoteOrderUseCase
             return null;
         }
 
-        $unit = $product->price()->amountRubles();
+        $unit = $product->regularPrice()?->amountRubles() ?? 0;
 
         return $this->productLine($product, 1, $unit, 'delivery');
     }

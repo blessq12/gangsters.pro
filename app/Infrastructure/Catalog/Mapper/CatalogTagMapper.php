@@ -3,11 +3,11 @@
 namespace App\Infrastructure\Catalog\Mapper;
 
 use App\Domain\Catalog\Entity\Tag;
-use App\Infrastructure\Catalog\Model\PRD_Tag;
+use App\Infrastructure\Catalog\Model\CAT_Tag;
 
 final class CatalogTagMapper
 {
-    public function toDomain(PRD_Tag $row): Tag
+    public function toDomain(CAT_Tag $row): Tag
     {
         return new Tag(
             id: (int) $row->id,

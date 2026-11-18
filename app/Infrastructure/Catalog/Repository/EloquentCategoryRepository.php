@@ -7,9 +7,9 @@ use App\Domain\Catalog\Entity\CategoryItem;
 use App\Domain\Catalog\Enum\CatalogItemKind;
 use App\Domain\Catalog\Repository\CategoryRepository;
 use App\Infrastructure\Catalog\Mapper\CatalogCategoryMapper;
-use App\Infrastructure\Catalog\Model\PRD_Category;
-use App\Infrastructure\Catalog\Model\PRD_CategoryProduct;
-use App\Infrastructure\Catalog\Model\PRD_Product;
+use App\Infrastructure\Catalog\Model\CAT_Category;
+use App\Infrastructure\Catalog\Model\CAT_CategoryItem;
+use App\Infrastructure\Catalog\Model\CAT_Item;
 use Illuminate\Support\Str;
 
 final class EloquentCategoryRepository implements CategoryRepository
@@ -20,35 +20,35 @@ final class EloquentCategoryRepository implements CategoryRepository
 
     public function findAllOrdered(): array
     {
-        return PRD_Category::query()
+        return CAT_Category::query()
             ->where('is_active', true)
             ->orderBy('sort_order')
             ->orderBy('id')
             ->get()
-            ->map(fn (PRD_Category $row) => $this->mapper->toDomain($row))
+            ->map(fn (CAT_Category $row) => $this->mapper->toDomain($row))
             ->all();
     }
 
     public function findAllIncludingInactive(): array
     {
-        return PRD_Category::query()
+        return CAT_Category::query()
             ->orderBy('sort_order')
             ->orderBy('id')
             ->get()
-            ->map(fn (PRD_Category $row) => $this->mapper->toDomain($row))
+            ->map(fn (CAT_Category $row) => $this->mapper->toDomain($row))
             ->all();
     }
 
     public function findById(int $id): ?Category
     {
-        $row = PRD_Category::query()->find($id);
+        $row = CAT_Category::query()->find($id);
 
-        return $row instanceof PRD_Category ? $this->mapper->toDomain($row) : null;
+        return $row instanceof CAT_Category ? $this->mapper->toDomain($row) : null;
     }
 
     public function findItemsByCategoryId(int $categoryId): array
     {
-        $links = PRD_CategoryProduct::query()
+        $links = CAT_CategoryItem::query()
             ->where('category_id', $categoryId)
             ->orderBy('sort_order')
             ->orderBy('id')
@@ -58,23 +58,23 @@ final class EloquentCategoryRepository implements CategoryRepository
             return [];
         }
 
-        $productIds = $links
-            ->pluck('product_id')
+        $itemIds = $links
+            ->pluck('item_id')
             ->map(static fn ($id) => (int) $id)
             ->all();
 
-        $kindsById = PRD_Product::query()
-            ->whereIn('id', $productIds)
-            ->pluck('catalog_kind', 'id');
+        $kindsById = CAT_Item::query()
+            ->whereIn('id', $itemIds)
+            ->pluck('kind', 'id');
 
         $items = [];
 
         foreach ($links as $link) {
-            if (! $link instanceof PRD_CategoryProduct) {
+            if (! $link instanceof CAT_CategoryItem) {
                 continue;
             }
 
-            $catalogItemId = (int) $link->product_id;
+            $catalogItemId = (int) $link->item_id;
             $kindValue = (string) ($kindsById[$catalogItemId] ?? CatalogItemKind::Product->value);
             $kind = CatalogItemKind::tryFrom($kindValue) ?? CatalogItemKind::Product;
 
@@ -91,13 +91,14 @@ final class EloquentCategoryRepository implements CategoryRepository
 
     public function save(?int $id, string $name, bool $isActive, bool $isAccompanying): Category
     {
-        $row = $id === null ? new PRD_Category() : PRD_Category::query()->find($id);
-        if (! $row instanceof PRD_Category) {
+        $row = $id === null ? new CAT_Category() : CAT_Category::query()->find($id);
+        if (! $row instanceof CAT_Category) {
             throw new \InvalidArgumentException('Категория не найдена.');
         }
 
         if ($id === null) {
             $row->slug = $this->uniqueSlug($name);
+            $row->sort_order = 0;
         }
 
         $row->fill([
@@ -119,7 +120,7 @@ final class EloquentCategoryRepository implements CategoryRepository
 
         $slug = $base;
         $suffix = 2;
-        while (PRD_Category::query()->where('slug', $slug)->exists()) {
+        while (CAT_Category::query()->where('slug', $slug)->exists()) {
             $slug = $base.'-'.$suffix;
             $suffix++;
         }

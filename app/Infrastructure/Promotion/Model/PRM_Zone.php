@@ -4,14 +4,17 @@ namespace App\Infrastructure\Promotion\Model;
 
 use Illuminate\Database\Eloquent\Model;
 
-class PRM_Zone extends Model
+final class PRM_Zone extends Model
 {
-    protected $table = 'PRM_zones';
+    public $incrementing = false;
 
     protected $keyType = 'string';
 
-    public $incrementing = false;
+    protected $table = 'PRM_zones';
 
+    /**
+     * @var list<string>
+     */
     protected $fillable = [
         'id',
         'name',
@@ -19,6 +22,9 @@ class PRM_Zone extends Model
         'is_remote',
     ];
 
+    /**
+     * @var array<string, string>
+     */
     protected $casts = [
         'fee_kopecks' => 'integer',
         'is_remote' => 'boolean',

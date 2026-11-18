@@ -4,12 +4,12 @@ namespace App\Infrastructure\Production\Mapper;
 
 use App\Domain\Production\Entity\KitchenTicket;
 use App\Domain\Production\Enum\KitchenTicketStatus;
-use App\Infrastructure\Production\Model\PRD_KitchenTicket;
+use App\Infrastructure\Production\Model\KIT_Ticket;
 use DateTimeImmutable;
 
 final class KitchenTicketMapper
 {
-    public function toDomain(PRD_KitchenTicket $row): KitchenTicket
+    public function toDomain(KIT_Ticket $row): KitchenTicket
     {
         $status = KitchenTicketStatus::tryFrom((string) $row->status)
             ?? KitchenTicketStatus::Queued;

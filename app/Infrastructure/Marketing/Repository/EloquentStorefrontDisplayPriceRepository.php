@@ -4,15 +4,15 @@ namespace App\Infrastructure\Marketing\Repository;
 
 use App\Domain\Marketing\Entity\StorefrontDisplayPrice;
 use App\Domain\Marketing\Repository\StorefrontDisplayPriceRepository;
-use App\Infrastructure\Catalog\Model\PRD_Product;
+use App\Infrastructure\Catalog\Model\CAT_Price;
 
 /**
- * Витринная «старая» цена: читает колонку old_price (рубли) из PRD_Product.
- * Физический вынос колонки — отдельный план миграций.
+ * Витринная «старая» цена: читает CAT_prices type=old (копейки).
+ * Кросс-контекст без FK — только opaque item_id.
  */
 final class EloquentStorefrontDisplayPriceRepository implements StorefrontDisplayPriceRepository
 {
-    private const KOPECKS_IN_RUBLE = 100;
+    private const PRICE_TYPE_OLD = 'old';
 
     public function findByCatalogItemIds(array $ids): array
     {
@@ -28,15 +28,23 @@ final class EloquentStorefrontDisplayPriceRepository implements StorefrontDispla
         }
 
         $prices = [];
-        $rows = PRD_Product::query()
-            ->whereIn('id', array_values($normalized))
-            ->get(['id', 'old_price']);
+        foreach ($normalized as $id) {
+            $prices[$id] = new StorefrontDisplayPrice(
+                catalogItemId: $id,
+                oldPriceKopecks: null,
+            );
+        }
+
+        $rows = CAT_Price::query()
+            ->where('type', self::PRICE_TYPE_OLD)
+            ->whereIn('item_id', array_values($normalized))
+            ->get(['item_id', 'amount_kopecks']);
 
         foreach ($rows as $row) {
-            $oldPriceRubles = $row->old_price !== null ? (int) $row->old_price : 0;
-            $prices[(int) $row->id] = new StorefrontDisplayPrice(
-                catalogItemId: (int) $row->id,
-                oldPriceKopecks: $oldPriceRubles > 0 ? $oldPriceRubles * self::KOPECKS_IN_RUBLE : null,
+            $amount = max(0, (int) $row->amount_kopecks);
+            $prices[(int) $row->item_id] = new StorefrontDisplayPrice(
+                catalogItemId: (int) $row->item_id,
+                oldPriceKopecks: $amount > 0 ? $amount : null,
             );
         }
 

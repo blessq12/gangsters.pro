@@ -3,24 +3,52 @@
 namespace App\Infrastructure\Promotion\Mapper;
 
 use App\Domain\Promotion\Entity\PromotionPolicy;
-use App\Infrastructure\Promotion\Model\PRM_Configuration;
+use App\Infrastructure\Promotion\Model\PRM_Policy;
 
 final class PromotionPolicyMapper
 {
     /** @var list<int> */
     private const DEFAULT_COURIER_WEEKDAYS = [1, 2, 3, 4];
 
-    public function toDomain(PRM_Configuration $row): PromotionPolicy
+    public function toDomain(PRM_Policy $row): PromotionPolicy
     {
-        $giftActive = (bool) $row->gift_benefit_active;
+        $giftRules = is_array($row->gift_rules) ? $row->gift_rules : [];
+        $deliveryBenefit = is_array($row->delivery_benefit) ? $row->delivery_benefit : [];
+        $complementSetBenefit = is_array($row->complement_set_benefit) ? $row->complement_set_benefit : [];
 
         return new PromotionPolicy(
             id: (int) $row->id,
-            giftRules: [
+            giftRules: $giftRules,
+            deliveryBenefit: $deliveryBenefit,
+            complementSetBenefit: $complementSetBenefit,
+        );
+    }
+
+    /**
+     * @param  array{
+     *     gift_pickup_min_order_kopecks: int,
+     *     gift_courier_min_order_kopecks: int,
+     *     gift_courier_weekdays: list<int>,
+     *     gift_benefit_active: bool,
+     *     delivery_free_threshold_kopecks: int,
+     *     delivery_outside_zone_surcharge_kopecks: int,
+     *     delivery_benefit_active: bool,
+     *     complement_set_benefit_active: bool,
+     *     complement_set_rolls_per_set: int,
+     *     complement_set_max_sets: int
+     * }  $fields
+     * @return array{gift_rules: list<array<string, mixed>>, delivery_benefit: array<string, mixed>, complement_set_benefit: array<string, mixed>}
+     */
+    public function flatFieldsToPersistence(array $fields): array
+    {
+        $giftActive = (bool) $fields['gift_benefit_active'];
+
+        return [
+            'gift_rules' => [
                 [
                     'order_channel' => 'pickup',
                     'min_order_amount_kopecks' => $this->requiredPositiveInt(
-                        $row->gift_pickup_min_order_kopecks,
+                        $fields['gift_pickup_min_order_kopecks'],
                         'gift_pickup_min_order_kopecks',
                     ),
                     'benefit_type' => 'free_roll_gift',
@@ -30,43 +58,43 @@ final class PromotionPolicyMapper
                 [
                     'order_channel' => 'courier',
                     'min_order_amount_kopecks' => $this->requiredPositiveInt(
-                        $row->gift_courier_min_order_kopecks,
+                        $fields['gift_courier_min_order_kopecks'],
                         'gift_courier_min_order_kopecks',
                     ),
                     'benefit_type' => 'free_roll_gift',
                     'is_active' => $giftActive,
                     'allowed_weekdays' => $this->normalizeWeekdays(
-                        $row->gift_courier_weekdays,
+                        $fields['gift_courier_weekdays'],
                         self::DEFAULT_COURIER_WEEKDAYS,
                     ),
                 ],
             ],
-            deliveryBenefit: [
+            'delivery_benefit' => [
                 'free_delivery_threshold_kopecks' => $this->requiredNonNegativeInt(
-                    $row->delivery_free_threshold_kopecks,
+                    $fields['delivery_free_threshold_kopecks'],
                     'delivery_free_threshold_kopecks',
                 ),
                 'outside_zone_surcharge_kopecks' => $this->requiredNonNegativeInt(
-                    $row->delivery_outside_zone_surcharge_kopecks,
+                    $fields['delivery_outside_zone_surcharge_kopecks'],
                     'delivery_outside_zone_surcharge_kopecks',
                 ),
                 'below_threshold_fee_mode' => 'base_tariff',
                 'in_zone_at_threshold_fee_mode' => 'free',
                 'outside_zone_at_threshold_fee_mode' => 'outside_zone_surcharge_only',
-                'is_active' => (bool) $row->delivery_benefit_active,
+                'is_active' => (bool) $fields['delivery_benefit_active'],
             ],
-            complementSetBenefit: [
+            'complement_set_benefit' => [
                 'rolls_per_set' => $this->requiredPositiveInt(
-                    $row->complement_set_rolls_per_set,
+                    $fields['complement_set_rolls_per_set'],
                     'complement_set_rolls_per_set',
                 ),
                 'max_sets' => $this->requiredPositiveInt(
-                    $row->complement_set_max_sets,
+                    $fields['complement_set_max_sets'],
                     'complement_set_max_sets',
                 ),
-                'is_active' => (bool) $row->complement_set_benefit_active,
+                'is_active' => (bool) $fields['complement_set_benefit_active'],
             ],
-        );
+        ];
     }
 
     /**

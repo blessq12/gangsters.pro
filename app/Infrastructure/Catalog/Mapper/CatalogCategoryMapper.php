@@ -3,11 +3,11 @@
 namespace App\Infrastructure\Catalog\Mapper;
 
 use App\Domain\Catalog\Entity\Category;
-use App\Infrastructure\Catalog\Model\PRD_Category;
+use App\Infrastructure\Catalog\Model\CAT_Category;
 
 final class CatalogCategoryMapper
 {
-    public function toDomain(PRD_Category $row): Category
+    public function toDomain(CAT_Category $row): Category
     {
         return new Category(
             id: (int) $row->id,

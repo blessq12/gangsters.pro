@@ -9,7 +9,7 @@ final class WH_StockWriteOff extends Model
     protected $table = 'WH_stock_writeoffs';
 
     /**
-     * @var array<int, string>
+     * @var list<string>
      */
     protected $fillable = [
         'ingredient_id',
@@ -24,7 +24,7 @@ final class WH_StockWriteOff extends Model
      */
     protected $casts = [
         'ingredient_id' => 'integer',
-        'quantity' => 'float',
+        'quantity' => 'decimal:3',
         'kitchen_ticket_id' => 'integer',
         'occurred_at' => 'datetime',
     ];

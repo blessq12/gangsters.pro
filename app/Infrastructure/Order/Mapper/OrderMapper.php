@@ -8,6 +8,8 @@ use DateTimeImmutable;
 
 final class OrderMapper
 {
+    private const KOPECKS_IN_RUBLE = 100;
+
     public function toDomain(ORD_Order $row): Order
     {
         return Order::restore(
@@ -42,7 +44,7 @@ final class OrderMapper
             'external_order_id' => $order->externalOrderId(),
             'status' => $order->status()->value,
             'client_id' => $order->clientId(),
-            'total_rubles' => $order->totalRubles(),
+            'total_kopecks' => max(0, $order->totalRubles()) * self::KOPECKS_IN_RUBLE,
             'cart_snapshot' => $order->cart(),
             'client_snapshot' => $order->client(),
             'delivery_snapshot' => $order->delivery(),

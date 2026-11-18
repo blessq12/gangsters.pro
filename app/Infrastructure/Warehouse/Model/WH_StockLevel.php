@@ -9,7 +9,7 @@ final class WH_StockLevel extends Model
     protected $table = 'WH_stock_levels';
 
     /**
-     * @var array<int, string>
+     * @var list<string>
      */
     protected $fillable = [
         'ingredient_id',
@@ -21,6 +21,6 @@ final class WH_StockLevel extends Model
      */
     protected $casts = [
         'ingredient_id' => 'integer',
-        'quantity' => 'float',
+        'quantity' => 'decimal:3',
     ];
 }

@@ -3,21 +3,26 @@
 namespace App\Infrastructure\Company\Model;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class CMP_CompanyDocument extends Model
+final class CMP_CompanyDocument extends Model
 {
     protected $table = 'CMP_company_documents';
 
+    /**
+     * @var list<string>
+     */
     protected $fillable = [
         'company_id',
         'slug',
         'name',
         'content',
+        'path',
     ];
 
-    public function company(): BelongsTo
-    {
-        return $this->belongsTo(CMP_Company::class, 'company_id');
-    }
+    /**
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'company_id' => 'integer',
+    ];
 }

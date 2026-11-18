@@ -6,10 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-class CMP_Company extends Model
+final class CMP_Company extends Model
 {
-    protected $table = 'CMP_company';
+    protected $table = 'CMP_companies';
 
+    /**
+     * @var list<string>
+     */
     protected $fillable = [
         'name',
         'description',
@@ -19,6 +22,9 @@ class CMP_Company extends Model
         'schedule',
     ];
 
+    /**
+     * @var array<string, string>
+     */
     protected $casts = [
         'socials' => 'array',
         'schedule' => 'array',
@@ -32,5 +38,10 @@ class CMP_Company extends Model
     public function documents(): HasMany
     {
         return $this->hasMany(CMP_CompanyDocument::class, 'company_id');
+    }
+
+    public function branches(): HasMany
+    {
+        return $this->hasMany(CMP_Branch::class, 'company_id');
     }
 }

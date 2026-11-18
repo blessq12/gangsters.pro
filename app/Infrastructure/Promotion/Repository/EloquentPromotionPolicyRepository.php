@@ -5,7 +5,7 @@ namespace App\Infrastructure\Promotion\Repository;
 use App\Domain\Promotion\Entity\PromotionPolicy;
 use App\Domain\Promotion\Repository\PromotionPolicyRepository;
 use App\Infrastructure\Promotion\Mapper\PromotionPolicyMapper;
-use App\Infrastructure\Promotion\Model\PRM_Configuration;
+use App\Infrastructure\Promotion\Model\PRM_Policy;
 
 final class EloquentPromotionPolicyRepository implements PromotionPolicyRepository
 {
@@ -15,20 +15,20 @@ final class EloquentPromotionPolicyRepository implements PromotionPolicyReposito
 
     public function find(): ?PromotionPolicy
     {
-        $row = PRM_Configuration::query()->find(self::SINGLETON_ID);
+        $row = PRM_Policy::query()->find(self::SINGLETON_ID);
 
-        return $row instanceof PRM_Configuration ? $this->mapper->toDomain($row) : null;
+        return $row instanceof PRM_Policy ? $this->mapper->toDomain($row) : null;
     }
 
     public function save(array $fields): PromotionPolicy
     {
-        $row = PRM_Configuration::query()->find(self::SINGLETON_ID);
-        if (! $row instanceof PRM_Configuration) {
-            $row = new PRM_Configuration();
+        $row = PRM_Policy::query()->find(self::SINGLETON_ID);
+        if (! $row instanceof PRM_Policy) {
+            $row = new PRM_Policy();
             $row->id = self::SINGLETON_ID;
         }
 
-        $row->fill($fields);
+        $row->fill($this->mapper->flatFieldsToPersistence($fields));
         $row->save();
 
         return $this->mapper->toDomain($row);

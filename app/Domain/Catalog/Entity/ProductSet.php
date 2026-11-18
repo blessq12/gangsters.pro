@@ -4,10 +4,10 @@ namespace App\Domain\Catalog\Entity;
 
 use App\Domain\Catalog\Contract\CatalogItem;
 use App\Domain\Catalog\Enum\CatalogItemKind;
+use App\Domain\Catalog\Enum\PriceType;
 use App\Domain\Catalog\Enum\ProductStatus;
-use App\Domain\Catalog\ValueObject\ProductSetLine;
 use App\Domain\Catalog\ValueObject\ProductImage;
-use App\Shared\ValueObject\Money;
+use App\Domain\Catalog\ValueObject\ProductSetLine;
 
 /**
  * Набор — группа товаров, объединённых в одну витринную позицию.
@@ -15,6 +15,7 @@ use App\Shared\ValueObject\Money;
 final class ProductSet implements CatalogItem
 {
     /**
+     * @param  list<Price>  $prices
      * @param  list<ProductSetLine>  $lines
      * @param  list<int>  $tagIds
      * @param  list<ProductImage>  $images
@@ -25,7 +26,7 @@ final class ProductSet implements CatalogItem
         private readonly string $slug,
         private readonly ?string $sku,
         private readonly ProductStatus $status,
-        private readonly Money $price,
+        private readonly array $prices,
         private readonly ?string $description,
         private readonly array $lines,
         private readonly array $tagIds,
@@ -34,6 +35,8 @@ final class ProductSet implements CatalogItem
         if ($lines === []) {
             throw new \InvalidArgumentException('Набор должен содержать хотя бы один товар.');
         }
+
+        $this->assertUniquePriceTypes($prices);
     }
 
     public function id(): int
@@ -71,9 +74,28 @@ final class ProductSet implements CatalogItem
         return $this->status->isActive();
     }
 
-    public function price(): Money
+    /**
+     * @return list<Price>
+     */
+    public function prices(): array
     {
-        return $this->price;
+        return $this->prices;
+    }
+
+    public function price(PriceType $type): ?Price
+    {
+        foreach ($this->prices as $price) {
+            if ($price->type() === $type) {
+                return $price;
+            }
+        }
+
+        return null;
+    }
+
+    public function regularPrice(): ?Price
+    {
+        return $this->price(PriceType::Regular);
     }
 
     public function description(): ?string
@@ -103,5 +125,23 @@ final class ProductSet implements CatalogItem
     public function images(): array
     {
         return $this->images;
+    }
+
+    /**
+     * @param  list<Price>  $prices
+     */
+    private function assertUniquePriceTypes(array $prices): void
+    {
+        $seen = [];
+        foreach ($prices as $price) {
+            if (! $price instanceof Price) {
+                throw new \InvalidArgumentException('В коллекции цен ожидается Price.');
+            }
+            $key = $price->type()->value;
+            if (isset($seen[$key])) {
+                throw new \InvalidArgumentException("Дубликат типа цены: {$key}.");
+            }
+            $seen[$key] = true;
+        }
     }
 }

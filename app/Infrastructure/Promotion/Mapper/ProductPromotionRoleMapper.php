@@ -15,13 +15,15 @@ final class ProductPromotionRoleMapper
             throw new \InvalidArgumentException('Неизвестная роль товара в акции: '.$row->role);
         }
 
-        $paidTwin = $row->paid_twin_product_id !== null ? (int) $row->paid_twin_product_id : null;
+        $paidTwin = $row->paid_twin_catalog_item_id !== null
+            ? (int) $row->paid_twin_catalog_item_id
+            : null;
 
         return new ProductPromotionRole(
-            productId: (int) $row->product_id,
+            productId: (int) $row->catalog_item_id,
             role: $role,
-            name: (string) $row->name,
-            priceKopecks: max(0, (int) $row->price_kopecks),
+            name: (string) $row->name_snapshot,
+            priceKopecks: max(0, (int) $row->price_kopecks_snapshot),
             paidTwinProductId: $paidTwin !== null && $paidTwin > 0 ? $paidTwin : null,
         );
     }

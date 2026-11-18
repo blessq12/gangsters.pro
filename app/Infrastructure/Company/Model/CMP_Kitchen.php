@@ -3,12 +3,14 @@
 namespace App\Infrastructure\Company\Model;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class CMP_Kitchen extends Model
+final class CMP_Kitchen extends Model
 {
     protected $table = 'CMP_kitchens';
 
+    /**
+     * @var list<string>
+     */
     protected $fillable = [
         'branch_id',
         'city',
@@ -19,14 +21,12 @@ class CMP_Kitchen extends Model
         'longitude',
     ];
 
+    /**
+     * @var array<string, string>
+     */
     protected $casts = [
         'branch_id' => 'integer',
         'latitude' => 'float',
         'longitude' => 'float',
     ];
-
-    public function branch(): BelongsTo
-    {
-        return $this->belongsTo(CMP_Branch::class, 'branch_id');
-    }
 }

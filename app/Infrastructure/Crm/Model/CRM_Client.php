@@ -2,36 +2,34 @@
 
 namespace App\Infrastructure\Crm\Model;
 
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Laravel\Sanctum\HasApiTokens;
 
-final class CRM_Client extends Authenticatable
+final class CRM_Client extends Model
 {
     use HasApiTokens;
 
     protected $table = 'CRM_clients';
 
     /**
-     * @var array<int, string>
+     * @var list<string>
      */
     protected $fillable = [
         'name',
         'phone',
         'email',
         'birth_date',
-        'password',
+        'password_hash',
         'consent_personal_data',
         'consent_marketing',
-        'addresses',
-        'favorite_product_ids',
     ];
 
     /**
-     * @var array<int, string>
+     * @var list<string>
      */
     protected $hidden = [
-        'password',
-        'remember_token',
+        'password_hash',
     ];
 
     /**
@@ -41,12 +39,20 @@ final class CRM_Client extends Authenticatable
         'birth_date' => 'date',
         'consent_personal_data' => 'boolean',
         'consent_marketing' => 'boolean',
-        'addresses' => 'array',
-        'favorite_product_ids' => 'array',
     ];
+
+    public function addresses(): HasMany
+    {
+        return $this->hasMany(CRM_ClientAddress::class, 'client_id');
+    }
+
+    public function favorites(): HasMany
+    {
+        return $this->hasMany(CRM_ClientFavorite::class, 'client_id');
+    }
 
     public function getAuthPassword(): string
     {
-        return (string) $this->getRawOriginal('password');
+        return (string) $this->password_hash;
     }
 }

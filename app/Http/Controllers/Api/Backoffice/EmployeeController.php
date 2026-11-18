@@ -8,7 +8,7 @@ use App\Application\Staff\Command\ToggleEmployeeActiveUseCase;
 use App\Application\Staff\DTO\SaveEmployeeDto;
 use App\Application\Staff\Query\ListEmployeesUseCase;
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Infrastructure\Staff\Model\STF_Employee;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use InvalidArgumentException;
@@ -106,7 +106,7 @@ final class EmployeeController extends Controller
     private function currentEmployeeId(Request $request): int
     {
         $user = $request->user('sanctum');
-        if (! $user instanceof User) {
+        if (! $user instanceof STF_Employee) {
             throw new InvalidArgumentException('Сотрудник не авторизован.');
         }
 

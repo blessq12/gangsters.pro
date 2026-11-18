@@ -25,7 +25,7 @@ class TestClientSeeder extends Seeder
             [
                 'name' => 'Тестовый Клиент',
                 'phone' => $phone,
-                'password' => Hash::make('password'),
+                'password_hash' => Hash::make('password'),
                 'consent_personal_data' => true,
                 'consent_marketing' => false,
             ],

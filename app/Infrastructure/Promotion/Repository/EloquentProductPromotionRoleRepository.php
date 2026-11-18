@@ -18,7 +18,7 @@ final class EloquentProductPromotionRoleRepository implements ProductPromotionRo
     {
         return PRM_ProductRole::query()
             ->orderBy('role')
-            ->orderBy('product_id')
+            ->orderBy('catalog_item_id')
             ->get()
             ->map(fn (PRM_ProductRole $row) => $this->mapper->toDomain($row))
             ->all();
@@ -32,9 +32,9 @@ final class EloquentProductPromotionRoleRepository implements ProductPromotionRo
         }
 
         return PRM_ProductRole::query()
-            ->whereIn('product_id', $ids)
+            ->whereIn('catalog_item_id', $ids)
             ->orderBy('role')
-            ->orderBy('product_id')
+            ->orderBy('catalog_item_id')
             ->get()
             ->map(fn (PRM_ProductRole $row) => $this->mapper->toDomain($row))
             ->all();
@@ -44,7 +44,7 @@ final class EloquentProductPromotionRoleRepository implements ProductPromotionRo
     {
         return PRM_ProductRole::query()
             ->where('role', $role->value)
-            ->orderBy('product_id')
+            ->orderBy('catalog_item_id')
             ->get()
             ->map(fn (PRM_ProductRole $row) => $this->mapper->toDomain($row))
             ->all();
@@ -53,14 +53,14 @@ final class EloquentProductPromotionRoleRepository implements ProductPromotionRo
     public function save(ProductPromotionRole $role): ProductPromotionRole
     {
         $row = PRM_ProductRole::query()->firstOrNew([
-            'product_id' => $role->productId(),
+            'catalog_item_id' => $role->productId(),
             'role' => $role->role()->value,
         ]);
 
         $row->fill([
-            'name' => $role->name(),
-            'price_kopecks' => $role->priceKopecks(),
-            'paid_twin_product_id' => $role->paidTwinProductId(),
+            'name_snapshot' => $role->name(),
+            'price_kopecks_snapshot' => $role->priceKopecks(),
+            'paid_twin_catalog_item_id' => $role->paidTwinProductId(),
         ]);
         $row->save();
 

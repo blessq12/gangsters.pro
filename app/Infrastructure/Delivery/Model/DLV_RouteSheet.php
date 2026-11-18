@@ -7,17 +7,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class DLV_RouteSheet extends Model
 {
-    public $timestamps = false;
-
     protected $table = 'DLV_route_sheets';
 
     /**
-     * @var array<int, string>
+     * @var list<string>
      */
     protected $fillable = [
         'status',
         'courier_id',
-        'created_at',
     ];
 
     /**
@@ -25,14 +22,10 @@ final class DLV_RouteSheet extends Model
      */
     protected $casts = [
         'courier_id' => 'integer',
-        'created_at' => 'datetime',
     ];
 
-    /**
-     * @return HasMany<DLV_RouteStop, $this>
-     */
     public function stops(): HasMany
     {
-        return $this->hasMany(DLV_RouteStop::class, 'route_sheet_id')->orderBy('position');
+        return $this->hasMany(DLV_RouteStop::class, 'route_sheet_id');
     }
 }

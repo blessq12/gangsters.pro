@@ -3,35 +3,38 @@
 namespace App\Infrastructure\Delivery\Model;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class DLV_Configuration extends Model
+final class DLV_Configuration extends Model
 {
-    protected $table = 'DLV_configuration';
+    protected $table = 'DLV_configurations';
 
+    /**
+     * @var list<string>
+     */
     protected $fillable = [
         'min_order_amount_kopecks',
-        'delivery_fee_kopecks',
-        'outside_zone_delivery_fee_kopecks',
         'average_delivery_time_minutes',
-        'kitchen_city',
-        'kitchen_street',
-        'kitchen_house',
-        'kitchen_address_comment',
         'kitchen_address',
         'kitchen_latitude',
         'kitchen_longitude',
-        'delivery_zone_geojson',
-        'delivery_zones',
+        'company_kitchen_id',
     ];
 
+    /**
+     * @var array<string, string>
+     */
     protected $casts = [
         'min_order_amount_kopecks' => 'integer',
-        'delivery_fee_kopecks' => 'integer',
-        'outside_zone_delivery_fee_kopecks' => 'integer',
         'average_delivery_time_minutes' => 'integer',
+        'kitchen_address' => 'array',
         'kitchen_latitude' => 'float',
         'kitchen_longitude' => 'float',
-        'delivery_zone_geojson' => 'array',
-        'delivery_zones' => 'array',
+        'company_kitchen_id' => 'integer',
     ];
+
+    public function zones(): HasMany
+    {
+        return $this->hasMany(DLV_Zone::class, 'configuration_id');
+    }
 }

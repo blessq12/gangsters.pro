@@ -3,30 +3,28 @@
 namespace App\Infrastructure\Delivery\Model;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 final class DLV_RouteStop extends Model
 {
-    public $timestamps = false;
-
     protected $table = 'DLV_route_stops';
 
     /**
-     * @var array<int, string>
+     * @var list<string>
      */
     protected $fillable = [
         'route_sheet_id',
         'order_id',
         'position',
-        'outcome',
-        'reason',
+        'status',
+        'settlement_note',
     ];
 
     /**
-     * @return BelongsTo<DLV_RouteSheet, $this>
+     * @var array<string, string>
      */
-    public function sheet(): BelongsTo
-    {
-        return $this->belongsTo(DLV_RouteSheet::class, 'route_sheet_id');
-    }
+    protected $casts = [
+        'route_sheet_id' => 'integer',
+        'order_id' => 'integer',
+        'position' => 'integer',
+    ];
 }

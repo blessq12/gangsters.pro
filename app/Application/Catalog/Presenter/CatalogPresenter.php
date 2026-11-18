@@ -3,6 +3,7 @@
 namespace App\Application\Catalog\Presenter;
 
 use App\Domain\Catalog\Entity\Category;
+use App\Domain\Catalog\Entity\Price;
 use App\Domain\Catalog\Entity\Product;
 use App\Domain\Catalog\Entity\ProductSet;
 use App\Domain\Catalog\Entity\Tag;
@@ -45,7 +46,8 @@ final class CatalogPresenter
             'sku' => $product->sku(),
             'status' => $product->status()->value,
             'is_system' => $product->isSystem(),
-            'price' => $this->money($product->price()),
+            'price' => $this->money($product->regularPrice()),
+            'prices' => $this->prices($product->prices()),
             'weight' => $product->weight(),
             'description' => $product->description(),
             'nutrition' => $this->nutrition($product->nutrition()),
@@ -84,7 +86,8 @@ final class CatalogPresenter
             'slug' => $set->slug(),
             'sku' => $set->sku(),
             'status' => $set->status()->value,
-            'price' => $this->money($set->price()),
+            'price' => $this->money($set->regularPrice()),
+            'prices' => $this->prices($set->prices()),
             'weight' => $this->setWeightGrams($set, $lineProductsById),
             'description' => $set->description(),
             'lines' => $lines,
@@ -119,7 +122,7 @@ final class CatalogPresenter
             'id' => $product->id(),
             'name' => $product->name(),
             'category_id' => $categoryId,
-            'price' => $product->price()->amountRubles(),
+            'price' => $product->regularPrice()?->amountRubles() ?? 0,
             'weight' => $product->weight(),
             'status' => $product->status()->value,
             'is_system' => $product->isSystem(),
@@ -139,7 +142,7 @@ final class CatalogPresenter
             'slug' => $set->slug(),
             'sku' => $set->sku(),
             'line_count' => count($set->lines()),
-            'price' => $set->price()->amountRubles(),
+            'price' => $set->regularPrice()?->amountRubles() ?? 0,
             'status' => $set->status()->value,
         ];
     }
@@ -201,12 +204,34 @@ final class CatalogPresenter
     /**
      * @return array{amount: int, currency: string}
      */
-    private function money(Money $money): array
+    private function money(?Price $price): array
     {
         return [
-            'amount' => $money->amountRubles(),
-            'currency' => $money->currency(),
+            'amount' => $price?->amountRubles() ?? 0,
+            'currency' => Money::CURRENCY,
         ];
+    }
+
+    /**
+     * @param  list<Price>  $prices
+     * @return list<array{type: string, amount_kopecks: int, amount_rubles: int}>
+     */
+    private function prices(array $prices): array
+    {
+        $mapped = [];
+        foreach ($prices as $price) {
+            if (! $price instanceof Price) {
+                continue;
+            }
+
+            $mapped[] = [
+                'type' => $price->type()->value,
+                'amount_kopecks' => $price->amountKopecks(),
+                'amount_rubles' => $price->amountRubles(),
+            ];
+        }
+
+        return $mapped;
     }
 
     /**

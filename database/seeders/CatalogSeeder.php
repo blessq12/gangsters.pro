@@ -3,11 +3,15 @@
 namespace Database\Seeders;
 
 use App\Domain\Catalog\Enum\CatalogItemKind;
+use App\Domain\Catalog\Enum\PriceType;
 use App\Domain\Catalog\Enum\ProductStatus;
-use App\Infrastructure\Catalog\Model\PRD_Category;
-use App\Infrastructure\Catalog\Model\PRD_Product;
-use App\Infrastructure\Catalog\Model\PRD_ProductImage;
-use App\Infrastructure\Catalog\Model\PRD_Tag;
+use App\Domain\Promotion\Enum\ProductPromotionRoleKind;
+use App\Infrastructure\Catalog\Model\CAT_Category;
+use App\Infrastructure\Catalog\Model\CAT_Item;
+use App\Infrastructure\Catalog\Model\CAT_ItemImage;
+use App\Infrastructure\Catalog\Model\CAT_Price;
+use App\Infrastructure\Catalog\Model\CAT_Tag;
+use App\Infrastructure\Promotion\Model\PRM_ProductRole;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -21,6 +25,8 @@ class CatalogSeeder extends Seeder
     private const CATALOG_SOURCE_URL = 'https://gangsta-sushi.ru/api/all-goods';
 
     private const CATALOG_SOURCE_ORIGIN = 'https://gangsta-sushi.ru';
+
+    private const KOPECKS_IN_RUBLE = 100;
 
     /** @var array<string, string> */
     private array $reservedSlugs = [];
@@ -36,6 +42,7 @@ class CatalogSeeder extends Seeder
             $products = $this->seedProducts($categoriesPayload);
             $this->attachCategoryItems($categoriesPayload, $categories, $products);
             $this->attachProductTags($categoriesPayload, $tags, $products);
+            $this->seedPromotionRoles($categoriesPayload, $products);
             $this->purgeObsoleteRecords($categoriesPayload);
         });
 
@@ -67,7 +74,7 @@ class CatalogSeeder extends Seeder
     }
 
     /**
-     * @return array<string, PRD_Tag>
+     * @return array<string, CAT_Tag>
      */
     private function seedTags(): array
     {
@@ -82,7 +89,7 @@ class CatalogSeeder extends Seeder
         $tags = [];
 
         foreach ($definitions as $code => $attributes) {
-            $tags[$code] = PRD_Tag::query()->updateOrCreate(
+            $tags[$code] = CAT_Tag::query()->updateOrCreate(
                 ['code' => $code],
                 [
                     'label' => $attributes['label'],
@@ -98,7 +105,7 @@ class CatalogSeeder extends Seeder
 
     /**
      * @param  list<array<string, mixed>>  $categoriesPayload
-     * @return array<string, PRD_Category>
+     * @return array<string, CAT_Category>
      */
     private function seedCategories(array $categoriesPayload): array
     {
@@ -111,7 +118,7 @@ class CatalogSeeder extends Seeder
                 continue;
             }
 
-            $categories[$slug] = PRD_Category::query()->updateOrCreate(
+            $categories[$slug] = CAT_Category::query()->updateOrCreate(
                 ['slug' => $slug],
                 [
                     'name' => $this->stringValue($row['name'] ?? $slug),
@@ -127,7 +134,7 @@ class CatalogSeeder extends Seeder
 
     /**
      * @param  list<array<string, mixed>>  $categoriesPayload
-     * @return array<string, PRD_Product>
+     * @return array<string, CAT_Item>
      */
     private function seedProducts(array $categoriesPayload): array
     {
@@ -135,10 +142,6 @@ class CatalogSeeder extends Seeder
         $products = [];
 
         foreach ($categoriesPayload as $categoryRow) {
-            $categorySlug = $this->stringValue($categoryRow['uri'] ?? null);
-            $categoryName = $this->stringValue($categoryRow['name'] ?? '');
-            $countsAsRoll = $this->categoryCountsAsRoll($categorySlug, $categoryName);
-
             foreach ($this->productsFromCategoryRow($categoryRow) as $row) {
                 $sku = $this->stringValue($row['sku'] ?? null);
 
@@ -147,29 +150,37 @@ class CatalogSeeder extends Seeder
                 }
 
                 $name = $this->stringValue($row['name'] ?? $sku);
+                $visible = (bool) ($row['visible'] ?? true);
+                $priceRubles = $this->parsePrice($row['price'] ?? null);
 
-                $products[$sku] = PRD_Product::query()->updateOrCreate(
+                $item = CAT_Item::query()->updateOrCreate(
                     ['sku' => $sku],
                     [
                         'name' => $name,
                         'slug' => $this->resolveProductSlug($name, $sku),
                         'description' => $this->nullableString($row['consist'] ?? null),
-                        'status' => ($row['visible'] ?? true)
+                        'status' => $visible
                             ? ProductStatus::Active->value
                             : ProductStatus::Archived->value,
-                        'catalog_kind' => CatalogItemKind::Product->value,
-                        'price' => $this->parsePrice($row['price'] ?? null),
-                        'calories' => 0,
-                        'proteins' => 0,
-                        'fats' => 0,
-                        'carbs' => 0,
-                        'nutrition_basis' => 'per_100g',
+                        'kind' => CatalogItemKind::Product->value,
+                        'is_system' => false,
+                        'nutrition' => null,
                         'ingredients' => null,
-                        'meta_counts_as_roll' => $countsAsRoll,
-                        'meta_is_complement_set' => false,
-                        'archived_at' => ($row['visible'] ?? true) ? null : now(),
+                        'archived_at' => $visible ? null : now(),
                     ],
                 );
+
+                CAT_Price::query()->updateOrCreate(
+                    [
+                        'item_id' => $item->id,
+                        'type' => PriceType::Regular->value,
+                    ],
+                    [
+                        'amount_kopecks' => $priceRubles * self::KOPECKS_IN_RUBLE,
+                    ],
+                );
+
+                $products[$sku] = $item;
             }
         }
 
@@ -178,7 +189,50 @@ class CatalogSeeder extends Seeder
 
     /**
      * @param  list<array<string, mixed>>  $categoriesPayload
-     * @param  array<string, PRD_Product>  $products
+     * @param  array<string, CAT_Item>  $products
+     */
+    private function seedPromotionRoles(array $categoriesPayload, array $products): void
+    {
+        foreach ($categoriesPayload as $categoryRow) {
+            $categorySlug = $this->stringValue($categoryRow['uri'] ?? null);
+            $categoryName = $this->stringValue($categoryRow['name'] ?? '');
+            $countsAsRoll = $this->categoryCountsAsRoll($categorySlug, $categoryName);
+            if (! $countsAsRoll) {
+                continue;
+            }
+
+            foreach ($this->productsFromCategoryRow($categoryRow) as $row) {
+                $sku = $this->stringValue($row['sku'] ?? null);
+                $item = $products[$sku] ?? null;
+                if (! $item instanceof CAT_Item) {
+                    continue;
+                }
+
+                $regular = CAT_Price::query()
+                    ->where('item_id', $item->id)
+                    ->where('type', PriceType::Regular->value)
+                    ->first();
+
+                PRM_ProductRole::query()->updateOrCreate(
+                    [
+                        'catalog_item_id' => $item->id,
+                        'role' => ProductPromotionRoleKind::Roll->value,
+                    ],
+                    [
+                        'name_snapshot' => (string) $item->name,
+                        'price_kopecks_snapshot' => $regular instanceof CAT_Price
+                            ? (int) $regular->amount_kopecks
+                            : 0,
+                        'paid_twin_catalog_item_id' => null,
+                    ],
+                );
+            }
+        }
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $categoriesPayload
+     * @param  array<string, CAT_Item>  $products
      */
     private function seedProductImages(array $categoriesPayload, array $products): void
     {
@@ -250,7 +304,7 @@ class CatalogSeeder extends Seeder
     /**
      * @param  list<string>  $sourceUrls
      */
-    private function syncProductImages(PRD_Product $product, array $sourceUrls): void
+    private function syncProductImages(CAT_Item $product, array $sourceUrls): void
     {
         $disk = Storage::disk('public');
         $storedPaths = [];
@@ -262,9 +316,9 @@ class CatalogSeeder extends Seeder
                 continue;
             }
 
-            PRD_ProductImage::query()->updateOrCreate(
+            CAT_ItemImage::query()->updateOrCreate(
                 [
-                    'product_id' => $product->id,
+                    'item_id' => $product->id,
                     'sort_order' => $sortOrder,
                 ],
                 [
@@ -277,18 +331,19 @@ class CatalogSeeder extends Seeder
         }
 
         if ($storedPaths === []) {
-            $product->productImages()->delete();
+            CAT_ItemImage::query()->where('item_id', $product->id)->delete();
 
             return;
         }
 
-        $product->productImages()
+        CAT_ItemImage::query()
+            ->where('item_id', $product->id)
             ->whereNotIn('path', $storedPaths)
             ->delete();
     }
 
     private function downloadProductImage(
-        PRD_Product $product,
+        CAT_Item $product,
         string $sourceUrl,
         \Illuminate\Contracts\Filesystem\Filesystem $disk,
     ): ?string {
@@ -299,7 +354,7 @@ class CatalogSeeder extends Seeder
             return null;
         }
 
-        $storagePath = 'products/'.$product->id.'/'.$basename;
+        $storagePath = 'catalog/items/'.$product->id.'/'.$basename;
 
         if ($disk->exists($storagePath)) {
             return $storagePath;
@@ -311,7 +366,7 @@ class CatalogSeeder extends Seeder
                 ->get($absoluteUrl);
         } catch (\Throwable $exception) {
             Log::warning('CatalogSeeder: не удалось скачать изображение.', [
-                'product_id' => $product->id,
+                'item_id' => $product->id,
                 'sku' => $product->sku,
                 'url' => $absoluteUrl,
                 'error' => $exception->getMessage(),
@@ -322,7 +377,7 @@ class CatalogSeeder extends Seeder
 
         if (! $response->successful()) {
             Log::warning('CatalogSeeder: не удалось скачать изображение.', [
-                'product_id' => $product->id,
+                'item_id' => $product->id,
                 'sku' => $product->sku,
                 'url' => $absoluteUrl,
                 'status' => $response->status(),
@@ -372,7 +427,7 @@ class CatalogSeeder extends Seeder
             return true;
         }
 
-        return PRD_Product::query()
+        return CAT_Item::query()
             ->where('slug', $slug)
             ->where('sku', '!=', $sku)
             ->exists();
@@ -380,8 +435,8 @@ class CatalogSeeder extends Seeder
 
     /**
      * @param  list<array<string, mixed>>  $categoriesPayload
-     * @param  array<string, PRD_Category>  $categories
-     * @param  array<string, PRD_Product>  $products
+     * @param  array<string, CAT_Category>  $categories
+     * @param  array<string, CAT_Item>  $products
      */
     private function attachCategoryItems(
         array $categoriesPayload,
@@ -410,14 +465,14 @@ class CatalogSeeder extends Seeder
                 $sync[$product->id] = ['sort_order' => $sortOrder];
             }
 
-            $category->products()->sync($sync);
+            $category->items()->sync($sync);
         }
     }
 
     /**
      * @param  list<array<string, mixed>>  $categoriesPayload
-     * @param  array<string, PRD_Tag>  $tags
-     * @param  array<string, PRD_Product>  $products
+     * @param  array<string, CAT_Tag>  $tags
+     * @param  array<string, CAT_Item>  $products
      */
     private function attachProductTags(
         array $categoriesPayload,
@@ -507,7 +562,7 @@ class CatalogSeeder extends Seeder
             }
         }
 
-        PRD_Product::query()
+        CAT_Item::query()
             ->where(function ($query) use ($productSkus): void {
                 $query
                     ->whereNull('sku')
@@ -515,7 +570,7 @@ class CatalogSeeder extends Seeder
             })
             ->delete();
 
-        PRD_Category::query()
+        CAT_Category::query()
             ->whereNotIn('slug', array_values(array_unique($categorySlugs)))
             ->delete();
     }

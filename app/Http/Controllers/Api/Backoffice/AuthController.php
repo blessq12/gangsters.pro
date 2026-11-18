@@ -8,7 +8,7 @@ use App\Application\Staff\Command\RequestEmployeePasswordResetUseCase;
 use App\Application\Staff\DTO\LoginEmployeeDto;
 use App\Application\Staff\Query\GetCurrentEmployeeUseCase;
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Infrastructure\Staff\Model\STF_Employee;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use InvalidArgumentException;
@@ -39,14 +39,14 @@ final class AuthController extends Controller
         $user = $request->user('sanctum');
 
         return response()->json(
-            $useCase->execute($user instanceof User ? $user : null),
+            $useCase->execute($user instanceof STF_Employee ? $user : null),
         );
     }
 
     public function me(Request $request, GetCurrentEmployeeUseCase $useCase): JsonResponse
     {
         $user = $request->user('sanctum');
-        $userId = $user instanceof User ? (int) $user->id : null;
+        $userId = $user instanceof STF_Employee ? (int) $user->id : null;
 
         return response()->json($useCase->execute($userId));
     }

@@ -11,7 +11,7 @@ final class ORD_Order extends Model
     protected $table = 'ORD_orders';
 
     /**
-     * @var array<int, string>
+     * @var list<string>
      */
     protected $fillable = [
         'source',
@@ -19,12 +19,12 @@ final class ORD_Order extends Model
         'partner_code',
         'external_order_id',
         'status',
-        'client_id',
-        'total_rubles',
         'cart_snapshot',
         'client_snapshot',
         'delivery_snapshot',
         'payment_snapshot',
+        'client_id',
+        'total_kopecks',
         'created_at',
     ];
 
@@ -36,6 +36,8 @@ final class ORD_Order extends Model
         'client_snapshot' => 'array',
         'delivery_snapshot' => 'array',
         'payment_snapshot' => 'array',
+        'client_id' => 'integer',
+        'total_kopecks' => 'integer',
         'created_at' => 'datetime',
     ];
 }
