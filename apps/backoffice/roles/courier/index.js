@@ -6,7 +6,6 @@ const module = {
     home: "courier-deliveries",
     nav: [
         { label: "Deliveries", routeName: "courier-deliveries", order: 1 },
-        { label: "Shift", routeName: "courier-shift", order: 2 },
     ],
     layout: CourierLayout,
     routes: [
@@ -23,12 +22,6 @@ const module = {
                     path: "deliveries",
                     name: "courier-deliveries",
                     component: () => import("./screens/DeliveriesScreen.vue"),
-                    meta: { role: "courier" },
-                },
-                {
-                    path: "shift",
-                    name: "courier-shift",
-                    component: () => import("./screens/ShiftScreen.vue"),
                     meta: { role: "courier" },
                 },
             ],

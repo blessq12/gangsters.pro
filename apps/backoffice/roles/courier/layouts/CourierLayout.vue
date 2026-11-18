@@ -5,7 +5,6 @@ const route = useRoute();
 
 const tabs = [
     { name: "courier-deliveries", label: "Deliveries" },
-    { name: "courier-shift", label: "Shift" },
 ];
 </script>
 

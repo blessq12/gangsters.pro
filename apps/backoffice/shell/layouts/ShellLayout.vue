@@ -1,6 +1,7 @@
 <script setup>
 import ShellTopbar from "../components/ShellTopbar.vue";
 import ShellFooter from "../components/ShellFooter.vue";
+import ToastHost from "../components/ToastHost.vue";
 </script>
 
 <template>
@@ -10,5 +11,6 @@ import ShellFooter from "../components/ShellFooter.vue";
             <RouterView />
         </div>
         <ShellFooter />
+        <ToastHost />
     </div>
 </template>

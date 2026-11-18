@@ -6,11 +6,11 @@ const module = {
     home: "administrator-live-orders",
     nav: [
         { label: "Live orders", routeName: "administrator-live-orders", order: 1 },
-        { label: "Dispatch", routeName: "administrator-dispatch", order: 2 },
-        { label: "Clients", routeName: "administrator-clients", order: 3 },
-        { label: "Menu ops", routeName: "administrator-menu-ops", order: 4 },
-        { label: "Support", routeName: "administrator-support", order: 5 },
-        { label: "Shift board", routeName: "administrator-shift-board", order: 6 },
+        { label: "Manual order", routeName: "administrator-manual-order", order: 2 },
+        { label: "Logistics", routeName: "administrator-logistics", order: 3 },
+        { label: "Clients", routeName: "administrator-clients", order: 4 },
+        { label: "Production", routeName: "administrator-production", order: 5 },
+        { label: "Catalog", routeName: "administrator-catalog", order: 6 },
     ],
     routes: [
         {
@@ -26,9 +26,15 @@ const module = {
                     meta: { role: "administrator" },
                 },
                 {
-                    path: "dispatch",
-                    name: "administrator-dispatch",
-                    component: () => import("./screens/DispatchScreen.vue"),
+                    path: "manual-order",
+                    name: "administrator-manual-order",
+                    component: () => import("./screens/ManualOrderScreen.vue"),
+                    meta: { role: "administrator" },
+                },
+                {
+                    path: "logistics",
+                    name: "administrator-logistics",
+                    component: () => import("./screens/LogisticsScreen.vue"),
                     meta: { role: "administrator" },
                 },
                 {
@@ -38,21 +44,15 @@ const module = {
                     meta: { role: "administrator" },
                 },
                 {
-                    path: "menu-ops",
-                    name: "administrator-menu-ops",
-                    component: () => import("./screens/MenuOpsScreen.vue"),
+                    path: "production",
+                    name: "administrator-production",
+                    component: () => import("./screens/ProductionReadScreen.vue"),
                     meta: { role: "administrator" },
                 },
                 {
-                    path: "support",
-                    name: "administrator-support",
-                    component: () => import("./screens/SupportScreen.vue"),
-                    meta: { role: "administrator" },
-                },
-                {
-                    path: "shift-board",
-                    name: "administrator-shift-board",
-                    component: () => import("./screens/ShiftBoardScreen.vue"),
+                    path: "catalog",
+                    name: "administrator-catalog",
+                    component: () => import("./screens/CatalogReadScreen.vue"),
                     meta: { role: "administrator" },
                 },
             ],

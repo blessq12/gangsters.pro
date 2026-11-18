@@ -1,0 +1,432 @@
+<script setup>
+import { computed, onMounted, reactive, ref } from "vue";
+import {
+    adjustStock,
+    getStock,
+    listIngredients,
+    listWriteOffs,
+    storeIngredient,
+    storeWriteOff,
+    updateIngredient,
+} from "../../../api/warehouse.js";
+import { useApi } from "../../../shell/composables/useApi.js";
+import { useToast } from "../../../shell/composables/useToast.js";
+import UiButton from "../../../shell/components/ui/UiButton.vue";
+import UiCard from "../../../shell/components/ui/UiCard.vue";
+import UiFormField from "../../../shell/components/ui/UiFormField.vue";
+import UiInput from "../../../shell/components/ui/UiInput.vue";
+import UiModal from "../../../shell/components/ui/UiModal.vue";
+import UiTable from "../../../shell/components/ui/UiTable.vue";
+
+const toast = useToast();
+const loadApi = useApi();
+const saveApi = useApi();
+
+const tab = ref("ingredients");
+const ingredients = ref([]);
+const stock = ref([]);
+const writeOffs = ref([]);
+
+const ingredientModalOpen = ref(false);
+const editingIngredientId = ref(null);
+const ingredientErrors = reactive({});
+const ingredientForm = reactive({
+    name: "",
+    sku: "",
+    unit: "",
+});
+
+const adjustModalOpen = ref(false);
+const adjustErrors = reactive({});
+const adjustForm = reactive({
+    ingredient_id: "",
+    delta: "",
+});
+
+const writeOffModalOpen = ref(false);
+const writeOffErrors = reactive({});
+const writeOffForm = reactive({
+    ingredient_id: "",
+    quantity: "",
+    reason: "",
+});
+
+const tabs = [
+    { id: "ingredients", label: "Ингредиенты" },
+    { id: "stock", label: "Остатки" },
+    { id: "writeoffs", label: "Списания" },
+];
+
+const ingredientColumns = [
+    { key: "id", label: "ID", width: "64px" },
+    { key: "name", label: "Название" },
+    { key: "unit", label: "Ед.", width: "80px" },
+    { key: "actions", label: "", width: "120px" },
+];
+
+const stockColumns = [
+    { key: "ingredient", label: "Ингредиент" },
+    { key: "quantity", label: "Кол-во", width: "100px" },
+    { key: "unit", label: "Ед.", width: "80px" },
+    { key: "actions", label: "", width: "140px" },
+];
+
+const writeOffColumns = [
+    { key: "id", label: "ID", width: "64px" },
+    { key: "ingredient", label: "Ингредиент" },
+    { key: "quantity", label: "Кол-во", width: "90px" },
+    { key: "reason", label: "Причина" },
+    { key: "created_at", label: "Дата", width: "160px" },
+];
+
+const ingredientById = computed(() => {
+    /** @type {Record<number|string, any>} */
+    const map = {};
+    ingredients.value.forEach((item) => {
+        map[item.id] = item;
+    });
+    return map;
+});
+
+const stockRows = computed(() =>
+    stock.value.map((row) => {
+        const ingredient = ingredientById.value[row.ingredient_id];
+        return {
+            ...row,
+            ingredient: ingredient?.name ?? `#${row.ingredient_id}`,
+            unit: ingredient?.unit ?? "—",
+        };
+    }),
+);
+
+const writeOffRows = computed(() =>
+    writeOffs.value.map((row) => {
+        const ingredient = ingredientById.value[row.ingredient_id];
+        return {
+            ...row,
+            ingredient: ingredient?.name ?? `#${row.ingredient_id}`,
+            created_at: formatDate(row.occurred_at),
+        };
+    }),
+);
+
+function formatDate(value) {
+    if (!value) {
+        return "—";
+    }
+    try {
+        return new Date(value).toLocaleString("ru-RU");
+    } catch {
+        return String(value);
+    }
+}
+
+function clearErrors(target) {
+    Object.keys(target).forEach((key) => {
+        delete target[key];
+    });
+}
+
+function asList(payload) {
+    return Array.isArray(payload) ? payload : (payload?.items ?? []);
+}
+
+async function loadAll() {
+    try {
+        const [ingredientsPayload, stockPayload, writeOffsPayload] = await loadApi.run(
+            async () => Promise.all([
+                listIngredients(),
+                getStock(),
+                listWriteOffs(),
+            ]),
+        );
+        ingredients.value = asList(ingredientsPayload);
+        stock.value = asList(stockPayload);
+        writeOffs.value = asList(writeOffsPayload);
+    } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Не удалось загрузить склад");
+    }
+}
+
+function openCreateIngredient() {
+    editingIngredientId.value = null;
+    ingredientForm.name = "";
+    ingredientForm.sku = "";
+    ingredientForm.unit = "";
+    clearErrors(ingredientErrors);
+    ingredientModalOpen.value = true;
+}
+
+function openEditIngredient(row) {
+    editingIngredientId.value = row.id;
+    ingredientForm.name = row.name ?? "";
+    ingredientForm.sku = row.sku ?? "";
+    ingredientForm.unit = row.unit ?? "";
+    clearErrors(ingredientErrors);
+    ingredientModalOpen.value = true;
+}
+
+function validateIngredient() {
+    clearErrors(ingredientErrors);
+    if (!String(ingredientForm.name).trim()) {
+        ingredientErrors.name = "Обязательное поле";
+    }
+    if (!String(ingredientForm.unit).trim()) {
+        ingredientErrors.unit = "Обязательное поле";
+    }
+    return Object.keys(ingredientErrors).length === 0;
+}
+
+async function saveIngredient() {
+    if (!validateIngredient()) {
+        toast.error("Проверьте обязательные поля");
+        return;
+    }
+    const id = editingIngredientId.value;
+    const body = {
+        name: ingredientForm.name.trim(),
+        unit: ingredientForm.unit.trim(),
+        sku: ingredientForm.sku || null,
+    };
+    try {
+        await saveApi.run(() =>
+            id ? updateIngredient(id, body) : storeIngredient(body),
+        );
+        toast.success(id ? "Сохранено" : "Создано");
+        ingredientModalOpen.value = false;
+        await loadAll();
+    } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Ошибка сохранения");
+    }
+}
+
+function openAdjust(row) {
+    adjustForm.ingredient_id = String(row.ingredient_id ?? "");
+    adjustForm.delta = "";
+    clearErrors(adjustErrors);
+    adjustModalOpen.value = true;
+}
+
+function validateAdjust() {
+    clearErrors(adjustErrors);
+    if (!String(adjustForm.ingredient_id).trim()) {
+        adjustErrors.ingredient_id = "Обязательное поле";
+    }
+    if (adjustForm.delta === "" || Number.isNaN(Number(adjustForm.delta))) {
+        adjustErrors.delta = "Укажите delta";
+    }
+    return Object.keys(adjustErrors).length === 0;
+}
+
+async function saveAdjust() {
+    if (!validateAdjust()) {
+        toast.error("Проверьте обязательные поля");
+        return;
+    }
+    try {
+        await saveApi.run(() => adjustStock({
+            ingredient_id: Number(adjustForm.ingredient_id),
+            delta: Number(adjustForm.delta),
+        }));
+        toast.success("Остаток скорректирован");
+        adjustModalOpen.value = false;
+        await loadAll();
+    } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Ошибка");
+    }
+}
+
+function openWriteOff() {
+    writeOffForm.ingredient_id = ingredients.value[0] ? String(ingredients.value[0].id) : "";
+    writeOffForm.quantity = "";
+    writeOffForm.reason = "";
+    clearErrors(writeOffErrors);
+    writeOffModalOpen.value = true;
+}
+
+function validateWriteOff() {
+    clearErrors(writeOffErrors);
+    if (!String(writeOffForm.ingredient_id).trim()) {
+        writeOffErrors.ingredient_id = "Обязательное поле";
+    }
+    if (
+        writeOffForm.quantity === ""
+        || Number.isNaN(Number(writeOffForm.quantity))
+        || Number(writeOffForm.quantity) <= 0
+    ) {
+        writeOffErrors.quantity = " > 0";
+    }
+    if (!String(writeOffForm.reason).trim()) {
+        writeOffErrors.reason = "Обязательное поле";
+    }
+    return Object.keys(writeOffErrors).length === 0;
+}
+
+async function saveWriteOff() {
+    if (!validateWriteOff()) {
+        toast.error("Проверьте обязательные поля");
+        return;
+    }
+    try {
+        await saveApi.run(() => storeWriteOff({
+            ingredient_id: Number(writeOffForm.ingredient_id),
+            quantity: Number(writeOffForm.quantity),
+            reason: writeOffForm.reason.trim(),
+        }));
+        toast.success("Списание создано");
+        writeOffModalOpen.value = false;
+        await loadAll();
+    } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Ошибка");
+    }
+}
+
+onMounted(loadAll);
+</script>
+
+<template>
+    <div class="space-y-4 p-4 md:p-6">
+        <UiCard title="Склад">
+            <div class="mb-4 flex flex-wrap gap-2">
+                <button
+                    v-for="item in tabs"
+                    :key="item.id"
+                    type="button"
+                    class="rounded px-3 py-1.5 text-sm"
+                    :class="tab === item.id
+                        ? 'bg-slate-900 text-white'
+                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
+                    @click="tab = item.id"
+                >
+                    {{ item.label }}
+                </button>
+            </div>
+
+            <div v-if="tab === 'ingredients'" class="space-y-3">
+                <div class="flex justify-end">
+                    <UiButton @click="openCreateIngredient">+ Ингредиент</UiButton>
+                </div>
+                <UiTable
+                    :columns="ingredientColumns"
+                    :rows="ingredients"
+                    :loading="loadApi.loading"
+                    empty-text="Нет ингредиентов"
+                >
+                    <template #cell-actions="{ row }">
+                        <UiButton @click.stop="openEditIngredient(row)">Редактировать</UiButton>
+                    </template>
+                </UiTable>
+            </div>
+
+            <div v-else-if="tab === 'stock'" class="space-y-3">
+                <UiTable
+                    :columns="stockColumns"
+                    :rows="stockRows"
+                    :loading="loadApi.loading"
+                    empty-text="Нет остатков"
+                >
+                    <template #cell-actions="{ row }">
+                        <UiButton @click.stop="openAdjust(row)">Корректировать</UiButton>
+                    </template>
+                </UiTable>
+            </div>
+
+            <div v-else class="space-y-3">
+                <div class="flex justify-end">
+                    <UiButton @click="openWriteOff">+ Списание</UiButton>
+                </div>
+                <UiTable
+                    :columns="writeOffColumns"
+                    :rows="writeOffRows"
+                    :loading="loadApi.loading"
+                    empty-text="Нет списаний"
+                />
+            </div>
+        </UiCard>
+
+        <UiModal
+            :open="ingredientModalOpen"
+            :title="editingIngredientId ? 'Редактировать ингредиент' : 'Новый ингредиент'"
+            @close="ingredientModalOpen = false"
+        >
+            <div class="space-y-3">
+                <UiFormField label="Название" required :error="ingredientErrors.name">
+                    <UiInput v-model="ingredientForm.name" />
+                </UiFormField>
+                <UiFormField label="Ед. изм." required :error="ingredientErrors.unit">
+                    <UiInput v-model="ingredientForm.unit" />
+                </UiFormField>
+                <UiFormField label="SKU">
+                    <UiInput v-model="ingredientForm.sku" />
+                </UiFormField>
+            </div>
+            <template #footer>
+                <UiButton @click="ingredientModalOpen = false">Отмена</UiButton>
+                <UiButton :disabled="saveApi.loading" @click="saveIngredient">Сохранить</UiButton>
+            </template>
+        </UiModal>
+
+        <UiModal
+            :open="adjustModalOpen"
+            title="Корректировка остатка"
+            @close="adjustModalOpen = false"
+        >
+            <div class="space-y-3">
+                <UiFormField label="ingredient_id" required :error="adjustErrors.ingredient_id">
+                    <select
+                        v-model="adjustForm.ingredient_id"
+                        class="mt-1 w-full rounded border border-slate-300 bg-white px-3 py-2"
+                    >
+                        <option
+                            v-for="item in ingredients"
+                            :key="item.id"
+                            :value="String(item.id)"
+                        >
+                            {{ item.id }} — {{ item.name }}
+                        </option>
+                    </select>
+                </UiFormField>
+                <UiFormField label="Delta (+/−)" required :error="adjustErrors.delta">
+                    <UiInput v-model="adjustForm.delta" type="number" />
+                </UiFormField>
+            </div>
+            <template #footer>
+                <UiButton @click="adjustModalOpen = false">Отмена</UiButton>
+                <UiButton :disabled="saveApi.loading" @click="saveAdjust">Сохранить</UiButton>
+            </template>
+        </UiModal>
+
+        <UiModal
+            :open="writeOffModalOpen"
+            title="Новое списание"
+            @close="writeOffModalOpen = false"
+        >
+            <div class="space-y-3">
+                <UiFormField label="Ингредиент" required :error="writeOffErrors.ingredient_id">
+                    <select
+                        v-model="writeOffForm.ingredient_id"
+                        class="mt-1 w-full rounded border border-slate-300 bg-white px-3 py-2"
+                    >
+                        <option
+                            v-for="item in ingredients"
+                            :key="item.id"
+                            :value="String(item.id)"
+                        >
+                            {{ item.id }} — {{ item.name }}
+                        </option>
+                    </select>
+                </UiFormField>
+                <UiFormField label="Количество" required :error="writeOffErrors.quantity">
+                    <UiInput v-model="writeOffForm.quantity" type="number" />
+                </UiFormField>
+                <UiFormField label="Причина" required :error="writeOffErrors.reason">
+                    <UiInput v-model="writeOffForm.reason" />
+                </UiFormField>
+            </div>
+            <template #footer>
+                <UiButton @click="writeOffModalOpen = false">Отмена</UiButton>
+                <UiButton :disabled="saveApi.loading" @click="saveWriteOff">Сохранить</UiButton>
+            </template>
+        </UiModal>
+    </div>
+</template>

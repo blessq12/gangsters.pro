@@ -6,8 +6,6 @@ const module = {
     home: "production-queue",
     nav: [
         { label: "Queue", routeName: "production-queue", order: 1 },
-        { label: "Ticket", routeName: "production-ticket", order: 2 },
-        { label: "Station", routeName: "production-station", order: 3 },
     ],
     layout: ProductionLayout,
     routes: [
@@ -27,15 +25,9 @@ const module = {
                     meta: { role: "kitchen" },
                 },
                 {
-                    path: "ticket",
+                    path: "ticket/:orderId",
                     name: "production-ticket",
                     component: () => import("./screens/TicketScreen.vue"),
-                    meta: { role: "kitchen" },
-                },
-                {
-                    path: "station",
-                    name: "production-station",
-                    component: () => import("./screens/StationScreen.vue"),
                     meta: { role: "kitchen" },
                 },
             ],

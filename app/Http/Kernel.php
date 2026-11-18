@@ -56,5 +56,6 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'backoffice.auth' => \App\Http\Middleware\EnsureBackofficeAuthenticated::class,
+        'backoffice.role' => \App\Http\Middleware\EnsureBackofficeRole::class,
     ];
 }
