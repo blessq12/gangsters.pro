@@ -16,6 +16,13 @@ interface ProductPromotionRoleRepository
     public function findAll(): array;
 
     /**
+     * @return list<ProductPromotionRole>
+     */
+    public function listPage(int $offset, int $limit): array;
+
+    public function countAll(): int;
+
+    /**
      * @param  list<int>  $productIds
      * @return list<ProductPromotionRole>
      */

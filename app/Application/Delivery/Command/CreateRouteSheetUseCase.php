@@ -4,13 +4,14 @@ namespace App\Application\Delivery\Command;
 
 use App\Application\Delivery\DTO\CreateRouteSheetDto;
 use App\Application\Delivery\Presenter\RouteSheetPresenter;
+use App\Application\Shared\DomainEventPublisher;
 use App\Domain\Core\Delivery\Routing\Entity\RouteSheet;
 use App\Domain\Core\Delivery\Routing\Repository\RouteSheetRepository;
 use App\Domain\Core\Order\Repository\OrderRepository;
+use App\Shared\Transaction\TransactionManager;
 
 /**
- * Выпуск маршрутного листа.
- * Статусы заказов меняет Order по OrderAddedToRoute.
+ * Выпуск листа. Статус заказа меняет слушатель OrderAddedToRoute.
  */
 final class CreateRouteSheetUseCase
 {
@@ -18,6 +19,8 @@ final class CreateRouteSheetUseCase
         private readonly RouteSheetRepository $sheets,
         private readonly OrderRepository $orders,
         private readonly RouteSheetPresenter $presenter,
+        private readonly DomainEventPublisher $events,
+        private readonly TransactionManager $transaction,
     ) {}
 
     /**
@@ -25,8 +28,42 @@ final class CreateRouteSheetUseCase
      */
     public function execute(CreateRouteSheetDto $dto): array
     {
+        return $this->transaction->run(function () use ($dto): array {
+            $orderIds = $this->orderIds($dto->orderIds);
+
+            foreach ($orderIds as $orderId) {
+                $order = $this->orders->findById($orderId);
+                if ($order === null) {
+                    throw new \InvalidArgumentException(sprintf('Заказ #%d не найден.', $orderId));
+                }
+                if (! $order->canBeAssignedToRoute()) {
+                    throw new \InvalidArgumentException(
+                        sprintf('Заказ #%d должен быть готовым заказом с доставкой.', $orderId),
+                    );
+                }
+                if ($this->sheets->findOpenByOrderId($orderId) !== null) {
+                    throw new \InvalidArgumentException(
+                        sprintf('Заказ #%d уже в открытом маршрутном листе.', $orderId),
+                    );
+                }
+            }
+
+            $sheet = RouteSheet::release($orderIds);
+            $this->sheets->save($sheet);
+            $this->events->publish($sheet);
+
+            return $this->presenter->present($sheet);
+        });
+    }
+
+    /**
+     * @param  list<int>  $rawIds
+     * @return list<int>
+     */
+    private function orderIds(array $rawIds): array
+    {
         $orderIds = [];
-        foreach ($dto->orderIds as $rawId) {
+        foreach ($rawIds as $rawId) {
             $orderId = (int) $rawId;
             if ($orderId < 1) {
                 throw new \InvalidArgumentException('Некорректный order_id.');
@@ -39,30 +76,6 @@ final class CreateRouteSheetUseCase
             throw new \InvalidArgumentException('Нужен хотя бы один заказ.');
         }
 
-        foreach ($orderIds as $orderId) {
-            $order = $this->orders->findById($orderId);
-            if ($order === null) {
-                throw new \InvalidArgumentException(sprintf('Заказ #%d не найден.', $orderId));
-            }
-            if (! $order->canBeAssignedToRoute()) {
-                throw new \InvalidArgumentException(
-                    sprintf('Заказ #%d должен быть готовым заказом с доставкой.', $orderId),
-                );
-            }
-            if ($this->sheets->findOpenByOrderId($orderId) !== null) {
-                throw new \InvalidArgumentException(
-                    sprintf('Заказ #%d уже в открытом маршрутном листе.', $orderId),
-                );
-            }
-        }
-
-        $sheet = RouteSheet::release($orderIds);
-        $this->sheets->save($sheet);
-
-        foreach ($sheet->pullDomainEvents() as $event) {
-            event($event);
-        }
-
-        return $this->presenter->present($sheet);
+        return $orderIds;
     }
 }

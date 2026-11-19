@@ -19,8 +19,8 @@ class ContentSeeder extends Seeder
         $this->call([
             CatalogSeeder::class,
             PromotionSeeder::class,
-            DeliverySeeder::class,
             CompanySeeder::class,
+            DeliverySeeder::class,
             MarketingContentSeeder::class,
         ]);
     }

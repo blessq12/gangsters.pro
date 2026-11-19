@@ -4,89 +4,123 @@ namespace Database\Seeders;
 
 use App\Infrastructure\Marketing\Model\MKT_Banner;
 use App\Infrastructure\Marketing\Model\MKT_Promotion;
+use App\Infrastructure\Marketing\Support\MarketingStoredPath;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Http;
+use RuntimeException;
 
+/**
+ * Баннеры/акции из /api/content → MKT_*.
+ */
 class MarketingContentSeeder extends Seeder
 {
+    private const CONTENT_SOURCE_URL = 'https://gangsta-sushi.ru/api/content';
+
     public function run(): void
     {
-        $banners = [
-            [
-                'image' => '/images/banners/banner1.jpeg',
-                'sort_order' => 0,
-            ],
-            [
-                'image' => '/images/banners/banner2.jpeg',
-                'sort_order' => 1,
-            ],
-            [
-                'image' => '/images/banners/banner3.jpeg',
-                'sort_order' => 2,
-            ],
-        ];
+        $payload = $this->fetchContentPayload();
+        $marketing = is_array($payload['marketing'] ?? null) ? $payload['marketing'] : [];
 
-        foreach ($banners as $banner) {
-            MKT_Banner::query()->updateOrCreate(
-                ['sort_order' => $banner['sort_order']],
-                [
-                    'image_desktop' => $banner['image'],
-                    'image_mobile' => $banner['image'],
-                    'is_active' => true,
-                ],
-            );
+        $banners = is_array($marketing['banners'] ?? null) ? $marketing['banners'] : [];
+        $keptBannerIds = [];
+
+        foreach (array_values($banners) as $sortOrder => $banner) {
+            if (! is_array($banner)) {
+                continue;
+            }
+
+            $id = (int) ($banner['id'] ?? 0);
+            $desktop = MarketingStoredPath::normalizePublicDiskPath($banner['image_desktop'] ?? null);
+            $mobile = MarketingStoredPath::normalizePublicDiskPath($banner['image_mobile'] ?? null);
+
+            if ($desktop === null && $mobile === null) {
+                continue;
+            }
+
+            $attributes = [
+                'image_desktop' => $desktop,
+                'image_mobile' => $mobile ?? $desktop,
+                'sort_order' => $sortOrder,
+                'is_active' => true,
+            ];
+
+            if ($id > 0) {
+                MKT_Banner::query()->updateOrCreate(['id' => $id], $attributes);
+                $keptBannerIds[] = $id;
+            } else {
+                $row = MKT_Banner::query()->updateOrCreate(
+                    ['sort_order' => $sortOrder],
+                    $attributes,
+                );
+                $keptBannerIds[] = (int) $row->id;
+            }
         }
 
-        $promotions = [
-            [
-                'title' => 'Будни с бонусом 🍣',
-                'body' => $this->htmlBody([
-                    'В Gangsta Sushi даже будни вкусные.',
-                    'Делай заказ от 1800 ₽ с понедельника по четверг — и получай ролл Лава в подарок.',
-                ]),
-                'image' => '/images/banners/banner1.jpeg',
-                'sort_order' => 0,
-            ],
-            [
-                'title' => 'День рождения по-гангстерски 🎉🍣',
-                'body' => $this->htmlBody([
-                    'Празднуй вместе с Gangsta Sushi.',
-                    'Заказывай от 1000 ₽ — дарим ролл, а от 1800 ₽ — делаем скидку 15%.',
-                    'Акция действует 3 дня до и 3 дня после твоего дня рождения — потому что один день для праздника слишком мало. 😎',
-                ]),
-                'image' => '/images/banners/banner2.jpeg',
-                'sort_order' => 1,
-            ],
-            [
-                'title' => 'Забери сам — забери больше 🍣',
-                'body' => $this->htmlBody([
-                    'В Gangsta Sushi уважают тех, кто двигается сам.',
-                    'Оформляй заказ от 1000 ₽, забирай его сам — и получай ролл в подарок.',
-                ]),
-                'image' => '/images/banners/banner3.jpeg',
-                'sort_order' => 2,
-            ],
-        ];
+        if ($keptBannerIds !== []) {
+            MKT_Banner::query()->whereNotIn('id', $keptBannerIds)->delete();
+        }
 
-        foreach ($promotions as $promotion) {
-            MKT_Promotion::query()->updateOrCreate(
-                ['title' => $promotion['title']],
-                [
-                    'body' => $promotion['body'],
-                    'image' => $promotion['image'],
-                    'sort_order' => $promotion['sort_order'],
-                    'is_active' => true,
-                ],
-            );
+        $promotions = is_array($marketing['promotions'] ?? null) ? $marketing['promotions'] : [];
+        $keptPromotionIds = [];
+
+        foreach (array_values($promotions) as $sortOrder => $promotion) {
+            if (! is_array($promotion)) {
+                continue;
+            }
+
+            $id = (int) ($promotion['id'] ?? 0);
+            $title = trim((string) ($promotion['title'] ?? ''));
+            if ($title === '') {
+                continue;
+            }
+
+            $attributes = [
+                'title' => $title,
+                'body' => $promotion['body'] ?? null,
+                'image' => MarketingStoredPath::normalizePublicDiskPath($promotion['image'] ?? null),
+                'sort_order' => $sortOrder,
+                'is_active' => true,
+            ];
+
+            if ($id > 0) {
+                MKT_Promotion::query()->updateOrCreate(['id' => $id], $attributes);
+                $keptPromotionIds[] = $id;
+            } else {
+                $row = MKT_Promotion::query()->updateOrCreate(
+                    ['title' => $title],
+                    $attributes,
+                );
+                $keptPromotionIds[] = (int) $row->id;
+            }
+        }
+
+        if ($keptPromotionIds !== []) {
+            MKT_Promotion::query()->whereNotIn('id', $keptPromotionIds)->delete();
         }
     }
 
     /**
-     * @param  list<string>  $paragraphs
+     * @return array<string, mixed>
      */
-    private function htmlBody(array $paragraphs): string
+    private function fetchContentPayload(): array
     {
-        return collect($paragraphs)
-            ->map(fn (string $paragraph): string => '<p>'.e($paragraph).'</p>')
-            ->implode('');
+        $response = Http::timeout(60)
+            ->acceptJson()
+            ->retry(2, 500)
+            ->get(self::CONTENT_SOURCE_URL);
+
+        if (! $response->successful()) {
+            throw new RuntimeException(
+                'Не удалось загрузить content: HTTP '.$response->status(),
+            );
+        }
+
+        $payload = $response->json();
+        if (! is_array($payload)) {
+            throw new RuntimeException('Некорректный формат content API.');
+        }
+
+        return $payload;
     }
+
 }

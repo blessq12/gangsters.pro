@@ -37,9 +37,33 @@ const module = {
                     meta: { role: "owner" },
                 },
                 {
+                    path: "orders/:id",
+                    name: "owner-order",
+                    component: () => import("./screens/OrderCardScreen.vue"),
+                    meta: { role: "owner" },
+                },
+                {
                     path: "catalog",
                     name: "owner-catalog",
                     component: () => import("./screens/CatalogScreen.vue"),
+                    meta: { role: "owner" },
+                },
+                {
+                    path: "catalog/products/:id",
+                    name: "owner-catalog-product",
+                    component: () => import("./screens/ProductEditScreen.vue"),
+                    meta: { role: "owner" },
+                },
+                {
+                    path: "catalog/sets/:id",
+                    name: "owner-catalog-set",
+                    component: () => import("./screens/SetEditScreen.vue"),
+                    meta: { role: "owner" },
+                },
+                {
+                    path: "catalog/categories/:id",
+                    name: "owner-catalog-category",
+                    component: () => import("./screens/CategoryEditScreen.vue"),
                     meta: { role: "owner" },
                 },
                 {

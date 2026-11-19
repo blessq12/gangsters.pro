@@ -4,6 +4,7 @@ namespace App\Application\Order\Command;
 
 use App\Application\Order\DTO\CreateOrderDto;
 use App\Application\Order\Presenter\OrderPresenter;
+use App\Application\Shared\DomainEventPublisher;
 use App\Domain\Core\Order\Entity\Order;
 use App\Domain\Core\Order\Enum\OrderLineType;
 use App\Domain\Core\Order\Repository\OrderRepository;
@@ -22,6 +23,7 @@ final class CreateOrderUseCase
     public function __construct(
         private readonly OrderRepository $orders,
         private readonly OrderPresenter $presenter,
+        private readonly DomainEventPublisher $events,
         private readonly TransactionManager $transaction,
     ) {}
 
@@ -60,7 +62,7 @@ final class CreateOrderUseCase
             client: $this->mapClient($clientRaw),
             delivery: $this->mapDelivery($deliveryRaw, $totals),
             lines: $this->mapLines($rawLines),
-            createdAt: new DateTimeImmutable(),
+            createdAt: new DateTimeImmutable,
             scheduledAt: $this->parseScheduledAt($deliveryRaw['scheduled_at'] ?? null),
         );
 
@@ -73,10 +75,7 @@ final class CreateOrderUseCase
             $this->orders->save($order);
             $order->markPlaced($paymentMethod, $changeFromRubles);
             $this->orders->save($order);
-
-            foreach ($order->pullDomainEvents() as $event) {
-                event($event);
-            }
+            $this->events->publish($order);
 
             $saved = $this->orders->findById($order->id());
             if ($saved === null) {

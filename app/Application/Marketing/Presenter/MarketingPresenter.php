@@ -24,7 +24,7 @@ final class MarketingPresenter
     ): array {
         return [
             'banners' => array_map(fn (Banner $banner): array => $this->banner($banner), $banners),
-            'promotions' => array_map(fn (Promotion $promotion): array => $this->promotion($promotion), $promotions),
+            'promotions' => array_map(fn (Campaign $promotion): array => $this->promotion($promotion), $promotions),
             'delivery_conditions_text' => $deliveryConditions !== null
                 ? $this->deliveryConditions($deliveryConditions)
                 : null,
@@ -48,7 +48,7 @@ final class MarketingPresenter
     /**
      * @return array<string, mixed>
      */
-    public function promotion(Promotion $promotion): array
+    public function promotion(Campaign $promotion): array
     {
         return [
             'id' => $promotion->id(),

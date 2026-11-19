@@ -1,17 +1,18 @@
 <script setup>
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
+import { useRouter } from "vue-router";
+import draggable from "vuedraggable";
 import {
-    getCatalog,
-    storeCategory,
-    storeProduct,
-    storeSet,
+    listCategories,
+    listProducts,
+    listSets,
+    listTags,
+    reorderCategories,
     storeTag,
-    updateCategory,
-    updateProduct,
-    updateSet,
     updateTag,
 } from "../../../api/catalog.js";
 import { useApi } from "../../../shell/composables/useApi.js";
+import { usePagedList } from "../../../shell/composables/usePagedList.js";
 import { useToast } from "../../../shell/composables/useToast.js";
 import UiBadge from "../../../shell/components/ui/UiBadge.vue";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
@@ -19,36 +20,34 @@ import UiCard from "../../../shell/components/ui/UiCard.vue";
 import UiFormField from "../../../shell/components/ui/UiFormField.vue";
 import UiInput from "../../../shell/components/ui/UiInput.vue";
 import UiModal from "../../../shell/components/ui/UiModal.vue";
+import UiPagination from "../../../shell/components/ui/UiPagination.vue";
 import UiTable from "../../../shell/components/ui/UiTable.vue";
 
+const router = useRouter();
 const toast = useToast();
 const catalogApi = useApi();
 const saveApi = useApi();
+const reorderApi = useApi();
+const {
+    page,
+    perPage,
+    total,
+    items: rows,
+    offset,
+    resetPage,
+    applyPayload,
+} = usePagedList();
 
 const tab = ref("products");
-const catalog = reactive({
-    categories: [],
-    products: [],
-    sets: [],
-    tags: [],
-});
 
 const modalOpen = ref(false);
-const modalKind = ref("product");
 const editingId = ref(null);
 const fieldErrors = reactive({});
 const form = reactive({
-    name: "",
-    price: "",
-    weight: "",
-    status: "active",
-    description: "",
-    sku: "",
-    is_active: true,
-    is_accompanying: false,
     code: "",
     label: "",
     color: "#999999",
+    is_active: true,
 });
 
 const tabs = [
@@ -59,28 +58,19 @@ const tabs = [
 ];
 
 const columnsByTab = {
-    categories: [
-        { key: "id", label: "ID", width: "64px" },
-        { key: "name", label: "Название" },
-        { key: "is_active", label: "Активна", width: "100px" },
-        { key: "actions", label: "", width: "120px" },
-    ],
     products: [
-        { key: "id", label: "ID", width: "64px" },
         { key: "name", label: "Название" },
         { key: "price", label: "Цена", width: "90px" },
         { key: "status", label: "Статус", width: "110px" },
         { key: "actions", label: "", width: "120px" },
     ],
     sets: [
-        { key: "id", label: "ID", width: "64px" },
         { key: "name", label: "Название" },
         { key: "price", label: "Цена", width: "90px" },
         { key: "status", label: "Статус", width: "110px" },
         { key: "actions", label: "", width: "120px" },
     ],
     tags: [
-        { key: "id", label: "ID", width: "64px" },
         { key: "code", label: "Код" },
         { key: "label", label: "Подпись" },
         { key: "is_active", label: "Активен", width: "100px" },
@@ -88,18 +78,8 @@ const columnsByTab = {
     ],
 };
 
-const currentColumns = computed(() => columnsByTab[tab.value]);
-const currentRows = computed(() => catalog[tab.value] ?? []);
-const modalTitle = computed(() => {
-    const labels = {
-        product: "товар",
-        set: "набор",
-        category: "категорию",
-        tag: "тег",
-    };
-    const noun = labels[modalKind.value] || "запись";
-    return editingId.value ? `Редактировать ${noun}` : `Новый ${noun}`;
-});
+const currentColumns = computed(() => columnsByTab[tab.value] ?? []);
+const modalTitle = computed(() => (editingId.value ? "Редактировать тег" : "Новый тег"));
 
 function clearErrors() {
     Object.keys(fieldErrors).forEach((key) => {
@@ -108,134 +88,91 @@ function clearErrors() {
 }
 
 function resetForm() {
-    form.name = "";
-    form.price = "";
-    form.weight = "";
-    form.status = "active";
-    form.description = "";
-    form.sku = "";
-    form.is_active = true;
-    form.is_accompanying = false;
     form.code = "";
     form.label = "";
     form.color = "#999999";
+    form.is_active = true;
     clearErrors();
 }
 
-async function loadCatalog() {
+async function loadTab() {
     try {
-        const payload = await catalogApi.run(() => getCatalog());
-        catalog.categories = payload?.categories ?? [];
-        catalog.products = payload?.products ?? [];
-        catalog.sets = payload?.sets ?? [];
-        catalog.tags = payload?.tags ?? [];
+        const query = { offset: offset.value, limit: perPage };
+        let payload;
+        if (tab.value === "products") {
+            payload = await catalogApi.run(() => listProducts(query));
+        } else if (tab.value === "sets") {
+            payload = await catalogApi.run(() => listSets(query));
+        } else if (tab.value === "categories") {
+            payload = await catalogApi.run(() => listCategories(query));
+        } else {
+            payload = await catalogApi.run(() => listTags(query));
+        }
+        applyPayload(payload);
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось загрузить каталог");
     }
 }
 
 function openCreate(kind) {
-    modalKind.value = kind;
+    if (kind === "product") {
+        router.push({ name: "owner-catalog-product", params: { id: "new" } });
+        return;
+    }
+    if (kind === "set") {
+        router.push({ name: "owner-catalog-set", params: { id: "new" } });
+        return;
+    }
+    if (kind === "category") {
+        router.push({ name: "owner-catalog-category", params: { id: "new" } });
+        return;
+    }
     editingId.value = null;
     resetForm();
     modalOpen.value = true;
 }
 
 function openEdit(kind, row) {
-    modalKind.value = kind;
+    if (kind === "product") {
+        router.push({ name: "owner-catalog-product", params: { id: row.id } });
+        return;
+    }
+    if (kind === "set") {
+        router.push({ name: "owner-catalog-set", params: { id: row.id } });
+        return;
+    }
+    if (kind === "category") {
+        router.push({ name: "owner-catalog-category", params: { id: row.id } });
+        return;
+    }
     editingId.value = row.id;
     resetForm();
-    if (kind === "product") {
-        form.name = row.name ?? "";
-        form.price = String(row.price ?? "");
-        form.weight = row.weight != null ? String(row.weight) : "";
-        form.status = row.status ?? "active";
-        form.description = row.description ?? "";
-        form.sku = row.sku ?? "";
-    } else if (kind === "set") {
-        form.name = row.name ?? "";
-        form.price = String(row.price ?? "");
-        form.status = row.status ?? "active";
-        form.sku = row.sku ?? "";
-    } else if (kind === "category") {
-        form.name = row.name ?? "";
-        form.is_active = Boolean(row.is_active);
-        form.is_accompanying = Boolean(row.is_accompanying);
-    } else if (kind === "tag") {
-        form.code = row.code ?? "";
-        form.label = row.label ?? "";
-        form.color = row.color ?? "#999999";
-        form.is_active = Boolean(row.is_active);
-    }
+    form.code = row.code ?? "";
+    form.label = row.label ?? "";
+    form.color = row.color ?? "#999999";
+    form.is_active = Boolean(row.is_active);
     modalOpen.value = true;
 }
 
-function validate() {
+function validateTag() {
     clearErrors();
-    const kind = modalKind.value;
-    if (kind === "product" || kind === "set" || kind === "category") {
-        if (!String(form.name).trim()) {
-            fieldErrors.name = "Обязательное поле";
-        }
+    if (!String(form.code).trim()) {
+        fieldErrors.code = "Обязательное поле";
     }
-    if (kind === "product" || kind === "set") {
-        if (form.price === "" || Number.isNaN(Number(form.price))) {
-            fieldErrors.price = "Укажите цену";
-        }
-        if (!form.status) {
-            fieldErrors.status = "Обязательное поле";
-        }
-    }
-    if (kind === "tag") {
-        if (!String(form.code).trim()) {
-            fieldErrors.code = "Обязательное поле";
-        }
-        if (!String(form.label).trim()) {
-            fieldErrors.label = "Обязательное поле";
-        }
+    if (!String(form.label).trim()) {
+        fieldErrors.label = "Обязательное поле";
     }
     return Object.keys(fieldErrors).length === 0;
 }
 
-async function save() {
-    if (!validate()) {
+async function saveTag() {
+    if (!validateTag()) {
         toast.error("Проверьте обязательные поля");
         return;
     }
-
-    const kind = modalKind.value;
     const id = editingId.value;
-
     try {
         await saveApi.run(async () => {
-            if (kind === "product") {
-                const body = {
-                    name: form.name.trim(),
-                    price: Number(form.price),
-                    weight: form.weight === "" ? null : Number(form.weight),
-                    status: form.status,
-                    description: form.description || null,
-                    sku: form.sku || null,
-                };
-                return id ? updateProduct(id, body) : storeProduct(body);
-            }
-            if (kind === "set") {
-                const body = {
-                    name: form.name.trim(),
-                    sku: form.sku || null,
-                    price: Number(form.price),
-                    status: form.status,
-                };
-                return id ? updateSet(id, body) : storeSet(body);
-            }
-            if (kind === "category") {
-                const body = {
-                    name: form.name.trim(),
-                    is_active: Boolean(form.is_active),
-                    is_accompanying: Boolean(form.is_accompanying),
-                };
-                return id ? updateCategory(id, body) : storeCategory(body);
-            }
             const body = {
                 code: form.code.trim(),
                 label: form.label.trim(),
@@ -246,23 +183,57 @@ async function save() {
         });
         toast.success(id ? "Сохранено" : "Создано");
         modalOpen.value = false;
-        await loadCatalog();
+        await loadTab();
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Ошибка сохранения");
     }
 }
 
-onMounted(loadCatalog);
+async function onCategoriesReorder() {
+    const pageIds = rows.value.map((row) => Number(row.id)).filter((id) => id > 0);
+    if (pageIds.length === 0) {
+        return;
+    }
+    try {
+        const allPayload = await listCategories({ offset: 0, limit: Math.max(total.value, pageIds.length) });
+        const allIds = (allPayload?.items ?? []).map((row) => Number(row.id)).filter((id) => id > 0);
+        const start = offset.value;
+        const next = [
+            ...allIds.slice(0, start),
+            ...pageIds,
+            ...allIds.slice(start + pageIds.length),
+        ];
+        await reorderApi.run(() => reorderCategories(next));
+    } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Не удалось сохранить порядок");
+        await loadTab();
+    }
+}
+
+watch(tab, () => {
+    resetPage();
+    loadTab();
+});
+watch(page, loadTab);
+onMounted(loadTab);
 </script>
 
 <template>
     <div class="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
         <UiCard title="Каталог">
             <template #actions>
-                <UiButton @click="openCreate('product')">+ Товар</UiButton>
-                <UiButton @click="openCreate('set')">+ Набор</UiButton>
-                <UiButton @click="openCreate('category')">+ Категория</UiButton>
-                <UiButton @click="openCreate('tag')">+ Тег</UiButton>
+                <UiButton @click="openCreate('product')">
+                    + Товар
+                </UiButton>
+                <UiButton @click="openCreate('set')">
+                    + Набор
+                </UiButton>
+                <UiButton @click="openCreate('category')">
+                    + Категория
+                </UiButton>
+                <UiButton @click="openCreate('tag')">
+                    + Тег
+                </UiButton>
             </template>
 
             <div class="mb-8 flex flex-wrap gap-2">
@@ -280,9 +251,49 @@ onMounted(loadCatalog);
                 </button>
             </div>
 
+            <div v-if="tab === 'categories'">
+                <p v-if="catalogApi.loading" class="px-4 py-12 text-center text-sm text-bo-muted">
+                    Загрузка…
+                </p>
+                <p
+                    v-else-if="rows.length === 0"
+                    class="border border-bo-border px-4 py-12 text-center text-sm text-bo-muted"
+                >
+                    Пусто
+                </p>
+                <draggable
+                    v-else
+                    v-model="rows"
+                    item-key="id"
+                    handle=".drag-handle"
+                    class="divide-y divide-bo-border border border-bo-border"
+                    :disabled="reorderApi.loading"
+                    @end="onCategoriesReorder"
+                >
+                    <template #item="{ element }">
+                        <div class="flex flex-wrap items-center gap-3 px-4 py-3.5 transition-colors hover:bg-white/[0.03]">
+                            <span class="drag-handle cursor-grab select-none text-bo-muted active:cursor-grabbing">
+                                ⋮⋮
+                            </span>
+                            <span class="min-w-0 flex-1 text-sm text-bo-fg">
+                                {{ element.name }}
+                            </span>
+                            <UiBadge
+                                :variant="element.is_active ? 'success' : 'neutral'"
+                                :text="element.is_active ? 'да' : 'нет'"
+                            />
+                            <UiButton @click="openEdit('category', element)">
+                                Редактировать
+                            </UiButton>
+                        </div>
+                    </template>
+                </draggable>
+            </div>
+
             <UiTable
+                v-else
                 :columns="currentColumns"
-                :rows="currentRows"
+                :rows="rows"
                 :loading="catalogApi.loading"
                 empty-text="Пусто"
             >
@@ -301,9 +312,8 @@ onMounted(loadCatalog);
                 <template #cell-actions="{ row }">
                     <UiButton
                         @click.stop="openEdit(
-                            tab === 'categories' ? 'category'
-                                : tab === 'products' ? 'product'
-                                    : tab === 'sets' ? 'set' : 'tag',
+                            tab === 'products' ? 'product'
+                                : tab === 'sets' ? 'set' : 'tag',
                             row,
                         )"
                     >
@@ -311,75 +321,38 @@ onMounted(loadCatalog);
                     </UiButton>
                 </template>
             </UiTable>
+
+            <div class="mt-6">
+                <UiPagination
+                    :page="page"
+                    :per-page="perPage"
+                    :total="total"
+                    @update:page="page = $event"
+                />
+            </div>
         </UiCard>
 
         <UiModal :open="modalOpen" :title="modalTitle" @close="modalOpen = false">
             <div class="space-y-5">
-                <template v-if="modalKind === 'product' || modalKind === 'set' || modalKind === 'category'">
-                    <UiFormField label="Название" required :error="fieldErrors.name">
-                        <UiInput v-model="form.name" />
-                    </UiFormField>
-                </template>
-
-                <template v-if="modalKind === 'product' || modalKind === 'set'">
-                    <UiFormField label="Цена (₽)" required :error="fieldErrors.price">
-                        <UiInput v-model="form.price" type="number" />
-                    </UiFormField>
-                    <UiFormField label="SKU" :error="fieldErrors.sku">
-                        <UiInput v-model="form.sku" />
-                    </UiFormField>
-                    <UiFormField label="Статус" required :error="fieldErrors.status">
-                        <select
-                            v-model="form.status"
-                            class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 transition-colors hover:border-bo-border-strong focus:border-bo-accent focus:outline-none"
-                        >
-                            <option value="active">active</option>
-                            <option value="archived">archived</option>
-                        </select>
-                    </UiFormField>
-                </template>
-
-                <template v-if="modalKind === 'product'">
-                    <UiFormField label="Вес (г)">
-                        <UiInput v-model="form.weight" type="number" />
-                    </UiFormField>
-                    <UiFormField label="Описание">
-                        <textarea
-                            v-model="form.description"
-                            rows="3"
-                            class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 transition-colors hover:border-bo-border-strong focus:border-bo-accent focus:outline-none"
-                        />
-                    </UiFormField>
-                </template>
-
-                <template v-if="modalKind === 'category'">
-                    <UiFormField label="Активна">
-                        <input v-model="form.is_active" type="checkbox" class="mt-2">
-                    </UiFormField>
-                    <UiFormField label="Сопутствующая">
-                        <input v-model="form.is_accompanying" type="checkbox" class="mt-2">
-                    </UiFormField>
-                </template>
-
-                <template v-if="modalKind === 'tag'">
-                    <UiFormField label="Код" required :error="fieldErrors.code">
-                        <UiInput v-model="form.code" />
-                    </UiFormField>
-                    <UiFormField label="Подпись" required :error="fieldErrors.label">
-                        <UiInput v-model="form.label" />
-                    </UiFormField>
-                    <UiFormField label="Цвет">
-                        <UiInput v-model="form.color" />
-                    </UiFormField>
-                    <UiFormField label="Активен">
-                        <input v-model="form.is_active" type="checkbox" class="mt-2">
-                    </UiFormField>
-                </template>
+                <UiFormField label="Код" required :error="fieldErrors.code">
+                    <UiInput v-model="form.code" />
+                </UiFormField>
+                <UiFormField label="Подпись" required :error="fieldErrors.label">
+                    <UiInput v-model="form.label" />
+                </UiFormField>
+                <UiFormField label="Цвет">
+                    <UiInput v-model="form.color" />
+                </UiFormField>
+                <UiFormField label="Активен">
+                    <input v-model="form.is_active" type="checkbox" class="mt-2">
+                </UiFormField>
             </div>
 
             <template #footer>
-                <UiButton @click="modalOpen = false">Отмена</UiButton>
-                <UiButton :disabled="saveApi.loading" @click="save">
+                <UiButton @click="modalOpen = false">
+                    Отмена
+                </UiButton>
+                <UiButton :disabled="saveApi.loading" @click="saveTag">
                     Сохранить
                 </UiButton>
             </template>

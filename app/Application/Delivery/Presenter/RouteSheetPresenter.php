@@ -71,15 +71,23 @@ final class RouteSheetPresenter
     {
         $delivery = $order->delivery();
         $client = $order->client();
+        $address = $delivery->address();
 
         return [
             'id' => $order->hasId() ? $order->id() : null,
             'status' => $order->status()->value,
-            'address' => $delivery['address'] ?? null,
+            'method' => $delivery->type()->value,
+            'address' => $address === null ? null : [
+                'street' => $address->street(),
+                'house' => $address->house(),
+                'entrance' => $address->entrance(),
+                'floor' => $address->floor(),
+                'apartment' => $address->apartment(),
+                'comment' => $address->comment(),
+            ],
             'client' => [
-                'name' => $client['name'] ?? null,
-                'phone' => $client['phone'] ?? null,
-                'kind' => $client['kind'] ?? null,
+                'name' => $client->name(),
+                'phone' => $client->phone(),
             ],
         ];
     }

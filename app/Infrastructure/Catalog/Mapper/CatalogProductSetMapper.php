@@ -27,10 +27,6 @@ final class CatalogProductSetMapper
         array $images = [],
         array $prices = [],
     ): ?ProductSet {
-        if ($lines === []) {
-            return null;
-        }
-
         return new ProductSet(
             id: (int) $row->id,
             name: (string) $row->name,

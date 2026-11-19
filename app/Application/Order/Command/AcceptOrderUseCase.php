@@ -4,15 +4,24 @@ namespace App\Application\Order\Command;
 
 use App\Application\Order\DTO\AcceptOrderDto;
 use App\Application\Order\Presenter\AdminOrderPresenter;
+use App\Application\Shared\DomainEventPublisher;
+use App\Domain\Core\Order\Entity\Order;
 use App\Domain\Core\Order\Repository\OrderRepository;
 use App\Domain\Supporting\Company\Repository\KitchenRepository;
+use App\Shared\Transaction\TransactionManager;
 
+/**
+ * Подтверждение: accept + assignKitchen + confirm.
+ * Тикет и платёж поднимают слушатели OrderConfirmed.
+ */
 final class AcceptOrderUseCase
 {
     public function __construct(
         private readonly OrderRepository $orders,
         private readonly KitchenRepository $kitchens,
         private readonly AdminOrderPresenter $presenter,
+        private readonly DomainEventPublisher $events,
+        private readonly TransactionManager $transaction,
     ) {}
 
     /**
@@ -20,35 +29,32 @@ final class AcceptOrderUseCase
      */
     public function execute(AcceptOrderDto $dto): array
     {
-        $order = $this->orders->findById($dto->orderId);
-        if ($order === null) {
-            throw new \InvalidArgumentException('Заказ не найден.');
-        }
+        return $this->transaction->run(function () use ($dto): array {
+            $order = $this->requireOrder($dto->orderId);
 
-        $kitchenId = $dto->kitchenId;
-        if ($kitchenId === null || $kitchenId < 1) {
-            throw new \InvalidArgumentException('Для подтверждения нужен kitchen_id.');
-        }
+            $kitchenId = $dto->kitchenId;
+            if ($kitchenId === null || $kitchenId < 1) {
+                throw new \InvalidArgumentException('Для подтверждения нужен kitchen_id.');
+            }
 
-        $kitchen = $this->kitchens->findById($kitchenId);
-        if ($kitchen === null) {
-            throw new \InvalidArgumentException('Кухня не найдена.');
-        }
+            $kitchen = $this->kitchens->findById($kitchenId);
+            if ($kitchen === null) {
+                throw new \InvalidArgumentException('Кухня не найдена.');
+            }
 
-        $order->accept();
-        $order->assignKitchen($kitchen->id(), $kitchen->branchId());
-        $order->confirm();
-        $this->orders->save($order);
+            $order->accept();
+            $order->assignKitchen($kitchen->id(), $kitchen->branchId());
+            $order->confirm();
+            $this->orders->save($order);
+            $this->events->publish($order);
 
-        foreach ($order->pullDomainEvents() as $event) {
-            event($event);
-        }
+            return $this->presenter->present($this->requireOrder($order->id()));
+        });
+    }
 
-        $saved = $this->orders->findById($order->id());
-        if ($saved === null) {
-            throw new \RuntimeException('Заказ не сохранился после подтверждения.');
-        }
-
-        return $this->presenter->present($saved);
+    private function requireOrder(int $orderId): Order
+    {
+        return $this->orders->findById($orderId)
+            ?? throw new \InvalidArgumentException('Заказ не найден.');
     }
 }

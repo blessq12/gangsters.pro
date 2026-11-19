@@ -22,4 +22,11 @@ interface KitchenTicketRepository
      * @return list<KitchenTicket>
      */
     public function listActiveByKitchen(int $kitchenId): array;
+
+    /**
+     * @return list<KitchenTicket>
+     */
+    public function listActiveByKitchenPage(int $kitchenId, int $offset, int $limit): array;
+
+    public function countActiveByKitchen(int $kitchenId): int;
 }

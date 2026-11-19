@@ -4,6 +4,7 @@ namespace App\Infrastructure\Delivery\Repository;
 
 use App\Domain\Core\Delivery\Tariff\Entity\DeliveryConfiguration;
 use App\Domain\Core\Delivery\Tariff\Repository\DeliveryConfigurationRepository;
+use App\Domain\Core\Delivery\Tariff\ValueObject\DeliveryZone;
 use App\Infrastructure\Delivery\Mapper\DeliveryConfigurationMapper;
 use App\Infrastructure\Delivery\Model\DLV_Configuration;
 use App\Infrastructure\Delivery\Model\DLV_Zone;
@@ -23,6 +24,34 @@ final class EloquentDeliveryConfigurationRepository implements DeliveryConfigura
             ->find(self::SINGLETON_ID);
 
         return $row instanceof DLV_Configuration ? $this->mapper->toDomain($row) : null;
+    }
+
+    public function listZonesPage(int $offset, int $limit): array
+    {
+        $zones = [];
+        $rows = DLV_Zone::query()
+            ->where('configuration_id', self::SINGLETON_ID)
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->offset(max(0, $offset))
+            ->limit(max(1, $limit))
+            ->get();
+
+        foreach ($rows as $row) {
+            $zone = $this->mapper->zoneToDomain($row);
+            if ($zone instanceof DeliveryZone) {
+                $zones[] = $zone;
+            }
+        }
+
+        return $zones;
+    }
+
+    public function countZones(): int
+    {
+        return (int) DLV_Zone::query()
+            ->where('configuration_id', self::SINGLETON_ID)
+            ->count();
     }
 
     /**

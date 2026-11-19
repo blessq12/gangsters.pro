@@ -32,7 +32,7 @@ final class StockWriteOffMapper
             'quantity' => $writeOff->quantity(),
             'reason' => $writeOff->reason(),
             'kitchen_ticket_id' => $writeOff->kitchenTicketId(),
-            'occurred_at' => $writeOff->occurredAt(),
+            'occurred_at' => $writeOff->occurredAt()->format('Y-m-d H:i:s'),
         ];
     }
 }

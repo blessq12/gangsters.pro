@@ -25,6 +25,25 @@ final class EloquentCompanyDocumentRepository implements CompanyDocumentReposito
             ->all();
     }
 
+    public function listPage(int $offset, int $limit): array
+    {
+        return CMP_CompanyDocument::query()
+            ->where('company_id', CompanyRepository::SINGLETON_ID)
+            ->orderBy('id')
+            ->offset(max(0, $offset))
+            ->limit(max(1, $limit))
+            ->get()
+            ->map(fn (CMP_CompanyDocument $row) => $this->mapper->toDomain($row))
+            ->all();
+    }
+
+    public function countAll(): int
+    {
+        return (int) CMP_CompanyDocument::query()
+            ->where('company_id', CompanyRepository::SINGLETON_ID)
+            ->count();
+    }
+
     public function save(?int $id, string $name, ?string $content): CompanyDocument
     {
         $row = $id === null

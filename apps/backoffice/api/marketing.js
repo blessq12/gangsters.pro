@@ -4,6 +4,32 @@ export function getMarketing() {
     return request("GET", "/marketing");
 }
 
+/**
+ * @param {string} path
+ * @param {{ offset?: number, limit?: number }} [query]
+ */
+function withPage(path, query = {}) {
+    const params = new URLSearchParams();
+    if (query.offset !== undefined) {
+        params.set("offset", String(query.offset));
+    }
+    if (query.limit !== undefined) {
+        params.set("limit", String(query.limit));
+    }
+    const qs = params.toString();
+    return request("GET", `${path}${qs ? `?${qs}` : ""}`);
+}
+
+/** @param {{ offset?: number, limit?: number }} [query] */
+export function listBanners(query = {}) {
+    return withPage("/marketing/banners", query);
+}
+
+/** @param {{ offset?: number, limit?: number }} [query] */
+export function listPromotions(query = {}) {
+    return withPage("/marketing/promotions", query);
+}
+
 /** @param {Record<string, unknown>} data */
 export function storeBanner(data) {
     return request("POST", "/marketing/banners", data);

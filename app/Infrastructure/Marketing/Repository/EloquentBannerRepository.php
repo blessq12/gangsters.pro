@@ -34,6 +34,23 @@ final class EloquentBannerRepository implements BannerRepository
             ->all();
     }
 
+    public function listPage(int $offset, int $limit): array
+    {
+        return MKT_Banner::query()
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->offset(max(0, $offset))
+            ->limit(max(1, $limit))
+            ->get()
+            ->map(fn (MKT_Banner $row) => $this->mapper->toDomain($row))
+            ->all();
+    }
+
+    public function countAll(): int
+    {
+        return (int) MKT_Banner::query()->count();
+    }
+
     public function save(?int $id, bool $isActive, ?string $desktopPath, ?string $mobilePath): Banner
     {
         $row = $id === null ? new MKT_Banner() : MKT_Banner::query()->find($id);

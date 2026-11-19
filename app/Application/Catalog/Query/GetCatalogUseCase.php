@@ -134,10 +134,11 @@ final class GetCatalogUseCase
     ): ?array {
         if ($link->kind() === CatalogItemKind::Set) {
             $set = $setsById[$link->catalogItemId()] ?? null;
+            if (! $set instanceof ProductSet || $set->lines() === []) {
+                return null;
+            }
 
-            return $set instanceof ProductSet
-                ? $this->presenter->productSet($set, $tagById, $lineProductNames, $lineProductsById)
-                : null;
+            return $this->presenter->productSet($set, $tagById, $lineProductNames, $lineProductsById);
         }
 
         $product = $productsById[$link->catalogItemId()] ?? null;

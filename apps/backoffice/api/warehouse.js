@@ -1,7 +1,23 @@
 import { request } from "../http/transport.js";
 
-export function listIngredients() {
-    return request("GET", "/warehouse/ingredients");
+/**
+ * @param {{ offset?: number, limit?: number }} [query]
+ */
+function withPage(path, query = {}) {
+    const params = new URLSearchParams();
+    if (query.offset !== undefined) {
+        params.set("offset", String(query.offset));
+    }
+    if (query.limit !== undefined) {
+        params.set("limit", String(query.limit));
+    }
+    const qs = params.toString();
+    return request("GET", `${path}${qs ? `?${qs}` : ""}`);
+}
+
+/** @param {{ offset?: number, limit?: number }} [query] */
+export function listIngredients(query = {}) {
+    return withPage("/warehouse/ingredients", query);
 }
 
 /** @param {Record<string, unknown>} data */
@@ -14,8 +30,9 @@ export function updateIngredient(id, data) {
     return request("PUT", `/warehouse/ingredients/${id}`, data);
 }
 
-export function getStock() {
-    return request("GET", "/warehouse/stock");
+/** @param {{ offset?: number, limit?: number }} [query] */
+export function getStock(query = {}) {
+    return withPage("/warehouse/stock", query);
 }
 
 /** @param {Record<string, unknown>} data */
@@ -23,8 +40,9 @@ export function adjustStock(data) {
     return request("POST", "/warehouse/stock/adjust", data);
 }
 
-export function listWriteOffs() {
-    return request("GET", "/warehouse/write-offs");
+/** @param {{ offset?: number, limit?: number }} [query] */
+export function listWriteOffs(query = {}) {
+    return withPage("/warehouse/write-offs", query);
 }
 
 /** @param {Record<string, unknown>} data */

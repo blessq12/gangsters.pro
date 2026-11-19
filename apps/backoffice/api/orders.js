@@ -23,17 +23,31 @@ export function getOrder(id) {
     return request("GET", `/orders/${id}`);
 }
 
-/** @param {number|string} id */
-export function acceptOrder(id) {
-    return request("POST", `/orders/${id}/accept`);
+/**
+ * Подтверждение: accept + кухня → OrderConfirmed.
+ * @param {number|string} id
+ * @param {{ kitchen_id: number }} data
+ */
+export function acceptOrder(id, data) {
+    return request("POST", `/orders/${id}/accept`, data);
+}
+
+/**
+ * Отмена публикует OrderCancelled. Другие статусы этой командой не ставятся.
+ * @param {number|string} id
+ */
+export function cancelOrder(id) {
+    return request("POST", `/orders/${id}/status`, {
+        target_status: "cancelled",
+    });
 }
 
 /**
  * @param {number|string} id
- * @param {{ target_status: string, actor_role?: string }} data
+ * @param {{ kitchen_id: number }} data
  */
-export function changeOrderStatus(id, data) {
-    return request("POST", `/orders/${id}/status`, data);
+export function reassignKitchen(id, data) {
+    return request("POST", `/orders/${id}/reassign-kitchen`, data);
 }
 
 /** @param {number|string} id */

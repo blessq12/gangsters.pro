@@ -2,6 +2,8 @@
 
 namespace App\Shared\Provider;
 
+use App\Application\Shared\DomainEventPublisher;
+use App\Infrastructure\Shared\Event\LaravelDomainEventPublisher;
 use App\Infrastructure\Shared\Geo\YandexAddressGeocoder;
 use App\Infrastructure\Shared\Transaction\LaravelTransactionManager;
 use App\Shared\Geo\AddressGeocoder;
@@ -15,6 +17,7 @@ final class SharedProvider extends ServiceProvider
     {
         $this->app->bind(AddressGeocoder::class, YandexAddressGeocoder::class);
         $this->app->bind(TransactionManager::class, LaravelTransactionManager::class);
+        $this->app->bind(DomainEventPublisher::class, LaravelDomainEventPublisher::class);
     }
 
     public function boot(): void

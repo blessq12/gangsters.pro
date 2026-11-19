@@ -8,6 +8,8 @@ use App\Application\Promotion\Command\SyncPromotionZonesUseCase;
 use App\Application\Promotion\DTO\AssignProductPromotionRoleDto;
 use App\Application\Promotion\DTO\SavePromotionPolicyDto;
 use App\Application\Promotion\Query\GetAdminPromotionPolicyUseCase;
+use App\Application\Promotion\Query\ListAdminPromotionRolesUseCase;
+use App\Application\Promotion\Query\ListAdminPromotionZonesUseCase;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -22,6 +24,22 @@ final class PromotionController extends Controller
         } catch (InvalidArgumentException $exception) {
             return response()->json(['message' => $exception->getMessage()], 404);
         }
+    }
+
+    public function listRoles(Request $request, ListAdminPromotionRolesUseCase $useCase): JsonResponse
+    {
+        return response()->json($useCase->execute(
+            offset: (int) $request->query('offset', 0),
+            limit: (int) $request->query('limit', 20),
+        ));
+    }
+
+    public function listZones(Request $request, ListAdminPromotionZonesUseCase $useCase): JsonResponse
+    {
+        return response()->json($useCase->execute(
+            offset: (int) $request->query('offset', 0),
+            limit: (int) $request->query('limit', 20),
+        ));
     }
 
     public function store(Request $request, SavePromotionPolicyUseCase $useCase): JsonResponse

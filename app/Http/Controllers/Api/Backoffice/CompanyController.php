@@ -11,6 +11,9 @@ use App\Application\Company\DTO\SaveCompanyDocumentDto;
 use App\Application\Company\DTO\SaveCompanyDto;
 use App\Application\Company\DTO\SaveKitchenDto;
 use App\Application\Company\Query\GetAdminCompanyUseCase;
+use App\Application\Company\Query\ListAdminBranchesUseCase;
+use App\Application\Company\Query\ListAdminDocumentsUseCase;
+use App\Application\Company\Query\ListAdminKitchensUseCase;
 use App\Domain\Supporting\Company\Repository\CompanyRepository;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
@@ -22,6 +25,30 @@ final class CompanyController extends Controller
     public function show(GetAdminCompanyUseCase $useCase): JsonResponse
     {
         return response()->json($useCase->execute());
+    }
+
+    public function listBranches(Request $request, ListAdminBranchesUseCase $useCase): JsonResponse
+    {
+        return response()->json($useCase->execute(
+            offset: (int) $request->query('offset', 0),
+            limit: (int) $request->query('limit', 20),
+        ));
+    }
+
+    public function listKitchens(Request $request, ListAdminKitchensUseCase $useCase): JsonResponse
+    {
+        return response()->json($useCase->execute(
+            offset: (int) $request->query('offset', 0),
+            limit: (int) $request->query('limit', 20),
+        ));
+    }
+
+    public function listDocuments(Request $request, ListAdminDocumentsUseCase $useCase): JsonResponse
+    {
+        return response()->json($useCase->execute(
+            offset: (int) $request->query('offset', 0),
+            limit: (int) $request->query('limit', 20),
+        ));
     }
 
     public function store(Request $request, SaveCompanyUseCase $useCase): JsonResponse

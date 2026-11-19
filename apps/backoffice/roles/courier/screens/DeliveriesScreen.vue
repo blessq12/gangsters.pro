@@ -1,11 +1,12 @@
 <script setup>
-import { onMounted, onUnmounted, ref } from "vue";
+import { onMounted, onUnmounted, ref, watch } from "vue";
 import {
     listCourierRouteSheets,
     settleStop,
     takeRouteSheet,
 } from "../../../api/delivery.js";
 import { useApi } from "../../../shell/composables/useApi.js";
+import { usePagedList } from "../../../shell/composables/usePagedList.js";
 import { useToast } from "../../../shell/composables/useToast.js";
 import { useAuthStore } from "../../../shell/store/authStore.js";
 import UiBadge from "../../../shell/components/ui/UiBadge.vue";
@@ -13,132 +14,110 @@ import UiButton from "../../../shell/components/ui/UiButton.vue";
 import UiCard from "../../../shell/components/ui/UiCard.vue";
 import UiFormField from "../../../shell/components/ui/UiFormField.vue";
 import UiModal from "../../../shell/components/ui/UiModal.vue";
+import UiPagination from "../../../shell/components/ui/UiPagination.vue";
+import {
+    formatAddress,
+    sheetHint,
+    sheetStatusLabel,
+    sheetStatusVariant,
+    stopIsOpen,
+    stopOutcomeLabel,
+    stopOutcomeVariant,
+} from "../../../shell/domain/orderStage.js";
 
 const auth = useAuthStore();
 const toast = useToast();
 const listApi = useApi();
 const actionApi = useApi();
 
-const sheets = ref([]);
-const expandedId = ref(null);
-
-const problemOpen = ref(false);
-const problemSheetId = ref(null);
-const problemOrderId = ref(null);
-const problemReason = ref("");
+const {
+    page,
+    perPage,
+    total,
+    items: sheets,
+    offset,
+    applyPayload,
+} = usePagedList();
+const writeOffOpen = ref(false);
+const writeOffSheetId = ref(null);
+const writeOffOrderId = ref(null);
+const writeOffReason = ref("");
 
 /** @type {ReturnType<typeof setInterval>|null} */
 let pollTimer = null;
 const POLL_MS = 18000;
 
-const sheetStatusLabel = {
-    released: "Новый",
-    in_delivery: "В работе",
-    completed: "Завершён",
-};
-
-const sheetStatusVariant = {
-    released: "warning",
-    in_delivery: "warning",
-    completed: "success",
-};
-
-const outcomeLabel = {
-    pending: "Ожидает",
-    delivered: "Доставлен",
-    written_off: "Списан",
-};
-
-const outcomeVariant = {
-    pending: "neutral",
-    delivered: "success",
-    written_off: "danger",
-};
-
-function asList(payload) {
-    return Array.isArray(payload) ? payload : (payload?.items ?? []);
-}
-
-function stopOutcome(stop) {
-    return stop?.outcome && stop.outcome !== "" ? stop.outcome : "pending";
-}
-
-function isPending(stop) {
-    return stopOutcome(stop) === "pending";
-}
-
 async function load(silent = false) {
     try {
-        const payload = await listApi.run(() => listCourierRouteSheets());
-        sheets.value = asList(payload);
+        const payload = await listApi.run(() => listCourierRouteSheets({
+            offset: offset.value,
+            limit: perPage,
+        }));
+        applyPayload(payload);
+        const lastPage = Math.max(1, Math.ceil(total.value / perPage));
+        if (page.value > lastPage) {
+            page.value = lastPage;
+        }
     } catch (err) {
         if (!silent) {
-            toast.error(err instanceof Error ? err.message : "Не удалось загрузить маршруты");
+            toast.error(err instanceof Error ? err.message : "Не удалось загрузить маршрутные листы");
         }
     }
 }
 
-function toggleExpand(id) {
-    expandedId.value = expandedId.value === id ? null : id;
-}
-
-async function onTake(sheetId, event) {
-    event?.stopPropagation();
+async function onTake(sheetId) {
     const courierId = auth.employee?.id;
     if (!courierId) {
-        toast.error("Нет id курьера");
+        toast.error("Нет курьера в сессии. Войди заново.");
         return;
     }
     try {
         await actionApi.run(() => takeRouteSheet(sheetId, { courier_id: courierId }));
-        toast.success("Маршрут взят");
+        toast.success("Лист взят. Заказы в пути.");
         await load(true);
     } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Ошибка");
+        toast.error(err instanceof Error ? err.message : "Не удалось взять лист");
     }
 }
 
-async function onDelivered(sheetId, orderId, event) {
-    event?.stopPropagation();
+async function onDelivered(sheetId, orderId) {
     try {
-        await actionApi.run(() => settleStop(sheetId, orderId, {
-            outcome: "delivered",
-        }));
-        toast.success(`#${orderId} доставлен`);
+        await actionApi.run(() => settleStop(sheetId, orderId, { outcome: "delivered" }));
+        toast.success(`Остановка заказа #${orderId}: доставлен.`);
         await load(true);
     } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Ошибка");
+        toast.error(err instanceof Error ? err.message : "Не удалось закрыть остановку");
     }
 }
 
-function askProblem(sheetId, orderId, event) {
-    event?.stopPropagation();
-    problemSheetId.value = sheetId;
-    problemOrderId.value = orderId;
-    problemReason.value = "";
-    problemOpen.value = true;
+function askWriteOff(sheetId, orderId) {
+    writeOffSheetId.value = sheetId;
+    writeOffOrderId.value = orderId;
+    writeOffReason.value = "";
+    writeOffOpen.value = true;
 }
 
-async function confirmProblem() {
-    if (!String(problemReason.value).trim()) {
-        toast.error("Укажи причину");
+async function confirmWriteOff() {
+    if (!String(writeOffReason.value).trim()) {
+        toast.error("Нужна причина списания");
         return;
     }
-    const sheetId = problemSheetId.value;
-    const orderId = problemOrderId.value;
-    problemOpen.value = false;
+    const sheetId = writeOffSheetId.value;
+    const orderId = writeOffOrderId.value;
+    writeOffOpen.value = false;
     try {
         await actionApi.run(() => settleStop(sheetId, orderId, {
             outcome: "written_off",
-            reason: problemReason.value.trim(),
+            reason: writeOffReason.value.trim(),
         }));
-        toast.success(`#${orderId}: списан`);
+        toast.success(`Остановка заказа #${orderId}: списан.`);
         await load(true);
     } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Ошибка");
+        toast.error(err instanceof Error ? err.message : "Не удалось списать заказ");
     }
 }
 
+watch(page, () => load());
 onMounted(() => {
     load();
     pollTimer = setInterval(() => load(true), POLL_MS);
@@ -155,129 +134,117 @@ onUnmounted(() => {
 <template>
     <div class="space-y-6 px-4 py-6 sm:px-6">
         <h1 class="text-2xl font-bold text-bo-fg">
-            Мои доставки
+            Маршрутные листы
         </h1>
 
         <div
             v-if="!listApi.loading && sheets.length === 0"
-            class="rounded-none border border-bo-border bg-bo-elevated px-6 py-16 text-center text-2xl font-semibold text-bo-muted"
+            class="border border-bo-border bg-bo-elevated px-6 py-16 text-center text-2xl font-semibold text-bo-muted"
         >
-            Нет активных маршрутов
+            Свободных и своих листов нет
         </div>
 
         <div v-else class="space-y-4">
             <UiCard
                 v-for="sheet in sheets"
                 :key="sheet.id"
-                class="!cursor-pointer"
-                @click="toggleExpand(sheet.id)"
             >
                 <div class="space-y-4">
                     <div class="flex items-start justify-between gap-3">
                         <div>
                             <p class="text-3xl font-black text-bo-fg">
-                                #{{ sheet.id }}
+                                Лист #{{ sheet.id }}
                             </p>
-                            <p class="mt-1 text-sm text-bo-muted">
-                                Стопов: {{ (sheet.stops ?? []).length }}
+                            <p class="mt-2 text-sm text-bo-muted">
+                                {{ sheetHint(sheet) }}
                             </p>
                         </div>
                         <UiBadge
                             class="!px-3 !py-1 !text-sm"
-                            :variant="sheetStatusVariant[sheet.status] || 'neutral'"
-                            :text="sheetStatusLabel[sheet.status] || String(sheet.status || '—')"
+                            :variant="sheetStatusVariant(sheet.status)"
+                            :text="sheetStatusLabel(sheet.status)"
                         />
                     </div>
 
-                    <div class="space-y-2" @click.stop>
-                        <div
-                            v-for="stop in (sheet.stops ?? [])"
-                            :key="`${sheet.id}-${stop.order_id}-${stop.position}`"
-                            class="border border-bo-border bg-white/[0.03] p-4"
-                        >
-                            <div class="flex flex-wrap items-center justify-between gap-2">
-                                <div class="space-y-1">
-                                    <p class="text-lg font-semibold text-bo-fg">
-                                        Заказ #{{ stop.order_id }}
-                                        <span class="text-sm font-normal text-bo-muted">
-                                            · pos {{ stop.position }}
-                                        </span>
-                                    </p>
-                                    <UiBadge
-                                        :variant="outcomeVariant[stopOutcome(stop)] || 'neutral'"
-                                        :text="outcomeLabel[stopOutcome(stop)] || stopOutcome(stop)"
-                                    />
-                                </div>
-
-                                <div
-                                    v-if="sheet.status === 'in_delivery' && isPending(stop)"
-                                    class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row"
-                                >
-                                    <UiButton
-                                        class="!h-14 !flex-1 !bg-emerald-600 !text-lg !font-bold sm:!min-w-[9rem]"
-                                        :disabled="actionApi.loading"
-                                        @click="onDelivered(sheet.id, stop.order_id, $event)"
-                                    >
-                                        Доставлен
-                                    </UiButton>
-                                    <UiButton
-                                        class="!h-14 !flex-1 !bg-bo-accent !text-lg !font-bold sm:!min-w-[9rem]"
-                                        :disabled="actionApi.loading"
-                                        @click="askProblem(sheet.id, stop.order_id, $event)"
-                                    >
-                                        Проблема
-                                    </UiButton>
-                                </div>
-                            </div>
-
-                            <div
-                                v-if="expandedId === sheet.id && stop.order"
-                                class="mt-2 text-sm text-bo-muted"
-                            >
-                                <p>{{ stop.order.client?.name || "—" }} · {{ stop.order.client?.phone || "" }}</p>
-                                <p v-if="stop.order.address">
-                                    {{ typeof stop.order.address === 'string'
-                                        ? stop.order.address
-                                        : (stop.order.address.line || stop.order.address.search_line || '—') }}
+                    <article
+                        v-for="stop in (sheet.stops ?? [])"
+                        :key="`${sheet.id}-${stop.order_id}-${stop.position}`"
+                        class="border border-bo-border bg-white/[0.03] p-4"
+                    >
+                        <div class="flex flex-wrap items-start justify-between gap-2">
+                            <div class="space-y-1">
+                                <p class="text-lg font-semibold text-bo-fg">
+                                    Остановка {{ stop.position }} · заказ #{{ stop.order_id }}
+                                </p>
+                                <p class="text-sm text-bo-muted">
+                                    {{ stop.order?.client?.name || "—" }}
+                                    <span v-if="stop.order?.client?.phone"> · {{ stop.order.client.phone }}</span>
+                                </p>
+                                <p class="text-base text-bo-fg">
+                                    {{ formatAddress(stop.order?.address) || "Адрес не указан" }}
                                 </p>
                             </div>
+                            <UiBadge
+                                :variant="stopOutcomeVariant(stop.outcome)"
+                                :text="stopOutcomeLabel(stop.outcome)"
+                            />
                         </div>
-                    </div>
 
-                    <div v-if="sheet.status === 'released'" @click.stop>
-                        <UiButton
-                            class="!h-14 !w-full !bg-bo-accent !text-xl !font-bold"
-                            :disabled="actionApi.loading"
-                            @click="onTake(sheet.id, $event)"
+                        <div
+                            v-if="sheet.status === 'in_delivery' && stopIsOpen(stop.outcome)"
+                            class="mt-3 flex w-full flex-col gap-2 sm:flex-row"
                         >
-                            Взять маршрут
-                        </UiButton>
-                    </div>
+                            <UiButton
+                                class="!h-14 !flex-1 !bg-emerald-600 !text-lg !font-bold sm:!min-w-[9rem]"
+                                :disabled="actionApi.loading"
+                                @click="onDelivered(sheet.id, stop.order_id)"
+                            >
+                                Доставлен
+                            </UiButton>
+                            <UiButton
+                                class="!h-14 !flex-1 !text-lg !font-bold sm:!min-w-[9rem]"
+                                :disabled="actionApi.loading"
+                                @click="askWriteOff(sheet.id, stop.order_id)"
+                            >
+                                Списать
+                            </UiButton>
+                        </div>
+                    </article>
+
+                    <UiButton
+                        v-if="sheet.status === 'released' && !sheet.courier_id"
+                        class="!h-14 !w-full !text-xl !font-bold"
+                        :disabled="actionApi.loading"
+                        @click="onTake(sheet.id)"
+                    >
+                        Взять лист
+                    </UiButton>
                 </div>
             </UiCard>
         </div>
 
-        <UiModal
-            :open="problemOpen"
-            title="Причина проблемы"
-            @close="problemOpen = false"
-        >
+        <UiPagination
+            :page="page"
+            :per-page="perPage"
+            :total="total"
+            @update:page="page = $event"
+        />
+
+        <UiModal :open="writeOffOpen" title="Списать заказ" @close="writeOffOpen = false">
             <UiFormField label="Причина" required>
                 <textarea
-                    v-model="problemReason"
+                    v-model="writeOffReason"
                     rows="4"
-                    class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 transition-colors hover:border-bo-border-strong focus:border-bo-accent focus:outline-none text-base"
-                    placeholder="Что случилось?"
+                    class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 text-base focus:border-bo-accent focus:outline-none"
+                    placeholder="Почему заказ не доставлен"
                 />
             </UiFormField>
             <template #footer>
-                <UiButton @click="problemOpen = false">Отмена</UiButton>
-                <UiButton
-                    class="!bg-bo-accent"
-                    :disabled="actionApi.loading"
-                    @click="confirmProblem"
-                >
-                    Подтвердить
+                <UiButton class="!bg-white/10 !text-bo-fg" @click="writeOffOpen = false">
+                    Закрыть
+                </UiButton>
+                <UiButton :disabled="actionApi.loading" @click="confirmWriteOff">
+                    Списать
                 </UiButton>
             </template>
         </UiModal>

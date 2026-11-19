@@ -18,5 +18,12 @@ interface EmployeeRepository
      */
     public function list(?StaffRole $role = null, ?bool $isActive = null): array;
 
+    /**
+     * @return list<Employee>
+     */
+    public function listPage(int $offset, int $limit, ?StaffRole $role = null, ?bool $isActive = null): array;
+
+    public function count(?StaffRole $role = null, ?bool $isActive = null): int;
+
     public function delete(int $id): void;
 }

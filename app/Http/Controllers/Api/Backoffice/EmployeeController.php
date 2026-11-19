@@ -32,6 +32,8 @@ final class EmployeeController extends Controller
             return response()->json($useCase->execute(
                 role: is_string($role) ? $role : null,
                 isActive: $isActive,
+                offset: (int) $request->query('offset', 0),
+                limit: (int) $request->query('limit', 20),
             ));
         } catch (InvalidArgumentException $exception) {
             return response()->json(['message' => $exception->getMessage()], 422);

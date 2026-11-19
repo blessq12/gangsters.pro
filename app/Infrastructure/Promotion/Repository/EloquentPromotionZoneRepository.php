@@ -24,6 +24,23 @@ final class EloquentPromotionZoneRepository implements PromotionZoneRepository
             ->all();
     }
 
+    public function listPage(int $offset, int $limit): array
+    {
+        return PRM_Zone::query()
+            ->orderBy('name')
+            ->orderBy('id')
+            ->offset(max(0, $offset))
+            ->limit(max(1, $limit))
+            ->get()
+            ->map(fn (PRM_Zone $row) => $this->mapper->toDomain($row))
+            ->all();
+    }
+
+    public function countAll(): int
+    {
+        return (int) PRM_Zone::query()->count();
+    }
+
     public function findById(string $id): ?PromotionZone
     {
         $row = PRM_Zone::query()->find($id);

@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers\Api\Backoffice;
 
-use App\Application\Production\Command\CancelTicketUseCase;
+use App\Application\Order\Command\CancelOrderUseCase;
 use App\Application\Production\Command\CompleteWorkUseCase;
-use App\Application\Production\Command\QueueTicketUseCase;
 use App\Application\Production\Command\StartWorkUseCase;
 use App\Application\Production\DTO\CompleteWorkDto;
-use App\Application\Production\DTO\QueueTicketDto;
 use App\Application\Production\DTO\StartWorkDto;
 use App\Application\Production\Query\GetTicketUseCase;
 use App\Application\Production\Query\ListQueueUseCase;
@@ -24,7 +22,11 @@ final class ProductionController extends Controller
             'kitchen_id' => ['required', 'integer', 'min:1'],
         ]);
 
-        return response()->json($useCase->execute((int) $validated['kitchen_id']));
+        return response()->json($useCase->execute(
+            kitchenId: (int) $validated['kitchen_id'],
+            offset: (int) $request->query('offset', 0),
+            limit: (int) $request->query('limit', 20),
+        ));
     }
 
     public function show(int $orderId, GetTicketUseCase $useCase): JsonResponse
@@ -34,17 +36,6 @@ final class ProductionController extends Controller
         } catch (InvalidArgumentException $exception) {
             return response()->json(['message' => $exception->getMessage()], 404);
         }
-    }
-
-    public function enqueue(int $orderId, QueueTicketUseCase $useCase): JsonResponse
-    {
-        try {
-            $result = $useCase->execute(new QueueTicketDto(orderId: $orderId));
-        } catch (InvalidArgumentException $exception) {
-            return response()->json(['message' => $exception->getMessage()], 422);
-        }
-
-        return response()->json($result);
     }
 
     public function start(int $orderId, StartWorkUseCase $useCase): JsonResponse
@@ -69,7 +60,7 @@ final class ProductionController extends Controller
         return response()->json($result);
     }
 
-    public function cancel(int $orderId, CancelTicketUseCase $useCase): JsonResponse
+    public function cancel(int $orderId, CancelOrderUseCase $useCase): JsonResponse
     {
         try {
             $result = $useCase->execute($orderId);

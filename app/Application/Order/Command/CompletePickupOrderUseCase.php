@@ -3,13 +3,21 @@
 namespace App\Application\Order\Command;
 
 use App\Application\Order\Presenter\AdminOrderPresenter;
+use App\Application\Shared\DomainEventPublisher;
+use App\Domain\Core\Order\Entity\Order;
 use App\Domain\Core\Order\Repository\OrderRepository;
+use App\Shared\Transaction\TransactionManager;
 
+/**
+ * Выдача самовывоза. Оплату закрывает слушатель OrderPickedUp.
+ */
 final class CompletePickupOrderUseCase
 {
     public function __construct(
         private readonly OrderRepository $orders,
         private readonly AdminOrderPresenter $presenter,
+        private readonly DomainEventPublisher $events,
+        private readonly TransactionManager $transaction,
     ) {}
 
     /**
@@ -17,23 +25,19 @@ final class CompletePickupOrderUseCase
      */
     public function execute(int $orderId): array
     {
-        $order = $this->orders->findById($orderId);
-        if ($order === null) {
-            throw new \InvalidArgumentException('Заказ не найден.');
-        }
+        return $this->transaction->run(function () use ($orderId): array {
+            $order = $this->requireOrder($orderId);
+            $order->markDeliveredPickup();
+            $this->orders->save($order);
+            $this->events->publish($order);
 
-        $order->markDeliveredPickup();
-        $this->orders->save($order);
+            return $this->presenter->present($this->requireOrder($order->id()));
+        });
+    }
 
-        foreach ($order->pullDomainEvents() as $event) {
-            event($event);
-        }
-
-        $saved = $this->orders->findById($orderId);
-        if ($saved === null) {
-            throw new \RuntimeException('Заказ не найден после выдачи.');
-        }
-
-        return $this->presenter->present($saved);
+    private function requireOrder(int $orderId): Order
+    {
+        return $this->orders->findById($orderId)
+            ?? throw new \InvalidArgumentException('Заказ не найден.');
     }
 }

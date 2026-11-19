@@ -15,5 +15,21 @@ interface RouteSheetRepository
      */
     public function listActive(): array;
 
+    /**
+     * @return list<RouteSheet>
+     */
+    public function listActivePage(int $offset, int $limit): array;
+
+    public function countActive(): int;
+
+    /**
+     * Листы, видимые курьеру: свои активные + свободные released без курьера.
+     *
+     * @return list<RouteSheet>
+     */
+    public function listVisibleToCourierPage(int $courierId, int $offset, int $limit): array;
+
+    public function countVisibleToCourier(int $courierId): int;
+
     public function save(RouteSheet $sheet): void;
 }

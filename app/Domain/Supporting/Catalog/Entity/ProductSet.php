@@ -32,10 +32,7 @@ final class ProductSet implements CatalogItem
         private readonly array $tagIds,
         private readonly array $images = [],
     ) {
-        if ($lines === []) {
-            throw new \InvalidArgumentException('Набор должен содержать хотя бы один товар.');
-        }
-
+        // Пустой состав допустим как черновик в админке; витрина его отфильтрует.
         $this->assertUniquePriceTypes($prices);
     }
 

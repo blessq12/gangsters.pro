@@ -57,8 +57,6 @@ Route::prefix('backoffice')->middleware(EnsureBackofficeEnabled::class)->group(f
             Route::get('production/queue', [ProductionController::class, 'queue']);
             Route::get('production/tickets/{orderId}', [ProductionController::class, 'show'])
                 ->whereNumber('orderId');
-            Route::post('production/tickets/{orderId}/queue', [ProductionController::class, 'enqueue'])
-                ->whereNumber('orderId');
             Route::post('production/tickets/{orderId}/start', [ProductionController::class, 'start'])
                 ->whereNumber('orderId');
             Route::post('production/tickets/{orderId}/complete', [ProductionController::class, 'complete'])
@@ -74,18 +72,42 @@ Route::prefix('backoffice')->middleware(EnsureBackofficeEnabled::class)->group(f
                 ->whereNumber('id');
 
             Route::get('catalog', [CatalogController::class, 'show']);
+            Route::get('catalog/products', [CatalogController::class, 'listProducts']);
+            Route::get('catalog/products/{id}', [CatalogController::class, 'showProduct'])
+                ->whereNumber('id');
+            Route::get('catalog/sets', [CatalogController::class, 'listSets']);
+            Route::get('catalog/sets/{id}', [CatalogController::class, 'showSet'])
+                ->whereNumber('id');
+            Route::get('catalog/categories', [CatalogController::class, 'listCategories']);
+            Route::get('catalog/categories/{id}', [CatalogController::class, 'showCategory'])
+                ->whereNumber('id');
+            Route::get('catalog/tags', [CatalogController::class, 'listTags']);
 
             Route::post('catalog/products', [CatalogController::class, 'storeProduct']);
             Route::put('catalog/products/{id}', [CatalogController::class, 'updateProduct'])
                 ->whereNumber('id');
 
             Route::post('catalog/categories', [CatalogController::class, 'storeCategory']);
+            Route::put('catalog/categories/order', [CatalogController::class, 'reorderCategories']);
             Route::put('catalog/categories/{id}', [CatalogController::class, 'updateCategory'])
+                ->whereNumber('id');
+            Route::put('catalog/categories/{id}/items', [CatalogController::class, 'replaceCategoryItems'])
                 ->whereNumber('id');
 
             Route::post('catalog/sets', [CatalogController::class, 'storeSet']);
             Route::put('catalog/sets/{id}', [CatalogController::class, 'updateSet'])
                 ->whereNumber('id');
+            Route::put('catalog/sets/{id}/lines', [CatalogController::class, 'replaceSetLines'])
+                ->whereNumber('id');
+
+            Route::post('catalog/items/{id}/images', [CatalogController::class, 'storeItemImage'])
+                ->whereNumber('id');
+            Route::patch('catalog/items/{id}/images/{imageId}', [CatalogController::class, 'updateItemImage'])
+                ->whereNumber('id')
+                ->whereNumber('imageId');
+            Route::delete('catalog/items/{id}/images/{imageId}', [CatalogController::class, 'destroyItemImage'])
+                ->whereNumber('id')
+                ->whereNumber('imageId');
 
             Route::post('catalog/tags', [CatalogController::class, 'storeTag']);
             Route::put('catalog/tags/{id}', [CatalogController::class, 'updateTag'])
@@ -95,14 +117,17 @@ Route::prefix('backoffice')->middleware(EnsureBackofficeEnabled::class)->group(f
             Route::post('company', [CompanyController::class, 'store']);
             Route::put('company', [CompanyController::class, 'update']);
 
+            Route::get('company/branches', [CompanyController::class, 'listBranches']);
             Route::post('company/branches', [CompanyController::class, 'storeBranch']);
             Route::put('company/branches/{id}', [CompanyController::class, 'updateBranch'])
                 ->whereNumber('id');
 
+            Route::get('company/kitchens', [CompanyController::class, 'listKitchens']);
             Route::post('company/kitchens', [CompanyController::class, 'storeKitchen']);
             Route::put('company/kitchens/{id}', [CompanyController::class, 'updateKitchen'])
                 ->whereNumber('id');
 
+            Route::get('company/documents', [CompanyController::class, 'listDocuments']);
             Route::post('company/documents', [CompanyController::class, 'storeDocument']);
             Route::put('company/documents/{id}', [CompanyController::class, 'updateDocument'])
                 ->whereNumber('id');
@@ -111,6 +136,7 @@ Route::prefix('backoffice')->middleware(EnsureBackofficeEnabled::class)->group(f
             Route::post('delivery', [DeliveryController::class, 'store']);
             Route::put('delivery', [DeliveryController::class, 'update']);
 
+            Route::get('delivery/zones', [DeliveryController::class, 'listZones']);
             Route::post('delivery/zones', [DeliveryController::class, 'storeZone']);
             Route::put('delivery/zones/{id}', [DeliveryController::class, 'updateZone']);
 
@@ -130,13 +156,17 @@ Route::prefix('backoffice')->middleware(EnsureBackofficeEnabled::class)->group(f
             Route::get('promotion-policy', [PromotionController::class, 'show']);
             Route::post('promotion-policy', [PromotionController::class, 'store']);
             Route::put('promotion-policy', [PromotionController::class, 'update']);
+            Route::get('promotion-policy/roles', [PromotionController::class, 'listRoles']);
             Route::post('promotion-policy/roles', [PromotionController::class, 'assignRole']);
+            Route::get('promotion-policy/zones', [PromotionController::class, 'listZones']);
             Route::post('promotion-policy/sync-zones', [PromotionController::class, 'syncZones']);
 
             Route::get('marketing', [MarketingController::class, 'show']);
+            Route::get('marketing/banners', [MarketingController::class, 'listBanners']);
             Route::post('marketing/banners', [MarketingController::class, 'storeBanner']);
             Route::put('marketing/banners/{id}', [MarketingController::class, 'updateBanner'])
                 ->whereNumber('id');
+            Route::get('marketing/promotions', [MarketingController::class, 'listPromotions']);
             Route::post('marketing/promotions', [MarketingController::class, 'storePromotion']);
             Route::put('marketing/promotions/{id}', [MarketingController::class, 'updatePromotion'])
                 ->whereNumber('id');

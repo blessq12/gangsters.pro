@@ -5,11 +5,11 @@ const module = {
     role: "administrator",
     home: "administrator-live-orders",
     nav: [
-        { label: "Заказы онлайн", routeName: "administrator-live-orders", icon: "live", order: 1 },
+        { label: "Заказы", routeName: "administrator-live-orders", icon: "live", order: 1 },
         { label: "Ручной заказ", routeName: "administrator-manual-order", icon: "manual-order", order: 2 },
-        { label: "Логистика", routeName: "administrator-logistics", icon: "logistics", order: 3 },
+        { label: "Маршрутные листы", routeName: "administrator-logistics", icon: "logistics", order: 3 },
         { label: "Клиенты", routeName: "administrator-clients", icon: "clients", order: 4 },
-        { label: "Производство", routeName: "administrator-production", icon: "production", order: 5 },
+        { label: "Тикеты", routeName: "administrator-production", icon: "production", order: 5 },
         { label: "Каталог", routeName: "administrator-catalog", icon: "catalog", order: 6 },
     ],
     routes: [
@@ -23,6 +23,12 @@ const module = {
                     path: "live-orders",
                     name: "administrator-live-orders",
                     component: () => import("./screens/LiveOrdersScreen.vue"),
+                    meta: { role: "administrator" },
+                },
+                {
+                    path: "orders/:id",
+                    name: "administrator-order",
+                    component: () => import("./screens/OrderCardScreen.vue"),
                     meta: { role: "administrator" },
                 },
                 {

@@ -24,6 +24,23 @@ final class EloquentProductPromotionRoleRepository implements ProductPromotionRo
             ->all();
     }
 
+    public function listPage(int $offset, int $limit): array
+    {
+        return PRM_ProductRole::query()
+            ->orderBy('role')
+            ->orderBy('catalog_item_id')
+            ->offset(max(0, $offset))
+            ->limit(max(1, $limit))
+            ->get()
+            ->map(fn (PRM_ProductRole $row) => $this->mapper->toDomain($row))
+            ->all();
+    }
+
+    public function countAll(): int
+    {
+        return (int) PRM_ProductRole::query()->count();
+    }
+
     public function findByProductIds(array $productIds): array
     {
         $ids = $this->normalizeIds($productIds);

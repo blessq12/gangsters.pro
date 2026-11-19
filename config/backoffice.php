@@ -11,6 +11,7 @@ return [
     'access' => [
         // orders — операции
         ['method' => 'POST', 'path' => 'orders/*/accept', 'roles' => ['administrator']],
+        ['method' => 'POST', 'path' => 'orders/*/reassign-kitchen', 'roles' => ['administrator']],
         ['method' => 'POST', 'path' => 'orders/*/status', 'roles' => ['administrator']],
         ['method' => 'POST', 'path' => 'orders/*/complete-pickup', 'roles' => ['administrator']],
         ['method' => 'POST', 'path' => 'orders', 'roles' => ['administrator']],
@@ -27,8 +28,21 @@ return [
         ['method' => 'GET', 'path' => 'payments/*', 'roles' => ['owner', 'administrator']],
 
         // catalog
+        ['method' => 'POST', 'path' => 'catalog/items/*/images', 'roles' => ['owner']],
+        ['method' => 'PATCH', 'path' => 'catalog/items/*/images/*', 'roles' => ['owner']],
+        ['method' => 'DELETE', 'path' => 'catalog/items/*/images/*', 'roles' => ['owner']],
+        ['method' => 'PUT', 'path' => 'catalog/categories/*/items', 'roles' => ['owner']],
+        ['method' => 'PUT', 'path' => 'catalog/categories/order', 'roles' => ['owner']],
+        ['method' => 'PUT', 'path' => 'catalog/sets/*/lines', 'roles' => ['owner']],
         ['method' => 'POST', 'path' => 'catalog/*', 'roles' => ['owner']],
         ['method' => 'PUT', 'path' => 'catalog/*/*', 'roles' => ['owner']],
+        ['method' => 'GET', 'path' => 'catalog/products/*', 'roles' => ['owner', 'administrator']],
+        ['method' => 'GET', 'path' => 'catalog/products', 'roles' => ['owner', 'administrator']],
+        ['method' => 'GET', 'path' => 'catalog/sets/*', 'roles' => ['owner', 'administrator']],
+        ['method' => 'GET', 'path' => 'catalog/sets', 'roles' => ['owner', 'administrator']],
+        ['method' => 'GET', 'path' => 'catalog/categories/*', 'roles' => ['owner', 'administrator']],
+        ['method' => 'GET', 'path' => 'catalog/categories', 'roles' => ['owner', 'administrator']],
+        ['method' => 'GET', 'path' => 'catalog/tags', 'roles' => ['owner', 'administrator']],
         ['method' => 'GET', 'path' => 'catalog', 'roles' => ['owner', 'administrator']],
 
         // company
@@ -36,20 +50,25 @@ return [
         ['method' => 'PUT', 'path' => 'company/*/*', 'roles' => ['owner']],
         ['method' => 'POST', 'path' => 'company', 'roles' => ['owner']],
         ['method' => 'PUT', 'path' => 'company', 'roles' => ['owner']],
-        ['method' => 'GET', 'path' => 'company', 'roles' => ['owner', 'administrator']],
+        ['method' => 'GET', 'path' => 'company/branches', 'roles' => ['owner', 'administrator', 'kitchen']],
+        ['method' => 'GET', 'path' => 'company/kitchens', 'roles' => ['owner', 'administrator', 'kitchen']],
+        ['method' => 'GET', 'path' => 'company/documents', 'roles' => ['owner', 'administrator', 'kitchen']],
+        ['method' => 'GET', 'path' => 'company', 'roles' => ['owner', 'administrator', 'kitchen']],
 
         // delivery config / zones
         ['method' => 'POST', 'path' => 'delivery/zones', 'roles' => ['owner']],
         ['method' => 'PUT', 'path' => 'delivery/zones/*', 'roles' => ['owner']],
         ['method' => 'POST', 'path' => 'delivery', 'roles' => ['owner']],
         ['method' => 'PUT', 'path' => 'delivery', 'roles' => ['owner']],
+        ['method' => 'GET', 'path' => 'delivery/zones', 'roles' => ['owner', 'administrator']],
         ['method' => 'GET', 'path' => 'delivery', 'roles' => ['owner', 'administrator']],
 
         // delivery route-sheets
-        ['method' => null, 'path' => 'delivery/route-sheets/*/stops/*/settle', 'roles' => ['administrator']],
-        ['method' => null, 'path' => 'delivery/route-sheets/*/take', 'roles' => ['administrator']],
-        ['method' => null, 'path' => 'delivery/route-sheets/*', 'roles' => ['administrator']],
-        ['method' => null, 'path' => 'delivery/route-sheets', 'roles' => ['administrator']],
+        ['method' => null, 'path' => 'delivery/route-sheets/*/stops/*/settle', 'roles' => ['administrator', 'courier']],
+        ['method' => null, 'path' => 'delivery/route-sheets/*/take', 'roles' => ['administrator', 'courier']],
+        ['method' => 'GET', 'path' => 'delivery/route-sheets/*', 'roles' => ['owner', 'administrator']],
+        ['method' => 'GET', 'path' => 'delivery/route-sheets', 'roles' => ['owner', 'administrator']],
+        ['method' => 'POST', 'path' => 'delivery/route-sheets', 'roles' => ['administrator']],
 
         // courier
         ['method' => 'GET', 'path' => 'courier/route-sheets', 'roles' => ['courier']],
@@ -58,12 +77,16 @@ return [
         ['method' => 'POST', 'path' => 'promotion-policy/*', 'roles' => ['owner']],
         ['method' => 'POST', 'path' => 'promotion-policy', 'roles' => ['owner']],
         ['method' => 'PUT', 'path' => 'promotion-policy', 'roles' => ['owner']],
+        ['method' => 'GET', 'path' => 'promotion-policy/roles', 'roles' => ['owner', 'administrator']],
+        ['method' => 'GET', 'path' => 'promotion-policy/zones', 'roles' => ['owner', 'administrator']],
         ['method' => 'GET', 'path' => 'promotion-policy', 'roles' => ['owner', 'administrator']],
 
         // marketing
         ['method' => 'POST', 'path' => 'marketing/*', 'roles' => ['owner']],
         ['method' => 'PUT', 'path' => 'marketing/*', 'roles' => ['owner']],
         ['method' => 'PUT', 'path' => 'marketing/*/*', 'roles' => ['owner']],
+        ['method' => 'GET', 'path' => 'marketing/banners', 'roles' => ['owner', 'administrator']],
+        ['method' => 'GET', 'path' => 'marketing/promotions', 'roles' => ['owner', 'administrator']],
         ['method' => 'GET', 'path' => 'marketing', 'roles' => ['owner', 'administrator']],
 
         // employees (= staff)
@@ -71,7 +94,7 @@ return [
         ['method' => 'POST', 'path' => 'employees', 'roles' => ['owner']],
         ['method' => 'PUT', 'path' => 'employees/*', 'roles' => ['owner']],
         ['method' => 'DELETE', 'path' => 'employees/*', 'roles' => ['owner']],
-        ['method' => 'GET', 'path' => 'employees', 'roles' => ['owner']],
+        ['method' => 'GET', 'path' => 'employees', 'roles' => ['owner', 'administrator']],
 
         // clients
         ['method' => 'GET', 'path' => 'clients/*', 'roles' => ['owner', 'administrator']],

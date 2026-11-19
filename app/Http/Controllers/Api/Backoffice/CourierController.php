@@ -19,7 +19,11 @@ final class CourierController extends Controller
         }
 
         try {
-            return response()->json($useCase->execute((int) $user->id));
+            return response()->json($useCase->execute(
+                courierId: (int) $user->id,
+                offset: (int) $request->query('offset', 0),
+                limit: (int) $request->query('limit', 20),
+            ));
         } catch (InvalidArgumentException $exception) {
             return response()->json(['message' => $exception->getMessage()], 422);
         }

@@ -3,6 +3,7 @@
 namespace App\Application\Order\Query;
 
 use App\Application\Order\Presenter\AdminOrderPresenter;
+use App\Application\Shared\PageParams;
 use App\Domain\Core\Order\Repository\OrderRepository;
 
 final class ListAdminOrdersUseCase
@@ -15,19 +16,18 @@ final class ListAdminOrdersUseCase
     /**
      * @return array{items: list<array<string, mixed>>, total: int, offset: int, limit: int}
      */
-    public function execute(?string $status = null, int $offset = 0, int $limit = 50): array
+    public function execute(?string $status = null, int $offset = 0, int $limit = PageParams::DEFAULT_LIMIT): array
     {
-        $limit = max(1, min(200, $limit));
-        $offset = max(0, $offset);
+        ['offset' => $offset, 'limit' => $limit] = PageParams::normalize($offset, $limit);
         $statusFilter = $status !== null && trim($status) !== '' ? trim($status) : null;
 
-        return [
-            'items' => $this->presenter->presentList(
+        return PageParams::wrap(
+            $this->presenter->presentList(
                 $this->orders->listPage($offset, $limit, $statusFilter),
             ),
-            'total' => $this->orders->count($statusFilter),
-            'offset' => $offset,
-            'limit' => $limit,
-        ];
+            $this->orders->count($statusFilter),
+            $offset,
+            $limit,
+        );
     }
 }

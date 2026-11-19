@@ -16,6 +16,13 @@ interface TagRepository
      */
     public function findAllOrdered(): array;
 
+    /**
+     * @return list<Tag>
+     */
+    public function listPage(int $offset, int $limit, ?string $q = null): array;
+
+    public function countAll(?string $q = null): int;
+
     public function findById(int $id): ?Tag;
 
     public function save(?int $id, string $code, string $label, string $color, bool $isActive): Tag;

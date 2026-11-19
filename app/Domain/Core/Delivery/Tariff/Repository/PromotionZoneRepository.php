@@ -11,6 +11,13 @@ interface PromotionZoneRepository
      */
     public function findAll(): array;
 
+    /**
+     * @return list<PromotionZone>
+     */
+    public function listPage(int $offset, int $limit): array;
+
+    public function countAll(): int;
+
     public function findById(string $id): ?PromotionZone;
 
     /**

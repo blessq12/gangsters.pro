@@ -7,6 +7,7 @@ use App\Domain\Supporting\Company\Repository\KitchenRepository;
 use App\Infrastructure\Company\Mapper\KitchenMapper;
 use App\Infrastructure\Company\Model\CMP_Branch;
 use App\Infrastructure\Company\Model\CMP_Kitchen;
+use Illuminate\Database\Eloquent\Builder;
 
 final class EloquentKitchenRepository implements KitchenRepository
 {
@@ -38,6 +39,33 @@ final class EloquentKitchenRepository implements KitchenRepository
             ->get()
             ->map(fn (CMP_Kitchen $row) => $this->mapper->toDomain($row))
             ->all();
+    }
+
+    public function listPageByCompany(int $companyId, int $offset, int $limit): array
+    {
+        return $this->companyKitchensQuery($companyId)
+            ->orderBy('id')
+            ->offset(max(0, $offset))
+            ->limit(max(1, $limit))
+            ->get()
+            ->map(fn (CMP_Kitchen $row) => $this->mapper->toDomain($row))
+            ->all();
+    }
+
+    public function countByCompany(int $companyId): int
+    {
+        return (int) $this->companyKitchensQuery($companyId)->count();
+    }
+
+    /**
+     * @return Builder<CMP_Kitchen>
+     */
+    private function companyKitchensQuery(int $companyId): Builder
+    {
+        return CMP_Kitchen::query()->whereIn(
+            'branch_id',
+            CMP_Branch::query()->where('company_id', $companyId)->select('id'),
+        );
     }
 
     public function save(Kitchen $kitchen): Kitchen

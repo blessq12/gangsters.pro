@@ -9,6 +9,8 @@ use App\Application\Marketing\DTO\SaveBannerDto;
 use App\Application\Marketing\DTO\SaveDeliveryConditionsTextDto;
 use App\Application\Marketing\DTO\SavePromotionMediaDto;
 use App\Application\Marketing\Query\GetAdminMarketingUseCase;
+use App\Application\Marketing\Query\ListAdminBannersUseCase;
+use App\Application\Marketing\Query\ListAdminPromotionsUseCase;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -19,6 +21,22 @@ final class MarketingController extends Controller
     public function show(GetAdminMarketingUseCase $useCase): JsonResponse
     {
         return response()->json($useCase->execute());
+    }
+
+    public function listBanners(Request $request, ListAdminBannersUseCase $useCase): JsonResponse
+    {
+        return response()->json($useCase->execute(
+            offset: (int) $request->query('offset', 0),
+            limit: (int) $request->query('limit', 20),
+        ));
+    }
+
+    public function listPromotions(Request $request, ListAdminPromotionsUseCase $useCase): JsonResponse
+    {
+        return response()->json($useCase->execute(
+            offset: (int) $request->query('offset', 0),
+            limit: (int) $request->query('limit', 20),
+        ));
     }
 
     public function storeBanner(Request $request, SaveBannerUseCase $useCase): JsonResponse

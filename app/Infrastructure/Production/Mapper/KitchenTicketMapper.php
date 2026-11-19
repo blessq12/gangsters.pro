@@ -13,8 +13,7 @@ final class KitchenTicketMapper
 {
     public function toDomain(KIT_Ticket $row): KitchenTicket
     {
-        $status = KitchenTicketStatus::tryFrom((string) $row->status)
-            ?? KitchenTicketStatus::Queued;
+        $status = KitchenTicketStatus::from((string) $row->status);
 
         $lines = [];
         $lineRows = $row->relationLoaded('lines')
@@ -53,14 +52,6 @@ final class KitchenTicketMapper
      */
     public function toPersistence(KitchenTicket $ticket): array
     {
-        $ticketPayload = [
-            'order_id' => $ticket->orderId(),
-            'kitchen_id' => $ticket->kitchenId(),
-            'status' => $ticket->status()->value,
-            'started_at' => $ticket->startedAt(),
-            'completed_at' => $ticket->completedAt(),
-        ];
-
         $lines = [];
         foreach (array_values($ticket->lines()) as $index => $line) {
             $lines[] = [
@@ -72,7 +63,13 @@ final class KitchenTicketMapper
         }
 
         return [
-            'ticket' => $ticketPayload,
+            'ticket' => [
+                'order_id' => $ticket->orderId(),
+                'kitchen_id' => $ticket->kitchenId(),
+                'status' => $ticket->status()->value,
+                'started_at' => $ticket->startedAt()?->format('Y-m-d H:i:s'),
+                'completed_at' => $ticket->completedAt()?->format('Y-m-d H:i:s'),
+            ],
             'lines' => $lines,
         ];
     }

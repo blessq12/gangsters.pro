@@ -48,14 +48,20 @@ final class UpdatePaymentOnRouteStopSettled
 
     private function markWrittenOff(Payment $payment): void
     {
-        if ($payment->status() !== PaymentStatus::Paid) {
+        match ($payment->status()) {
+            PaymentStatus::Pending => $payment->cancel(),
+            PaymentStatus::Paid => $payment->refund(),
+            PaymentStatus::Refunded, PaymentStatus::Cancelled => null,
+        };
+
+        $events = $payment->pullDomainEvents();
+        if ($events === []) {
             return;
         }
 
-        $payment->refund();
         $this->payments->save($payment);
 
-        foreach ($payment->pullDomainEvents() as $domainEvent) {
+        foreach ($events as $domainEvent) {
             event($domainEvent);
         }
     }

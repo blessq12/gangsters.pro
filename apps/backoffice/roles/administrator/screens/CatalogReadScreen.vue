@@ -1,21 +1,27 @@
 <script setup>
-import { computed, onMounted, ref } from "vue";
-import { getCatalog } from "../../../api/catalog.js";
+import { computed, onMounted, ref, watch } from "vue";
+import { listCategories, listProducts, listSets } from "../../../api/catalog.js";
 import { useApi } from "../../../shell/composables/useApi.js";
+import { usePagedList } from "../../../shell/composables/usePagedList.js";
 import { useToast } from "../../../shell/composables/useToast.js";
 import UiBadge from "../../../shell/components/ui/UiBadge.vue";
 import UiCard from "../../../shell/components/ui/UiCard.vue";
+import UiPagination from "../../../shell/components/ui/UiPagination.vue";
 import UiTable from "../../../shell/components/ui/UiTable.vue";
 
 const toast = useToast();
 const catalogApi = useApi();
+const {
+    page,
+    perPage,
+    total,
+    items,
+    offset,
+    resetPage,
+    applyPayload,
+} = usePagedList();
 
 const tab = ref("products");
-const catalog = ref({
-    products: [],
-    sets: [],
-    categories: [],
-});
 
 const tabs = [
     { id: "products", label: "Товары" },
@@ -23,36 +29,49 @@ const tabs = [
     { id: "categories", label: "Категории" },
 ];
 
-const columns = [
-    { key: "id", label: "ID", width: "64px" },
-    { key: "name", label: "Название" },
-    { key: "price", label: "Цена", width: "90px" },
-    { key: "is_active", label: "Активен", width: "100px" },
-];
-
-const rows = computed(() => {
-    const list = catalog.value[tab.value] ?? [];
-    return list.map((item) => ({
-        id: item.id,
-        name: item.name,
-        price: item.price != null ? `${item.price} ₽` : "—",
-        is_active: item.is_active ?? item.status === "active",
-    }));
+const columns = computed(() => {
+    if (tab.value === "categories") {
+        return [
+            { key: "name", label: "Название" },
+            { key: "is_active", label: "Активен", width: "100px" },
+        ];
+    }
+    return [
+        { key: "name", label: "Название" },
+        { key: "price", label: "Цена", width: "90px" },
+        { key: "is_active", label: "Активен", width: "100px" },
+    ];
 });
+
+const rows = computed(() => items.value.map((item) => ({
+    id: item.id,
+    name: item.name,
+    price: item.price != null ? `${item.price} ₽` : "—",
+    is_active: item.is_active ?? item.status === "active",
+})));
 
 async function load() {
     try {
-        const payload = await catalogApi.run(() => getCatalog());
-        catalog.value = {
-            products: payload?.products ?? [],
-            sets: payload?.sets ?? [],
-            categories: payload?.categories ?? [],
-        };
+        const query = { offset: offset.value, limit: perPage };
+        let payload;
+        if (tab.value === "products") {
+            payload = await catalogApi.run(() => listProducts(query));
+        } else if (tab.value === "sets") {
+            payload = await catalogApi.run(() => listSets(query));
+        } else {
+            payload = await catalogApi.run(() => listCategories(query));
+        }
+        applyPayload(payload);
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось загрузить каталог");
     }
 }
 
+watch(tab, () => {
+    resetPage();
+    load();
+});
+watch(page, load);
 onMounted(load);
 </script>
 
@@ -87,6 +106,15 @@ onMounted(load);
                     />
                 </template>
             </UiTable>
+
+            <div class="mt-6">
+                <UiPagination
+                    :page="page"
+                    :per-page="perPage"
+                    :total="total"
+                    @update:page="page = $event"
+                />
+            </div>
         </UiCard>
     </div>
 </template>

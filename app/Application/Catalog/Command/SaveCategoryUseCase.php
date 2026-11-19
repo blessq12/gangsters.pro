@@ -30,6 +30,10 @@ final class SaveCategoryUseCase
             $dto->isAccompanying,
         );
 
+        if ($dto->items !== null) {
+            $this->categories->replaceItems($category->id(), $dto->items);
+        }
+
         return $this->presenter->category($category);
     }
 }

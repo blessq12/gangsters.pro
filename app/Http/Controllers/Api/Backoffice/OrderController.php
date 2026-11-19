@@ -3,16 +3,16 @@
 namespace App\Http\Controllers\Api\Backoffice;
 
 use App\Application\Order\Command\AcceptOrderUseCase;
-use App\Application\Order\Command\ChangeOrderStatusUseCase;
+use App\Application\Order\Command\CancelOrderUseCase;
 use App\Application\Order\Command\CompletePickupOrderUseCase;
 use App\Application\Order\Command\CreateOrderUseCase;
 use App\Application\Order\Command\ReassignKitchenUseCase;
 use App\Application\Order\DTO\AcceptOrderDto;
-use App\Application\Order\DTO\ChangeOrderStatusDto;
 use App\Application\Order\DTO\CreateOrderDto;
 use App\Application\Order\DTO\ReassignKitchenDto;
 use App\Application\Order\Query\GetAdminOrderUseCase;
 use App\Application\Order\Query\ListAdminOrdersUseCase;
+use App\Domain\Core\Order\Enum\OrderStatus;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -24,7 +24,7 @@ final class OrderController extends Controller
     {
         $status = $request->query('status');
         $offset = (int) $request->query('offset', 0);
-        $limit = (int) $request->query('limit', 50);
+        $limit = (int) $request->query('limit', 20);
 
         return response()->json($useCase->execute(
             status: is_string($status) ? $status : null,
@@ -99,19 +99,21 @@ final class OrderController extends Controller
     public function changeStatus(
         Request $request,
         int $id,
-        ChangeOrderStatusUseCase $useCase,
+        CancelOrderUseCase $useCase,
     ): JsonResponse {
         $validated = $request->validate([
             'target_status' => ['required', 'string', 'max:64'],
             'actor_role' => ['nullable', 'string', 'max:64'],
         ]);
 
+        if ($validated['target_status'] !== OrderStatus::Cancelled->value) {
+            return response()->json([
+                'message' => 'Этот статус выставляется доменным событием. Через эту команду можно только отменить заказ.',
+            ], 422);
+        }
+
         try {
-            $result = $useCase->execute(new ChangeOrderStatusDto(
-                orderId: $id,
-                targetStatus: $validated['target_status'],
-                actorRole: $validated['actor_role'] ?? null,
-            ));
+            $result = $useCase->execute($id);
         } catch (InvalidArgumentException $exception) {
             return response()->json(['message' => $exception->getMessage()], 422);
         }

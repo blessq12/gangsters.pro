@@ -7,6 +7,7 @@ use App\Domain\Core\Delivery\Routing\Repository\RouteSheetRepository;
 use App\Infrastructure\Delivery\Mapper\RouteSheetMapper;
 use App\Infrastructure\Delivery\Model\DLV_RouteSheet;
 use App\Infrastructure\Delivery\Model\DLV_RouteStop;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
 final class EloquentRouteSheetRepository implements RouteSheetRepository
@@ -41,14 +42,63 @@ final class EloquentRouteSheetRepository implements RouteSheetRepository
 
     public function listActive(): array
     {
-        /** @var \Illuminate\Database\Eloquent\Collection<int, DLV_RouteSheet> $rows */
-        $rows = DLV_RouteSheet::query()
-            ->with('stops')
-            ->whereIn('status', ['released', 'in_delivery'])
-            ->orderByDesc('id')
-            ->get();
+        return $this->listActivePage(0, max(1, $this->countActive()));
+    }
 
-        return $rows
+    public function listActivePage(int $offset, int $limit): array
+    {
+        return $this->mapPage($this->activeQuery(), $offset, $limit);
+    }
+
+    public function countActive(): int
+    {
+        return (int) $this->activeQuery()->count();
+    }
+
+    public function listVisibleToCourierPage(int $courierId, int $offset, int $limit): array
+    {
+        return $this->mapPage($this->courierQuery($courierId), $offset, $limit);
+    }
+
+    public function countVisibleToCourier(int $courierId): int
+    {
+        return (int) $this->courierQuery($courierId)->count();
+    }
+
+    /**
+     * @return Builder<DLV_RouteSheet>
+     */
+    private function activeQuery(): Builder
+    {
+        return DLV_RouteSheet::query()
+            ->whereIn('status', ['released', 'in_delivery'])
+            ->orderByDesc('id');
+    }
+
+    /**
+     * @return Builder<DLV_RouteSheet>
+     */
+    private function courierQuery(int $courierId): Builder
+    {
+        return $this->activeQuery()->where(function (Builder $query) use ($courierId): void {
+            $query->where('courier_id', $courierId)
+                ->orWhere(function (Builder $free): void {
+                    $free->where('status', 'released')->whereNull('courier_id');
+                });
+        });
+    }
+
+    /**
+     * @param  Builder<DLV_RouteSheet>  $query
+     * @return list<RouteSheet>
+     */
+    private function mapPage(Builder $query, int $offset, int $limit): array
+    {
+        return $query
+            ->with('stops')
+            ->offset(max(0, $offset))
+            ->limit(max(1, $limit))
+            ->get()
             ->map(fn (DLV_RouteSheet $row): RouteSheet => $this->mapper->toDomain($row))
             ->all();
     }

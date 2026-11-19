@@ -1,7 +1,9 @@
 <script setup>
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import {
     getMarketing,
+    listBanners,
+    listPromotions,
     saveDeliveryConditions,
     storeBanner,
     storePromotion,
@@ -9,6 +11,7 @@ import {
     updatePromotion,
 } from "../../../api/marketing.js";
 import { useApi } from "../../../shell/composables/useApi.js";
+import { usePagedList } from "../../../shell/composables/usePagedList.js";
 import { useToast } from "../../../shell/composables/useToast.js";
 import UiBadge from "../../../shell/components/ui/UiBadge.vue";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
@@ -16,6 +19,7 @@ import UiCard from "../../../shell/components/ui/UiCard.vue";
 import UiFormField from "../../../shell/components/ui/UiFormField.vue";
 import UiInput from "../../../shell/components/ui/UiInput.vue";
 import UiModal from "../../../shell/components/ui/UiModal.vue";
+import UiPagination from "../../../shell/components/ui/UiPagination.vue";
 import UiTable from "../../../shell/components/ui/UiTable.vue";
 
 const toast = useToast();
@@ -23,8 +27,22 @@ const loadApi = useApi();
 const saveApi = useApi();
 
 const tab = ref("banners");
-const banners = ref([]);
-const promotions = ref([]);
+const {
+    page: bannersPage,
+    perPage: bannersPerPage,
+    total: bannersTotal,
+    items: banners,
+    offset: bannersOffset,
+    applyPayload: applyBanners,
+} = usePagedList();
+const {
+    page: promotionsPage,
+    perPage: promotionsPerPage,
+    total: promotionsTotal,
+    items: promotions,
+    offset: promotionsOffset,
+    applyPayload: applyPromotions,
+} = usePagedList();
 
 const conditionsForm = reactive({
     id: null,
@@ -81,23 +99,48 @@ function clearErrors(target) {
     });
 }
 
-function applyMarketing(payload) {
-    banners.value = payload?.banners ?? [];
-    promotions.value = payload?.promotions ?? [];
-
+function applyConditions(payload) {
     const conditions = payload?.delivery_conditions_text;
     conditionsForm.id = conditions?.id ?? null;
     conditionsForm.body = conditions?.body ?? "";
     conditionsForm.is_active = conditions?.is_active ?? true;
 }
 
-async function loadMarketing() {
+async function loadConditions() {
     try {
         const payload = await loadApi.run(() => getMarketing());
-        applyMarketing(payload);
+        applyConditions(payload);
     } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Не удалось загрузить маркетинг");
+        toast.error(err instanceof Error ? err.message : "Не удалось загрузить условия доставки");
     }
+}
+
+async function loadBanners() {
+    try {
+        const payload = await loadApi.run(() => listBanners({
+            offset: bannersOffset.value,
+            limit: bannersPerPage,
+        }));
+        applyBanners(payload);
+    } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Не удалось загрузить баннеры");
+    }
+}
+
+async function loadPromotions() {
+    try {
+        const payload = await loadApi.run(() => listPromotions({
+            offset: promotionsOffset.value,
+            limit: promotionsPerPage,
+        }));
+        applyPromotions(payload);
+    } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Не удалось загрузить акции");
+    }
+}
+
+async function loadMarketing() {
+    await Promise.all([loadConditions(), loadBanners(), loadPromotions()]);
 }
 
 function resetModalForm() {
@@ -184,7 +227,7 @@ async function saveModal() {
         });
         toast.success(id ? "Сохранено" : "Создано");
         modalOpen.value = false;
-        await loadMarketing();
+        await (kind === "banner" ? loadBanners() : loadPromotions());
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Ошибка сохранения");
     }
@@ -205,12 +248,14 @@ async function saveConditionsForm() {
     try {
         await saveApi.run(() => saveDeliveryConditions(body));
         toast.success("Условия сохранены");
-        await loadMarketing();
+        await loadConditions();
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Ошибка сохранения");
     }
 }
 
+watch(bannersPage, loadBanners);
+watch(promotionsPage, loadPromotions);
 onMounted(loadMarketing);
 </script>
 
@@ -252,6 +297,12 @@ onMounted(loadMarketing);
                         <UiButton @click.stop="openEdit('banner', row)">Редактировать</UiButton>
                     </template>
                 </UiTable>
+                <UiPagination
+                    :page="bannersPage"
+                    :per-page="bannersPerPage"
+                    :total="bannersTotal"
+                    @update:page="bannersPage = $event"
+                />
             </div>
 
             <div v-else-if="tab === 'promotions'" class="space-y-5">
@@ -274,6 +325,12 @@ onMounted(loadMarketing);
                         <UiButton @click.stop="openEdit('promotion', row)">Редактировать</UiButton>
                     </template>
                 </UiTable>
+                <UiPagination
+                    :page="promotionsPage"
+                    :per-page="promotionsPerPage"
+                    :total="promotionsTotal"
+                    @update:page="promotionsPage = $event"
+                />
             </div>
 
             <div v-else class="space-y-5">

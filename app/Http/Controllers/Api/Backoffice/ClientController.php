@@ -14,7 +14,7 @@ final class ClientController extends Controller
     public function index(Request $request, ListAdminClientsUseCase $useCase): JsonResponse
     {
         $offset = (int) $request->query('offset', 0);
-        $limit = (int) $request->query('limit', 50);
+        $limit = (int) $request->query('limit', 20);
         $q = $request->query('q');
 
         return response()->json($useCase->execute(

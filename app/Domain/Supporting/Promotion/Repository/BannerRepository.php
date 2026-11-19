@@ -16,5 +16,12 @@ interface BannerRepository
      */
     public function findAllOrdered(): array;
 
+    /**
+     * @return list<Banner>
+     */
+    public function listPage(int $offset, int $limit): array;
+
+    public function countAll(): int;
+
     public function save(?int $id, bool $isActive, ?string $desktopPath, ?string $mobilePath): Banner;
 }

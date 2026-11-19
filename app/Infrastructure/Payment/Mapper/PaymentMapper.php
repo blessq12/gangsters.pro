@@ -39,8 +39,8 @@ final class PaymentMapper
             'change_from_rubles' => $payment->changeFromRubles(),
             'amount_kopecks' => $payment->amountKopecks(),
             'status' => $payment->status()->value,
-            'paid_at' => $payment->paidAt(),
-            'refunded_at' => $payment->refundedAt(),
+            'paid_at' => $payment->paidAt()?->format('Y-m-d H:i:s'),
+            'refunded_at' => $payment->refundedAt()?->format('Y-m-d H:i:s'),
         ];
     }
 }

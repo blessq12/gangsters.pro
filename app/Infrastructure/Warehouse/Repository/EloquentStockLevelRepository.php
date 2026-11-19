@@ -24,11 +24,23 @@ final class EloquentStockLevelRepository implements StockLevelRepository
 
     public function listAll(): array
     {
+        return $this->listPage(0, max(1, $this->countAll()));
+    }
+
+    public function listPage(int $offset, int $limit): array
+    {
         return WH_StockLevel::query()
             ->orderBy('ingredient_id')
+            ->offset(max(0, $offset))
+            ->limit(max(1, $limit))
             ->get()
             ->map(fn (WH_StockLevel $row): StockLevel => $this->mapper->toDomain($row))
             ->all();
+    }
+
+    public function countAll(): int
+    {
+        return (int) WH_StockLevel::query()->count();
     }
 
     public function save(StockLevel $level): void

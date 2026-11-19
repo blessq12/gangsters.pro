@@ -35,6 +35,27 @@ final class EloquentTagRepository implements TagRepository
             ->all();
     }
 
+    public function listPage(int $offset, int $limit, ?string $q = null): array
+    {
+        $query = CAT_Tag::query()->orderBy('sort_order')->orderBy('id');
+        $this->applyTagSearch($query, $q);
+
+        return $query
+            ->offset(max(0, $offset))
+            ->limit(max(1, $limit))
+            ->get()
+            ->map(fn (CAT_Tag $row) => $this->mapper->toDomain($row))
+            ->all();
+    }
+
+    public function countAll(?string $q = null): int
+    {
+        $query = CAT_Tag::query();
+        $this->applyTagSearch($query, $q);
+
+        return (int) $query->count();
+    }
+
     public function findById(int $id): ?Tag
     {
         $row = CAT_Tag::query()->find($id);
@@ -96,6 +117,19 @@ final class EloquentTagRepository implements TagRepository
         $row->save();
 
         return $this->mapper->toDomain($row);
+    }
+
+    private function applyTagSearch(mixed $query, ?string $q): void
+    {
+        $needle = trim((string) ($q ?? ''));
+        if ($needle === '') {
+            return;
+        }
+        $query->where(function ($builder) use ($needle): void {
+            $builder
+                ->where('code', 'like', '%'.$needle.'%')
+                ->orWhere('label', 'like', '%'.$needle.'%');
+        });
     }
 
     /**

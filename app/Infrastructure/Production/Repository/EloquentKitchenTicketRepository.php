@@ -8,6 +8,7 @@ use App\Domain\Core\Production\Repository\KitchenTicketRepository;
 use App\Infrastructure\Production\Mapper\KitchenTicketMapper;
 use App\Infrastructure\Production\Model\KIT_Ticket;
 use App\Infrastructure\Production\Model\KIT_TicketLine;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
 final class EloquentKitchenTicketRepository implements KitchenTicketRepository
@@ -69,17 +70,37 @@ final class EloquentKitchenTicketRepository implements KitchenTicketRepository
 
     public function listActiveByKitchen(int $kitchenId): array
     {
-        return KIT_Ticket::query()
+        return $this->listActiveByKitchenPage($kitchenId, 0, max(1, $this->countActiveByKitchen($kitchenId)));
+    }
+
+    public function listActiveByKitchenPage(int $kitchenId, int $offset, int $limit): array
+    {
+        return $this->activeByKitchenQuery($kitchenId)
             ->with('lines')
+            ->orderBy('id')
+            ->offset(max(0, $offset))
+            ->limit(max(1, $limit))
+            ->get()
+            ->map(fn (KIT_Ticket $row): KitchenTicket => $this->mapper->toDomain($row))
+            ->all();
+    }
+
+    public function countActiveByKitchen(int $kitchenId): int
+    {
+        return (int) $this->activeByKitchenQuery($kitchenId)->count();
+    }
+
+    /**
+     * @return Builder<KIT_Ticket>
+     */
+    private function activeByKitchenQuery(int $kitchenId): Builder
+    {
+        return KIT_Ticket::query()
             ->where('kitchen_id', $kitchenId)
             ->whereIn('status', [
                 KitchenTicketStatus::Queued->value,
                 KitchenTicketStatus::Started->value,
-            ])
-            ->orderBy('id')
-            ->get()
-            ->map(fn (KIT_Ticket $row): KitchenTicket => $this->mapper->toDomain($row))
-            ->all();
+            ]);
     }
 
     /**

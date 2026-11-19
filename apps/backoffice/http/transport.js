@@ -76,8 +76,18 @@ export async function request(method, path, body) {
 }
 
 export async function requestForm(path, formData) {
+    return requestMultipart("POST", path, formData);
+}
+
+/**
+ * Multipart request (do not set Content-Type — browser adds boundary).
+ * @param {string} method
+ * @param {string} path
+ * @param {FormData} formData
+ */
+export async function requestMultipart(method, path, formData) {
     const response = await fetch(buildUrl(path), {
-        method: "POST",
+        method,
         headers: buildHeaders(),
         body: formData,
     });

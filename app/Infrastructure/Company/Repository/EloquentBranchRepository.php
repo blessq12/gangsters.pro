@@ -30,6 +30,23 @@ final class EloquentBranchRepository implements BranchRepository
             ->all();
     }
 
+    public function listPageByCompany(int $companyId, int $offset, int $limit): array
+    {
+        return CMP_Branch::query()
+            ->where('company_id', $companyId)
+            ->orderBy('id')
+            ->offset(max(0, $offset))
+            ->limit(max(1, $limit))
+            ->get()
+            ->map(fn (CMP_Branch $row) => $this->mapper->toDomain($row))
+            ->all();
+    }
+
+    public function countByCompany(int $companyId): int
+    {
+        return (int) CMP_Branch::query()->where('company_id', $companyId)->count();
+    }
+
     public function save(Branch $branch): Branch
     {
         if ($branch->id() < 1) {

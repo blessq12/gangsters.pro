@@ -14,6 +14,13 @@ interface BranchRepository
     public function listByCompany(int $companyId): array;
 
     /**
+     * @return list<Branch>
+     */
+    public function listPageByCompany(int $companyId, int $offset, int $limit): array;
+
+    public function countByCompany(int $companyId): int;
+
+    /**
      * Создать (id &lt; 1) или обновить филиал. Возвращает сохранённую сущность с id.
      */
     public function save(Branch $branch): Branch;

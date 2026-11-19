@@ -16,5 +16,12 @@ interface CampaignRepository
      */
     public function findAllOrdered(): array;
 
+    /**
+     * @return list<Campaign>
+     */
+    public function listPage(int $offset, int $limit): array;
+
+    public function countAll(): int;
+
     public function save(?int $id, string $title, ?string $body, bool $isActive, ?string $imagePath): Campaign;
 }

@@ -18,9 +18,12 @@ use InvalidArgumentException;
 
 final class WarehouseController extends Controller
 {
-    public function ingredients(ListIngredientsUseCase $useCase): JsonResponse
+    public function ingredients(Request $request, ListIngredientsUseCase $useCase): JsonResponse
     {
-        return response()->json($useCase->execute());
+        return response()->json($useCase->execute(
+            offset: (int) $request->query('offset', 0),
+            limit: (int) $request->query('limit', 20),
+        ));
     }
 
     public function storeIngredient(Request $request, SaveIngredientUseCase $useCase): JsonResponse
@@ -33,9 +36,12 @@ final class WarehouseController extends Controller
         return $this->saveIngredient($request, $useCase, $id);
     }
 
-    public function stock(ListStockLevelsUseCase $useCase): JsonResponse
+    public function stock(Request $request, ListStockLevelsUseCase $useCase): JsonResponse
     {
-        return response()->json($useCase->execute());
+        return response()->json($useCase->execute(
+            offset: (int) $request->query('offset', 0),
+            limit: (int) $request->query('limit', 20),
+        ));
     }
 
     public function adjustStock(Request $request, AdjustStockLevelUseCase $useCase): JsonResponse
@@ -57,9 +63,12 @@ final class WarehouseController extends Controller
         return response()->json($result);
     }
 
-    public function writeOffs(ListWriteOffsUseCase $useCase): JsonResponse
+    public function writeOffs(Request $request, ListWriteOffsUseCase $useCase): JsonResponse
     {
-        return response()->json($useCase->execute());
+        return response()->json($useCase->execute(
+            offset: (int) $request->query('offset', 0),
+            limit: (int) $request->query('limit', 20),
+        ));
     }
 
     public function storeWriteOff(Request $request, WriteOffStockUseCase $useCase): JsonResponse

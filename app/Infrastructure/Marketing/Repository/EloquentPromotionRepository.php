@@ -34,6 +34,23 @@ final class EloquentPromotionRepository implements CampaignRepository
             ->all();
     }
 
+    public function listPage(int $offset, int $limit): array
+    {
+        return MKT_Promotion::query()
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->offset(max(0, $offset))
+            ->limit(max(1, $limit))
+            ->get()
+            ->map(fn (MKT_Promotion $row) => $this->mapper->toDomain($row))
+            ->all();
+    }
+
+    public function countAll(): int
+    {
+        return (int) MKT_Promotion::query()->count();
+    }
+
     public function save(?int $id, string $title, ?string $body, bool $isActive, ?string $imagePath): Campaign
     {
         $row = $id === null ? new MKT_Promotion() : MKT_Promotion::query()->find($id);

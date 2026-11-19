@@ -1,7 +1,10 @@
 <script setup>
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import {
     getCompany,
+    listBranches,
+    listDocuments,
+    listKitchens,
     storeBranch,
     storeCompany,
     storeDocument,
@@ -12,6 +15,7 @@ import {
     updateKitchen,
 } from "../../../api/company.js";
 import { useApi } from "../../../shell/composables/useApi.js";
+import { usePagedList } from "../../../shell/composables/usePagedList.js";
 import { useToast } from "../../../shell/composables/useToast.js";
 import UiBadge from "../../../shell/components/ui/UiBadge.vue";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
@@ -19,6 +23,7 @@ import UiCard from "../../../shell/components/ui/UiCard.vue";
 import UiFormField from "../../../shell/components/ui/UiFormField.vue";
 import UiInput from "../../../shell/components/ui/UiInput.vue";
 import UiModal from "../../../shell/components/ui/UiModal.vue";
+import UiPagination from "../../../shell/components/ui/UiPagination.vue";
 import UiTable from "../../../shell/components/ui/UiTable.vue";
 
 const toast = useToast();
@@ -28,9 +33,31 @@ const saveApi = useApi();
 const tab = ref("company");
 const companyExists = ref(false);
 const companyId = ref(null);
-const branches = ref([]);
-const kitchens = ref([]);
-const documents = ref([]);
+const branchOptions = ref([]);
+const {
+    page: branchesPage,
+    perPage: branchesPerPage,
+    total: branchesTotal,
+    items: branches,
+    offset: branchesOffset,
+    applyPayload: applyBranches,
+} = usePagedList();
+const {
+    page: kitchensPage,
+    perPage: kitchensPerPage,
+    total: kitchensTotal,
+    items: kitchens,
+    offset: kitchensOffset,
+    applyPayload: applyKitchens,
+} = usePagedList();
+const {
+    page: documentsPage,
+    perPage: documentsPerPage,
+    total: documentsTotal,
+    items: documents,
+    offset: documentsOffset,
+    applyPayload: applyDocuments,
+} = usePagedList();
 
 const companyForm = reactive({
     name: "",
@@ -145,9 +172,6 @@ function applyCompany(payload) {
     companyForm.scheduleJson = company?.schedule
         ? JSON.stringify(company.schedule, null, 2)
         : "";
-    branches.value = payload?.branches ?? [];
-    kitchens.value = payload?.kitchens ?? [];
-    documents.value = payload?.documents ?? [];
 }
 
 async function loadCompany() {
@@ -157,6 +181,61 @@ async function loadCompany() {
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось загрузить компанию");
     }
+}
+
+async function loadBranchOptions() {
+    try {
+        const payload = await listBranches({ offset: 0, limit: 100 });
+        branchOptions.value = Array.isArray(payload?.items) ? payload.items : [];
+    } catch {
+        branchOptions.value = [];
+    }
+}
+
+async function loadBranches() {
+    try {
+        const payload = await loadApi.run(() => listBranches({
+            offset: branchesOffset.value,
+            limit: branchesPerPage,
+        }));
+        applyBranches(payload);
+    } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Не удалось загрузить филиалы");
+    }
+}
+
+async function loadKitchens() {
+    try {
+        const payload = await loadApi.run(() => listKitchens({
+            offset: kitchensOffset.value,
+            limit: kitchensPerPage,
+        }));
+        applyKitchens(payload);
+    } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Не удалось загрузить кухни");
+    }
+}
+
+async function loadDocuments() {
+    try {
+        const payload = await loadApi.run(() => listDocuments({
+            offset: documentsOffset.value,
+            limit: documentsPerPage,
+        }));
+        applyDocuments(payload);
+    } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Не удалось загрузить документы");
+    }
+}
+
+async function loadAll() {
+    await Promise.all([
+        loadCompany(),
+        loadBranchOptions(),
+        loadBranches(),
+        loadKitchens(),
+        loadDocuments(),
+    ]);
 }
 
 function validateCompany() {
@@ -215,8 +294,8 @@ function openCreate(kind) {
     modalKind.value = kind;
     editingId.value = null;
     resetModalForm();
-    if (kind === "kitchen" && branches.value[0]) {
-        form.branch_id = String(branches.value[0].id);
+    if (kind === "kitchen" && branchOptions.value[0]) {
+        form.branch_id = String(branchOptions.value[0].id);
     }
     modalOpen.value = true;
 }
@@ -297,13 +376,22 @@ async function saveModal() {
         });
         toast.success(id ? "Сохранено" : "Создано");
         modalOpen.value = false;
-        await loadCompany();
+        if (kind === "branch") {
+            await Promise.all([loadBranches(), loadBranchOptions()]);
+        } else if (kind === "kitchen") {
+            await loadKitchens();
+        } else {
+            await loadDocuments();
+        }
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Ошибка сохранения");
     }
 }
 
-onMounted(loadCompany);
+watch(branchesPage, loadBranches);
+watch(kitchensPage, loadKitchens);
+watch(documentsPage, loadDocuments);
+onMounted(loadAll);
 </script>
 
 <template>
@@ -390,6 +478,12 @@ onMounted(loadCompany);
                         <UiButton @click.stop="openEdit('branch', row)">Редактировать</UiButton>
                     </template>
                 </UiTable>
+                <UiPagination
+                    :page="branchesPage"
+                    :per-page="branchesPerPage"
+                    :total="branchesTotal"
+                    @update:page="branchesPage = $event"
+                />
             </div>
 
             <div v-else-if="tab === 'kitchens'" class="space-y-5">
@@ -406,6 +500,12 @@ onMounted(loadCompany);
                         <UiButton @click.stop="openEdit('kitchen', row)">Редактировать</UiButton>
                     </template>
                 </UiTable>
+                <UiPagination
+                    :page="kitchensPage"
+                    :per-page="kitchensPerPage"
+                    :total="kitchensTotal"
+                    @update:page="kitchensPage = $event"
+                />
             </div>
 
             <div v-else class="space-y-5">
@@ -422,6 +522,12 @@ onMounted(loadCompany);
                         <UiButton @click.stop="openEdit('document', row)">Редактировать</UiButton>
                     </template>
                 </UiTable>
+                <UiPagination
+                    :page="documentsPage"
+                    :per-page="documentsPerPage"
+                    :total="documentsTotal"
+                    @update:page="documentsPage = $event"
+                />
             </div>
         </UiCard>
 
@@ -444,7 +550,7 @@ onMounted(loadCompany);
                         >
                             <option value="">—</option>
                             <option
-                                v-for="branch in branches"
+                                v-for="branch in branchOptions"
                                 :key="branch.id"
                                 :value="String(branch.id)"
                             >

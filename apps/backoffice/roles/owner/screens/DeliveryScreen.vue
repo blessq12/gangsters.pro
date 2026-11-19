@@ -1,16 +1,18 @@
 <script setup>
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import {
     getDelivery,
     getRouteSheet,
     listRouteSheets,
+    listZones,
     storeDelivery,
     storeZone,
     updateDelivery,
     updateZone,
 } from "../../../api/delivery.js";
-import { getCompany } from "../../../api/company.js";
+import { listKitchens } from "../../../api/company.js";
 import { useApi } from "../../../shell/composables/useApi.js";
+import { usePagedList } from "../../../shell/composables/usePagedList.js";
 import { useToast } from "../../../shell/composables/useToast.js";
 import UiBadge from "../../../shell/components/ui/UiBadge.vue";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
@@ -18,6 +20,7 @@ import UiCard from "../../../shell/components/ui/UiCard.vue";
 import UiFormField from "../../../shell/components/ui/UiFormField.vue";
 import UiInput from "../../../shell/components/ui/UiInput.vue";
 import UiModal from "../../../shell/components/ui/UiModal.vue";
+import UiPagination from "../../../shell/components/ui/UiPagination.vue";
 import UiTable from "../../../shell/components/ui/UiTable.vue";
 
 const toast = useToast();
@@ -27,9 +30,23 @@ const detailApi = useApi();
 
 const tab = ref("settings");
 const deliveryExists = ref(false);
-const zones = ref([]);
 const kitchens = ref([]);
-const routeSheets = ref([]);
+const {
+    page: zonesPage,
+    perPage: zonesPerPage,
+    total: zonesTotal,
+    items: zones,
+    offset: zonesOffset,
+    applyPayload: applyZones,
+} = usePagedList();
+const {
+    page: routesPage,
+    perPage: routesPerPage,
+    total: routesTotal,
+    items: routeSheets,
+    offset: routesOffset,
+    applyPayload: applyRouteSheets,
+} = usePagedList();
 const sheetDetail = ref(null);
 const sheetModalOpen = ref(false);
 
@@ -109,26 +126,40 @@ function applyDelivery(payload) {
             : "";
     settingsForm.kitchen_id =
         payload?.kitchen_id != null ? String(payload.kitchen_id) : "";
-    zones.value = payload?.zones ?? [];
 }
 
 async function loadDelivery() {
     try {
         const [payload, company] = await Promise.all([
             loadApi.run(() => getDelivery()),
-            loadApi.run(() => getCompany()).catch(() => null),
+            loadApi.run(() => listKitchens({ offset: 0, limit: 100 })).catch(() => null),
         ]);
-        kitchens.value = Array.isArray(company?.kitchens) ? company.kitchens : [];
+        kitchens.value = Array.isArray(company?.items) ? company.items : [];
         applyDelivery(payload);
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось загрузить доставку");
     }
 }
 
+async function loadZones() {
+    try {
+        const payload = await loadApi.run(() => listZones({
+            offset: zonesOffset.value,
+            limit: zonesPerPage,
+        }));
+        applyZones(payload);
+    } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Не удалось загрузить зоны");
+    }
+}
+
 async function loadRouteSheets() {
     try {
-        const payload = await loadApi.run(() => listRouteSheets());
-        routeSheets.value = Array.isArray(payload) ? payload : (payload?.items ?? []);
+        const payload = await loadApi.run(() => listRouteSheets({
+            offset: routesOffset.value,
+            limit: routesPerPage,
+        }));
+        applyRouteSheets(payload);
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось загрузить маршрутные листы");
     }
@@ -248,7 +279,7 @@ async function saveZone() {
         );
         toast.success(editingZoneId.value ? "Зона сохранена" : "Зона создана");
         zoneModalOpen.value = false;
-        await loadDelivery();
+        await loadZones();
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Ошибка сохранения");
     }
@@ -267,13 +298,15 @@ async function openRouteSheet(row) {
 
 async function onTab(id) {
     tab.value = id;
-    if (id === "routes" && routeSheets.value.length === 0) {
+    if (id === "routes") {
         await loadRouteSheets();
     }
 }
 
+watch(zonesPage, loadZones);
+watch(routesPage, loadRouteSheets);
 onMounted(async () => {
-    await loadDelivery();
+    await Promise.all([loadDelivery(), loadZones()]);
 });
 </script>
 
@@ -351,6 +384,12 @@ onMounted(async () => {
                         <UiButton @click.stop="openEditZone(row)">Редактировать</UiButton>
                     </template>
                 </UiTable>
+                <UiPagination
+                    :page="zonesPage"
+                    :per-page="zonesPerPage"
+                    :total="zonesTotal"
+                    @update:page="zonesPage = $event"
+                />
             </div>
 
             <div v-else class="space-y-5">
@@ -365,6 +404,12 @@ onMounted(async () => {
                         <UiBadge variant="neutral" :text="String(value ?? '—')" />
                     </template>
                 </UiTable>
+                <UiPagination
+                    :page="routesPage"
+                    :per-page="routesPerPage"
+                    :total="routesTotal"
+                    @update:page="routesPage = $event"
+                />
             </div>
         </UiCard>
 

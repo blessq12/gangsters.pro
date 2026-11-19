@@ -126,11 +126,47 @@ final class CatalogPresenter
             'name' => $product->name(),
             'category_id' => $categoryId,
             'price' => $product->regularPrice()?->amountRubles() ?? 0,
+            'old_price' => $product->price(PriceType::Old)?->amountRubles(),
             'weight' => $product->weight(),
             'status' => $product->status()->value,
             'is_system' => $product->isSystem(),
             'description' => $product->description(),
             'sku' => $product->sku(),
+        ];
+    }
+
+    /**
+     * @param  list<array{id: int, url: string, path: string, sort_order: int, focus_x: float|null, focus_y: float|null}>  $images
+     * @return array<string, mixed>
+     */
+    public function adminProductDetail(Product $product, array $images): array
+    {
+        $nutrition = $product->nutrition();
+
+        return [
+            'id' => $product->id(),
+            'name' => $product->name(),
+            'slug' => $product->slug(),
+            'sku' => $product->sku(),
+            'status' => $product->status()->value,
+            'is_system' => $product->isSystem(),
+            'description' => $product->description(),
+            'weight' => $product->weight(),
+            'price' => $product->regularPrice()?->amountRubles() ?? 0,
+            'old_price' => $product->price(PriceType::Old)?->amountRubles(),
+            'prices' => $this->adminPrices($product->prices()),
+            'ingredients' => $product->ingredients(),
+            'nutrition' => $nutrition instanceof Nutrition
+                ? [
+                    'calories' => $nutrition->calories(),
+                    'proteins' => $nutrition->proteins(),
+                    'fats' => $nutrition->fats(),
+                    'carbs' => $nutrition->carbs(),
+                    'basis' => $nutrition->basis(),
+                ]
+                : null,
+            'tag_ids' => $product->tagIds(),
+            'images' => $images,
         ];
     }
 
@@ -146,7 +182,42 @@ final class CatalogPresenter
             'sku' => $set->sku(),
             'line_count' => count($set->lines()),
             'price' => $set->regularPrice()?->amountRubles() ?? 0,
+            'old_price' => $set->price(PriceType::Old)?->amountRubles(),
             'status' => $set->status()->value,
+        ];
+    }
+
+    /**
+     * @param  list<array{product_id: int, name: string, quantity: int}>  $lines
+     * @param  list<array{id: int, url: string, path: string, sort_order: int, focus_x: float|null, focus_y: float|null}>  $images
+     * @return array<string, mixed>
+     */
+    public function adminSetDetail(ProductSet $set, array $lines, array $images): array
+    {
+        return [
+            'id' => $set->id(),
+            'name' => $set->name(),
+            'slug' => $set->slug(),
+            'sku' => $set->sku(),
+            'status' => $set->status()->value,
+            'price' => $set->regularPrice()?->amountRubles() ?? 0,
+            'old_price' => $set->price(PriceType::Old)?->amountRubles(),
+            'prices' => $this->adminPrices($set->prices()),
+            'description' => $set->description(),
+            'lines' => $lines,
+            'images' => $images,
+        ];
+    }
+
+    /**
+     * @param  list<array{id: int, kind: string, name: string, sort_order: int}>  $items
+     * @return array<string, mixed>
+     */
+    public function adminCategoryDetail(Category $category, array $items): array
+    {
+        return [
+            ...$this->category($category),
+            'items' => $items,
         ];
     }
 
@@ -243,6 +314,32 @@ final class CatalogPresenter
                 'type' => $price->type()->value,
                 'amount_kopecks' => $price->amountKopecks(),
                 'amount_rubles' => $price->amountRubles(),
+            ];
+        }
+
+        return $mapped;
+    }
+
+    /**
+     * Admin API: деньги в рублях.
+     *
+     * @param  list<Price>  $prices
+     * @return list<array{type: string, amount: int}>
+     */
+    private function adminPrices(array $prices): array
+    {
+        $mapped = [];
+        foreach ($prices as $price) {
+            if (! $price instanceof Price) {
+                continue;
+            }
+            if ($price->type() === PriceType::Promo) {
+                continue;
+            }
+
+            $mapped[] = [
+                'type' => $price->type()->value,
+                'amount' => $price->amountRubles(),
             ];
         }
 

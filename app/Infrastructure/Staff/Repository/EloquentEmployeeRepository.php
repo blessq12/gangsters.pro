@@ -50,6 +50,29 @@ final class EloquentEmployeeRepository implements EmployeeRepository
 
     public function list(?StaffRole $role = null, ?bool $isActive = null): array
     {
+        return $this->listPage(0, max(1, $this->count($role, $isActive)), $role, $isActive);
+    }
+
+    public function listPage(int $offset, int $limit, ?StaffRole $role = null, ?bool $isActive = null): array
+    {
+        return $this->filteredQuery($role, $isActive)
+            ->offset(max(0, $offset))
+            ->limit(max(1, $limit))
+            ->get()
+            ->map(fn (STF_Employee $row): Employee => $this->map($row))
+            ->all();
+    }
+
+    public function count(?StaffRole $role = null, ?bool $isActive = null): int
+    {
+        return (int) $this->filteredQuery($role, $isActive)->count();
+    }
+
+    /**
+     * @return Builder<STF_Employee>
+     */
+    private function filteredQuery(?StaffRole $role = null, ?bool $isActive = null): Builder
+    {
         /** @var Builder<STF_Employee> $query */
         $query = STF_Employee::query()->orderBy('id');
 
@@ -60,9 +83,7 @@ final class EloquentEmployeeRepository implements EmployeeRepository
             $query->where('is_active', $isActive);
         }
 
-        return $query->get()
-            ->map(fn (STF_Employee $row): Employee => $this->map($row))
-            ->all();
+        return $query;
     }
 
     public function delete(int $id): void

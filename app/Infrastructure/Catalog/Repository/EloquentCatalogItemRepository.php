@@ -21,8 +21,6 @@ use Illuminate\Support\Str;
 
 final class EloquentCatalogItemRepository implements CatalogItemRepository
 {
-    private const PRICE_TYPE_REGULAR = 'regular';
-
     private const KOPECKS_IN_RUBLE = 100;
 
     public function __construct(
@@ -181,10 +179,20 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
 
     public function listAllProducts(): array
     {
-        $rows = $this->itemQuery()
+        return $this->listProductsPage(0, max(1, $this->countProducts()));
+    }
+
+    public function listProductsPage(int $offset, int $limit, ?string $q = null): array
+    {
+        $query = $this->itemQuery()
             ->where('kind', CatalogItemKind::Product->value)
             ->with('prices')
-            ->orderBy('id')
+            ->orderBy('id');
+        $this->applyItemNameSearch($query, $q);
+
+        $rows = $query
+            ->offset(max(0, $offset))
+            ->limit(max(1, $limit))
             ->get();
 
         $ids = $rows
@@ -209,12 +217,30 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
         return $products;
     }
 
+    public function countProducts(?string $q = null): int
+    {
+        $query = $this->itemQuery()->where('kind', CatalogItemKind::Product->value);
+        $this->applyItemNameSearch($query, $q);
+
+        return (int) $query->count();
+    }
+
     public function listAllSets(): array
     {
-        $rows = $this->itemQuery()
+        return $this->listSetsPage(0, max(1, $this->countSets()));
+    }
+
+    public function listSetsPage(int $offset, int $limit, ?string $q = null): array
+    {
+        $query = $this->itemQuery()
             ->where('kind', CatalogItemKind::Set->value)
             ->with(['setLines', 'prices'])
-            ->orderBy('id')
+            ->orderBy('id');
+        $this->applyItemNameSearch($query, $q);
+
+        $rows = $query
+            ->offset(max(0, $offset))
+            ->limit(max(1, $limit))
             ->get();
 
         $ids = $rows
@@ -246,6 +272,14 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
         return $sets;
     }
 
+    public function countSets(?string $q = null): int
+    {
+        $query = $this->itemQuery()->where('kind', CatalogItemKind::Set->value);
+        $this->applyItemNameSearch($query, $q);
+
+        return (int) $query->count();
+    }
+
     public function findArchivedProductIds(): array
     {
         return $this->itemQuery()
@@ -260,31 +294,110 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
     public function saveProduct(
         ?int $id,
         string $name,
-        int $price,
+        array $prices,
         ?int $weight,
         string $status,
         ?string $description,
         ?string $sku,
+        ?array $ingredients = null,
+        ?array $nutrition = null,
+        ?array $tagIds = null,
     ): int {
-        return $this->saveItem($id, CatalogItemKind::Product, $name, $price, $weight, $status, $description, $sku);
+        $itemId = $this->saveItem(
+            $id,
+            CatalogItemKind::Product,
+            $name,
+            $prices,
+            $weight,
+            $status,
+            $description,
+            $sku,
+        );
+
+        $row = $this->requireKind($itemId, CatalogItemKind::Product);
+        if ($ingredients !== null) {
+            $row->ingredients = array_values(array_filter(
+                array_map(static fn (mixed $v): string => trim((string) $v), $ingredients),
+                static fn (string $v): bool => $v !== '',
+            ));
+        }
+        if ($nutrition !== null) {
+            $row->nutrition = [
+                'calories' => (float) ($nutrition['calories'] ?? 0),
+                'proteins' => (float) ($nutrition['proteins'] ?? 0),
+                'fats' => (float) ($nutrition['fats'] ?? 0),
+                'carbs' => (float) ($nutrition['carbs'] ?? 0),
+                'basis' => (string) ($nutrition['basis'] ?? 'per_100g'),
+            ];
+        }
+        if ($ingredients !== null || $nutrition !== null) {
+            $row->save();
+        }
+
+        if ($tagIds !== null) {
+            $this->syncItemTags($itemId, $tagIds);
+        }
+
+        return $itemId;
     }
 
     public function saveSet(
         ?int $id,
         string $name,
         ?string $sku,
-        int $price,
+        array $prices,
         string $status,
+        ?string $description = null,
     ): int {
-        return $this->saveItem($id, CatalogItemKind::Set, $name, $price, null, $status, null, $sku);
+        return $this->saveItem($id, CatalogItemKind::Set, $name, $prices, null, $status, $description, $sku);
     }
 
-    public function listProductImages(int $productId): array
+    public function replaceSetLines(int $setId, array $lines): void
     {
-        $this->requireItem($productId);
+        $this->requireKind($setId, CatalogItemKind::Set);
+
+        $normalized = [];
+        foreach ($lines as $line) {
+            if (! is_array($line)) {
+                continue;
+            }
+            $productId = (int) ($line['product_id'] ?? 0);
+            $quantity = (int) ($line['quantity'] ?? 0);
+            if ($productId < 1 || $quantity < 1) {
+                continue;
+            }
+            $normalized[$productId] = $quantity;
+        }
+
+        if ($normalized !== []) {
+            $existing = CAT_Item::query()
+                ->where('kind', CatalogItemKind::Product->value)
+                ->whereIn('id', array_keys($normalized))
+                ->pluck('id')
+                ->map(static fn ($id): int => (int) $id)
+                ->all();
+            $missing = array_diff(array_keys($normalized), $existing);
+            if ($missing !== []) {
+                throw new \InvalidArgumentException('В набор можно добавлять только существующие товары: '.implode(', ', $missing));
+            }
+        }
+
+        CAT_SetLine::query()->where('set_item_id', $setId)->delete();
+        foreach ($normalized as $productId => $quantity) {
+            CAT_SetLine::query()->create([
+                'set_item_id' => $setId,
+                'component_item_id' => $productId,
+                'quantity' => $quantity,
+            ]);
+        }
+    }
+
+    public function listItemImages(int $itemId): array
+    {
+        $this->requireItem($itemId);
 
         return CAT_ItemImage::query()
-            ->where('item_id', $productId)
+            ->where('item_id', $itemId)
             ->orderBy('sort_order')
             ->orderBy('id')
             ->get()
@@ -295,6 +408,8 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
                 return [
                     'id' => (int) $row->id,
                     'url' => $this->imageUrl($path),
+                    'path' => $path,
+                    'sort_order' => (int) $row->sort_order,
                     'focus_x' => $focusX,
                     'focus_y' => $focusY,
                 ];
@@ -302,15 +417,90 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
             ->all();
     }
 
+    public function listProductImages(int $productId): array
+    {
+        return array_map(
+            static fn (array $image): array => [
+                'id' => $image['id'],
+                'url' => $image['url'],
+                'focus_x' => $image['focus_x'],
+                'focus_y' => $image['focus_y'],
+            ],
+            $this->listItemImages($productId),
+        );
+    }
+
     public function addProductImage(int $productId, string $path): void
     {
-        $this->requireItem($productId);
-        CAT_ItemImage::query()->create([
-            'item_id' => $productId,
+        $this->addItemImage($productId, $path);
+    }
+
+    public function addItemImage(int $itemId, string $path, ?float $focusX = null, ?float $focusY = null): array
+    {
+        $this->requireItem($itemId);
+        $normalized = CatalogStoredImagePath::normalize($path);
+        if ($normalized === null) {
+            throw new \InvalidArgumentException('Некорректный путь изображения.');
+        }
+
+        $maxSort = (int) CAT_ItemImage::query()->where('item_id', $itemId)->max('sort_order');
+        $focus = null;
+        if ($focusX !== null && $focusY !== null) {
+            $focus = ['x' => $focusX, 'y' => $focusY];
+        }
+
+        $row = CAT_ItemImage::query()->create([
+            'item_id' => $itemId,
             'disk' => 'public',
-            'path' => $path,
-            'sort_order' => 0,
+            'path' => $normalized,
+            'sort_order' => $maxSort + 1,
+            'focus' => $focus,
         ]);
+
+        return $this->presentImageRow($row);
+    }
+
+    public function updateItemImage(
+        int $itemId,
+        int $imageId,
+        ?float $focusX = null,
+        ?float $focusY = null,
+        ?int $sortOrder = null,
+    ): array {
+        $row = CAT_ItemImage::query()
+            ->where('item_id', $itemId)
+            ->whereKey($imageId)
+            ->first();
+        if (! $row instanceof CAT_ItemImage) {
+            throw new \InvalidArgumentException('Изображение не найдено.');
+        }
+
+        if ($focusX !== null && $focusY !== null) {
+            $row->focus = ['x' => $focusX, 'y' => $focusY];
+        }
+        if ($sortOrder !== null) {
+            $row->sort_order = $sortOrder;
+        }
+        $row->save();
+
+        return $this->presentImageRow($row);
+    }
+
+    public function deleteItemImage(int $itemId, int $imageId): void
+    {
+        $row = CAT_ItemImage::query()
+            ->where('item_id', $itemId)
+            ->whereKey($imageId)
+            ->first();
+        if (! $row instanceof CAT_ItemImage) {
+            throw new \InvalidArgumentException('Изображение не найдено.');
+        }
+
+        $path = CatalogStoredImagePath::normalize($row->path);
+        $row->delete();
+        if ($path !== null && Storage::disk('public')->exists($path)) {
+            Storage::disk('public')->delete($path);
+        }
     }
 
     private function itemQuery()
@@ -476,11 +666,14 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
         return [$focusX, $focusY];
     }
 
+    /**
+     * @param  list<array{type: string, amount: int}>  $prices
+     */
     private function saveItem(
         ?int $id,
         CatalogItemKind $kind,
         string $name,
-        int $price,
+        array $prices,
         ?int $weight,
         string $status,
         ?string $description,
@@ -500,10 +693,11 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
         $fields = [
             'name' => $name,
             'status' => $status,
+            'description' => $description,
+            'archived_at' => $status === ProductStatus::Archived->value ? ($row->archived_at ?? now()) : null,
         ];
         if ($kind === CatalogItemKind::Product) {
             $fields['weight'] = $weight;
-            $fields['description'] = $description;
         }
         $row->fill($fields);
         if ($sku !== null && trim($sku) !== '') {
@@ -513,17 +707,77 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
         }
         $row->save();
 
-        CAT_Price::query()->updateOrCreate(
-            [
-                'item_id' => (int) $row->id,
-                'type' => self::PRICE_TYPE_REGULAR,
-            ],
-            [
-                'amount_kopecks' => max(0, $price) * self::KOPECKS_IN_RUBLE,
-            ],
-        );
+        $this->syncPrices((int) $row->id, $prices);
 
         return (int) $row->id;
+    }
+
+    /**
+     * @param  list<array{type: string, amount: int}>  $prices
+     */
+    private function syncPrices(int $itemId, array $prices): void
+    {
+        $keptTypes = [];
+        foreach ($prices as $price) {
+            $type = (string) ($price['type'] ?? '');
+            if ($type === '') {
+                continue;
+            }
+            $keptTypes[] = $type;
+            CAT_Price::query()->updateOrCreate(
+                [
+                    'item_id' => $itemId,
+                    'type' => $type,
+                ],
+                [
+                    'amount_kopecks' => max(0, (int) ($price['amount'] ?? 0)) * self::KOPECKS_IN_RUBLE,
+                ],
+            );
+        }
+
+        $query = CAT_Price::query()->where('item_id', $itemId);
+        if ($keptTypes !== []) {
+            $query->whereNotIn('type', $keptTypes);
+        }
+        $query->delete();
+    }
+
+    /**
+     * @param  list<int>  $tagIds
+     */
+    private function syncItemTags(int $itemId, array $tagIds): void
+    {
+        $normalized = [];
+        foreach ($tagIds as $tagId) {
+            if (! is_numeric($tagId)) {
+                continue;
+            }
+            $id = (int) $tagId;
+            if ($id > 0) {
+                $normalized[] = $id;
+            }
+        }
+        $normalized = array_values(array_unique($normalized));
+
+        CAT_Item::query()->findOrFail($itemId)->tags()->sync($normalized);
+    }
+
+    /**
+     * @return array{id: int, url: string, path: string, sort_order: int, focus_x: float|null, focus_y: float|null}
+     */
+    private function presentImageRow(CAT_ItemImage $row): array
+    {
+        $path = CatalogStoredImagePath::normalize($row->path) ?? '';
+        [$focusX, $focusY] = $this->resolveImageFocus($row);
+
+        return [
+            'id' => (int) $row->id,
+            'url' => $this->imageUrl($path),
+            'path' => $path,
+            'sort_order' => (int) $row->sort_order,
+            'focus_x' => $focusX,
+            'focus_y' => $focusY,
+        ];
     }
 
     private function requireKind(int $id, CatalogItemKind $kind): CAT_Item
@@ -547,6 +801,15 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
         }
 
         return $row;
+    }
+
+    private function applyItemNameSearch(mixed $query, ?string $q): void
+    {
+        $needle = trim((string) ($q ?? ''));
+        if ($needle === '') {
+            return;
+        }
+        $query->where('name', 'like', '%'.$needle.'%');
     }
 
     private function uniqueItemSlug(string $name): string

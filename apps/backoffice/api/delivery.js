@@ -1,5 +1,21 @@
 import { request } from "../http/transport.js";
 
+/**
+ * @param {string} path
+ * @param {{ offset?: number, limit?: number }} [query]
+ */
+function withPage(path, query = {}) {
+    const params = new URLSearchParams();
+    if (query.offset !== undefined) {
+        params.set("offset", String(query.offset));
+    }
+    if (query.limit !== undefined) {
+        params.set("limit", String(query.limit));
+    }
+    const qs = params.toString();
+    return request("GET", `${path}${qs ? `?${qs}` : ""}`);
+}
+
 export function getDelivery() {
     return request("GET", "/delivery");
 }
@@ -24,12 +40,19 @@ export function updateZone(id, data) {
     return request("PUT", `/delivery/zones/${id}`, data);
 }
 
-export function listRouteSheets() {
-    return request("GET", "/delivery/route-sheets");
+/** @param {{ offset?: number, limit?: number }} [query] */
+export function listZones(query = {}) {
+    return withPage("/delivery/zones", query);
 }
 
-export function listCourierRouteSheets() {
-    return request("GET", "/courier/route-sheets");
+/** @param {{ offset?: number, limit?: number }} [query] */
+export function listRouteSheets(query = {}) {
+    return withPage("/delivery/route-sheets", query);
+}
+
+/** @param {{ offset?: number, limit?: number }} [query] */
+export function listCourierRouteSheets(query = {}) {
+    return withPage("/courier/route-sheets", query);
 }
 
 /** @param {number|string} id */

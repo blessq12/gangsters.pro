@@ -13,6 +13,9 @@ use App\Infrastructure\Order\Model\ORD_OrderLine;
 use App\Shared\Enum\DeliveryMethod;
 use DateTimeImmutable;
 
+/**
+ * Order ↔ ORD_orders + ORD_order_lines. Агрегат целиком, деньги в копейках.
+ */
 final class OrderMapper
 {
     public function toDomain(ORD_Order $row): Order
@@ -36,10 +39,14 @@ final class OrderMapper
             );
         }
 
+        $createdAt = $row->created_at !== null
+            ? DateTimeImmutable::createFromInterface($row->created_at)
+            : new DateTimeImmutable;
+
         return Order::restore(
             id: (int) $row->id,
             source: (string) ($row->source ?? 'site'),
-            checkoutId: $row->checkout_id !== null ? (string) $row->checkout_id : null,
+            checkoutId: $this->nullableString($row->checkout_id),
             partnerCode: $this->nullableString($row->partner_code),
             externalOrderId: $this->nullableString($row->external_order_id),
             status: (string) $row->status,
@@ -50,11 +57,11 @@ final class OrderMapper
                 phone: (string) $row->client_phone,
             ),
             delivery: $this->mapDelivery($row),
-            createdAt: new DateTimeImmutable((string) $row->created_at),
+            createdAt: $createdAt,
             kitchenId: $row->kitchen_id !== null ? (int) $row->kitchen_id : null,
             branchId: $row->branch_id !== null ? (int) $row->branch_id : null,
             paymentId: $row->payment_id !== null ? (int) $row->payment_id : null,
-            paymentMethod: $this->nullableString($row->payment_method ?? null),
+            paymentMethod: $this->nullableString($row->payment_method),
             changeFromRubles: $row->change_from_rubles !== null ? (int) $row->change_from_rubles : null,
         );
     }
@@ -68,34 +75,43 @@ final class OrderMapper
         $delivery = $order->delivery();
         $address = $delivery->address();
 
-        $orderPayload = [
-            'id' => $order->hasId() ? $order->id() : null,
-            'source' => $order->source(),
-            'checkout_id' => $order->checkoutId(),
-            'partner_code' => $order->partnerCode(),
-            'external_order_id' => $order->externalOrderId(),
-            'status' => $order->status()->value,
-            'client_id' => $client->clientId(),
-            'client_name' => $client->name(),
-            'client_phone' => $client->phone(),
-            'delivery_type' => $delivery->type()->value,
-            'delivery_zone_id' => $delivery->zoneId(),
-            'delivery_fee_kopecks' => $delivery->feeKopecks(),
-            'delivery_street' => $address?->street(),
-            'delivery_house' => $address?->house(),
-            'delivery_entrance' => $address?->entrance(),
-            'delivery_floor' => $address?->floor(),
-            'delivery_apartment' => $address?->apartment(),
-            'delivery_comment' => $address?->comment(),
-            'kitchen_id' => $order->kitchenId(),
-            'branch_id' => $order->branchId(),
-            'payment_id' => $order->paymentId(),
-            'payment_method' => $order->paymentMethod(),
-            'change_from_rubles' => $order->changeFromRubles(),
-            'total_kopecks' => $order->grandTotalKopecks(),
-            'created_at' => $order->createdAt(),
+        return [
+            'order' => [
+                'id' => $order->hasId() ? $order->id() : null,
+                'source' => $order->source(),
+                'checkout_id' => $order->checkoutId(),
+                'partner_code' => $order->partnerCode(),
+                'external_order_id' => $order->externalOrderId(),
+                'status' => $order->status()->value,
+                'client_id' => $client->clientId(),
+                'client_name' => $client->name(),
+                'client_phone' => $client->phone(),
+                'delivery_type' => $delivery->type()->value,
+                'delivery_zone_id' => $delivery->zoneId(),
+                'delivery_fee_kopecks' => $delivery->feeKopecks(),
+                'delivery_street' => $address?->street(),
+                'delivery_house' => $address?->house(),
+                'delivery_entrance' => $address?->entrance(),
+                'delivery_floor' => $address?->floor(),
+                'delivery_apartment' => $address?->apartment(),
+                'delivery_comment' => $address?->comment(),
+                'kitchen_id' => $order->kitchenId(),
+                'branch_id' => $order->branchId(),
+                'payment_id' => $order->paymentId(),
+                'payment_method' => $order->paymentMethod(),
+                'change_from_rubles' => $order->changeFromRubles(),
+                'total_kopecks' => $order->grandTotalKopecks(),
+                'created_at' => $order->createdAt()->format('Y-m-d H:i:s'),
+            ],
+            'lines' => $this->mapLines($order),
         ];
+    }
 
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function mapLines(Order $order): array
+    {
         $lines = [];
         foreach (array_values($order->lines()) as $index => $line) {
             $lines[] = [
@@ -108,10 +124,7 @@ final class OrderMapper
             ];
         }
 
-        return [
-            'order' => $orderPayload,
-            'lines' => $lines,
-        ];
+        return $lines;
     }
 
     private function mapDelivery(ORD_Order $row): OrderDeliveryInfo

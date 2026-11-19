@@ -34,18 +34,27 @@ final class GetAdminCatalogUseCase
         $categoryIdByProduct = [];
 
         foreach ($this->categories->findAllIncludingInactive() as $category) {
-            $productIds = [];
+            $itemIds = [];
+            $items = [];
             foreach ($this->categories->findItemsByCategoryId($category->id()) as $item) {
-                if ($item->kind() !== CatalogItemKind::Product) {
-                    continue;
+                $itemIds[] = $item->catalogItemId();
+                $items[] = [
+                    'id' => $item->catalogItemId(),
+                    'kind' => $item->kind()->value,
+                    'sort_order' => $item->sortOrder(),
+                ];
+                if ($item->kind() === CatalogItemKind::Product) {
+                    $categoryIdByProduct[$item->catalogItemId()] ??= $category->id();
                 }
-                $productIds[] = $item->catalogItemId();
-                $categoryIdByProduct[$item->catalogItemId()] ??= $category->id();
             }
 
             $categoryRows[] = [
                 ...$this->presenter->category($category),
-                'product_ids' => $productIds,
+                'product_ids' => array_values(array_map(
+                    static fn (array $row): int => $row['id'],
+                    array_filter($items, static fn (array $row): bool => $row['kind'] === CatalogItemKind::Product->value),
+                )),
+                'items' => $items,
             ];
         }
 

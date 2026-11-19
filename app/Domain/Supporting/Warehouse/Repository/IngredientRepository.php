@@ -15,5 +15,12 @@ interface IngredientRepository
      */
     public function listAll(): array;
 
+    /**
+     * @return list<Ingredient>
+     */
+    public function listPage(int $offset, int $limit): array;
+
+    public function countAll(): int;
+
     public function save(Ingredient $ingredient): void;
 }

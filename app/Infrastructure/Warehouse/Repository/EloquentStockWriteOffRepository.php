@@ -22,12 +22,24 @@ final class EloquentStockWriteOffRepository implements StockWriteOffRepository
 
     public function listAll(): array
     {
+        return $this->listPage(0, max(1, $this->countAll()));
+    }
+
+    public function listPage(int $offset, int $limit): array
+    {
         return WH_StockWriteOff::query()
             ->orderByDesc('occurred_at')
             ->orderByDesc('id')
+            ->offset(max(0, $offset))
+            ->limit(max(1, $limit))
             ->get()
             ->map(fn (WH_StockWriteOff $row): StockWriteOff => $this->mapper->toDomain($row))
             ->all();
+    }
+
+    public function countAll(): int
+    {
+        return (int) WH_StockWriteOff::query()->count();
     }
 
     public function listByKitchenTicketId(int $kitchenTicketId): array

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import {
     adjustStock,
     getStock,
@@ -10,22 +10,34 @@ import {
     updateIngredient,
 } from "../../../api/warehouse.js";
 import { useApi } from "../../../shell/composables/useApi.js";
+import { usePagedList } from "../../../shell/composables/usePagedList.js";
 import { useToast } from "../../../shell/composables/useToast.js";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
 import UiCard from "../../../shell/components/ui/UiCard.vue";
 import UiFormField from "../../../shell/components/ui/UiFormField.vue";
 import UiInput from "../../../shell/components/ui/UiInput.vue";
 import UiModal from "../../../shell/components/ui/UiModal.vue";
+import UiPagination from "../../../shell/components/ui/UiPagination.vue";
 import UiTable from "../../../shell/components/ui/UiTable.vue";
 
 const toast = useToast();
 const loadApi = useApi();
 const saveApi = useApi();
+const {
+    page,
+    perPage,
+    total,
+    items: pageRows,
+    offset,
+    resetPage,
+    applyPayload,
+} = usePagedList();
 
 const tab = ref("ingredients");
-const ingredients = ref([]);
-const stock = ref([]);
-const writeOffs = ref([]);
+const ingredientOptions = ref([]);
+const ingredients = computed(() => (tab.value === "ingredients" ? pageRows.value : ingredientOptions.value));
+const stock = computed(() => (tab.value === "stock" ? pageRows.value : []));
+const writeOffs = computed(() => (tab.value === "writeoffs" ? pageRows.value : []));
 
 const ingredientModalOpen = ref(false);
 const editingIngredientId = ref(null);
@@ -82,7 +94,7 @@ const writeOffColumns = [
 const ingredientById = computed(() => {
     /** @type {Record<number|string, any>} */
     const map = {};
-    ingredients.value.forEach((item) => {
+    ingredientOptions.value.forEach((item) => {
         map[item.id] = item;
     });
     return map;
@@ -127,25 +139,34 @@ function clearErrors(target) {
     });
 }
 
-function asList(payload) {
-    return Array.isArray(payload) ? payload : (payload?.items ?? []);
+async function loadIngredientOptions() {
+    try {
+        const payload = await listIngredients({ offset: 0, limit: 100 });
+        ingredientOptions.value = Array.isArray(payload?.items) ? payload.items : [];
+    } catch {
+        ingredientOptions.value = [];
+    }
 }
 
-async function loadAll() {
+async function loadTab() {
     try {
-        const [ingredientsPayload, stockPayload, writeOffsPayload] = await loadApi.run(
-            async () => Promise.all([
-                listIngredients(),
-                getStock(),
-                listWriteOffs(),
-            ]),
-        );
-        ingredients.value = asList(ingredientsPayload);
-        stock.value = asList(stockPayload);
-        writeOffs.value = asList(writeOffsPayload);
+        const query = { offset: offset.value, limit: perPage };
+        let payload;
+        if (tab.value === "ingredients") {
+            payload = await loadApi.run(() => listIngredients(query));
+        } else if (tab.value === "stock") {
+            payload = await loadApi.run(() => getStock(query));
+        } else {
+            payload = await loadApi.run(() => listWriteOffs(query));
+        }
+        applyPayload(payload);
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось загрузить склад");
     }
+}
+
+async function loadAll() {
+    await Promise.all([loadIngredientOptions(), loadTab()]);
 }
 
 function openCreateIngredient() {
@@ -237,7 +258,7 @@ async function saveAdjust() {
 }
 
 function openWriteOff() {
-    writeOffForm.ingredient_id = ingredients.value[0] ? String(ingredients.value[0].id) : "";
+    writeOffForm.ingredient_id = ingredientOptions.value[0] ? String(ingredientOptions.value[0].id) : "";
     writeOffForm.quantity = "";
     writeOffForm.reason = "";
     clearErrors(writeOffErrors);
@@ -281,6 +302,11 @@ async function saveWriteOff() {
     }
 }
 
+watch(tab, () => {
+    resetPage();
+    loadTab();
+});
+watch(page, loadTab);
 onMounted(loadAll);
 </script>
 
@@ -308,7 +334,7 @@ onMounted(loadAll);
                 </div>
                 <UiTable
                     :columns="ingredientColumns"
-                    :rows="ingredients"
+                    :rows="pageRows"
                     :loading="loadApi.loading"
                     empty-text="Нет ингредиентов"
                 >
@@ -340,6 +366,15 @@ onMounted(loadAll);
                     :rows="writeOffRows"
                     :loading="loadApi.loading"
                     empty-text="Нет списаний"
+                />
+            </div>
+
+            <div class="mt-6">
+                <UiPagination
+                    :page="page"
+                    :per-page="perPage"
+                    :total="total"
+                    @update:page="page = $event"
                 />
             </div>
         </UiCard>
@@ -378,7 +413,7 @@ onMounted(loadAll);
                         class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 transition-colors hover:border-bo-border-strong focus:border-bo-accent focus:outline-none"
                     >
                         <option
-                            v-for="item in ingredients"
+                            v-for="item in ingredientOptions"
                             :key="item.id"
                             :value="String(item.id)"
                         >
@@ -408,7 +443,7 @@ onMounted(loadAll);
                         class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 transition-colors hover:border-bo-border-strong focus:border-bo-accent focus:outline-none"
                     >
                         <option
-                            v-for="item in ingredients"
+                            v-for="item in ingredientOptions"
                             :key="item.id"
                             :value="String(item.id)"
                         >

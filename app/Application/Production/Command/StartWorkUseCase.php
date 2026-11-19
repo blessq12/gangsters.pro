@@ -4,13 +4,15 @@ namespace App\Application\Production\Command;
 
 use App\Application\Production\DTO\StartWorkDto;
 use App\Application\Production\Presenter\KitchenTicketPresenter;
-use App\Domain\Core\Order\Enum\OrderStatus;
+use App\Application\Shared\DomainEventPublisher;
+use App\Domain\Core\Order\Entity\Order;
 use App\Domain\Core\Order\Repository\OrderRepository;
+use App\Domain\Core\Production\Entity\KitchenTicket;
 use App\Domain\Core\Production\Repository\KitchenTicketRepository;
 use App\Shared\Transaction\TransactionManager;
 
 /**
- * Старт работы кухни по уже существующему тикету (создан по OrderConfirmed).
+ * Старт уже созданного тикета. Заказ в preparing переводит слушатель KitchenTicketStarted.
  */
 final class StartWorkUseCase
 {
@@ -18,6 +20,7 @@ final class StartWorkUseCase
         private readonly KitchenTicketRepository $tickets,
         private readonly OrderRepository $orders,
         private readonly KitchenTicketPresenter $presenter,
+        private readonly DomainEventPublisher $events,
         private readonly TransactionManager $transaction,
     ) {}
 
@@ -27,45 +30,31 @@ final class StartWorkUseCase
     public function execute(StartWorkDto $dto): array
     {
         return $this->transaction->run(function () use ($dto): array {
-            $order = $this->orders->findById($dto->orderId);
-            if ($order === null) {
-                throw new \InvalidArgumentException('Заказ не найден.');
-            }
-
-            if ($order->status() !== OrderStatus::Confirmed) {
-                throw new \InvalidArgumentException('Начать готовку можно только по подтверждённому заказу.');
-            }
-
-            $kitchenId = $order->kitchenId();
-            if ($kitchenId === null) {
-                throw new \InvalidArgumentException('Заказу не назначена кухня.');
-            }
-
-            $ticket = $this->tickets->findByOrderId($dto->orderId);
-            if ($ticket === null) {
-                throw new \InvalidArgumentException(
-                    'Тикет не найден. Он создаётся при подтверждении заказа.',
-                );
-            }
+            $order = $this->requireOrder($dto->orderId);
+            $ticket = $this->requireTicket($dto->orderId);
 
             try {
-                $ticket->start($kitchenId);
+                $ticket->start($order->kitchenId());
             } catch (\LogicException $exception) {
                 throw new \InvalidArgumentException($exception->getMessage(), 0, $exception);
             }
 
             $this->tickets->save($ticket);
+            $this->events->publish($ticket);
 
-            foreach ($ticket->pullDomainEvents() as $event) {
-                event($event);
-            }
-
-            $order = $this->orders->findById($dto->orderId);
-            if ($order === null) {
-                throw new \InvalidArgumentException('Заказ не найден.');
-            }
-
-            return $this->presenter->present($ticket, $order);
+            return $this->presenter->present($ticket, $this->requireOrder($dto->orderId));
         });
+    }
+
+    private function requireOrder(int $orderId): Order
+    {
+        return $this->orders->findById($orderId)
+            ?? throw new \InvalidArgumentException('Заказ не найден.');
+    }
+
+    private function requireTicket(int $orderId): KitchenTicket
+    {
+        return $this->tickets->findByOrderId($orderId)
+            ?? throw new \InvalidArgumentException('Тикет не найден. Он создаётся при подтверждении заказа.');
     }
 }

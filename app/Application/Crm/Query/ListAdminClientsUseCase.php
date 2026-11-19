@@ -3,6 +3,7 @@
 namespace App\Application\Crm\Query;
 
 use App\Application\Crm\Presenter\AdminClientPresenter;
+use App\Application\Shared\PageParams;
 use App\Domain\Supporting\Customer\Entity\Client;
 use App\Domain\Supporting\Customer\Repository\ClientRepository;
 
@@ -16,21 +17,20 @@ final class ListAdminClientsUseCase
     /**
      * @return array{items: list<array<string, mixed>>, total: int, offset: int, limit: int}
      */
-    public function execute(int $offset = 0, int $limit = 50, ?string $q = null): array
+    public function execute(int $offset = 0, int $limit = PageParams::DEFAULT_LIMIT, ?string $q = null): array
     {
-        $offset = max(0, $offset);
-        $limit = max(1, min(200, $limit));
+        ['offset' => $offset, 'limit' => $limit] = PageParams::normalize($offset, $limit);
         $query = trim((string) ($q ?? ''));
 
         if ($query === '') {
-            return [
-                'items' => $this->presenter->presentList(
+            return PageParams::wrap(
+                $this->presenter->presentList(
                     $this->clients->listPage($offset, $limit),
                 ),
-                'total' => $this->clients->count(),
-                'offset' => $offset,
-                'limit' => $limit,
-            ];
+                $this->clients->count(),
+                $offset,
+                $limit,
+            );
         }
 
         $all = $this->clients->listPage(0, max(1, $this->clients->count()));
@@ -42,12 +42,12 @@ final class ListAdminClientsUseCase
         $total = count($filtered);
         $page = array_slice($filtered, $offset, $limit);
 
-        return [
-            'items' => $this->presenter->presentList($page),
-            'total' => $total,
-            'offset' => $offset,
-            'limit' => $limit,
-        ];
+        return PageParams::wrap(
+            $this->presenter->presentList($page),
+            $total,
+            $offset,
+            $limit,
+        );
     }
 
     private function matches(Client $client, string $query): bool

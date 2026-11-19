@@ -15,6 +15,7 @@ use App\Application\Delivery\DTO\TakeRouteSheetDto;
 use App\Application\Delivery\Query\GetAdminDeliveryUseCase;
 use App\Application\Delivery\Query\GetRouteSheetUseCase;
 use App\Application\Delivery\Query\ListActiveRouteSheetsUseCase;
+use App\Application\Delivery\Query\ListAdminDeliveryZonesUseCase;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -51,9 +52,20 @@ final class DeliveryController extends Controller
         return $this->saveZone($request, $useCase, $id);
     }
 
-    public function listRouteSheets(ListActiveRouteSheetsUseCase $useCase): JsonResponse
+    public function listZones(Request $request, ListAdminDeliveryZonesUseCase $useCase): JsonResponse
     {
-        return response()->json($useCase->execute());
+        return response()->json($useCase->execute(
+            offset: (int) $request->query('offset', 0),
+            limit: (int) $request->query('limit', 20),
+        ));
+    }
+
+    public function listRouteSheets(Request $request, ListActiveRouteSheetsUseCase $useCase): JsonResponse
+    {
+        return response()->json($useCase->execute(
+            offset: (int) $request->query('offset', 0),
+            limit: (int) $request->query('limit', 20),
+        ));
     }
 
     public function showRouteSheet(int $id, GetRouteSheetUseCase $useCase): JsonResponse

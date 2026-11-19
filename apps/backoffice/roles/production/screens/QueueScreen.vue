@@ -1,78 +1,62 @@
 <script setup>
-import { onMounted, onUnmounted, ref } from "vue";
+import { onMounted, onUnmounted, watch } from "vue";
 import { useRouter } from "vue-router";
-import {
-    completeTicket,
-    getQueue,
-    startTicket,
-} from "../../../api/production.js";
+import { completeTicket, getQueue, startTicket } from "../../../api/production.js";
 import { useApi } from "../../../shell/composables/useApi.js";
+import { usePagedList } from "../../../shell/composables/usePagedList.js";
+import { useKitchenChoice } from "../../../shell/composables/useKitchenChoice.js";
 import { useToast } from "../../../shell/composables/useToast.js";
 import UiBadge from "../../../shell/components/ui/UiBadge.vue";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
 import UiCard from "../../../shell/components/ui/UiCard.vue";
+import UiPagination from "../../../shell/components/ui/UiPagination.vue";
+import { ticketHint, ticketStatusLabel, ticketStatusVariant } from "../../../shell/domain/orderStage.js";
 
 const router = useRouter();
 const toast = useToast();
 const listApi = useApi();
 const actionApi = useApi();
+const {
+    kitchens,
+    kitchenId,
+    error: kitchensError,
+    load: loadKitchens,
+    select: selectKitchen,
+    kitchenLabel,
+} = useKitchenChoice();
 
-const tickets = ref([]);
+const {
+    page,
+    perPage,
+    total,
+    items: tickets,
+    offset,
+    resetPage,
+    applyPayload,
+    clearItems,
+} = usePagedList();
 /** @type {ReturnType<typeof setInterval>|null} */
 let pollTimer = null;
 const POLL_MS = 12000;
 
-function asList(payload) {
-    return Array.isArray(payload) ? payload : (payload?.items ?? []);
-}
-
-function formatDate(value) {
-    if (!value) {
-        return "";
-    }
-    try {
-        return new Date(value).toLocaleTimeString("ru-RU", {
-            hour: "2-digit",
-            minute: "2-digit",
-        });
-    } catch {
-        return String(value);
-    }
-}
-
-function statusVariant(status) {
-    if (status === "queued") {
-        return "warning";
-    }
-    if (status === "started") {
-        return "neutral";
-    }
-    if (status === "completed") {
-        return "success";
-    }
-    if (status === "cancelled") {
-        return "danger";
-    }
-    return "neutral";
-}
-
-function statusClass(status) {
-    if (status === "started") {
-        return "!bg-sky-500 !text-white";
-    }
-    if (status === "queued") {
-        return "!bg-amber-400 !text-slate-900";
-    }
-    return "";
-}
-
 async function load(silent = false) {
+    if (!kitchenId.value) {
+        clearItems();
+        return;
+    }
     try {
-        const payload = await listApi.run(() => getQueue());
-        tickets.value = asList(payload);
+        const payload = await listApi.run(() => getQueue(kitchenId.value, {
+            offset: offset.value,
+            limit: perPage,
+        }));
+        applyPayload(payload);
+        const lastPage = Math.max(1, Math.ceil(total.value / perPage));
+        if (page.value > lastPage) {
+            page.value = lastPage;
+        }
     } catch (err) {
         if (!silent) {
-            toast.error(err instanceof Error ? err.message : "Не удалось загрузить очередь");
+            toast.error(err instanceof Error ? err.message : "Не удалось загрузить тикеты");
         }
     }
 }
@@ -85,10 +69,10 @@ async function onStart(orderId, event) {
     event.stopPropagation();
     try {
         await actionApi.run(() => startTicket(orderId));
-        toast.success(`#${orderId} взяли`);
+        toast.success(`Тикет заказа #${orderId} в работе`);
         await load(true);
     } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Ошибка");
+        toast.error(err instanceof Error ? err.message : "Не удалось начать тикет");
     }
 }
 
@@ -96,16 +80,36 @@ async function onComplete(orderId, event) {
     event.stopPropagation();
     try {
         await actionApi.run(() => completeTicket(orderId));
-        toast.success(`#${orderId} готово`);
+        toast.success(`Тикет заказа #${orderId} завершён. Заказ готов.`);
         await load(true);
     } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Ошибка");
+        toast.error(err instanceof Error ? err.message : "Не удалось завершить тикет");
     }
 }
 
-onMounted(() => {
-    load();
+function restartPoll() {
+    if (pollTimer) {
+        clearInterval(pollTimer);
+    }
     pollTimer = setInterval(() => load(true), POLL_MS);
+}
+
+watch(kitchenId, () => {
+    if (page.value !== 1) {
+        resetPage();
+        return;
+    }
+    load();
+});
+
+watch(page, () => {
+    load();
+});
+
+onMounted(async () => {
+    await loadKitchens();
+    await load();
+    restartPoll();
 });
 
 onUnmounted(() => {
@@ -118,15 +122,42 @@ onUnmounted(() => {
 
 <template>
     <div class="space-y-6">
-        <h1 class="text-4xl font-bold tracking-tight md:text-5xl">
-            Очередь кухни
-        </h1>
+        <div class="flex flex-wrap items-end justify-between gap-4">
+            <h1 class="text-4xl font-bold tracking-tight md:text-5xl">
+                Тикеты
+            </h1>
+            <label class="block min-w-[16rem] text-base text-bo-muted" for="kitchen-choice">
+                Кухня
+                <select
+                    id="kitchen-choice"
+                    class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-3 text-lg text-bo-fg focus:border-bo-accent focus:outline-none"
+                    :value="kitchenId"
+                    @change="selectKitchen($event.target.value)"
+                >
+                    <option value="">Выбери кухню</option>
+                    <option
+                        v-for="kitchen in kitchens"
+                        :key="kitchen.id"
+                        :value="String(kitchen.id)"
+                    >
+                        {{ kitchenLabel(kitchen) }}
+                    </option>
+                </select>
+            </label>
+        </div>
+
+        <p v-if="kitchensError" class="text-xl text-red-300">
+            {{ kitchensError }}
+        </p>
+        <p v-else-if="!kitchenId" class="text-2xl text-bo-muted">
+            Выбери кухню, чтобы увидеть её тикеты.
+        </p>
 
         <div
-            v-if="!listApi.loading && tickets.length === 0"
-            class="rounded-none border border-bo-border bg-bo-elevated px-8 py-16 text-center text-4xl font-semibold text-bo-muted md:text-5xl"
+            v-else-if="!listApi.loading && tickets.length === 0"
+            class="border border-bo-border bg-bo-elevated px-8 py-16 text-center text-4xl font-semibold text-bo-muted md:text-5xl"
         >
-            Очередь пуста
+            Тикетов нет
         </div>
 
         <div
@@ -139,26 +170,28 @@ onUnmounted(() => {
                 class="!cursor-pointer !border-bo-border !bg-bo-elevated !text-bo-fg !shadow-none transition hover:!border-bo-accent"
                 @click="openTicket(ticket.order_id)"
             >
-                <div class="space-y-5">
+                <div class="space-y-4">
                     <div class="flex items-start justify-between gap-3">
                         <p class="text-5xl font-black leading-none md:text-6xl">
                             #{{ ticket.order_id }}
                         </p>
                         <UiBadge
                             class="!px-3 !py-1 !text-base"
-                            :class="statusClass(ticket.status)"
-                            :variant="statusVariant(ticket.status)"
-                            :text="String(ticket.status || '—')"
+                            :variant="ticketStatusVariant(ticket.status)"
+                            :text="ticketStatusLabel(ticket.status)"
                         />
                     </div>
-
-                    <p
-                        v-if="ticket.status === 'started' && ticket.started_at"
-                        class="text-xl text-bo-muted"
-                    >
-                        Старт {{ formatDate(ticket.started_at) }}
+                    <p class="text-lg text-bo-muted">
+                        {{ ticketHint(ticket.status) }}
                     </p>
-
+                    <ul class="space-y-1 text-xl">
+                        <li
+                            v-for="(line, idx) in (ticket.lines ?? []).slice(0, 4)"
+                            :key="idx"
+                        >
+                            {{ line.name || `Позиция #${line.product_id}` }} × {{ line.quantity }}
+                        </li>
+                    </ul>
                     <div class="flex flex-wrap gap-3" @click.stop>
                         <UiButton
                             v-if="ticket.status === 'queued'"
@@ -166,7 +199,7 @@ onUnmounted(() => {
                             :disabled="actionApi.loading"
                             @click="onStart(ticket.order_id, $event)"
                         >
-                            Взять
+                            Старт
                         </UiButton>
                         <UiButton
                             v-if="ticket.status === 'started'"
@@ -174,11 +207,19 @@ onUnmounted(() => {
                             :disabled="actionApi.loading"
                             @click="onComplete(ticket.order_id, $event)"
                         >
-                            Готово
+                            Завершить
                         </UiButton>
                     </div>
                 </div>
             </UiCard>
         </div>
+
+        <UiPagination
+            v-if="kitchenId"
+            :page="page"
+            :per-page="perPage"
+            :total="total"
+            @update:page="page = $event"
+        />
     </div>
 </template>

@@ -49,6 +49,11 @@ final class DeliveryConfigurationMapper
         return $zones;
     }
 
+    public function zoneToDomain(DLV_Zone $row): ?DeliveryZone
+    {
+        return $this->mapZoneRow($row);
+    }
+
     private function mapZoneRow(DLV_Zone $row): ?DeliveryZone
     {
         $geometry = $this->resolveGeoJson($row->geojson);

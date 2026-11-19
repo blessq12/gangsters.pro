@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, reactive, ref } from "vue";
+import { onMounted, reactive, ref, watch } from "vue";
 import {
     deleteEmployee,
     listEmployees,
@@ -8,6 +8,7 @@ import {
     updateEmployee,
 } from "../../../api/staff.js";
 import { useApi } from "../../../shell/composables/useApi.js";
+import { usePagedList } from "../../../shell/composables/usePagedList.js";
 import { useToast } from "../../../shell/composables/useToast.js";
 import UiBadge from "../../../shell/components/ui/UiBadge.vue";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
@@ -16,13 +17,20 @@ import UiConfirmDialog from "../../../shell/components/ui/UiConfirmDialog.vue";
 import UiFormField from "../../../shell/components/ui/UiFormField.vue";
 import UiInput from "../../../shell/components/ui/UiInput.vue";
 import UiModal from "../../../shell/components/ui/UiModal.vue";
+import UiPagination from "../../../shell/components/ui/UiPagination.vue";
 import UiTable from "../../../shell/components/ui/UiTable.vue";
 
 const toast = useToast();
 const listApi = useApi();
 const saveApi = useApi();
-
-const rows = ref([]);
+const {
+    page,
+    perPage,
+    total,
+    items: rows,
+    offset,
+    applyPayload,
+} = usePagedList();
 const modalOpen = ref(false);
 const editingId = ref(null);
 const fieldErrors = reactive({});
@@ -67,8 +75,11 @@ function resetForm() {
 
 async function loadEmployees() {
     try {
-        const payload = await listApi.run(() => listEmployees());
-        rows.value = Array.isArray(payload) ? payload : (payload?.items ?? []);
+        const payload = await listApi.run(() => listEmployees({
+            offset: offset.value,
+            limit: perPage,
+        }));
+        applyPayload(payload);
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось загрузить сотрудников");
     }
@@ -182,6 +193,7 @@ function roleVariant(role) {
     return "neutral";
 }
 
+watch(page, loadEmployees);
 onMounted(loadEmployees);
 </script>
 
@@ -217,6 +229,14 @@ onMounted(loadEmployees);
                     </div>
                 </template>
             </UiTable>
+            <div class="mt-6">
+                <UiPagination
+                    :page="page"
+                    :per-page="perPage"
+                    :total="total"
+                    @update:page="page = $event"
+                />
+            </div>
         </UiCard>
 
         <UiModal

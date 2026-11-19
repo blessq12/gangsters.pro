@@ -2,6 +2,7 @@
 import { onMounted, ref, watch } from "vue";
 import { getClient, listClients } from "../../../api/clients.js";
 import { useApi } from "../../../shell/composables/useApi.js";
+import { usePagedList } from "../../../shell/composables/usePagedList.js";
 import { useToast } from "../../../shell/composables/useToast.js";
 import UiBadge from "../../../shell/components/ui/UiBadge.vue";
 import UiCard from "../../../shell/components/ui/UiCard.vue";
@@ -14,12 +15,17 @@ import UiButton from "../../../shell/components/ui/UiButton.vue";
 const toast = useToast();
 const listApi = useApi();
 const detailApi = useApi();
+const {
+    page,
+    perPage,
+    total,
+    items: rows,
+    offset,
+    resetPage,
+    applyPayload,
+} = usePagedList();
 
-const page = ref(1);
-const perPage = 20;
-const total = ref(0);
 const q = ref("");
-const rows = ref([]);
 
 const detailOpen = ref(false);
 const detailClient = ref(null);
@@ -54,12 +60,11 @@ function formatDate(value) {
 async function load() {
     try {
         const payload = await listApi.run(() => listClients({
-            offset: (page.value - 1) * perPage,
+            offset: offset.value,
             limit: perPage,
             q: q.value.trim() || undefined,
         }));
-        total.value = Number(payload?.total ?? 0);
-        rows.value = (payload?.items ?? []).map((client) => ({
+        applyPayload(payload, (client) => ({
             ...client,
             created_at: formatDate(client.created_at),
             _raw: client,
@@ -92,7 +97,7 @@ let searchTimer = null;
 watch(q, () => {
     clearTimeout(searchTimer);
     searchTimer = setTimeout(() => {
-        page.value = 1;
+        resetPage();
         load();
     }, 300);
 });

@@ -4,11 +4,15 @@ namespace App\Application\Production\Command;
 
 use App\Application\Production\DTO\CompleteWorkDto;
 use App\Application\Production\Presenter\KitchenTicketPresenter;
+use App\Application\Shared\DomainEventPublisher;
+use App\Domain\Core\Order\Entity\Order;
 use App\Domain\Core\Order\Repository\OrderRepository;
+use App\Domain\Core\Production\Entity\KitchenTicket;
 use App\Domain\Core\Production\Repository\KitchenTicketRepository;
+use App\Shared\Transaction\TransactionManager;
 
 /**
- * Завершение работы кухни. Order → Ready через KitchenTicketCompleted → listener.
+ * Завершение тикета. Заказ в ready переводит слушатель KitchenTicketCompleted.
  */
 final class CompleteWorkUseCase
 {
@@ -16,6 +20,8 @@ final class CompleteWorkUseCase
         private readonly KitchenTicketRepository $tickets,
         private readonly OrderRepository $orders,
         private readonly KitchenTicketPresenter $presenter,
+        private readonly DomainEventPublisher $events,
+        private readonly TransactionManager $transaction,
     ) {}
 
     /**
@@ -23,28 +29,31 @@ final class CompleteWorkUseCase
      */
     public function execute(CompleteWorkDto $dto): array
     {
-        $ticket = $this->tickets->findByOrderId($dto->orderId);
-        if ($ticket === null) {
-            throw new \InvalidArgumentException('Тикет не найден.');
-        }
+        return $this->transaction->run(function () use ($dto): array {
+            $ticket = $this->requireTicket($dto->orderId);
 
-        try {
-            $ticket->complete();
-        } catch (\LogicException $exception) {
-            throw new \InvalidArgumentException($exception->getMessage(), 0, $exception);
-        }
+            try {
+                $ticket->complete();
+            } catch (\LogicException $exception) {
+                throw new \InvalidArgumentException($exception->getMessage(), 0, $exception);
+            }
 
-        $this->tickets->save($ticket);
+            $this->tickets->save($ticket);
+            $this->events->publish($ticket);
 
-        foreach ($ticket->pullDomainEvents() as $event) {
-            event($event);
-        }
+            return $this->presenter->present($ticket, $this->requireOrder($dto->orderId));
+        });
+    }
 
-        $order = $this->orders->findById($dto->orderId);
-        if ($order === null) {
-            throw new \InvalidArgumentException('Заказ не найден.');
-        }
+    private function requireOrder(int $orderId): Order
+    {
+        return $this->orders->findById($orderId)
+            ?? throw new \InvalidArgumentException('Заказ не найден.');
+    }
 
-        return $this->presenter->present($ticket, $order);
+    private function requireTicket(int $orderId): KitchenTicket
+    {
+        return $this->tickets->findByOrderId($orderId)
+            ?? throw new \InvalidArgumentException('Тикет не найден.');
     }
 }

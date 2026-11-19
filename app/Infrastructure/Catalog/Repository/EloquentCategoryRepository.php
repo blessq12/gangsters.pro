@@ -39,6 +39,23 @@ final class EloquentCategoryRepository implements CategoryRepository
             ->all();
     }
 
+    public function listPage(int $offset, int $limit): array
+    {
+        return CAT_Category::query()
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->offset(max(0, $offset))
+            ->limit(max(1, $limit))
+            ->get()
+            ->map(fn (CAT_Category $row) => $this->mapper->toDomain($row))
+            ->all();
+    }
+
+    public function countAll(): int
+    {
+        return (int) CAT_Category::query()->count();
+    }
+
     public function findById(int $id): ?Category
     {
         $row = CAT_Category::query()->find($id);
@@ -98,7 +115,7 @@ final class EloquentCategoryRepository implements CategoryRepository
 
         if ($id === null) {
             $row->slug = $this->uniqueSlug($name);
-            $row->sort_order = 0;
+            $row->sort_order = ((int) CAT_Category::query()->max('sort_order')) + 1;
         }
 
         $row->fill([
@@ -109,6 +126,71 @@ final class EloquentCategoryRepository implements CategoryRepository
         $row->save();
 
         return $this->mapper->toDomain($row);
+    }
+
+    public function reorder(array $orderedIds): void
+    {
+        if ($orderedIds === []) {
+            return;
+        }
+
+        $existing = CAT_Category::query()
+            ->whereIn('id', $orderedIds)
+            ->pluck('id')
+            ->map(static fn ($id): int => (int) $id)
+            ->all();
+        $missing = array_diff($orderedIds, $existing);
+        if ($missing !== []) {
+            throw new \InvalidArgumentException('Неизвестные категории: '.implode(', ', $missing));
+        }
+
+        foreach ($orderedIds as $index => $categoryId) {
+            CAT_Category::query()
+                ->whereKey((int) $categoryId)
+                ->update(['sort_order' => (int) $index]);
+        }
+    }
+
+    public function replaceItems(int $categoryId, array $items): void
+    {
+        if (! CAT_Category::query()->whereKey($categoryId)->exists()) {
+            throw new \InvalidArgumentException('Категория не найдена.');
+        }
+
+        $normalized = [];
+        foreach ($items as $index => $item) {
+            if (! is_array($item)) {
+                continue;
+            }
+            $itemId = (int) ($item['item_id'] ?? 0);
+            if ($itemId < 1) {
+                continue;
+            }
+            $sortOrder = isset($item['sort_order']) ? (int) $item['sort_order'] : $index;
+            $normalized[$itemId] = $sortOrder;
+        }
+
+        if ($normalized !== []) {
+            $existing = CAT_Item::query()
+                ->whereIn('id', array_keys($normalized))
+                ->pluck('id')
+                ->map(static fn ($id): int => (int) $id)
+                ->all();
+            $missing = array_diff(array_keys($normalized), $existing);
+            if ($missing !== []) {
+                throw new \InvalidArgumentException('Неизвестные позиции каталога: '.implode(', ', $missing));
+            }
+        }
+
+        CAT_CategoryItem::query()->where('category_id', $categoryId)->delete();
+
+        foreach ($normalized as $itemId => $sortOrder) {
+            CAT_CategoryItem::query()->create([
+                'category_id' => $categoryId,
+                'item_id' => $itemId,
+                'sort_order' => $sortOrder,
+            ]);
+        }
     }
 
     private function uniqueSlug(string $name): string

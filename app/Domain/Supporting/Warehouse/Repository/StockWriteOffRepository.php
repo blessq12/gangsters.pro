@@ -16,6 +16,13 @@ interface StockWriteOffRepository
     /**
      * @return list<StockWriteOff>
      */
+    public function listPage(int $offset, int $limit): array;
+
+    public function countAll(): int;
+
+    /**
+     * @return list<StockWriteOff>
+     */
     public function listByKitchenTicketId(int $kitchenTicketId): array;
 
     public function save(StockWriteOff $writeOff): void;

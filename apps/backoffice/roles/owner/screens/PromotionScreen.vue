@@ -1,13 +1,16 @@
 <script setup>
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import {
     assignProductRole,
     getPromotionPolicy,
+    listPromotionRoles,
+    listPromotionZones,
     storePromotionPolicy,
     syncZones,
     updatePromotionPolicy,
 } from "../../../api/promotion.js";
 import { useApi } from "../../../shell/composables/useApi.js";
+import { usePagedList } from "../../../shell/composables/usePagedList.js";
 import { useToast } from "../../../shell/composables/useToast.js";
 import UiBadge from "../../../shell/components/ui/UiBadge.vue";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
@@ -15,6 +18,7 @@ import UiCard from "../../../shell/components/ui/UiCard.vue";
 import UiFormField from "../../../shell/components/ui/UiFormField.vue";
 import UiInput from "../../../shell/components/ui/UiInput.vue";
 import UiModal from "../../../shell/components/ui/UiModal.vue";
+import UiPagination from "../../../shell/components/ui/UiPagination.vue";
 import UiTable from "../../../shell/components/ui/UiTable.vue";
 
 const toast = useToast();
@@ -23,8 +27,23 @@ const saveApi = useApi();
 
 const tab = ref("policy");
 const policyExists = ref(false);
-const roles = ref([]);
-const zones = ref([]);
+const {
+    page: rolesPage,
+    perPage: rolesPerPage,
+    total: rolesTotal,
+    items: roles,
+    offset: rolesOffset,
+    applyPayload: applyRoles,
+} = usePagedList();
+const {
+    page: zonesPage,
+    perPage: zonesPerPage,
+    total: zonesTotal,
+    items: zones,
+    offset: zonesOffset,
+    resetPage: resetZonesPage,
+    applyPayload: applyZones,
+} = usePagedList();
 
 const weekdayOptions = [
     { value: 1, label: "пн" },
@@ -121,8 +140,6 @@ function applyPolicy(payload) {
     policyForm.complement_set_benefit_active = Boolean(payload?.complement?.is_active);
     policyForm.complement_set_rolls_per_set = String(payload?.complement?.rolls_per_set ?? 1);
     policyForm.complement_set_max_sets = String(payload?.complement?.max_sets ?? 1);
-    roles.value = payload?.roles ?? [];
-    zones.value = payload?.zones ?? [];
 }
 
 async function loadPolicy() {
@@ -132,6 +149,34 @@ async function loadPolicy() {
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось загрузить политику");
     }
+}
+
+async function loadRoles() {
+    try {
+        const payload = await loadApi.run(() => listPromotionRoles({
+            offset: rolesOffset.value,
+            limit: rolesPerPage,
+        }));
+        applyRoles(payload);
+    } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Не удалось загрузить роли");
+    }
+}
+
+async function loadZones() {
+    try {
+        const payload = await loadApi.run(() => listPromotionZones({
+            offset: zonesOffset.value,
+            limit: zonesPerPage,
+        }));
+        applyZones(payload);
+    } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Не удалось загрузить зоны");
+    }
+}
+
+async function loadAll() {
+    await Promise.all([loadPolicy(), loadRoles(), loadZones()]);
 }
 
 function toggleWeekday(day) {
@@ -239,7 +284,7 @@ async function saveRole() {
         await saveApi.run(() => assignProductRole(body));
         toast.success("Роль назначена");
         roleModalOpen.value = false;
-        await loadPolicy();
+        await loadRoles();
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Ошибка");
     }
@@ -247,13 +292,13 @@ async function saveRole() {
 
 async function onSyncZones() {
     try {
-        const payload = await saveApi.run(() => syncZones());
-        if (payload?.zones) {
-            zones.value = payload.zones;
-        } else {
-            await loadPolicy();
-        }
+        await saveApi.run(() => syncZones());
         toast.success("Зоны синхронизированы");
+        if (zonesPage.value === 1) {
+            await loadZones();
+        } else {
+            resetZonesPage();
+        }
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Ошибка синхронизации");
     }
@@ -269,7 +314,9 @@ function roleVariant(role) {
     return "neutral";
 }
 
-onMounted(loadPolicy);
+watch(rolesPage, loadRoles);
+watch(zonesPage, loadZones);
+onMounted(loadAll);
 </script>
 
 <template>
@@ -393,6 +440,12 @@ onMounted(loadPolicy);
                         <UiBadge :variant="roleVariant(value)" :text="String(value)" />
                     </template>
                 </UiTable>
+                <UiPagination
+                    :page="rolesPage"
+                    :per-page="rolesPerPage"
+                    :total="rolesTotal"
+                    @update:page="rolesPage = $event"
+                />
             </div>
 
             <div v-else class="space-y-5">
@@ -414,6 +467,12 @@ onMounted(loadPolicy);
                         />
                     </template>
                 </UiTable>
+                <UiPagination
+                    :page="zonesPage"
+                    :per-page="zonesPerPage"
+                    :total="zonesTotal"
+                    @update:page="zonesPage = $event"
+                />
             </div>
         </UiCard>
 
