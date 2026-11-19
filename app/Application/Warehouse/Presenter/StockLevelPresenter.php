@@ -2,7 +2,7 @@
 
 namespace App\Application\Warehouse\Presenter;
 
-use App\Domain\Warehouse\Entity\StockLevel;
+use App\Domain\Supporting\Warehouse\Entity\StockLevel;
 
 final class StockLevelPresenter
 {

@@ -2,8 +2,8 @@
 
 namespace App\Infrastructure\Promotion\Mapper;
 
-use App\Domain\Promotion\Entity\ProductPromotionRole;
-use App\Domain\Promotion\Enum\ProductPromotionRoleKind;
+use App\Domain\Core\Order\Entity\ProductPromotionRole;
+use App\Domain\Core\Order\Enum\ProductPromotionRoleKind;
 use App\Infrastructure\Promotion\Model\PRM_ProductRole;
 
 final class ProductPromotionRoleMapper

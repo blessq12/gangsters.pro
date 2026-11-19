@@ -4,7 +4,7 @@ namespace App\Application\Promotion\Command;
 
 use App\Application\Promotion\DTO\SavePromotionPolicyDto;
 use App\Application\Promotion\Query\GetAdminPromotionPolicyUseCase;
-use App\Domain\Promotion\Repository\PromotionPolicyRepository;
+use App\Domain\Core\Order\Repository\PromotionPolicyRepository;
 
 final class SavePromotionPolicyUseCase
 {

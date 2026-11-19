@@ -2,8 +2,8 @@
 
 namespace App\Infrastructure\Warehouse\Repository;
 
-use App\Domain\Warehouse\Entity\StockLevel;
-use App\Domain\Warehouse\Repository\StockLevelRepository;
+use App\Domain\Supporting\Warehouse\Entity\StockLevel;
+use App\Domain\Supporting\Warehouse\Repository\StockLevelRepository;
 use App\Infrastructure\Warehouse\Mapper\StockLevelMapper;
 use App\Infrastructure\Warehouse\Model\WH_StockLevel;
 

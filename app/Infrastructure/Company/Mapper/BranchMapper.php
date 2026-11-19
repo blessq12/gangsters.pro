@@ -2,7 +2,7 @@
 
 namespace App\Infrastructure\Company\Mapper;
 
-use App\Domain\Company\Entity\Branch;
+use App\Domain\Supporting\Company\Entity\Branch;
 use App\Infrastructure\Company\Model\CMP_Branch;
 
 final class BranchMapper

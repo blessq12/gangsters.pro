@@ -2,7 +2,7 @@
 
 namespace App\Infrastructure\Promotion\Mapper;
 
-use App\Domain\Promotion\Entity\PromotionZone;
+use App\Domain\Core\Delivery\Tariff\Entity\PromotionZone;
 use App\Infrastructure\Promotion\Model\PRM_Zone;
 
 final class PromotionZoneMapper

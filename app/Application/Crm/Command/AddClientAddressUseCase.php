@@ -4,8 +4,8 @@ namespace App\Application\Crm\Command;
 
 use App\Application\Crm\DTO\AddClientAddressDto;
 use App\Application\Crm\Presenter\ClientPresenter;
-use App\Domain\Crm\Entity\ClientAddress;
-use App\Domain\Crm\Repository\ClientRepository;
+use App\Domain\Supporting\Customer\Entity\ClientAddress;
+use App\Domain\Supporting\Customer\Repository\ClientRepository;
 
 final class AddClientAddressUseCase
 {

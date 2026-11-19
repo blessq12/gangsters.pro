@@ -3,14 +3,14 @@
 namespace App\Application\Company\Query;
 
 use App\Application\Company\Presenter\CompanyPresenter;
-use App\Domain\Company\Entity\Branch;
-use App\Domain\Company\Entity\Company;
-use App\Domain\Company\Entity\Kitchen;
-use App\Domain\Company\Repository\BranchRepository;
-use App\Domain\Company\Repository\CompanyDocumentRepository;
-use App\Domain\Company\Repository\CompanyLegalRepository;
-use App\Domain\Company\Repository\CompanyRepository;
-use App\Domain\Company\Repository\KitchenRepository;
+use App\Domain\Supporting\Company\Entity\Branch;
+use App\Domain\Supporting\Company\Entity\Company;
+use App\Domain\Supporting\Company\Entity\Kitchen;
+use App\Domain\Supporting\Company\Repository\BranchRepository;
+use App\Domain\Supporting\Company\Repository\CompanyDocumentRepository;
+use App\Domain\Supporting\Company\Repository\CompanyLegalRepository;
+use App\Domain\Supporting\Company\Repository\CompanyRepository;
+use App\Domain\Supporting\Company\Repository\KitchenRepository;
 
 /**
  * Публичный срез компании для витрины.

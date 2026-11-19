@@ -2,7 +2,7 @@
 
 namespace App\Application\Warehouse\Presenter;
 
-use App\Domain\Warehouse\Entity\StockWriteOff;
+use App\Domain\Supporting\Warehouse\Entity\StockWriteOff;
 
 final class WriteOffPresenter
 {

@@ -1,0 +1,38 @@
+<?php
+
+namespace App\Domain\Supporting\Catalog\Repository;
+
+use App\Domain\Supporting\Catalog\Entity\Tag;
+
+interface TagRepository
+{
+    /**
+     * @return list<Tag>
+     */
+    public function findAllActiveOrdered(): array;
+
+    /**
+     * @return list<Tag>
+     */
+    public function findAllOrdered(): array;
+
+    public function findById(int $id): ?Tag;
+
+    public function save(?int $id, string $code, string $label, string $color, bool $isActive): Tag;
+
+    /**
+     * @param  list<int>  $ids
+     * @return list<Tag>
+     */
+    public function findByIds(array $ids): array;
+
+    /**
+     * @return list<int>
+     */
+    public function findTagIdsByProductId(int $productId): array;
+
+    /**
+     * @return list<int>
+     */
+    public function findTagIdsBySetId(int $setId): array;
+}

@@ -3,7 +3,7 @@
 namespace App\Application\Promotion\Query;
 
 use App\Application\Promotion\Presenter\PromotionPolicyPresenter;
-use App\Domain\Promotion\Repository\PromotionPolicyRepository;
+use App\Domain\Core\Order\Repository\PromotionPolicyRepository;
 
 final class GetPublicPromotionPolicyUseCase
 {

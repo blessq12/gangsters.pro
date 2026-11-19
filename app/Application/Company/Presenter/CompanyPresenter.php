@@ -2,11 +2,11 @@
 
 namespace App\Application\Company\Presenter;
 
-use App\Domain\Company\Entity\Branch;
-use App\Domain\Company\Entity\Company;
-use App\Domain\Company\Entity\CompanyDocument;
-use App\Domain\Company\Entity\CompanyLegalInfo;
-use App\Domain\Company\Entity\Kitchen;
+use App\Domain\Supporting\Company\Entity\Branch;
+use App\Domain\Supporting\Company\Entity\Company;
+use App\Domain\Supporting\Company\Entity\CompanyDocument;
+use App\Domain\Supporting\Company\Entity\CompanyLegalInfo;
+use App\Domain\Supporting\Company\Entity\Kitchen;
 use App\Shared\ValueObject\PhoneNumber;
 
 /**

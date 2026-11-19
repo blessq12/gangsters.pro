@@ -2,15 +2,15 @@
 
 namespace App\Application\Marketing\Presenter;
 
-use App\Domain\Marketing\Entity\Banner;
-use App\Domain\Marketing\Entity\DeliveryConditionsText;
-use App\Domain\Marketing\Entity\Promotion;
+use App\Domain\Supporting\Promotion\Entity\Banner;
+use App\Domain\Supporting\Company\Entity\DeliveryConditionsText;
+use App\Domain\Supporting\Promotion\Entity\Campaign;
 
 final class MarketingPresenter
 {
     /**
      * @param  list<Banner>  $banners
-     * @param  list<Promotion>  $promotions
+     * @param  list<Campaign>  $promotions
      * @return array{
      *     banners: list<array<string, mixed>>,
      *     promotions: list<array<string, mixed>>,

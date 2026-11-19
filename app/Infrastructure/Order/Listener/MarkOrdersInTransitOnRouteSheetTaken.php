@@ -2,11 +2,11 @@
 
 namespace App\Infrastructure\Order\Listener;
 
-use App\Domain\Delivery\Event\RouteSheetTaken;
-use App\Domain\Order\Repository\OrderRepository;
+use App\Domain\Core\Delivery\Event\RouteSheetTaken;
+use App\Domain\Core\Order\Repository\OrderRepository;
 
 /**
- * Delivery публикует факт «курьер взял лист»; Order переводит свои заказы в InTransit.
+ * Курьер взял лист → все заказы листа в in_transit.
  */
 final class MarkOrdersInTransitOnRouteSheetTaken
 {

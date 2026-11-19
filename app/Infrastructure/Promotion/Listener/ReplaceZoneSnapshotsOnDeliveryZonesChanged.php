@@ -2,9 +2,9 @@
 
 namespace App\Infrastructure\Promotion\Listener;
 
-use App\Domain\Delivery\Event\DeliveryZonesChanged;
-use App\Domain\Promotion\Entity\PromotionZone;
-use App\Domain\Promotion\Repository\PromotionZoneRepository;
+use App\Domain\Core\Delivery\Event\DeliveryZonesChanged;
+use App\Domain\Core\Delivery\Tariff\Entity\PromotionZone;
+use App\Domain\Core\Delivery\Tariff\Repository\PromotionZoneRepository;
 
 /**
  * Delivery публикует актуальный набор зон; Promotion полностью заменяет свой снимок.

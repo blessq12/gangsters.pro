@@ -3,15 +3,15 @@
 namespace App\Application\Catalog\Query;
 
 use App\Application\Catalog\Presenter\CatalogPresenter;
-use App\Domain\Catalog\Entity\Category;
-use App\Domain\Catalog\Entity\CategoryItem;
-use App\Domain\Catalog\Entity\Product;
-use App\Domain\Catalog\Entity\ProductSet;
-use App\Domain\Catalog\Entity\Tag;
-use App\Domain\Catalog\Enum\CatalogItemKind;
-use App\Domain\Catalog\Repository\CatalogItemRepository;
-use App\Domain\Catalog\Repository\CategoryRepository;
-use App\Domain\Catalog\Repository\TagRepository;
+use App\Domain\Supporting\Catalog\Entity\Category;
+use App\Domain\Supporting\Catalog\Entity\CategoryItem;
+use App\Domain\Supporting\Catalog\Entity\Product;
+use App\Domain\Supporting\Catalog\Entity\ProductSet;
+use App\Domain\Supporting\Catalog\Entity\Tag;
+use App\Domain\Supporting\Catalog\Enum\CatalogItemKind;
+use App\Domain\Supporting\Catalog\Repository\CatalogItemRepository;
+use App\Domain\Supporting\Catalog\Repository\CategoryRepository;
+use App\Domain\Supporting\Catalog\Repository\TagRepository;
 
 /**
  * Дерево каталога для витрины: только активные категории и позиции.

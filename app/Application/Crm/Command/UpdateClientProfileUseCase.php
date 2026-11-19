@@ -4,7 +4,7 @@ namespace App\Application\Crm\Command;
 
 use App\Application\Crm\DTO\UpdateClientProfileDto;
 use App\Application\Crm\Presenter\ClientPresenter;
-use App\Domain\Crm\Repository\ClientRepository;
+use App\Domain\Supporting\Customer\Repository\ClientRepository;
 use App\Shared\ValueObject\PhoneNumber;
 use DateTimeImmutable;
 

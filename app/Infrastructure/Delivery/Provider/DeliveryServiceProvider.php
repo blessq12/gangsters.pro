@@ -2,8 +2,8 @@
 
 namespace App\Infrastructure\Delivery\Provider;
 
-use App\Domain\Delivery\Repository\DeliveryConfigurationRepository;
-use App\Domain\Delivery\Repository\RouteSheetRepository;
+use App\Domain\Core\Delivery\Tariff\Repository\DeliveryConfigurationRepository;
+use App\Domain\Core\Delivery\Routing\Repository\RouteSheetRepository;
 use App\Infrastructure\Delivery\Repository\EloquentDeliveryConfigurationRepository;
 use App\Infrastructure\Delivery\Repository\EloquentRouteSheetRepository;
 use Illuminate\Support\ServiceProvider;

@@ -4,12 +4,12 @@ namespace App\Application\Delivery\Command;
 
 use App\Application\Delivery\DTO\TakeRouteSheetDto;
 use App\Application\Delivery\Presenter\RouteSheetPresenter;
-use App\Domain\Delivery\Repository\RouteSheetRepository;
-use App\Domain\Staff\Enum\StaffRole;
-use App\Domain\Staff\Repository\EmployeeRepository;
+use App\Domain\Core\Delivery\Routing\Repository\RouteSheetRepository;
+use App\Domain\Generic\Staff\Enum\StaffRole;
+use App\Domain\Generic\Staff\Repository\EmployeeRepository;
 
 /**
- * Курьер берёт лист. Order переводит заказы в InTransit по RouteSheetTaken.
+ * Курьер берёт лист. Order → in_transit по RouteSheetTaken (listener).
  */
 final class TakeRouteSheetUseCase
 {

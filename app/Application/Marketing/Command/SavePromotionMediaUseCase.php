@@ -4,12 +4,12 @@ namespace App\Application\Marketing\Command;
 
 use App\Application\Marketing\DTO\SavePromotionMediaDto;
 use App\Application\Marketing\Presenter\MarketingPresenter;
-use App\Domain\Marketing\Repository\PromotionRepository;
+use App\Domain\Supporting\Promotion\Repository\CampaignRepository;
 
 final class SavePromotionMediaUseCase
 {
     public function __construct(
-        private readonly PromotionRepository $promotions,
+        private readonly CampaignRepository $promotions,
         private readonly MarketingPresenter $presenter,
     ) {}
 

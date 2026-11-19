@@ -4,8 +4,8 @@ namespace App\Application\Production\Command;
 
 use App\Application\Production\DTO\CompleteWorkDto;
 use App\Application\Production\Presenter\KitchenTicketPresenter;
-use App\Domain\Order\Repository\OrderRepository;
-use App\Domain\Production\Repository\KitchenTicketRepository;
+use App\Domain\Core\Order\Repository\OrderRepository;
+use App\Domain\Core\Production\Repository\KitchenTicketRepository;
 
 /**
  * Завершение работы кухни. Order → Ready через KitchenTicketCompleted → listener.

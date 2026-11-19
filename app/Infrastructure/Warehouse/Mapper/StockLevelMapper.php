@@ -2,7 +2,7 @@
 
 namespace App\Infrastructure\Warehouse\Mapper;
 
-use App\Domain\Warehouse\Entity\StockLevel;
+use App\Domain\Supporting\Warehouse\Entity\StockLevel;
 use App\Infrastructure\Warehouse\Model\WH_StockLevel;
 
 final class StockLevelMapper

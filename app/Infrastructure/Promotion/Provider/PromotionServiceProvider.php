@@ -2,9 +2,9 @@
 
 namespace App\Infrastructure\Promotion\Provider;
 
-use App\Domain\Promotion\Repository\ProductPromotionRoleRepository;
-use App\Domain\Promotion\Repository\PromotionPolicyRepository;
-use App\Domain\Promotion\Repository\PromotionZoneRepository;
+use App\Domain\Core\Order\Repository\ProductPromotionRoleRepository;
+use App\Domain\Core\Order\Repository\PromotionPolicyRepository;
+use App\Domain\Core\Delivery\Tariff\Repository\PromotionZoneRepository;
 use App\Infrastructure\Promotion\Repository\EloquentProductPromotionRoleRepository;
 use App\Infrastructure\Promotion\Repository\EloquentPromotionPolicyRepository;
 use App\Infrastructure\Promotion\Repository\EloquentPromotionZoneRepository;

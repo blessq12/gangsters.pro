@@ -4,8 +4,8 @@ namespace App\Application\Company\Command;
 
 use App\Application\Company\DTO\SaveKitchenDto;
 use App\Application\Company\Presenter\CompanyPresenter;
-use App\Domain\Company\Entity\Kitchen;
-use App\Domain\Company\Repository\KitchenRepository;
+use App\Domain\Supporting\Company\Entity\Kitchen;
+use App\Domain\Supporting\Company\Repository\KitchenRepository;
 
 final class SaveKitchenUseCase
 {

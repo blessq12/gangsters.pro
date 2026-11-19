@@ -4,7 +4,7 @@ namespace App\Application\Delivery\Command;
 
 use App\Application\Delivery\DTO\SettleStopDto;
 use App\Application\Delivery\Presenter\RouteSheetPresenter;
-use App\Domain\Delivery\Repository\RouteSheetRepository;
+use App\Domain\Core\Delivery\Routing\Repository\RouteSheetRepository;
 
 /**
  * Курьер фиксирует исход остановки. Order меняет статус по RouteStopSettled.

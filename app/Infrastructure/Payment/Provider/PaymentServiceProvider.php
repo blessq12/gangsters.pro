@@ -2,7 +2,7 @@
 
 namespace App\Infrastructure\Payment\Provider;
 
-use App\Domain\Payment\Repository\PaymentRepository;
+use App\Domain\Supporting\Payment\Repository\PaymentRepository;
 use App\Infrastructure\Payment\Repository\EloquentPaymentRepository;
 use Illuminate\Support\ServiceProvider;
 

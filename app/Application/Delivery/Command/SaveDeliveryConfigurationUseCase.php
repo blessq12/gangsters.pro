@@ -5,9 +5,9 @@ namespace App\Application\Delivery\Command;
 use App\Application\Delivery\DTO\SaveDeliveryConfigurationDto;
 use App\Application\Delivery\Event\DeliveryZonesChangedFactory;
 use App\Application\Delivery\Presenter\DeliveryPresenter;
-use App\Domain\Company\Entity\Kitchen;
-use App\Domain\Company\Repository\KitchenRepository;
-use App\Domain\Delivery\Repository\DeliveryConfigurationRepository;
+use App\Domain\Supporting\Company\Entity\Kitchen;
+use App\Domain\Supporting\Company\Repository\KitchenRepository;
+use App\Domain\Core\Delivery\Tariff\Repository\DeliveryConfigurationRepository;
 
 final class SaveDeliveryConfigurationUseCase
 {

@@ -4,11 +4,11 @@ namespace App\Application\Warehouse\Command;
 
 use App\Application\Warehouse\DTO\WriteOffStockDto;
 use App\Application\Warehouse\Presenter\WriteOffPresenter;
-use App\Domain\Warehouse\Entity\StockLevel;
-use App\Domain\Warehouse\Entity\StockWriteOff;
-use App\Domain\Warehouse\Repository\IngredientRepository;
-use App\Domain\Warehouse\Repository\StockLevelRepository;
-use App\Domain\Warehouse\Repository\StockWriteOffRepository;
+use App\Domain\Supporting\Warehouse\Entity\StockLevel;
+use App\Domain\Supporting\Warehouse\Entity\StockWriteOff;
+use App\Domain\Supporting\Warehouse\Repository\IngredientRepository;
+use App\Domain\Supporting\Warehouse\Repository\StockLevelRepository;
+use App\Domain\Supporting\Warehouse\Repository\StockWriteOffRepository;
 
 final class WriteOffStockUseCase
 {

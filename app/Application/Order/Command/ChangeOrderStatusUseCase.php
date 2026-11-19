@@ -4,10 +4,17 @@ namespace App\Application\Order\Command;
 
 use App\Application\Order\DTO\ChangeOrderStatusDto;
 use App\Application\Order\Presenter\AdminOrderPresenter;
-use App\Domain\Order\Entity\Order;
-use App\Domain\Order\Enum\OrderStatus;
-use App\Domain\Order\Repository\OrderRepository;
+use App\Domain\Core\Order\Enum\OrderStatus;
+use App\Domain\Core\Order\Repository\OrderRepository;
 
+/**
+ * Ручная смена статуса — только безопасные исключения.
+ *
+ * Запрещены статусы событийного контура:
+ * preparing, ready, assigned_to_route, in_transit, delivered, written_off, confirmed.
+ *
+ * Допустимо: cancelled (публикует OrderCancelled → Production/Delivery/Payment).
+ */
 final class ChangeOrderStatusUseCase
 {
     public function __construct(
@@ -31,16 +38,21 @@ final class ChangeOrderStatusUseCase
         }
 
         match ($target) {
-            OrderStatus::Confirmed => throw new \InvalidArgumentException(
-                'Подтверждение заказа — через accept с назначением кухни.',
-            ),
-            OrderStatus::Preparing => $order->startPreparing(),
-            OrderStatus::Ready => $order->markReady(),
-            OrderStatus::AssignedToRoute => $order->assignToRoute(),
-            OrderStatus::InTransit => $order->markInTransit(),
-            OrderStatus::Delivered => $this->deliver($order),
-            OrderStatus::WrittenOff => $order->writeOff(),
             OrderStatus::Cancelled => $order->cancel(),
+            OrderStatus::Confirmed => throw new \InvalidArgumentException(
+                'Подтверждение заказа — через accept с назначением кухни (OrderConfirmed).',
+            ),
+            OrderStatus::Preparing,
+            OrderStatus::Ready,
+            OrderStatus::AssignedToRoute,
+            OrderStatus::InTransit,
+            OrderStatus::Delivered,
+            OrderStatus::WrittenOff => throw new \InvalidArgumentException(
+                sprintf(
+                    'Статус «%s» выставляется только через доменные события, не через change status.',
+                    $target->value,
+                ),
+            ),
             OrderStatus::New, OrderStatus::Preorder => throw new \InvalidArgumentException(
                 'Нельзя перевести заказ в статус «'.$target->value.'» через change status.',
             ),
@@ -53,16 +65,5 @@ final class ChangeOrderStatusUseCase
         }
 
         return $this->presenter->present($order);
-    }
-
-    private function deliver(Order $order): void
-    {
-        if ($order->status() === OrderStatus::Ready) {
-            $order->markDeliveredPickup();
-
-            return;
-        }
-
-        $order->markDelivered();
     }
 }

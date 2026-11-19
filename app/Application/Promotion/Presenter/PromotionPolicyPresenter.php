@@ -2,9 +2,9 @@
 
 namespace App\Application\Promotion\Presenter;
 
-use App\Domain\Promotion\Entity\ProductPromotionRole;
-use App\Domain\Promotion\Entity\PromotionPolicy;
-use App\Domain\Promotion\Entity\PromotionZone;
+use App\Domain\Core\Order\Entity\ProductPromotionRole;
+use App\Domain\Core\Order\Policy\PromotionPolicy;
+use App\Domain\Core\Delivery\Tariff\Entity\PromotionZone;
 
 final class PromotionPolicyPresenter
 {

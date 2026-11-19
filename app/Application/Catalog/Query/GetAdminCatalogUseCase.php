@@ -3,10 +3,10 @@
 namespace App\Application\Catalog\Query;
 
 use App\Application\Catalog\Presenter\CatalogPresenter;
-use App\Domain\Catalog\Enum\CatalogItemKind;
-use App\Domain\Catalog\Repository\CatalogItemRepository;
-use App\Domain\Catalog\Repository\CategoryRepository;
-use App\Domain\Catalog\Repository\TagRepository;
+use App\Domain\Supporting\Catalog\Enum\CatalogItemKind;
+use App\Domain\Supporting\Catalog\Repository\CatalogItemRepository;
+use App\Domain\Supporting\Catalog\Repository\CategoryRepository;
+use App\Domain\Supporting\Catalog\Repository\TagRepository;
 
 /**
  * Полный каталог для админки: все категории, товары, наборы и теги.

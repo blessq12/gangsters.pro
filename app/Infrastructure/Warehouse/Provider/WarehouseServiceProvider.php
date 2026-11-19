@@ -2,9 +2,9 @@
 
 namespace App\Infrastructure\Warehouse\Provider;
 
-use App\Domain\Warehouse\Repository\IngredientRepository;
-use App\Domain\Warehouse\Repository\StockLevelRepository;
-use App\Domain\Warehouse\Repository\StockWriteOffRepository;
+use App\Domain\Supporting\Warehouse\Repository\IngredientRepository;
+use App\Domain\Supporting\Warehouse\Repository\StockLevelRepository;
+use App\Domain\Supporting\Warehouse\Repository\StockWriteOffRepository;
 use App\Infrastructure\Warehouse\Repository\EloquentIngredientRepository;
 use App\Infrastructure\Warehouse\Repository\EloquentStockLevelRepository;
 use App\Infrastructure\Warehouse\Repository\EloquentStockWriteOffRepository;

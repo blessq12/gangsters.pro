@@ -2,7 +2,7 @@
 
 namespace App\Infrastructure\Company\Mapper;
 
-use App\Domain\Company\Entity\Kitchen;
+use App\Domain\Supporting\Company\Entity\Kitchen;
 use App\Infrastructure\Company\Model\CMP_Kitchen;
 
 final class KitchenMapper

@@ -3,7 +3,7 @@
 namespace App\Application\Order\Command;
 
 use App\Application\Order\Presenter\AdminOrderPresenter;
-use App\Domain\Order\Repository\OrderRepository;
+use App\Domain\Core\Order\Repository\OrderRepository;
 
 final class CompletePickupOrderUseCase
 {
@@ -25,6 +25,15 @@ final class CompletePickupOrderUseCase
         $order->markDeliveredPickup();
         $this->orders->save($order);
 
-        return $this->presenter->present($order);
+        foreach ($order->pullDomainEvents() as $event) {
+            event($event);
+        }
+
+        $saved = $this->orders->findById($orderId);
+        if ($saved === null) {
+            throw new \RuntimeException('Заказ не найден после выдачи.');
+        }
+
+        return $this->presenter->present($saved);
     }
 }

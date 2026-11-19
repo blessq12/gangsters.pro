@@ -2,9 +2,9 @@
 
 namespace App\Application\Delivery\Presenter;
 
-use App\Domain\Company\Entity\Kitchen;
-use App\Domain\Delivery\Entity\DeliveryConfiguration;
-use App\Domain\Delivery\ValueObject\DeliveryZone;
+use App\Domain\Supporting\Company\Entity\Kitchen;
+use App\Domain\Core\Delivery\Tariff\Entity\DeliveryConfiguration;
+use App\Domain\Core\Delivery\Tariff\ValueObject\DeliveryZone;
 
 /**
  * Единый формат ответа Delivery для витрины и админки.

@@ -3,6 +3,7 @@
 namespace App\Infrastructure\Production\Model;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class KIT_Ticket extends Model
 {
@@ -28,4 +29,11 @@ final class KIT_Ticket extends Model
         'started_at' => 'datetime',
         'completed_at' => 'datetime',
     ];
+
+    public function lines(): HasMany
+    {
+        return $this->hasMany(KIT_TicketLine::class, 'ticket_id')
+            ->orderBy('position')
+            ->orderBy('id');
+    }
 }

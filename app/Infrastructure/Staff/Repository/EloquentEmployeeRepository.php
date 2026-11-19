@@ -2,9 +2,9 @@
 
 namespace App\Infrastructure\Staff\Repository;
 
-use App\Domain\Staff\Entity\Employee;
-use App\Domain\Staff\Enum\StaffRole;
-use App\Domain\Staff\Repository\EmployeeRepository;
+use App\Domain\Generic\Staff\Entity\Employee;
+use App\Domain\Generic\Staff\Enum\StaffRole;
+use App\Domain\Generic\Staff\Repository\EmployeeRepository;
 use App\Infrastructure\Staff\Model\STF_Employee;
 use DateTimeImmutable;
 use Illuminate\Database\Eloquent\Builder;

@@ -4,12 +4,12 @@ namespace App\Application\Promotion\Query;
 
 use App\Application\Promotion\DTO\ResolvePromotionsDto;
 use App\Application\Promotion\Presenter\AppliedPromotionsPresenter;
-use App\Domain\Promotion\Entity\ProductPromotionRole;
-use App\Domain\Promotion\Entity\PromotionPolicy;
-use App\Domain\Promotion\Enum\ProductPromotionRoleKind;
-use App\Domain\Promotion\Repository\ProductPromotionRoleRepository;
-use App\Domain\Promotion\Repository\PromotionPolicyRepository;
-use App\Domain\Promotion\Repository\PromotionZoneRepository;
+use App\Domain\Core\Order\Entity\ProductPromotionRole;
+use App\Domain\Core\Order\Policy\PromotionPolicy;
+use App\Domain\Core\Order\Enum\ProductPromotionRoleKind;
+use App\Domain\Core\Order\Repository\ProductPromotionRoleRepository;
+use App\Domain\Core\Order\Repository\PromotionPolicyRepository;
+use App\Domain\Core\Delivery\Tariff\Repository\PromotionZoneRepository;
 use App\Shared\Enum\DeliveryMethod;
 
 /**

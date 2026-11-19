@@ -5,16 +5,16 @@ namespace App\Application\Order\Query;
 use App\Application\Order\DTO\QuoteOrderDto;
 use App\Application\Promotion\DTO\ResolvePromotionsDto;
 use App\Application\Promotion\Query\ResolvePromotionsUseCase;
-use App\Domain\Catalog\Entity\Product;
-use App\Domain\Catalog\Entity\ProductSet;
-use App\Domain\Catalog\Repository\CatalogItemRepository;
-use App\Domain\Company\Repository\BranchRepository;
-use App\Domain\Company\Repository\CompanyRepository;
-use App\Domain\Company\Repository\KitchenRepository;
-use App\Domain\Crm\Repository\ClientRepository;
-use App\Domain\Delivery\Entity\DeliveryConfiguration;
-use App\Domain\Delivery\Repository\DeliveryConfigurationRepository;
-use App\Domain\Delivery\ValueObject\DeliveryZone;
+use App\Domain\Supporting\Catalog\Entity\Product;
+use App\Domain\Supporting\Catalog\Entity\ProductSet;
+use App\Domain\Supporting\Catalog\Repository\CatalogItemRepository;
+use App\Domain\Supporting\Company\Repository\BranchRepository;
+use App\Domain\Supporting\Company\Repository\CompanyRepository;
+use App\Domain\Supporting\Company\Repository\KitchenRepository;
+use App\Domain\Supporting\Customer\Repository\ClientRepository;
+use App\Domain\Core\Delivery\Tariff\Entity\DeliveryConfiguration;
+use App\Domain\Core\Delivery\Tariff\Repository\DeliveryConfigurationRepository;
+use App\Domain\Core\Delivery\Tariff\ValueObject\DeliveryZone;
 use App\Shared\Enum\DeliveryMethod;
 use App\Shared\Geo\AddressGeocoder;
 use App\Shared\Geo\DeliveryZoneMatcher;
@@ -610,7 +610,7 @@ final class QuoteOrderUseCase
     }
 
     /**
-     * @param  list<\App\Domain\Catalog\ValueObject\ProductImage>  $images
+     * @param  list<\App\Domain\Supporting\Catalog\ValueObject\ProductImage>  $images
      * @return list<string>
      */
     private function imagePathsFromList(array $images): array

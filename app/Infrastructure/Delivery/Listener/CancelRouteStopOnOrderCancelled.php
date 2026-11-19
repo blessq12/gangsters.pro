@@ -2,8 +2,8 @@
 
 namespace App\Infrastructure\Delivery\Listener;
 
-use App\Domain\Delivery\Repository\RouteSheetRepository;
-use App\Domain\Order\Event\OrderCancelled;
+use App\Domain\Core\Delivery\Routing\Repository\RouteSheetRepository;
+use App\Domain\Core\Order\Event\OrderCancelled;
 
 /**
  * Order публикует отмену; Delivery помечает остановку активного листа отменённой.

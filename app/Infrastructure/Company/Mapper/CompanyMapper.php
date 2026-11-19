@@ -2,8 +2,8 @@
 
 namespace App\Infrastructure\Company\Mapper;
 
-use App\Domain\Company\Entity\Company;
-use App\Domain\Company\ValueObject\CompanySocials;
+use App\Domain\Supporting\Company\Entity\Company;
+use App\Domain\Supporting\Company\ValueObject\CompanySocials;
 use App\Infrastructure\Company\Model\CMP_Company;
 
 final class CompanyMapper

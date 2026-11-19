@@ -2,8 +2,8 @@
 
 namespace App\Infrastructure\Promotion\Repository;
 
-use App\Domain\Promotion\Entity\PromotionZone;
-use App\Domain\Promotion\Repository\PromotionZoneRepository;
+use App\Domain\Core\Delivery\Tariff\Entity\PromotionZone;
+use App\Domain\Core\Delivery\Tariff\Repository\PromotionZoneRepository;
 use App\Infrastructure\Promotion\Mapper\PromotionZoneMapper;
 use App\Infrastructure\Promotion\Model\PRM_Zone;
 use Illuminate\Support\Facades\DB;

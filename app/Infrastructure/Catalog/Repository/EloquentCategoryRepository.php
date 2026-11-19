@@ -2,10 +2,10 @@
 
 namespace App\Infrastructure\Catalog\Repository;
 
-use App\Domain\Catalog\Entity\Category;
-use App\Domain\Catalog\Entity\CategoryItem;
-use App\Domain\Catalog\Enum\CatalogItemKind;
-use App\Domain\Catalog\Repository\CategoryRepository;
+use App\Domain\Supporting\Catalog\Entity\Category;
+use App\Domain\Supporting\Catalog\Entity\CategoryItem;
+use App\Domain\Supporting\Catalog\Enum\CatalogItemKind;
+use App\Domain\Supporting\Catalog\Repository\CategoryRepository;
 use App\Infrastructure\Catalog\Mapper\CatalogCategoryMapper;
 use App\Infrastructure\Catalog\Model\CAT_Category;
 use App\Infrastructure\Catalog\Model\CAT_CategoryItem;

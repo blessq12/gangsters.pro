@@ -2,8 +2,8 @@
 
 namespace App\Infrastructure\Catalog\Repository;
 
-use App\Domain\Catalog\Entity\Tag;
-use App\Domain\Catalog\Repository\TagRepository;
+use App\Domain\Supporting\Catalog\Entity\Tag;
+use App\Domain\Supporting\Catalog\Repository\TagRepository;
 use App\Infrastructure\Catalog\Mapper\CatalogTagMapper;
 use App\Infrastructure\Catalog\Model\CAT_Tag;
 use Illuminate\Support\Facades\DB;

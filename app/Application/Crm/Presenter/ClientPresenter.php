@@ -2,8 +2,8 @@
 
 namespace App\Application\Crm\Presenter;
 
-use App\Domain\Crm\Entity\Client;
-use App\Domain\Crm\Entity\ClientAddress;
+use App\Domain\Supporting\Customer\Entity\Client;
+use App\Domain\Supporting\Customer\Entity\ClientAddress;
 
 final class ClientPresenter
 {

@@ -4,7 +4,7 @@ namespace App\Application\Catalog\Command;
 
 use App\Application\Catalog\DTO\SaveCategoryDto;
 use App\Application\Catalog\Presenter\CatalogPresenter;
-use App\Domain\Catalog\Repository\CategoryRepository;
+use App\Domain\Supporting\Catalog\Repository\CategoryRepository;
 
 final class SaveCategoryUseCase
 {

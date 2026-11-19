@@ -2,9 +2,9 @@
 
 namespace App\Infrastructure\Catalog\Provider;
 
-use App\Domain\Catalog\Repository\CatalogItemRepository;
-use App\Domain\Catalog\Repository\CategoryRepository;
-use App\Domain\Catalog\Repository\TagRepository;
+use App\Domain\Supporting\Catalog\Repository\CatalogItemRepository;
+use App\Domain\Supporting\Catalog\Repository\CategoryRepository;
+use App\Domain\Supporting\Catalog\Repository\TagRepository;
 use App\Infrastructure\Catalog\Repository\EloquentCatalogItemRepository;
 use App\Infrastructure\Catalog\Repository\EloquentCategoryRepository;
 use App\Infrastructure\Catalog\Repository\EloquentTagRepository;

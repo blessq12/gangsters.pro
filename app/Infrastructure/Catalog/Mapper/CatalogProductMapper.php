@@ -2,12 +2,12 @@
 
 namespace App\Infrastructure\Catalog\Mapper;
 
-use App\Domain\Catalog\Entity\Price;
-use App\Domain\Catalog\Entity\Product;
-use App\Domain\Catalog\Enum\PriceType;
-use App\Domain\Catalog\Enum\ProductStatus;
-use App\Domain\Catalog\ValueObject\Nutrition;
-use App\Domain\Catalog\ValueObject\ProductImage;
+use App\Domain\Supporting\Catalog\Entity\Price;
+use App\Domain\Supporting\Catalog\Entity\Product;
+use App\Domain\Supporting\Catalog\Enum\PriceType;
+use App\Domain\Supporting\Catalog\Enum\ProductStatus;
+use App\Domain\Supporting\Catalog\ValueObject\Nutrition;
+use App\Domain\Supporting\Catalog\ValueObject\ProductImage;
 use App\Infrastructure\Catalog\Model\CAT_Item;
 use App\Infrastructure\Catalog\Model\CAT_Price;
 

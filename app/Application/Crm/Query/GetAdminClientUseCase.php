@@ -3,8 +3,8 @@
 namespace App\Application\Crm\Query;
 
 use App\Application\Crm\Presenter\AdminClientPresenter;
-use App\Domain\Crm\Repository\ClientRepository;
-use App\Domain\Order\Repository\OrderRepository;
+use App\Domain\Supporting\Customer\Repository\ClientRepository;
+use App\Domain\Core\Order\Repository\OrderRepository;
 
 final class GetAdminClientUseCase
 {

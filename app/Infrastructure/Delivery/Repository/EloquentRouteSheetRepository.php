@@ -2,19 +2,24 @@
 
 namespace App\Infrastructure\Delivery\Repository;
 
-use App\Domain\Delivery\Entity\RouteSheet;
-use App\Domain\Delivery\Entity\RouteStop;
-use App\Domain\Delivery\Repository\RouteSheetRepository;
+use App\Domain\Core\Delivery\Routing\Entity\RouteSheet;
+use App\Domain\Core\Delivery\Routing\Repository\RouteSheetRepository;
+use App\Infrastructure\Delivery\Mapper\RouteSheetMapper;
 use App\Infrastructure\Delivery\Model\DLV_RouteSheet;
 use App\Infrastructure\Delivery\Model\DLV_RouteStop;
+use Illuminate\Support\Facades\DB;
 
 final class EloquentRouteSheetRepository implements RouteSheetRepository
 {
+    public function __construct(
+        private readonly RouteSheetMapper $mapper,
+    ) {}
+
     public function findById(int $id): ?RouteSheet
     {
         $row = DLV_RouteSheet::query()->with('stops')->find($id);
 
-        return $row instanceof DLV_RouteSheet ? $this->toDomain($row) : null;
+        return $row instanceof DLV_RouteSheet ? $this->mapper->toDomain($row) : null;
     }
 
     public function findOpenByOrderId(int $orderId): ?RouteSheet
@@ -44,54 +49,29 @@ final class EloquentRouteSheetRepository implements RouteSheetRepository
             ->get();
 
         return $rows
-            ->map(fn (DLV_RouteSheet $row): RouteSheet => $this->toDomain($row))
+            ->map(fn (DLV_RouteSheet $row): RouteSheet => $this->mapper->toDomain($row))
             ->all();
     }
 
     public function save(RouteSheet $sheet): void
     {
-        if (! $sheet->hasId()) {
-            $row = DLV_RouteSheet::query()->create([
-                'status' => $sheet->status(),
-                'courier_id' => $sheet->courierId(),
-            ]);
-            $sheet->assignId((int) $row->id);
-        } else {
-            DLV_RouteSheet::query()->whereKey($sheet->id())->update([
-                'status' => $sheet->status(),
-                'courier_id' => $sheet->courierId(),
-            ]);
-            DLV_RouteStop::query()->where('route_sheet_id', $sheet->id())->delete();
-        }
+        DB::transaction(function () use ($sheet): void {
+            $payload = $this->mapper->toPersistence($sheet);
 
-        foreach ($sheet->stops() as $stop) {
-            DLV_RouteStop::query()->create([
-                'route_sheet_id' => $sheet->id(),
-                'order_id' => $stop->orderId(),
-                'position' => $stop->position(),
-                'status' => $stop->outcome(),
-                'settlement_note' => $stop->reason() !== '' ? $stop->reason() : null,
-            ]);
-        }
-    }
+            if (! $sheet->hasId()) {
+                $row = DLV_RouteSheet::query()->create($payload['sheet']);
+                $sheet->assignId((int) $row->id);
+            } else {
+                DLV_RouteSheet::query()->whereKey($sheet->id())->update($payload['sheet']);
+                DLV_RouteStop::query()->where('route_sheet_id', $sheet->id())->delete();
+            }
 
-    private function toDomain(DLV_RouteSheet $row): RouteSheet
-    {
-        $stops = [];
-        foreach ($row->stops as $stop) {
-            $stops[] = new RouteStop(
-                (int) $stop->order_id,
-                (int) $stop->position,
-                (string) $stop->status,
-                (string) ($stop->settlement_note ?? ''),
-            );
-        }
-
-        return RouteSheet::restore(
-            (int) $row->id,
-            (string) $row->status,
-            $stops,
-            $row->courier_id !== null ? (int) $row->courier_id : null,
-        );
+            foreach ($payload['stops'] as $stop) {
+                DLV_RouteStop::query()->create([
+                    ...$stop,
+                    'route_sheet_id' => $sheet->id(),
+                ]);
+            }
+        });
     }
 }

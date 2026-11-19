@@ -2,8 +2,8 @@
 
 namespace App\Infrastructure\Order\Listener;
 
-use App\Domain\Delivery\Event\RouteStopSettled;
-use App\Domain\Order\Repository\OrderRepository;
+use App\Domain\Core\Delivery\Event\RouteStopSettled;
+use App\Domain\Core\Order\Repository\OrderRepository;
 
 /**
  * Delivery публикует исход остановки; Order переводит заказ в Delivered или WrittenOff.

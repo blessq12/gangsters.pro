@@ -2,58 +2,148 @@
 
 namespace App\Infrastructure\Order\Mapper;
 
-use App\Domain\Order\Entity\Order;
+use App\Domain\Core\Order\Entity\Order;
+use App\Domain\Core\Order\Enum\OrderLineType;
+use App\Domain\Core\Order\ValueObject\OrderClientSnapshot;
+use App\Domain\Core\Order\ValueObject\OrderDeliveryAddress;
+use App\Domain\Core\Order\ValueObject\OrderDeliveryInfo;
+use App\Domain\Core\Order\ValueObject\OrderLine;
 use App\Infrastructure\Order\Model\ORD_Order;
+use App\Infrastructure\Order\Model\ORD_OrderLine;
+use App\Shared\Enum\DeliveryMethod;
 use DateTimeImmutable;
 
 final class OrderMapper
 {
-    private const KOPECKS_IN_RUBLE = 100;
-
     public function toDomain(ORD_Order $row): Order
     {
+        $lines = [];
+        $lineRows = $row->relationLoaded('lines')
+            ? $row->lines
+            : $row->lines()->get();
+
+        foreach ($lineRows as $lineRow) {
+            if (! $lineRow instanceof ORD_OrderLine) {
+                continue;
+            }
+
+            $lines[] = new OrderLine(
+                productId: (int) $lineRow->product_id,
+                name: (string) $lineRow->name,
+                unitPriceKopecks: (int) $lineRow->unit_price_kopecks,
+                quantity: (int) $lineRow->quantity,
+                lineType: OrderLineType::from((string) $lineRow->line_type),
+            );
+        }
+
         return Order::restore(
             id: (int) $row->id,
             source: (string) ($row->source ?? 'site'),
             checkoutId: $row->checkout_id !== null ? (string) $row->checkout_id : null,
-            partnerCode: isset($row->partner_code) && (string) $row->partner_code !== ''
-                ? (string) $row->partner_code
-                : null,
-            externalOrderId: isset($row->external_order_id) && (string) $row->external_order_id !== ''
-                ? (string) $row->external_order_id
-                : null,
+            partnerCode: $this->nullableString($row->partner_code),
+            externalOrderId: $this->nullableString($row->external_order_id),
             status: (string) $row->status,
-            cart: is_array($row->cart_snapshot) ? $row->cart_snapshot : [],
-            client: is_array($row->client_snapshot) ? $row->client_snapshot : [],
-            delivery: is_array($row->delivery_snapshot) ? $row->delivery_snapshot : [],
+            lines: $lines,
+            client: new OrderClientSnapshot(
+                clientId: $row->client_id !== null ? (int) $row->client_id : null,
+                name: (string) $row->client_name,
+                phone: (string) $row->client_phone,
+            ),
+            delivery: $this->mapDelivery($row),
             createdAt: new DateTimeImmutable((string) $row->created_at),
             kitchenId: $row->kitchen_id !== null ? (int) $row->kitchen_id : null,
             branchId: $row->branch_id !== null ? (int) $row->branch_id : null,
             paymentId: $row->payment_id !== null ? (int) $row->payment_id : null,
+            paymentMethod: $this->nullableString($row->payment_method ?? null),
+            changeFromRubles: $row->change_from_rubles !== null ? (int) $row->change_from_rubles : null,
         );
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array{order: array<string, mixed>, lines: list<array<string, mixed>>}
      */
     public function toPersistence(Order $order): array
     {
-        return [
+        $client = $order->client();
+        $delivery = $order->delivery();
+        $address = $delivery->address();
+
+        $orderPayload = [
             'id' => $order->hasId() ? $order->id() : null,
             'source' => $order->source(),
             'checkout_id' => $order->checkoutId(),
             'partner_code' => $order->partnerCode(),
             'external_order_id' => $order->externalOrderId(),
             'status' => $order->status()->value,
-            'client_id' => $order->clientId(),
+            'client_id' => $client->clientId(),
+            'client_name' => $client->name(),
+            'client_phone' => $client->phone(),
+            'delivery_type' => $delivery->type()->value,
+            'delivery_zone_id' => $delivery->zoneId(),
+            'delivery_fee_kopecks' => $delivery->feeKopecks(),
+            'delivery_street' => $address?->street(),
+            'delivery_house' => $address?->house(),
+            'delivery_entrance' => $address?->entrance(),
+            'delivery_floor' => $address?->floor(),
+            'delivery_apartment' => $address?->apartment(),
+            'delivery_comment' => $address?->comment(),
             'kitchen_id' => $order->kitchenId(),
             'branch_id' => $order->branchId(),
             'payment_id' => $order->paymentId(),
-            'total_kopecks' => max(0, $order->totalRubles()) * self::KOPECKS_IN_RUBLE,
-            'cart_snapshot' => $order->cart(),
-            'client_snapshot' => $order->client(),
-            'delivery_snapshot' => $order->delivery(),
+            'payment_method' => $order->paymentMethod(),
+            'change_from_rubles' => $order->changeFromRubles(),
+            'total_kopecks' => $order->grandTotalKopecks(),
             'created_at' => $order->createdAt(),
         ];
+
+        $lines = [];
+        foreach (array_values($order->lines()) as $index => $line) {
+            $lines[] = [
+                'product_id' => $line->productId(),
+                'name' => $line->name(),
+                'unit_price_kopecks' => $line->unitPriceKopecks(),
+                'quantity' => $line->quantity(),
+                'line_type' => $line->lineType()->value,
+                'position' => $index,
+            ];
+        }
+
+        return [
+            'order' => $orderPayload,
+            'lines' => $lines,
+        ];
+    }
+
+    private function mapDelivery(ORD_Order $row): OrderDeliveryInfo
+    {
+        $type = DeliveryMethod::from((string) $row->delivery_type);
+
+        if ($type === DeliveryMethod::Pickup) {
+            return OrderDeliveryInfo::pickup((int) $row->delivery_fee_kopecks);
+        }
+
+        return OrderDeliveryInfo::courier(
+            new OrderDeliveryAddress(
+                street: (string) $row->delivery_street,
+                house: (string) $row->delivery_house,
+                entrance: $this->nullableString($row->delivery_entrance),
+                floor: $this->nullableString($row->delivery_floor),
+                apartment: $this->nullableString($row->delivery_apartment),
+                comment: $this->nullableString($row->delivery_comment),
+            ),
+            (string) $row->delivery_zone_id,
+            (int) $row->delivery_fee_kopecks,
+        );
+    }
+
+    private function nullableString(mixed $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $string = trim((string) $value);
+
+        return $string !== '' ? $string : null;
     }
 }

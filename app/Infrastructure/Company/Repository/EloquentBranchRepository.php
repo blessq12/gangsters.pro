@@ -2,8 +2,8 @@
 
 namespace App\Infrastructure\Company\Repository;
 
-use App\Domain\Company\Entity\Branch;
-use App\Domain\Company\Repository\BranchRepository;
+use App\Domain\Supporting\Company\Entity\Branch;
+use App\Domain\Supporting\Company\Repository\BranchRepository;
 use App\Infrastructure\Company\Mapper\BranchMapper;
 use App\Infrastructure\Company\Model\CMP_Branch;
 

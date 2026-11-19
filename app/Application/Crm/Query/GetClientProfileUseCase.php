@@ -3,7 +3,7 @@
 namespace App\Application\Crm\Query;
 
 use App\Application\Crm\Presenter\ClientPresenter;
-use App\Domain\Crm\Repository\ClientRepository;
+use App\Domain\Supporting\Customer\Repository\ClientRepository;
 
 final class GetClientProfileUseCase
 {

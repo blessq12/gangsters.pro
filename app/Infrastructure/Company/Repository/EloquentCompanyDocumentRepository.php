@@ -2,9 +2,9 @@
 
 namespace App\Infrastructure\Company\Repository;
 
-use App\Domain\Company\Entity\CompanyDocument;
-use App\Domain\Company\Repository\CompanyDocumentRepository;
-use App\Domain\Company\Repository\CompanyRepository;
+use App\Domain\Supporting\Company\Entity\CompanyDocument;
+use App\Domain\Supporting\Company\Repository\CompanyDocumentRepository;
+use App\Domain\Supporting\Company\Repository\CompanyRepository;
 use App\Infrastructure\Company\Mapper\CompanyDocumentMapper;
 use App\Infrastructure\Company\Model\CMP_CompanyDocument;
 use Illuminate\Support\Str;

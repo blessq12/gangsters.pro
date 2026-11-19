@@ -3,7 +3,7 @@
 namespace App\Application\Warehouse\Query;
 
 use App\Application\Warehouse\Presenter\StockLevelPresenter;
-use App\Domain\Warehouse\Repository\StockLevelRepository;
+use App\Domain\Supporting\Warehouse\Repository\StockLevelRepository;
 
 final class ListStockLevelsUseCase
 {

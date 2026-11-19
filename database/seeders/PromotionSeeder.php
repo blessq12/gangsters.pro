@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Domain\Promotion\Repository\PromotionPolicyRepository;
+use App\Domain\Core\Order\Repository\PromotionPolicyRepository;
 use App\Infrastructure\Promotion\Model\PRM_Policy;
 use Illuminate\Database\Seeder;
 

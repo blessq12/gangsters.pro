@@ -2,7 +2,7 @@
 
 namespace App\Infrastructure\Promotion\Mapper;
 
-use App\Domain\Promotion\Entity\PromotionPolicy;
+use App\Domain\Core\Order\Policy\PromotionPolicy;
 use App\Infrastructure\Promotion\Model\PRM_Policy;
 
 final class PromotionPolicyMapper

@@ -4,12 +4,13 @@ namespace App\Application\Delivery\Command;
 
 use App\Application\Delivery\DTO\CreateRouteSheetDto;
 use App\Application\Delivery\Presenter\RouteSheetPresenter;
-use App\Domain\Delivery\Entity\RouteSheet;
-use App\Domain\Delivery\Repository\RouteSheetRepository;
-use App\Domain\Order\Repository\OrderRepository;
+use App\Domain\Core\Delivery\Routing\Entity\RouteSheet;
+use App\Domain\Core\Delivery\Routing\Repository\RouteSheetRepository;
+use App\Domain\Core\Order\Repository\OrderRepository;
 
 /**
- * Выпуск маршрутного листа. Статусы заказов меняет Order по OrderAssignedToRoute.
+ * Выпуск маршрутного листа.
+ * Статусы заказов меняет Order по OrderAddedToRoute.
  */
 final class CreateRouteSheetUseCase
 {

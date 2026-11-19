@@ -2,7 +2,7 @@
 
 namespace App\Application\Staff\Command;
 
-use App\Domain\Staff\Repository\EmployeeRepository;
+use App\Domain\Generic\Staff\Repository\EmployeeRepository;
 
 final class DeleteEmployeeUseCase
 {

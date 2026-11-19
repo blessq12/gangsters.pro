@@ -4,7 +4,7 @@ namespace App\Application\Marketing\Command;
 
 use App\Application\Marketing\DTO\SaveBannerDto;
 use App\Application\Marketing\Presenter\MarketingPresenter;
-use App\Domain\Marketing\Repository\BannerRepository;
+use App\Domain\Supporting\Promotion\Repository\BannerRepository;
 
 final class SaveBannerUseCase
 {

@@ -4,8 +4,8 @@ namespace App\Application\Warehouse\Command;
 
 use App\Application\Warehouse\DTO\SaveIngredientDto;
 use App\Application\Warehouse\Presenter\IngredientPresenter;
-use App\Domain\Warehouse\Entity\Ingredient;
-use App\Domain\Warehouse\Repository\IngredientRepository;
+use App\Domain\Supporting\Warehouse\Entity\Ingredient;
+use App\Domain\Supporting\Warehouse\Repository\IngredientRepository;
 
 final class SaveIngredientUseCase
 {

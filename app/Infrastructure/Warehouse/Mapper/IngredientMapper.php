@@ -2,7 +2,7 @@
 
 namespace App\Infrastructure\Warehouse\Mapper;
 
-use App\Domain\Warehouse\Entity\Ingredient;
+use App\Domain\Supporting\Warehouse\Entity\Ingredient;
 use App\Infrastructure\Warehouse\Model\WH_Ingredient;
 
 final class IngredientMapper

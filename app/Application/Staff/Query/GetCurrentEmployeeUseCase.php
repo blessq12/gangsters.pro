@@ -3,7 +3,7 @@
 namespace App\Application\Staff\Query;
 
 use App\Application\Staff\Presenter\EmployeePresenter;
-use App\Domain\Staff\Repository\EmployeeRepository;
+use App\Domain\Generic\Staff\Repository\EmployeeRepository;
 
 final class GetCurrentEmployeeUseCase
 {

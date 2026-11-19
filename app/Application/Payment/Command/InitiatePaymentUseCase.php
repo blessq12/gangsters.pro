@@ -3,8 +3,8 @@
 namespace App\Application\Payment\Command;
 
 use App\Application\Payment\DTO\InitiatePaymentDto;
-use App\Domain\Payment\Entity\Payment;
-use App\Domain\Payment\Repository\PaymentRepository;
+use App\Domain\Supporting\Payment\Entity\Payment;
+use App\Domain\Supporting\Payment\Repository\PaymentRepository;
 use App\Shared\Enum\PaymentMethod;
 
 /**

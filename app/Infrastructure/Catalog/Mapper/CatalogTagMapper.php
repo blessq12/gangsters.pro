@@ -2,7 +2,7 @@
 
 namespace App\Infrastructure\Catalog\Mapper;
 
-use App\Domain\Catalog\Entity\Tag;
+use App\Domain\Supporting\Catalog\Entity\Tag;
 use App\Infrastructure\Catalog\Model\CAT_Tag;
 
 final class CatalogTagMapper

@@ -4,8 +4,8 @@ namespace App\Application\Order\Command;
 
 use App\Application\Order\DTO\AcceptOrderDto;
 use App\Application\Order\Presenter\AdminOrderPresenter;
-use App\Domain\Company\Repository\KitchenRepository;
-use App\Domain\Order\Repository\OrderRepository;
+use App\Domain\Core\Order\Repository\OrderRepository;
+use App\Domain\Supporting\Company\Repository\KitchenRepository;
 
 final class AcceptOrderUseCase
 {
@@ -27,11 +27,6 @@ final class AcceptOrderUseCase
 
         $kitchenId = $dto->kitchenId;
         if ($kitchenId === null || $kitchenId < 1) {
-            $fromDelivery = $order->delivery()['kitchen_id'] ?? null;
-            $kitchenId = $fromDelivery !== null ? (int) $fromDelivery : null;
-        }
-
-        if ($kitchenId === null || $kitchenId < 1) {
             throw new \InvalidArgumentException('Для подтверждения нужен kitchen_id.');
         }
 
@@ -42,8 +37,18 @@ final class AcceptOrderUseCase
 
         $order->accept();
         $order->assignKitchen($kitchen->id(), $kitchen->branchId());
+        $order->confirm();
         $this->orders->save($order);
 
-        return $this->presenter->present($order);
+        foreach ($order->pullDomainEvents() as $event) {
+            event($event);
+        }
+
+        $saved = $this->orders->findById($order->id());
+        if ($saved === null) {
+            throw new \RuntimeException('Заказ не сохранился после подтверждения.');
+        }
+
+        return $this->presenter->present($saved);
     }
 }

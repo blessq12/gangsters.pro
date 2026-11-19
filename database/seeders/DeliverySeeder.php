@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Domain\Delivery\Repository\DeliveryConfigurationRepository;
+use App\Domain\Core\Delivery\Tariff\Repository\DeliveryConfigurationRepository;
 use App\Infrastructure\Company\Model\CMP_Kitchen;
 use App\Infrastructure\Delivery\Model\DLV_Configuration;
 use App\Infrastructure\Delivery\Model\DLV_Zone;

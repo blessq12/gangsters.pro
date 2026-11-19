@@ -2,7 +2,7 @@
 
 namespace App\Infrastructure\Marketing\Mapper;
 
-use App\Domain\Marketing\Entity\Banner;
+use App\Domain\Supporting\Promotion\Entity\Banner;
 use App\Infrastructure\Marketing\Model\MKT_Banner;
 use App\Infrastructure\Marketing\Support\PublicMediaUrl;
 

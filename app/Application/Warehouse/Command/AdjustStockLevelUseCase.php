@@ -4,9 +4,9 @@ namespace App\Application\Warehouse\Command;
 
 use App\Application\Warehouse\DTO\AdjustStockLevelDto;
 use App\Application\Warehouse\Presenter\StockLevelPresenter;
-use App\Domain\Warehouse\Entity\StockLevel;
-use App\Domain\Warehouse\Repository\IngredientRepository;
-use App\Domain\Warehouse\Repository\StockLevelRepository;
+use App\Domain\Supporting\Warehouse\Entity\StockLevel;
+use App\Domain\Supporting\Warehouse\Repository\IngredientRepository;
+use App\Domain\Supporting\Warehouse\Repository\StockLevelRepository;
 
 final class AdjustStockLevelUseCase
 {

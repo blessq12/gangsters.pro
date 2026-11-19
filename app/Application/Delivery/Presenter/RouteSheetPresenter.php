@@ -2,10 +2,10 @@
 
 namespace App\Application\Delivery\Presenter;
 
-use App\Domain\Delivery\Entity\RouteSheet;
-use App\Domain\Delivery\Entity\RouteStop;
-use App\Domain\Order\Entity\Order;
-use App\Domain\Order\Repository\OrderRepository;
+use App\Domain\Core\Delivery\Routing\Entity\RouteSheet;
+use App\Domain\Core\Delivery\Routing\Entity\RouteStop;
+use App\Domain\Core\Order\Entity\Order;
+use App\Domain\Core\Order\Repository\OrderRepository;
 
 final class RouteSheetPresenter
 {

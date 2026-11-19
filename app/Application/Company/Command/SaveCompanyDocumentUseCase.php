@@ -4,7 +4,7 @@ namespace App\Application\Company\Command;
 
 use App\Application\Company\DTO\SaveCompanyDocumentDto;
 use App\Application\Company\Presenter\CompanyPresenter;
-use App\Domain\Company\Repository\CompanyDocumentRepository;
+use App\Domain\Supporting\Company\Repository\CompanyDocumentRepository;
 
 final class SaveCompanyDocumentUseCase
 {

@@ -4,9 +4,9 @@ namespace App\Application\Promotion\Command;
 
 use App\Application\Promotion\DTO\AssignProductPromotionRoleDto;
 use App\Application\Promotion\Presenter\PromotionPolicyPresenter;
-use App\Domain\Promotion\Entity\ProductPromotionRole;
-use App\Domain\Promotion\Enum\ProductPromotionRoleKind;
-use App\Domain\Promotion\Repository\ProductPromotionRoleRepository;
+use App\Domain\Core\Order\Entity\ProductPromotionRole;
+use App\Domain\Core\Order\Enum\ProductPromotionRoleKind;
+use App\Domain\Core\Order\Repository\ProductPromotionRoleRepository;
 
 final class AssignProductPromotionRoleUseCase
 {

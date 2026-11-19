@@ -2,7 +2,7 @@
 
 namespace App\Infrastructure\Warehouse\Mapper;
 
-use App\Domain\Warehouse\Entity\StockWriteOff;
+use App\Domain\Supporting\Warehouse\Entity\StockWriteOff;
 use App\Infrastructure\Warehouse\Model\WH_StockWriteOff;
 use DateTimeImmutable;
 

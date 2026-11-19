@@ -2,7 +2,7 @@
 
 namespace App\Infrastructure\Staff\Provider;
 
-use App\Domain\Staff\Repository\EmployeeRepository;
+use App\Domain\Generic\Staff\Repository\EmployeeRepository;
 use App\Infrastructure\Staff\Repository\EloquentEmployeeRepository;
 use Illuminate\Support\ServiceProvider;
 

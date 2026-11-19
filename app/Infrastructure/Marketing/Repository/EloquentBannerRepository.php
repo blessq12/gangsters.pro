@@ -2,8 +2,8 @@
 
 namespace App\Infrastructure\Marketing\Repository;
 
-use App\Domain\Marketing\Entity\Banner;
-use App\Domain\Marketing\Repository\BannerRepository;
+use App\Domain\Supporting\Promotion\Entity\Banner;
+use App\Domain\Supporting\Promotion\Repository\BannerRepository;
 use App\Infrastructure\Marketing\Mapper\BannerMapper;
 use App\Infrastructure\Marketing\Model\MKT_Banner;
 

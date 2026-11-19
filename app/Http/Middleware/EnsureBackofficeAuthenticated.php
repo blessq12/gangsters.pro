@@ -2,8 +2,8 @@
 
 namespace App\Http\Middleware;
 
-use App\Domain\Staff\Entity\Employee;
-use App\Domain\Staff\Repository\EmployeeRepository;
+use App\Domain\Generic\Staff\Entity\Employee;
+use App\Domain\Generic\Staff\Repository\EmployeeRepository;
 use App\Infrastructure\Staff\Model\STF_Employee;
 use Closure;
 use Illuminate\Http\Request;

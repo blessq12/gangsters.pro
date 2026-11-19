@@ -2,8 +2,8 @@
 
 namespace App\Infrastructure\Delivery\Repository;
 
-use App\Domain\Delivery\Entity\DeliveryConfiguration;
-use App\Domain\Delivery\Repository\DeliveryConfigurationRepository;
+use App\Domain\Core\Delivery\Tariff\Entity\DeliveryConfiguration;
+use App\Domain\Core\Delivery\Tariff\Repository\DeliveryConfigurationRepository;
 use App\Infrastructure\Delivery\Mapper\DeliveryConfigurationMapper;
 use App\Infrastructure\Delivery\Model\DLV_Configuration;
 use App\Infrastructure\Delivery\Model\DLV_Zone;

@@ -2,8 +2,8 @@
 
 namespace App\Infrastructure\Company\Repository;
 
-use App\Domain\Company\Entity\Company;
-use App\Domain\Company\Repository\CompanyRepository;
+use App\Domain\Supporting\Company\Entity\Company;
+use App\Domain\Supporting\Company\Repository\CompanyRepository;
 use App\Infrastructure\Company\Mapper\CompanyMapper;
 use App\Infrastructure\Company\Model\CMP_Company;
 

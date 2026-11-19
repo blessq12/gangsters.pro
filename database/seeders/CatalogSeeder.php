@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Domain\Catalog\Enum\CatalogItemKind;
-use App\Domain\Catalog\Enum\PriceType;
-use App\Domain\Catalog\Enum\ProductStatus;
-use App\Domain\Promotion\Enum\ProductPromotionRoleKind;
+use App\Domain\Supporting\Catalog\Enum\CatalogItemKind;
+use App\Domain\Supporting\Catalog\Enum\PriceType;
+use App\Domain\Supporting\Catalog\Enum\ProductStatus;
+use App\Domain\Core\Order\Enum\ProductPromotionRoleKind;
 use App\Infrastructure\Catalog\Model\CAT_Category;
 use App\Infrastructure\Catalog\Model\CAT_Item;
 use App\Infrastructure\Catalog\Model\CAT_ItemImage;

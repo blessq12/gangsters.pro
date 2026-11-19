@@ -2,8 +2,8 @@
 
 namespace App\Infrastructure\Order\Listener;
 
-use App\Domain\Order\Repository\OrderRepository;
-use App\Domain\Payment\Event\PaymentInitiated;
+use App\Domain\Core\Order\Repository\OrderRepository;
+use App\Domain\Supporting\Payment\Event\PaymentInitiated;
 
 /**
  * Payment публикует заведённый платёж; Order сохраняет только ссылку на него.

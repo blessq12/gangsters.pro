@@ -28,13 +28,16 @@ return new class extends Migration
             $table->unsignedInteger('sort_order')->default(0);
             $table->timestamps();
 
-            $table->foreign('configuration_id')->references('id')->on('DLV_configurations')->cascadeOnDelete();
+            $table->foreign('configuration_id')
+                ->references('id')
+                ->on('DLV_configurations')
+                ->cascadeOnDelete();
             $table->unique(['configuration_id', 'zone_key']);
         });
 
         Schema::create('DLV_route_sheets', function (Blueprint $table): void {
             $table->id();
-            $table->string('status', 32);
+            $table->string('status', 32)->index();
             $table->unsignedBigInteger('courier_id')->nullable()->index();
             $table->timestamps();
         });
@@ -44,11 +47,15 @@ return new class extends Migration
             $table->unsignedBigInteger('route_sheet_id');
             $table->unsignedBigInteger('order_id')->index();
             $table->unsignedInteger('position');
-            $table->string('status', 32);
+            $table->string('status', 32)->index();
             $table->string('settlement_note')->nullable();
             $table->timestamps();
 
-            $table->foreign('route_sheet_id')->references('id')->on('DLV_route_sheets')->cascadeOnDelete();
+            $table->foreign('route_sheet_id')
+                ->references('id')
+                ->on('DLV_route_sheets')
+                ->cascadeOnDelete();
+            $table->index(['route_sheet_id', 'position']);
         });
     }
 

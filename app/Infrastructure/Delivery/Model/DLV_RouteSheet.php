@@ -26,6 +26,8 @@ final class DLV_RouteSheet extends Model
 
     public function stops(): HasMany
     {
-        return $this->hasMany(DLV_RouteStop::class, 'route_sheet_id');
+        return $this->hasMany(DLV_RouteStop::class, 'route_sheet_id')
+            ->orderBy('position')
+            ->orderBy('id');
     }
 }

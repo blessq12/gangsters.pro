@@ -2,10 +2,12 @@
 
 namespace App\Infrastructure\Order\Repository;
 
-use App\Domain\Order\Entity\Order;
-use App\Domain\Order\Repository\OrderRepository;
+use App\Domain\Core\Order\Entity\Order;
+use App\Domain\Core\Order\Repository\OrderRepository;
 use App\Infrastructure\Order\Mapper\OrderMapper;
 use App\Infrastructure\Order\Model\ORD_Order;
+use App\Infrastructure\Order\Model\ORD_OrderLine;
+use Illuminate\Support\Facades\DB;
 
 final class EloquentOrderRepository implements OrderRepository
 {
@@ -15,7 +17,7 @@ final class EloquentOrderRepository implements OrderRepository
 
     public function findById(int $id): ?Order
     {
-        $row = ORD_Order::query()->find($id);
+        $row = ORD_Order::query()->with('lines')->find($id);
 
         return $row instanceof ORD_Order ? $this->mapper->toDomain($row) : null;
     }
@@ -23,6 +25,7 @@ final class EloquentOrderRepository implements OrderRepository
     public function findByClientRequestId(string $clientRequestId): ?Order
     {
         $row = ORD_Order::query()
+            ->with('lines')
             ->where('checkout_id', $clientRequestId)
             ->first();
 
@@ -56,7 +59,7 @@ final class EloquentOrderRepository implements OrderRepository
 
     public function listPage(int $offset, int $limit, ?string $status = null): array
     {
-        $query = ORD_Order::query()->orderByDesc('id');
+        $query = ORD_Order::query()->with('lines')->orderByDesc('id');
         if ($status !== null && $status !== '') {
             $query->where('status', $status);
         }
@@ -76,6 +79,7 @@ final class EloquentOrderRepository implements OrderRepository
     {
         /** @var \Illuminate\Database\Eloquent\Collection<int, ORD_Order> $rows */
         $rows = ORD_Order::query()
+            ->with('lines')
             ->where('client_id', $clientId)
             ->orderByDesc('created_at')
             ->orderByDesc('id')
@@ -88,19 +92,28 @@ final class EloquentOrderRepository implements OrderRepository
 
     public function save(Order $order): void
     {
-        $payload = $this->mapper->toPersistence($order);
+        DB::transaction(function () use ($order): void {
+            $payload = $this->mapper->toPersistence($order);
+            $orderPayload = $payload['order'];
+            $lines = $payload['lines'];
 
-        if (! $order->hasId()) {
-            unset($payload['id']);
-            $row = ORD_Order::query()->create($payload);
-            $order->assignId((int) $row->id);
+            if (! $order->hasId()) {
+                unset($orderPayload['id']);
+                $row = ORD_Order::query()->create($orderPayload);
+                $order->assignId((int) $row->id);
+            } else {
+                $id = (int) $orderPayload['id'];
+                unset($orderPayload['id']);
+                ORD_Order::query()->whereKey($id)->update($orderPayload);
+                ORD_OrderLine::query()->where('order_id', $id)->delete();
+            }
 
-            return;
-        }
-
-        ORD_Order::query()->updateOrCreate(
-            ['id' => $payload['id']],
-            $payload,
-        );
+            foreach ($lines as $line) {
+                ORD_OrderLine::query()->create([
+                    ...$line,
+                    'order_id' => $order->id(),
+                ]);
+            }
+        });
     }
 }

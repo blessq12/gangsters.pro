@@ -2,11 +2,11 @@
 
 namespace App\Infrastructure\Company\Provider;
 
-use App\Domain\Company\Repository\BranchRepository;
-use App\Domain\Company\Repository\CompanyDocumentRepository;
-use App\Domain\Company\Repository\CompanyLegalRepository;
-use App\Domain\Company\Repository\CompanyRepository;
-use App\Domain\Company\Repository\KitchenRepository;
+use App\Domain\Supporting\Company\Repository\BranchRepository;
+use App\Domain\Supporting\Company\Repository\CompanyDocumentRepository;
+use App\Domain\Supporting\Company\Repository\CompanyLegalRepository;
+use App\Domain\Supporting\Company\Repository\CompanyRepository;
+use App\Domain\Supporting\Company\Repository\KitchenRepository;
 use App\Infrastructure\Company\Repository\EloquentBranchRepository;
 use App\Infrastructure\Company\Repository\EloquentCompanyDocumentRepository;
 use App\Infrastructure\Company\Repository\EloquentCompanyLegalRepository;

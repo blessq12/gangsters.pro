@@ -2,8 +2,8 @@
 
 namespace App\Infrastructure\Promotion\Listener;
 
-use App\Domain\Catalog\Event\CatalogItemPriceChanged;
-use App\Domain\Promotion\Repository\ProductPromotionRoleRepository;
+use App\Domain\Supporting\Catalog\Event\CatalogItemPriceChanged;
+use App\Domain\Core\Order\Repository\ProductPromotionRoleRepository;
 
 /**
  * Catalog публикует новую цену; Promotion обновляет снимки name/price во всех ролях позиции.

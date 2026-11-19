@@ -3,9 +3,9 @@
 namespace App\Application\Promotion\Command;
 
 use App\Application\Promotion\Presenter\PromotionPolicyPresenter;
-use App\Domain\Delivery\Repository\DeliveryConfigurationRepository;
-use App\Domain\Promotion\Entity\PromotionZone;
-use App\Domain\Promotion\Repository\PromotionZoneRepository;
+use App\Domain\Core\Delivery\Tariff\Repository\DeliveryConfigurationRepository;
+use App\Domain\Core\Delivery\Tariff\Entity\PromotionZone;
+use App\Domain\Core\Delivery\Tariff\Repository\PromotionZoneRepository;
 
 /**
  * Единственное место, где Promotion читает Delivery: снимок зон в PRM_zones.

@@ -3,7 +3,7 @@
 namespace App\Application\Warehouse\Query;
 
 use App\Application\Warehouse\Presenter\WriteOffPresenter;
-use App\Domain\Warehouse\Repository\StockWriteOffRepository;
+use App\Domain\Supporting\Warehouse\Repository\StockWriteOffRepository;
 
 final class ListWriteOffsUseCase
 {

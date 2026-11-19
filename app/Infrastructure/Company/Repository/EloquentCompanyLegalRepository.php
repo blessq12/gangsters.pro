@@ -2,9 +2,9 @@
 
 namespace App\Infrastructure\Company\Repository;
 
-use App\Domain\Company\Entity\CompanyLegalInfo;
-use App\Domain\Company\Repository\CompanyLegalRepository;
-use App\Domain\Company\Repository\CompanyRepository;
+use App\Domain\Supporting\Company\Entity\CompanyLegalInfo;
+use App\Domain\Supporting\Company\Repository\CompanyLegalRepository;
+use App\Domain\Supporting\Company\Repository\CompanyRepository;
 use App\Infrastructure\Company\Mapper\CompanyLegalMapper;
 use App\Infrastructure\Company\Model\CMP_CompanyLegal;
 

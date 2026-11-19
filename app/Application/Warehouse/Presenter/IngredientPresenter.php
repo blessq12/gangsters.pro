@@ -2,7 +2,7 @@
 
 namespace App\Application\Warehouse\Presenter;
 
-use App\Domain\Warehouse\Entity\Ingredient;
+use App\Domain\Supporting\Warehouse\Entity\Ingredient;
 
 final class IngredientPresenter
 {

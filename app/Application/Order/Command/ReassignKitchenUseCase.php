@@ -4,11 +4,15 @@ namespace App\Application\Order\Command;
 
 use App\Application\Order\DTO\ReassignKitchenDto;
 use App\Application\Order\Presenter\AdminOrderPresenter;
-use App\Domain\Company\Repository\KitchenRepository;
-use App\Domain\Order\Repository\OrderRepository;
-use App\Domain\Production\Enum\KitchenTicketStatus;
-use App\Domain\Production\Repository\KitchenTicketRepository;
+use App\Domain\Core\Order\Repository\OrderRepository;
+use App\Domain\Core\Production\Enum\KitchenTicketStatus;
+use App\Domain\Core\Production\Repository\KitchenTicketRepository;
+use App\Domain\Supporting\Company\Repository\KitchenRepository;
 
+/**
+ * Переназначение кухни → KitchenReassigned.
+ * Production-listener отменяет незавершённый тикет и создаёт новый на новую кухню.
+ */
 final class ReassignKitchenUseCase
 {
     public function __construct(
@@ -46,9 +50,18 @@ final class ReassignKitchenUseCase
             throw new \InvalidArgumentException('Кухня не найдена.');
         }
 
-        $order->assignKitchen($kitchen->id(), $kitchen->branchId());
+        $order->reassignKitchen($kitchen->id(), $kitchen->branchId());
         $this->orders->save($order);
 
-        return $this->presenter->present($order);
+        foreach ($order->pullDomainEvents() as $event) {
+            event($event);
+        }
+
+        $saved = $this->orders->findById($order->id());
+        if ($saved === null) {
+            throw new \RuntimeException('Заказ не найден после переназначения.');
+        }
+
+        return $this->presenter->present($saved);
     }
 }

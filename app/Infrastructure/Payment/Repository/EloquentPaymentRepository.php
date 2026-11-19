@@ -2,8 +2,8 @@
 
 namespace App\Infrastructure\Payment\Repository;
 
-use App\Domain\Payment\Entity\Payment;
-use App\Domain\Payment\Repository\PaymentRepository;
+use App\Domain\Supporting\Payment\Entity\Payment;
+use App\Domain\Supporting\Payment\Repository\PaymentRepository;
 use App\Infrastructure\Payment\Mapper\PaymentMapper;
 use App\Infrastructure\Payment\Model\PAY_Payment;
 

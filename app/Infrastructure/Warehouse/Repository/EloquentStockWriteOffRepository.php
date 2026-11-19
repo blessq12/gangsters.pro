@@ -2,8 +2,8 @@
 
 namespace App\Infrastructure\Warehouse\Repository;
 
-use App\Domain\Warehouse\Entity\StockWriteOff;
-use App\Domain\Warehouse\Repository\StockWriteOffRepository;
+use App\Domain\Supporting\Warehouse\Entity\StockWriteOff;
+use App\Domain\Supporting\Warehouse\Repository\StockWriteOffRepository;
 use App\Infrastructure\Warehouse\Mapper\StockWriteOffMapper;
 use App\Infrastructure\Warehouse\Model\WH_StockWriteOff;
 

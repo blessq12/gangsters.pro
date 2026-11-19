@@ -2,7 +2,7 @@
 
 namespace App\Application\Payment\Presenter;
 
-use App\Domain\Payment\Entity\Payment;
+use App\Domain\Supporting\Payment\Entity\Payment;
 
 final class PaymentPresenter
 {

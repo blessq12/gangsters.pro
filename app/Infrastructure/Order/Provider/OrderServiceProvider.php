@@ -2,7 +2,7 @@
 
 namespace App\Infrastructure\Order\Provider;
 
-use App\Domain\Order\Repository\OrderRepository;
+use App\Domain\Core\Order\Repository\OrderRepository;
 use App\Infrastructure\Order\Repository\EloquentOrderRepository;
 use Illuminate\Support\ServiceProvider;
 

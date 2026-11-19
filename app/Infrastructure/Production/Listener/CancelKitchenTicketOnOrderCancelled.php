@@ -2,8 +2,8 @@
 
 namespace App\Infrastructure\Production\Listener;
 
-use App\Domain\Order\Event\OrderCancelled;
-use App\Domain\Production\Repository\KitchenTicketRepository;
+use App\Domain\Core\Order\Event\OrderCancelled;
+use App\Domain\Core\Production\Repository\KitchenTicketRepository;
 
 /**
  * Order публикует отмену; Production отменяет свой тикет, не трогая Order.
@@ -28,5 +28,9 @@ final class CancelKitchenTicketOnOrderCancelled
         }
 
         $this->tickets->save($ticket);
+
+        foreach ($ticket->pullDomainEvents() as $domainEvent) {
+            event($domainEvent);
+        }
     }
 }

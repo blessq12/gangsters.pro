@@ -2,12 +2,12 @@
 
 namespace App\Infrastructure\Catalog\Repository;
 
-use App\Domain\Catalog\Entity\Product;
-use App\Domain\Catalog\Entity\ProductSet;
-use App\Domain\Catalog\Enum\CatalogItemKind;
-use App\Domain\Catalog\Enum\ProductStatus;
-use App\Domain\Catalog\Repository\CatalogItemRepository;
-use App\Domain\Catalog\ValueObject\ProductImage;
+use App\Domain\Supporting\Catalog\Entity\Product;
+use App\Domain\Supporting\Catalog\Entity\ProductSet;
+use App\Domain\Supporting\Catalog\Enum\CatalogItemKind;
+use App\Domain\Supporting\Catalog\Enum\ProductStatus;
+use App\Domain\Supporting\Catalog\Repository\CatalogItemRepository;
+use App\Domain\Supporting\Catalog\ValueObject\ProductImage;
 use App\Infrastructure\Catalog\Mapper\CatalogProductMapper;
 use App\Infrastructure\Catalog\Mapper\CatalogProductSetMapper;
 use App\Infrastructure\Catalog\Model\CAT_Item;

@@ -4,11 +4,11 @@ namespace App\Application\Company\Command;
 
 use App\Application\Company\DTO\SaveCompanyDto;
 use App\Application\Company\Query\GetAdminCompanyUseCase;
-use App\Domain\Company\Entity\Company;
-use App\Domain\Company\Entity\CompanyLegalInfo;
-use App\Domain\Company\Repository\CompanyLegalRepository;
-use App\Domain\Company\Repository\CompanyRepository;
-use App\Domain\Company\ValueObject\CompanySocials;
+use App\Domain\Supporting\Company\Entity\Company;
+use App\Domain\Supporting\Company\Entity\CompanyLegalInfo;
+use App\Domain\Supporting\Company\Repository\CompanyLegalRepository;
+use App\Domain\Supporting\Company\Repository\CompanyRepository;
+use App\Domain\Supporting\Company\ValueObject\CompanySocials;
 use App\Shared\ValueObject\PhoneNumber;
 
 final class SaveCompanyUseCase

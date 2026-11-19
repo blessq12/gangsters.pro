@@ -2,7 +2,7 @@
 
 namespace App\Infrastructure\Catalog\Mapper;
 
-use App\Domain\Catalog\Entity\Category;
+use App\Domain\Supporting\Catalog\Entity\Category;
 use App\Infrastructure\Catalog\Model\CAT_Category;
 
 final class CatalogCategoryMapper

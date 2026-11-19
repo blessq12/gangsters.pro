@@ -2,8 +2,8 @@
 
 namespace App\Infrastructure\Warehouse\Repository;
 
-use App\Domain\Warehouse\Entity\Ingredient;
-use App\Domain\Warehouse\Repository\IngredientRepository;
+use App\Domain\Supporting\Warehouse\Entity\Ingredient;
+use App\Domain\Supporting\Warehouse\Repository\IngredientRepository;
 use App\Infrastructure\Warehouse\Mapper\IngredientMapper;
 use App\Infrastructure\Warehouse\Model\WH_Ingredient;
 
@@ -16,6 +16,20 @@ final class EloquentIngredientRepository implements IngredientRepository
     public function findById(int $id): ?Ingredient
     {
         $row = WH_Ingredient::query()->find($id);
+
+        return $row instanceof WH_Ingredient ? $this->mapper->toDomain($row) : null;
+    }
+
+    public function findByName(string $name): ?Ingredient
+    {
+        $name = trim($name);
+        if ($name === '') {
+            return null;
+        }
+
+        $row = WH_Ingredient::query()
+            ->whereRaw('LOWER(name) = ?', [mb_strtolower($name)])
+            ->first();
 
         return $row instanceof WH_Ingredient ? $this->mapper->toDomain($row) : null;
     }

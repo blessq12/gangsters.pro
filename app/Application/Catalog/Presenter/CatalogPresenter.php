@@ -2,15 +2,15 @@
 
 namespace App\Application\Catalog\Presenter;
 
-use App\Domain\Catalog\Entity\Category;
-use App\Domain\Catalog\Entity\Price;
-use App\Domain\Catalog\Entity\Product;
-use App\Domain\Catalog\Entity\ProductSet;
-use App\Domain\Catalog\Entity\Tag;
-use App\Domain\Catalog\Enum\CatalogItemKind;
-use App\Domain\Catalog\Enum\PriceType;
-use App\Domain\Catalog\ValueObject\Nutrition;
-use App\Domain\Catalog\ValueObject\ProductImage;
+use App\Domain\Supporting\Catalog\Entity\Category;
+use App\Domain\Supporting\Catalog\Entity\Price;
+use App\Domain\Supporting\Catalog\Entity\Product;
+use App\Domain\Supporting\Catalog\Entity\ProductSet;
+use App\Domain\Supporting\Catalog\Entity\Tag;
+use App\Domain\Supporting\Catalog\Enum\CatalogItemKind;
+use App\Domain\Supporting\Catalog\Enum\PriceType;
+use App\Domain\Supporting\Catalog\ValueObject\Nutrition;
+use App\Domain\Supporting\Catalog\ValueObject\ProductImage;
 use App\Shared\ValueObject\Money;
 
 /**

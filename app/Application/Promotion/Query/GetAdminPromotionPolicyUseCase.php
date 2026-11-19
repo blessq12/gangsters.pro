@@ -3,9 +3,9 @@
 namespace App\Application\Promotion\Query;
 
 use App\Application\Promotion\Presenter\PromotionPolicyPresenter;
-use App\Domain\Promotion\Repository\ProductPromotionRoleRepository;
-use App\Domain\Promotion\Repository\PromotionPolicyRepository;
-use App\Domain\Promotion\Repository\PromotionZoneRepository;
+use App\Domain\Core\Order\Repository\ProductPromotionRoleRepository;
+use App\Domain\Core\Order\Repository\PromotionPolicyRepository;
+use App\Domain\Core\Delivery\Tariff\Repository\PromotionZoneRepository;
 
 final class GetAdminPromotionPolicyUseCase
 {

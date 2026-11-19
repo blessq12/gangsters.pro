@@ -3,8 +3,8 @@
 namespace App\Application\Crm\Query;
 
 use App\Application\Crm\Presenter\AdminClientPresenter;
-use App\Domain\Crm\Entity\Client;
-use App\Domain\Crm\Repository\ClientRepository;
+use App\Domain\Supporting\Customer\Entity\Client;
+use App\Domain\Supporting\Customer\Repository\ClientRepository;
 
 final class ListAdminClientsUseCase
 {

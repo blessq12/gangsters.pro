@@ -2,8 +2,8 @@
 
 namespace App\Infrastructure\Promotion\Repository;
 
-use App\Domain\Promotion\Entity\PromotionPolicy;
-use App\Domain\Promotion\Repository\PromotionPolicyRepository;
+use App\Domain\Core\Order\Policy\PromotionPolicy;
+use App\Domain\Core\Order\Repository\PromotionPolicyRepository;
 use App\Infrastructure\Promotion\Mapper\PromotionPolicyMapper;
 use App\Infrastructure\Promotion\Model\PRM_Policy;
 

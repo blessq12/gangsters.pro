@@ -2,8 +2,8 @@
 
 namespace App\Infrastructure\Crm\Repository;
 
-use App\Domain\Crm\Entity\Client;
-use App\Domain\Crm\Repository\ClientRepository;
+use App\Domain\Supporting\Customer\Entity\Client;
+use App\Domain\Supporting\Customer\Repository\ClientRepository;
 use App\Infrastructure\Crm\Mapper\ClientMapper;
 use App\Infrastructure\Crm\Model\CRM_Client;
 use Illuminate\Support\Facades\DB;

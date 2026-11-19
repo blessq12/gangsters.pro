@@ -4,8 +4,8 @@ namespace App\Application\Company\Command;
 
 use App\Application\Company\DTO\SaveBranchDto;
 use App\Application\Company\Presenter\CompanyPresenter;
-use App\Domain\Company\Entity\Branch;
-use App\Domain\Company\Repository\BranchRepository;
+use App\Domain\Supporting\Company\Entity\Branch;
+use App\Domain\Supporting\Company\Repository\BranchRepository;
 
 final class SaveBranchUseCase
 {

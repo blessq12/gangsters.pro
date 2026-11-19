@@ -2,7 +2,7 @@
 
 namespace App\Infrastructure\Company\Mapper;
 
-use App\Domain\Company\Entity\CompanyLegalInfo;
+use App\Domain\Supporting\Company\Entity\CompanyLegalInfo;
 use App\Infrastructure\Company\Model\CMP_CompanyLegal;
 
 final class CompanyLegalMapper

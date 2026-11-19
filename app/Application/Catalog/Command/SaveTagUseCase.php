@@ -4,7 +4,7 @@ namespace App\Application\Catalog\Command;
 
 use App\Application\Catalog\DTO\SaveTagDto;
 use App\Application\Catalog\Presenter\CatalogPresenter;
-use App\Domain\Catalog\Repository\TagRepository;
+use App\Domain\Supporting\Catalog\Repository\TagRepository;
 
 final class SaveTagUseCase
 {

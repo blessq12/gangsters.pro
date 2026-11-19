@@ -1,31 +1,39 @@
 <?php
 
-use App\Domain\Catalog\Event\CatalogItemPriceChanged;
-use App\Domain\Delivery\Event\DeliveryZonesChanged;
-use App\Domain\Delivery\Event\OrderAssignedToRoute;
-use App\Domain\Delivery\Event\RouteSheetTaken;
-use App\Domain\Delivery\Event\RouteStopSettled;
-use App\Domain\Order\Event\OrderCancelled;
-use App\Domain\Order\Event\OrderPlaced;
-use App\Domain\Payment\Event\PaymentInitiated;
-use App\Domain\Production\Event\KitchenTicketCompleted;
-use App\Domain\Production\Event\KitchenTicketStarted;
+use App\Domain\Core\Delivery\Event\DeliveryZonesChanged;
+use App\Domain\Core\Delivery\Event\OrderAddedToRoute;
+use App\Domain\Core\Delivery\Event\RouteSheetCreated;
+use App\Domain\Core\Delivery\Event\RouteSheetTaken;
+use App\Domain\Core\Delivery\Event\RouteStopSettled;
+use App\Domain\Core\Order\Event\KitchenReassigned;
+use App\Domain\Core\Order\Event\OrderCancelled;
+use App\Domain\Core\Order\Event\OrderConfirmed;
+use App\Domain\Core\Order\Event\OrderPickedUp;
+use App\Domain\Core\Order\Event\OrderPlaced;
+use App\Domain\Core\Production\Event\KitchenTicketCompleted;
+use App\Domain\Core\Production\Event\KitchenTicketStarted;
+use App\Domain\Supporting\Catalog\Event\CatalogItemPriceChanged;
+use App\Domain\Supporting\Payment\Event\PaymentInitiated;
 use App\Infrastructure\Delivery\Listener\CancelRouteStopOnOrderCancelled;
 use App\Infrastructure\Order\Listener\AttachPaymentOnPaymentInitiated;
-use App\Infrastructure\Order\Listener\MarkOrderAssignedToRouteOnOrderAssignedToRoute;
-use App\Infrastructure\Payment\Listener\InitiatePaymentOnOrderPlaced;
+use App\Infrastructure\Order\Listener\MarkOrderAssignedToRouteOnOrderAddedToRoute;
 use App\Infrastructure\Order\Listener\MarkOrderPreparingOnKitchenTicketStarted;
 use App\Infrastructure\Order\Listener\MarkOrderReadyOnKitchenTicketCompleted;
 use App\Infrastructure\Order\Listener\MarkOrdersInTransitOnRouteSheetTaken;
 use App\Infrastructure\Order\Listener\SettleOrderOnRouteStopSettled;
+use App\Infrastructure\Payment\Listener\ClosePaymentOnOrderCancelled;
+use App\Infrastructure\Payment\Listener\InitiatePaymentOnOrderConfirmed;
+use App\Infrastructure\Payment\Listener\MarkPaymentPaidOnOrderPickedUp;
+use App\Infrastructure\Payment\Listener\UpdatePaymentOnRouteStopSettled;
 use App\Infrastructure\Production\Listener\CancelKitchenTicketOnOrderCancelled;
+use App\Infrastructure\Production\Listener\CreateKitchenTicketOnOrderConfirmed;
+use App\Infrastructure\Production\Listener\ReplaceKitchenTicketOnKitchenReassigned;
 use App\Infrastructure\Promotion\Listener\RefreshRoleSnapshotsOnCatalogItemPriceChanged;
 use App\Infrastructure\Promotion\Listener\ReplaceZoneSnapshotsOnDeliveryZonesChanged;
+use App\Infrastructure\Warehouse\Listener\WriteOffIngredientsOnKitchenTicketCompleted;
 
 /**
  * Матрица подписок: доменное событие → слушатели Infrastructure.
- *
- * Слушатель: class-string с методом handle, или [class-string, 'method'].
  *
  * @return array{
  *     listen: array<class-string, list<class-string|array{0: class-string, 1: string}>>
@@ -33,21 +41,34 @@ use App\Infrastructure\Promotion\Listener\ReplaceZoneSnapshotsOnDeliveryZonesCha
  */
 return [
     'listen' => [
+        OrderPlaced::class => [],
+
+        OrderConfirmed::class => [
+            CreateKitchenTicketOnOrderConfirmed::class,
+            InitiatePaymentOnOrderConfirmed::class,
+        ],
+
+        OrderPickedUp::class => [
+            MarkPaymentPaidOnOrderPickedUp::class,
+        ],
+
+        KitchenReassigned::class => [
+            ReplaceKitchenTicketOnKitchenReassigned::class,
+        ],
+
         KitchenTicketStarted::class => [
             MarkOrderPreparingOnKitchenTicketStarted::class,
         ],
 
         KitchenTicketCompleted::class => [
             MarkOrderReadyOnKitchenTicketCompleted::class,
+            WriteOffIngredientsOnKitchenTicketCompleted::class,
         ],
 
-        OrderCancelled::class => [
-            CancelKitchenTicketOnOrderCancelled::class,
-            CancelRouteStopOnOrderCancelled::class,
-        ],
+        RouteSheetCreated::class => [],
 
-        OrderAssignedToRoute::class => [
-            MarkOrderAssignedToRouteOnOrderAssignedToRoute::class,
+        OrderAddedToRoute::class => [
+            MarkOrderAssignedToRouteOnOrderAddedToRoute::class,
         ],
 
         RouteSheetTaken::class => [
@@ -56,6 +77,17 @@ return [
 
         RouteStopSettled::class => [
             SettleOrderOnRouteStopSettled::class,
+            UpdatePaymentOnRouteStopSettled::class,
+        ],
+
+        OrderCancelled::class => [
+            CancelKitchenTicketOnOrderCancelled::class,
+            CancelRouteStopOnOrderCancelled::class,
+            ClosePaymentOnOrderCancelled::class,
+        ],
+
+        PaymentInitiated::class => [
+            AttachPaymentOnPaymentInitiated::class,
         ],
 
         CatalogItemPriceChanged::class => [
@@ -64,14 +96,6 @@ return [
 
         DeliveryZonesChanged::class => [
             ReplaceZoneSnapshotsOnDeliveryZonesChanged::class,
-        ],
-
-        OrderPlaced::class => [
-            InitiatePaymentOnOrderPlaced::class,
-        ],
-
-        PaymentInitiated::class => [
-            AttachPaymentOnPaymentInitiated::class,
         ],
     ],
 ];

@@ -3,7 +3,7 @@
 namespace App\Application\Delivery\Query;
 
 use App\Application\Delivery\Presenter\RouteSheetPresenter;
-use App\Domain\Delivery\Repository\RouteSheetRepository;
+use App\Domain\Core\Delivery\Routing\Repository\RouteSheetRepository;
 
 final class GetRouteSheetUseCase
 {

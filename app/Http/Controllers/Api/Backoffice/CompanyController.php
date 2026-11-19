@@ -11,7 +11,7 @@ use App\Application\Company\DTO\SaveCompanyDocumentDto;
 use App\Application\Company\DTO\SaveCompanyDto;
 use App\Application\Company\DTO\SaveKitchenDto;
 use App\Application\Company\Query\GetAdminCompanyUseCase;
-use App\Domain\Company\Repository\CompanyRepository;
+use App\Domain\Supporting\Company\Repository\CompanyRepository;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

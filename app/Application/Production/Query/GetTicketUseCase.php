@@ -3,8 +3,8 @@
 namespace App\Application\Production\Query;
 
 use App\Application\Production\Presenter\KitchenTicketPresenter;
-use App\Domain\Order\Repository\OrderRepository;
-use App\Domain\Production\Repository\KitchenTicketRepository;
+use App\Domain\Core\Order\Repository\OrderRepository;
+use App\Domain\Core\Production\Repository\KitchenTicketRepository;
 
 final class GetTicketUseCase
 {

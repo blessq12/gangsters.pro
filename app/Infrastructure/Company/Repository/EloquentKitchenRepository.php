@@ -2,8 +2,8 @@
 
 namespace App\Infrastructure\Company\Repository;
 
-use App\Domain\Company\Entity\Kitchen;
-use App\Domain\Company\Repository\KitchenRepository;
+use App\Domain\Supporting\Company\Entity\Kitchen;
+use App\Domain\Supporting\Company\Repository\KitchenRepository;
 use App\Infrastructure\Company\Mapper\KitchenMapper;
 use App\Infrastructure\Company\Model\CMP_Branch;
 use App\Infrastructure\Company\Model\CMP_Kitchen;

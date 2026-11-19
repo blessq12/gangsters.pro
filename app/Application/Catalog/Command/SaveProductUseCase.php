@@ -3,9 +3,9 @@
 namespace App\Application\Catalog\Command;
 
 use App\Application\Catalog\DTO\SaveProductDto;
-use App\Domain\Catalog\Enum\ProductStatus;
-use App\Domain\Catalog\Event\CatalogItemPriceChanged;
-use App\Domain\Catalog\Repository\CatalogItemRepository;
+use App\Domain\Supporting\Catalog\Enum\ProductStatus;
+use App\Domain\Supporting\Catalog\Event\CatalogItemPriceChanged;
+use App\Domain\Supporting\Catalog\Repository\CatalogItemRepository;
 
 final class SaveProductUseCase
 {

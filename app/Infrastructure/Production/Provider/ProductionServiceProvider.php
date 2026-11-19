@@ -2,7 +2,7 @@
 
 namespace App\Infrastructure\Production\Provider;
 
-use App\Domain\Production\Repository\KitchenTicketRepository;
+use App\Domain\Core\Production\Repository\KitchenTicketRepository;
 use App\Infrastructure\Production\Repository\EloquentKitchenTicketRepository;
 use Illuminate\Support\ServiceProvider;
 

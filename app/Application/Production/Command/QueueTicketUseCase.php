@@ -4,11 +4,13 @@ namespace App\Application\Production\Command;
 
 use App\Application\Production\DTO\QueueTicketDto;
 use App\Application\Production\Presenter\KitchenTicketPresenter;
-use App\Domain\Order\Enum\OrderStatus;
-use App\Domain\Order\Repository\OrderRepository;
-use App\Domain\Production\Entity\KitchenTicket;
-use App\Domain\Production\Repository\KitchenTicketRepository;
+use App\Domain\Core\Order\Repository\OrderRepository;
+use App\Domain\Core\Production\Repository\KitchenTicketRepository;
 
+/**
+ * Тикет создаётся только по OrderConfirmed.
+ * Здесь — получить уже существующий тикет.
+ */
 final class QueueTicketUseCase
 {
     public function __construct(
@@ -27,22 +29,12 @@ final class QueueTicketUseCase
             throw new \InvalidArgumentException('Заказ не найден.');
         }
 
-        if ($order->status() !== OrderStatus::Confirmed) {
-            throw new \InvalidArgumentException('В очередь можно поставить только подтверждённый заказ.');
+        $ticket = $this->tickets->findByOrderId($dto->orderId);
+        if ($ticket === null) {
+            throw new \InvalidArgumentException(
+                'Тикет ещё не создан. Он появляется после подтверждения заказа.',
+            );
         }
-
-        $kitchenId = $order->kitchenId();
-        if ($kitchenId === null) {
-            throw new \InvalidArgumentException('Заказу не назначена кухня.');
-        }
-
-        $existing = $this->tickets->findByOrderId($dto->orderId);
-        if ($existing !== null) {
-            return $this->presenter->present($existing, $order);
-        }
-
-        $ticket = KitchenTicket::queue($dto->orderId, $kitchenId);
-        $this->tickets->enqueue($ticket);
 
         return $this->presenter->present($ticket, $order);
     }

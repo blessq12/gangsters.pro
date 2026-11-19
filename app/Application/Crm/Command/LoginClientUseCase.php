@@ -5,8 +5,8 @@ namespace App\Application\Crm\Command;
 use App\Application\Crm\DTO\LoginClientDto;
 use App\Application\Crm\Presenter\ClientPresenter;
 use App\Application\Crm\Support\ClientAccessToken;
-use App\Domain\Crm\Entity\Client;
-use App\Domain\Crm\Repository\ClientRepository;
+use App\Domain\Supporting\Customer\Entity\Client;
+use App\Domain\Supporting\Customer\Repository\ClientRepository;
 use App\Shared\ValueObject\PhoneNumber;
 use Illuminate\Support\Facades\Hash;
 

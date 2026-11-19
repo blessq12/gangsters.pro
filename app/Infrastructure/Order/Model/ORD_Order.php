@@ -3,6 +3,7 @@
 namespace App\Infrastructure\Order\Model;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class ORD_Order extends Model
 {
@@ -19,13 +20,23 @@ final class ORD_Order extends Model
         'partner_code',
         'external_order_id',
         'status',
-        'cart_snapshot',
-        'client_snapshot',
-        'delivery_snapshot',
         'client_id',
+        'client_name',
+        'client_phone',
+        'delivery_type',
+        'delivery_zone_id',
+        'delivery_fee_kopecks',
+        'delivery_street',
+        'delivery_house',
+        'delivery_entrance',
+        'delivery_floor',
+        'delivery_apartment',
+        'delivery_comment',
         'kitchen_id',
         'branch_id',
         'payment_id',
+        'payment_method',
+        'change_from_rubles',
         'total_kopecks',
         'created_at',
     ];
@@ -34,14 +45,20 @@ final class ORD_Order extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'cart_snapshot' => 'array',
-        'client_snapshot' => 'array',
-        'delivery_snapshot' => 'array',
         'client_id' => 'integer',
+        'delivery_fee_kopecks' => 'integer',
         'kitchen_id' => 'integer',
         'branch_id' => 'integer',
         'payment_id' => 'integer',
+        'change_from_rubles' => 'integer',
         'total_kopecks' => 'integer',
         'created_at' => 'datetime',
     ];
+
+    public function lines(): HasMany
+    {
+        return $this->hasMany(ORD_OrderLine::class, 'order_id')
+            ->orderBy('position')
+            ->orderBy('id');
+    }
 }

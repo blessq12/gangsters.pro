@@ -2,11 +2,11 @@
 
 namespace App\Infrastructure\Order\Listener;
 
-use App\Domain\Order\Repository\OrderRepository;
-use App\Domain\Production\Event\KitchenTicketStarted;
+use App\Domain\Core\Order\Repository\OrderRepository;
+use App\Domain\Core\Production\Event\KitchenTicketStarted;
 
 /**
- * Production публикует факт старта; Order меняет только свой статус.
+ * Production стартовала тикет → Order в preparing.
  */
 final class MarkOrderPreparingOnKitchenTicketStarted
 {

@@ -2,8 +2,8 @@
 
 namespace App\Infrastructure\Order\Listener;
 
-use App\Domain\Order\Repository\OrderRepository;
-use App\Domain\Production\Event\KitchenTicketCompleted;
+use App\Domain\Core\Order\Repository\OrderRepository;
+use App\Domain\Core\Production\Event\KitchenTicketCompleted;
 
 /**
  * Production публикует факт готовности; Order меняет только свой статус.

@@ -19,22 +19,10 @@ return new class extends Migration
             $table->timestamp('refunded_at')->nullable();
             $table->timestamps();
         });
-
-        Schema::table('ORD_orders', function (Blueprint $table): void {
-            $table->unsignedBigInteger('payment_id')->nullable()->after('branch_id');
-            $table->index('payment_id');
-            $table->dropColumn('payment_snapshot');
-        });
     }
 
     public function down(): void
     {
-        Schema::table('ORD_orders', function (Blueprint $table): void {
-            $table->json('payment_snapshot')->nullable()->after('delivery_snapshot');
-            $table->dropIndex(['payment_id']);
-            $table->dropColumn('payment_id');
-        });
-
         Schema::dropIfExists('PAY_payments');
     }
 };

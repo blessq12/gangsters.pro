@@ -2,8 +2,8 @@
 
 namespace App\Application\Crm\Presenter;
 
-use App\Domain\Crm\Entity\Client;
-use App\Domain\Order\Entity\Order;
+use App\Domain\Supporting\Customer\Entity\Client;
+use App\Domain\Core\Order\Entity\Order;
 
 final class AdminClientPresenter
 {

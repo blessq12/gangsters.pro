@@ -5,8 +5,8 @@ namespace App\Application\Delivery\Command;
 use App\Application\Delivery\DTO\SaveDeliveryZoneDto;
 use App\Application\Delivery\Event\DeliveryZonesChangedFactory;
 use App\Application\Delivery\Presenter\DeliveryPresenter;
-use App\Domain\Delivery\Repository\DeliveryConfigurationRepository;
-use App\Domain\Delivery\ValueObject\DeliveryZone;
+use App\Domain\Core\Delivery\Tariff\Repository\DeliveryConfigurationRepository;
+use App\Domain\Core\Delivery\Tariff\ValueObject\DeliveryZone;
 use Illuminate\Support\Str;
 
 final class SaveDeliveryZoneUseCase

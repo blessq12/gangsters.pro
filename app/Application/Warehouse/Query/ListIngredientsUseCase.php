@@ -3,7 +3,7 @@
 namespace App\Application\Warehouse\Query;
 
 use App\Application\Warehouse\Presenter\IngredientPresenter;
-use App\Domain\Warehouse\Repository\IngredientRepository;
+use App\Domain\Supporting\Warehouse\Repository\IngredientRepository;
 
 final class ListIngredientsUseCase
 {

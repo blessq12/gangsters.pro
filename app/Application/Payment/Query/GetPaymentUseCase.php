@@ -3,7 +3,7 @@
 namespace App\Application\Payment\Query;
 
 use App\Application\Payment\Presenter\PaymentPresenter;
-use App\Domain\Payment\Repository\PaymentRepository;
+use App\Domain\Supporting\Payment\Repository\PaymentRepository;
 
 final class GetPaymentUseCase
 {

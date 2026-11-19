@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Domain\Company\Repository\CompanyRepository;
+use App\Domain\Supporting\Company\Repository\CompanyRepository;
 use App\Infrastructure\Company\Model\CMP_Company;
 use App\Infrastructure\Company\Model\CMP_CompanyDocument;
 use App\Infrastructure\Company\Model\CMP_CompanyLegal;

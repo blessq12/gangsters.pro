@@ -2,8 +2,8 @@
 
 namespace App\Infrastructure\Crm\Mapper;
 
-use App\Domain\Crm\Entity\Client;
-use App\Domain\Crm\Entity\ClientAddress;
+use App\Domain\Supporting\Customer\Entity\Client;
+use App\Domain\Supporting\Customer\Entity\ClientAddress;
 use App\Infrastructure\Crm\Model\CRM_Client;
 use App\Infrastructure\Crm\Model\CRM_ClientAddress;
 use App\Infrastructure\Crm\Model\CRM_ClientFavorite;

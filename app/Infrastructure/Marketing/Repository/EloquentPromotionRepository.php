@@ -2,12 +2,12 @@
 
 namespace App\Infrastructure\Marketing\Repository;
 
-use App\Domain\Marketing\Entity\Promotion;
-use App\Domain\Marketing\Repository\PromotionRepository;
+use App\Domain\Supporting\Promotion\Entity\Campaign;
+use App\Domain\Supporting\Promotion\Repository\CampaignRepository;
 use App\Infrastructure\Marketing\Mapper\PromotionMapper;
 use App\Infrastructure\Marketing\Model\MKT_Promotion;
 
-final class EloquentPromotionRepository implements PromotionRepository
+final class EloquentPromotionRepository implements CampaignRepository
 {
     public function __construct(
         private readonly PromotionMapper $mapper,
@@ -34,7 +34,7 @@ final class EloquentPromotionRepository implements PromotionRepository
             ->all();
     }
 
-    public function save(?int $id, string $title, ?string $body, bool $isActive, ?string $imagePath): Promotion
+    public function save(?int $id, string $title, ?string $body, bool $isActive, ?string $imagePath): Campaign
     {
         $row = $id === null ? new MKT_Promotion() : MKT_Promotion::query()->find($id);
         if (! $row instanceof MKT_Promotion) {

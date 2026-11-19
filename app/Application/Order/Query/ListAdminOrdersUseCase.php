@@ -3,7 +3,7 @@
 namespace App\Application\Order\Query;
 
 use App\Application\Order\Presenter\AdminOrderPresenter;
-use App\Domain\Order\Repository\OrderRepository;
+use App\Domain\Core\Order\Repository\OrderRepository;
 
 final class ListAdminOrdersUseCase
 {
