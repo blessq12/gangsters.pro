@@ -4,14 +4,12 @@ namespace App\Application\Delivery\Presenter;
 
 use App\Domain\Core\Delivery\Routing\Entity\RouteSheet;
 use App\Domain\Core\Delivery\Routing\Entity\RouteStop;
-use App\Domain\Core\Order\Entity\Order;
-use App\Domain\Core\Order\Repository\OrderRepository;
-use App\Domain\Core\Order\ValueObject\OrderNumber;
+use App\Domain\Core\Delivery\Routing\Port\DeliveryOrderStopSnapshotPort;
 
 final class RouteSheetPresenter
 {
     public function __construct(
-        private readonly OrderRepository $orders,
+        private readonly DeliveryOrderStopSnapshotPort $orderStops,
     ) {}
 
     /**
@@ -19,12 +17,18 @@ final class RouteSheetPresenter
      */
     public function present(RouteSheet $sheet, bool $hideCancelled = false): array
     {
+        $orderIds = [];
+        foreach ($sheet->stops() as $stop) {
+            $orderIds[] = $stop->orderId();
+        }
+        $snapshots = $this->orderStops->findMany($orderIds);
+
         $stops = [];
         foreach ($sheet->stops() as $stop) {
             if ($hideCancelled && $stop->outcome() === RouteStop::OUTCOME_CANCELLED) {
                 continue;
             }
-            $stops[] = $this->presentStop($stop);
+            $stops[] = $this->presentStop($stop, $snapshots[$stop->orderId()] ?? null);
         }
 
         return [
@@ -51,49 +55,17 @@ final class RouteSheetPresenter
     }
 
     /**
+     * @param  array<string, mixed>|null  $order
      * @return array<string, mixed>
      */
-    private function presentStop(RouteStop $stop): array
+    private function presentStop(RouteStop $stop, ?array $order): array
     {
-        $order = $this->orders->findById($stop->orderId());
-
         return [
             'order_id' => $stop->orderId(),
             'position' => $stop->position(),
             'outcome' => $stop->outcome(),
             'reason' => $stop->reason() !== '' ? $stop->reason() : null,
-            'order' => $order !== null ? $this->orderSnapshot($order) : null,
-        ];
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function orderSnapshot(Order $order): array
-    {
-        $delivery = $order->delivery();
-        $client = $order->client();
-        $address = $delivery->address();
-
-        $id = $order->hasId() ? $order->id() : null;
-
-        return [
-            'id' => $id,
-            'number' => $id !== null ? OrderNumber::format($id, $order->createdAt()) : null,
-            'status' => $order->status()->value,
-            'method' => $delivery->type()->value,
-            'address' => $address === null ? null : [
-                'street' => $address->street(),
-                'house' => $address->house(),
-                'entrance' => $address->entrance(),
-                'floor' => $address->floor(),
-                'apartment' => $address->apartment(),
-                'comment' => $address->comment(),
-            ],
-            'client' => [
-                'name' => $client->name(),
-                'phone' => $client->phone(),
-            ],
+            'order' => $order,
         ];
     }
 }

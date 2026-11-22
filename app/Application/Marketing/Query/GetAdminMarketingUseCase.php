@@ -3,7 +3,7 @@
 namespace App\Application\Marketing\Query;
 
 use App\Application\Marketing\Presenter\MarketingPresenter;
-use App\Domain\Supporting\Company\Repository\DeliveryConditionsTextRepository;
+use App\Domain\Supporting\Promotion\Port\MarketingDeliveryConditionsPort;
 use App\Domain\Supporting\Promotion\Repository\BannerRepository;
 use App\Domain\Supporting\Promotion\Repository\CampaignRepository;
 
@@ -12,7 +12,7 @@ final class GetAdminMarketingUseCase
     public function __construct(
         private readonly BannerRepository $banners,
         private readonly CampaignRepository $promotions,
-        private readonly DeliveryConditionsTextRepository $deliveryConditions,
+        private readonly MarketingDeliveryConditionsPort $deliveryConditions,
         private readonly MarketingPresenter $presenter,
     ) {}
 

@@ -51,58 +51,6 @@ final class Order
     }
 
     /**
-     * Создаёт заказ из базовых позиций и применяет коммерческие политики.
-     *
-     * @param  list<OrderLine>  $baseLines  только regular|set
-     */
-    public static function place(
-        string $checkoutId,
-        OrderClientSnapshot $client,
-        OrderDeliveryInfo $delivery,
-        array $baseLines,
-        PromotionPolicy $policy,
-        OrderFormationFacts $facts,
-        string $channel,
-        DateTimeImmutable $createdAt,
-        string $timezone = 'UTC',
-        ?DateTimeImmutable $scheduledAt = null,
-        string $source = 'site',
-        ?string $partnerCode = null,
-        ?string $externalOrderId = null,
-        bool $zoneIsRemote = false,
-    ): self {
-        if ($checkoutId === '') {
-            throw new \InvalidArgumentException('Заказ нельзя создать без ссылки на чекаут.');
-        }
-
-        $formed = OrderFormation::apply(
-            baseLines: $baseLines,
-            delivery: $delivery,
-            policy: $policy,
-            facts: $facts,
-            channel: $channel,
-            at: $createdAt,
-            timezone: $timezone,
-            zoneIsRemote: $zoneIsRemote,
-        );
-
-        return new self(
-            id: null,
-            source: $source,
-            checkoutId: $checkoutId,
-            partnerCode: $partnerCode,
-            externalOrderId: $externalOrderId,
-            status: $scheduledAt !== null && $scheduledAt > $createdAt
-                ? OrderStatus::Preorder
-                : OrderStatus::New,
-            lines: $formed['lines'],
-            client: $client,
-            delivery: $formed['delivery'],
-            createdAt: $createdAt,
-        );
-    }
-
-    /**
      * Создание заказа из уже сформированных позиций (снимок чекаута).
      * Политики и инварианты чекаута уже применены снаружи.
      *
@@ -441,6 +389,7 @@ final class Order
             orderId: $this->id,
             previousBranchId: $previousBranchId,
             branchId: $branchId,
+            productionLines: $this->productionLineSnapshots(),
         ));
     }
 
@@ -496,7 +445,25 @@ final class Order
             amountKopecks: $this->grandTotalKopecks(),
             paymentMethod: $this->paymentMethod,
             changeFromRubles: $this->changeFromRubles,
+            productionLines: $this->productionLineSnapshots(),
         ));
+    }
+
+    /**
+     * @return list<array{product_id: int, name: string, quantity: int}>
+     */
+    private function productionLineSnapshots(): array
+    {
+        $lines = [];
+        foreach ($this->productionLines() as $line) {
+            $lines[] = [
+                'product_id' => $line->productId(),
+                'name' => $line->name(),
+                'quantity' => $line->quantity(),
+            ];
+        }
+
+        return $lines;
     }
 
     public function startPreparing(): void

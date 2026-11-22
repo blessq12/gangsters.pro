@@ -3,14 +3,14 @@
 namespace App\Application\Crm\Query;
 
 use App\Application\Crm\Presenter\AdminClientPresenter;
+use App\Domain\Supporting\Customer\Port\CrmClientOrdersPort;
 use App\Domain\Supporting\Customer\Repository\ClientRepository;
-use App\Domain\Core\Order\Repository\OrderRepository;
 
 final class GetAdminClientUseCase
 {
     public function __construct(
         private readonly ClientRepository $clients,
-        private readonly OrderRepository $orders,
+        private readonly CrmClientOrdersPort $clientOrders,
         private readonly AdminClientPresenter $presenter,
     ) {}
 
@@ -26,7 +26,7 @@ final class GetAdminClientUseCase
 
         return $this->presenter->presentWithOrders(
             $client,
-            $this->orders->listByClientId($clientId),
+            $this->clientOrders->listByClientId($clientId),
         );
     }
 }

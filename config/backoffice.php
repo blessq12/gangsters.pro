@@ -95,14 +95,14 @@ return [
         // courier
         ['method' => 'GET', 'path' => 'courier/route-sheets', 'roles' => ['courier']],
 
-        // promotion-policy
-        ['method' => 'DELETE', 'path' => 'promotion-policy/roles', 'roles' => ['owner']],
-        ['method' => 'POST', 'path' => 'promotion-policy/*', 'roles' => ['owner']],
-        ['method' => 'POST', 'path' => 'promotion-policy', 'roles' => ['owner']],
-        ['method' => 'PUT', 'path' => 'promotion-policy', 'roles' => ['owner']],
-        ['method' => 'GET', 'path' => 'promotion-policy/roles', 'roles' => ['owner', 'administrator']],
-        ['method' => 'GET', 'path' => 'promotion-policy/zones', 'roles' => ['owner', 'administrator']],
-        ['method' => 'GET', 'path' => 'promotion-policy', 'roles' => ['owner', 'administrator']],
+        // order/policy — правила оформления заказа
+        ['method' => 'DELETE', 'path' => 'order/policy/roles', 'roles' => ['owner']],
+        ['method' => 'POST', 'path' => 'order/policy/*', 'roles' => ['owner']],
+        ['method' => 'POST', 'path' => 'order/policy', 'roles' => ['owner']],
+        ['method' => 'PUT', 'path' => 'order/policy', 'roles' => ['owner']],
+        ['method' => 'GET', 'path' => 'order/policy/roles', 'roles' => ['owner', 'administrator']],
+        ['method' => 'GET', 'path' => 'order/policy/zones', 'roles' => ['owner', 'administrator']],
+        ['method' => 'GET', 'path' => 'order/policy', 'roles' => ['owner', 'administrator']],
 
         // marketing
         ['method' => 'POST', 'path' => 'marketing/*', 'roles' => ['owner']],

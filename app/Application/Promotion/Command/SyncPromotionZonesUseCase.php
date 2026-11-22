@@ -3,17 +3,17 @@
 namespace App\Application\Promotion\Command;
 
 use App\Application\Promotion\Presenter\PromotionPolicyPresenter;
-use App\Domain\Core\Delivery\Tariff\Repository\DeliveryConfigurationRepository;
 use App\Domain\Core\Delivery\Tariff\Entity\PromotionZone;
 use App\Domain\Core\Delivery\Tariff\Repository\PromotionZoneRepository;
+use App\Domain\Core\Order\Port\OrderDeliveryTariffPort;
 
 /**
- * Единственное место, где Promotion читает Delivery: снимок зон филиала в PRM_zones.
+ * Снимок зон филиала в PRM_zones. Delivery читается только через порт Order (ACL).
  */
 final class SyncPromotionZonesUseCase
 {
     public function __construct(
-        private readonly DeliveryConfigurationRepository $delivery,
+        private readonly OrderDeliveryTariffPort $deliveryTariffs,
         private readonly PromotionZoneRepository $zones,
         private readonly PromotionPolicyPresenter $presenter,
     ) {}
@@ -23,18 +23,18 @@ final class SyncPromotionZonesUseCase
      */
     public function execute(int $branchId): array
     {
-        $configuration = $this->delivery->findByBranch($branchId);
+        $configuration = $this->deliveryTariffs->findConfigByBranch($branchId);
         if ($configuration === null) {
             throw new \InvalidArgumentException('Конфигурация доставки филиала не найдена.');
         }
 
         $snapshots = [];
-        foreach ($configuration->zones() as $zone) {
+        foreach ($configuration['zones'] as $zone) {
             $snapshots[] = new PromotionZone(
-                id: $zone->id(),
-                name: $zone->name(),
-                feeKopecks: $zone->deliveryFeeKopecks(),
-                isRemote: $zone->isRemote(),
+                id: (string) $zone['id'],
+                name: (string) $zone['name'],
+                feeKopecks: (int) $zone['fee_kopecks'],
+                isRemote: (bool) $zone['is_remote'],
             );
         }
 

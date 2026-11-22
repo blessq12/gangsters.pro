@@ -4,20 +4,18 @@ namespace App\Application\Production\Query;
 
 use App\Application\Production\Presenter\KitchenTicketPresenter;
 use App\Application\Shared\PageParams;
-use App\Domain\Core\Order\Repository\OrderRepository;
+use App\Domain\Core\Production\Port\ProductionOrderSnapshotPort;
 use App\Domain\Core\Production\Repository\KitchenTicketRepository;
 
 final class ListQueueUseCase
 {
     public function __construct(
         private readonly KitchenTicketRepository $tickets,
-        private readonly OrderRepository $orders,
+        private readonly ProductionOrderSnapshotPort $orders,
         private readonly KitchenTicketPresenter $presenter,
     ) {}
 
     /**
-     * Только чтение: никаких side effects.
-     *
      * @return array{items: list<array<string, mixed>>, total: int, offset: int, limit: int}
      */
     public function execute(
@@ -27,10 +25,16 @@ final class ListQueueUseCase
     ): array {
         ['offset' => $offset, 'limit' => $limit] = PageParams::normalize($offset, $limit);
 
+        $page = $this->tickets->listActiveByBranchPage($branchId, $offset, $limit);
+        $orderIds = [];
+        foreach ($page as $ticket) {
+            $orderIds[] = $ticket->orderId();
+        }
+        $snapshots = $this->orders->findMany($orderIds);
+
         $items = [];
-        foreach ($this->tickets->listActiveByBranchPage($branchId, $offset, $limit) as $ticket) {
-            $order = $this->orders->findById($ticket->orderId());
-            $items[] = $this->presenter->present($ticket, $order);
+        foreach ($page as $ticket) {
+            $items[] = $this->presenter->present($ticket, $snapshots[$ticket->orderId()] ?? null);
         }
 
         return PageParams::wrap(

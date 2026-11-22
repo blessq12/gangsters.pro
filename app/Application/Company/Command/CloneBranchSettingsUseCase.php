@@ -3,17 +3,14 @@
 namespace App\Application\Company\Command;
 
 use App\Application\Company\DTO\CloneBranchSettingsDto;
-use App\Application\Delivery\Event\DeliveryZonesChangedFactory;
-use App\Domain\Core\Delivery\Tariff\Entity\DeliveryConfiguration;
-use App\Domain\Core\Delivery\Tariff\Repository\DeliveryConfigurationRepository;
-use App\Domain\Core\Order\Policy\PromotionPolicy;
-use App\Domain\Core\Order\Repository\PromotionPolicyRepository;
 use App\Domain\Supporting\Company\Entity\BranchCategory;
 use App\Domain\Supporting\Company\Entity\BranchCategoryItem;
 use App\Domain\Supporting\Company\Entity\BranchMenuItem;
 use App\Domain\Supporting\Company\Entity\BranchSet;
 use App\Domain\Supporting\Company\Entity\BranchTag;
 use App\Domain\Supporting\Company\Enum\BranchMenuEntryKind;
+use App\Domain\Supporting\Company\Port\CompanyDeliveryConfigClonePort;
+use App\Domain\Supporting\Company\Port\CompanyPromotionPolicyClonePort;
 use App\Domain\Supporting\Company\Repository\BranchCategoryRepository;
 use App\Domain\Supporting\Company\Repository\BranchMenuRepository;
 use App\Domain\Supporting\Company\Repository\BranchRepository;
@@ -40,9 +37,8 @@ final class CloneBranchSettingsUseCase
         private readonly BranchCategoryRepository $categories,
         private readonly BranchTagRepository $tags,
         private readonly BranchSetRepository $sets,
-        private readonly PromotionPolicyRepository $policies,
-        private readonly DeliveryConfigurationRepository $delivery,
-        private readonly DeliveryZonesChangedFactory $zonesChanged,
+        private readonly CompanyPromotionPolicyClonePort $promotionClone,
+        private readonly CompanyDeliveryConfigClonePort $deliveryClone,
         private readonly TransactionManager $transaction,
     ) {}
 
@@ -82,13 +78,17 @@ final class CloneBranchSettingsUseCase
         return $this->transaction->run(function () use ($dto, $mode, $sourceId, $targets): array {
             $sourceMenu = $dto->copyMenu ? $this->menu->listByBranch($sourceId) : [];
             $sourceStructure = $dto->copyMenu ? $this->loadSourceStructure($sourceId) : null;
-            $sourcePolicy = $dto->copyPromotions ? $this->policies->findByBranch($sourceId) : null;
-            $sourceDelivery = $dto->copyDelivery ? $this->delivery->findByBranch($sourceId) : null;
+            $sourcePolicyFields = $dto->copyPromotions
+                ? $this->promotionClone->exportFlatFields($sourceId)
+                : null;
+            $sourceDeliverySnapshot = $dto->copyDelivery
+                ? $this->deliveryClone->export($sourceId)
+                : null;
 
-            if ($dto->copyPromotions && $sourcePolicy === null) {
+            if ($dto->copyPromotions && $sourcePolicyFields === null) {
                 throw new \InvalidArgumentException('У филиала-источника нет политики акций.');
             }
-            if ($dto->copyDelivery && $sourceDelivery === null) {
+            if ($dto->copyDelivery && $sourceDeliverySnapshot === null) {
                 throw new \InvalidArgumentException('У филиала-источника нет настроек доставки.');
             }
 
@@ -102,8 +102,8 @@ final class CloneBranchSettingsUseCase
                     copyDelivery: $dto->copyDelivery,
                     sourceMenu: $sourceMenu,
                     sourceStructure: $sourceStructure,
-                    sourcePolicy: $sourcePolicy,
-                    sourceDelivery: $sourceDelivery,
+                    sourcePolicyFields: $sourcePolicyFields,
+                    sourceDeliverySnapshot: $sourceDeliverySnapshot,
                 );
             }
 
@@ -134,8 +134,8 @@ final class CloneBranchSettingsUseCase
         bool $copyDelivery,
         array $sourceMenu,
         ?array $sourceStructure,
-        ?PromotionPolicy $sourcePolicy,
-        ?DeliveryConfiguration $sourceDelivery,
+        ?array $sourcePolicyFields,
+        ?array $sourceDeliverySnapshot,
     ): array {
         $menuStats = ['copied' => 0, 'skipped' => 0];
         $structureStats = ['categories' => 0, 'tags' => 0, 'sets' => 0, 'skipped' => false];
@@ -149,12 +149,12 @@ final class CloneBranchSettingsUseCase
             }
         }
 
-        if ($copyPromotions && $sourcePolicy instanceof PromotionPolicy) {
-            $promoStats = $this->clonePromotions($targetId, $mode, $sourcePolicy);
+        if ($copyPromotions && $sourcePolicyFields !== null) {
+            $promoStats = $this->clonePromotions($targetId, $mode, $sourcePolicyFields);
         }
 
-        if ($copyDelivery && $sourceDelivery instanceof DeliveryConfiguration) {
-            $deliveryStatus = $this->cloneDelivery($targetId, $mode, $sourceDelivery);
+        if ($copyDelivery && $sourceDeliverySnapshot !== null) {
+            $deliveryStatus = $this->cloneDelivery($targetId, $mode, $sourceDeliverySnapshot);
         }
 
         return [
@@ -351,19 +351,16 @@ final class CloneBranchSettingsUseCase
     }
 
     /**
+     * @param  array<string, mixed>  $sourcePolicyFields
      * @return array{policy: string, roles_copied: int, roles_skipped: int}
      */
-    private function clonePromotions(
-        int $targetId,
-        string $mode,
-        PromotionPolicy $sourcePolicy,
-    ): array {
+    private function clonePromotions(int $targetId, string $mode, array $sourcePolicyFields): array
+    {
         $policyStatus = 'copied';
-        $targetPolicy = $this->policies->findByBranch($targetId);
-        if ($mode === self::MODE_SKIP && $targetPolicy !== null) {
+        if ($mode === self::MODE_SKIP && $this->promotionClone->existsForBranch($targetId)) {
             $policyStatus = 'skipped';
         } else {
-            $this->policies->saveForBranch($targetId, $this->policyToFlatFields($sourcePolicy));
+            $this->promotionClone->importFlatFields($targetId, $sourcePolicyFields);
         }
 
         return [
@@ -373,83 +370,18 @@ final class CloneBranchSettingsUseCase
         ];
     }
 
-    private function cloneDelivery(int $targetId, string $mode, DeliveryConfiguration $source): string
+    /**
+     * @param  array<string, mixed>  $sourceDeliverySnapshot
+     */
+    private function cloneDelivery(int $targetId, string $mode, array $sourceDeliverySnapshot): string
     {
-        $target = $this->delivery->findByBranch($targetId);
-        if ($mode === self::MODE_SKIP && $target !== null) {
+        if ($mode === self::MODE_SKIP && $this->deliveryClone->existsForBranch($targetId)) {
             return 'skipped';
         }
 
-        $zones = [];
-        foreach ($source->zones() as $zone) {
-            $zones[] = [
-                'id' => $zone->id(),
-                'name' => $zone->name(),
-                'fee_rubles' => (int) round($zone->deliveryFeeKopecks() / 100),
-                'is_remote' => $zone->isRemote(),
-                'geometry' => $zone->geometry(),
-            ];
-        }
-
-        $before = $this->zonesChanged->snapshot($target);
-        $after = $this->delivery->saveSettingsForBranch(
-            branchId: $targetId,
-            minOrderAmountKopecks: $source->minOrderAmountKopecks(),
-            averageDeliveryTimeMinutes: $source->averageDeliveryTimeMinutes(),
-            zones: $zones,
-        );
-
-        $event = $this->zonesChanged->createIfChanged($before, $after);
-        if ($event !== null) {
-            event($event);
-        }
+        $this->deliveryClone->import($targetId, $sourceDeliverySnapshot);
 
         return 'copied';
-    }
-
-    /**
-     * @return array{
-     *     gift_pickup_min_order_kopecks: int,
-     *     gift_courier_min_order_kopecks: int,
-     *     gift_courier_weekdays: list<int>,
-     *     gift_benefit_active: bool,
-     *     delivery_free_threshold_kopecks: int,
-     *     delivery_outside_zone_surcharge_kopecks: int,
-     *     delivery_benefit_active: bool,
-     *     complement_set_benefit_active: bool,
-     *     complement_set_rolls_per_set: int,
-     *     complement_set_max_sets: int
-     * }
-     */
-    private function policyToFlatFields(PromotionPolicy $policy): array
-    {
-        $pickup = $policy->giftRuleForChannel('pickup') ?? [];
-        $courier = $policy->giftRuleForChannel('courier') ?? [];
-        $delivery = $policy->deliveryBenefit();
-        $complement = $policy->complementSetBenefit();
-
-        $weekdays = [];
-        foreach ($courier['allowed_weekdays'] ?? [] as $day) {
-            $int = (int) $day;
-            if ($int >= 1 && $int <= 7) {
-                $weekdays[$int] = $int;
-            }
-        }
-        $weekdays = array_values($weekdays);
-        sort($weekdays);
-
-        return [
-            'gift_pickup_min_order_kopecks' => max(1, (int) ($pickup['min_order_amount_kopecks'] ?? 1)),
-            'gift_courier_min_order_kopecks' => max(1, (int) ($courier['min_order_amount_kopecks'] ?? 1)),
-            'gift_courier_weekdays' => $weekdays,
-            'gift_benefit_active' => (bool) (($pickup['is_active'] ?? false) || ($courier['is_active'] ?? false)),
-            'delivery_free_threshold_kopecks' => max(0, (int) ($delivery['free_delivery_threshold_kopecks'] ?? 0)),
-            'delivery_outside_zone_surcharge_kopecks' => 0,
-            'delivery_benefit_active' => (bool) ($delivery['is_active'] ?? false),
-            'complement_set_benefit_active' => (bool) ($complement['is_active'] ?? false),
-            'complement_set_rolls_per_set' => max(1, (int) ($complement['rolls_per_set'] ?? 1)),
-            'complement_set_max_sets' => max(1, (int) ($complement['max_sets'] ?? 1)),
-        ];
     }
 
     private function normalizeMode(string $mode): string

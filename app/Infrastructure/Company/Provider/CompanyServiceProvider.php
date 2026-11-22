@@ -2,6 +2,8 @@
 
 namespace App\Infrastructure\Company\Provider;
 
+use App\Domain\Supporting\Company\Port\CompanyDeliveryConfigClonePort;
+use App\Domain\Supporting\Company\Port\CompanyPromotionPolicyClonePort;
 use App\Domain\Supporting\Company\Repository\BranchCategoryRepository;
 use App\Domain\Supporting\Company\Repository\BranchMenuRepository;
 use App\Domain\Supporting\Company\Repository\BranchRepository;
@@ -10,6 +12,8 @@ use App\Domain\Supporting\Company\Repository\BranchTagRepository;
 use App\Domain\Supporting\Company\Repository\CompanyDocumentRepository;
 use App\Domain\Supporting\Company\Repository\CompanyLegalRepository;
 use App\Domain\Supporting\Company\Repository\CompanyRepository;
+use App\Infrastructure\Company\Adapter\EloquentCompanyDeliveryConfigClonePort;
+use App\Infrastructure\Company\Adapter\EloquentCompanyPromotionPolicyClonePort;
 use App\Infrastructure\Company\Repository\EloquentBranchCategoryRepository;
 use App\Infrastructure\Company\Repository\EloquentBranchMenuRepository;
 use App\Infrastructure\Company\Repository\EloquentBranchRepository;
@@ -32,5 +36,7 @@ final class CompanyServiceProvider extends ServiceProvider
         $this->app->bind(BranchCategoryRepository::class, EloquentBranchCategoryRepository::class);
         $this->app->bind(BranchTagRepository::class, EloquentBranchTagRepository::class);
         $this->app->bind(BranchSetRepository::class, EloquentBranchSetRepository::class);
+        $this->app->bind(CompanyPromotionPolicyClonePort::class, EloquentCompanyPromotionPolicyClonePort::class);
+        $this->app->bind(CompanyDeliveryConfigClonePort::class, EloquentCompanyDeliveryConfigClonePort::class);
     }
 }

@@ -186,14 +186,14 @@ Route::prefix('backoffice')->middleware(EnsureBackofficeEnabled::class)->group(f
 
             Route::get('courier/route-sheets', [CourierController::class, 'routeSheets']);
 
-            Route::get('promotion-policy', [PromotionController::class, 'show']);
-            Route::post('promotion-policy', [PromotionController::class, 'store']);
-            Route::put('promotion-policy', [PromotionController::class, 'update']);
-            Route::get('promotion-policy/roles', [PromotionController::class, 'listRoles']);
-            Route::post('promotion-policy/roles', [PromotionController::class, 'assignRole']);
-            Route::delete('promotion-policy/roles', [PromotionController::class, 'destroyRole']);
-            Route::get('promotion-policy/zones', [PromotionController::class, 'listZones']);
-            Route::post('promotion-policy/sync-zones', [PromotionController::class, 'syncZones']);
+            Route::get('order/policy', [PromotionController::class, 'show']);
+            Route::post('order/policy', [PromotionController::class, 'store']);
+            Route::put('order/policy', [PromotionController::class, 'update']);
+            Route::get('order/policy/roles', [PromotionController::class, 'listRoles']);
+            Route::post('order/policy/roles', [PromotionController::class, 'assignRole']);
+            Route::delete('order/policy/roles', [PromotionController::class, 'destroyRole']);
+            Route::get('order/policy/zones', [PromotionController::class, 'listZones']);
+            Route::post('order/policy/sync-zones', [PromotionController::class, 'syncZones']);
 
             Route::get('marketing', [MarketingController::class, 'show']);
             Route::get('marketing/banners', [MarketingController::class, 'listBanners']);

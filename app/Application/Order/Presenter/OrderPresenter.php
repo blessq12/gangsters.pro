@@ -2,18 +2,16 @@
 
 namespace App\Application\Order\Presenter;
 
-use App\Application\Payment\Presenter\PaymentPresenter;
 use App\Domain\Core\Order\Entity\Order;
+use App\Domain\Core\Order\Port\OrderPaymentSnapshotPort;
 use App\Domain\Core\Order\ValueObject\OrderNumber;
-use App\Domain\Supporting\Payment\Repository\PaymentRepository;
 
 final class OrderPresenter
 {
     private const KOPECKS_IN_RUBLE = 100;
 
     public function __construct(
-        private readonly PaymentRepository $payments,
-        private readonly PaymentPresenter $paymentPresenter,
+        private readonly OrderPaymentSnapshotPort $payments,
     ) {}
 
     /**
@@ -98,8 +96,17 @@ final class OrderPresenter
             return null;
         }
 
-        $payment = $this->payments->findById($paymentId);
+        $snapshot = $this->payments->findByPaymentId($paymentId);
+        if ($snapshot === null) {
+            return null;
+        }
 
-        return $payment !== null ? $this->paymentPresenter->present($payment) : null;
+        return [
+            'id' => $snapshot['id'],
+            'status' => $snapshot['status'],
+            'method' => $snapshot['method'],
+            'amount_kopecks' => $snapshot['amount_kopecks'],
+            'change_from_rubles' => $snapshot['change_from_rubles'],
+        ];
     }
 }

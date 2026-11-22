@@ -21,7 +21,6 @@ use App\Application\Order\DTO\QuoteOrderDto;
 use App\Application\Order\DTO\ReassignBranchDto;
 use App\Application\Order\Presenter\AdminOrderPresenter;
 use App\Application\Order\Presenter\OrderPresenter;
-use App\Application\Payment\Presenter\PaymentPresenter;
 use App\Application\Production\Command\CompleteWorkUseCase;
 use App\Application\Production\Command\StartWorkUseCase;
 use App\Application\Production\DTO\CompleteWorkDto;
@@ -55,11 +54,15 @@ use Illuminate\Container\Container;
 use Illuminate\Events\Dispatcher;
 use PHPUnit\Framework\TestCase;
 use Tests\Application\Core\Support\ImmediateTransactionManager;
+use Tests\Application\Core\Support\InMemoryDeliveryOrderStopSnapshotPort;
+use Tests\Application\Core\Support\InMemoryDeliveryRouteOrderEligibilityPort;
 use Tests\Application\Core\Support\InMemoryEmployeeRepository;
 use Tests\Application\Core\Support\InMemoryBranchRepository;
 use Tests\Application\Core\Support\InMemoryKitchenTicketRepository;
+use Tests\Application\Core\Support\InMemoryOrderPaymentSnapshotPort;
 use Tests\Application\Core\Support\InMemoryOrderRepository;
 use Tests\Application\Core\Support\InMemoryPaymentRepository;
+use Tests\Application\Core\Support\InMemoryProductionOrderSnapshotPort;
 use Tests\Application\Core\Support\InMemoryRouteSheetRepository;
 use Tests\Application\Core\Support\RecordingDomainEventPublisher;
 
@@ -299,7 +302,7 @@ final class CoreFlowTest extends TestCase
 
         $result = (new CreateOrderUseCase(
             $this->orders,
-            new OrderPresenter(new InMemoryPaymentRepository, new PaymentPresenter),
+            new OrderPresenter(new InMemoryOrderPaymentSnapshotPort(new InMemoryPaymentRepository)),
             $this->events,
             $this->transaction,
             $quote,

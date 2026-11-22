@@ -24,6 +24,11 @@ import {
     paymentStatusVariant,
 } from "../../../shell/domain/orderStage.js";
 
+defineProps({
+    /** Без внешней рамки страницы — для хаба «Заказы». */
+    embedded: { type: Boolean, default: false },
+});
+
 const router = useRouter();
 const toast = useToast();
 const listApi = useApi();
@@ -138,8 +143,12 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
-        <UiCard title="Заказы">
+    <div
+        :class="embedded
+            ? 'space-y-8'
+            : 'mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10'"
+    >
+        <UiCard :title="embedded ? '' : 'Заказы'">
             <div class="mb-6 grid items-end gap-3 md:grid-cols-2 lg:grid-cols-4">
                 <UiInput
                     v-model="q"

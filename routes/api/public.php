@@ -11,7 +11,7 @@ use App\Http\Controllers\Api\PublicApi\PromotionController;
 use Illuminate\Support\Facades\Route;
 
 /*
-| Public API: auth stubs + catalog/company/delivery/promotions + client CRM.
+| Public API: auth stubs + catalog/company/delivery/order-policy + client CRM.
 */
 
 Route::prefix('public')->group(function (): void {
@@ -23,7 +23,7 @@ Route::prefix('public')->group(function (): void {
     Route::get('catalog', [CatalogController::class, 'show']);
     Route::get('company', [CompanyController::class, 'show']);
     Route::get('delivery', [DeliveryController::class, 'show']);
-    Route::get('promotions', [PromotionController::class, 'show']);
+    Route::get('order/policy', [PromotionController::class, 'show']);
     Route::get('marketing', [MarketingController::class, 'show']);
 
     Route::post('order/quote', [OrderController::class, 'quote']);

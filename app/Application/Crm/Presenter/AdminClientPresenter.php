@@ -2,8 +2,6 @@
 
 namespace App\Application\Crm\Presenter;
 
-use App\Domain\Core\Order\Entity\Order;
-use App\Domain\Core\Order\ValueObject\OrderNumber;
 use App\Domain\Supporting\Customer\Entity\Client;
 
 final class AdminClientPresenter
@@ -46,35 +44,31 @@ final class AdminClientPresenter
     }
 
     /**
-     * @param  list<Order>  $orders
+     * @param  list<array{
+     *     id: int,
+     *     number: string|null,
+     *     status: string,
+     *     created_at: string,
+     *     grand_total_kopecks: int
+     * }>  $orders
      * @return array{client: array<string, mixed>, orders: list<array<string, mixed>>}
      */
     public function presentWithOrders(Client $client, array $orders): array
     {
         $orderItems = [];
         foreach ($orders as $order) {
-            $orderItems[] = $this->orderSnapshot($order);
+            $orderItems[] = [
+                'id' => $order['id'],
+                'number' => $order['number'],
+                'status' => $order['status'],
+                'total' => intdiv((int) $order['grand_total_kopecks'], 100),
+                'created_at' => $order['created_at'],
+            ];
         }
 
         return [
             'client' => $this->present($client),
             'orders' => $orderItems,
-        ];
-    }
-
-    /**
-     * @return array{id: int|null, number: string|null, status: string, total: int, created_at: string}
-     */
-    public function orderSnapshot(Order $order): array
-    {
-        $id = $order->hasId() ? $order->id() : null;
-
-        return [
-            'id' => $id,
-            'number' => $id !== null ? OrderNumber::format($id, $order->createdAt()) : null,
-            'status' => $order->status()->value,
-            'total' => intdiv($order->grandTotalKopecks(), 100),
-            'created_at' => $order->createdAt()->format(DATE_ATOM),
         ];
     }
 }

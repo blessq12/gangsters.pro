@@ -3,24 +3,24 @@
 namespace App\Application\Order\Checkout;
 
 use App\Domain\Core\Order\Policy\OrderFormation;
+use App\Domain\Core\Order\Port\OrderBranchMenuSnapshotPort;
+use App\Domain\Core\Order\Port\OrderCatalogSnapshotPort;
 use App\Domain\Core\Order\Repository\PromotionPolicyRepository;
 use App\Domain\Core\Order\ValueObject\OrderDeliveryInfo;
 use App\Domain\Core\Order\ValueObject\OrderFormationFacts;
 use App\Domain\Core\Order\ValueObject\OrderLine;
-use App\Domain\Supporting\Catalog\Repository\CatalogItemRepository;
-use App\Domain\Supporting\Company\Repository\BranchMenuRepository;
 use DateTimeInterface;
 
 /**
  * Единственная точка Application, которая применяет политики оформления.
- * Правила живут в OrderFormation; флаги и подарок собираются здесь из Catalog + меню.
+ * Правила живут в OrderFormation; флаги и подарок собираются здесь через порты Order.
  */
 final class FormCheckoutPromotions
 {
     public function __construct(
         private readonly PromotionPolicyRepository $policies,
-        private readonly CatalogItemRepository $catalog,
-        private readonly BranchMenuRepository $menu,
+        private readonly OrderCatalogSnapshotPort $catalog,
+        private readonly OrderBranchMenuSnapshotPort $menu,
     ) {}
 
     /**
@@ -73,7 +73,7 @@ final class FormCheckoutPromotions
     {
         $availableMenu = [];
         foreach ($this->menu->listAvailableByBranch($branchId) as $item) {
-            $availableMenu[$item->catalogItemId()] = $item;
+            $availableMenu[$item['catalog_item_id']] = $item;
         }
 
         $productIds = [];
@@ -86,39 +86,37 @@ final class FormCheckoutPromotions
 
         $products = [];
         if ($productIds !== []) {
-            foreach ($this->catalog->findActiveProductsByIds(array_values($productIds)) as $product) {
-                $products[$product->id()] = $product;
-            }
+            $products = $this->catalog->findActiveProductsByIds(array_values($productIds));
         }
 
         $isRollByProductId = [];
         foreach ($baseLines as $line) {
             $product = $products[$line->productId()] ?? null;
-            $isRollByProductId[$line->productId()] = $product !== null && $product->isRoll();
+            $isRollByProductId[$line->productId()] = $product !== null && ($product['is_roll'] ?? false);
         }
 
         $complements = [];
         foreach ($availableMenu as $catalogItemId => $menuItem) {
             $product = $products[$catalogItemId] ?? null;
-            if ($product === null || ! $product->isComplement()) {
+            if ($product === null || ! ($product['is_complement'] ?? false)) {
                 continue;
             }
             $complements[] = [
-                'product_id' => $product->id(),
-                'name' => $product->name(),
+                'product_id' => $product['id'],
+                'name' => $product['name'],
             ];
         }
 
         $giftCandidates = [];
         foreach ($availableMenu as $catalogItemId => $menuItem) {
-            if (! $menuItem->isGiftCandidate()) {
+            if (! ($menuItem['is_gift_candidate'] ?? false)) {
                 continue;
             }
             $product = $products[$catalogItemId] ?? null;
             if ($product !== null) {
                 $giftCandidates[] = [
-                    'product_id' => $product->id(),
-                    'name' => $product->name(),
+                    'product_id' => $product['id'],
+                    'name' => $product['name'],
                 ];
                 continue;
             }

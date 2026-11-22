@@ -4,12 +4,12 @@ namespace App\Application\Marketing\Command;
 
 use App\Application\Marketing\DTO\SaveDeliveryConditionsTextDto;
 use App\Application\Marketing\Presenter\MarketingPresenter;
-use App\Domain\Supporting\Company\Repository\DeliveryConditionsTextRepository;
+use App\Domain\Supporting\Promotion\Port\MarketingDeliveryConditionsPort;
 
 final class SaveDeliveryConditionsTextUseCase
 {
     public function __construct(
-        private readonly DeliveryConditionsTextRepository $conditions,
+        private readonly MarketingDeliveryConditionsPort $conditions,
         private readonly MarketingPresenter $presenter,
     ) {}
 

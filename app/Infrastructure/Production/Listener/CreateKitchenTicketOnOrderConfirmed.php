@@ -3,18 +3,16 @@
 namespace App\Infrastructure\Production\Listener;
 
 use App\Domain\Core\Order\Event\OrderConfirmed;
-use App\Domain\Core\Order\Repository\OrderRepository;
 use App\Domain\Core\Production\Entity\KitchenTicket;
 use App\Domain\Core\Production\Repository\KitchenTicketRepository;
 use App\Domain\Core\Production\ValueObject\KitchenTicketLine;
 
 /**
- * Order подтверждён → Production создаёт KitchenTicket со снимком позиций.
+ * Order подтверждён → Production создаёт KitchenTicket со снимком позиций из события.
  */
 final class CreateKitchenTicketOnOrderConfirmed
 {
     public function __construct(
-        private readonly OrderRepository $orders,
         private readonly KitchenTicketRepository $tickets,
     ) {}
 
@@ -26,18 +24,9 @@ final class CreateKitchenTicketOnOrderConfirmed
             return;
         }
 
-        $order = $this->orders->findById($event->orderId);
-        if ($order === null) {
+        $lines = $this->mapLines($event->productionLines);
+        if ($lines === []) {
             return;
-        }
-
-        $lines = [];
-        foreach ($order->productionLines() as $line) {
-            $lines[] = new KitchenTicketLine(
-                productId: $line->productId(),
-                name: $line->name(),
-                quantity: $line->quantity(),
-            );
         }
 
         $ticket = KitchenTicket::queue(
@@ -46,5 +35,23 @@ final class CreateKitchenTicketOnOrderConfirmed
             lines: $lines,
         );
         $this->tickets->enqueue($ticket);
+    }
+
+    /**
+     * @param  list<array{product_id: int, name: string, quantity: int}>  $snapshots
+     * @return list<KitchenTicketLine>
+     */
+    private function mapLines(array $snapshots): array
+    {
+        $lines = [];
+        foreach ($snapshots as $snapshot) {
+            $lines[] = new KitchenTicketLine(
+                productId: (int) $snapshot['product_id'],
+                name: (string) $snapshot['name'],
+                quantity: (int) $snapshot['quantity'],
+            );
+        }
+
+        return $lines;
     }
 }

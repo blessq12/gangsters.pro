@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Infrastructure\Company\Model\CMP_Branch;
-use App\Infrastructure\Promotion\Model\PRM_Policy;
+use App\Infrastructure\Order\Model\PRM_Policy;
 use Illuminate\Database\Seeder;
 
 class PromotionSeeder extends Seeder

@@ -5,9 +5,8 @@ namespace App\Application\Production\Command;
 use App\Application\Production\DTO\StartWorkDto;
 use App\Application\Production\Presenter\KitchenTicketPresenter;
 use App\Application\Shared\DomainEventPublisher;
-use App\Domain\Core\Order\Entity\Order;
-use App\Domain\Core\Order\Repository\OrderRepository;
 use App\Domain\Core\Production\Entity\KitchenTicket;
+use App\Domain\Core\Production\Port\ProductionOrderSnapshotPort;
 use App\Domain\Core\Production\Repository\KitchenTicketRepository;
 use App\Shared\Transaction\TransactionManager;
 
@@ -18,7 +17,7 @@ final class StartWorkUseCase
 {
     public function __construct(
         private readonly KitchenTicketRepository $tickets,
-        private readonly OrderRepository $orders,
+        private readonly ProductionOrderSnapshotPort $orders,
         private readonly KitchenTicketPresenter $presenter,
         private readonly DomainEventPublisher $events,
         private readonly TransactionManager $transaction,
@@ -34,7 +33,7 @@ final class StartWorkUseCase
             $ticket = $this->requireTicket($dto->orderId);
 
             try {
-                $ticket->start($order->branchId());
+                $ticket->start($order['branch_id'] ?? null);
             } catch (\LogicException $exception) {
                 throw new \InvalidArgumentException($exception->getMessage(), 0, $exception);
             }
@@ -46,9 +45,12 @@ final class StartWorkUseCase
         });
     }
 
-    private function requireOrder(int $orderId): Order
+    /**
+     * @return array<string, mixed>
+     */
+    private function requireOrder(int $orderId): array
     {
-        return $this->orders->findById($orderId)
+        return $this->orders->find($orderId)
             ?? throw new \InvalidArgumentException('Заказ не найден.');
     }
 

@@ -5,9 +5,8 @@ namespace App\Application\Production\Command;
 use App\Application\Production\DTO\CompleteWorkDto;
 use App\Application\Production\Presenter\KitchenTicketPresenter;
 use App\Application\Shared\DomainEventPublisher;
-use App\Domain\Core\Order\Entity\Order;
-use App\Domain\Core\Order\Repository\OrderRepository;
 use App\Domain\Core\Production\Entity\KitchenTicket;
+use App\Domain\Core\Production\Port\ProductionOrderSnapshotPort;
 use App\Domain\Core\Production\Repository\KitchenTicketRepository;
 use App\Shared\Transaction\TransactionManager;
 
@@ -18,7 +17,7 @@ final class CompleteWorkUseCase
 {
     public function __construct(
         private readonly KitchenTicketRepository $tickets,
-        private readonly OrderRepository $orders,
+        private readonly ProductionOrderSnapshotPort $orders,
         private readonly KitchenTicketPresenter $presenter,
         private readonly DomainEventPublisher $events,
         private readonly TransactionManager $transaction,
@@ -41,14 +40,8 @@ final class CompleteWorkUseCase
             $this->tickets->save($ticket);
             $this->events->publish($ticket);
 
-            return $this->presenter->present($ticket, $this->requireOrder($dto->orderId));
+            return $this->presenter->present($ticket, $this->orders->find($dto->orderId));
         });
-    }
-
-    private function requireOrder(int $orderId): Order
-    {
-        return $this->orders->findById($orderId)
-            ?? throw new \InvalidArgumentException('Заказ не найден.');
     }
 
     private function requireTicket(int $orderId): KitchenTicket

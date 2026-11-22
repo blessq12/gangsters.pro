@@ -3,7 +3,6 @@
 namespace App\Infrastructure\Production\Listener;
 
 use App\Domain\Core\Order\Event\BranchReassigned;
-use App\Domain\Core\Order\Repository\OrderRepository;
 use App\Domain\Core\Production\Entity\KitchenTicket;
 use App\Domain\Core\Production\Enum\KitchenTicketStatus;
 use App\Domain\Core\Production\Repository\KitchenTicketRepository;
@@ -11,12 +10,11 @@ use App\Domain\Core\Production\ValueObject\KitchenTicketLine;
 
 /**
  * Филиал переназначен → отменить незавершённый тикет и создать новый на новый филиал.
- * Новый тикет ставится сразу (не ждём повторный OrderConfirmed).
+ * Линии берутся из события, без загрузки Order.
  */
 final class ReplaceKitchenTicketOnBranchReassigned
 {
     public function __construct(
-        private readonly OrderRepository $orders,
         private readonly KitchenTicketRepository $tickets,
     ) {}
 
@@ -43,20 +41,7 @@ final class ReplaceKitchenTicketOnBranchReassigned
             $this->tickets->delete($existing);
         }
 
-        $order = $this->orders->findById($event->orderId);
-        if ($order === null) {
-            return;
-        }
-
-        $lines = [];
-        foreach ($order->productionLines() as $line) {
-            $lines[] = new KitchenTicketLine(
-                productId: $line->productId(),
-                name: $line->name(),
-                quantity: $line->quantity(),
-            );
-        }
-
+        $lines = $this->mapLines($event->productionLines);
         if ($lines === []) {
             return;
         }
@@ -67,5 +52,23 @@ final class ReplaceKitchenTicketOnBranchReassigned
             lines: $lines,
         );
         $this->tickets->enqueue($ticket);
+    }
+
+    /**
+     * @param  list<array{product_id: int, name: string, quantity: int}>  $snapshots
+     * @return list<KitchenTicketLine>
+     */
+    private function mapLines(array $snapshots): array
+    {
+        $lines = [];
+        foreach ($snapshots as $snapshot) {
+            $lines[] = new KitchenTicketLine(
+                productId: (int) $snapshot['product_id'],
+                name: (string) $snapshot['name'],
+                quantity: (int) $snapshot['quantity'],
+            );
+        }
+
+        return $lines;
     }
 }

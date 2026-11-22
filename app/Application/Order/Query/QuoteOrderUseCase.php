@@ -7,21 +7,16 @@ use App\Application\Order\Checkout\FormCheckoutPromotions;
 use App\Application\Order\DTO\QuoteOrderDto;
 use App\Domain\Core\Order\Enum\OrderLineType;
 use App\Domain\Core\Order\Policy\PromotionPolicy;
+use App\Domain\Core\Order\Port\OrderBranchLookupPort;
+use App\Domain\Core\Order\Port\OrderBranchMenuSnapshotPort;
+use App\Domain\Core\Order\Port\OrderCatalogSnapshotPort;
+use App\Domain\Core\Order\Port\OrderClientLookupPort;
+use App\Domain\Core\Order\Port\OrderDeliveryTariffPort;
 use App\Domain\Core\Order\ValueObject\OrderDeliveryAddress;
 use App\Domain\Core\Order\ValueObject\OrderDeliveryInfo;
 use App\Domain\Core\Order\ValueObject\OrderLine;
-use App\Domain\Supporting\Catalog\Entity\Product;
-use App\Domain\Supporting\Catalog\Repository\CatalogItemRepository;
-use App\Domain\Supporting\Company\Entity\Branch;
-use App\Domain\Supporting\Company\Entity\BranchSet;
-use App\Domain\Supporting\Company\Repository\BranchMenuRepository;
-use App\Domain\Supporting\Company\Repository\BranchRepository;
-use App\Domain\Supporting\Company\Repository\BranchSetRepository;
-use App\Domain\Supporting\Customer\Repository\ClientRepository;
-use App\Domain\Core\Delivery\Tariff\Repository\DeliveryConfigurationRepository;
 use App\Shared\Enum\DeliveryMethod;
 use App\Shared\Geo\AddressGeocoder;
-use App\Shared\Geo\DeliveryZoneMatcher;
 use App\Shared\ValueObject\PhoneNumber;
 use DateTimeImmutable;
 use Illuminate\Support\Str;
@@ -32,12 +27,11 @@ use Illuminate\Support\Str;
 final class QuoteOrderUseCase implements CheckoutQuote
 {
     public function __construct(
-        private readonly CatalogItemRepository $catalog,
-        private readonly ClientRepository $clients,
-        private readonly DeliveryConfigurationRepository $deliveryConfigs,
-        private readonly BranchRepository $branches,
-        private readonly BranchMenuRepository $menu,
-        private readonly BranchSetRepository $branchSets,
+        private readonly OrderCatalogSnapshotPort $catalog,
+        private readonly OrderClientLookupPort $clients,
+        private readonly OrderDeliveryTariffPort $deliveryTariffs,
+        private readonly OrderBranchLookupPort $branches,
+        private readonly OrderBranchMenuSnapshotPort $menu,
         private readonly FormCheckoutPromotions $promotions,
         private readonly AddressGeocoder $geocoder,
     ) {}
@@ -54,17 +48,17 @@ final class QuoteOrderUseCase implements CheckoutQuote
         $deliveryMethod = $this->normalizeDeliveryMethod($dto->deliveryMethod);
         $paymentMethod = $this->normalizePaymentMethod($dto->paymentMethod);
 
-        $branch = $this->requireActiveBranch($dto->branchId);
-        [$cartLines] = $this->buildUserLines($branch->id(), $dto->lines);
+        $branch = $this->branches->requireActiveBranch($dto->branchId);
+        [$cartLines] = $this->buildUserLines($branch['id'], $dto->lines);
 
-        $deliveryConfig = $this->deliveryConfigs->findByBranch($branch->id());
+        $deliveryConfig = $this->deliveryTariffs->findConfigByBranch($branch['id']);
         if ($deliveryConfig === null) {
             throw new \InvalidArgumentException('Конфигурация доставки филиала не найдена.');
         }
 
-        [$latitude, $longitude] = $this->resolveCoordinates($deliveryMethod, $dto, $branch);
+        [$latitude, $longitude] = $this->resolveCoordinates($deliveryMethod, $dto, $branch['city']);
         $zone = $deliveryMethod === DeliveryMethod::Courier->value
-            ? DeliveryZoneMatcher::match($deliveryConfig->zones(), $latitude, $longitude)
+            ? $this->deliveryTariffs->matchZoneByCoordinates($branch['id'], $latitude, $longitude)
             : null;
 
         [$deliveryAvailable, $inZone] = $this->resolveDeliveryAvailability(
@@ -80,17 +74,17 @@ final class QuoteOrderUseCase implements CheckoutQuote
         if ($deliveryMethod === DeliveryMethod::Courier->value) {
             $deliveryInfo = OrderDeliveryInfo::courier(
                 address: $this->deliveryAddress($dto),
-                zoneId: $zone?->id() ?? 'outside',
-                feeKopecks: $zone?->deliveryFeeKopecks() ?? 0,
+                zoneId: $zone !== null ? $zone['id'] : 'outside',
+                feeKopecks: $zone !== null ? $zone['fee_kopecks'] : 0,
             );
-            $zoneIsRemote = $zone === null || $zone->isRemote();
+            $zoneIsRemote = $zone === null || $zone['is_remote'];
         } else {
             $deliveryInfo = OrderDeliveryInfo::pickup();
             $zoneIsRemote = false;
         }
 
         $formed = $this->promotions->apply(
-            $branch->id(),
+            $branch['id'],
             $this->toBaseLines($cartLines),
             $deliveryInfo,
             $at,
@@ -131,7 +125,7 @@ final class QuoteOrderUseCase implements CheckoutQuote
             'grand_total_rubles' => $grandTotalRubles,
         ];
 
-        $branchId = $branch->id();
+        $branchId = $branch['id'];
 
         $client = $this->resolveClientSnapshot($dto->client);
 
@@ -144,16 +138,16 @@ final class QuoteOrderUseCase implements CheckoutQuote
             'delivery_available' => $deliveryAvailable,
             'in_zone' => $inZone,
             'zone' => $zone !== null ? [
-                'id' => $zone->id(),
-                'name' => $zone->name(),
-                'fee_kopecks' => $zone->deliveryFeeKopecks(),
-                'is_remote' => $zone->isRemote(),
+                'id' => $zone['id'],
+                'name' => $zone['name'],
+                'fee_kopecks' => $zone['fee_kopecks'],
+                'is_remote' => $zone['is_remote'],
             ] : null,
-            'zone_id' => $zone?->id(),
-            'zone_name' => $zone?->name(),
+            'zone_id' => $zone !== null ? $zone['id'] : null,
+            'zone_name' => $zone !== null ? $zone['name'] : null,
             'is_remote' => $zoneIsRemote,
             'fee' => $deliveryFeeKopecks,
-            'min_order_kopecks' => $deliveryConfig->minOrderAmountKopecks(),
+            'min_order_kopecks' => $deliveryConfig['min_order_kopecks'],
             'branch_id' => $branchId,
             'latitude' => $latitude,
             'longitude' => $longitude,
@@ -208,8 +202,8 @@ final class QuoteOrderUseCase implements CheckoutQuote
         }
 
         $menuById = $this->menu->findByBranchAndItemIds($branchId, array_values(array_unique($productIds)));
-        $products = $this->indexProducts($this->catalog->findActiveProductsByIds(array_values(array_unique($productIds))));
-        $sets = $this->indexSets($this->branchSets->findAvailableByBranchAndIds($branchId, array_values(array_unique($setIds))));
+        $products = $this->catalog->findActiveProductsByIds(array_values(array_unique($productIds)));
+        $sets = $this->menu->findAvailableSetsByBranchAndIds($branchId, array_values(array_unique($setIds)));
 
         $cartLines = [];
         $itemsTotalRubles = 0;
@@ -222,10 +216,10 @@ final class QuoteOrderUseCase implements CheckoutQuote
 
             if ($kind === 'set') {
                 $set = $sets[$id] ?? null;
-                if (! $set instanceof BranchSet || ! $set->isAvailable()) {
+                if ($set === null || ! ($set['is_available'] ?? false)) {
                     throw new \InvalidArgumentException(sprintf('Сет #%d недоступен в меню филиала.', $id));
                 }
-                $unitKopecks = $set->priceKopecks();
+                $unitKopecks = (int) $set['price_kopecks'];
                 $unit = intdiv($unitKopecks, 100);
                 $itemsTotalRubles += $unit * $quantity;
                 $cartLine = $this->setLine($set, $quantity, $unit, 'set');
@@ -237,14 +231,14 @@ final class QuoteOrderUseCase implements CheckoutQuote
             }
 
             $menuItem = $menuById[$id] ?? null;
-            if ($menuItem === null || ! $menuItem->isAvailable()) {
+            if ($menuItem === null || ! ($menuItem['is_available'] ?? false)) {
                 throw new \InvalidArgumentException(sprintf('Товар #%d недоступен в меню филиала.', $id));
             }
             $product = $products[$id] ?? null;
-            if (! $product instanceof Product) {
+            if ($product === null) {
                 throw new \InvalidArgumentException(sprintf('Товар #%d недоступен.', $id));
             }
-            $unitKopecks = $menuItem->priceKopecks();
+            $unitKopecks = (int) $menuItem['price_kopecks'];
             $unit = intdiv($unitKopecks, 100);
             $itemsTotalRubles += $unit * $quantity;
             $cartLine = $this->productLine($product, $quantity, $unit, 'regular');
@@ -441,11 +435,11 @@ final class QuoteOrderUseCase implements CheckoutQuote
 
             return [
                 'kind' => 'client',
-                'id' => $found->id(),
-                'client_id' => $found->id(),
-                'name' => $found->name(),
-                'phone' => $found->phone(),
-                'email' => $found->email(),
+                'id' => $found['id'],
+                'client_id' => $found['id'],
+                'name' => $found['name'],
+                'phone' => $found['phone'],
+                'email' => $found['email'],
             ];
         }
 
@@ -475,25 +469,12 @@ final class QuoteOrderUseCase implements CheckoutQuote
     }
 
     /**
-     * Quote/create всегда работают в одном активном филиале.
-     */
-    private function requireActiveBranch(int $branchId): Branch
-    {
-        $branch = $this->branches->findById($branchId);
-        if (! $branch instanceof Branch || ! $branch->isActive()) {
-            throw new \InvalidArgumentException('Филиал недоступен для оформления заказа.');
-        }
-
-        return $branch;
-    }
-
-    /**
      * @return array{0: ?float, 1: ?float}
      */
     private function resolveCoordinates(
         string $deliveryMethod,
         QuoteOrderDto $dto,
-        ?Branch $branch,
+        ?string $branchCity,
     ): array {
         if ($deliveryMethod !== DeliveryMethod::Courier->value) {
             return [null, null];
@@ -512,7 +493,7 @@ final class QuoteOrderUseCase implements CheckoutQuote
             throw new \InvalidArgumentException('Для курьера нужны street и house.');
         }
 
-        $coords = $this->geocoder->geocode($street, $house, $branch?->city());
+        $coords = $this->geocoder->geocode($street, $house, $branchCity);
 
         return [$coords['latitude'] ?? null, $coords['longitude'] ?? null];
     }
@@ -572,46 +553,19 @@ final class QuoteOrderUseCase implements CheckoutQuote
     }
 
     /**
-     * @param  list<Product>  $products
-     * @return array<int, Product>
-     */
-    private function indexProducts(array $products): array
-    {
-        $indexed = [];
-        foreach ($products as $product) {
-            $indexed[$product->id()] = $product;
-        }
-
-        return $indexed;
-    }
-
-    /**
-     * @param  list<BranchSet>  $sets
-     * @return array<int, BranchSet>
-     */
-    private function indexSets(array $sets): array
-    {
-        $indexed = [];
-        foreach ($sets as $set) {
-            $indexed[$set->id()] = $set;
-        }
-
-        return $indexed;
-    }
-
-    /**
+     * @param  array{id: int, name: string, sku: string|null, images: list<string>}  $product
      * @return array<string, mixed>
      */
-    private function productLine(Product $product, int $quantity, int $unitPriceRubles, string $kind): array
+    private function productLine(array $product, int $quantity, int $unitPriceRubles, string $kind): array
     {
         return [
-            'product_id' => $product->id(),
-            'product_name' => $product->name(),
+            'product_id' => $product['id'],
+            'product_name' => $product['name'],
             'quantity' => $quantity,
             'unit_price_rubles' => $unitPriceRubles,
             'line_total_rubles' => $unitPriceRubles * $quantity,
-            'sku' => $product->sku(),
-            'images' => $this->imagePaths($product),
+            'sku' => $product['sku'],
+            'images' => $product['images'],
             'payload' => [
                 'kind' => $kind,
                 'catalog_kind' => 'product',
@@ -620,21 +574,14 @@ final class QuoteOrderUseCase implements CheckoutQuote
     }
 
     /**
+     * @param  array{id: int, name: string, price_kopecks: int, composition: list<array{product_id: int, quantity: int}>}  $set
      * @return array<string, mixed>
      */
-    private function setLine(BranchSet $set, int $quantity, int $unitPriceRubles, string $kind): array
+    private function setLine(array $set, int $quantity, int $unitPriceRubles, string $kind): array
     {
-        $composition = [];
-        foreach ($set->lines() as $setLine) {
-            $composition[] = [
-                'product_id' => $setLine->catalogItemId(),
-                'quantity' => $setLine->quantity(),
-            ];
-        }
-
         return [
-            'product_id' => $set->id(),
-            'product_name' => $set->name(),
+            'product_id' => $set['id'],
+            'product_name' => $set['name'],
             'quantity' => $quantity,
             'unit_price_rubles' => $unitPriceRubles,
             'line_total_rubles' => $unitPriceRubles * $quantity,
@@ -643,30 +590,8 @@ final class QuoteOrderUseCase implements CheckoutQuote
             'payload' => [
                 'kind' => $kind,
                 'catalog_kind' => 'set',
-                'composition' => $composition,
+                'composition' => $set['composition'],
             ],
         ];
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function imagePaths(Product $product): array
-    {
-        return $this->imagePathsFromList($product->images());
-    }
-
-    /**
-     * @param  list<\App\Domain\Supporting\Catalog\ValueObject\ProductImage>  $images
-     * @return list<string>
-     */
-    private function imagePathsFromList(array $images): array
-    {
-        $paths = [];
-        foreach ($images as $image) {
-            $paths[] = $image->path();
-        }
-
-        return $paths;
     }
 }

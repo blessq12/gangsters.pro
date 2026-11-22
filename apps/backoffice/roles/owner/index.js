@@ -10,12 +10,11 @@ const module = {
         { label: "Каталог", routeName: "owner-menu", icon: "menu", order: 3 },
         { label: "Компания", routeName: "owner-company", icon: "company", order: 4 },
         { label: "Доставка", routeName: "owner-delivery", icon: "delivery", order: 5 },
-        { label: "Акции", routeName: "owner-promotion", icon: "promotion", order: 6 },
-        { label: "Маркетинг", routeName: "owner-marketing", icon: "marketing", order: 7 },
-        { label: "Сотрудники", routeName: "owner-staff", icon: "staff", order: 8 },
-        { label: "Клиенты", routeName: "owner-clients", icon: "clients", order: 9 },
-        { label: "Склад", routeName: "owner-warehouse", icon: "warehouse", order: 10 },
-        { label: "Финансы", routeName: "owner-finance", icon: "finance", order: 11 },
+        { label: "Маркетинг", routeName: "owner-marketing", icon: "marketing", order: 6 },
+        { label: "Сотрудники", routeName: "owner-staff", icon: "staff", order: 7 },
+        { label: "Клиенты", routeName: "owner-clients", icon: "clients", order: 8 },
+        { label: "Склад", routeName: "owner-warehouse", icon: "warehouse", order: 9 },
+        { label: "Финансы", routeName: "owner-finance", icon: "finance", order: 10 },
     ],
     routes: [
         {
@@ -33,8 +32,12 @@ const module = {
                 {
                     path: "orders",
                     name: "owner-orders",
-                    component: () => import("./screens/OrdersScreen.vue"),
+                    component: () => import("./screens/OrdersHubScreen.vue"),
                     meta: { role: "owner" },
+                },
+                {
+                    path: "promotion",
+                    redirect: { name: "owner-orders", query: { section: "rules" } },
                 },
                 {
                     path: "orders/:id",
@@ -80,12 +83,6 @@ const module = {
                     path: "delivery",
                     name: "owner-delivery",
                     component: () => import("./screens/DeliveryScreen.vue"),
-                    meta: { role: "owner" },
-                },
-                {
-                    path: "promotion",
-                    name: "owner-promotion",
-                    component: () => import("./screens/PromotionScreen.vue"),
                     meta: { role: "owner" },
                 },
                 {
