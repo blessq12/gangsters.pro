@@ -18,6 +18,7 @@ final class BranchMenuPresenter
             'branch_id' => $item->branchId(),
             'catalog_item_id' => $item->catalogItemId(),
             'is_available' => $item->isAvailable(),
+            'is_gift_candidate' => $item->isGiftCandidate(),
             'price_kopecks' => $item->priceKopecks(),
             'price_rubles' => intdiv($item->priceKopecks(), 100),
         ];

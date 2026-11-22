@@ -247,6 +247,7 @@ export function useCheckoutWizard({
 
         return {
             orderId: order.id ?? null,
+            orderNumber: order.number ?? null,
             totalRubles: Number(order.total) || store.itemsTotalRubles || 0,
             deliveryLine,
             paymentLine: paymentLabel,

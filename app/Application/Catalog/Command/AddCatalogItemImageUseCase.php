@@ -18,10 +18,6 @@ final class AddCatalogItemImageUseCase
      */
     public function execute(int $itemId, UploadedFile $file, ?float $focusX = null, ?float $focusY = null): array
     {
-        if ($this->items->findProductById($itemId) === null && $this->items->findSetById($itemId) === null) {
-            // Item may be empty set; validate via addItemImage requireItem.
-        }
-
         $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension() ?: 'jpg');
         $basename = Str::uuid()->toString().'.'.$extension;
         $path = 'catalog/items/'.$itemId.'/'.$basename;

@@ -3,10 +3,11 @@
 namespace App\Application\Catalog\Command;
 
 use App\Application\Catalog\DTO\SaveProductDto;
-use App\Domain\Supporting\Catalog\Enum\PriceType;
+use App\Domain\Supporting\Catalog\Entity\TechCard;
 use App\Domain\Supporting\Catalog\Enum\ProductStatus;
-use App\Domain\Supporting\Catalog\Event\CatalogItemPriceChanged;
 use App\Domain\Supporting\Catalog\Repository\CatalogItemRepository;
+use App\Domain\Supporting\Catalog\Repository\TechCardRepository;
+use App\Domain\Supporting\Catalog\ValueObject\TechCardLine;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -16,6 +17,7 @@ final class SaveProductUseCase
 {
     public function __construct(
         private readonly CatalogItemRepository $items,
+        private readonly TechCardRepository $techCards,
     ) {}
 
     /**
@@ -33,13 +35,8 @@ final class SaveProductUseCase
             throw new \InvalidArgumentException('Некорректный статус товара.');
         }
 
-        $prices = $this->normalizePrices($dto->prices);
-
         $description = trim((string) $dto->description);
         $sku = $dto->sku !== null ? trim($dto->sku) : null;
-
-        $before = $dto->id !== null ? $this->items->findProductById($dto->id) : null;
-        $priceBefore = $before?->regularPrice()?->amountKopecks();
 
         $storedPaths = [];
 
@@ -47,7 +44,6 @@ final class SaveProductUseCase
             $id = DB::transaction(function () use (
                 $dto,
                 $name,
-                $prices,
                 $status,
                 $description,
                 $sku,
@@ -56,14 +52,12 @@ final class SaveProductUseCase
                 $itemId = $this->items->saveProduct(
                     $dto->id,
                     $name,
-                    $prices,
                     $dto->weight,
                     $status->value,
                     $description !== '' ? $description : null,
                     $sku !== '' ? $sku : null,
                     $dto->ingredients,
                     $dto->nutrition,
-                    $dto->tagIds,
                     $dto->isRoll,
                     $dto->isComplement,
                 );
@@ -116,6 +110,16 @@ final class SaveProductUseCase
                     }
                 }
 
+                $techLines = [];
+                foreach ($dto->techCardLines as $row) {
+                    $techLines[] = new TechCardLine(
+                        ingredientRef: (string) ($row['ingredient_ref'] ?? ''),
+                        quantity: (float) ($row['quantity'] ?? 0),
+                        unit: (string) ($row['unit'] ?? ''),
+                    );
+                }
+                $this->techCards->save(TechCard::forProduct($itemId, $techLines));
+
                 return $itemId;
             });
         } catch (\Throwable $exception) {
@@ -127,56 +131,6 @@ final class SaveProductUseCase
             throw $exception;
         }
 
-        $priceAfter = $this->items->findProductById($id)?->regularPrice()?->amountKopecks();
-        if ($before !== null && $priceAfter !== null && $priceAfter !== $priceBefore) {
-            event(new CatalogItemPriceChanged(
-                catalogItemId: $id,
-                name: $name,
-                regularPriceKopecks: $priceAfter,
-            ));
-        }
-
         return ['id' => $id];
-    }
-
-    /**
-     * @param  list<array{type?: mixed, amount?: mixed}>  $prices
-     * @return list<array{type: string, amount: int}>
-     */
-    private function normalizePrices(array $prices): array
-    {
-        $normalized = [];
-        foreach ($prices as $row) {
-            if (! is_array($row)) {
-                continue;
-            }
-            $type = PriceType::tryFrom((string) ($row['type'] ?? ''));
-            if ($type === null || $type === PriceType::Promo) {
-                throw new \InvalidArgumentException('Неизвестный тип цены: '.(string) ($row['type'] ?? ''));
-            }
-            if (! array_key_exists('amount', $row) || ! is_numeric($row['amount'])) {
-                throw new \InvalidArgumentException('У цены '.$type->value.' нужна сумма.');
-            }
-            $amount = (int) $row['amount'];
-            if ($amount < 0) {
-                throw new \InvalidArgumentException('Цена не может быть отрицательной.');
-            }
-            if (isset($normalized[$type->value])) {
-                throw new \InvalidArgumentException('Тип цены '.$type->value.' указан дважды.');
-            }
-            $normalized[$type->value] = [
-                'type' => $type->value,
-                'amount' => $amount,
-            ];
-        }
-
-        if ($normalized === []) {
-            throw new \InvalidArgumentException('Нужна хотя бы одна цена.');
-        }
-        if (! isset($normalized[PriceType::Regular->value])) {
-            throw new \InvalidArgumentException('Обязательна цена типа regular.');
-        }
-
-        return array_values($normalized);
     }
 }

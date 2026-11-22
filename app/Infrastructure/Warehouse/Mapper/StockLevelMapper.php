@@ -10,6 +10,7 @@ final class StockLevelMapper
     public function toDomain(WH_StockLevel $row): StockLevel
     {
         return new StockLevel(
+            branchId: (int) $row->branch_id,
             ingredientId: (int) $row->ingredient_id,
             quantity: (float) $row->quantity,
         );
@@ -21,6 +22,7 @@ final class StockLevelMapper
     public function toPersistence(StockLevel $level): array
     {
         return [
+            'branch_id' => $level->branchId(),
             'ingredient_id' => $level->ingredientId(),
             'quantity' => $level->quantity(),
         ];

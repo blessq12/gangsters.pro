@@ -44,6 +44,14 @@ export function updateZone(id, data) {
     return request("PUT", `/delivery/zones/${id}`, data);
 }
 
+/**
+ * Полная замена зон филиала (с геометрией).
+ * @param {{ branch_id: number|string, zones: Array<Record<string, unknown>> }} data
+ */
+export function replaceZones(data) {
+    return request("PUT", "/delivery/zones", data);
+}
+
 /** @param {number|string} branchId @param {{ offset?: number, limit?: number }} [query] */
 export function listZones(branchId, query = {}) {
     return withPage("/delivery/zones", { ...query, branch_id: branchId });

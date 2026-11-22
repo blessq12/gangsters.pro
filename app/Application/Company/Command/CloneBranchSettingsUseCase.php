@@ -8,14 +8,25 @@ use App\Domain\Core\Delivery\Tariff\Entity\DeliveryConfiguration;
 use App\Domain\Core\Delivery\Tariff\Repository\DeliveryConfigurationRepository;
 use App\Domain\Core\Order\Policy\PromotionPolicy;
 use App\Domain\Core\Order\Repository\PromotionPolicyRepository;
+use App\Domain\Supporting\Company\Entity\BranchCategory;
+use App\Domain\Supporting\Company\Entity\BranchCategoryItem;
 use App\Domain\Supporting\Company\Entity\BranchMenuItem;
+use App\Domain\Supporting\Company\Entity\BranchSet;
+use App\Domain\Supporting\Company\Entity\BranchTag;
+use App\Domain\Supporting\Company\Enum\BranchMenuEntryKind;
+use App\Domain\Supporting\Company\Repository\BranchCategoryRepository;
 use App\Domain\Supporting\Company\Repository\BranchMenuRepository;
 use App\Domain\Supporting\Company\Repository\BranchRepository;
+use App\Domain\Supporting\Company\Repository\BranchSetRepository;
+use App\Domain\Supporting\Company\Repository\BranchTagRepository;
 use App\Shared\Transaction\TransactionManager;
 
 /**
- * Копирует меню / политики / доставку с одного филиала на один или несколько.
+ * Копирует меню (позиции + категории/теги/сеты) / политики / доставку с одного филиала на один или несколько.
  * Catalog не трогает. Заказы не трогает. Режим overwrite | skip_existing.
+ *
+ * Структура меню (категории/теги/сеты) в skip_existing копируется только в филиал,
+ * где её ещё нет вообще — частичный перенос ломает ремап id сетов.
  */
 final class CloneBranchSettingsUseCase
 {
@@ -26,6 +37,9 @@ final class CloneBranchSettingsUseCase
     public function __construct(
         private readonly BranchRepository $branches,
         private readonly BranchMenuRepository $menu,
+        private readonly BranchCategoryRepository $categories,
+        private readonly BranchTagRepository $tags,
+        private readonly BranchSetRepository $sets,
         private readonly PromotionPolicyRepository $policies,
         private readonly DeliveryConfigurationRepository $delivery,
         private readonly DeliveryZonesChangedFactory $zonesChanged,
@@ -39,6 +53,7 @@ final class CloneBranchSettingsUseCase
      *     targets: list<array{
      *         branch_id: int,
      *         menu: array{copied: int, skipped: int},
+     *         structure: array{categories: int, tags: int, sets: int, skipped: bool},
      *         promotions: array{policy: string, roles_copied: int, roles_skipped: int},
      *         delivery: string
      *     }>
@@ -66,6 +81,7 @@ final class CloneBranchSettingsUseCase
 
         return $this->transaction->run(function () use ($dto, $mode, $sourceId, $targets): array {
             $sourceMenu = $dto->copyMenu ? $this->menu->listByBranch($sourceId) : [];
+            $sourceStructure = $dto->copyMenu ? $this->loadSourceStructure($sourceId) : null;
             $sourcePolicy = $dto->copyPromotions ? $this->policies->findByBranch($sourceId) : null;
             $sourceDelivery = $dto->copyDelivery ? $this->delivery->findByBranch($sourceId) : null;
 
@@ -85,6 +101,7 @@ final class CloneBranchSettingsUseCase
                     copyPromotions: $dto->copyPromotions,
                     copyDelivery: $dto->copyDelivery,
                     sourceMenu: $sourceMenu,
+                    sourceStructure: $sourceStructure,
                     sourcePolicy: $sourcePolicy,
                     sourceDelivery: $sourceDelivery,
                 );
@@ -100,9 +117,11 @@ final class CloneBranchSettingsUseCase
 
     /**
      * @param  list<BranchMenuItem>  $sourceMenu
+     * @param  array{categories: list<BranchCategory>, items: array<int, list<BranchCategoryItem>>, tags: list<BranchTag>, sets: list<BranchSet>, productTagIds: array<int, list<int>>}|null  $sourceStructure
      * @return array{
      *     branch_id: int,
      *     menu: array{copied: int, skipped: int},
+     *     structure: array{categories: int, tags: int, sets: int, skipped: bool},
      *     promotions: array{policy: string, roles_copied: int, roles_skipped: int},
      *     delivery: string
      * }
@@ -114,15 +133,20 @@ final class CloneBranchSettingsUseCase
         bool $copyPromotions,
         bool $copyDelivery,
         array $sourceMenu,
+        ?array $sourceStructure,
         ?PromotionPolicy $sourcePolicy,
         ?DeliveryConfiguration $sourceDelivery,
     ): array {
         $menuStats = ['copied' => 0, 'skipped' => 0];
+        $structureStats = ['categories' => 0, 'tags' => 0, 'sets' => 0, 'skipped' => false];
         $promoStats = ['policy' => 'skipped', 'roles_copied' => 0, 'roles_skipped' => 0];
         $deliveryStatus = 'skipped';
 
         if ($copyMenu) {
             $menuStats = $this->cloneMenu($targetId, $mode, $sourceMenu);
+            if ($sourceStructure !== null) {
+                $structureStats = $this->cloneStructure($targetId, $mode, $sourceStructure);
+            }
         }
 
         if ($copyPromotions && $sourcePolicy instanceof PromotionPolicy) {
@@ -136,6 +160,7 @@ final class CloneBranchSettingsUseCase
         return [
             'branch_id' => $targetId,
             'menu' => $menuStats,
+            'structure' => $structureStats,
             'promotions' => $promoStats,
             'delivery' => $deliveryStatus,
         ];
@@ -168,6 +193,7 @@ final class CloneBranchSettingsUseCase
                 catalogItemId: $catalogItemId,
                 isAvailable: $item->isAvailable(),
                 priceKopecks: $item->priceKopecks(),
+                isGiftCandidate: $item->isGiftCandidate(),
             );
         }
 
@@ -176,6 +202,152 @@ final class CloneBranchSettingsUseCase
         }
 
         return ['copied' => count($toUpsert), 'skipped' => $skipped];
+    }
+
+    /**
+     * @return array{
+     *     categories: list<BranchCategory>,
+     *     items: array<int, list<BranchCategoryItem>>,
+     *     tags: list<BranchTag>,
+     *     sets: list<BranchSet>,
+     *     productTagIds: array<int, list<int>>
+     * }
+     */
+    private function loadSourceStructure(int $sourceId): array
+    {
+        $categories = $this->categories->listByBranch($sourceId);
+        $items = [];
+        $productIds = [];
+        foreach ($categories as $category) {
+            $items[$category->id()] = $this->categories->findItemsByCategoryId($category->id());
+            foreach ($items[$category->id()] as $item) {
+                if ($item->entryKind() === BranchMenuEntryKind::Product) {
+                    $productIds[$item->entryId()] = $item->entryId();
+                }
+            }
+        }
+        foreach ($this->menu->listByBranch($sourceId) as $menuItem) {
+            $productIds[$menuItem->catalogItemId()] = $menuItem->catalogItemId();
+        }
+
+        return [
+            'categories' => $categories,
+            'items' => $items,
+            'tags' => $this->tags->listByBranch($sourceId),
+            'sets' => $this->sets->listByBranch($sourceId),
+            'productTagIds' => $this->tags->findTagIdsForEntries(
+                BranchMenuEntryKind::Product,
+                array_values($productIds),
+            ),
+        ];
+    }
+
+    /**
+     * Порядок важен: теги → сеты (теги сетов через ремап) → категории (ремап id сетов) → теги товаров.
+     *
+     * @param  array{categories: list<BranchCategory>, items: array<int, list<BranchCategoryItem>>, tags: list<BranchTag>, sets: list<BranchSet>, productTagIds: array<int, list<int>>}  $source
+     * @return array{categories: int, tags: int, sets: int, skipped: bool}
+     */
+    private function cloneStructure(int $targetId, string $mode, array $source): array
+    {
+        if ($mode === self::MODE_SKIP && $this->targetHasStructure($targetId)) {
+            return ['categories' => 0, 'tags' => 0, 'sets' => 0, 'skipped' => true];
+        }
+
+        /** @var array<int, int> $tagMap oldTagId => newTagId */
+        $tagMap = $this->tags->replaceAllForBranch($targetId, $source['tags']);
+
+        $sets = [];
+        foreach ($source['sets'] as $set) {
+            $sets[] = new BranchSet(
+                id: $set->id(),
+                branchId: $targetId,
+                name: $set->name(),
+                slug: $set->slug(),
+                description: $set->description(),
+                isAvailable: $set->isAvailable(),
+                priceKopecks: $set->priceKopecks(),
+                status: $set->status(),
+                lines: $set->lines(),
+                tagIds: $this->remapIds($set->tagIds(), $tagMap),
+            );
+        }
+
+        /** @var array<int, int> $setMap oldSetId => newSetId */
+        $setMap = $this->sets->replaceAllForBranch($targetId, $sets);
+
+        $categories = [];
+        $itemsByCategoryId = [];
+        foreach ($source['categories'] as $category) {
+            $categories[] = new BranchCategory(
+                id: $category->id(),
+                branchId: $targetId,
+                name: $category->name(),
+                slug: $category->slug(),
+                sortOrder: $category->sortOrder(),
+                isActive: $category->isActive(),
+                isAccompanying: $category->isAccompanying(),
+            );
+
+            $remapped = [];
+            foreach ($source['items'][$category->id()] ?? [] as $item) {
+                $entryId = $item->entryId();
+                if ($item->entryKind() === BranchMenuEntryKind::Set) {
+                    $entryId = $setMap[$entryId] ?? 0;
+                    if ($entryId < 1) {
+                        continue;
+                    }
+                }
+                $remapped[] = new BranchCategoryItem(
+                    categoryId: $category->id(),
+                    entryKind: $item->entryKind(),
+                    entryId: $entryId,
+                    sortOrder: $item->sortOrder(),
+                );
+            }
+            $itemsByCategoryId[$category->id()] = $remapped;
+        }
+        $this->categories->replaceAllForBranch($targetId, $categories, $itemsByCategoryId);
+
+        foreach ($source['productTagIds'] as $productId => $oldTagIds) {
+            $this->tags->syncEntryTags(
+                $targetId,
+                BranchMenuEntryKind::Product,
+                $productId,
+                $this->remapIds($oldTagIds, $tagMap),
+            );
+        }
+
+        return [
+            'categories' => count($categories),
+            'tags' => count($tagMap),
+            'sets' => count($setMap),
+            'skipped' => false,
+        ];
+    }
+
+    private function targetHasStructure(int $targetId): bool
+    {
+        return $this->categories->listByBranch($targetId) !== []
+            || $this->tags->listByBranch($targetId) !== []
+            || $this->sets->listByBranch($targetId) !== [];
+    }
+
+    /**
+     * @param  list<int>  $ids
+     * @param  array<int, int>  $map
+     * @return list<int>
+     */
+    private function remapIds(array $ids, array $map): array
+    {
+        $out = [];
+        foreach ($ids as $id) {
+            if (isset($map[$id])) {
+                $out[$map[$id]] = $map[$id];
+            }
+        }
+
+        return array_values($out);
     }
 
     /**
@@ -241,7 +413,6 @@ final class CloneBranchSettingsUseCase
      *     gift_courier_min_order_kopecks: int,
      *     gift_courier_weekdays: list<int>,
      *     gift_benefit_active: bool,
-     *     gift_product_id: int|null,
      *     delivery_free_threshold_kopecks: int,
      *     delivery_outside_zone_surcharge_kopecks: int,
      *     delivery_benefit_active: bool,
@@ -272,9 +443,8 @@ final class CloneBranchSettingsUseCase
             'gift_courier_min_order_kopecks' => max(1, (int) ($courier['min_order_amount_kopecks'] ?? 1)),
             'gift_courier_weekdays' => $weekdays,
             'gift_benefit_active' => (bool) (($pickup['is_active'] ?? false) || ($courier['is_active'] ?? false)),
-            'gift_product_id' => $policy->giftProductId(),
             'delivery_free_threshold_kopecks' => max(0, (int) ($delivery['free_delivery_threshold_kopecks'] ?? 0)),
-            'delivery_outside_zone_surcharge_kopecks' => max(0, (int) ($delivery['outside_zone_surcharge_kopecks'] ?? 0)),
+            'delivery_outside_zone_surcharge_kopecks' => 0,
             'delivery_benefit_active' => (bool) ($delivery['is_active'] ?? false),
             'complement_set_benefit_active' => (bool) ($complement['is_active'] ?? false),
             'complement_set_rolls_per_set' => max(1, (int) ($complement['rolls_per_set'] ?? 1)),

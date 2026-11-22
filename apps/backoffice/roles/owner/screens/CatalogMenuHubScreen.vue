@@ -1,36 +1,79 @@
 <script setup>
 import { computed, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import BranchCategoriesPanel from "../components/menu/BranchCategoriesPanel.vue";
+import BranchSetsPanel from "../components/menu/BranchSetsPanel.vue";
+import BranchTagsPanel from "../components/menu/BranchTagsPanel.vue";
+import OwnerBranchSelector from "../components/branch/OwnerBranchSelector.vue";
+import { useOwnerBranchContext } from "../composables/useOwnerBranchContext.js";
 import CatalogScreen from "./CatalogScreen.vue";
 import MenuScreen from "./MenuScreen.vue";
 
 const route = useRoute();
 const router = useRouter();
+const { selectedBranchId, ensureLoaded } = useOwnerBranchContext();
 
-const sections = [
-    { id: "catalog", label: "Справочник" },
-    { id: "branch-menu", label: "Меню филиала" },
+ensureLoaded();
+
+/** Два верхних контекста: глобальный справочник vs меню филиала. */
+const contexts = [
+    { id: "catalog", label: "Справочник товаров" },
+    { id: "branch", label: "Меню филиала" },
 ];
 
-const section = computed(() =>
-    route.query.section === "branch-menu" ? "branch-menu" : "catalog",
+const branchSections = [
+    { id: "prices", label: "Цены и доступность" },
+    { id: "categories", label: "Категории" },
+    { id: "tags", label: "Теги" },
+    { id: "sets", label: "Наборы" },
+];
+
+const contextIds = contexts.map((item) => item.id);
+const branchSectionIds = branchSections.map((item) => item.id);
+
+const context = computed(() =>
+    contextIds.includes(String(route.query.ctx)) ? String(route.query.ctx) : "catalog",
 );
 
-function setSection(id) {
-    if (section.value === id) {
+const branchSection = computed(() =>
+    branchSectionIds.includes(String(route.query.section))
+        ? String(route.query.section)
+        : "prices",
+);
+
+function setContext(id) {
+    if (context.value === id) {
+        return;
+    }
+    if (id === "catalog") {
+        router.replace({ name: "owner-menu", query: {} });
         return;
     }
     router.replace({
         name: "owner-menu",
-        query: id === "catalog" ? {} : { section: id },
+        query: { ctx: "branch", section: "prices" },
+    });
+}
+
+function setBranchSection(id) {
+    if (branchSection.value === id) {
+        return;
+    }
+    router.replace({
+        name: "owner-menu",
+        query: { ctx: "branch", section: id },
     });
 }
 
 watch(
-    () => route.query.section,
-    (value) => {
-        if (value && value !== "catalog" && value !== "branch-menu") {
+    () => [route.query.ctx, route.query.section],
+    ([ctx, section]) => {
+        if (ctx && !contextIds.includes(String(ctx))) {
             router.replace({ name: "owner-menu", query: {} });
+            return;
+        }
+        if (String(ctx) === "branch" && section && !branchSectionIds.includes(String(section))) {
+            router.replace({ name: "owner-menu", query: { ctx: "branch", section: "prices" } });
         }
     },
     { immediate: true },
@@ -39,32 +82,53 @@ watch(
 
 <template>
     <div class="mx-auto w-full max-w-7xl space-y-6 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
-        <div class="flex flex-wrap items-end justify-between gap-3">
-            <div>
-                <h1 class="text-2xl font-semibold tracking-tight text-bo-fg">
-                    Меню
-                </h1>
-                <p class="mt-1 text-sm text-bo-muted">
-                    Справочник товаров общий; продажа и цена — в меню выбранного филиала.
-                </p>
-            </div>
+        <div class="space-y-3">
+            <h1 class="text-2xl font-semibold tracking-tight text-bo-fg">
+                Каталог
+            </h1>
+
             <div class="flex flex-wrap gap-2">
                 <button
-                    v-for="item in sections"
+                    v-for="item in contexts"
                     :key="item.id"
                     type="button"
-                    class="h-10 px-4 text-sm font-medium transition-colors duration-150"
-                    :class="section === item.id
+                    class="h-11 px-4 text-sm font-medium transition-colors duration-150"
+                    :class="context === item.id
                         ? 'bg-bo-accent text-white'
                         : 'bg-white/[0.04] text-bo-muted hover:bg-white/[0.08] hover:text-bo-fg'"
-                    @click="setSection(item.id)"
+                    @click="setContext(item.id)"
                 >
                     {{ item.label }}
                 </button>
             </div>
         </div>
 
-        <CatalogScreen v-if="section === 'catalog'" embedded />
-        <MenuScreen v-else embedded />
+        <CatalogScreen v-if="context === 'catalog'" embedded />
+
+        <template v-else>
+            <OwnerBranchSelector />
+
+            <div class="flex flex-wrap gap-2">
+                <button
+                    v-for="item in branchSections"
+                    :key="item.id"
+                    type="button"
+                    class="h-10 px-3.5 text-sm font-medium transition-colors duration-150"
+                    :class="branchSection === item.id
+                        ? 'bg-white/15 text-bo-fg'
+                        : 'bg-transparent text-bo-muted hover:bg-white/[0.06] hover:text-bo-fg'"
+                    @click="setBranchSection(item.id)"
+                >
+                    {{ item.label }}
+                </button>
+            </div>
+
+            <template v-if="selectedBranchId">
+                <MenuScreen v-if="branchSection === 'prices'" embedded />
+                <BranchCategoriesPanel v-else-if="branchSection === 'categories'" embedded />
+                <BranchTagsPanel v-else-if="branchSection === 'tags'" embedded />
+                <BranchSetsPanel v-else embedded />
+            </template>
+        </template>
     </div>
 </template>

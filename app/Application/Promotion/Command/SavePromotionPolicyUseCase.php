@@ -5,13 +5,11 @@ namespace App\Application\Promotion\Command;
 use App\Application\Promotion\DTO\SavePromotionPolicyDto;
 use App\Application\Promotion\Query\GetAdminPromotionPolicyUseCase;
 use App\Domain\Core\Order\Repository\PromotionPolicyRepository;
-use App\Domain\Supporting\Catalog\Repository\CatalogItemRepository;
 
 final class SavePromotionPolicyUseCase
 {
     public function __construct(
         private readonly PromotionPolicyRepository $policies,
-        private readonly CatalogItemRepository $catalog,
         private readonly GetAdminPromotionPolicyUseCase $read,
     ) {}
 
@@ -28,21 +26,12 @@ final class SavePromotionPolicyUseCase
             throw new \InvalidArgumentException('Пороги подарка не могут быть отрицательными.');
         }
 
-        if ($dto->deliveryFreeThresholdKopecks < 0 || $dto->deliveryOutsideZoneSurchargeKopecks < 0) {
-            throw new \InvalidArgumentException('Пороги доставки не могут быть отрицательными.');
+        if ($dto->deliveryFreeThresholdKopecks < 0) {
+            throw new \InvalidArgumentException('Порог бесплатной доставки не может быть отрицательным.');
         }
 
         if ($dto->complementSetRollsPerSet < 1 || $dto->complementSetMaxSets < 1) {
             throw new \InvalidArgumentException('rolls_per_set и max_sets должны быть ≥ 1.');
-        }
-
-        $giftProductId = $dto->giftProductId;
-        if ($giftProductId !== null && $giftProductId > 0) {
-            if ($this->catalog->findProductById($giftProductId) === null) {
-                throw new \InvalidArgumentException('Товар-подарок не найден в каталоге.');
-            }
-        } else {
-            $giftProductId = null;
         }
 
         $weekdays = [];
@@ -55,14 +44,14 @@ final class SavePromotionPolicyUseCase
         $weekdays = array_values($weekdays);
         sort($weekdays);
 
+        // outside_zone_surcharge — ответственность доставки; всегда 0 в политике акций.
         $this->policies->saveForBranch($dto->branchId, [
             'gift_pickup_min_order_kopecks' => $dto->giftPickupMinOrderKopecks,
             'gift_courier_min_order_kopecks' => $dto->giftCourierMinOrderKopecks,
             'gift_courier_weekdays' => $weekdays,
             'gift_benefit_active' => $dto->giftBenefitActive,
-            'gift_product_id' => $giftProductId,
             'delivery_free_threshold_kopecks' => $dto->deliveryFreeThresholdKopecks,
-            'delivery_outside_zone_surcharge_kopecks' => $dto->deliveryOutsideZoneSurchargeKopecks,
+            'delivery_outside_zone_surcharge_kopecks' => 0,
             'delivery_benefit_active' => $dto->deliveryBenefitActive,
             'complement_set_benefit_active' => $dto->complementSetBenefitActive,
             'complement_set_rolls_per_set' => $dto->complementSetRollsPerSet,

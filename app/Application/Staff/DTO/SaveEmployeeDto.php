@@ -12,5 +12,6 @@ final readonly class SaveEmployeeDto
         public string $role,
         public ?string $password,
         public ?bool $isActive,
+        public ?int $branchId = null,
     ) {}
 }

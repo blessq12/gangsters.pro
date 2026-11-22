@@ -13,7 +13,6 @@ final class PRM_Policy extends Model
      */
     protected $fillable = [
         'branch_id',
-        'gift_product_id',
         'gift_rules',
         'delivery_benefit',
         'complement_set_benefit',
@@ -24,7 +23,6 @@ final class PRM_Policy extends Model
      */
     protected $casts = [
         'branch_id' => 'integer',
-        'gift_product_id' => 'integer',
         'gift_rules' => 'array',
         'delivery_benefit' => 'array',
         'complement_set_benefit' => 'array',

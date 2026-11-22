@@ -289,6 +289,7 @@ export function buildQuoteOrderPayload(
 ) {
     const userLines = store.userItems.map((item) => ({
         product_id: item.productId,
+        kind: item.kind === "set" ? "set" : "product",
         quantity: item.qty,
     }));
 
@@ -315,6 +316,8 @@ export function buildQuoteOrderPayload(
         : null;
 
     const coords = resolveCoords(selectedAddress, store);
+    const giftProductId = Number(store.promotions?.freeRollGiftProductId) || 0;
+
     return {
         branch_id: useContentStore().selectedBranchId,
         lines: userLines,
@@ -331,6 +334,7 @@ export function buildQuoteOrderPayload(
         change_from_rubles: paymentPayload?.change_from_rubles,
         latitude: coords.latitude,
         longitude: coords.longitude,
+        gift_product_id: giftProductId > 0 ? giftProductId : null,
     };
 }
 
@@ -432,11 +436,13 @@ export function buildLocalCartItem(product, qty, payload = null) {
         isSystem: false,
         lineKind: "user",
         productId,
+        kind: product?.kind === "set" ? "set" : "product",
         qty: quantity,
         productSnapshot: {
             id: productId,
             name: String(product?.name || ""),
             price: unitRub,
+            kind: product?.kind === "set" ? "set" : "product",
         },
         pricing: {
             listUnitPriceKopecks: unitKopecks,

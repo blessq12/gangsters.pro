@@ -13,23 +13,25 @@ final class EloquentStockLevelRepository implements StockLevelRepository
         private readonly StockLevelMapper $mapper,
     ) {}
 
-    public function findByIngredientId(int $ingredientId): ?StockLevel
+    public function findByBranchAndIngredient(int $branchId, int $ingredientId): ?StockLevel
     {
         $row = WH_StockLevel::query()
+            ->where('branch_id', $branchId)
             ->where('ingredient_id', $ingredientId)
             ->first();
 
         return $row instanceof WH_StockLevel ? $this->mapper->toDomain($row) : null;
     }
 
-    public function listAll(): array
+    public function listByBranch(int $branchId): array
     {
-        return $this->listPage(0, max(1, $this->countAll()));
+        return $this->listByBranchPage($branchId, 0, max(1, $this->countByBranch($branchId)));
     }
 
-    public function listPage(int $offset, int $limit): array
+    public function listByBranchPage(int $branchId, int $offset, int $limit): array
     {
         return WH_StockLevel::query()
+            ->where('branch_id', $branchId)
             ->orderBy('ingredient_id')
             ->offset(max(0, $offset))
             ->limit(max(1, $limit))
@@ -38,15 +40,18 @@ final class EloquentStockLevelRepository implements StockLevelRepository
             ->all();
     }
 
-    public function countAll(): int
+    public function countByBranch(int $branchId): int
     {
-        return (int) WH_StockLevel::query()->count();
+        return (int) WH_StockLevel::query()->where('branch_id', $branchId)->count();
     }
 
     public function save(StockLevel $level): void
     {
         WH_StockLevel::query()->updateOrCreate(
-            ['ingredient_id' => $level->ingredientId()],
+            [
+                'branch_id' => $level->branchId(),
+                'ingredient_id' => $level->ingredientId(),
+            ],
             $this->mapper->toPersistence($level),
         );
     }

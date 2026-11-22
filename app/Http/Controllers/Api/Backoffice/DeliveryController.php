@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Backoffice;
 use App\Application\Delivery\Command\CreateRouteSheetUseCase;
 use App\Application\Delivery\Command\SaveDeliveryConfigurationUseCase;
 use App\Application\Delivery\Command\SaveDeliveryZoneUseCase;
+use App\Application\Delivery\Command\SaveDeliveryZonesUseCase;
 use App\Application\Delivery\Command\SettleStopUseCase;
 use App\Application\Delivery\Command\TakeRouteSheetUseCase;
 use App\Application\Delivery\DTO\CreateRouteSheetDto;
@@ -44,6 +45,31 @@ final class DeliveryController extends Controller
     public function update(Request $request, SaveDeliveryConfigurationUseCase $useCase): JsonResponse
     {
         return $this->saveConfiguration($request, $useCase, 200);
+    }
+
+    public function replaceZones(Request $request, SaveDeliveryZonesUseCase $useCase): JsonResponse
+    {
+        $validated = $request->validate([
+            'branch_id' => ['required', 'integer', 'min:1'],
+            'zones' => ['required', 'array'],
+            'zones.*.id' => ['nullable', 'string', 'max:64'],
+            'zones.*.name' => ['required', 'string', 'max:255'],
+            'zones.*.fee' => ['nullable', 'integer', 'min:0'],
+            'zones.*.fee_rubles' => ['nullable', 'integer', 'min:0'],
+            'zones.*.is_remote' => ['sometimes', 'boolean'],
+            'zones.*.geometry' => ['required', 'array'],
+            'zones.*.geometry.type' => ['required', 'string', 'in:Polygon,MultiPolygon'],
+            'zones.*.geometry.coordinates' => ['required', 'array'],
+        ]);
+
+        try {
+            return response()->json($useCase->execute(
+                branchId: (int) $validated['branch_id'],
+                zones: $validated['zones'],
+            ));
+        } catch (InvalidArgumentException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
     }
 
     public function storeZone(Request $request, SaveDeliveryZoneUseCase $useCase): JsonResponse
@@ -173,6 +199,7 @@ final class DeliveryController extends Controller
             'zones.*.fee' => ['nullable', 'integer', 'min:0'],
             'zones.*.fee_rubles' => ['nullable', 'integer', 'min:0'],
             'zones.*.is_remote' => ['sometimes', 'boolean'],
+            'zones.*.geometry' => ['sometimes', 'array'],
         ]);
 
         try {
@@ -184,7 +211,7 @@ final class DeliveryController extends Controller
                     ? (int) $validated['average_delivery_time_minutes']
                     : null,
                 branchId: (int) $validated['branch_id'],
-                zones: is_array($validated['zones'] ?? null) ? $validated['zones'] : [],
+                zones: array_key_exists('zones', $validated) ? $validated['zones'] : null,
             ));
         } catch (InvalidArgumentException $exception) {
             return response()->json(['message' => $exception->getMessage()], 422);

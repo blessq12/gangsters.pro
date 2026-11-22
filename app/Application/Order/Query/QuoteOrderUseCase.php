@@ -11,11 +11,12 @@ use App\Domain\Core\Order\ValueObject\OrderDeliveryAddress;
 use App\Domain\Core\Order\ValueObject\OrderDeliveryInfo;
 use App\Domain\Core\Order\ValueObject\OrderLine;
 use App\Domain\Supporting\Catalog\Entity\Product;
-use App\Domain\Supporting\Catalog\Entity\ProductSet;
 use App\Domain\Supporting\Catalog\Repository\CatalogItemRepository;
 use App\Domain\Supporting\Company\Entity\Branch;
+use App\Domain\Supporting\Company\Entity\BranchSet;
 use App\Domain\Supporting\Company\Repository\BranchMenuRepository;
 use App\Domain\Supporting\Company\Repository\BranchRepository;
+use App\Domain\Supporting\Company\Repository\BranchSetRepository;
 use App\Domain\Supporting\Customer\Repository\ClientRepository;
 use App\Domain\Core\Delivery\Tariff\Repository\DeliveryConfigurationRepository;
 use App\Shared\Enum\DeliveryMethod;
@@ -36,6 +37,7 @@ final class QuoteOrderUseCase implements CheckoutQuote
         private readonly DeliveryConfigurationRepository $deliveryConfigs,
         private readonly BranchRepository $branches,
         private readonly BranchMenuRepository $menu,
+        private readonly BranchSetRepository $branchSets,
         private readonly FormCheckoutPromotions $promotions,
         private readonly AddressGeocoder $geocoder,
     ) {}
@@ -93,6 +95,7 @@ final class QuoteOrderUseCase implements CheckoutQuote
             $deliveryInfo,
             $at,
             $zoneIsRemote,
+            $dto->giftProductId,
         );
         $cartLines = $this->presentLines($formed['lines'], $cartLines);
         $itemsTotalKopecks = 0;
@@ -181,64 +184,73 @@ final class QuoteOrderUseCase implements CheckoutQuote
     }
 
     /**
-     * Цены и доступность — только из меню филиала.
+     * Цены и доступность — только из меню филиала / сетов филиала.
      *
-     * @param  list<array{product_id: int, quantity: int}>  $lines
+     * @param  list<array{product_id?: int, id?: int, quantity: int, kind?: string}>  $lines
      * @return array{0: list<array<string, mixed>>, 1: int, 2: list<array{product_id: int, quantity: int}>}
      */
     private function buildUserLines(int $branchId, array $lines): array
     {
-        $ids = [];
+        $productIds = [];
+        $setIds = [];
         foreach ($lines as $line) {
-            $productId = (int) ($line['product_id'] ?? 0);
+            $id = (int) ($line['id'] ?? $line['product_id'] ?? 0);
             $quantity = (int) ($line['quantity'] ?? 0);
-            if ($productId < 1 || $quantity < 1) {
+            $kind = (string) ($line['kind'] ?? 'product');
+            if ($id < 1 || $quantity < 1) {
                 throw new \InvalidArgumentException('Некорректная строка корзины.');
             }
-            $ids[] = $productId;
+            if ($kind === 'set') {
+                $setIds[] = $id;
+            } else {
+                $productIds[] = $id;
+            }
         }
 
-        $uniqueIds = array_values(array_unique($ids));
-        $menuById = $this->menu->findByBranchAndItemIds($branchId, $uniqueIds);
-        $products = $this->indexProducts($this->catalog->findActiveProductsByIds($uniqueIds));
-        $sets = $this->indexSets($this->catalog->findActiveSetsByIds($uniqueIds));
+        $menuById = $this->menu->findByBranchAndItemIds($branchId, array_values(array_unique($productIds)));
+        $products = $this->indexProducts($this->catalog->findActiveProductsByIds(array_values(array_unique($productIds))));
+        $sets = $this->indexSets($this->branchSets->findAvailableByBranchAndIds($branchId, array_values(array_unique($setIds))));
 
         $cartLines = [];
         $itemsTotalRubles = 0;
         $promoLines = [];
 
         foreach ($lines as $line) {
-            $catalogId = (int) $line['product_id'];
-            $quantity = (int) $line['quantity'];
-            $menuItem = $menuById[$catalogId] ?? null;
+            $id = (int) ($line['id'] ?? $line['product_id'] ?? 0);
+            $quantity = (int) ($line['quantity'] ?? 0);
+            $kind = (string) ($line['kind'] ?? 'product');
+
+            if ($kind === 'set') {
+                $set = $sets[$id] ?? null;
+                if (! $set instanceof BranchSet || ! $set->isAvailable()) {
+                    throw new \InvalidArgumentException(sprintf('Сет #%d недоступен в меню филиала.', $id));
+                }
+                $unitKopecks = $set->priceKopecks();
+                $unit = intdiv($unitKopecks, 100);
+                $itemsTotalRubles += $unit * $quantity;
+                $cartLine = $this->setLine($set, $quantity, $unit, 'set');
+                $cartLine['unit_price_kopecks'] = $unitKopecks;
+                $cartLines[] = $cartLine;
+                $promoLines[] = ['product_id' => $id, 'quantity' => $quantity];
+
+                continue;
+            }
+
+            $menuItem = $menuById[$id] ?? null;
             if ($menuItem === null || ! $menuItem->isAvailable()) {
-                throw new \InvalidArgumentException(sprintf('Товар #%d недоступен в меню филиала.', $catalogId));
+                throw new \InvalidArgumentException(sprintf('Товар #%d недоступен в меню филиала.', $id));
+            }
+            $product = $products[$id] ?? null;
+            if (! $product instanceof Product) {
+                throw new \InvalidArgumentException(sprintf('Товар #%d недоступен.', $id));
             }
             $unitKopecks = $menuItem->priceKopecks();
             $unit = intdiv($unitKopecks, 100);
             $itemsTotalRubles += $unit * $quantity;
-
-            if (isset($products[$catalogId])) {
-                $product = $products[$catalogId];
-                $line = $this->productLine($product, $quantity, $unit, 'regular');
-                $line['unit_price_kopecks'] = $unitKopecks;
-                $cartLines[] = $line;
-                $promoLines[] = ['product_id' => $catalogId, 'quantity' => $quantity];
-
-                continue;
-            }
-
-            if (isset($sets[$catalogId])) {
-                $set = $sets[$catalogId];
-                $line = $this->setLine($set, $quantity, $unit, 'set');
-                $line['unit_price_kopecks'] = $unitKopecks;
-                $cartLines[] = $line;
-                $promoLines[] = ['product_id' => $catalogId, 'quantity' => $quantity];
-
-                continue;
-            }
-
-            throw new \InvalidArgumentException(sprintf('Товар #%d недоступен.', $catalogId));
+            $cartLine = $this->productLine($product, $quantity, $unit, 'regular');
+            $cartLine['unit_price_kopecks'] = $unitKopecks;
+            $cartLines[] = $cartLine;
+            $promoLines[] = ['product_id' => $id, 'quantity' => $quantity];
         }
 
         return [$cartLines, $itemsTotalRubles, $promoLines];
@@ -339,6 +351,24 @@ final class QuoteOrderUseCase implements CheckoutQuote
             (string) config('app.timezone', 'UTC'),
         );
         $giftThreshold = (int) ($giftRule['min_order_amount_kopecks'] ?? 0);
+        $thresholdMet = $itemsTotalKopecks >= $giftThreshold;
+        $giftCandidatesRaw = $facts->giftCandidates();
+        $giftRuleOk = $weekdayOk && $thresholdMet && $giftCandidatesRaw !== [];
+
+        $giftCandidates = [];
+        if ($giftRuleOk) {
+            foreach ($giftCandidatesRaw as $candidate) {
+                $productId = (int) ($candidate['product_id'] ?? 0);
+                if ($productId < 1) {
+                    continue;
+                }
+                $giftCandidates[] = [
+                    'id' => $productId,
+                    'product_id' => $productId,
+                    'name' => (string) ($candidate['name'] ?? ''),
+                ];
+            }
+        }
 
         $giftLine = null;
         $complementQty = 0;
@@ -368,15 +398,12 @@ final class QuoteOrderUseCase implements CheckoutQuote
             'gift_active' => (bool) ($giftRule['is_active'] ?? false),
             'gift_weekday_ok' => $weekdayOk,
             'gift_allowed_weekdays' => $giftRule['allowed_weekdays'] ?? [],
-            'gift_eligible' => $giftLine !== null,
+            'gift_eligible' => $giftRuleOk,
             'gift_selected' => $giftLine !== null,
             'gift_threshold_kopecks' => $giftThreshold,
             'gift_current_kopecks' => $itemsTotalKopecks,
             'gift_remaining_kopecks' => max(0, $giftThreshold - $itemsTotalKopecks),
-            'gift_candidates' => $giftLine === null ? [] : [[
-                'product_id' => $giftLine->productId(),
-                'name' => $giftLine->name(),
-            ]],
+            'gift_candidates' => $giftCandidates,
             'rolls_per_set' => $rollsPerSet,
             'complement_max_sets' => $maxSets,
             'roll_count' => $rollCount,
@@ -559,8 +586,8 @@ final class QuoteOrderUseCase implements CheckoutQuote
     }
 
     /**
-     * @param  list<ProductSet>  $sets
-     * @return array<int, ProductSet>
+     * @param  list<BranchSet>  $sets
+     * @return array<int, BranchSet>
      */
     private function indexSets(array $sets): array
     {
@@ -577,7 +604,7 @@ final class QuoteOrderUseCase implements CheckoutQuote
      */
     private function productLine(Product $product, int $quantity, int $unitPriceRubles, string $kind): array
     {
-        $line = [
+        return [
             'product_id' => $product->id(),
             'product_name' => $product->name(),
             'quantity' => $quantity,
@@ -590,19 +617,17 @@ final class QuoteOrderUseCase implements CheckoutQuote
                 'catalog_kind' => 'product',
             ],
         ];
-
-        return $line;
     }
 
     /**
      * @return array<string, mixed>
      */
-    private function setLine(ProductSet $set, int $quantity, int $unitPriceRubles, string $kind): array
+    private function setLine(BranchSet $set, int $quantity, int $unitPriceRubles, string $kind): array
     {
         $composition = [];
         foreach ($set->lines() as $setLine) {
             $composition[] = [
-                'product_id' => $setLine->productId(),
+                'product_id' => $setLine->catalogItemId(),
                 'quantity' => $setLine->quantity(),
             ];
         }
@@ -613,8 +638,8 @@ final class QuoteOrderUseCase implements CheckoutQuote
             'quantity' => $quantity,
             'unit_price_rubles' => $unitPriceRubles,
             'line_total_rubles' => $unitPriceRubles * $quantity,
-            'sku' => $set->sku(),
-            'images' => $this->imagePathsFromList($set->images()),
+            'sku' => null,
+            'images' => [],
             'payload' => [
                 'kind' => $kind,
                 'catalog_kind' => 'set',

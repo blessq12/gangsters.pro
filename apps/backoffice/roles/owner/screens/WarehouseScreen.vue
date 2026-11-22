@@ -1,126 +1,136 @@
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import {
-    adjustStock,
-    getStock,
+    getBranchStock,
+    listBranchWriteOffs,
     listIngredients,
-    listWriteOffs,
-    storeIngredient,
-    storeWriteOff,
-    updateIngredient,
 } from "../../../api/warehouse.js";
+import OwnerBranchSelector from "../components/branch/OwnerBranchSelector.vue";
+import { useOwnerBranchContext } from "../composables/useOwnerBranchContext.js";
 import { useApi } from "../../../shell/composables/useApi.js";
-import { usePagedList } from "../../../shell/composables/usePagedList.js";
+import { useClientList } from "../../../shell/composables/useClientList.js";
 import { useToast } from "../../../shell/composables/useToast.js";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
 import UiCard from "../../../shell/components/ui/UiCard.vue";
-import UiFormField from "../../../shell/components/ui/UiFormField.vue";
 import UiInput from "../../../shell/components/ui/UiInput.vue";
-import UiModal from "../../../shell/components/ui/UiModal.vue";
 import UiPagination from "../../../shell/components/ui/UiPagination.vue";
 import UiTable from "../../../shell/components/ui/UiTable.vue";
 
+const PAGE_LIMIT = 100;
+
+const route = useRoute();
+const router = useRouter();
 const toast = useToast();
 const loadApi = useApi();
-const saveApi = useApi();
-const {
-    page,
-    perPage,
-    total,
-    items: pageRows,
-    offset,
-    resetPage,
-    applyPayload,
-} = usePagedList();
+const { selectedBranchId, ensureLoaded } = useOwnerBranchContext();
 
-const tab = ref("ingredients");
-const ingredientOptions = ref([]);
-const ingredients = computed(() => (tab.value === "ingredients" ? pageRows.value : ingredientOptions.value));
-const stock = computed(() => (tab.value === "stock" ? pageRows.value : []));
-const writeOffs = computed(() => (tab.value === "writeoffs" ? pageRows.value : []));
+ensureLoaded();
 
-const ingredientModalOpen = ref(false);
-const editingIngredientId = ref(null);
-const ingredientErrors = reactive({});
-const ingredientForm = reactive({
-    name: "",
-    sku: "",
-    unit: "",
-});
+const contexts = [
+    { id: "catalog", label: "Справочник" },
+    { id: "branch", label: "Склад филиала" },
+];
+const contextIds = contexts.map((item) => item.id);
 
-const adjustModalOpen = ref(false);
-const adjustErrors = reactive({});
-const adjustForm = reactive({
-    ingredient_id: "",
-    delta: "",
-});
-
-const writeOffModalOpen = ref(false);
-const writeOffErrors = reactive({});
-const writeOffForm = reactive({
-    ingredient_id: "",
-    quantity: "",
-    reason: "",
-});
-
-const tabs = [
-    { id: "ingredients", label: "Ингредиенты" },
+const branchSections = [
     { id: "stock", label: "Остатки" },
     { id: "writeoffs", label: "Списания" },
 ];
+const branchSectionIds = branchSections.map((item) => item.id);
 
-const ingredientColumns = [
-    { key: "id", label: "ID", width: "64px" },
+const context = computed(() =>
+    contextIds.includes(String(route.query.ctx)) ? String(route.query.ctx) : "catalog",
+);
+
+const branchSection = computed(() =>
+    branchSectionIds.includes(String(route.query.section))
+        ? String(route.query.section)
+        : "stock",
+);
+
+function setContext(id) {
+    if (context.value === id) {
+        return;
+    }
+    if (id === "catalog") {
+        router.replace({ name: "owner-warehouse", query: {} });
+        return;
+    }
+    router.replace({
+        name: "owner-warehouse",
+        query: { ctx: "branch", section: "stock" },
+    });
+}
+
+function setBranchSection(id) {
+    if (branchSection.value === id) {
+        return;
+    }
+    router.replace({
+        name: "owner-warehouse",
+        query: { ctx: "branch", section: id },
+    });
+}
+
+const allIngredients = ref([]);
+/** @type {import('vue').Ref<Map<number, number>>} */
+const quantityByIngredientId = ref(new Map());
+const allWriteOffs = ref([]);
+
+const {
+    searchQuery: catalogSearch,
+    page: catalogPage,
+    perPage: catalogPerPage,
+    total: catalogTotal,
+    pageItems: catalogRows,
+    setItems: setCatalogRows,
+} = useClientList({
+    perPage: 20,
+    getHaystack: (row) => `${row.name ?? ""} ${row.unit ?? ""}`,
+});
+
+const {
+    searchQuery: stockSearch,
+    page: stockPage,
+    perPage: stockPerPage,
+    total: stockTotal,
+    pageItems: stockRows,
+    setItems: setStockRows,
+} = useClientList({
+    perPage: 20,
+    getHaystack: (row) => `${row.name ?? ""} ${row.unit ?? ""}`,
+});
+
+const {
+    searchQuery: writeOffsSearch,
+    page: writeOffsPage,
+    perPage: writeOffsPerPage,
+    total: writeOffsTotal,
+    pageItems: writeOffRows,
+    setItems: setWriteOffItems,
+} = useClientList({
+    perPage: 20,
+    getHaystack: (row) => `${row.ingredient_name ?? ""} ${row.reason ?? ""}`,
+});
+
+const catalogColumns = [
     { key: "name", label: "Название" },
     { key: "unit", label: "Ед.", width: "80px" },
-    { key: "actions", label: "", width: "120px" },
 ];
 
 const stockColumns = [
-    { key: "ingredient", label: "Ингредиент" },
-    { key: "quantity", label: "Кол-во", width: "100px" },
+    { key: "name", label: "Ингредиент" },
+    { key: "quantity", label: "Остаток", width: "110px" },
     { key: "unit", label: "Ед.", width: "80px" },
-    { key: "actions", label: "", width: "140px" },
 ];
 
 const writeOffColumns = [
-    { key: "id", label: "ID", width: "64px" },
-    { key: "ingredient", label: "Ингредиент" },
+    { key: "ingredient_name", label: "Ингредиент" },
     { key: "quantity", label: "Кол-во", width: "90px" },
     { key: "reason", label: "Причина" },
-    { key: "created_at", label: "Дата", width: "160px" },
+    { key: "occurred_at", label: "Когда", width: "170px" },
 ];
-
-const ingredientById = computed(() => {
-    /** @type {Record<number|string, any>} */
-    const map = {};
-    ingredientOptions.value.forEach((item) => {
-        map[item.id] = item;
-    });
-    return map;
-});
-
-const stockRows = computed(() =>
-    stock.value.map((row) => {
-        const ingredient = ingredientById.value[row.ingredient_id];
-        return {
-            ...row,
-            ingredient: ingredient?.name ?? `#${row.ingredient_id}`,
-            unit: ingredient?.unit ?? "—",
-        };
-    }),
-);
-
-const writeOffRows = computed(() =>
-    writeOffs.value.map((row) => {
-        const ingredient = ingredientById.value[row.ingredient_id];
-        return {
-            ...row,
-            ingredient: ingredient?.name ?? `#${row.ingredient_id}`,
-            created_at: formatDate(row.occurred_at),
-        };
-    }),
-);
 
 function formatDate(value) {
     if (!value) {
@@ -133,335 +143,281 @@ function formatDate(value) {
     }
 }
 
-function clearErrors(target) {
-    Object.keys(target).forEach((key) => {
-        delete target[key];
-    });
-}
-
-async function loadIngredientOptions() {
-    try {
-        const payload = await listIngredients({ offset: 0, limit: 100 });
-        ingredientOptions.value = Array.isArray(payload?.items) ? payload.items : [];
-    } catch {
-        ingredientOptions.value = [];
-    }
-}
-
-async function loadTab() {
-    try {
-        const query = { offset: offset.value, limit: perPage };
-        let payload;
-        if (tab.value === "ingredients") {
-            payload = await loadApi.run(() => listIngredients(query));
-        } else if (tab.value === "stock") {
-            payload = await loadApi.run(() => getStock(query));
-        } else {
-            payload = await loadApi.run(() => listWriteOffs(query));
+/**
+ * @param {(query: { offset: number, limit: number }) => Promise<{ items?: unknown[], total?: number }>} fetchPage
+ */
+async function fetchAllPages(fetchPage) {
+    const result = [];
+    let total = 0;
+    do {
+        const payload = await fetchPage({ offset: result.length, limit: PAGE_LIMIT });
+        const items = Array.isArray(payload?.items) ? payload.items : [];
+        total = Number(payload?.total ?? 0);
+        result.push(...items);
+        if (items.length === 0) {
+            break;
         }
-        applyPayload(payload);
+    } while (result.length < total);
+    return result;
+}
+
+function rebuildCatalog() {
+    setCatalogRows(allIngredients.value.map((item) => ({
+        id: Number(item.id),
+        name: item.name,
+        unit: item.unit ?? "",
+    })));
+}
+
+function rebuildBranchLists() {
+    const qtyMap = quantityByIngredientId.value;
+    setStockRows(allIngredients.value.map((item) => ({
+        id: Number(item.id),
+        name: item.name,
+        unit: item.unit ?? "",
+        quantity: qtyMap.get(Number(item.id)) ?? 0,
+    })));
+
+    const nameById = new Map(
+        allIngredients.value.map((item) => [Number(item.id), item.name]),
+    );
+    setWriteOffItems(allWriteOffs.value.map((row) => ({
+        ...row,
+        ingredient_id: Number(row.ingredient_id),
+        ingredient_name: nameById.get(Number(row.ingredient_id)) ?? `#${row.ingredient_id}`,
+        occurred_at: formatDate(row.occurred_at),
+    })));
+}
+
+async function loadCatalog() {
+    try {
+        const ingredients = await loadApi.run(() => fetchAllPages(listIngredients));
+        allIngredients.value = ingredients;
+        rebuildCatalog();
     } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Не удалось загрузить склад");
+        toast.error(err instanceof Error ? err.message : "Не удалось загрузить справочник");
     }
 }
 
-async function loadAll() {
-    await Promise.all([loadIngredientOptions(), loadTab()]);
+async function loadBranch() {
+    const branchId = selectedBranchId.value;
+    if (!branchId) {
+        quantityByIngredientId.value = new Map();
+        allWriteOffs.value = [];
+        rebuildBranchLists();
+        return;
+    }
+    try {
+        const [ingredients, stockLevels, writeOffs] = await loadApi.run(() => Promise.all([
+            fetchAllPages(listIngredients),
+            fetchAllPages((query) => getBranchStock(branchId, query)),
+            fetchAllPages((query) => listBranchWriteOffs(branchId, query)),
+        ]));
+        allIngredients.value = ingredients;
+        const qty = new Map();
+        for (const row of stockLevels) {
+            qty.set(Number(row.ingredient_id), Number(row.quantity ?? 0));
+        }
+        quantityByIngredientId.value = qty;
+        allWriteOffs.value = writeOffs;
+        rebuildBranchLists();
+    } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Не удалось загрузить склад филиала");
+    }
+}
+
+async function loadCurrent() {
+    if (context.value === "catalog") {
+        await loadCatalog();
+        return;
+    }
+    await loadBranch();
 }
 
 function openCreateIngredient() {
-    editingIngredientId.value = null;
-    ingredientForm.name = "";
-    ingredientForm.sku = "";
-    ingredientForm.unit = "";
-    clearErrors(ingredientErrors);
-    ingredientModalOpen.value = true;
+    router.push({ name: "owner-warehouse-ingredient", params: { id: "new" } });
 }
 
-function openEditIngredient(row) {
-    editingIngredientId.value = row.id;
-    ingredientForm.name = row.name ?? "";
-    ingredientForm.sku = row.sku ?? "";
-    ingredientForm.unit = row.unit ?? "";
-    clearErrors(ingredientErrors);
-    ingredientModalOpen.value = true;
+function openIngredient(row) {
+    router.push({ name: "owner-warehouse-ingredient", params: { id: row.id } });
 }
 
-function validateIngredient() {
-    clearErrors(ingredientErrors);
-    if (!String(ingredientForm.name).trim()) {
-        ingredientErrors.name = "Обязательное поле";
-    }
-    if (!String(ingredientForm.unit).trim()) {
-        ingredientErrors.unit = "Обязательное поле";
-    }
-    return Object.keys(ingredientErrors).length === 0;
-}
-
-async function saveIngredient() {
-    if (!validateIngredient()) {
-        toast.error("Проверьте обязательные поля");
+function openBranchStockItem(row) {
+    if (!selectedBranchId.value) {
         return;
     }
-    const id = editingIngredientId.value;
-    const body = {
-        name: ingredientForm.name.trim(),
-        unit: ingredientForm.unit.trim(),
-        sku: ingredientForm.sku || null,
-    };
-    try {
-        await saveApi.run(() =>
-            id ? updateIngredient(id, body) : storeIngredient(body),
-        );
-        toast.success(id ? "Сохранено" : "Создано");
-        ingredientModalOpen.value = false;
-        await loadAll();
-    } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Ошибка сохранения");
-    }
+    router.push({
+        name: "owner-warehouse-branch-item",
+        params: {
+            branchId: selectedBranchId.value,
+            id: row.id,
+        },
+    });
 }
 
-function openAdjust(row) {
-    adjustForm.ingredient_id = String(row.ingredient_id ?? "");
-    adjustForm.delta = "";
-    clearErrors(adjustErrors);
-    adjustModalOpen.value = true;
-}
-
-function validateAdjust() {
-    clearErrors(adjustErrors);
-    if (!String(adjustForm.ingredient_id).trim()) {
-        adjustErrors.ingredient_id = "Обязательное поле";
-    }
-    if (adjustForm.delta === "" || Number.isNaN(Number(adjustForm.delta))) {
-        adjustErrors.delta = "Укажите delta";
-    }
-    return Object.keys(adjustErrors).length === 0;
-}
-
-async function saveAdjust() {
-    if (!validateAdjust()) {
-        toast.error("Проверьте обязательные поля");
+function openWriteOffIngredient(row) {
+    if (!selectedBranchId.value || !row?.ingredient_id) {
         return;
     }
-    try {
-        await saveApi.run(() => adjustStock({
-            ingredient_id: Number(adjustForm.ingredient_id),
-            delta: Number(adjustForm.delta),
-        }));
-        toast.success("Остаток скорректирован");
-        adjustModalOpen.value = false;
-        await loadAll();
-    } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Ошибка");
-    }
+    router.push({
+        name: "owner-warehouse-branch-item",
+        params: {
+            branchId: selectedBranchId.value,
+            id: row.ingredient_id,
+        },
+    });
 }
 
-function openWriteOff() {
-    writeOffForm.ingredient_id = ingredientOptions.value[0] ? String(ingredientOptions.value[0].id) : "";
-    writeOffForm.quantity = "";
-    writeOffForm.reason = "";
-    clearErrors(writeOffErrors);
-    writeOffModalOpen.value = true;
-}
+watch(
+    () => [route.query.ctx, route.query.section],
+    ([ctx, section]) => {
+        if (ctx && !contextIds.includes(String(ctx))) {
+            router.replace({ name: "owner-warehouse", query: {} });
+            return;
+        }
+        if (String(ctx) === "branch" && section && !branchSectionIds.includes(String(section))) {
+            router.replace({ name: "owner-warehouse", query: { ctx: "branch", section: "stock" } });
+        }
+    },
+    { immediate: true },
+);
 
-function validateWriteOff() {
-    clearErrors(writeOffErrors);
-    if (!String(writeOffForm.ingredient_id).trim()) {
-        writeOffErrors.ingredient_id = "Обязательное поле";
-    }
-    if (
-        writeOffForm.quantity === ""
-        || Number.isNaN(Number(writeOffForm.quantity))
-        || Number(writeOffForm.quantity) <= 0
-    ) {
-        writeOffErrors.quantity = " > 0";
-    }
-    if (!String(writeOffForm.reason).trim()) {
-        writeOffErrors.reason = "Обязательное поле";
-    }
-    return Object.keys(writeOffErrors).length === 0;
-}
-
-async function saveWriteOff() {
-    if (!validateWriteOff()) {
-        toast.error("Проверьте обязательные поля");
-        return;
-    }
-    try {
-        await saveApi.run(() => storeWriteOff({
-            ingredient_id: Number(writeOffForm.ingredient_id),
-            quantity: Number(writeOffForm.quantity),
-            reason: writeOffForm.reason.trim(),
-        }));
-        toast.success("Списание создано");
-        writeOffModalOpen.value = false;
-        await loadAll();
-    } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Ошибка");
-    }
-}
-
-watch(tab, () => {
-    resetPage();
-    loadTab();
-});
-watch(page, loadTab);
-onMounted(loadAll);
+watch([context, selectedBranchId, branchSection], loadCurrent);
+onMounted(loadCurrent);
 </script>
 
 <template>
-    <div class="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
-        <UiCard title="Склад">
-            <div class="mb-8 flex flex-wrap gap-2">
+    <div class="mx-auto w-full max-w-7xl space-y-6 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
+        <div class="space-y-3">
+            <h1 class="text-2xl font-semibold tracking-tight text-bo-fg">
+                Склад
+            </h1>
+            <div class="flex flex-wrap gap-2">
                 <button
-                    v-for="item in tabs"
+                    v-for="item in contexts"
                     :key="item.id"
                     type="button"
-                    class="h-10 px-4 text-sm font-medium transition-colors duration-150"
-                    :class="tab === item.id
+                    class="h-11 px-4 text-sm font-medium transition-colors duration-150"
+                    :class="context === item.id
                         ? 'bg-bo-accent text-white'
                         : 'bg-white/[0.04] text-bo-muted hover:bg-white/[0.08] hover:text-bo-fg'"
-                    @click="tab = item.id"
+                    @click="setContext(item.id)"
+                >
+                    {{ item.label }}
+                </button>
+            </div>
+        </div>
+
+        <template v-if="context === 'catalog'">
+            <UiCard title="Ингредиенты">
+                <template #actions>
+                    <UiButton @click="openCreateIngredient">
+                        + Ингредиент
+                    </UiButton>
+                </template>
+
+                <div class="mb-4 max-w-md">
+                    <UiInput
+                        v-model="catalogSearch"
+                        type="search"
+                        placeholder="Поиск по названию"
+                    />
+                </div>
+
+                <UiTable
+                    :columns="catalogColumns"
+                    :rows="catalogRows"
+                    :loading="loadApi.loading"
+                    empty-text="Ничего не найдено"
+                    @row-click="openIngredient"
+                />
+
+                <div class="mt-6">
+                    <UiPagination
+                        :page="catalogPage"
+                        :per-page="catalogPerPage"
+                        :total="catalogTotal"
+                        @update:page="catalogPage = $event"
+                    />
+                </div>
+            </UiCard>
+        </template>
+
+        <template v-else>
+            <OwnerBranchSelector />
+
+            <div class="flex flex-wrap gap-2">
+                <button
+                    v-for="item in branchSections"
+                    :key="item.id"
+                    type="button"
+                    class="h-10 px-3.5 text-sm font-medium transition-colors duration-150"
+                    :class="branchSection === item.id
+                        ? 'bg-white/15 text-bo-fg'
+                        : 'bg-transparent text-bo-muted hover:bg-white/[0.06] hover:text-bo-fg'"
+                    @click="setBranchSection(item.id)"
                 >
                     {{ item.label }}
                 </button>
             </div>
 
-            <div v-if="tab === 'ingredients'" class="space-y-5">
-                <div class="flex justify-end">
-                    <UiButton @click="openCreateIngredient">+ Ингредиент</UiButton>
+            <UiCard v-if="branchSection === 'stock'" title="Остатки филиала">
+                <div class="mb-4 max-w-md">
+                    <UiInput
+                        v-model="stockSearch"
+                        type="search"
+                        placeholder="Поиск"
+                        :disabled="!selectedBranchId"
+                    />
                 </div>
-                <UiTable
-                    :columns="ingredientColumns"
-                    :rows="pageRows"
-                    :loading="loadApi.loading"
-                    empty-text="Нет ингредиентов"
-                >
-                    <template #cell-actions="{ row }">
-                        <UiButton @click.stop="openEditIngredient(row)">Редактировать</UiButton>
-                    </template>
-                </UiTable>
-            </div>
 
-            <div v-else-if="tab === 'stock'" class="space-y-5">
                 <UiTable
+                    v-if="selectedBranchId"
                     :columns="stockColumns"
                     :rows="stockRows"
                     :loading="loadApi.loading"
-                    empty-text="Нет остатков"
-                >
-                    <template #cell-actions="{ row }">
-                        <UiButton @click.stop="openAdjust(row)">Корректировать</UiButton>
-                    </template>
-                </UiTable>
-            </div>
+                    empty-text="Ничего не найдено"
+                    @row-click="openBranchStockItem"
+                />
 
-            <div v-else class="space-y-5">
-                <div class="flex justify-end">
-                    <UiButton @click="openWriteOff">+ Списание</UiButton>
+                <div v-if="selectedBranchId" class="mt-6">
+                    <UiPagination
+                        :page="stockPage"
+                        :per-page="stockPerPage"
+                        :total="stockTotal"
+                        @update:page="stockPage = $event"
+                    />
                 </div>
+            </UiCard>
+
+            <UiCard v-else title="Списания филиала">
+                <div class="mb-4 max-w-md">
+                    <UiInput
+                        v-model="writeOffsSearch"
+                        type="search"
+                        placeholder="Поиск"
+                        :disabled="!selectedBranchId"
+                    />
+                </div>
+
                 <UiTable
+                    v-if="selectedBranchId"
                     :columns="writeOffColumns"
                     :rows="writeOffRows"
                     :loading="loadApi.loading"
-                    empty-text="Нет списаний"
+                    empty-text="Ничего не найдено"
+                    @row-click="openWriteOffIngredient"
                 />
-            </div>
 
-            <div class="mt-6">
-                <UiPagination
-                    :page="page"
-                    :per-page="perPage"
-                    :total="total"
-                    @update:page="page = $event"
-                />
-            </div>
-        </UiCard>
-
-        <UiModal
-            :open="ingredientModalOpen"
-            :title="editingIngredientId ? 'Редактировать ингредиент' : 'Новый ингредиент'"
-            @close="ingredientModalOpen = false"
-        >
-            <div class="space-y-5">
-                <UiFormField label="Название" required :error="ingredientErrors.name">
-                    <UiInput v-model="ingredientForm.name" />
-                </UiFormField>
-                <UiFormField label="Ед. изм." required :error="ingredientErrors.unit">
-                    <UiInput v-model="ingredientForm.unit" />
-                </UiFormField>
-                <UiFormField label="SKU">
-                    <UiInput v-model="ingredientForm.sku" />
-                </UiFormField>
-            </div>
-            <template #footer>
-                <UiButton @click="ingredientModalOpen = false">Отмена</UiButton>
-                <UiButton :disabled="saveApi.loading" @click="saveIngredient">Сохранить</UiButton>
-            </template>
-        </UiModal>
-
-        <UiModal
-            :open="adjustModalOpen"
-            title="Корректировка остатка"
-            @close="adjustModalOpen = false"
-        >
-            <div class="space-y-5">
-                <UiFormField label="ingredient_id" required :error="adjustErrors.ingredient_id">
-                    <select
-                        v-model="adjustForm.ingredient_id"
-                        class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 transition-colors hover:border-bo-border-strong focus:border-bo-accent focus:outline-none"
-                    >
-                        <option
-                            v-for="item in ingredientOptions"
-                            :key="item.id"
-                            :value="String(item.id)"
-                        >
-                            {{ item.id }} — {{ item.name }}
-                        </option>
-                    </select>
-                </UiFormField>
-                <UiFormField label="Delta (+/−)" required :error="adjustErrors.delta">
-                    <UiInput v-model="adjustForm.delta" type="number" />
-                </UiFormField>
-            </div>
-            <template #footer>
-                <UiButton @click="adjustModalOpen = false">Отмена</UiButton>
-                <UiButton :disabled="saveApi.loading" @click="saveAdjust">Сохранить</UiButton>
-            </template>
-        </UiModal>
-
-        <UiModal
-            :open="writeOffModalOpen"
-            title="Новое списание"
-            @close="writeOffModalOpen = false"
-        >
-            <div class="space-y-5">
-                <UiFormField label="Ингредиент" required :error="writeOffErrors.ingredient_id">
-                    <select
-                        v-model="writeOffForm.ingredient_id"
-                        class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 transition-colors hover:border-bo-border-strong focus:border-bo-accent focus:outline-none"
-                    >
-                        <option
-                            v-for="item in ingredientOptions"
-                            :key="item.id"
-                            :value="String(item.id)"
-                        >
-                            {{ item.id }} — {{ item.name }}
-                        </option>
-                    </select>
-                </UiFormField>
-                <UiFormField label="Количество" required :error="writeOffErrors.quantity">
-                    <UiInput v-model="writeOffForm.quantity" type="number" />
-                </UiFormField>
-                <UiFormField label="Причина" required :error="writeOffErrors.reason">
-                    <UiInput v-model="writeOffForm.reason" />
-                </UiFormField>
-            </div>
-            <template #footer>
-                <UiButton @click="writeOffModalOpen = false">Отмена</UiButton>
-                <UiButton :disabled="saveApi.loading" @click="saveWriteOff">Сохранить</UiButton>
-            </template>
-        </UiModal>
+                <div v-if="selectedBranchId" class="mt-6">
+                    <UiPagination
+                        :page="writeOffsPage"
+                        :per-page="writeOffsPerPage"
+                        :total="writeOffsTotal"
+                        @update:page="writeOffsPage = $event"
+                    />
+                </div>
+            </UiCard>
+        </template>
     </div>
 </template>

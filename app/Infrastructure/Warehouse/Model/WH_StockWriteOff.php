@@ -12,6 +12,7 @@ final class WH_StockWriteOff extends Model
      * @var list<string>
      */
     protected $fillable = [
+        'branch_id',
         'ingredient_id',
         'quantity',
         'reason',
@@ -23,6 +24,7 @@ final class WH_StockWriteOff extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'branch_id' => 'integer',
         'ingredient_id' => 'integer',
         'quantity' => 'decimal:3',
         'kitchen_ticket_id' => 'integer',

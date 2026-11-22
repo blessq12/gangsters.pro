@@ -14,7 +14,6 @@ final class IngredientPresenter
         return [
             'id' => $ingredient->hasId() ? $ingredient->id() : null,
             'name' => $ingredient->name(),
-            'sku' => $ingredient->sku(),
             'unit' => $ingredient->unit(),
         ];
     }

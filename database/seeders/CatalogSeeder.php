@@ -2,15 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Domain\Supporting\Catalog\Enum\CatalogItemKind;
-use App\Domain\Supporting\Catalog\Enum\PriceType;
 use App\Domain\Supporting\Catalog\Enum\ProductStatus;
-use App\Infrastructure\Catalog\Model\CAT_Category;
 use App\Infrastructure\Catalog\Model\CAT_Item;
 use App\Infrastructure\Catalog\Model\CAT_ItemImage;
-use App\Infrastructure\Catalog\Model\CAT_Price;
-use App\Infrastructure\Catalog\Model\CAT_SetLine;
-use App\Infrastructure\Catalog\Model\CAT_Tag;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -19,7 +13,11 @@ use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 
 /**
- * Каталог из публичного API витрины → greenfield CAT_items (включая is_roll / is_complement).
+ * Товары каталога из публичного API витрины → CAT_items + CAT_item_images.
+ * is_roll / is_complement берутся из promotion_meta.
+ *
+ * Категории, теги, сеты и цены сюда НЕ входят: структура меню и цены — в филиале (CMP_*),
+ * наполняет админка. Позиции API с kind=set пропускаются (сет — сущность филиала).
  */
 class CatalogSeeder extends Seeder
 {
@@ -27,26 +25,17 @@ class CatalogSeeder extends Seeder
 
     private const CATALOG_SOURCE_ORIGIN = 'https://gangsta-sushi.ru';
 
-    private const KOPECKS_IN_RUBLE = 100;
-
     public function run(): void
     {
         $payload = $this->fetchCatalogPayload();
         $categoryBlocks = $this->categoryBlocksFromPayload($payload);
-        $itemsById = $this->collectItemsById($payload, $categoryBlocks);
+        $itemsById = $this->collectProductRowsById($payload, $categoryBlocks);
 
-        DB::transaction(function () use ($categoryBlocks, $itemsById): void {
-            $tags = $this->seedTags($itemsById);
-            $categories = $this->seedCategories($categoryBlocks);
+        DB::transaction(function () use ($itemsById): void {
             $products = $this->seedItems($itemsById);
-            $this->attachCategoryItems($categoryBlocks, $categories, $products);
-            $this->attachItemTags($itemsById, $tags, $products);
-            $this->seedSetLines($itemsById, $products);
-            $this->purgeObsoleteRecords($categories, $products);
+            $this->purgeObsoleteItems($products);
+            $this->seedItemImages($itemsById, $products);
         });
-
-        // Медиа не качаем в сидере — иначе залипаем на сотнях HTTP.
-        // Пути/фокус можно дотянуть отдельно при необходимости.
     }
 
     /**
@@ -109,7 +98,7 @@ class CatalogSeeder extends Seeder
      * @param  list<array{category: array<string, mixed>, items: list<array<string, mixed>>}>  $categoryBlocks
      * @return array<int, array<string, mixed>>
      */
-    private function collectItemsById(array $payload, array $categoryBlocks): array
+    private function collectProductRowsById(array $payload, array $categoryBlocks): array
     {
         $itemsById = [];
 
@@ -143,93 +132,11 @@ class CatalogSeeder extends Seeder
     private function indexItem(array &$itemsById, array $item): void
     {
         $id = (int) ($item['id'] ?? 0);
-        if ($id <= 0) {
+        if ($id <= 0 || ($item['kind'] ?? null) === 'set') {
             return;
         }
 
         $itemsById[$id] = $item;
-    }
-
-    /**
-     * @param  array<int, array<string, mixed>>  $itemsById
-     * @return array<string, CAT_Tag>
-     */
-    private function seedTags(array $itemsById): array
-    {
-        $definitions = [];
-
-        foreach ($itemsById as $item) {
-            $tags = $item['tags'] ?? [];
-            if (! is_array($tags)) {
-                continue;
-            }
-
-            foreach ($tags as $tag) {
-                if (! is_array($tag)) {
-                    continue;
-                }
-
-                $code = $this->stringValue($tag['code'] ?? null);
-                if ($code === '') {
-                    continue;
-                }
-
-                $definitions[$code] = [
-                    'label' => $this->stringValue($tag['label'] ?? $code),
-                    'color' => $this->stringValue($tag['color'] ?? 'amber') ?: 'amber',
-                ];
-            }
-        }
-
-        $tags = [];
-        $sortOrder = 0;
-
-        foreach ($definitions as $code => $attributes) {
-            $tags[$code] = CAT_Tag::query()->updateOrCreate(
-                ['code' => $code],
-                [
-                    'label' => $attributes['label'],
-                    'color' => $attributes['color'],
-                    'sort_order' => $sortOrder,
-                    'is_active' => true,
-                ],
-            );
-            $sortOrder++;
-        }
-
-        return $tags;
-    }
-
-    /**
-     * @param  list<array{category: array<string, mixed>, items: list<array<string, mixed>>}>  $categoryBlocks
-     * @return array<int, CAT_Category>
-     */
-    private function seedCategories(array $categoryBlocks): array
-    {
-        $categories = [];
-
-        foreach ($categoryBlocks as $block) {
-            $row = $block['category'];
-            $id = (int) ($row['id'] ?? 0);
-            $slug = $this->stringValue($row['slug'] ?? null);
-
-            if ($id <= 0 || $slug === '') {
-                continue;
-            }
-
-            $categories[$id] = CAT_Category::query()->updateOrCreate(
-                ['id' => $id],
-                [
-                    'name' => $this->stringValue($row['name'] ?? $slug),
-                    'slug' => $slug,
-                    'sort_order' => (int) ($row['sort_order'] ?? 0),
-                    'is_active' => (bool) ($row['is_active'] ?? true),
-                    'is_accompanying' => (bool) ($row['is_accompanying'] ?? false),
-                ],
-            );
-        }
-
-        return $categories;
     }
 
     /**
@@ -241,11 +148,6 @@ class CatalogSeeder extends Seeder
         $products = [];
 
         foreach ($itemsById as $id => $row) {
-            $kind = $this->stringValue($row['kind'] ?? CatalogItemKind::Product->value);
-            if ($kind !== CatalogItemKind::Product->value && $kind !== CatalogItemKind::Set->value) {
-                $kind = CatalogItemKind::Product->value;
-            }
-
             $statusRaw = $this->stringValue($row['status'] ?? ProductStatus::Active->value);
             $status = $statusRaw === ProductStatus::Archived->value
                 ? ProductStatus::Archived->value
@@ -266,7 +168,6 @@ class CatalogSeeder extends Seeder
                     'sku' => (string) $id,
                     'description' => $this->nullableString($row['description'] ?? null),
                     'status' => $status,
-                    'kind' => $kind,
                     'is_system' => false,
                     'is_roll' => ! empty($meta['counts_as_roll']),
                     'is_complement' => ! empty($meta['complement_set']),
@@ -279,7 +180,6 @@ class CatalogSeeder extends Seeder
                 ],
             );
 
-            $this->seedPrices($item, $row);
             $products[$id] = $item;
         }
 
@@ -287,184 +187,16 @@ class CatalogSeeder extends Seeder
     }
 
     /**
-     * @param  array<string, mixed>  $row
-     */
-    private function seedPrices(CAT_Item $item, array $row): void
-    {
-        $regularKopecks = $this->moneyToKopecks($row['price'] ?? null);
-
-        CAT_Price::query()->updateOrCreate(
-            [
-                'item_id' => $item->id,
-                'type' => PriceType::Regular->value,
-            ],
-            [
-                'amount_kopecks' => $regularKopecks,
-            ],
-        );
-
-        $old = $row['old_price'] ?? null;
-        if ($old === null || $old === '') {
-            CAT_Price::query()
-                ->where('item_id', $item->id)
-                ->where('type', PriceType::Old->value)
-                ->delete();
-
-            return;
-        }
-
-        CAT_Price::query()->updateOrCreate(
-            [
-                'item_id' => $item->id,
-                'type' => PriceType::Old->value,
-            ],
-            [
-                'amount_kopecks' => $this->moneyToKopecks($old),
-            ],
-        );
-    }
-
-    /**
-     * @param  list<array{category: array<string, mixed>, items: list<array<string, mixed>>}>  $categoryBlocks
-     * @param  array<int, CAT_Category>  $categories
      * @param  array<int, CAT_Item>  $products
      */
-    private function attachCategoryItems(
-        array $categoryBlocks,
-        array $categories,
-        array $products,
-    ): void {
-        foreach ($categoryBlocks as $block) {
-            $categoryId = (int) ($block['category']['id'] ?? 0);
-            $category = $categories[$categoryId] ?? null;
-            if ($category === null) {
-                continue;
-            }
-
-            $sync = [];
-            foreach ($block['items'] as $sortOrder => $row) {
-                $itemId = (int) ($row['id'] ?? 0);
-                $product = $products[$itemId] ?? null;
-                if ($product === null) {
-                    continue;
-                }
-
-                $sync[$product->id] = ['sort_order' => (int) $sortOrder];
-            }
-
-            $category->items()->sync($sync);
-        }
-    }
-
-    /**
-     * @param  array<int, array<string, mixed>>  $itemsById
-     * @param  array<string, CAT_Tag>  $tags
-     * @param  array<int, CAT_Item>  $products
-     */
-    private function attachItemTags(array $itemsById, array $tags, array $products): void
-    {
-        foreach ($itemsById as $itemId => $row) {
-            $product = $products[$itemId] ?? null;
-            if ($product === null) {
-                continue;
-            }
-
-            $tagIds = [];
-            $rawTags = $row['tags'] ?? [];
-            if (is_array($rawTags)) {
-                foreach ($rawTags as $tag) {
-                    if (! is_array($tag)) {
-                        continue;
-                    }
-                    $code = $this->stringValue($tag['code'] ?? null);
-                    if ($code !== '' && isset($tags[$code])) {
-                        $tagIds[] = $tags[$code]->id;
-                    }
-                }
-            }
-
-            $product->tags()->sync(array_values(array_unique($tagIds)));
-        }
-    }
-
-    /**
-     * @param  array<int, array<string, mixed>>  $itemsById
-     * @param  array<int, CAT_Item>  $products
-     */
-    private function seedSetLines(array $itemsById, array $products): void
-    {
-        foreach ($itemsById as $setId => $row) {
-            if (($row['kind'] ?? null) !== CatalogItemKind::Set->value) {
-                continue;
-            }
-
-            $set = $products[$setId] ?? null;
-            if ($set === null) {
-                continue;
-            }
-
-            $desired = [];
-            $lines = $row['lines'] ?? [];
-            if (! is_array($lines)) {
-                $lines = [];
-            }
-
-            foreach ($lines as $line) {
-                if (! is_array($line)) {
-                    continue;
-                }
-
-                $componentId = (int) ($line['product_id'] ?? 0);
-                $quantity = (int) ($line['quantity'] ?? 0);
-                if ($componentId <= 0 || $quantity <= 0 || ! isset($products[$componentId])) {
-                    continue;
-                }
-
-                $desired[$componentId] = $quantity;
-
-                CAT_SetLine::query()->updateOrCreate(
-                    [
-                        'set_item_id' => $set->id,
-                        'component_item_id' => $componentId,
-                    ],
-                    [
-                        'quantity' => $quantity,
-                    ],
-                );
-            }
-
-            CAT_SetLine::query()
-                ->where('set_item_id', $set->id)
-                ->when(
-                    $desired !== [],
-                    fn ($query) => $query->whereNotIn('component_item_id', array_keys($desired)),
-                    fn ($query) => $query,
-                )
-                ->delete();
-        }
-    }
-
-    /**
-     * @param  array<int, CAT_Category>  $categories
-     * @param  array<int, CAT_Item>  $products
-     */
-    private function purgeObsoleteRecords(array $categories, array $products): void
+    private function purgeObsoleteItems(array $products): void
     {
         $itemIds = array_keys($products);
-        $categoryIds = array_keys($categories);
 
         CAT_Item::query()
             ->when(
                 $itemIds !== [],
                 fn ($query) => $query->whereNotIn('id', $itemIds),
-                fn ($query) => $query,
-            )
-            ->delete();
-
-        CAT_Category::query()
-            ->when(
-                $categoryIds !== [],
-                fn ($query) => $query->whereNotIn('id', $categoryIds),
                 fn ($query) => $query,
             )
             ->delete();
@@ -561,129 +293,6 @@ class CatalogSeeder extends Seeder
         }
 
         return $bySize === [] ? null : reset($bySize);
-    }
-
-    /**
-     * @param  list<array{url: string, focus: array<string, mixed>|null}>  $descriptors
-     */
-    private function syncItemImages(CAT_Item $product, array $descriptors): void
-    {
-        $disk = Storage::disk('public');
-        $storedPaths = [];
-
-        foreach (array_values($descriptors) as $sortOrder => $descriptor) {
-            $storagePath = $this->downloadProductImage($product, $descriptor['url'], $disk);
-            if ($storagePath === null) {
-                continue;
-            }
-
-            CAT_ItemImage::query()->updateOrCreate(
-                [
-                    'item_id' => $product->id,
-                    'sort_order' => $sortOrder,
-                ],
-                [
-                    'disk' => 'public',
-                    'path' => $storagePath,
-                    'focus' => $descriptor['focus'],
-                ],
-            );
-
-            $storedPaths[] = $storagePath;
-        }
-
-        if ($storedPaths === []) {
-            CAT_ItemImage::query()->where('item_id', $product->id)->delete();
-
-            return;
-        }
-
-        CAT_ItemImage::query()
-            ->where('item_id', $product->id)
-            ->whereNotIn('path', $storedPaths)
-            ->delete();
-    }
-
-    private function downloadProductImage(
-        CAT_Item $product,
-        string $sourceUrl,
-        \Illuminate\Contracts\Filesystem\Filesystem $disk,
-    ): ?string {
-        $basename = basename((string) parse_url($sourceUrl, PHP_URL_PATH));
-        if ($basename === '') {
-            return null;
-        }
-
-        $storagePath = 'catalog/items/'.$product->id.'/'.$basename;
-        if ($disk->exists($storagePath)) {
-            return $storagePath;
-        }
-
-        try {
-            $response = Http::timeout(30)
-                ->retry(2, 500)
-                ->get($sourceUrl);
-        } catch (\Throwable $exception) {
-            Log::warning('CatalogSeeder: не удалось скачать изображение.', [
-                'item_id' => $product->id,
-                'url' => $sourceUrl,
-                'error' => $exception->getMessage(),
-            ]);
-
-            return null;
-        }
-
-        if (! $response->successful()) {
-            Log::warning('CatalogSeeder: не удалось скачать изображение.', [
-                'item_id' => $product->id,
-                'url' => $sourceUrl,
-                'status' => $response->status(),
-            ]);
-
-            return null;
-        }
-
-        $disk->put($storagePath, $response->body());
-
-        return $storagePath;
-    }
-
-    private function absoluteAssetUrl(string $path): string
-    {
-        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
-            return $path;
-        }
-
-        if (str_starts_with($path, '/storage/')) {
-            return rtrim(self::CATALOG_SOURCE_ORIGIN, '/').$path;
-        }
-
-        if (str_starts_with($path, 'storage/')) {
-            return rtrim(self::CATALOG_SOURCE_ORIGIN, '/').'/'.$path;
-        }
-
-        return rtrim(self::CATALOG_SOURCE_ORIGIN, '/').'/storage/'.ltrim($path, '/');
-    }
-
-    private function moneyToKopecks(mixed $value): int
-    {
-        if (is_array($value)) {
-            $amount = $value['amount'] ?? 0;
-
-            return max(0, (int) round(((float) $amount) * self::KOPECKS_IN_RUBLE));
-        }
-
-        if (is_int($value) || is_float($value)) {
-            return max(0, (int) round(((float) $value) * self::KOPECKS_IN_RUBLE));
-        }
-
-        if (! is_string($value) || $value === '') {
-            return 0;
-        }
-
-        $normalized = str_replace([' ', ','], ['', '.'], trim($value));
-
-        return max(0, (int) round(((float) $normalized) * self::KOPECKS_IN_RUBLE));
     }
 
     private function stringValue(mixed $value): string

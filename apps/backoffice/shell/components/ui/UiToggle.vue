@@ -4,6 +4,7 @@ defineProps({
     labelOn: { type: String, default: "" },
     labelOff: { type: String, default: "" },
     label: { type: String, default: "" },
+    ariaLabel: { type: String, default: "" },
     disabled: { type: Boolean, default: false },
 });
 
@@ -15,6 +16,7 @@ defineEmits(["update:modelValue"]);
         type="button"
         role="switch"
         :aria-checked="modelValue ? 'true' : 'false'"
+        :aria-label="ariaLabel || undefined"
         :disabled="disabled"
         class="inline-flex h-11 items-center justify-center gap-2.5 px-5 text-sm font-medium transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-40"
         :class="modelValue
@@ -31,13 +33,15 @@ defineEmits(["update:modelValue"]);
                 :class="modelValue ? 'translate-x-3' : 'translate-x-0'"
             />
         </span>
-        <span>
-            <template v-if="labelOn || labelOff">
-                {{ modelValue ? (labelOn || label) : (labelOff || label) }}
-            </template>
-            <template v-else>
-                {{ label }}
-            </template>
+        <span class="inline-flex items-center">
+            <slot :on="modelValue">
+                <template v-if="labelOn || labelOff">
+                    {{ modelValue ? (labelOn || label) : (labelOff || label) }}
+                </template>
+                <template v-else>
+                    {{ label }}
+                </template>
+            </slot>
         </span>
     </button>
 </template>

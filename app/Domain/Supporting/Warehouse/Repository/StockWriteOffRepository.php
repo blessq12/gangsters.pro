@@ -11,19 +11,24 @@ interface StockWriteOffRepository
     /**
      * @return list<StockWriteOff>
      */
-    public function listAll(): array;
+    public function listByBranch(int $branchId): array;
 
     /**
      * @return list<StockWriteOff>
      */
-    public function listPage(int $offset, int $limit): array;
+    public function listByBranchPage(int $branchId, int $offset, int $limit): array;
 
-    public function countAll(): int;
+    public function countByBranch(int $branchId): int;
 
     /**
      * @return list<StockWriteOff>
      */
     public function listByKitchenTicketId(int $kitchenTicketId): array;
+
+    /**
+     * @return list<StockWriteOff>
+     */
+    public function listByBranchAndIngredient(int $branchId, int $ingredientId): array;
 
     public function save(StockWriteOff $writeOff): void;
 }

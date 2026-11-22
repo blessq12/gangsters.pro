@@ -4,6 +4,7 @@ namespace Tests\Application\Core\Support;
 
 use App\Domain\Core\Order\Entity\Order;
 use App\Domain\Core\Order\Repository\OrderRepository;
+use App\Domain\Core\Order\ValueObject\OrderNumber;
 
 final class InMemoryOrderRepository implements OrderRepository
 {
@@ -36,9 +37,9 @@ final class InMemoryOrderRepository implements OrderRepository
         ));
     }
 
-    public function count(?string $status = null): int
+    public function count(array $filters = []): int
     {
-        return count($this->listPage(0, PHP_INT_MAX, $status));
+        return count($this->listPage(0, PHP_INT_MAX, $filters));
     }
 
     public function countByStatus(): array
@@ -52,13 +53,54 @@ final class InMemoryOrderRepository implements OrderRepository
         return $counts;
     }
 
-    public function listPage(int $offset, int $limit, ?string $status = null): array
+    public function listPage(int $offset, int $limit, array $filters = []): array
     {
         $rows = array_values($this->orders);
-        if ($status !== null) {
+
+        $status = isset($filters['status']) ? trim((string) $filters['status']) : '';
+        if ($status !== '') {
             $rows = array_values(array_filter(
                 $rows,
                 static fn (Order $order): bool => $order->status()->value === $status,
+            ));
+        }
+
+        $branchId = isset($filters['branch_id']) ? (int) $filters['branch_id'] : 0;
+        if ($branchId > 0) {
+            $rows = array_values(array_filter(
+                $rows,
+                static fn (Order $order): bool => $order->branchId() === $branchId,
+            ));
+        }
+
+        $method = isset($filters['delivery_method']) ? trim((string) $filters['delivery_method']) : '';
+        if ($method === 'pickup' || $method === 'courier') {
+            $rows = array_values(array_filter(
+                $rows,
+                static fn (Order $order): bool => $method === 'pickup'
+                    ? $order->delivery()->isPickup()
+                    : ! $order->delivery()->isPickup(),
+            ));
+        }
+
+        $q = isset($filters['q']) ? trim((string) $filters['q']) : '';
+        if ($q !== '') {
+            $parsedNumber = OrderNumber::tryParse($q);
+            $rows = array_values(array_filter(
+                $rows,
+                static function (Order $order) use ($q, $parsedNumber): bool {
+                    if ($parsedNumber !== null) {
+                        return $order->hasId() && $order->id() === $parsedNumber['id'];
+                    }
+                    if (ctype_digit($q) && $order->hasId() && $order->id() === (int) $q) {
+                        return true;
+                    }
+                    $name = mb_strtolower($order->client()->name());
+                    $phone = mb_strtolower($order->client()->phone());
+                    $needle = mb_strtolower($q);
+
+                    return str_contains($name, $needle) || str_contains($phone, $needle);
+                },
             ));
         }
 

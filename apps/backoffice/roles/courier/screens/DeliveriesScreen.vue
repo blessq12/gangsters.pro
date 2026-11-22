@@ -174,7 +174,7 @@ onUnmounted(() => {
                         <div class="flex flex-wrap items-start justify-between gap-2">
                             <div class="space-y-1">
                                 <p class="text-lg font-semibold text-bo-fg">
-                                    Остановка {{ stop.position }} · заказ #{{ stop.order_id }}
+                                    Остановка {{ stop.position }} · {{ stop.order?.number || `заказ #${stop.order_id}` }}
                                 </p>
                                 <p class="text-sm text-bo-muted">
                                     {{ stop.order?.client?.name || "—" }}

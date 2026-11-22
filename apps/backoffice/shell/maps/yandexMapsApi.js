@@ -33,7 +33,8 @@ export function loadYandexMapsApi(apiKey) {
     return new Promise((resolve, reject) => {
         const script = document.createElement("script");
         script.id = SCRIPT_ID;
-        script.src = `https://api-maps.yandex.ru/2.1/?apikey=${encodeURIComponent(apiKey)}&lang=ru_RU`;
+        // package.full — нужен editor полигонов (зоны доставки).
+        script.src = `https://api-maps.yandex.ru/2.1/?apikey=${encodeURIComponent(apiKey)}&lang=ru_RU&load=package.full`;
         script.async = true;
         script.onload = () => window.ymaps.ready(resolve);
         script.onerror = () => reject(new Error("Не удалось загрузить Яндекс.Карты"));

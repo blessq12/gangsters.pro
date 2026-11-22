@@ -24,7 +24,7 @@ final class ListAdminProductsUseCase
 
         $items = [];
         foreach ($this->items->listProductsPage($offset, $limit, $needle) as $product) {
-            $items[] = $this->presenter->adminProduct($product, null);
+            $items[] = $this->presenter->adminProduct($product);
         }
 
         return PageParams::wrap(

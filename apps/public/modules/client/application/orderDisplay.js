@@ -21,6 +21,36 @@ const DELIVERY_LABELS = {
     pickup: "Самовывоз",
 };
 
+/**
+ * Публичный номер заказа: ORD-XXXX-YY.
+ * @param {{ number?: string|null, id?: number|string|null, created_at?: string|null }|null|undefined} order
+ */
+export function formatOrderNumber(order) {
+    if (!order) {
+        return "—";
+    }
+    if (typeof order.number === "string" && order.number.trim() !== "") {
+        return order.number.trim();
+    }
+    const id = Number(order.id);
+    if (!Number.isFinite(id) || id < 1) {
+        return "—";
+    }
+    const padded = String(Math.trunc(id)).padStart(4, "0");
+    if (!order.created_at) {
+        return `ORD-${padded}`;
+    }
+    try {
+        const year = new Date(order.created_at).getFullYear() % 100;
+        if (Number.isNaN(year)) {
+            return `ORD-${padded}`;
+        }
+        return `ORD-${padded}-${String(year).padStart(2, "0")}`;
+    } catch {
+        return `ORD-${padded}`;
+    }
+}
+
 export function formatOrderStatusRu(status) {
     if (!status) return "—";
     return STATUS_LABELS[status] || status;

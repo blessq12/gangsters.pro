@@ -22,12 +22,15 @@ final class OrderFormationTest extends TestCase
                 $this->line(2, 'Сет', 30000, 1, OrderLineType::Set),
             ],
             delivery: OrderDeliveryInfo::pickup(),
-            policy: $this->policy(giftMin: 10000, rollsPerSet: 4, maxSets: 3, deliveryActive: false, giftProductId: 20),
+            policy: $this->policy(giftMin: 10000, rollsPerSet: 4, maxSets: 3, deliveryActive: false),
             facts: new OrderFormationFacts(
                 isRollByProductId: [1 => true, 2 => false],
                 complements: [
                     ['product_id' => 10, 'name' => 'Соус'],
                     ['product_id' => 11, 'name' => 'Имбирь'],
+                ],
+                giftCandidates: [
+                    ['product_id' => 20, 'name' => 'Подарок'],
                 ],
                 gift: ['product_id' => 20, 'name' => 'Подарок'],
             ),
@@ -98,11 +101,12 @@ final class OrderFormationTest extends TestCase
         $this->assertSame(0, $formed['delivery']->feeKopecks());
     }
 
-    public function testВнеЗоныОтПорогаОстаётсяТолькоНадбавка(): void
+    public function testВнеЗоныОтПорогаНадбавкаИзАкцийБольшеНеБерётся(): void
     {
         $formed = $this->formCourier(subtotalKopecks: 80000, threshold: 50000, remote: true, baseFee: 20000, surcharge: 5000);
 
-        $this->assertSame(5000, $formed['delivery']->feeKopecks());
+        // outside_zone_surcharge — ответственность Delivery, в Promotion всегда 0.
+        $this->assertSame(0, $formed['delivery']->feeKopecks());
     }
 
     /**
@@ -155,7 +159,6 @@ final class OrderFormationTest extends TestCase
         bool $deliveryActive,
         int $threshold = 0,
         int $surcharge = 0,
-        ?int $giftProductId = null,
     ): PromotionPolicy {
         return new PromotionPolicy(
             id: 1,
@@ -180,7 +183,6 @@ final class OrderFormationTest extends TestCase
                 'max_sets' => $maxSets,
                 'is_active' => true,
             ],
-            giftProductId: $giftProductId,
         );
     }
 }

@@ -2,149 +2,53 @@
 
 namespace App\Application\Catalog\Presenter;
 
-use App\Domain\Supporting\Catalog\Entity\Category;
-use App\Domain\Supporting\Catalog\Entity\Price;
 use App\Domain\Supporting\Catalog\Entity\Product;
-use App\Domain\Supporting\Catalog\Entity\ProductSet;
-use App\Domain\Supporting\Catalog\Entity\Tag;
-use App\Domain\Supporting\Catalog\Enum\CatalogItemKind;
-use App\Domain\Supporting\Catalog\Enum\PriceType;
+use App\Domain\Supporting\Catalog\Entity\TechCard;
 use App\Domain\Supporting\Catalog\ValueObject\Nutrition;
 use App\Domain\Supporting\Catalog\ValueObject\ProductImage;
 use App\Shared\ValueObject\Money;
 
 /**
- * Единый формат ответа каталога для витрины и админки.
+ * Единый формат ответа каталога для витрины и админки (товар без цен и тегов).
  */
 final class CatalogPresenter
 {
     /**
+     * @param  list<array{code: string, label: string, color: string}>  $tags  теги приходят снаружи (из меню филиала)
      * @return array<string, mixed>
      */
-    public function category(Category $category): array
+    public function product(Product $product, array $tags = []): array
     {
         return [
-            'id' => $category->id(),
-            'name' => $category->name(),
-            'slug' => $category->slug(),
-            'sort_order' => $category->sortOrder(),
-            'is_active' => $category->isActive(),
-            'is_accompanying' => $category->isAccompanying(),
-        ];
-    }
-
-    /**
-     * @param  array<int, Tag>  $tagById
-     * @return array<string, mixed>
-     */
-    public function product(Product $product, array $tagById): array
-    {
-        return [
-            'kind' => CatalogItemKind::Product->value,
             'id' => $product->id(),
+            'kind' => 'product',
             'name' => $product->name(),
             'slug' => $product->slug(),
             'sku' => $product->sku(),
             'status' => $product->status()->value,
             'is_system' => $product->isSystem(),
-            'price' => $this->money($product->regularPrice()),
-            'old_price' => $this->optionalMoney($product->price(PriceType::Old)),
-            'prices' => $this->prices($product->prices()),
+            'is_roll' => $product->isRoll(),
+            'is_complement' => $product->isComplement(),
             'weight' => $product->weight(),
             'description' => $product->description(),
             'nutrition' => $this->nutrition($product->nutrition()),
             'ingredients' => $product->ingredients(),
-            'tags' => $this->tags($product->tagIds(), $tagById),
+            'tags' => $tags,
             'images' => $this->images($product->images()),
         ];
     }
 
     /**
-     * @param  array<int, Tag>  $tagById
-     * @param  array<int, string>  $lineProductNames
-     * @param  array<int, Product>  $lineProductsById
-     * @return array<string, mixed>
-     */
-    public function productSet(
-        ProductSet $set,
-        array $tagById,
-        array $lineProductNames,
-        array $lineProductsById,
-    ): array {
-        $lines = [];
-        foreach ($set->lines() as $line) {
-            $productId = $line->productId();
-            $lines[] = [
-                'product_id' => $productId,
-                'quantity' => $line->quantity(),
-                'product_name' => $lineProductNames[$productId] ?? null,
-            ];
-        }
-
-        return [
-            'kind' => CatalogItemKind::Set->value,
-            'id' => $set->id(),
-            'name' => $set->name(),
-            'slug' => $set->slug(),
-            'sku' => $set->sku(),
-            'status' => $set->status()->value,
-            'price' => $this->money($set->regularPrice()),
-            'old_price' => $this->optionalMoney($set->price(PriceType::Old)),
-            'prices' => $this->prices($set->prices()),
-            'weight' => $this->setWeightGrams($set, $lineProductsById),
-            'description' => $set->description(),
-            'lines' => $lines,
-            'tags' => $this->tags($set->tagIds(), $tagById),
-            'images' => $this->images($set->images()),
-        ];
-    }
-
-    /**
-     * Подмена продажной цены позиции ценой из меню филиала (форма ответа не меняется).
+     * Подстановка продажной цены из меню филиала в payload товара.
      *
-     * @param  array<string, mixed>  $item  результат product() / productSet()
+     * @param  array<string, mixed>  $item  результат product()
      * @return array<string, mixed>
      */
     public function withMenuPrice(array $item, int $priceKopecks): array
     {
-        $rubles = intdiv($priceKopecks, 100);
-        $item['price'] = ['amount' => $rubles, 'currency' => Money::CURRENCY];
-
-        $prices = is_array($item['prices'] ?? null) ? $item['prices'] : [];
-        $regular = [
-            'type' => PriceType::Regular->value,
-            'amount_kopecks' => $priceKopecks,
-            'amount_rubles' => $rubles,
-        ];
-
-        $replaced = false;
-        foreach ($prices as $index => $price) {
-            if (($price['type'] ?? null) === PriceType::Regular->value) {
-                $prices[$index] = $regular;
-                $replaced = true;
-            }
-        }
-        if (! $replaced) {
-            $prices[] = $regular;
-        }
-        $item['prices'] = array_values($prices);
+        $item['price'] = ['amount' => intdiv($priceKopecks, 100), 'currency' => Money::CURRENCY];
 
         return $item;
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    public function tag(Tag $tag): array
-    {
-        return [
-            'id' => $tag->id(),
-            'code' => $tag->code(),
-            'label' => $tag->label(),
-            'color' => $tag->color(),
-            'is_active' => $tag->isActive(),
-            'sort_order' => $tag->sortOrder(),
-        ];
     }
 
     /**
@@ -152,17 +56,16 @@ final class CatalogPresenter
      *
      * @return array<string, mixed>
      */
-    public function adminProduct(Product $product, ?int $categoryId): array
+    public function adminProduct(Product $product): array
     {
         return [
             'id' => $product->id(),
             'name' => $product->name(),
-            'category_id' => $categoryId,
-            'price' => $product->regularPrice()?->amountRubles() ?? 0,
-            'old_price' => $product->price(PriceType::Old)?->amountRubles(),
             'weight' => $product->weight(),
             'status' => $product->status()->value,
             'is_system' => $product->isSystem(),
+            'is_roll' => $product->isRoll(),
+            'is_complement' => $product->isComplement(),
             'description' => $product->description(),
             'sku' => $product->sku(),
         ];
@@ -172,10 +75,8 @@ final class CatalogPresenter
      * @param  list<array{id: int, url: string, path: string, sort_order: int, focus_x: float|null, focus_y: float|null}>  $images
      * @return array<string, mixed>
      */
-    public function adminProductDetail(Product $product, array $images): array
+    public function adminProductDetail(Product $product, array $images, ?TechCard $techCard = null): array
     {
-        $nutrition = $product->nutrition();
-
         return [
             'id' => $product->id(),
             'name' => $product->name(),
@@ -187,97 +88,32 @@ final class CatalogPresenter
             'is_complement' => $product->isComplement(),
             'description' => $product->description(),
             'weight' => $product->weight(),
-            'price' => $product->regularPrice()?->amountRubles() ?? 0,
-            'old_price' => $product->price(PriceType::Old)?->amountRubles(),
-            'prices' => $this->adminPrices($product->prices()),
             'ingredients' => $product->ingredients(),
-            'nutrition' => $nutrition instanceof Nutrition
-                ? [
-                    'calories' => $nutrition->calories(),
-                    'proteins' => $nutrition->proteins(),
-                    'fats' => $nutrition->fats(),
-                    'carbs' => $nutrition->carbs(),
-                    'basis' => $nutrition->basis(),
-                ]
-                : null,
-            'tag_ids' => $product->tagIds(),
+            'nutrition' => $this->nutrition($product->nutrition()),
             'images' => $images,
+            'tech_card' => $this->techCard($techCard),
         ];
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array{lines: list<array{ingredient_ref: string, quantity: float, unit: string}>}
      */
-    public function adminSet(ProductSet $set): array
+    private function techCard(?TechCard $techCard): array
     {
-        return [
-            'id' => $set->id(),
-            'name' => $set->name(),
-            'slug' => $set->slug(),
-            'sku' => $set->sku(),
-            'line_count' => count($set->lines()),
-            'price' => $set->regularPrice()?->amountRubles() ?? 0,
-            'old_price' => $set->price(PriceType::Old)?->amountRubles(),
-            'status' => $set->status()->value,
-        ];
-    }
+        if (! $techCard instanceof TechCard) {
+            return ['lines' => []];
+        }
 
-    /**
-     * @param  list<array{product_id: int, name: string, quantity: int}>  $lines
-     * @param  list<array{id: int, url: string, path: string, sort_order: int, focus_x: float|null, focus_y: float|null}>  $images
-     * @return array<string, mixed>
-     */
-    public function adminSetDetail(ProductSet $set, array $lines, array $images): array
-    {
-        return [
-            'id' => $set->id(),
-            'name' => $set->name(),
-            'slug' => $set->slug(),
-            'sku' => $set->sku(),
-            'status' => $set->status()->value,
-            'price' => $set->regularPrice()?->amountRubles() ?? 0,
-            'old_price' => $set->price(PriceType::Old)?->amountRubles(),
-            'prices' => $this->adminPrices($set->prices()),
-            'description' => $set->description(),
-            'lines' => $lines,
-            'images' => $images,
-        ];
-    }
-
-    /**
-     * @param  list<array{id: int, kind: string, name: string, sort_order: int}>  $items
-     * @return array<string, mixed>
-     */
-    public function adminCategoryDetail(Category $category, array $items): array
-    {
-        return [
-            ...$this->category($category),
-            'items' => $items,
-        ];
-    }
-
-    /**
-     * @param  list<int>  $tagIds
-     * @param  array<int, Tag>  $tagById
-     * @return list<array{code: string, label: string, color: string}>
-     */
-    private function tags(array $tagIds, array $tagById): array
-    {
-        $tags = [];
-        foreach ($tagIds as $tagId) {
-            $tag = $tagById[$tagId] ?? null;
-            if (! $tag instanceof Tag) {
-                continue;
-            }
-
-            $tags[] = [
-                'code' => $tag->code(),
-                'label' => $tag->label(),
-                'color' => $tag->color(),
+        $lines = [];
+        foreach ($techCard->lines() as $line) {
+            $lines[] = [
+                'ingredient_ref' => $line->ingredientRef(),
+                'quantity' => $line->quantity(),
+                'unit' => $line->unit(),
             ];
         }
 
-        return $tags;
+        return ['lines' => $lines];
     }
 
     /**
@@ -311,77 +147,6 @@ final class CatalogPresenter
     }
 
     /**
-     * @return array{amount: int, currency: string}
-     */
-    private function money(?Price $price): array
-    {
-        return [
-            'amount' => $price?->amountRubles() ?? 0,
-            'currency' => Money::CURRENCY,
-        ];
-    }
-
-    /**
-     * @return array{amount: int, currency: string}|null
-     */
-    private function optionalMoney(?Price $price): ?array
-    {
-        if (! $price instanceof Price || $price->amountKopecks() <= 0) {
-            return null;
-        }
-
-        return $this->money($price);
-    }
-
-    /**
-     * @param  list<Price>  $prices
-     * @return list<array{type: string, amount_kopecks: int, amount_rubles: int}>
-     */
-    private function prices(array $prices): array
-    {
-        $mapped = [];
-        foreach ($prices as $price) {
-            if (! $price instanceof Price) {
-                continue;
-            }
-
-            $mapped[] = [
-                'type' => $price->type()->value,
-                'amount_kopecks' => $price->amountKopecks(),
-                'amount_rubles' => $price->amountRubles(),
-            ];
-        }
-
-        return $mapped;
-    }
-
-    /**
-     * Admin API: деньги в рублях.
-     *
-     * @param  list<Price>  $prices
-     * @return list<array{type: string, amount: int}>
-     */
-    private function adminPrices(array $prices): array
-    {
-        $mapped = [];
-        foreach ($prices as $price) {
-            if (! $price instanceof Price) {
-                continue;
-            }
-            if ($price->type() === PriceType::Promo) {
-                continue;
-            }
-
-            $mapped[] = [
-                'type' => $price->type()->value,
-                'amount' => $price->amountRubles(),
-            ];
-        }
-
-        return $mapped;
-    }
-
-    /**
      * @return array<string, mixed>|null
      */
     private function nutrition(?Nutrition $nutrition): ?array
@@ -397,28 +162,5 @@ final class CatalogPresenter
             'carbs' => $nutrition->carbs(),
             'basis' => $nutrition->basis(),
         ];
-    }
-
-    /**
-     * @param  array<int, Product>  $lineProductsById
-     */
-    private function setWeightGrams(ProductSet $set, array $lineProductsById): ?int
-    {
-        $total = 0;
-        foreach ($set->lines() as $line) {
-            $product = $lineProductsById[$line->productId()] ?? null;
-            if (! $product instanceof Product) {
-                return null;
-            }
-
-            $grams = $product->weight();
-            if ($grams === null || $grams <= 0) {
-                return null;
-            }
-
-            $total += $grams * $line->quantity();
-        }
-
-        return $total > 0 ? $total : null;
     }
 }

@@ -172,8 +172,8 @@ onUnmounted(() => {
             >
                 <div class="space-y-4">
                     <div class="flex items-start justify-between gap-3">
-                        <p class="text-5xl font-black leading-none md:text-6xl">
-                            #{{ ticket.order_id }}
+                        <p class="text-3xl font-black leading-none tracking-tight md:text-4xl">
+                            {{ ticket.order_number || ticket.order?.number || `#${ticket.order_id}` }}
                         </p>
                         <UiBadge
                             class="!px-3 !py-1 !text-base"

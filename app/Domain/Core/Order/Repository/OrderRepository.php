@@ -15,7 +15,15 @@ interface OrderRepository
      */
     public function listByClientId(int $clientId): array;
 
-    public function count(?string $status = null): int;
+    /**
+     * @param  array{
+     *     status?: string|null,
+     *     q?: string|null,
+     *     branch_id?: int|null,
+     *     delivery_method?: string|null
+     * }  $filters
+     */
+    public function count(array $filters = []): int;
 
     /**
      * @return array<string, int>
@@ -23,9 +31,15 @@ interface OrderRepository
     public function countByStatus(): array;
 
     /**
+     * @param  array{
+     *     status?: string|null,
+     *     q?: string|null,
+     *     branch_id?: int|null,
+     *     delivery_method?: string|null
+     * }  $filters
      * @return list<Order>
      */
-    public function listPage(int $offset, int $limit, ?string $status = null): array;
+    public function listPage(int $offset, int $limit, array $filters = []): array;
 
     public function save(Order $order): void;
 }

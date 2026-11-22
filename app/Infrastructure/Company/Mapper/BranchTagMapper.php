@@ -1,0 +1,22 @@
+<?php
+
+namespace App\Infrastructure\Company\Mapper;
+
+use App\Domain\Supporting\Company\Entity\BranchTag;
+use App\Infrastructure\Company\Model\CMP_BranchTag;
+
+final class BranchTagMapper
+{
+    public function toDomain(CMP_BranchTag $row): BranchTag
+    {
+        return new BranchTag(
+            id: (int) $row->id,
+            branchId: (int) $row->branch_id,
+            code: (string) $row->code,
+            label: (string) $row->label,
+            color: (string) $row->color,
+            isActive: (bool) $row->is_active,
+            sortOrder: (int) $row->sort_order,
+        );
+    }
+}

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Backoffice;
 
 use App\Application\Order\Checkout\CheckoutPayload;
 use App\Application\Order\Command\AcceptOrderUseCase;
+use App\Application\Order\Command\AddOrderNoteUseCase;
 use App\Application\Order\Command\CancelOrderUseCase;
 use App\Application\Order\Command\CompletePickupOrderUseCase;
 use App\Application\Order\Command\CreateOrderUseCase;
@@ -15,6 +16,7 @@ use App\Application\Order\Query\GetAdminOrderUseCase;
 use App\Application\Order\Query\ListAdminOrdersUseCase;
 use App\Domain\Core\Order\Enum\OrderStatus;
 use App\Http\Controllers\Controller;
+use App\Infrastructure\Staff\Model\STF_Employee;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -25,6 +27,9 @@ final class OrderController extends Controller
     public function index(Request $request, ListAdminOrdersUseCase $useCase): JsonResponse
     {
         $status = $request->query('status');
+        $q = $request->query('q');
+        $branchId = $request->query('branch_id');
+        $deliveryMethod = $request->query('delivery_method');
         $offset = (int) $request->query('offset', 0);
         $limit = (int) $request->query('limit', 20);
 
@@ -32,6 +37,9 @@ final class OrderController extends Controller
             status: is_string($status) ? $status : null,
             offset: $offset,
             limit: $limit,
+            q: is_string($q) ? $q : null,
+            branchId: is_numeric($branchId) ? (int) $branchId : null,
+            deliveryMethod: is_string($deliveryMethod) ? $deliveryMethod : null,
         ));
     }
 
@@ -131,5 +139,26 @@ final class OrderController extends Controller
         } catch (InvalidArgumentException $exception) {
             return response()->json(['message' => $exception->getMessage()], 422);
         }
+    }
+
+    public function addNote(
+        Request $request,
+        int $id,
+        AddOrderNoteUseCase $useCase,
+    ): JsonResponse {
+        $validated = $request->validate([
+            'body' => ['required', 'string', 'max:4000'],
+        ]);
+
+        $user = $request->user('sanctum');
+        $authorId = $user instanceof STF_Employee ? (int) $user->id : null;
+
+        try {
+            $note = $useCase->execute($id, $validated['body'], $authorId);
+        } catch (InvalidArgumentException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
+
+        return response()->json(['note' => $note], 201);
     }
 }

@@ -13,10 +13,16 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('CAT_items', function (Blueprint $table): void {
-            $table->boolean('is_roll')->default(false)->after('is_system');
-            $table->boolean('is_complement')->default(false)->after('is_roll');
-        });
+        if (! Schema::hasColumn('CAT_items', 'is_roll')) {
+            Schema::table('CAT_items', function (Blueprint $table): void {
+                $table->boolean('is_roll')->default(false)->after('is_system');
+            });
+        }
+        if (! Schema::hasColumn('CAT_items', 'is_complement')) {
+            Schema::table('CAT_items', function (Blueprint $table): void {
+                $table->boolean('is_complement')->default(false)->after('is_roll');
+            });
+        }
 
         Schema::table('PRM_policies', function (Blueprint $table): void {
             $table->unsignedBigInteger('gift_product_id')->nullable()->after('branch_id');

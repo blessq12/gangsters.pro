@@ -12,6 +12,7 @@ final class StockLevelPresenter
     public function present(StockLevel $level): array
     {
         return [
+            'branch_id' => $level->branchId(),
             'ingredient_id' => $level->ingredientId(),
             'quantity' => $level->quantity(),
         ];

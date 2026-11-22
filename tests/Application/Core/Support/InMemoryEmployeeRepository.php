@@ -32,23 +32,38 @@ final class InMemoryEmployeeRepository implements EmployeeRepository
         return null;
     }
 
-    public function list(?StaffRole $role = null, ?bool $isActive = null): array
+    public function list(?StaffRole $role = null, ?bool $isActive = null, ?int $branchId = null): array
     {
-        return array_values($this->employees);
+        return array_values(array_filter(
+            $this->employees,
+            static function (Employee $employee) use ($role, $isActive, $branchId): bool {
+                if ($role !== null && $employee->role() !== $role) {
+                    return false;
+                }
+                if ($isActive !== null && $employee->isActive() !== $isActive) {
+                    return false;
+                }
+                if ($branchId !== null && $employee->branchId() !== $branchId) {
+                    return false;
+                }
+
+                return true;
+            },
+        ));
     }
 
-    public function listPage(int $offset, int $limit, ?StaffRole $role = null, ?bool $isActive = null): array
-    {
-        return array_slice($this->list($role, $isActive), $offset, $limit);
+    public function listPage(
+        int $offset,
+        int $limit,
+        ?StaffRole $role = null,
+        ?bool $isActive = null,
+        ?int $branchId = null,
+    ): array {
+        return array_slice($this->list($role, $isActive, $branchId), $offset, $limit);
     }
 
-    public function count(?StaffRole $role = null, ?bool $isActive = null): int
+    public function count(?StaffRole $role = null, ?bool $isActive = null, ?int $branchId = null): int
     {
-        return count($this->list($role, $isActive));
-    }
-
-    public function delete(int $id): void
-    {
-        unset($this->employees[$id]);
+        return count($this->list($role, $isActive, $branchId));
     }
 }

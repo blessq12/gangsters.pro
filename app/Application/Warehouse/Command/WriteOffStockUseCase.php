@@ -28,13 +28,14 @@ final class WriteOffStockUseCase
             throw new \InvalidArgumentException('Ингредиент не найден.');
         }
 
-        $current = $this->levels->findByIngredientId($dto->ingredientId);
+        $current = $this->levels->findByBranchAndIngredient($dto->branchId, $dto->ingredientId);
         $currentQty = $current?->quantity() ?? 0.0;
         if ($currentQty < $dto->quantity) {
             throw new \InvalidArgumentException('Недостаточно остатка для списания.');
         }
 
         $writeOff = StockWriteOff::record(
+            branchId: $dto->branchId,
             ingredientId: $dto->ingredientId,
             quantity: $dto->quantity,
             reason: $dto->reason,
@@ -43,6 +44,7 @@ final class WriteOffStockUseCase
         $this->writeOffs->save($writeOff);
 
         $this->levels->save(new StockLevel(
+            branchId: $dto->branchId,
             ingredientId: $dto->ingredientId,
             quantity: $currentQty - $dto->quantity,
         ));

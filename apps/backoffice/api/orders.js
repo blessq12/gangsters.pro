@@ -1,7 +1,14 @@
 import { request } from "../http/transport.js";
 
 /**
- * @param {{ offset?: number, limit?: number, status?: string }} [query]
+ * @param {{
+ *   offset?: number,
+ *   limit?: number,
+ *   status?: string,
+ *   q?: string,
+ *   branch_id?: number|string,
+ *   delivery_method?: string,
+ * }} [query]
  */
 export function listOrders(query = {}) {
     const params = new URLSearchParams();
@@ -13,6 +20,15 @@ export function listOrders(query = {}) {
     }
     if (query.status) {
         params.set("status", query.status);
+    }
+    if (query.q) {
+        params.set("q", query.q);
+    }
+    if (query.branch_id !== undefined && query.branch_id !== null && query.branch_id !== "") {
+        params.set("branch_id", String(query.branch_id));
+    }
+    if (query.delivery_method) {
+        params.set("delivery_method", query.delivery_method);
     }
     const qs = params.toString();
     return request("GET", `/orders${qs ? `?${qs}` : ""}`);
@@ -57,4 +73,12 @@ export function completePickup(id) {
 /** @param {Record<string, unknown>} data */
 export function storeOrder(data) {
     return request("POST", "/orders", data);
+}
+
+/**
+ * @param {number|string} id
+ * @param {{ body: string }} data
+ */
+export function addOrderNote(id, data) {
+    return request("POST", `/orders/${id}/notes`, data);
 }

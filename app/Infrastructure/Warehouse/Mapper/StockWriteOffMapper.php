@@ -12,6 +12,7 @@ final class StockWriteOffMapper
     {
         return StockWriteOff::restore(
             id: (int) $row->id,
+            branchId: (int) $row->branch_id,
             ingredientId: (int) $row->ingredient_id,
             quantity: (float) $row->quantity,
             reason: (string) $row->reason,
@@ -28,6 +29,7 @@ final class StockWriteOffMapper
     public function toPersistence(StockWriteOff $writeOff): array
     {
         return [
+            'branch_id' => $writeOff->branchId(),
             'ingredient_id' => $writeOff->ingredientId(),
             'quantity' => $writeOff->quantity(),
             'reason' => $writeOff->reason(),

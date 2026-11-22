@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers\Api\Backoffice;
 
-use App\Application\Staff\Command\DeleteEmployeeUseCase;
 use App\Application\Staff\Command\SaveEmployeeUseCase;
 use App\Application\Staff\Command\ToggleEmployeeActiveUseCase;
 use App\Application\Staff\DTO\SaveEmployeeDto;
+use App\Application\Staff\Query\GetEmployeeUseCase;
 use App\Application\Staff\Query\ListEmployeesUseCase;
 use App\Http\Controllers\Controller;
-use App\Infrastructure\Staff\Model\STF_Employee;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use InvalidArgumentException;
@@ -28,15 +27,33 @@ final class EmployeeController extends Controller
             }
         }
 
+        $branchIdRaw = $request->query('branch_id');
+        $branchId = null;
+        if ($branchIdRaw !== null && $branchIdRaw !== '') {
+            $branchId = (int) $branchIdRaw;
+        }
+
         try {
             return response()->json($useCase->execute(
                 role: is_string($role) ? $role : null,
                 isActive: $isActive,
+                branchId: $branchId,
                 offset: (int) $request->query('offset', 0),
                 limit: (int) $request->query('limit', 20),
             ));
         } catch (InvalidArgumentException $exception) {
             return response()->json(['message' => $exception->getMessage()], 422);
+        }
+    }
+
+    public function show(int $id, GetEmployeeUseCase $useCase): JsonResponse
+    {
+        try {
+            return response()->json($useCase->execute($id));
+        } catch (InvalidArgumentException $exception) {
+            $status = $exception->getMessage() === 'Сотрудник не найден.' ? 404 : 422;
+
+            return response()->json(['message' => $exception->getMessage()], $status);
         }
     }
 
@@ -48,17 +65,6 @@ final class EmployeeController extends Controller
     public function update(Request $request, int $id, SaveEmployeeUseCase $useCase): JsonResponse
     {
         return $this->save($request, $useCase, $id);
-    }
-
-    public function destroy(Request $request, int $id, DeleteEmployeeUseCase $useCase): JsonResponse
-    {
-        try {
-            $result = $useCase->execute($id, $this->currentEmployeeId($request));
-        } catch (InvalidArgumentException $exception) {
-            return response()->json(['message' => $exception->getMessage()], 422);
-        }
-
-        return response()->json($result);
     }
 
     public function toggleActive(int $id, ToggleEmployeeActiveUseCase $useCase): JsonResponse
@@ -82,6 +88,7 @@ final class EmployeeController extends Controller
             'email' => ['required', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:32'],
             'role' => ['required', 'string', 'max:64'],
+            'branch_id' => ['nullable', 'integer', 'min:1'],
             'password' => [$id === null ? 'required' : 'nullable', 'string'],
             'is_active' => ['sometimes', 'boolean'],
         ]);
@@ -97,21 +104,12 @@ final class EmployeeController extends Controller
                 isActive: array_key_exists('is_active', $validated)
                     ? (bool) $validated['is_active']
                     : null,
+                branchId: isset($validated['branch_id']) ? (int) $validated['branch_id'] : null,
             ));
         } catch (InvalidArgumentException $exception) {
             return response()->json(['message' => $exception->getMessage()], 422);
         }
 
         return response()->json($result['employee'], $result['created'] ? 201 : 200);
-    }
-
-    private function currentEmployeeId(Request $request): int
-    {
-        $user = $request->user('sanctum');
-        if (! $user instanceof STF_Employee) {
-            throw new InvalidArgumentException('Сотрудник не авторизован.');
-        }
-
-        return (int) $user->id;
     }
 }

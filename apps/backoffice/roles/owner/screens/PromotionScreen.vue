@@ -1,6 +1,5 @@
 <script setup>
 import { onMounted, reactive, ref, watch } from "vue";
-import { listProducts } from "../../../api/catalog.js";
 import {
     getPromotionPolicy,
     storePromotionPolicy,
@@ -12,6 +11,7 @@ import UiButton from "../../../shell/components/ui/UiButton.vue";
 import UiCard from "../../../shell/components/ui/UiCard.vue";
 import UiFormField from "../../../shell/components/ui/UiFormField.vue";
 import UiInput from "../../../shell/components/ui/UiInput.vue";
+import UiToggle from "../../../shell/components/ui/UiToggle.vue";
 import OwnerBranchSelector from "../components/branch/OwnerBranchSelector.vue";
 import { useOwnerBranchContext } from "../composables/useOwnerBranchContext.js";
 
@@ -20,7 +20,6 @@ const loadApi = useApi();
 const saveApi = useApi();
 
 const policyExists = ref(false);
-const catalogProducts = ref([]);
 const { selectedBranchId, ensureLoaded } = useOwnerBranchContext();
 
 const weekdayOptions = [
@@ -34,13 +33,11 @@ const weekdayOptions = [
 ];
 
 const policyForm = reactive({
-    gift_product_id: "",
-    gift_pickup_min_order_kopecks: "0",
-    gift_courier_min_order_kopecks: "0",
+    gift_pickup_min_order_rubles: "0",
+    gift_courier_min_order_rubles: "0",
     gift_courier_weekdays: /** @type {number[]} */ ([]),
     gift_benefit_active: false,
-    delivery_free_threshold_kopecks: "0",
-    delivery_outside_zone_surcharge_kopecks: "0",
+    delivery_free_threshold_rubles: "0",
     delivery_benefit_active: false,
     complement_set_benefit_active: false,
     complement_set_rolls_per_set: "1",
@@ -54,40 +51,46 @@ function clearErrors(target) {
     });
 }
 
+/** @param {number|null|undefined} kopecks */
+function kopecksToRubles(kopecks) {
+    return String(Math.round(Number(kopecks ?? 0) / 100));
+}
+
+/** @param {string|number} value @returns {number|null} */
+function rublesToKopecks(value) {
+    const text = String(value ?? "").trim();
+    if (text === "" || Number.isNaN(Number(text))) {
+        return null;
+    }
+    return Math.round(Number(text) * 100);
+}
+
 function applyPolicy(payload) {
     policyExists.value = Boolean(payload?.gift || payload?.delivery || payload?.complement);
     if (!payload) {
-        policyForm.gift_product_id = "";
-        policyForm.gift_pickup_min_order_kopecks = "0";
-        policyForm.gift_courier_min_order_kopecks = "0";
+        policyForm.gift_pickup_min_order_rubles = "0";
+        policyForm.gift_courier_min_order_rubles = "0";
         policyForm.gift_courier_weekdays = [];
         policyForm.gift_benefit_active = false;
-        policyForm.delivery_free_threshold_kopecks = "0";
-        policyForm.delivery_outside_zone_surcharge_kopecks = "0";
+        policyForm.delivery_free_threshold_rubles = "0";
         policyForm.delivery_benefit_active = false;
         policyForm.complement_set_benefit_active = false;
         policyForm.complement_set_rolls_per_set = "1";
         policyForm.complement_set_max_sets = "1";
         return;
     }
-    policyForm.gift_product_id = payload?.gift?.product_id != null
-        ? String(payload.gift.product_id)
-        : "";
-    policyForm.gift_pickup_min_order_kopecks = String(
-        payload?.gift?.pickup_min_order_kopecks ?? 0,
+    policyForm.gift_pickup_min_order_rubles = kopecksToRubles(
+        payload?.gift?.pickup_min_order_kopecks,
     );
-    policyForm.gift_courier_min_order_kopecks = String(
-        payload?.gift?.courier_min_order_kopecks ?? 0,
+    policyForm.gift_courier_min_order_rubles = kopecksToRubles(
+        payload?.gift?.courier_min_order_kopecks,
     );
     policyForm.gift_courier_weekdays = Array.isArray(payload?.gift?.courier_weekdays)
         ? [...payload.gift.courier_weekdays]
         : [];
     policyForm.gift_benefit_active = Boolean(payload?.gift?.is_active);
-    policyForm.delivery_free_threshold_kopecks = String(
-        payload?.delivery?.free_delivery_threshold_kopecks ?? 0,
-    );
-    policyForm.delivery_outside_zone_surcharge_kopecks = String(
-        payload?.delivery?.outside_zone_surcharge_kopecks ?? 0,
+    policyForm.delivery_free_threshold_rubles = kopecksToRubles(
+        payload?.delivery?.free_delivery_threshold_kopecks,
     );
     policyForm.delivery_benefit_active = Boolean(payload?.delivery?.is_active);
     policyForm.complement_set_benefit_active = Boolean(payload?.complement?.is_active);
@@ -127,15 +130,17 @@ function toggleWeekday(day) {
 
 function validatePolicy() {
     clearErrors(policyErrors);
-    const requiredNums = [
-        "gift_pickup_min_order_kopecks",
-        "gift_courier_min_order_kopecks",
-        "delivery_free_threshold_kopecks",
-        "delivery_outside_zone_surcharge_kopecks",
-        "complement_set_rolls_per_set",
-        "complement_set_max_sets",
+    const moneyKeys = [
+        "gift_pickup_min_order_rubles",
+        "gift_courier_min_order_rubles",
+        "delivery_free_threshold_rubles",
     ];
-    requiredNums.forEach((key) => {
+    moneyKeys.forEach((key) => {
+        if (rublesToKopecks(policyForm[key]) === null) {
+            policyErrors[key] = "Число";
+        }
+    });
+    ["complement_set_rolls_per_set", "complement_set_max_sets"].forEach((key) => {
         if (policyForm[key] === "" || Number.isNaN(Number(policyForm[key]))) {
             policyErrors[key] = "Число";
         }
@@ -153,18 +158,13 @@ async function savePolicy() {
         return;
     }
 
-    const giftProductId = String(policyForm.gift_product_id).trim();
     const body = {
         branch_id: Number(selectedBranchId.value),
-        gift_product_id: giftProductId !== "" ? Number(giftProductId) : null,
-        gift_pickup_min_order_kopecks: Number(policyForm.gift_pickup_min_order_kopecks),
-        gift_courier_min_order_kopecks: Number(policyForm.gift_courier_min_order_kopecks),
+        gift_pickup_min_order_kopecks: rublesToKopecks(policyForm.gift_pickup_min_order_rubles),
+        gift_courier_min_order_kopecks: rublesToKopecks(policyForm.gift_courier_min_order_rubles),
         gift_courier_weekdays: [...policyForm.gift_courier_weekdays],
         gift_benefit_active: Boolean(policyForm.gift_benefit_active),
-        delivery_free_threshold_kopecks: Number(policyForm.delivery_free_threshold_kopecks),
-        delivery_outside_zone_surcharge_kopecks: Number(
-            policyForm.delivery_outside_zone_surcharge_kopecks,
-        ),
+        delivery_free_threshold_kopecks: rublesToKopecks(policyForm.delivery_free_threshold_rubles),
         delivery_benefit_active: Boolean(policyForm.delivery_benefit_active),
         complement_set_benefit_active: Boolean(policyForm.complement_set_benefit_active),
         complement_set_rolls_per_set: Number(policyForm.complement_set_rolls_per_set),
@@ -177,151 +177,136 @@ async function savePolicy() {
                 ? updatePromotionPolicy(body)
                 : storePromotionPolicy(body),
         );
-        toast.success("Политика сохранена");
+        toast.success("Сохранено");
         await loadPolicy();
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Ошибка сохранения");
     }
 }
 
-async function loadCatalogProducts() {
-    try {
-        const payload = await listProducts({ limit: 200 });
-        catalogProducts.value = Array.isArray(payload?.items) ? payload.items : [];
-    } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Не удалось загрузить каталог");
-    }
-}
-
-watch(selectedBranchId, () => {
-    loadPolicy();
-});
+watch(selectedBranchId, loadPolicy);
 onMounted(async () => {
     await ensureLoaded();
-    await Promise.all([loadPolicy(), loadCatalogProducts()]);
+    await loadPolicy();
 });
 </script>
 
 <template>
-    <div class="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
-        <UiCard title="Политики филиала">
-            <template #actions>
-                <OwnerBranchSelector />
-            </template>
-
-            <p v-if="!selectedBranchId" class="text-sm text-bo-muted">
-                Выбери филиал, чтобы настроить правила и подарок.
-            </p>
-
-            <div v-else class="space-y-5">
-                <p class="text-sm text-bo-muted">
-                    Роллы и комплектные товары задаются флагами в карточке товара каталога.
-                    Здесь — правила филиала и явный товар-подарок.
-                </p>
-
-                <UiFormField label="Товар-подарок филиала">
-                    <select
-                        v-model="policyForm.gift_product_id"
-                        class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 transition-colors hover:border-bo-border-strong focus:border-bo-accent focus:outline-none"
-                    >
-                        <option value="">Без подарка</option>
-                        <option
-                            v-for="product in catalogProducts"
-                            :key="product.id"
-                            :value="String(product.id)"
-                        >
-                            {{ product.name }}
-                        </option>
-                    </select>
-                </UiFormField>
-
-                <div class="grid gap-3 md:grid-cols-2">
-                    <UiFormField
-                        label="Порог подарка pickup (коп.)"
-                        required
-                        :error="policyErrors.gift_pickup_min_order_kopecks"
-                    >
-                        <UiInput v-model="policyForm.gift_pickup_min_order_kopecks" type="number" />
-                    </UiFormField>
-                    <UiFormField
-                        label="Порог подарка courier (коп.)"
-                        required
-                        :error="policyErrors.gift_courier_min_order_kopecks"
-                    >
-                        <UiInput v-model="policyForm.gift_courier_min_order_kopecks" type="number" />
-                    </UiFormField>
-                </div>
-
-                <UiFormField label="Дни недели (courier)">
-                    <div class="mt-2 flex flex-wrap gap-3">
-                        <label
-                            v-for="day in weekdayOptions"
-                            :key="day.value"
-                            class="flex items-center gap-1 text-sm"
-                        >
-                            <input
-                                type="checkbox"
-                                :checked="policyForm.gift_courier_weekdays.includes(day.value)"
-                                @change="toggleWeekday(day.value)"
-                            >
-                            {{ day.label }}
-                        </label>
-                    </div>
-                </UiFormField>
-
-                <div class="flex flex-wrap gap-4 text-sm">
-                    <label class="flex items-center gap-2">
-                        <input v-model="policyForm.gift_benefit_active" type="checkbox">
-                        Подарок активен
-                    </label>
-                    <label class="flex items-center gap-2">
-                        <input v-model="policyForm.delivery_benefit_active" type="checkbox">
-                        Выгода доставки активна
-                    </label>
-                    <label class="flex items-center gap-2">
-                        <input v-model="policyForm.complement_set_benefit_active" type="checkbox">
-                        Комплекты активны
-                    </label>
-                </div>
-
-                <div class="grid gap-3 md:grid-cols-2">
-                    <UiFormField
-                        label="Роллов на комплект"
-                        required
-                        :error="policyErrors.complement_set_rolls_per_set"
-                    >
-                        <UiInput v-model="policyForm.complement_set_rolls_per_set" type="number" />
-                    </UiFormField>
-                    <UiFormField
-                        label="Макс. комплектов"
-                        required
-                        :error="policyErrors.complement_set_max_sets"
-                    >
-                        <UiInput v-model="policyForm.complement_set_max_sets" type="number" />
-                    </UiFormField>
-                    <UiFormField
-                        label="Порог бесплатной доставки (коп.)"
-                        required
-                        :error="policyErrors.delivery_free_threshold_kopecks"
-                    >
-                        <UiInput v-model="policyForm.delivery_free_threshold_kopecks" type="number" />
-                    </UiFormField>
-                    <UiFormField
-                        label="Надбавка вне зоны (коп.)"
-                        required
-                        :error="policyErrors.delivery_outside_zone_surcharge_kopecks"
-                    >
-                        <UiInput
-                            v-model="policyForm.delivery_outside_zone_surcharge_kopecks"
-                            type="number"
-                        />
-                    </UiFormField>
-                </div>
-
-                <UiButton :disabled="saveApi.loading" @click="savePolicy">
+    <div class="mx-auto w-full max-w-7xl space-y-4 px-4 py-5 sm:px-6 lg:px-10 lg:py-7">
+        <div class="space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <h1 class="text-2xl font-semibold tracking-tight text-bo-fg">
+                    Акции
+                </h1>
+                <UiButton
+                    :disabled="!selectedBranchId || saveApi.loading || loadApi.loading"
+                    @click="savePolicy"
+                >
                     Сохранить
                 </UiButton>
             </div>
-        </UiCard>
+            <OwnerBranchSelector />
+        </div>
+
+        <p v-if="!selectedBranchId" class="text-sm text-bo-muted">
+            Выбери филиал, чтобы настроить правила акций.
+        </p>
+
+        <template v-else>
+            <p v-if="loadApi.loading" class="text-sm text-bo-muted">
+                Загрузка…
+            </p>
+
+            <template v-else>
+                <UiCard title="Подарок">
+                    <template #actions>
+                        <UiToggle
+                            v-model="policyForm.gift_benefit_active"
+                            label-on="Активен"
+                            label-off="Выключен"
+                        />
+                    </template>
+                    <p class="mb-4 text-sm text-bo-muted">
+                        Товар-подарок задаётся флагом в каталоге филиала. Здесь — только пороги и дни.
+                    </p>
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <UiFormField
+                            label="Порог pickup (₽)"
+                            required
+                            :error="policyErrors.gift_pickup_min_order_rubles"
+                        >
+                            <UiInput v-model="policyForm.gift_pickup_min_order_rubles" type="number" min="0" step="1" />
+                        </UiFormField>
+                        <UiFormField
+                            label="Порог courier (₽)"
+                            required
+                            :error="policyErrors.gift_courier_min_order_rubles"
+                        >
+                            <UiInput v-model="policyForm.gift_courier_min_order_rubles" type="number" min="0" step="1" />
+                        </UiFormField>
+                    </div>
+                    <UiFormField class="mt-4" label="Дни недели (courier)">
+                        <div class="mt-2 flex flex-wrap gap-3">
+                            <label
+                                v-for="day in weekdayOptions"
+                                :key="day.value"
+                                class="flex items-center gap-1 text-sm text-bo-fg"
+                            >
+                                <input
+                                    type="checkbox"
+                                    class="accent-bo-accent"
+                                    :checked="policyForm.gift_courier_weekdays.includes(day.value)"
+                                    @change="toggleWeekday(day.value)"
+                                >
+                                {{ day.label }}
+                            </label>
+                        </div>
+                    </UiFormField>
+                </UiCard>
+
+                <UiCard title="Бесплатная доставка">
+                    <template #actions>
+                        <UiToggle
+                            v-model="policyForm.delivery_benefit_active"
+                            label-on="Активна"
+                            label-off="Выключена"
+                        />
+                    </template>
+                    <UiFormField
+                        label="Порог бесплатной доставки (₽)"
+                        required
+                        :error="policyErrors.delivery_free_threshold_rubles"
+                    >
+                        <UiInput v-model="policyForm.delivery_free_threshold_rubles" type="number" min="0" step="1" />
+                    </UiFormField>
+                </UiCard>
+
+                <UiCard title="Комплекты">
+                    <template #actions>
+                        <UiToggle
+                            v-model="policyForm.complement_set_benefit_active"
+                            label-on="Активны"
+                            label-off="Выключены"
+                        />
+                    </template>
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <UiFormField
+                            label="Роллов на комплект"
+                            required
+                            :error="policyErrors.complement_set_rolls_per_set"
+                        >
+                            <UiInput v-model="policyForm.complement_set_rolls_per_set" type="number" />
+                        </UiFormField>
+                        <UiFormField
+                            label="Макс. комплектов"
+                            required
+                            :error="policyErrors.complement_set_max_sets"
+                        >
+                            <UiInput v-model="policyForm.complement_set_max_sets" type="number" />
+                        </UiFormField>
+                    </div>
+                </UiCard>
+            </template>
+        </template>
     </div>
 </template>

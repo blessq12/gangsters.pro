@@ -1,6 +1,6 @@
 <script setup>
-import { computed, onMounted, ref, watch } from "vue";
-import { listCategories, listProducts, listSets } from "../../../api/catalog.js";
+import { computed, onMounted, watch } from "vue";
+import { listProducts } from "../../../api/catalog.js";
 import { useApi } from "../../../shell/composables/useApi.js";
 import { usePagedList } from "../../../shell/composables/usePagedList.js";
 import { useToast } from "../../../shell/composables/useToast.js";
@@ -17,60 +17,32 @@ const {
     total,
     items,
     offset,
-    resetPage,
     applyPayload,
 } = usePagedList();
 
-const tab = ref("products");
-
-const tabs = [
-    { id: "products", label: "Товары" },
-    { id: "sets", label: "Наборы" },
-    { id: "categories", label: "Категории" },
+const columns = [
+    { key: "name", label: "Название" },
+    { key: "is_active", label: "Активен", width: "100px" },
 ];
-
-const columns = computed(() => {
-    if (tab.value === "categories") {
-        return [
-            { key: "name", label: "Название" },
-            { key: "is_active", label: "Активен", width: "100px" },
-        ];
-    }
-    return [
-        { key: "name", label: "Название" },
-        { key: "price", label: "Цена", width: "90px" },
-        { key: "is_active", label: "Активен", width: "100px" },
-    ];
-});
 
 const rows = computed(() => items.value.map((item) => ({
     id: item.id,
     name: item.name,
-    price: item.price != null ? `${item.price} ₽` : "—",
     is_active: item.is_active ?? item.status === "active",
 })));
 
 async function load() {
     try {
-        const query = { offset: offset.value, limit: perPage };
-        let payload;
-        if (tab.value === "products") {
-            payload = await catalogApi.run(() => listProducts(query));
-        } else if (tab.value === "sets") {
-            payload = await catalogApi.run(() => listSets(query));
-        } else {
-            payload = await catalogApi.run(() => listCategories(query));
-        }
+        const payload = await catalogApi.run(() => listProducts({
+            offset: offset.value,
+            limit: perPage,
+        }));
         applyPayload(payload);
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось загрузить каталог");
     }
 }
 
-watch(tab, () => {
-    resetPage();
-    load();
-});
 watch(page, load);
 onMounted(load);
 </script>
@@ -78,21 +50,6 @@ onMounted(load);
 <template>
     <div class="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
         <UiCard title="Каталог (просмотр)">
-            <div class="mb-8 flex flex-wrap gap-2">
-                <button
-                    v-for="item in tabs"
-                    :key="item.id"
-                    type="button"
-                    class="h-10 px-4 text-sm font-medium transition-colors duration-150"
-                    :class="tab === item.id
-                        ? 'bg-bo-accent text-white'
-                        : 'bg-white/[0.04] text-bo-muted hover:bg-white/[0.08] hover:text-bo-fg'"
-                    @click="tab = item.id"
-                >
-                    {{ item.label }}
-                </button>
-            </div>
-
             <UiTable
                 :columns="columns"
                 :rows="rows"

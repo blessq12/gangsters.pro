@@ -5,7 +5,7 @@ namespace App\Domain\Generic\Staff\Entity;
 use App\Domain\Generic\Staff\Enum\StaffRole;
 use DateTimeImmutable;
 
-/** Агрегат сотрудника backoffice: профиль, роль, учётные данные, активность. */
+/** Агрегат сотрудника backoffice: профиль, роль, филиал (опционально), учётные данные. */
 final class Employee
 {
     private function __construct(
@@ -14,6 +14,7 @@ final class Employee
         private string $email,
         private ?string $phone,
         private StaffRole $role,
+        private ?int $branchId,
         private string $passwordHash,
         private bool $isActive,
         private readonly DateTimeImmutable $createdAt,
@@ -25,10 +26,12 @@ final class Employee
         ?string $phone,
         StaffRole $role,
         string $passwordHash,
+        ?int $branchId = null,
     ): self {
         $name = trim($name);
         $email = trim($email);
         $phone = self::normalizeOptional($phone);
+        $branchId = self::normalizeBranchId($branchId, $role);
 
         if ($name === '' || $email === '') {
             throw new \InvalidArgumentException('Имя и email обязательны.');
@@ -44,6 +47,7 @@ final class Employee
             email: $email,
             phone: $phone,
             role: $role,
+            branchId: $branchId,
             passwordHash: $passwordHash,
             isActive: true,
             createdAt: new DateTimeImmutable(),
@@ -59,13 +63,17 @@ final class Employee
         string $passwordHash,
         bool $isActive,
         DateTimeImmutable $createdAt,
+        ?int $branchId = null,
     ): self {
+        // Reconstitution из БД: не валим legacy kitchen/courier без филиала.
+        // Инварианта филиала — только на hire / changeRole / changeBranch.
         return new self(
             id: $id,
             name: $name,
             email: $email,
             phone: $phone,
             role: $role,
+            branchId: self::normalizeStoredBranchId($branchId),
             passwordHash: $passwordHash,
             isActive: $isActive,
             createdAt: $createdAt,
@@ -119,6 +127,11 @@ final class Employee
         return $this->role;
     }
 
+    public function branchId(): ?int
+    {
+        return $this->branchId;
+    }
+
     public function passwordHash(): string
     {
         return $this->passwordHash;
@@ -166,6 +179,12 @@ final class Employee
         }
 
         $this->role = $role;
+        $this->branchId = self::normalizeBranchId($this->branchId, $role);
+    }
+
+    public function changeBranch(?int $branchId): void
+    {
+        $this->branchId = self::normalizeBranchId($branchId, $this->role);
     }
 
     public function changePassword(string $passwordHash): void
@@ -204,5 +223,29 @@ final class Employee
         $value = trim($value);
 
         return $value === '' ? null : $value;
+    }
+
+    private static function normalizeStoredBranchId(?int $branchId): ?int
+    {
+        if ($branchId !== null && $branchId < 1) {
+            throw new \InvalidArgumentException('branch_id должен быть положительным.');
+        }
+
+        return $branchId;
+    }
+
+    private static function normalizeBranchId(?int $branchId, StaffRole $role): ?int
+    {
+        $branchId = self::normalizeStoredBranchId($branchId);
+
+        if ($role === StaffRole::Kitchen || $role === StaffRole::Courier) {
+            if ($branchId === null) {
+                throw new \InvalidArgumentException('Для ролей kitchen и courier нужен филиал.');
+            }
+
+            return $branchId;
+        }
+
+        return $branchId;
     }
 }

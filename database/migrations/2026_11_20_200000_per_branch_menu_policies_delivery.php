@@ -147,12 +147,19 @@ return new class extends Migration
 
         $primaryBranchId = $branchIds[0];
 
-        // Меню: active catalog items × branches с regular price.
-        if (Schema::hasTable('CAT_items') && Schema::hasTable('CAT_prices')) {
-            $items = DB::table('CAT_items')->where('status', 'active')->pluck('id');
-            $prices = DB::table('CAT_prices')
-                ->where('type', 'regular')
-                ->pluck('amount_kopecks', 'item_id');
+        // Меню: active catalog products × branches (цена из CAT_prices, если ещё есть).
+        if (Schema::hasTable('CAT_items')) {
+            $itemsQuery = DB::table('CAT_items')->where('status', 'active');
+            if (Schema::hasColumn('CAT_items', 'kind')) {
+                $itemsQuery->where('kind', 'product');
+            }
+            $items = $itemsQuery->pluck('id');
+            $prices = [];
+            if (Schema::hasTable('CAT_prices')) {
+                $prices = DB::table('CAT_prices')
+                    ->where('type', 'regular')
+                    ->pluck('amount_kopecks', 'item_id');
+            }
 
             foreach ($branchIds as $branchId) {
                 foreach ($items as $itemId) {

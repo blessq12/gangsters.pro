@@ -84,8 +84,8 @@ onMounted(load);
         >
             <div class="space-y-8">
                 <div class="flex flex-wrap items-center gap-4">
-                    <p class="text-5xl font-black md:text-6xl">
-                        #{{ ticket.order_id }}
+                    <p class="text-3xl font-black tracking-tight md:text-4xl">
+                        {{ ticket.order_number || ticket.order?.number || `#${ticket.order_id}` }}
                     </p>
                     <UiBadge
                         class="!px-4 !py-1.5 !text-xl"

@@ -11,19 +11,21 @@ use App\Domain\Core\Order\ValueObject\OrderDeliveryAddress;
 use App\Domain\Core\Order\ValueObject\OrderDeliveryInfo;
 use App\Domain\Core\Order\ValueObject\OrderLine;
 use App\Domain\Supporting\Catalog\Repository\CatalogItemRepository;
+use App\Domain\Supporting\Company\Entity\BranchSet;
 use App\Domain\Supporting\Company\Repository\BranchMenuRepository;
+use App\Domain\Supporting\Company\Repository\BranchSetRepository;
 use App\Shared\Enum\DeliveryMethod;
 use DateTimeImmutable;
 
 /**
- * Тот же OrderFormation, что quote и create. Отдельного расчёта акций нет.
- * Цены — только из меню филиала.
+ * Тот же OrderFormation, что quote и create.
  */
 final class ResolvePromotionsUseCase
 {
     public function __construct(
         private readonly CatalogItemRepository $catalog,
         private readonly BranchMenuRepository $menu,
+        private readonly BranchSetRepository $branchSets,
         private readonly DeliveryConfigurationRepository $deliveryConfigs,
         private readonly FormCheckoutPromotions $promotions,
         private readonly AppliedPromotionsPresenter $presenter,
@@ -97,58 +99,69 @@ final class ResolvePromotionsUseCase
     }
 
     /**
-     * @param  list<array{product_id: int, quantity: int}>  $lines
+     * @param  list<array{product_id?: int, id?: int, quantity: int, kind?: string}>  $lines
      * @return list<OrderLine>
      */
     private function baseLines(int $branchId, array $lines): array
     {
-        $ids = [];
+        $productIds = [];
+        $setIds = [];
         foreach ($lines as $line) {
-            $productId = (int) ($line['product_id'] ?? 0);
+            $id = (int) ($line['id'] ?? $line['product_id'] ?? 0);
             $quantity = (int) ($line['quantity'] ?? 0);
-            if ($productId < 1 || $quantity < 1) {
+            $kind = (string) ($line['kind'] ?? 'product');
+            if ($id < 1 || $quantity < 1) {
                 throw new \InvalidArgumentException('Некорректная строка корзины.');
             }
-            $ids[] = $productId;
+            if ($kind === 'set') {
+                $setIds[] = $id;
+            } else {
+                $productIds[] = $id;
+            }
         }
 
-        $uniqueIds = array_values(array_unique($ids));
-        $menuById = $this->menu->findByBranchAndItemIds($branchId, $uniqueIds);
-
+        $menuById = $this->menu->findByBranchAndItemIds($branchId, array_values(array_unique($productIds)));
         $products = [];
-        foreach ($this->catalog->findActiveProductsByIds($uniqueIds) as $product) {
+        foreach ($this->catalog->findActiveProductsByIds(array_values(array_unique($productIds))) as $product) {
             $products[$product->id()] = $product;
         }
         $sets = [];
-        foreach ($this->catalog->findActiveSetsByIds($uniqueIds) as $set) {
+        foreach ($this->branchSets->findAvailableByBranchAndIds($branchId, array_values(array_unique($setIds))) as $set) {
             $sets[$set->id()] = $set;
         }
 
         $base = [];
         foreach ($lines as $line) {
-            $productId = (int) $line['product_id'];
+            $id = (int) ($line['id'] ?? $line['product_id'] ?? 0);
             $quantity = (int) $line['quantity'];
-            $menuItem = $menuById[$productId] ?? null;
-            if ($menuItem === null || ! $menuItem->isAvailable()) {
-                throw new \InvalidArgumentException(sprintf('Товар #%d недоступен в меню филиала.', $productId));
+            $kind = (string) ($line['kind'] ?? 'product');
+
+            if ($kind === 'set') {
+                $set = $sets[$id] ?? null;
+                if (! $set instanceof BranchSet || ! $set->isAvailable()) {
+                    throw new \InvalidArgumentException(sprintf('Сет #%d недоступен.', $id));
+                }
+                $base[] = new OrderLine(
+                    productId: $id,
+                    name: $set->name(),
+                    unitPriceKopecks: $set->priceKopecks(),
+                    quantity: $quantity,
+                    lineType: OrderLineType::Set,
+                );
+
+                continue;
             }
 
-            if (isset($products[$productId])) {
-                $item = $products[$productId];
-                $type = OrderLineType::Regular;
-            } elseif (isset($sets[$productId])) {
-                $item = $sets[$productId];
-                $type = OrderLineType::Set;
-            } else {
-                throw new \InvalidArgumentException(sprintf('Товар #%d недоступен.', $productId));
+            $menuItem = $menuById[$id] ?? null;
+            if ($menuItem === null || ! $menuItem->isAvailable() || ! isset($products[$id])) {
+                throw new \InvalidArgumentException(sprintf('Товар #%d недоступен в меню филиала.', $id));
             }
-
             $base[] = new OrderLine(
-                productId: $productId,
-                name: $item->name(),
+                productId: $id,
+                name: $products[$id]->name(),
                 unitPriceKopecks: $menuItem->priceKopecks(),
                 quantity: $quantity,
-                lineType: $type,
+                lineType: OrderLineType::Regular,
             );
         }
 

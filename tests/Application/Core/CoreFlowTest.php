@@ -104,6 +104,7 @@ final class CoreFlowTest extends TestCase
             'hash',
             true,
             new DateTimeImmutable('2026-11-19T10:00:00Z'),
+            branchId: 2,
         );
         $this->employees->save($courier);
 

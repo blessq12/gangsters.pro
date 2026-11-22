@@ -57,9 +57,9 @@ const actionTarget = ref(null);
 
 const columns = [
     { key: "created_at", label: "Создан", width: "150px" },
-    { key: "order_id", label: "Заказ", width: "90px" },
+    { key: "order_number", label: "Заказ", width: "140px" },
     { key: "method", label: "Метод", width: "130px" },
-    { key: "amount", label: "Сумма", width: "100px" },
+    { key: "amount", label: "Сумма", width: "100px", align: "right" },
     { key: "status", label: "Статус", width: "120px" },
     { key: "actions", label: "", width: "148px" },
 ];
@@ -154,6 +154,7 @@ async function loadList() {
         applyPayload(payload, (payment) => ({
             id: payment.id,
             order_id: payment.order_id,
+            order_number: payment.order_number || `ORD-${String(payment.order_id).padStart(4, "0")}`,
             created_at: formatDateTime(payment.created_at),
             method: payment.method,
             amount: formatKopecks(payment.amount_kopecks),
@@ -182,7 +183,7 @@ function askMarkPaid(row) {
     actionTarget.value = {
         kind: "paid",
         id: Number(row.id),
-        title: `заказ #${row.order_id}`,
+        title: row.order_number || `заказ #${row.order_id}`,
     };
     confirmOpen.value = true;
 }
@@ -191,7 +192,7 @@ function askRefund(row) {
     actionTarget.value = {
         kind: "refund",
         id: Number(row.id),
-        title: `заказ #${row.order_id}`,
+        title: row.order_number || `заказ #${row.order_id}`,
     };
     confirmOpen.value = true;
 }
@@ -362,13 +363,13 @@ watch(page, loadList);
                 :loading="listApi.loading"
                 empty-text="Платежей нет"
             >
-                <template #cell-order_id="{ value }">
+                <template #cell-order_number="{ row, value }">
                     <button
                         type="button"
                         class="text-bo-accent underline-offset-2 hover:underline"
-                        @click="openOrder(value)"
+                        @click="openOrder(row.order_id)"
                     >
-                        #{{ value }}
+                        {{ value }}
                     </button>
                 </template>
                 <template #cell-method="{ value }">

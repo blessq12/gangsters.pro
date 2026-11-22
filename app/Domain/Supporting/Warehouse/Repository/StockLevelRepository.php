@@ -6,19 +6,19 @@ use App\Domain\Supporting\Warehouse\Entity\StockLevel;
 
 interface StockLevelRepository
 {
-    public function findByIngredientId(int $ingredientId): ?StockLevel;
+    public function findByBranchAndIngredient(int $branchId, int $ingredientId): ?StockLevel;
 
     /**
      * @return list<StockLevel>
      */
-    public function listAll(): array;
+    public function listByBranch(int $branchId): array;
 
     /**
      * @return list<StockLevel>
      */
-    public function listPage(int $offset, int $limit): array;
+    public function listByBranchPage(int $branchId, int $offset, int $limit): array;
 
-    public function countAll(): int;
+    public function countByBranch(int $branchId): int;
 
     public function save(StockLevel $level): void;
 }

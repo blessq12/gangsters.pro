@@ -30,10 +30,8 @@ final class SaveBranchMenuItemUseCase
             throw new \InvalidArgumentException('Филиал не найден.');
         }
 
-        $exists = $this->catalog->findProductById($dto->catalogItemId) !== null
-            || $this->catalog->findSetById($dto->catalogItemId) !== null;
-        if (! $exists) {
-            throw new \InvalidArgumentException('Позиция каталога не найдена.');
+        if ($this->catalog->findProductById($dto->catalogItemId) === null) {
+            throw new \InvalidArgumentException('Товар каталога не найден.');
         }
 
         $saved = $this->menu->upsert(new BranchMenuItem(
@@ -41,6 +39,7 @@ final class SaveBranchMenuItemUseCase
             catalogItemId: $dto->catalogItemId,
             isAvailable: $dto->isAvailable,
             priceKopecks: $dto->priceKopecks,
+            isGiftCandidate: $dto->isGiftCandidate,
         ));
 
         return $this->presenter->item($saved);

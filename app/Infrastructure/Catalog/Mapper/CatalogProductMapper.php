@@ -2,23 +2,18 @@
 
 namespace App\Infrastructure\Catalog\Mapper;
 
-use App\Domain\Supporting\Catalog\Entity\Price;
 use App\Domain\Supporting\Catalog\Entity\Product;
-use App\Domain\Supporting\Catalog\Enum\PriceType;
 use App\Domain\Supporting\Catalog\Enum\ProductStatus;
 use App\Domain\Supporting\Catalog\ValueObject\Nutrition;
 use App\Domain\Supporting\Catalog\ValueObject\ProductImage;
 use App\Infrastructure\Catalog\Model\CAT_Item;
-use App\Infrastructure\Catalog\Model\CAT_Price;
 
 final class CatalogProductMapper
 {
     /**
-     * @param  list<int>  $tagIds
      * @param  list<ProductImage>  $images
-     * @param  list<Price>  $prices
      */
-    public function toDomain(CAT_Item $row, array $tagIds = [], array $images = [], array $prices = []): Product
+    public function toDomain(CAT_Item $row, array $images = []): Product
     {
         return new Product(
             id: (int) $row->id,
@@ -29,44 +24,12 @@ final class CatalogProductMapper
             isSystem: (bool) $row->is_system,
             isRoll: (bool) ($row->is_roll ?? false),
             isComplement: (bool) ($row->is_complement ?? false),
-            prices: $prices !== [] ? $prices : $this->mapPrices($row),
             description: $row->description !== null ? (string) $row->description : null,
             nutrition: $this->resolveNutrition($row),
-            tagIds: $tagIds,
             ingredients: $this->resolveIngredients($row),
             images: $images,
             weight: $this->resolveWeight($row),
         );
-    }
-
-    /**
-     * @return list<Price>
-     */
-    public function mapPrices(CAT_Item $row): array
-    {
-        $priceRows = $row->relationLoaded('prices')
-            ? $row->prices
-            : CAT_Price::query()->where('item_id', $row->id)->get();
-
-        $prices = [];
-        foreach ($priceRows as $priceRow) {
-            if (! $priceRow instanceof CAT_Price) {
-                continue;
-            }
-
-            $type = PriceType::tryFrom((string) $priceRow->type);
-            if ($type === null) {
-                continue;
-            }
-
-            $prices[] = Price::of(
-                type: $type,
-                amountKopecks: max(0, (int) $priceRow->amount_kopecks),
-                id: (int) $priceRow->id,
-            );
-        }
-
-        return $prices;
     }
 
     private function resolveWeight(CAT_Item $row): ?int

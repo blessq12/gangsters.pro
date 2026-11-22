@@ -14,6 +14,11 @@ export function listEmployees(query = {}) {
     return request("GET", `/employees${qs ? `?${qs}` : ""}`);
 }
 
+/** @param {number|string} id */
+export function getEmployee(id) {
+    return request("GET", `/employees/${id}`);
+}
+
 /** @param {Record<string, unknown>} data */
 export function storeEmployee(data) {
     return request("POST", "/employees", data);
@@ -22,11 +27,6 @@ export function storeEmployee(data) {
 /** @param {number|string} id @param {Record<string, unknown>} data */
 export function updateEmployee(id, data) {
     return request("PUT", `/employees/${id}`, data);
-}
-
-/** @param {number|string} id */
-export function deleteEmployee(id) {
-    return request("DELETE", `/employees/${id}`);
 }
 
 /** @param {number|string} id */

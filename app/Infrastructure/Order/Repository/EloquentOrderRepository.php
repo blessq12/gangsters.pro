@@ -4,9 +4,11 @@ namespace App\Infrastructure\Order\Repository;
 
 use App\Domain\Core\Order\Entity\Order;
 use App\Domain\Core\Order\Repository\OrderRepository;
+use App\Domain\Core\Order\ValueObject\OrderNumber;
 use App\Infrastructure\Order\Mapper\OrderMapper;
 use App\Infrastructure\Order\Model\ORD_Order;
 use App\Infrastructure\Order\Model\ORD_OrderLine;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
 final class EloquentOrderRepository implements OrderRepository
@@ -32,14 +34,9 @@ final class EloquentOrderRepository implements OrderRepository
         return $row instanceof ORD_Order ? $this->mapper->toDomain($row) : null;
     }
 
-    public function count(?string $status = null): int
+    public function count(array $filters = []): int
     {
-        $query = ORD_Order::query();
-        if ($status !== null && $status !== '') {
-            $query->where('status', $status);
-        }
-
-        return $query->count();
+        return $this->filteredQuery($filters)->count();
     }
 
     public function countByStatus(): array
@@ -57,15 +54,12 @@ final class EloquentOrderRepository implements OrderRepository
         return $counts;
     }
 
-    public function listPage(int $offset, int $limit, ?string $status = null): array
+    public function listPage(int $offset, int $limit, array $filters = []): array
     {
-        $query = ORD_Order::query()->with('lines')->orderByDesc('id');
-        if ($status !== null && $status !== '') {
-            $query->where('status', $status);
-        }
-
         /** @var \Illuminate\Database\Eloquent\Collection<int, ORD_Order> $rows */
-        $rows = $query
+        $rows = $this->filteredQuery($filters)
+            ->with('lines')
+            ->orderByDesc('id')
             ->offset(max(0, $offset))
             ->limit(max(1, $limit))
             ->get();
@@ -115,5 +109,55 @@ final class EloquentOrderRepository implements OrderRepository
                 ]);
             }
         });
+    }
+
+    /**
+     * @param  array{
+     *     status?: string|null,
+     *     q?: string|null,
+     *     branch_id?: int|null,
+     *     delivery_method?: string|null
+     * }  $filters
+     * @return Builder<ORD_Order>
+     */
+    private function filteredQuery(array $filters): Builder
+    {
+        /** @var Builder<ORD_Order> $query */
+        $query = ORD_Order::query();
+
+        $status = isset($filters['status']) ? trim((string) $filters['status']) : '';
+        if ($status !== '') {
+            $query->where('status', $status);
+        }
+
+        $branchId = isset($filters['branch_id']) ? (int) $filters['branch_id'] : 0;
+        if ($branchId > 0) {
+            $query->where('branch_id', $branchId);
+        }
+
+        $method = isset($filters['delivery_method']) ? trim((string) $filters['delivery_method']) : '';
+        if ($method !== '') {
+            $query->where('delivery_type', $method);
+        }
+
+        $q = isset($filters['q']) ? trim((string) $filters['q']) : '';
+        if ($q !== '') {
+            $parsedNumber = OrderNumber::tryParse($q);
+            $query->where(function (Builder $inner) use ($q, $parsedNumber): void {
+                if ($parsedNumber !== null) {
+                    $inner->orWhere('id', $parsedNumber['id']);
+
+                    return;
+                }
+                if (ctype_digit($q)) {
+                    $inner->orWhere('id', (int) $q);
+                }
+                $like = '%'.$q.'%';
+                $inner->orWhere('client_name', 'like', $like)
+                    ->orWhere('client_phone', 'like', $like);
+            });
+        }
+
+        return $query;
     }
 }

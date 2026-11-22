@@ -4,6 +4,7 @@ namespace App\Application\Order\Presenter;
 
 use App\Application\Payment\Presenter\PaymentPresenter;
 use App\Domain\Core\Order\Entity\Order;
+use App\Domain\Core\Order\ValueObject\OrderNumber;
 use App\Domain\Supporting\Payment\Repository\PaymentRepository;
 
 final class OrderPresenter
@@ -50,8 +51,11 @@ final class OrderPresenter
         $delivery = $order->delivery();
         $address = $delivery->address();
 
+        $id = $order->hasId() ? $order->id() : null;
+
         return [
-            'id' => $order->hasId() ? $order->id() : null,
+            'id' => $id,
+            'number' => $id !== null ? OrderNumber::format($id, $order->createdAt()) : null,
             'status' => $order->status()->value,
             'branch_id' => $order->branchId(),
             'cart' => [

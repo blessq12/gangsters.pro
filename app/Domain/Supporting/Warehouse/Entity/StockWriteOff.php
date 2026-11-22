@@ -4,11 +4,12 @@ namespace App\Domain\Supporting\Warehouse\Entity;
 
 use DateTimeImmutable;
 
-/** Списание ингредиента со склада (в т.ч. по завершённому кухонному тикету). */
+/** Списание ингредиента со склада филиала (в т.ч. по кухонному тикету). */
 final class StockWriteOff
 {
     private function __construct(
         private ?int $id,
+        private readonly int $branchId,
         private readonly int $ingredientId,
         private readonly float $quantity,
         private readonly string $reason,
@@ -17,12 +18,17 @@ final class StockWriteOff
     ) {}
 
     public static function record(
+        int $branchId,
         int $ingredientId,
         float $quantity,
         string $reason,
         ?int $kitchenTicketId,
         ?DateTimeImmutable $occurredAt = null,
     ): self {
+        if ($branchId < 1) {
+            throw new \InvalidArgumentException('branchId должен быть положительным.');
+        }
+
         if ($ingredientId < 1) {
             throw new \InvalidArgumentException('ingredientId должен быть положительным.');
         }
@@ -38,6 +44,7 @@ final class StockWriteOff
 
         return new self(
             id: null,
+            branchId: $branchId,
             ingredientId: $ingredientId,
             quantity: $quantity,
             reason: $reason,
@@ -48,6 +55,7 @@ final class StockWriteOff
 
     public static function restore(
         int $id,
+        int $branchId,
         int $ingredientId,
         float $quantity,
         string $reason,
@@ -56,6 +64,7 @@ final class StockWriteOff
     ): self {
         return new self(
             id: $id,
+            branchId: $branchId,
             ingredientId: $ingredientId,
             quantity: $quantity,
             reason: $reason,
@@ -89,6 +98,11 @@ final class StockWriteOff
     public function hasId(): bool
     {
         return $this->id !== null;
+    }
+
+    public function branchId(): int
+    {
+        return $this->branchId;
     }
 
     public function ingredientId(): int

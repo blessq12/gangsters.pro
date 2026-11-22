@@ -48,12 +48,17 @@ final class CreateOrderUseCase
         $clientRaw = is_array($snapshot['client'] ?? null) ? $snapshot['client'] : [];
         $deliveryRaw = is_array($snapshot['delivery'] ?? null) ? $snapshot['delivery'] : [];
         $payment = is_array($snapshot['payment'] ?? null) ? $snapshot['payment'] : [];
+        $benefits = is_array($snapshot['benefits'] ?? null) ? $snapshot['benefits'] : [];
         $totals = is_array($snapshot['totals'] ?? null)
             ? $snapshot['totals']
             : (is_array($cart['totals'] ?? null) ? $cart['totals'] : []);
 
         if (($deliveryRaw['method'] ?? '') === DeliveryMethod::Courier->value && ($deliveryRaw['in_zone'] ?? false) !== true) {
             throw new \InvalidArgumentException('Доставка по этому адресу невозможна.');
+        }
+
+        if (($benefits['gift_eligible'] ?? false) === true && ($benefits['gift_selected'] ?? false) !== true) {
+            throw new \InvalidArgumentException('Выберите подарок из доступных кандидатов.');
         }
 
         $rawLines = $cart['lines'] ?? null;

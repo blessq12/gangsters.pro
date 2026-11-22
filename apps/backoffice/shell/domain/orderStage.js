@@ -181,6 +181,47 @@ export function deliveryMethodLabel(method) {
     return "—";
 }
 
+/**
+ * Публичный номер: ORD-XXXX-YY.
+ * @param {number|string|null|undefined} id
+ * @param {string|Date|null|undefined} createdAt
+ */
+export function formatOrderNumber(id, createdAt) {
+    const numericId = Number(id);
+    if (!Number.isFinite(numericId) || numericId < 1) {
+        return "—";
+    }
+    const padded = String(Math.trunc(numericId)).padStart(4, "0");
+    if (!createdAt) {
+        return `ORD-${padded}`;
+    }
+    try {
+        const year = new Date(createdAt).getFullYear() % 100;
+        if (Number.isNaN(year)) {
+            return `ORD-${padded}`;
+        }
+        return `ORD-${padded}-${String(year).padStart(2, "0")}`;
+    } catch {
+        return `ORD-${padded}`;
+    }
+}
+
+/**
+ * @param {{ number?: string|null, id?: number|string|null, created_at?: string|null, order_number?: string|null, order_id?: number|string|null }|null|undefined} order
+ */
+export function orderNumberOf(order) {
+    if (!order) {
+        return "—";
+    }
+    if (typeof order.number === "string" && order.number.trim() !== "") {
+        return order.number.trim();
+    }
+    if (typeof order.order_number === "string" && order.order_number.trim() !== "") {
+        return order.order_number.trim();
+    }
+    return formatOrderNumber(order.id ?? order.order_id, order.created_at);
+}
+
 /** @param {Record<string, unknown>|null|undefined} order */
 export function formatRubles(order) {
     const rubles = order?.totals?.grand_total_rubles;
@@ -340,6 +381,20 @@ export function administratorCommands(order) {
         commands.push({ id: "cancel", label: "Отменить" });
     }
 
+    return commands;
+}
+
+/**
+ * Безопасные команды owner: только отмена, без кухни/маршрутов.
+ * @param {Record<string, unknown>|null|undefined} order
+ * @returns {Array<{ id: "cancel", label: string }>}
+ */
+export function ownerCommands(order) {
+    /** @type {Array<{ id: "cancel", label: string }>} */
+    const commands = [];
+    if (CANCELLABLE.includes(order?.status)) {
+        commands.push({ id: "cancel", label: "Отменить" });
+    }
     return commands;
 }
 

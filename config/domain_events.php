@@ -12,7 +12,6 @@ use App\Domain\Core\Order\Event\OrderPickedUp;
 use App\Domain\Core\Order\Event\OrderPlaced;
 use App\Domain\Core\Production\Event\KitchenTicketCompleted;
 use App\Domain\Core\Production\Event\KitchenTicketStarted;
-use App\Domain\Supporting\Catalog\Event\CatalogItemPriceChanged;
 use App\Domain\Supporting\Payment\Event\PaymentInitiated;
 use App\Infrastructure\Delivery\Listener\CancelRouteStopOnOrderCancelled;
 use App\Infrastructure\Order\Listener\AttachPaymentOnPaymentInitiated;
@@ -28,7 +27,7 @@ use App\Infrastructure\Payment\Listener\UpdatePaymentOnRouteStopSettled;
 use App\Infrastructure\Production\Listener\CancelKitchenTicketOnOrderCancelled;
 use App\Infrastructure\Production\Listener\CreateKitchenTicketOnOrderConfirmed;
 use App\Infrastructure\Production\Listener\ReplaceKitchenTicketOnBranchReassigned;
-use App\Infrastructure\Warehouse\Listener\WriteOffIngredientsOnKitchenTicketCompleted;
+use App\Infrastructure\Warehouse\Listener\WriteOffStockOnKitchenTicketCompleted;
 
 /**
  * Матрица подписок: доменное событие → слушатели Infrastructure.
@@ -60,7 +59,7 @@ return [
 
         KitchenTicketCompleted::class => [
             MarkOrderReadyOnKitchenTicketCompleted::class,
-            WriteOffIngredientsOnKitchenTicketCompleted::class,
+            WriteOffStockOnKitchenTicketCompleted::class,
         ],
 
         RouteSheetCreated::class => [],
@@ -89,8 +88,7 @@ return [
         ],
 
         // Роли и PRM_zones больше не участвуют в продаже:
-        // флаги — в Catalog, подарок — в PRM_policies.gift_product_id, зоны — в Delivery.
-        CatalogItemPriceChanged::class => [],
+        // флаги (вкл. подарок) — в Catalog; зоны/надбавка вне зоны — в Delivery.
         DeliveryZonesChanged::class => [],
     ],
 ];

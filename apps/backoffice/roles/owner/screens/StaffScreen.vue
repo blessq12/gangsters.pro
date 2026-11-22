@@ -1,183 +1,65 @@
 <script setup>
-import { onMounted, reactive, ref, watch } from "vue";
-import {
-    deleteEmployee,
-    listEmployees,
-    storeEmployee,
-    toggleEmployeeActive,
-    updateEmployee,
-} from "../../../api/staff.js";
+import { computed, onMounted, ref, watch } from "vue";
+import { useRouter } from "vue-router";
+import { listEmployees } from "../../../api/staff.js";
+import { useOwnerBranchContext } from "../composables/useOwnerBranchContext.js";
 import { useApi } from "../../../shell/composables/useApi.js";
 import { usePagedList } from "../../../shell/composables/usePagedList.js";
 import { useToast } from "../../../shell/composables/useToast.js";
+import ShellIcon from "../../../shell/components/ShellIcon.vue";
 import UiBadge from "../../../shell/components/ui/UiBadge.vue";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
 import UiCard from "../../../shell/components/ui/UiCard.vue";
-import UiConfirmDialog from "../../../shell/components/ui/UiConfirmDialog.vue";
-import UiFormField from "../../../shell/components/ui/UiFormField.vue";
-import UiInput from "../../../shell/components/ui/UiInput.vue";
-import UiModal from "../../../shell/components/ui/UiModal.vue";
 import UiPagination from "../../../shell/components/ui/UiPagination.vue";
 import UiTable from "../../../shell/components/ui/UiTable.vue";
 
+const router = useRouter();
 const toast = useToast();
 const listApi = useApi();
-const saveApi = useApi();
+const { branches, ensureLoaded, branchLabel } = useOwnerBranchContext();
 const {
     page,
     perPage,
     total,
     items: rows,
     offset,
+    resetPage,
     applyPayload,
 } = usePagedList();
-const modalOpen = ref(false);
-const editingId = ref(null);
-const fieldErrors = reactive({});
-const form = reactive({
-    name: "",
-    email: "",
-    phone: "",
-    role: "administrator",
-    password: "",
-    is_active: true,
-});
 
-const confirmOpen = ref(false);
-const deleteTarget = ref(null);
-
-const roles = ["owner", "administrator", "kitchen", "courier"];
+const filterBranchId = ref("");
 
 const columns = [
-    { key: "id", label: "ID", width: "64px" },
     { key: "name", label: "Имя" },
     { key: "email", label: "Email" },
     { key: "role", label: "Роль", width: "130px" },
+    { key: "branch", label: "Филиал", width: "220px" },
     { key: "is_active", label: "Активен", width: "100px" },
-    { key: "actions", label: "", width: "260px" },
+    { key: "actions", label: "", width: "72px" },
 ];
 
-function clearErrors() {
-    Object.keys(fieldErrors).forEach((key) => {
-        delete fieldErrors[key];
+const branchById = computed(() => {
+    /** @type {Map<number, any>} */
+    const map = new Map();
+    branches.value.forEach((branch) => {
+        map.set(Number(branch.id), branch);
     });
-}
+    return map;
+});
 
-function resetForm() {
-    form.name = "";
-    form.email = "";
-    form.phone = "";
-    form.role = "administrator";
-    form.password = "";
-    form.is_active = true;
-    clearErrors();
-}
+const tableRows = computed(() =>
+    rows.value.map((row) => ({
+        ...row,
+        branch: formatBranch(row.branch_id),
+    })),
+);
 
-async function loadEmployees() {
-    try {
-        const payload = await listApi.run(() => listEmployees({
-            offset: offset.value,
-            limit: perPage,
-        }));
-        applyPayload(payload);
-    } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Не удалось загрузить сотрудников");
+function formatBranch(branchId) {
+    if (branchId == null || branchId === "") {
+        return "Вся компания";
     }
-}
-
-function openCreate() {
-    editingId.value = null;
-    resetForm();
-    modalOpen.value = true;
-}
-
-function openEdit(row) {
-    editingId.value = row.id;
-    resetForm();
-    form.name = row.name ?? "";
-    form.email = row.email ?? "";
-    form.phone = row.phone ?? "";
-    form.role = row.role ?? "administrator";
-    form.is_active = Boolean(row.is_active);
-    modalOpen.value = true;
-}
-
-function validate() {
-    clearErrors();
-    if (!String(form.name).trim()) {
-        fieldErrors.name = "Обязательное поле";
-    }
-    if (!String(form.email).trim()) {
-        fieldErrors.email = "Обязательное поле";
-    }
-    if (!form.role) {
-        fieldErrors.role = "Обязательное поле";
-    }
-    if (!editingId.value && !String(form.password).trim()) {
-        fieldErrors.password = "Обязательное поле";
-    }
-    return Object.keys(fieldErrors).length === 0;
-}
-
-async function save() {
-    if (!validate()) {
-        toast.error("Проверьте обязательные поля");
-        return;
-    }
-
-    const id = editingId.value;
-    const body = {
-        name: form.name.trim(),
-        email: form.email.trim(),
-        phone: form.phone || null,
-        role: form.role,
-        is_active: Boolean(form.is_active),
-    };
-    if (!id || form.password) {
-        body.password = form.password;
-    }
-
-    try {
-        await saveApi.run(() =>
-            id ? updateEmployee(id, body) : storeEmployee(body),
-        );
-        toast.success(id ? "Сохранено" : "Создано");
-        modalOpen.value = false;
-        await loadEmployees();
-    } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Ошибка сохранения");
-    }
-}
-
-async function onToggle(row) {
-    try {
-        await saveApi.run(() => toggleEmployeeActive(row.id));
-        toast.success(row.is_active ? "Деактивирован" : "Активирован");
-        await loadEmployees();
-    } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Ошибка");
-    }
-}
-
-function askDelete(row) {
-    deleteTarget.value = row;
-    confirmOpen.value = true;
-}
-
-async function confirmDelete() {
-    const target = deleteTarget.value;
-    confirmOpen.value = false;
-    deleteTarget.value = null;
-    if (!target) {
-        return;
-    }
-    try {
-        await saveApi.run(() => deleteEmployee(target.id));
-        toast.success("Удалён");
-        await loadEmployees();
-    } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Ошибка удаления");
-    }
+    const branch = branchById.value.get(Number(branchId));
+    return branch ? branchLabel(branch) : `#${branchId}`;
 }
 
 function roleVariant(role) {
@@ -193,20 +75,66 @@ function roleVariant(role) {
     return "neutral";
 }
 
+async function loadEmployees() {
+    try {
+        const payload = await listApi.run(() => listEmployees({
+            offset: offset.value,
+            limit: perPage,
+            branch_id: filterBranchId.value || undefined,
+        }));
+        applyPayload(payload);
+    } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Не удалось загрузить сотрудников");
+    }
+}
+
+function openCreate() {
+    router.push({ name: "owner-staff-employee", params: { id: "new" } });
+}
+
+function openEmployee(row) {
+    router.push({ name: "owner-staff-employee", params: { id: row.id } });
+}
+
 watch(page, loadEmployees);
-onMounted(loadEmployees);
+watch(filterBranchId, () => {
+    resetPage();
+    loadEmployees();
+});
+
+onMounted(async () => {
+    await ensureLoaded();
+    await loadEmployees();
+});
 </script>
 
 <template>
     <div class="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
         <UiCard title="Сотрудники">
             <template #actions>
-                <UiButton @click="openCreate">+ Сотрудник</UiButton>
+                <div class="flex flex-wrap items-center gap-2">
+                    <div class="min-w-[14rem]">
+                        <select
+                            v-model="filterBranchId"
+                            class="h-10 w-full border border-bo-border bg-bo-field px-3 text-sm focus:border-bo-accent focus:outline-none"
+                        >
+                            <option value="">Все филиалы</option>
+                            <option
+                                v-for="branch in branches"
+                                :key="branch.id"
+                                :value="String(branch.id)"
+                            >
+                                {{ branchLabel(branch) }}
+                            </option>
+                        </select>
+                    </div>
+                    <UiButton @click="openCreate">+ Сотрудник</UiButton>
+                </div>
             </template>
 
             <UiTable
                 :columns="columns"
-                :rows="rows"
+                :rows="tableRows"
                 :loading="listApi.loading"
                 empty-text="Нет сотрудников"
             >
@@ -220,13 +148,14 @@ onMounted(loadEmployees);
                     />
                 </template>
                 <template #cell-actions="{ row }">
-                    <div class="flex flex-wrap gap-1">
-                        <UiButton @click.stop="openEdit(row)">Редактировать</UiButton>
-                        <UiButton @click.stop="onToggle(row)">
-                            {{ row.is_active ? "Деактивировать" : "Активировать" }}
-                        </UiButton>
-                        <UiButton @click.stop="askDelete(row)">Удалить</UiButton>
-                    </div>
+                    <UiButton
+                        class="!h-9 !px-2.5"
+                        title="Редактировать"
+                        aria-label="Редактировать"
+                        @click.stop="openEmployee(row)"
+                    >
+                        <ShellIcon name="edit" class="h-4 w-4" />
+                    </UiButton>
                 </template>
             </UiTable>
             <div class="mt-6">
@@ -238,57 +167,5 @@ onMounted(loadEmployees);
                 />
             </div>
         </UiCard>
-
-        <UiModal
-            :open="modalOpen"
-            :title="editingId ? 'Редактировать сотрудника' : 'Новый сотрудник'"
-            @close="modalOpen = false"
-        >
-            <div class="space-y-5">
-                <UiFormField label="Имя" required :error="fieldErrors.name">
-                    <UiInput v-model="form.name" />
-                </UiFormField>
-                <UiFormField label="Email" required :error="fieldErrors.email">
-                    <UiInput v-model="form.email" type="email" />
-                </UiFormField>
-                <UiFormField label="Телефон">
-                    <UiInput v-model="form.phone" type="tel" />
-                </UiFormField>
-                <UiFormField label="Роль" required :error="fieldErrors.role">
-                    <select
-                        v-model="form.role"
-                        class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 transition-colors hover:border-bo-border-strong focus:border-bo-accent focus:outline-none"
-                    >
-                        <option v-for="role in roles" :key="role" :value="role">
-                            {{ role }}
-                        </option>
-                    </select>
-                </UiFormField>
-                <UiFormField
-                    label="Пароль"
-                    :required="!editingId"
-                    :error="fieldErrors.password"
-                >
-                    <UiInput v-model="form.password" type="password" />
-                </UiFormField>
-                <UiFormField label="Активен">
-                    <input v-model="form.is_active" type="checkbox" class="mt-2">
-                </UiFormField>
-            </div>
-            <template #footer>
-                <UiButton @click="modalOpen = false">Отмена</UiButton>
-                <UiButton :disabled="saveApi.loading" @click="save">Сохранить</UiButton>
-            </template>
-        </UiModal>
-
-        <UiConfirmDialog
-            :open="confirmOpen"
-            title="Удалить сотрудника?"
-            :message="deleteTarget
-                ? `Удалить ${deleteTarget.name} (${deleteTarget.email})?`
-                : ''"
-            @confirm="confirmDelete"
-            @cancel="confirmOpen = false; deleteTarget = null"
-        />
     </div>
 </template>

@@ -184,10 +184,11 @@ final class OrderFormation
                 ? (string) ($benefit['outside_zone_at_threshold_fee_mode'] ?? 'outside_zone_surcharge_only')
                 : (string) ($benefit['in_zone_at_threshold_fee_mode'] ?? 'free'));
 
+        // Надбавка вне зоны — ответственность Delivery, не Promotion Policy.
         return $delivery->withFee(self::feeByMode(
             $mode,
             $delivery->feeKopecks(),
-            (int) ($benefit['outside_zone_surcharge_kopecks'] ?? 0),
+            0,
         ));
     }
 

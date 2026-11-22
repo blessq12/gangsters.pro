@@ -14,7 +14,6 @@ interface PromotionPolicyRepository
      *     gift_courier_min_order_kopecks: int,
      *     gift_courier_weekdays: list<int>,
      *     gift_benefit_active: bool,
-     *     gift_product_id: int|null,
      *     delivery_free_threshold_kopecks: int,
      *     delivery_outside_zone_surcharge_kopecks: int,
      *     delivery_benefit_active: bool,

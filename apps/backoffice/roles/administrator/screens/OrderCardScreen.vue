@@ -9,6 +9,7 @@ import {
     reassignBranch,
 } from "../../../api/orders.js";
 import OrderFacts from "../../../shell/components/order/OrderFacts.vue";
+import UiBadge from "../../../shell/components/ui/UiBadge.vue";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
 import UiCard from "../../../shell/components/ui/UiCard.vue";
 import UiConfirmDialog from "../../../shell/components/ui/UiConfirmDialog.vue";
@@ -17,7 +18,12 @@ import UiModal from "../../../shell/components/ui/UiModal.vue";
 import { useApi } from "../../../shell/composables/useApi.js";
 import { useBranchChoice } from "../../../shell/composables/useBranchChoice.js";
 import { useToast } from "../../../shell/composables/useToast.js";
-import { administratorCommands } from "../../../shell/domain/orderStage.js";
+import {
+    administratorCommands,
+    orderNumberOf,
+    orderStatusLabel,
+    orderStatusVariant,
+} from "../../../shell/domain/orderStage.js";
 
 const route = useRoute();
 const router = useRouter();
@@ -26,7 +32,6 @@ const detailApi = useApi();
 const actionApi = useApi();
 const {
     branches,
-    error: branchesError,
     load: loadBranches,
     labelOf,
     branchLabel,
@@ -42,6 +47,10 @@ const selectedBranchId = ref("");
 const orderId = computed(() => route.params.id);
 const commands = computed(() => administratorCommands(order.value));
 const branchTitle = computed(() => labelOf(order.value?.branch_id));
+const branchCity = computed(() => {
+    const branch = branches.value.find((item) => String(item.id) === String(order.value?.branch_id ?? ""));
+    return String(branch?.city ?? "").trim();
+});
 const otherBranches = computed(() =>
     branches.value.filter((branch) => String(branch.id) !== String(order.value?.branch_id ?? "")),
 );
@@ -142,35 +151,49 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="mx-auto w-full max-w-3xl space-y-6 px-4 py-6 sm:px-6 lg:py-10">
-        <UiButton class="!bg-white/10 !text-bo-fg" @click="goList">
-            К списку заказов
-        </UiButton>
+    <div class="mx-auto w-full max-w-7xl space-y-4 px-4 py-5 sm:px-6 lg:px-10 lg:py-7">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex flex-wrap items-center gap-3">
+                <UiButton class="!bg-white/10 !text-bo-fg" @click="goList">
+                    К списку заказов
+                </UiButton>
+                <h1 class="text-lg font-semibold tracking-tight text-bo-fg">
+                    {{ order ? orderNumberOf(order) : `Заказ #${orderId}` }}
+                </h1>
+                <UiBadge
+                    v-if="order"
+                    :variant="orderStatusVariant(order.status)"
+                    :text="orderStatusLabel(order.status)"
+                />
+            </div>
+        </div>
 
-        <UiCard title="Карточка заказа">
-            <p v-if="detailApi.loading" class="text-sm text-bo-muted">
-                Загрузка…
-            </p>
+        <p v-if="detailApi.loading" class="text-sm text-bo-muted">
+            Загрузка…
+        </p>
+        <p v-else-if="!order" class="text-sm text-bo-muted">
+            Заказ не найден.
+        </p>
+        <template v-else>
+            <UiCard v-if="commands.length" title="Действия">
+                <div class="flex flex-wrap gap-3">
+                    <UiButton
+                        v-for="command in commands"
+                        :key="command.id"
+                        :disabled="actionApi.loading"
+                        @click="onCommand(command.id)"
+                    >
+                        {{ command.label }}
+                    </UiButton>
+                </div>
+            </UiCard>
+
             <OrderFacts
-                v-else-if="order"
                 :order="order"
                 :branch-title="branchTitle"
+                :branch-city="branchCity"
             />
-            <p v-else class="text-sm text-bo-muted">
-                Заказ не найден.
-            </p>
-
-            <div v-if="order && commands.length" class="mt-6 flex flex-wrap gap-3">
-                <UiButton
-                    v-for="command in commands"
-                    :key="command.id"
-                    :disabled="actionApi.loading"
-                    @click="onCommand(command.id)"
-                >
-                    {{ command.label }}
-                </UiButton>
-            </div>
-        </UiCard>
+        </template>
 
         <UiConfirmDialog
             :open="confirmOpen"

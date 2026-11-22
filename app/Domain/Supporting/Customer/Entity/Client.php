@@ -247,6 +247,39 @@ final class Client
         }
     }
 
+    public function updateAddress(
+        string $addressId,
+        ?string $type,
+        ?string $title,
+        string $street,
+        string $house,
+        ?string $entrance,
+        ?string $floor,
+        ?string $apartment,
+        ?string $comment,
+    ): ClientAddress {
+        foreach ($this->addresses as $address) {
+            if ($address->id() !== $addressId) {
+                continue;
+            }
+
+            $address->update(
+                type: $type,
+                title: $title,
+                street: $street,
+                house: $house,
+                entrance: $entrance,
+                floor: $floor,
+                apartment: $apartment,
+                comment: $comment,
+            );
+
+            return $address;
+        }
+
+        throw new \InvalidArgumentException('Адрес не найден.');
+    }
+
     public function addFavoriteProductId(int $productId): void
     {
         if ($productId < 1) {

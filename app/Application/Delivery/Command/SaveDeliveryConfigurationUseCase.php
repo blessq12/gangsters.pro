@@ -5,6 +5,7 @@ namespace App\Application\Delivery\Command;
 use App\Application\Delivery\DTO\SaveDeliveryConfigurationDto;
 use App\Application\Delivery\Event\DeliveryZonesChangedFactory;
 use App\Application\Delivery\Presenter\DeliveryPresenter;
+use App\Domain\Core\Delivery\Tariff\Entity\DeliveryConfiguration;
 use App\Domain\Core\Delivery\Tariff\Repository\DeliveryConfigurationRepository;
 use App\Domain\Supporting\Company\Entity\Branch;
 use App\Domain\Supporting\Company\Repository\BranchRepository;
@@ -41,8 +42,59 @@ final class SaveDeliveryConfigurationUseCase
             throw new \InvalidArgumentException('Филиал не найден.');
         }
 
+        $current = $this->delivery->findByBranch($branchId);
+        $zonesBefore = $this->zonesChanged->snapshot($current);
+
+        $zones = $dto->zones === null
+            ? $this->preserveZones($current)
+            : $this->normalizeIncomingZones($dto->zones);
+
+        $configuration = $this->delivery->saveSettingsForBranch(
+            branchId: $branchId,
+            minOrderAmountKopecks: $dto->minOrderRubles === null ? null : $dto->minOrderRubles * 100,
+            averageDeliveryTimeMinutes: $dto->averageDeliveryTimeMinutes,
+            zones: $zones,
+        );
+
+        $event = $this->zonesChanged->createIfChanged($zonesBefore, $configuration);
+        if ($event !== null) {
+            event($event);
+        }
+
+        return $this->presenter->present($configuration, $branch);
+    }
+
+    /**
+     * @return list<array{id: string, name: string, fee_rubles: int, is_remote: bool, geometry: array<string, mixed>}>
+     */
+    private function preserveZones(?DeliveryConfiguration $current): array
+    {
+        if ($current === null) {
+            return [];
+        }
+
         $zones = [];
-        foreach ($dto->zones as $zone) {
+        foreach ($current->zones() as $zone) {
+            $zones[] = [
+                'id' => $zone->id(),
+                'name' => $zone->name(),
+                'fee_rubles' => intdiv($zone->deliveryFeeKopecks(), 100),
+                'is_remote' => $zone->isRemote(),
+                'geometry' => $zone->geometry(),
+            ];
+        }
+
+        return $zones;
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $incoming
+     * @return list<array{id: string, name: string, fee_rubles: int, is_remote: bool, geometry?: array<string, mixed>}>
+     */
+    private function normalizeIncomingZones(array $incoming): array
+    {
+        $zones = [];
+        foreach ($incoming as $zone) {
             if (! is_array($zone)) {
                 continue;
             }
@@ -58,28 +110,18 @@ final class SaveDeliveryConfigurationUseCase
                 throw new \InvalidArgumentException('Тариф зоны не может быть отрицательным.');
             }
 
-            $zones[] = [
+            $row = [
                 'id' => $id,
                 'name' => $name,
                 'fee_rubles' => $fee,
                 'is_remote' => (bool) ($zone['is_remote'] ?? false),
             ];
+            if (isset($zone['geometry']) && is_array($zone['geometry'])) {
+                $row['geometry'] = $zone['geometry'];
+            }
+            $zones[] = $row;
         }
 
-        $zonesBefore = $this->zonesChanged->snapshot($this->delivery->findByBranch($branchId));
-
-        $configuration = $this->delivery->saveSettingsForBranch(
-            branchId: $branchId,
-            minOrderAmountKopecks: $dto->minOrderRubles === null ? null : $dto->minOrderRubles * 100,
-            averageDeliveryTimeMinutes: $dto->averageDeliveryTimeMinutes,
-            zones: $zones,
-        );
-
-        $event = $this->zonesChanged->createIfChanged($zonesBefore, $configuration);
-        if ($event !== null) {
-            event($event);
-        }
-
-        return $this->presenter->present($configuration, $branch);
+        return $zones;
     }
 }

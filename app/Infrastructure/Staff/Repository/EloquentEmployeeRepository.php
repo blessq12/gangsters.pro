@@ -25,6 +25,7 @@ final class EloquentEmployeeRepository implements EmployeeRepository
         $row->email = $employee->email();
         $row->phone = $employee->phone();
         $row->role = $employee->role()->value;
+        $row->branch_id = $employee->branchId();
         $row->is_active = $employee->isActive();
         $row->password_hash = $employee->passwordHash();
         $row->save();
@@ -48,14 +49,19 @@ final class EloquentEmployeeRepository implements EmployeeRepository
         return $row instanceof STF_Employee ? $this->map($row) : null;
     }
 
-    public function list(?StaffRole $role = null, ?bool $isActive = null): array
+    public function list(?StaffRole $role = null, ?bool $isActive = null, ?int $branchId = null): array
     {
-        return $this->listPage(0, max(1, $this->count($role, $isActive)), $role, $isActive);
+        return $this->listPage(0, max(1, $this->count($role, $isActive, $branchId)), $role, $isActive, $branchId);
     }
 
-    public function listPage(int $offset, int $limit, ?StaffRole $role = null, ?bool $isActive = null): array
-    {
-        return $this->filteredQuery($role, $isActive)
+    public function listPage(
+        int $offset,
+        int $limit,
+        ?StaffRole $role = null,
+        ?bool $isActive = null,
+        ?int $branchId = null,
+    ): array {
+        return $this->filteredQuery($role, $isActive, $branchId)
             ->offset(max(0, $offset))
             ->limit(max(1, $limit))
             ->get()
@@ -63,16 +69,19 @@ final class EloquentEmployeeRepository implements EmployeeRepository
             ->all();
     }
 
-    public function count(?StaffRole $role = null, ?bool $isActive = null): int
+    public function count(?StaffRole $role = null, ?bool $isActive = null, ?int $branchId = null): int
     {
-        return (int) $this->filteredQuery($role, $isActive)->count();
+        return (int) $this->filteredQuery($role, $isActive, $branchId)->count();
     }
 
     /**
      * @return Builder<STF_Employee>
      */
-    private function filteredQuery(?StaffRole $role = null, ?bool $isActive = null): Builder
-    {
+    private function filteredQuery(
+        ?StaffRole $role = null,
+        ?bool $isActive = null,
+        ?int $branchId = null,
+    ): Builder {
         /** @var Builder<STF_Employee> $query */
         $query = STF_Employee::query()->orderBy('id');
 
@@ -82,18 +91,11 @@ final class EloquentEmployeeRepository implements EmployeeRepository
         if ($isActive !== null) {
             $query->where('is_active', $isActive);
         }
-
-        return $query;
-    }
-
-    public function delete(int $id): void
-    {
-        $row = STF_Employee::query()->find($id);
-        if (! $row instanceof STF_Employee) {
-            throw new \InvalidArgumentException('Сотрудник не найден.');
+        if ($branchId !== null) {
+            $query->where('branch_id', $branchId);
         }
 
-        $row->delete();
+        return $query;
     }
 
     private function map(STF_Employee $row): Employee
@@ -109,6 +111,7 @@ final class EloquentEmployeeRepository implements EmployeeRepository
             passwordHash: (string) $row->password_hash,
             isActive: (bool) $row->is_active,
             createdAt: $row->created_at?->toDateTimeImmutable() ?? new DateTimeImmutable(),
+            branchId: $row->branch_id !== null ? (int) $row->branch_id : null,
         );
     }
 }

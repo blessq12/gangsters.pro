@@ -6,6 +6,7 @@ use App\Domain\Core\Delivery\Routing\Entity\RouteSheet;
 use App\Domain\Core\Delivery\Routing\Entity\RouteStop;
 use App\Domain\Core\Order\Entity\Order;
 use App\Domain\Core\Order\Repository\OrderRepository;
+use App\Domain\Core\Order\ValueObject\OrderNumber;
 
 final class RouteSheetPresenter
 {
@@ -74,8 +75,11 @@ final class RouteSheetPresenter
         $client = $order->client();
         $address = $delivery->address();
 
+        $id = $order->hasId() ? $order->id() : null;
+
         return [
-            'id' => $order->hasId() ? $order->id() : null,
+            'id' => $id,
+            'number' => $id !== null ? OrderNumber::format($id, $order->createdAt()) : null,
             'status' => $order->status()->value,
             'method' => $delivery->type()->value,
             'address' => $address === null ? null : [

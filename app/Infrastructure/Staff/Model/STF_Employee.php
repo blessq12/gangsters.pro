@@ -22,6 +22,7 @@ final class STF_Employee extends Authenticatable
         'email',
         'phone',
         'role',
+        'branch_id',
         'password_hash',
         'is_active',
     ];
@@ -38,6 +39,7 @@ final class STF_Employee extends Authenticatable
      * @var array<string, string>
      */
     protected $casts = [
+        'branch_id' => 'integer',
         'is_active' => 'boolean',
     ];
 

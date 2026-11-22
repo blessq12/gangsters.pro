@@ -20,6 +20,7 @@ final class ListEmployeesUseCase
     public function execute(
         ?string $role = null,
         ?bool $isActive = null,
+        ?int $branchId = null,
         int $offset = 0,
         int $limit = PageParams::DEFAULT_LIMIT,
     ): array {
@@ -33,11 +34,15 @@ final class ListEmployeesUseCase
             }
         }
 
+        if ($branchId !== null && $branchId < 1) {
+            throw new \InvalidArgumentException('Некорректный филиал.');
+        }
+
         return PageParams::wrap(
             $this->presenter->presentList(
-                $this->employees->listPage($offset, $limit, $staffRole, $isActive),
+                $this->employees->listPage($offset, $limit, $staffRole, $isActive, $branchId),
             ),
-            $this->employees->count($staffRole, $isActive),
+            $this->employees->count($staffRole, $isActive, $branchId),
             $offset,
             $limit,
         );

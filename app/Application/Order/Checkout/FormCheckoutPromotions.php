@@ -38,13 +38,14 @@ final class FormCheckoutPromotions
         OrderDeliveryInfo $delivery,
         DateTimeInterface $at,
         bool $zoneIsRemote,
+        ?int $giftProductId = null,
     ): array {
         $policy = $this->policies->findByBranch($branchId);
         if ($policy === null) {
             throw new \InvalidArgumentException('Политика акций филиала не найдена.');
         }
 
-        $facts = $this->factsFor($branchId, $baseLines, $policy->giftProductId());
+        $facts = $this->factsFor($branchId, $baseLines, $giftProductId);
 
         $formed = OrderFormation::apply(
             baseLines: $baseLines,
@@ -82,9 +83,6 @@ final class FormCheckoutPromotions
         foreach (array_keys($availableMenu) as $menuItemId) {
             $productIds[(int) $menuItemId] = (int) $menuItemId;
         }
-        if ($giftProductId !== null && $giftProductId > 0) {
-            $productIds[$giftProductId] = $giftProductId;
-        }
 
         $products = [];
         if ($productIds !== []) {
@@ -111,22 +109,35 @@ final class FormCheckoutPromotions
             ];
         }
 
-        $gift = null;
-        if ($giftProductId !== null && $giftProductId > 0 && isset($availableMenu[$giftProductId])) {
-            $giftProduct = $products[$giftProductId] ?? null;
-            if ($giftProduct !== null) {
-                $gift = [
-                    'product_id' => $giftProduct->id(),
-                    'name' => $giftProduct->name(),
+        $giftCandidates = [];
+        foreach ($availableMenu as $catalogItemId => $menuItem) {
+            if (! $menuItem->isGiftCandidate()) {
+                continue;
+            }
+            $product = $products[$catalogItemId] ?? null;
+            if ($product !== null) {
+                $giftCandidates[] = [
+                    'product_id' => $product->id(),
+                    'name' => $product->name(),
                 ];
-            } else {
-                $names = $this->catalog->findProductNamesByIds([$giftProductId]);
-                $name = $names[$giftProductId] ?? null;
-                if ($name !== null && $name !== '') {
-                    $gift = [
-                        'product_id' => $giftProductId,
-                        'name' => $name,
-                    ];
+                continue;
+            }
+            $names = $this->catalog->findProductNamesByIds([(int) $catalogItemId]);
+            $name = $names[(int) $catalogItemId] ?? null;
+            if ($name !== null && $name !== '') {
+                $giftCandidates[] = [
+                    'product_id' => (int) $catalogItemId,
+                    'name' => $name,
+                ];
+            }
+        }
+
+        $gift = null;
+        if ($giftProductId !== null && $giftProductId > 0) {
+            foreach ($giftCandidates as $candidate) {
+                if ((int) $candidate['product_id'] === $giftProductId) {
+                    $gift = $candidate;
+                    break;
                 }
             }
         }
@@ -134,6 +145,7 @@ final class FormCheckoutPromotions
         return new OrderFormationFacts(
             isRollByProductId: $isRollByProductId,
             complements: $complements,
+            giftCandidates: $giftCandidates,
             gift: $gift,
         );
     }

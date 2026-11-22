@@ -38,11 +38,23 @@ final class SaveEmployeeUseCase
             throw new \InvalidArgumentException('Некорректная роль.');
         }
 
-        if ($dto->id === null) {
-            return $this->create($name, $email, $phone, $role, $dto);
+        $branchId = $dto->branchId;
+        if ($branchId !== null && $branchId < 1) {
+            throw new \InvalidArgumentException('Некорректный филиал.');
         }
 
-        return $this->update($dto->id, $name, $email, $phone, $role, $dto);
+        if (
+            ($role === StaffRole::Kitchen || $role === StaffRole::Courier)
+            && $branchId === null
+        ) {
+            throw new \InvalidArgumentException('Для ролей kitchen и courier нужен филиал.');
+        }
+
+        if ($dto->id === null) {
+            return $this->create($name, $email, $phone, $role, $branchId, $dto);
+        }
+
+        return $this->update($dto->id, $name, $email, $phone, $role, $branchId, $dto);
     }
 
     /**
@@ -53,6 +65,7 @@ final class SaveEmployeeUseCase
         string $email,
         ?string $phone,
         StaffRole $role,
+        ?int $branchId,
         SaveEmployeeDto $dto,
     ): array {
         $password = (string) ($dto->password ?? '');
@@ -70,6 +83,7 @@ final class SaveEmployeeUseCase
             phone: $phone,
             role: $role,
             passwordHash: Hash::make($password),
+            branchId: $branchId,
         );
 
         if ($dto->isActive === false) {
@@ -93,6 +107,7 @@ final class SaveEmployeeUseCase
         string $email,
         ?string $phone,
         StaffRole $role,
+        ?int $branchId,
         SaveEmployeeDto $dto,
     ): array {
         $existing = $this->employees->findById($id);
@@ -124,6 +139,7 @@ final class SaveEmployeeUseCase
             passwordHash: $passwordHash,
             isActive: $isActive,
             createdAt: $existing->createdAt(),
+            branchId: $branchId,
         );
 
         $this->employees->save($employee);

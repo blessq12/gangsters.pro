@@ -315,7 +315,7 @@ onMounted(async () => {
                         <div class="flex flex-wrap items-start justify-between gap-3">
                             <div class="space-y-1">
                                 <p class="font-semibold">
-                                    Остановка {{ stop.position }} · заказ #{{ stop.order_id }}
+                                    Остановка {{ stop.position }} · {{ stop.order?.number || `заказ #${stop.order_id}` }}
                                 </p>
                                 <p class="text-bo-muted">
                                     {{ stop.order?.client?.name || "—" }}
@@ -367,7 +367,7 @@ onMounted(async () => {
                         @change="toggleOrder(order.id)"
                     >
                     <span>
-                        <span class="font-medium">Заказ #{{ order.id }}</span>
+                        <span class="font-medium">{{ order.number || `Заказ #${order.id}` }}</span>
                         · {{ order.client?.name || "—" }}
                         <span class="block text-bo-muted">{{ formatAddress(order.delivery?.address) || "Адрес не указан" }}</span>
                     </span>

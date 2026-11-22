@@ -3,12 +3,14 @@
 namespace App\Application\Order\Query;
 
 use App\Application\Order\Presenter\AdminOrderPresenter;
+use App\Domain\Core\Order\Repository\OrderNoteRepository;
 use App\Domain\Core\Order\Repository\OrderRepository;
 
 final class GetAdminOrderUseCase
 {
     public function __construct(
         private readonly OrderRepository $orders,
+        private readonly OrderNoteRepository $notes,
         private readonly AdminOrderPresenter $presenter,
     ) {}
 
@@ -22,6 +24,9 @@ final class GetAdminOrderUseCase
             throw new \InvalidArgumentException('Заказ не найден.');
         }
 
-        return $this->presenter->present($order);
+        $payload = $this->presenter->present($order);
+        $payload['notes'] = $this->notes->listByOrderId($orderId);
+
+        return $payload;
     }
 }

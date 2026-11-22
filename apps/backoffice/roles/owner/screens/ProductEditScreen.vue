@@ -2,12 +2,11 @@
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import {
-    getCatalog,
     getProduct,
     storeProduct,
     updateProduct,
 } from "../../../api/catalog.js";
-import CatalogPricesEditor from "../components/catalog/CatalogPricesEditor.vue";
+import { listIngredients } from "../../../api/warehouse.js";
 import CatalogProductImagesDraft from "../components/catalog/CatalogProductImagesDraft.vue";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
 import UiCard from "../../../shell/components/ui/UiCard.vue";
@@ -27,10 +26,13 @@ const saveApi = useApi();
 const isNew = computed(() => route.params.id === "new");
 const productId = computed(() => (isNew.value ? null : Number(route.params.id)));
 
-const tags = ref([]);
-const prices = ref([{ type: "regular", amount: "" }]);
 const draftImages = ref([]);
 const deletedImageIds = ref([]);
+/** @type {import('vue').Ref<Array<{ id: number, name: string, unit: string }>>} */
+const warehouseIngredients = ref([]);
+/** @type {import('vue').Ref<Array<{ ingredient_ref: string, quantity: string, unit: string }>>} */
+const techCardLines = ref([]);
+const addIngredientId = ref("");
 const fieldErrors = reactive({});
 const form = reactive({
     name: "",
@@ -45,7 +47,6 @@ const form = reactive({
     fats: "",
     carbs: "",
     basis: "per_100g",
-    tag_ids: [],
 });
 /** @type {import('vue').Ref<string|null>} */
 const sku = ref(null);
@@ -58,24 +59,19 @@ const title = computed(() => {
     return name !== "" ? name : "Товар";
 });
 
+const ingredientById = computed(
+    () => new Map(warehouseIngredients.value.map((row) => [String(row.id), row])),
+);
+
+const availableIngredients = computed(() => {
+    const used = new Set(techCardLines.value.map((row) => row.ingredient_ref));
+    return warehouseIngredients.value.filter((row) => !used.has(String(row.id)));
+});
+
 function clearErrors() {
     Object.keys(fieldErrors).forEach((key) => {
         delete fieldErrors[key];
     });
-}
-
-function mapPrices(payload) {
-    if (Array.isArray(payload?.prices) && payload.prices.length > 0) {
-        return payload.prices.map((row) => ({
-            type: row.type,
-            amount: row.amount != null ? String(row.amount) : "",
-        }));
-    }
-    const rows = [{ type: "regular", amount: payload?.price != null ? String(payload.price) : "" }];
-    if (payload?.old_price != null) {
-        rows.push({ type: "old", amount: String(payload.old_price) });
-    }
-    return rows;
 }
 
 function mapImages(payload) {
@@ -90,6 +86,14 @@ function mapImages(payload) {
         focus_y: row.focus_y ?? 50,
         isNew: false,
     }));
+}
+
+function ingredientLabel(ref) {
+    const row = ingredientById.value.get(String(ref));
+    if (!row) {
+        return `ref:${ref}`;
+    }
+    return row.name;
 }
 
 function applyDetail(payload) {
@@ -108,27 +112,39 @@ function applyDetail(payload) {
     form.fats = payload?.nutrition?.fats != null ? String(payload.nutrition.fats) : "";
     form.carbs = payload?.nutrition?.carbs != null ? String(payload.nutrition.carbs) : "";
     form.basis = payload?.nutrition?.basis ?? "per_100g";
-    form.tag_ids = Array.isArray(payload?.tag_ids) ? [...payload.tag_ids] : [];
-    prices.value = mapPrices(payload);
     draftImages.value = mapImages(payload);
     deletedImageIds.value = [];
+    techCardLines.value = Array.isArray(payload?.tech_card?.lines)
+        ? payload.tech_card.lines.map((row) => ({
+            ingredient_ref: String(row.ingredient_ref ?? ""),
+            quantity: row.quantity != null ? String(row.quantity) : "",
+            unit: String(row.unit ?? ""),
+        })).filter((row) => row.ingredient_ref !== "")
+        : [];
+    addIngredientId.value = "";
+}
+
+async function loadWarehouseIngredients() {
+    const payload = await listIngredients({ offset: 0, limit: 500 });
+    warehouseIngredients.value = Array.isArray(payload?.items) ? payload.items : [];
 }
 
 async function load() {
     clearErrors();
-    try {
-        const catalog = await getCatalog();
-        tags.value = catalog?.tags ?? [];
-    } catch {
-        tags.value = [];
-    }
-
     if (isNew.value) {
         applyDetail(null);
+        try {
+            await loadWarehouseIngredients();
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Не удалось загрузить ингредиенты");
+        }
         return;
     }
     try {
-        const payload = await loadApi.run(() => getProduct(productId.value));
+        const [payload] = await loadApi.run(() => Promise.all([
+            getProduct(productId.value),
+            loadWarehouseIngredients(),
+        ]));
         applyDetail(payload);
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось загрузить товар");
@@ -136,17 +152,35 @@ async function load() {
     }
 }
 
+function addTechLine() {
+    const id = String(addIngredientId.value || "");
+    const ingredient = ingredientById.value.get(id);
+    if (!ingredient) {
+        return;
+    }
+    techCardLines.value.push({
+        ingredient_ref: id,
+        quantity: "1",
+        unit: String(ingredient.unit || "шт"),
+    });
+    addIngredientId.value = "";
+}
+
+function removeTechLine(index) {
+    techCardLines.value.splice(index, 1);
+}
+
 function validate() {
     clearErrors();
     if (!String(form.name).trim()) {
         fieldErrors.name = "Обязательное поле";
     }
-    const regular = prices.value.find((row) => row.type === "regular");
-    if (!regular || regular.amount === "" || Number.isNaN(Number(regular.amount))) {
-        fieldErrors.prices = "Нужна актуальная цена (regular)";
-    }
-    if (prices.value.some((row) => row.amount === "" || Number.isNaN(Number(row.amount)))) {
-        fieldErrors.prices = fieldErrors.prices || "У каждой цены укажи сумму";
+    for (const [index, row] of techCardLines.value.entries()) {
+        const qty = Number(String(row.quantity).replace(",", "."));
+        if (!row.ingredient_ref || !row.unit.trim() || Number.isNaN(qty) || qty <= 0) {
+            fieldErrors.tech_card = `Строка техкарты #${index + 1}: нужен ингредиент, кол-во > 0 и единица`;
+            break;
+        }
     }
     return Object.keys(fieldErrors).length === 0;
 }
@@ -158,10 +192,6 @@ function buildPayload() {
     return {
         name: form.name.trim(),
         sku: sku.value,
-        prices: prices.value.map((row) => ({
-            type: row.type,
-            amount: Number(row.amount),
-        })),
         weight: form.weight === "" ? null : Number(form.weight),
         status: form.isActive ? "active" : "archived",
         is_roll: Boolean(form.isRoll),
@@ -177,7 +207,13 @@ function buildPayload() {
                 carbs: Number(form.carbs || 0),
                 basis: form.basis || "per_100g",
             },
-        tag_ids: form.tag_ids.map(Number),
+        tech_card: {
+            lines: techCardLines.value.map((row) => ({
+                ingredient_ref: String(row.ingredient_ref),
+                quantity: Number(String(row.quantity).replace(",", ".")),
+                unit: String(row.unit).trim(),
+            })),
+        },
     };
 }
 
@@ -232,15 +268,6 @@ async function save() {
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Ошибка сохранения");
     }
-}
-
-function toggleTag(id) {
-    const num = Number(id);
-    if (form.tag_ids.includes(num)) {
-        form.tag_ids = form.tag_ids.filter((value) => value !== num);
-        return;
-    }
-    form.tag_ids = [...form.tag_ids, num];
 }
 
 watch(() => route.params.id, load);
@@ -305,39 +332,58 @@ onMounted(load);
                 </div>
             </UiCard>
 
-            <UiCard title="Справочные цены">
-                <p class="mb-3 text-sm text-bo-muted">
-                    Справочные цены каталога. Продажная цена задаётся в меню филиала.
-                </p>
-                <CatalogPricesEditor v-model="prices" :error="fieldErrors.prices" />
-            </UiCard>
-
-            <UiCard title="Теги">
-                <div class="flex flex-wrap gap-2">
-                    <button
-                        v-for="tag in tags"
-                        :key="tag.id"
-                        type="button"
-                        class="h-8 px-2.5 text-sm transition-colors"
-                        :class="form.tag_ids.includes(tag.id)
-                            ? 'bg-bo-accent text-white'
-                            : 'bg-white/[0.04] text-bo-muted hover:bg-white/[0.08]'"
-                        @click="toggleTag(tag.id)"
-                    >
-                        {{ tag.label || tag.code }}
-                    </button>
-                    <p v-if="tags.length === 0" class="text-sm text-bo-muted">
-                        Тегов пока нет
-                    </p>
-                </div>
-            </UiCard>
-
             <UiCard title="Состав">
                 <UiFormField label="Ингредиенты">
                     <UiChipInput
                         v-model="form.ingredients"
                         placeholder="Введи и нажми Enter"
                     />
+                </UiFormField>
+            </UiCard>
+
+            <UiCard title="Техкарта">
+                <UiFormField :error="fieldErrors.tech_card">
+                    <ul
+                        v-if="techCardLines.length > 0"
+                        class="mb-3 divide-y divide-bo-border border border-bo-border"
+                    >
+                        <li
+                            v-for="(row, index) in techCardLines"
+                            :key="`${row.ingredient_ref}-${index}`"
+                            class="flex flex-wrap items-end gap-2 px-3 py-2.5"
+                        >
+                            <div class="min-w-[10rem] flex-1 text-sm text-bo-fg">
+                                {{ ingredientLabel(row.ingredient_ref) }}
+                            </div>
+                            <div class="w-28">
+                                <UiInput v-model="row.quantity" type="number" placeholder="Кол-во" />
+                            </div>
+                            <div class="w-24">
+                                <UiInput v-model="row.unit" placeholder="Ед." />
+                            </div>
+                            <UiButton class="!h-9 !px-2.5" @click="removeTechLine(index)">
+                                ×
+                            </UiButton>
+                        </li>
+                    </ul>
+                    <div class="flex flex-wrap gap-2">
+                        <select
+                            v-model="addIngredientId"
+                            class="min-w-0 flex-1 border border-bo-border bg-bo-field px-4 py-2.5 text-sm focus:border-bo-accent focus:outline-none"
+                        >
+                            <option value="">Добавить ингредиент…</option>
+                            <option
+                                v-for="item in availableIngredients"
+                                :key="item.id"
+                                :value="String(item.id)"
+                            >
+                                {{ item.name }}{{ item.unit ? ` · ${item.unit}` : "" }}
+                            </option>
+                        </select>
+                        <UiButton :disabled="!addIngredientId" @click="addTechLine">
+                            Добавить
+                        </UiButton>
+                    </div>
                 </UiFormField>
             </UiCard>
 

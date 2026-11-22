@@ -6,7 +6,7 @@ use Carbon\Carbon;
 
 /**
  * Коммерческие правила филиала (per-branch).
- * Подарок филиала — giftProductId; роллы/комплекты — флаги Catalog на входе Formation.
+ * Товар-подарок и надбавка вне зоны — не здесь (Catalog / Delivery).
  */
 final class PromotionPolicy
 {
@@ -34,7 +34,6 @@ final class PromotionPolicy
         private readonly array $giftRules,
         private readonly array $deliveryBenefit,
         private readonly array $complementSetBenefit,
-        private readonly ?int $giftProductId = null,
     ) {}
 
     public function id(): int
@@ -45,11 +44,6 @@ final class PromotionPolicy
     public function branchId(): int
     {
         return $this->branchId;
-    }
-
-    public function giftProductId(): ?int
-    {
-        return $this->giftProductId;
     }
 
     /**

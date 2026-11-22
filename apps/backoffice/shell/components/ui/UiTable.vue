@@ -11,17 +11,21 @@ defineEmits(["row-click"]);
 </script>
 
 <template>
-    <div class="overflow-x-auto border border-bo-border">
+    <div class="w-full max-w-full overflow-x-auto border border-bo-border">
         <div v-if="loading" class="px-6 py-12 text-center text-sm text-bo-muted">
             Загрузка…
         </div>
-        <table v-else class="min-w-full text-left text-sm">
+        <table v-else class="min-w-full table-fixed text-sm">
             <thead class="border-b border-bo-border bg-white/[0.02]">
                 <tr>
                     <th
                         v-for="col in columns"
                         :key="col.key"
-                        class="whitespace-nowrap px-4 py-3 text-[11px] font-medium uppercase tracking-[0.12em] text-bo-muted"
+                        class="px-3 py-3 text-[11px] font-medium uppercase tracking-[0.12em] text-bo-muted sm:px-4"
+                        :class="[
+                            col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left',
+                            col.truncate ? 'truncate' : 'whitespace-nowrap',
+                        ]"
                         :style="col.width ? { width: col.width } : undefined"
                     >
                         {{ col.label }}
@@ -46,7 +50,12 @@ defineEmits(["row-click"]);
                     <td
                         v-for="col in columns"
                         :key="col.key"
-                        class="px-4 py-3.5 align-middle text-bo-fg"
+                        class="px-3 py-3.5 align-middle text-bo-fg sm:px-4"
+                        :class="[
+                            col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left',
+                            col.truncate ? 'max-w-0 truncate' : 'whitespace-nowrap',
+                        ]"
+                        :title="col.truncate ? String(row[col.key] ?? '') : undefined"
                     >
                         <slot
                             :name="`cell-${col.key}`"

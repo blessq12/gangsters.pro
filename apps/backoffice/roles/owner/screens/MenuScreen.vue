@@ -1,6 +1,5 @@
 <script setup>
 import { computed, onMounted, ref, watch } from "vue";
-import { listProducts, listSets } from "../../../api/catalog.js";
 import {
     cloneBranchSettings,
     deleteBranchMenuItem,
@@ -8,24 +7,26 @@ import {
     saveBranchMenuItem,
 } from "../../../api/company.js";
 import { useApi } from "../../../shell/composables/useApi.js";
+import { useClientList } from "../../../shell/composables/useClientList.js";
 import { useToast } from "../../../shell/composables/useToast.js";
+import ShellIcon from "../../../shell/components/ShellIcon.vue";
 import UiBadge from "../../../shell/components/ui/UiBadge.vue";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
 import UiCard from "../../../shell/components/ui/UiCard.vue";
 import UiConfirmDialog from "../../../shell/components/ui/UiConfirmDialog.vue";
 import UiInput from "../../../shell/components/ui/UiInput.vue";
 import UiModal from "../../../shell/components/ui/UiModal.vue";
+import UiPagination from "../../../shell/components/ui/UiPagination.vue";
 import UiTable from "../../../shell/components/ui/UiTable.vue";
 import UiToggle from "../../../shell/components/ui/UiToggle.vue";
 import OwnerBranchSelector from "../components/branch/OwnerBranchSelector.vue";
+import { fetchAllProducts } from "../composables/fetchAllProducts.js";
 import { useOwnerBranchContext } from "../composables/useOwnerBranchContext.js";
 
 defineProps({
-    /** Без внешней рамки страницы — для хаба «Меню». */
+    /** Без внешней рамки страницы — для хаба «Каталог». */
     embedded: { type: Boolean, default: false },
 });
-
-const PAGE_LIMIT = 100;
 
 const toast = useToast();
 const loadApi = useApi();
@@ -37,21 +38,18 @@ const {
     branchLabel,
 } = useOwnerBranchContext();
 
-/**
- * @type {import('vue').Ref<Array<{
- *   id: number,
- *   kind: string,
- *   name: string,
- *   catalogRubles: number,
- *   inMenu: boolean,
- *   isAvailable: boolean,
- *   priceRubles: string,
- *   saved: { isAvailable: boolean, priceRubles: string },
- *   saving: boolean,
- *   error: string,
- * }>>}
- */
-const rows = ref([]);
+const {
+    searchQuery,
+    page,
+    perPage,
+    total,
+    pageItems,
+    setItems,
+} = useClientList({
+    perPage: 20,
+    getHaystack: (row) => `${row.name ?? ""} ${row.id ?? ""}`,
+});
+
 const removeTarget = ref(null);
 const cloneOpen = ref(false);
 const cloneForm = ref({
@@ -64,17 +62,11 @@ const cloneForm = ref({
 
 const columns = [
     { key: "name", label: "Позиция" },
-    { key: "kind", label: "Тип", width: "110px" },
-    { key: "catalogRubles", label: "Цена в каталоге", width: "140px" },
     { key: "isAvailable", label: "В продаже", width: "170px" },
+    { key: "isGiftCandidate", label: "Подарок", width: "140px" },
     { key: "priceRubles", label: "Цена в филиале (₽)", width: "190px" },
     { key: "actions", label: "", width: "260px" },
 ];
-
-const kindLabels = {
-    product: "Товар",
-    set: "Набор",
-};
 
 const confirmMessage = computed(() =>
     removeTarget.value
@@ -100,38 +92,20 @@ function rublesToKopecks(value) {
     return Math.round(Number(text) * 100);
 }
 
-async function fetchAllCatalogItems(fetchPage) {
-    const result = [];
-    let total = 0;
-    do {
-        const payload = await fetchPage({ offset: result.length, limit: PAGE_LIMIT });
-        const items = Array.isArray(payload?.items) ? payload.items : [];
-        total = Number(payload?.total ?? 0);
-        result.push(...items);
-        if (items.length === 0) {
-            break;
-        }
-    } while (result.length < total);
-    return result;
-}
-
-function buildRow(item, kind, menuByItemId) {
+function buildRow(item, menuByItemId) {
     const entry = menuByItemId.get(Number(item.id));
-    const catalogRubles = Number(item.price?.amount ?? 0);
-    const priceRubles = entry
-        ? kopecksToRubles(entry.price_kopecks)
-        : String(catalogRubles);
+    const priceRubles = entry ? kopecksToRubles(entry.price_kopecks) : "";
     const isAvailable = entry ? Boolean(entry.is_available) : false;
+    const isGiftCandidate = entry ? Boolean(entry.is_gift_candidate) : false;
 
     return {
         id: Number(item.id),
-        kind,
         name: item.name ?? `#${item.id}`,
-        catalogRubles,
         inMenu: Boolean(entry),
         isAvailable,
+        isGiftCandidate,
         priceRubles,
-        saved: { isAvailable, priceRubles },
+        saved: { isAvailable, isGiftCandidate, priceRubles },
         saving: false,
         error: "",
     };
@@ -140,13 +114,12 @@ function buildRow(item, kind, menuByItemId) {
 async function loadMenu() {
     const branchId = selectedBranchId.value;
     if (!branchId) {
-        rows.value = [];
+        setItems([]);
         return;
     }
     try {
-        const [products, sets, menu] = await loadApi.run(() => Promise.all([
-            fetchAllCatalogItems(listProducts),
-            fetchAllCatalogItems(listSets),
+        const [products, menu] = await loadApi.run(() => Promise.all([
+            fetchAllProducts(),
             getBranchMenu(branchId),
         ]));
         if (branchId !== selectedBranchId.value) {
@@ -156,10 +129,7 @@ async function loadMenu() {
             (Array.isArray(menu?.items) ? menu.items : [])
                 .map((entry) => [Number(entry.catalog_item_id), entry]),
         );
-        rows.value = [
-            ...products.map((item) => buildRow(item, "product", menuByItemId)),
-            ...sets.map((item) => buildRow(item, "set", menuByItemId)),
-        ];
+        setItems(products.map((item) => buildRow(item, menuByItemId)));
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось загрузить меню");
     }
@@ -167,6 +137,7 @@ async function loadMenu() {
 
 function isDirty(row) {
     return row.isAvailable !== row.saved.isAvailable
+        || row.isGiftCandidate !== row.saved.isGiftCandidate
         || row.priceRubles !== row.saved.priceRubles;
 }
 
@@ -187,11 +158,17 @@ async function saveRow(row) {
         const saved = await saveBranchMenuItem(branchId, row.id, {
             is_available: row.isAvailable,
             price_kopecks: priceKopecks,
+            is_gift_candidate: Boolean(row.isGiftCandidate),
         });
         row.inMenu = true;
         row.isAvailable = Boolean(saved?.is_available ?? row.isAvailable);
+        row.isGiftCandidate = Boolean(saved?.is_gift_candidate ?? row.isGiftCandidate);
         row.priceRubles = kopecksToRubles(saved?.price_kopecks ?? priceKopecks);
-        row.saved = { isAvailable: row.isAvailable, priceRubles: row.priceRubles };
+        row.saved = {
+            isAvailable: row.isAvailable,
+            isGiftCandidate: row.isGiftCandidate,
+            priceRubles: row.priceRubles,
+        };
         toast.success("Позиция сохранена");
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Ошибка сохранения");
@@ -212,8 +189,13 @@ async function confirmRemove() {
         await deleteBranchMenuItem(branchId, row.id);
         row.inMenu = false;
         row.isAvailable = false;
-        row.priceRubles = String(row.catalogRubles);
-        row.saved = { isAvailable: row.isAvailable, priceRubles: row.priceRubles };
+        row.isGiftCandidate = false;
+        row.priceRubles = "";
+        row.saved = {
+            isAvailable: row.isAvailable,
+            isGiftCandidate: row.isGiftCandidate,
+            priceRubles: row.priceRubles,
+        };
         row.error = "";
         toast.success("Позиция убрана из меню");
     } catch (err) {
@@ -295,10 +277,10 @@ onMounted(async () => {
             ? 'space-y-8'
             : 'mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10'"
     >
-        <UiCard title="Меню филиала">
+        <UiCard title="Цены и доступность">
             <template #actions>
                 <div class="flex flex-wrap items-center gap-2">
-                    <OwnerBranchSelector />
+                    <OwnerBranchSelector v-if="!embedded" />
                     <UiButton
                         class="!h-9 !px-3"
                         :disabled="!selectedBranchId || sourceBranches.length === 0"
@@ -309,75 +291,92 @@ onMounted(async () => {
                 </div>
             </template>
 
-            <p class="mb-5 text-sm text-bo-muted">
-                Название, фото и состав позиций правятся в каталоге.
-                Здесь настраивается, что продаётся в выбранном филиале и по какой цене.
-            </p>
-
-            <p v-if="!selectedBranchId" class="text-sm text-bo-muted">
-                Выбери филиал, чтобы настроить меню.
-            </p>
-
-            <UiTable
-                v-else
-                :columns="columns"
-                :rows="rows"
-                :loading="loadApi.loading"
-                empty-text="В каталоге нет позиций"
-            >
-                <template #cell-name="{ row }">
-                    <div class="flex flex-wrap items-center gap-2">
-                        <span>{{ row.name }}</span>
-                        <UiBadge
-                            :variant="row.inMenu ? 'success' : 'neutral'"
-                            :text="row.inMenu ? 'в меню' : 'не в меню'"
-                        />
-                    </div>
-                </template>
-                <template #cell-kind="{ value }">
-                    {{ kindLabels[value] ?? value }}
-                </template>
-                <template #cell-catalogRubles="{ value }">
-                    {{ value }} ₽
-                </template>
-                <template #cell-isAvailable="{ row }">
-                    <UiToggle
-                        v-model="row.isAvailable"
-                        label-on="В продаже"
-                        label-off="Скрыто"
-                        :disabled="row.saving"
-                    />
-                </template>
-                <template #cell-priceRubles="{ row }">
+            <template v-if="selectedBranchId">
+                <div class="mb-4 max-w-md">
                     <UiInput
-                        v-model="row.priceRubles"
-                        type="number"
-                        :disabled="row.saving"
+                        v-model="searchQuery"
+                        type="search"
+                        placeholder="Поиск по названию"
                     />
-                    <p v-if="row.error" class="mt-1 text-xs text-red-300">
-                        {{ row.error }}
-                    </p>
-                </template>
-                <template #cell-actions="{ row }">
-                    <div class="flex flex-wrap gap-1">
-                        <UiButton
-                            class="!h-9 !px-2.5"
-                            :disabled="row.saving || (row.inMenu && !isDirty(row))"
-                            @click.stop="saveRow(row)"
-                        >
-                            Сохранить
-                        </UiButton>
-                        <UiButton
-                            v-if="row.inMenu"
-                            class="!h-9 !px-2.5"
+                </div>
+
+                <UiTable
+                    :columns="columns"
+                    :rows="pageItems"
+                    :loading="loadApi.loading"
+                    empty-text="Ничего не найдено"
+                >
+                    <template #cell-name="{ row }">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span>{{ row.name }}</span>
+                            <UiBadge
+                                :variant="row.inMenu ? 'success' : 'neutral'"
+                                :text="row.inMenu ? 'в меню' : 'не в меню'"
+                            />
+                        </div>
+                    </template>
+                    <template #cell-isAvailable="{ row }">
+                        <UiToggle
+                            v-model="row.isAvailable"
+                            aria-label="В продаже"
                             :disabled="row.saving"
-                            @click.stop="removeTarget = row"
                         >
-                            Убрать из меню
-                        </UiButton>
-                    </div>
-                </template>
-            </UiTable>
+                            <ShellIcon
+                                :name="row.isAvailable ? 'eye' : 'eye-off'"
+                                class="h-4 w-4"
+                            />
+                        </UiToggle>
+                    </template>
+                    <template #cell-isGiftCandidate="{ row }">
+                        <UiToggle
+                            v-model="row.isGiftCandidate"
+                            aria-label="Подарок"
+                            :disabled="row.saving"
+                        >
+                            <ShellIcon name="gift" class="h-4 w-4" />
+                        </UiToggle>
+                    </template>
+                    <template #cell-priceRubles="{ row }">
+                        <UiInput
+                            v-model="row.priceRubles"
+                            type="number"
+                            placeholder="0"
+                            :disabled="row.saving"
+                        />
+                        <p v-if="row.error" class="mt-1 text-xs text-red-300">
+                            {{ row.error }}
+                        </p>
+                    </template>
+                    <template #cell-actions="{ row }">
+                        <div class="flex flex-wrap gap-1">
+                            <UiButton
+                                class="!h-9 !px-2.5"
+                                :disabled="row.saving || (row.inMenu && !isDirty(row))"
+                                @click.stop="saveRow(row)"
+                            >
+                                Сохранить
+                            </UiButton>
+                            <UiButton
+                                v-if="row.inMenu"
+                                class="!h-9 !px-2.5"
+                                :disabled="row.saving"
+                                @click.stop="removeTarget = row"
+                            >
+                                Убрать из меню
+                            </UiButton>
+                        </div>
+                    </template>
+                </UiTable>
+
+                <div class="mt-6">
+                    <UiPagination
+                        :page="page"
+                        :per-page="perPage"
+                        :total="total"
+                        @update:page="page = $event"
+                    />
+                </div>
+            </template>
         </UiCard>
 
         <UiConfirmDialog
@@ -393,11 +392,6 @@ onMounted(async () => {
             title="Клонировать настройки филиала"
             @close="cloneOpen = false"
         >
-            <p class="mb-4 text-sm text-bo-muted">
-                Целевой филиал: текущий выбранный.
-                Catalog не копируется — только меню и связанные настройки.
-            </p>
-
             <label class="mb-4 block text-sm">
                 <span class="mb-1 block text-bo-muted">Филиал-источник</span>
                 <select

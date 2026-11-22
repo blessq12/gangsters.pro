@@ -20,14 +20,15 @@ final class EloquentStockWriteOffRepository implements StockWriteOffRepository
         return $row instanceof WH_StockWriteOff ? $this->mapper->toDomain($row) : null;
     }
 
-    public function listAll(): array
+    public function listByBranch(int $branchId): array
     {
-        return $this->listPage(0, max(1, $this->countAll()));
+        return $this->listByBranchPage($branchId, 0, max(1, $this->countByBranch($branchId)));
     }
 
-    public function listPage(int $offset, int $limit): array
+    public function listByBranchPage(int $branchId, int $offset, int $limit): array
     {
         return WH_StockWriteOff::query()
+            ->where('branch_id', $branchId)
             ->orderByDesc('occurred_at')
             ->orderByDesc('id')
             ->offset(max(0, $offset))
@@ -37,15 +38,27 @@ final class EloquentStockWriteOffRepository implements StockWriteOffRepository
             ->all();
     }
 
-    public function countAll(): int
+    public function countByBranch(int $branchId): int
     {
-        return (int) WH_StockWriteOff::query()->count();
+        return (int) WH_StockWriteOff::query()->where('branch_id', $branchId)->count();
     }
 
     public function listByKitchenTicketId(int $kitchenTicketId): array
     {
         return WH_StockWriteOff::query()
             ->where('kitchen_ticket_id', $kitchenTicketId)
+            ->orderByDesc('occurred_at')
+            ->orderByDesc('id')
+            ->get()
+            ->map(fn (WH_StockWriteOff $row): StockWriteOff => $this->mapper->toDomain($row))
+            ->all();
+    }
+
+    public function listByBranchAndIngredient(int $branchId, int $ingredientId): array
+    {
+        return WH_StockWriteOff::query()
+            ->where('branch_id', $branchId)
+            ->where('ingredient_id', $ingredientId)
             ->orderByDesc('occurred_at')
             ->orderByDesc('id')
             ->get()

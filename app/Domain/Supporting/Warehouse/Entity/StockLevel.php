@@ -2,13 +2,18 @@
 
 namespace App\Domain\Supporting\Warehouse\Entity;
 
-/** Остаток ингредиента на складе. */
+/** Остаток ингредиента на складе филиала. */
 final class StockLevel
 {
     public function __construct(
+        private readonly int $branchId,
         private readonly int $ingredientId,
         private float $quantity,
     ) {
+        if ($branchId < 1) {
+            throw new \InvalidArgumentException('branchId должен быть положительным.');
+        }
+
         if ($ingredientId < 1) {
             throw new \InvalidArgumentException('ingredientId должен быть положительным.');
         }
@@ -16,6 +21,11 @@ final class StockLevel
         if ($quantity < 0) {
             throw new \InvalidArgumentException('Остаток не может быть отрицательным.');
         }
+    }
+
+    public function branchId(): int
+    {
+        return $this->branchId;
     }
 
     public function ingredientId(): int

@@ -45,7 +45,7 @@ const detailOpen = ref(false);
 const detail = ref(null);
 
 const columns = [
-    { key: "order_id", label: "Заказ", width: "90px" },
+    { key: "order_number", label: "Заказ", width: "150px" },
     { key: "status", label: "Тикет", width: "140px" },
     { key: "order_status", label: "Этап заказа", width: "160px" },
     { key: "next", label: "Дальше" },
@@ -54,6 +54,7 @@ const columns = [
 const tableRows = computed(() =>
     rows.value.map((row) => ({
         order_id: row.order_id,
+        order_number: row.order_number || row.order?.number || `#${row.order_id}`,
         status: row.status,
         order_status: row.order?.status ?? "",
         next: ticketHint(row.status),
@@ -142,9 +143,6 @@ onMounted(async () => {
                 row-key="order_id"
                 @row-click="openDetail"
             >
-                <template #cell-order_id="{ value }">
-                    #{{ value }}
-                </template>
                 <template #cell-status="{ value }">
                     <UiBadge
                         :variant="ticketStatusVariant(value)"
@@ -178,7 +176,7 @@ onMounted(async () => {
                 <p class="border border-bo-border bg-white/[0.03] px-4 py-3">
                     {{ ticketHint(detail.status) }}
                 </p>
-                <p>Заказ #{{ detail.order_id }}</p>
+                <p>{{ detail.order_number || detail.order?.number || `Заказ #${detail.order_id}` }}</p>
                 <p>
                     Тикет:
                     <UiBadge

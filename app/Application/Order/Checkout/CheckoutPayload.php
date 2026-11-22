@@ -6,7 +6,7 @@ use App\Application\Order\DTO\QuoteOrderDto;
 
 /**
  * Один вход оформления для quote и create.
- * Подарок и комплекты с клиента не читаются: их считает OrderFormation.
+ * Комплекты считает OrderFormation; подарок — выбор клиента из кандидатов меню.
  */
 final class CheckoutPayload
 {
@@ -48,6 +48,7 @@ final class CheckoutPayload
             'client' => $client,
             'payment_method' => $input['payment_method'] ?? $input['paymentMethod'] ?? null,
             'change_from_rubles' => $input['change_from_rubles'] ?? $input['changeFrom'] ?? null,
+            'gift_product_id' => $input['gift_product_id'] ?? $input['giftProductId'] ?? null,
         ];
     }
 
@@ -57,6 +58,10 @@ final class CheckoutPayload
     public static function toDto(array $validated): QuoteOrderDto
     {
         $client = is_array($validated['client'] ?? null) ? $validated['client'] : [];
+        $giftProductId = isset($validated['gift_product_id']) ? (int) $validated['gift_product_id'] : null;
+        if ($giftProductId !== null && $giftProductId < 1) {
+            $giftProductId = null;
+        }
 
         return new QuoteOrderDto(
             branchId: (int) $validated['branch_id'],
@@ -79,7 +84,7 @@ final class CheckoutPayload
             scheduledAt: isset($validated['scheduled_at']) ? (string) $validated['scheduled_at'] : null,
             paymentMethod: (string) $validated['payment_method'],
             changeFrom: isset($validated['change_from_rubles']) ? (int) $validated['change_from_rubles'] : null,
-            giftProductId: null,
+            giftProductId: $giftProductId,
             complementSelections: [],
             promoCode: null,
         );
@@ -114,6 +119,7 @@ final class CheckoutPayload
             'client.email' => ['nullable', 'string', 'max:255'],
             'payment_method' => ['required', 'string', 'in:cash,card_courier,card_online'],
             'change_from_rubles' => ['nullable', 'integer', 'min:0'],
+            'gift_product_id' => ['nullable', 'integer', 'min:1'],
         ];
     }
 }

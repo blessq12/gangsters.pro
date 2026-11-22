@@ -3,6 +3,7 @@
 namespace App\Application\Production\Presenter;
 
 use App\Domain\Core\Order\Entity\Order;
+use App\Domain\Core\Order\ValueObject\OrderNumber;
 use App\Domain\Core\Production\Entity\KitchenTicket;
 
 final class KitchenTicketPresenter
@@ -21,9 +22,15 @@ final class KitchenTicketPresenter
             ];
         }
 
+        $orderNumber = null;
+        if ($order !== null && $order->hasId()) {
+            $orderNumber = OrderNumber::format($order->id(), $order->createdAt());
+        }
+
         return [
             'id' => $ticket->hasId() ? $ticket->id() : null,
             'order_id' => $ticket->orderId(),
+            'order_number' => $orderNumber,
             'branch_id' => $ticket->branchId(),
             'status' => $ticket->status()->value,
             'lines' => $ticketLines,
@@ -51,8 +58,11 @@ final class KitchenTicketPresenter
             ];
         }
 
+        $id = $order->hasId() ? $order->id() : null;
+
         return [
-            'id' => $order->hasId() ? $order->id() : null,
+            'id' => $id,
+            'number' => $id !== null ? OrderNumber::format($id, $order->createdAt()) : null,
             'status' => $order->status()->value,
             'lines' => $lines,
             'comment' => $comment,

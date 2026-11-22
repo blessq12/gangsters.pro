@@ -40,9 +40,9 @@ const columns = [
 ];
 
 const orderColumns = [
-    { key: "id", label: "ID", width: "64px" },
+    { key: "number", label: "Заказ", width: "140px" },
     { key: "status", label: "Статус", width: "120px" },
-    { key: "total", label: "Сумма", width: "90px" },
+    { key: "total", label: "Сумма", width: "90px", align: "right" },
     { key: "created_at", label: "Создан" },
 ];
 
@@ -83,6 +83,7 @@ async function openDetail(row) {
         detailClient.value = payload?.client ?? null;
         detailOrders.value = (payload?.orders ?? []).map((order) => ({
             id: order.id,
+            number: order.number || `ORD-${String(order.id).padStart(4, "0")}`,
             status: order.status,
             total: `${order.total ?? 0} ₽`,
             created_at: formatDate(order.created_at),

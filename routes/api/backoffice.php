@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\Backoffice\AuthController;
 use App\Http\Controllers\Api\Backoffice\BranchMenuController;
+use App\Http\Controllers\Api\Backoffice\BranchMenuStructureController;
 use App\Http\Controllers\Api\Backoffice\CatalogController;
 use App\Http\Controllers\Api\Backoffice\ClientController;
 use App\Http\Controllers\Api\Backoffice\CompanyController;
@@ -36,14 +37,23 @@ Route::prefix('backoffice')->middleware(EnsureBackofficeEnabled::class)->group(f
 
         Route::middleware('backoffice.role')->group(function (): void {
             Route::get('employees', [EmployeeController::class, 'index']);
+            Route::get('employees/{id}', [EmployeeController::class, 'show'])->whereNumber('id');
             Route::post('employees', [EmployeeController::class, 'store']);
             Route::put('employees/{id}', [EmployeeController::class, 'update'])->whereNumber('id');
-            Route::delete('employees/{id}', [EmployeeController::class, 'destroy'])->whereNumber('id');
             Route::post('employees/{id}/toggle-active', [EmployeeController::class, 'toggleActive'])
                 ->whereNumber('id');
 
             Route::get('clients', [ClientController::class, 'index']);
             Route::get('clients/{id}', [ClientController::class, 'show'])->whereNumber('id');
+            Route::patch('clients/{id}', [ClientController::class, 'updateProfile'])->whereNumber('id');
+            Route::post('clients/{id}/addresses', [ClientController::class, 'addAddress'])->whereNumber('id');
+            Route::put('clients/{id}/addresses/{addressId}', [ClientController::class, 'updateAddress'])
+                ->whereNumber('id');
+            Route::delete('clients/{id}/addresses/{addressId}', [ClientController::class, 'deleteAddress'])
+                ->whereNumber('id');
+            Route::post('clients/{id}/addresses/{addressId}/default', [ClientController::class, 'setDefaultAddress'])
+                ->whereNumber('id');
+
 
             Route::get('orders', [OrderController::class, 'index']);
             Route::post('orders', [OrderController::class, 'store']);
@@ -54,6 +64,8 @@ Route::prefix('backoffice')->middleware(EnsureBackofficeEnabled::class)->group(f
             Route::post('orders/{id}/status', [OrderController::class, 'changeStatus'])->whereNumber('id');
             Route::post('orders/{id}/complete-pickup', [OrderController::class, 'completePickup'])
                 ->whereNumber('id');
+            Route::post('orders/{id}/notes', [OrderController::class, 'addNote'])->whereNumber('id');
+
 
             Route::get('production/queue', [ProductionController::class, 'queue']);
             Route::get('production/tickets/{orderId}', [ProductionController::class, 'show'])
@@ -78,35 +90,11 @@ Route::prefix('backoffice')->middleware(EnsureBackofficeEnabled::class)->group(f
             Route::get('catalog/products', [CatalogController::class, 'listProducts']);
             Route::get('catalog/products/{id}', [CatalogController::class, 'showProduct'])
                 ->whereNumber('id');
-            Route::get('catalog/sets', [CatalogController::class, 'listSets']);
-            Route::get('catalog/sets/{id}', [CatalogController::class, 'showSet'])
-                ->whereNumber('id');
-            Route::get('catalog/categories', [CatalogController::class, 'listCategories']);
-            Route::get('catalog/categories/{id}', [CatalogController::class, 'showCategory'])
-                ->whereNumber('id');
-            Route::get('catalog/tags', [CatalogController::class, 'listTags']);
 
             Route::post('catalog/products', [CatalogController::class, 'storeProduct']);
             Route::put('catalog/products/{id}', [CatalogController::class, 'updateProduct'])
                 ->whereNumber('id');
             Route::delete('catalog/products/{id}', [CatalogController::class, 'destroyProduct'])
-                ->whereNumber('id');
-
-            Route::post('catalog/categories', [CatalogController::class, 'storeCategory']);
-            Route::put('catalog/categories/order', [CatalogController::class, 'reorderCategories']);
-            Route::put('catalog/categories/{id}', [CatalogController::class, 'updateCategory'])
-                ->whereNumber('id');
-            Route::delete('catalog/categories/{id}', [CatalogController::class, 'destroyCategory'])
-                ->whereNumber('id');
-            Route::put('catalog/categories/{id}/items', [CatalogController::class, 'replaceCategoryItems'])
-                ->whereNumber('id');
-
-            Route::post('catalog/sets', [CatalogController::class, 'storeSet']);
-            Route::put('catalog/sets/{id}', [CatalogController::class, 'updateSet'])
-                ->whereNumber('id');
-            Route::delete('catalog/sets/{id}', [CatalogController::class, 'destroySet'])
-                ->whereNumber('id');
-            Route::put('catalog/sets/{id}/lines', [CatalogController::class, 'replaceSetLines'])
                 ->whereNumber('id');
 
             Route::post('catalog/items/{id}/images', [CatalogController::class, 'storeItemImage'])
@@ -117,12 +105,6 @@ Route::prefix('backoffice')->middleware(EnsureBackofficeEnabled::class)->group(f
             Route::delete('catalog/items/{id}/images/{imageId}', [CatalogController::class, 'destroyItemImage'])
                 ->whereNumber('id')
                 ->whereNumber('imageId');
-
-            Route::post('catalog/tags', [CatalogController::class, 'storeTag']);
-            Route::put('catalog/tags/{id}', [CatalogController::class, 'updateTag'])
-                ->whereNumber('id');
-            Route::delete('catalog/tags/{id}', [CatalogController::class, 'destroyTag'])
-                ->whereNumber('id');
 
             Route::get('company', [CompanyController::class, 'show']);
             Route::post('company', [CompanyController::class, 'store']);
@@ -145,6 +127,36 @@ Route::prefix('backoffice')->middleware(EnsureBackofficeEnabled::class)->group(f
                 ->whereNumber('branchId')
                 ->whereNumber('catalogItemId');
 
+            Route::prefix('company/branches/{branchId}')->whereNumber('branchId')->group(function (): void {
+                Route::get('categories', [BranchMenuStructureController::class, 'indexCategories']);
+                Route::post('categories', [BranchMenuStructureController::class, 'storeCategory']);
+                Route::put('categories/order', [BranchMenuStructureController::class, 'reorderCategories']);
+                Route::get('categories/{id}', [BranchMenuStructureController::class, 'showCategory'])
+                    ->whereNumber('id');
+                Route::put('categories/{id}', [BranchMenuStructureController::class, 'updateCategory'])
+                    ->whereNumber('id');
+                Route::delete('categories/{id}', [BranchMenuStructureController::class, 'destroyCategory'])
+                    ->whereNumber('id');
+                Route::put('categories/{id}/items', [BranchMenuStructureController::class, 'replaceCategoryItems'])
+                    ->whereNumber('id');
+
+                Route::get('tags', [BranchMenuStructureController::class, 'indexTags']);
+                Route::post('tags', [BranchMenuStructureController::class, 'storeTag']);
+                Route::put('tags/{id}', [BranchMenuStructureController::class, 'updateTag'])
+                    ->whereNumber('id');
+                Route::delete('tags/{id}', [BranchMenuStructureController::class, 'destroyTag'])
+                    ->whereNumber('id');
+
+                Route::get('sets', [BranchMenuStructureController::class, 'indexSets']);
+                Route::post('sets', [BranchMenuStructureController::class, 'storeSet']);
+                Route::get('sets/{id}', [BranchMenuStructureController::class, 'showSet'])
+                    ->whereNumber('id');
+                Route::put('sets/{id}', [BranchMenuStructureController::class, 'updateSet'])
+                    ->whereNumber('id');
+                Route::delete('sets/{id}', [BranchMenuStructureController::class, 'destroySet'])
+                    ->whereNumber('id');
+            });
+
             Route::get('company/documents', [CompanyController::class, 'listDocuments']);
             Route::get('company/documents/{id}', [CompanyController::class, 'showDocument'])
                 ->whereNumber('id');
@@ -157,6 +169,7 @@ Route::prefix('backoffice')->middleware(EnsureBackofficeEnabled::class)->group(f
             Route::put('delivery', [DeliveryController::class, 'update']);
 
             Route::get('delivery/zones', [DeliveryController::class, 'listZones']);
+            Route::put('delivery/zones', [DeliveryController::class, 'replaceZones']);
             Route::post('delivery/zones', [DeliveryController::class, 'storeZone']);
             Route::put('delivery/zones/{id}', [DeliveryController::class, 'updateZone']);
 
@@ -204,12 +217,22 @@ Route::prefix('backoffice')->middleware(EnsureBackofficeEnabled::class)->group(f
 
             Route::get('warehouse/ingredients', [WarehouseController::class, 'ingredients']);
             Route::post('warehouse/ingredients', [WarehouseController::class, 'storeIngredient']);
+            Route::get('warehouse/ingredients/{id}', [WarehouseController::class, 'showIngredient'])
+                ->whereNumber('id');
             Route::put('warehouse/ingredients/{id}', [WarehouseController::class, 'updateIngredient'])
                 ->whereNumber('id');
-            Route::get('warehouse/stock', [WarehouseController::class, 'stock']);
-            Route::post('warehouse/stock/adjust', [WarehouseController::class, 'adjustStock']);
-            Route::get('warehouse/write-offs', [WarehouseController::class, 'writeOffs']);
-            Route::post('warehouse/write-offs', [WarehouseController::class, 'storeWriteOff']);
+
+            Route::get('warehouse/branches/{branchId}/stock', [WarehouseController::class, 'branchStock'])
+                ->whereNumber('branchId');
+            Route::post('warehouse/branches/{branchId}/stock/adjust', [WarehouseController::class, 'adjustBranchStock'])
+                ->whereNumber('branchId');
+            Route::get('warehouse/branches/{branchId}/ingredients/{id}', [WarehouseController::class, 'showBranchIngredient'])
+                ->whereNumber('branchId')
+                ->whereNumber('id');
+            Route::get('warehouse/branches/{branchId}/write-offs', [WarehouseController::class, 'branchWriteOffs'])
+                ->whereNumber('branchId');
+            Route::post('warehouse/branches/{branchId}/write-offs', [WarehouseController::class, 'storeBranchWriteOff'])
+                ->whereNumber('branchId');
         });
     });
 });

@@ -6,6 +6,7 @@ import {
     formatDeliveryMethodRu,
     formatOrderDate,
     formatOrderMoneyRubles,
+    formatOrderNumber,
     formatOrderStatusRu,
     formatPaymentMethodRu,
 } from "../../modules/client/application/orderDisplay";
@@ -109,7 +110,7 @@ async function handleReplaceChoice() {
                 >
                     <div :class="oh.cardHeadMain">
                         <p :class="oh.monoId">
-                            {{ order.id }}
+                            {{ formatOrderNumber(order) }}
                         </p>
                         <p :class="oh.dateMuted">
                             {{ formatOrderDate(order.created_at) }}

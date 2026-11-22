@@ -2,8 +2,9 @@
 
 namespace App\Application\Crm\Presenter;
 
-use App\Domain\Supporting\Customer\Entity\Client;
 use App\Domain\Core\Order\Entity\Order;
+use App\Domain\Core\Order\ValueObject\OrderNumber;
+use App\Domain\Supporting\Customer\Entity\Client;
 
 final class AdminClientPresenter
 {
@@ -62,14 +63,17 @@ final class AdminClientPresenter
     }
 
     /**
-     * @return array{id: int|null, status: string, total: int, created_at: string}
+     * @return array{id: int|null, number: string|null, status: string, total: int, created_at: string}
      */
     public function orderSnapshot(Order $order): array
     {
+        $id = $order->hasId() ? $order->id() : null;
+
         return [
-            'id' => $order->hasId() ? $order->id() : null,
+            'id' => $id,
+            'number' => $id !== null ? OrderNumber::format($id, $order->createdAt()) : null,
             'status' => $order->status()->value,
-            'total' => $order->totalRubles(),
+            'total' => intdiv($order->grandTotalKopecks(), 100),
             'created_at' => $order->createdAt()->format(DATE_ATOM),
         ];
     }

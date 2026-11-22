@@ -24,12 +24,10 @@ final class PromotionPolicyPresenter
                 'pickup_min_order_kopecks' => (int) ($pickup['min_order_amount_kopecks'] ?? 0),
                 'courier_min_order_kopecks' => (int) ($courier['min_order_amount_kopecks'] ?? 0),
                 'courier_weekdays' => array_values($courier['allowed_weekdays'] ?? []),
-                'product_id' => $policy->giftProductId(),
             ],
             'delivery' => [
                 'is_active' => (bool) ($delivery['is_active'] ?? false),
                 'free_delivery_threshold_kopecks' => (int) ($delivery['free_delivery_threshold_kopecks'] ?? 0),
-                'outside_zone_surcharge_kopecks' => (int) ($delivery['outside_zone_surcharge_kopecks'] ?? 0),
             ],
             'complement' => [
                 'is_active' => (bool) ($complement['is_active'] ?? false),
@@ -42,12 +40,9 @@ final class PromotionPolicyPresenter
     /**
      * @return array<string, mixed>
      */
-    public function adminPolicy(PromotionPolicy $policy, ?string $giftProductName = null): array
+    public function adminPolicy(PromotionPolicy $policy): array
     {
-        $payload = $this->publicPolicy($policy);
-        $payload['gift']['product_name'] = $giftProductName;
-
-        return $payload;
+        return $this->publicPolicy($policy);
     }
 
     /**

@@ -14,14 +14,33 @@ const { goToCart, lastCreatedOrder, successSummary, checkoutState } =
 const { formatPrice } = checkoutState;
 
 const orderNumber = computed(() => {
+    const fromSummary = successSummary.value?.orderNumber;
+    if (typeof fromSummary === "string" && fromSummary.trim() !== "") {
+        return fromSummary.trim();
+    }
+    const order = lastCreatedOrder.value;
+    if (order?.number) {
+        return String(order.number);
+    }
     const id =
         successSummary.value?.orderId ??
-        lastCreatedOrder.value?.id;
+        order?.id;
     if (id == null || id === "") {
         return null;
     }
-
-    return String(id);
+    const padded = String(id).padStart(4, "0");
+    const createdAt = order?.created_at;
+    if (createdAt) {
+        try {
+            const year = new Date(createdAt).getFullYear() % 100;
+            if (!Number.isNaN(year)) {
+                return `ORD-${padded}-${String(year).padStart(2, "0")}`;
+            }
+        } catch {
+            /* noop */
+        }
+    }
+    return `ORD-${padded}`;
 });
 
 const recapLines = computed(() => {
