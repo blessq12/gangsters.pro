@@ -2,9 +2,9 @@
 
 namespace App\Application\Promotion\Presenter;
 
+use App\Domain\Core\Delivery\Tariff\Entity\PromotionZone;
 use App\Domain\Core\Order\Entity\ProductPromotionRole;
 use App\Domain\Core\Order\Policy\PromotionPolicy;
-use App\Domain\Core\Delivery\Tariff\Entity\PromotionZone;
 
 final class PromotionPolicyPresenter
 {
@@ -24,6 +24,7 @@ final class PromotionPolicyPresenter
                 'pickup_min_order_kopecks' => (int) ($pickup['min_order_amount_kopecks'] ?? 0),
                 'courier_min_order_kopecks' => (int) ($courier['min_order_amount_kopecks'] ?? 0),
                 'courier_weekdays' => array_values($courier['allowed_weekdays'] ?? []),
+                'product_id' => $policy->giftProductId(),
             ],
             'delivery' => [
                 'is_active' => (bool) ($delivery['is_active'] ?? false),
@@ -39,17 +40,14 @@ final class PromotionPolicyPresenter
     }
 
     /**
-     * @param  list<ProductPromotionRole>  $roles
-     * @param  list<PromotionZone>  $zones
      * @return array<string, mixed>
      */
-    public function adminPolicy(PromotionPolicy $policy, array $roles, array $zones): array
+    public function adminPolicy(PromotionPolicy $policy, ?string $giftProductName = null): array
     {
-        return [
-            ...$this->publicPolicy($policy),
-            'roles' => array_map(fn (ProductPromotionRole $role): array => $this->role($role), $roles),
-            'zones' => array_map(fn (PromotionZone $zone): array => $this->zone($zone), $zones),
-        ];
+        $payload = $this->publicPolicy($policy);
+        $payload['gift']['product_name'] = $giftProductName;
+
+        return $payload;
     }
 
     /**

@@ -55,6 +55,16 @@ final class EloquentRouteSheetRepository implements RouteSheetRepository
         return (int) $this->activeQuery()->count();
     }
 
+    public function listActivePageByBranch(int $branchId, int $offset, int $limit): array
+    {
+        return $this->mapPage($this->activeQuery()->where('branch_id', $branchId), $offset, $limit);
+    }
+
+    public function countActiveByBranch(int $branchId): int
+    {
+        return (int) $this->activeQuery()->where('branch_id', $branchId)->count();
+    }
+
     public function listVisibleToCourierPage(int $courierId, int $offset, int $limit): array
     {
         return $this->mapPage($this->courierQuery($courierId), $offset, $limit);

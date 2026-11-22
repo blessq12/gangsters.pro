@@ -12,9 +12,14 @@ use App\Domain\Supporting\Catalog\Enum\CatalogItemKind;
 use App\Domain\Supporting\Catalog\Repository\CatalogItemRepository;
 use App\Domain\Supporting\Catalog\Repository\CategoryRepository;
 use App\Domain\Supporting\Catalog\Repository\TagRepository;
+use App\Domain\Supporting\Company\Entity\Branch;
+use App\Domain\Supporting\Company\Entity\BranchMenuItem;
+use App\Domain\Supporting\Company\Repository\BranchMenuRepository;
+use App\Domain\Supporting\Company\Repository\BranchRepository;
 
 /**
- * Дерево каталога для витрины: только активные категории и позиции.
+ * Дерево каталога для витрины филиала: активные категории и только те позиции,
+ * что доступны в меню филиала; цена — из меню.
  */
 final class GetCatalogUseCase
 {
@@ -22,6 +27,8 @@ final class GetCatalogUseCase
         private readonly CategoryRepository $categories,
         private readonly CatalogItemRepository $catalogItems,
         private readonly TagRepository $tags,
+        private readonly BranchRepository $branches,
+        private readonly BranchMenuRepository $menu,
         private readonly CatalogPresenter $presenter,
     ) {}
 
@@ -31,15 +38,21 @@ final class GetCatalogUseCase
      *     accompanying_categories: list<array{category: array<string, mixed>, items: list<array<string, mixed>>}>
      * }
      */
-    public function execute(): array
+    public function execute(int $branchId): array
     {
+        $branch = $this->branches->findById($branchId);
+        if (! $branch instanceof Branch || ! $branch->isActive()) {
+            throw new \InvalidArgumentException('Филиал недоступен.');
+        }
+
+        $menuByItemId = $this->indexMenu($this->menu->listAvailableByBranch($branchId));
         $tagById = $this->indexTags($this->tags->findAllActiveOrdered());
 
         $menuCategories = [];
         $accompanyingCategories = [];
 
         foreach ($this->categories->findAllOrdered() as $category) {
-            $node = $this->buildCategoryNode($category, $tagById);
+            $node = $this->buildCategoryNode($category, $tagById, $menuByItemId);
             if ($node['items'] === []) {
                 continue;
             }
@@ -59,11 +72,16 @@ final class GetCatalogUseCase
 
     /**
      * @param  array<int, Tag>  $tagById
+     * @param  array<int, BranchMenuItem>  $menuByItemId
      * @return array{category: array<string, mixed>, items: list<array<string, mixed>>}
      */
-    private function buildCategoryNode(Category $category, array $tagById): array
+    private function buildCategoryNode(Category $category, array $tagById, array $menuByItemId): array
     {
-        $links = $this->categories->findItemsByCategoryId($category->id());
+        // Только позиции, доступные в меню филиала.
+        $links = array_values(array_filter(
+            $this->categories->findItemsByCategoryId($category->id()),
+            static fn (CategoryItem $link): bool => isset($menuByItemId[$link->catalogItemId()]),
+        ));
 
         $productIds = [];
         $setIds = [];
@@ -106,7 +124,10 @@ final class GetCatalogUseCase
                 $lineProductsById,
             );
             if ($item !== null) {
-                $items[] = $item;
+                $items[] = $this->presenter->withMenuPrice(
+                    $item,
+                    $menuByItemId[$link->catalogItemId()]->priceKopecks(),
+                );
             }
         }
 
@@ -146,6 +167,20 @@ final class GetCatalogUseCase
         return $product instanceof Product
             ? $this->presenter->product($product, $tagById)
             : null;
+    }
+
+    /**
+     * @param  list<BranchMenuItem>  $items
+     * @return array<int, BranchMenuItem>
+     */
+    private function indexMenu(array $items): array
+    {
+        $indexed = [];
+        foreach ($items as $item) {
+            $indexed[$item->catalogItemId()] = $item;
+        }
+
+        return $indexed;
     }
 
     /**

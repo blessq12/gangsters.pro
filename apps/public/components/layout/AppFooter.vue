@@ -19,7 +19,25 @@ const footer = useAppDesign().components.footer;
 
 const year = new Date().getFullYear();
 const contentStore = useContentStore();
-const { documents, profile, deliveryFacts, legal } = storeToRefs(contentStore);
+const {
+    documents,
+    profile,
+    branch,
+    deliveryFacts,
+    legal,
+    activeBranches,
+    selectedBranchId,
+} = storeToRefs(contentStore);
+
+const showBranchSelect = computed(() => activeBranches.value.length > 1);
+
+function branchOptionLabel(item) {
+    return safeTrim(item.name) || `Филиал №${item.id}`;
+}
+
+function onBranchChange(event) {
+    void contentStore.selectBranch(event.target.value);
+}
 
 /** @type {import("vue").Ref<object|null>} */
 const activeDocument = ref(null);
@@ -75,10 +93,10 @@ const companyTitle = computed(() => {
 });
 
 const todayScheduleLine = computed(() =>
-    formatTodayWorkScheduleLine(profile.value, new Date()),
+    formatTodayWorkScheduleLine(branch.value, new Date()),
 );
 
-const phoneRaw = computed(() => profile.value?.phone || "");
+const phoneRaw = computed(() => branch.value?.phone || profile.value?.phone || "");
 const phoneDisplay = computed(() => formatRuPhone(phoneRaw.value));
 const phoneHref = computed(() => phoneToTelHref(phoneRaw.value));
 
@@ -157,6 +175,7 @@ const legalOgrnValue = computed(() => safeTrim(legal.value?.ogrn) || "");
 
 const hasContactsCol = computed(
     () =>
+        showBranchSelect.value ||
         Boolean(phoneHref.value && phoneDisplay.value) ||
         Boolean(telegramHref.value) ||
         Boolean(whatsappHref.value) ||
@@ -211,6 +230,21 @@ const copyrightName = computed(
                     <div v-if="hasContactsCol" :class="footer.column">
                         <p :class="footer.columnTitle">Контакты</p>
                         <div :class="footer.contactStack">
+                            <select
+                                v-if="showBranchSelect"
+                                :value="selectedBranchId"
+                                aria-label="Филиал"
+                                :class="footer.branchSelect"
+                                @change="onBranchChange"
+                            >
+                                <option
+                                    v-for="item in activeBranches"
+                                    :key="item.id"
+                                    :value="item.id"
+                                >
+                                    {{ branchOptionLabel(item) }}
+                                </option>
+                            </select>
                             <a
                                 v-if="phoneHref && phoneDisplay"
                                 :href="phoneHref"

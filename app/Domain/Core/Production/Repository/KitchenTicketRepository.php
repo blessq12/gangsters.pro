@@ -17,16 +17,16 @@ interface KitchenTicketRepository
     public function delete(KitchenTicket $ticket): void;
 
     /**
-     * Тикеты кухни в статусе Queued + Started.
+     * Тикеты филиала в статусе Queued + Started.
      *
      * @return list<KitchenTicket>
      */
-    public function listActiveByKitchen(int $kitchenId): array;
+    public function listActiveByBranch(int $branchId): array;
 
     /**
      * @return list<KitchenTicket>
      */
-    public function listActiveByKitchenPage(int $kitchenId, int $offset, int $limit): array;
+    public function listActiveByBranchPage(int $branchId, int $offset, int $limit): array;
 
-    public function countActiveByKitchen(int $kitchenId): int;
+    public function countActiveByBranch(int $branchId): int;
 }

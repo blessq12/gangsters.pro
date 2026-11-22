@@ -9,14 +9,16 @@ use App\Application\Delivery\DTO\CreateRouteSheetDto;
 use App\Application\Delivery\DTO\SettleStopDto;
 use App\Application\Delivery\DTO\TakeRouteSheetDto;
 use App\Application\Delivery\Presenter\RouteSheetPresenter;
+use App\Application\Order\Checkout\CheckoutQuote;
 use App\Application\Order\Command\AcceptOrderUseCase;
 use App\Application\Order\Command\CancelOrderUseCase;
 use App\Application\Order\Command\CompletePickupOrderUseCase;
 use App\Application\Order\Command\CreateOrderUseCase;
-use App\Application\Order\Command\ReassignKitchenUseCase;
+use App\Application\Order\Command\ReassignBranchUseCase;
 use App\Application\Order\DTO\AcceptOrderDto;
 use App\Application\Order\DTO\CreateOrderDto;
-use App\Application\Order\DTO\ReassignKitchenDto;
+use App\Application\Order\DTO\QuoteOrderDto;
+use App\Application\Order\DTO\ReassignBranchDto;
 use App\Application\Order\Presenter\AdminOrderPresenter;
 use App\Application\Order\Presenter\OrderPresenter;
 use App\Application\Payment\Presenter\PaymentPresenter;
@@ -30,7 +32,7 @@ use App\Domain\Core\Delivery\Event\RouteSheetCreated;
 use App\Domain\Core\Delivery\Event\RouteSheetTaken;
 use App\Domain\Core\Delivery\Event\RouteStopSettled;
 use App\Domain\Core\Order\Enum\OrderStatus;
-use App\Domain\Core\Order\Event\KitchenReassigned;
+use App\Domain\Core\Order\Event\BranchReassigned;
 use App\Domain\Core\Order\Event\OrderCancelled;
 use App\Domain\Core\Order\Event\OrderConfirmed;
 use App\Domain\Core\Order\Event\OrderPickedUp;
@@ -39,7 +41,7 @@ use App\Domain\Core\Production\Event\KitchenTicketCompleted;
 use App\Domain\Core\Production\Event\KitchenTicketStarted;
 use App\Domain\Generic\Staff\Entity\Employee;
 use App\Domain\Generic\Staff\Enum\StaffRole;
-use App\Domain\Supporting\Company\Entity\Kitchen;
+use App\Domain\Supporting\Company\Entity\Branch;
 use App\Infrastructure\Delivery\Listener\CancelRouteStopOnOrderCancelled;
 use App\Infrastructure\Order\Listener\MarkOrderAssignedToRouteOnOrderAddedToRoute;
 use App\Infrastructure\Order\Listener\MarkOrderPreparingOnKitchenTicketStarted;
@@ -54,7 +56,7 @@ use Illuminate\Events\Dispatcher;
 use PHPUnit\Framework\TestCase;
 use Tests\Application\Core\Support\ImmediateTransactionManager;
 use Tests\Application\Core\Support\InMemoryEmployeeRepository;
-use Tests\Application\Core\Support\InMemoryKitchenRepository;
+use Tests\Application\Core\Support\InMemoryBranchRepository;
 use Tests\Application\Core\Support\InMemoryKitchenTicketRepository;
 use Tests\Application\Core\Support\InMemoryOrderRepository;
 use Tests\Application\Core\Support\InMemoryPaymentRepository;
@@ -69,7 +71,7 @@ final class CoreFlowTest extends TestCase
 
     private InMemoryRouteSheetRepository $sheets;
 
-    private InMemoryKitchenRepository $kitchens;
+    private InMemoryBranchRepository $branches;
 
     private InMemoryEmployeeRepository $employees;
 
@@ -82,7 +84,7 @@ final class CoreFlowTest extends TestCase
         $this->orders = new InMemoryOrderRepository;
         $this->tickets = new InMemoryKitchenTicketRepository;
         $this->sheets = new InMemoryRouteSheetRepository;
-        $this->kitchens = new InMemoryKitchenRepository;
+        $this->branches = new InMemoryBranchRepository;
         $this->employees = new InMemoryEmployeeRepository;
         $this->transaction = new ImmediateTransactionManager;
         $this->events = new RecordingDomainEventPublisher(
@@ -91,8 +93,8 @@ final class CoreFlowTest extends TestCase
             },
         );
 
-        $this->kitchens->save(new Kitchen(3, 2, null, null, null, null, null, null));
-        $this->kitchens->save(new Kitchen(9, 4, null, null, null, null, null, null));
+        $this->branches->save(new Branch(2, 1, 'Томск-1', true, [], 'Томск', 'ул. Говорова', '50/1', null, 56.513432, 84.986366));
+        $this->branches->save(new Branch(4, 1, 'Томск-2', true, [], 'Томск', 'ул. Ленина', '10', null, 56.48, 84.95));
         $courier = Employee::restore(
             7,
             'Курьер',
@@ -114,7 +116,7 @@ final class CoreFlowTest extends TestCase
     {
         $orderId = $this->place('courier-1', 'courier', 20000);
 
-        $this->accept($orderId, 3);
+        $this->accept($orderId, 2);
         $this->assertSame(OrderStatus::Confirmed, $this->orders->findById($orderId)->status());
         $this->assertNotNull($this->tickets->findByOrderId($orderId));
 
@@ -153,7 +155,7 @@ final class CoreFlowTest extends TestCase
     {
         $this->events = new RecordingDomainEventPublisher(onEvent: static function (): void {});
         $orderId = $this->place('courier-isolated', 'courier', 10000);
-        $this->accept($orderId, 3);
+        $this->accept($orderId, 2);
         $this->queueTicket($orderId);
         $this->start($orderId);
 
@@ -161,33 +163,32 @@ final class CoreFlowTest extends TestCase
         $this->assertInstanceOf(KitchenTicketStarted::class, $this->events->events[array_key_last($this->events->events)]);
     }
 
-    public function test_reassign_publishes_kitchen_reassigned_without_touching_ticket(): void
+    public function test_reassign_publishes_branch_reassigned_without_touching_ticket(): void
     {
         $this->events = new RecordingDomainEventPublisher(onEvent: static function (): void {});
         $orderId = $this->place('reassign-1', 'courier', 10000);
-        $this->accept($orderId, 3);
+        $this->accept($orderId, 2);
         $this->queueTicket($orderId);
         $ticketId = $this->tickets->findByOrderId($orderId)->id();
 
-        (new ReassignKitchenUseCase(
+        (new ReassignBranchUseCase(
             $this->orders,
-            $this->kitchens,
+            $this->branches,
             new AdminOrderPresenter($this->orderPresenter()),
             $this->events,
             $this->transaction,
-        ))->execute(new ReassignKitchenDto(orderId: $orderId, kitchenId: 9));
+        ))->execute(new ReassignBranchDto(orderId: $orderId, branchId: 4));
 
         $order = $this->orders->findById($orderId);
-        $this->assertSame(9, $order->kitchenId());
         $this->assertSame(4, $order->branchId());
         $this->assertSame($ticketId, $this->tickets->findByOrderId($orderId)->id());
-        $this->assertInstanceOf(KitchenReassigned::class, $this->events->events[array_key_last($this->events->events)]);
+        $this->assertInstanceOf(BranchReassigned::class, $this->events->events[array_key_last($this->events->events)]);
     }
 
     public function test_pickup_publishes_order_picked_up(): void
     {
         $orderId = $this->place('pickup-1', 'pickup', 0);
-        $this->accept($orderId, 3);
+        $this->accept($orderId, 2);
         $this->start($orderId);
         $this->complete($orderId);
 
@@ -205,7 +206,7 @@ final class CoreFlowTest extends TestCase
     public function test_cancel_publishes_order_cancelled_and_listeners_close_ticket_and_stop(): void
     {
         $orderId = $this->place('cancel-1', 'courier', 15000);
-        $this->accept($orderId, 3);
+        $this->accept($orderId, 2);
         $this->start($orderId);
 
         (new CancelOrderUseCase(
@@ -223,7 +224,7 @@ final class CoreFlowTest extends TestCase
     public function test_cancel_on_route_settles_stop_through_listener(): void
     {
         $orderId = $this->place('cancel-route-1', 'courier', 15000);
-        $this->accept($orderId, 3);
+        $this->accept($orderId, 2);
         $this->start($orderId);
         $this->complete($orderId);
         $sheetId = $this->releaseRoute([$orderId]);
@@ -242,7 +243,7 @@ final class CoreFlowTest extends TestCase
     public function test_written_off_stop_writes_off_order(): void
     {
         $orderId = $this->place('writeoff-1', 'courier', 10000);
-        $this->accept($orderId, 3);
+        $this->accept($orderId, 2);
         $this->start($orderId);
         $this->complete($orderId);
         $sheetId = $this->releaseRoute([$orderId]);
@@ -256,6 +257,7 @@ final class CoreFlowTest extends TestCase
     private function place(string $requestId, string $method, int $feeKopecks): int
     {
         $snapshot = [
+            'branch_id' => 2,
             'cart' => [
                 'lines' => [[
                     'product_id' => 1,
@@ -267,10 +269,12 @@ final class CoreFlowTest extends TestCase
             ],
             'client' => ['name' => 'Анна', 'phone' => '+79990000000'],
             'delivery' => $method === 'pickup'
-                ? ['method' => 'pickup']
+                ? ['method' => 'pickup', 'branch_id' => 2]
                 : [
                     'method' => 'courier',
+                    'branch_id' => 2,
                     'zone_id' => 'center',
+                    'in_zone' => true,
                     'delivery_fee_kopecks' => $feeKopecks,
                     'address' => ['street' => 'Ленина', 'house' => '1'],
                 ],
@@ -282,25 +286,49 @@ final class CoreFlowTest extends TestCase
             ],
         ];
 
+        $quote = new class($snapshot) implements CheckoutQuote
+        {
+            public function __construct(private array $snapshot) {}
+
+            public function execute(QuoteOrderDto $dto): array
+            {
+                return $this->snapshot;
+            }
+        };
+
         $result = (new CreateOrderUseCase(
             $this->orders,
             new OrderPresenter(new InMemoryPaymentRepository, new PaymentPresenter),
             $this->events,
             $this->transaction,
-        ))->execute(new CreateOrderDto($requestId, $snapshot));
+            $quote,
+        ))->execute(new CreateOrderDto(
+            $requestId,
+            new QuoteOrderDto(
+                branchId: 2,
+                lines: [['product_id' => 1, 'quantity' => 1]],
+                deliveryMethod: $method,
+                client: ['kind' => 'guest', 'name' => 'Анна', 'phone' => '+79990000000'],
+                address: $method === 'pickup' ? null : ['street' => 'Ленина', 'house' => '1'],
+                scheduledAt: null,
+                paymentMethod: 'cash',
+                changeFrom: null,
+                giftProductId: null,
+                complementSelections: [],
+            ),
+        ));
 
         return (int) $result['id'];
     }
 
-    private function accept(int $orderId, int $kitchenId): void
+    private function accept(int $orderId, int $branchId): void
     {
         (new AcceptOrderUseCase(
             $this->orders,
-            $this->kitchens,
             new AdminOrderPresenter($this->orderPresenter()),
             $this->events,
             $this->transaction,
-        ))->execute(new AcceptOrderDto($orderId, $kitchenId));
+        ))->execute(new AcceptOrderDto($orderId));
     }
 
     private function start(int $orderId): void

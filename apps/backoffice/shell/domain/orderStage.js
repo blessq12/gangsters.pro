@@ -225,14 +225,15 @@ export function formatAddress(address) {
 }
 
 /**
- * @param {{ id?: number, city?: string, street?: string, house?: string }|null|undefined} kitchen
+ * @param {{ id?: number, name?: string, city?: string, street?: string, house?: string }|null|undefined} branch
  */
-export function kitchenLabel(kitchen) {
-    if (!kitchen?.id) {
+export function branchLabel(branch) {
+    if (!branch?.id) {
         return "—";
     }
-    const place = [kitchen.city, kitchen.street, kitchen.house].filter(Boolean).join(", ");
-    return place ? `Кухня #${kitchen.id} · ${place}` : `Кухня #${kitchen.id}`;
+    const title = branch.name ? String(branch.name) : `Филиал #${branch.id}`;
+    const place = [branch.city, branch.street, branch.house].filter(Boolean).join(", ");
+    return place ? `${title} · ${place}` : title;
 }
 
 /**
@@ -282,11 +283,11 @@ export function stageHint(order) {
     const method = order?.delivery?.method;
     switch (status) {
         case "new":
-            return "Новый заказ. Следующее действие администратора — подтвердить и назначить кухню. После этого появятся тикет и платёж.";
+            return "Новый заказ. Следующее действие администратора — подтвердить и назначить филиал. После этого появятся тикет и платёж.";
         case "preorder":
-            return "Предзаказ. Следующее действие администратора — подтвердить и назначить кухню.";
+            return "Предзаказ. Следующее действие администратора — подтвердить и назначить филиал.";
         case "confirmed":
-            return "Подтверждён, тикет стоит в очереди. Следующее действие кухни — старт тикета. Пока тикет не взят, кухню можно переназначить.";
+            return "Подтверждён, тикет стоит в очереди. Следующее действие кухни — старт тикета. Пока тикет не взят, филиал можно переназначить.";
         case "preparing":
             return "Кухня готовит. Следующее действие — завершить тикет, заказ станет готов.";
         case "ready":
@@ -326,8 +327,8 @@ export function administratorCommands(order) {
     if (status === "new" || status === "preorder") {
         commands.push({ id: "confirm", label: "Подтвердить" });
     }
-    if (status === "confirmed") {
-        commands.push({ id: "reassign", label: "Переназначить кухню" });
+    if (status === "confirmed" || status === "preparing") {
+        commands.push({ id: "reassign", label: "Переназначить филиал" });
     }
     if (status === "ready" && method === "pickup") {
         commands.push({ id: "pickup", label: "Выдать самовывоз" });

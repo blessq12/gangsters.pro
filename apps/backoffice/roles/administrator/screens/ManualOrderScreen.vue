@@ -23,10 +23,14 @@ const form = reactive({
     phone: "",
     email: "",
     method: "pickup",
-    address: "",
+    street: "",
+    house: "",
+    entrance: "",
+    floor: "",
+    apartment: "",
+    comment: "",
     payment_method: "cash",
     change_from: "",
-    delivery_fee: "0",
     lines: [{ product_id: "", qty: "1" }],
 });
 
@@ -56,10 +60,6 @@ function removeLine(index) {
     form.lines.splice(index, 1);
 }
 
-function productById(id) {
-    return products.value.find((item) => String(item.id) === String(id)) ?? null;
-}
-
 function validate() {
     clearErrors();
     if (!String(form.name).trim()) {
@@ -68,8 +68,11 @@ function validate() {
     if (!String(form.phone).trim()) {
         fieldErrors.phone = "Обязательное поле";
     }
-    if (form.method === "courier" && !String(form.address).trim()) {
-        fieldErrors.address = "Нужен адрес";
+    if (form.method === "courier" && !String(form.street).trim()) {
+        fieldErrors.street = "Нужна улица";
+    }
+    if (form.method === "courier" && !String(form.house).trim()) {
+        fieldErrors.house = "Нужен дом";
     }
     if (!form.payment_method) {
         fieldErrors.payment_method = "Обязательное поле";
@@ -83,52 +86,36 @@ function validate() {
     return Object.keys(fieldErrors).length === 0;
 }
 
-function buildSnapshot() {
+function checkoutBody() {
     const lines = form.lines
         .filter((line) => line.product_id && Number(line.qty) > 0)
-        .map((line) => {
-            const product = productById(line.product_id);
-            const qty = Number(line.qty);
-            const price = Number(product?.price ?? 0);
-            return {
-                product_id: Number(line.product_id),
-                product_name: product?.name ?? String(line.product_id),
-                quantity: qty,
-                unit_price_rubles: price,
-                line_total_rubles: price * qty,
-            };
-        });
-
-    const itemsTotal = lines.reduce((sum, line) => sum + Number(line.line_total_rubles), 0);
-    const deliveryFee = form.method === "courier" ? Number(form.delivery_fee || 0) : 0;
-    const totals = {
-        items_total_rubles: itemsTotal,
-        delivery_fee_rubles: deliveryFee,
-        grand_total_rubles: itemsTotal + deliveryFee,
-    };
+        .map((line) => ({
+            product_id: Number(line.product_id),
+            quantity: Number(line.qty),
+        }));
 
     return {
-        cart: {
-            lines,
-            totals,
-        },
+        client_request_id: `admin-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        lines,
+        delivery_method: form.method,
+        address: form.method === "courier"
+            ? {
+                street: form.street.trim(),
+                house: form.house.trim(),
+                entrance: form.entrance.trim() || null,
+                floor: form.floor.trim() || null,
+                apartment: form.apartment.trim() || null,
+                comment: form.comment.trim() || null,
+            }
+            : null,
         client: {
+            kind: "guest",
             name: form.name.trim(),
             phone: form.phone.trim(),
             email: form.email.trim() || null,
-            kind: "guest",
         },
-        delivery: {
-            method: form.method,
-            address: form.method === "courier"
-                ? { line: form.address.trim() }
-                : null,
-        },
-        payment: {
-            method: form.payment_method,
-            change_from: form.change_from === "" ? null : Number(form.change_from),
-        },
-        totals,
+        payment_method: form.payment_method,
+        change_from_rubles: form.change_from === "" ? null : Number(form.change_from),
     };
 }
 
@@ -138,10 +125,7 @@ async function createOrder() {
         return;
     }
 
-    const body = {
-        client_request_id: `admin-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        quote_snapshot: buildSnapshot(),
-    };
+    const body = checkoutBody();
 
     try {
         await saveApi.run(() => storeOrder(body));
@@ -164,7 +148,7 @@ onMounted(loadCatalog);
                         <UiInput v-model="form.name" />
                     </UiFormField>
                     <UiFormField label="Телефон" required :error="fieldErrors.phone">
-                        <UiInput v-model="form.phone" />
+                        <UiInput v-model="form.phone" type="tel" />
                     </UiFormField>
                     <UiFormField label="Email">
                         <UiInput v-model="form.email" type="email" />
@@ -183,17 +167,31 @@ onMounted(loadCatalog);
                     </UiFormField>
                     <UiFormField
                         v-if="form.method === 'courier'"
-                        label="Адрес"
+                        label="Улица"
                         required
-                        :error="fieldErrors.address"
+                        :error="fieldErrors.street"
                     >
-                        <UiInput v-model="form.address" />
+                        <UiInput v-model="form.street" />
                     </UiFormField>
                     <UiFormField
                         v-if="form.method === 'courier'"
-                        label="Доставка (₽)"
+                        label="Дом"
+                        required
+                        :error="fieldErrors.house"
                     >
-                        <UiInput v-model="form.delivery_fee" type="number" />
+                        <UiInput v-model="form.house" />
+                    </UiFormField>
+                    <UiFormField v-if="form.method === 'courier'" label="Подъезд">
+                        <UiInput v-model="form.entrance" />
+                    </UiFormField>
+                    <UiFormField v-if="form.method === 'courier'" label="Этаж">
+                        <UiInput v-model="form.floor" />
+                    </UiFormField>
+                    <UiFormField v-if="form.method === 'courier'" label="Квартира">
+                        <UiInput v-model="form.apartment" />
+                    </UiFormField>
+                    <UiFormField v-if="form.method === 'courier'" label="Комментарий">
+                        <UiInput v-model="form.comment" />
                     </UiFormField>
                 </div>
 
@@ -208,8 +206,8 @@ onMounted(loadCatalog);
                             class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 transition-colors hover:border-bo-border-strong focus:border-bo-accent focus:outline-none"
                         >
                             <option value="cash">cash</option>
-                            <option value="card">card</option>
-                            <option value="online">online</option>
+                            <option value="card_courier">card_courier</option>
+                            <option value="card_online">card_online</option>
                         </select>
                     </UiFormField>
                     <UiFormField label="Сдача с">

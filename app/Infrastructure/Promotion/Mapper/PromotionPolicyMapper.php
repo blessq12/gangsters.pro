@@ -16,11 +16,15 @@ final class PromotionPolicyMapper
         $deliveryBenefit = is_array($row->delivery_benefit) ? $row->delivery_benefit : [];
         $complementSetBenefit = is_array($row->complement_set_benefit) ? $row->complement_set_benefit : [];
 
+        $giftProductId = $row->gift_product_id !== null ? (int) $row->gift_product_id : null;
+
         return new PromotionPolicy(
             id: (int) $row->id,
+            branchId: (int) $row->branch_id,
             giftRules: $giftRules,
             deliveryBenefit: $deliveryBenefit,
             complementSetBenefit: $complementSetBenefit,
+            giftProductId: $giftProductId !== null && $giftProductId > 0 ? $giftProductId : null,
         );
     }
 
@@ -30,6 +34,7 @@ final class PromotionPolicyMapper
      *     gift_courier_min_order_kopecks: int,
      *     gift_courier_weekdays: list<int>,
      *     gift_benefit_active: bool,
+     *     gift_product_id: int|null,
      *     delivery_free_threshold_kopecks: int,
      *     delivery_outside_zone_surcharge_kopecks: int,
      *     delivery_benefit_active: bool,
@@ -37,13 +42,17 @@ final class PromotionPolicyMapper
      *     complement_set_rolls_per_set: int,
      *     complement_set_max_sets: int
      * }  $fields
-     * @return array{gift_rules: list<array<string, mixed>>, delivery_benefit: array<string, mixed>, complement_set_benefit: array<string, mixed>}
+     * @return array{gift_product_id: int|null, gift_rules: list<array<string, mixed>>, delivery_benefit: array<string, mixed>, complement_set_benefit: array<string, mixed>}
      */
     public function flatFieldsToPersistence(array $fields): array
     {
         $giftActive = (bool) $fields['gift_benefit_active'];
+        $giftProductId = isset($fields['gift_product_id']) && $fields['gift_product_id'] !== null
+            ? (int) $fields['gift_product_id']
+            : null;
 
         return [
+            'gift_product_id' => $giftProductId !== null && $giftProductId > 0 ? $giftProductId : null,
             'gift_rules' => [
                 [
                     'order_channel' => 'pickup',

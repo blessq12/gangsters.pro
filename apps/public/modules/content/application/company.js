@@ -3,8 +3,9 @@ import { formatMoneyRublesRu } from "../../../platform/moneyFormat";
 
 /**
  * Логика «сейчас открыто» по данным компании из API.
- * Опирается на schedule: объект { mon: { work, is_day_off }, … }.
- * Время в work парсится как «10:00-22:00» (дефис или длинное тире).
+ * Расписание принадлежит филиалу (branch.schedule), не компании.
+ * Формат: { mon: { work, is_day_off }, … }.
+ * Время в work: «10:00-22:00» (дефис или длинное тире).
  * Часовой пояс — локальный (браузер пользователя).
  */
 
@@ -84,11 +85,12 @@ export function findScheduleRowForDay(schedule, dayKey) {
 }
 
 /**
- * @param {object|null|undefined} company
+ * Расписание филиала.
+ * @param {object|null|undefined} branch
  * @returns {unknown}
  */
-export function companyScheduleOf(company) {
-    return company?.schedule ?? null;
+export function branchScheduleOf(branch) {
+    return branch?.schedule ?? null;
 }
 
 /**
@@ -112,13 +114,14 @@ export function isOpenByWeekendFallback(now) {
 }
 
 /**
- * @param {object|null|undefined} company — объект из systemStore.company
+ * Открыт ли филиал сейчас (по его расписанию).
+ * @param {object|null|undefined} branch
  * @param {Date} [now]
  * @returns {boolean}
  */
-export function isCompanyOpenNow(company, now = new Date()) {
+export function isCompanyOpenNow(branch, now = new Date()) {
     const dayKey = getCurrentDayKey(now);
-    const schedule = companyScheduleOf(company);
+    const schedule = branchScheduleOf(branch);
     const row = findScheduleRowForDay(schedule, dayKey);
 
     if (row) {
@@ -148,12 +151,12 @@ export function isCompanyOpenNow(company, now = new Date()) {
 }
 
 /**
- * @param {object|null|undefined} company
+ * @param {object|null|undefined} branch
  * @param {Date} [now]
  * @returns {{ open: boolean, hint: string }}
  */
-export function getCompanyOpenStatusHint(company, now = new Date()) {
-    const open = isCompanyOpenNow(company, now);
+export function getCompanyOpenStatusHint(branch, now = new Date()) {
+    const open = isCompanyOpenNow(branch, now);
     // Статус «Открыто/Закрыто» рисует UI; доп. hint (время) не отдаём.
     return { open, hint: "" };
 }
@@ -307,16 +310,16 @@ export function formatWorkScheduleForDisplay(schedule) {
 }
 
 /**
- * Одна строка: режим работы на указанный день (локальная дата браузера).
- * @param {object|null|undefined} company
+ * Одна строка: режим работы филиала на указанный день.
+ * @param {object|null|undefined} branch
  * @param {Date} [date]
  */
-export function formatTodayWorkScheduleLine(company, date = new Date()) {
-    if (!company) return "";
+export function formatTodayWorkScheduleLine(branch, date = new Date()) {
+    if (!branch) return "";
 
     const dayKey = getCurrentDayKey(date);
     const dayLabel = DAY_LABELS[dayKey] || dayKey;
-    const row = findScheduleRowForDay(companyScheduleOf(company), dayKey);
+    const row = findScheduleRowForDay(branchScheduleOf(branch), dayKey);
 
     if (!row) {
         return "";
@@ -482,8 +485,8 @@ export function hasDeliveryFee(company) {
 /**
  * @param {object|null|undefined} company
  */
-export function hasKitchenAddressLine(company) {
-    return kitchenAddressLine(company).trim() !== "";
+export function hasBranchAddressLine(company) {
+    return branchAddressLine(company).trim() !== "";
 }
 
 /**
@@ -587,7 +590,7 @@ export function deliveryHighlightMinOrderSubline(company) {
  * @param {object|null|undefined} company
  * @returns {string}
  */
-export function kitchenAddressLine(company) {
+export function branchAddressLine(company) {
     return formatCompanyAddressLine(company);
 }
 
@@ -604,16 +607,16 @@ export function buildYandexMapWidgetSearchUrl(company) {
     return `https://yandex.ru/map-widget/v1/?mode=search&text=${text}&z=12&theme=dark`;
 }
 
-const KITCHEN_ADDRESS_FALLBACK = "Томск, ул. Говорова 50";
+const BRANCH_ADDRESS_FALLBACK = "Томск, ул. Говорова 50";
 
 /**
  * Подпись адреса кухни для карты и UI.
  * @param {object|null|undefined} company
  * @returns {string}
  */
-export function kitchenAddressLabelOrFallback(company) {
-    const line = kitchenAddressLine(company);
-    return line || KITCHEN_ADDRESS_FALLBACK;
+export function branchAddressLabelOrFallback(company) {
+    const line = branchAddressLine(company);
+    return line || BRANCH_ADDRESS_FALLBACK;
 }
 
 /**
@@ -621,8 +624,8 @@ export function kitchenAddressLabelOrFallback(company) {
  * @param {object|null|undefined} company
  * @returns {string}
  */
-export function buildYandexMapKitchenPointWidgetUrl(company) {
-    const text = encodeURIComponent(kitchenAddressLabelOrFallback(company));
+export function buildYandexMapBranchPointWidgetUrl(company) {
+    const text = encodeURIComponent(branchAddressLabelOrFallback(company));
     return `https://yandex.ru/map-widget/v1/?mode=search&text=${text}&z=16&theme=dark`;
 }
 
@@ -680,7 +683,7 @@ export function markClosedNoticeDismissedThisSession() {
 }
 
 /**
- * @param {object|null|undefined} company
+ * @param {object|null|undefined} branch
  * @param {Date} [now]
  * @returns {{
  *   title: string,
@@ -688,13 +691,13 @@ export function markClosedNoticeDismissedThisSession() {
  *   todayLine: string|null,
  * }}
  */
-export function buildClosedOrdersNotice(company, now = new Date()) {
-    const todayLine = formatTodayWorkScheduleLine(company, now) || null;
+export function buildClosedOrdersNotice(branch, now = new Date()) {
+    const todayLine = formatTodayWorkScheduleLine(branch, now) || null;
 
     const scheduleFallback = todayLine;
 
     const dayKey = getCurrentDayKey(now);
-    const row = findScheduleRowForDay(companyScheduleOf(company), dayKey);
+    const row = findScheduleRowForDay(branchScheduleOf(branch), dayKey);
     let lead =
         "Сейчас мы не принимаем и не обрабатываем заказы. Оформи заказ в рабочие часы — тогда всё уйдёт на кухню без задержек.";
 
@@ -716,10 +719,10 @@ export function buildClosedOrdersNotice(company, now = new Date()) {
 const TICK_MS = 60_000;
 
 /**
- * Реактивный статус открытости по данным компании (обновляется раз в минуту).
- * @param {() => object|null|undefined} getCompany
+ * Реактивный статус открытости по расписанию филиала (раз в минуту).
+ * @param {() => object|null|undefined} getBranch
  */
-export function useCompanyOpenStatus(getCompany) {
+export function useCompanyOpenStatus(getBranch) {
     const tick = ref(0);
     let timerId = null;
 
@@ -737,14 +740,14 @@ export function useCompanyOpenStatus(getCompany) {
 
     const openNow = computed(() => {
         void tick.value;
-        const c = getCompany();
-        return isCompanyOpenNow(c, new Date());
+        const branch = getBranch();
+        return isCompanyOpenNow(branch, new Date());
     });
 
     const statusHint = computed(() => {
         void tick.value;
-        const c = getCompany();
-        return getCompanyOpenStatusHint(c, new Date());
+        const branch = getBranch();
+        return getCompanyOpenStatusHint(branch, new Date());
     });
 
     return { openNow, statusHint, tick };

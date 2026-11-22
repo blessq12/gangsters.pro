@@ -23,5 +23,14 @@ interface BannerRepository
 
     public function countAll(): int;
 
+    public function findById(int $id): ?Banner;
+
+    /**
+     * Сырые пути в storage (для замены файлов).
+     *
+     * @return array{image_desktop: ?string, image_mobile: ?string}|null
+     */
+    public function findStoredPaths(int $id): ?array;
+
     public function save(?int $id, bool $isActive, ?string $desktopPath, ?string $mobilePath): Banner;
 }

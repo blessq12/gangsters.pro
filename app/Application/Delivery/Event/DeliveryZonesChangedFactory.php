@@ -37,8 +37,13 @@ final class DeliveryZonesChangedFactory
      */
     public function createIfChanged(array $before, DeliveryConfiguration $after): ?DeliveryZonesChanged
     {
+        $branchId = $after->branchId();
+        if ($branchId === null) {
+            return null;
+        }
+
         $snapshot = $this->snapshot($after);
 
-        return $snapshot === $before ? null : new DeliveryZonesChanged(zones: $snapshot);
+        return $snapshot === $before ? null : new DeliveryZonesChanged(branchId: $branchId, zones: $snapshot);
     }
 }

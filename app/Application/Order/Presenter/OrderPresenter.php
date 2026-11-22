@@ -53,7 +53,6 @@ final class OrderPresenter
         return [
             'id' => $order->hasId() ? $order->id() : null,
             'status' => $order->status()->value,
-            'kitchen_id' => $order->kitchenId(),
             'branch_id' => $order->branchId(),
             'cart' => [
                 'lines' => $lines,

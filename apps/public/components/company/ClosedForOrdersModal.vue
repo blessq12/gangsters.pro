@@ -27,7 +27,7 @@ const isOpen = computed({
 });
 
 const notice = computed(() =>
-    buildClosedOrdersNotice(contentStore.profile, new Date()),
+    buildClosedOrdersNotice(contentStore.branch, new Date()),
 );
 
 function dismiss() {

@@ -28,6 +28,7 @@ final class RouteSheetPresenter
 
         return [
             'id' => $sheet->hasId() ? $sheet->id() : null,
+            'branch_id' => $sheet->branchId(),
             'status' => $sheet->status(),
             'courier_id' => $sheet->courierId(),
             'stops' => $stops,

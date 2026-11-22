@@ -32,7 +32,6 @@ final class ORD_Order extends Model
         'delivery_floor',
         'delivery_apartment',
         'delivery_comment',
-        'kitchen_id',
         'branch_id',
         'payment_id',
         'payment_method',
@@ -47,7 +46,6 @@ final class ORD_Order extends Model
     protected $casts = [
         'client_id' => 'integer',
         'delivery_fee_kopecks' => 'integer',
-        'kitchen_id' => 'integer',
         'branch_id' => 'integer',
         'payment_id' => 'integer',
         'change_from_rubles' => 'integer',

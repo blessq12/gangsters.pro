@@ -7,24 +7,22 @@ use App\Domain\Core\Delivery\Tariff\ValueObject\DeliveryZone;
 
 interface DeliveryConfigurationRepository
 {
-    public const SINGLETON_ID = 1;
-
-    public function findPublic(): ?DeliveryConfiguration;
+    public function findByBranch(int $branchId): ?DeliveryConfiguration;
 
     /**
      * @return list<DeliveryZone>
      */
-    public function listZonesPage(int $offset, int $limit): array;
+    public function listZonesPageByBranch(int $branchId, int $offset, int $limit): array;
 
-    public function countZones(): int;
+    public function countZonesByBranch(int $branchId): int;
 
     /**
      * @param  list<array{id: string, name: string, fee_rubles: int, is_remote: bool}>  $zones
      */
-    public function saveSettings(
+    public function saveSettingsForBranch(
+        int $branchId,
         ?int $minOrderAmountKopecks,
         ?int $averageDeliveryTimeMinutes,
-        ?int $kitchenId,
         array $zones,
     ): DeliveryConfiguration;
 }

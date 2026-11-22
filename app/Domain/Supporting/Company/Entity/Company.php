@@ -6,12 +6,10 @@ use App\Domain\Supporting\Company\ValueObject\CompanySocials;
 
 /**
  * Публичный профиль компании.
+ * Расписание работы — у филиала (Branch), не здесь.
  */
 final class Company
 {
-    /**
-     * @param  array<string, array{work: ?string, is_day_off: bool}>  $schedule
-     */
     public function __construct(
         private readonly int $id,
         private readonly string $name,
@@ -19,7 +17,6 @@ final class Company
         private readonly ?string $phone,
         private readonly ?string $email,
         private readonly CompanySocials $socials,
-        private readonly array $schedule,
     ) {}
 
     public function id(): int
@@ -50,13 +47,5 @@ final class Company
     public function socials(): CompanySocials
     {
         return $this->socials;
-    }
-
-    /**
-     * @return array<string, array{work: ?string, is_day_off: bool}>
-     */
-    public function schedule(): array
-    {
-        return $this->schedule;
     }
 }

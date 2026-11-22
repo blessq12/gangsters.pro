@@ -10,7 +10,7 @@ use App\Domain\Core\Production\ValueObject\KitchenTicketLine;
 use DateTimeImmutable;
 
 /**
- * Кухонный тикет: единица работы кухни по заказу со снимком позиций.
+ * Кухонный тикет: единица работы филиала по заказу со снимком позиций.
  * Связь с Order — только orderId.
  */
 final class KitchenTicket
@@ -24,7 +24,7 @@ final class KitchenTicket
     private function __construct(
         private ?int $id,
         private readonly int $orderId,
-        private readonly int $kitchenId,
+        private readonly int $branchId,
         private readonly array $lines,
         private KitchenTicketStatus $status,
         private ?DateTimeImmutable $startedAt,
@@ -36,20 +36,20 @@ final class KitchenTicket
     /**
      * @param  list<KitchenTicketLine>  $lines
      */
-    public static function queue(int $orderId, int $kitchenId, array $lines): self
+    public static function queue(int $orderId, int $branchId, array $lines): self
     {
         if ($orderId < 1) {
             throw new \InvalidArgumentException('orderId должен быть положительным.');
         }
 
-        if ($kitchenId < 1) {
-            throw new \InvalidArgumentException('kitchenId должен быть положительным.');
+        if ($branchId < 1) {
+            throw new \InvalidArgumentException('branchId должен быть положительным.');
         }
 
         return new self(
             id: null,
             orderId: $orderId,
-            kitchenId: $kitchenId,
+            branchId: $branchId,
             lines: array_values($lines),
             status: KitchenTicketStatus::Queued,
             startedAt: null,
@@ -63,7 +63,7 @@ final class KitchenTicket
     public static function restore(
         int $id,
         int $orderId,
-        int $kitchenId,
+        int $branchId,
         array $lines,
         KitchenTicketStatus $status,
         ?DateTimeImmutable $startedAt,
@@ -72,7 +72,7 @@ final class KitchenTicket
         return new self(
             id: $id,
             orderId: $orderId,
-            kitchenId: $kitchenId,
+            branchId: $branchId,
             lines: array_values($lines),
             status: $status,
             startedAt: $startedAt,
@@ -112,9 +112,9 @@ final class KitchenTicket
         return $this->orderId;
     }
 
-    public function kitchenId(): int
+    public function branchId(): int
     {
-        return $this->kitchenId;
+        return $this->branchId;
     }
 
     /**
@@ -141,16 +141,16 @@ final class KitchenTicket
     }
 
     /**
-     * @param  int|null  $orderKitchenId  кухня, назначенная заказу на момент старта
+     * @param  int|null  $orderBranchId  филиал, назначенный заказу на момент старта
      */
-    public function start(?int $orderKitchenId, ?DateTimeImmutable $at = null): void
+    public function start(?int $orderBranchId, ?DateTimeImmutable $at = null): void
     {
         if ($this->status !== KitchenTicketStatus::Queued) {
             throw new \LogicException('Начать можно только тикет в очереди.');
         }
 
-        if ($orderKitchenId !== $this->kitchenId) {
-            throw new \LogicException('Кухня тикета не совпадает с кухней заказа — старт запрещён.');
+        if ($orderBranchId !== $this->branchId) {
+            throw new \LogicException('Филиал тикета не совпадает с филиалом заказа — старт запрещён.');
         }
 
         $this->status = KitchenTicketStatus::Started;

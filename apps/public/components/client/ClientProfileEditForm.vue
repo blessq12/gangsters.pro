@@ -7,7 +7,6 @@ import { applyApiFieldErrors } from "../../platform/extractApiFieldErrors";
 import { mapApiError } from "../../platform/mapApiError";
 import {
     RU_PHONE_MASKA_PATTERN,
-    RU_PHONE_MASKA_TOKENS_ATTR,
     validateRuPhoneForSubmit,
 } from "../../platform/ruPhone";
 import { useFormFieldErrors } from "../../platform/useFormFieldErrors";
@@ -146,7 +145,6 @@ function handleLogoutClick() {
                         v-model="phoneMask.masked"
                         v-maska="phoneMask"
                         :data-maska="RU_PHONE_MASKA_PATTERN"
-                        :data-maska-tokens="RU_PHONE_MASKA_TOKENS_ATTR"
                         type="tel"
                         :class="[s.input, invalid && invalidClass]"
                         placeholder="+7 (___) ___-__-__"

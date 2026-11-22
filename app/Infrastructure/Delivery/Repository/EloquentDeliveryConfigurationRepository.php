@@ -17,20 +17,21 @@ final class EloquentDeliveryConfigurationRepository implements DeliveryConfigura
         private readonly DeliveryConfigurationMapper $mapper,
     ) {}
 
-    public function findPublic(): ?DeliveryConfiguration
+    public function findByBranch(int $branchId): ?DeliveryConfiguration
     {
         $row = DLV_Configuration::query()
             ->with(['zones' => static fn ($q) => $q->orderBy('sort_order')->orderBy('id')])
-            ->find(self::SINGLETON_ID);
+            ->where('branch_id', $branchId)
+            ->first();
 
         return $row instanceof DLV_Configuration ? $this->mapper->toDomain($row) : null;
     }
 
-    public function listZonesPage(int $offset, int $limit): array
+    public function listZonesPageByBranch(int $branchId, int $offset, int $limit): array
     {
         $zones = [];
         $rows = DLV_Zone::query()
-            ->where('configuration_id', self::SINGLETON_ID)
+            ->whereIn('configuration_id', $this->configurationIdsByBranch($branchId))
             ->orderBy('sort_order')
             ->orderBy('id')
             ->offset(max(0, $offset))
@@ -47,10 +48,10 @@ final class EloquentDeliveryConfigurationRepository implements DeliveryConfigura
         return $zones;
     }
 
-    public function countZones(): int
+    public function countZonesByBranch(int $branchId): int
     {
         return (int) DLV_Zone::query()
-            ->where('configuration_id', self::SINGLETON_ID)
+            ->whereIn('configuration_id', $this->configurationIdsByBranch($branchId))
             ->count();
     }
 
@@ -63,28 +64,27 @@ final class EloquentDeliveryConfigurationRepository implements DeliveryConfigura
      *     geometry?: array<string, mixed>|null
      * }>  $zones
      */
-    public function saveSettings(
+    public function saveSettingsForBranch(
+        int $branchId,
         ?int $minOrderAmountKopecks,
         ?int $averageDeliveryTimeMinutes,
-        ?int $kitchenId,
         array $zones,
     ): DeliveryConfiguration {
         return DB::transaction(function () use (
+            $branchId,
             $minOrderAmountKopecks,
             $averageDeliveryTimeMinutes,
-            $kitchenId,
             $zones,
         ): DeliveryConfiguration {
-            $row = DLV_Configuration::query()->find(self::SINGLETON_ID);
+            $row = DLV_Configuration::query()->where('branch_id', $branchId)->first();
             if (! $row instanceof DLV_Configuration) {
                 $row = new DLV_Configuration();
-                $row->id = self::SINGLETON_ID;
             }
 
             $row->fill([
                 'min_order_amount_kopecks' => $minOrderAmountKopecks,
                 'average_delivery_time_minutes' => $averageDeliveryTimeMinutes,
-                'company_kitchen_id' => $kitchenId !== null && $kitchenId > 0 ? $kitchenId : null,
+                'branch_id' => $branchId,
             ]);
             $row->save();
 
@@ -164,5 +164,20 @@ final class EloquentDeliveryConfigurationRepository implements DeliveryConfigura
 
             return $this->mapper->toDomain($row);
         });
+    }
+
+    /**
+     * Id конфигураций филиала (одна конфигурация на филиал).
+     *
+     * @return list<int>
+     */
+    private function configurationIdsByBranch(int $branchId): array
+    {
+        return DLV_Configuration::query()
+            ->where('branch_id', $branchId)
+            ->pluck('id')
+            ->map(static fn ($id): int => (int) $id)
+            ->values()
+            ->all();
     }
 }

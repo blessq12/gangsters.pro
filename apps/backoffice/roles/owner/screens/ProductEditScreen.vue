@@ -36,6 +36,8 @@ const form = reactive({
     name: "",
     weight: "",
     isActive: true,
+    isRoll: false,
+    isComplement: false,
     description: "",
     ingredients: [],
     calories: "",
@@ -95,6 +97,8 @@ function applyDetail(payload) {
     sku.value = payload?.sku ?? null;
     form.weight = payload?.weight != null ? String(payload.weight) : "";
     form.isActive = (payload?.status ?? "active") === "active";
+    form.isRoll = Boolean(payload?.is_roll);
+    form.isComplement = Boolean(payload?.is_complement);
     form.description = payload?.description ?? "";
     form.ingredients = Array.isArray(payload?.ingredients)
         ? payload.ingredients.map((item) => String(item).trim()).filter(Boolean)
@@ -128,7 +132,7 @@ async function load() {
         applyDetail(payload);
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось загрузить товар");
-        router.push({ name: "owner-catalog" });
+        router.push({ name: "owner-menu" });
     }
 }
 
@@ -160,6 +164,8 @@ function buildPayload() {
         })),
         weight: form.weight === "" ? null : Number(form.weight),
         status: form.isActive ? "active" : "archived",
+        is_roll: Boolean(form.isRoll),
+        is_complement: Boolean(form.isComplement),
         description: form.description.trim() || null,
         ingredients: form.ingredients.map((item) => String(item).trim()).filter(Boolean),
         nutrition: nutritionEmpty
@@ -245,7 +251,7 @@ onMounted(load);
     <div class="product-edit mx-auto w-full max-w-7xl space-y-4 px-4 py-5 sm:px-6 lg:px-10 lg:py-7">
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div class="flex flex-wrap items-center gap-3">
-                <UiButton class="!bg-white/10 !text-bo-fg" @click="router.push({ name: 'owner-catalog' })">
+                <UiButton class="!bg-white/10 !text-bo-fg" @click="router.push({ name: 'owner-menu' })">
                     К каталогу
                 </UiButton>
                 <h1 class="text-lg font-semibold tracking-tight text-bo-fg">
@@ -282,10 +288,27 @@ onMounted(load);
                             class="mt-1 w-full border border-bo-border bg-bo-field px-3 py-2 text-sm"
                         />
                     </UiFormField>
+                    <div class="flex flex-wrap gap-6">
+                        <UiToggle
+                            v-model="form.isRoll"
+                            label-on="Ролл"
+                            label-off="Не ролл"
+                            :disabled="loadApi.loading"
+                        />
+                        <UiToggle
+                            v-model="form.isComplement"
+                            label-on="Комплектный"
+                            label-off="Не комплектный"
+                            :disabled="loadApi.loading"
+                        />
+                    </div>
                 </div>
             </UiCard>
 
-            <UiCard title="Цены">
+            <UiCard title="Справочные цены">
+                <p class="mb-3 text-sm text-bo-muted">
+                    Справочные цены каталога. Продажная цена задаётся в меню филиала.
+                </p>
                 <CatalogPricesEditor v-model="prices" :error="fieldErrors.prices" />
             </UiCard>
 

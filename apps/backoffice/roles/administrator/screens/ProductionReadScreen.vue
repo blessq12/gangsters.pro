@@ -3,7 +3,7 @@ import { computed, onMounted, ref, watch } from "vue";
 import { getQueue, getTicket } from "../../../api/production.js";
 import { useApi } from "../../../shell/composables/useApi.js";
 import { usePagedList } from "../../../shell/composables/usePagedList.js";
-import { useKitchenChoice } from "../../../shell/composables/useKitchenChoice.js";
+import { useBranchChoice } from "../../../shell/composables/useBranchChoice.js";
 import { useToast } from "../../../shell/composables/useToast.js";
 import UiBadge from "../../../shell/components/ui/UiBadge.vue";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
@@ -23,13 +23,13 @@ const toast = useToast();
 const listApi = useApi();
 const detailApi = useApi();
 const {
-    kitchens,
-    kitchenId,
-    error: kitchensError,
-    load: loadKitchens,
-    select: selectKitchen,
-    kitchenLabel,
-} = useKitchenChoice();
+    branches,
+    branchId,
+    error: branchesError,
+    load: loadBranches,
+    select: selectBranch,
+    branchLabel,
+} = useBranchChoice();
 
 const {
     page,
@@ -62,12 +62,12 @@ const tableRows = computed(() =>
 );
 
 async function load() {
-    if (!kitchenId.value) {
+    if (!branchId.value) {
         clearItems();
         return;
     }
     try {
-        const payload = await listApi.run(() => getQueue(kitchenId.value, {
+        const payload = await listApi.run(() => getQueue(branchId.value, {
             offset: offset.value,
             limit: perPage,
         }));
@@ -88,7 +88,7 @@ async function openDetail(row) {
     }
 }
 
-watch(kitchenId, () => {
+watch(branchId, () => {
     if (page.value !== 1) {
         resetPage();
         return;
@@ -97,7 +97,7 @@ watch(kitchenId, () => {
 });
 watch(page, load);
 onMounted(async () => {
-    await loadKitchens();
+    await loadBranches();
     await load();
 });
 </script>
@@ -108,37 +108,37 @@ onMounted(async () => {
             <p class="mb-4 text-sm text-bo-muted">
                 Просмотр очереди. Старт и завершение делает кухня, отсюда статус тикета не переключается.
             </p>
-            <label class="mb-6 block max-w-md text-sm text-bo-muted" for="admin-kitchen">
-                Кухня
+            <label class="mb-6 block max-w-md text-sm text-bo-muted" for="admin-branch">
+                Филиал
                 <select
-                    id="admin-kitchen"
+                    id="admin-branch"
                     class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 text-sm text-bo-fg focus:border-bo-accent focus:outline-none"
-                    :value="kitchenId"
-                    @change="selectKitchen($event.target.value)"
+                    :value="branchId"
+                    @change="selectBranch($event.target.value)"
                 >
-                    <option value="">Выбери кухню</option>
+                    <option value="">Выбери филиал</option>
                     <option
-                        v-for="kitchen in kitchens"
-                        :key="kitchen.id"
-                        :value="String(kitchen.id)"
+                        v-for="branch in branches"
+                        :key="branch.id"
+                        :value="String(branch.id)"
                     >
-                        {{ kitchenLabel(kitchen) }}
+                        {{ branchLabel(branch) }}
                     </option>
                 </select>
             </label>
-            <p v-if="kitchensError" class="mb-4 text-sm text-red-300">
-                {{ kitchensError }}
+            <p v-if="branchesError" class="mb-4 text-sm text-red-300">
+                {{ branchesError }}
             </p>
 
-            <p v-if="!kitchenId" class="text-sm text-bo-muted">
-                Сначала выбери кухню — очередь своя у каждой.
+            <p v-if="!branchId" class="text-sm text-bo-muted">
+                Сначала выбери филиал — очередь своя у каждого.
             </p>
             <UiTable
                 v-else
                 :columns="columns"
                 :rows="tableRows"
                 :loading="listApi.loading"
-                empty-text="На этой кухне нет тикетов в работе"
+                empty-text="В этом филиале нет тикетов в работе"
                 row-key="order_id"
                 @row-click="openDetail"
             >
@@ -160,7 +160,7 @@ onMounted(async () => {
                     <span v-else class="text-bo-muted">—</span>
                 </template>
             </UiTable>
-            <div v-if="kitchenId" class="mt-6">
+            <div v-if="branchId" class="mt-6">
                 <UiPagination
                     :page="page"
                     :per-page="perPage"

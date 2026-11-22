@@ -27,6 +27,8 @@ interface TagRepository
 
     public function save(?int $id, string $code, string $label, string $color, bool $isActive): Tag;
 
+    public function delete(int $id): void;
+
     /**
      * @param  list<int>  $ids
      * @return list<Tag>

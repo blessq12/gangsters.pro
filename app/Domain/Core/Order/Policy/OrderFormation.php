@@ -2,10 +2,9 @@
 
 namespace App\Domain\Core\Order\Policy;
 
-use App\Domain\Core\Order\Entity\ProductPromotionRole;
 use App\Domain\Core\Order\Enum\OrderLineType;
-use App\Domain\Core\Order\Enum\ProductPromotionRoleKind;
 use App\Domain\Core\Order\ValueObject\OrderDeliveryInfo;
+use App\Domain\Core\Order\ValueObject\OrderFormationFacts;
 use App\Domain\Core\Order\ValueObject\OrderLine;
 use DateTimeInterface;
 
@@ -21,24 +20,24 @@ final class OrderFormation
 {
     /**
      * @param  list<OrderLine>  $baseLines  только regular|set
-     * @param  list<ProductPromotionRole>  $roles
      * @return FormationResult
      */
     public static function apply(
         array $baseLines,
         OrderDeliveryInfo $delivery,
         PromotionPolicy $policy,
-        array $roles,
+        OrderFormationFacts $facts,
         string $channel,
         DateTimeInterface $at,
         string $timezone,
+        bool $zoneIsRemote = false,
     ): array {
         self::assertBaseLines($baseLines);
 
         $lines = array_values($baseLines);
-        $lines = [...$lines, ...self::complementLines($lines, $policy, $roles)];
-        $lines = [...$lines, ...self::giftLines($lines, $policy, $roles, $channel, $at, $timezone)];
-        $delivery = self::applyDeliveryBenefit($lines, $delivery, $policy);
+        $lines = [...$lines, ...self::complementLines($lines, $policy, $facts)];
+        $lines = [...$lines, ...self::giftLines($lines, $policy, $facts, $channel, $at, $timezone)];
+        $delivery = self::applyDeliveryBenefit($lines, $delivery, $policy, $zoneIsRemote);
 
         return [
             'lines' => $lines,
@@ -69,13 +68,12 @@ final class OrderFormation
 
     /**
      * @param  list<OrderLine>  $lines
-     * @param  list<ProductPromotionRole>  $roles
      * @return list<OrderLine>
      */
     private static function complementLines(
         array $lines,
         PromotionPolicy $policy,
-        array $roles,
+        OrderFormationFacts $facts,
     ): array {
         $benefit = $policy->complementSetBenefit();
         if (! ($benefit['is_active'] ?? false)) {
@@ -93,8 +91,7 @@ final class OrderFormation
             if (! $line->isBillable()) {
                 continue;
             }
-            $role = self::roleFor($roles, $line->productId(), ProductPromotionRoleKind::Roll);
-            if ($role !== null) {
+            if ($facts->isRoll($line->productId())) {
                 $rollCount += $line->quantity();
             }
         }
@@ -104,10 +101,7 @@ final class OrderFormation
             return [];
         }
 
-        $complements = array_values(array_filter(
-            $roles,
-            static fn (ProductPromotionRole $role): bool => $role->isComplementSet(),
-        ));
+        $complements = $facts->complements();
         if ($complements === []) {
             return [];
         }
@@ -115,8 +109,8 @@ final class OrderFormation
         $result = [];
         foreach ($complements as $complement) {
             $result[] = new OrderLine(
-                productId: $complement->productId(),
-                name: $complement->name(),
+                productId: (int) $complement['product_id'],
+                name: (string) $complement['name'],
                 unitPriceKopecks: 0,
                 quantity: $sets,
                 lineType: OrderLineType::Complement,
@@ -128,13 +122,12 @@ final class OrderFormation
 
     /**
      * @param  list<OrderLine>  $lines
-     * @param  list<ProductPromotionRole>  $roles
      * @return list<OrderLine>
      */
     private static function giftLines(
         array $lines,
         PromotionPolicy $policy,
-        array $roles,
+        OrderFormationFacts $facts,
         string $channel,
         DateTimeInterface $at,
         string $timezone,
@@ -149,21 +142,15 @@ final class OrderFormation
             return [];
         }
 
-        $gifts = array_values(array_filter(
-            $roles,
-            static fn (ProductPromotionRole $role): bool => $role->isGiftCandidate(),
-        ));
-        if ($gifts === []) {
+        $gift = $facts->gift();
+        if ($gift === null) {
             return [];
         }
 
-        // Один подарок — первый кандидат по роли gift.
-        $gift = $gifts[0];
-
         return [
             new OrderLine(
-                productId: $gift->productId(),
-                name: $gift->name(),
+                productId: (int) $gift['product_id'],
+                name: (string) $gift['name'],
                 unitPriceKopecks: 0,
                 quantity: 1,
                 lineType: OrderLineType::Gift,
@@ -178,6 +165,7 @@ final class OrderFormation
         array $lines,
         OrderDeliveryInfo $delivery,
         PromotionPolicy $policy,
+        bool $zoneIsRemote,
     ): OrderDeliveryInfo {
         if (! $delivery->isCourier()) {
             return $delivery->withFee(0);
@@ -189,11 +177,29 @@ final class OrderFormation
         }
 
         $threshold = (int) ($benefit['free_delivery_threshold_kopecks'] ?? 0);
-        if ($threshold > 0 && self::billableSubtotal($lines) >= $threshold) {
-            return $delivery->withFee(0);
-        }
+        $atThreshold = self::billableSubtotal($lines) >= $threshold;
+        $mode = ! $atThreshold
+            ? (string) ($benefit['below_threshold_fee_mode'] ?? 'base_tariff')
+            : ($zoneIsRemote
+                ? (string) ($benefit['outside_zone_at_threshold_fee_mode'] ?? 'outside_zone_surcharge_only')
+                : (string) ($benefit['in_zone_at_threshold_fee_mode'] ?? 'free'));
 
-        return $delivery;
+        return $delivery->withFee(self::feeByMode(
+            $mode,
+            $delivery->feeKopecks(),
+            (int) ($benefit['outside_zone_surcharge_kopecks'] ?? 0),
+        ));
+    }
+
+    private static function feeByMode(string $mode, int $baseFeeKopecks, int $surchargeKopecks): int
+    {
+        return match ($mode) {
+            'base_tariff' => $baseFeeKopecks,
+            'free' => 0,
+            'outside_zone_surcharge_only' => $surchargeKopecks,
+            'base_plus_surcharge' => $baseFeeKopecks + $surchargeKopecks,
+            default => throw new \InvalidArgumentException('Неизвестный режим тарифа доставки: '.$mode),
+        };
     }
 
     /**
@@ -209,22 +215,5 @@ final class OrderFormation
         }
 
         return $total;
-    }
-
-    /**
-     * @param  list<ProductPromotionRole>  $roles
-     */
-    private static function roleFor(
-        array $roles,
-        int $productId,
-        ProductPromotionRoleKind $kind,
-    ): ?ProductPromotionRole {
-        foreach ($roles as $role) {
-            if ($role->productId() === $productId && $role->role() === $kind) {
-                return $role;
-            }
-        }
-
-        return null;
     }
 }

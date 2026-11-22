@@ -62,6 +62,14 @@ final class EloquentBranchRepository implements BranchRepository
             'company_id' => $branch->companyId(),
             'name' => $branch->name(),
             'is_active' => $branch->isActive(),
+            'schedule' => $branch->schedule(),
+            'city' => $branch->city(),
+            'street' => $branch->street(),
+            'house' => $branch->house(),
+            'comment' => $branch->comment(),
+            'latitude' => $branch->latitude(),
+            'longitude' => $branch->longitude(),
+            'phone' => $branch->phone(),
         ]);
         $row->save();
 

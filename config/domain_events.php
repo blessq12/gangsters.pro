@@ -5,7 +5,7 @@ use App\Domain\Core\Delivery\Event\OrderAddedToRoute;
 use App\Domain\Core\Delivery\Event\RouteSheetCreated;
 use App\Domain\Core\Delivery\Event\RouteSheetTaken;
 use App\Domain\Core\Delivery\Event\RouteStopSettled;
-use App\Domain\Core\Order\Event\KitchenReassigned;
+use App\Domain\Core\Order\Event\BranchReassigned;
 use App\Domain\Core\Order\Event\OrderCancelled;
 use App\Domain\Core\Order\Event\OrderConfirmed;
 use App\Domain\Core\Order\Event\OrderPickedUp;
@@ -27,9 +27,7 @@ use App\Infrastructure\Payment\Listener\MarkPaymentPaidOnOrderPickedUp;
 use App\Infrastructure\Payment\Listener\UpdatePaymentOnRouteStopSettled;
 use App\Infrastructure\Production\Listener\CancelKitchenTicketOnOrderCancelled;
 use App\Infrastructure\Production\Listener\CreateKitchenTicketOnOrderConfirmed;
-use App\Infrastructure\Production\Listener\ReplaceKitchenTicketOnKitchenReassigned;
-use App\Infrastructure\Promotion\Listener\RefreshRoleSnapshotsOnCatalogItemPriceChanged;
-use App\Infrastructure\Promotion\Listener\ReplaceZoneSnapshotsOnDeliveryZonesChanged;
+use App\Infrastructure\Production\Listener\ReplaceKitchenTicketOnBranchReassigned;
 use App\Infrastructure\Warehouse\Listener\WriteOffIngredientsOnKitchenTicketCompleted;
 
 /**
@@ -52,8 +50,8 @@ return [
             MarkPaymentPaidOnOrderPickedUp::class,
         ],
 
-        KitchenReassigned::class => [
-            ReplaceKitchenTicketOnKitchenReassigned::class,
+        BranchReassigned::class => [
+            ReplaceKitchenTicketOnBranchReassigned::class,
         ],
 
         KitchenTicketStarted::class => [
@@ -90,12 +88,9 @@ return [
             AttachPaymentOnPaymentInitiated::class,
         ],
 
-        CatalogItemPriceChanged::class => [
-            RefreshRoleSnapshotsOnCatalogItemPriceChanged::class,
-        ],
-
-        DeliveryZonesChanged::class => [
-            ReplaceZoneSnapshotsOnDeliveryZonesChanged::class,
-        ],
+        // Роли и PRM_zones больше не участвуют в продаже:
+        // флаги — в Catalog, подарок — в PRM_policies.gift_product_id, зоны — в Delivery.
+        CatalogItemPriceChanged::class => [],
+        DeliveryZonesChanged::class => [],
     ],
 ];

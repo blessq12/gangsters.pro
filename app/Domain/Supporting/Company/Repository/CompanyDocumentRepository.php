@@ -6,6 +6,8 @@ use App\Domain\Supporting\Company\Entity\CompanyDocument;
 
 interface CompanyDocumentRepository
 {
+    public function findById(int $id): ?CompanyDocument;
+
     /**
      * @return list<CompanyDocument>
      */

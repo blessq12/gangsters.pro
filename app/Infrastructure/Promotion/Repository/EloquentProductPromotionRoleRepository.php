@@ -14,9 +14,10 @@ final class EloquentProductPromotionRoleRepository implements ProductPromotionRo
         private readonly ProductPromotionRoleMapper $mapper,
     ) {}
 
-    public function findAll(): array
+    public function findAllByBranch(int $branchId): array
     {
         return PRM_ProductRole::query()
+            ->where('branch_id', $branchId)
             ->orderBy('role')
             ->orderBy('catalog_item_id')
             ->get()
@@ -24,9 +25,10 @@ final class EloquentProductPromotionRoleRepository implements ProductPromotionRo
             ->all();
     }
 
-    public function listPage(int $offset, int $limit): array
+    public function listPageByBranch(int $branchId, int $offset, int $limit): array
     {
         return PRM_ProductRole::query()
+            ->where('branch_id', $branchId)
             ->orderBy('role')
             ->orderBy('catalog_item_id')
             ->offset(max(0, $offset))
@@ -36,12 +38,14 @@ final class EloquentProductPromotionRoleRepository implements ProductPromotionRo
             ->all();
     }
 
-    public function countAll(): int
+    public function countByBranch(int $branchId): int
     {
-        return (int) PRM_ProductRole::query()->count();
+        return (int) PRM_ProductRole::query()
+            ->where('branch_id', $branchId)
+            ->count();
     }
 
-    public function findByProductIds(array $productIds): array
+    public function findByBranchAndProductIds(int $branchId, array $productIds): array
     {
         $ids = $this->normalizeIds($productIds);
         if ($ids === []) {
@@ -49,6 +53,7 @@ final class EloquentProductPromotionRoleRepository implements ProductPromotionRo
         }
 
         return PRM_ProductRole::query()
+            ->where('branch_id', $branchId)
             ->whereIn('catalog_item_id', $ids)
             ->orderBy('role')
             ->orderBy('catalog_item_id')
@@ -57,9 +62,10 @@ final class EloquentProductPromotionRoleRepository implements ProductPromotionRo
             ->all();
     }
 
-    public function findByRole(ProductPromotionRoleKind $role): array
+    public function findByBranchAndRole(int $branchId, ProductPromotionRoleKind $role): array
     {
         return PRM_ProductRole::query()
+            ->where('branch_id', $branchId)
             ->where('role', $role->value)
             ->orderBy('catalog_item_id')
             ->get()
@@ -70,6 +76,7 @@ final class EloquentProductPromotionRoleRepository implements ProductPromotionRo
     public function save(ProductPromotionRole $role): ProductPromotionRole
     {
         $row = PRM_ProductRole::query()->firstOrNew([
+            'branch_id' => $role->branchId(),
             'catalog_item_id' => $role->productId(),
             'role' => $role->role()->value,
         ]);
@@ -84,7 +91,16 @@ final class EloquentProductPromotionRoleRepository implements ProductPromotionRo
         return $this->mapper->toDomain($row);
     }
 
-    public function findMetaByProductIds(array $ids): array
+    public function delete(int $branchId, int $productId, ProductPromotionRoleKind $role): void
+    {
+        PRM_ProductRole::query()
+            ->where('branch_id', $branchId)
+            ->where('catalog_item_id', $productId)
+            ->where('role', $role->value)
+            ->delete();
+    }
+
+    public function findMetaByBranchAndProductIds(int $branchId, array $ids): array
     {
         $ids = $this->normalizeIds($ids);
         if ($ids === []) {
@@ -100,7 +116,7 @@ final class EloquentProductPromotionRoleRepository implements ProductPromotionRo
             ];
         }
 
-        foreach ($this->findByProductIds($ids) as $role) {
+        foreach ($this->findByBranchAndProductIds($branchId, $ids) as $role) {
             $productId = $role->productId();
             if ($role->countsAsRoll()) {
                 $meta[$productId]['counts_as_roll'] = true;

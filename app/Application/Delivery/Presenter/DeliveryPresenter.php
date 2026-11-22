@@ -2,13 +2,13 @@
 
 namespace App\Application\Delivery\Presenter;
 
-use App\Domain\Supporting\Company\Entity\Kitchen;
 use App\Domain\Core\Delivery\Tariff\Entity\DeliveryConfiguration;
 use App\Domain\Core\Delivery\Tariff\ValueObject\DeliveryZone;
+use App\Domain\Supporting\Company\Entity\Branch;
 
 /**
  * Единый формат ответа Delivery для витрины и админки.
- * Адрес кухни собирается из Company при необходимости.
+ * Адрес филиала собирается из Company при необходимости.
  */
 final class DeliveryPresenter
 {
@@ -17,11 +17,11 @@ final class DeliveryPresenter
      *     settings: array<string, mixed>,
      *     zones: list<array<string, mixed>>,
      *     zone_geojson: array<string, mixed>|null,
-     *     kitchen_id: int|null,
-     *     kitchen_address: array<string, mixed>|null
+     *     branch_id: int|null,
+     *     branch_address: array<string, mixed>|null
      * }
      */
-    public function present(DeliveryConfiguration $configuration, ?Kitchen $kitchen = null): array
+    public function present(DeliveryConfiguration $configuration, ?Branch $branch = null): array
     {
         return [
             'settings' => $this->settings($configuration),
@@ -30,9 +30,9 @@ final class DeliveryPresenter
                 $configuration->zones(),
             ),
             'zone_geojson' => $configuration->deliveryZoneGeoJson(),
-            'kitchen_id' => $configuration->kitchenId(),
-            'kitchen_address' => $kitchen instanceof Kitchen
-                ? $this->kitchenFromCompany($kitchen)
+            'branch_id' => $configuration->branchId(),
+            'branch_address' => $branch instanceof Branch
+                ? $this->branchAddress($branch)
                 : null,
         ];
     }
@@ -72,22 +72,22 @@ final class DeliveryPresenter
     /**
      * @return array<string, mixed>
      */
-    public function kitchenFromCompany(Kitchen $kitchen): array
+    public function branchAddress(Branch $branch): array
     {
         $parts = array_values(array_filter([
-            $kitchen->city(),
-            $kitchen->street(),
-            $kitchen->house(),
+            $branch->city(),
+            $branch->street(),
+            $branch->house(),
         ], static fn (?string $part): bool => $part !== null && trim($part) !== ''));
 
         return [
-            'city' => $kitchen->city(),
-            'street' => $kitchen->street(),
-            'house' => $kitchen->house(),
-            'comment' => $kitchen->comment(),
+            'city' => $branch->city(),
+            'street' => $branch->street(),
+            'house' => $branch->house(),
+            'comment' => $branch->comment(),
             'search_line' => $parts !== [] ? implode(', ', $parts) : null,
-            'latitude' => $kitchen->latitude(),
-            'longitude' => $kitchen->longitude(),
+            'latitude' => $branch->latitude(),
+            'longitude' => $branch->longitude(),
         ];
     }
 }

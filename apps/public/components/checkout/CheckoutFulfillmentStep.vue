@@ -15,9 +15,9 @@ import {
     CHECKOUT_PERSONS_MIN,
 } from "../../modules/checkout/domain/checkoutServerMappers";
 import { useContentStore } from "../../modules/content/store";
-import { kitchenAddressLabelOrFallback } from "../../modules/content/application/company";
+import { branchAddressLabelOrFallback } from "../../modules/content/application/company";
 import FormField from "../ui/FormField.vue";
-import ContactsKitchenMap from "../contacts/ContactsKitchenMap.vue";
+import ContactsBranchMap from "../contacts/ContactsBranchMap.vue";
 import CheckoutAddressFormFields from "./CheckoutAddressFormFields.vue";
 import CheckoutAuthAddressSection from "./CheckoutAuthAddressSection.vue";
 import CheckoutDeliveryZoneStatus from "./CheckoutDeliveryZoneStatus.vue";
@@ -68,8 +68,8 @@ const isPickup = computed(
     () => checkoutIntent.deliveryInfo.method === "pickup",
 );
 
-const kitchenAddressLabel = computed(() =>
-    kitchenAddressLabelOrFallback(deliveryFacts.value),
+const branchAddressLabel = computed(() =>
+    branchAddressLabelOrFallback(deliveryFacts.value),
 );
 
 const paymentOptions = computed(() =>
@@ -173,9 +173,9 @@ const canIncrementPersons = computed(
             title="Адрес кухни"
         >
             <p :class="s.stepHint">
-                {{ kitchenAddressLabel }}
+                {{ branchAddressLabel }}
             </p>
-            <ContactsKitchenMap />
+            <ContactsBranchMap />
         </CheckoutSection>
 
         <CheckoutSection title="Количество персон">

@@ -11,7 +11,7 @@ return [
     'access' => [
         // orders — операции
         ['method' => 'POST', 'path' => 'orders/*/accept', 'roles' => ['administrator']],
-        ['method' => 'POST', 'path' => 'orders/*/reassign-kitchen', 'roles' => ['administrator']],
+        ['method' => 'POST', 'path' => 'orders/*/reassign-branch', 'roles' => ['administrator']],
         ['method' => 'POST', 'path' => 'orders/*/status', 'roles' => ['administrator']],
         ['method' => 'POST', 'path' => 'orders/*/complete-pickup', 'roles' => ['administrator']],
         ['method' => 'POST', 'path' => 'orders', 'roles' => ['administrator']],
@@ -24,8 +24,10 @@ return [
         ['method' => 'GET', 'path' => 'production/tickets/*', 'roles' => ['owner', 'administrator', 'kitchen']],
 
         // payments
-        ['method' => 'POST', 'path' => 'payments/*/*', 'roles' => ['administrator']],
+        ['method' => 'POST', 'path' => 'payments/*/*', 'roles' => ['owner', 'administrator']],
+        ['method' => 'GET', 'path' => 'payments/summary', 'roles' => ['owner', 'administrator']],
         ['method' => 'GET', 'path' => 'payments/*', 'roles' => ['owner', 'administrator']],
+        ['method' => 'GET', 'path' => 'payments', 'roles' => ['owner', 'administrator']],
 
         // catalog
         ['method' => 'POST', 'path' => 'catalog/items/*/images', 'roles' => ['owner']],
@@ -36,6 +38,7 @@ return [
         ['method' => 'PUT', 'path' => 'catalog/sets/*/lines', 'roles' => ['owner']],
         ['method' => 'POST', 'path' => 'catalog/*', 'roles' => ['owner']],
         ['method' => 'PUT', 'path' => 'catalog/*/*', 'roles' => ['owner']],
+        ['method' => 'DELETE', 'path' => 'catalog/*/*', 'roles' => ['owner']],
         ['method' => 'GET', 'path' => 'catalog/products/*', 'roles' => ['owner', 'administrator']],
         ['method' => 'GET', 'path' => 'catalog/products', 'roles' => ['owner', 'administrator']],
         ['method' => 'GET', 'path' => 'catalog/sets/*', 'roles' => ['owner', 'administrator']],
@@ -45,13 +48,18 @@ return [
         ['method' => 'GET', 'path' => 'catalog/tags', 'roles' => ['owner', 'administrator']],
         ['method' => 'GET', 'path' => 'catalog', 'roles' => ['owner', 'administrator']],
 
-        // company
+        // company + branch menu / clone
+        ['method' => 'POST', 'path' => 'company/branches/clone-settings', 'roles' => ['owner']],
+        ['method' => 'GET', 'path' => 'company/branches/*/menu', 'roles' => ['owner']],
+        ['method' => 'PUT', 'path' => 'company/branches/*/menu/*', 'roles' => ['owner']],
+        ['method' => 'DELETE', 'path' => 'company/branches/*/menu/*', 'roles' => ['owner']],
         ['method' => 'POST', 'path' => 'company/*', 'roles' => ['owner']],
         ['method' => 'PUT', 'path' => 'company/*/*', 'roles' => ['owner']],
         ['method' => 'POST', 'path' => 'company', 'roles' => ['owner']],
         ['method' => 'PUT', 'path' => 'company', 'roles' => ['owner']],
+        ['method' => 'GET', 'path' => 'company/branches/*', 'roles' => ['owner', 'administrator', 'kitchen']],
         ['method' => 'GET', 'path' => 'company/branches', 'roles' => ['owner', 'administrator', 'kitchen']],
-        ['method' => 'GET', 'path' => 'company/kitchens', 'roles' => ['owner', 'administrator', 'kitchen']],
+        ['method' => 'GET', 'path' => 'company/documents/*', 'roles' => ['owner', 'administrator', 'kitchen']],
         ['method' => 'GET', 'path' => 'company/documents', 'roles' => ['owner', 'administrator', 'kitchen']],
         ['method' => 'GET', 'path' => 'company', 'roles' => ['owner', 'administrator', 'kitchen']],
 
@@ -74,6 +82,7 @@ return [
         ['method' => 'GET', 'path' => 'courier/route-sheets', 'roles' => ['courier']],
 
         // promotion-policy
+        ['method' => 'DELETE', 'path' => 'promotion-policy/roles', 'roles' => ['owner']],
         ['method' => 'POST', 'path' => 'promotion-policy/*', 'roles' => ['owner']],
         ['method' => 'POST', 'path' => 'promotion-policy', 'roles' => ['owner']],
         ['method' => 'PUT', 'path' => 'promotion-policy', 'roles' => ['owner']],
@@ -83,8 +92,11 @@ return [
 
         // marketing
         ['method' => 'POST', 'path' => 'marketing/*', 'roles' => ['owner']],
+        ['method' => 'POST', 'path' => 'marketing/*/*', 'roles' => ['owner']],
         ['method' => 'PUT', 'path' => 'marketing/*', 'roles' => ['owner']],
         ['method' => 'PUT', 'path' => 'marketing/*/*', 'roles' => ['owner']],
+        ['method' => 'GET', 'path' => 'marketing/banners/*', 'roles' => ['owner', 'administrator']],
+        ['method' => 'GET', 'path' => 'marketing/promotions/*', 'roles' => ['owner', 'administrator']],
         ['method' => 'GET', 'path' => 'marketing/banners', 'roles' => ['owner', 'administrator']],
         ['method' => 'GET', 'path' => 'marketing/promotions', 'roles' => ['owner', 'administrator']],
         ['method' => 'GET', 'path' => 'marketing', 'roles' => ['owner', 'administrator']],

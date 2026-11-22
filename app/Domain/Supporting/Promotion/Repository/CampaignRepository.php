@@ -23,5 +23,10 @@ interface CampaignRepository
 
     public function countAll(): int;
 
+    public function findById(int $id): ?Campaign;
+
+    /** Сырой путь картинки в storage (для замены файла). */
+    public function findStoredImagePath(int $id): ?string;
+
     public function save(?int $id, string $title, ?string $body, bool $isActive, ?string $imagePath): Campaign;
 }

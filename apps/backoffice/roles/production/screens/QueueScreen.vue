@@ -4,7 +4,7 @@ import { useRouter } from "vue-router";
 import { completeTicket, getQueue, startTicket } from "../../../api/production.js";
 import { useApi } from "../../../shell/composables/useApi.js";
 import { usePagedList } from "../../../shell/composables/usePagedList.js";
-import { useKitchenChoice } from "../../../shell/composables/useKitchenChoice.js";
+import { useBranchChoice } from "../../../shell/composables/useBranchChoice.js";
 import { useToast } from "../../../shell/composables/useToast.js";
 import UiBadge from "../../../shell/components/ui/UiBadge.vue";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
@@ -17,13 +17,13 @@ const toast = useToast();
 const listApi = useApi();
 const actionApi = useApi();
 const {
-    kitchens,
-    kitchenId,
-    error: kitchensError,
-    load: loadKitchens,
-    select: selectKitchen,
-    kitchenLabel,
-} = useKitchenChoice();
+    branches,
+    branchId,
+    error: branchesError,
+    load: loadBranches,
+    select: selectBranch,
+    branchLabel,
+} = useBranchChoice();
 
 const {
     page,
@@ -40,12 +40,12 @@ let pollTimer = null;
 const POLL_MS = 12000;
 
 async function load(silent = false) {
-    if (!kitchenId.value) {
+    if (!branchId.value) {
         clearItems();
         return;
     }
     try {
-        const payload = await listApi.run(() => getQueue(kitchenId.value, {
+        const payload = await listApi.run(() => getQueue(branchId.value, {
             offset: offset.value,
             limit: perPage,
         }));
@@ -94,7 +94,7 @@ function restartPoll() {
     pollTimer = setInterval(() => load(true), POLL_MS);
 }
 
-watch(kitchenId, () => {
+watch(branchId, () => {
     if (page.value !== 1) {
         resetPage();
         return;
@@ -107,7 +107,7 @@ watch(page, () => {
 });
 
 onMounted(async () => {
-    await loadKitchens();
+    await loadBranches();
     await load();
     restartPoll();
 });
@@ -126,31 +126,31 @@ onUnmounted(() => {
             <h1 class="text-4xl font-bold tracking-tight md:text-5xl">
                 Тикеты
             </h1>
-            <label class="block min-w-[16rem] text-base text-bo-muted" for="kitchen-choice">
-                Кухня
+            <label class="block min-w-[16rem] text-base text-bo-muted" for="branch-choice">
+                Филиал
                 <select
-                    id="kitchen-choice"
+                    id="branch-choice"
                     class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-3 text-lg text-bo-fg focus:border-bo-accent focus:outline-none"
-                    :value="kitchenId"
-                    @change="selectKitchen($event.target.value)"
+                    :value="branchId"
+                    @change="selectBranch($event.target.value)"
                 >
-                    <option value="">Выбери кухню</option>
+                    <option value="">Выбери филиал</option>
                     <option
-                        v-for="kitchen in kitchens"
-                        :key="kitchen.id"
-                        :value="String(kitchen.id)"
+                        v-for="branch in branches"
+                        :key="branch.id"
+                        :value="String(branch.id)"
                     >
-                        {{ kitchenLabel(kitchen) }}
+                        {{ branchLabel(branch) }}
                     </option>
                 </select>
             </label>
         </div>
 
-        <p v-if="kitchensError" class="text-xl text-red-300">
-            {{ kitchensError }}
+        <p v-if="branchesError" class="text-xl text-red-300">
+            {{ branchesError }}
         </p>
-        <p v-else-if="!kitchenId" class="text-2xl text-bo-muted">
-            Выбери кухню, чтобы увидеть её тикеты.
+        <p v-else-if="!branchId" class="text-2xl text-bo-muted">
+            Выбери филиал, чтобы увидеть его тикеты.
         </p>
 
         <div
@@ -215,7 +215,7 @@ onUnmounted(() => {
         </div>
 
         <UiPagination
-            v-if="kitchenId"
+            v-if="branchId"
             :page="page"
             :per-page="perPage"
             :total="total"

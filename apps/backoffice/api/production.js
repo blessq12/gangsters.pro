@@ -1,11 +1,11 @@
 import { request } from "../http/transport.js";
 
 /**
- * @param {number|string} kitchenId
+ * @param {number|string} branchId
  * @param {{ offset?: number, limit?: number }} [query]
  */
-export function getQueue(kitchenId, query = {}) {
-    const params = new URLSearchParams({ kitchen_id: String(kitchenId) });
+export function getQueue(branchId, query = {}) {
+    const params = new URLSearchParams({ branch_id: String(branchId) });
     if (query.offset !== undefined) {
         params.set("offset", String(query.offset));
     }

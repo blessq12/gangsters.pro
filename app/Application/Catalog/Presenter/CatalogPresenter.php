@@ -100,6 +100,39 @@ final class CatalogPresenter
     }
 
     /**
+     * Подмена продажной цены позиции ценой из меню филиала (форма ответа не меняется).
+     *
+     * @param  array<string, mixed>  $item  результат product() / productSet()
+     * @return array<string, mixed>
+     */
+    public function withMenuPrice(array $item, int $priceKopecks): array
+    {
+        $rubles = intdiv($priceKopecks, 100);
+        $item['price'] = ['amount' => $rubles, 'currency' => Money::CURRENCY];
+
+        $prices = is_array($item['prices'] ?? null) ? $item['prices'] : [];
+        $regular = [
+            'type' => PriceType::Regular->value,
+            'amount_kopecks' => $priceKopecks,
+            'amount_rubles' => $rubles,
+        ];
+
+        $replaced = false;
+        foreach ($prices as $index => $price) {
+            if (($price['type'] ?? null) === PriceType::Regular->value) {
+                $prices[$index] = $regular;
+                $replaced = true;
+            }
+        }
+        if (! $replaced) {
+            $prices[] = $regular;
+        }
+        $item['prices'] = array_values($prices);
+
+        return $item;
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function tag(Tag $tag): array
@@ -150,6 +183,8 @@ final class CatalogPresenter
             'sku' => $product->sku(),
             'status' => $product->status()->value,
             'is_system' => $product->isSystem(),
+            'is_roll' => $product->isRoll(),
+            'is_complement' => $product->isComplement(),
             'description' => $product->description(),
             'weight' => $product->weight(),
             'price' => $product->regularPrice()?->amountRubles() ?? 0,

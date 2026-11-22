@@ -10,7 +10,7 @@ final readonly class SaveDeliveryConfigurationDto
     public function __construct(
         public ?int $minOrderRubles,
         public ?int $averageDeliveryTimeMinutes,
-        public ?int $kitchenId,
+        public int $branchId,
         public array $zones,
     ) {}
 }

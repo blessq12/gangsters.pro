@@ -68,14 +68,14 @@ final class EloquentKitchenTicketRepository implements KitchenTicketRepository
         });
     }
 
-    public function listActiveByKitchen(int $kitchenId): array
+    public function listActiveByBranch(int $branchId): array
     {
-        return $this->listActiveByKitchenPage($kitchenId, 0, max(1, $this->countActiveByKitchen($kitchenId)));
+        return $this->listActiveByBranchPage($branchId, 0, max(1, $this->countActiveByBranch($branchId)));
     }
 
-    public function listActiveByKitchenPage(int $kitchenId, int $offset, int $limit): array
+    public function listActiveByBranchPage(int $branchId, int $offset, int $limit): array
     {
-        return $this->activeByKitchenQuery($kitchenId)
+        return $this->activeByBranchQuery($branchId)
             ->with('lines')
             ->orderBy('id')
             ->offset(max(0, $offset))
@@ -85,18 +85,18 @@ final class EloquentKitchenTicketRepository implements KitchenTicketRepository
             ->all();
     }
 
-    public function countActiveByKitchen(int $kitchenId): int
+    public function countActiveByBranch(int $branchId): int
     {
-        return (int) $this->activeByKitchenQuery($kitchenId)->count();
+        return (int) $this->activeByBranchQuery($branchId)->count();
     }
 
     /**
      * @return Builder<KIT_Ticket>
      */
-    private function activeByKitchenQuery(int $kitchenId): Builder
+    private function activeByBranchQuery(int $branchId): Builder
     {
         return KIT_Ticket::query()
-            ->where('kitchen_id', $kitchenId)
+            ->where('branch_id', $branchId)
             ->whereIn('status', [
                 KitchenTicketStatus::Queued->value,
                 KitchenTicketStatus::Started->value,

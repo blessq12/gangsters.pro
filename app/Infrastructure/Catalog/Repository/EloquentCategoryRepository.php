@@ -151,6 +151,15 @@ final class EloquentCategoryRepository implements CategoryRepository
         }
     }
 
+    public function delete(int $id): void
+    {
+        $row = CAT_Category::query()->find($id);
+        if (! $row instanceof CAT_Category) {
+            throw new \InvalidArgumentException('Категория не найдена.');
+        }
+        $row->delete();
+    }
+
     public function replaceItems(int $categoryId, array $items): void
     {
         if (! CAT_Category::query()->whereKey($categoryId)->exists()) {

@@ -5,7 +5,8 @@ namespace App\Domain\Core\Order\Policy;
 use Carbon\Carbon;
 
 /**
- * Singleton-конфигурация коммерческих правил.
+ * Коммерческие правила филиала (per-branch).
+ * Подарок филиала — giftProductId; роллы/комплекты — флаги Catalog на входе Formation.
  */
 final class PromotionPolicy
 {
@@ -29,14 +30,26 @@ final class PromotionPolicy
      */
     public function __construct(
         private readonly int $id,
+        private readonly int $branchId,
         private readonly array $giftRules,
         private readonly array $deliveryBenefit,
         private readonly array $complementSetBenefit,
+        private readonly ?int $giftProductId = null,
     ) {}
 
     public function id(): int
     {
         return $this->id;
+    }
+
+    public function branchId(): int
+    {
+        return $this->branchId;
+    }
+
+    public function giftProductId(): ?int
+    {
+        return $this->giftProductId;
     }
 
     /**

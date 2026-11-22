@@ -30,11 +30,20 @@ final class CreateRouteSheetUseCase
     {
         return $this->transaction->run(function () use ($dto): array {
             $orderIds = $this->orderIds($dto->orderIds);
+            $branchId = null;
 
             foreach ($orderIds as $orderId) {
                 $order = $this->orders->findById($orderId);
                 if ($order === null) {
                     throw new \InvalidArgumentException(sprintf('Заказ #%d не найден.', $orderId));
+                }
+                if ($order->branchId() === null || $order->branchId() < 1) {
+                    throw new \InvalidArgumentException(sprintf('У заказа #%d нет филиала.', $orderId));
+                }
+                if ($branchId === null) {
+                    $branchId = $order->branchId();
+                } elseif ($branchId !== $order->branchId()) {
+                    throw new \InvalidArgumentException('Все заказы листа должны быть одного филиала.');
                 }
                 if (! $order->canBeAssignedToRoute()) {
                     throw new \InvalidArgumentException(
@@ -48,7 +57,7 @@ final class CreateRouteSheetUseCase
                 }
             }
 
-            $sheet = RouteSheet::release($orderIds);
+            $sheet = RouteSheet::release((int) $branchId, $orderIds);
             $this->sheets->save($sheet);
             $this->events->publish($sheet);
 

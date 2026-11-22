@@ -2,8 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Domain\Core\Delivery\Tariff\Repository\DeliveryConfigurationRepository;
-use App\Infrastructure\Company\Model\CMP_Kitchen;
+use App\Infrastructure\Company\Model\CMP_Branch;
 use App\Infrastructure\Delivery\Model\DLV_Configuration;
 use App\Infrastructure\Delivery\Model\DLV_Zone;
 use Illuminate\Database\Seeder;
@@ -12,8 +11,8 @@ use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
 /**
- * Тариф доставки из /api/content → DLV_configurations / DLV_zones.
- * Кухня должна уже существовать (CompanySeeder).
+ * Тариф доставки из /api/content → DLV_configurations / DLV_zones на каждый активный филиал.
+ * Филиалы должны уже существовать (CompanySeeder).
  */
 class DeliverySeeder extends Seeder
 {
@@ -26,58 +25,63 @@ class DeliverySeeder extends Seeder
         $settings = is_array($delivery['settings'] ?? null) ? $delivery['settings'] : [];
         $zone = is_array($delivery['zone'] ?? null) ? $delivery['zone'] : [];
 
-        $kitchen = CMP_Kitchen::query()->orderBy('id')->first();
-        $kitchenLatitude = $kitchen?->latitude !== null
-            ? (float) $kitchen->latitude
-            : (isset($zone['kitchen_latitude']) ? (float) $zone['kitchen_latitude'] : 56.513432);
-        $kitchenLongitude = $kitchen?->longitude !== null
-            ? (float) $kitchen->longitude
-            : (isset($zone['kitchen_longitude']) ? (float) $zone['kitchen_longitude'] : 84.986366);
-
-        $geometry = $zone['delivery_zone_geojson'] ?? null;
-        if (! is_array($geometry)) {
-            $geometry = [
-                'type' => 'Polygon',
-                'coordinates' => [
-                    [
-                        [$kitchenLongitude - 0.04, $kitchenLatitude - 0.03],
-                        [$kitchenLongitude + 0.04, $kitchenLatitude - 0.03],
-                        [$kitchenLongitude + 0.04, $kitchenLatitude + 0.03],
-                        [$kitchenLongitude - 0.04, $kitchenLatitude + 0.03],
-                        [$kitchenLongitude - 0.04, $kitchenLatitude - 0.03],
-                    ],
-                ],
-            ];
+        $branches = CMP_Branch::query()->where('is_active', true)->orderBy('id')->get();
+        if ($branches->isEmpty()) {
+            throw new RuntimeException('Нет филиалов: сначала запустите CompanySeeder.');
         }
 
         $feeKopecks = (int) ($settings['delivery_fee_kopecks'] ?? 40_000);
         $minOrder = (int) ($settings['min_order_amount_kopecks'] ?? 100_000);
         $avgMinutes = (int) ($settings['average_delivery_time_minutes'] ?? 90);
+        $sourceGeometry = is_array($zone['delivery_zone_geojson'] ?? null)
+            ? $zone['delivery_zone_geojson']
+            : null;
 
-        DB::transaction(function () use ($kitchen, $geometry, $feeKopecks, $minOrder, $avgMinutes): void {
-            $config = DLV_Configuration::query()->updateOrCreate(
-                ['id' => DeliveryConfigurationRepository::SINGLETON_ID],
-                [
-                    'min_order_amount_kopecks' => $minOrder,
-                    'average_delivery_time_minutes' => $avgMinutes,
-                    'company_kitchen_id' => $kitchen?->id,
-                ],
-            );
+        DB::transaction(function () use ($branches, $sourceGeometry, $feeKopecks, $minOrder, $avgMinutes, $zone): void {
+            foreach ($branches as $branch) {
+                $branchLatitude = $branch->latitude !== null
+                    ? (float) $branch->latitude
+                    : (isset($zone['kitchen_latitude']) ? (float) $zone['kitchen_latitude'] : 56.513432);
+                $branchLongitude = $branch->longitude !== null
+                    ? (float) $branch->longitude
+                    : (isset($zone['kitchen_longitude']) ? (float) $zone['kitchen_longitude'] : 84.986366);
 
-            DLV_Zone::query()->updateOrCreate(
-                [
-                    'configuration_id' => $config->id,
-                    'zone_key' => 'zone-main',
-                ],
-                [
-                    'name' => 'Основная',
-                    'fee_kopecks' => $feeKopecks,
-                    'is_remote' => false,
-                    'geojson' => $geometry,
-                    'delivery_product_id' => null,
-                    'sort_order' => 0,
-                ],
-            );
+                $geometry = $sourceGeometry ?? [
+                    'type' => 'Polygon',
+                    'coordinates' => [
+                        [
+                            [$branchLongitude - 0.04, $branchLatitude - 0.03],
+                            [$branchLongitude + 0.04, $branchLatitude - 0.03],
+                            [$branchLongitude + 0.04, $branchLatitude + 0.03],
+                            [$branchLongitude - 0.04, $branchLatitude + 0.03],
+                            [$branchLongitude - 0.04, $branchLatitude - 0.03],
+                        ],
+                    ],
+                ];
+
+                $config = DLV_Configuration::query()->updateOrCreate(
+                    ['branch_id' => $branch->id],
+                    [
+                        'min_order_amount_kopecks' => $minOrder,
+                        'average_delivery_time_minutes' => $avgMinutes,
+                    ],
+                );
+
+                DLV_Zone::query()->updateOrCreate(
+                    [
+                        'configuration_id' => $config->id,
+                        'zone_key' => 'zone-main',
+                    ],
+                    [
+                        'name' => 'Основная',
+                        'fee_kopecks' => $feeKopecks,
+                        'is_remote' => false,
+                        'geojson' => $geometry,
+                        'delivery_product_id' => null,
+                        'sort_order' => 0,
+                    ],
+                );
+            }
         });
     }
 

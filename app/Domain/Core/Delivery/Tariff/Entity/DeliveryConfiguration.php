@@ -5,8 +5,8 @@ namespace App\Domain\Core\Delivery\Tariff\Entity;
 use App\Domain\Core\Delivery\Tariff\ValueObject\DeliveryZone;
 
 /**
- * Публичная конфигурация доставки: ссылка на кухню Company и список зон.
- * Адрес/координаты кухни здесь не хранятся — только kitchenId.
+ * Публичная конфигурация доставки: ссылка на филиал Company и список зон.
+ * Адрес/координаты филиала здесь не хранятся — только branchId.
  */
 final class DeliveryConfiguration
 {
@@ -17,7 +17,7 @@ final class DeliveryConfiguration
         private readonly int $id,
         private readonly ?int $minOrderAmountKopecks,
         private readonly ?int $averageDeliveryTimeMinutes,
-        private readonly ?int $kitchenId,
+        private readonly ?int $branchId,
         private readonly array $zones,
     ) {}
 
@@ -36,9 +36,9 @@ final class DeliveryConfiguration
         return $this->averageDeliveryTimeMinutes;
     }
 
-    public function kitchenId(): ?int
+    public function branchId(): ?int
     {
-        return $this->kitchenId;
+        return $this->branchId;
     }
 
     /**

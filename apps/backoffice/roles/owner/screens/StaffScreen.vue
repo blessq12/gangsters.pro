@@ -252,7 +252,7 @@ onMounted(loadEmployees);
                     <UiInput v-model="form.email" type="email" />
                 </UiFormField>
                 <UiFormField label="Телефон">
-                    <UiInput v-model="form.phone" />
+                    <UiInput v-model="form.phone" type="tel" />
                 </UiFormField>
                 <UiFormField label="Роль" required :error="fieldErrors.role">
                     <select

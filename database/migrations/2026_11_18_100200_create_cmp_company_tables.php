@@ -15,7 +15,6 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->string('email')->nullable();
             $table->json('socials')->nullable();
-            $table->json('schedule')->nullable();
             $table->timestamps();
         });
 
@@ -48,29 +47,22 @@ return new class extends Migration
             $table->unsignedBigInteger('company_id');
             $table->string('name');
             $table->boolean('is_active')->default(true);
-            $table->timestamps();
-
-            $table->foreign('company_id')->references('id')->on('CMP_companies')->cascadeOnDelete();
-        });
-
-        Schema::create('CMP_kitchens', function (Blueprint $table): void {
-            $table->id();
-            $table->unsignedBigInteger('branch_id');
+            $table->json('schedule')->nullable();
             $table->string('city')->nullable();
             $table->string('street')->nullable();
             $table->string('house')->nullable();
             $table->string('comment')->nullable();
             $table->decimal('latitude', 10, 7)->nullable();
             $table->decimal('longitude', 10, 7)->nullable();
+            $table->string('phone', 32)->nullable();
             $table->timestamps();
 
-            $table->foreign('branch_id')->references('id')->on('CMP_branches')->cascadeOnDelete();
+            $table->foreign('company_id')->references('id')->on('CMP_companies')->cascadeOnDelete();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('CMP_kitchens');
         Schema::dropIfExists('CMP_branches');
         Schema::dropIfExists('CMP_company_documents');
         Schema::dropIfExists('CMP_company_legal');

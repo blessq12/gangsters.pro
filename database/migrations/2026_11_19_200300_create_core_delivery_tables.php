@@ -16,7 +16,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('min_order_amount_kopecks')->nullable();
             $table->unsignedInteger('average_delivery_time_minutes')->nullable();
-            $table->unsignedBigInteger('company_kitchen_id')->nullable()->index();
+            $table->unsignedBigInteger('branch_id')->nullable()->index();
             $table->timestamps();
         });
 

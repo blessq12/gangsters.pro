@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Domain\Core\Order\Enum\ProductPromotionRoleKind;
 use App\Domain\Supporting\Catalog\Enum\CatalogItemKind;
 use App\Domain\Supporting\Catalog\Enum\PriceType;
 use App\Domain\Supporting\Catalog\Enum\ProductStatus;
@@ -12,7 +11,6 @@ use App\Infrastructure\Catalog\Model\CAT_ItemImage;
 use App\Infrastructure\Catalog\Model\CAT_Price;
 use App\Infrastructure\Catalog\Model\CAT_SetLine;
 use App\Infrastructure\Catalog\Model\CAT_Tag;
-use App\Infrastructure\Promotion\Model\PRM_ProductRole;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -21,7 +19,7 @@ use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 
 /**
- * Каталог из публичного API витрины → greenfield CAT_/PRM_product_roles.
+ * Каталог из публичного API витрины → greenfield CAT_items (включая is_roll / is_complement).
  */
 class CatalogSeeder extends Seeder
 {
@@ -44,7 +42,6 @@ class CatalogSeeder extends Seeder
             $this->attachCategoryItems($categoryBlocks, $categories, $products);
             $this->attachItemTags($itemsById, $tags, $products);
             $this->seedSetLines($itemsById, $products);
-            $this->seedPromotionRoles($itemsById, $products);
             $this->purgeObsoleteRecords($categories, $products);
         });
 
@@ -259,6 +256,8 @@ class CatalogSeeder extends Seeder
                 $slug = 'item-'.$id;
             }
 
+            $meta = is_array($row['promotion_meta'] ?? null) ? $row['promotion_meta'] : [];
+
             $item = CAT_Item::query()->updateOrCreate(
                 ['id' => $id],
                 [
@@ -269,6 +268,8 @@ class CatalogSeeder extends Seeder
                     'status' => $status,
                     'kind' => $kind,
                     'is_system' => false,
+                    'is_roll' => ! empty($meta['counts_as_roll']),
+                    'is_complement' => ! empty($meta['complement_set']),
                     'weight' => isset($row['weight']) && is_numeric($row['weight'])
                         ? (int) $row['weight']
                         : null,
@@ -440,77 +441,6 @@ class CatalogSeeder extends Seeder
                     fn ($query) => $query,
                 )
                 ->delete();
-        }
-    }
-
-    /**
-     * @param  array<int, array<string, mixed>>  $itemsById
-     * @param  array<int, CAT_Item>  $products
-     */
-    private function seedPromotionRoles(array $itemsById, array $products): void
-    {
-        $keepKeys = [];
-
-        foreach ($itemsById as $itemId => $row) {
-            $product = $products[$itemId] ?? null;
-            if ($product === null) {
-                continue;
-            }
-
-            $meta = is_array($row['promotion_meta'] ?? null) ? $row['promotion_meta'] : [];
-            $regular = CAT_Price::query()
-                ->where('item_id', $product->id)
-                ->where('type', PriceType::Regular->value)
-                ->first();
-            $priceSnapshot = $regular instanceof CAT_Price ? (int) $regular->amount_kopecks : 0;
-
-            if (! empty($meta['counts_as_roll'])) {
-                $role = ProductPromotionRoleKind::Roll->value;
-                PRM_ProductRole::query()->updateOrCreate(
-                    [
-                        'catalog_item_id' => $product->id,
-                        'role' => $role,
-                    ],
-                    [
-                        'name_snapshot' => (string) $product->name,
-                        'price_kopecks_snapshot' => $priceSnapshot,
-                        'paid_twin_catalog_item_id' => null,
-                    ],
-                );
-                $keepKeys[] = $product->id.':'.$role;
-            }
-
-            if (! empty($meta['complement_set'])) {
-                $role = ProductPromotionRoleKind::Complement->value;
-                $paidTwinId = isset($row['paid_twin_product_id']) && is_numeric($row['paid_twin_product_id'])
-                    ? (int) $row['paid_twin_product_id']
-                    : null;
-
-                PRM_ProductRole::query()->updateOrCreate(
-                    [
-                        'catalog_item_id' => $product->id,
-                        'role' => $role,
-                    ],
-                    [
-                        'name_snapshot' => (string) $product->name,
-                        'price_kopecks_snapshot' => $priceSnapshot,
-                        'paid_twin_catalog_item_id' => $paidTwinId,
-                    ],
-                );
-                $keepKeys[] = $product->id.':'.$role;
-            }
-        }
-
-        if ($keepKeys === []) {
-            return;
-        }
-
-        $roles = PRM_ProductRole::query()->get();
-        foreach ($roles as $roleRow) {
-            $key = $roleRow->catalog_item_id.':'.$roleRow->role;
-            if (! in_array($key, $keepKeys, true)) {
-                $roleRow->delete();
-            }
         }
     }
 

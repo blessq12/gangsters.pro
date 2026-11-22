@@ -14,9 +14,10 @@ final class EloquentPromotionZoneRepository implements PromotionZoneRepository
         private readonly PromotionZoneMapper $mapper,
     ) {}
 
-    public function findAll(): array
+    public function findAllByBranch(int $branchId): array
     {
         return PRM_Zone::query()
+            ->where('branch_id', $branchId)
             ->orderBy('name')
             ->orderBy('id')
             ->get()
@@ -24,9 +25,10 @@ final class EloquentPromotionZoneRepository implements PromotionZoneRepository
             ->all();
     }
 
-    public function listPage(int $offset, int $limit): array
+    public function listPageByBranch(int $branchId, int $offset, int $limit): array
     {
         return PRM_Zone::query()
+            ->where('branch_id', $branchId)
             ->orderBy('name')
             ->orderBy('id')
             ->offset(max(0, $offset))
@@ -36,22 +38,27 @@ final class EloquentPromotionZoneRepository implements PromotionZoneRepository
             ->all();
     }
 
-    public function countAll(): int
+    public function countByBranch(int $branchId): int
     {
-        return (int) PRM_Zone::query()->count();
+        return (int) PRM_Zone::query()
+            ->where('branch_id', $branchId)
+            ->count();
     }
 
-    public function findById(string $id): ?PromotionZone
+    public function findByBranchAndId(int $branchId, string $id): ?PromotionZone
     {
-        $row = PRM_Zone::query()->find($id);
+        $row = PRM_Zone::query()
+            ->where('branch_id', $branchId)
+            ->where('id', $id)
+            ->first();
 
         return $row instanceof PRM_Zone ? $this->mapper->toDomain($row) : null;
     }
 
-    public function replaceAll(array $zones): void
+    public function replaceForBranch(int $branchId, array $zones): void
     {
-        DB::transaction(function () use ($zones): void {
-            PRM_Zone::query()->delete();
+        DB::transaction(function () use ($branchId, $zones): void {
+            PRM_Zone::query()->where('branch_id', $branchId)->delete();
 
             foreach ($zones as $zone) {
                 if (! $zone instanceof PromotionZone) {
@@ -60,6 +67,7 @@ final class EloquentPromotionZoneRepository implements PromotionZoneRepository
 
                 PRM_Zone::query()->create([
                     'id' => $zone->id(),
+                    'branch_id' => $branchId,
                     'name' => $zone->name(),
                     'fee_kopecks' => $zone->feeKopecks(),
                     'is_remote' => $zone->isRemote(),

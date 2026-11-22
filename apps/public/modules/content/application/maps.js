@@ -2,9 +2,9 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import { readYandexMapsApiKey } from "../../../config/site";
 import {
     buildDeliveryZoneBalloonContent,
-    buildYandexMapKitchenPointWidgetUrl,
+    buildYandexMapBranchPointWidgetUrl,
     buildYandexMapWidgetSearchUrl,
-    kitchenAddressLabelOrFallback,
+    branchAddressLabelOrFallback,
 } from "./company";
 
 /**
@@ -71,10 +71,10 @@ export function hasDeliveryZoneGeometry(company) {
  * @param {object|null|undefined} company
  * @returns {[number, number]|null}
  */
-export function kitchenMapCenterOrNull(company) {
+export function branchMapCenterOrNull(company) {
     return pairToYmapsCenter(
-        company?.kitchen_latitude,
-        company?.kitchen_longitude,
+        company?.branch_latitude,
+        company?.branch_longitude,
     );
 }
 
@@ -100,10 +100,10 @@ export async function mountCompanyDeliveryZoneReadonlyMap(container, company) {
         zones,
         geometries,
         geometry: geometries[0] ?? null,
-        center: kitchenMapCenterOrNull(company),
-        kitchenPlacemark: true,
+        center: branchMapCenterOrNull(company),
+        branchPlacemark: true,
         balloonContentHeader: "Самовывоз",
-        balloonContentBody: kitchenAddressLabelOrFallback(company),
+        balloonContentBody: branchAddressLabelOrFallback(company),
         minOrderAmountKopecks: company?.min_order_amount_kopecks ?? null,
     });
 }
@@ -142,17 +142,17 @@ export function resolveDeliveryDockMapMode(input) {
  * @param {object|null|undefined} company
  * @returns {Promise<{ destroy: () => void, refit: () => void, placemarkShown: boolean }|null>}
  */
-export async function mountCompanyKitchenPlacemarkReadonlyMap(container, company) {
+export async function mountCompanyBranchPlacemarkReadonlyMap(container, company) {
     const apiKey = readYandexMapsApiKeyFromSite();
 
     if (!apiKey) {
         return null;
     }
 
-    return mountYandexKitchenPlacemarkReadonlyMap(container, {
+    return mountYandexBranchPlacemarkReadonlyMap(container, {
         apiKey,
-        center: kitchenMapCenterOrNull(company),
-        balloonContent: kitchenAddressLabelOrFallback(company),
+        center: branchMapCenterOrNull(company),
+        balloonContent: branchAddressLabelOrFallback(company),
     });
 }
 
@@ -331,7 +331,7 @@ function resolveMapCenter(explicitCenter, geometry) {
  *   zones?: object[],
  *   center?: [number, number]|null,
  *   zoom?: number,
- *   kitchenPlacemark?: boolean,
+ *   branchPlacemark?: boolean,
  *   balloonContent?: string,
  *   balloonContentHeader?: string,
  *   balloonContentBody?: string,
@@ -347,7 +347,7 @@ export async function mountYandexDeliveryZoneReadonlyMap(container, options) {
         zones = null,
         center = null,
         zoom = 12,
-        kitchenPlacemark = false,
+        branchPlacemark = false,
         balloonContent = "",
         balloonContentHeader = "",
         balloonContentBody = "",
@@ -382,7 +382,7 @@ export async function mountYandexDeliveryZoneReadonlyMap(container, options) {
     );
     const canShowPolygon = nearTomskZones.length > 0;
     const canShowPlacemark =
-        kitchenPlacemark === true
+        branchPlacemark === true
         && center != null
         && isNearTomskArea(center);
 
@@ -486,7 +486,7 @@ export async function mountYandexDeliveryZoneReadonlyMap(container, options) {
  * }} options
  * @returns {Promise<{ destroy: () => void, refit: () => void, placemarkShown: boolean }>}
  */
-export async function mountYandexKitchenPlacemarkReadonlyMap(container, options) {
+export async function mountYandexBranchPlacemarkReadonlyMap(container, options) {
     const {
         apiKey,
         center = null,
@@ -572,12 +572,12 @@ export function useDeliveryZoneReadonlyMap({
 
     const hasMapsApiKey = computed(() => Boolean(readYandexMapsApiKeyFromSite()));
 
-    const hasKitchenAddress = computed(() => Boolean(mapUrl.value));
+    const hasBranchAddress = computed(() => Boolean(mapUrl.value));
 
     const mapDisplayMode = computed(() =>
         resolveDeliveryDockMapMode({
             hasApiKey: hasMapsApiKey.value,
-            hasAddress: hasKitchenAddress.value,
+            hasAddress: hasBranchAddress.value,
             isLoading: deliveryLoading.value && !facts.value,
         }),
     );
@@ -587,15 +587,15 @@ export function useDeliveryZoneReadonlyMap({
     const zoneMapController = ref(null);
     const zoneMapMountFailed = ref(false);
     const zonePolygonShown = ref(false);
-    const kitchenPlacemarkShown = ref(false);
+    const branchPlacemarkShown = ref(false);
 
     /** @type {import('vue').Ref<ResizeObserver|null>} */
     const mapResizeObserver = ref(null);
     /** @type {ReturnType<typeof setTimeout>|null} */
     let mountDelayTimer = null;
 
-    const hasKitchenCoords = computed(
-        () => kitchenMapCenterOrNull(facts.value) != null,
+    const hasBranchCoords = computed(
+        () => branchMapCenterOrNull(facts.value) != null,
     );
 
     const showZonePolygonHint = computed(
@@ -607,11 +607,11 @@ export function useDeliveryZoneReadonlyMap({
             zoneMapController.value != null,
     );
 
-    const showKitchenPlacemarkHint = computed(
+    const showBranchPlacemarkHint = computed(
         () =>
             mapDisplayMode.value === "zone-sdk" &&
-            hasKitchenCoords.value &&
-            !kitchenPlacemarkShown.value &&
+            hasBranchCoords.value &&
+            !branchPlacemarkShown.value &&
             !zoneMapMountFailed.value &&
             zoneMapController.value != null,
     );
@@ -651,7 +651,7 @@ export function useDeliveryZoneReadonlyMap({
         zoneMapController.value?.destroy();
         zoneMapController.value = null;
         zonePolygonShown.value = false;
-        kitchenPlacemarkShown.value = false;
+        branchPlacemarkShown.value = false;
     }
 
     async function syncZoneMap() {
@@ -673,7 +673,7 @@ export function useDeliveryZoneReadonlyMap({
             }
             zoneMapController.value = controller;
             zonePolygonShown.value = controller.polygonShown === true;
-            kitchenPlacemarkShown.value = controller.placemarkShown === true;
+            branchPlacemarkShown.value = controller.placemarkShown === true;
             connectResizeObserver();
             controller.refit?.();
         } catch (error) {
@@ -723,7 +723,7 @@ export function useDeliveryZoneReadonlyMap({
         mapContainerRef,
         zoneMapMountFailed,
         showZonePolygonHint,
-        showKitchenPlacemarkHint,
+        showBranchPlacemarkHint,
         showZoneClickHint,
     };
 }
@@ -737,21 +737,21 @@ export function useDeliveryZoneReadonlyMap({
  *   deliveryLoading: import('vue').ComputedRef<boolean>,
  * }} options
  */
-export function useKitchenAddressReadonlyMap({ facts, deliveryLoading }) {
-    const mapUrl = computed(() => buildYandexMapKitchenPointWidgetUrl(facts.value));
+export function useBranchAddressReadonlyMap({ facts, deliveryLoading }) {
+    const mapUrl = computed(() => buildYandexMapBranchPointWidgetUrl(facts.value));
 
     const addressLabel = computed(() =>
-        kitchenAddressLabelOrFallback(facts.value),
+        branchAddressLabelOrFallback(facts.value),
     );
 
-    const hasKitchenPoint = computed(() => Boolean(addressLabel.value));
+    const hasBranchPoint = computed(() => Boolean(addressLabel.value));
 
     const hasMapsApiKey = computed(() => Boolean(readYandexMapsApiKeyFromSite()));
 
     const mapDisplayMode = computed(() =>
         resolveDeliveryDockMapMode({
             hasApiKey: hasMapsApiKey.value,
-            hasAddress: hasKitchenPoint.value,
+            hasAddress: hasBranchPoint.value,
             isLoading: deliveryLoading.value && !facts.value,
         }),
     );
@@ -805,7 +805,7 @@ export function useKitchenAddressReadonlyMap({ facts, deliveryLoading }) {
         }
 
         try {
-            const controller = await mountCompanyKitchenPlacemarkReadonlyMap(
+            const controller = await mountCompanyBranchPlacemarkReadonlyMap(
                 mapContainerRef.value,
                 facts.value,
             );
@@ -818,7 +818,7 @@ export function useKitchenAddressReadonlyMap({ facts, deliveryLoading }) {
             connectResizeObserver();
             controller.refit?.();
         } catch (error) {
-            console.error("Kitchen address map:", error);
+            console.error("Branch address map:", error);
             mapMountFailed.value = true;
         }
     }

@@ -31,6 +31,7 @@ final class RouteSheetMapper
 
         return RouteSheet::restore(
             (int) $row->id,
+            (int) ($row->branch_id ?? 0),
             (string) $row->status,
             $stops,
             $row->courier_id !== null ? (int) $row->courier_id : null,
@@ -54,6 +55,7 @@ final class RouteSheetMapper
 
         return [
             'sheet' => [
+                'branch_id' => $sheet->branchId(),
                 'status' => $sheet->status(),
                 'courier_id' => $sheet->courierId(),
             ],

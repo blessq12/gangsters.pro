@@ -15,7 +15,7 @@ final class DLV_Configuration extends Model
     protected $fillable = [
         'min_order_amount_kopecks',
         'average_delivery_time_minutes',
-        'company_kitchen_id',
+        'branch_id',
     ];
 
     /**
@@ -24,7 +24,7 @@ final class DLV_Configuration extends Model
     protected $casts = [
         'min_order_amount_kopecks' => 'integer',
         'average_delivery_time_minutes' => 'integer',
-        'company_kitchen_id' => 'integer',
+        'branch_id' => 'integer',
     ];
 
     public function zones(): HasMany

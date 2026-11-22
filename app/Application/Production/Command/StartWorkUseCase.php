@@ -34,7 +34,7 @@ final class StartWorkUseCase
             $ticket = $this->requireTicket($dto->orderId);
 
             try {
-                $ticket->start($order->kitchenId());
+                $ticket->start($order->branchId());
             } catch (\LogicException $exception) {
                 throw new \InvalidArgumentException($exception->getMessage(), 0, $exception);
             }

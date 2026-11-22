@@ -5,15 +5,15 @@ namespace App\Application\Delivery\Command;
 use App\Application\Delivery\DTO\SaveDeliveryConfigurationDto;
 use App\Application\Delivery\Event\DeliveryZonesChangedFactory;
 use App\Application\Delivery\Presenter\DeliveryPresenter;
-use App\Domain\Supporting\Company\Entity\Kitchen;
-use App\Domain\Supporting\Company\Repository\KitchenRepository;
 use App\Domain\Core\Delivery\Tariff\Repository\DeliveryConfigurationRepository;
+use App\Domain\Supporting\Company\Entity\Branch;
+use App\Domain\Supporting\Company\Repository\BranchRepository;
 
 final class SaveDeliveryConfigurationUseCase
 {
     public function __construct(
         private readonly DeliveryConfigurationRepository $delivery,
-        private readonly KitchenRepository $kitchens,
+        private readonly BranchRepository $branches,
         private readonly DeliveryPresenter $presenter,
         private readonly DeliveryZonesChangedFactory $zonesChanged,
     ) {}
@@ -31,16 +31,14 @@ final class SaveDeliveryConfigurationUseCase
             throw new \InvalidArgumentException('Среднее время доставки не может быть отрицательным.');
         }
 
-        $kitchenId = $dto->kitchenId;
-        $kitchen = null;
-        if ($kitchenId !== null) {
-            if ($kitchenId < 1) {
-                throw new \InvalidArgumentException('Некорректный kitchen_id.');
-            }
-            $kitchen = $this->kitchens->findById($kitchenId);
-            if (! $kitchen instanceof Kitchen) {
-                throw new \InvalidArgumentException('Кухня не найдена.');
-            }
+        $branchId = $dto->branchId;
+        if ($branchId < 1) {
+            throw new \InvalidArgumentException('Некорректный branch_id.');
+        }
+
+        $branch = $this->branches->findById($branchId);
+        if (! $branch instanceof Branch) {
+            throw new \InvalidArgumentException('Филиал не найден.');
         }
 
         $zones = [];
@@ -68,12 +66,12 @@ final class SaveDeliveryConfigurationUseCase
             ];
         }
 
-        $zonesBefore = $this->zonesChanged->snapshot($this->delivery->findPublic());
+        $zonesBefore = $this->zonesChanged->snapshot($this->delivery->findByBranch($branchId));
 
-        $configuration = $this->delivery->saveSettings(
+        $configuration = $this->delivery->saveSettingsForBranch(
+            branchId: $branchId,
             minOrderAmountKopecks: $dto->minOrderRubles === null ? null : $dto->minOrderRubles * 100,
             averageDeliveryTimeMinutes: $dto->averageDeliveryTimeMinutes,
-            kitchenId: $kitchenId,
             zones: $zones,
         );
 
@@ -82,6 +80,6 @@ final class SaveDeliveryConfigurationUseCase
             event($event);
         }
 
-        return $this->presenter->present($configuration, $kitchen);
+        return $this->presenter->present($configuration, $branch);
     }
 }

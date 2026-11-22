@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Backoffice;
 
 use App\Application\Promotion\Command\AssignProductPromotionRoleUseCase;
+use App\Application\Promotion\Command\DeleteProductPromotionRoleUseCase;
 use App\Application\Promotion\Command\SavePromotionPolicyUseCase;
 use App\Application\Promotion\Command\SyncPromotionZonesUseCase;
 use App\Application\Promotion\DTO\AssignProductPromotionRoleDto;
@@ -17,10 +18,14 @@ use InvalidArgumentException;
 
 final class PromotionController extends Controller
 {
-    public function show(GetAdminPromotionPolicyUseCase $useCase): JsonResponse
+    public function show(Request $request, GetAdminPromotionPolicyUseCase $useCase): JsonResponse
     {
+        $validated = $request->validate([
+            'branch_id' => ['required', 'integer', 'min:1'],
+        ]);
+
         try {
-            return response()->json($useCase->execute());
+            return response()->json($useCase->execute((int) $validated['branch_id']));
         } catch (InvalidArgumentException $exception) {
             return response()->json(['message' => $exception->getMessage()], 404);
         }
@@ -28,7 +33,12 @@ final class PromotionController extends Controller
 
     public function listRoles(Request $request, ListAdminPromotionRolesUseCase $useCase): JsonResponse
     {
+        $validated = $request->validate([
+            'branch_id' => ['required', 'integer', 'min:1'],
+        ]);
+
         return response()->json($useCase->execute(
+            branchId: (int) $validated['branch_id'],
             offset: (int) $request->query('offset', 0),
             limit: (int) $request->query('limit', 20),
         ));
@@ -36,7 +46,12 @@ final class PromotionController extends Controller
 
     public function listZones(Request $request, ListAdminPromotionZonesUseCase $useCase): JsonResponse
     {
+        $validated = $request->validate([
+            'branch_id' => ['required', 'integer', 'min:1'],
+        ]);
+
         return response()->json($useCase->execute(
+            branchId: (int) $validated['branch_id'],
             offset: (int) $request->query('offset', 0),
             limit: (int) $request->query('limit', 20),
         ));
@@ -55,6 +70,7 @@ final class PromotionController extends Controller
     public function assignRole(Request $request, AssignProductPromotionRoleUseCase $useCase): JsonResponse
     {
         $validated = $request->validate([
+            'branch_id' => ['required', 'integer', 'min:1'],
             'product_id' => ['required', 'integer', 'min:1'],
             'role' => ['required', 'string', 'in:roll,gift,complement'],
             'name' => ['required', 'string', 'max:255'],
@@ -64,6 +80,7 @@ final class PromotionController extends Controller
 
         try {
             $result = $useCase->execute(new AssignProductPromotionRoleDto(
+                branchId: (int) $validated['branch_id'],
                 productId: (int) $validated['product_id'],
                 role: $validated['role'],
                 name: $validated['name'],
@@ -79,10 +96,31 @@ final class PromotionController extends Controller
         return response()->json($result, 201);
     }
 
-    public function syncZones(SyncPromotionZonesUseCase $useCase): JsonResponse
+    public function destroyRole(Request $request, DeleteProductPromotionRoleUseCase $useCase): JsonResponse
     {
+        $validated = $request->validate([
+            'branch_id' => ['required', 'integer', 'min:1'],
+            'product_id' => ['required', 'integer', 'min:1'],
+            'role' => ['required', 'string', 'in:roll,gift,complement'],
+        ]);
+
         try {
-            return response()->json($useCase->execute());
+            $useCase->execute((int) $validated['branch_id'], (int) $validated['product_id'], $validated['role']);
+        } catch (InvalidArgumentException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
+
+        return response()->json(null, 204);
+    }
+
+    public function syncZones(Request $request, SyncPromotionZonesUseCase $useCase): JsonResponse
+    {
+        $validated = $request->validate([
+            'branch_id' => ['required', 'integer', 'min:1'],
+        ]);
+
+        try {
+            return response()->json($useCase->execute((int) $validated['branch_id']));
         } catch (InvalidArgumentException $exception) {
             return response()->json(['message' => $exception->getMessage()], 422);
         }
@@ -94,11 +132,13 @@ final class PromotionController extends Controller
         int $status,
     ): JsonResponse {
         $validated = $request->validate([
+            'branch_id' => ['required', 'integer', 'min:1'],
             'gift_pickup_min_order_kopecks' => ['required', 'integer', 'min:0'],
             'gift_courier_min_order_kopecks' => ['required', 'integer', 'min:0'],
             'gift_courier_weekdays' => ['sometimes', 'array'],
             'gift_courier_weekdays.*' => ['integer', 'min:1', 'max:7'],
             'gift_benefit_active' => ['required', 'boolean'],
+            'gift_product_id' => ['nullable', 'integer', 'min:1'],
             'delivery_free_threshold_kopecks' => ['required', 'integer', 'min:0'],
             'delivery_outside_zone_surcharge_kopecks' => ['required', 'integer', 'min:0'],
             'delivery_benefit_active' => ['required', 'boolean'],
@@ -109,12 +149,14 @@ final class PromotionController extends Controller
 
         try {
             $result = $useCase->execute(new SavePromotionPolicyDto(
+                branchId: (int) $validated['branch_id'],
                 giftPickupMinOrderKopecks: (int) $validated['gift_pickup_min_order_kopecks'],
                 giftCourierMinOrderKopecks: (int) $validated['gift_courier_min_order_kopecks'],
                 giftCourierWeekdays: is_array($validated['gift_courier_weekdays'] ?? null)
                     ? $validated['gift_courier_weekdays']
                     : [],
                 giftBenefitActive: (bool) $validated['gift_benefit_active'],
+                giftProductId: isset($validated['gift_product_id']) ? (int) $validated['gift_product_id'] : null,
                 deliveryFreeThresholdKopecks: (int) $validated['delivery_free_threshold_kopecks'],
                 deliveryOutsideZoneSurchargeKopecks: (int) $validated['delivery_outside_zone_surcharge_kopecks'],
                 deliveryBenefitActive: (bool) $validated['delivery_benefit_active'],

@@ -51,6 +51,25 @@ final class EloquentPromotionRepository implements CampaignRepository
         return (int) MKT_Promotion::query()->count();
     }
 
+    public function findById(int $id): ?Campaign
+    {
+        $row = MKT_Promotion::query()->find($id);
+
+        return $row instanceof MKT_Promotion ? $this->mapper->toDomain($row) : null;
+    }
+
+    public function findStoredImagePath(int $id): ?string
+    {
+        $row = MKT_Promotion::query()->find($id);
+        if (! $row instanceof MKT_Promotion) {
+            return null;
+        }
+
+        $path = trim((string) ($row->image ?? ''));
+
+        return $path !== '' ? $path : null;
+    }
+
     public function save(?int $id, string $title, ?string $body, bool $isActive, ?string $imagePath): Campaign
     {
         $row = $id === null ? new MKT_Promotion() : MKT_Promotion::query()->find($id);

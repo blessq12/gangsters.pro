@@ -14,7 +14,7 @@ final class KIT_Ticket extends Model
      */
     protected $fillable = [
         'order_id',
-        'kitchen_id',
+        'branch_id',
         'status',
         'started_at',
         'completed_at',
@@ -25,7 +25,7 @@ final class KIT_Ticket extends Model
      */
     protected $casts = [
         'order_id' => 'integer',
-        'kitchen_id' => 'integer',
+        'branch_id' => 'integer',
         'started_at' => 'datetime',
         'completed_at' => 'datetime',
     ];

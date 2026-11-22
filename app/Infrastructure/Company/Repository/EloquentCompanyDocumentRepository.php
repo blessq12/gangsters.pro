@@ -15,6 +15,15 @@ final class EloquentCompanyDocumentRepository implements CompanyDocumentReposito
         private readonly CompanyDocumentMapper $mapper,
     ) {}
 
+    public function findById(int $id): ?CompanyDocument
+    {
+        $row = CMP_CompanyDocument::query()
+            ->where('company_id', CompanyRepository::SINGLETON_ID)
+            ->find($id);
+
+        return $row instanceof CMP_CompanyDocument ? $this->mapper->toDomain($row) : null;
+    }
+
     public function findAllOrdered(): array
     {
         return CMP_CompanyDocument::query()

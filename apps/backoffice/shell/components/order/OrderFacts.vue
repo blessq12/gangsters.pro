@@ -19,7 +19,7 @@ import {
 
 const props = defineProps({
     order: { type: Object, required: true },
-    kitchenTitle: { type: String, default: "" },
+    branchTitle: { type: String, default: "" },
 });
 
 const lines = computed(() => props.order?.cart?.lines ?? []);
@@ -84,8 +84,8 @@ function formatDate(value) {
                 </span>
             </p>
             <p>
-                <span class="text-bo-muted">Кухня</span>
-                <span class="mt-1 block">{{ kitchenTitle || (order.kitchen_id ? `Кухня #${order.kitchen_id}` : "Ещё не назначена") }}</span>
+                <span class="text-bo-muted">Филиал</span>
+                <span class="mt-1 block">{{ branchTitle || (order.branch_id ? `Филиал #${order.branch_id}` : "Ещё не назначен") }}</span>
             </p>
             <p>
                 <span class="text-bo-muted">Сумма</span>

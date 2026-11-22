@@ -9,7 +9,9 @@ import {
 
 const ruMask = new Mask({
     mask: RU_PHONE_MASKA_PATTERN,
-    tokens: RU_PHONE_MASKA_TOKENS,
+    ...(Object.keys(RU_PHONE_MASKA_TOKENS).length > 0
+        ? { tokens: RU_PHONE_MASKA_TOKENS }
+        : {}),
 });
 
 function digitsToMaskedDisplay(digitsNormalized) {

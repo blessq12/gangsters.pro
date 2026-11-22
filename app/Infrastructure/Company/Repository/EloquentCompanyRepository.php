@@ -27,7 +27,6 @@ final class EloquentCompanyRepository implements CompanyRepository
             [
                 'name' => $company->name(),
                 'socials' => [],
-                'schedule' => [],
             ],
         );
         $row->fill([
@@ -36,7 +35,6 @@ final class EloquentCompanyRepository implements CompanyRepository
             'phone' => $company->phone(),
             'email' => $company->email(),
             'socials' => $company->socials()->toArray(),
-            'schedule' => $company->schedule(),
         ]);
         $row->save();
     }

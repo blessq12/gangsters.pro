@@ -1,39 +1,32 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from "vue";
+import { useRouter } from "vue-router";
 import {
     getCompany,
     listBranches,
     listDocuments,
-    listKitchens,
-    storeBranch,
     storeCompany,
-    storeDocument,
-    storeKitchen,
-    updateBranch,
     updateCompany,
-    updateDocument,
-    updateKitchen,
 } from "../../../api/company.js";
-import { useApi } from "../../../shell/composables/useApi.js";
-import { usePagedList } from "../../../shell/composables/usePagedList.js";
-import { useToast } from "../../../shell/composables/useToast.js";
+import ShellIcon from "../../../shell/components/ShellIcon.vue";
 import UiBadge from "../../../shell/components/ui/UiBadge.vue";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
 import UiCard from "../../../shell/components/ui/UiCard.vue";
 import UiFormField from "../../../shell/components/ui/UiFormField.vue";
 import UiInput from "../../../shell/components/ui/UiInput.vue";
-import UiModal from "../../../shell/components/ui/UiModal.vue";
 import UiPagination from "../../../shell/components/ui/UiPagination.vue";
 import UiTable from "../../../shell/components/ui/UiTable.vue";
+import { useApi } from "../../../shell/composables/useApi.js";
+import { usePagedList } from "../../../shell/composables/usePagedList.js";
+import { useToast } from "../../../shell/composables/useToast.js";
 
+const router = useRouter();
 const toast = useToast();
 const loadApi = useApi();
 const saveApi = useApi();
 
 const tab = ref("company");
 const companyExists = ref(false);
-const companyId = ref(null);
-const branchOptions = ref([]);
 const {
     page: branchesPage,
     perPage: branchesPerPage,
@@ -41,14 +34,6 @@ const {
     items: branches,
     offset: branchesOffset,
     applyPayload: applyBranches,
-} = usePagedList();
-const {
-    page: kitchensPage,
-    perPage: kitchensPerPage,
-    total: kitchensTotal,
-    items: kitchens,
-    offset: kitchensOffset,
-    applyPayload: applyKitchens,
 } = usePagedList();
 const {
     page: documentsPage,
@@ -69,71 +54,39 @@ const companyForm = reactive({
     inst: "",
     site_url: "",
     whatsapp: "",
-    scheduleJson: "",
+    full_name: "",
+    inn: "",
+    ogrn: "",
 });
 const companyErrors = reactive({});
-
-const modalOpen = ref(false);
-const modalKind = ref("branch");
-const editingId = ref(null);
-const fieldErrors = reactive({});
-const form = reactive({
-    name: "",
-    is_active: true,
-    branch_id: "",
-    city: "",
-    street: "",
-    house: "",
-    comment: "",
-    latitude: "",
-    longitude: "",
-    slug: "",
-    content: "",
-});
 
 const tabs = [
     { id: "company", label: "Компания" },
     { id: "branches", label: "Филиалы" },
-    { id: "kitchens", label: "Кухни" },
     { id: "documents", label: "Документы" },
 ];
 
 const branchColumns = [
-    { key: "id", label: "ID", width: "64px" },
     { key: "name", label: "Название" },
-    { key: "is_active", label: "Активен", width: "100px" },
-    { key: "actions", label: "", width: "120px" },
-];
-
-const kitchenColumns = [
-    { key: "id", label: "ID", width: "64px" },
-    { key: "branch_id", label: "Филиал", width: "90px" },
+    { key: "phone", label: "Телефон", width: "160px" },
     { key: "address", label: "Адрес" },
-    { key: "actions", label: "", width: "120px" },
+    { key: "is_active", label: "Активен", width: "100px" },
+    { key: "actions", label: "", width: "64px" },
 ];
 
 const documentColumns = [
     { key: "slug", label: "Slug" },
     { key: "name", label: "Название" },
-    { key: "actions", label: "", width: "120px" },
+    { key: "actions", label: "", width: "64px" },
 ];
 
-const kitchenRows = computed(() =>
-    kitchens.value.map((row) => ({
+const branchRows = computed(() =>
+    branches.value.map((row) => ({
         ...row,
+        phone: row.phone || "—",
         address: [row.city, row.street, row.house].filter(Boolean).join(", ") || "—",
     })),
 );
-
-const modalTitle = computed(() => {
-    const labels = {
-        branch: "филиал",
-        kitchen: "кухню",
-        document: "документ",
-    };
-    const noun = labels[modalKind.value] || "запись";
-    return editingId.value ? `Редактировать ${noun}` : `Новый ${noun}`;
-});
 
 function clearErrors(target) {
     Object.keys(target).forEach((key) => {
@@ -141,25 +94,9 @@ function clearErrors(target) {
     });
 }
 
-function resetModalForm() {
-    form.name = "";
-    form.is_active = true;
-    form.branch_id = "";
-    form.city = "";
-    form.street = "";
-    form.house = "";
-    form.comment = "";
-    form.latitude = "";
-    form.longitude = "";
-    form.slug = "";
-    form.content = "";
-    clearErrors(fieldErrors);
-}
-
 function applyCompany(payload) {
     const company = payload?.company ?? null;
     companyExists.value = Boolean(company?.id);
-    companyId.value = company?.id ?? null;
     companyForm.name = company?.name ?? "";
     companyForm.description = company?.description ?? "";
     companyForm.phone = company?.phone ?? "";
@@ -169,9 +106,10 @@ function applyCompany(payload) {
     companyForm.inst = company?.socials?.inst ?? "";
     companyForm.site_url = company?.socials?.site_url ?? "";
     companyForm.whatsapp = company?.socials?.whatsapp ?? "";
-    companyForm.scheduleJson = company?.schedule
-        ? JSON.stringify(company.schedule, null, 2)
-        : "";
+    const legal = payload?.legal ?? {};
+    companyForm.full_name = legal.full_name ?? "";
+    companyForm.inn = legal.inn ?? "";
+    companyForm.ogrn = legal.ogrn ?? "";
 }
 
 async function loadCompany() {
@@ -180,15 +118,6 @@ async function loadCompany() {
         applyCompany(payload);
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось загрузить компанию");
-    }
-}
-
-async function loadBranchOptions() {
-    try {
-        const payload = await listBranches({ offset: 0, limit: 100 });
-        branchOptions.value = Array.isArray(payload?.items) ? payload.items : [];
-    } catch {
-        branchOptions.value = [];
     }
 }
 
@@ -201,18 +130,6 @@ async function loadBranches() {
         applyBranches(payload);
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось загрузить филиалы");
-    }
-}
-
-async function loadKitchens() {
-    try {
-        const payload = await loadApi.run(() => listKitchens({
-            offset: kitchensOffset.value,
-            limit: kitchensPerPage,
-        }));
-        applyKitchens(payload);
-    } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Не удалось загрузить кухни");
     }
 }
 
@@ -231,9 +148,7 @@ async function loadDocuments() {
 async function loadAll() {
     await Promise.all([
         loadCompany(),
-        loadBranchOptions(),
         loadBranches(),
-        loadKitchens(),
         loadDocuments(),
     ]);
 }
@@ -243,13 +158,6 @@ function validateCompany() {
     if (!String(companyForm.name).trim()) {
         companyErrors.name = "Обязательное поле";
     }
-    if (companyForm.scheduleJson.trim()) {
-        try {
-            JSON.parse(companyForm.scheduleJson);
-        } catch {
-            companyErrors.schedule = "Невалидный JSON";
-        }
-    }
     return Object.keys(companyErrors).length === 0;
 }
 
@@ -257,11 +165,6 @@ async function saveCompanyForm() {
     if (!validateCompany()) {
         toast.error("Проверьте обязательные поля");
         return;
-    }
-
-    let schedule = {};
-    if (companyForm.scheduleJson.trim()) {
-        schedule = JSON.parse(companyForm.scheduleJson);
     }
 
     const body = {
@@ -276,7 +179,11 @@ async function saveCompanyForm() {
             site_url: companyForm.site_url || null,
             whatsapp: companyForm.whatsapp || null,
         },
-        schedule,
+        legal: {
+            full_name: companyForm.full_name.trim() || null,
+            inn: companyForm.inn.trim() || null,
+            ogrn: companyForm.ogrn.trim() || null,
+        },
     };
 
     try {
@@ -291,105 +198,22 @@ async function saveCompanyForm() {
 }
 
 function openCreate(kind) {
-    modalKind.value = kind;
-    editingId.value = null;
-    resetModalForm();
-    if (kind === "kitchen" && branchOptions.value[0]) {
-        form.branch_id = String(branchOptions.value[0].id);
+    if (kind === "branch") {
+        router.push({ name: "owner-company-branch", params: { id: "new" } });
+        return;
     }
-    modalOpen.value = true;
+    router.push({ name: "owner-company-document", params: { id: "new" } });
 }
 
 function openEdit(kind, row) {
-    modalKind.value = kind;
-    editingId.value = row.id;
-    resetModalForm();
     if (kind === "branch") {
-        form.name = row.name ?? "";
-        form.is_active = Boolean(row.is_active);
-    } else if (kind === "kitchen") {
-        form.branch_id = String(row.branch_id ?? "");
-        form.city = row.city ?? "";
-        form.street = row.street ?? "";
-        form.house = row.house ?? "";
-        form.comment = row.comment ?? "";
-        form.latitude = row.latitude != null ? String(row.latitude) : "";
-        form.longitude = row.longitude != null ? String(row.longitude) : "";
-    } else if (kind === "document") {
-        form.slug = row.slug ?? "";
-        form.name = row.name ?? "";
-        form.content = row.content ?? "";
-    }
-    modalOpen.value = true;
-}
-
-function validateModal() {
-    clearErrors(fieldErrors);
-    if (modalKind.value === "branch" || modalKind.value === "document") {
-        if (!String(form.name).trim()) {
-            fieldErrors.name = "Обязательное поле";
-        }
-    }
-    if (modalKind.value === "kitchen") {
-        if (!String(form.branch_id).trim()) {
-            fieldErrors.branch_id = "Обязательное поле";
-        }
-    }
-    return Object.keys(fieldErrors).length === 0;
-}
-
-async function saveModal() {
-    if (!validateModal()) {
-        toast.error("Проверьте обязательные поля");
+        router.push({ name: "owner-company-branch", params: { id: row.id } });
         return;
     }
-
-    const kind = modalKind.value;
-    const id = editingId.value;
-
-    try {
-        await saveApi.run(async () => {
-            if (kind === "branch") {
-                const body = {
-                    name: form.name.trim(),
-                    is_active: Boolean(form.is_active),
-                };
-                return id ? updateBranch(id, body) : storeBranch(body);
-            }
-            if (kind === "kitchen") {
-                const body = {
-                    branch_id: Number(form.branch_id),
-                    city: form.city || null,
-                    street: form.street || null,
-                    house: form.house || null,
-                    comment: form.comment || null,
-                    latitude: form.latitude === "" ? null : Number(form.latitude),
-                    longitude: form.longitude === "" ? null : Number(form.longitude),
-                };
-                return id ? updateKitchen(id, body) : storeKitchen(body);
-            }
-            const body = {
-                name: form.name.trim(),
-                content: form.content || null,
-            };
-            return id ? updateDocument(id, body) : storeDocument(body);
-        });
-        toast.success(id ? "Сохранено" : "Создано");
-        modalOpen.value = false;
-        if (kind === "branch") {
-            await Promise.all([loadBranches(), loadBranchOptions()]);
-        } else if (kind === "kitchen") {
-            await loadKitchens();
-        } else {
-            await loadDocuments();
-        }
-    } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Ошибка сохранения");
-    }
+    router.push({ name: "owner-company-document", params: { id: row.id } });
 }
 
 watch(branchesPage, loadBranches);
-watch(kitchensPage, loadKitchens);
 watch(documentsPage, loadDocuments);
 onMounted(loadAll);
 </script>
@@ -424,11 +248,22 @@ onMounted(loadAll);
                     />
                 </UiFormField>
                 <UiFormField label="Телефон">
-                    <UiInput v-model="companyForm.phone" />
+                    <UiInput v-model="companyForm.phone" type="tel" />
                 </UiFormField>
                 <UiFormField label="Email">
                     <UiInput v-model="companyForm.email" type="email" />
                 </UiFormField>
+                <UiFormField label="Полное наименование">
+                    <UiInput v-model="companyForm.full_name" />
+                </UiFormField>
+                <div class="grid gap-3 md:grid-cols-2">
+                    <UiFormField label="ИНН">
+                        <UiInput v-model="companyForm.inn" />
+                    </UiFormField>
+                    <UiFormField label="ОГРН">
+                        <UiInput v-model="companyForm.ogrn" />
+                    </UiFormField>
+                </div>
                 <div class="grid gap-3 md:grid-cols-2">
                     <UiFormField label="Telegram">
                         <UiInput v-model="companyForm.telegram" />
@@ -443,16 +278,9 @@ onMounted(loadAll);
                         <UiInput v-model="companyForm.site_url" />
                     </UiFormField>
                     <UiFormField label="WhatsApp">
-                        <UiInput v-model="companyForm.whatsapp" />
+                        <UiInput v-model="companyForm.whatsapp" type="tel" />
                     </UiFormField>
                 </div>
-                <UiFormField label="Расписание (JSON)" :error="companyErrors.schedule">
-                    <textarea
-                        v-model="companyForm.scheduleJson"
-                        rows="8"
-                        class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 transition-colors hover:border-bo-border-strong focus:border-bo-accent focus:outline-none font-mono text-xs"
-                    />
-                </UiFormField>
                 <UiButton :disabled="saveApi.loading" @click="saveCompanyForm">
                     Сохранить
                 </UiButton>
@@ -460,11 +288,13 @@ onMounted(loadAll);
 
             <div v-else-if="tab === 'branches'" class="space-y-5">
                 <div class="flex justify-end">
-                    <UiButton @click="openCreate('branch')">+ Филиал</UiButton>
+                    <UiButton @click="openCreate('branch')">
+                        + Филиал
+                    </UiButton>
                 </div>
                 <UiTable
                     :columns="branchColumns"
-                    :rows="branches"
+                    :rows="branchRows"
                     :loading="loadApi.loading"
                     empty-text="Нет филиалов"
                 >
@@ -475,7 +305,14 @@ onMounted(loadAll);
                         />
                     </template>
                     <template #cell-actions="{ row }">
-                        <UiButton @click.stop="openEdit('branch', row)">Редактировать</UiButton>
+                        <UiButton
+                            class="!h-9 !px-2.5"
+                            title="Редактировать"
+                            aria-label="Редактировать"
+                            @click.stop="openEdit('branch', row)"
+                        >
+                            <ShellIcon name="edit" class="h-4 w-4" />
+                        </UiButton>
                     </template>
                 </UiTable>
                 <UiPagination
@@ -486,31 +323,11 @@ onMounted(loadAll);
                 />
             </div>
 
-            <div v-else-if="tab === 'kitchens'" class="space-y-5">
-                <div class="flex justify-end">
-                    <UiButton @click="openCreate('kitchen')">+ Кухня</UiButton>
-                </div>
-                <UiTable
-                    :columns="kitchenColumns"
-                    :rows="kitchenRows"
-                    :loading="loadApi.loading"
-                    empty-text="Нет кухонь"
-                >
-                    <template #cell-actions="{ row }">
-                        <UiButton @click.stop="openEdit('kitchen', row)">Редактировать</UiButton>
-                    </template>
-                </UiTable>
-                <UiPagination
-                    :page="kitchensPage"
-                    :per-page="kitchensPerPage"
-                    :total="kitchensTotal"
-                    @update:page="kitchensPage = $event"
-                />
-            </div>
-
             <div v-else class="space-y-5">
                 <div class="flex justify-end">
-                    <UiButton @click="openCreate('document')">+ Документ</UiButton>
+                    <UiButton @click="openCreate('document')">
+                        + Документ
+                    </UiButton>
                 </div>
                 <UiTable
                     :columns="documentColumns"
@@ -519,7 +336,14 @@ onMounted(loadAll);
                     empty-text="Нет документов"
                 >
                     <template #cell-actions="{ row }">
-                        <UiButton @click.stop="openEdit('document', row)">Редактировать</UiButton>
+                        <UiButton
+                            class="!h-9 !px-2.5"
+                            title="Редактировать"
+                            aria-label="Редактировать"
+                            @click.stop="openEdit('document', row)"
+                        >
+                            <ShellIcon name="edit" class="h-4 w-4" />
+                        </UiButton>
                     </template>
                 </UiTable>
                 <UiPagination
@@ -530,77 +354,5 @@ onMounted(loadAll);
                 />
             </div>
         </UiCard>
-
-        <UiModal :open="modalOpen" :title="modalTitle" @close="modalOpen = false">
-            <div class="space-y-5">
-                <template v-if="modalKind === 'branch'">
-                    <UiFormField label="Название" required :error="fieldErrors.name">
-                        <UiInput v-model="form.name" />
-                    </UiFormField>
-                    <UiFormField label="Активен">
-                        <input v-model="form.is_active" type="checkbox" class="mt-2">
-                    </UiFormField>
-                </template>
-
-                <template v-else-if="modalKind === 'kitchen'">
-                    <UiFormField label="Филиал (branch_id)" required :error="fieldErrors.branch_id">
-                        <select
-                            v-model="form.branch_id"
-                            class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 transition-colors hover:border-bo-border-strong focus:border-bo-accent focus:outline-none"
-                        >
-                            <option value="">—</option>
-                            <option
-                                v-for="branch in branchOptions"
-                                :key="branch.id"
-                                :value="String(branch.id)"
-                            >
-                                {{ branch.id }} — {{ branch.name }}
-                            </option>
-                        </select>
-                    </UiFormField>
-                    <UiFormField label="Город">
-                        <UiInput v-model="form.city" />
-                    </UiFormField>
-                    <UiFormField label="Улица">
-                        <UiInput v-model="form.street" />
-                    </UiFormField>
-                    <UiFormField label="Дом">
-                        <UiInput v-model="form.house" />
-                    </UiFormField>
-                    <UiFormField label="Комментарий">
-                        <UiInput v-model="form.comment" />
-                    </UiFormField>
-                    <div class="grid gap-3 md:grid-cols-2">
-                        <UiFormField label="Широта">
-                            <UiInput v-model="form.latitude" type="number" />
-                        </UiFormField>
-                        <UiFormField label="Долгота">
-                            <UiInput v-model="form.longitude" type="number" />
-                        </UiFormField>
-                    </div>
-                </template>
-
-                <template v-else>
-                    <UiFormField v-if="editingId" label="Slug">
-                        <UiInput v-model="form.slug" disabled />
-                    </UiFormField>
-                    <UiFormField label="Название" required :error="fieldErrors.name">
-                        <UiInput v-model="form.name" />
-                    </UiFormField>
-                    <UiFormField label="Контент">
-                        <textarea
-                            v-model="form.content"
-                            rows="6"
-                            class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 transition-colors hover:border-bo-border-strong focus:border-bo-accent focus:outline-none"
-                        />
-                    </UiFormField>
-                </template>
-            </div>
-
-            <template #footer>
-                <UiButton @click="modalOpen = false">Отмена</UiButton>
-                <UiButton :disabled="saveApi.loading" @click="saveModal">Сохранить</UiButton>
-            </template>
-        </UiModal>
     </div>
 </template>

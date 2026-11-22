@@ -24,12 +24,11 @@ export function getOrder(id) {
 }
 
 /**
- * Подтверждение: accept + кухня → OrderConfirmed.
+ * Подтверждение: accept + confirm → OrderConfirmed (филиал уже на заказе).
  * @param {number|string} id
- * @param {{ kitchen_id: number }} data
  */
-export function acceptOrder(id, data) {
-    return request("POST", `/orders/${id}/accept`, data);
+export function acceptOrder(id) {
+    return request("POST", `/orders/${id}/accept`, {});
 }
 
 /**
@@ -44,10 +43,10 @@ export function cancelOrder(id) {
 
 /**
  * @param {number|string} id
- * @param {{ kitchen_id: number }} data
+ * @param {{ branch_id: number }} data
  */
-export function reassignKitchen(id, data) {
-    return request("POST", `/orders/${id}/reassign-kitchen`, data);
+export function reassignBranch(id, data) {
+    return request("POST", `/orders/${id}/reassign-branch`, data);
 }
 
 /** @param {number|string} id */

@@ -1,38 +1,63 @@
 {
-  "_role-administrator-C5RkaalH.js": {
-    "file": "assets/role-administrator-C5RkaalH.js",
+  "_role-administrator-Dxc678zI.js": {
+    "file": "assets/role-administrator-Dxc678zI.js",
     "name": "role-administrator",
     "isDynamicEntry": true
   },
-  "_role-courier-BzDb0pEZ.js": {
-    "file": "assets/role-courier-BzDb0pEZ.js",
+  "_role-courier-lp_KLUoh.js": {
+    "file": "assets/role-courier-lp_KLUoh.js",
     "name": "role-courier",
     "isDynamicEntry": true,
     "imports": [
-      "_role-administrator-C5RkaalH.js"
+      "_role-administrator-Dxc678zI.js"
+    ]
+  },
+  "_role-owner-!~{004}~.js": {
+    "file": "assets/role-owner-DsKEusIc.css",
+    "src": "_role-owner-!~{004}~.js"
+  },
+  "_role-owner-DZdd71ay.js": {
+    "file": "assets/role-owner-DZdd71ay.js",
+    "name": "role-owner",
+    "isDynamicEntry": true,
+    "imports": [
+      "_role-administrator-Dxc678zI.js",
+      "_vendor-tiptap-C9Whgte7.js"
+    ],
+    "css": [
+      "assets/role-owner-DsKEusIc.css"
+    ]
+  },
+  "_vendor-tiptap-C9Whgte7.js": {
+    "file": "assets/vendor-tiptap-C9Whgte7.js",
+    "name": "vendor-tiptap",
+    "imports": [
+      "_role-administrator-Dxc678zI.js"
     ]
   },
   "apps/backoffice/app.js": {
-    "file": "assets/app-CpNdTDYR.js",
+    "file": "assets/app-BsQG-spj.js",
     "name": "app",
     "src": "apps/backoffice/app.js",
     "isEntry": true,
     "imports": [
-      "_role-courier-BzDb0pEZ.js",
-      "_role-administrator-C5RkaalH.js"
+      "_role-administrator-Dxc678zI.js",
+      "_role-courier-lp_KLUoh.js",
+      "_role-owner-DZdd71ay.js",
+      "_vendor-tiptap-C9Whgte7.js"
     ],
     "dynamicImports": [
       "apps/backoffice/shell/pages/LoginPage.vue",
       "apps/backoffice/shell/pages/ForgotPasswordPage.vue",
       "apps/backoffice/shell/pages/RootRedirectPage.vue",
       "apps/backoffice/shell/pages/NotFoundPage.vue",
-      "apps/backoffice/roles/owner/index.js",
-      "_role-administrator-C5RkaalH.js",
+      "_role-owner-DZdd71ay.js",
+      "_role-administrator-Dxc678zI.js",
       "apps/backoffice/roles/production/index.js",
-      "_role-courier-BzDb0pEZ.js"
+      "_role-courier-lp_KLUoh.js"
     ],
     "css": [
-      "assets/app-CNPWM10e.css"
+      "assets/app-CFrQ4HaB.css"
     ],
     "assets": [
       "assets/logo-mark-BTlBO8ev.svg"
@@ -42,66 +67,58 @@
     "file": "assets/logo-mark-BTlBO8ev.svg",
     "src": "apps/backoffice/assets/logo-mark.svg"
   },
-  "apps/backoffice/roles/owner/index.js": {
-    "file": "assets/role-owner-Cnjo5uM0.js",
-    "name": "role-owner",
-    "src": "apps/backoffice/roles/owner/index.js",
-    "isDynamicEntry": true,
-    "imports": [
-      "_role-administrator-C5RkaalH.js"
-    ],
-    "css": [
-      "assets/role-owner-Di8usYsM.css"
-    ]
-  },
   "apps/backoffice/roles/production/index.js": {
-    "file": "assets/role-production-Bim3EN8E.js",
+    "file": "assets/role-production-CxaAQWcf.js",
     "name": "role-production",
     "src": "apps/backoffice/roles/production/index.js",
     "isDynamicEntry": true,
     "imports": [
-      "_role-administrator-C5RkaalH.js"
+      "_role-administrator-Dxc678zI.js"
     ]
   },
   "apps/backoffice/shell/pages/ForgotPasswordPage.vue": {
-    "file": "assets/ForgotPasswordPage-Bz4sJGAu.js",
+    "file": "assets/ForgotPasswordPage-BOd-n-MG.js",
     "name": "ForgotPasswordPage",
     "src": "apps/backoffice/shell/pages/ForgotPasswordPage.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_role-administrator-C5RkaalH.js",
-      "_role-courier-BzDb0pEZ.js"
+      "_role-administrator-Dxc678zI.js",
+      "_role-courier-lp_KLUoh.js"
     ]
   },
   "apps/backoffice/shell/pages/LoginPage.vue": {
-    "file": "assets/LoginPage-CT8wuSJD.js",
+    "file": "assets/LoginPage-9QVME66s.js",
     "name": "LoginPage",
     "src": "apps/backoffice/shell/pages/LoginPage.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_role-administrator-C5RkaalH.js",
-      "_role-courier-BzDb0pEZ.js",
-      "apps/backoffice/app.js"
+      "_role-administrator-Dxc678zI.js",
+      "_role-courier-lp_KLUoh.js",
+      "apps/backoffice/app.js",
+      "_role-owner-DZdd71ay.js",
+      "_vendor-tiptap-C9Whgte7.js"
     ]
   },
   "apps/backoffice/shell/pages/NotFoundPage.vue": {
-    "file": "assets/NotFoundPage-DGtCM9nY.js",
+    "file": "assets/NotFoundPage-ByU7GiLa.js",
     "name": "NotFoundPage",
     "src": "apps/backoffice/shell/pages/NotFoundPage.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_role-administrator-C5RkaalH.js"
+      "_role-administrator-Dxc678zI.js"
     ]
   },
   "apps/backoffice/shell/pages/RootRedirectPage.vue": {
-    "file": "assets/RootRedirectPage-hoRQg6hg.js",
+    "file": "assets/RootRedirectPage-BuU8SCpP.js",
     "name": "RootRedirectPage",
     "src": "apps/backoffice/shell/pages/RootRedirectPage.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_role-administrator-C5RkaalH.js",
-      "_role-courier-BzDb0pEZ.js",
-      "apps/backoffice/app.js"
+      "_role-administrator-Dxc678zI.js",
+      "_role-courier-lp_KLUoh.js",
+      "apps/backoffice/app.js",
+      "_role-owner-DZdd71ay.js",
+      "_vendor-tiptap-C9Whgte7.js"
     ]
   }
 }

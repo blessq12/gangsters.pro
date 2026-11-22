@@ -302,6 +302,8 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
         ?array $ingredients = null,
         ?array $nutrition = null,
         ?array $tagIds = null,
+        bool $isRoll = false,
+        bool $isComplement = false,
     ): int {
         $itemId = $this->saveItem(
             $id,
@@ -315,6 +317,8 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
         );
 
         $row = $this->requireKind($itemId, CatalogItemKind::Product);
+        $row->is_roll = $isRoll;
+        $row->is_complement = $isComplement;
         if ($ingredients !== null) {
             $row->ingredients = array_values(array_filter(
                 array_map(static fn (mixed $v): string => trim((string) $v), $ingredients),
@@ -330,9 +334,7 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
                 'basis' => (string) ($nutrition['basis'] ?? 'per_100g'),
             ];
         }
-        if ($ingredients !== null || $nutrition !== null) {
-            $row->save();
-        }
+        $row->save();
 
         if ($tagIds !== null) {
             $this->syncItemTags($itemId, $tagIds);
@@ -500,6 +502,45 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
         $row->delete();
         if ($path !== null && Storage::disk('public')->exists($path)) {
             Storage::disk('public')->delete($path);
+        }
+    }
+
+    public function deleteProduct(int $id): void
+    {
+        $row = $this->requireKind($id, CatalogItemKind::Product);
+        if ((bool) $row->is_system) {
+            throw new \InvalidArgumentException('Системный товар нельзя удалить.');
+        }
+        $this->deleteCatalogItem($row);
+    }
+
+    public function deleteSet(int $id): void
+    {
+        $row = $this->requireKind($id, CatalogItemKind::Set);
+        $this->deleteCatalogItem($row);
+    }
+
+    private function deleteCatalogItem(CAT_Item $row): void
+    {
+        $itemId = (int) $row->id;
+        $images = CAT_ItemImage::query()->where('item_id', $itemId)->get();
+        $paths = [];
+        foreach ($images as $image) {
+            if (! $image instanceof CAT_ItemImage) {
+                continue;
+            }
+            $path = CatalogStoredImagePath::normalize($image->path);
+            if ($path !== null) {
+                $paths[] = $path;
+            }
+        }
+
+        $row->delete();
+
+        foreach ($paths as $path) {
+            if (Storage::disk('public')->exists($path)) {
+                Storage::disk('public')->delete($path);
+            }
         }
     }
 

@@ -33,7 +33,6 @@ return new class extends Migration
             $table->string('delivery_apartment')->nullable();
             $table->string('delivery_comment')->nullable();
 
-            $table->unsignedBigInteger('kitchen_id')->nullable()->index();
             $table->unsignedBigInteger('branch_id')->nullable()->index();
             $table->unsignedBigInteger('payment_id')->nullable()->index();
             $table->string('payment_method', 32)->nullable();

@@ -2,6 +2,7 @@
 
 namespace App\Application\Order\Command;
 
+use App\Application\Order\Checkout\CheckoutQuote;
 use App\Application\Order\DTO\CreateOrderDto;
 use App\Application\Order\Presenter\OrderPresenter;
 use App\Application\Shared\DomainEventPublisher;
@@ -25,6 +26,7 @@ final class CreateOrderUseCase
         private readonly OrderPresenter $presenter,
         private readonly DomainEventPublisher $events,
         private readonly TransactionManager $transaction,
+        private readonly CheckoutQuote $quotes,
     ) {}
 
     /**
@@ -41,7 +43,7 @@ final class CreateOrderUseCase
             throw new \InvalidArgumentException('Заказ с таким client_request_id уже существует.');
         }
 
-        $snapshot = $dto->quoteSnapshot;
+        $snapshot = $this->quotes->execute($dto->checkout);
         $cart = is_array($snapshot['cart'] ?? null) ? $snapshot['cart'] : [];
         $clientRaw = is_array($snapshot['client'] ?? null) ? $snapshot['client'] : [];
         $deliveryRaw = is_array($snapshot['delivery'] ?? null) ? $snapshot['delivery'] : [];
@@ -50,6 +52,10 @@ final class CreateOrderUseCase
             ? $snapshot['totals']
             : (is_array($cart['totals'] ?? null) ? $cart['totals'] : []);
 
+        if (($deliveryRaw['method'] ?? '') === DeliveryMethod::Courier->value && ($deliveryRaw['in_zone'] ?? false) !== true) {
+            throw new \InvalidArgumentException('Доставка по этому адресу невозможна.');
+        }
+
         $rawLines = $cart['lines'] ?? null;
         if (! is_array($rawLines) || $rawLines === []) {
             throw new \InvalidArgumentException('Корзина пуста.');
@@ -57,12 +63,18 @@ final class CreateOrderUseCase
 
         $this->assertTotalsConsistent($totals);
 
+        $branchId = (int) ($snapshot['branch_id'] ?? $deliveryRaw['branch_id'] ?? 0);
+        if ($branchId < 1) {
+            throw new \InvalidArgumentException('В снимке quote нет branch_id.');
+        }
+
         $order = Order::compose(
             checkoutId: $clientRequestId,
             client: $this->mapClient($clientRaw),
             delivery: $this->mapDelivery($deliveryRaw, $totals),
             lines: $this->mapLines($rawLines),
             createdAt: new DateTimeImmutable,
+            branchId: $branchId,
             scheduledAt: $this->parseScheduledAt($deliveryRaw['scheduled_at'] ?? null),
         );
 
@@ -91,7 +103,7 @@ final class CreateOrderUseCase
      */
     private function mapClient(array $client): OrderClientSnapshot
     {
-        $clientId = isset($client['id']) ? (int) $client['id'] : null;
+        $clientId = isset($client['id']) ? (int) $client['id'] : (isset($client['client_id']) ? (int) $client['client_id'] : null);
         if ($clientId !== null && $clientId < 1) {
             $clientId = null;
         }

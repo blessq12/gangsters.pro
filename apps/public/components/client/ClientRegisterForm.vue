@@ -5,7 +5,6 @@ import { useRuPhoneModel } from "../../modules/client/application/useRuPhoneMode
 import { useFormFieldErrors } from "../../platform/useFormFieldErrors";
 import {
     RU_PHONE_MASKA_PATTERN,
-    RU_PHONE_MASKA_TOKENS_ATTR,
     validateRuPhoneForSubmit,
 } from "../../platform/ruPhone";
 import { mapApiError } from "../../platform/mapApiError";
@@ -169,7 +168,6 @@ async function submit() {
                         v-model="phoneMask.masked"
                         v-maska="phoneMask"
                         :data-maska="RU_PHONE_MASKA_PATTERN"
-                        :data-maska-tokens="RU_PHONE_MASKA_TOKENS_ATTR"
                         type="tel"
                         placeholder="+7 (___) ___-__-__"
                         :class="[s.input, invalid && invalidClass]"

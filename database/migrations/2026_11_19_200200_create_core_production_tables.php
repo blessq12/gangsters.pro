@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('KIT_tickets', function (Blueprint $table): void {
             $table->id();
             $table->unsignedBigInteger('order_id')->unique();
-            $table->unsignedBigInteger('kitchen_id')->index();
+            $table->unsignedBigInteger('branch_id')->index();
             $table->string('status', 32)->index();
             $table->timestamp('started_at')->nullable();
             $table->timestamp('completed_at')->nullable();

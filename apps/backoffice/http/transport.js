@@ -49,10 +49,10 @@ function handleHttpError(status, payload) {
         persistBackofficeAuthToken(null);
         unauthorizedHandler?.();
     }
-    if (status === 403) {
-        throw new Error(payload?.message || "Forbidden.");
-    }
-    throw new Error(messageFrom(payload));
+    const message = status === 403
+        ? (payload?.message || "Forbidden.")
+        : messageFrom(payload);
+    throw Object.assign(new Error(message), { status });
 }
 
 /**

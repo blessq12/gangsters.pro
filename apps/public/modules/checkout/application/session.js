@@ -4,6 +4,7 @@ import {
     roundRubles2,
 } from "../../../platform/moneyFormat";
 import { useUserStore } from "../../client/store/userStore";
+import { useContentStore } from "../../content/store";
 import { placeOrderRequest, quoteOrderRequest } from "../../../api/order";
 import {
     buildClientPayload,
@@ -12,7 +13,6 @@ import {
     normalizeDeliveryComment,
     normalizePersonsCount,
 } from "../domain/checkoutServerMappers";
-import { isComplementCartLine } from "../domain/normalizeCheckoutCart";
 import { giftCourierWeekdaysLabel } from "../domain/giftWeekdaysLabel";
 import { adaptQuoteToCheckoutSnapshot } from "../domain/normalizeOrderPreview";
 import { useCheckoutStore } from "../store";
@@ -260,13 +260,6 @@ function resolveRegisteredClientId(store, options = {}) {
     return null;
 }
 
-function resolveComplementProductIds(store) {
-    return store.cartItems
-        .filter((item) => isComplementCartLine(item))
-        .map((item) => Number(item.productId) || 0)
-        .filter((id) => id > 0);
-}
-
 function resolveCoords(selectedAddress, store) {
     const source =
         selectedAddress ??
@@ -287,15 +280,6 @@ function resolveCoords(selectedAddress, store) {
         latitude: Number.isFinite(latitude) ? latitude : null,
         longitude: Number.isFinite(longitude) ? longitude : null,
     };
-}
-
-function resolveComplementSelections(store) {
-    return Object.entries(store.complementSelections || {})
-        .map(([productId, quantity]) => ({
-            product_id: Number(productId),
-            quantity: Math.max(0, Number(quantity) || 0),
-        }))
-        .filter((row) => Number.isFinite(row.product_id) && row.product_id > 0);
 }
 
 export function buildQuoteOrderPayload(
@@ -331,9 +315,8 @@ export function buildQuoteOrderPayload(
         : null;
 
     const coords = resolveCoords(selectedAddress, store);
-    const giftProductId = store.promotions.freeRollGiftProductId;
-
     return {
+        branch_id: useContentStore().selectedBranchId,
         lines: userLines,
         delivery_method:
             deliveryPayload?.method ?? store.deliveryInfo.method ?? "courier",
@@ -346,9 +329,6 @@ export function buildQuoteOrderPayload(
         scheduled_at: deliveryPayload?.scheduled_at,
         payment_method: paymentPayload?.method ?? "cash",
         change_from_rubles: paymentPayload?.change_from_rubles,
-        gift_product_id: giftProductId != null ? Number(giftProductId) : null,
-        complement_product_ids: resolveComplementProductIds(store),
-        complement_selections: resolveComplementSelections(store),
         latitude: coords.latitude,
         longitude: coords.longitude,
     };
@@ -535,9 +515,8 @@ export async function placeOrderOnServer(store, selectedAddress = null) {
     const previewAddress = effectivePreviewAddress(store, selectedAddress);
 
     try {
-        const quote = await quoteOrderRequest(
-            buildQuoteOrderPayload(store, previewAddress),
-        );
+        const checkout = buildQuoteOrderPayload(store, previewAddress);
+        const quote = await quoteOrderRequest(checkout);
 
         const delivery = quote?.delivery && typeof quote.delivery === "object"
             ? quote.delivery
@@ -565,10 +544,7 @@ export async function placeOrderOnServer(store, selectedAddress = null) {
         const body = {
             client_request_id:
                 store.clientRequestId || resolveClientRequestId(),
-            cart: quote.cart,
-            client: quote.client,
-            delivery: quote.delivery,
-            payment: quote.payment,
+            ...checkout,
         };
 
         const data = await placeOrderRequest(body);

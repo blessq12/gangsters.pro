@@ -27,6 +27,8 @@ final class Product implements CatalogItem
         private readonly ?string $sku,
         private readonly ProductStatus $status,
         private readonly bool $isSystem,
+        private readonly bool $isRoll,
+        private readonly bool $isComplement,
         private readonly array $prices,
         private readonly ?string $description,
         private readonly ?Nutrition $nutrition,
@@ -76,6 +78,16 @@ final class Product implements CatalogItem
     public function isSystem(): bool
     {
         return $this->isSystem;
+    }
+
+    public function isRoll(): bool
+    {
+        return $this->isRoll;
+    }
+
+    public function isComplement(): bool
+    {
+        return $this->isComplement;
     }
 
     /**

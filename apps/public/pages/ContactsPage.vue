@@ -14,7 +14,7 @@ import { getCurrentDayKey } from "../modules/content/application/company";
 import { useAppDesign } from "../design/useAppDesign";
 
 const contentStore = useContentStore();
-const { profile, deliveryFacts: facts, legal, loading, error } = storeToRefs(contentStore);
+const { profile, branch, deliveryFacts: facts, legal, loading, error } = storeToRefs(contentStore);
 
 const loadingProfile = computed(() => loading.value && !profile.value);
 const loadingDelivery = computed(() => loading.value && !facts.value);
@@ -31,9 +31,8 @@ const hasLegal = computed(
 );
 
 const heroStats = computed(() => {
-    const c = profile.value;
     const d = facts.value;
-    const today = formatTodayWorkScheduleLine(c, new Date()) || "—";
+    const today = formatTodayWorkScheduleLine(branch.value, new Date()) || "—";
     return [
         {
             label: "Режим",
@@ -46,12 +45,14 @@ const heroStats = computed(() => {
     ];
 });
 
+const phoneRaw = computed(() => branch.value?.phone || profile.value?.phone || "");
+
 const phoneDisplay = computed(() => {
-    const raw = profile.value?.phone;
+    const raw = phoneRaw.value;
     return raw ? formatRuPhone(raw) : "";
 });
 
-const phoneTel = computed(() => phoneToTelHref(profile.value?.phone));
+const phoneTel = computed(() => phoneToTelHref(phoneRaw.value));
 
 const socials = computed(() => profile.value?.socials || {});
 
@@ -90,9 +91,9 @@ const addressLines = computed(() => {
 const hasAddress = computed(() => addressLines.value.length > 0);
 
 const scheduleRows = computed(() => {
-    const c = profile.value;
-    if (!c) return [];
-    return getWorkScheduleRows(c.schedule);
+    const schedule = branch.value?.schedule;
+    if (!schedule) return [];
+    return getWorkScheduleRows(schedule);
 });
 
 const currentDayKey = computed(() => getCurrentDayKey(new Date()));
@@ -261,7 +262,7 @@ const co = useAppDesign().components.pages.contacts;
                     Адрес уточняется.
                 </p>
 
-                <ContactsKitchenMap />
+                <ContactsBranchMap />
 
                 <p
                     v-if="siteUrl"

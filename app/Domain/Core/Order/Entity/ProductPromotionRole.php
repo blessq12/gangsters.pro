@@ -10,12 +10,17 @@ use App\Domain\Core\Order\Enum\ProductPromotionRoleKind;
 final class ProductPromotionRole
 {
     public function __construct(
+        private readonly int $branchId,
         private readonly int $productId,
         private readonly ProductPromotionRoleKind $role,
         private readonly string $name,
         private readonly int $priceKopecks,
         private readonly ?int $paidTwinProductId = null,
     ) {
+        if ($this->branchId < 1) {
+            throw new \InvalidArgumentException('branch_id должен быть положительным.');
+        }
+
         if ($this->productId < 1) {
             throw new \InvalidArgumentException('product_id должен быть положительным.');
         }
@@ -27,6 +32,11 @@ final class ProductPromotionRole
         if ($this->priceKopecks < 0) {
             throw new \InvalidArgumentException('Цена снимка не может быть отрицательной.');
         }
+    }
+
+    public function branchId(): int
+    {
+        return $this->branchId;
     }
 
     public function productId(): int
@@ -57,6 +67,7 @@ final class ProductPromotionRole
     public function withSnapshot(string $name, int $priceKopecks): self
     {
         return new self(
+            branchId: $this->branchId,
             productId: $this->productId,
             role: $this->role,
             name: $name,

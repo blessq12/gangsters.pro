@@ -2,25 +2,30 @@
 
 namespace App\Application\Promotion\Query;
 
+use App\Application\Order\Checkout\FormCheckoutPromotions;
 use App\Application\Promotion\DTO\ResolvePromotionsDto;
 use App\Application\Promotion\Presenter\AppliedPromotionsPresenter;
-use App\Domain\Core\Order\Entity\ProductPromotionRole;
-use App\Domain\Core\Order\Policy\PromotionPolicy;
-use App\Domain\Core\Order\Enum\ProductPromotionRoleKind;
-use App\Domain\Core\Order\Repository\ProductPromotionRoleRepository;
-use App\Domain\Core\Order\Repository\PromotionPolicyRepository;
-use App\Domain\Core\Delivery\Tariff\Repository\PromotionZoneRepository;
+use App\Domain\Core\Delivery\Tariff\Repository\DeliveryConfigurationRepository;
+use App\Domain\Core\Order\Enum\OrderLineType;
+use App\Domain\Core\Order\ValueObject\OrderDeliveryAddress;
+use App\Domain\Core\Order\ValueObject\OrderDeliveryInfo;
+use App\Domain\Core\Order\ValueObject\OrderLine;
+use App\Domain\Supporting\Catalog\Repository\CatalogItemRepository;
+use App\Domain\Supporting\Company\Repository\BranchMenuRepository;
 use App\Shared\Enum\DeliveryMethod;
+use DateTimeImmutable;
 
 /**
- * Резолв акций только из таблиц Promotion (без Catalog/Delivery).
+ * Тот же OrderFormation, что quote и create. Отдельного расчёта акций нет.
+ * Цены — только из меню филиала.
  */
 final class ResolvePromotionsUseCase
 {
     public function __construct(
-        private readonly PromotionPolicyRepository $policies,
-        private readonly ProductPromotionRoleRepository $roles,
-        private readonly PromotionZoneRepository $zones,
+        private readonly CatalogItemRepository $catalog,
+        private readonly BranchMenuRepository $menu,
+        private readonly DeliveryConfigurationRepository $deliveryConfigs,
+        private readonly FormCheckoutPromotions $promotions,
         private readonly AppliedPromotionsPresenter $presenter,
     ) {}
 
@@ -29,176 +34,143 @@ final class ResolvePromotionsUseCase
      */
     public function execute(ResolvePromotionsDto $dto): array
     {
-        if ($dto->currentTotalKopecks < 0) {
-            throw new \InvalidArgumentException('current_total_kopecks не может быть отрицательным.');
+        $baseLines = $this->baseLines($dto->branchId, $dto->lines);
+        $channel = $dto->deliveryMethod === DeliveryMethod::Pickup->value
+            ? DeliveryMethod::Pickup->value
+            : DeliveryMethod::Courier->value;
+
+        if ($channel === DeliveryMethod::Courier->value) {
+            [$zoneId, $fee, $remote] = $this->zone($dto->branchId, $dto->deliveryZoneId);
+            $delivery = OrderDeliveryInfo::courier(
+                address: new OrderDeliveryAddress(street: 'Зона', house: '1'),
+                zoneId: $zoneId,
+                feeKopecks: $fee,
+            );
+        } else {
+            $delivery = OrderDeliveryInfo::pickup();
+            $fee = 0;
+            $remote = false;
         }
 
-        $policy = $this->policies->find();
-        if ($policy === null) {
-            throw new \InvalidArgumentException('Политика акций не найдена.');
-        }
+        $formed = $this->promotions->apply(
+            $dto->branchId,
+            $baseLines,
+            $delivery,
+            $dto->scheduledAt ?? new DateTimeImmutable,
+            $remote,
+        );
 
-        $qtyByProduct = [];
-        foreach ($dto->lines as $line) {
-            if (! is_array($line)) {
-                continue;
-            }
-            $productId = (int) ($line['product_id'] ?? 0);
-            $quantity = (int) ($line['quantity'] ?? 0);
-            if ($productId < 1 || $quantity < 1) {
-                continue;
-            }
-            $qtyByProduct[$productId] = ($qtyByProduct[$productId] ?? 0) + $quantity;
-        }
-
-        $cartRoles = $this->roles->findByProductIds(array_keys($qtyByProduct));
+        $gift = null;
+        $complements = [];
         $rollCount = 0;
-        foreach ($cartRoles as $role) {
-            if ($role->countsAsRoll()) {
-                $rollCount += $qtyByProduct[$role->productId()] ?? 0;
+        foreach ($formed['lines'] as $line) {
+            if ($line->lineType() === OrderLineType::Gift && $gift === null) {
+                $gift = [
+                    'product_id' => $line->productId(),
+                    'name' => $line->name(),
+                    'price_kopecks' => 0,
+                ];
+            }
+            if ($line->lineType() === OrderLineType::Complement) {
+                $complements[] = [
+                    'product_id' => $line->productId(),
+                    'name' => $line->name(),
+                    'quantity' => $line->quantity(),
+                    'price_kopecks' => 0,
+                ];
+            }
+            if ($formed['facts']->isRoll($line->productId()) && $line->isBillable()) {
+                $rollCount += $line->quantity();
             }
         }
 
-        $gift = $this->resolveGift($policy, $dto);
-        $complements = $this->resolveComplements($policy, $rollCount);
-        [$freeDelivery, $discount] = $this->resolveFreeDelivery($policy, $dto);
+        $formedFee = $formed['delivery']->feeKopecks();
 
         return $this->presenter->present([
             'gift' => $gift,
             'complements' => $complements,
-            'free_delivery' => $freeDelivery,
-            'delivery_discount_kopecks' => $discount,
+            'free_delivery' => $channel === DeliveryMethod::Courier->value && $fee > 0 && $formedFee === 0,
+            'delivery_discount_kopecks' => max(0, $fee - $formedFee),
             'roll_count' => $rollCount,
-            'complement_entitled' => $this->entitledComplementSets($policy, $rollCount),
+            'complement_entitled' => $complements === [] ? 0 : $complements[0]['quantity'],
         ]);
     }
 
     /**
-     * @return array{product_id: int, name: string, price_kopecks: int}|null
+     * @param  list<array{product_id: int, quantity: int}>  $lines
+     * @return list<OrderLine>
      */
-    private function resolveGift(
-        PromotionPolicy $policy,
-        ResolvePromotionsDto $dto,
-    ): ?array {
-        $channel = $this->normalizeChannel($dto->deliveryMethod);
-        $rule = $policy->giftRuleForChannel($channel);
-        if ($rule === null) {
-            return null;
-        }
-
-        $at = $dto->scheduledAt ?? new \DateTimeImmutable('now');
-        $timezone = (string) config('app.timezone', 'UTC');
-        if (! $policy->isGiftRuleAllowedOnDate($rule, $at, $timezone)) {
-            return null;
-        }
-
-        if ($dto->currentTotalKopecks < (int) ($rule['min_order_amount_kopecks'] ?? 0)) {
-            return null;
-        }
-
-        $candidates = $this->roles->findByRole(ProductPromotionRoleKind::Gift);
-        if ($candidates === []) {
-            return null;
-        }
-
-        /** @var ProductPromotionRole $gift */
-        $gift = $candidates[0];
-
-        return [
-            'product_id' => $gift->productId(),
-            'name' => $gift->name(),
-            'price_kopecks' => $gift->priceKopecks(),
-        ];
-    }
-
-    /**
-     * @return list<array{product_id: int, name: string, quantity: int, price_kopecks: int}>
-     */
-    private function resolveComplements(
-        PromotionPolicy $policy,
-        int $rollCount,
-    ): array {
-        $entitled = $this->entitledComplementSets($policy, $rollCount);
-        if ($entitled < 1) {
-            return [];
-        }
-
-        $complements = $this->roles->findByRole(ProductPromotionRoleKind::Complement);
-        if ($complements === []) {
-            return [];
-        }
-
-        $first = $complements[0];
-
-        return [[
-            'product_id' => $first->productId(),
-            'name' => $first->name(),
-            'quantity' => $entitled,
-            'price_kopecks' => $first->priceKopecks(),
-        ]];
-    }
-
-    private function entitledComplementSets(
-        PromotionPolicy $policy,
-        int $rollCount,
-    ): int {
-        $benefit = $policy->complementSetBenefit();
-        if (! ($benefit['is_active'] ?? false)) {
-            return 0;
-        }
-
-        $rollsPerSet = max(1, (int) ($benefit['rolls_per_set'] ?? 1));
-        $maxSets = max(1, (int) ($benefit['max_sets'] ?? 1));
-
-        return min(intdiv($rollCount, $rollsPerSet), $maxSets);
-    }
-
-    /**
-     * @return array{0: bool, 1: int}
-     */
-    private function resolveFreeDelivery(
-        PromotionPolicy $policy,
-        ResolvePromotionsDto $dto,
-    ): array {
-        if ($this->normalizeChannel($dto->deliveryMethod) !== 'courier') {
-            return [false, 0];
-        }
-
-        $benefit = $policy->deliveryBenefit();
-        if (! ($benefit['is_active'] ?? false)) {
-            return [false, 0];
-        }
-
-        $threshold = (int) ($benefit['free_delivery_threshold_kopecks'] ?? 0);
-        if ($dto->currentTotalKopecks < $threshold) {
-            return [false, 0];
-        }
-
-        $zoneId = $dto->deliveryZoneId !== null ? trim($dto->deliveryZoneId) : '';
-        if ($zoneId === '') {
-            return [false, 0];
-        }
-
-        $zone = $this->zones->findById($zoneId);
-        if ($zone === null) {
-            return [false, 0];
-        }
-
-        if ($zone->isRemote()) {
-            return [false, 0];
-        }
-
-        return [true, $zone->feeKopecks()];
-    }
-
-    private function normalizeChannel(string $deliveryMethod): string
+    private function baseLines(int $branchId, array $lines): array
     {
-        $method = DeliveryMethod::tryFrom($deliveryMethod);
+        $ids = [];
+        foreach ($lines as $line) {
+            $productId = (int) ($line['product_id'] ?? 0);
+            $quantity = (int) ($line['quantity'] ?? 0);
+            if ($productId < 1 || $quantity < 1) {
+                throw new \InvalidArgumentException('Некорректная строка корзины.');
+            }
+            $ids[] = $productId;
+        }
 
-        return match ($method) {
-            DeliveryMethod::Pickup => 'pickup',
-            DeliveryMethod::Courier => 'courier',
-            null => $deliveryMethod === 'pickup' ? 'pickup' : 'courier',
-        };
+        $uniqueIds = array_values(array_unique($ids));
+        $menuById = $this->menu->findByBranchAndItemIds($branchId, $uniqueIds);
+
+        $products = [];
+        foreach ($this->catalog->findActiveProductsByIds($uniqueIds) as $product) {
+            $products[$product->id()] = $product;
+        }
+        $sets = [];
+        foreach ($this->catalog->findActiveSetsByIds($uniqueIds) as $set) {
+            $sets[$set->id()] = $set;
+        }
+
+        $base = [];
+        foreach ($lines as $line) {
+            $productId = (int) $line['product_id'];
+            $quantity = (int) $line['quantity'];
+            $menuItem = $menuById[$productId] ?? null;
+            if ($menuItem === null || ! $menuItem->isAvailable()) {
+                throw new \InvalidArgumentException(sprintf('Товар #%d недоступен в меню филиала.', $productId));
+            }
+
+            if (isset($products[$productId])) {
+                $item = $products[$productId];
+                $type = OrderLineType::Regular;
+            } elseif (isset($sets[$productId])) {
+                $item = $sets[$productId];
+                $type = OrderLineType::Set;
+            } else {
+                throw new \InvalidArgumentException(sprintf('Товар #%d недоступен.', $productId));
+            }
+
+            $base[] = new OrderLine(
+                productId: $productId,
+                name: $item->name(),
+                unitPriceKopecks: $menuItem->priceKopecks(),
+                quantity: $quantity,
+                lineType: $type,
+            );
+        }
+
+        return $base;
+    }
+
+    /**
+     * @return array{0: string, 1: int, 2: bool}
+     */
+    private function zone(int $branchId, ?string $zoneId): array
+    {
+        $config = $this->deliveryConfigs->findByBranch($branchId);
+        if ($config === null || $zoneId === null || $zoneId === '') {
+            return ['outside', 0, true];
+        }
+
+        foreach ($config->zones() as $zone) {
+            if ($zone->id() === $zoneId) {
+                return [$zone->id(), $zone->deliveryFeeKopecks(), $zone->isRemote()];
+            }
+        }
+
+        return ['outside', 0, true];
     }
 }

@@ -27,6 +27,8 @@ final class CatalogProductMapper
             sku: $this->resolveSku($row),
             status: $this->resolveStatus($row),
             isSystem: (bool) $row->is_system,
+            isRoll: (bool) ($row->is_roll ?? false),
+            isComplement: (bool) ($row->is_complement ?? false),
             prices: $prices !== [] ? $prices : $this->mapPrices($row),
             description: $row->description !== null ? (string) $row->description : null,
             nutrition: $this->resolveNutrition($row),

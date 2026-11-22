@@ -35,7 +35,7 @@ final class KitchenTicketMapper
         return KitchenTicket::restore(
             id: (int) $row->id,
             orderId: (int) $row->order_id,
-            kitchenId: (int) $row->kitchen_id,
+            branchId: (int) $row->branch_id,
             lines: $lines,
             status: $status,
             startedAt: $row->started_at !== null
@@ -65,7 +65,7 @@ final class KitchenTicketMapper
         return [
             'ticket' => [
                 'order_id' => $ticket->orderId(),
-                'kitchen_id' => $ticket->kitchenId(),
+                'branch_id' => $ticket->branchId(),
                 'status' => $ticket->status()->value,
                 'started_at' => $ticket->startedAt()?->format('Y-m-d H:i:s'),
                 'completed_at' => $ticket->completedAt()?->format('Y-m-d H:i:s'),

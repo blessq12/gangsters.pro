@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { fetchCatalog } from "../../api/catalog";
 import { mapCatalogTreeFromPayload } from "./domain/buildCatalogTree";
 import { mapApiError } from "../../platform/mapApiError";
+import { useContentStore } from "../content/store";
 
 const CATALOG_STORAGE_KEY = "gangsters_catalog";
 const DESKTOP_CARDS_PER_ROW_DEFAULT = 4;
@@ -36,6 +37,9 @@ function normalizeMobileCardViewMode(value) {
         ? value
         : resolveDefaultMobileCardViewMode();
 }
+
+/** Защита от гонки: результат применяется только у последнего запроса (смена филиала). */
+let catalogFetchSeq = 0;
 
 export const useCatalogStore = defineStore("catalog", {
     state: () => ({
@@ -253,11 +257,21 @@ export const useCatalogStore = defineStore("catalog", {
         },
 
         async fetchAll() {
+            const seq = ++catalogFetchSeq;
             this.loading = true;
             this.error = null;
 
             try {
-                const response = { data: await fetchCatalog() };
+                const branchId =
+                    await useContentStore().ensureSelectedBranchId();
+                if (branchId == null) {
+                    throw new Error("Нет доступных филиалов.");
+                }
+
+                const response = { data: await fetchCatalog(branchId) };
+                if (seq !== catalogFetchSeq) {
+                    return;
+                }
                 const tree = mapCatalogTreeFromPayload(response?.data || {});
                 this.categories = Array.isArray(tree?.categories)
                     ? tree.categories
@@ -274,13 +288,18 @@ export const useCatalogStore = defineStore("catalog", {
 
                 this.hasLoaded = true;
             } catch (e) {
+                if (seq !== catalogFetchSeq) {
+                    return;
+                }
                 console.error("Failed to fetch catalog", e);
                 this.error = mapApiError(
                     e,
                     "Не удалось загрузить каталог. Попробуйте обновить страницу.",
                 );
             } finally {
-                this.loading = false;
+                if (seq === catalogFetchSeq) {
+                    this.loading = false;
+                }
             }
         },
     },

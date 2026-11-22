@@ -42,7 +42,7 @@ final class CreateKitchenTicketOnOrderConfirmed
 
         $ticket = KitchenTicket::queue(
             orderId: $event->orderId,
-            kitchenId: $event->kitchenId,
+            branchId: $event->branchId,
             lines: $lines,
         );
         $this->tickets->enqueue($ticket);

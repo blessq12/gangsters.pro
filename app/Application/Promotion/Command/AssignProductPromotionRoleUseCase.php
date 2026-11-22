@@ -30,6 +30,10 @@ final class AssignProductPromotionRoleUseCase
             throw new \InvalidArgumentException('Нужно название снимка товара.');
         }
 
+        if ($dto->branchId < 1) {
+            throw new \InvalidArgumentException('branch_id должен быть положительным.');
+        }
+
         if ($dto->productId < 1) {
             throw new \InvalidArgumentException('product_id должен быть положительным.');
         }
@@ -39,6 +43,7 @@ final class AssignProductPromotionRoleUseCase
         }
 
         $saved = $this->roles->save(new ProductPromotionRole(
+            branchId: $dto->branchId,
             productId: $dto->productId,
             role: $roleKind,
             name: $name,

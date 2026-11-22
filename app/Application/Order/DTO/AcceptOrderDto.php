@@ -6,6 +6,5 @@ final readonly class AcceptOrderDto
 {
     public function __construct(
         public int $orderId,
-        public ?int $kitchenId = null,
     ) {}
 }

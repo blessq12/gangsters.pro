@@ -15,6 +15,7 @@ final class RouteSheet
      */
     private function __construct(
         private ?int $id,
+        private readonly int $branchId,
         private readonly string $status,
         private readonly array $stops,
         private readonly ?int $courierId,
@@ -22,12 +23,15 @@ final class RouteSheet
     ) {}
 
     /**
-     * Выпуск листа.
+     * Выпуск листа филиала.
      *
      * @param  list<int>  $orderIds
      */
-    public static function release(array $orderIds): self
+    public static function release(int $branchId, array $orderIds): self
     {
+        if ($branchId < 1) {
+            throw new \InvalidArgumentException('branchId маршрутного листа должен быть положительным.');
+        }
         if ($orderIds === []) {
             throw new \InvalidArgumentException('В маршрутном листе нет заказов.');
         }
@@ -47,15 +51,20 @@ final class RouteSheet
             );
         }
 
-        return new self(null, 'released', $stops, null);
+        return new self(null, $branchId, 'released', $stops, null);
     }
 
     /**
      * @param  list<RouteStop>  $stops
      */
-    public static function restore(int $id, string $status, array $stops, ?int $courierId = null): self
+    public static function restore(int $id, int $branchId, string $status, array $stops, ?int $courierId = null): self
     {
-        return new self($id, $status, $stops, $courierId);
+        return new self($id, $branchId, $status, $stops, $courierId);
+    }
+
+    public function branchId(): int
+    {
+        return $this->branchId;
     }
 
     public function id(): int
@@ -130,6 +139,7 @@ final class RouteSheet
 
         return new self(
             $this->id,
+            $this->branchId,
             'in_delivery',
             $this->stops,
             $courierId,
@@ -175,6 +185,7 @@ final class RouteSheet
 
         return new self(
             $this->id,
+            $this->branchId,
             $this->status,
             $stops,
             $this->courierId,
@@ -211,7 +222,7 @@ final class RouteSheet
             throw new \InvalidArgumentException('Этого заказа нет среди ожидающих остановок листа.');
         }
 
-        return new self($this->id, $this->status, $stops, $this->courierId, $this->domainEvents);
+        return new self($this->id, $this->branchId, $this->status, $stops, $this->courierId, $this->domainEvents);
     }
 
     public function complete(): self
@@ -226,7 +237,7 @@ final class RouteSheet
             }
         }
 
-        return new self($this->id, 'completed', $this->stops, $this->courierId, $this->domainEvents);
+        return new self($this->id, $this->branchId, 'completed', $this->stops, $this->courierId, $this->domainEvents);
     }
 
     /**

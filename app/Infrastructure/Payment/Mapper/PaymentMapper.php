@@ -25,6 +25,9 @@ final class PaymentMapper
             refundedAt: $row->refunded_at !== null
                 ? DateTimeImmutable::createFromInterface($row->refunded_at)
                 : null,
+            createdAt: $row->created_at !== null
+                ? DateTimeImmutable::createFromInterface($row->created_at)
+                : null,
         );
     }
 

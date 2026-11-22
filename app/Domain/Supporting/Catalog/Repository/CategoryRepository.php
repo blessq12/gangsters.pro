@@ -30,6 +30,8 @@ interface CategoryRepository
 
     public function save(?int $id, string $name, bool $isActive, bool $isAccompanying): Category;
 
+    public function delete(int $id): void;
+
     /**
      * Полная перестановка порядка категорий (индекс = sort_order).
      *

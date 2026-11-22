@@ -13,7 +13,7 @@ describe("administratorCommands", () => {
         assert.deepEqual(ids, ["confirm", "cancel"]);
     });
 
-    it("подтверждённый: переназначить кухню, без выдачи", () => {
+    it("подтверждённый: переназначить филиал, без выдачи", () => {
         const ids = administratorCommands({
             status: "confirmed",
             delivery: { method: "pickup" },

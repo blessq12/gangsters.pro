@@ -7,7 +7,6 @@ import { CHECKOUT_NAV_LABELS } from "../../modules/checkout/application/session"
 import {
     formatRuPhoneCanonical,
     RU_PHONE_MASKA_PATTERN,
-    RU_PHONE_MASKA_TOKENS_ATTR,
 } from "../../platform/ruPhone";
 import { CONSENT_PERSONAL_DATA_LABEL } from "../../platform/consentPersonalData";
 import FormField from "../ui/FormField.vue";
@@ -123,7 +122,6 @@ watch(
                         v-model="phoneMask.masked"
                         v-maska="phoneMask"
                         :data-maska="RU_PHONE_MASKA_PATTERN"
-                        :data-maska-tokens="RU_PHONE_MASKA_TOKENS_ATTR"
                         type="tel"
                         placeholder="+7 (___) ___-__-__"
                         :class="[s.inputFieldFull, invalid && invalidClass]"

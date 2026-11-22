@@ -41,21 +41,21 @@ final class InMemoryKitchenTicketRepository implements KitchenTicketRepository
         unset($this->byOrderId[$ticket->orderId()]);
     }
 
-    public function listActiveByKitchenPage(int $kitchenId, int $offset, int $limit): array
+    public function listActiveByBranchPage(int $branchId, int $offset, int $limit): array
     {
-        return array_slice($this->listActiveByKitchen($kitchenId), $offset, $limit);
+        return array_slice($this->listActiveByBranch($branchId), $offset, $limit);
     }
 
-    public function countActiveByKitchen(int $kitchenId): int
+    public function countActiveByBranch(int $branchId): int
     {
-        return count($this->listActiveByKitchen($kitchenId));
+        return count($this->listActiveByBranch($branchId));
     }
 
-    public function listActiveByKitchen(int $kitchenId): array
+    public function listActiveByBranch(int $branchId): array
     {
         return array_values(array_filter(
             $this->byOrderId,
-            static fn (KitchenTicket $ticket): bool => $ticket->kitchenId() === $kitchenId,
+            static fn (KitchenTicket $ticket): bool => $ticket->branchId() === $branchId,
         ));
     }
 }

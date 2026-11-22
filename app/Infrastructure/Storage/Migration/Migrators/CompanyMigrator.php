@@ -46,7 +46,6 @@ final class CompanyMigrator implements BoundedContextMigrator
 
         if ($truncateTarget && ! $dryRun) {
             ConnectionSchema::truncate($target, [
-                'CMP_kitchens',
                 'CMP_branches',
                 'CMP_company_documents',
                 'CMP_company_legal',
@@ -68,9 +67,6 @@ final class CompanyMigrator implements BoundedContextMigrator
                         'socials' => is_string($row->socials ?? null)
                             ? $row->socials
                             : json_encode($row->socials ?? [], JSON_UNESCAPED_UNICODE),
-                        'schedule' => is_string($row->schedule ?? null)
-                            ? $row->schedule
-                            : json_encode($row->schedule ?? [], JSON_UNESCAPED_UNICODE),
                         'created_at' => $row->created_at ?? now(),
                         'updated_at' => $row->updated_at ?? now(),
                     ],
@@ -116,42 +112,38 @@ final class CompanyMigrator implements BoundedContextMigrator
             ],
         );
 
-        $this->copySimple(
-            $source,
-            $target,
-            $dryRun,
-            $report,
-            'CMP_branches',
-            'CMP_branches',
-            static fn (object $row): array => [
-                'id' => $row->id,
-                'company_id' => $row->company_id,
-                'name' => $row->name,
-                'is_active' => (bool) ($row->is_active ?? true),
-                'created_at' => $row->created_at ?? now(),
-                'updated_at' => $row->updated_at ?? now(),
-            ],
-        );
+        // Легаси-источник мог хранить адрес в CMP_kitchens: берём первую кухню каждого филиала.
+        $legacyKitchens = $this->firstLegacyKitchenByBranch($source);
 
         $this->copySimple(
             $source,
             $target,
             $dryRun,
             $report,
-            'CMP_kitchens',
-            'CMP_kitchens',
-            static fn (object $row): array => [
-                'id' => $row->id,
-                'branch_id' => $row->branch_id,
-                'city' => $row->city ?? null,
-                'street' => $row->street ?? null,
-                'house' => $row->house ?? null,
-                'comment' => $row->comment ?? null,
-                'latitude' => $row->latitude ?? null,
-                'longitude' => $row->longitude ?? null,
-                'created_at' => $row->created_at ?? now(),
-                'updated_at' => $row->updated_at ?? now(),
-            ],
+            'CMP_branches',
+            'CMP_branches',
+            static function (object $row) use ($legacyKitchens): array {
+                $kitchen = $legacyKitchens[(int) $row->id] ?? null;
+
+                return [
+                    'id' => $row->id,
+                    'company_id' => $row->company_id,
+                    'name' => $row->name,
+                    'is_active' => (bool) ($row->is_active ?? true),
+                    'schedule' => is_string($row->schedule ?? null)
+                        ? $row->schedule
+                        : json_encode($row->schedule ?? [], JSON_UNESCAPED_UNICODE),
+                    'city' => $row->city ?? $kitchen->city ?? null,
+                    'street' => $row->street ?? $kitchen->street ?? null,
+                    'house' => $row->house ?? $kitchen->house ?? null,
+                    'comment' => $row->comment ?? $kitchen->comment ?? null,
+                    'latitude' => $row->latitude ?? $kitchen->latitude ?? null,
+                    'longitude' => $row->longitude ?? $kitchen->longitude ?? null,
+                    'phone' => $row->phone ?? null,
+                    'created_at' => $row->created_at ?? now(),
+                    'updated_at' => $row->updated_at ?? now(),
+                ];
+            },
         );
 
         return $report;
@@ -188,5 +180,25 @@ final class CompanyMigrator implements BoundedContextMigrator
             $target->table($targetTable)->updateOrInsert(['id' => $id], $payload);
         }
         $report->addWritten($targetTable, $rows->count());
+    }
+
+    /**
+     * @return array<int, object>
+     */
+    private function firstLegacyKitchenByBranch(ConnectionInterface $source): array
+    {
+        if (! ConnectionSchema::hasTable($source, 'CMP_kitchens')) {
+            return [];
+        }
+
+        $result = [];
+        foreach ($source->table('CMP_kitchens')->orderBy('id')->get() as $kitchen) {
+            $branchId = (int) $kitchen->branch_id;
+            if (! isset($result[$branchId])) {
+                $result[$branchId] = $kitchen;
+            }
+        }
+
+        return $result;
     }
 }

@@ -27,6 +27,7 @@ final class Payment
         private PaymentStatus $status,
         private ?DateTimeImmutable $paidAt,
         private ?DateTimeImmutable $refundedAt,
+        private readonly ?DateTimeImmutable $createdAt,
     ) {}
 
     public static function initiate(
@@ -56,6 +57,7 @@ final class Payment
             status: PaymentStatus::Pending,
             paidAt: null,
             refundedAt: null,
+            createdAt: null,
         );
     }
 
@@ -68,6 +70,7 @@ final class Payment
         PaymentStatus $status,
         ?DateTimeImmutable $paidAt,
         ?DateTimeImmutable $refundedAt,
+        ?DateTimeImmutable $createdAt = null,
     ): self {
         return new self(
             id: $id,
@@ -78,6 +81,7 @@ final class Payment
             status: $status,
             paidAt: $paidAt,
             refundedAt: $refundedAt,
+            createdAt: $createdAt,
         );
     }
 
@@ -145,6 +149,11 @@ final class Payment
     public function refundedAt(): ?DateTimeImmutable
     {
         return $this->refundedAt;
+    }
+
+    public function createdAt(): ?DateTimeImmutable
+    {
+        return $this->createdAt;
     }
 
     public function markPaid(?DateTimeImmutable $at = null): void

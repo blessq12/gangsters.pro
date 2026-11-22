@@ -5,12 +5,10 @@ namespace App\Application\Company\Query;
 use App\Application\Company\Presenter\CompanyPresenter;
 use App\Domain\Supporting\Company\Entity\Branch;
 use App\Domain\Supporting\Company\Entity\Company;
-use App\Domain\Supporting\Company\Entity\Kitchen;
 use App\Domain\Supporting\Company\Repository\BranchRepository;
 use App\Domain\Supporting\Company\Repository\CompanyDocumentRepository;
 use App\Domain\Supporting\Company\Repository\CompanyLegalRepository;
 use App\Domain\Supporting\Company\Repository\CompanyRepository;
-use App\Domain\Supporting\Company\Repository\KitchenRepository;
 
 /**
  * Публичный срез компании для витрины.
@@ -22,7 +20,6 @@ final class GetPublicCompanyUseCase
         private readonly CompanyLegalRepository $legal,
         private readonly CompanyDocumentRepository $documents,
         private readonly BranchRepository $branches,
-        private readonly KitchenRepository $kitchens,
         private readonly CompanyPresenter $presenter,
     ) {}
 
@@ -32,7 +29,7 @@ final class GetPublicCompanyUseCase
      *     legal: array<string, mixed>|null,
      *     documents: list<array<string, mixed>>,
      *     branch: array<string, mixed>|null,
-     *     kitchen: array<string, mixed>|null
+     *     branches: list<array{id: int, name: string, is_active: bool, phone: string|null}>
      * }
      */
     public function execute(): array
@@ -40,10 +37,8 @@ final class GetPublicCompanyUseCase
         $company = $this->companies->findPublic();
         $companyId = $company?->id() ?? CompanyRepository::SINGLETON_ID;
 
-        $branch = $this->resolvePublicBranch($companyId);
-        $kitchen = $branch instanceof Branch
-            ? $this->resolveKitchenForBranch($companyId, $branch->id())
-            : null;
+        $companyBranches = $this->branches->listByCompany($companyId);
+        $branch = $this->resolvePublicBranch($companyBranches);
 
         return [
             'company' => $company instanceof Company
@@ -57,28 +52,21 @@ final class GetPublicCompanyUseCase
             'branch' => $branch instanceof Branch
                 ? $this->presenter->branch($branch)
                 : null,
-            'kitchen' => $kitchen instanceof Kitchen
-                ? $this->presenter->kitchen($kitchen)
-                : null,
+            'branches' => array_map(
+                fn (Branch $item): array => $this->presenter->branchSummary($item),
+                $companyBranches,
+            ),
         ];
     }
 
-    private function resolvePublicBranch(int $companyId): ?Branch
+    /**
+     * @param  list<Branch>  $companyBranches
+     */
+    private function resolvePublicBranch(array $companyBranches): ?Branch
     {
-        foreach ($this->branches->listByCompany($companyId) as $branch) {
+        foreach ($companyBranches as $branch) {
             if ($branch->isActive()) {
                 return $branch;
-            }
-        }
-
-        return null;
-    }
-
-    private function resolveKitchenForBranch(int $companyId, int $branchId): ?Kitchen
-    {
-        foreach ($this->kitchens->listByCompany($companyId) as $kitchen) {
-            if ($kitchen->branchId() === $branchId) {
-                return $kitchen;
             }
         }
 

@@ -2,20 +2,22 @@
 
 namespace App\Http\Controllers\Api\Backoffice;
 
+use App\Application\Order\Checkout\CheckoutPayload;
 use App\Application\Order\Command\AcceptOrderUseCase;
 use App\Application\Order\Command\CancelOrderUseCase;
 use App\Application\Order\Command\CompletePickupOrderUseCase;
 use App\Application\Order\Command\CreateOrderUseCase;
-use App\Application\Order\Command\ReassignKitchenUseCase;
+use App\Application\Order\Command\ReassignBranchUseCase;
 use App\Application\Order\DTO\AcceptOrderDto;
 use App\Application\Order\DTO\CreateOrderDto;
-use App\Application\Order\DTO\ReassignKitchenDto;
+use App\Application\Order\DTO\ReassignBranchDto;
 use App\Application\Order\Query\GetAdminOrderUseCase;
 use App\Application\Order\Query\ListAdminOrdersUseCase;
 use App\Domain\Core\Order\Enum\OrderStatus;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use InvalidArgumentException;
 
 final class OrderController extends Controller
@@ -44,15 +46,21 @@ final class OrderController extends Controller
 
     public function store(Request $request, CreateOrderUseCase $useCase): JsonResponse
     {
-        $validated = $request->validate([
-            'client_request_id' => ['required', 'string', 'max:128'],
-            'quote_snapshot' => ['required', 'array'],
-        ]);
+        $validated = Validator::make(
+            [
+                ...CheckoutPayload::normalize($request->all()),
+                'client_request_id' => $request->input('client_request_id'),
+            ],
+            [
+                ...CheckoutPayload::rules(),
+                'client_request_id' => ['required', 'string', 'max:128'],
+            ],
+        )->validate();
 
         try {
             $result = $useCase->execute(new CreateOrderDto(
                 clientRequestId: $validated['client_request_id'],
-                quoteSnapshot: $validated['quote_snapshot'],
+                checkout: CheckoutPayload::toDto($validated),
             ));
         } catch (InvalidArgumentException $exception) {
             return response()->json(['message' => $exception->getMessage()], 422);
@@ -61,35 +69,30 @@ final class OrderController extends Controller
         return response()->json($result, 201);
     }
 
-    public function accept(Request $request, int $id, AcceptOrderUseCase $useCase): JsonResponse
+    public function accept(int $id, AcceptOrderUseCase $useCase): JsonResponse
     {
-        $validated = $request->validate([
-            'kitchen_id' => ['nullable', 'integer', 'min:1'],
-        ]);
-
         try {
             return response()->json($useCase->execute(new AcceptOrderDto(
                 orderId: $id,
-                kitchenId: isset($validated['kitchen_id']) ? (int) $validated['kitchen_id'] : null,
             )));
         } catch (InvalidArgumentException $exception) {
             return response()->json(['message' => $exception->getMessage()], 422);
         }
     }
 
-    public function reassignKitchen(
+    public function reassignBranch(
         Request $request,
         int $id,
-        ReassignKitchenUseCase $useCase,
+        ReassignBranchUseCase $useCase,
     ): JsonResponse {
         $validated = $request->validate([
-            'kitchen_id' => ['required', 'integer', 'min:1'],
+            'branch_id' => ['required', 'integer', 'min:1'],
         ]);
 
         try {
-            return response()->json($useCase->execute(new ReassignKitchenDto(
+            return response()->json($useCase->execute(new ReassignBranchDto(
                 orderId: $id,
-                kitchenId: (int) $validated['kitchen_id'],
+                branchId: (int) $validated['branch_id'],
             )));
         } catch (InvalidArgumentException $exception) {
             return response()->json(['message' => $exception->getMessage()], 422);

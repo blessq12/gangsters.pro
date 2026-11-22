@@ -6,17 +6,15 @@ use App\Domain\Supporting\Company\Entity\Branch;
 use App\Domain\Supporting\Company\Entity\Company;
 use App\Domain\Supporting\Company\Entity\CompanyDocument;
 use App\Domain\Supporting\Company\Entity\CompanyLegalInfo;
-use App\Domain\Supporting\Company\Entity\Kitchen;
+use App\Domain\Supporting\Company\Support\ScheduleNormalizer;
 use App\Shared\ValueObject\PhoneNumber;
 
 /**
  * Единый формат ответа Company для витрины и админки.
+ * Расписание — только в branch, у company его нет.
  */
 final class CompanyPresenter
 {
-    /** @var list<string> */
-    private const DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
-
     /**
      * @return array<string, mixed>
      */
@@ -32,7 +30,6 @@ final class CompanyPresenter
             'phone' => $this->formatOptionalPhone($company->phone()),
             'email' => $company->email(),
             'socials' => $socials,
-            'schedule' => $this->schedule($company->schedule()),
         ];
     }
 
@@ -77,42 +74,30 @@ final class CompanyPresenter
             'company_id' => $branch->companyId(),
             'name' => $branch->name(),
             'is_active' => $branch->isActive(),
+            'schedule' => ScheduleNormalizer::normalize($branch->schedule()),
+            'city' => $branch->city(),
+            'street' => $branch->street(),
+            'house' => $branch->house(),
+            'comment' => $branch->comment(),
+            'latitude' => $branch->latitude(),
+            'longitude' => $branch->longitude(),
+            'phone' => $this->formatOptionalPhone($branch->phone()),
         ];
     }
 
     /**
-     * @return array<string, mixed>
+     * Краткий снимок филиала для выбора на витрине.
+     *
+     * @return array{id: int, name: string, is_active: bool, phone: string|null}
      */
-    public function kitchen(Kitchen $kitchen): array
+    public function branchSummary(Branch $branch): array
     {
         return [
-            'id' => $kitchen->id(),
-            'branch_id' => $kitchen->branchId(),
-            'city' => $kitchen->city(),
-            'street' => $kitchen->street(),
-            'house' => $kitchen->house(),
-            'comment' => $kitchen->comment(),
-            'latitude' => $kitchen->latitude(),
-            'longitude' => $kitchen->longitude(),
+            'id' => $branch->id(),
+            'name' => $branch->name(),
+            'is_active' => $branch->isActive(),
+            'phone' => $this->formatOptionalPhone($branch->phone()),
         ];
-    }
-
-    /**
-     * @param  array<string, array{work: ?string, is_day_off: bool}>  $schedule
-     * @return array<string, array{work: ?string, is_day_off: bool}>
-     */
-    private function schedule(array $schedule): array
-    {
-        $normalized = [];
-        foreach (self::DAYS as $day) {
-            $row = $schedule[$day] ?? null;
-            $normalized[$day] = [
-                'work' => is_array($row) ? ($row['work'] ?? null) : null,
-                'is_day_off' => is_array($row) ? (bool) ($row['is_day_off'] ?? false) : false,
-            ];
-        }
-
-        return $normalized;
     }
 
     private function formatOptionalPhone(?string $raw): ?string

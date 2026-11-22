@@ -17,6 +17,7 @@ final class PRM_Zone extends Model
      */
     protected $fillable = [
         'id',
+        'branch_id',
         'name',
         'fee_kopecks',
         'is_remote',
@@ -26,6 +27,7 @@ final class PRM_Zone extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'branch_id' => 'integer',
         'fee_kopecks' => 'integer',
         'is_remote' => 'boolean',
     ];

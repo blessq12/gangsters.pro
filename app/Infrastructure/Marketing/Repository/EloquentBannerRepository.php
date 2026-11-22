@@ -51,6 +51,26 @@ final class EloquentBannerRepository implements BannerRepository
         return (int) MKT_Banner::query()->count();
     }
 
+    public function findById(int $id): ?Banner
+    {
+        $row = MKT_Banner::query()->find($id);
+
+        return $row instanceof MKT_Banner ? $this->mapper->toDomain($row) : null;
+    }
+
+    public function findStoredPaths(int $id): ?array
+    {
+        $row = MKT_Banner::query()->find($id);
+        if (! $row instanceof MKT_Banner) {
+            return null;
+        }
+
+        return [
+            'image_desktop' => $this->nullableString($row->image_desktop),
+            'image_mobile' => $this->nullableString($row->image_mobile),
+        ];
+    }
+
     public function save(?int $id, bool $isActive, ?string $desktopPath, ?string $mobilePath): Banner
     {
         $row = $id === null ? new MKT_Banner() : MKT_Banner::query()->find($id);
@@ -72,5 +92,16 @@ final class EloquentBannerRepository implements BannerRepository
         $row->save();
 
         return $this->mapper->toDomain($row);
+    }
+
+    private function nullableString(mixed $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $trimmed = trim((string) $value);
+
+        return $trimmed !== '' ? $trimmed : null;
     }
 }

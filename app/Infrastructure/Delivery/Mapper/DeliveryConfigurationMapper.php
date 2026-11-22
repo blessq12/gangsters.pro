@@ -15,7 +15,7 @@ final class DeliveryConfigurationMapper
             id: (int) $row->id,
             minOrderAmountKopecks: $this->nullableInt($row->min_order_amount_kopecks),
             averageDeliveryTimeMinutes: $this->nullableInt($row->average_delivery_time_minutes),
-            kitchenId: $this->nullableInt($row->company_kitchen_id),
+            branchId: $this->nullableInt($row->branch_id),
             zones: $this->resolveZones($row),
         );
     }

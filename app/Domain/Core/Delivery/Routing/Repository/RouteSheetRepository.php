@@ -23,6 +23,13 @@ interface RouteSheetRepository
     public function countActive(): int;
 
     /**
+     * @return list<RouteSheet>
+     */
+    public function listActivePageByBranch(int $branchId, int $offset, int $limit): array;
+
+    public function countActiveByBranch(int $branchId): int;
+
+    /**
      * Листы, видимые курьеру: свои активные + свободные released без курьера.
      *
      * @return list<RouteSheet>

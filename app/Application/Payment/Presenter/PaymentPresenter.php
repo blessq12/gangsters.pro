@@ -20,6 +20,7 @@ final class PaymentPresenter
             'status' => $payment->status()->value,
             'paid_at' => $payment->paidAt()?->format(DATE_ATOM),
             'refunded_at' => $payment->refundedAt()?->format(DATE_ATOM),
+            'created_at' => $payment->createdAt()?->format(DATE_ATOM),
         ];
     }
 }

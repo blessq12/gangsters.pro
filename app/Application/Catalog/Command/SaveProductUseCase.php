@@ -64,6 +64,8 @@ final class SaveProductUseCase
                     $dto->ingredients,
                     $dto->nutrition,
                     $dto->tagIds,
+                    $dto->isRoll,
+                    $dto->isComplement,
                 );
 
                 foreach ($dto->deletedImageIds as $imageId) {

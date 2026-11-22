@@ -2,10 +2,13 @@ import { request } from "../http/transport.js";
 
 /**
  * @param {string} path
- * @param {{ offset?: number, limit?: number }} [query]
+ * @param {{ offset?: number, limit?: number, branch_id?: number|string }} [query]
  */
 function withPage(path, query = {}) {
     const params = new URLSearchParams();
+    if (query.branch_id !== undefined) {
+        params.set("branch_id", String(query.branch_id));
+    }
     if (query.offset !== undefined) {
         params.set("offset", String(query.offset));
     }
@@ -16,33 +19,34 @@ function withPage(path, query = {}) {
     return request("GET", `${path}${qs ? `?${qs}` : ""}`);
 }
 
-export function getDelivery() {
-    return request("GET", "/delivery");
+/** @param {number|string} branchId */
+export function getDelivery(branchId) {
+    return request("GET", `/delivery?branch_id=${encodeURIComponent(String(branchId))}`);
 }
 
-/** @param {Record<string, unknown>} data */
+/** @param {Record<string, unknown>} data включает branch_id */
 export function storeDelivery(data) {
     return request("POST", "/delivery", data);
 }
 
-/** @param {Record<string, unknown>} data */
+/** @param {Record<string, unknown>} data включает branch_id */
 export function updateDelivery(data) {
     return request("PUT", "/delivery", data);
 }
 
-/** @param {Record<string, unknown>} data */
+/** @param {Record<string, unknown>} data включает branch_id */
 export function storeZone(data) {
     return request("POST", "/delivery/zones", data);
 }
 
-/** @param {number|string} id @param {Record<string, unknown>} data */
+/** @param {number|string} id @param {Record<string, unknown>} data включает branch_id */
 export function updateZone(id, data) {
     return request("PUT", `/delivery/zones/${id}`, data);
 }
 
-/** @param {{ offset?: number, limit?: number }} [query] */
-export function listZones(query = {}) {
-    return withPage("/delivery/zones", query);
+/** @param {number|string} branchId @param {{ offset?: number, limit?: number }} [query] */
+export function listZones(branchId, query = {}) {
+    return withPage("/delivery/zones", { ...query, branch_id: branchId });
 }
 
 /** @param {{ offset?: number, limit?: number }} [query] */

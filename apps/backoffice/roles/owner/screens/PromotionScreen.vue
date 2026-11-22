@@ -1,49 +1,27 @@
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from "vue";
+import { onMounted, reactive, ref, watch } from "vue";
+import { listProducts } from "../../../api/catalog.js";
 import {
-    assignProductRole,
     getPromotionPolicy,
-    listPromotionRoles,
-    listPromotionZones,
     storePromotionPolicy,
-    syncZones,
     updatePromotionPolicy,
 } from "../../../api/promotion.js";
 import { useApi } from "../../../shell/composables/useApi.js";
-import { usePagedList } from "../../../shell/composables/usePagedList.js";
 import { useToast } from "../../../shell/composables/useToast.js";
-import UiBadge from "../../../shell/components/ui/UiBadge.vue";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
 import UiCard from "../../../shell/components/ui/UiCard.vue";
 import UiFormField from "../../../shell/components/ui/UiFormField.vue";
 import UiInput from "../../../shell/components/ui/UiInput.vue";
-import UiModal from "../../../shell/components/ui/UiModal.vue";
-import UiPagination from "../../../shell/components/ui/UiPagination.vue";
-import UiTable from "../../../shell/components/ui/UiTable.vue";
+import OwnerBranchSelector from "../components/branch/OwnerBranchSelector.vue";
+import { useOwnerBranchContext } from "../composables/useOwnerBranchContext.js";
 
 const toast = useToast();
 const loadApi = useApi();
 const saveApi = useApi();
 
-const tab = ref("policy");
 const policyExists = ref(false);
-const {
-    page: rolesPage,
-    perPage: rolesPerPage,
-    total: rolesTotal,
-    items: roles,
-    offset: rolesOffset,
-    applyPayload: applyRoles,
-} = usePagedList();
-const {
-    page: zonesPage,
-    perPage: zonesPerPage,
-    total: zonesTotal,
-    items: zones,
-    offset: zonesOffset,
-    resetPage: resetZonesPage,
-    applyPayload: applyZones,
-} = usePagedList();
+const catalogProducts = ref([]);
+const { selectedBranchId, ensureLoaded } = useOwnerBranchContext();
 
 const weekdayOptions = [
     { value: 1, label: "пн" },
@@ -56,6 +34,7 @@ const weekdayOptions = [
 ];
 
 const policyForm = reactive({
+    gift_product_id: "",
     gift_pickup_min_order_kopecks: "0",
     gift_courier_min_order_kopecks: "0",
     gift_courier_weekdays: /** @type {number[]} */ ([]),
@@ -69,49 +48,6 @@ const policyForm = reactive({
 });
 const policyErrors = reactive({});
 
-const roleModalOpen = ref(false);
-const roleErrors = reactive({});
-const roleForm = reactive({
-    product_id: "",
-    role: "roll",
-    name: "",
-    price_rubles: "",
-});
-
-const tabs = [
-    { id: "policy", label: "Политика" },
-    { id: "roles", label: "Роли товаров" },
-    { id: "zones", label: "Зоны" },
-];
-
-const roleColumns = [
-    { key: "product_id", label: "ID товара", width: "100px" },
-    { key: "name", label: "Название" },
-    { key: "price", label: "Цена", width: "90px" },
-    { key: "role", label: "Роль", width: "120px" },
-];
-
-const zoneColumns = [
-    { key: "id", label: "ID", width: "120px" },
-    { key: "name", label: "Название" },
-    { key: "fee", label: "Тариф", width: "90px" },
-    { key: "is_remote", label: "Удалённая", width: "110px" },
-];
-
-const roleRows = computed(() =>
-    roles.value.map((row) => ({
-        ...row,
-        price: `${Math.floor(Number(row.price_kopecks ?? 0) / 100)} ₽`,
-    })),
-);
-
-const zoneRows = computed(() =>
-    zones.value.map((row) => ({
-        ...row,
-        fee: `${Math.floor(Number(row.fee_kopecks ?? 0) / 100)} ₽`,
-    })),
-);
-
 function clearErrors(target) {
     Object.keys(target).forEach((key) => {
         delete target[key];
@@ -120,6 +56,23 @@ function clearErrors(target) {
 
 function applyPolicy(payload) {
     policyExists.value = Boolean(payload?.gift || payload?.delivery || payload?.complement);
+    if (!payload) {
+        policyForm.gift_product_id = "";
+        policyForm.gift_pickup_min_order_kopecks = "0";
+        policyForm.gift_courier_min_order_kopecks = "0";
+        policyForm.gift_courier_weekdays = [];
+        policyForm.gift_benefit_active = false;
+        policyForm.delivery_free_threshold_kopecks = "0";
+        policyForm.delivery_outside_zone_surcharge_kopecks = "0";
+        policyForm.delivery_benefit_active = false;
+        policyForm.complement_set_benefit_active = false;
+        policyForm.complement_set_rolls_per_set = "1";
+        policyForm.complement_set_max_sets = "1";
+        return;
+    }
+    policyForm.gift_product_id = payload?.gift?.product_id != null
+        ? String(payload.gift.product_id)
+        : "";
     policyForm.gift_pickup_min_order_kopecks = String(
         payload?.gift?.pickup_min_order_kopecks ?? 0,
     );
@@ -143,40 +96,23 @@ function applyPolicy(payload) {
 }
 
 async function loadPolicy() {
+    const branchId = selectedBranchId.value;
+    if (!branchId) {
+        applyPolicy(null);
+        return;
+    }
     try {
-        const payload = await loadApi.run(() => getPromotionPolicy());
-        applyPolicy(payload);
+        const payload = await loadApi.run(() => getPromotionPolicy(branchId));
+        if (branchId === selectedBranchId.value) {
+            applyPolicy(payload);
+        }
     } catch (err) {
+        if (err?.status === 404) {
+            applyPolicy(null);
+            return;
+        }
         toast.error(err instanceof Error ? err.message : "Не удалось загрузить политику");
     }
-}
-
-async function loadRoles() {
-    try {
-        const payload = await loadApi.run(() => listPromotionRoles({
-            offset: rolesOffset.value,
-            limit: rolesPerPage,
-        }));
-        applyRoles(payload);
-    } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Не удалось загрузить роли");
-    }
-}
-
-async function loadZones() {
-    try {
-        const payload = await loadApi.run(() => listPromotionZones({
-            offset: zonesOffset.value,
-            limit: zonesPerPage,
-        }));
-        applyZones(payload);
-    } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Не удалось загрузить зоны");
-    }
-}
-
-async function loadAll() {
-    await Promise.all([loadPolicy(), loadRoles(), loadZones()]);
 }
 
 function toggleWeekday(day) {
@@ -208,12 +144,19 @@ function validatePolicy() {
 }
 
 async function savePolicy() {
+    if (!selectedBranchId.value) {
+        toast.error("Выбери филиал");
+        return;
+    }
     if (!validatePolicy()) {
         toast.error("Проверьте поля");
         return;
     }
 
+    const giftProductId = String(policyForm.gift_product_id).trim();
     const body = {
+        branch_id: Number(selectedBranchId.value),
+        gift_product_id: giftProductId !== "" ? Number(giftProductId) : null,
         gift_pickup_min_order_kopecks: Number(policyForm.gift_pickup_min_order_kopecks),
         gift_courier_min_order_kopecks: Number(policyForm.gift_courier_min_order_kopecks),
         gift_courier_weekdays: [...policyForm.gift_courier_weekdays],
@@ -241,103 +184,57 @@ async function savePolicy() {
     }
 }
 
-function openRoleModal() {
-    roleForm.product_id = "";
-    roleForm.role = "roll";
-    roleForm.name = "";
-    roleForm.price_rubles = "";
-    clearErrors(roleErrors);
-    roleModalOpen.value = true;
-}
-
-function validateRole() {
-    clearErrors(roleErrors);
-    if (!String(roleForm.product_id).trim()) {
-        roleErrors.product_id = "Обязательное поле";
-    }
-    if (!roleForm.role) {
-        roleErrors.role = "Обязательное поле";
-    }
-    if (!String(roleForm.name).trim()) {
-        roleErrors.name = "Обязательное поле";
-    }
-    if (roleForm.price_rubles === "" || Number.isNaN(Number(roleForm.price_rubles))) {
-        roleErrors.price_rubles = "Укажите цену";
-    }
-    return Object.keys(roleErrors).length === 0;
-}
-
-async function saveRole() {
-    if (!validateRole()) {
-        toast.error("Проверьте обязательные поля");
-        return;
-    }
-
-    const body = {
-        product_id: Number(roleForm.product_id),
-        role: roleForm.role,
-        name: roleForm.name.trim(),
-        price_kopecks: Math.round(Number(roleForm.price_rubles) * 100),
-    };
-
+async function loadCatalogProducts() {
     try {
-        await saveApi.run(() => assignProductRole(body));
-        toast.success("Роль назначена");
-        roleModalOpen.value = false;
-        await loadRoles();
+        const payload = await listProducts({ limit: 200 });
+        catalogProducts.value = Array.isArray(payload?.items) ? payload.items : [];
     } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Ошибка");
+        toast.error(err instanceof Error ? err.message : "Не удалось загрузить каталог");
     }
 }
 
-async function onSyncZones() {
-    try {
-        await saveApi.run(() => syncZones());
-        toast.success("Зоны синхронизированы");
-        if (zonesPage.value === 1) {
-            await loadZones();
-        } else {
-            resetZonesPage();
-        }
-    } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Ошибка синхронизации");
-    }
-}
-
-function roleVariant(role) {
-    if (role === "gift") {
-        return "success";
-    }
-    if (role === "complement") {
-        return "warning";
-    }
-    return "neutral";
-}
-
-watch(rolesPage, loadRoles);
-watch(zonesPage, loadZones);
-onMounted(loadAll);
+watch(selectedBranchId, () => {
+    loadPolicy();
+});
+onMounted(async () => {
+    await ensureLoaded();
+    await Promise.all([loadPolicy(), loadCatalogProducts()]);
+});
 </script>
 
 <template>
     <div class="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
-        <UiCard title="Акции">
-            <div class="mb-8 flex flex-wrap gap-2">
-                <button
-                    v-for="item in tabs"
-                    :key="item.id"
-                    type="button"
-                    class="h-10 px-4 text-sm font-medium transition-colors duration-150"
-                    :class="tab === item.id
-                        ? 'bg-bo-accent text-white'
-                        : 'bg-white/[0.04] text-bo-muted hover:bg-white/[0.08] hover:text-bo-fg'"
-                    @click="tab = item.id"
-                >
-                    {{ item.label }}
-                </button>
-            </div>
+        <UiCard title="Политики филиала">
+            <template #actions>
+                <OwnerBranchSelector />
+            </template>
 
-            <div v-if="tab === 'policy'" class="space-y-5">
+            <p v-if="!selectedBranchId" class="text-sm text-bo-muted">
+                Выбери филиал, чтобы настроить правила и подарок.
+            </p>
+
+            <div v-else class="space-y-5">
+                <p class="text-sm text-bo-muted">
+                    Роллы и комплектные товары задаются флагами в карточке товара каталога.
+                    Здесь — правила филиала и явный товар-подарок.
+                </p>
+
+                <UiFormField label="Товар-подарок филиала">
+                    <select
+                        v-model="policyForm.gift_product_id"
+                        class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 transition-colors hover:border-bo-border-strong focus:border-bo-accent focus:outline-none"
+                    >
+                        <option value="">Без подарка</option>
+                        <option
+                            v-for="product in catalogProducts"
+                            :key="product.id"
+                            :value="String(product.id)"
+                        >
+                            {{ product.name }}
+                        </option>
+                    </select>
+                </UiFormField>
+
                 <div class="grid gap-3 md:grid-cols-2">
                     <UiFormField
                         label="Порог подарка pickup (коп.)"
@@ -375,28 +272,28 @@ onMounted(loadAll);
                 <div class="flex flex-wrap gap-4 text-sm">
                     <label class="flex items-center gap-2">
                         <input v-model="policyForm.gift_benefit_active" type="checkbox">
-                        gift_benefit_active
+                        Подарок активен
                     </label>
                     <label class="flex items-center gap-2">
                         <input v-model="policyForm.delivery_benefit_active" type="checkbox">
-                        delivery_benefit_active
+                        Выгода доставки активна
                     </label>
                     <label class="flex items-center gap-2">
                         <input v-model="policyForm.complement_set_benefit_active" type="checkbox">
-                        complement_set_benefit_active
+                        Комплекты активны
                     </label>
                 </div>
 
                 <div class="grid gap-3 md:grid-cols-2">
                     <UiFormField
-                        label="rolls_per_set"
+                        label="Роллов на комплект"
                         required
                         :error="policyErrors.complement_set_rolls_per_set"
                     >
                         <UiInput v-model="policyForm.complement_set_rolls_per_set" type="number" />
                     </UiFormField>
                     <UiFormField
-                        label="max_sets"
+                        label="Макс. комплектов"
                         required
                         :error="policyErrors.complement_set_max_sets"
                     >
@@ -425,83 +322,6 @@ onMounted(loadAll);
                     Сохранить
                 </UiButton>
             </div>
-
-            <div v-else-if="tab === 'roles'" class="space-y-5">
-                <div class="flex justify-end">
-                    <UiButton @click="openRoleModal">+ Роль</UiButton>
-                </div>
-                <UiTable
-                    :columns="roleColumns"
-                    :rows="roleRows"
-                    :loading="loadApi.loading"
-                    empty-text="Нет ролей"
-                >
-                    <template #cell-role="{ value }">
-                        <UiBadge :variant="roleVariant(value)" :text="String(value)" />
-                    </template>
-                </UiTable>
-                <UiPagination
-                    :page="rolesPage"
-                    :per-page="rolesPerPage"
-                    :total="rolesTotal"
-                    @update:page="rolesPage = $event"
-                />
-            </div>
-
-            <div v-else class="space-y-5">
-                <div class="flex justify-end">
-                    <UiButton :disabled="saveApi.loading" @click="onSyncZones">
-                        Синхронизировать зоны
-                    </UiButton>
-                </div>
-                <UiTable
-                    :columns="zoneColumns"
-                    :rows="zoneRows"
-                    :loading="loadApi.loading"
-                    empty-text="Нет зон"
-                >
-                    <template #cell-is_remote="{ value }">
-                        <UiBadge
-                            :variant="value ? 'warning' : 'neutral'"
-                            :text="value ? 'да' : 'нет'"
-                        />
-                    </template>
-                </UiTable>
-                <UiPagination
-                    :page="zonesPage"
-                    :per-page="zonesPerPage"
-                    :total="zonesTotal"
-                    @update:page="zonesPage = $event"
-                />
-            </div>
         </UiCard>
-
-        <UiModal :open="roleModalOpen" title="Назначить роль" @close="roleModalOpen = false">
-            <div class="space-y-5">
-                <UiFormField label="product_id" required :error="roleErrors.product_id">
-                    <UiInput v-model="roleForm.product_id" type="number" />
-                </UiFormField>
-                <UiFormField label="Роль" required :error="roleErrors.role">
-                    <select
-                        v-model="roleForm.role"
-                        class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 transition-colors hover:border-bo-border-strong focus:border-bo-accent focus:outline-none"
-                    >
-                        <option value="roll">roll</option>
-                        <option value="gift">gift</option>
-                        <option value="complement">complement</option>
-                    </select>
-                </UiFormField>
-                <UiFormField label="Название" required :error="roleErrors.name">
-                    <UiInput v-model="roleForm.name" />
-                </UiFormField>
-                <UiFormField label="Цена (₽)" required :error="roleErrors.price_rubles">
-                    <UiInput v-model="roleForm.price_rubles" type="number" />
-                </UiFormField>
-            </div>
-            <template #footer>
-                <UiButton @click="roleModalOpen = false">Отмена</UiButton>
-                <UiButton :disabled="saveApi.loading" @click="saveRole">Сохранить</UiButton>
-            </template>
-        </UiModal>
     </div>
 </template>

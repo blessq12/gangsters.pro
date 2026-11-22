@@ -4,7 +4,7 @@ namespace App\Domain\Core\Order\Entity;
 
 use App\Domain\Core\Order\Enum\OrderLineType;
 use App\Domain\Core\Order\Enum\OrderStatus;
-use App\Domain\Core\Order\Event\KitchenReassigned;
+use App\Domain\Core\Order\Event\BranchReassigned;
 use App\Domain\Core\Order\Event\OrderCancelled;
 use App\Domain\Core\Order\Event\OrderConfirmed;
 use App\Domain\Core\Order\Event\OrderPickedUp;
@@ -13,6 +13,7 @@ use App\Domain\Core\Order\Policy\OrderFormation;
 use App\Domain\Core\Order\Policy\PromotionPolicy;
 use App\Domain\Core\Order\ValueObject\OrderClientSnapshot;
 use App\Domain\Core\Order\ValueObject\OrderDeliveryInfo;
+use App\Domain\Core\Order\ValueObject\OrderFormationFacts;
 use App\Domain\Core\Order\ValueObject\OrderLine;
 use App\Shared\Enum\DeliveryMethod;
 use DateTimeImmutable;
@@ -20,7 +21,7 @@ use DateTimeInterface;
 
 /**
  * Агрегат заказа: позиции + снимки клиента/доставки + жизненный цикл.
- * kitchenId / branchId — ссылки на Company; paymentId — ссылка на Payment.
+ * branchId — ссылка на Company (филиал); paymentId — ссылка на Payment.
  */
 final class Order
 {
@@ -41,7 +42,6 @@ final class Order
         private OrderClientSnapshot $client,
         private OrderDeliveryInfo $delivery,
         private readonly DateTimeImmutable $createdAt,
-        private ?int $kitchenId = null,
         private ?int $branchId = null,
         private ?int $paymentId = null,
         private ?string $paymentMethod = null,
@@ -54,7 +54,6 @@ final class Order
      * Создаёт заказ из базовых позиций и применяет коммерческие политики.
      *
      * @param  list<OrderLine>  $baseLines  только regular|set
-     * @param  list<ProductPromotionRole>  $roles
      */
     public static function place(
         string $checkoutId,
@@ -62,7 +61,7 @@ final class Order
         OrderDeliveryInfo $delivery,
         array $baseLines,
         PromotionPolicy $policy,
-        array $roles,
+        OrderFormationFacts $facts,
         string $channel,
         DateTimeImmutable $createdAt,
         string $timezone = 'UTC',
@@ -70,6 +69,7 @@ final class Order
         string $source = 'site',
         ?string $partnerCode = null,
         ?string $externalOrderId = null,
+        bool $zoneIsRemote = false,
     ): self {
         if ($checkoutId === '') {
             throw new \InvalidArgumentException('Заказ нельзя создать без ссылки на чекаут.');
@@ -79,10 +79,11 @@ final class Order
             baseLines: $baseLines,
             delivery: $delivery,
             policy: $policy,
-            roles: $roles,
+            facts: $facts,
             channel: $channel,
             at: $createdAt,
             timezone: $timezone,
+            zoneIsRemote: $zoneIsRemote,
         );
 
         return new self(
@@ -113,6 +114,7 @@ final class Order
         OrderDeliveryInfo $delivery,
         array $lines,
         DateTimeImmutable $createdAt,
+        int $branchId,
         ?DateTimeImmutable $scheduledAt = null,
         string $source = 'site',
         ?string $partnerCode = null,
@@ -120,6 +122,9 @@ final class Order
     ): self {
         if ($checkoutId === '') {
             throw new \InvalidArgumentException('Заказ нельзя создать без ссылки на чекаут.');
+        }
+        if ($branchId < 1) {
+            throw new \InvalidArgumentException('Заказ нельзя создать без филиала.');
         }
 
         return new self(
@@ -135,6 +140,7 @@ final class Order
             client: $client,
             delivery: $delivery,
             createdAt: $createdAt,
+            branchId: $branchId,
         );
     }
 
@@ -152,7 +158,6 @@ final class Order
         OrderClientSnapshot $client,
         OrderDeliveryInfo $delivery,
         DateTimeImmutable $createdAt,
-        ?int $kitchenId = null,
         ?int $branchId = null,
         ?int $paymentId = null,
         ?string $paymentMethod = null,
@@ -169,7 +174,6 @@ final class Order
             client: $client,
             delivery: $delivery,
             createdAt: $createdAt,
-            kitchenId: $kitchenId,
             branchId: $branchId,
             paymentId: $paymentId,
             paymentMethod: $paymentMethod,
@@ -181,16 +185,16 @@ final class Order
      * Пересчёт выгод по актуальным политикам. Только до старта готовки.
      *
      * @param  list<OrderLine>  $baseLines  только regular|set; null = взять текущие billable
-     * @param  list<ProductPromotionRole>  $roles
      */
     public function recalculate(
         PromotionPolicy $policy,
-        array $roles,
+        OrderFormationFacts $facts,
         string $channel,
         DateTimeInterface $at,
         string $timezone,
         ?array $baseLines = null,
         ?OrderDeliveryInfo $delivery = null,
+        bool $zoneIsRemote = false,
     ): void {
         if (! in_array($this->status, [OrderStatus::New, OrderStatus::Preorder, OrderStatus::Confirmed], true)) {
             throw new \InvalidArgumentException('Пересчёт доступен только до начала готовки.');
@@ -205,10 +209,11 @@ final class Order
             baseLines: $base,
             delivery: $delivery ?? $this->delivery,
             policy: $policy,
-            roles: $roles,
+            facts: $facts,
             channel: $channel,
             at: $at,
             timezone: $timezone,
+            zoneIsRemote: $zoneIsRemote,
         );
 
         $this->lines = $formed['lines'];
@@ -325,11 +330,6 @@ final class Order
         return $this->delivery;
     }
 
-    public function kitchenId(): ?int
-    {
-        return $this->kitchenId;
-    }
-
     public function branchId(): ?int
     {
         return $this->branchId;
@@ -391,58 +391,56 @@ final class Order
         ));
     }
 
-    public function assignKitchen(int $kitchenId, int $branchId): void
+    public function assignBranch(int $branchId): void
     {
-        if ($kitchenId < 1 || $branchId < 1) {
-            throw new \InvalidArgumentException('kitchenId и branchId должны быть положительными.');
+        if ($branchId < 1) {
+            throw new \InvalidArgumentException('branchId должен быть положительным.');
         }
 
         if ($this->status !== OrderStatus::Confirmed) {
             throw new \InvalidArgumentException(
-                'Кухню можно назначить только подтверждённому заказу.',
+                'Филиал можно назначить только подтверждённому заказу.',
             );
         }
 
-        $this->kitchenId = $kitchenId;
         $this->branchId = $branchId;
     }
 
     /**
-     * Переназначение кухни после первичного назначения.
-     * Production отменяет старый тикет и создаёт новый по KitchenReassigned.
+     * Переназначение филиала после первичного назначения.
+     * Production отменяет старый тикет и создаёт новый по BranchReassigned.
      */
-    public function reassignKitchen(int $kitchenId, int $branchId): void
+    public function reassignBranch(int $branchId): void
     {
-        if ($kitchenId < 1 || $branchId < 1) {
-            throw new \InvalidArgumentException('kitchenId и branchId должны быть положительными.');
+        if ($branchId < 1) {
+            throw new \InvalidArgumentException('branchId должен быть положительным.');
         }
 
         if ($this->id === null) {
-            throw new \LogicException('Нельзя переназначить кухню без id заказа.');
+            throw new \LogicException('Нельзя переназначить филиал без id заказа.');
         }
 
-        if ($this->kitchenId === null) {
-            throw new \InvalidArgumentException('Кухня ещё не назначена — используй assignKitchen.');
+        if ($this->branchId === null) {
+            throw new \InvalidArgumentException('Филиал ещё не назначен — используй assignBranch.');
         }
 
         if (! in_array($this->status, [OrderStatus::Confirmed, OrderStatus::Preparing], true)) {
             throw new \InvalidArgumentException(
-                'Переназначение кухни доступно только до готовности заказа.',
+                'Переназначение филиала доступно только до готовности заказа.',
             );
         }
 
-        if ($kitchenId === $this->kitchenId) {
-            throw new \InvalidArgumentException('Указана та же кухня.');
+        if ($branchId === $this->branchId) {
+            throw new \InvalidArgumentException('Указан тот же филиал.');
         }
 
-        $previousKitchenId = $this->kitchenId;
-        $this->kitchenId = $kitchenId;
+        $previousBranchId = $this->branchId;
         $this->branchId = $branchId;
 
-        $this->record(new KitchenReassigned(
+        $this->record(new BranchReassigned(
             orderId: $this->id,
-            previousKitchenId: $previousKitchenId,
-            kitchenId: $kitchenId,
+            previousBranchId: $previousBranchId,
+            branchId: $branchId,
         ));
     }
 
@@ -469,7 +467,7 @@ final class Order
     }
 
     /**
-     * Публикует OrderConfirmed после accept + assignKitchen.
+     * Публикует OrderConfirmed после accept + assignBranch.
      * Тикет и платёж создаются слушателями этого события.
      */
     public function confirm(): void
@@ -484,8 +482,8 @@ final class Order
             );
         }
 
-        if ($this->kitchenId === null) {
-            throw new \InvalidArgumentException('Перед подтверждением нужно назначить кухню.');
+        if ($this->branchId === null) {
+            throw new \InvalidArgumentException('Перед подтверждением нужно назначить филиал.');
         }
 
         if ($this->paymentMethod === null || trim($this->paymentMethod) === '') {
@@ -494,7 +492,7 @@ final class Order
 
         $this->record(new OrderConfirmed(
             orderId: $this->id,
-            kitchenId: $this->kitchenId,
+            branchId: $this->branchId,
             amountKopecks: $this->grandTotalKopecks(),
             paymentMethod: $this->paymentMethod,
             changeFromRubles: $this->changeFromRubles,

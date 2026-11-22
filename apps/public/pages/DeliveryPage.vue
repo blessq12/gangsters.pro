@@ -14,10 +14,10 @@ const dv = useAppDesign().components.pages.delivery;
 const paymentBlocks = buildCheckoutAlignedPaymentInfoBlocks();
 
 const contentStore = useContentStore();
-const { profile, deliveryFacts: facts } = storeToRefs(contentStore);
+const { branch, deliveryFacts: facts } = storeToRefs(contentStore);
 
 const todayScheduleLine = computed(
-    () => formatTodayWorkScheduleLine(profile.value, new Date()) || "—",
+    () => formatTodayWorkScheduleLine(branch.value, new Date()) || "—",
 );
 
 const averageDeliveryLine = computed(() =>
@@ -29,7 +29,7 @@ const averageDeliveryMinutes = computed(() =>
 );
 
 const heroDescription = computed(() => {
-    const line = formatTodayWorkScheduleLine(profile.value, new Date());
+    const line = formatTodayWorkScheduleLine(branch.value, new Date());
     if (!line) {
         return "Мы принимаем и доставляем заказы по расписанию текущего дня.";
     }
@@ -42,7 +42,7 @@ const heroStats = computed(() => [
 ]);
 
 const importantTitle = computed(() => {
-    const line = formatTodayWorkScheduleLine(profile.value, new Date());
+    const line = formatTodayWorkScheduleLine(branch.value, new Date());
     if (!line) {
         return "Приём и доставка — по расписанию текущего дня";
     }

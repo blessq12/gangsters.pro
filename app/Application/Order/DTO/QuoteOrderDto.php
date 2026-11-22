@@ -11,6 +11,7 @@ final readonly class QuoteOrderDto
      * @param  array<int, int>  $complementSelections
      */
     public function __construct(
+        public int $branchId,
         public array $lines,
         public string $deliveryMethod,
         public array $client,

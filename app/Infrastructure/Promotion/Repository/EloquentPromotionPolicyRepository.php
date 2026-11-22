@@ -13,19 +13,19 @@ final class EloquentPromotionPolicyRepository implements PromotionPolicyReposito
         private readonly PromotionPolicyMapper $mapper,
     ) {}
 
-    public function find(): ?PromotionPolicy
+    public function findByBranch(int $branchId): ?PromotionPolicy
     {
-        $row = PRM_Policy::query()->find(self::SINGLETON_ID);
+        $row = PRM_Policy::query()->where('branch_id', $branchId)->first();
 
         return $row instanceof PRM_Policy ? $this->mapper->toDomain($row) : null;
     }
 
-    public function save(array $fields): PromotionPolicy
+    public function saveForBranch(int $branchId, array $fields): PromotionPolicy
     {
-        $row = PRM_Policy::query()->find(self::SINGLETON_ID);
+        $row = PRM_Policy::query()->where('branch_id', $branchId)->first();
         if (! $row instanceof PRM_Policy) {
             $row = new PRM_Policy();
-            $row->id = self::SINGLETON_ID;
+            $row->branch_id = $branchId;
         }
 
         $row->fill($this->mapper->flatFieldsToPersistence($fields));

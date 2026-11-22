@@ -8,7 +8,7 @@ use App\Domain\Core\Delivery\Tariff\Entity\PromotionZone;
 use App\Domain\Core\Delivery\Tariff\Repository\PromotionZoneRepository;
 
 /**
- * Единственное место, где Promotion читает Delivery: снимок зон в PRM_zones.
+ * Единственное место, где Promotion читает Delivery: снимок зон филиала в PRM_zones.
  */
 final class SyncPromotionZonesUseCase
 {
@@ -21,11 +21,11 @@ final class SyncPromotionZonesUseCase
     /**
      * @return array{zones: list<array<string, mixed>>, count: int}
      */
-    public function execute(): array
+    public function execute(int $branchId): array
     {
-        $configuration = $this->delivery->findPublic();
+        $configuration = $this->delivery->findByBranch($branchId);
         if ($configuration === null) {
-            throw new \InvalidArgumentException('Конфигурация доставки не найдена.');
+            throw new \InvalidArgumentException('Конфигурация доставки филиала не найдена.');
         }
 
         $snapshots = [];
@@ -38,9 +38,9 @@ final class SyncPromotionZonesUseCase
             );
         }
 
-        $this->zones->replaceAll($snapshots);
+        $this->zones->replaceForBranch($branchId, $snapshots);
 
-        $saved = $this->zones->findAll();
+        $saved = $this->zones->findAllByBranch($branchId);
 
         return [
             'zones' => array_map(

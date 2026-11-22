@@ -3,6 +3,10 @@ import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import draggable from "vuedraggable";
 import {
+    deleteCategory,
+    deleteProduct,
+    deleteSet,
+    deleteTag,
     listCategories,
     listProducts,
     listSets,
@@ -14,20 +18,28 @@ import {
 import { useApi } from "../../../shell/composables/useApi.js";
 import { usePagedList } from "../../../shell/composables/usePagedList.js";
 import { useToast } from "../../../shell/composables/useToast.js";
+import ShellIcon from "../../../shell/components/ShellIcon.vue";
 import UiBadge from "../../../shell/components/ui/UiBadge.vue";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
 import UiCard from "../../../shell/components/ui/UiCard.vue";
+import UiConfirmDialog from "../../../shell/components/ui/UiConfirmDialog.vue";
 import UiFormField from "../../../shell/components/ui/UiFormField.vue";
 import UiInput from "../../../shell/components/ui/UiInput.vue";
 import UiModal from "../../../shell/components/ui/UiModal.vue";
 import UiPagination from "../../../shell/components/ui/UiPagination.vue";
 import UiTable from "../../../shell/components/ui/UiTable.vue";
 
+defineProps({
+    /** Без внешней рамки страницы — для хаба «Меню». */
+    embedded: { type: Boolean, default: false },
+});
+
 const router = useRouter();
 const toast = useToast();
 const catalogApi = useApi();
 const saveApi = useApi();
 const reorderApi = useApi();
+const deleteApi = useApi();
 const {
     page,
     perPage,
@@ -50,6 +62,10 @@ const form = reactive({
     is_active: true,
 });
 
+const confirmOpen = ref(false);
+/** @type {import('vue').Ref<{ kind: string, id: number, title: string }|null>} */
+const deleteTarget = ref(null);
+
 const tabs = [
     { id: "categories", label: "Категории" },
     { id: "products", label: "Товары" },
@@ -62,21 +78,29 @@ const columnsByTab = {
         { key: "name", label: "Название" },
         { key: "price", label: "Цена", width: "90px" },
         { key: "status", label: "Статус", width: "110px" },
-        { key: "actions", label: "", width: "120px" },
+        { key: "actions", label: "", width: "112px" },
     ],
     sets: [
         { key: "name", label: "Название" },
         { key: "price", label: "Цена", width: "90px" },
         { key: "status", label: "Статус", width: "110px" },
-        { key: "actions", label: "", width: "120px" },
+        { key: "actions", label: "", width: "112px" },
     ],
     tags: [
         { key: "code", label: "Код" },
         { key: "label", label: "Подпись" },
         { key: "is_active", label: "Активен", width: "100px" },
-        { key: "actions", label: "", width: "120px" },
+        { key: "actions", label: "", width: "112px" },
     ],
 };
+
+const deleteConfirmMessage = computed(() => {
+    const target = deleteTarget.value;
+    if (!target) {
+        return "";
+    }
+    return `Удалить «${target.title}»? Это действие нельзя отменить.`;
+});
 
 const currentColumns = computed(() => columnsByTab[tab.value] ?? []);
 const modalTitle = computed(() => (editingId.value ? "Редактировать тег" : "Новый тег"));
@@ -189,6 +213,43 @@ async function saveTag() {
     }
 }
 
+function askDelete(kind, row) {
+    if (kind === "product" && row.is_system) {
+        toast.error("Системный товар нельзя удалить");
+        return;
+    }
+    const title = row.name || row.label || row.code || `#${row.id}`;
+    deleteTarget.value = { kind, id: Number(row.id), title: String(title) };
+    confirmOpen.value = true;
+}
+
+async function confirmDelete() {
+    const target = deleteTarget.value;
+    confirmOpen.value = false;
+    deleteTarget.value = null;
+    if (!target?.id) {
+        return;
+    }
+    try {
+        await deleteApi.run(async () => {
+            if (target.kind === "product") {
+                return deleteProduct(target.id);
+            }
+            if (target.kind === "set") {
+                return deleteSet(target.id);
+            }
+            if (target.kind === "category") {
+                return deleteCategory(target.id);
+            }
+            return deleteTag(target.id);
+        });
+        toast.success("Удалено");
+        await loadTab();
+    } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Не удалось удалить");
+    }
+}
+
 async function onCategoriesReorder() {
     const pageIds = rows.value.map((row) => Number(row.id)).filter((id) => id > 0);
     if (pageIds.length === 0) {
@@ -219,8 +280,12 @@ onMounted(loadTab);
 </script>
 
 <template>
-    <div class="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
-        <UiCard title="Каталог">
+    <div
+        :class="embedded
+            ? 'space-y-8'
+            : 'mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10'"
+    >
+        <UiCard title="Справочник">
             <template #actions>
                 <UiButton @click="openCreate('product')">
                     + Товар
@@ -282,9 +347,24 @@ onMounted(loadTab);
                                 :variant="element.is_active ? 'success' : 'neutral'"
                                 :text="element.is_active ? 'да' : 'нет'"
                             />
-                            <UiButton @click="openEdit('category', element)">
-                                Редактировать
-                            </UiButton>
+                            <div class="flex flex-wrap gap-1">
+                                <UiButton
+                                    class="!h-9 !px-2.5"
+                                    title="Редактировать"
+                                    aria-label="Редактировать"
+                                    @click="openEdit('category', element)"
+                                >
+                                    <ShellIcon name="edit" class="h-4 w-4" />
+                                </UiButton>
+                                <UiButton
+                                    class="!h-9 !px-2.5"
+                                    title="Удалить"
+                                    aria-label="Удалить"
+                                    @click="askDelete('category', element)"
+                                >
+                                    <ShellIcon name="trash" class="h-4 w-4" />
+                                </UiButton>
+                            </div>
                         </div>
                     </template>
                 </draggable>
@@ -310,15 +390,33 @@ onMounted(loadTab);
                     />
                 </template>
                 <template #cell-actions="{ row }">
-                    <UiButton
-                        @click.stop="openEdit(
-                            tab === 'products' ? 'product'
-                                : tab === 'sets' ? 'set' : 'tag',
-                            row,
-                        )"
-                    >
-                        Редактировать
-                    </UiButton>
+                    <div class="flex flex-wrap gap-1">
+                        <UiButton
+                            class="!h-9 !px-2.5"
+                            title="Редактировать"
+                            aria-label="Редактировать"
+                            @click.stop="openEdit(
+                                tab === 'products' ? 'product'
+                                    : tab === 'sets' ? 'set' : 'tag',
+                                row,
+                            )"
+                        >
+                            <ShellIcon name="edit" class="h-4 w-4" />
+                        </UiButton>
+                        <UiButton
+                            class="!h-9 !px-2.5"
+                            title="Удалить"
+                            aria-label="Удалить"
+                            :disabled="tab === 'products' && row.is_system"
+                            @click.stop="askDelete(
+                                tab === 'products' ? 'product'
+                                    : tab === 'sets' ? 'set' : 'tag',
+                                row,
+                            )"
+                        >
+                            <ShellIcon name="trash" class="h-4 w-4" />
+                        </UiButton>
+                    </div>
                 </template>
             </UiTable>
 
@@ -357,5 +455,13 @@ onMounted(loadTab);
                 </UiButton>
             </template>
         </UiModal>
+
+        <UiConfirmDialog
+            :open="confirmOpen"
+            title="Удаление"
+            :message="deleteConfirmMessage"
+            @confirm="confirmDelete"
+            @cancel="confirmOpen = false; deleteTarget = null"
+        />
     </div>
 </template>

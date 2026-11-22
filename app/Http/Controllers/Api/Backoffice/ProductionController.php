@@ -19,11 +19,11 @@ final class ProductionController extends Controller
     public function queue(Request $request, ListQueueUseCase $useCase): JsonResponse
     {
         $validated = $request->validate([
-            'kitchen_id' => ['required', 'integer', 'min:1'],
+            'branch_id' => ['required', 'integer', 'min:1'],
         ]);
 
         return response()->json($useCase->execute(
-            kitchenId: (int) $validated['kitchen_id'],
+            branchId: (int) $validated['branch_id'],
             offset: (int) $request->query('offset', 0),
             limit: (int) $request->query('limit', 20),
         ));

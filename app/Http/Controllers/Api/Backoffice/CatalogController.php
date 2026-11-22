@@ -4,6 +4,10 @@ namespace App\Http\Controllers\Api\Backoffice;
 
 use App\Application\Catalog\Command\AddCatalogItemImageUseCase;
 use App\Application\Catalog\Command\DeleteCatalogItemImageUseCase;
+use App\Application\Catalog\Command\DeleteCategoryUseCase;
+use App\Application\Catalog\Command\DeleteProductUseCase;
+use App\Application\Catalog\Command\DeleteSetUseCase;
+use App\Application\Catalog\Command\DeleteTagUseCase;
 use App\Application\Catalog\Command\ReorderCategoriesUseCase;
 use App\Application\Catalog\Command\ReplaceCategoryItemsUseCase;
 use App\Application\Catalog\Command\ReplaceSetLinesUseCase;
@@ -114,6 +118,15 @@ final class CatalogController extends Controller
         return $this->saveProduct($request, $useCase, $id);
     }
 
+    public function destroyProduct(int $id, DeleteProductUseCase $useCase): JsonResponse
+    {
+        try {
+            return response()->json($useCase->execute($id));
+        } catch (InvalidArgumentException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
+    }
+
     public function storeCategory(Request $request, SaveCategoryUseCase $useCase): JsonResponse
     {
         return $this->saveCategory($request, $useCase, null);
@@ -122,6 +135,15 @@ final class CatalogController extends Controller
     public function updateCategory(Request $request, int $id, SaveCategoryUseCase $useCase): JsonResponse
     {
         return $this->saveCategory($request, $useCase, $id);
+    }
+
+    public function destroyCategory(int $id, DeleteCategoryUseCase $useCase): JsonResponse
+    {
+        try {
+            return response()->json($useCase->execute($id));
+        } catch (InvalidArgumentException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
     }
 
     public function reorderCategories(Request $request, ReorderCategoriesUseCase $useCase): JsonResponse
@@ -148,6 +170,15 @@ final class CatalogController extends Controller
         return $this->saveSet($request, $useCase, $id);
     }
 
+    public function destroySet(int $id, DeleteSetUseCase $useCase): JsonResponse
+    {
+        try {
+            return response()->json($useCase->execute($id));
+        } catch (InvalidArgumentException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
+    }
+
     public function storeTag(Request $request, SaveTagUseCase $useCase): JsonResponse
     {
         return $this->saveTag($request, $useCase, null);
@@ -156,6 +187,15 @@ final class CatalogController extends Controller
     public function updateTag(Request $request, int $id, SaveTagUseCase $useCase): JsonResponse
     {
         return $this->saveTag($request, $useCase, $id);
+    }
+
+    public function destroyTag(int $id, DeleteTagUseCase $useCase): JsonResponse
+    {
+        try {
+            return response()->json($useCase->execute($id));
+        } catch (InvalidArgumentException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
     }
 
     public function replaceCategoryItems(
@@ -383,6 +423,8 @@ final class CatalogController extends Controller
                 newImages: $newImages,
                 existingImages: $existingNormalized,
                 deletedImageIds: $deletedNormalized,
+                isRoll: (bool) ($payload['is_roll'] ?? false),
+                isComplement: (bool) ($payload['is_complement'] ?? false),
             ));
         } catch (InvalidArgumentException $exception) {
             return response()->json(['message' => $exception->getMessage()], 422);

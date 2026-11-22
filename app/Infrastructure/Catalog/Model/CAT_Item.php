@@ -21,6 +21,8 @@ final class CAT_Item extends Model
         'status',
         'kind',
         'is_system',
+        'is_roll',
+        'is_complement',
         'weight',
         'nutrition',
         'ingredients',
@@ -32,6 +34,8 @@ final class CAT_Item extends Model
      */
     protected $casts = [
         'is_system' => 'boolean',
+        'is_roll' => 'boolean',
+        'is_complement' => 'boolean',
         'weight' => 'integer',
         'nutrition' => 'array',
         'ingredients' => 'array',

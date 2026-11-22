@@ -75,6 +75,8 @@ interface CatalogItemRepository
         ?array $ingredients = null,
         ?array $nutrition = null,
         ?array $tagIds = null,
+        bool $isRoll = false,
+        bool $isComplement = false,
     ): int;
 
     /**
@@ -123,4 +125,8 @@ interface CatalogItemRepository
     ): array;
 
     public function deleteItemImage(int $itemId, int $imageId): void;
+
+    public function deleteProduct(int $id): void;
+
+    public function deleteSet(int $id): void;
 }

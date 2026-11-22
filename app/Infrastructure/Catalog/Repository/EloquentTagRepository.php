@@ -119,6 +119,15 @@ final class EloquentTagRepository implements TagRepository
         return $this->mapper->toDomain($row);
     }
 
+    public function delete(int $id): void
+    {
+        $row = CAT_Tag::query()->find($id);
+        if (! $row instanceof CAT_Tag) {
+            throw new \InvalidArgumentException('Тег не найден.');
+        }
+        $row->delete();
+    }
+
     private function applyTagSearch(mixed $query, ?string $q): void
     {
         $needle = trim((string) ($q ?? ''));

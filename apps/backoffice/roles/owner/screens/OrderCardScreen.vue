@@ -6,18 +6,18 @@ import OrderFacts from "../../../shell/components/order/OrderFacts.vue";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
 import UiCard from "../../../shell/components/ui/UiCard.vue";
 import { useApi } from "../../../shell/composables/useApi.js";
-import { useKitchenChoice } from "../../../shell/composables/useKitchenChoice.js";
+import { useBranchChoice } from "../../../shell/composables/useBranchChoice.js";
 import { useToast } from "../../../shell/composables/useToast.js";
 
 const route = useRoute();
 const router = useRouter();
 const toast = useToast();
 const detailApi = useApi();
-const { load: loadKitchens, labelOf } = useKitchenChoice();
+const { load: loadBranches, labelOf } = useBranchChoice();
 
 const order = ref(null);
 const orderId = computed(() => route.params.id);
-const kitchenTitle = computed(() => labelOf(order.value?.kitchen_id));
+const branchTitle = computed(() => labelOf(order.value?.branch_id));
 
 async function load() {
     if (!orderId.value) {
@@ -33,7 +33,7 @@ async function load() {
 
 watch(orderId, load);
 onMounted(async () => {
-    await loadKitchens();
+    await loadBranches();
     await load();
 });
 </script>
@@ -50,7 +50,7 @@ onMounted(async () => {
             <OrderFacts
                 v-else-if="order"
                 :order="order"
-                :kitchen-title="kitchenTitle"
+                :branch-title="branchTitle"
             />
             <p v-else class="text-sm text-bo-muted">
                 Заказ не найден.

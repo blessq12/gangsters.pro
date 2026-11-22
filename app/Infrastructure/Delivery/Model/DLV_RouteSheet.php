@@ -13,6 +13,7 @@ final class DLV_RouteSheet extends Model
      * @var list<string>
      */
     protected $fillable = [
+        'branch_id',
         'status',
         'courier_id',
     ];
@@ -21,6 +22,7 @@ final class DLV_RouteSheet extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'branch_id' => 'integer',
         'courier_id' => 'integer',
     ];
 

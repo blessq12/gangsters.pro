@@ -24,7 +24,7 @@ final class KitchenTicketPresenter
         return [
             'id' => $ticket->hasId() ? $ticket->id() : null,
             'order_id' => $ticket->orderId(),
-            'kitchen_id' => $ticket->kitchenId(),
+            'branch_id' => $ticket->branchId(),
             'status' => $ticket->status()->value,
             'lines' => $ticketLines,
             'started_at' => $ticket->startedAt()?->format(DATE_ATOM),

@@ -10,7 +10,6 @@ import {
     updateDelivery,
     updateZone,
 } from "../../../api/delivery.js";
-import { listKitchens } from "../../../api/company.js";
 import { useApi } from "../../../shell/composables/useApi.js";
 import { usePagedList } from "../../../shell/composables/usePagedList.js";
 import { useToast } from "../../../shell/composables/useToast.js";
@@ -22,6 +21,8 @@ import UiInput from "../../../shell/components/ui/UiInput.vue";
 import UiModal from "../../../shell/components/ui/UiModal.vue";
 import UiPagination from "../../../shell/components/ui/UiPagination.vue";
 import UiTable from "../../../shell/components/ui/UiTable.vue";
+import OwnerBranchSelector from "../components/branch/OwnerBranchSelector.vue";
+import { useOwnerBranchContext } from "../composables/useOwnerBranchContext.js";
 
 const toast = useToast();
 const loadApi = useApi();
@@ -30,14 +31,16 @@ const detailApi = useApi();
 
 const tab = ref("settings");
 const deliveryExists = ref(false);
-const kitchens = ref([]);
+const { selectedBranchId, ensureLoaded } = useOwnerBranchContext();
 const {
     page: zonesPage,
     perPage: zonesPerPage,
     total: zonesTotal,
     items: zones,
     offset: zonesOffset,
+    resetPage: resetZonesPage,
     applyPayload: applyZones,
+    clearItems: clearZones,
 } = usePagedList();
 const {
     page: routesPage,
@@ -53,7 +56,6 @@ const sheetModalOpen = ref(false);
 const settingsForm = reactive({
     min_order_rubles: "",
     average_delivery_time_minutes: "",
-    kitchen_id: "",
 });
 const settingsErrors = reactive({});
 
@@ -106,16 +108,8 @@ function clearErrors(target) {
     });
 }
 
-function kitchenLabel(kitchen) {
-    const parts = [kitchen?.city, kitchen?.street, kitchen?.house]
-        .map((part) => String(part || "").trim())
-        .filter(Boolean);
-    const address = parts.join(", ");
-    return address !== "" ? `#${kitchen.id} — ${address}` : `Кухня #${kitchen.id}`;
-}
-
 function applyDelivery(payload) {
-    deliveryExists.value = Boolean(payload?.settings || payload?.kitchen_id);
+    deliveryExists.value = Boolean(payload?.settings);
     settingsForm.min_order_rubles =
         payload?.settings?.min_order_rubles != null
             ? String(payload.settings.min_order_rubles)
@@ -124,38 +118,56 @@ function applyDelivery(payload) {
         payload?.settings?.average_delivery_time_minutes != null
             ? String(payload.settings.average_delivery_time_minutes)
             : "";
-    settingsForm.kitchen_id =
-        payload?.kitchen_id != null ? String(payload.kitchen_id) : "";
 }
 
 async function loadDelivery() {
+    const branchId = selectedBranchId.value;
+    if (!branchId) {
+        applyDelivery(null);
+        return;
+    }
     try {
-        const [payload, company] = await Promise.all([
-            loadApi.run(() => getDelivery()),
-            loadApi.run(() => listKitchens({ offset: 0, limit: 100 })).catch(() => null),
-        ]);
-        kitchens.value = Array.isArray(company?.items) ? company.items : [];
-        applyDelivery(payload);
+        const payload = await loadApi.run(() => getDelivery(branchId));
+        if (branchId === selectedBranchId.value) {
+            applyDelivery(payload);
+        }
     } catch (err) {
+        if (err?.status === 404) {
+            // у филиала ещё нет настроек доставки — форма для создания
+            applyDelivery(null);
+            return;
+        }
         toast.error(err instanceof Error ? err.message : "Не удалось загрузить доставку");
     }
 }
 
 async function loadZones() {
+    const branchId = selectedBranchId.value;
+    if (!branchId) {
+        clearZones();
+        return;
+    }
     try {
-        const payload = await loadApi.run(() => listZones({
+        const payload = await loadApi.run(() => listZones(branchId, {
             offset: zonesOffset.value,
             limit: zonesPerPage,
         }));
-        applyZones(payload);
+        if (branchId === selectedBranchId.value) {
+            applyZones(payload);
+        }
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось загрузить зоны");
     }
 }
 
 async function loadRouteSheets() {
+    if (!selectedBranchId.value) {
+        applyRouteSheets({ items: [], total: 0 });
+        return;
+    }
     try {
         const payload = await loadApi.run(() => listRouteSheets({
+            branch_id: Number(selectedBranchId.value),
             offset: routesOffset.value,
             limit: routesPerPage,
         }));
@@ -180,6 +192,10 @@ function validateSettings() {
 }
 
 async function saveSettings() {
+    if (!selectedBranchId.value) {
+        toast.error("Выбери филиал");
+        return;
+    }
     if (!validateSettings()) {
         toast.error("Проверьте поля");
         return;
@@ -192,9 +208,7 @@ async function saveSettings() {
         average_delivery_time_minutes: settingsForm.average_delivery_time_minutes === ""
             ? null
             : Number(settingsForm.average_delivery_time_minutes),
-        kitchen_id: settingsForm.kitchen_id === ""
-            ? null
-            : Number(settingsForm.kitchen_id),
+        branch_id: Number(selectedBranchId.value),
     };
 
     try {
@@ -257,12 +271,17 @@ function validateZone() {
 }
 
 async function saveZone() {
+    if (!selectedBranchId.value) {
+        toast.error("Выбери филиал");
+        return;
+    }
     if (!validateZone()) {
         toast.error("Проверьте обязательные поля");
         return;
     }
 
     const body = {
+        branch_id: Number(selectedBranchId.value),
         name: zoneForm.name.trim(),
         fee: Number(zoneForm.fee),
         is_remote: Boolean(zoneForm.is_remote),
@@ -305,7 +324,19 @@ async function onTab(id) {
 
 watch(zonesPage, loadZones);
 watch(routesPage, loadRouteSheets);
+watch(selectedBranchId, async () => {
+    if (tab.value === "routes") {
+        await loadRouteSheets();
+    }
+    if (zonesPage.value === 1) {
+        await Promise.all([loadDelivery(), loadZones()]);
+        return;
+    }
+    resetZonesPage();
+    await loadDelivery();
+});
 onMounted(async () => {
+    await ensureLoaded();
     await Promise.all([loadDelivery(), loadZones()]);
 });
 </script>
@@ -313,6 +344,9 @@ onMounted(async () => {
 <template>
     <div class="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
         <UiCard title="Доставка">
+            <template #actions>
+                <OwnerBranchSelector />
+            </template>
             <div class="mb-8 flex flex-wrap gap-2">
                 <button
                     v-for="item in tabs"
@@ -328,7 +362,14 @@ onMounted(async () => {
                 </button>
             </div>
 
-            <div v-if="tab === 'settings'" class="space-y-5">
+            <p
+                v-if="!selectedBranchId && tab !== 'routes'"
+                class="text-sm text-bo-muted"
+            >
+                Выбери филиал, чтобы настроить доставку.
+            </p>
+
+            <div v-else-if="tab === 'settings'" class="space-y-5">
                 <UiFormField
                     label="Мин. заказ (₽)"
                     :error="settingsErrors.min_order_rubles"
@@ -343,21 +384,6 @@ onMounted(async () => {
                         v-model="settingsForm.average_delivery_time_minutes"
                         type="number"
                     />
-                </UiFormField>
-                <UiFormField label="Кухня (Company)" :error="settingsErrors.kitchen_id">
-                    <select
-                        v-model="settingsForm.kitchen_id"
-                        class="w-full border border-bo-border bg-bo-field px-4 py-2.5 transition-colors hover:border-bo-border-strong focus:border-bo-accent focus:outline-none text-sm"
-                    >
-                        <option value="">Не выбрана</option>
-                        <option
-                            v-for="kitchen in kitchens"
-                            :key="kitchen.id"
-                            :value="String(kitchen.id)"
-                        >
-                            {{ kitchenLabel(kitchen) }}
-                        </option>
-                    </select>
                 </UiFormField>
                 <UiButton :disabled="saveApi.loading" @click="saveSettings">
                     Сохранить

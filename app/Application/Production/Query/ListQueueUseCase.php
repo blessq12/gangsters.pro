@@ -21,21 +21,21 @@ final class ListQueueUseCase
      * @return array{items: list<array<string, mixed>>, total: int, offset: int, limit: int}
      */
     public function execute(
-        int $kitchenId,
+        int $branchId,
         int $offset = 0,
         int $limit = PageParams::DEFAULT_LIMIT,
     ): array {
         ['offset' => $offset, 'limit' => $limit] = PageParams::normalize($offset, $limit);
 
         $items = [];
-        foreach ($this->tickets->listActiveByKitchenPage($kitchenId, $offset, $limit) as $ticket) {
+        foreach ($this->tickets->listActiveByBranchPage($branchId, $offset, $limit) as $ticket) {
             $order = $this->orders->findById($ticket->orderId());
             $items[] = $this->presenter->present($ticket, $order);
         }
 
         return PageParams::wrap(
             $items,
-            $this->tickets->countActiveByKitchen($kitchenId),
+            $this->tickets->countActiveByBranch($branchId),
             $offset,
             $limit,
         );

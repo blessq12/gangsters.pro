@@ -19,7 +19,6 @@ final class CMP_Company extends Model
         'phone',
         'email',
         'socials',
-        'schedule',
     ];
 
     /**
@@ -27,7 +26,6 @@ final class CMP_Company extends Model
      */
     protected $casts = [
         'socials' => 'array',
-        'schedule' => 'array',
     ];
 
     public function legal(): HasOne

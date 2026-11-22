@@ -52,6 +52,27 @@ final class InMemoryRouteSheetRepository implements RouteSheetRepository
         return count($this->listActive());
     }
 
+    public function listActivePageByBranch(int $branchId, int $offset, int $limit): array
+    {
+        return array_slice($this->listActiveByBranch($branchId), $offset, $limit);
+    }
+
+    public function countActiveByBranch(int $branchId): int
+    {
+        return count($this->listActiveByBranch($branchId));
+    }
+
+    /**
+     * @return list<RouteSheet>
+     */
+    private function listActiveByBranch(int $branchId): array
+    {
+        return array_values(array_filter(
+            $this->listActive(),
+            static fn (RouteSheet $sheet): bool => $sheet->branchId() === $branchId,
+        ));
+    }
+
     public function listVisibleToCourierPage(int $courierId, int $offset, int $limit): array
     {
         return array_slice($this->visibleToCourier($courierId), $offset, $limit);

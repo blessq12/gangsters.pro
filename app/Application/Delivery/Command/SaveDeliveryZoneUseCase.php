@@ -43,9 +43,13 @@ final class SaveDeliveryZoneUseCase
             $this->assertValidGeometry($dto->geometry);
         }
 
-        $current = $this->delivery->findPublic();
+        if ($dto->branchId < 1) {
+            throw new \InvalidArgumentException('Некорректный branch_id.');
+        }
+
+        $current = $this->delivery->findByBranch($dto->branchId);
         if ($current === null) {
-            throw new \InvalidArgumentException('Настройки доставки не найдены.');
+            throw new \InvalidArgumentException('Настройки доставки филиала не найдены.');
         }
 
         $zones = [];
@@ -87,10 +91,10 @@ final class SaveDeliveryZoneUseCase
             ];
         }
 
-        $configuration = $this->delivery->saveSettings(
+        $configuration = $this->delivery->saveSettingsForBranch(
+            branchId: $dto->branchId,
             minOrderAmountKopecks: $current->minOrderAmountKopecks(),
             averageDeliveryTimeMinutes: $current->averageDeliveryTimeMinutes(),
-            kitchenId: $current->kitchenId(),
             zones: $zones,
         );
 

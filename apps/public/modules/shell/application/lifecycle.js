@@ -10,6 +10,7 @@ import {
     wasClosedNoticeDismissedThisSession,
 } from "../../content/application/company";
 import { useContentStore } from "../../content/store";
+import { useCatalogStore } from "../../catalog/store";
 import { useCheckoutStore } from "../../checkout/store";
 import { useShellStore } from "../store/shellStore";
 import { useUiStore } from "../store/uiStore";
@@ -25,6 +26,9 @@ export function useSessionLifecycleProcess() {
             subscribeDomainEvent(DOMAIN_EVENTS.CLIENT_LOGGED_OUT, () => {
                 useCheckoutStore().clearAfterCompleted();
                 uiStore.setDockActive(null);
+            }),
+            subscribeDomainEvent(DOMAIN_EVENTS.BRANCH_CHANGED, () => {
+                void useCatalogStore().fetchAll();
             }),
             subscribeDomainEvent(DOMAIN_EVENTS.ORDER_CREATED, () => {
                 useCheckoutStore().clearAfterCompleted();
@@ -89,11 +93,11 @@ export function useCompanyClosedNoticeProcess() {
         const shellStore = useShellStore();
 
         function tryOpenNotice() {
-            if (!shellStore.isInteractive || !contentStore.loaded || !contentStore.profile) {
+            if (!shellStore.isInteractive || !contentStore.loaded || !contentStore.branch) {
                 return;
             }
 
-            if (isCompanyOpenNow(contentStore.profile)) {
+            if (isCompanyOpenNow(contentStore.branch)) {
                 return;
             }
 
@@ -113,7 +117,7 @@ export function useCompanyClosedNoticeProcess() {
                 return;
             }
 
-            if (!shellStore.isInteractive || !contentStore.loaded || !contentStore.profile) {
+            if (!shellStore.isInteractive || !contentStore.loaded || !contentStore.branch) {
                 return;
             }
 
@@ -128,7 +132,7 @@ export function useCompanyClosedNoticeProcess() {
             () => [
                 shellStore.isInteractive,
                 contentStore.loaded,
-                contentStore.profile,
+                contentStore.branch,
             ],
             () => scheduleNoticeAfterShellReady(),
             { immediate: true },

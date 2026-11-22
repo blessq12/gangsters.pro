@@ -34,7 +34,7 @@ const stripRootClass = computed(() =>
 );
 
 const { openNow, statusHint } = useCompanyOpenStatus(
-    () => contentStore.profile,
+    () => contentStore.branch,
 );
 
 const stripEnterRef = ref(null);
@@ -98,9 +98,9 @@ const dotClass = computed(() => {
 const currentDayKey = computed(() => getCurrentDayKey(new Date()));
 
 const scheduleRows = computed(() => {
-    const c = contentStore.profile;
-    if (!c) return [];
-    return getWorkScheduleRows(c.schedule);
+    const schedule = contentStore.workSchedule;
+    if (!schedule) return [];
+    return getWorkScheduleRows(schedule);
 });
 
 function isScheduleToday(dayKey) {

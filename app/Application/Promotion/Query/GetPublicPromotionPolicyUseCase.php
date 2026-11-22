@@ -15,11 +15,11 @@ final class GetPublicPromotionPolicyUseCase
     /**
      * @return array<string, mixed>
      */
-    public function execute(): array
+    public function execute(int $branchId): array
     {
-        $policy = $this->policies->find();
+        $policy = $this->policies->findByBranch($branchId);
         if ($policy === null) {
-            throw new \InvalidArgumentException('Политика акций не найдена.');
+            throw new \InvalidArgumentException('Политика акций филиала не найдена.');
         }
 
         return $this->presenter->publicPolicy($policy);

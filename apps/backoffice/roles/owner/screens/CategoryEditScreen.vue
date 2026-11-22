@@ -119,7 +119,7 @@ async function load() {
         applyDetail(payload);
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось загрузить категорию");
-        router.push({ name: "owner-catalog" });
+        router.push({ name: "owner-menu" });
     }
 }
 
@@ -216,7 +216,7 @@ onMounted(load);
     <div class="category-edit mx-auto w-full max-w-7xl space-y-4 px-4 py-5 sm:px-6 lg:px-10 lg:py-7">
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div class="flex flex-wrap items-center gap-3">
-                <UiButton class="!bg-white/10 !text-bo-fg" @click="router.push({ name: 'owner-catalog' })">
+                <UiButton class="!bg-white/10 !text-bo-fg" @click="router.push({ name: 'owner-menu' })">
                     К каталогу
                 </UiButton>
                 <h1 class="text-lg font-semibold tracking-tight text-bo-fg">

@@ -16,6 +16,7 @@ const contentStore = useContentStore();
 const mm = useAppDesign().components.navbar.mobileMenu;
 
 const profile = computed(() => contentStore.profile);
+const branch = computed(() => contentStore.branch);
 const deliveryFacts = computed(() => contentStore.deliveryFacts);
 
 const companyTitle = computed(() => {
@@ -25,18 +26,18 @@ const companyTitle = computed(() => {
 });
 
 const todayScheduleLine = computed(() =>
-    formatTodayWorkScheduleLine(profile.value, new Date()),
+    formatTodayWorkScheduleLine(branch.value, new Date()),
 );
 
 const addressLine = computed(() =>
     formatCompanyAddressLine(deliveryFacts.value),
 );
 
-const phoneDisplay = computed(() =>
-    formatRuPhone(profile.value?.phone),
-);
+const phoneRaw = computed(() => branch.value?.phone || profile.value?.phone || "");
 
-const phoneHref = computed(() => phoneToTelHref(profile.value?.phone));
+const phoneDisplay = computed(() => formatRuPhone(phoneRaw.value));
+
+const phoneHref = computed(() => phoneToTelHref(phoneRaw.value));
 
 function closeMenuOnScroll() {
     if (uiStore.isMobileMenuOpen) {

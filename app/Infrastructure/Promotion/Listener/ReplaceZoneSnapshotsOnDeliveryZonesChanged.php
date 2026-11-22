@@ -7,7 +7,7 @@ use App\Domain\Core\Delivery\Tariff\Entity\PromotionZone;
 use App\Domain\Core\Delivery\Tariff\Repository\PromotionZoneRepository;
 
 /**
- * Delivery публикует актуальный набор зон; Promotion полностью заменяет свой снимок.
+ * Delivery публикует актуальный набор зон; Promotion полностью заменяет свой снимок зон этого филиала (PRM_zones.branch_id).
  */
 final class ReplaceZoneSnapshotsOnDeliveryZonesChanged
 {
@@ -27,6 +27,6 @@ final class ReplaceZoneSnapshotsOnDeliveryZonesChanged
             );
         }
 
-        $this->zones->replaceAll($snapshots);
+        $this->zones->replaceForBranch($event->branchId, $snapshots);
     }
 }

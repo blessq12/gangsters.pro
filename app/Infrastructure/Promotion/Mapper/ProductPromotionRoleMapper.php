@@ -20,6 +20,7 @@ final class ProductPromotionRoleMapper
             : null;
 
         return new ProductPromotionRole(
+            branchId: (int) $row->branch_id,
             productId: (int) $row->catalog_item_id,
             role: $role,
             name: (string) $row->name_snapshot,

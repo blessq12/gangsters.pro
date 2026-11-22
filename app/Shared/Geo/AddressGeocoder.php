@@ -14,7 +14,7 @@ interface AddressGeocoder
     public function geocode(string $street, string $house, ?string $city = null): ?array;
 
     /**
-     * Свободная строка адреса (например kitchen_address).
+     * Свободная строка адреса (например адрес филиала).
      *
      * @return array{latitude: float, longitude: float}|null
      */

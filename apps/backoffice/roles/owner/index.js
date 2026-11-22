@@ -7,7 +7,7 @@ const module = {
     nav: [
         { label: "Дашборд", routeName: "owner-dashboard", icon: "dashboard", order: 1 },
         { label: "Заказы", routeName: "owner-orders", icon: "orders", order: 2 },
-        { label: "Каталог", routeName: "owner-catalog", icon: "catalog", order: 3 },
+        { label: "Меню", routeName: "owner-menu", icon: "menu", order: 3 },
         { label: "Компания", routeName: "owner-company", icon: "company", order: 4 },
         { label: "Доставка", routeName: "owner-delivery", icon: "delivery", order: 5 },
         { label: "Акции", routeName: "owner-promotion", icon: "promotion", order: 6 },
@@ -43,10 +43,14 @@ const module = {
                     meta: { role: "owner" },
                 },
                 {
-                    path: "catalog",
-                    name: "owner-catalog",
-                    component: () => import("./screens/CatalogScreen.vue"),
+                    path: "menu",
+                    name: "owner-menu",
+                    component: () => import("./screens/CatalogMenuHubScreen.vue"),
                     meta: { role: "owner" },
+                },
+                {
+                    path: "catalog",
+                    redirect: { name: "owner-menu" },
                 },
                 {
                     path: "catalog/products/:id",
@@ -73,6 +77,18 @@ const module = {
                     meta: { role: "owner" },
                 },
                 {
+                    path: "company/branches/:id",
+                    name: "owner-company-branch",
+                    component: () => import("./screens/BranchEditScreen.vue"),
+                    meta: { role: "owner" },
+                },
+                {
+                    path: "company/documents/:id",
+                    name: "owner-company-document",
+                    component: () => import("./screens/DocumentEditScreen.vue"),
+                    meta: { role: "owner" },
+                },
+                {
                     path: "delivery",
                     name: "owner-delivery",
                     component: () => import("./screens/DeliveryScreen.vue"),
@@ -88,6 +104,18 @@ const module = {
                     path: "marketing",
                     name: "owner-marketing",
                     component: () => import("./screens/MarketingScreen.vue"),
+                    meta: { role: "owner" },
+                },
+                {
+                    path: "marketing/banners/:id",
+                    name: "owner-marketing-banner",
+                    component: () => import("./screens/BannerEditScreen.vue"),
+                    meta: { role: "owner" },
+                },
+                {
+                    path: "marketing/promotions/:id",
+                    name: "owner-marketing-promotion",
+                    component: () => import("./screens/PromotionEditScreen.vue"),
                     meta: { role: "owner" },
                 },
                 {

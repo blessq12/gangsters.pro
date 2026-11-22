@@ -3,7 +3,6 @@
 namespace App\Infrastructure\Company\Model;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class CMP_Branch extends Model
 {
@@ -16,6 +15,14 @@ final class CMP_Branch extends Model
         'company_id',
         'name',
         'is_active',
+        'schedule',
+        'city',
+        'street',
+        'house',
+        'comment',
+        'latitude',
+        'longitude',
+        'phone',
     ];
 
     /**
@@ -24,10 +31,8 @@ final class CMP_Branch extends Model
     protected $casts = [
         'company_id' => 'integer',
         'is_active' => 'boolean',
+        'schedule' => 'array',
+        'latitude' => 'float',
+        'longitude' => 'float',
     ];
-
-    public function kitchens(): HasMany
-    {
-        return $this->hasMany(CMP_Kitchen::class, 'branch_id');
-    }
 }

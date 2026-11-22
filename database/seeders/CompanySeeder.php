@@ -7,13 +7,12 @@ use App\Infrastructure\Company\Model\CMP_Branch;
 use App\Infrastructure\Company\Model\CMP_Company;
 use App\Infrastructure\Company\Model\CMP_CompanyDocument;
 use App\Infrastructure\Company\Model\CMP_CompanyLegal;
-use App\Infrastructure\Company\Model\CMP_Kitchen;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
 /**
- * Компания + филиал/кухня из /api/content → CMP_*.
+ * Компания + филиал (адрес и координаты в самом филиале) из /api/content → CMP_*.
  */
 class CompanySeeder extends Seeder
 {
@@ -39,7 +38,6 @@ class CompanySeeder extends Seeder
                 'phone' => $main['phone'] ?? null,
                 'email' => $main['email'] ?? null,
                 'socials' => is_array($main['socials'] ?? null) ? $main['socials'] : [],
-                'schedule' => is_array($main['schedule'] ?? null) ? $main['schedule'] : [],
             ],
         );
 
@@ -85,28 +83,24 @@ class CompanySeeder extends Seeder
                 ->delete();
         }
 
-        $branch = CMP_Branch::query()->updateOrCreate(
+        $zone = is_array($deliveryBlock['zone'] ?? null) ? $deliveryBlock['zone'] : [];
+        $address = is_array($zone['kitchen_address'] ?? null) ? $zone['kitchen_address'] : [];
+
+        CMP_Branch::query()->updateOrCreate(
             [
                 'company_id' => $companyId,
                 'name' => 'Томск',
             ],
             [
                 'is_active' => true,
-            ],
-        );
-
-        $zone = is_array($deliveryBlock['zone'] ?? null) ? $deliveryBlock['zone'] : [];
-        $address = is_array($zone['kitchen_address'] ?? null) ? $zone['kitchen_address'] : [];
-
-        CMP_Kitchen::query()->updateOrCreate(
-            ['branch_id' => $branch->id],
-            [
+                'schedule' => is_array($main['schedule'] ?? null) ? $main['schedule'] : [],
                 'city' => $address['city'] ?? 'Томск',
                 'street' => $address['street'] ?? 'ул. Говорова',
                 'house' => $address['house'] ?? '50/1',
                 'comment' => $address['comment'] ?? null,
                 'latitude' => isset($zone['kitchen_latitude']) ? (float) $zone['kitchen_latitude'] : 56.513432,
                 'longitude' => isset($zone['kitchen_longitude']) ? (float) $zone['kitchen_longitude'] : 84.986366,
+                'phone' => $main['phone'] ?? null,
             ],
         );
     }

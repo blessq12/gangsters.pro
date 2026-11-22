@@ -13,9 +13,6 @@ use App\Shared\ValueObject\PhoneNumber;
 
 final class SaveCompanyUseCase
 {
-    /** @var list<string> */
-    private const DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
-
     public function __construct(
         private readonly CompanyRepository $companies,
         private readonly CompanyLegalRepository $legal,
@@ -70,7 +67,6 @@ final class SaveCompanyUseCase
                 siteUrl: $this->nullable($dto->socials['site_url'] ?? null),
                 whatsapp: $whatsapp,
             ),
-            schedule: $this->normalizeSchedule($dto->schedule),
         ));
 
         $currentLegal = $this->legal->findPublic();
@@ -83,24 +79,6 @@ final class SaveCompanyUseCase
         ));
 
         return $this->read->execute();
-    }
-
-    /**
-     * @param  array<string, mixed>  $rawSchedule
-     * @return array<string, array{work: ?string, is_day_off: bool}>
-     */
-    private function normalizeSchedule(array $rawSchedule): array
-    {
-        $schedule = [];
-        foreach (self::DAYS as $day) {
-            $row = is_array($rawSchedule[$day] ?? null) ? $rawSchedule[$day] : [];
-            $schedule[$day] = [
-                'work' => $this->nullable($row['work'] ?? null),
-                'is_day_off' => (bool) ($row['is_day_off'] ?? false),
-            ];
-        }
-
-        return $schedule;
     }
 
     private function isValidInn(string $inn): bool

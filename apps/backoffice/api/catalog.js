@@ -143,6 +143,11 @@ export function updateProduct(id, payload, images = {}) {
     return requestMultipart("POST", `/catalog/products/${id}`, formData);
 }
 
+/** @param {number|string} id */
+export function deleteProduct(id) {
+    return request("DELETE", `/catalog/products/${id}`);
+}
+
 /** @param {Record<string, unknown>} data */
 export function storeCategory(data) {
     return request("POST", "/catalog/categories", data);
@@ -151,6 +156,11 @@ export function storeCategory(data) {
 /** @param {number|string} id @param {Record<string, unknown>} data */
 export function updateCategory(id, data) {
     return request("PUT", `/catalog/categories/${id}`, data);
+}
+
+/** @param {number|string} id */
+export function deleteCategory(id) {
+    return request("DELETE", `/catalog/categories/${id}`);
 }
 
 /** @param {number[]} ids */
@@ -191,6 +201,11 @@ export function updateSet(id, payload, images = {}) {
     const formData = buildCatalogItemFormData(payload, images);
     formData.append("_method", "PUT");
     return requestMultipart("POST", `/catalog/sets/${id}`, formData);
+}
+
+/** @param {number|string} id */
+export function deleteSet(id) {
+    return request("DELETE", `/catalog/sets/${id}`);
 }
 
 /**
@@ -238,4 +253,9 @@ export function storeTag(data) {
 /** @param {number|string} id @param {Record<string, unknown>} data */
 export function updateTag(id, data) {
     return request("PUT", `/catalog/tags/${id}`, data);
+}
+
+/** @param {number|string} id */
+export function deleteTag(id) {
+    return request("DELETE", `/catalog/tags/${id}`);
 }

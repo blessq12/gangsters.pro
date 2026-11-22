@@ -6,7 +6,7 @@ import {
     cancelOrder,
     completePickup,
     getOrder,
-    reassignKitchen,
+    reassignBranch,
 } from "../../../api/orders.js";
 import OrderFacts from "../../../shell/components/order/OrderFacts.vue";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
@@ -15,7 +15,7 @@ import UiConfirmDialog from "../../../shell/components/ui/UiConfirmDialog.vue";
 import UiFormField from "../../../shell/components/ui/UiFormField.vue";
 import UiModal from "../../../shell/components/ui/UiModal.vue";
 import { useApi } from "../../../shell/composables/useApi.js";
-import { useKitchenChoice } from "../../../shell/composables/useKitchenChoice.js";
+import { useBranchChoice } from "../../../shell/composables/useBranchChoice.js";
 import { useToast } from "../../../shell/composables/useToast.js";
 import { administratorCommands } from "../../../shell/domain/orderStage.js";
 
@@ -25,25 +25,25 @@ const toast = useToast();
 const detailApi = useApi();
 const actionApi = useApi();
 const {
-    kitchens,
-    error: kitchensError,
-    load: loadKitchens,
+    branches,
+    error: branchesError,
+    load: loadBranches,
     labelOf,
-    kitchenLabel,
-} = useKitchenChoice();
+    branchLabel,
+} = useBranchChoice();
 
 const order = ref(null);
 const confirmOpen = ref(false);
 const reassignOpen = ref(false);
 const cancelOpen = ref(false);
 const pickupOpen = ref(false);
-const selectedKitchenId = ref("");
+const selectedBranchId = ref("");
 
 const orderId = computed(() => route.params.id);
 const commands = computed(() => administratorCommands(order.value));
-const kitchenTitle = computed(() => labelOf(order.value?.kitchen_id));
-const otherKitchens = computed(() =>
-    kitchens.value.filter((kitchen) => String(kitchen.id) !== String(order.value?.kitchen_id ?? "")),
+const branchTitle = computed(() => labelOf(order.value?.branch_id));
+const otherBranches = computed(() =>
+    branches.value.filter((branch) => String(branch.id) !== String(order.value?.branch_id ?? "")),
 );
 
 async function load() {
@@ -68,12 +68,11 @@ function goRoutes() {
 
 function onCommand(id) {
     if (id === "confirm") {
-        selectedKitchenId.value = kitchens.value.length === 1 ? String(kitchens.value[0].id) : "";
         confirmOpen.value = true;
         return;
     }
     if (id === "reassign") {
-        selectedKitchenId.value = "";
+        selectedBranchId.value = "";
         reassignOpen.value = true;
         return;
     }
@@ -91,14 +90,9 @@ function onCommand(id) {
 }
 
 async function submitConfirm() {
-    const kitchenId = Number(selectedKitchenId.value);
-    if (!kitchenId) {
-        toast.error("Выбери кухню");
-        return;
-    }
     confirmOpen.value = false;
     try {
-        order.value = await actionApi.run(() => acceptOrder(order.value.id, { kitchen_id: kitchenId }));
+        order.value = await actionApi.run(() => acceptOrder(order.value.id));
         toast.success("Заказ подтверждён. Тикет и платёж созданы.");
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось подтвердить");
@@ -106,17 +100,17 @@ async function submitConfirm() {
 }
 
 async function submitReassign() {
-    const kitchenId = Number(selectedKitchenId.value);
-    if (!kitchenId) {
-        toast.error("Выбери другую кухню");
+    const branchId = Number(selectedBranchId.value);
+    if (!branchId) {
+        toast.error("Выбери другой филиал");
         return;
     }
     reassignOpen.value = false;
     try {
-        order.value = await actionApi.run(() => reassignKitchen(order.value.id, { kitchen_id: kitchenId }));
-        toast.success("Кухня переназначена. Старый тикет сменится новым.");
+        order.value = await actionApi.run(() => reassignBranch(order.value.id, { branch_id: branchId }));
+        toast.success("Филиал переназначен. Старый тикет сменится новым.");
     } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Не удалось переназначить кухню");
+        toast.error(err instanceof Error ? err.message : "Не удалось переназначить филиал");
     }
 }
 
@@ -142,7 +136,7 @@ async function submitPickup() {
 
 watch(orderId, load);
 onMounted(async () => {
-    await loadKitchens();
+    await loadBranches();
     await load();
 });
 </script>
@@ -160,7 +154,7 @@ onMounted(async () => {
             <OrderFacts
                 v-else-if="order"
                 :order="order"
-                :kitchen-title="kitchenTitle"
+                :branch-title="branchTitle"
             />
             <p v-else class="text-sm text-bo-muted">
                 Заказ не найден.
@@ -178,54 +172,30 @@ onMounted(async () => {
             </div>
         </UiCard>
 
-        <UiModal :open="confirmOpen" title="Подтвердить заказ" @close="confirmOpen = false">
-            <p class="mb-4 text-sm text-bo-muted">
-                Назначим кухню. Появятся тикет в очереди и платёж в ожидании.
-            </p>
-            <UiFormField label="Кухня" required>
-                <select
-                    v-model="selectedKitchenId"
-                    class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 text-sm focus:border-bo-accent focus:outline-none"
-                >
-                    <option value="">Выбери кухню</option>
-                    <option
-                        v-for="kitchen in kitchens"
-                        :key="kitchen.id"
-                        :value="String(kitchen.id)"
-                    >
-                        {{ kitchenLabel(kitchen) }}
-                    </option>
-                </select>
-            </UiFormField>
-            <p v-if="kitchensError" class="mt-2 text-sm text-red-300">
-                {{ kitchensError }}
-            </p>
-            <template #footer>
-                <UiButton class="!bg-white/10 !text-bo-fg" @click="confirmOpen = false">
-                    Закрыть
-                </UiButton>
-                <UiButton :disabled="actionApi.loading" @click="submitConfirm">
-                    Подтвердить
-                </UiButton>
-            </template>
-        </UiModal>
+        <UiConfirmDialog
+            :open="confirmOpen"
+            title="Подтвердить заказ?"
+            message="Филиал уже на заказе. Появятся тикет в очереди и платёж в ожидании."
+            @confirm="submitConfirm"
+            @cancel="confirmOpen = false"
+        />
 
-        <UiModal :open="reassignOpen" title="Переназначить кухню" @close="reassignOpen = false">
+        <UiModal :open="reassignOpen" title="Переназначить филиал" @close="reassignOpen = false">
             <p class="mb-4 text-sm text-bo-muted">
-                Пока тикет не взят в работу, старый закроется и встанет новый на другую кухню.
+                Пока тикет не взят в работу, старый закроется и встанет новый на другой филиал.
             </p>
-            <UiFormField label="Новая кухня" required>
+            <UiFormField label="Новый филиал" required>
                 <select
-                    v-model="selectedKitchenId"
+                    v-model="selectedBranchId"
                     class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 text-sm focus:border-bo-accent focus:outline-none"
                 >
-                    <option value="">Выбери кухню</option>
+                    <option value="">Выбери филиал</option>
                     <option
-                        v-for="kitchen in otherKitchens"
-                        :key="kitchen.id"
-                        :value="String(kitchen.id)"
+                        v-for="branch in otherBranches"
+                        :key="branch.id"
+                        :value="String(branch.id)"
                     >
-                        {{ kitchenLabel(kitchen) }}
+                        {{ branchLabel(branch) }}
                     </option>
                 </select>
             </UiFormField>

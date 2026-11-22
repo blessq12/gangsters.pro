@@ -23,10 +23,14 @@ use InvalidArgumentException;
 
 final class DeliveryController extends Controller
 {
-    public function show(GetAdminDeliveryUseCase $useCase): JsonResponse
+    public function show(Request $request, GetAdminDeliveryUseCase $useCase): JsonResponse
     {
+        $validated = $request->validate([
+            'branch_id' => ['required', 'integer', 'min:1'],
+        ]);
+
         try {
-            return response()->json($useCase->execute());
+            return response()->json($useCase->execute((int) $validated['branch_id']));
         } catch (InvalidArgumentException $exception) {
             return response()->json(['message' => $exception->getMessage()], 404);
         }
@@ -54,7 +58,12 @@ final class DeliveryController extends Controller
 
     public function listZones(Request $request, ListAdminDeliveryZonesUseCase $useCase): JsonResponse
     {
+        $validated = $request->validate([
+            'branch_id' => ['required', 'integer', 'min:1'],
+        ]);
+
         return response()->json($useCase->execute(
+            branchId: (int) $validated['branch_id'],
             offset: (int) $request->query('offset', 0),
             limit: (int) $request->query('limit', 20),
         ));
@@ -62,10 +71,21 @@ final class DeliveryController extends Controller
 
     public function listRouteSheets(Request $request, ListActiveRouteSheetsUseCase $useCase): JsonResponse
     {
-        return response()->json($useCase->execute(
-            offset: (int) $request->query('offset', 0),
-            limit: (int) $request->query('limit', 20),
-        ));
+        $validated = $request->validate([
+            'branch_id' => ['required', 'integer', 'min:1'],
+            'offset' => ['sometimes', 'integer', 'min:0'],
+            'limit' => ['sometimes', 'integer', 'min:1', 'max:100'],
+        ]);
+
+        try {
+            return response()->json($useCase->execute(
+                branchId: (int) $validated['branch_id'],
+                offset: (int) ($validated['offset'] ?? 0),
+                limit: (int) ($validated['limit'] ?? 20),
+            ));
+        } catch (InvalidArgumentException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
     }
 
     public function showRouteSheet(int $id, GetRouteSheetUseCase $useCase): JsonResponse
@@ -146,7 +166,7 @@ final class DeliveryController extends Controller
         $validated = $request->validate([
             'min_order_rubles' => ['nullable', 'integer', 'min:0'],
             'average_delivery_time_minutes' => ['nullable', 'integer', 'min:0'],
-            'kitchen_id' => ['nullable', 'integer', 'min:1'],
+            'branch_id' => ['required', 'integer', 'min:1'],
             'zones' => ['sometimes', 'array'],
             'zones.*.id' => ['required', 'string', 'max:64'],
             'zones.*.name' => ['required', 'string', 'max:255'],
@@ -163,7 +183,7 @@ final class DeliveryController extends Controller
                 averageDeliveryTimeMinutes: isset($validated['average_delivery_time_minutes'])
                     ? (int) $validated['average_delivery_time_minutes']
                     : null,
-                kitchenId: isset($validated['kitchen_id']) ? (int) $validated['kitchen_id'] : null,
+                branchId: (int) $validated['branch_id'],
                 zones: is_array($validated['zones'] ?? null) ? $validated['zones'] : [],
             ));
         } catch (InvalidArgumentException $exception) {
@@ -179,6 +199,7 @@ final class DeliveryController extends Controller
         ?string $id,
     ): JsonResponse {
         $validated = $request->validate([
+            'branch_id' => ['required', 'integer', 'min:1'],
             'name' => ['required', 'string', 'max:255'],
             'fee' => ['required', 'integer', 'min:0'],
             'is_remote' => ['sometimes', 'boolean'],
@@ -189,6 +210,7 @@ final class DeliveryController extends Controller
 
         try {
             $result = $useCase->execute(new SaveDeliveryZoneDto(
+                branchId: (int) $validated['branch_id'],
                 id: $id,
                 name: $validated['name'],
                 feeRubles: (int) $validated['fee'],
