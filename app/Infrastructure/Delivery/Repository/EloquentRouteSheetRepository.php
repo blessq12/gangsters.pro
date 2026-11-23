@@ -65,6 +65,16 @@ final class EloquentRouteSheetRepository implements RouteSheetRepository
         return (int) $this->activeQuery()->where('branch_id', $branchId)->count();
     }
 
+    public function countOpen(?int $branchId = null): int
+    {
+        $query = $this->activeQuery();
+        if ($branchId !== null && $branchId > 0) {
+            $query->where('branch_id', $branchId);
+        }
+
+        return (int) $query->count();
+    }
+
     public function listVisibleToCourierPage(int $courierId, int $offset, int $limit): array
     {
         return $this->mapPage($this->courierQuery($courierId), $offset, $limit);
@@ -90,12 +100,7 @@ final class EloquentRouteSheetRepository implements RouteSheetRepository
      */
     private function courierQuery(int $courierId): Builder
     {
-        return $this->activeQuery()->where(function (Builder $query) use ($courierId): void {
-            $query->where('courier_id', $courierId)
-                ->orWhere(function (Builder $free): void {
-                    $free->where('status', 'released')->whereNull('courier_id');
-                });
-        });
+        return $this->activeQuery()->where('courier_id', $courierId);
     }
 
     /**

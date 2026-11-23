@@ -71,6 +71,11 @@ export function completePickup(id) {
 }
 
 /** @param {Record<string, unknown>} data */
+export function quoteOrder(data) {
+    return request("POST", "/orders/quote", data);
+}
+
+/** @param {Record<string, unknown>} data */
 export function storeOrder(data) {
     return request("POST", "/orders", data);
 }

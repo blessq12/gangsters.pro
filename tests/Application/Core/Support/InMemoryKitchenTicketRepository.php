@@ -51,6 +51,30 @@ final class InMemoryKitchenTicketRepository implements KitchenTicketRepository
         return count($this->listActiveByBranch($branchId));
     }
 
+    public function countActiveByStatus(?int $branchId = null): array
+    {
+        $tickets = $branchId !== null && $branchId > 0
+            ? $this->listActiveByBranch($branchId)
+            : array_values($this->byOrderId);
+
+        $queued = 0;
+        $started = 0;
+        foreach ($tickets as $ticket) {
+            $status = $ticket->status()->value;
+            if ($status === 'queued') {
+                $queued++;
+            }
+            if ($status === 'started') {
+                $started++;
+            }
+        }
+
+        return [
+            'queued' => $queued,
+            'started' => $started,
+        ];
+    }
+
     public function listActiveByBranch(int $branchId): array
     {
         return array_values(array_filter(

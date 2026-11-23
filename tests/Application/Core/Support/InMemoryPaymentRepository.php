@@ -47,6 +47,7 @@ final class InMemoryPaymentRepository implements PaymentRepository
         ?DateTimeImmutable $createdTo = null,
         ?string $status = null,
         ?string $method = null,
+        ?int $branchId = null,
     ): array {
         return [
             'paid_kopecks' => 0,

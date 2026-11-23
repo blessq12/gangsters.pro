@@ -62,6 +62,15 @@ final class InMemoryRouteSheetRepository implements RouteSheetRepository
         return count($this->listActiveByBranch($branchId));
     }
 
+    public function countOpen(?int $branchId = null): int
+    {
+        if ($branchId === null || $branchId < 1) {
+            return $this->countActive();
+        }
+
+        return $this->countActiveByBranch($branchId);
+    }
+
     /**
      * @return list<RouteSheet>
      */
@@ -90,8 +99,7 @@ final class InMemoryRouteSheetRepository implements RouteSheetRepository
     {
         return array_values(array_filter(
             $this->listActive(),
-            static fn (RouteSheet $sheet): bool => $sheet->courierId() === $courierId
-                || ($sheet->status() === 'released' && $sheet->courierId() === null),
+            static fn (RouteSheet $sheet): bool => $sheet->courierId() === $courierId,
         ));
     }
 

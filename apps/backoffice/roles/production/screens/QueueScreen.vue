@@ -1,29 +1,30 @@
 <script setup>
-import { onMounted, onUnmounted, watch } from "vue";
+import { computed, onMounted, onUnmounted, watch } from "vue";
 import { useRouter } from "vue-router";
+import { storeToRefs } from "pinia";
 import { completeTicket, getQueue, startTicket } from "../../../api/production.js";
 import { useApi } from "../../../shell/composables/useApi.js";
 import { usePagedList } from "../../../shell/composables/usePagedList.js";
-import { useBranchChoice } from "../../../shell/composables/useBranchChoice.js";
 import { useToast } from "../../../shell/composables/useToast.js";
+import { useAuthStore } from "../../../shell/store/authStore.js";
 import UiBadge from "../../../shell/components/ui/UiBadge.vue";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
 import UiCard from "../../../shell/components/ui/UiCard.vue";
 import UiPagination from "../../../shell/components/ui/UiPagination.vue";
-import { ticketHint, ticketStatusLabel, ticketStatusVariant } from "../../../shell/domain/orderStage.js";
+import { ticketStatusLabel, ticketStatusVariant } from "../../../shell/domain/orderStage.js";
 
 const router = useRouter();
 const toast = useToast();
+const auth = useAuthStore();
+const { employee } = storeToRefs(auth);
 const listApi = useApi();
 const actionApi = useApi();
-const {
-    branches,
-    branchId,
-    error: branchesError,
-    load: loadBranches,
-    select: selectBranch,
-    branchLabel,
-} = useBranchChoice();
+
+const branchId = computed(() => {
+    const raw = employee.value?.branch_id;
+    const id = Number(raw);
+    return Number.isFinite(id) && id > 0 ? id : null;
+});
 
 const {
     page,
@@ -31,7 +32,6 @@ const {
     total,
     items: tickets,
     offset,
-    resetPage,
     applyPayload,
     clearItems,
 } = usePagedList();
@@ -69,7 +69,7 @@ async function onStart(orderId, event) {
     event.stopPropagation();
     try {
         await actionApi.run(() => startTicket(orderId));
-        toast.success(`Тикет заказа #${orderId} в работе`);
+        toast.success("В работе");
         await load(true);
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось начать тикет");
@@ -80,7 +80,7 @@ async function onComplete(orderId, event) {
     event.stopPropagation();
     try {
         await actionApi.run(() => completeTicket(orderId));
-        toast.success(`Тикет заказа #${orderId} завершён. Заказ готов.`);
+        toast.success("Готово");
         await load(true);
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось завершить тикет");
@@ -94,20 +94,14 @@ function restartPoll() {
     pollTimer = setInterval(() => load(true), POLL_MS);
 }
 
-watch(branchId, () => {
-    if (page.value !== 1) {
-        resetPage();
-        return;
-    }
-    load();
-});
-
 watch(page, () => {
     load();
 });
 
 onMounted(async () => {
-    await loadBranches();
+    if (!auth.bootstrapped) {
+        await auth.bootstrap();
+    }
     await load();
     restartPoll();
 });
@@ -122,35 +116,15 @@ onUnmounted(() => {
 
 <template>
     <div class="space-y-6">
-        <div class="flex flex-wrap items-end justify-between gap-4">
-            <h1 class="text-4xl font-bold tracking-tight md:text-5xl">
-                Тикеты
-            </h1>
-            <label class="block min-w-[16rem] text-base text-bo-muted" for="branch-choice">
-                Филиал
-                <select
-                    id="branch-choice"
-                    class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-3 text-lg text-bo-fg focus:border-bo-accent focus:outline-none"
-                    :value="branchId"
-                    @change="selectBranch($event.target.value)"
-                >
-                    <option value="">Выбери филиал</option>
-                    <option
-                        v-for="branch in branches"
-                        :key="branch.id"
-                        :value="String(branch.id)"
-                    >
-                        {{ branchLabel(branch) }}
-                    </option>
-                </select>
-            </label>
-        </div>
+        <h1 class="text-4xl font-bold tracking-tight md:text-5xl">
+            Тикеты
+        </h1>
 
-        <p v-if="branchesError" class="text-xl text-red-300">
-            {{ branchesError }}
-        </p>
-        <p v-else-if="!branchId" class="text-2xl text-bo-muted">
-            Выбери филиал, чтобы увидеть его тикеты.
+        <p
+            v-if="!branchId"
+            class="text-2xl text-bo-muted"
+        >
+            У сотрудника не указан филиал смены — очередь недоступна.
         </p>
 
         <div
@@ -161,7 +135,7 @@ onUnmounted(() => {
         </div>
 
         <div
-            v-else
+            v-else-if="branchId"
             class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3"
         >
             <UiCard
@@ -181,9 +155,6 @@ onUnmounted(() => {
                             :text="ticketStatusLabel(ticket.status)"
                         />
                     </div>
-                    <p class="text-lg text-bo-muted">
-                        {{ ticketHint(ticket.status) }}
-                    </p>
                     <ul class="space-y-1 text-xl">
                         <li
                             v-for="(line, idx) in (ticket.lines ?? []).slice(0, 4)"
@@ -192,7 +163,10 @@ onUnmounted(() => {
                             {{ line.name || `Позиция #${line.product_id}` }} × {{ line.quantity }}
                         </li>
                     </ul>
-                    <div class="flex flex-wrap gap-3" @click.stop>
+                    <div
+                        class="flex flex-wrap gap-3"
+                        @click.stop
+                    >
                         <UiButton
                             v-if="ticket.status === 'queued'"
                             class="!h-16 !min-w-[10rem] !bg-amber-400 !px-8 !text-2xl !font-bold !text-slate-900"

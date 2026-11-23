@@ -24,6 +24,12 @@ const module = {
                     component: () => import("./screens/DeliveriesScreen.vue"),
                     meta: { role: "courier" },
                 },
+                {
+                    path: "deliveries/:id",
+                    name: "courier-route-sheet",
+                    component: () => import("./screens/CourierRouteSheetScreen.vue"),
+                    meta: { role: "courier" },
+                },
             ],
         },
     ],

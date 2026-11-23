@@ -8,8 +8,6 @@ import UiBadge from "../../../shell/components/ui/UiBadge.vue";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
 import UiCard from "../../../shell/components/ui/UiCard.vue";
 import {
-    orderStatusLabel,
-    ticketHint,
     ticketStatusLabel,
     ticketStatusVariant,
 } from "../../../shell/domain/orderStage.js";
@@ -24,7 +22,6 @@ const ticket = ref(null);
 
 const orderId = computed(() => route.params.orderId);
 const lines = computed(() => ticket.value?.lines ?? []);
-const comment = computed(() => ticket.value?.order?.comment ?? null);
 
 async function load() {
     if (!orderId.value) {
@@ -45,7 +42,7 @@ function goQueue() {
 async function onStart() {
     try {
         ticket.value = await actionApi.run(() => startTicket(orderId.value));
-        toast.success("Тикет в работе. Заказ готовится.");
+        toast.success("В работе");
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось начать тикет");
     }
@@ -54,7 +51,7 @@ async function onStart() {
 async function onComplete() {
     try {
         await actionApi.run(() => completeTicket(orderId.value));
-        toast.success("Тикет завершён. Заказ готов.");
+        toast.success("Готово");
         goQueue();
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось завершить тикет");
@@ -74,7 +71,10 @@ onMounted(load);
             К тикетам
         </UiButton>
 
-        <div v-if="detailApi.loading" class="text-3xl text-bo-muted">
+        <div
+            v-if="detailApi.loading"
+            class="text-3xl text-bo-muted"
+        >
             Загрузка…
         </div>
 
@@ -94,34 +94,21 @@ onMounted(load);
                     />
                 </div>
 
-                <p class="text-2xl text-bo-muted">
-                    {{ ticketHint(ticket.status) }}
-                </p>
-
-                <div class="space-y-3">
-                    <p class="text-2xl font-semibold text-bo-muted">Состав</p>
-                    <ul class="space-y-3">
-                        <li
-                            v-for="(line, idx) in lines"
-                            :key="idx"
-                            class="border border-bo-border bg-black/40 px-4 py-3 text-3xl font-semibold"
-                        >
-                            {{ line.name || `Позиция #${line.product_id}` }}
-                            <span class="text-amber-300">× {{ line.quantity }}</span>
-                        </li>
-                    </ul>
-                    <p v-if="lines.length === 0" class="text-2xl text-bo-muted">
-                        В тикете нет позиций
-                    </p>
-                </div>
-
-                <div v-if="comment" class="border border-amber-700/40 bg-amber-950/30 px-4 py-3">
-                    <p class="mb-1 text-lg text-amber-200">Комментарий к заказу</p>
-                    <p class="text-2xl text-amber-50">{{ comment }}</p>
-                </div>
-
-                <p v-if="ticket.order?.status" class="text-xl text-bo-muted">
-                    Заказ: {{ orderStatusLabel(ticket.order.status) }}
+                <ul class="space-y-3">
+                    <li
+                        v-for="(line, idx) in lines"
+                        :key="idx"
+                        class="border border-bo-border bg-black/40 px-4 py-3 text-3xl font-semibold"
+                    >
+                        {{ line.name || `Позиция #${line.product_id}` }}
+                        <span class="text-amber-300">× {{ line.quantity }}</span>
+                    </li>
+                </ul>
+                <p
+                    v-if="lines.length === 0"
+                    class="text-2xl text-bo-muted"
+                >
+                    Нет позиций
                 </p>
 
                 <div class="flex flex-wrap gap-4">

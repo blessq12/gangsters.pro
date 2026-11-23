@@ -90,6 +90,40 @@ final class EloquentKitchenTicketRepository implements KitchenTicketRepository
         return (int) $this->activeByBranchQuery($branchId)->count();
     }
 
+    public function countActiveByStatus(?int $branchId = null): array
+    {
+        $query = KIT_Ticket::query()
+            ->whereIn('status', [
+                KitchenTicketStatus::Queued->value,
+                KitchenTicketStatus::Started->value,
+            ]);
+        if ($branchId !== null && $branchId > 0) {
+            $query->where('branch_id', $branchId);
+        }
+
+        $queued = 0;
+        $started = 0;
+        $rows = $query
+            ->selectRaw('status, COUNT(*) as aggregate')
+            ->groupBy('status')
+            ->get();
+        foreach ($rows as $row) {
+            $status = (string) $row->status;
+            $count = (int) $row->aggregate;
+            if ($status === KitchenTicketStatus::Queued->value) {
+                $queued = $count;
+            }
+            if ($status === KitchenTicketStatus::Started->value) {
+                $started = $count;
+            }
+        }
+
+        return [
+            'queued' => $queued,
+            'started' => $started,
+        ];
+    }
+
     /**
      * @return Builder<KIT_Ticket>
      */

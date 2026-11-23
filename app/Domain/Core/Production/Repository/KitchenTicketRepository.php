@@ -29,4 +29,11 @@ interface KitchenTicketRepository
     public function listActiveByBranchPage(int $branchId, int $offset, int $limit): array;
 
     public function countActiveByBranch(int $branchId): int;
+
+    /**
+     * Активные тикеты по статусу (queued/started), опционально по филиалу.
+     *
+     * @return array{queued: int, started: int}
+     */
+    public function countActiveByStatus(?int $branchId = null): array;
 }

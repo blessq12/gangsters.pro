@@ -29,8 +29,11 @@ interface RouteSheetRepository
 
     public function countActiveByBranch(int $branchId): int;
 
+    /** Открытые листы (released + in_delivery), опционально по филиалу. */
+    public function countOpen(?int $branchId = null): int;
+
     /**
-     * Листы, видимые курьеру: свои активные + свободные released без курьера.
+     * Активные листы, назначенные на курьера.
      *
      * @return list<RouteSheet>
      */

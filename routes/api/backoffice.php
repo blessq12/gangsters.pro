@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\Backoffice\CatalogController;
 use App\Http\Controllers\Api\Backoffice\ClientController;
 use App\Http\Controllers\Api\Backoffice\CompanyController;
 use App\Http\Controllers\Api\Backoffice\CourierController;
+use App\Http\Controllers\Api\Backoffice\DashboardController;
 use App\Http\Controllers\Api\Backoffice\DeliveryController;
 use App\Http\Controllers\Api\Backoffice\EmployeeController;
 use App\Http\Controllers\Api\Backoffice\MarketingController;
@@ -56,6 +57,7 @@ Route::prefix('backoffice')->middleware(EnsureBackofficeEnabled::class)->group(f
 
 
             Route::get('orders', [OrderController::class, 'index']);
+            Route::post('orders/quote', [OrderController::class, 'quote']);
             Route::post('orders', [OrderController::class, 'store']);
             Route::get('orders/{id}', [OrderController::class, 'show'])->whereNumber('id');
             Route::post('orders/{id}/accept', [OrderController::class, 'accept'])->whereNumber('id');
@@ -76,6 +78,8 @@ Route::prefix('backoffice')->middleware(EnsureBackofficeEnabled::class)->group(f
                 ->whereNumber('orderId');
             Route::post('production/tickets/{orderId}/cancel', [ProductionController::class, 'cancel'])
                 ->whereNumber('orderId');
+
+            Route::get('dashboard/summary', [DashboardController::class, 'summary']);
 
             Route::get('payments', [PaymentController::class, 'index']);
             Route::get('payments/summary', [PaymentController::class, 'summary']);

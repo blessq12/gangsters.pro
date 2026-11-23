@@ -5,12 +5,12 @@ const module = {
     role: "administrator",
     home: "administrator-live-orders",
     nav: [
+        { label: "Дашборд", routeName: "administrator-dashboard", icon: "dashboard", order: 0 },
         { label: "Заказы", routeName: "administrator-live-orders", icon: "live", order: 1 },
-        { label: "Ручной заказ", routeName: "administrator-manual-order", icon: "manual-order", order: 2 },
-        { label: "Маршрутные листы", routeName: "administrator-logistics", icon: "logistics", order: 3 },
-        { label: "Клиенты", routeName: "administrator-clients", icon: "clients", order: 4 },
-        { label: "Тикеты", routeName: "administrator-production", icon: "production", order: 5 },
-        { label: "Каталог", routeName: "administrator-catalog", icon: "catalog", order: 6 },
+        { label: "Маршрутные листы", routeName: "administrator-logistics", icon: "logistics", order: 2 },
+        { label: "Клиенты", routeName: "administrator-clients", icon: "clients", order: 3 },
+        { label: "Тикеты", routeName: "administrator-production", icon: "production", order: 4 },
+        { label: "Каталог", routeName: "administrator-catalog", icon: "catalog", order: 5 },
     ],
     routes: [
         {
@@ -19,6 +19,12 @@ const module = {
             meta: { role: "administrator" },
             children: [
                 { path: "", redirect: { name: "administrator-live-orders" } },
+                {
+                    path: "dashboard",
+                    name: "administrator-dashboard",
+                    component: () => import("./screens/DashboardScreen.vue"),
+                    meta: { role: "administrator" },
+                },
                 {
                     path: "live-orders",
                     name: "administrator-live-orders",
@@ -41,6 +47,12 @@ const module = {
                     path: "logistics",
                     name: "administrator-logistics",
                     component: () => import("./screens/LogisticsScreen.vue"),
+                    meta: { role: "administrator" },
+                },
+                {
+                    path: "logistics/assemble",
+                    name: "administrator-logistics-assemble",
+                    component: () => import("./screens/RouteSheetAssembleScreen.vue"),
                     meta: { role: "administrator" },
                 },
                 {

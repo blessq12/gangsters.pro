@@ -15,6 +15,7 @@ return [
         ['method' => 'POST', 'path' => 'orders/*/status', 'roles' => ['owner', 'administrator']],
         ['method' => 'POST', 'path' => 'orders/*/complete-pickup', 'roles' => ['administrator']],
         ['method' => 'POST', 'path' => 'orders/*/notes', 'roles' => ['owner', 'administrator']],
+        ['method' => 'POST', 'path' => 'orders/quote', 'roles' => ['administrator']],
         ['method' => 'POST', 'path' => 'orders', 'roles' => ['administrator']],
         ['method' => 'GET', 'path' => 'orders/*', 'roles' => ['owner', 'administrator']],
         ['method' => 'GET', 'path' => 'orders', 'roles' => ['owner', 'administrator']],
@@ -23,6 +24,9 @@ return [
         ['method' => 'POST', 'path' => 'production/tickets/*/*', 'roles' => ['kitchen']],
         ['method' => 'GET', 'path' => 'production/queue', 'roles' => ['owner', 'administrator', 'kitchen']],
         ['method' => 'GET', 'path' => 'production/tickets/*', 'roles' => ['owner', 'administrator', 'kitchen']],
+
+        // dashboard
+        ['method' => 'GET', 'path' => 'dashboard/summary', 'roles' => ['owner', 'administrator']],
 
         // payments
         ['method' => 'POST', 'path' => 'payments/*/*', 'roles' => ['owner', 'administrator']],
@@ -43,7 +47,7 @@ return [
 
         // company + branch menu / structure / clone
         ['method' => 'POST', 'path' => 'company/branches/clone-settings', 'roles' => ['owner']],
-        ['method' => 'GET', 'path' => 'company/branches/*/menu', 'roles' => ['owner']],
+        ['method' => 'GET', 'path' => 'company/branches/*/menu', 'roles' => ['owner', 'administrator']],
         ['method' => 'PUT', 'path' => 'company/branches/*/menu/*', 'roles' => ['owner']],
         ['method' => 'DELETE', 'path' => 'company/branches/*/menu/*', 'roles' => ['owner']],
 
@@ -88,7 +92,7 @@ return [
         // delivery route-sheets
         ['method' => null, 'path' => 'delivery/route-sheets/*/stops/*/settle', 'roles' => ['administrator', 'courier']],
         ['method' => null, 'path' => 'delivery/route-sheets/*/take', 'roles' => ['administrator', 'courier']],
-        ['method' => 'GET', 'path' => 'delivery/route-sheets/*', 'roles' => ['owner', 'administrator']],
+        ['method' => 'GET', 'path' => 'delivery/route-sheets/*', 'roles' => ['owner', 'administrator', 'courier']],
         ['method' => 'GET', 'path' => 'delivery/route-sheets', 'roles' => ['owner', 'administrator']],
         ['method' => 'POST', 'path' => 'delivery/route-sheets', 'roles' => ['administrator']],
 

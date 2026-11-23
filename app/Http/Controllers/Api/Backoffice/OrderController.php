@@ -14,6 +14,7 @@ use App\Application\Order\DTO\CreateOrderDto;
 use App\Application\Order\DTO\ReassignBranchDto;
 use App\Application\Order\Query\GetAdminOrderUseCase;
 use App\Application\Order\Query\ListAdminOrdersUseCase;
+use App\Application\Order\Query\QuoteOrderUseCase;
 use App\Domain\Core\Order\Enum\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Infrastructure\Staff\Model\STF_Employee;
@@ -50,6 +51,22 @@ final class OrderController extends Controller
         } catch (InvalidArgumentException $exception) {
             return response()->json(['message' => $exception->getMessage()], 404);
         }
+    }
+
+    public function quote(Request $request, QuoteOrderUseCase $useCase): JsonResponse
+    {
+        $validated = Validator::make(
+            CheckoutPayload::normalize($request->all()),
+            CheckoutPayload::rules(),
+        )->validate();
+
+        try {
+            $result = $useCase->execute(CheckoutPayload::toDto($validated));
+        } catch (InvalidArgumentException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
+
+        return response()->json($result);
     }
 
     public function store(Request $request, CreateOrderUseCase $useCase): JsonResponse

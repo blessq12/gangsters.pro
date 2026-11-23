@@ -1,22 +1,21 @@
 <script setup>
 import { computed, onMounted, ref, watch } from "vue";
+import { useRouter } from "vue-router";
+import { storeToRefs } from "pinia";
 import {
-    createRouteSheet,
     getRouteSheet,
     listRouteSheets,
-    settleStop,
     takeRouteSheet,
 } from "../../../api/delivery.js";
-import { listOrders } from "../../../api/orders.js";
 import { listEmployees } from "../../../api/staff.js";
 import { useApi } from "../../../shell/composables/useApi.js";
 import { usePagedList } from "../../../shell/composables/usePagedList.js";
 import { useToast } from "../../../shell/composables/useToast.js";
+import { useAuthStore } from "../../../shell/store/authStore.js";
 import UiBadge from "../../../shell/components/ui/UiBadge.vue";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
 import UiCard from "../../../shell/components/ui/UiCard.vue";
 import UiFormField from "../../../shell/components/ui/UiFormField.vue";
-import UiModal from "../../../shell/components/ui/UiModal.vue";
 import UiPagination from "../../../shell/components/ui/UiPagination.vue";
 import UiTable from "../../../shell/components/ui/UiTable.vue";
 import {
@@ -25,15 +24,22 @@ import {
     sheetHint,
     sheetStatusLabel,
     sheetStatusVariant,
-    stopIsOpen,
     stopOutcomeLabel,
     stopOutcomeVariant,
 } from "../../../shell/domain/orderStage.js";
 
+const router = useRouter();
 const toast = useToast();
+const auth = useAuthStore();
+const { employee } = storeToRefs(auth);
 const listApi = useApi();
 const detailApi = useApi();
-const actionApi = useApi();
+
+const branchId = computed(() => {
+    const raw = employee.value?.branch_id;
+    const id = Number(raw);
+    return Number.isFinite(id) && id > 0 ? id : null;
+});
 
 const {
     page,
@@ -43,15 +49,14 @@ const {
     offset,
     applyPayload,
 } = usePagedList();
-const readyOrders = ref([]);
 const couriers = ref([]);
-const createOpen = ref(false);
-const selectedOrderIds = ref(/** @type {number[]} */ ([]));
 const sheet = ref(null);
 const courierId = ref("");
-const writeOffOpen = ref(false);
-const writeOffOrderId = ref(null);
-const writeOffReason = ref("");
+const actionApi = useApi();
+
+const canAssignCourier = computed(
+    () => sheet.value?.status === "released" && !sheet.value?.courier_id,
+);
 
 const columns = [
     { key: "id", label: "Лист", width: "80px" },
@@ -92,8 +97,14 @@ async function loadCouriers() {
 }
 
 async function loadSheets() {
+    if (!branchId.value) {
+        applyPayload({ items: [], total: 0 });
+        toast.error("У сотрудника не указан филиал смены");
+        return;
+    }
     try {
         const payload = await listApi.run(() => listRouteSheets({
+            branch_id: branchId.value,
             offset: offset.value,
             limit: perPage,
         }));
@@ -103,52 +114,8 @@ async function loadSheets() {
     }
 }
 
-async function loadReadyOrders() {
-    try {
-        const payload = await listOrders({ status: "ready", offset: 0, limit: 100 });
-        readyOrders.value = (payload?.items ?? []).filter(
-            (order) => order.delivery?.method === "courier",
-        );
-    } catch (err) {
-        readyOrders.value = [];
-        toast.error(err instanceof Error ? err.message : "Не удалось загрузить готовые заказы");
-    }
-}
-
-async function openCreate() {
-    selectedOrderIds.value = [];
-    createOpen.value = true;
-    await loadReadyOrders();
-}
-
-function toggleOrder(id) {
-    const num = Number(id);
-    const idx = selectedOrderIds.value.indexOf(num);
-    if (idx >= 0) {
-        selectedOrderIds.value.splice(idx, 1);
-        return;
-    }
-    selectedOrderIds.value.push(num);
-}
-
-async function onCreateSheet() {
-    if (selectedOrderIds.value.length === 0) {
-        toast.error("Выбери хотя бы один готовый заказ");
-        return;
-    }
-    try {
-        const created = await actionApi.run(() => createRouteSheet({
-            order_ids: [...selectedOrderIds.value],
-        }));
-        toast.success("Маршрутный лист выпущен. Заказы ждут, пока его возьмут.");
-        createOpen.value = false;
-        await loadSheets();
-        if (created?.id) {
-            await openSheet({ id: created.id });
-        }
-    } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Не удалось выпустить лист");
-    }
+function openAssemble() {
+    router.push({ name: "administrator-logistics-assemble" });
 }
 
 async function openSheet(row) {
@@ -161,9 +128,9 @@ async function openSheet(row) {
     }
 }
 
-async function onTake() {
+async function onAssignCourier() {
     const id = Number(courierId.value);
-    if (!id) {
+    if (!id || !sheet.value?.id) {
         toast.error("Выбери курьера");
         return;
     }
@@ -171,47 +138,10 @@ async function onTake() {
         sheet.value = await actionApi.run(() => takeRouteSheet(sheet.value.id, {
             courier_id: id,
         }));
-        toast.success("Лист взят. Заказы в пути.");
+        toast.success("Курьер назначен");
         await loadSheets();
     } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Не удалось взять лист");
-    }
-}
-
-async function onDelivered(orderId) {
-    try {
-        sheet.value = await actionApi.run(() => settleStop(sheet.value.id, orderId, {
-            outcome: "delivered",
-        }));
-        toast.success(`Остановка заказа #${orderId} закрыта: доставлен.`);
-        await loadSheets();
-    } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Не удалось закрыть остановку");
-    }
-}
-
-function askWriteOff(orderId) {
-    writeOffOrderId.value = orderId;
-    writeOffReason.value = "";
-    writeOffOpen.value = true;
-}
-
-async function confirmWriteOff() {
-    if (!String(writeOffReason.value).trim()) {
-        toast.error("Нужна причина списания");
-        return;
-    }
-    const orderId = writeOffOrderId.value;
-    writeOffOpen.value = false;
-    try {
-        sheet.value = await actionApi.run(() => settleStop(sheet.value.id, orderId, {
-            outcome: "written_off",
-            reason: writeOffReason.value.trim(),
-        }));
-        toast.success(`Остановка заказа #${orderId} закрыта: списан.`);
-        await loadSheets();
-    } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Не удалось списать заказ");
+        toast.error(err instanceof Error ? err.message : "Не удалось назначить курьера");
     }
 }
 
@@ -226,7 +156,7 @@ onMounted(async () => {
     <div class="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
         <UiCard title="Маршрутные листы">
             <template #actions>
-                <UiButton @click="openCreate">
+                <UiButton @click="openAssemble">
                     Собрать лист
                 </UiButton>
             </template>
@@ -258,11 +188,20 @@ onMounted(async () => {
             </div>
         </UiCard>
 
-        <UiCard v-if="sheet" :title="`Маршрутный лист #${sheet.id}`">
-            <div v-if="detailApi.loading" class="text-sm text-bo-muted">
+        <UiCard
+            v-if="sheet"
+            :title="`Маршрутный лист #${sheet.id}`"
+        >
+            <div
+                v-if="detailApi.loading"
+                class="text-sm text-bo-muted"
+            >
                 Загрузка…
             </div>
-            <div v-else class="space-y-5 text-sm">
+            <div
+                v-else
+                class="space-y-5 text-sm"
+            >
                 <div class="border border-bo-border bg-white/[0.03] px-4 py-3">
                     <p class="text-[11px] font-medium uppercase tracking-[0.12em] text-bo-muted">
                         Где лист
@@ -281,11 +220,19 @@ onMounted(async () => {
                 </div>
 
                 <div
-                    v-if="sheet.status === 'released'"
+                    v-if="canAssignCourier"
                     class="space-y-3 border border-bo-border bg-white/[0.03] p-4"
                 >
-                    <p class="font-medium">Взятие листа</p>
-                    <UiFormField label="Курьер" required>
+                    <p class="font-medium">
+                        Назначить курьера
+                    </p>
+                    <p class="text-bo-muted">
+                        Лист выпущен без курьера — добей назначение.
+                    </p>
+                    <UiFormField
+                        label="Курьер"
+                        required
+                    >
                         <select
                             v-model="courierId"
                             class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 text-sm focus:border-bo-accent focus:outline-none"
@@ -300,13 +247,18 @@ onMounted(async () => {
                             </option>
                         </select>
                     </UiFormField>
-                    <UiButton :disabled="actionApi.loading" @click="onTake">
-                        Взять лист
+                    <UiButton
+                        :disabled="actionApi.loading"
+                        @click="onAssignCourier"
+                    >
+                        Назначить
                     </UiButton>
                 </div>
 
                 <div class="space-y-2">
-                    <p class="font-medium">Остановки</p>
+                    <p class="font-medium">
+                        Остановки
+                    </p>
                     <article
                         v-for="stop in (sheet.stops ?? [])"
                         :key="`${stop.order_id}-${stop.position}`"
@@ -322,10 +274,16 @@ onMounted(async () => {
                                     <span v-if="stop.order?.client?.phone"> · {{ stop.order.client.phone }}</span>
                                 </p>
                                 <p>{{ formatAddress(stop.order?.address) || "Адрес не указан" }}</p>
-                                <p v-if="stop.order?.status" class="text-bo-muted">
+                                <p
+                                    v-if="stop.order?.status"
+                                    class="text-bo-muted"
+                                >
                                     Заказ: {{ orderStatusLabel(stop.order.status) }}
                                 </p>
-                                <p v-if="stop.reason" class="text-bo-muted">
+                                <p
+                                    v-if="stop.reason"
+                                    class="text-bo-muted"
+                                >
                                     Причина: {{ stop.reason }}
                                 </p>
                             </div>
@@ -334,75 +292,9 @@ onMounted(async () => {
                                 :text="stopOutcomeLabel(stop.outcome)"
                             />
                         </div>
-                        <div
-                            v-if="sheet.status === 'in_delivery' && stopIsOpen(stop.outcome)"
-                            class="mt-3 flex flex-wrap gap-2"
-                        >
-                            <UiButton :disabled="actionApi.loading" @click="onDelivered(stop.order_id)">
-                                Доставлен
-                            </UiButton>
-                            <UiButton :disabled="actionApi.loading" @click="askWriteOff(stop.order_id)">
-                                Списать
-                            </UiButton>
-                        </div>
                     </article>
                 </div>
             </div>
         </UiCard>
-
-        <UiModal :open="createOpen" title="Собрать маршрутный лист" @close="createOpen = false">
-            <p class="mb-3 text-sm text-bo-muted">
-                Только готовые заказы на курьера. Самовывоз сюда не попадает.
-            </p>
-            <div class="space-y-2 text-sm">
-                <label
-                    v-for="order in readyOrders"
-                    :key="order.id"
-                    class="flex items-start gap-3 border border-bo-border px-3 py-2"
-                >
-                    <input
-                        type="checkbox"
-                        class="mt-1"
-                        :checked="selectedOrderIds.includes(order.id)"
-                        @change="toggleOrder(order.id)"
-                    >
-                    <span>
-                        <span class="font-medium">{{ order.number || `Заказ #${order.id}` }}</span>
-                        · {{ order.client?.name || "—" }}
-                        <span class="block text-bo-muted">{{ formatAddress(order.delivery?.address) || "Адрес не указан" }}</span>
-                    </span>
-                </label>
-                <p v-if="readyOrders.length === 0" class="text-bo-muted">
-                    Готовых заказов на курьера нет.
-                </p>
-            </div>
-            <template #footer>
-                <UiButton class="!bg-white/10 !text-bo-fg" @click="createOpen = false">
-                    Закрыть
-                </UiButton>
-                <UiButton :disabled="actionApi.loading" @click="onCreateSheet">
-                    Выпустить лист
-                </UiButton>
-            </template>
-        </UiModal>
-
-        <UiModal :open="writeOffOpen" title="Списать заказ" @close="writeOffOpen = false">
-            <UiFormField label="Причина" required>
-                <textarea
-                    v-model="writeOffReason"
-                    rows="4"
-                    class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 text-sm focus:border-bo-accent focus:outline-none"
-                    placeholder="Почему заказ не доставлен"
-                />
-            </UiFormField>
-            <template #footer>
-                <UiButton class="!bg-white/10 !text-bo-fg" @click="writeOffOpen = false">
-                    Закрыть
-                </UiButton>
-                <UiButton :disabled="actionApi.loading" @click="confirmWriteOff">
-                    Списать
-                </UiButton>
-            </template>
-        </UiModal>
     </div>
 </template>

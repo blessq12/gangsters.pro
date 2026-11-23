@@ -57,5 +57,6 @@ interface PaymentRepository
         ?DateTimeImmutable $createdTo = null,
         ?string $status = null,
         ?string $method = null,
+        ?int $branchId = null,
     ): array;
 }

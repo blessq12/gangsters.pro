@@ -14,7 +14,7 @@ final class ListCourierRouteSheetsUseCase
     ) {}
 
     /**
-     * Свои активные листы курьера и свободные (released без курьера).
+     * Активные листы, назначенные на этого курьера.
      *
      * @return array{items: list<array<string, mixed>>, total: int, offset: int, limit: int}
      */

@@ -8,6 +8,7 @@ use App\Domain\Core\Order\ValueObject\OrderNumber;
 use App\Infrastructure\Order\Mapper\OrderMapper;
 use App\Infrastructure\Order\Model\ORD_Order;
 use App\Infrastructure\Order\Model\ORD_OrderLine;
+use DateTimeImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
@@ -52,6 +53,65 @@ final class EloquentOrderRepository implements OrderRepository
         }
 
         return $counts;
+    }
+
+    public function countByStatusFiltered(
+        ?int $branchId = null,
+        ?DateTimeImmutable $createdFrom = null,
+        ?DateTimeImmutable $createdTo = null,
+    ): array {
+        $query = ORD_Order::query();
+        if ($branchId !== null && $branchId > 0) {
+            $query->where('branch_id', $branchId);
+        }
+        if ($createdFrom !== null) {
+            $query->where('created_at', '>=', $createdFrom->format('Y-m-d H:i:s'));
+        }
+        if ($createdTo !== null) {
+            $query->where('created_at', '<=', $createdTo->format('Y-m-d H:i:s'));
+        }
+
+        $counts = [];
+        $rows = $query
+            ->selectRaw('status, COUNT(*) as aggregate')
+            ->groupBy('status')
+            ->get();
+
+        foreach ($rows as $row) {
+            $counts[(string) $row->status] = (int) $row->aggregate;
+        }
+
+        return $counts;
+    }
+
+    public function countOpsSnapshot(?int $branchId = null): array
+    {
+        $base = ORD_Order::query();
+        if ($branchId !== null && $branchId > 0) {
+            $base->where('branch_id', $branchId);
+        }
+
+        $byStatus = [];
+        $rows = (clone $base)
+            ->selectRaw('status, COUNT(*) as aggregate')
+            ->groupBy('status')
+            ->get();
+        foreach ($rows as $row) {
+            $byStatus[(string) $row->status] = (int) $row->aggregate;
+        }
+
+        $readyCourier = (int) (clone $base)
+            ->where('status', 'ready')
+            ->where('delivery_type', 'courier')
+            ->count();
+
+        return [
+            'new' => (int) ($byStatus['new'] ?? 0) + (int) ($byStatus['preorder'] ?? 0) + (int) ($byStatus['confirmed'] ?? 0),
+            'preparing' => (int) ($byStatus['preparing'] ?? 0),
+            'ready' => (int) ($byStatus['ready'] ?? 0),
+            'ready_courier' => $readyCourier,
+            'in_transit' => (int) ($byStatus['in_transit'] ?? 0) + (int) ($byStatus['assigned_to_route'] ?? 0),
+        ];
     }
 
     public function listPage(int $offset, int $limit, array $filters = []): array

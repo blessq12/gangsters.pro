@@ -66,10 +66,18 @@ final class CheckoutPayload
         return new QuoteOrderDto(
             branchId: (int) $validated['branch_id'],
             lines: array_map(
-                static fn (array $line): array => [
-                    'product_id' => (int) $line['product_id'],
-                    'quantity' => (int) $line['quantity'],
-                ],
+                static function (array $line): array {
+                    $kind = (string) ($line['kind'] ?? 'product');
+                    if ($kind !== 'set') {
+                        $kind = 'product';
+                    }
+
+                    return [
+                        'product_id' => (int) $line['product_id'],
+                        'quantity' => (int) $line['quantity'],
+                        'kind' => $kind,
+                    ];
+                },
                 $validated['lines'],
             ),
             deliveryMethod: (string) $validated['delivery_method'],
@@ -100,6 +108,7 @@ final class CheckoutPayload
             'lines' => ['required', 'array', 'min:1'],
             'lines.*.product_id' => ['required', 'integer', 'min:1'],
             'lines.*.quantity' => ['required', 'integer', 'min:1'],
+            'lines.*.kind' => ['sometimes', 'string', 'in:product,set'],
             'delivery_method' => ['required', 'string', 'in:pickup,courier'],
             'address' => ['nullable', 'array'],
             'address.street' => ['nullable', 'string', 'max:255'],

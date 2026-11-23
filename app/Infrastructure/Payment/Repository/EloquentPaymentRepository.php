@@ -91,8 +91,9 @@ final class EloquentPaymentRepository implements PaymentRepository
         ?DateTimeImmutable $createdTo = null,
         ?string $status = null,
         ?string $method = null,
+        ?int $branchId = null,
     ): array {
-        $totals = $this->filteredQuery($createdFrom, $createdTo, $status, $method)
+        $totals = $this->filteredQuery($createdFrom, $createdTo, $status, $method, $branchId)
             ->selectRaw("
                 COALESCE(SUM(CASE WHEN status = 'paid' THEN amount_kopecks ELSE 0 END), 0) AS paid_kopecks,
                 COALESCE(SUM(CASE WHEN status = 'refunded' THEN amount_kopecks ELSE 0 END), 0) AS refunded_kopecks,
@@ -105,7 +106,7 @@ final class EloquentPaymentRepository implements PaymentRepository
             ")
             ->first();
 
-        $byMethodRows = $this->filteredQuery($createdFrom, $createdTo, $status, $method)
+        $byMethodRows = $this->filteredQuery($createdFrom, $createdTo, $status, $method, $branchId)
             ->where('status', 'paid')
             ->selectRaw('method, COALESCE(SUM(amount_kopecks), 0) AS total_kopecks')
             ->groupBy('method')
@@ -144,6 +145,7 @@ final class EloquentPaymentRepository implements PaymentRepository
         ?DateTimeImmutable $createdTo,
         ?string $status,
         ?string $method,
+        ?int $branchId = null,
     ): Builder {
         $query = PAY_Payment::query();
 
@@ -158,6 +160,13 @@ final class EloquentPaymentRepository implements PaymentRepository
         }
         if ($method !== null && $method !== '') {
             $query->where('method', $method);
+        }
+        if ($branchId !== null && $branchId > 0) {
+            $query->whereIn('order_id', static function ($sub) use ($branchId): void {
+                $sub->select('id')
+                    ->from('ORD_orders')
+                    ->where('branch_id', $branchId);
+            });
         }
 
         return $query;

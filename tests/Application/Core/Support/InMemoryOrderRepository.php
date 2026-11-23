@@ -5,6 +5,7 @@ namespace Tests\Application\Core\Support;
 use App\Domain\Core\Order\Entity\Order;
 use App\Domain\Core\Order\Repository\OrderRepository;
 use App\Domain\Core\Order\ValueObject\OrderNumber;
+use DateTimeImmutable;
 
 final class InMemoryOrderRepository implements OrderRepository
 {
@@ -51,6 +52,27 @@ final class InMemoryOrderRepository implements OrderRepository
         }
 
         return $counts;
+    }
+
+    public function countByStatusFiltered(
+        ?int $branchId = null,
+        ?DateTimeImmutable $createdFrom = null,
+        ?DateTimeImmutable $createdTo = null,
+    ): array {
+        return $this->countByStatus();
+    }
+
+    public function countOpsSnapshot(?int $branchId = null): array
+    {
+        $byStatus = $this->countByStatus();
+
+        return [
+            'new' => (int) ($byStatus['new'] ?? 0) + (int) ($byStatus['preorder'] ?? 0) + (int) ($byStatus['confirmed'] ?? 0),
+            'preparing' => (int) ($byStatus['preparing'] ?? 0),
+            'ready' => (int) ($byStatus['ready'] ?? 0),
+            'ready_courier' => 0,
+            'in_transit' => (int) ($byStatus['in_transit'] ?? 0) + (int) ($byStatus['assigned_to_route'] ?? 0),
+        ];
     }
 
     public function listPage(int $offset, int $limit, array $filters = []): array

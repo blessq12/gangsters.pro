@@ -21,6 +21,9 @@ let media = null;
 
 const showChrome = computed(() => !route.meta.guest && auth.isAuthenticated);
 
+/** Курьер — отдельный mobile PWA-контур без sidebar/topbar. */
+const isCourierApp = computed(() => showChrome.value && auth.role === "courier");
+
 function readCollapsed() {
     try {
         return localStorage.getItem(COLLAPSE_KEY) === "1";
@@ -76,7 +79,17 @@ onUnmounted(() => {
             <RouterView />
         </main>
 
-        <div v-else class="flex h-screen overflow-hidden">
+        <div
+            v-else-if="isCourierApp"
+            class="flex h-dvh flex-col overflow-hidden"
+        >
+            <RouterView />
+        </div>
+
+        <div
+            v-else
+            class="flex h-screen overflow-hidden"
+        >
             <ShellSidebar
                 :collapsed="collapsed && isDesktop"
                 :mobile-open="mobileOpen"
