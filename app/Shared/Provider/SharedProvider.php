@@ -4,9 +4,7 @@ namespace App\Shared\Provider;
 
 use App\Application\Shared\DomainEventPublisher;
 use App\Infrastructure\Shared\Event\LaravelDomainEventPublisher;
-use App\Infrastructure\Shared\Geo\YandexAddressGeocoder;
 use App\Infrastructure\Shared\Transaction\LaravelTransactionManager;
-use App\Shared\Geo\AddressGeocoder;
 use App\Shared\Transaction\TransactionManager;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
@@ -15,7 +13,6 @@ final class SharedProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->bind(AddressGeocoder::class, YandexAddressGeocoder::class);
         $this->app->bind(TransactionManager::class, LaravelTransactionManager::class);
         $this->app->bind(DomainEventPublisher::class, LaravelDomainEventPublisher::class);
     }

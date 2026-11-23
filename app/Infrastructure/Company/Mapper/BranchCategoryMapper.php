@@ -18,7 +18,9 @@ final class BranchCategoryMapper
             slug: (string) $row->slug,
             sortOrder: (int) $row->sort_order,
             isActive: (bool) $row->is_active,
-            isAccompanying: (bool) $row->is_accompanying,
+            isAccompanying: (bool) ($row->is_accompanying ?? false),
+            isComplement: (bool) ($row->is_complement ?? false),
+            isGift: (bool) ($row->is_gift ?? false),
         );
     }
 

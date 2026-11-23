@@ -205,7 +205,9 @@ final class BranchMenuStructureController extends Controller
             'slug' => ['nullable', 'string', 'max:255'],
             'sort_order' => ['required', 'integer', 'min:0'],
             'is_active' => ['required', 'boolean'],
-            'is_accompanying' => ['required', 'boolean'],
+            'is_accompanying' => ['sometimes', 'boolean'],
+            'is_complement' => ['sometimes', 'boolean'],
+            'is_gift' => ['sometimes', 'boolean'],
             'items' => ['sometimes', 'array'],
             'items.*.entry_kind' => ['required', 'string', 'in:product,set'],
             'items.*.entry_id' => ['required', 'integer', 'min:1'],
@@ -220,7 +222,9 @@ final class BranchMenuStructureController extends Controller
                 slug: $validated['slug'] ?? null,
                 sortOrder: (int) $validated['sort_order'],
                 isActive: (bool) $validated['is_active'],
-                isAccompanying: (bool) $validated['is_accompanying'],
+                isAccompanying: (bool) ($validated['is_accompanying'] ?? false),
+                isComplement: (bool) ($validated['is_complement'] ?? false),
+                isGift: (bool) ($validated['is_gift'] ?? false),
                 items: array_key_exists('items', $validated)
                     ? $this->normalizeCategoryItems($validated['items'])
                     : null,

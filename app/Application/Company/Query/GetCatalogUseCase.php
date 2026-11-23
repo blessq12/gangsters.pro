@@ -52,10 +52,23 @@ final class GetCatalogUseCase
 
         $menuCategories = [];
         $accompanying = [];
+        $complementProducts = [];
 
         foreach ($this->categories->listActiveOrderedByBranch($branchId) as $category) {
             $node = $this->buildCategoryNode($branchId, $category, $tagById, $menuByProductId);
             if ($node['items'] === []) {
+                continue;
+            }
+            if ($category->isComplement()) {
+                foreach ($node['items'] as $item) {
+                    if (($item['kind'] ?? '') === 'product' || ! isset($item['kind'])) {
+                        $complementProducts[] = $item;
+                    }
+                }
+                continue;
+            }
+            if ($category->isGift()) {
+                // Подарки только через quote / gift modal, не в витрине.
                 continue;
             }
             if ($category->isAccompanying()) {
@@ -68,6 +81,7 @@ final class GetCatalogUseCase
         return [
             'categories' => $menuCategories,
             'accompanying_categories' => $accompanying,
+            'complement_products' => $complementProducts,
         ];
     }
 
@@ -146,6 +160,8 @@ final class GetCatalogUseCase
                 'sort_order' => $category->sortOrder(),
                 'is_active' => $category->isActive(),
                 'is_accompanying' => $category->isAccompanying(),
+                'is_complement' => $category->isComplement(),
+                'is_gift' => $category->isGift(),
             ],
             'items' => $items,
         ];

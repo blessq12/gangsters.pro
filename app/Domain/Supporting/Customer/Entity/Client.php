@@ -65,6 +65,25 @@ final class Client
     }
 
     /**
+     * Клиент из бэкофиса (POS): без пароля для входа в ЛК, ПДн отмечены оператором.
+     */
+    public static function registerByStaff(
+        string $name,
+        string $phone,
+        string $passwordHash,
+    ): self {
+        return self::register(
+            name: $name,
+            phone: $phone,
+            email: null,
+            birthDate: null,
+            passwordHash: $passwordHash,
+            consentPersonalData: true,
+            consentMarketing: false,
+        );
+    }
+
+    /**
      * @param list<ClientAddress> $addresses
      * @param list<int> $favoriteProductIds
      */

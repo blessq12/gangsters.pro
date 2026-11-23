@@ -14,6 +14,14 @@ export function listClients(query = {}) {
     return request("GET", `/clients${qs ? `?${qs}` : ""}`);
 }
 
+/**
+ * Найти или создать клиента по телефону (POS / ручной заказ).
+ * @param {{ name: string, phone: string }} data
+ */
+export function ensureClient(data) {
+    return request("POST", "/clients/ensure", data);
+}
+
 /** @param {number|string} id */
 export function getClient(id) {
     return request("GET", `/clients/${id}`);

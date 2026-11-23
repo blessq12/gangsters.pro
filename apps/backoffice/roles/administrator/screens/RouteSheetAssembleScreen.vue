@@ -1,11 +1,14 @@
 <script setup>
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
+import { storeToRefs } from "pinia";
+import { getBranch } from "../../../api/company.js";
 import { createRouteSheet, takeRouteSheet } from "../../../api/delivery.js";
 import { listOrders } from "../../../api/orders.js";
 import { listEmployees } from "../../../api/staff.js";
 import { useApi } from "../../../shell/composables/useApi.js";
 import { useToast } from "../../../shell/composables/useToast.js";
+import { useAuthStore } from "../../../shell/store/authStore.js";
 import { formatAddress, orderNumberOf } from "../../../shell/domain/orderStage.js";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
 import UiFormField from "../../../shell/components/ui/UiFormField.vue";
@@ -13,6 +16,8 @@ import RouteOrdersMap from "../../../shell/components/order/RouteOrdersMap.vue";
 
 const router = useRouter();
 const toast = useToast();
+const auth = useAuthStore();
+const { employee } = storeToRefs(auth);
 const loadApi = useApi();
 const actionApi = useApi();
 
@@ -20,6 +25,13 @@ const readyOrders = ref(/** @type {Array<Record<string, unknown>>} */ ([]));
 const couriers = ref(/** @type {Array<Record<string, unknown>>} */ ([]));
 const selectedOrderIds = ref(/** @type {number[]} */ ([]));
 const courierId = ref("");
+const branchCity = ref("");
+
+const branchId = computed(() => {
+    const raw = employee.value?.branch_id;
+    const id = Number(raw);
+    return Number.isFinite(id) && id > 0 ? id : null;
+});
 
 const mapOrders = computed(() =>
     readyOrders.value.map((order) => {
@@ -30,7 +42,7 @@ const mapOrders = computed(() =>
             subtitle: String(order?.client?.name ?? "").trim() || "—",
             street: address?.street ? String(address.street) : "",
             house: address?.house ? String(address.house) : "",
-            city: address?.city ? String(address.city) : "",
+            city: address?.city ? String(address.city) : branchCity.value,
             latitude: address?.lat ?? address?.latitude ?? null,
             longitude: address?.lng ?? address?.longitude ?? null,
         };
@@ -111,8 +123,24 @@ async function onSubmit() {
     }
 }
 
+async function loadBranchCity() {
+    if (!branchId.value) {
+        branchCity.value = "";
+        return;
+    }
+    try {
+        const branch = await getBranch(branchId.value);
+        branchCity.value = String(branch?.city ?? "").trim();
+    } catch {
+        branchCity.value = "";
+    }
+}
+
 onMounted(async () => {
-    await Promise.all([loadCouriers(), loadReadyOrders()]);
+    if (!auth.bootstrapped) {
+        await auth.bootstrap();
+    }
+    await Promise.all([loadBranchCity(), loadCouriers(), loadReadyOrders()]);
 });
 </script>
 
@@ -219,6 +247,7 @@ onMounted(async () => {
                 <RouteOrdersMap
                     :orders="mapOrders"
                     :selected-ids="selectedOrderIds"
+                    :default-city="branchCity"
                     @toggle="toggleOrder"
                 />
             </div>

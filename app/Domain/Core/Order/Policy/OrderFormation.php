@@ -91,9 +91,7 @@ final class OrderFormation
             if (! $line->isBillable()) {
                 continue;
             }
-            if ($facts->isRoll($line->productId())) {
-                $rollCount += $line->quantity();
-            }
+            $rollCount += $facts->rollUnitsPerLineUnit($line->productId()) * $line->quantity();
         }
 
         $sets = min($maxSets, intdiv($rollCount, $rollsPerSet));

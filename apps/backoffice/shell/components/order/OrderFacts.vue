@@ -9,15 +9,11 @@ import {
     formatKopecks,
     formatLineRubles,
     formatRubles,
-    orderStatusLabel,
-    orderStatusVariant,
     paymentHint,
     paymentLooksStuck,
     paymentMethodLabel,
     paymentStatusLabel,
     paymentStatusVariant,
-    orderNumberOf,
-    stageHint,
 } from "../../domain/orderStage.js";
 
 const props = defineProps({
@@ -26,7 +22,6 @@ const props = defineProps({
     branchCity: { type: String, default: "" },
 });
 
-const hint = computed(() => stageHint(props.order));
 const paymentText = computed(() => paymentHint(props.order));
 const stuck = computed(() => paymentLooksStuck(props.order));
 const totals = computed(() => props.order?.totals ?? props.order?.cart?.totals ?? {});
@@ -57,8 +52,11 @@ const paymentLine = computed(() => {
 });
 
 const allLines = computed(() => (Array.isArray(props.order?.cart?.lines) ? props.order.cart.lines : []));
-const regularLines = computed(() => allLines.value.filter((line) => lineTypeOf(line) === "regular"));
-const setLines = computed(() => allLines.value.filter((line) => lineTypeOf(line) === "set"));
+/** Наборы (set) показываем как обычные товары — без отдельного блока. */
+const productLines = computed(() => allLines.value.filter((line) => {
+    const type = lineTypeOf(line);
+    return type === "regular" || type === "set";
+}));
 const giftLines = computed(() => allLines.value.filter((line) => lineTypeOf(line) === "gift"));
 const complementLines = computed(() => allLines.value.filter((line) => lineTypeOf(line) === "complement"));
 const otherLines = computed(() => allLines.value.filter((line) => {
@@ -68,11 +66,8 @@ const otherLines = computed(() => allLines.value.filter((line) => {
 
 const cartSummary = computed(() => {
     const parts = [];
-    if (regularLines.value.length > 0) {
-        parts.push(`заказ ${regularLines.value.length}`);
-    }
-    if (setLines.value.length > 0) {
-        parts.push(`комплект ${setLines.value.length}`);
+    if (productLines.value.length > 0) {
+        parts.push(`заказ ${productLines.value.length}`);
     }
     if (giftLines.value.length > 0) {
         parts.push(`подарок ${giftLines.value.length}`);
@@ -91,17 +86,6 @@ const cartSummary = computed(() => {
  */
 function lineTypeOf(line) {
     return String(line?.line_type ?? "regular");
-}
-
-function formatDate(value) {
-    if (!value) {
-        return "—";
-    }
-    try {
-        return new Date(value).toLocaleString("ru-RU");
-    } catch {
-        return String(value);
-    }
 }
 
 function rublesOf(key) {
@@ -178,30 +162,8 @@ function rublesOf(key) {
             </UiCard>
         </div>
 
-        <!-- 2/3: заказ + корзина + финансы -->
+        <!-- 2/3: корзина + финансы -->
         <div class="space-y-4 lg:col-span-2">
-            <UiCard title="Заказ">
-                <template #actions>
-                    <UiBadge
-                        :variant="orderStatusVariant(order.status)"
-                        :text="orderStatusLabel(order.status)"
-                    />
-                </template>
-                <div class="space-y-3">
-                    <p
-                        class="text-base font-semibold leading-snug text-bo-fg"
-                        :class="stuck ? 'text-red-300' : ''"
-                    >
-                        {{ hint }}
-                    </p>
-                    <p class="text-sm text-bo-muted">
-                        {{ orderNumberOf(order) }}
-                        · {{ formatDate(order.created_at) }}
-                        · {{ branchText }}
-                    </p>
-                </div>
-            </UiCard>
-
             <UiCard title="Корзина">
                 <template #actions>
                     <span class="text-sm text-bo-muted">{{ cartSummary }}</span>
@@ -211,10 +173,10 @@ function rublesOf(key) {
                         <p class="mb-2 text-xs font-medium uppercase tracking-wide text-bo-muted">
                             Линии заказа
                         </p>
-                        <ul v-if="regularLines.length > 0" class="space-y-1.5">
+                        <ul v-if="productLines.length > 0" class="space-y-1.5">
                             <li
-                                v-for="(line, idx) in regularLines"
-                                :key="`regular-${idx}`"
+                                v-for="(line, idx) in productLines"
+                                :key="`product-${idx}`"
                                 class="flex items-baseline justify-between gap-3"
                             >
                                 <span class="min-w-0 font-medium text-bo-fg">
@@ -225,25 +187,6 @@ function rublesOf(key) {
                             </li>
                         </ul>
                         <p v-else class="text-bo-muted">Нет позиций</p>
-                    </div>
-
-                    <div v-if="setLines.length > 0">
-                        <p class="mb-2 text-xs font-medium uppercase tracking-wide text-bo-muted">
-                            Линии комплекта
-                        </p>
-                        <ul class="space-y-1.5">
-                            <li
-                                v-for="(line, idx) in setLines"
-                                :key="`set-${idx}`"
-                                class="flex items-baseline justify-between gap-3"
-                            >
-                                <span class="min-w-0 font-medium text-bo-fg">
-                                    {{ line.name || `Комплект #${line.product_id}` }}
-                                    <span class="font-normal text-bo-muted">× {{ line.quantity }}</span>
-                                </span>
-                                <span class="shrink-0 text-bo-muted">{{ formatLineRubles(line) }}</span>
-                            </li>
-                        </ul>
                     </div>
 
                     <div v-if="giftLines.length > 0">

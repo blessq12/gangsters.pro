@@ -106,11 +106,11 @@ final class EloquentOrderRepository implements OrderRepository
             ->count();
 
         return [
-            'new' => (int) ($byStatus['new'] ?? 0) + (int) ($byStatus['preorder'] ?? 0) + (int) ($byStatus['confirmed'] ?? 0),
+            'new' => (int) ($byStatus['new'] ?? 0),
             'preparing' => (int) ($byStatus['preparing'] ?? 0),
             'ready' => (int) ($byStatus['ready'] ?? 0),
             'ready_courier' => $readyCourier,
-            'in_transit' => (int) ($byStatus['in_transit'] ?? 0) + (int) ($byStatus['assigned_to_route'] ?? 0),
+            'in_transit' => (int) ($byStatus['in_transit'] ?? 0),
         ];
     }
 

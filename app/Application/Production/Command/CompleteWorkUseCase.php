@@ -32,7 +32,7 @@ final class CompleteWorkUseCase
             $ticket = $this->requireTicket($dto->orderId);
 
             try {
-                $ticket->complete();
+                $ticket->complete($dto->employeeId);
             } catch (\LogicException $exception) {
                 throw new \InvalidArgumentException($exception->getMessage(), 0, $exception);
             }

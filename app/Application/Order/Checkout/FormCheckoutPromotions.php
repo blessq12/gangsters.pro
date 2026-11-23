@@ -2,6 +2,7 @@
 
 namespace App\Application\Order\Checkout;
 
+use App\Domain\Core\Order\Enum\OrderLineType;
 use App\Domain\Core\Order\Policy\OrderFormation;
 use App\Domain\Core\Order\Port\OrderBranchMenuSnapshotPort;
 use App\Domain\Core\Order\Port\OrderCatalogSnapshotPort;
@@ -9,11 +10,13 @@ use App\Domain\Core\Order\Repository\PromotionPolicyRepository;
 use App\Domain\Core\Order\ValueObject\OrderDeliveryInfo;
 use App\Domain\Core\Order\ValueObject\OrderFormationFacts;
 use App\Domain\Core\Order\ValueObject\OrderLine;
+use App\Domain\Supporting\Company\Enum\BranchMenuEntryKind;
+use App\Domain\Supporting\Company\Repository\BranchCategoryRepository;
 use DateTimeInterface;
 
 /**
  * Единственная точка Application, которая применяет политики оформления.
- * Правила живут в OrderFormation; флаги и подарок собираются здесь через порты Order.
+ * Комплектные и подарки берутся из ролевых категорий филиала.
  */
 final class FormCheckoutPromotions
 {
@@ -21,6 +24,7 @@ final class FormCheckoutPromotions
         private readonly PromotionPolicyRepository $policies,
         private readonly OrderCatalogSnapshotPort $catalog,
         private readonly OrderBranchMenuSnapshotPort $menu,
+        private readonly BranchCategoryRepository $categories,
     ) {}
 
     /**
@@ -73,15 +77,42 @@ final class FormCheckoutPromotions
     {
         $availableMenu = [];
         foreach ($this->menu->listAvailableByBranch($branchId) as $item) {
-            $availableMenu[$item['catalog_item_id']] = $item;
+            $availableMenu[(int) $item['catalog_item_id']] = $item;
         }
 
+        $complementIds = $this->productIdsFromRoleCategory($branchId, 'complement');
+        $giftIds = $this->productIdsFromRoleCategory($branchId, 'gift');
+
+        $setIds = [];
         $productIds = [];
         foreach ($baseLines as $line) {
-            $productIds[$line->productId()] = $line->productId();
+            if ($line->lineType() === OrderLineType::Set) {
+                $setIds[] = $line->productId();
+            } else {
+                $productIds[$line->productId()] = $line->productId();
+            }
         }
         foreach (array_keys($availableMenu) as $menuItemId) {
             $productIds[(int) $menuItemId] = (int) $menuItemId;
+        }
+        foreach ($complementIds as $id) {
+            $productIds[$id] = $id;
+        }
+        foreach ($giftIds as $id) {
+            $productIds[$id] = $id;
+        }
+
+        $sets = $setIds === []
+            ? []
+            : $this->menu->findAvailableSetsByBranchAndIds($branchId, array_values(array_unique($setIds)));
+
+        foreach ($sets as $set) {
+            foreach ($set['composition'] ?? [] as $part) {
+                $partId = (int) ($part['product_id'] ?? 0);
+                if ($partId > 0) {
+                    $productIds[$partId] = $partId;
+                }
+            }
         }
 
         $products = [];
@@ -90,15 +121,37 @@ final class FormCheckoutPromotions
         }
 
         $isRollByProductId = [];
+        foreach ($productIds as $id) {
+            $product = $products[$id] ?? null;
+            $isRollByProductId[$id] = $product !== null && ($product['is_roll'] ?? false);
+        }
+
+        /** @var array<int, int> $rollsPerUnitByLineId */
+        $rollsPerUnitByLineId = [];
         foreach ($baseLines as $line) {
-            $product = $products[$line->productId()] ?? null;
-            $isRollByProductId[$line->productId()] = $product !== null && ($product['is_roll'] ?? false);
+            $lineId = $line->productId();
+            if ($line->lineType() === OrderLineType::Set) {
+                $rolls = 0;
+                foreach ($sets[$lineId]['composition'] ?? [] as $part) {
+                    $partId = (int) ($part['product_id'] ?? 0);
+                    $partQty = max(0, (int) ($part['quantity'] ?? 0));
+                    if ($partId > 0 && ($isRollByProductId[$partId] ?? false)) {
+                        $rolls += $partQty;
+                    }
+                }
+                $rollsPerUnitByLineId[$lineId] = $rolls;
+                continue;
+            }
+            $rollsPerUnitByLineId[$lineId] = ($isRollByProductId[$lineId] ?? false) ? 1 : 0;
         }
 
         $complements = [];
-        foreach ($availableMenu as $catalogItemId => $menuItem) {
+        foreach ($complementIds as $catalogItemId) {
+            if (! isset($availableMenu[$catalogItemId])) {
+                continue;
+            }
             $product = $products[$catalogItemId] ?? null;
-            if ($product === null || ! ($product['is_complement'] ?? false)) {
+            if ($product === null) {
                 continue;
             }
             $complements[] = [
@@ -108,8 +161,8 @@ final class FormCheckoutPromotions
         }
 
         $giftCandidates = [];
-        foreach ($availableMenu as $catalogItemId => $menuItem) {
-            if (! ($menuItem['is_gift_candidate'] ?? false)) {
+        foreach ($giftIds as $catalogItemId) {
+            if (! isset($availableMenu[$catalogItemId])) {
                 continue;
             }
             $product = $products[$catalogItemId] ?? null;
@@ -120,11 +173,11 @@ final class FormCheckoutPromotions
                 ];
                 continue;
             }
-            $names = $this->catalog->findProductNamesByIds([(int) $catalogItemId]);
-            $name = $names[(int) $catalogItemId] ?? null;
+            $names = $this->catalog->findProductNamesByIds([$catalogItemId]);
+            $name = $names[$catalogItemId] ?? null;
             if ($name !== null && $name !== '') {
                 $giftCandidates[] = [
-                    'product_id' => (int) $catalogItemId,
+                    'product_id' => $catalogItemId,
                     'name' => $name,
                 ];
             }
@@ -145,6 +198,38 @@ final class FormCheckoutPromotions
             complements: $complements,
             giftCandidates: $giftCandidates,
             gift: $gift,
+            rollsPerUnitByLineId: $rollsPerUnitByLineId,
         );
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function productIdsFromRoleCategory(int $branchId, string $role): array
+    {
+        $category = null;
+        foreach ($this->categories->listActiveOrderedByBranch($branchId) as $row) {
+            if ($role === 'complement' && $row->isComplement()) {
+                $category = $row;
+                break;
+            }
+            if ($role === 'gift' && $row->isGift()) {
+                $category = $row;
+                break;
+            }
+        }
+        if ($category === null) {
+            return [];
+        }
+
+        $ids = [];
+        foreach ($this->categories->findItemsByCategoryId($category->id()) as $item) {
+            if ($item->entryKind() !== BranchMenuEntryKind::Product) {
+                continue;
+            }
+            $ids[] = $item->entryId();
+        }
+
+        return array_values(array_unique($ids));
     }
 }

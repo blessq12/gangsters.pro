@@ -144,6 +144,7 @@ final class CreateOrderUseCase
 
         $addressRaw = is_array($delivery['address'] ?? null) ? $delivery['address'] : $delivery;
         $zoneId = (string) ($delivery['zone_id'] ?? $delivery['zone']['id'] ?? '');
+        [$lat, $lng] = $this->resolveAddressCoordinates($addressRaw, $delivery);
 
         return OrderDeliveryInfo::courier(
             address: new OrderDeliveryAddress(
@@ -153,10 +154,35 @@ final class CreateOrderUseCase
                 floor: isset($addressRaw['floor']) ? (string) $addressRaw['floor'] : null,
                 apartment: isset($addressRaw['apartment']) ? (string) $addressRaw['apartment'] : null,
                 comment: isset($addressRaw['comment']) ? (string) $addressRaw['comment'] : null,
+                lat: $lat,
+                lng: $lng,
             ),
             zoneId: $zoneId,
             feeKopecks: max(0, $feeKopecks),
         );
+    }
+
+    /**
+     * @param  array<string, mixed>  $addressRaw
+     * @param  array<string, mixed>  $delivery
+     * @return array{0: float, 1: float}
+     */
+    private function resolveAddressCoordinates(array $addressRaw, array $delivery): array
+    {
+        $latRaw = $addressRaw['lat'] ?? $addressRaw['latitude'] ?? $delivery['latitude'] ?? null;
+        $lngRaw = $addressRaw['lng'] ?? $addressRaw['longitude'] ?? $delivery['longitude'] ?? null;
+
+        if ($latRaw === null || $latRaw === '' || $lngRaw === null || $lngRaw === '') {
+            throw new \InvalidArgumentException('Для курьера нужны координаты адреса (lat/lng).');
+        }
+
+        $lat = (float) $latRaw;
+        $lng = (float) $lngRaw;
+        if (! is_finite($lat) || ! is_finite($lng)) {
+            throw new \InvalidArgumentException('Некорректные координаты адреса.');
+        }
+
+        return [$lat, $lng];
     }
 
     /**

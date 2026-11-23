@@ -90,6 +90,36 @@ final class EloquentKitchenTicketRepository implements KitchenTicketRepository
         return (int) $this->activeByBranchQuery($branchId)->count();
     }
 
+    public function listQueuedByBranchPage(int $branchId, int $offset, int $limit): array
+    {
+        return $this->queuedByBranchQuery($branchId)
+            ->with('lines')
+            ->orderBy('id')
+            ->offset(max(0, $offset))
+            ->limit(max(1, $limit))
+            ->get()
+            ->map(fn (KIT_Ticket $row): KitchenTicket => $this->mapper->toDomain($row))
+            ->all();
+    }
+
+    public function countQueuedByBranch(int $branchId): int
+    {
+        return (int) $this->queuedByBranchQuery($branchId)->count();
+    }
+
+    public function listMineStartedByBranch(int $branchId, int $employeeId): array
+    {
+        return KIT_Ticket::query()
+            ->with('lines')
+            ->where('branch_id', $branchId)
+            ->where('status', KitchenTicketStatus::Started->value)
+            ->where('assignee_employee_id', $employeeId)
+            ->orderBy('id')
+            ->get()
+            ->map(fn (KIT_Ticket $row): KitchenTicket => $this->mapper->toDomain($row))
+            ->all();
+    }
+
     public function countActiveByStatus(?int $branchId = null): array
     {
         $query = KIT_Ticket::query()
@@ -135,6 +165,16 @@ final class EloquentKitchenTicketRepository implements KitchenTicketRepository
                 KitchenTicketStatus::Queued->value,
                 KitchenTicketStatus::Started->value,
             ]);
+    }
+
+    /**
+     * @return Builder<KIT_Ticket>
+     */
+    private function queuedByBranchQuery(int $branchId): Builder
+    {
+        return KIT_Ticket::query()
+            ->where('branch_id', $branchId)
+            ->where('status', KitchenTicketStatus::Queued->value);
     }
 
     /**

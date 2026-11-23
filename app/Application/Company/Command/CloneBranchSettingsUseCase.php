@@ -193,7 +193,6 @@ final class CloneBranchSettingsUseCase
                 catalogItemId: $catalogItemId,
                 isAvailable: $item->isAvailable(),
                 priceKopecks: $item->priceKopecks(),
-                isGiftCandidate: $item->isGiftCandidate(),
             );
         }
 
@@ -287,6 +286,8 @@ final class CloneBranchSettingsUseCase
                 sortOrder: $category->sortOrder(),
                 isActive: $category->isActive(),
                 isAccompanying: $category->isAccompanying(),
+                isComplement: $category->isComplement(),
+                isGift: $category->isGift(),
             );
 
             $remapped = [];

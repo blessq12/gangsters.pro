@@ -12,6 +12,5 @@ final readonly class SaveBranchMenuItemDto
         public int $catalogItemId,
         public bool $isAvailable,
         public int $priceKopecks,
-        public bool $isGiftCandidate = false,
     ) {}
 }

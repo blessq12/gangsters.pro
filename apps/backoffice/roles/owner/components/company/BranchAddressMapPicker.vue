@@ -1,10 +1,12 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import {
-    TOMSK_CENTER,
+    createCityBiasedSuggestProvider,
+    geocodeWithCityBias,
     loadYandexMapsApi,
     parseYandexGeoObject,
     readYandexMapsApiKey,
+    resolveMapCenter,
 } from "../../../../shell/maps/yandexMapsApi.js";
 
 const props = defineProps({
@@ -63,15 +65,6 @@ function toNumberOrNull(value) {
     }
     const number = Number(value);
     return Number.isFinite(number) ? number : null;
-}
-
-function currentCenter() {
-    const latitude = toNumberOrNull(props.latitude);
-    const longitude = toNumberOrNull(props.longitude);
-    if (latitude !== null && longitude !== null) {
-        return [latitude, longitude];
-    }
-    return TOMSK_CENTER;
 }
 
 /**
@@ -168,7 +161,7 @@ async function geocodeQuery(query) {
         return;
     }
     try {
-        const result = await window.ymaps.geocode(text, { results: 1 });
+        const result = await geocodeWithCityBias(text, props.city, { results: 1 });
         if (destroyed) {
             return;
         }
@@ -236,7 +229,14 @@ async function mountMap() {
             return;
         }
 
-        const center = currentCenter();
+        const center = await resolveMapCenter({
+            latitude: toNumberOrNull(props.latitude),
+            longitude: toNumberOrNull(props.longitude),
+            city: props.city,
+        });
+        if (destroyed) {
+            return;
+        }
         map = new window.ymaps.Map(
             host,
             {
@@ -256,6 +256,7 @@ async function mountMap() {
 
         suggestView = new window.ymaps.SuggestView(input, {
             results: 7,
+            provider: createCityBiasedSuggestProvider(props.city),
         });
         suggestView.events.add("select", (event) => {
             const item = event.get("item");

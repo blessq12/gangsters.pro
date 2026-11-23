@@ -134,13 +134,8 @@ onMounted(load);
                             variant="neutral"
                             text="ролл"
                         />
-                        <UiBadge
-                            v-if="row.is_complement"
-                            variant="warning"
-                            text="комплект"
-                        />
                         <span
-                            v-if="!row.is_roll && !row.is_complement"
+                            v-if="!row.is_roll"
                             class="text-bo-muted"
                         >
                             —

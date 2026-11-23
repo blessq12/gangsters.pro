@@ -1,9 +1,11 @@
 <script setup>
 import { computed, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { storeToRefs } from "pinia";
 import { completeTicket, getTicket, startTicket } from "../../../api/production.js";
 import { useApi } from "../../../shell/composables/useApi.js";
 import { useToast } from "../../../shell/composables/useToast.js";
+import { useAuthStore } from "../../../shell/store/authStore.js";
 import UiBadge from "../../../shell/components/ui/UiBadge.vue";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
 import UiCard from "../../../shell/components/ui/UiCard.vue";
@@ -15,6 +17,8 @@ import {
 const route = useRoute();
 const router = useRouter();
 const toast = useToast();
+const auth = useAuthStore();
+const { employee } = storeToRefs(auth);
 const detailApi = useApi();
 const actionApi = useApi();
 
@@ -22,6 +26,18 @@ const ticket = ref(null);
 
 const orderId = computed(() => route.params.orderId);
 const lines = computed(() => ticket.value?.lines ?? []);
+const myEmployeeId = computed(() => {
+    const id = Number(employee.value?.id);
+    return Number.isFinite(id) && id > 0 ? id : null;
+});
+const isMine = computed(() => {
+    if (!ticket.value || myEmployeeId.value === null) {
+        return false;
+    }
+    return Number(ticket.value.assignee_employee_id) === myEmployeeId.value;
+});
+const canStart = computed(() => ticket.value?.status === "queued");
+const canComplete = computed(() => ticket.value?.status === "started" && isMine.value);
 
 async function load() {
     if (!orderId.value) {
@@ -68,7 +84,7 @@ onMounted(load);
             class="!h-14 !bg-white/10 !px-6 !text-xl !text-white"
             @click="goQueue"
         >
-            К тикетам
+            К очереди
         </UiButton>
 
         <div
@@ -113,7 +129,7 @@ onMounted(load);
 
                 <div class="flex flex-wrap gap-4">
                     <UiButton
-                        v-if="ticket.status === 'queued'"
+                        v-if="canStart"
                         class="!h-16 !min-w-[12rem] !bg-amber-400 !px-8 !text-2xl !font-bold !text-slate-900"
                         :disabled="actionApi.loading"
                         @click="onStart"
@@ -121,13 +137,19 @@ onMounted(load);
                         Старт
                     </UiButton>
                     <UiButton
-                        v-if="ticket.status === 'started'"
+                        v-if="canComplete"
                         class="!h-16 !min-w-[12rem] !bg-emerald-500 !px-8 !text-2xl !font-bold !text-white"
                         :disabled="actionApi.loading"
                         @click="onComplete"
                     >
                         Завершить
                     </UiButton>
+                    <p
+                        v-else-if="ticket.status === 'started' && !isMine"
+                        class="text-2xl text-bo-muted"
+                    >
+                        Тикет у другого повара
+                    </p>
                 </div>
             </div>
         </UiCard>

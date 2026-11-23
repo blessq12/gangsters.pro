@@ -39,7 +39,6 @@ const form = reactive({
     weight: "",
     isActive: true,
     isRoll: false,
-    isComplement: false,
     description: "",
     ingredients: [],
     calories: "",
@@ -102,7 +101,6 @@ function applyDetail(payload) {
     form.weight = payload?.weight != null ? String(payload.weight) : "";
     form.isActive = (payload?.status ?? "active") === "active";
     form.isRoll = Boolean(payload?.is_roll);
-    form.isComplement = Boolean(payload?.is_complement);
     form.description = payload?.description ?? "";
     form.ingredients = Array.isArray(payload?.ingredients)
         ? payload.ingredients.map((item) => String(item).trim()).filter(Boolean)
@@ -195,7 +193,6 @@ function buildPayload() {
         weight: form.weight === "" ? null : Number(form.weight),
         status: form.isActive ? "active" : "archived",
         is_roll: Boolean(form.isRoll),
-        is_complement: Boolean(form.isComplement),
         description: form.description.trim() || null,
         ingredients: form.ingredients.map((item) => String(item).trim()).filter(Boolean),
         nutrition: nutritionEmpty
@@ -320,12 +317,6 @@ onMounted(load);
                             v-model="form.isRoll"
                             label-on="Ролл"
                             label-off="Не ролл"
-                            :disabled="loadApi.loading"
-                        />
-                        <UiToggle
-                            v-model="form.isComplement"
-                            label-on="Комплектный"
-                            label-off="Не комплектный"
                             :disabled="loadApi.loading"
                         />
                     </div>

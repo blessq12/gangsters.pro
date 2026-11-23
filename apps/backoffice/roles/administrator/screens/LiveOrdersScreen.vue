@@ -1,19 +1,20 @@
 <script setup>
 import { onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { listOrders } from "../../../api/orders.js";
+import { acceptOrder, completePickup, listOrders } from "../../../api/orders.js";
 import { useApi } from "../../../shell/composables/useApi.js";
 import { usePagedList } from "../../../shell/composables/usePagedList.js";
 import { useToast } from "../../../shell/composables/useToast.js";
-import OrderQuickPreview from "../../../shell/components/order/OrderQuickPreview.vue";
 import ShellIcon from "../../../shell/components/ShellIcon.vue";
 import UiBadge from "../../../shell/components/ui/UiBadge.vue";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
 import UiCard from "../../../shell/components/ui/UiCard.vue";
+import UiConfirmDialog from "../../../shell/components/ui/UiConfirmDialog.vue";
 import UiPagination from "../../../shell/components/ui/UiPagination.vue";
 import UiTable from "../../../shell/components/ui/UiTable.vue";
 import {
     ORDER_STATUSES,
+    administratorCommands,
     deliveryMethodLabel,
     formatRubles,
     orderNumberOf,
@@ -28,6 +29,7 @@ const route = useRoute();
 const router = useRouter();
 const toast = useToast();
 const listApi = useApi();
+const actionApi = useApi();
 const {
     page,
     perPage,
@@ -48,8 +50,11 @@ function statusFromQuery() {
     }
     return ORDER_STATUSES.includes(value) ? value : "";
 }
-const previewOpen = ref(false);
-const previewOrderId = ref(/** @type {number|string|null} */ (null));
+
+/** @type {import('vue').Ref<'confirm'|'pickup'|null>} */
+const pendingAction = ref(null);
+/** @type {import('vue').Ref<number|string|null>} */
+const pendingOrderId = ref(null);
 
 /** Быстрые фильтры по ключевым этапам жизни заказа. */
 const QUICK_STATUS_FILTERS = [
@@ -67,6 +72,7 @@ const columns = [
     { key: "delivery_method", label: "Тип", width: "52px", align: "center" },
     { key: "payment", label: "Платёж", width: "110px" },
     { key: "total", label: "Сумма", width: "88px", align: "right" },
+    { key: "actions", label: "Действия", width: "168px" },
 ];
 
 function clientLine(order) {
@@ -80,6 +86,17 @@ function clientLine(order) {
 
 function deliveryIcon(method) {
     return method === "pickup" ? "pickup" : "delivery";
+}
+
+/**
+ * Только подтверждение и выдача самовывоза — остальное на полной карточке.
+ * @param {{ status?: string, delivery_method?: string }} row
+ */
+function quickActionsFor(row) {
+    return administratorCommands({
+        status: row.status,
+        delivery: { method: row.delivery_method },
+    }).filter((command) => command.id === "confirm" || command.id === "pickup");
 }
 
 async function load() {
@@ -104,23 +121,53 @@ async function load() {
     }
 }
 
-function openPreview(row) {
-    previewOrderId.value = row.id;
-    previewOpen.value = true;
-}
-
-function closePreview() {
-    previewOpen.value = false;
-    previewOrderId.value = null;
-}
-
-function openFull(orderId) {
-    closePreview();
-    router.push({ name: "administrator-order", params: { id: String(orderId) } });
+function openFull(row) {
+    router.push({ name: "administrator-order", params: { id: String(row.id) } });
 }
 
 function openCreate() {
     router.push({ name: "administrator-manual-order" });
+}
+
+/**
+ * @param {MouseEvent} event
+ * @param {{ id: number|string }} row
+ * @param {'confirm'|'pickup'} actionId
+ */
+function askQuickAction(event, row, actionId) {
+    event.stopPropagation();
+    pendingOrderId.value = row.id;
+    pendingAction.value = actionId;
+}
+
+function closePending() {
+    pendingAction.value = null;
+    pendingOrderId.value = null;
+}
+
+async function submitPending() {
+    const orderId = pendingOrderId.value;
+    const action = pendingAction.value;
+    closePending();
+    if (!orderId || !action) {
+        return;
+    }
+    try {
+        if (action === "confirm") {
+            await actionApi.run(() => acceptOrder(orderId));
+            toast.success("Заказ подтверждён. Тикет и платёж созданы.");
+        } else if (action === "pickup") {
+            await actionApi.run(() => completePickup(orderId));
+            toast.success("Заказ выдан. Платёж оплачен.");
+        } else {
+            const _exhaustive = action;
+            void _exhaustive;
+            return;
+        }
+        await load();
+    } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Не удалось выполнить действие");
+    }
 }
 
 watch(statusFilter, () => {
@@ -201,7 +248,7 @@ onMounted(() => {
                     :rows="rows"
                     :loading="listApi.loading"
                     empty-text="Заказов нет"
-                    @row-click="openPreview"
+                    @row-click="openFull"
                 >
                     <template #cell-status="{ value }">
                         <UiBadge
@@ -230,6 +277,23 @@ onMounted(() => {
                         />
                         <span v-else class="text-bo-muted">—</span>
                     </template>
+                    <template #cell-actions="{ row }">
+                        <div
+                            v-if="quickActionsFor(row).length"
+                            class="flex flex-wrap gap-2"
+                        >
+                            <UiButton
+                                v-for="command in quickActionsFor(row)"
+                                :key="command.id"
+                                class="!h-9 !px-3 !text-xs"
+                                :disabled="actionApi.loading"
+                                @click="askQuickAction($event, row, command.id)"
+                            >
+                                {{ command.label }}
+                            </UiButton>
+                        </div>
+                        <span v-else class="text-bo-muted">—</span>
+                    </template>
                 </UiTable>
             </div>
 
@@ -243,11 +307,20 @@ onMounted(() => {
             </div>
         </UiCard>
 
-        <OrderQuickPreview
-            :open="previewOpen"
-            :order-id="previewOrderId"
-            @close="closePreview"
-            @open-full="openFull"
+        <UiConfirmDialog
+            :open="pendingAction === 'confirm'"
+            title="Подтвердить заказ?"
+            message="Филиал уже на заказе. Появятся тикет в очереди и платёж в ожидании."
+            @confirm="submitPending"
+            @cancel="closePending"
+        />
+
+        <UiConfirmDialog
+            :open="pendingAction === 'pickup'"
+            title="Выдать самовывоз?"
+            message="Заказ станет выданным, платёж — оплаченным. В маршрутный лист он не попадёт."
+            @confirm="submitPending"
+            @cancel="closePending"
         />
     </div>
 </template>

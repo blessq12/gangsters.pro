@@ -12,7 +12,24 @@ final class BranchCategory
         private readonly int $sortOrder,
         private readonly bool $isActive,
         private readonly bool $isAccompanying = false,
-    ) {}
+        private readonly bool $isComplement = false,
+        private readonly bool $isGift = false,
+    ) {
+        self::assertExclusiveRoles($isAccompanying, $isComplement, $isGift);
+    }
+
+    public static function assertExclusiveRoles(
+        bool $isAccompanying,
+        bool $isComplement,
+        bool $isGift,
+    ): void {
+        $flags = (int) $isAccompanying + (int) $isComplement + (int) $isGift;
+        if ($flags > 1) {
+            throw new \InvalidArgumentException(
+                'У категории может быть только одна роль: accompanying, complement или gift.',
+            );
+        }
+    }
 
     public function id(): int
     {
@@ -47,5 +64,15 @@ final class BranchCategory
     public function isAccompanying(): bool
     {
         return $this->isAccompanying;
+    }
+
+    public function isComplement(): bool
+    {
+        return $this->isComplement;
+    }
+
+    public function isGift(): bool
+    {
+        return $this->isGift;
     }
 }

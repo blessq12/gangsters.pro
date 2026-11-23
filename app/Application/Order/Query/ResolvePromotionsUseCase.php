@@ -78,8 +78,8 @@ final class ResolvePromotionsUseCase
                     'price_kopecks' => 0,
                 ];
             }
-            if ($formed['facts']->isRoll($line->productId()) && $line->isBillable()) {
-                $rollCount += $line->quantity();
+            if ($line->isBillable()) {
+                $rollCount += $formed['facts']->rollUnitsPerLineUnit($line->productId()) * $line->quantity();
             }
         }
 

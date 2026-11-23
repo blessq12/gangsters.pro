@@ -14,7 +14,6 @@ final class BranchMenuMapper
             catalogItemId: (int) $row->catalog_item_id,
             isAvailable: (bool) $row->is_available,
             priceKopecks: (int) $row->price_kopecks,
-            isGiftCandidate: (bool) ($row->is_gift_candidate ?? false),
             id: (int) $row->id,
         );
     }

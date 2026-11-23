@@ -33,6 +33,7 @@ final class KitchenTicketPresenter
             'order_id' => $ticket->orderId(),
             'order_number' => $order['number'] ?? null,
             'branch_id' => $ticket->branchId(),
+            'assignee_employee_id' => $ticket->assigneeEmployeeId(),
             'status' => $ticket->status()->value,
             'lines' => $ticketLines,
             'started_at' => $ticket->startedAt()?->format(DATE_ATOM),

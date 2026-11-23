@@ -31,6 +31,22 @@ interface KitchenTicketRepository
     public function countActiveByBranch(int $branchId): int;
 
     /**
+     * Общий пул: только queued по филиалу.
+     *
+     * @return list<KitchenTicket>
+     */
+    public function listQueuedByBranchPage(int $branchId, int $offset, int $limit): array;
+
+    public function countQueuedByBranch(int $branchId): int;
+
+    /**
+     * Мои в работе: started + assignee = employee.
+     *
+     * @return list<KitchenTicket>
+     */
+    public function listMineStartedByBranch(int $branchId, int $employeeId): array;
+
+    /**
      * Активные тикеты по статусу (queued/started), опционально по филиалу.
      *
      * @return array{queued: int, started: int}

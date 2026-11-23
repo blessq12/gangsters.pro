@@ -51,7 +51,6 @@ interface CatalogItemRepository
         ?array $ingredients = null,
         ?array $nutrition = null,
         bool $isRoll = false,
-        bool $isComplement = false,
     ): int;
 
     /**

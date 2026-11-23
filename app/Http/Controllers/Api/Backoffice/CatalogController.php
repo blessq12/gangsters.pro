@@ -248,7 +248,6 @@ final class CatalogController extends Controller
                 existingImages: $existingNormalized,
                 deletedImageIds: $deletedNormalized,
                 isRoll: (bool) ($payload['is_roll'] ?? false),
-                isComplement: (bool) ($payload['is_complement'] ?? false),
                 techCardLines: $techCardLines,
             ));
         } catch (InvalidArgumentException $exception) {

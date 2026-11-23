@@ -15,7 +15,6 @@ final class CMP_BranchMenuItem extends Model
         'branch_id',
         'catalog_item_id',
         'is_available',
-        'is_gift_candidate',
         'price_kopecks',
     ];
 
@@ -26,7 +25,6 @@ final class CMP_BranchMenuItem extends Model
         'branch_id' => 'integer',
         'catalog_item_id' => 'integer',
         'is_available' => 'boolean',
-        'is_gift_candidate' => 'boolean',
         'price_kopecks' => 'integer',
     ];
 }

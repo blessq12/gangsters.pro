@@ -14,11 +14,9 @@ use App\Application\Order\Command\AcceptOrderUseCase;
 use App\Application\Order\Command\CancelOrderUseCase;
 use App\Application\Order\Command\CompletePickupOrderUseCase;
 use App\Application\Order\Command\CreateOrderUseCase;
-use App\Application\Order\Command\ReassignBranchUseCase;
 use App\Application\Order\DTO\AcceptOrderDto;
 use App\Application\Order\DTO\CreateOrderDto;
 use App\Application\Order\DTO\QuoteOrderDto;
-use App\Application\Order\DTO\ReassignBranchDto;
 use App\Application\Order\Presenter\AdminOrderPresenter;
 use App\Application\Order\Presenter\OrderPresenter;
 use App\Application\Production\Command\CompleteWorkUseCase;
@@ -31,7 +29,6 @@ use App\Domain\Core\Delivery\Event\RouteSheetCreated;
 use App\Domain\Core\Delivery\Event\RouteSheetTaken;
 use App\Domain\Core\Delivery\Event\RouteStopSettled;
 use App\Domain\Core\Order\Enum\OrderStatus;
-use App\Domain\Core\Order\Event\BranchReassigned;
 use App\Domain\Core\Order\Event\OrderCancelled;
 use App\Domain\Core\Order\Event\OrderConfirmed;
 use App\Domain\Core\Order\Event\OrderPickedUp;
@@ -167,28 +164,6 @@ final class CoreFlowTest extends TestCase
         $this->assertInstanceOf(KitchenTicketStarted::class, $this->events->events[array_key_last($this->events->events)]);
     }
 
-    public function test_reassign_publishes_branch_reassigned_without_touching_ticket(): void
-    {
-        $this->events = new RecordingDomainEventPublisher(onEvent: static function (): void {});
-        $orderId = $this->place('reassign-1', 'courier', 10000);
-        $this->accept($orderId, 2);
-        $this->queueTicket($orderId);
-        $ticketId = $this->tickets->findByOrderId($orderId)->id();
-
-        (new ReassignBranchUseCase(
-            $this->orders,
-            $this->branches,
-            new AdminOrderPresenter($this->orderPresenter()),
-            $this->events,
-            $this->transaction,
-        ))->execute(new ReassignBranchDto(orderId: $orderId, branchId: 4));
-
-        $order = $this->orders->findById($orderId);
-        $this->assertSame(4, $order->branchId());
-        $this->assertSame($ticketId, $this->tickets->findByOrderId($orderId)->id());
-        $this->assertInstanceOf(BranchReassigned::class, $this->events->events[array_key_last($this->events->events)]);
-    }
-
     public function test_pickup_publishes_order_picked_up(): void
     {
         $orderId = $this->place('pickup-1', 'pickup', 0);
@@ -280,7 +255,14 @@ final class CoreFlowTest extends TestCase
                     'zone_id' => 'center',
                     'in_zone' => true,
                     'delivery_fee_kopecks' => $feeKopecks,
-                    'address' => ['street' => 'Ленина', 'house' => '1'],
+                    'address' => [
+                        'street' => 'Ленина',
+                        'house' => '1',
+                        'lat' => 56.49771,
+                        'lng' => 84.97437,
+                    ],
+                    'latitude' => 56.49771,
+                    'longitude' => 84.97437,
                 ],
             'payment' => ['method' => 'cash'],
             'totals' => [
@@ -313,7 +295,12 @@ final class CoreFlowTest extends TestCase
                 lines: [['product_id' => 1, 'quantity' => 1]],
                 deliveryMethod: $method,
                 client: ['kind' => 'guest', 'name' => 'Анна', 'phone' => '+79990000000'],
-                address: $method === 'pickup' ? null : ['street' => 'Ленина', 'house' => '1'],
+                address: $method === 'pickup' ? null : [
+                    'street' => 'Ленина',
+                    'house' => '1',
+                    'lat' => 56.49771,
+                    'lng' => 84.97437,
+                ],
                 scheduledAt: null,
                 paymentMethod: 'cash',
                 changeFrom: null,
@@ -343,7 +330,7 @@ final class CoreFlowTest extends TestCase
             new KitchenTicketPresenter,
             $this->events,
             $this->transaction,
-        ))->execute(new StartWorkDto($orderId));
+        ))->execute(new StartWorkDto(orderId: $orderId, employeeId: 1));
     }
 
     private function complete(int $orderId): void
@@ -354,7 +341,7 @@ final class CoreFlowTest extends TestCase
             new KitchenTicketPresenter,
             $this->events,
             $this->transaction,
-        ))->execute(new CompleteWorkDto($orderId));
+        ))->execute(new CompleteWorkDto(orderId: $orderId, employeeId: 1));
     }
 
     /**

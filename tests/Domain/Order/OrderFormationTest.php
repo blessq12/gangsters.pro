@@ -54,6 +54,44 @@ final class OrderFormationTest extends TestCase
         $this->assertSame(0, $formed['delivery']->feeKopecks());
     }
 
+    public function testРоллыВнутриНабораДаютКомплекты(): void
+    {
+        // 1 сет × 3 ролла в составе + 1 отдельный ролл = 4 ролла → 1 комплект при 4/1
+        $formed = OrderFormation::apply(
+            baseLines: [
+                $this->line(1, 'Ролл', 50000, 1, OrderLineType::Regular),
+                $this->line(50, 'Набор', 120000, 1, OrderLineType::Set),
+            ],
+            delivery: OrderDeliveryInfo::pickup(),
+            policy: $this->policy(giftMin: 99999999, rollsPerSet: 4, maxSets: 3, deliveryActive: false),
+            facts: new OrderFormationFacts(
+                isRollByProductId: [1 => true, 11 => true, 12 => true, 13 => true],
+                complements: [
+                    ['product_id' => 10, 'name' => 'Соус'],
+                ],
+                gift: null,
+                rollsPerUnitByLineId: [
+                    1 => 1,
+                    50 => 3,
+                ],
+            ),
+            channel: 'pickup',
+            at: new DateTimeImmutable('2026-11-19 12:00:00'),
+            timezone: 'UTC',
+        );
+
+        $types = array_map(
+            static fn (OrderLine $line): string => $line->lineType()->value.':'.$line->productId().'x'.$line->quantity(),
+            $formed['lines'],
+        );
+
+        $this->assertSame([
+            'regular:1x1',
+            'set:50x1',
+            'complement:10x1',
+        ], $types);
+    }
+
     public function testПлатныйКомплектВКорзинеНеМешаетБесплатнойДобавке(): void
     {
         $formed = OrderFormation::apply(

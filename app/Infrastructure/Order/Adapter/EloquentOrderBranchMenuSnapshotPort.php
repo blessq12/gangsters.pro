@@ -24,7 +24,6 @@ final class EloquentOrderBranchMenuSnapshotPort implements OrderBranchMenuSnapsh
                 'catalog_item_id' => $item->catalogItemId(),
                 'is_available' => $item->isAvailable(),
                 'price_kopecks' => $item->priceKopecks(),
-                'is_gift_candidate' => $item->isGiftCandidate(),
             ];
         }
 
@@ -39,7 +38,6 @@ final class EloquentOrderBranchMenuSnapshotPort implements OrderBranchMenuSnapsh
                 'catalog_item_id' => $item->catalogItemId(),
                 'is_available' => $item->isAvailable(),
                 'price_kopecks' => $item->priceKopecks(),
-                'is_gift_candidate' => $item->isGiftCandidate(),
             ];
         }
 

@@ -1,21 +1,12 @@
 <script setup>
 import { computed } from "vue";
-import { RouterLink, useRoute, useRouter } from "vue-router";
+import { useRouter } from "vue-router";
 import { useAuthStore } from "../../../shell/store/authStore.js";
 import { useSessionStore } from "../../../shell/store/sessionStore.js";
 
-const route = useRoute();
 const router = useRouter();
 const auth = useAuthStore();
 const session = useSessionStore();
-
-const tabs = [
-    {
-        name: "courier-deliveries",
-        label: "Листы",
-        match: ["courier-deliveries", "courier-route-sheet"],
-    },
-];
 
 const courierName = computed(() => String(auth.employee?.name ?? "").trim() || "Курьер");
 
@@ -45,25 +36,8 @@ async function logout() {
             </button>
         </header>
 
-        <div class="min-h-0 flex-1 overflow-auto pb-[calc(4.25rem+env(safe-area-inset-bottom))]">
+        <div class="min-h-0 flex-1 overflow-auto pb-[env(safe-area-inset-bottom)]">
             <RouterView />
         </div>
-
-        <nav
-            class="fixed inset-x-0 bottom-0 z-20 flex h-[calc(3.5rem+env(safe-area-inset-bottom))] items-stretch border-t border-bo-border bg-bo-surface pb-[env(safe-area-inset-bottom)]"
-            aria-label="Вкладки курьера"
-        >
-            <RouterLink
-                v-for="tab in tabs"
-                :key="tab.name"
-                :to="{ name: tab.name }"
-                class="flex flex-1 items-center justify-center text-base font-medium"
-                :class="(tab.match ? tab.match.includes(String(route.name)) : route.name === tab.name)
-                    ? 'text-bo-accent'
-                    : 'text-bo-muted'"
-            >
-                {{ tab.label }}
-            </RouterLink>
-        </nav>
     </div>
 </template>

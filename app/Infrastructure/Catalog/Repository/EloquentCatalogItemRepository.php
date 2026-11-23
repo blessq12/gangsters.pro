@@ -135,7 +135,6 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
         ?array $ingredients = null,
         ?array $nutrition = null,
         bool $isRoll = false,
-        bool $isComplement = false,
     ): int {
         if (ProductStatus::tryFrom($status) === null) {
             throw new \InvalidArgumentException('Недопустимый статус.');
@@ -153,7 +152,6 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
             'description' => $description,
             'weight' => $weight,
             'is_roll' => $isRoll,
-            'is_complement' => $isComplement,
             'archived_at' => $status === ProductStatus::Archived->value ? ($row->archived_at ?? now()) : null,
         ]);
 

@@ -21,8 +21,10 @@ let media = null;
 
 const showChrome = computed(() => !route.meta.guest && auth.isAuthenticated);
 
-/** Курьер — отдельный mobile PWA-контур без sidebar/topbar. */
-const isCourierApp = computed(() => showChrome.value && auth.role === "courier");
+/** Курьер / кухня — без shell sidebar/topbar (свой layout). */
+const isChromeLessApp = computed(() =>
+    showChrome.value && (auth.role === "courier" || auth.role === "kitchen"),
+);
 
 function readCollapsed() {
     try {
@@ -80,7 +82,7 @@ onUnmounted(() => {
         </main>
 
         <div
-            v-else-if="isCourierApp"
+            v-else-if="isChromeLessApp"
             class="flex h-dvh flex-col overflow-hidden"
         >
             <RouterView />

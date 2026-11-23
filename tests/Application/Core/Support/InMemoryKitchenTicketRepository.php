@@ -3,6 +3,7 @@
 namespace Tests\Application\Core\Support;
 
 use App\Domain\Core\Production\Entity\KitchenTicket;
+use App\Domain\Core\Production\Enum\KitchenTicketStatus;
 use App\Domain\Core\Production\Repository\KitchenTicketRepository;
 
 final class InMemoryKitchenTicketRepository implements KitchenTicketRepository
@@ -49,6 +50,33 @@ final class InMemoryKitchenTicketRepository implements KitchenTicketRepository
     public function countActiveByBranch(int $branchId): int
     {
         return count($this->listActiveByBranch($branchId));
+    }
+
+    public function listQueuedByBranchPage(int $branchId, int $offset, int $limit): array
+    {
+        $queued = array_values(array_filter(
+            $this->listActiveByBranch($branchId),
+            static fn (KitchenTicket $ticket): bool => $ticket->status() === KitchenTicketStatus::Queued,
+        ));
+
+        return array_slice($queued, $offset, $limit);
+    }
+
+    public function countQueuedByBranch(int $branchId): int
+    {
+        return count(array_filter(
+            $this->listActiveByBranch($branchId),
+            static fn (KitchenTicket $ticket): bool => $ticket->status() === KitchenTicketStatus::Queued,
+        ));
+    }
+
+    public function listMineStartedByBranch(int $branchId, int $employeeId): array
+    {
+        return array_values(array_filter(
+            $this->listActiveByBranch($branchId),
+            static fn (KitchenTicket $ticket): bool => $ticket->status() === KitchenTicketStatus::Started
+                && $ticket->assigneeEmployeeId() === $employeeId,
+        ));
     }
 
     public function countActiveByStatus(?int $branchId = null): array

@@ -94,6 +94,8 @@ final class OrderMapper
                 'delivery_floor' => $address?->floor(),
                 'delivery_apartment' => $address?->apartment(),
                 'delivery_comment' => $address?->comment(),
+                'delivery_lat' => $address?->lat(),
+                'delivery_lng' => $address?->lng(),
                 'branch_id' => $order->branchId(),
                 'payment_id' => $order->paymentId(),
                 'payment_method' => $order->paymentMethod(),
@@ -141,10 +143,23 @@ final class OrderMapper
                 floor: $this->nullableString($row->delivery_floor),
                 apartment: $this->nullableString($row->delivery_apartment),
                 comment: $this->nullableString($row->delivery_comment),
+                lat: $this->nullableFloat($row->delivery_lat),
+                lng: $this->nullableFloat($row->delivery_lng),
             ),
             (string) $row->delivery_zone_id,
             (int) $row->delivery_fee_kopecks,
         );
+    }
+
+    private function nullableFloat(mixed $value): ?float
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        $number = (float) $value;
+
+        return is_finite($number) ? $number : null;
     }
 
     private function nullableString(mixed $value): ?string

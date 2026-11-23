@@ -76,6 +76,8 @@ final class OrderPresenter
                     'floor' => $address->floor(),
                     'apartment' => $address->apartment(),
                     'comment' => $address->comment(),
+                    'lat' => $address->lat(),
+                    'lng' => $address->lng(),
                 ],
             ],
             'payment_id' => $order->paymentId(),

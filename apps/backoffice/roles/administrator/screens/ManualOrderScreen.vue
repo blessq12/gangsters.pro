@@ -3,6 +3,7 @@ import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { getCatalog } from "../../../api/catalog.js";
+import { ensureClient } from "../../../api/clients.js";
 import {
     getBranch,
     getBranchMenu,
@@ -13,15 +14,24 @@ import { quoteOrder, storeOrder } from "../../../api/orders.js";
 import { useApi } from "../../../shell/composables/useApi.js";
 import { useToast } from "../../../shell/composables/useToast.js";
 import { branchLabel } from "../../../shell/domain/orderStage.js";
+import { isRuPhoneComplete } from "../../../shell/phone/ruPhone.js";
 import { useAuthStore } from "../../../shell/store/authStore.js";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
 import UiCard from "../../../shell/components/ui/UiCard.vue";
 import UiFormField from "../../../shell/components/ui/UiFormField.vue";
 import UiInput from "../../../shell/components/ui/UiInput.vue";
 import ClientSearchField from "../components/order/ClientSearchField.vue";
+import DeliveryAddressFields from "../components/order/DeliveryAddressFields.vue";
 import DeliveryAddressMapPicker from "../components/order/DeliveryAddressMapPicker.vue";
 import GiftPickModal from "../components/order/GiftPickModal.vue";
 import PosMenuPanel from "../components/order/PosMenuPanel.vue";
+
+const STEPS = [
+    { id: "client", label: "Клиент" },
+    { id: "menu", label: "Меню" },
+    { id: "fulfillment", label: "Доставка" },
+    { id: "confirm", label: "Подтверждение" },
+];
 
 const router = useRouter();
 const toast = useToast();
@@ -31,6 +41,10 @@ const { employee } = storeToRefs(auth);
 const menuApi = useApi();
 const quoteApi = useApi();
 const saveApi = useApi();
+const ensureApi = useApi();
+
+const stepIndex = ref(0);
+const stepId = computed(() => STEPS[stepIndex.value]?.id ?? "client");
 
 const branchId = computed(() => {
     const raw = employee.value?.branch_id;
@@ -50,17 +64,21 @@ const branchTitle = computed(() => {
     return `Филиал #${branchId.value}`;
 });
 
+const branchCity = computed(() => String(branch.value?.city ?? form.city ?? "").trim());
+
+/** Карта — опциональный способ указать адрес. */
+const mapOpen = ref(false);
+
 const categories = ref(/** @type {Array<Record<string, unknown>>} */ ([]));
 const cart = ref(/** @type {Array<{ key: string, id: number, kind: string, name: string, quantity: number }>} */ ([]));
 const quote = ref(/** @type {Record<string, unknown>|null} */ (null));
 const fieldErrors = reactive({});
+const clientRequestId = ref(`admin-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
 
 /** null | number | 'declined' */
 const giftDecision = ref(/** @type {null|number|'declined'} */ (null));
 const giftModalOpen = ref(false);
 const giftPromptedForEligible = ref(false);
-/** Выезжающая POS-панель: не раздувает вертикальный скролл формы. */
-const posOpen = ref(false);
 
 const cartCount = computed(() =>
     cart.value.reduce((sum, line) => sum + Number(line.quantity || 0), 0),
@@ -101,6 +119,36 @@ const quoteLines = computed(() => {
     return Array.isArray(lines) ? lines : [];
 });
 
+/**
+ * @param {Record<string, unknown>|null|undefined} line
+ */
+function quoteLineKind(line) {
+    return String(line?.payload?.kind ?? "regular");
+}
+
+/** Бесплатные комплектные линии из quote — только показ в корзине. */
+const freeComplementLines = computed(() =>
+    quoteLines.value.filter((line) => quoteLineKind(line) === "complement"),
+);
+
+/** Основные линии (товар + набор) для шага подтверждения. */
+const confirmMainLines = computed(() =>
+    quoteLines.value.filter((line) => {
+        const kind = quoteLineKind(line);
+        return kind === "regular" || kind === "set";
+    }),
+);
+
+/** Комплектные линии для шага подтверждения. */
+const confirmComplementLines = computed(() =>
+    quoteLines.value.filter((line) => quoteLineKind(line) === "complement"),
+);
+
+/** Линии подарка для шага подтверждения. */
+const confirmGiftLines = computed(() =>
+    quoteLines.value.filter((line) => quoteLineKind(line) === "gift"),
+);
+
 const totals = computed(() => {
     const source = quote.value?.totals || quote.value?.cart?.totals || {};
     return {
@@ -121,6 +169,49 @@ const deliveryFeeLabel = computed(() => {
     }
     return `Доставка: ${fee} ₽`;
 });
+
+const quoteInZone = computed(() => {
+    const raw = quote.value?.delivery?.in_zone;
+    if (raw === true) {
+        return true;
+    }
+    if (raw === false) {
+        return false;
+    }
+    return null;
+});
+
+/** Статус зоны после выбора адреса (coords → quote → matchZone). */
+const addressZoneStatus = computed(() => {
+    if (form.method !== "courier") {
+        return "";
+    }
+    if (form.lat === "" || form.lng === "") {
+        return "";
+    }
+    if (!quote.value) {
+        return quoteApi.loading ? "Проверяем зону…" : "";
+    }
+    if (quoteInZone.value === true) {
+        const zoneId = quote.value?.delivery?.zone_id;
+        return zoneId
+            ? `В зоне доставки · ${zoneId}`
+            : "В зоне доставки";
+    }
+    if (quoteInZone.value === false) {
+        return "Адрес вне зоны доставки";
+    }
+    return "";
+});
+
+const paymentLabel = computed(() => {
+    if (form.payment_method === "card_courier") {
+        return "Картой курьеру";
+    }
+    return "Наличные";
+});
+
+const methodLabel = computed(() => (form.method === "courier" ? "Курьер" : "Самовывоз"));
 
 function clearErrors() {
     Object.keys(fieldErrors).forEach((key) => {
@@ -149,18 +240,6 @@ function addToCart(item) {
         name: item.name,
         quantity: 1,
     });
-}
-
-function openPos() {
-    posOpen.value = true;
-}
-
-function closePos() {
-    posOpen.value = false;
-}
-
-function togglePos() {
-    posOpen.value = !posOpen.value;
 }
 
 /**
@@ -198,14 +277,54 @@ function onClearClient() {
 }
 
 /**
- * @param {{ city: string, street: string, house: string, latitude: number, longitude: number }} address
+ * @param {{
+ *   city?: string,
+ *   street?: string,
+ *   house?: string,
+ *   entrance?: string,
+ *   floor?: string,
+ *   apartment?: string,
+ *   comment?: string,
+ *   latitude?: number|string|null,
+ *   longitude?: number|string|null,
+ * }} address
  */
-function onMapUpdate(address) {
-    form.city = address.city || "";
-    form.street = address.street || "";
-    form.house = address.house || "";
-    form.lat = String(address.latitude ?? "");
-    form.lng = String(address.longitude ?? "");
+function onAddressUpdate(address) {
+    if (address.city !== undefined) {
+        form.city = address.city || "";
+    }
+    if (address.street !== undefined) {
+        form.street = address.street || "";
+        delete fieldErrors.street;
+    }
+    if (address.house !== undefined) {
+        form.house = address.house || "";
+        delete fieldErrors.house;
+    }
+    if (address.entrance !== undefined) {
+        form.entrance = address.entrance || "";
+    }
+    if (address.floor !== undefined) {
+        form.floor = address.floor || "";
+    }
+    if (address.apartment !== undefined) {
+        form.apartment = address.apartment || "";
+    }
+    if (address.comment !== undefined) {
+        form.comment = address.comment || "";
+    }
+    if (address.latitude !== undefined) {
+        form.lat = address.latitude === "" || address.latitude === null
+            ? ""
+            : String(address.latitude);
+        delete fieldErrors.street;
+    }
+    if (address.longitude !== undefined) {
+        form.lng = address.longitude === "" || address.longitude === null
+            ? ""
+            : String(address.longitude);
+        delete fieldErrors.street;
+    }
 }
 
 function buildCheckoutBody() {
@@ -222,18 +341,12 @@ function buildCheckoutBody() {
         branch_id: branchId.value,
         lines,
         delivery_method: form.method,
-        client: form.clientId
-            ? {
-                kind: "client",
-                id: form.clientId,
-                name: form.name.trim() || null,
-                phone: form.phone.trim() || null,
-            }
-            : {
-                kind: "guest",
-                name: form.name.trim(),
-                phone: form.phone.trim(),
-            },
+        client: {
+            kind: "client",
+            id: form.clientId,
+            name: form.name.trim() || null,
+            phone: form.phone.trim() || null,
+        },
         payment_method: form.payment_method,
         change_from_rubles: form.payment_method === "cash" && form.change_from !== ""
             ? Number(form.change_from)
@@ -259,7 +372,7 @@ function buildCheckoutBody() {
 }
 
 async function refreshQuote() {
-    if (!branchId.value || cart.value.length === 0) {
+    if (!branchId.value || cart.value.length === 0 || !form.clientId) {
         quote.value = null;
         return;
     }
@@ -267,24 +380,13 @@ async function refreshQuote() {
         const hasCoords = form.lat !== "" && form.lng !== "";
         const hasStreetHouse =
             String(form.street).trim() !== "" && String(form.house).trim() !== "";
-        if (!hasCoords && !hasStreetHouse) {
-            // Адрес ещё не выбран — не дергаем quote и не орём тостом.
+        if (!hasCoords || !hasStreetHouse) {
             quote.value = null;
             return;
         }
     }
-    if (!form.clientId && (!form.name.trim() || !form.phone.trim())) {
-        // quote всё равно полезен без клиента — подставим черновик
-    }
 
     const body = buildCheckoutBody();
-    if (!body.client.name) {
-        body.client.name = "Гость";
-    }
-    if (!body.client.phone) {
-        body.client.phone = "+70000000000";
-    }
-
     try {
         quote.value = await quoteApi.run(() => quoteOrder(body));
     } catch (err) {
@@ -302,28 +404,39 @@ function scheduleQuote() {
     }, 320);
 }
 
-function validate() {
+function validateClientStep() {
     clearErrors();
-    if (!branchId.value) {
-        fieldErrors.branch = "Нет филиала смены";
+    if (!isRuPhoneComplete(form.phone)) {
+        fieldErrors.phone = "Введи полный номер";
     }
-    if (!form.clientId) {
-        if (!String(form.name).trim()) {
-            fieldErrors.name = "Обязательное поле";
-        }
-        if (!String(form.phone).trim()) {
-            fieldErrors.phone = "Обязательное поле";
-        }
+    if (!String(form.name).trim()) {
+        fieldErrors.name = "Обязательное поле";
     }
+    return Object.keys(fieldErrors).length === 0;
+}
+
+function validateMenuStep() {
+    clearErrors();
     if (cart.value.length === 0) {
         fieldErrors.lines = "Добавь позиции из меню";
     }
+    return Object.keys(fieldErrors).length === 0;
+}
+
+function validateFulfillmentStep() {
+    clearErrors();
     if (form.method === "courier") {
-        if (!String(form.street).trim() || !String(form.house).trim()) {
-            fieldErrors.address = "Выбери адрес на карте";
+        if (!String(form.street).trim()) {
+            fieldErrors.street = "Укажи улицу";
         }
-        if (form.lat === "" || form.lng === "") {
-            fieldErrors.address = "Нужны координаты с карты";
+        if (!String(form.house).trim()) {
+            fieldErrors.house = "Укажи дом";
+        }
+        if (!fieldErrors.street && !fieldErrors.house && (form.lat === "" || form.lng === "")) {
+            fieldErrors.street = "Выбери адрес из подсказок или на карте";
+        }
+        if (!fieldErrors.street && !fieldErrors.house && quoteInZone.value === false) {
+            fieldErrors.street = "Адрес вне зоны доставки";
         }
     }
     if (!form.payment_method) {
@@ -332,8 +445,76 @@ function validate() {
     return Object.keys(fieldErrors).length === 0;
 }
 
+async function goNext() {
+    if (stepId.value === "client") {
+        if (!validateClientStep()) {
+            toast.error("Проверьте клиента");
+            return;
+        }
+        try {
+            const result = await ensureApi.run(() => ensureClient({
+                name: form.name.trim(),
+                phone: form.phone.trim(),
+            }));
+            const client = result?.client;
+            if (!client?.id) {
+                throw new Error("Клиент не получен");
+            }
+            form.clientId = Number(client.id);
+            form.name = String(client.name ?? form.name);
+            form.phone = String(client.phone ?? form.phone);
+            if (result.created) {
+                toast.success("Клиент создан в CRM");
+            }
+            stepIndex.value += 1;
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Не удалось сохранить клиента");
+        }
+        return;
+    }
+
+    if (stepId.value === "menu") {
+        if (!validateMenuStep()) {
+            toast.error("Корзина пуста");
+            return;
+        }
+        stepIndex.value += 1;
+        scheduleQuote();
+        return;
+    }
+
+    if (stepId.value === "fulfillment") {
+        if (form.method === "courier" && form.lat !== "" && form.lng !== "") {
+            await refreshQuote();
+        }
+        if (!validateFulfillmentStep()) {
+            toast.error("Проверьте доставку и оплату");
+            return;
+        }
+        stepIndex.value += 1;
+        await refreshQuote();
+        if (giftEligible.value && giftDecision.value === null && !giftPromptedForEligible.value) {
+            giftPromptedForEligible.value = true;
+            giftModalOpen.value = true;
+        }
+        return;
+    }
+}
+
+function goBack() {
+    if (stepIndex.value <= 0) {
+        return;
+    }
+    stepIndex.value -= 1;
+}
+
 async function createOrder() {
-    if (!validate()) {
+    if (!form.clientId) {
+        toast.error("Сначала сохрани клиента");
+        stepIndex.value = 0;
+        return;
+    }
+    if (!validateMenuStep() || !validateFulfillmentStep()) {
         toast.error("Проверьте обязательные поля");
         return;
     }
@@ -346,7 +527,7 @@ async function createOrder() {
 
     const body = {
         ...buildCheckoutBody(),
-        client_request_id: `admin-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        client_request_id: clientRequestId.value,
     };
 
     try {
@@ -386,6 +567,10 @@ async function loadBranch() {
     }
     try {
         branch.value = await getBranch(branchId.value);
+        const city = String(branch.value?.city ?? "").trim();
+        if (city && !String(form.city).trim()) {
+            form.city = city;
+        }
     } catch {
         branch.value = null;
     }
@@ -418,6 +603,7 @@ async function loadMenu() {
         );
 
         const categoryRows = Array.isArray(cats?.items) ? cats.items : [];
+
         /** @type {Array<Record<string, unknown>>} */
         const built = [];
 
@@ -467,7 +653,6 @@ async function loadMenu() {
             });
         }
 
-        // Фоллбек: плоский список доступного меню, если категорий нет.
         if (built.length === 0) {
             const flat = [];
             for (const [id, menuItem] of menuById.entries()) {
@@ -505,21 +690,18 @@ watch(
         form.lat,
         form.lng,
         form.clientId,
-        form.name,
-        form.phone,
         giftDecision.value,
+        stepId.value,
     ],
     () => {
-        scheduleQuote();
+        if (stepId.value === "menu" || stepId.value === "fulfillment" || stepId.value === "confirm") {
+            scheduleQuote();
+        }
     },
     { deep: false },
 );
 
-watch(giftEligible, (eligible, wasEligible) => {
-    if (eligible && !wasEligible && giftDecision.value === null && !giftPromptedForEligible.value) {
-        giftPromptedForEligible.value = true;
-        giftModalOpen.value = true;
-    }
+watch(giftEligible, (eligible) => {
     if (!eligible) {
         giftDecision.value = null;
         giftPromptedForEligible.value = false;
@@ -552,6 +734,16 @@ watch(
     },
 );
 
+watch(
+    () => [form.phone, form.name],
+    () => {
+        // Смена телефона/имени на шаге клиента сбрасывает привязку — ensure заново.
+        if (stepId.value === "client" && form.clientId) {
+            // оставляем id до Next; ensure идемпотентен
+        }
+    },
+);
+
 onMounted(async () => {
     if (!auth.bootstrapped) {
         await auth.bootstrap();
@@ -571,31 +763,12 @@ onMounted(async () => {
                     {{ branchTitle }}
                 </p>
             </div>
-            <div class="flex flex-wrap gap-2">
-                <UiButton
-                    class="!bg-white/10 !text-bo-fg"
-                    @click="router.push({ name: 'administrator-live-orders' })"
-                >
-                    К списку
-                </UiButton>
-                <UiButton
-                    v-if="branchId"
-                    class="!bg-white/10 !text-bo-fg"
-                    @click="togglePos"
-                >
-                    {{ posOpen ? "Свернуть меню" : "Меню" }}
-                    <span
-                        v-if="cartCount > 0"
-                        class="ml-1 opacity-80"
-                    >({{ cartCount }})</span>
-                </UiButton>
-                <UiButton
-                    :disabled="!branchId || saveApi.loading || cart.length === 0"
-                    @click="createOrder"
-                >
-                    Создать заказ
-                </UiButton>
-            </div>
+            <UiButton
+                class="!bg-white/10 !text-bo-fg"
+                @click="router.push({ name: 'administrator-live-orders' })"
+            >
+                К списку
+            </UiButton>
         </div>
 
         <p
@@ -606,155 +779,65 @@ onMounted(async () => {
         </p>
 
         <template v-else>
-            <div class="grid gap-4 lg:grid-cols-3">
-                <div class="space-y-4 lg:col-span-1">
-                    <UiCard title="Клиент">
-                        <ClientSearchField
-                            v-model:name="form.name"
-                            v-model:phone="form.phone"
-                            :client-id="form.clientId"
-                            :name-error="fieldErrors.name"
-                            :phone-error="fieldErrors.phone"
-                            @select-client="onSelectClient"
-                            @clear-client="onClearClient"
-                        />
-                    </UiCard>
-
-                    <UiCard title="Доставка">
-                        <div class="grid gap-3">
-                            <UiFormField
-                                label="Способ"
-                                required
-                            >
-                                <select
-                                    v-model="form.method"
-                                    class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 text-sm text-bo-fg"
-                                >
-                                    <option value="pickup">Самовывоз</option>
-                                    <option value="courier">Курьер</option>
-                                </select>
-                            </UiFormField>
-
-                            <template v-if="form.method === 'courier'">
-                                <p
-                                    v-if="fieldErrors.address"
-                                    class="text-xs text-red-300"
-                                >
-                                    {{ fieldErrors.address }}
-                                </p>
-                                <DeliveryAddressMapPicker
-                                    :city="form.city"
-                                    :street="form.street"
-                                    :house="form.house"
-                                    :latitude="form.lat"
-                                    :longitude="form.lng"
-                                    @update="onMapUpdate"
-                                />
-                                <div class="grid gap-3 sm:grid-cols-3">
-                                    <UiFormField label="Подъезд">
-                                        <UiInput v-model="form.entrance" />
-                                    </UiFormField>
-                                    <UiFormField label="Этаж">
-                                        <UiInput v-model="form.floor" />
-                                    </UiFormField>
-                                    <UiFormField label="Квартира">
-                                        <UiInput v-model="form.apartment" />
-                                    </UiFormField>
-                                </div>
-                                <UiFormField label="Комментарий к адресу">
-                                    <UiInput v-model="form.comment" />
-                                </UiFormField>
-                            </template>
-                        </div>
-                    </UiCard>
-
-                    <UiCard title="Оплата и итог">
-                        <div class="grid gap-3">
-                            <UiFormField
-                                label="Оплата"
-                                required
-                                :error="fieldErrors.payment_method"
-                            >
-                                <select
-                                    v-model="form.payment_method"
-                                    class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 text-sm text-bo-fg"
-                                >
-                                    <option value="cash">Наличные</option>
-                                    <option value="card_courier">Картой курьеру</option>
-                                </select>
-                            </UiFormField>
-                            <UiFormField
-                                v-if="form.payment_method === 'cash'"
-                                label="Сдача с"
-                            >
-                                <UiInput
-                                    v-model="form.change_from"
-                                    type="number"
-                                    min="0"
-                                    step="1"
-                                />
-                            </UiFormField>
-
-                            <div class="space-y-1 border border-bo-border bg-bo-field px-3 py-3 text-sm">
-                                <div class="flex justify-between gap-2">
-                                    <span class="text-bo-muted">Товары</span>
-                                    <span>{{ rubles(totals.items) }}</span>
-                                </div>
-                                <div
-                                    v-if="deliveryFeeLabel"
-                                    class="flex justify-between gap-2"
-                                >
-                                    <span class="text-bo-muted">Доставка</span>
-                                    <span>{{ deliveryFeeLabel }}</span>
-                                </div>
-                                <div class="flex justify-between gap-2 font-medium text-bo-fg">
-                                    <span>Итого</span>
-                                    <span>{{ rubles(totals.grand) }}</span>
-                                </div>
-                                <p
-                                    v-if="quoteApi.loading"
-                                    class="text-xs text-bo-muted"
-                                >
-                                    Пересчёт…
-                                </p>
-                            </div>
-
-                            <div
-                                v-if="giftEligible || giftDecision !== null"
-                                class="flex flex-wrap items-center justify-between gap-2 text-sm"
-                            >
-                                <span class="text-bo-muted">
-                                    <template v-if="typeof giftDecision === 'number'">
-                                        Подарок выбран
-                                    </template>
-                                    <template v-else-if="giftDecision === 'declined'">
-                                        Без подарка
-                                    </template>
-                                    <template v-else>
-                                        Доступен подарок
-                                    </template>
-                                </span>
-                                <UiButton
-                                    class="!bg-white/10 !text-bo-fg"
-                                    @click="openGiftModal"
-                                >
-                                    {{ giftDecision === null ? 'Выбрать подарок' : 'Изменить' }}
-                                </UiButton>
-                            </div>
-                        </div>
-                    </UiCard>
+            <nav class="flex flex-wrap gap-2">
+                <div
+                    v-for="(step, index) in STEPS"
+                    :key="step.id"
+                    class="flex items-center gap-2"
+                >
+                    <span
+                        class="inline-flex h-8 items-center px-3 text-xs font-medium uppercase tracking-wide"
+                        :class="index === stepIndex
+                            ? 'bg-bo-accent text-white'
+                            : index < stepIndex
+                                ? 'bg-white/10 text-bo-fg'
+                                : 'bg-white/[0.04] text-bo-muted'"
+                    >
+                        {{ index + 1 }}. {{ step.label }}
+                    </span>
+                    <span
+                        v-if="index < STEPS.length - 1"
+                        class="hidden text-bo-muted sm:inline"
+                    >→</span>
                 </div>
+            </nav>
 
-                <div class="lg:col-span-2">
+            <!-- Шаг 1: Клиент -->
+            <UiCard
+                v-if="stepId === 'client'"
+                title="Клиент"
+            >
+                <ClientSearchField
+                    v-model:name="form.name"
+                    v-model:phone="form.phone"
+                    :client-id="form.clientId"
+                    :name-error="fieldErrors.name"
+                    :phone-error="fieldErrors.phone"
+                    @select-client="onSelectClient"
+                    @clear-client="onClearClient"
+                />
+                <p class="mt-3 text-xs text-bo-muted">
+                    При «Далее» клиент найдётся или создастся в CRM по телефону.
+                </p>
+            </UiCard>
+
+            <!-- Шаг 2: Меню + корзина -->
+            <div
+                v-else-if="stepId === 'menu'"
+                class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(260px,320px)]"
+            >
+                <UiCard title="Меню филиала">
+                    <div class="min-h-[50vh]">
+                        <PosMenuPanel
+                            :categories="categories"
+                            :loading="menuApi.loading"
+                            @add="addToCart"
+                        />
+                    </div>
+                </UiCard>
+
+                <aside class="space-y-3 lg:sticky lg:top-4 lg:self-start">
                     <UiCard title="Корзина">
-                        <template #actions>
-                            <UiButton
-                                class="!bg-white/10 !text-bo-fg"
-                                @click="openPos"
-                            >
-                                {{ cart.length === 0 ? "+ Добавить из меню" : "Открыть меню" }}
-                            </UiButton>
-                        </template>
                         <p
                             v-if="fieldErrors.lines"
                             class="mb-2 text-xs text-red-300"
@@ -762,14 +845,14 @@ onMounted(async () => {
                             {{ fieldErrors.lines }}
                         </p>
                         <p
-                            v-if="cart.length === 0"
+                            v-if="cart.length === 0 && freeComplementLines.length === 0"
                             class="text-sm text-bo-muted"
                         >
-                            Корзина пуста — открой меню и добавь позиции.
+                            Кликай позиции в меню.
                         </p>
                         <div
                             v-else
-                            class="space-y-2"
+                            class="max-h-[50vh] space-y-2 overflow-y-auto"
                         >
                             <div
                                 v-for="line in cart"
@@ -784,7 +867,7 @@ onMounted(async () => {
                                         {{ line.kind === 'set' ? 'Набор' : 'Товар' }}
                                     </div>
                                 </div>
-                                <div class="flex items-center gap-2">
+                                <div class="flex shrink-0 items-center gap-1">
                                     <button
                                         type="button"
                                         class="h-8 w-8 border border-bo-border text-bo-fg"
@@ -800,87 +883,334 @@ onMounted(async () => {
                                     >
                                         +
                                     </button>
-                                    <button
-                                        type="button"
-                                        class="text-xs text-bo-muted hover:text-bo-fg"
-                                        @click="removeLine(line.key)"
-                                    >
-                                        Удалить
-                                    </button>
                                 </div>
+                            </div>
+
+                            <template v-if="freeComplementLines.length > 0">
+                                <p class="pt-1 text-[11px] font-medium uppercase tracking-wide text-bo-muted">
+                                    Бесплатный комплект
+                                </p>
+                                <div
+                                    v-for="(line, idx) in freeComplementLines"
+                                    :key="`free-c-${line.product_id}-${idx}`"
+                                    class="flex items-center justify-between gap-2 border border-dashed border-bo-border bg-white/[0.02] px-3 py-2"
+                                >
+                                    <div class="min-w-0">
+                                        <div class="truncate text-sm text-bo-fg">
+                                            {{ line.product_name }}
+                                        </div>
+                                        <div class="text-xs text-bo-muted">
+                                            бесплатно × {{ line.quantity }}
+                                        </div>
+                                    </div>
+                                    <span class="shrink-0 text-sm text-bo-muted">0 ₽</span>
+                                </div>
+                            </template>
+                        </div>
+                        <div class="mt-3 flex justify-between border-t border-bo-border pt-3 text-sm">
+                            <span class="text-bo-muted">{{ cartCount }} шт.</span>
+                            <span class="font-medium">{{ rubles(totals.grand || totals.items) }}</span>
+                        </div>
+                        <p
+                            v-if="quoteApi.loading"
+                            class="mt-1 text-xs text-bo-muted"
+                        >
+                            Пересчёт…
+                        </p>
+                    </UiCard>
+                </aside>
+
+                <!-- mobile sticky cart strip -->
+                <div
+                    class="fixed inset-x-0 bottom-0 z-30 border-t border-bo-border bg-bo-elevated px-4 py-3 lg:hidden"
+                >
+                    <div class="mx-auto flex max-w-7xl items-center justify-between gap-3">
+                        <div class="text-sm">
+                            <span class="text-bo-muted">В заказе</span>
+                            <span class="ml-2 font-medium text-bo-fg">{{ cartCount }} шт. · {{ rubles(totals.grand || totals.items) }}</span>
+                        </div>
+                        <UiButton
+                            :disabled="cart.length === 0"
+                            @click="goNext"
+                        >
+                            Далее
+                        </UiButton>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Шаг 3: Доставка / оплата -->
+            <div
+                v-else-if="stepId === 'fulfillment'"
+                class="grid gap-4 lg:grid-cols-2"
+            >
+                <UiCard title="Доставка">
+                    <div class="grid gap-3">
+                        <UiFormField
+                            label="Способ"
+                            required
+                        >
+                            <select
+                                v-model="form.method"
+                                class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 text-sm text-bo-fg"
+                            >
+                                <option value="pickup">Самовывоз</option>
+                                <option value="courier">Курьер</option>
+                            </select>
+                        </UiFormField>
+
+                        <template v-if="form.method === 'courier'">
+                            <DeliveryAddressFields
+                                :city="form.city"
+                                :street="form.street"
+                                :house="form.house"
+                                :entrance="form.entrance"
+                                :floor="form.floor"
+                                :apartment="form.apartment"
+                                :comment="form.comment"
+                                :latitude="form.lat"
+                                :longitude="form.lng"
+                                :branch-city="branchCity"
+                                :street-error="fieldErrors.street || ''"
+                                :house-error="fieldErrors.house || ''"
+                                :zone-status="addressZoneStatus"
+                                :map-open="mapOpen"
+                                @update="onAddressUpdate"
+                                @toggle-map="mapOpen = !mapOpen"
+                            />
+                            <DeliveryAddressMapPicker
+                                v-if="mapOpen"
+                                :city="form.city"
+                                :street="form.street"
+                                :house="form.house"
+                                :latitude="form.lat"
+                                :longitude="form.lng"
+                                :bias-city="branchCity"
+                                @update="onAddressUpdate"
+                            />
+                        </template>
+                    </div>
+                </UiCard>
+
+                <UiCard title="Оплата">
+                    <div class="grid gap-3">
+                        <UiFormField
+                            label="Оплата"
+                            required
+                            :error="fieldErrors.payment_method"
+                        >
+                            <select
+                                v-model="form.payment_method"
+                                class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 text-sm text-bo-fg"
+                            >
+                                <option value="cash">Наличные</option>
+                                <option value="card_courier">Картой курьеру</option>
+                            </select>
+                        </UiFormField>
+                        <UiFormField
+                            v-if="form.payment_method === 'cash'"
+                            label="Сдача с"
+                        >
+                            <UiInput
+                                v-model="form.change_from"
+                                type="number"
+                                min="0"
+                                step="1"
+                            />
+                        </UiFormField>
+
+                        <div class="space-y-1 border border-bo-border bg-bo-field px-3 py-3 text-sm">
+                            <div class="flex justify-between gap-2">
+                                <span class="text-bo-muted">Товары</span>
+                                <span>{{ rubles(totals.items) }}</span>
+                            </div>
+                            <div
+                                v-if="deliveryFeeLabel"
+                                class="flex justify-between gap-2"
+                            >
+                                <span class="text-bo-muted">Доставка</span>
+                                <span>{{ deliveryFeeLabel }}</span>
+                            </div>
+                            <div class="flex justify-between gap-2 font-medium text-bo-fg">
+                                <span>Итого</span>
+                                <span>{{ rubles(totals.grand) }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </UiCard>
+            </div>
+
+            <!-- Шаг 4: Подтверждение -->
+            <UiCard
+                v-else-if="stepId === 'confirm'"
+                title="Подтверждение"
+            >
+                <div class="grid gap-4 lg:grid-cols-2">
+                    <div class="space-y-3 text-sm">
+                        <div>
+                            <p class="text-xs uppercase tracking-wide text-bo-muted">Клиент</p>
+                            <p class="text-bo-fg">{{ form.name }} · {{ form.phone }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs uppercase tracking-wide text-bo-muted">Получение</p>
+                            <p class="text-bo-fg">{{ methodLabel }}</p>
+                            <p
+                                v-if="form.method === 'courier'"
+                                class="text-bo-muted"
+                            >
+                                {{ form.street }}, {{ form.house }}
+                                <template v-if="form.apartment">, кв. {{ form.apartment }}</template>
+                            </p>
+                        </div>
+                        <div>
+                            <p class="text-xs uppercase tracking-wide text-bo-muted">Оплата</p>
+                            <p class="text-bo-fg">
+                                {{ paymentLabel }}
+                                <template v-if="form.payment_method === 'cash' && form.change_from">
+                                    · сдача с {{ form.change_from }}
+                                </template>
+                            </p>
+                        </div>
+                        <div
+                            v-if="giftEligible || giftDecision !== null"
+                            class="flex flex-wrap items-center justify-between gap-2"
+                        >
+                            <span class="text-bo-muted">
+                                <template v-if="typeof giftDecision === 'number'">Подарок выбран</template>
+                                <template v-else-if="giftDecision === 'declined'">Без подарка</template>
+                                <template v-else>Доступен подарок</template>
+                            </span>
+                            <UiButton
+                                class="!bg-white/10 !text-bo-fg"
+                                @click="openGiftModal"
+                            >
+                                {{ giftDecision === null ? 'Выбрать подарок' : 'Изменить' }}
+                            </UiButton>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="space-y-2">
+                            <p class="text-xs uppercase tracking-wide text-bo-muted">Основные линии</p>
+                            <template v-if="quoteLines.length">
+                                <div
+                                    v-for="(line, index) in confirmMainLines"
+                                    :key="`main-${line.product_id}-${index}`"
+                                    class="flex justify-between gap-2 text-sm"
+                                >
+                                    <span class="truncate text-bo-fg">
+                                        {{ line.product_name }} × {{ line.quantity }}
+                                    </span>
+                                    <span class="text-bo-muted">{{ rubles(line.line_total_rubles ?? line.unit_price_rubles) }}</span>
+                                </div>
+                                <p
+                                    v-if="confirmMainLines.length === 0"
+                                    class="text-sm text-bo-muted"
+                                >
+                                    Нет позиций
+                                </p>
+                            </template>
+                            <template v-else>
+                                <div
+                                    v-for="line in cart"
+                                    :key="line.key"
+                                    class="flex justify-between gap-2 text-sm"
+                                >
+                                    <span>{{ line.name }} × {{ line.quantity }}</span>
+                                </div>
+                                <p
+                                    v-if="cart.length === 0"
+                                    class="text-sm text-bo-muted"
+                                >
+                                    Нет позиций
+                                </p>
+                            </template>
+                        </div>
+
+                        <div
+                            v-if="confirmComplementLines.length > 0"
+                            class="space-y-2"
+                        >
+                            <p class="text-xs uppercase tracking-wide text-bo-muted">Комплектные</p>
+                            <div
+                                v-for="(line, index) in confirmComplementLines"
+                                :key="`complement-${line.product_id}-${index}`"
+                                class="flex justify-between gap-2 text-sm"
+                            >
+                                <span class="truncate text-bo-fg">
+                                    {{ line.product_name }} × {{ line.quantity }}
+                                </span>
+                                <span class="text-bo-muted">{{ rubles(line.line_total_rubles ?? line.unit_price_rubles) }}</span>
                             </div>
                         </div>
 
                         <div
-                            v-if="quoteLines.length"
-                            class="mt-4 space-y-1 border-t border-bo-border pt-3"
+                            v-if="confirmGiftLines.length > 0"
+                            class="space-y-2"
                         >
-                            <p class="text-xs font-medium uppercase tracking-wide text-bo-muted">
-                                Расчёт
-                            </p>
+                            <p class="text-xs uppercase tracking-wide text-bo-muted">Подарок</p>
                             <div
-                                v-for="(line, index) in quoteLines"
-                                :key="`${line.product_id}-${index}`"
-                                class="flex justify-between gap-2 text-xs text-bo-muted"
+                                v-for="(line, index) in confirmGiftLines"
+                                :key="`gift-${line.product_id}-${index}`"
+                                class="flex justify-between gap-2 text-sm"
                             >
-                                <span class="truncate">
+                                <span class="truncate text-bo-fg">
                                     {{ line.product_name }} × {{ line.quantity }}
-                                    <span v-if="line.payload?.kind && line.payload.kind !== 'regular'">
-                                        ({{ line.payload.kind === 'complement' ? 'комплект' : line.payload.kind === 'gift' ? 'подарок' : line.payload.kind === 'set' ? 'набор' : line.payload.kind }})
-                                    </span>
                                 </span>
-                                <span>{{ rubles(line.line_total_rubles ?? line.unit_price_rubles) }}</span>
+                                <span class="text-bo-muted">{{ rubles(line.line_total_rubles ?? line.unit_price_rubles) }}</span>
                             </div>
                         </div>
-                    </UiCard>
+
+                        <div class="mt-1 space-y-1 border-t border-bo-border pt-3 text-sm">
+                            <div class="flex justify-between gap-2">
+                                <span class="text-bo-muted">Товары</span>
+                                <span>{{ rubles(totals.items) }}</span>
+                            </div>
+                            <div
+                                v-if="deliveryFeeLabel"
+                                class="flex justify-between gap-2"
+                            >
+                                <span class="text-bo-muted">Доставка</span>
+                                <span>{{ deliveryFeeLabel }}</span>
+                            </div>
+                            <div class="flex justify-between gap-2 text-base font-semibold">
+                                <span>Итого</span>
+                                <span>{{ rubles(totals.grand) }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </UiCard>
+
+            <div
+                class="flex flex-wrap items-center justify-between gap-3 border-t border-bo-border pt-4"
+                :class="stepId === 'menu' ? 'pb-20 lg:pb-0' : ''"
+            >
+                <UiButton
+                    class="!bg-white/10 !text-bo-fg"
+                    :disabled="stepIndex === 0"
+                    @click="goBack"
+                >
+                    Назад
+                </UiButton>
+                <div class="flex flex-wrap gap-2">
+                    <UiButton
+                        v-if="stepId !== 'confirm'"
+                        :class="stepId === 'menu' ? 'hidden lg:inline-flex' : ''"
+                        :disabled="ensureApi.loading"
+                        @click="goNext"
+                    >
+                        Далее
+                    </UiButton>
+                    <UiButton
+                        v-if="stepId === 'confirm'"
+                        :disabled="saveApi.loading || cart.length === 0"
+                        @click="createOrder"
+                    >
+                        Создать заказ
+                    </UiButton>
                 </div>
             </div>
-
-            <Teleport to="body">
-                <div
-                    v-if="posOpen"
-                    class="fixed inset-0 z-40"
-                >
-                    <button
-                        type="button"
-                        class="absolute inset-0 bg-black/55 backdrop-blur-sm"
-                        aria-label="Свернуть меню"
-                        @click="closePos"
-                    />
-                    <aside
-                        class="absolute inset-y-0 right-0 flex w-full max-w-xl flex-col border-l border-bo-border bg-bo-elevated shadow-bo-lg"
-                        role="dialog"
-                        aria-modal="true"
-                        aria-label="Меню филиала"
-                    >
-                        <header class="flex items-center justify-between gap-3 border-b border-bo-border px-5 py-4">
-                            <div>
-                                <h2 class="text-lg font-semibold text-bo-fg">
-                                    Меню
-                                </h2>
-                                <p class="text-xs text-bo-muted">
-                                    Клик по позиции добавляет в корзину · в заказе {{ cartCount }} шт.
-                                </p>
-                            </div>
-                            <UiButton
-                                class="!bg-white/10 !text-bo-fg"
-                                @click="closePos"
-                            >
-                                Свернуть
-                            </UiButton>
-                        </header>
-                        <div class="min-h-0 flex-1 overflow-hidden p-5">
-                            <div class="h-full">
-                                <PosMenuPanel
-                                    :categories="categories"
-                                    :loading="menuApi.loading"
-                                    @add="addToCart"
-                                />
-                            </div>
-                        </div>
-                    </aside>
-                </div>
-            </Teleport>
         </template>
 
         <GiftPickModal

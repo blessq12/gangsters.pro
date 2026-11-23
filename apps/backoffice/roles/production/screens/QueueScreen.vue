@@ -1,10 +1,9 @@
 <script setup>
-import { computed, onMounted, onUnmounted, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
-import { completeTicket, getQueue, startTicket } from "../../../api/production.js";
+import { getQueue, startTicket } from "../../../api/production.js";
 import { useApi } from "../../../shell/composables/useApi.js";
-import { usePagedList } from "../../../shell/composables/usePagedList.js";
 import { useToast } from "../../../shell/composables/useToast.js";
 import { useAuthStore } from "../../../shell/store/authStore.js";
 import UiBadge from "../../../shell/components/ui/UiBadge.vue";
@@ -26,22 +25,21 @@ const branchId = computed(() => {
     return Number.isFinite(id) && id > 0 ? id : null;
 });
 
-const {
-    page,
-    perPage,
-    total,
-    items: tickets,
-    offset,
-    applyPayload,
-    clearItems,
-} = usePagedList();
+const page = ref(1);
+const perPage = 20;
+const poolTotal = ref(0);
+const pool = ref(/** @type {Array<Record<string, unknown>>} */ ([]));
+
+const offset = computed(() => (page.value - 1) * perPage);
+
 /** @type {ReturnType<typeof setInterval>|null} */
 let pollTimer = null;
 const POLL_MS = 12000;
 
 async function load(silent = false) {
     if (!branchId.value) {
-        clearItems();
+        pool.value = [];
+        poolTotal.value = 0;
         return;
     }
     try {
@@ -49,8 +47,11 @@ async function load(silent = false) {
             offset: offset.value,
             limit: perPage,
         }));
-        applyPayload(payload);
-        const lastPage = Math.max(1, Math.ceil(total.value / perPage));
+        const poolPage = payload?.pool && typeof payload.pool === "object" ? payload.pool : {};
+        pool.value = Array.isArray(poolPage.items) ? poolPage.items : [];
+        poolTotal.value = Number(poolPage.total ?? 0);
+
+        const lastPage = Math.max(1, Math.ceil(poolTotal.value / perPage) || 1);
         if (page.value > lastPage) {
             page.value = lastPage;
         }
@@ -61,7 +62,10 @@ async function load(silent = false) {
     }
 }
 
-function openTicket(orderId) {
+/**
+ * @param {number|string} orderId
+ */
+function goTicket(orderId) {
     router.push({ name: "production-ticket", params: { orderId: String(orderId) } });
 }
 
@@ -69,21 +73,11 @@ async function onStart(orderId, event) {
     event.stopPropagation();
     try {
         await actionApi.run(() => startTicket(orderId));
-        toast.success("В работе");
-        await load(true);
+        toast.success("Взято в работу");
+        goTicket(orderId);
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось начать тикет");
-    }
-}
-
-async function onComplete(orderId, event) {
-    event.stopPropagation();
-    try {
-        await actionApi.run(() => completeTicket(orderId));
-        toast.success("Готово");
         await load(true);
-    } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Не удалось завершить тикет");
     }
 }
 
@@ -115,9 +109,9 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="space-y-6">
+    <div class="space-y-8">
         <h1 class="text-4xl font-bold tracking-tight md:text-5xl">
-            Тикеты
+            Очередь
         </h1>
 
         <p
@@ -127,73 +121,64 @@ onUnmounted(() => {
             У сотрудника не указан филиал смены — очередь недоступна.
         </p>
 
-        <div
-            v-else-if="!listApi.loading && tickets.length === 0"
-            class="border border-bo-border bg-bo-elevated px-8 py-16 text-center text-4xl font-semibold text-bo-muted md:text-5xl"
-        >
-            Тикетов нет
-        </div>
-
-        <div
-            v-else-if="branchId"
-            class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3"
-        >
-            <UiCard
-                v-for="ticket in tickets"
-                :key="ticket.order_id"
-                class="!cursor-pointer !border-bo-border !bg-bo-elevated !text-bo-fg !shadow-none transition hover:!border-bo-accent"
-                @click="openTicket(ticket.order_id)"
+        <template v-else>
+            <div
+                v-if="!listApi.loading && pool.length === 0"
+                class="border border-bo-border bg-bo-elevated px-6 py-10 text-center text-2xl text-bo-muted"
             >
-                <div class="space-y-4">
-                    <div class="flex items-start justify-between gap-3">
-                        <p class="text-3xl font-black leading-none tracking-tight md:text-4xl">
-                            {{ ticket.order_number || ticket.order?.number || `#${ticket.order_id}` }}
-                        </p>
-                        <UiBadge
-                            class="!px-3 !py-1 !text-base"
-                            :variant="ticketStatusVariant(ticket.status)"
-                            :text="ticketStatusLabel(ticket.status)"
-                        />
+                Пул пуст
+            </div>
+            <div
+                v-else
+                class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3"
+            >
+                <UiCard
+                    v-for="ticket in pool"
+                    :key="`pool-${ticket.order_id}`"
+                    class="!cursor-pointer !border-bo-border !bg-bo-elevated !text-bo-fg !shadow-none transition hover:!border-bo-accent"
+                    @click="goTicket(ticket.order_id)"
+                >
+                    <div class="space-y-4">
+                        <div class="flex items-start justify-between gap-3">
+                            <p class="text-3xl font-black leading-none tracking-tight md:text-4xl">
+                                {{ ticket.order_number || ticket.order?.number || `#${ticket.order_id}` }}
+                            </p>
+                            <UiBadge
+                                class="!px-3 !py-1 !text-base"
+                                :variant="ticketStatusVariant(ticket.status)"
+                                :text="ticketStatusLabel(ticket.status)"
+                            />
+                        </div>
+                        <ul class="space-y-1 text-xl">
+                            <li
+                                v-for="(line, idx) in (ticket.lines ?? []).slice(0, 4)"
+                                :key="idx"
+                            >
+                                {{ line.name || `Позиция #${line.product_id}` }} × {{ line.quantity }}
+                            </li>
+                        </ul>
+                        <div
+                            class="flex flex-wrap gap-3"
+                            @click.stop
+                        >
+                            <UiButton
+                                class="!h-16 !min-w-[10rem] !bg-amber-400 !px-8 !text-2xl !font-bold !text-slate-900"
+                                :disabled="actionApi.loading"
+                                @click="onStart(ticket.order_id, $event)"
+                            >
+                                Старт
+                            </UiButton>
+                        </div>
                     </div>
-                    <ul class="space-y-1 text-xl">
-                        <li
-                            v-for="(line, idx) in (ticket.lines ?? []).slice(0, 4)"
-                            :key="idx"
-                        >
-                            {{ line.name || `Позиция #${line.product_id}` }} × {{ line.quantity }}
-                        </li>
-                    </ul>
-                    <div
-                        class="flex flex-wrap gap-3"
-                        @click.stop
-                    >
-                        <UiButton
-                            v-if="ticket.status === 'queued'"
-                            class="!h-16 !min-w-[10rem] !bg-amber-400 !px-8 !text-2xl !font-bold !text-slate-900"
-                            :disabled="actionApi.loading"
-                            @click="onStart(ticket.order_id, $event)"
-                        >
-                            Старт
-                        </UiButton>
-                        <UiButton
-                            v-if="ticket.status === 'started'"
-                            class="!h-16 !min-w-[10rem] !bg-emerald-500 !px-8 !text-2xl !font-bold !text-white"
-                            :disabled="actionApi.loading"
-                            @click="onComplete(ticket.order_id, $event)"
-                        >
-                            Завершить
-                        </UiButton>
-                    </div>
-                </div>
-            </UiCard>
-        </div>
+                </UiCard>
+            </div>
 
-        <UiPagination
-            v-if="branchId"
-            :page="page"
-            :per-page="perPage"
-            :total="total"
-            @update:page="page = $event"
-        />
+            <UiPagination
+                :page="page"
+                :per-page="perPage"
+                :total="poolTotal"
+                @update:page="page = $event"
+            />
+        </template>
     </div>
 </template>

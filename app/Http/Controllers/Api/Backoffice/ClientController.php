@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Backoffice;
 
 use App\Application\Crm\Command\AddClientAddressUseCase;
 use App\Application\Crm\Command\DeleteClientAddressUseCase;
+use App\Application\Crm\Command\EnsureClientByPhoneUseCase;
 use App\Application\Crm\Command\SetDefaultClientAddressUseCase;
 use App\Application\Crm\Command\UpdateClientAddressUseCase;
 use App\Application\Crm\Command\UpdateClientProfileUseCase;
@@ -19,6 +20,23 @@ use InvalidArgumentException;
 
 final class ClientController extends Controller
 {
+    public function ensure(Request $request, EnsureClientByPhoneUseCase $useCase): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'max:32'],
+        ]);
+
+        try {
+            return response()->json($useCase->execute(
+                name: (string) $validated['name'],
+                phone: (string) $validated['phone'],
+            ));
+        } catch (InvalidArgumentException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
+    }
+
     public function index(Request $request, ListAdminClientsUseCase $useCase): JsonResponse
     {
         $offset = (int) $request->query('offset', 0);

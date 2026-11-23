@@ -10,7 +10,6 @@ namespace App\Domain\Core\Order\Port;
  *     name: string,
  *     sku: string|null,
  *     is_roll: bool,
- *     is_complement: bool,
  *     images: list<string>
  * }
  */

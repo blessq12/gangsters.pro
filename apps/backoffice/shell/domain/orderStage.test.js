@@ -13,12 +13,12 @@ describe("administratorCommands", () => {
         assert.deepEqual(ids, ["confirm", "cancel"]);
     });
 
-    it("подтверждённый: переназначить филиал, без выдачи", () => {
+    it("подтверждённый: только отмена, без переназначения филиала", () => {
         const ids = administratorCommands({
             status: "confirmed",
             delivery: { method: "pickup" },
         }).map((command) => command.id);
-        assert.deepEqual(ids, ["reassign", "cancel"]);
+        assert.deepEqual(ids, ["cancel"]);
     });
 
     it("готовится: кухня сама завершает тикет, администратор может только отменить", () => {

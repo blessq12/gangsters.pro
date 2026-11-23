@@ -39,7 +39,6 @@ final class SaveBranchMenuItemUseCase
             catalogItemId: $dto->catalogItemId,
             isAvailable: $dto->isAvailable,
             priceKopecks: $dto->priceKopecks,
-            isGiftCandidate: $dto->isGiftCandidate,
         ));
 
         return $this->presenter->item($saved);

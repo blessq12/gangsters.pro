@@ -2,9 +2,11 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import {
     TOMSK_CENTER,
+    geocodeWithCityBias,
     loadYandexMapsApi,
     parseYandexGeoObject,
     readYandexMapsApiKey,
+    resolveMapCenter,
 } from "../../maps/yandexMapsApi.js";
 
 const props = defineProps({
@@ -69,7 +71,7 @@ async function geocodeQuery(text) {
         return;
     }
     try {
-        const result = await window.ymaps.geocode(text, { results: 1 });
+        const result = await geocodeWithCityBias(text, props.city, { results: 1 });
         if (destroyed || token !== geocodeToken) {
             return;
         }
@@ -109,10 +111,14 @@ async function mountMap() {
         if (destroyed || !mapHost.value) {
             return;
         }
+        const center = await resolveMapCenter({ city: props.city });
+        if (destroyed || !mapHost.value) {
+            return;
+        }
         map = new window.ymaps.Map(
             mapHost.value,
             {
-                center: TOMSK_CENTER,
+                center: center || TOMSK_CENTER,
                 zoom: 12,
                 controls: ["zoomControl"],
             },

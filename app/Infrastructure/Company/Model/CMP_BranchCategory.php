@@ -19,6 +19,8 @@ final class CMP_BranchCategory extends Model
         'sort_order',
         'is_active',
         'is_accompanying',
+        'is_complement',
+        'is_gift',
     ];
 
     /**
@@ -29,6 +31,8 @@ final class CMP_BranchCategory extends Model
         'sort_order' => 'integer',
         'is_active' => 'boolean',
         'is_accompanying' => 'boolean',
+        'is_complement' => 'boolean',
+        'is_gift' => 'boolean',
     ];
 
     /**

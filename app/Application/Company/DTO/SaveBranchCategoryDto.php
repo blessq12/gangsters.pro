@@ -18,6 +18,8 @@ final readonly class SaveBranchCategoryDto
         public int $sortOrder,
         public bool $isActive,
         public bool $isAccompanying,
+        public bool $isComplement = false,
+        public bool $isGift = false,
         public ?array $items = null,
     ) {}
 }

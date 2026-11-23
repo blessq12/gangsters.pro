@@ -328,7 +328,7 @@ export function stageHint(order) {
         case "preorder":
             return "Предзаказ. Следующее действие администратора — подтвердить и назначить филиал.";
         case "confirmed":
-            return "Подтверждён, тикет стоит в очереди. Следующее действие кухни — старт тикета. Пока тикет не взят, филиал можно переназначить.";
+            return "Подтверждён, тикет стоит в очереди. Следующее действие кухни — старт тикета.";
         case "preparing":
             return "Кухня готовит. Следующее действие — завершить тикет, заказ станет готов.";
         case "ready":
@@ -357,19 +357,16 @@ export function stageHint(order) {
 /**
  * Команды администратора. Кухня и курьер сюда не входят: их действия на своих экранах.
  * @param {Record<string, unknown>|null|undefined} order
- * @returns {Array<{ id: "confirm"|"reassign"|"pickup"|"toRoute"|"cancel", label: string }>}
+ * @returns {Array<{ id: "confirm"|"pickup"|"toRoute"|"cancel", label: string }>}
  */
 export function administratorCommands(order) {
     const status = order?.status;
     const method = order?.delivery?.method;
-    /** @type {Array<{ id: "confirm"|"reassign"|"pickup"|"toRoute"|"cancel", label: string }>} */
+    /** @type {Array<{ id: "confirm"|"pickup"|"toRoute"|"cancel", label: string }>} */
     const commands = [];
 
     if (status === "new" || status === "preorder") {
         commands.push({ id: "confirm", label: "Подтвердить" });
-    }
-    if (status === "confirmed" || status === "preparing") {
-        commands.push({ id: "reassign", label: "Переназначить филиал" });
     }
     if (status === "ready" && method === "pickup") {
         commands.push({ id: "pickup", label: "Выдать самовывоз" });

@@ -32,12 +32,18 @@ final class KitchenTicketMapper
             );
         }
 
+        $assignee = $row->assignee_employee_id !== null ? (int) $row->assignee_employee_id : null;
+        if ($assignee !== null && $assignee < 1) {
+            $assignee = null;
+        }
+
         return KitchenTicket::restore(
             id: (int) $row->id,
             orderId: (int) $row->order_id,
             branchId: (int) $row->branch_id,
             lines: $lines,
             status: $status,
+            assigneeEmployeeId: $assignee,
             startedAt: $row->started_at !== null
                 ? DateTimeImmutable::createFromInterface($row->started_at)
                 : null,
@@ -66,6 +72,7 @@ final class KitchenTicketMapper
             'ticket' => [
                 'order_id' => $ticket->orderId(),
                 'branch_id' => $ticket->branchId(),
+                'assignee_employee_id' => $ticket->assigneeEmployeeId(),
                 'status' => $ticket->status()->value,
                 'started_at' => $ticket->startedAt()?->format('Y-m-d H:i:s'),
                 'completed_at' => $ticket->completedAt()?->format('Y-m-d H:i:s'),

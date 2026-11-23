@@ -8,8 +8,7 @@ namespace App\Domain\Core\Order\Port;
  * @phpstan-type OrderMenuItemSnapshot array{
  *     catalog_item_id: int,
  *     is_available: bool,
- *     price_kopecks: int,
- *     is_gift_candidate: bool
+ *     price_kopecks: int
  * }
  * @phpstan-type OrderBranchSetSnapshot array{
  *     id: int,

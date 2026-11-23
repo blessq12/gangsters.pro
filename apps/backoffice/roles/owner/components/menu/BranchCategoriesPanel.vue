@@ -32,6 +32,27 @@ defineProps({
 
 const PER_PAGE = 20;
 
+/** Роль категории — взаимоисключающая: none | accompanying | complement | gift. */
+const ROLE_OPTIONS = [
+    { value: "none", label: "Обычная" },
+    { value: "accompanying", label: "Сопутствующая" },
+    { value: "complement", label: "Комплемент" },
+    { value: "gift", label: "Подарок" },
+];
+
+function roleFromCategory(row) {
+    if (row?.is_gift) {
+        return "gift";
+    }
+    if (row?.is_complement) {
+        return "complement";
+    }
+    if (row?.is_accompanying) {
+        return "accompanying";
+    }
+    return "none";
+}
+
 const toast = useToast();
 const loadApi = useApi();
 const saveApi = useApi();
@@ -54,7 +75,7 @@ const form = reactive({
     slug: "",
     sort_order: "0",
     is_active: true,
-    is_accompanying: false,
+    role: "none",
     /** @type {Array<{ entry_kind: 'product'|'set', entry_id: number }>} */
     items: [],
 });
@@ -154,7 +175,7 @@ function openCreate() {
     form.slug = "";
     form.sort_order = String(categories.value.length);
     form.is_active = true;
-    form.is_accompanying = false;
+    form.role = "none";
     form.items = [];
     modalOpen.value = true;
 }
@@ -167,7 +188,7 @@ function openEdit(row) {
     form.slug = row.slug ?? "";
     form.sort_order = String(row.sort_order ?? 0);
     form.is_active = Boolean(row.is_active);
-    form.is_accompanying = Boolean(row.is_accompanying);
+    form.role = roleFromCategory(row);
     form.items = (row.items ?? [])
         .slice()
         .sort((a, b) => a.sort_order - b.sort_order)
@@ -225,7 +246,9 @@ async function save() {
         slug: form.slug.trim() || null,
         sort_order: Number(form.sort_order),
         is_active: Boolean(form.is_active),
-        is_accompanying: Boolean(form.is_accompanying),
+        is_accompanying: form.role === "accompanying",
+        is_complement: form.role === "complement",
+        is_gift: form.role === "gift",
         items: form.items.map((item, index) => ({
             entry_kind: item.entry_kind,
             entry_id: item.entry_id,
@@ -332,6 +355,8 @@ onMounted(async () => {
                             </span>
                         </span>
                         <UiBadge v-if="element.is_accompanying" variant="warning" text="сопутствующая" />
+                        <UiBadge v-if="element.is_complement" variant="warning" text="комплемент" />
+                        <UiBadge v-if="element.is_gift" variant="warning" text="подарок" />
                         <UiBadge
                             :variant="element.is_active ? 'success' : 'neutral'"
                             :text="element.is_active ? 'активна' : 'выключена'"
@@ -373,6 +398,8 @@ onMounted(async () => {
                         </span>
                     </span>
                     <UiBadge v-if="element.is_accompanying" variant="warning" text="сопутствующая" />
+                    <UiBadge v-if="element.is_complement" variant="warning" text="комплемент" />
+                    <UiBadge v-if="element.is_gift" variant="warning" text="подарок" />
                     <UiBadge
                         :variant="element.is_active ? 'success' : 'neutral'"
                         :text="element.is_active ? 'активна' : 'выключена'"
@@ -420,12 +447,21 @@ onMounted(async () => {
                 </UiFormField>
                 <div class="flex flex-wrap gap-3">
                     <UiToggle v-model="form.is_active" label-on="Активна" label-off="Выключена" />
-                    <UiToggle
-                        v-model="form.is_accompanying"
-                        label-on="Сопутствующая"
-                        label-off="Обычная"
-                    />
                 </div>
+                <UiFormField label="Роль категории">
+                    <select
+                        v-model="form.role"
+                        class="w-full border border-bo-border bg-bo-field px-4 py-2.5 text-sm focus:border-bo-accent focus:outline-none"
+                    >
+                        <option
+                            v-for="option in ROLE_OPTIONS"
+                            :key="option.value"
+                            :value="option.value"
+                        >
+                            {{ option.label }}
+                        </option>
+                    </select>
+                </UiFormField>
 
                 <UiFormField label="Позиции">
                     <ul

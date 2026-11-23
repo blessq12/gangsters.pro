@@ -12,6 +12,7 @@ use DateTimeImmutable;
 /**
  * Кухонный тикет: единица работы филиала по заказу со снимком позиций.
  * Связь с Order — только orderId.
+ * assigneeEmployeeId — повар, взявший тикет в работу (null пока queued).
  */
 final class KitchenTicket
 {
@@ -27,6 +28,7 @@ final class KitchenTicket
         private readonly int $branchId,
         private readonly array $lines,
         private KitchenTicketStatus $status,
+        private ?int $assigneeEmployeeId,
         private ?DateTimeImmutable $startedAt,
         private ?DateTimeImmutable $completedAt,
     ) {
@@ -52,6 +54,7 @@ final class KitchenTicket
             branchId: $branchId,
             lines: array_values($lines),
             status: KitchenTicketStatus::Queued,
+            assigneeEmployeeId: null,
             startedAt: null,
             completedAt: null,
         );
@@ -66,6 +69,7 @@ final class KitchenTicket
         int $branchId,
         array $lines,
         KitchenTicketStatus $status,
+        ?int $assigneeEmployeeId,
         ?DateTimeImmutable $startedAt,
         ?DateTimeImmutable $completedAt,
     ): self {
@@ -75,6 +79,7 @@ final class KitchenTicket
             branchId: $branchId,
             lines: array_values($lines),
             status: $status,
+            assigneeEmployeeId: $assigneeEmployeeId,
             startedAt: $startedAt,
             completedAt: $completedAt,
         );
@@ -130,6 +135,11 @@ final class KitchenTicket
         return $this->status;
     }
 
+    public function assigneeEmployeeId(): ?int
+    {
+        return $this->assigneeEmployeeId;
+    }
+
     public function startedAt(): ?DateTimeImmutable
     {
         return $this->startedAt;
@@ -141,10 +151,16 @@ final class KitchenTicket
     }
 
     /**
+     * Взять тикет в работу: queued → started + assignee.
+     *
      * @param  int|null  $orderBranchId  филиал, назначенный заказу на момент старта
      */
-    public function start(?int $orderBranchId, ?DateTimeImmutable $at = null): void
+    public function start(int $employeeId, ?int $orderBranchId, ?DateTimeImmutable $at = null): void
     {
+        if ($employeeId < 1) {
+            throw new \InvalidArgumentException('employeeId должен быть положительным.');
+        }
+
         if ($this->status !== KitchenTicketStatus::Queued) {
             throw new \LogicException('Начать можно только тикет в очереди.');
         }
@@ -154,6 +170,7 @@ final class KitchenTicket
         }
 
         $this->status = KitchenTicketStatus::Started;
+        $this->assigneeEmployeeId = $employeeId;
         $this->startedAt = $at ?? new DateTimeImmutable();
 
         if ($this->id !== null) {
@@ -165,10 +182,18 @@ final class KitchenTicket
         }
     }
 
-    public function complete(?DateTimeImmutable $at = null): void
+    public function complete(int $employeeId, ?DateTimeImmutable $at = null): void
     {
+        if ($employeeId < 1) {
+            throw new \InvalidArgumentException('employeeId должен быть положительным.');
+        }
+
         if ($this->status !== KitchenTicketStatus::Started) {
             throw new \LogicException('Завершить можно только тикет в работе.');
+        }
+
+        if ($this->assigneeEmployeeId !== $employeeId) {
+            throw new \LogicException('Тикет закреплён за другим поваром.');
         }
 
         $this->status = KitchenTicketStatus::Completed;

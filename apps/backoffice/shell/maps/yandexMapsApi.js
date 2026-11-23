@@ -1,6 +1,6 @@
 const SCRIPT_ID = "gangsters-backoffice-yandex-maps-api";
 
-/** Томск — дефолтный центр карты. */
+/** Томск — дефолтный центр карты (fallback, если город филиала не задан). */
 export const TOMSK_CENTER = [56.49771, 84.97437];
 
 /**
@@ -9,6 +9,102 @@ export const TOMSK_CENTER = [56.49771, 84.97437];
 export function readYandexMapsApiKey() {
     const key = import.meta.env?.VITE_YANDEX_MAPS_API_KEY;
     return typeof key === "string" && key.trim() !== "" ? key.trim() : null;
+}
+
+/**
+ * Подмешивает город филиала в строку поиска/геокода, чтобы Яндекс не уводил в другой город.
+ *
+ * @param {string} query
+ * @param {string|null|undefined} city
+ * @returns {string}
+ */
+export function biasQueryWithCity(query, city) {
+    const text = String(query ?? "").trim();
+    if (!text) {
+        return "";
+    }
+    const cityName = String(city ?? "").trim();
+    if (!cityName) {
+        return text;
+    }
+    const lower = text.toLowerCase();
+    const cityLower = cityName.toLowerCase();
+    if (lower.includes(cityLower)) {
+        return text;
+    }
+    return `${cityName}, ${text}`;
+}
+
+/**
+ * Provider для SuggestView: подсказки в контексте города филиала.
+ *
+ * @param {string|null|undefined} city
+ * @returns {{ suggest: (request: string) => Promise<unknown> }}
+ */
+export function createCityBiasedSuggestProvider(city) {
+    return {
+        suggest(request) {
+            const q = biasQueryWithCity(request, city);
+            return window.ymaps.suggest(q);
+        },
+    };
+}
+
+/**
+ * Геокод с bias по городу филиала.
+ *
+ * @param {string} query
+ * @param {string|null|undefined} city
+ * @param {{ results?: number }} [options]
+ * @returns {Promise<unknown>}
+ */
+export function geocodeWithCityBias(query, city, options = {}) {
+    const text = biasQueryWithCity(query, city);
+    if (!text) {
+        return Promise.reject(new Error("Пустой запрос геокода"));
+    }
+    return window.ymaps.geocode(text, {
+        results: options.results ?? 1,
+    });
+}
+
+/**
+ * Центр карты: координаты адреса → геокод города → fallback Томск.
+ *
+ * @param {{
+ *   latitude?: number|null,
+ *   longitude?: number|null,
+ *   city?: string|null,
+ * }} params
+ * @returns {Promise<[number, number]>}
+ */
+export async function resolveMapCenter(params) {
+    const latitude = Number(params.latitude);
+    const longitude = Number(params.longitude);
+    if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
+        return [latitude, longitude];
+    }
+
+    const city = String(params.city ?? "").trim();
+    if (city && typeof window.ymaps !== "undefined") {
+        try {
+            const result = await window.ymaps.geocode(city, {
+                results: 1,
+                kind: "locality",
+            });
+            const geoObject = result.geoObjects.get(0);
+            const coords = geoObject?.geometry?.getCoordinates?.();
+            const lat = Number(coords?.[0]);
+            const lng = Number(coords?.[1]);
+            if (Number.isFinite(lat) && Number.isFinite(lng)) {
+                return [lat, lng];
+            }
+        } catch {
+            // fallback ниже
+        }
+    }
+
+    return TOMSK_CENTER;
 }
 
 /**

@@ -63,7 +63,6 @@ const cloneForm = ref({
 const columns = [
     { key: "name", label: "Позиция" },
     { key: "isAvailable", label: "В продаже", width: "170px" },
-    { key: "isGiftCandidate", label: "Подарок", width: "140px" },
     { key: "priceRubles", label: "Цена в филиале (₽)", width: "190px" },
     { key: "actions", label: "", width: "260px" },
 ];
@@ -96,16 +95,13 @@ function buildRow(item, menuByItemId) {
     const entry = menuByItemId.get(Number(item.id));
     const priceRubles = entry ? kopecksToRubles(entry.price_kopecks) : "";
     const isAvailable = entry ? Boolean(entry.is_available) : false;
-    const isGiftCandidate = entry ? Boolean(entry.is_gift_candidate) : false;
-
     return {
         id: Number(item.id),
         name: item.name ?? `#${item.id}`,
         inMenu: Boolean(entry),
         isAvailable,
-        isGiftCandidate,
         priceRubles,
-        saved: { isAvailable, isGiftCandidate, priceRubles },
+        saved: { isAvailable, priceRubles },
         saving: false,
         error: "",
     };
@@ -137,7 +133,6 @@ async function loadMenu() {
 
 function isDirty(row) {
     return row.isAvailable !== row.saved.isAvailable
-        || row.isGiftCandidate !== row.saved.isGiftCandidate
         || row.priceRubles !== row.saved.priceRubles;
 }
 
@@ -158,15 +153,12 @@ async function saveRow(row) {
         const saved = await saveBranchMenuItem(branchId, row.id, {
             is_available: row.isAvailable,
             price_kopecks: priceKopecks,
-            is_gift_candidate: Boolean(row.isGiftCandidate),
         });
         row.inMenu = true;
         row.isAvailable = Boolean(saved?.is_available ?? row.isAvailable);
-        row.isGiftCandidate = Boolean(saved?.is_gift_candidate ?? row.isGiftCandidate);
         row.priceRubles = kopecksToRubles(saved?.price_kopecks ?? priceKopecks);
         row.saved = {
             isAvailable: row.isAvailable,
-            isGiftCandidate: row.isGiftCandidate,
             priceRubles: row.priceRubles,
         };
         toast.success("Позиция сохранена");
@@ -189,11 +181,9 @@ async function confirmRemove() {
         await deleteBranchMenuItem(branchId, row.id);
         row.inMenu = false;
         row.isAvailable = false;
-        row.isGiftCandidate = false;
         row.priceRubles = "";
         row.saved = {
             isAvailable: row.isAvailable,
-            isGiftCandidate: row.isGiftCandidate,
             priceRubles: row.priceRubles,
         };
         row.error = "";
@@ -325,15 +315,6 @@ onMounted(async () => {
                                 :name="row.isAvailable ? 'eye' : 'eye-off'"
                                 class="h-4 w-4"
                             />
-                        </UiToggle>
-                    </template>
-                    <template #cell-isGiftCandidate="{ row }">
-                        <UiToggle
-                            v-model="row.isGiftCandidate"
-                            aria-label="Подарок"
-                            :disabled="row.saving"
-                        >
-                            <ShellIcon name="gift" class="h-4 w-4" />
                         </UiToggle>
                     </template>
                     <template #cell-priceRubles="{ row }">

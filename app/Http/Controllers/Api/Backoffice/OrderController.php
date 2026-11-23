@@ -8,10 +8,8 @@ use App\Application\Order\Command\AddOrderNoteUseCase;
 use App\Application\Order\Command\CancelOrderUseCase;
 use App\Application\Order\Command\CompletePickupOrderUseCase;
 use App\Application\Order\Command\CreateOrderUseCase;
-use App\Application\Order\Command\ReassignBranchUseCase;
 use App\Application\Order\DTO\AcceptOrderDto;
 use App\Application\Order\DTO\CreateOrderDto;
-use App\Application\Order\DTO\ReassignBranchDto;
 use App\Application\Order\Query\GetAdminOrderUseCase;
 use App\Application\Order\Query\ListAdminOrdersUseCase;
 use App\Application\Order\Query\QuoteOrderUseCase;
@@ -99,25 +97,6 @@ final class OrderController extends Controller
         try {
             return response()->json($useCase->execute(new AcceptOrderDto(
                 orderId: $id,
-            )));
-        } catch (InvalidArgumentException $exception) {
-            return response()->json(['message' => $exception->getMessage()], 422);
-        }
-    }
-
-    public function reassignBranch(
-        Request $request,
-        int $id,
-        ReassignBranchUseCase $useCase,
-    ): JsonResponse {
-        $validated = $request->validate([
-            'branch_id' => ['required', 'integer', 'min:1'],
-        ]);
-
-        try {
-            return response()->json($useCase->execute(new ReassignBranchDto(
-                orderId: $id,
-                branchId: (int) $validated['branch_id'],
             )));
         } catch (InvalidArgumentException $exception) {
             return response()->json(['message' => $exception->getMessage()], 422);

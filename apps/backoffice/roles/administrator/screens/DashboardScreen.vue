@@ -86,8 +86,8 @@ onMounted(async () => {
                         :to="{ name: 'administrator-live-orders', query: { status: 'preparing' } }"
                     />
                     <DashboardMetricCard
-                        label="Готов (курьер)"
-                        :value="Number(ops.ready_courier ?? 0)"
+                        label="Готов"
+                        :value="Number(ops.ready ?? 0)"
                         :to="{ name: 'administrator-live-orders', query: { status: 'ready' } }"
                     />
                     <DashboardMetricCard

@@ -71,8 +71,11 @@ final class EloquentBranchCategoryRepository implements BranchCategoryRepository
         int $sortOrder,
         bool $isActive,
         bool $isAccompanying,
+        bool $isComplement = false,
+        bool $isGift = false,
         ?array $items = null,
     ): BranchCategory {
+        BranchCategory::assertExclusiveRoles($isAccompanying, $isComplement, $isGift);
         $normalizedItems = $items === null ? null : $this->normalizeItems($items);
 
         return DB::transaction(function () use (
@@ -83,6 +86,8 @@ final class EloquentBranchCategoryRepository implements BranchCategoryRepository
             $sortOrder,
             $isActive,
             $isAccompanying,
+            $isComplement,
+            $isGift,
             $normalizedItems,
         ): BranchCategory {
             $scope = CMP_BranchCategory::query()->where('branch_id', $branchId);
@@ -117,6 +122,8 @@ final class EloquentBranchCategoryRepository implements BranchCategoryRepository
                 'sort_order' => $sortOrder,
                 'is_active' => $isActive,
                 'is_accompanying' => $isAccompanying,
+                'is_complement' => $isComplement,
+                'is_gift' => $isGift,
             ]);
             $row->save();
 
@@ -197,6 +204,8 @@ final class EloquentBranchCategoryRepository implements BranchCategoryRepository
                     'sort_order' => $category->sortOrder(),
                     'is_active' => $category->isActive(),
                     'is_accompanying' => $category->isAccompanying(),
+                    'is_complement' => $category->isComplement(),
+                    'is_gift' => $category->isGift(),
                 ]);
 
                 $rawItems = [];

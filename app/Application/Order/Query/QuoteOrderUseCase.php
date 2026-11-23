@@ -16,7 +16,6 @@ use App\Domain\Core\Order\ValueObject\OrderDeliveryAddress;
 use App\Domain\Core\Order\ValueObject\OrderDeliveryInfo;
 use App\Domain\Core\Order\ValueObject\OrderLine;
 use App\Shared\Enum\DeliveryMethod;
-use App\Shared\Geo\AddressGeocoder;
 use App\Shared\ValueObject\PhoneNumber;
 use DateTimeImmutable;
 use Illuminate\Support\Str;
@@ -33,7 +32,6 @@ final class QuoteOrderUseCase implements CheckoutQuote
         private readonly OrderBranchLookupPort $branches,
         private readonly OrderBranchMenuSnapshotPort $menu,
         private readonly FormCheckoutPromotions $promotions,
-        private readonly AddressGeocoder $geocoder,
     ) {}
 
     /**
@@ -56,7 +54,7 @@ final class QuoteOrderUseCase implements CheckoutQuote
             throw new \InvalidArgumentException('Конфигурация доставки филиала не найдена.');
         }
 
-        [$latitude, $longitude] = $this->resolveCoordinates($deliveryMethod, $dto, $branch['city']);
+        [$latitude, $longitude] = $this->resolveCoordinates($deliveryMethod, $dto);
         $zone = $deliveryMethod === DeliveryMethod::Courier->value
             ? $this->deliveryTariffs->matchZoneByCoordinates($branch['id'], $latitude, $longitude)
             : null;
@@ -73,7 +71,7 @@ final class QuoteOrderUseCase implements CheckoutQuote
 
         if ($deliveryMethod === DeliveryMethod::Courier->value) {
             $deliveryInfo = OrderDeliveryInfo::courier(
-                address: $this->deliveryAddress($dto),
+                address: $this->deliveryAddress($dto, $latitude, $longitude),
                 zoneId: $zone !== null ? $zone['id'] : 'outside',
                 feeKopecks: $zone !== null ? $zone['fee_kopecks'] : 0,
             );
@@ -131,7 +129,9 @@ final class QuoteOrderUseCase implements CheckoutQuote
 
         $delivery = [
             'method' => $deliveryMethod,
-            'address' => $deliveryMethod === DeliveryMethod::Courier->value ? $dto->address : null,
+            'address' => $deliveryMethod === DeliveryMethod::Courier->value
+                ? $this->presentQuoteAddress($dto->address, $latitude, $longitude)
+                : null,
             'scheduled_at' => $dto->scheduledAt,
             'delivery_fee_rubles' => $deliveryFeeRubles,
             'delivery_fee_kopecks' => $deliveryFeeKopecks,
@@ -276,7 +276,7 @@ final class QuoteOrderUseCase implements CheckoutQuote
         return $lines;
     }
 
-    private function deliveryAddress(QuoteOrderDto $dto): OrderDeliveryAddress
+    private function deliveryAddress(QuoteOrderDto $dto, ?float $latitude, ?float $longitude): OrderDeliveryAddress
     {
         $address = $dto->address ?? [];
 
@@ -287,7 +287,26 @@ final class QuoteOrderUseCase implements CheckoutQuote
             floor: isset($address['floor']) ? (string) $address['floor'] : null,
             apartment: isset($address['apartment']) ? (string) $address['apartment'] : null,
             comment: isset($address['comment']) ? (string) $address['comment'] : null,
+            lat: $latitude,
+            lng: $longitude,
         );
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $address
+     * @return array<string, mixed>|null
+     */
+    private function presentQuoteAddress(?array $address, ?float $latitude, ?float $longitude): ?array
+    {
+        if ($address === null) {
+            return null;
+        }
+
+        return [
+            ...$address,
+            'lat' => $latitude,
+            'lng' => $longitude,
+        ];
     }
 
     /**
@@ -374,8 +393,8 @@ final class QuoteOrderUseCase implements CheckoutQuote
             if ($line->lineType() === OrderLineType::Complement) {
                 $complementQty = max($complementQty, $line->quantity());
             }
-            if ($facts->isRoll($line->productId()) && $line->isBillable()) {
-                $rollCount += $line->quantity();
+            if ($line->isBillable()) {
+                $rollCount += $facts->rollUnitsPerLineUnit($line->productId()) * $line->quantity();
             }
         }
 
@@ -469,33 +488,38 @@ final class QuoteOrderUseCase implements CheckoutQuote
     }
 
     /**
+     * Координаты приходят с клиента (ДаДата / карта). Серверный геокод не используем.
+     *
      * @return array{0: ?float, 1: ?float}
      */
     private function resolveCoordinates(
         string $deliveryMethod,
         QuoteOrderDto $dto,
-        ?string $branchCity,
     ): array {
         if ($deliveryMethod !== DeliveryMethod::Courier->value) {
             return [null, null];
         }
 
         $address = $dto->address ?? [];
-        $lat = isset($address['lat']) ? (float) $address['lat'] : null;
-        $lng = isset($address['lng']) ? (float) $address['lng'] : null;
-        if ($lat !== null && $lng !== null) {
-            return [$lat, $lng];
-        }
-
         $street = trim((string) ($address['street'] ?? ''));
         $house = trim((string) ($address['house'] ?? ''));
         if ($street === '' || $house === '') {
             throw new \InvalidArgumentException('Для курьера нужны street и house.');
         }
 
-        $coords = $this->geocoder->geocode($street, $house, $branchCity);
+        $latRaw = $address['lat'] ?? null;
+        $lngRaw = $address['lng'] ?? null;
+        if ($latRaw === null || $latRaw === '' || $lngRaw === null || $lngRaw === '') {
+            throw new \InvalidArgumentException('Для курьера нужны координаты адреса (выбери подсказку или точку на карте).');
+        }
 
-        return [$coords['latitude'] ?? null, $coords['longitude'] ?? null];
+        $lat = (float) $latRaw;
+        $lng = (float) $lngRaw;
+        if (! is_finite($lat) || ! is_finite($lng)) {
+            throw new \InvalidArgumentException('Некорректные координаты адреса.');
+        }
+
+        return [$lat, $lng];
     }
 
     /**

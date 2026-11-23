@@ -11,7 +11,6 @@ return [
     'access' => [
         // orders — операции
         ['method' => 'POST', 'path' => 'orders/*/accept', 'roles' => ['administrator']],
-        ['method' => 'POST', 'path' => 'orders/*/reassign-branch', 'roles' => ['administrator']],
         ['method' => 'POST', 'path' => 'orders/*/status', 'roles' => ['owner', 'administrator']],
         ['method' => 'POST', 'path' => 'orders/*/complete-pickup', 'roles' => ['administrator']],
         ['method' => 'POST', 'path' => 'orders/*/notes', 'roles' => ['owner', 'administrator']],
@@ -127,6 +126,7 @@ return [
         ['method' => 'GET', 'path' => 'employees', 'roles' => ['owner', 'administrator']],
 
         // clients — саппорт: профиль и адреса
+        ['method' => 'POST', 'path' => 'clients/ensure', 'roles' => ['administrator']],
         ['method' => 'POST', 'path' => 'clients/*/addresses/*/default', 'roles' => ['owner', 'administrator']],
         ['method' => 'PUT', 'path' => 'clients/*/addresses/*', 'roles' => ['owner', 'administrator']],
         ['method' => 'DELETE', 'path' => 'clients/*/addresses/*', 'roles' => ['owner', 'administrator']],

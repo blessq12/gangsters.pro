@@ -4,7 +4,6 @@ namespace App\Domain\Core\Order\Entity;
 
 use App\Domain\Core\Order\Enum\OrderLineType;
 use App\Domain\Core\Order\Enum\OrderStatus;
-use App\Domain\Core\Order\Event\BranchReassigned;
 use App\Domain\Core\Order\Event\OrderCancelled;
 use App\Domain\Core\Order\Event\OrderConfirmed;
 use App\Domain\Core\Order\Event\OrderPickedUp;
@@ -352,45 +351,6 @@ final class Order
         }
 
         $this->branchId = $branchId;
-    }
-
-    /**
-     * Переназначение филиала после первичного назначения.
-     * Production отменяет старый тикет и создаёт новый по BranchReassigned.
-     */
-    public function reassignBranch(int $branchId): void
-    {
-        if ($branchId < 1) {
-            throw new \InvalidArgumentException('branchId должен быть положительным.');
-        }
-
-        if ($this->id === null) {
-            throw new \LogicException('Нельзя переназначить филиал без id заказа.');
-        }
-
-        if ($this->branchId === null) {
-            throw new \InvalidArgumentException('Филиал ещё не назначен — используй assignBranch.');
-        }
-
-        if (! in_array($this->status, [OrderStatus::Confirmed, OrderStatus::Preparing], true)) {
-            throw new \InvalidArgumentException(
-                'Переназначение филиала доступно только до готовности заказа.',
-            );
-        }
-
-        if ($branchId === $this->branchId) {
-            throw new \InvalidArgumentException('Указан тот же филиал.');
-        }
-
-        $previousBranchId = $this->branchId;
-        $this->branchId = $branchId;
-
-        $this->record(new BranchReassigned(
-            orderId: $this->id,
-            previousBranchId: $previousBranchId,
-            branchId: $branchId,
-            productionLines: $this->productionLineSnapshots(),
-        ));
     }
 
     public function attachPayment(int $paymentId): void

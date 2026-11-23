@@ -28,7 +28,6 @@ final class EloquentOrderCatalogSnapshotPort implements OrderCatalogSnapshotPort
                 'name' => $product->name(),
                 'sku' => $product->sku(),
                 'is_roll' => $product->isRoll(),
-                'is_complement' => $product->isComplement(),
                 'images' => $images,
             ];
         }

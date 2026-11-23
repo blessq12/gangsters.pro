@@ -67,7 +67,6 @@ final class EloquentBranchMenuRepository implements BranchMenuRepository
             ],
             [
                 'is_available' => $item->isAvailable(),
-                'is_gift_candidate' => $item->isGiftCandidate(),
                 'price_kopecks' => $item->priceKopecks(),
             ],
         );

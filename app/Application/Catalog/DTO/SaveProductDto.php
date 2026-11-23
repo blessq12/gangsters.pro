@@ -27,7 +27,6 @@ final readonly class SaveProductDto
         public array $existingImages = [],
         public array $deletedImageIds = [],
         public bool $isRoll = false,
-        public bool $isComplement = false,
         public array $techCardLines = [],
     ) {}
 }

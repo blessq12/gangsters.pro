@@ -35,6 +35,8 @@ interface BranchCategoryRepository
         int $sortOrder,
         bool $isActive,
         bool $isAccompanying,
+        bool $isComplement = false,
+        bool $isGift = false,
         ?array $items = null,
     ): BranchCategory;
 

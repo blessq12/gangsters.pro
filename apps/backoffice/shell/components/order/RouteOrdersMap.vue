@@ -2,9 +2,11 @@
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import {
     TOMSK_CENTER,
+    geocodeWithCityBias,
     loadYandexMapsApi,
     parseYandexGeoObject,
     readYandexMapsApiKey,
+    resolveMapCenter,
 } from "../../maps/yandexMapsApi.js";
 
 /**
@@ -61,12 +63,19 @@ function toNumberOrNull(value) {
  * @param {RouteMapOrder} order
  * @returns {string}
  */
+function biasCityFor(order) {
+    return String(order.city || props.defaultCity || "").trim();
+}
+
+/**
+ * @param {RouteMapOrder} order
+ * @returns {string}
+ */
 function geocodeQuery(order) {
-    const city = String(order.city || props.defaultCity || "").trim();
-    const parts = [order.street, order.house, city]
+    return [order.street, order.house]
         .map((part) => String(part || "").trim())
-        .filter(Boolean);
-    return parts.join(", ");
+        .filter(Boolean)
+        .join(", ");
 }
 
 /**
@@ -86,7 +95,7 @@ async function resolveCoords(order) {
     }
 
     try {
-        const result = await window.ymaps.geocode(query, { results: 1 });
+        const result = await geocodeWithCityBias(query, biasCityFor(order), { results: 1 });
         if (destroyed) {
             return null;
         }
@@ -256,10 +265,14 @@ async function mountMap() {
         if (destroyed || !mapHost.value) {
             return;
         }
+        const center = await resolveMapCenter({ city: props.defaultCity });
+        if (destroyed || !mapHost.value) {
+            return;
+        }
         map = new window.ymaps.Map(
             mapHost.value,
             {
-                center: TOMSK_CENTER,
+                center: center || TOMSK_CENTER,
                 zoom: 12,
                 controls: ["zoomControl"],
             },

@@ -27,6 +27,8 @@ final class BranchMenuStructurePresenter
             'sort_order' => $category->sortOrder(),
             'is_active' => $category->isActive(),
             'is_accompanying' => $category->isAccompanying(),
+            'is_complement' => $category->isComplement(),
+            'is_gift' => $category->isGift(),
             'items' => array_map(
                 static fn (BranchCategoryItem $item): array => [
                     'entry_kind' => $item->entryKind()->value,

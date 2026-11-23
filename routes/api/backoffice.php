@@ -45,6 +45,7 @@ Route::prefix('backoffice')->middleware(EnsureBackofficeEnabled::class)->group(f
                 ->whereNumber('id');
 
             Route::get('clients', [ClientController::class, 'index']);
+            Route::post('clients/ensure', [ClientController::class, 'ensure']);
             Route::get('clients/{id}', [ClientController::class, 'show'])->whereNumber('id');
             Route::patch('clients/{id}', [ClientController::class, 'updateProfile'])->whereNumber('id');
             Route::post('clients/{id}/addresses', [ClientController::class, 'addAddress'])->whereNumber('id');
@@ -61,8 +62,6 @@ Route::prefix('backoffice')->middleware(EnsureBackofficeEnabled::class)->group(f
             Route::post('orders', [OrderController::class, 'store']);
             Route::get('orders/{id}', [OrderController::class, 'show'])->whereNumber('id');
             Route::post('orders/{id}/accept', [OrderController::class, 'accept'])->whereNumber('id');
-            Route::post('orders/{id}/reassign-branch', [OrderController::class, 'reassignBranch'])
-                ->whereNumber('id');
             Route::post('orders/{id}/status', [OrderController::class, 'changeStatus'])->whereNumber('id');
             Route::post('orders/{id}/complete-pickup', [OrderController::class, 'completePickup'])
                 ->whereNumber('id');

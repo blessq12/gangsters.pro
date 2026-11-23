@@ -1,12 +1,15 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { storeToRefs } from "pinia";
+import { getBranch } from "../../../api/company.js";
 import {
     getRouteSheet,
     settleStop,
 } from "../../../api/delivery.js";
 import { useApi } from "../../../shell/composables/useApi.js";
 import { useToast } from "../../../shell/composables/useToast.js";
+import { useAuthStore } from "../../../shell/store/authStore.js";
 import RouteOrdersMap from "../../../shell/components/order/RouteOrdersMap.vue";
 import UiBadge from "../../../shell/components/ui/UiBadge.vue";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
@@ -24,6 +27,8 @@ import {
 const route = useRoute();
 const router = useRouter();
 const toast = useToast();
+const auth = useAuthStore();
+const { employee } = storeToRefs(auth);
 const detailApi = useApi();
 const actionApi = useApi();
 
@@ -35,9 +40,16 @@ const mapShell = ref(/** @type {HTMLElement|null} */ (null));
 const mapRef = ref(/** @type {{ refreshViewport?: () => void }|null} */ (null));
 const mapFullscreen = ref(false);
 const fullscreenSupported = ref(false);
+const branchCity = ref("");
 
 const sheetId = computed(() => {
     const id = Number(route.params.id);
+    return Number.isFinite(id) && id > 0 ? id : null;
+});
+
+const branchId = computed(() => {
+    const raw = employee.value?.branch_id;
+    const id = Number(raw);
     return Number.isFinite(id) && id > 0 ? id : null;
 });
 
@@ -52,7 +64,7 @@ const mapOrders = computed(() => {
             subtitle: String(order?.client?.name ?? "").trim() || `Остановка ${stop.position}`,
             street: address?.street ? String(address.street) : "",
             house: address?.house ? String(address.house) : "",
-            city: address?.city ? String(address.city) : "",
+            city: address?.city ? String(address.city) : branchCity.value,
             latitude: address?.lat ?? address?.latitude ?? null,
             longitude: address?.lng ?? address?.longitude ?? null,
         };
@@ -165,18 +177,34 @@ async function toggleMapFullscreen() {
     }
 }
 
+async function loadBranchCity() {
+    if (!branchId.value) {
+        branchCity.value = "";
+        return;
+    }
+    try {
+        const branch = await getBranch(branchId.value);
+        branchCity.value = String(branch?.city ?? "").trim();
+    } catch {
+        branchCity.value = "";
+    }
+}
+
 watch(sheetId, () => {
     load();
 });
 
-onMounted(() => {
+onMounted(async () => {
     fullscreenSupported.value = Boolean(
         document.documentElement.requestFullscreen
         || document.documentElement.webkitRequestFullscreen,
     );
     document.addEventListener("fullscreenchange", syncFullscreenState);
     document.addEventListener("webkitfullscreenchange", syncFullscreenState);
-    load();
+    if (!auth.bootstrapped) {
+        await auth.bootstrap();
+    }
+    await Promise.all([loadBranchCity(), load()]);
 });
 
 onBeforeUnmount(() => {
@@ -233,6 +261,7 @@ onBeforeUnmount(() => {
                     ref="mapRef"
                     :orders="mapOrders"
                     :selected-ids="[]"
+                    :default-city="branchCity"
                 />
                 <div class="absolute bottom-3 right-3 z-20 flex gap-2">
                     <UiButton

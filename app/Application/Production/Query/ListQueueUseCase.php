@@ -16,32 +16,51 @@ final class ListQueueUseCase
     ) {}
 
     /**
-     * @return array{items: list<array<string, mixed>>, total: int, offset: int, limit: int}
+     * @return array{
+     *   pool: array{items: list<array<string, mixed>>, total: int, offset: int, limit: int},
+     *   mine: list<array<string, mixed>>
+     * }
      */
     public function execute(
         int $branchId,
+        int $employeeId,
         int $offset = 0,
         int $limit = PageParams::DEFAULT_LIMIT,
     ): array {
         ['offset' => $offset, 'limit' => $limit] = PageParams::normalize($offset, $limit);
 
-        $page = $this->tickets->listActiveByBranchPage($branchId, $offset, $limit);
+        $poolTickets = $this->tickets->listQueuedByBranchPage($branchId, $offset, $limit);
+        $mineTickets = $employeeId > 0
+            ? $this->tickets->listMineStartedByBranch($branchId, $employeeId)
+            : [];
+
         $orderIds = [];
-        foreach ($page as $ticket) {
+        foreach ($poolTickets as $ticket) {
             $orderIds[] = $ticket->orderId();
         }
-        $snapshots = $this->orders->findMany($orderIds);
+        foreach ($mineTickets as $ticket) {
+            $orderIds[] = $ticket->orderId();
+        }
+        $snapshots = $this->orders->findMany(array_values(array_unique($orderIds)));
 
-        $items = [];
-        foreach ($page as $ticket) {
-            $items[] = $this->presenter->present($ticket, $snapshots[$ticket->orderId()] ?? null);
+        $poolItems = [];
+        foreach ($poolTickets as $ticket) {
+            $poolItems[] = $this->presenter->present($ticket, $snapshots[$ticket->orderId()] ?? null);
         }
 
-        return PageParams::wrap(
-            $items,
-            $this->tickets->countActiveByBranch($branchId),
-            $offset,
-            $limit,
-        );
+        $mineItems = [];
+        foreach ($mineTickets as $ticket) {
+            $mineItems[] = $this->presenter->present($ticket, $snapshots[$ticket->orderId()] ?? null);
+        }
+
+        return [
+            'pool' => PageParams::wrap(
+                $poolItems,
+                $this->tickets->countQueuedByBranch($branchId),
+                $offset,
+                $limit,
+            ),
+            'mine' => $mineItems,
+        ];
     }
 }

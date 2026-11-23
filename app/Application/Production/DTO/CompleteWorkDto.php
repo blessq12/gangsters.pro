@@ -6,5 +6,6 @@ final readonly class CompleteWorkDto
 {
     public function __construct(
         public int $orderId,
+        public int $employeeId,
     ) {}
 }

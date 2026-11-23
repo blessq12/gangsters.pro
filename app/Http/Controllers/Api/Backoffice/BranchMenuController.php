@@ -36,7 +36,6 @@ final class BranchMenuController extends Controller
         $validated = $request->validate([
             'is_available' => ['required', 'boolean'],
             'price_kopecks' => ['required', 'integer', 'min:0'],
-            'is_gift_candidate' => ['sometimes', 'boolean'],
         ]);
 
         try {
@@ -45,7 +44,6 @@ final class BranchMenuController extends Controller
                 catalogItemId: $catalogItemId,
                 isAvailable: (bool) $validated['is_available'],
                 priceKopecks: (int) $validated['price_kopecks'],
-                isGiftCandidate: (bool) ($validated['is_gift_candidate'] ?? false),
             ));
         } catch (InvalidArgumentException $exception) {
             return response()->json(['message' => $exception->getMessage()], 422);

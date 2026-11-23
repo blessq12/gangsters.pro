@@ -14,7 +14,7 @@ use RuntimeException;
 
 /**
  * Товары каталога из публичного API витрины → CAT_items + CAT_item_images.
- * is_roll / is_complement берутся из promotion_meta.
+ * is_roll берётся из promotion_meta; роли комплемента/подарка задаются категориями филиала.
  *
  * Категории, теги, сеты и цены сюда НЕ входят: структура меню и цены — в филиале (CMP_*),
  * наполняет админка. Позиции API с kind=set пропускаются (сет — сущность филиала).
@@ -170,7 +170,6 @@ class CatalogSeeder extends Seeder
                     'status' => $status,
                     'is_system' => false,
                     'is_roll' => ! empty($meta['counts_as_roll']),
-                    'is_complement' => ! empty($meta['complement_set']),
                     'weight' => isset($row['weight']) && is_numeric($row['weight'])
                         ? (int) $row['weight']
                         : null,

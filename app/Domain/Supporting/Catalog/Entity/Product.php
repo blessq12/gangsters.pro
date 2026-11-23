@@ -23,7 +23,6 @@ final class Product
         private readonly ProductStatus $status,
         private readonly bool $isSystem,
         private readonly bool $isRoll,
-        private readonly bool $isComplement,
         private readonly ?string $description,
         private readonly ?Nutrition $nutrition,
         private readonly array $ingredients = [],
@@ -69,11 +68,6 @@ final class Product
     public function isRoll(): bool
     {
         return $this->isRoll;
-    }
-
-    public function isComplement(): bool
-    {
-        return $this->isComplement;
     }
 
     public function weight(): ?int

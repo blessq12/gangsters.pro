@@ -66,21 +66,22 @@ const paymentText = computed(() => (order.value ? paymentHint(order.value) : "")
 
 const cartSummary = computed(() => {
     const lines = Array.isArray(order.value?.cart?.lines) ? order.value.cart.lines : [];
-    const counts = { regular: 0, set: 0, gift: 0, complement: 0, other: 0 };
+    const counts = { product: 0, gift: 0, complement: 0, other: 0 };
     for (const line of lines) {
         const type = String(line?.line_type ?? "regular");
-        if (type === "regular" || type === "set" || type === "gift" || type === "complement") {
-            counts[type] += 1;
+        if (type === "regular" || type === "set") {
+            counts.product += 1;
+        } else if (type === "gift") {
+            counts.gift += 1;
+        } else if (type === "complement") {
+            counts.complement += 1;
         } else {
             counts.other += 1;
         }
     }
     const parts = [];
-    if (counts.regular > 0) {
-        parts.push(`заказ ${counts.regular}`);
-    }
-    if (counts.set > 0) {
-        parts.push(`комплект ${counts.set}`);
+    if (counts.product > 0) {
+        parts.push(`заказ ${counts.product}`);
     }
     if (counts.gift > 0) {
         parts.push(`подарок ${counts.gift}`);

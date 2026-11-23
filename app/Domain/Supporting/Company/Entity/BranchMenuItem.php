@@ -3,7 +3,7 @@
 namespace App\Domain\Supporting\Company\Entity;
 
 /**
- * Позиция меню филиала: доступность, продажная цена и флаги акции в контексте branchId.
+ * Позиция меню филиала: доступность и продажная цена в контексте branchId.
  * Каталог остаётся справочником без знания о филиалах.
  */
 final class BranchMenuItem
@@ -13,7 +13,6 @@ final class BranchMenuItem
         private readonly int $catalogItemId,
         private readonly bool $isAvailable,
         private readonly int $priceKopecks,
-        private readonly bool $isGiftCandidate = false,
         private readonly ?int $id = null,
     ) {
         if ($this->branchId < 1) {
@@ -50,10 +49,5 @@ final class BranchMenuItem
     public function priceKopecks(): int
     {
         return $this->priceKopecks;
-    }
-
-    public function isGiftCandidate(): bool
-    {
-        return $this->isGiftCandidate;
     }
 }

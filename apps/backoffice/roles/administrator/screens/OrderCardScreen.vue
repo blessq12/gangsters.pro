@@ -6,15 +6,12 @@ import {
     cancelOrder,
     completePickup,
     getOrder,
-    reassignBranch,
 } from "../../../api/orders.js";
 import OrderFacts from "../../../shell/components/order/OrderFacts.vue";
 import UiBadge from "../../../shell/components/ui/UiBadge.vue";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
 import UiCard from "../../../shell/components/ui/UiCard.vue";
 import UiConfirmDialog from "../../../shell/components/ui/UiConfirmDialog.vue";
-import UiFormField from "../../../shell/components/ui/UiFormField.vue";
-import UiModal from "../../../shell/components/ui/UiModal.vue";
 import { useApi } from "../../../shell/composables/useApi.js";
 import { useBranchChoice } from "../../../shell/composables/useBranchChoice.js";
 import { useToast } from "../../../shell/composables/useToast.js";
@@ -34,15 +31,12 @@ const {
     branches,
     load: loadBranches,
     labelOf,
-    branchLabel,
 } = useBranchChoice();
 
 const order = ref(null);
 const confirmOpen = ref(false);
-const reassignOpen = ref(false);
 const cancelOpen = ref(false);
 const pickupOpen = ref(false);
-const selectedBranchId = ref("");
 
 const orderId = computed(() => route.params.id);
 const commands = computed(() => administratorCommands(order.value));
@@ -51,9 +45,6 @@ const branchCity = computed(() => {
     const branch = branches.value.find((item) => String(item.id) === String(order.value?.branch_id ?? ""));
     return String(branch?.city ?? "").trim();
 });
-const otherBranches = computed(() =>
-    branches.value.filter((branch) => String(branch.id) !== String(order.value?.branch_id ?? "")),
-);
 
 async function load() {
     if (!orderId.value) {
@@ -80,11 +71,6 @@ function onCommand(id) {
         confirmOpen.value = true;
         return;
     }
-    if (id === "reassign") {
-        selectedBranchId.value = "";
-        reassignOpen.value = true;
-        return;
-    }
     if (id === "pickup") {
         pickupOpen.value = true;
         return;
@@ -105,21 +91,6 @@ async function submitConfirm() {
         toast.success("Заказ подтверждён. Тикет и платёж созданы.");
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось подтвердить");
-    }
-}
-
-async function submitReassign() {
-    const branchId = Number(selectedBranchId.value);
-    if (!branchId) {
-        toast.error("Выбери другой филиал");
-        return;
-    }
-    reassignOpen.value = false;
-    try {
-        order.value = await actionApi.run(() => reassignBranch(order.value.id, { branch_id: branchId }));
-        toast.success("Филиал переназначен. Старый тикет сменится новым.");
-    } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Не удалось переназначить филиал");
     }
 }
 
@@ -202,35 +173,6 @@ onMounted(async () => {
             @confirm="submitConfirm"
             @cancel="confirmOpen = false"
         />
-
-        <UiModal :open="reassignOpen" title="Переназначить филиал" @close="reassignOpen = false">
-            <p class="mb-4 text-sm text-bo-muted">
-                Пока тикет не взят в работу, старый закроется и встанет новый на другой филиал.
-            </p>
-            <UiFormField label="Новый филиал" required>
-                <select
-                    v-model="selectedBranchId"
-                    class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 text-sm focus:border-bo-accent focus:outline-none"
-                >
-                    <option value="">Выбери филиал</option>
-                    <option
-                        v-for="branch in otherBranches"
-                        :key="branch.id"
-                        :value="String(branch.id)"
-                    >
-                        {{ branchLabel(branch) }}
-                    </option>
-                </select>
-            </UiFormField>
-            <template #footer>
-                <UiButton class="!bg-white/10 !text-bo-fg" @click="reassignOpen = false">
-                    Закрыть
-                </UiButton>
-                <UiButton :disabled="actionApi.loading" @click="submitReassign">
-                    Переназначить
-                </UiButton>
-            </template>
-        </UiModal>
 
         <UiConfirmDialog
             :open="pickupOpen"

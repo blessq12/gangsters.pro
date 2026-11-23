@@ -61,10 +61,6 @@ export function cancelOrder(id) {
  * @param {number|string} id
  * @param {{ branch_id: number }} data
  */
-export function reassignBranch(id, data) {
-    return request("POST", `/orders/${id}/reassign-branch`, data);
-}
-
 /** @param {number|string} id */
 export function completePickup(id) {
     return request("POST", `/orders/${id}/complete-pickup`);

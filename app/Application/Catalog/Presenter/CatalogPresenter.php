@@ -28,7 +28,6 @@ final class CatalogPresenter
             'status' => $product->status()->value,
             'is_system' => $product->isSystem(),
             'is_roll' => $product->isRoll(),
-            'is_complement' => $product->isComplement(),
             'weight' => $product->weight(),
             'description' => $product->description(),
             'nutrition' => $this->nutrition($product->nutrition()),
@@ -65,7 +64,6 @@ final class CatalogPresenter
             'status' => $product->status()->value,
             'is_system' => $product->isSystem(),
             'is_roll' => $product->isRoll(),
-            'is_complement' => $product->isComplement(),
             'description' => $product->description(),
             'sku' => $product->sku(),
         ];
@@ -85,7 +83,6 @@ final class CatalogPresenter
             'status' => $product->status()->value,
             'is_system' => $product->isSystem(),
             'is_roll' => $product->isRoll(),
-            'is_complement' => $product->isComplement(),
             'description' => $product->description(),
             'weight' => $product->weight(),
             'ingredients' => $product->ingredients(),
