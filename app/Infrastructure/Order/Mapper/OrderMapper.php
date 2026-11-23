@@ -130,12 +130,9 @@ final class OrderMapper
     {
         $type = DeliveryMethod::from((string) $row->delivery_type);
 
-        if ($type === DeliveryMethod::Pickup) {
-            return OrderDeliveryInfo::pickup((int) $row->delivery_fee_kopecks);
-        }
-
-        return OrderDeliveryInfo::courier(
-            new OrderDeliveryAddress(
+        $address = null;
+        if ($type === DeliveryMethod::Courier) {
+            $address = OrderDeliveryAddress::restore(
                 street: (string) $row->delivery_street,
                 house: (string) $row->delivery_house,
                 entrance: $this->nullableString($row->delivery_entrance),
@@ -144,9 +141,14 @@ final class OrderMapper
                 comment: $this->nullableString($row->delivery_comment),
                 lat: $this->nullableFloat($row->delivery_lat),
                 lng: $this->nullableFloat($row->delivery_lng),
-            ),
-            (string) $row->delivery_zone_id,
-            (int) $row->delivery_fee_kopecks,
+            );
+        }
+
+        return OrderDeliveryInfo::restore(
+            type: $type,
+            address: $address,
+            zoneId: $this->nullableString($row->delivery_zone_id),
+            feeKopecks: (int) $row->delivery_fee_kopecks,
         );
     }
 

@@ -9,7 +9,7 @@ use App\Shared\Enum\DeliveryMethod;
  */
 final readonly class OrderDeliveryInfo
 {
-    public function __construct(
+    private function __construct(
         private DeliveryMethod $type,
         private ?OrderDeliveryAddress $address,
         private ?string $zoneId,
@@ -18,19 +18,6 @@ final readonly class OrderDeliveryInfo
         if ($this->feeKopecks < 0) {
             throw new \InvalidArgumentException('Стоимость доставки не может быть отрицательной.');
         }
-
-        if ($this->type === DeliveryMethod::Courier) {
-            if ($this->address === null) {
-                throw new \InvalidArgumentException('Для курьерской доставки нужен адрес.');
-            }
-            if ($this->zoneId === null || trim($this->zoneId) === '') {
-                throw new \InvalidArgumentException('Для курьерской доставки нужна зона.');
-            }
-        }
-
-        if ($this->type === DeliveryMethod::Pickup && $this->address !== null) {
-            throw new \InvalidArgumentException('У самовывоза не может быть адреса доставки.');
-        }
     }
 
     public static function courier(
@@ -38,12 +25,33 @@ final readonly class OrderDeliveryInfo
         string $zoneId,
         int $feeKopecks,
     ): self {
+        if (trim($zoneId) === '') {
+            throw new \InvalidArgumentException('Для курьерской доставки нужна зона.');
+        }
+
         return new self(DeliveryMethod::Courier, $address, $zoneId, $feeKopecks);
     }
 
     public static function pickup(int $feeKopecks = 0): self
     {
         return new self(DeliveryMethod::Pickup, null, null, $feeKopecks);
+    }
+
+    /**
+     * Снимок из хранилища. Старые заказы могут быть без зоны.
+     */
+    public static function restore(
+        DeliveryMethod $type,
+        ?OrderDeliveryAddress $address,
+        ?string $zoneId,
+        int $feeKopecks,
+    ): self {
+        $zoneId = $zoneId !== null && trim($zoneId) !== '' ? $zoneId : null;
+
+        return match ($type) {
+            DeliveryMethod::Pickup => new self(DeliveryMethod::Pickup, null, null, $feeKopecks),
+            DeliveryMethod::Courier => new self(DeliveryMethod::Courier, $address, $zoneId, $feeKopecks),
+        };
     }
 
     public function type(): DeliveryMethod

@@ -57,7 +57,7 @@ final class OrderFormationParityTest extends TestCase
                 }
             }
             $delivery = OrderDeliveryInfo::courier(
-                address: new OrderDeliveryAddress(
+                address: OrderDeliveryAddress::create(
                     street: $intent['address']['street'],
                     house: $intent['address']['house'],
                     lat: $lat,

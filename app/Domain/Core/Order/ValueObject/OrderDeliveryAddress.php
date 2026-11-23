@@ -7,7 +7,7 @@ namespace App\Domain\Core\Order\ValueObject;
  */
 final readonly class OrderDeliveryAddress
 {
-    public function __construct(
+    private function __construct(
         private string $street,
         private string $house,
         private ?string $entrance = null,
@@ -17,10 +17,6 @@ final readonly class OrderDeliveryAddress
         private ?float $lat = null,
         private ?float $lng = null,
     ) {
-        if (trim($this->street) === '' || trim($this->house) === '') {
-            throw new \InvalidArgumentException('Улица и дом обязательны для доставки.');
-        }
-
         if (($this->lat === null) !== ($this->lng === null)) {
             throw new \InvalidArgumentException('Координаты адреса должны быть парой lat/lng.');
         }
@@ -28,6 +24,39 @@ final readonly class OrderDeliveryAddress
         if ($this->lat !== null && (! is_finite($this->lat) || ! is_finite((float) $this->lng))) {
             throw new \InvalidArgumentException('Некорректные координаты адреса.');
         }
+    }
+
+    public static function create(
+        string $street,
+        string $house,
+        ?string $entrance = null,
+        ?string $floor = null,
+        ?string $apartment = null,
+        ?string $comment = null,
+        ?float $lat = null,
+        ?float $lng = null,
+    ): self {
+        if (trim($street) === '' || trim($house) === '') {
+            throw new \InvalidArgumentException('Улица и дом обязательны для доставки.');
+        }
+
+        return new self($street, $house, $entrance, $floor, $apartment, $comment, $lat, $lng);
+    }
+
+    /**
+     * Снимок из хранилища. Старые заказы могут быть без улицы и дома.
+     */
+    public static function restore(
+        string $street,
+        string $house,
+        ?string $entrance = null,
+        ?string $floor = null,
+        ?string $apartment = null,
+        ?string $comment = null,
+        ?float $lat = null,
+        ?float $lng = null,
+    ): self {
+        return new self($street, $house, $entrance, $floor, $apartment, $comment, $lat, $lng);
     }
 
     public function street(): string

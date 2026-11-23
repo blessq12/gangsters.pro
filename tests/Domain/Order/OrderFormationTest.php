@@ -160,7 +160,7 @@ final class OrderFormationTest extends TestCase
         return OrderFormation::apply(
             baseLines: [$this->line(1, 'Ролл', $subtotalKopecks, 1, OrderLineType::Regular)],
             delivery: OrderDeliveryInfo::courier(
-                new OrderDeliveryAddress('Ленина', '1'),
+                OrderDeliveryAddress::create('Ленина', '1'),
                 'zone-1',
                 $baseFee,
             ),

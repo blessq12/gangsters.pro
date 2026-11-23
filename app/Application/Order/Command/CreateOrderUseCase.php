@@ -166,7 +166,7 @@ final class CreateOrderUseCase
         [$lat, $lng] = $this->resolveAddressCoordinates($addressRaw, $delivery);
 
         return OrderDeliveryInfo::courier(
-            address: new OrderDeliveryAddress(
+            address: OrderDeliveryAddress::create(
                 street: (string) ($addressRaw['street'] ?? ''),
                 house: (string) ($addressRaw['house'] ?? ''),
                 entrance: isset($addressRaw['entrance']) ? (string) $addressRaw['entrance'] : null,

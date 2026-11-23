@@ -281,7 +281,7 @@ final class QuoteOrderUseCase implements CheckoutQuote
     {
         $address = $dto->address ?? [];
 
-        return new OrderDeliveryAddress(
+        return OrderDeliveryAddress::create(
             street: (string) ($address['street'] ?? ''),
             house: (string) ($address['house'] ?? ''),
             entrance: isset($address['entrance']) ? (string) $address['entrance'] : null,
