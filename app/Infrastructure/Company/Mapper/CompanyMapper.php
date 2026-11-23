@@ -4,11 +4,11 @@ namespace App\Infrastructure\Company\Mapper;
 
 use App\Domain\Supporting\Company\Entity\Company;
 use App\Domain\Supporting\Company\ValueObject\CompanySocials;
-use App\Infrastructure\Company\Model\CMP_Company;
+use App\Infrastructure\Company\Model\CompanyModel;
 
 final class CompanyMapper
 {
-    public function toDomain(CMP_Company $row): Company
+    public function toDomain(CompanyModel $row): Company
     {
         return new Company(
             id: (int) $row->id,

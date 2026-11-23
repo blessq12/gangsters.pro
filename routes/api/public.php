@@ -7,11 +7,10 @@ use App\Http\Controllers\Api\PublicApi\CompanyController;
 use App\Http\Controllers\Api\PublicApi\DeliveryController;
 use App\Http\Controllers\Api\PublicApi\MarketingController;
 use App\Http\Controllers\Api\PublicApi\OrderController;
-use App\Http\Controllers\Api\PublicApi\PromotionController;
 use Illuminate\Support\Facades\Route;
 
 /*
-| Public API: auth stubs + catalog/company/delivery/order-policy + checkout context + client CRM.
+| Public API: auth stubs + catalog/company/delivery + checkout context + client CRM.
 */
 
 Route::prefix('public')->group(function (): void {
@@ -23,7 +22,6 @@ Route::prefix('public')->group(function (): void {
     Route::get('catalog', [CatalogController::class, 'show']);
     Route::get('company', [CompanyController::class, 'show']);
     Route::get('delivery', [DeliveryController::class, 'show']);
-    Route::get('order/policy', [PromotionController::class, 'show']);
     Route::get('marketing', [MarketingController::class, 'show']);
 
     Route::get('checkout/context', [OrderController::class, 'context']);

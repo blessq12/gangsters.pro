@@ -14,7 +14,6 @@ use App\Http\Controllers\Api\Backoffice\MarketingController;
 use App\Http\Controllers\Api\Backoffice\OrderController;
 use App\Http\Controllers\Api\Backoffice\PaymentController;
 use App\Http\Controllers\Api\Backoffice\ProductionController;
-use App\Http\Controllers\Api\Backoffice\PromotionController;
 use App\Http\Controllers\Api\Backoffice\WarehouseController;
 use App\Http\Middleware\EnsureBackofficeEnabled;
 use Illuminate\Support\Facades\Route;
@@ -189,14 +188,9 @@ Route::prefix('backoffice')->middleware(EnsureBackofficeEnabled::class)->group(f
 
             Route::get('courier/route-sheets', [CourierController::class, 'routeSheets']);
 
-            Route::get('order/policy', [PromotionController::class, 'show']);
-            Route::post('order/policy', [PromotionController::class, 'store']);
-            Route::put('order/policy', [PromotionController::class, 'update']);
-            Route::get('order/policy/roles', [PromotionController::class, 'listRoles']);
-            Route::post('order/policy/roles', [PromotionController::class, 'assignRole']);
-            Route::delete('order/policy/roles', [PromotionController::class, 'destroyRole']);
-            Route::get('order/policy/zones', [PromotionController::class, 'listZones']);
-            Route::post('order/policy/sync-zones', [PromotionController::class, 'syncZones']);
+            Route::get('order/commercial-rules', [OrderController::class, 'showCommercialRules']);
+            Route::post('order/commercial-rules', [OrderController::class, 'storeCommercialRules']);
+            Route::put('order/commercial-rules', [OrderController::class, 'updateCommercialRules']);
 
             Route::get('marketing', [MarketingController::class, 'show']);
             Route::get('marketing/banners', [MarketingController::class, 'listBanners']);

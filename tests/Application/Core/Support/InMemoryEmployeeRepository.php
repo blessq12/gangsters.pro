@@ -2,9 +2,9 @@
 
 namespace Tests\Application\Core\Support;
 
-use App\Domain\Generic\Staff\Entity\Employee;
-use App\Domain\Generic\Staff\Enum\StaffRole;
-use App\Domain\Generic\Staff\Repository\EmployeeRepository;
+use App\Domain\Supporting\Staff\Entity\Employee;
+use App\Domain\Supporting\Staff\Enum\StaffRole;
+use App\Domain\Supporting\Staff\Repository\EmployeeRepository;
 
 final class InMemoryEmployeeRepository implements EmployeeRepository
 {

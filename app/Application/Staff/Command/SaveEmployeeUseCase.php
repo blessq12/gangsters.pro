@@ -4,9 +4,9 @@ namespace App\Application\Staff\Command;
 
 use App\Application\Staff\DTO\SaveEmployeeDto;
 use App\Application\Staff\Presenter\EmployeePresenter;
-use App\Domain\Generic\Staff\Entity\Employee;
-use App\Domain\Generic\Staff\Enum\StaffRole;
-use App\Domain\Generic\Staff\Repository\EmployeeRepository;
+use App\Domain\Supporting\Staff\Entity\Employee;
+use App\Domain\Supporting\Staff\Enum\StaffRole;
+use App\Domain\Supporting\Staff\Repository\EmployeeRepository;
 use Illuminate\Support\Facades\Hash;
 
 final class SaveEmployeeUseCase

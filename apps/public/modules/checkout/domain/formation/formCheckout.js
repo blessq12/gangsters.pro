@@ -70,10 +70,10 @@ function buildBaseLines(context, intentLines) {
 }
 
 function buildFacts(context, intent) {
-    const promotions = context.promotions;
+    const commercialRules = context.commercial_rules;
     const giftProductId = Number(intent.gift_product_id) || 0;
     const gift = giftProductId > 0
-        ? promotions.gift_candidates.find((candidate) => candidate.product_id === giftProductId) ?? null
+        ? commercialRules.gift_candidates.find((candidate) => candidate.product_id === giftProductId) ?? null
         : null;
 
     const selections = new Map();
@@ -82,8 +82,8 @@ function buildFacts(context, intent) {
     }
 
     return {
-        complements: promotions.complements,
-        giftCandidates: promotions.gift_candidates,
+        complements: commercialRules.complements,
+        giftCandidates: commercialRules.gift_candidates,
         gift,
         rollUnitsPerLineUnit: (line) => line.rollsPerUnit ?? 0,
         complementQuantity: (productId, entitledSets) => {
@@ -111,8 +111,8 @@ function presentLines(lines) {
 }
 
 function benefits(context, facts, lines, channel, at, itemsTotalKopecks, deliveryFeeKopecks) {
-    const promotions = context.promotions;
-    const giftRule = giftRuleForChannel({ giftRules: promotions.gift_rules }, channel);
+    const commercialRules = context.commercial_rules;
+    const giftRule = giftRuleForChannel({ giftRules: commercialRules.gift_rules }, channel);
     const weekdayOk = giftRule !== null && isGiftRuleAllowedOnDate(giftRule, at, context.timezone);
     const giftThreshold = Number(giftRule?.min_order_amount_kopecks) || 0;
     const giftRuleOk = weekdayOk && itemsTotalKopecks >= giftThreshold && facts.giftCandidates.length > 0;
@@ -136,8 +136,8 @@ function benefits(context, facts, lines, channel, at, itemsTotalKopecks, deliver
         }
     }
 
-    const complement = promotions.complement_set_benefit;
-    const deliveryBenefit = promotions.delivery_benefit;
+    const complement = commercialRules.complement_set_benefit;
+    const deliveryBenefit = commercialRules.delivery_benefit;
     const threshold = Number(deliveryBenefit.free_delivery_threshold_kopecks) || 0;
     const rollsPerSet = Math.max(1, Number(complement.rolls_per_set) || 1);
     const maxSets = Number(complement.max_sets) || 0;
@@ -219,9 +219,9 @@ export function formCheckout(context, intent, now = new Date()) {
         baseLines,
         delivery,
         policy: {
-            giftRules: context.promotions.gift_rules,
-            deliveryBenefit: context.promotions.delivery_benefit,
-            complementSetBenefit: context.promotions.complement_set_benefit,
+            giftRules: context.commercial_rules.gift_rules,
+            deliveryBenefit: context.commercial_rules.delivery_benefit,
+            complementSetBenefit: context.commercial_rules.complement_set_benefit,
         },
         facts,
         channel: deliveryMethod,

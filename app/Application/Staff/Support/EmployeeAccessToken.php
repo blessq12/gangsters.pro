@@ -2,27 +2,27 @@
 
 namespace App\Application\Staff\Support;
 
-use App\Infrastructure\Staff\Model\STF_Employee;
+use App\Infrastructure\Staff\Model\EmployeeModel;
 use Laravel\Sanctum\PersonalAccessToken;
 
 /**
- * Выдача/ревокация Sanctum PAT для STF_Employee.
+ * Выдача/ревокация Sanctum PAT для EmployeeModel.
  */
 final class EmployeeAccessToken
 {
     public static function issue(int $employeeId, string $tokenName = 'backoffice'): string
     {
-        $employee = STF_Employee::query()->find($employeeId);
-        if (! $employee instanceof STF_Employee) {
+        $employee = EmployeeModel::query()->find($employeeId);
+        if (! $employee instanceof EmployeeModel) {
             throw new \InvalidArgumentException('Сотрудник не найден.');
         }
 
         return $employee->createToken($tokenName)->plainTextToken;
     }
 
-    public static function revokeCurrent(?STF_Employee $employee): void
+    public static function revokeCurrent(?EmployeeModel $employee): void
     {
-        if (! $employee instanceof STF_Employee) {
+        if (! $employee instanceof EmployeeModel) {
             return;
         }
 

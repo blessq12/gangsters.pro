@@ -3,10 +3,10 @@
 namespace App\Application\Order\Query;
 
 use App\Application\Order\Checkout\CheckoutQuote;
-use App\Application\Order\Checkout\FormCheckoutPromotions;
+use App\Application\Order\Checkout\FormOrderCommercialRules;
 use App\Application\Order\DTO\QuoteOrderDto;
 use App\Domain\Core\Order\Enum\OrderLineType;
-use App\Domain\Core\Order\Policy\PromotionPolicy;
+use App\Domain\Core\Order\Entity\OrderCommercialRules;
 use App\Domain\Core\Order\Port\OrderBranchLookupPort;
 use App\Domain\Core\Order\Port\OrderBranchMenuSnapshotPort;
 use App\Domain\Core\Order\Port\OrderCatalogSnapshotPort;
@@ -31,7 +31,7 @@ final class QuoteOrderUseCase implements CheckoutQuote
         private readonly OrderDeliveryTariffPort $deliveryTariffs,
         private readonly OrderBranchLookupPort $branches,
         private readonly OrderBranchMenuSnapshotPort $menu,
-        private readonly FormCheckoutPromotions $promotions,
+        private readonly FormOrderCommercialRules $commercialRules,
     ) {}
 
     /**
@@ -81,7 +81,7 @@ final class QuoteOrderUseCase implements CheckoutQuote
             $zoneIsRemote = false;
         }
 
-        $formed = $this->promotions->apply(
+        $formed = $this->commercialRules->apply(
             $branch['id'],
             $this->toBaseLines($cartLines),
             $deliveryInfo,
@@ -100,7 +100,7 @@ final class QuoteOrderUseCase implements CheckoutQuote
         $deliveryFeeKopecks = $formed['delivery']->feeKopecks();
         $deliveryFeeRubles = intdiv($deliveryFeeKopecks, 100);
         $benefits = $this->benefits(
-            $formed['policy'],
+            $formed['rules'],
             $formed['facts'],
             $formed['lines'],
             $deliveryMethod,
@@ -350,7 +350,7 @@ final class QuoteOrderUseCase implements CheckoutQuote
      * @return array<string, mixed>
      */
     private function benefits(
-        PromotionPolicy $policy,
+        OrderCommercialRules $rules,
         \App\Domain\Core\Order\ValueObject\OrderFormationFacts $facts,
         array $lines,
         string $channel,
@@ -358,8 +358,8 @@ final class QuoteOrderUseCase implements CheckoutQuote
         int $itemsTotalKopecks,
         int $deliveryFeeKopecks,
     ): array {
-        $giftRule = $policy->giftRuleForChannel($channel) ?? [];
-        $weekdayOk = $giftRule !== [] && $policy->isGiftRuleAllowedOnDate(
+        $giftRule = $rules->giftRuleForChannel($channel) ?? [];
+        $weekdayOk = $giftRule !== [] && $rules->isGiftRuleAllowedOnDate(
             $giftRule,
             $at,
             (string) config('app.timezone', 'UTC'),
@@ -395,8 +395,8 @@ final class QuoteOrderUseCase implements CheckoutQuote
             }
         }
 
-        $complement = $policy->complementSetBenefit();
-        $deliveryBenefit = $policy->deliveryBenefit();
+        $complement = $rules->complementSetBenefit();
+        $deliveryBenefit = $rules->deliveryBenefit();
         $threshold = (int) ($deliveryBenefit['free_delivery_threshold_kopecks'] ?? 0);
         $rollsPerSet = max(1, (int) ($complement['rolls_per_set'] ?? 1));
         $maxSets = (int) ($complement['max_sets'] ?? 0);

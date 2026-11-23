@@ -5,7 +5,7 @@ namespace App\Infrastructure\Company\Repository;
 use App\Domain\Supporting\Company\Entity\BranchMenuItem;
 use App\Domain\Supporting\Company\Repository\BranchMenuRepository;
 use App\Infrastructure\Company\Mapper\BranchMenuMapper;
-use App\Infrastructure\Company\Model\CMP_BranchMenuItem;
+use App\Infrastructure\Company\Model\BranchMenuItemModel;
 use Illuminate\Support\Facades\DB;
 
 final class EloquentBranchMenuRepository implements BranchMenuRepository
@@ -16,22 +16,22 @@ final class EloquentBranchMenuRepository implements BranchMenuRepository
 
     public function listByBranch(int $branchId): array
     {
-        return CMP_BranchMenuItem::query()
+        return BranchMenuItemModel::query()
             ->where('branch_id', $branchId)
             ->orderBy('catalog_item_id')
             ->get()
-            ->map(fn (CMP_BranchMenuItem $row) => $this->mapper->toDomain($row))
+            ->map(fn (BranchMenuItemModel $row) => $this->mapper->toDomain($row))
             ->all();
     }
 
     public function listAvailableByBranch(int $branchId): array
     {
-        return CMP_BranchMenuItem::query()
+        return BranchMenuItemModel::query()
             ->where('branch_id', $branchId)
             ->where('is_available', true)
             ->orderBy('catalog_item_id')
             ->get()
-            ->map(fn (CMP_BranchMenuItem $row) => $this->mapper->toDomain($row))
+            ->map(fn (BranchMenuItemModel $row) => $this->mapper->toDomain($row))
             ->all();
     }
 
@@ -46,7 +46,7 @@ final class EloquentBranchMenuRepository implements BranchMenuRepository
         }
 
         $out = [];
-        $rows = CMP_BranchMenuItem::query()
+        $rows = BranchMenuItemModel::query()
             ->where('branch_id', $branchId)
             ->whereIn('catalog_item_id', $ids)
             ->get();
@@ -60,7 +60,7 @@ final class EloquentBranchMenuRepository implements BranchMenuRepository
 
     public function upsert(BranchMenuItem $item): BranchMenuItem
     {
-        $row = CMP_BranchMenuItem::query()->updateOrCreate(
+        $row = BranchMenuItemModel::query()->updateOrCreate(
             [
                 'branch_id' => $item->branchId(),
                 'catalog_item_id' => $item->catalogItemId(),
@@ -91,7 +91,7 @@ final class EloquentBranchMenuRepository implements BranchMenuRepository
 
     public function delete(int $branchId, int $catalogItemId): void
     {
-        CMP_BranchMenuItem::query()
+        BranchMenuItemModel::query()
             ->where('branch_id', $branchId)
             ->where('catalog_item_id', $catalogItemId)
             ->delete();

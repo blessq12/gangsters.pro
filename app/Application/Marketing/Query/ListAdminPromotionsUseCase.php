@@ -4,8 +4,8 @@ namespace App\Application\Marketing\Query;
 
 use App\Application\Marketing\Presenter\MarketingPresenter;
 use App\Application\Shared\PageParams;
-use App\Domain\Supporting\Promotion\Entity\Campaign;
-use App\Domain\Supporting\Promotion\Repository\CampaignRepository;
+use App\Domain\Supporting\Marketing\Entity\Campaign;
+use App\Domain\Supporting\Marketing\Repository\CampaignRepository;
 
 final class ListAdminPromotionsUseCase
 {

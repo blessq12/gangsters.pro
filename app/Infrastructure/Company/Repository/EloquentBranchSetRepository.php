@@ -8,9 +8,9 @@ use App\Domain\Supporting\Company\Repository\BranchSetRepository;
 use App\Domain\Supporting\Company\Repository\BranchTagRepository;
 use App\Domain\Supporting\Company\ValueObject\BranchSetLine;
 use App\Infrastructure\Company\Mapper\BranchSetMapper;
-use App\Infrastructure\Company\Model\CMP_BranchCategoryItem;
-use App\Infrastructure\Company\Model\CMP_BranchSet;
-use App\Infrastructure\Company\Model\CMP_BranchSetLine;
+use App\Infrastructure\Company\Model\BranchCategoryItemModel;
+use App\Infrastructure\Company\Model\BranchSetModel;
+use App\Infrastructure\Company\Model\BranchSetLineModel;
 use App\Infrastructure\Company\Support\BranchSlugGenerator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -25,7 +25,7 @@ final class EloquentBranchSetRepository implements BranchSetRepository
 
     public function listByBranch(int $branchId): array
     {
-        $rows = CMP_BranchSet::query()
+        $rows = BranchSetModel::query()
             ->with('lines')
             ->where('branch_id', $branchId)
             ->orderBy('name')
@@ -45,7 +45,7 @@ final class EloquentBranchSetRepository implements BranchSetRepository
             return [];
         }
 
-        $rows = CMP_BranchSet::query()
+        $rows = BranchSetModel::query()
             ->with('lines')
             ->where('branch_id', $branchId)
             ->where('is_available', true)
@@ -59,12 +59,12 @@ final class EloquentBranchSetRepository implements BranchSetRepository
 
     public function findById(int $branchId, int $id): ?BranchSet
     {
-        $row = CMP_BranchSet::query()
+        $row = BranchSetModel::query()
             ->with('lines')
             ->where('branch_id', $branchId)
             ->where('id', $id)
             ->first();
-        if (! $row instanceof CMP_BranchSet) {
+        if (! $row instanceof BranchSetModel) {
             return null;
         }
 
@@ -103,11 +103,11 @@ final class EloquentBranchSetRepository implements BranchSetRepository
             $normalizedLines,
             $tagIds,
         ): int {
-            $scope = CMP_BranchSet::query()->where('branch_id', $branchId);
+            $scope = BranchSetModel::query()->where('branch_id', $branchId);
             $slug = trim($slug);
 
             if ($id === null) {
-                $row = new CMP_BranchSet();
+                $row = new BranchSetModel();
                 $row->branch_id = $branchId;
                 if ($slug === '') {
                     $slug = $this->slugs->generate($scope, $name, $branchId, 'set');
@@ -115,11 +115,11 @@ final class EloquentBranchSetRepository implements BranchSetRepository
                     throw new \InvalidArgumentException('Такой slug сета уже есть в филиале.');
                 }
             } else {
-                $row = CMP_BranchSet::query()
+                $row = BranchSetModel::query()
                     ->where('branch_id', $branchId)
                     ->where('id', $id)
                     ->first();
-                if (! $row instanceof CMP_BranchSet) {
+                if (! $row instanceof BranchSetModel) {
                     throw new \InvalidArgumentException('Сет не найден.');
                 }
                 if ($slug === '') {
@@ -156,11 +156,11 @@ final class EloquentBranchSetRepository implements BranchSetRepository
     public function delete(int $branchId, int $id): void
     {
         DB::transaction(function () use ($branchId, $id): void {
-            $row = CMP_BranchSet::query()
+            $row = BranchSetModel::query()
                 ->where('branch_id', $branchId)
                 ->where('id', $id)
                 ->first();
-            if (! $row instanceof CMP_BranchSet) {
+            if (! $row instanceof BranchSetModel) {
                 return;
             }
 
@@ -177,7 +177,7 @@ final class EloquentBranchSetRepository implements BranchSetRepository
     public function replaceAllForBranch(int $branchId, array $sets): array
     {
         return DB::transaction(function () use ($branchId, $sets): array {
-            $existingIds = CMP_BranchSet::query()
+            $existingIds = BranchSetModel::query()
                 ->where('branch_id', $branchId)
                 ->pluck('id')
                 ->map(static fn (mixed $id): int => (int) $id)
@@ -190,7 +190,7 @@ final class EloquentBranchSetRepository implements BranchSetRepository
                     continue;
                 }
 
-                $row = CMP_BranchSet::query()->create([
+                $row = BranchSetModel::query()->create([
                     'branch_id' => $branchId,
                     'name' => $set->name(),
                     'slug' => $set->slug(),
@@ -221,16 +221,16 @@ final class EloquentBranchSetRepository implements BranchSetRepository
     }
 
     /**
-     * @param  Collection<int, CMP_BranchSet>  $rows
+     * @param  Collection<int, BranchSetModel>  $rows
      * @return list<BranchSet>
      */
     private function hydrate(Collection $rows): array
     {
-        $ids = $rows->map(static fn (CMP_BranchSet $row): int => (int) $row->id)->all();
+        $ids = $rows->map(static fn (BranchSetModel $row): int => (int) $row->id)->all();
         $tagIdsBySet = $this->tags->findTagIdsForEntries(BranchMenuEntryKind::Set, $ids);
 
         return $rows
-            ->map(fn (CMP_BranchSet $row) => $this->mapper->toDomain($row, $tagIdsBySet[(int) $row->id] ?? []))
+            ->map(fn (BranchSetModel $row) => $this->mapper->toDomain($row, $tagIdsBySet[(int) $row->id] ?? []))
             ->values()
             ->all();
     }
@@ -263,10 +263,10 @@ final class EloquentBranchSetRepository implements BranchSetRepository
      */
     private function writeLines(int $setId, array $lines): void
     {
-        CMP_BranchSetLine::query()->where('set_id', $setId)->delete();
+        BranchSetLineModel::query()->where('set_id', $setId)->delete();
 
         foreach ($lines as $line) {
-            CMP_BranchSetLine::query()->create([
+            BranchSetLineModel::query()->create([
                 'set_id' => $setId,
                 'catalog_item_id' => $line->catalogItemId(),
                 'quantity' => $line->quantity(),
@@ -289,11 +289,11 @@ final class EloquentBranchSetRepository implements BranchSetRepository
             $this->tags->syncEntryTags($branchId, BranchMenuEntryKind::Set, $setId, []);
         }
 
-        CMP_BranchCategoryItem::query()
+        BranchCategoryItemModel::query()
             ->where('entry_kind', BranchMenuEntryKind::Set->value)
             ->whereIn('entry_id', $setIds)
             ->delete();
-        CMP_BranchSetLine::query()->whereIn('set_id', $setIds)->delete();
-        CMP_BranchSet::query()->where('branch_id', $branchId)->whereIn('id', $setIds)->delete();
+        BranchSetLineModel::query()->whereIn('set_id', $setIds)->delete();
+        BranchSetModel::query()->where('branch_id', $branchId)->whereIn('id', $setIds)->delete();
     }
 }

@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Infrastructure\Marketing\Model\MKT_Banner;
-use App\Infrastructure\Marketing\Model\MKT_Promotion;
+use App\Infrastructure\Marketing\Model\BannerModel;
+use App\Infrastructure\Marketing\Model\PromotionMediaModel;
 use App\Infrastructure\Marketing\Support\MarketingStoredPath;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Http;
@@ -45,10 +45,10 @@ class MarketingContentSeeder extends Seeder
             ];
 
             if ($id > 0) {
-                MKT_Banner::query()->updateOrCreate(['id' => $id], $attributes);
+                BannerModel::query()->updateOrCreate(['id' => $id], $attributes);
                 $keptBannerIds[] = $id;
             } else {
-                $row = MKT_Banner::query()->updateOrCreate(
+                $row = BannerModel::query()->updateOrCreate(
                     ['sort_order' => $sortOrder],
                     $attributes,
                 );
@@ -57,7 +57,7 @@ class MarketingContentSeeder extends Seeder
         }
 
         if ($keptBannerIds !== []) {
-            MKT_Banner::query()->whereNotIn('id', $keptBannerIds)->delete();
+            BannerModel::query()->whereNotIn('id', $keptBannerIds)->delete();
         }
 
         $promotions = is_array($marketing['promotions'] ?? null) ? $marketing['promotions'] : [];
@@ -83,10 +83,10 @@ class MarketingContentSeeder extends Seeder
             ];
 
             if ($id > 0) {
-                MKT_Promotion::query()->updateOrCreate(['id' => $id], $attributes);
+                PromotionMediaModel::query()->updateOrCreate(['id' => $id], $attributes);
                 $keptPromotionIds[] = $id;
             } else {
-                $row = MKT_Promotion::query()->updateOrCreate(
+                $row = PromotionMediaModel::query()->updateOrCreate(
                     ['title' => $title],
                     $attributes,
                 );
@@ -95,7 +95,7 @@ class MarketingContentSeeder extends Seeder
         }
 
         if ($keptPromotionIds !== []) {
-            MKT_Promotion::query()->whereNotIn('id', $keptPromotionIds)->delete();
+            PromotionMediaModel::query()->whereNotIn('id', $keptPromotionIds)->delete();
         }
     }
 

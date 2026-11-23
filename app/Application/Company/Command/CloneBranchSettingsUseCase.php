@@ -10,7 +10,7 @@ use App\Domain\Supporting\Company\Entity\BranchSet;
 use App\Domain\Supporting\Company\Entity\BranchTag;
 use App\Domain\Supporting\Company\Enum\BranchMenuEntryKind;
 use App\Domain\Supporting\Company\Port\CompanyDeliveryConfigClonePort;
-use App\Domain\Supporting\Company\Port\CompanyPromotionPolicyClonePort;
+use App\Domain\Supporting\Company\Port\CompanyOrderCommercialRulesClonePort;
 use App\Domain\Supporting\Company\Repository\BranchCategoryRepository;
 use App\Domain\Supporting\Company\Repository\BranchMenuRepository;
 use App\Domain\Supporting\Company\Repository\BranchRepository;
@@ -37,7 +37,7 @@ final class CloneBranchSettingsUseCase
         private readonly BranchCategoryRepository $categories,
         private readonly BranchTagRepository $tags,
         private readonly BranchSetRepository $sets,
-        private readonly CompanyPromotionPolicyClonePort $promotionClone,
+        private readonly CompanyOrderCommercialRulesClonePort $commercialRulesClone,
         private readonly CompanyDeliveryConfigClonePort $deliveryClone,
         private readonly TransactionManager $transaction,
     ) {}
@@ -78,14 +78,14 @@ final class CloneBranchSettingsUseCase
         return $this->transaction->run(function () use ($dto, $mode, $sourceId, $targets): array {
             $sourceMenu = $dto->copyMenu ? $this->menu->listByBranch($sourceId) : [];
             $sourceStructure = $dto->copyMenu ? $this->loadSourceStructure($sourceId) : null;
-            $sourcePolicyFields = $dto->copyPromotions
-                ? $this->promotionClone->exportFlatFields($sourceId)
+            $sourceCommercialRulesFields = $dto->copyPromotions
+                ? $this->commercialRulesClone->exportFlatFields($sourceId)
                 : null;
             $sourceDeliverySnapshot = $dto->copyDelivery
                 ? $this->deliveryClone->export($sourceId)
                 : null;
 
-            if ($dto->copyPromotions && $sourcePolicyFields === null) {
+            if ($dto->copyPromotions && $sourceCommercialRulesFields === null) {
                 throw new \InvalidArgumentException('У филиала-источника нет политики акций.');
             }
             if ($dto->copyDelivery && $sourceDeliverySnapshot === null) {
@@ -102,7 +102,7 @@ final class CloneBranchSettingsUseCase
                     copyDelivery: $dto->copyDelivery,
                     sourceMenu: $sourceMenu,
                     sourceStructure: $sourceStructure,
-                    sourcePolicyFields: $sourcePolicyFields,
+                    sourceCommercialRulesFields: $sourceCommercialRulesFields,
                     sourceDeliverySnapshot: $sourceDeliverySnapshot,
                 );
             }
@@ -134,7 +134,7 @@ final class CloneBranchSettingsUseCase
         bool $copyDelivery,
         array $sourceMenu,
         ?array $sourceStructure,
-        ?array $sourcePolicyFields,
+        ?array $sourceCommercialRulesFields,
         ?array $sourceDeliverySnapshot,
     ): array {
         $menuStats = ['copied' => 0, 'skipped' => 0];
@@ -149,8 +149,8 @@ final class CloneBranchSettingsUseCase
             }
         }
 
-        if ($copyPromotions && $sourcePolicyFields !== null) {
-            $promoStats = $this->clonePromotions($targetId, $mode, $sourcePolicyFields);
+        if ($copyPromotions && $sourceCommercialRulesFields !== null) {
+            $promoStats = $this->clonePromotions($targetId, $mode, $sourceCommercialRulesFields);
         }
 
         if ($copyDelivery && $sourceDeliverySnapshot !== null) {
@@ -352,16 +352,16 @@ final class CloneBranchSettingsUseCase
     }
 
     /**
-     * @param  array<string, mixed>  $sourcePolicyFields
+     * @param  array<string, mixed>  $sourceCommercialRulesFields
      * @return array{policy: string, roles_copied: int, roles_skipped: int}
      */
-    private function clonePromotions(int $targetId, string $mode, array $sourcePolicyFields): array
+    private function clonePromotions(int $targetId, string $mode, array $sourceCommercialRulesFields): array
     {
         $policyStatus = 'copied';
-        if ($mode === self::MODE_SKIP && $this->promotionClone->existsForBranch($targetId)) {
+        if ($mode === self::MODE_SKIP && $this->commercialRulesClone->existsForBranch($targetId)) {
             $policyStatus = 'skipped';
         } else {
-            $this->promotionClone->importFlatFields($targetId, $sourcePolicyFields);
+            $this->commercialRulesClone->importFlatFields($targetId, $sourceCommercialRulesFields);
         }
 
         return [

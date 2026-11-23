@@ -2,27 +2,27 @@
 
 namespace App\Http\Controllers\Api\PublicApi;
 
-use App\Application\Crm\Command\AddClientAddressUseCase;
-use App\Application\Crm\Command\DeleteClientAddressUseCase;
-use App\Application\Crm\Command\LoginClientUseCase;
-use App\Application\Crm\Command\LogoutClientUseCase;
-use App\Application\Crm\Command\MergeGuestFavoritesUseCase;
-use App\Application\Crm\Command\RegisterClientUseCase;
-use App\Application\Crm\Command\RemoveClientFavoriteUseCase;
-use App\Application\Crm\Command\RequestPasswordResetUseCase;
-use App\Application\Crm\Command\ToggleClientFavoriteUseCase;
-use App\Application\Crm\Command\UpdateClientProfileUseCase;
-use App\Application\Crm\DTO\AddClientAddressDto;
-use App\Application\Crm\DTO\LoginClientDto;
-use App\Application\Crm\DTO\RegisterClientDto;
-use App\Application\Crm\DTO\ToggleFavoriteDto;
-use App\Application\Crm\DTO\UpdateClientProfileDto;
-use App\Application\Crm\Query\GetClientFavoritesUseCase;
-use App\Application\Crm\Query\GetClientOrderHistoryUseCase;
-use App\Application\Crm\Query\GetClientProfileUseCase;
-use App\Application\Crm\Query\GetRepeatableOrderLinesUseCase;
+use App\Application\Client\Command\AddClientAddressUseCase;
+use App\Application\Client\Command\DeleteClientAddressUseCase;
+use App\Application\Client\Command\LoginClientUseCase;
+use App\Application\Client\Command\LogoutClientUseCase;
+use App\Application\Client\Command\MergeGuestFavoritesUseCase;
+use App\Application\Client\Command\RegisterClientUseCase;
+use App\Application\Client\Command\RemoveClientFavoriteUseCase;
+use App\Application\Client\Command\RequestPasswordResetUseCase;
+use App\Application\Client\Command\ToggleClientFavoriteUseCase;
+use App\Application\Client\Command\UpdateClientProfileUseCase;
+use App\Application\Client\DTO\AddClientAddressDto;
+use App\Application\Client\DTO\LoginClientDto;
+use App\Application\Client\DTO\RegisterClientDto;
+use App\Application\Client\DTO\ToggleFavoriteDto;
+use App\Application\Client\DTO\UpdateClientProfileDto;
+use App\Application\Client\Query\GetClientFavoritesUseCase;
+use App\Application\Client\Query\GetClientOrderHistoryUseCase;
+use App\Application\Client\Query\GetClientProfileUseCase;
+use App\Application\Client\Query\GetRepeatableOrderLinesUseCase;
 use App\Http\Controllers\Controller;
-use App\Infrastructure\Crm\Model\CRM_Client;
+use App\Infrastructure\Client\Model\ClientModel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use InvalidArgumentException;
@@ -101,7 +101,7 @@ final class ClientController extends Controller
     public function logout(Request $request, LogoutClientUseCase $useCase): JsonResponse
     {
         $client = $request->user();
-        $model = $client instanceof CRM_Client ? $client : null;
+        $model = $client instanceof ClientModel ? $client : null;
 
         return response()->json($useCase->execute($model));
     }
@@ -277,7 +277,7 @@ final class ClientController extends Controller
     private function clientId(Request $request): int
     {
         $user = $request->user();
-        if (! $user instanceof CRM_Client) {
+        if (! $user instanceof ClientModel) {
             throw new InvalidArgumentException('Клиент не авторизован.');
         }
 

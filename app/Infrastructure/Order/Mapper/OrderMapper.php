@@ -8,8 +8,8 @@ use App\Domain\Core\Order\ValueObject\OrderClientSnapshot;
 use App\Domain\Core\Order\ValueObject\OrderDeliveryAddress;
 use App\Domain\Core\Order\ValueObject\OrderDeliveryInfo;
 use App\Domain\Core\Order\ValueObject\OrderLine;
-use App\Infrastructure\Order\Model\ORD_Order;
-use App\Infrastructure\Order\Model\ORD_OrderLine;
+use App\Infrastructure\Order\Model\OrderModel;
+use App\Infrastructure\Order\Model\OrderLineModel;
 use App\Shared\Enum\DeliveryMethod;
 use DateTimeImmutable;
 
@@ -18,7 +18,7 @@ use DateTimeImmutable;
  */
 final class OrderMapper
 {
-    public function toDomain(ORD_Order $row): Order
+    public function toDomain(OrderModel $row): Order
     {
         $lines = [];
         $lineRows = $row->relationLoaded('lines')
@@ -26,7 +26,7 @@ final class OrderMapper
             : $row->lines()->get();
 
         foreach ($lineRows as $lineRow) {
-            if (! $lineRow instanceof ORD_OrderLine) {
+            if (! $lineRow instanceof OrderLineModel) {
                 continue;
             }
 
@@ -47,8 +47,8 @@ final class OrderMapper
             id: (int) $row->id,
             source: (string) ($row->source ?? 'site'),
             checkoutId: $this->nullableString($row->checkout_id),
-            partnerCode: $this->nullableString($row->partner_code),
-            externalOrderId: $this->nullableString($row->external_order_id),
+            partnerCode: null,
+            externalOrderId: null,
             status: (string) $row->status,
             lines: $lines,
             client: new OrderClientSnapshot(
@@ -79,8 +79,6 @@ final class OrderMapper
                 'id' => $order->hasId() ? $order->id() : null,
                 'source' => $order->source(),
                 'checkout_id' => $order->checkoutId(),
-                'partner_code' => $order->partnerCode(),
-                'external_order_id' => $order->externalOrderId(),
                 'status' => $order->status()->value,
                 'client_id' => $client->clientId(),
                 'client_name' => $client->name(),
@@ -102,6 +100,7 @@ final class OrderMapper
                 'change_from_rubles' => $order->changeFromRubles(),
                 'total_kopecks' => $order->grandTotalKopecks(),
                 'created_at' => $order->createdAt()->format('Y-m-d H:i:s'),
+                'updated_at' => now()->format('Y-m-d H:i:s'),
             ],
             'lines' => $this->mapLines($order),
         ];
@@ -127,7 +126,7 @@ final class OrderMapper
         return $lines;
     }
 
-    private function mapDelivery(ORD_Order $row): OrderDeliveryInfo
+    private function mapDelivery(OrderModel $row): OrderDeliveryInfo
     {
         $type = DeliveryMethod::from((string) $row->delivery_type);
 

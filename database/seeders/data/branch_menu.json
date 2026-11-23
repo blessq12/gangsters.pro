@@ -1,0 +1,2274 @@
+{
+    "categories": [
+        {
+            "id": 1,
+            "branch_id": 1,
+            "name": "Наборы",
+            "slug": "nabory-b1",
+            "sort_order": 0,
+            "is_active": 1,
+            "is_accompanying": 0,
+            "is_complement": 0,
+            "is_gift": 0,
+            "created_at": "2026-11-22 17:22:16",
+            "updated_at": "2026-11-22 17:22:16"
+        },
+        {
+            "id": 2,
+            "branch_id": 1,
+            "name": "Роллы",
+            "slug": "vk2ydefi7t-b1",
+            "sort_order": 1,
+            "is_active": 1,
+            "is_accompanying": 0,
+            "is_complement": 0,
+            "is_gift": 0,
+            "created_at": "2026-11-22 17:22:16",
+            "updated_at": "2026-11-22 17:22:16"
+        },
+        {
+            "id": 3,
+            "branch_id": 1,
+            "name": "Запечённые роллы",
+            "slug": "mciqv2buzf-b1",
+            "sort_order": 2,
+            "is_active": 1,
+            "is_accompanying": 0,
+            "is_complement": 0,
+            "is_gift": 0,
+            "created_at": "2026-11-22 17:22:16",
+            "updated_at": "2026-11-22 17:22:16"
+        },
+        {
+            "id": 4,
+            "branch_id": 1,
+            "name": "Темпурные роллы",
+            "slug": "jk62x5ipr7-b1",
+            "sort_order": 3,
+            "is_active": 1,
+            "is_accompanying": 0,
+            "is_complement": 0,
+            "is_gift": 0,
+            "created_at": "2026-11-22 17:22:16",
+            "updated_at": "2026-11-22 17:22:16"
+        },
+        {
+            "id": 5,
+            "branch_id": 1,
+            "name": "Вегетарианские роллы",
+            "slug": "zvckmm9sk4-b1",
+            "sort_order": 4,
+            "is_active": 1,
+            "is_accompanying": 0,
+            "is_complement": 0,
+            "is_gift": 0,
+            "created_at": "2026-11-22 17:22:16",
+            "updated_at": "2026-11-22 17:22:16"
+        },
+        {
+            "id": 6,
+            "branch_id": 1,
+            "name": "Закуски",
+            "slug": "jw2ei0fwno-b1",
+            "sort_order": 8,
+            "is_active": 1,
+            "is_accompanying": 0,
+            "is_complement": 0,
+            "is_gift": 0,
+            "created_at": "2026-11-22 17:22:16",
+            "updated_at": "2026-11-22 17:22:16"
+        },
+        {
+            "id": 7,
+            "branch_id": 1,
+            "name": "Напитки",
+            "slug": "napitki-b1",
+            "sort_order": 10,
+            "is_active": 1,
+            "is_accompanying": 1,
+            "is_complement": 0,
+            "is_gift": 0,
+            "created_at": "2026-11-22 17:22:16",
+            "updated_at": "2026-11-22 17:22:16"
+        },
+        {
+            "id": 8,
+            "branch_id": 1,
+            "name": "Супы",
+            "slug": "supy-b1",
+            "sort_order": 12,
+            "is_active": 1,
+            "is_accompanying": 0,
+            "is_complement": 0,
+            "is_gift": 0,
+            "created_at": "2026-11-22 17:22:16",
+            "updated_at": "2026-11-22 17:22:16"
+        },
+        {
+            "id": 9,
+            "branch_id": 1,
+            "name": "Воки",
+            "slug": "woki-b1",
+            "sort_order": 13,
+            "is_active": 1,
+            "is_accompanying": 0,
+            "is_complement": 0,
+            "is_gift": 0,
+            "created_at": "2026-11-22 17:22:16",
+            "updated_at": "2026-11-22 17:22:16"
+        },
+        {
+            "id": 10,
+            "branch_id": 1,
+            "name": "Мексиканская кухня",
+            "slug": "meksikanskaia-kuxnia-b1",
+            "sort_order": 14,
+            "is_active": 1,
+            "is_accompanying": 0,
+            "is_complement": 0,
+            "is_gift": 0,
+            "created_at": "2026-11-22 17:22:16",
+            "updated_at": "2026-11-22 17:22:16"
+        },
+        {
+            "id": 11,
+            "branch_id": 1,
+            "name": "Десерты",
+            "slug": "deserty-b1",
+            "sort_order": 15,
+            "is_active": 1,
+            "is_accompanying": 1,
+            "is_complement": 0,
+            "is_gift": 0,
+            "created_at": "2026-11-22 17:22:16",
+            "updated_at": "2026-11-22 17:22:16"
+        },
+        {
+            "id": 12,
+            "branch_id": 1,
+            "name": "категория",
+            "slug": "kategoriia-b1",
+            "sort_order": 16,
+            "is_active": 1,
+            "is_accompanying": 0,
+            "is_complement": 0,
+            "is_gift": 0,
+            "created_at": "2026-11-22 17:22:16",
+            "updated_at": "2026-11-22 17:22:16"
+        },
+        {
+            "id": 25,
+            "branch_id": 1,
+            "name": "Комплектные",
+            "slug": "komplektnye",
+            "sort_order": 26,
+            "is_active": 1,
+            "is_accompanying": 0,
+            "is_complement": 1,
+            "is_gift": 0,
+            "created_at": "2026-11-23 17:25:04",
+            "updated_at": "2026-11-23 17:25:04"
+        },
+        {
+            "id": 27,
+            "branch_id": 1,
+            "name": "Подарки",
+            "slug": "podarki",
+            "sort_order": 36,
+            "is_active": 1,
+            "is_accompanying": 0,
+            "is_complement": 0,
+            "is_gift": 1,
+            "created_at": "2026-11-23 17:25:15",
+            "updated_at": "2026-11-23 17:25:15"
+        }
+    ],
+    "category_items": [
+        {
+            "id": 1,
+            "category_id": 1,
+            "entry_kind": "set",
+            "entry_id": 2,
+            "sort_order": 0
+        },
+        {
+            "id": 13,
+            "category_id": 1,
+            "entry_kind": "set",
+            "entry_id": 1,
+            "sort_order": 1
+        },
+        {
+            "id": 25,
+            "category_id": 1,
+            "entry_kind": "set",
+            "entry_id": 3,
+            "sort_order": 2
+        },
+        {
+            "id": 36,
+            "category_id": 1,
+            "entry_kind": "set",
+            "entry_id": 4,
+            "sort_order": 3
+        },
+        {
+            "id": 44,
+            "category_id": 1,
+            "entry_kind": "set",
+            "entry_id": 5,
+            "sort_order": 4
+        },
+        {
+            "id": 51,
+            "category_id": 1,
+            "entry_kind": "set",
+            "entry_id": 6,
+            "sort_order": 5
+        },
+        {
+            "id": 56,
+            "category_id": 1,
+            "entry_kind": "set",
+            "entry_id": 7,
+            "sort_order": 6
+        },
+        {
+            "id": 60,
+            "category_id": 1,
+            "entry_kind": "set",
+            "entry_id": 8,
+            "sort_order": 7
+        },
+        {
+            "id": 2,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 145,
+            "sort_order": 0
+        },
+        {
+            "id": 14,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 11,
+            "sort_order": 1
+        },
+        {
+            "id": 26,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 12,
+            "sort_order": 2
+        },
+        {
+            "id": 37,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 13,
+            "sort_order": 3
+        },
+        {
+            "id": 45,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 14,
+            "sort_order": 4
+        },
+        {
+            "id": 52,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 15,
+            "sort_order": 5
+        },
+        {
+            "id": 57,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 160,
+            "sort_order": 6
+        },
+        {
+            "id": 61,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 52,
+            "sort_order": 7
+        },
+        {
+            "id": 64,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 130,
+            "sort_order": 8
+        },
+        {
+            "id": 67,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 16,
+            "sort_order": 9
+        },
+        {
+            "id": 70,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 17,
+            "sort_order": 10
+        },
+        {
+            "id": 73,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 18,
+            "sort_order": 11
+        },
+        {
+            "id": 75,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 19,
+            "sort_order": 12
+        },
+        {
+            "id": 76,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 20,
+            "sort_order": 13
+        },
+        {
+            "id": 77,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 21,
+            "sort_order": 14
+        },
+        {
+            "id": 78,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 23,
+            "sort_order": 15
+        },
+        {
+            "id": 79,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 24,
+            "sort_order": 16
+        },
+        {
+            "id": 80,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 25,
+            "sort_order": 17
+        },
+        {
+            "id": 81,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 26,
+            "sort_order": 18
+        },
+        {
+            "id": 82,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 27,
+            "sort_order": 19
+        },
+        {
+            "id": 83,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 28,
+            "sort_order": 20
+        },
+        {
+            "id": 84,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 29,
+            "sort_order": 21
+        },
+        {
+            "id": 85,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 30,
+            "sort_order": 22
+        },
+        {
+            "id": 86,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 31,
+            "sort_order": 23
+        },
+        {
+            "id": 87,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 32,
+            "sort_order": 24
+        },
+        {
+            "id": 88,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 33,
+            "sort_order": 25
+        },
+        {
+            "id": 89,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 34,
+            "sort_order": 26
+        },
+        {
+            "id": 90,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 35,
+            "sort_order": 27
+        },
+        {
+            "id": 91,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 36,
+            "sort_order": 28
+        },
+        {
+            "id": 92,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 37,
+            "sort_order": 29
+        },
+        {
+            "id": 93,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 38,
+            "sort_order": 30
+        },
+        {
+            "id": 94,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 39,
+            "sort_order": 31
+        },
+        {
+            "id": 95,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 40,
+            "sort_order": 32
+        },
+        {
+            "id": 96,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 41,
+            "sort_order": 33
+        },
+        {
+            "id": 97,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 42,
+            "sort_order": 34
+        },
+        {
+            "id": 98,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 43,
+            "sort_order": 35
+        },
+        {
+            "id": 99,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 44,
+            "sort_order": 36
+        },
+        {
+            "id": 100,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 45,
+            "sort_order": 37
+        },
+        {
+            "id": 101,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 46,
+            "sort_order": 38
+        },
+        {
+            "id": 102,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 47,
+            "sort_order": 39
+        },
+        {
+            "id": 103,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 48,
+            "sort_order": 40
+        },
+        {
+            "id": 104,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 49,
+            "sort_order": 41
+        },
+        {
+            "id": 105,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 50,
+            "sort_order": 42
+        },
+        {
+            "id": 106,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 51,
+            "sort_order": 43
+        },
+        {
+            "id": 107,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 53,
+            "sort_order": 44
+        },
+        {
+            "id": 108,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 54,
+            "sort_order": 45
+        },
+        {
+            "id": 109,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 55,
+            "sort_order": 46
+        },
+        {
+            "id": 110,
+            "category_id": 2,
+            "entry_kind": "product",
+            "entry_id": 56,
+            "sort_order": 47
+        },
+        {
+            "id": 3,
+            "category_id": 3,
+            "entry_kind": "product",
+            "entry_id": 69,
+            "sort_order": 0
+        },
+        {
+            "id": 15,
+            "category_id": 3,
+            "entry_kind": "product",
+            "entry_id": 57,
+            "sort_order": 1
+        },
+        {
+            "id": 27,
+            "category_id": 3,
+            "entry_kind": "product",
+            "entry_id": 58,
+            "sort_order": 2
+        },
+        {
+            "id": 38,
+            "category_id": 3,
+            "entry_kind": "product",
+            "entry_id": 59,
+            "sort_order": 3
+        },
+        {
+            "id": 46,
+            "category_id": 3,
+            "entry_kind": "product",
+            "entry_id": 60,
+            "sort_order": 4
+        },
+        {
+            "id": 53,
+            "category_id": 3,
+            "entry_kind": "product",
+            "entry_id": 61,
+            "sort_order": 5
+        },
+        {
+            "id": 58,
+            "category_id": 3,
+            "entry_kind": "product",
+            "entry_id": 62,
+            "sort_order": 6
+        },
+        {
+            "id": 62,
+            "category_id": 3,
+            "entry_kind": "product",
+            "entry_id": 63,
+            "sort_order": 7
+        },
+        {
+            "id": 65,
+            "category_id": 3,
+            "entry_kind": "product",
+            "entry_id": 64,
+            "sort_order": 8
+        },
+        {
+            "id": 68,
+            "category_id": 3,
+            "entry_kind": "product",
+            "entry_id": 65,
+            "sort_order": 9
+        },
+        {
+            "id": 71,
+            "category_id": 3,
+            "entry_kind": "product",
+            "entry_id": 66,
+            "sort_order": 10
+        },
+        {
+            "id": 74,
+            "category_id": 3,
+            "entry_kind": "product",
+            "entry_id": 68,
+            "sort_order": 11
+        },
+        {
+            "id": 4,
+            "category_id": 4,
+            "entry_kind": "product",
+            "entry_id": 71,
+            "sort_order": 0
+        },
+        {
+            "id": 16,
+            "category_id": 4,
+            "entry_kind": "product",
+            "entry_id": 70,
+            "sort_order": 1
+        },
+        {
+            "id": 28,
+            "category_id": 4,
+            "entry_kind": "product",
+            "entry_id": 72,
+            "sort_order": 2
+        },
+        {
+            "id": 39,
+            "category_id": 4,
+            "entry_kind": "product",
+            "entry_id": 73,
+            "sort_order": 3
+        },
+        {
+            "id": 47,
+            "category_id": 4,
+            "entry_kind": "product",
+            "entry_id": 76,
+            "sort_order": 4
+        },
+        {
+            "id": 54,
+            "category_id": 4,
+            "entry_kind": "product",
+            "entry_id": 77,
+            "sort_order": 5
+        },
+        {
+            "id": 59,
+            "category_id": 4,
+            "entry_kind": "product",
+            "entry_id": 78,
+            "sort_order": 6
+        },
+        {
+            "id": 63,
+            "category_id": 4,
+            "entry_kind": "product",
+            "entry_id": 79,
+            "sort_order": 7
+        },
+        {
+            "id": 66,
+            "category_id": 4,
+            "entry_kind": "product",
+            "entry_id": 80,
+            "sort_order": 8
+        },
+        {
+            "id": 69,
+            "category_id": 4,
+            "entry_kind": "product",
+            "entry_id": 81,
+            "sort_order": 9
+        },
+        {
+            "id": 72,
+            "category_id": 4,
+            "entry_kind": "product",
+            "entry_id": 82,
+            "sort_order": 10
+        },
+        {
+            "id": 5,
+            "category_id": 5,
+            "entry_kind": "product",
+            "entry_id": 83,
+            "sort_order": 0
+        },
+        {
+            "id": 17,
+            "category_id": 5,
+            "entry_kind": "product",
+            "entry_id": 84,
+            "sort_order": 1
+        },
+        {
+            "id": 29,
+            "category_id": 5,
+            "entry_kind": "product",
+            "entry_id": 85,
+            "sort_order": 2
+        },
+        {
+            "id": 6,
+            "category_id": 6,
+            "entry_kind": "product",
+            "entry_id": 86,
+            "sort_order": 0
+        },
+        {
+            "id": 18,
+            "category_id": 6,
+            "entry_kind": "product",
+            "entry_id": 87,
+            "sort_order": 1
+        },
+        {
+            "id": 30,
+            "category_id": 6,
+            "entry_kind": "product",
+            "entry_id": 88,
+            "sort_order": 2
+        },
+        {
+            "id": 40,
+            "category_id": 6,
+            "entry_kind": "product",
+            "entry_id": 89,
+            "sort_order": 3
+        },
+        {
+            "id": 48,
+            "category_id": 6,
+            "entry_kind": "product",
+            "entry_id": 90,
+            "sort_order": 4
+        },
+        {
+            "id": 7,
+            "category_id": 7,
+            "entry_kind": "product",
+            "entry_id": 91,
+            "sort_order": 0
+        },
+        {
+            "id": 19,
+            "category_id": 7,
+            "entry_kind": "product",
+            "entry_id": 92,
+            "sort_order": 1
+        },
+        {
+            "id": 31,
+            "category_id": 7,
+            "entry_kind": "product",
+            "entry_id": 128,
+            "sort_order": 2
+        },
+        {
+            "id": 41,
+            "category_id": 7,
+            "entry_kind": "product",
+            "entry_id": 129,
+            "sort_order": 3
+        },
+        {
+            "id": 49,
+            "category_id": 7,
+            "entry_kind": "product",
+            "entry_id": 127,
+            "sort_order": 4
+        },
+        {
+            "id": 55,
+            "category_id": 7,
+            "entry_kind": "product",
+            "entry_id": 131,
+            "sort_order": 5
+        },
+        {
+            "id": 8,
+            "category_id": 8,
+            "entry_kind": "product",
+            "entry_id": 132,
+            "sort_order": 0
+        },
+        {
+            "id": 20,
+            "category_id": 8,
+            "entry_kind": "product",
+            "entry_id": 133,
+            "sort_order": 1
+        },
+        {
+            "id": 32,
+            "category_id": 8,
+            "entry_kind": "product",
+            "entry_id": 134,
+            "sort_order": 2
+        },
+        {
+            "id": 9,
+            "category_id": 9,
+            "entry_kind": "product",
+            "entry_id": 139,
+            "sort_order": 0
+        },
+        {
+            "id": 21,
+            "category_id": 9,
+            "entry_kind": "product",
+            "entry_id": 136,
+            "sort_order": 1
+        },
+        {
+            "id": 33,
+            "category_id": 9,
+            "entry_kind": "product",
+            "entry_id": 135,
+            "sort_order": 2
+        },
+        {
+            "id": 42,
+            "category_id": 9,
+            "entry_kind": "product",
+            "entry_id": 138,
+            "sort_order": 3
+        },
+        {
+            "id": 50,
+            "category_id": 9,
+            "entry_kind": "product",
+            "entry_id": 137,
+            "sort_order": 4
+        },
+        {
+            "id": 10,
+            "category_id": 10,
+            "entry_kind": "product",
+            "entry_id": 154,
+            "sort_order": 0
+        },
+        {
+            "id": 22,
+            "category_id": 10,
+            "entry_kind": "product",
+            "entry_id": 156,
+            "sort_order": 1
+        },
+        {
+            "id": 34,
+            "category_id": 10,
+            "entry_kind": "product",
+            "entry_id": 157,
+            "sort_order": 2
+        },
+        {
+            "id": 11,
+            "category_id": 11,
+            "entry_kind": "product",
+            "entry_id": 159,
+            "sort_order": 0
+        },
+        {
+            "id": 23,
+            "category_id": 11,
+            "entry_kind": "product",
+            "entry_id": 158,
+            "sort_order": 1
+        },
+        {
+            "id": 35,
+            "category_id": 11,
+            "entry_kind": "product",
+            "entry_id": 161,
+            "sort_order": 2
+        },
+        {
+            "id": 43,
+            "category_id": 11,
+            "entry_kind": "product",
+            "entry_id": 162,
+            "sort_order": 3
+        },
+        {
+            "id": 12,
+            "category_id": 12,
+            "entry_kind": "product",
+            "entry_id": 43,
+            "sort_order": 0
+        },
+        {
+            "id": 24,
+            "category_id": 12,
+            "entry_kind": "set",
+            "entry_id": 5,
+            "sort_order": 1
+        },
+        {
+            "id": 221,
+            "category_id": 25,
+            "entry_kind": "product",
+            "entry_id": 93,
+            "sort_order": 1
+        },
+        {
+            "id": 222,
+            "category_id": 25,
+            "entry_kind": "product",
+            "entry_id": 94,
+            "sort_order": 2
+        },
+        {
+            "id": 223,
+            "category_id": 25,
+            "entry_kind": "product",
+            "entry_id": 95,
+            "sort_order": 3
+        },
+        {
+            "id": 227,
+            "category_id": 27,
+            "entry_kind": "product",
+            "entry_id": 14,
+            "sort_order": 1
+        },
+        {
+            "id": 228,
+            "category_id": 27,
+            "entry_kind": "product",
+            "entry_id": 15,
+            "sort_order": 2
+        },
+        {
+            "id": 229,
+            "category_id": 27,
+            "entry_kind": "product",
+            "entry_id": 16,
+            "sort_order": 3
+        }
+    ],
+    "menu_items": [
+        {
+            "id": 123,
+            "branch_id": 1,
+            "catalog_item_id": 11,
+            "is_available": 1,
+            "price_kopecks": 28000,
+            "created_at": "2026-11-22 16:53:36",
+            "updated_at": "2026-11-23 17:02:24"
+        },
+        {
+            "id": 124,
+            "branch_id": 1,
+            "catalog_item_id": 12,
+            "is_available": 1,
+            "price_kopecks": 45500,
+            "created_at": "2026-11-22 16:53:37",
+            "updated_at": "2026-11-22 16:53:59"
+        },
+        {
+            "id": 125,
+            "branch_id": 1,
+            "catalog_item_id": 13,
+            "is_available": 1,
+            "price_kopecks": 55400,
+            "created_at": "2026-11-22 16:53:38",
+            "updated_at": "2026-11-22 16:53:59"
+        },
+        {
+            "id": 126,
+            "branch_id": 1,
+            "catalog_item_id": 14,
+            "is_available": 1,
+            "price_kopecks": 43000,
+            "created_at": "2026-11-22 16:53:38",
+            "updated_at": "2026-11-23 17:08:16"
+        },
+        {
+            "id": 127,
+            "branch_id": 1,
+            "catalog_item_id": 15,
+            "is_available": 1,
+            "price_kopecks": 42000,
+            "created_at": "2026-11-22 16:53:39",
+            "updated_at": "2026-11-23 17:08:17"
+        },
+        {
+            "id": 6,
+            "branch_id": 1,
+            "catalog_item_id": 16,
+            "is_available": 1,
+            "price_kopecks": 59000,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-23 17:08:17"
+        },
+        {
+            "id": 7,
+            "branch_id": 1,
+            "catalog_item_id": 17,
+            "is_available": 1,
+            "price_kopecks": 59000,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 8,
+            "branch_id": 1,
+            "catalog_item_id": 18,
+            "is_available": 1,
+            "price_kopecks": 59000,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 9,
+            "branch_id": 1,
+            "catalog_item_id": 19,
+            "is_available": 1,
+            "price_kopecks": 59000,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 10,
+            "branch_id": 1,
+            "catalog_item_id": 20,
+            "is_available": 1,
+            "price_kopecks": 59000,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 11,
+            "branch_id": 1,
+            "catalog_item_id": 21,
+            "is_available": 1,
+            "price_kopecks": 38500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 12,
+            "branch_id": 1,
+            "catalog_item_id": 23,
+            "is_available": 1,
+            "price_kopecks": 40500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 13,
+            "branch_id": 1,
+            "catalog_item_id": 24,
+            "is_available": 1,
+            "price_kopecks": 40500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 14,
+            "branch_id": 1,
+            "catalog_item_id": 25,
+            "is_available": 1,
+            "price_kopecks": 40500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 15,
+            "branch_id": 1,
+            "catalog_item_id": 26,
+            "is_available": 1,
+            "price_kopecks": 40500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 16,
+            "branch_id": 1,
+            "catalog_item_id": 27,
+            "is_available": 1,
+            "price_kopecks": 40500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 17,
+            "branch_id": 1,
+            "catalog_item_id": 28,
+            "is_available": 1,
+            "price_kopecks": 40500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 18,
+            "branch_id": 1,
+            "catalog_item_id": 29,
+            "is_available": 1,
+            "price_kopecks": 40500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 19,
+            "branch_id": 1,
+            "catalog_item_id": 30,
+            "is_available": 1,
+            "price_kopecks": 43500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 20,
+            "branch_id": 1,
+            "catalog_item_id": 31,
+            "is_available": 1,
+            "price_kopecks": 39500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 21,
+            "branch_id": 1,
+            "catalog_item_id": 32,
+            "is_available": 1,
+            "price_kopecks": 32000,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 22,
+            "branch_id": 1,
+            "catalog_item_id": 33,
+            "is_available": 1,
+            "price_kopecks": 40500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 23,
+            "branch_id": 1,
+            "catalog_item_id": 34,
+            "is_available": 1,
+            "price_kopecks": 40500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 24,
+            "branch_id": 1,
+            "catalog_item_id": 35,
+            "is_available": 1,
+            "price_kopecks": 46500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 25,
+            "branch_id": 1,
+            "catalog_item_id": 36,
+            "is_available": 1,
+            "price_kopecks": 47500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 26,
+            "branch_id": 1,
+            "catalog_item_id": 37,
+            "is_available": 1,
+            "price_kopecks": 70000,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 27,
+            "branch_id": 1,
+            "catalog_item_id": 38,
+            "is_available": 1,
+            "price_kopecks": 40500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 28,
+            "branch_id": 1,
+            "catalog_item_id": 39,
+            "is_available": 1,
+            "price_kopecks": 40500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 29,
+            "branch_id": 1,
+            "catalog_item_id": 40,
+            "is_available": 1,
+            "price_kopecks": 38500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 30,
+            "branch_id": 1,
+            "catalog_item_id": 41,
+            "is_available": 1,
+            "price_kopecks": 33500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 31,
+            "branch_id": 1,
+            "catalog_item_id": 42,
+            "is_available": 1,
+            "price_kopecks": 30500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 32,
+            "branch_id": 1,
+            "catalog_item_id": 43,
+            "is_available": 1,
+            "price_kopecks": 36500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 33,
+            "branch_id": 1,
+            "catalog_item_id": 44,
+            "is_available": 1,
+            "price_kopecks": 33500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 34,
+            "branch_id": 1,
+            "catalog_item_id": 45,
+            "is_available": 1,
+            "price_kopecks": 32500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 35,
+            "branch_id": 1,
+            "catalog_item_id": 46,
+            "is_available": 1,
+            "price_kopecks": 50500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 36,
+            "branch_id": 1,
+            "catalog_item_id": 47,
+            "is_available": 1,
+            "price_kopecks": 49500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 37,
+            "branch_id": 1,
+            "catalog_item_id": 48,
+            "is_available": 1,
+            "price_kopecks": 44500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 38,
+            "branch_id": 1,
+            "catalog_item_id": 49,
+            "is_available": 1,
+            "price_kopecks": 44500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 39,
+            "branch_id": 1,
+            "catalog_item_id": 50,
+            "is_available": 1,
+            "price_kopecks": 48500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 40,
+            "branch_id": 1,
+            "catalog_item_id": 51,
+            "is_available": 1,
+            "price_kopecks": 48500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 41,
+            "branch_id": 1,
+            "catalog_item_id": 52,
+            "is_available": 1,
+            "price_kopecks": 50500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 42,
+            "branch_id": 1,
+            "catalog_item_id": 53,
+            "is_available": 1,
+            "price_kopecks": 36500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 43,
+            "branch_id": 1,
+            "catalog_item_id": 54,
+            "is_available": 1,
+            "price_kopecks": 44500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 44,
+            "branch_id": 1,
+            "catalog_item_id": 55,
+            "is_available": 1,
+            "price_kopecks": 45500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 45,
+            "branch_id": 1,
+            "catalog_item_id": 56,
+            "is_available": 1,
+            "price_kopecks": 45500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 46,
+            "branch_id": 1,
+            "catalog_item_id": 57,
+            "is_available": 1,
+            "price_kopecks": 38500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 47,
+            "branch_id": 1,
+            "catalog_item_id": 58,
+            "is_available": 1,
+            "price_kopecks": 40500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 48,
+            "branch_id": 1,
+            "catalog_item_id": 59,
+            "is_available": 1,
+            "price_kopecks": 41500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 49,
+            "branch_id": 1,
+            "catalog_item_id": 60,
+            "is_available": 1,
+            "price_kopecks": 41500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 50,
+            "branch_id": 1,
+            "catalog_item_id": 61,
+            "is_available": 1,
+            "price_kopecks": 41500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 51,
+            "branch_id": 1,
+            "catalog_item_id": 62,
+            "is_available": 1,
+            "price_kopecks": 41500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 52,
+            "branch_id": 1,
+            "catalog_item_id": 63,
+            "is_available": 1,
+            "price_kopecks": 40500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 53,
+            "branch_id": 1,
+            "catalog_item_id": 64,
+            "is_available": 1,
+            "price_kopecks": 43500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 54,
+            "branch_id": 1,
+            "catalog_item_id": 65,
+            "is_available": 1,
+            "price_kopecks": 40500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 55,
+            "branch_id": 1,
+            "catalog_item_id": 66,
+            "is_available": 1,
+            "price_kopecks": 40500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 56,
+            "branch_id": 1,
+            "catalog_item_id": 68,
+            "is_available": 1,
+            "price_kopecks": 40500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 57,
+            "branch_id": 1,
+            "catalog_item_id": 69,
+            "is_available": 1,
+            "price_kopecks": 41500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 58,
+            "branch_id": 1,
+            "catalog_item_id": 70,
+            "is_available": 1,
+            "price_kopecks": 45500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 59,
+            "branch_id": 1,
+            "catalog_item_id": 71,
+            "is_available": 1,
+            "price_kopecks": 45500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 60,
+            "branch_id": 1,
+            "catalog_item_id": 72,
+            "is_available": 1,
+            "price_kopecks": 41500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 61,
+            "branch_id": 1,
+            "catalog_item_id": 73,
+            "is_available": 1,
+            "price_kopecks": 41500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 62,
+            "branch_id": 1,
+            "catalog_item_id": 76,
+            "is_available": 1,
+            "price_kopecks": 41500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 63,
+            "branch_id": 1,
+            "catalog_item_id": 77,
+            "is_available": 1,
+            "price_kopecks": 41500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 64,
+            "branch_id": 1,
+            "catalog_item_id": 78,
+            "is_available": 1,
+            "price_kopecks": 41500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 65,
+            "branch_id": 1,
+            "catalog_item_id": 79,
+            "is_available": 1,
+            "price_kopecks": 41500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 66,
+            "branch_id": 1,
+            "catalog_item_id": 80,
+            "is_available": 1,
+            "price_kopecks": 41500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 67,
+            "branch_id": 1,
+            "catalog_item_id": 81,
+            "is_available": 1,
+            "price_kopecks": 41500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 68,
+            "branch_id": 1,
+            "catalog_item_id": 82,
+            "is_available": 1,
+            "price_kopecks": 41500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 69,
+            "branch_id": 1,
+            "catalog_item_id": 83,
+            "is_available": 1,
+            "price_kopecks": 22500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 70,
+            "branch_id": 1,
+            "catalog_item_id": 84,
+            "is_available": 1,
+            "price_kopecks": 33500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 71,
+            "branch_id": 1,
+            "catalog_item_id": 85,
+            "is_available": 1,
+            "price_kopecks": 33000,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 72,
+            "branch_id": 1,
+            "catalog_item_id": 86,
+            "is_available": 1,
+            "price_kopecks": 53500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 73,
+            "branch_id": 1,
+            "catalog_item_id": 87,
+            "is_available": 1,
+            "price_kopecks": 29500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 74,
+            "branch_id": 1,
+            "catalog_item_id": 88,
+            "is_available": 1,
+            "price_kopecks": 29500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 75,
+            "branch_id": 1,
+            "catalog_item_id": 89,
+            "is_available": 1,
+            "price_kopecks": 21000,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 76,
+            "branch_id": 1,
+            "catalog_item_id": 90,
+            "is_available": 1,
+            "price_kopecks": 21000,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 77,
+            "branch_id": 1,
+            "catalog_item_id": 91,
+            "is_available": 1,
+            "price_kopecks": 22500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 78,
+            "branch_id": 1,
+            "catalog_item_id": 92,
+            "is_available": 1,
+            "price_kopecks": 22500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 79,
+            "branch_id": 1,
+            "catalog_item_id": 93,
+            "is_available": 1,
+            "price_kopecks": 3500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 80,
+            "branch_id": 1,
+            "catalog_item_id": 94,
+            "is_available": 1,
+            "price_kopecks": 3500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 81,
+            "branch_id": 1,
+            "catalog_item_id": 95,
+            "is_available": 1,
+            "price_kopecks": 3500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 90,
+            "branch_id": 1,
+            "catalog_item_id": 127,
+            "is_available": 1,
+            "price_kopecks": 26500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 91,
+            "branch_id": 1,
+            "catalog_item_id": 128,
+            "is_available": 1,
+            "price_kopecks": 26500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 92,
+            "branch_id": 1,
+            "catalog_item_id": 129,
+            "is_available": 1,
+            "price_kopecks": 26500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 93,
+            "branch_id": 1,
+            "catalog_item_id": 130,
+            "is_available": 1,
+            "price_kopecks": 50500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 94,
+            "branch_id": 1,
+            "catalog_item_id": 131,
+            "is_available": 1,
+            "price_kopecks": 22500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 95,
+            "branch_id": 1,
+            "catalog_item_id": 132,
+            "is_available": 1,
+            "price_kopecks": 45500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 96,
+            "branch_id": 1,
+            "catalog_item_id": 133,
+            "is_available": 1,
+            "price_kopecks": 45500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 97,
+            "branch_id": 1,
+            "catalog_item_id": 134,
+            "is_available": 1,
+            "price_kopecks": 41500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 98,
+            "branch_id": 1,
+            "catalog_item_id": 135,
+            "is_available": 1,
+            "price_kopecks": 38500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 99,
+            "branch_id": 1,
+            "catalog_item_id": 136,
+            "is_available": 1,
+            "price_kopecks": 40500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 100,
+            "branch_id": 1,
+            "catalog_item_id": 137,
+            "is_available": 1,
+            "price_kopecks": 36500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 101,
+            "branch_id": 1,
+            "catalog_item_id": 138,
+            "is_available": 1,
+            "price_kopecks": 38500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 102,
+            "branch_id": 1,
+            "catalog_item_id": 139,
+            "is_available": 1,
+            "price_kopecks": 38500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 103,
+            "branch_id": 1,
+            "catalog_item_id": 145,
+            "is_available": 1,
+            "price_kopecks": 75000,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 104,
+            "branch_id": 1,
+            "catalog_item_id": 146,
+            "is_available": 1,
+            "price_kopecks": 0,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 105,
+            "branch_id": 1,
+            "catalog_item_id": 147,
+            "is_available": 1,
+            "price_kopecks": 0,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 106,
+            "branch_id": 1,
+            "catalog_item_id": 148,
+            "is_available": 1,
+            "price_kopecks": 0,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 107,
+            "branch_id": 1,
+            "catalog_item_id": 154,
+            "is_available": 1,
+            "price_kopecks": 38500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 108,
+            "branch_id": 1,
+            "catalog_item_id": 156,
+            "is_available": 1,
+            "price_kopecks": 38500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 109,
+            "branch_id": 1,
+            "catalog_item_id": 157,
+            "is_available": 1,
+            "price_kopecks": 38500,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 110,
+            "branch_id": 1,
+            "catalog_item_id": 158,
+            "is_available": 1,
+            "price_kopecks": 12000,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-20 18:59:34"
+        },
+        {
+            "id": 111,
+            "branch_id": 1,
+            "catalog_item_id": 159,
+            "is_available": 1,
+            "price_kopecks": 12000,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-22 17:28:18"
+        },
+        {
+            "id": 112,
+            "branch_id": 1,
+            "catalog_item_id": 160,
+            "is_available": 1,
+            "price_kopecks": 69000,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-22 17:28:26"
+        },
+        {
+            "id": 113,
+            "branch_id": 1,
+            "catalog_item_id": 161,
+            "is_available": 1,
+            "price_kopecks": 12000,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-22 17:28:21"
+        },
+        {
+            "id": 114,
+            "branch_id": 1,
+            "catalog_item_id": 162,
+            "is_available": 1,
+            "price_kopecks": 12000,
+            "created_at": "2026-11-20 18:59:34",
+            "updated_at": "2026-11-22 17:28:22"
+        }
+    ],
+    "tags": [
+        {
+            "id": 1,
+            "branch_id": 1,
+            "code": "12345679",
+            "label": "Рекомендуем",
+            "color": "amber",
+            "is_active": 1,
+            "sort_order": 0,
+            "created_at": "2026-11-22 17:22:16",
+            "updated_at": "2026-11-22 17:22:16"
+        },
+        {
+            "id": 2,
+            "branch_id": 1,
+            "code": "ывфыв",
+            "label": "ТЭЭЭЭГ",
+            "color": "#999999",
+            "is_active": 1,
+            "sort_order": 0,
+            "created_at": "2026-11-22 17:22:16",
+            "updated_at": "2026-11-22 17:22:16"
+        }
+    ],
+    "entry_tags": [
+        {
+            "id": 1,
+            "tag_id": 1,
+            "entry_kind": "product",
+            "entry_id": 52
+        },
+        {
+            "id": 2,
+            "tag_id": 1,
+            "entry_kind": "product",
+            "entry_id": 69
+        },
+        {
+            "id": 3,
+            "tag_id": 1,
+            "entry_kind": "product",
+            "entry_id": 71
+        },
+        {
+            "id": 4,
+            "tag_id": 1,
+            "entry_kind": "product",
+            "entry_id": 130
+        },
+        {
+            "id": 5,
+            "tag_id": 1,
+            "entry_kind": "product",
+            "entry_id": 160
+        }
+    ],
+    "sets": [
+        {
+            "id": 1,
+            "branch_id": 1,
+            "name": "Набор \"Лава микс\"",
+            "slug": "lava-miks-b1",
+            "description": "Набор для тех, кто знает толк в соусах и не собирается останавливаться на одном вкусе. Более чем килограмм фирменной «Лавы» в четырёх исполнениях: с лососем, обжаренным в терияки, со слабосолёным лососем, королевской креветкой и снежным крабом.",
+            "is_available": 1,
+            "price_kopecks": 131000,
+            "status": "active",
+            "created_at": "2026-11-22 17:22:16",
+            "updated_at": "2026-11-22 17:22:16"
+        },
+        {
+            "id": 2,
+            "branch_id": 1,
+            "name": "Набор \"Острые козырьки\"",
+            "slug": "ostrye-kozyrki-b1",
+            "description": "Набор из четырех острых роллов. Отличается большим количеством тар-тара из лосося, а также авторскими жгучими соусами",
+            "is_available": 1,
+            "price_kopecks": 120000,
+            "status": "active",
+            "created_at": "2026-11-22 17:22:16",
+            "updated_at": "2026-11-22 17:22:16"
+        },
+        {
+            "id": 3,
+            "branch_id": 1,
+            "name": "Набор \"Лицо со шрамом\"",
+            "slug": "nabor-lico-so-sramom-b1",
+            "description": "Набор для тех, кто хочет получить максимум разнообразия. Здесь классический дуэт творожного сыра и креветки встречается в «Мозаика Маки», а подкопчённая курочка раскрывается в хрустящей панировке из воздушных сухарей в «Тони Монтана». Для любителей более ярких и необычных сочетаний - «Мэнни Рибера» и «Пьяная клюква» с томлёным лососем и насыщенными соусами.",
+            "is_available": 1,
+            "price_kopecks": 155000,
+            "status": "active",
+            "created_at": "2026-11-22 17:22:16",
+            "updated_at": "2026-11-22 17:22:16"
+        },
+        {
+            "id": 4,
+            "branch_id": 1,
+            "name": "Набор \"Любовь\"",
+            "slug": "nabor-liubov-b1",
+            "description": "Четыре любимых ролла в одном наборе: Калифорния с креветкой, Гейша с креветкой, Лава с креветкой и Филадельфия. Нежная креветка, сливочный сыр и лосось — знакомые сочетания, которые отлично дополняют друг друга.",
+            "is_available": 1,
+            "price_kopecks": 160000,
+            "status": "active",
+            "created_at": "2026-11-22 17:22:16",
+            "updated_at": "2026-11-22 17:22:16"
+        },
+        {
+            "id": 5,
+            "branch_id": 1,
+            "name": "Набор \"Филадельфия\"",
+            "slug": "filadelfiia-lav-b1",
+            "description": "Набор для тех, кто знает: лосося много не бывает. Здесь собрали его во всех любимых проявлениях - классические роллы с лососем снаружи, как в полной, так и в облегчённой версии, вариант с лососем внутри и запечённый лосось для тех, кто любит погорячее.",
+            "is_available": 1,
+            "price_kopecks": 205000,
+            "status": "active",
+            "created_at": "2026-11-22 17:22:16",
+            "updated_at": "2026-11-22 17:22:16"
+        },
+        {
+            "id": 6,
+            "branch_id": 1,
+            "name": "Набор \"Сакура\"",
+            "slug": "sakura-b1",
+            "description": "Пять роллов - пять разных вкусов. Сочная Калифорния, нежная Лава с огурчиком, большой хрустящий Тацуми с ароматной чесночной шапкой, сливочный Капа маки чиз и щедро покрытая копчёным угрём Ева. Набор, в котором каждый ролл хочется попробовать первым.",
+            "is_available": 1,
+            "price_kopecks": 200000,
+            "status": "active",
+            "created_at": "2026-11-22 17:22:16",
+            "updated_at": "2026-11-22 17:22:16"
+        },
+        {
+            "id": 7,
+            "branch_id": 1,
+            "name": "Набор \"Джон Уик\"",
+            "slug": "nabor-dzon-uik-b1",
+            "description": "Пять мощных роллов: хрустящий \"Тацуми\" с сырно-чесночной шапкой, жаренная \"Оливьешка\", созданная по мотивам легендарного салата, классическая \"Лава\" с лососем, пряный \"Эби грин маки\" и нежный вкус авокадо в пышных темпурных сухарях.\nХруст, сливки, острота и жар — всё в одном ударе",
+            "is_available": 1,
+            "price_kopecks": 205000,
+            "status": "active",
+            "created_at": "2026-11-22 17:22:16",
+            "updated_at": "2026-11-22 17:22:16"
+        },
+        {
+            "id": 8,
+            "branch_id": 1,
+            "name": "Набор \"Семья\"",
+            "slug": "nabor-semia-b1",
+            "description": "Шесть роллов с разным характером, объединённых одной историей. Роскошный Майкл, обернутый в щедрый слой слабосоленого лосося, три ярких острых ролла - Констанция, Апполония и Санни, нежная Мэри с копчёной форелью и Вито с томлёным лососем и икрой кеты. Семья, которую лучше попробовать целиком.",
+            "is_available": 1,
+            "price_kopecks": 280000,
+            "status": "active",
+            "created_at": "2026-11-22 17:22:16",
+            "updated_at": "2026-11-22 17:22:16"
+        }
+    ],
+    "set_lines": [
+        {
+            "id": 1,
+            "set_id": 1,
+            "catalog_item_id": 39,
+            "quantity": 1
+        },
+        {
+            "id": 2,
+            "set_id": 1,
+            "catalog_item_id": 38,
+            "quantity": 1
+        },
+        {
+            "id": 3,
+            "set_id": 1,
+            "catalog_item_id": 40,
+            "quantity": 1
+        },
+        {
+            "id": 4,
+            "set_id": 1,
+            "catalog_item_id": 42,
+            "quantity": 1
+        },
+        {
+            "id": 5,
+            "set_id": 2,
+            "catalog_item_id": 47,
+            "quantity": 1
+        },
+        {
+            "id": 6,
+            "set_id": 2,
+            "catalog_item_id": 34,
+            "quantity": 1
+        },
+        {
+            "id": 7,
+            "set_id": 2,
+            "catalog_item_id": 64,
+            "quantity": 1
+        },
+        {
+            "id": 8,
+            "set_id": 3,
+            "catalog_item_id": 30,
+            "quantity": 1
+        },
+        {
+            "id": 9,
+            "set_id": 3,
+            "catalog_item_id": 54,
+            "quantity": 1
+        },
+        {
+            "id": 10,
+            "set_id": 4,
+            "catalog_item_id": 28,
+            "quantity": 1
+        },
+        {
+            "id": 11,
+            "set_id": 4,
+            "catalog_item_id": 38,
+            "quantity": 1
+        },
+        {
+            "id": 12,
+            "set_id": 4,
+            "catalog_item_id": 56,
+            "quantity": 1
+        },
+        {
+            "id": 14,
+            "set_id": 5,
+            "catalog_item_id": 27,
+            "quantity": 1
+        },
+        {
+            "id": 13,
+            "set_id": 5,
+            "catalog_item_id": 14,
+            "quantity": 1
+        },
+        {
+            "id": 15,
+            "set_id": 6,
+            "catalog_item_id": 71,
+            "quantity": 1
+        },
+        {
+            "id": 16,
+            "set_id": 6,
+            "catalog_item_id": 41,
+            "quantity": 1
+        },
+        {
+            "id": 17,
+            "set_id": 6,
+            "catalog_item_id": 19,
+            "quantity": 1
+        },
+        {
+            "id": 18,
+            "set_id": 6,
+            "catalog_item_id": 55,
+            "quantity": 1
+        },
+        {
+            "id": 19,
+            "set_id": 6,
+            "catalog_item_id": 53,
+            "quantity": 1
+        },
+        {
+            "id": 20,
+            "set_id": 7,
+            "catalog_item_id": 71,
+            "quantity": 1
+        },
+        {
+            "id": 21,
+            "set_id": 7,
+            "catalog_item_id": 78,
+            "quantity": 1
+        },
+        {
+            "id": 22,
+            "set_id": 7,
+            "catalog_item_id": 39,
+            "quantity": 1
+        },
+        {
+            "id": 23,
+            "set_id": 8,
+            "catalog_item_id": 48,
+            "quantity": 1
+        },
+        {
+            "id": 24,
+            "set_id": 8,
+            "catalog_item_id": 47,
+            "quantity": 1
+        },
+        {
+            "id": 25,
+            "set_id": 8,
+            "catalog_item_id": 46,
+            "quantity": 1
+        },
+        {
+            "id": 26,
+            "set_id": 8,
+            "catalog_item_id": 64,
+            "quantity": 1
+        },
+        {
+            "id": 27,
+            "set_id": 8,
+            "catalog_item_id": 49,
+            "quantity": 1
+        }
+    ]
+}

@@ -6,14 +6,14 @@ use App\Domain\Supporting\Catalog\Entity\Product;
 use App\Domain\Supporting\Catalog\Enum\ProductStatus;
 use App\Domain\Supporting\Catalog\ValueObject\Nutrition;
 use App\Domain\Supporting\Catalog\ValueObject\ProductImage;
-use App\Infrastructure\Catalog\Model\CAT_Item;
+use App\Infrastructure\Catalog\Model\CatalogItemModel;
 
 final class CatalogProductMapper
 {
     /**
      * @param  list<ProductImage>  $images
      */
-    public function toDomain(CAT_Item $row, array $images = []): Product
+    public function toDomain(CatalogItemModel $row, array $images = []): Product
     {
         return new Product(
             id: (int) $row->id,
@@ -31,7 +31,7 @@ final class CatalogProductMapper
         );
     }
 
-    private function resolveWeight(CAT_Item $row): ?int
+    private function resolveWeight(CatalogItemModel $row): ?int
     {
         if ($row->weight === null) {
             return null;
@@ -42,7 +42,7 @@ final class CatalogProductMapper
         return $grams > 0 ? $grams : null;
     }
 
-    private function resolveSku(CAT_Item $row): ?string
+    private function resolveSku(CatalogItemModel $row): ?string
     {
         $sku = trim((string) ($row->sku ?? ''));
 
@@ -52,7 +52,7 @@ final class CatalogProductMapper
     /**
      * @return list<string>
      */
-    private function resolveIngredients(CAT_Item $row): array
+    private function resolveIngredients(CatalogItemModel $row): array
     {
         $raw = $row->ingredients;
 
@@ -75,7 +75,7 @@ final class CatalogProductMapper
         return $ingredients;
     }
 
-    private function resolveStatus(CAT_Item $row): ProductStatus
+    private function resolveStatus(CatalogItemModel $row): ProductStatus
     {
         if ($row->archived_at !== null) {
             return ProductStatus::Archived;
@@ -88,7 +88,7 @@ final class CatalogProductMapper
             : ProductStatus::Archived;
     }
 
-    private function resolveNutrition(CAT_Item $row): ?Nutrition
+    private function resolveNutrition(CatalogItemModel $row): ?Nutrition
     {
         $raw = $row->nutrition;
         if (! is_array($raw)) {

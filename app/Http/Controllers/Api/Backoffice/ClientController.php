@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers\Api\Backoffice;
 
-use App\Application\Crm\Command\AddClientAddressUseCase;
-use App\Application\Crm\Command\DeleteClientAddressUseCase;
-use App\Application\Crm\Command\EnsureClientByPhoneUseCase;
-use App\Application\Crm\Command\SetDefaultClientAddressUseCase;
-use App\Application\Crm\Command\UpdateClientAddressUseCase;
-use App\Application\Crm\Command\UpdateClientProfileUseCase;
-use App\Application\Crm\DTO\AddClientAddressDto;
-use App\Application\Crm\DTO\UpdateClientAddressDto;
-use App\Application\Crm\DTO\UpdateClientProfileDto;
-use App\Application\Crm\Query\GetAdminClientUseCase;
-use App\Application\Crm\Query\ListAdminClientsUseCase;
+use App\Application\Client\Command\AddClientAddressUseCase;
+use App\Application\Client\Command\DeleteClientAddressUseCase;
+use App\Application\Client\Command\EnsureClientByPhoneUseCase;
+use App\Application\Client\Command\SetDefaultClientAddressUseCase;
+use App\Application\Client\Command\UpdateClientAddressUseCase;
+use App\Application\Client\Command\UpdateClientProfileUseCase;
+use App\Application\Client\DTO\AddClientAddressDto;
+use App\Application\Client\DTO\UpdateClientAddressDto;
+use App\Application\Client\DTO\UpdateClientProfileDto;
+use App\Application\Client\Query\GetAdminClientUseCase;
+use App\Application\Client\Query\ListAdminClientsUseCase;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

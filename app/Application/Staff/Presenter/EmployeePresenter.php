@@ -2,7 +2,7 @@
 
 namespace App\Application\Staff\Presenter;
 
-use App\Domain\Generic\Staff\Entity\Employee;
+use App\Domain\Supporting\Staff\Entity\Employee;
 
 final class EmployeePresenter
 {

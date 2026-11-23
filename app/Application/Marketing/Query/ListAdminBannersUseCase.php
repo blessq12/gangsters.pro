@@ -4,8 +4,8 @@ namespace App\Application\Marketing\Query;
 
 use App\Application\Marketing\Presenter\MarketingPresenter;
 use App\Application\Shared\PageParams;
-use App\Domain\Supporting\Promotion\Entity\Banner;
-use App\Domain\Supporting\Promotion\Repository\BannerRepository;
+use App\Domain\Supporting\Marketing\Entity\Banner;
+use App\Domain\Supporting\Marketing\Repository\BannerRepository;
 
 final class ListAdminBannersUseCase
 {

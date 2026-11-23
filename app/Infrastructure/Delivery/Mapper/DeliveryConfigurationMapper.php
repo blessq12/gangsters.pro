@@ -4,12 +4,12 @@ namespace App\Infrastructure\Delivery\Mapper;
 
 use App\Domain\Core\Delivery\Tariff\Entity\DeliveryConfiguration;
 use App\Domain\Core\Delivery\Tariff\ValueObject\DeliveryZone;
-use App\Infrastructure\Delivery\Model\DLV_Configuration;
-use App\Infrastructure\Delivery\Model\DLV_Zone;
+use App\Infrastructure\Delivery\Model\DeliveryConfigurationModel;
+use App\Infrastructure\Delivery\Model\DeliveryZoneModel;
 
 final class DeliveryConfigurationMapper
 {
-    public function toDomain(DLV_Configuration $row): DeliveryConfiguration
+    public function toDomain(DeliveryConfigurationModel $row): DeliveryConfiguration
     {
         return new DeliveryConfiguration(
             id: (int) $row->id,
@@ -23,20 +23,20 @@ final class DeliveryConfigurationMapper
     /**
      * @return list<DeliveryZone>
      */
-    private function resolveZones(DLV_Configuration $row): array
+    private function resolveZones(DeliveryConfigurationModel $row): array
     {
         $zones = [];
 
         $zoneRows = $row->relationLoaded('zones')
             ? $row->zones
-            : DLV_Zone::query()
+            : DeliveryZoneModel::query()
                 ->where('configuration_id', $row->id)
                 ->orderBy('sort_order')
                 ->orderBy('id')
                 ->get();
 
         foreach ($zoneRows as $zoneRow) {
-            if (! $zoneRow instanceof DLV_Zone) {
+            if (! $zoneRow instanceof DeliveryZoneModel) {
                 continue;
             }
 
@@ -49,12 +49,12 @@ final class DeliveryConfigurationMapper
         return $zones;
     }
 
-    public function zoneToDomain(DLV_Zone $row): ?DeliveryZone
+    public function zoneToDomain(DeliveryZoneModel $row): ?DeliveryZone
     {
         return $this->mapZoneRow($row);
     }
 
-    private function mapZoneRow(DLV_Zone $row): ?DeliveryZone
+    private function mapZoneRow(DeliveryZoneModel $row): ?DeliveryZone
     {
         $geometry = $this->resolveGeoJson($row->geojson);
         if ($geometry === null) {

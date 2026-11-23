@@ -4,10 +4,9 @@ namespace Tests\Application\Company;
 
 use App\Application\Company\Command\CloneBranchSettingsUseCase;
 use App\Application\Company\DTO\CloneBranchSettingsDto;
-use App\Application\Delivery\Event\DeliveryZonesChangedFactory;
-use App\Domain\Core\Delivery\Tariff\Repository\DeliveryConfigurationRepository;
-use App\Domain\Core\Order\Repository\PromotionPolicyRepository;
 use App\Domain\Supporting\Company\Entity\Branch;
+use App\Domain\Supporting\Company\Port\CompanyDeliveryConfigClonePort;
+use App\Domain\Supporting\Company\Port\CompanyOrderCommercialRulesClonePort;
 use App\Domain\Supporting\Company\Entity\BranchCategory;
 use App\Domain\Supporting\Company\Entity\BranchCategoryItem;
 use App\Domain\Supporting\Company\Entity\BranchMenuItem;
@@ -324,18 +323,14 @@ final class CloneBranchSettingsUseCaseTest extends TestCase
         ?BranchTagRepository $tags = null,
         ?BranchSetRepository $sets = null,
     ): CloneBranchSettingsUseCase {
-        $policies = $this->createMock(PromotionPolicyRepository::class);
-        $delivery = $this->createMock(DeliveryConfigurationRepository::class);
-
         return new CloneBranchSettingsUseCase(
             branches: $branches,
             menu: $menu,
             categories: $categories ?? $this->createMock(BranchCategoryRepository::class),
             tags: $tags ?? $this->createMock(BranchTagRepository::class),
             sets: $sets ?? $this->createMock(BranchSetRepository::class),
-            policies: $policies,
-            delivery: $delivery,
-            zonesChanged: new DeliveryZonesChangedFactory(),
+            commercialRulesClone: $this->createMock(CompanyOrderCommercialRulesClonePort::class),
+            deliveryClone: $this->createMock(CompanyDeliveryConfigClonePort::class),
             transaction: new ImmediateTransactionManager(),
         );
     }

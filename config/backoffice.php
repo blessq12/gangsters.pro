@@ -98,14 +98,10 @@ return [
         // courier
         ['method' => 'GET', 'path' => 'courier/route-sheets', 'roles' => ['courier']],
 
-        // order/policy — правила оформления заказа
-        ['method' => 'DELETE', 'path' => 'order/policy/roles', 'roles' => ['owner']],
-        ['method' => 'POST', 'path' => 'order/policy/*', 'roles' => ['owner']],
-        ['method' => 'POST', 'path' => 'order/policy', 'roles' => ['owner']],
-        ['method' => 'PUT', 'path' => 'order/policy', 'roles' => ['owner']],
-        ['method' => 'GET', 'path' => 'order/policy/roles', 'roles' => ['owner', 'administrator']],
-        ['method' => 'GET', 'path' => 'order/policy/zones', 'roles' => ['owner', 'administrator']],
-        ['method' => 'GET', 'path' => 'order/policy', 'roles' => ['owner', 'administrator']],
+        // order/commercial-rules — коммерческие правила оформления заказа
+        ['method' => 'POST', 'path' => 'order/commercial-rules', 'roles' => ['owner']],
+        ['method' => 'PUT', 'path' => 'order/commercial-rules', 'roles' => ['owner']],
+        ['method' => 'GET', 'path' => 'order/commercial-rules', 'roles' => ['owner', 'administrator']],
 
         // marketing
         ['method' => 'POST', 'path' => 'marketing/*', 'roles' => ['owner']],

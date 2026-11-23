@@ -4,12 +4,12 @@ namespace App\Infrastructure\Delivery\Mapper;
 
 use App\Domain\Core\Delivery\Routing\Entity\RouteSheet;
 use App\Domain\Core\Delivery\Routing\Entity\RouteStop;
-use App\Infrastructure\Delivery\Model\DLV_RouteSheet;
-use App\Infrastructure\Delivery\Model\DLV_RouteStop;
+use App\Infrastructure\Delivery\Model\RouteSheetModel;
+use App\Infrastructure\Delivery\Model\RouteStopModel;
 
 final class RouteSheetMapper
 {
-    public function toDomain(DLV_RouteSheet $row): RouteSheet
+    public function toDomain(RouteSheetModel $row): RouteSheet
     {
         $stops = [];
         $stopRows = $row->relationLoaded('stops')
@@ -17,7 +17,7 @@ final class RouteSheetMapper
             : $row->stops()->get();
 
         foreach ($stopRows as $stop) {
-            if (! $stop instanceof DLV_RouteStop) {
+            if (! $stop instanceof RouteStopModel) {
                 continue;
             }
 

@@ -4,13 +4,13 @@ namespace App\Infrastructure\Payment\Mapper;
 
 use App\Domain\Supporting\Payment\Entity\Payment;
 use App\Domain\Supporting\Payment\Enum\PaymentStatus;
-use App\Infrastructure\Payment\Model\PAY_Payment;
+use App\Infrastructure\Payment\Model\PaymentModel;
 use App\Shared\Enum\PaymentMethod;
 use DateTimeImmutable;
 
 final class PaymentMapper
 {
-    public function toDomain(PAY_Payment $row): Payment
+    public function toDomain(PaymentModel $row): Payment
     {
         return Payment::restore(
             id: (int) $row->id,

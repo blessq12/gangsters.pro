@@ -6,8 +6,8 @@ use App\Domain\Core\Delivery\Tariff\Entity\DeliveryConfiguration;
 use App\Domain\Core\Delivery\Tariff\Repository\DeliveryConfigurationRepository;
 use App\Domain\Core\Delivery\Tariff\ValueObject\DeliveryZone;
 use App\Infrastructure\Delivery\Mapper\DeliveryConfigurationMapper;
-use App\Infrastructure\Delivery\Model\DLV_Configuration;
-use App\Infrastructure\Delivery\Model\DLV_Zone;
+use App\Infrastructure\Delivery\Model\DeliveryConfigurationModel;
+use App\Infrastructure\Delivery\Model\DeliveryZoneModel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -19,18 +19,18 @@ final class EloquentDeliveryConfigurationRepository implements DeliveryConfigura
 
     public function findByBranch(int $branchId): ?DeliveryConfiguration
     {
-        $row = DLV_Configuration::query()
+        $row = DeliveryConfigurationModel::query()
             ->with(['zones' => static fn ($q) => $q->orderBy('sort_order')->orderBy('id')])
             ->where('branch_id', $branchId)
             ->first();
 
-        return $row instanceof DLV_Configuration ? $this->mapper->toDomain($row) : null;
+        return $row instanceof DeliveryConfigurationModel ? $this->mapper->toDomain($row) : null;
     }
 
     public function listZonesPageByBranch(int $branchId, int $offset, int $limit): array
     {
         $zones = [];
-        $rows = DLV_Zone::query()
+        $rows = DeliveryZoneModel::query()
             ->whereIn('configuration_id', $this->configurationIdsByBranch($branchId))
             ->orderBy('sort_order')
             ->orderBy('id')
@@ -50,7 +50,7 @@ final class EloquentDeliveryConfigurationRepository implements DeliveryConfigura
 
     public function countZonesByBranch(int $branchId): int
     {
-        return (int) DLV_Zone::query()
+        return (int) DeliveryZoneModel::query()
             ->whereIn('configuration_id', $this->configurationIdsByBranch($branchId))
             ->count();
     }
@@ -76,9 +76,9 @@ final class EloquentDeliveryConfigurationRepository implements DeliveryConfigura
             $averageDeliveryTimeMinutes,
             $zones,
         ): DeliveryConfiguration {
-            $row = DLV_Configuration::query()->where('branch_id', $branchId)->first();
-            if (! $row instanceof DLV_Configuration) {
-                $row = new DLV_Configuration();
+            $row = DeliveryConfigurationModel::query()->where('branch_id', $branchId)->first();
+            if (! $row instanceof DeliveryConfigurationModel) {
+                $row = new DeliveryConfigurationModel();
             }
 
             $row->fill([
@@ -88,10 +88,10 @@ final class EloquentDeliveryConfigurationRepository implements DeliveryConfigura
             ]);
             $row->save();
 
-            $existing = DLV_Zone::query()
+            $existing = DeliveryZoneModel::query()
                 ->where('configuration_id', $row->id)
                 ->get()
-                ->keyBy(static fn (DLV_Zone $zone): string => (string) $zone->zone_key);
+                ->keyBy(static fn (DeliveryZoneModel $zone): string => (string) $zone->zone_key);
 
             $keptKeys = [];
             $sortOrder = 0;
@@ -109,7 +109,7 @@ final class EloquentDeliveryConfigurationRepository implements DeliveryConfigura
                 $hasGeometry = is_array($geometry);
 
                 if ($id !== '' && $existing->has($id)) {
-                    /** @var DLV_Zone $zoneRow */
+                    /** @var DeliveryZoneModel $zoneRow */
                     $zoneRow = $existing->get($id);
                     $zoneRow->fill([
                         'name' => $name !== '' ? $name : (string) $zoneRow->name,
@@ -140,7 +140,7 @@ final class EloquentDeliveryConfigurationRepository implements DeliveryConfigura
                 }
 
                 $newId = $id !== '' ? $id : (string) Str::uuid();
-                DLV_Zone::query()->create([
+                DeliveryZoneModel::query()->create([
                     'configuration_id' => (int) $row->id,
                     'zone_key' => $newId,
                     'name' => $name,
@@ -173,7 +173,7 @@ final class EloquentDeliveryConfigurationRepository implements DeliveryConfigura
      */
     private function configurationIdsByBranch(int $branchId): array
     {
-        return DLV_Configuration::query()
+        return DeliveryConfigurationModel::query()
             ->where('branch_id', $branchId)
             ->pluck('id')
             ->map(static fn ($id): int => (int) $id)

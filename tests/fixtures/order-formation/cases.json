@@ -12,7 +12,7 @@
                 { "id": 1, "name": "Набор Лава микс", "price_kopecks": 131000, "rolls_per_unit": 4 }
             ]
         },
-        "promotions": {
+        "commercial_rules": {
             "gift_rules": [
                 { "order_channel": "pickup", "min_order_amount_kopecks": 100000, "is_active": true, "allowed_weekdays": [] },
                 { "order_channel": "courier", "min_order_amount_kopecks": 180000, "is_active": true, "allowed_weekdays": [1, 2, 3, 4] }

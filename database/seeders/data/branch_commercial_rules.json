@@ -1,0 +1,9 @@
+{
+    "id": 1,
+    "branch_id": 1,
+    "gift_rules": "[{\"is_active\": true, \"benefit_type\": \"free_roll_gift\", \"order_channel\": \"pickup\", \"allowed_weekdays\": [], \"min_order_amount_kopecks\": 100000}, {\"is_active\": true, \"benefit_type\": \"free_roll_gift\", \"order_channel\": \"courier\", \"allowed_weekdays\": [1, 2, 3, 4], \"min_order_amount_kopecks\": 180000}]",
+    "delivery_benefit": "{\"is_active\": true, \"below_threshold_fee_mode\": \"base_tariff\", \"in_zone_at_threshold_fee_mode\": \"free\", \"outside_zone_surcharge_kopecks\": 0, \"free_delivery_threshold_kopecks\": 100000, \"outside_zone_at_threshold_fee_mode\": \"outside_zone_surcharge_only\"}",
+    "complement_set_benefit": "{\"max_sets\": 3, \"is_active\": true, \"rolls_per_set\": 2}",
+    "created_at": "2026-11-19 18:11:07",
+    "updated_at": "2026-11-22 22:14:36"
+}

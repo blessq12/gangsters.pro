@@ -6,8 +6,8 @@ use App\Domain\Core\Order\Entity\Order;
 use App\Domain\Core\Order\Repository\OrderRepository;
 use App\Domain\Core\Order\ValueObject\OrderNumber;
 use App\Infrastructure\Order\Mapper\OrderMapper;
-use App\Infrastructure\Order\Model\ORD_Order;
-use App\Infrastructure\Order\Model\ORD_OrderLine;
+use App\Infrastructure\Order\Model\OrderModel;
+use App\Infrastructure\Order\Model\OrderLineModel;
 use DateTimeImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -20,19 +20,19 @@ final class EloquentOrderRepository implements OrderRepository
 
     public function findById(int $id): ?Order
     {
-        $row = ORD_Order::query()->with('lines')->find($id);
+        $row = OrderModel::query()->with('lines')->find($id);
 
-        return $row instanceof ORD_Order ? $this->mapper->toDomain($row) : null;
+        return $row instanceof OrderModel ? $this->mapper->toDomain($row) : null;
     }
 
     public function findByClientRequestId(string $clientRequestId): ?Order
     {
-        $row = ORD_Order::query()
+        $row = OrderModel::query()
             ->with('lines')
             ->where('checkout_id', $clientRequestId)
             ->first();
 
-        return $row instanceof ORD_Order ? $this->mapper->toDomain($row) : null;
+        return $row instanceof OrderModel ? $this->mapper->toDomain($row) : null;
     }
 
     public function count(array $filters = []): int
@@ -43,7 +43,7 @@ final class EloquentOrderRepository implements OrderRepository
     public function countByStatus(): array
     {
         $counts = [];
-        $rows = ORD_Order::query()
+        $rows = OrderModel::query()
             ->selectRaw('status, COUNT(*) as aggregate')
             ->groupBy('status')
             ->get();
@@ -60,7 +60,7 @@ final class EloquentOrderRepository implements OrderRepository
         ?DateTimeImmutable $createdFrom = null,
         ?DateTimeImmutable $createdTo = null,
     ): array {
-        $query = ORD_Order::query();
+        $query = OrderModel::query();
         if ($branchId !== null && $branchId > 0) {
             $query->where('branch_id', $branchId);
         }
@@ -86,7 +86,7 @@ final class EloquentOrderRepository implements OrderRepository
 
     public function countOpsSnapshot(?int $branchId = null): array
     {
-        $base = ORD_Order::query();
+        $base = OrderModel::query();
         if ($branchId !== null && $branchId > 0) {
             $base->where('branch_id', $branchId);
         }
@@ -116,7 +116,7 @@ final class EloquentOrderRepository implements OrderRepository
 
     public function listPage(int $offset, int $limit, array $filters = []): array
     {
-        /** @var \Illuminate\Database\Eloquent\Collection<int, ORD_Order> $rows */
+        /** @var \Illuminate\Database\Eloquent\Collection<int, OrderModel> $rows */
         $rows = $this->filteredQuery($filters)
             ->with('lines')
             ->orderByDesc('id')
@@ -125,14 +125,14 @@ final class EloquentOrderRepository implements OrderRepository
             ->get();
 
         return $rows
-            ->map(fn (ORD_Order $row): Order => $this->mapper->toDomain($row))
+            ->map(fn (OrderModel $row): Order => $this->mapper->toDomain($row))
             ->all();
     }
 
     public function listByClientId(int $clientId): array
     {
-        /** @var \Illuminate\Database\Eloquent\Collection<int, ORD_Order> $rows */
-        $rows = ORD_Order::query()
+        /** @var \Illuminate\Database\Eloquent\Collection<int, OrderModel> $rows */
+        $rows = OrderModel::query()
             ->with('lines')
             ->where('client_id', $clientId)
             ->orderByDesc('created_at')
@@ -140,7 +140,7 @@ final class EloquentOrderRepository implements OrderRepository
             ->get();
 
         return $rows
-            ->map(fn (ORD_Order $row): Order => $this->mapper->toDomain($row))
+            ->map(fn (OrderModel $row): Order => $this->mapper->toDomain($row))
             ->all();
     }
 
@@ -153,17 +153,17 @@ final class EloquentOrderRepository implements OrderRepository
 
             if (! $order->hasId()) {
                 unset($orderPayload['id']);
-                $row = ORD_Order::query()->create($orderPayload);
+                $row = OrderModel::query()->create($orderPayload);
                 $order->assignId((int) $row->id);
             } else {
                 $id = (int) $orderPayload['id'];
                 unset($orderPayload['id']);
-                ORD_Order::query()->whereKey($id)->update($orderPayload);
-                ORD_OrderLine::query()->where('order_id', $id)->delete();
+                OrderModel::query()->whereKey($id)->update($orderPayload);
+                OrderLineModel::query()->where('order_id', $id)->delete();
             }
 
             foreach ($lines as $line) {
-                ORD_OrderLine::query()->create([
+                OrderLineModel::query()->create([
                     ...$line,
                     'order_id' => $order->id(),
                 ]);
@@ -178,12 +178,12 @@ final class EloquentOrderRepository implements OrderRepository
      *     branch_id?: int|null,
      *     delivery_method?: string|null
      * }  $filters
-     * @return Builder<ORD_Order>
+     * @return Builder<OrderModel>
      */
     private function filteredQuery(array $filters): Builder
     {
-        /** @var Builder<ORD_Order> $query */
-        $query = ORD_Order::query();
+        /** @var Builder<OrderModel> $query */
+        $query = OrderModel::query();
 
         $status = isset($filters['status']) ? trim((string) $filters['status']) : '';
         if ($status !== '') {

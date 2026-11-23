@@ -398,7 +398,7 @@ onMounted(async () => {
                 </label>
                 <label class="flex items-center gap-2 text-sm">
                     <input v-model="cloneForm.copyPromotions" type="checkbox" class="accent-bo-accent">
-                    Политики и роли акций
+                    Коммерческие правила заказа
                 </label>
                 <label class="flex items-center gap-2 text-sm">
                     <input v-model="cloneForm.copyDelivery" type="checkbox" class="accent-bo-accent">

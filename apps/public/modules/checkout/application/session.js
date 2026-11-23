@@ -16,6 +16,7 @@ import {
     normalizeDeliveryComment,
     normalizePersonsCount,
 } from "../domain/checkoutServerMappers";
+import { productImageUrl } from "../domain/cartLineImage.js";
 import { formCheckout } from "../domain/formation/formCheckout.js";
 import { giftCourierWeekdaysLabel } from "../domain/giftWeekdaysLabel";
 import { adaptFormationToCheckoutSnapshot } from "../domain/normalizeOrderPreview";
@@ -280,7 +281,7 @@ function resolveCoords(selectedAddress, store) {
 
 function buildComplementSelections(store) {
     const known = new Set(
-        (store.context?.promotions?.complements ?? []).map((row) => Number(row.product_id)),
+        (store.context?.commercial_rules?.complements ?? []).map((row) => Number(row.product_id)),
     );
 
     return Object.entries(store.complementSelections ?? {})
@@ -462,6 +463,7 @@ export function buildLocalCartItem(product, qty, payload = null) {
             name: String(product?.name || ""),
             price: unitRub,
             kind: product?.kind === "set" ? "set" : "product",
+            imageUrl: productImageUrl(product),
         },
         pricing: {
             listUnitPriceKopecks: unitKopecks,

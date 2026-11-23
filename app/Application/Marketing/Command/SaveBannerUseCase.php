@@ -4,7 +4,7 @@ namespace App\Application\Marketing\Command;
 
 use App\Application\Marketing\DTO\SaveBannerDto;
 use App\Application\Marketing\Presenter\MarketingPresenter;
-use App\Domain\Supporting\Promotion\Repository\BannerRepository;
+use App\Domain\Supporting\Marketing\Repository\BannerRepository;
 use App\Infrastructure\Marketing\Support\MarketingMediaStore;
 use App\Infrastructure\Marketing\Support\MarketingStoredMedia;
 use Illuminate\Support\Facades\DB;

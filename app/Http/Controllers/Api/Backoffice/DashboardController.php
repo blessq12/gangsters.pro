@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Api\Backoffice;
 
 use App\Application\Dashboard\Query\GetDashboardSummaryUseCase;
-use App\Domain\Generic\Staff\Enum\StaffRole;
+use App\Domain\Supporting\Staff\Enum\StaffRole;
 use App\Http\Controllers\Controller;
-use App\Infrastructure\Staff\Model\STF_Employee;
+use App\Infrastructure\Staff\Model\EmployeeModel;
 use DateTimeImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -34,7 +34,7 @@ final class DashboardController extends Controller
     private function resolveBranchId(Request $request): int|null|false
     {
         $user = $request->user('sanctum');
-        if ($user instanceof STF_Employee && (string) $user->role === StaffRole::Administrator->value) {
+        if ($user instanceof EmployeeModel && (string) $user->role === StaffRole::Administrator->value) {
             $id = (int) ($user->branch_id ?? 0);
 
             return $id > 0 ? $id : false;

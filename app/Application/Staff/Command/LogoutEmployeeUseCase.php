@@ -3,14 +3,14 @@
 namespace App\Application\Staff\Command;
 
 use App\Application\Staff\Support\EmployeeAccessToken;
-use App\Infrastructure\Staff\Model\STF_Employee;
+use App\Infrastructure\Staff\Model\EmployeeModel;
 
 final class LogoutEmployeeUseCase
 {
     /**
      * @return array{ok: true}
      */
-    public function execute(?STF_Employee $employee): array
+    public function execute(?EmployeeModel $employee): array
     {
         EmployeeAccessToken::revokeCurrent($employee);
 

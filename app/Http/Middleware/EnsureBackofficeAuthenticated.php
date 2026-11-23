@@ -2,9 +2,9 @@
 
 namespace App\Http\Middleware;
 
-use App\Domain\Generic\Staff\Entity\Employee;
-use App\Domain\Generic\Staff\Repository\EmployeeRepository;
-use App\Infrastructure\Staff\Model\STF_Employee;
+use App\Domain\Supporting\Staff\Entity\Employee;
+use App\Domain\Supporting\Staff\Repository\EmployeeRepository;
+use App\Infrastructure\Staff\Model\EmployeeModel;
 use Closure;
 use Illuminate\Http\Request;
 use Laravel\Sanctum\PersonalAccessToken;
@@ -26,7 +26,7 @@ final class EnsureBackofficeAuthenticated
         }
 
         $user = $request->user('sanctum');
-        if (! $user instanceof STF_Employee) {
+        if (! $user instanceof EmployeeModel) {
             return response()->json(['message' => 'Требуется вход.'], 401);
         }
 

@@ -4,7 +4,7 @@ namespace App\Infrastructure\Marketing\Adapter;
 
 use App\Domain\Supporting\Company\Entity\DeliveryConditionsText;
 use App\Domain\Supporting\Company\Repository\DeliveryConditionsTextRepository;
-use App\Domain\Supporting\Promotion\Port\MarketingDeliveryConditionsPort;
+use App\Domain\Supporting\Marketing\Port\MarketingDeliveryConditionsPort;
 
 final class EloquentMarketingDeliveryConditionsPort implements MarketingDeliveryConditionsPort
 {

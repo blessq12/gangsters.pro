@@ -2,10 +2,10 @@
 
 namespace App\Infrastructure\Staff\Repository;
 
-use App\Domain\Generic\Staff\Entity\Employee;
-use App\Domain\Generic\Staff\Enum\StaffRole;
-use App\Domain\Generic\Staff\Repository\EmployeeRepository;
-use App\Infrastructure\Staff\Model\STF_Employee;
+use App\Domain\Supporting\Staff\Entity\Employee;
+use App\Domain\Supporting\Staff\Enum\StaffRole;
+use App\Domain\Supporting\Staff\Repository\EmployeeRepository;
+use App\Infrastructure\Staff\Model\EmployeeModel;
 use DateTimeImmutable;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -14,10 +14,10 @@ final class EloquentEmployeeRepository implements EmployeeRepository
     public function save(Employee $employee): void
     {
         $row = $employee->hasId()
-            ? STF_Employee::query()->find($employee->id())
-            : new STF_Employee();
+            ? EmployeeModel::query()->find($employee->id())
+            : new EmployeeModel();
 
-        if (! $row instanceof STF_Employee) {
+        if (! $row instanceof EmployeeModel) {
             throw new \InvalidArgumentException('Сотрудник не найден.');
         }
 
@@ -37,16 +37,16 @@ final class EloquentEmployeeRepository implements EmployeeRepository
 
     public function findById(int $id): ?Employee
     {
-        $row = STF_Employee::query()->find($id);
+        $row = EmployeeModel::query()->find($id);
 
-        return $row instanceof STF_Employee ? $this->map($row) : null;
+        return $row instanceof EmployeeModel ? $this->map($row) : null;
     }
 
     public function findByEmail(string $email): ?Employee
     {
-        $row = STF_Employee::query()->where('email', trim($email))->first();
+        $row = EmployeeModel::query()->where('email', trim($email))->first();
 
-        return $row instanceof STF_Employee ? $this->map($row) : null;
+        return $row instanceof EmployeeModel ? $this->map($row) : null;
     }
 
     public function list(?StaffRole $role = null, ?bool $isActive = null, ?int $branchId = null): array
@@ -65,7 +65,7 @@ final class EloquentEmployeeRepository implements EmployeeRepository
             ->offset(max(0, $offset))
             ->limit(max(1, $limit))
             ->get()
-            ->map(fn (STF_Employee $row): Employee => $this->map($row))
+            ->map(fn (EmployeeModel $row): Employee => $this->map($row))
             ->all();
     }
 
@@ -75,15 +75,15 @@ final class EloquentEmployeeRepository implements EmployeeRepository
     }
 
     /**
-     * @return Builder<STF_Employee>
+     * @return Builder<EmployeeModel>
      */
     private function filteredQuery(
         ?StaffRole $role = null,
         ?bool $isActive = null,
         ?int $branchId = null,
     ): Builder {
-        /** @var Builder<STF_Employee> $query */
-        $query = STF_Employee::query()->orderBy('id');
+        /** @var Builder<EmployeeModel> $query */
+        $query = EmployeeModel::query()->orderBy('id');
 
         if ($role instanceof StaffRole) {
             $query->where('role', $role->value);
@@ -98,7 +98,7 @@ final class EloquentEmployeeRepository implements EmployeeRepository
         return $query;
     }
 
-    private function map(STF_Employee $row): Employee
+    private function map(EmployeeModel $row): Employee
     {
         $role = StaffRole::tryFrom((string) $row->role) ?? StaffRole::Administrator;
 

@@ -4,7 +4,7 @@ namespace Tests\Domain\Order;
 
 use App\Domain\Core\Order\Enum\OrderLineType;
 use App\Domain\Core\Order\Policy\OrderFormation;
-use App\Domain\Core\Order\Policy\PromotionPolicy;
+use App\Domain\Core\Order\Entity\OrderCommercialRules;
 use App\Domain\Core\Order\ValueObject\OrderDeliveryAddress;
 use App\Domain\Core\Order\ValueObject\OrderDeliveryInfo;
 use App\Domain\Core\Order\ValueObject\OrderFormationFacts;
@@ -22,7 +22,7 @@ final class OrderFormationTest extends TestCase
                 $this->line(2, 'Сет', 30000, 1, OrderLineType::Set),
             ],
             delivery: OrderDeliveryInfo::pickup(),
-            policy: $this->policy(giftMin: 10000, rollsPerSet: 4, maxSets: 3, deliveryActive: false),
+            rules: $this->policy(giftMin: 10000, rollsPerSet: 4, maxSets: 3, deliveryActive: false),
             facts: new OrderFormationFacts(
                 isRollByProductId: [1 => true, 2 => false],
                 complements: [
@@ -63,7 +63,7 @@ final class OrderFormationTest extends TestCase
                 $this->line(50, 'Набор', 120000, 1, OrderLineType::Set),
             ],
             delivery: OrderDeliveryInfo::pickup(),
-            policy: $this->policy(giftMin: 99999999, rollsPerSet: 4, maxSets: 3, deliveryActive: false),
+            rules: $this->policy(giftMin: 99999999, rollsPerSet: 4, maxSets: 3, deliveryActive: false),
             facts: new OrderFormationFacts(
                 isRollByProductId: [1 => true, 11 => true, 12 => true, 13 => true],
                 complements: [
@@ -100,7 +100,7 @@ final class OrderFormationTest extends TestCase
                 $this->line(10, 'Соус', 5000, 1, OrderLineType::Regular),
             ],
             delivery: OrderDeliveryInfo::pickup(),
-            policy: $this->policy(giftMin: 99999999, rollsPerSet: 4, maxSets: 1, deliveryActive: false),
+            rules: $this->policy(giftMin: 99999999, rollsPerSet: 4, maxSets: 1, deliveryActive: false),
             facts: new OrderFormationFacts(
                 isRollByProductId: [1 => true, 10 => false],
                 complements: [
@@ -164,7 +164,7 @@ final class OrderFormationTest extends TestCase
                 'zone-1',
                 $baseFee,
             ),
-            policy: $this->policy(
+            rules: $this->policy(
                 giftMin: 99999999,
                 rollsPerSet: 99,
                 maxSets: 1,
@@ -197,8 +197,8 @@ final class OrderFormationTest extends TestCase
         bool $deliveryActive,
         int $threshold = 0,
         int $surcharge = 0,
-    ): PromotionPolicy {
-        return new PromotionPolicy(
+    ): OrderCommercialRules {
+        return new OrderCommercialRules(
             id: 1,
             branchId: 1,
             giftRules: [[

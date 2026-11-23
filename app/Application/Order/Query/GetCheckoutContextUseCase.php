@@ -3,12 +3,12 @@
 namespace App\Application\Order\Query;
 
 use App\Application\Order\Checkout\CheckoutRulesVersion;
-use App\Application\Order\Checkout\FormCheckoutPromotions;
+use App\Application\Order\Checkout\FormOrderCommercialRules;
 use App\Domain\Core\Order\Port\OrderBranchLookupPort;
 use App\Domain\Core\Order\Port\OrderBranchMenuSnapshotPort;
 use App\Domain\Core\Order\Port\OrderCatalogSnapshotPort;
 use App\Domain\Core\Order\Port\OrderDeliveryTariffPort;
-use App\Domain\Core\Order\Repository\PromotionPolicyRepository;
+use App\Domain\Core\Order\Repository\OrderCommercialRulesRepository;
 
 /**
  * Всё, по чему фронт сам формирует корзину тем же алгоритмом, что OrderFormation.
@@ -20,8 +20,8 @@ final class GetCheckoutContextUseCase implements CheckoutRulesVersion
         private readonly OrderBranchMenuSnapshotPort $menu,
         private readonly OrderCatalogSnapshotPort $catalog,
         private readonly OrderDeliveryTariffPort $deliveryTariffs,
-        private readonly PromotionPolicyRepository $policies,
-        private readonly FormCheckoutPromotions $promotions,
+        private readonly OrderCommercialRulesRepository $commercialRules,
+        private readonly FormOrderCommercialRules $formation,
     ) {}
 
     /**
@@ -49,9 +49,9 @@ final class GetCheckoutContextUseCase implements CheckoutRulesVersion
     {
         $branch = $this->branches->requireActiveBranch($branchId);
 
-        $policy = $this->policies->findByBranch($branch['id']);
-        if ($policy === null) {
-            throw new \InvalidArgumentException('Политика акций филиала не найдена.');
+        $rules = $this->commercialRules->findByBranch($branch['id']);
+        if ($rules === null) {
+            throw new \InvalidArgumentException('Коммерческие правила филиала не найдены.');
         }
 
         $deliveryConfig = $this->deliveryTariffs->findConfigByBranch($branch['id']);
@@ -109,7 +109,7 @@ final class GetCheckoutContextUseCase implements CheckoutRulesVersion
         usort($menuSets, static fn (array $a, array $b): int => $a['id'] <=> $b['id']);
 
         $giftRules = [];
-        foreach ($policy->giftRules() as $rule) {
+        foreach ($rules->giftRules() as $rule) {
             $giftRules[] = [
                 'order_channel' => (string) ($rule['order_channel'] ?? ''),
                 'min_order_amount_kopecks' => (int) ($rule['min_order_amount_kopecks'] ?? 0),
@@ -117,9 +117,9 @@ final class GetCheckoutContextUseCase implements CheckoutRulesVersion
                 'allowed_weekdays' => array_values(array_map('intval', $rule['allowed_weekdays'] ?? [])),
             ];
         }
-        $deliveryBenefit = $policy->deliveryBenefit();
-        $complementBenefit = $policy->complementSetBenefit();
-        $promotionCatalog = $this->promotions->promotionCatalog($branch['id']);
+        $deliveryBenefit = $rules->deliveryBenefit();
+        $complementBenefit = $rules->complementSetBenefit();
+        $catalog = $this->formation->commercialCatalog($branch['id']);
 
         $zones = [];
         foreach ($deliveryConfig['zones'] as $zone) {
@@ -139,7 +139,7 @@ final class GetCheckoutContextUseCase implements CheckoutRulesVersion
                 'products' => $menuProducts,
                 'sets' => $menuSets,
             ],
-            'promotions' => [
+            'commercial_rules' => [
                 'gift_rules' => $giftRules,
                 'delivery_benefit' => [
                     'is_active' => (bool) ($deliveryBenefit['is_active'] ?? false),
@@ -153,8 +153,8 @@ final class GetCheckoutContextUseCase implements CheckoutRulesVersion
                     'rolls_per_set' => (int) ($complementBenefit['rolls_per_set'] ?? 1),
                     'max_sets' => (int) ($complementBenefit['max_sets'] ?? 0),
                 ],
-                'complements' => $promotionCatalog['complements'],
-                'gift_candidates' => $promotionCatalog['gift_candidates'],
+                'complements' => $catalog['complements'],
+                'gift_candidates' => $catalog['gift_candidates'],
             ],
             'delivery' => [
                 'min_order_kopecks' => $deliveryConfig['min_order_kopecks'],

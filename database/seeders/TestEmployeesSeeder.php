@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Infrastructure\Staff\Model\STF_Employee;
+use App\Infrastructure\Staff\Model\EmployeeModel;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -51,7 +51,7 @@ class TestEmployeesSeeder extends Seeder
         ];
 
         foreach ($employees as $employee) {
-            STF_Employee::query()->updateOrCreate(
+            EmployeeModel::query()->updateOrCreate(
                 ['email' => $employee['email']],
                 [
                     'name' => $employee['name'],

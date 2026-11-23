@@ -4,12 +4,12 @@ namespace App\Infrastructure\Company\Mapper;
 
 use App\Domain\Supporting\Company\Entity\BranchCategory;
 use App\Domain\Supporting\Company\Entity\BranchCategoryItem;
-use App\Infrastructure\Company\Model\CMP_BranchCategory;
-use App\Infrastructure\Company\Model\CMP_BranchCategoryItem;
+use App\Infrastructure\Company\Model\BranchCategoryModel;
+use App\Infrastructure\Company\Model\BranchCategoryItemModel;
 
 final class BranchCategoryMapper
 {
-    public function toDomain(CMP_BranchCategory $row): BranchCategory
+    public function toDomain(BranchCategoryModel $row): BranchCategory
     {
         return new BranchCategory(
             id: (int) $row->id,
@@ -24,7 +24,7 @@ final class BranchCategoryMapper
         );
     }
 
-    public function itemToDomain(CMP_BranchCategoryItem $row): BranchCategoryItem
+    public function itemToDomain(BranchCategoryItemModel $row): BranchCategoryItem
     {
         return new BranchCategoryItem(
             categoryId: (int) $row->category_id,

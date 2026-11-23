@@ -4,7 +4,7 @@ namespace Tests\Domain\Order;
 
 use App\Domain\Core\Order\Enum\OrderLineType;
 use App\Domain\Core\Order\Policy\OrderFormation;
-use App\Domain\Core\Order\Policy\PromotionPolicy;
+use App\Domain\Core\Order\Entity\OrderCommercialRules;
 use App\Domain\Core\Order\ValueObject\OrderDeliveryAddress;
 use App\Domain\Core\Order\ValueObject\OrderDeliveryInfo;
 use App\Domain\Core\Order\ValueObject\OrderFormationFacts;
@@ -72,7 +72,7 @@ final class OrderFormationParityTest extends TestCase
 
         $giftProductId = (int) ($intent['gift_product_id'] ?? 0);
         $gift = null;
-        foreach ($context['promotions']['gift_candidates'] as $candidate) {
+        foreach ($context['commercial_rules']['gift_candidates'] as $candidate) {
             if ($candidate['product_id'] === $giftProductId) {
                 $gift = $candidate;
             }
@@ -90,17 +90,17 @@ final class OrderFormationParityTest extends TestCase
         $formed = OrderFormation::apply(
             baseLines: $baseLines,
             delivery: $delivery,
-            policy: new PromotionPolicy(
+            rules: new OrderCommercialRules(
                 id: 1,
                 branchId: $context['branch_id'],
-                giftRules: $context['promotions']['gift_rules'],
-                deliveryBenefit: $context['promotions']['delivery_benefit'],
-                complementSetBenefit: $context['promotions']['complement_set_benefit'],
+                giftRules: $context['commercial_rules']['gift_rules'],
+                deliveryBenefit: $context['commercial_rules']['delivery_benefit'],
+                complementSetBenefit: $context['commercial_rules']['complement_set_benefit'],
             ),
             facts: new OrderFormationFacts(
                 isRollByProductId: [],
-                complements: $context['promotions']['complements'],
-                giftCandidates: $context['promotions']['gift_candidates'],
+                complements: $context['commercial_rules']['complements'],
+                giftCandidates: $context['commercial_rules']['gift_candidates'],
                 gift: $gift,
                 rollsPerUnitByLineId: $rollsPerUnit,
                 complementSelections: $selections,

@@ -4,7 +4,7 @@ namespace App\Application\Marketing\Command;
 
 use App\Application\Marketing\DTO\SaveDeliveryConditionsTextDto;
 use App\Application\Marketing\Presenter\MarketingPresenter;
-use App\Domain\Supporting\Promotion\Port\MarketingDeliveryConditionsPort;
+use App\Domain\Supporting\Marketing\Port\MarketingDeliveryConditionsPort;
 
 final class SaveDeliveryConditionsTextUseCase
 {

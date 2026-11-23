@@ -8,14 +8,17 @@ use App\Application\Order\Command\AddOrderNoteUseCase;
 use App\Application\Order\Command\CancelOrderUseCase;
 use App\Application\Order\Command\CompletePickupOrderUseCase;
 use App\Application\Order\Command\CreateOrderUseCase;
+use App\Application\Order\Command\SaveOrderCommercialRulesUseCase;
 use App\Application\Order\DTO\AcceptOrderDto;
 use App\Application\Order\DTO\CreateOrderDto;
+use App\Application\Order\DTO\SaveOrderCommercialRulesDto;
 use App\Application\Order\Query\GetAdminOrderUseCase;
+use App\Application\Order\Query\GetOrderCommercialRulesUseCase;
 use App\Application\Order\Query\ListAdminOrdersUseCase;
 use App\Application\Order\Query\QuoteOrderUseCase;
 use App\Domain\Core\Order\Enum\OrderStatus;
 use App\Http\Controllers\Controller;
-use App\Infrastructure\Staff\Model\STF_Employee;
+use App\Infrastructure\Staff\Model\EmployeeModel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -147,7 +150,7 @@ final class OrderController extends Controller
         ]);
 
         $user = $request->user('sanctum');
-        $authorId = $user instanceof STF_Employee ? (int) $user->id : null;
+        $authorId = $user instanceof EmployeeModel ? (int) $user->id : null;
 
         try {
             $note = $useCase->execute($id, $validated['body'], $authorId);
@@ -156,5 +159,69 @@ final class OrderController extends Controller
         }
 
         return response()->json(['note' => $note], 201);
+    }
+
+    public function showCommercialRules(Request $request, GetOrderCommercialRulesUseCase $useCase): JsonResponse
+    {
+        $validated = $request->validate([
+            'branch_id' => ['required', 'integer', 'min:1'],
+        ]);
+
+        try {
+            return response()->json($useCase->execute((int) $validated['branch_id']));
+        } catch (InvalidArgumentException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 404);
+        }
+    }
+
+    public function storeCommercialRules(Request $request, SaveOrderCommercialRulesUseCase $useCase): JsonResponse
+    {
+        return $this->saveCommercialRules($request, $useCase, 201);
+    }
+
+    public function updateCommercialRules(Request $request, SaveOrderCommercialRulesUseCase $useCase): JsonResponse
+    {
+        return $this->saveCommercialRules($request, $useCase, 200);
+    }
+
+    private function saveCommercialRules(
+        Request $request,
+        SaveOrderCommercialRulesUseCase $useCase,
+        int $status,
+    ): JsonResponse {
+        $validated = $request->validate([
+            'branch_id' => ['required', 'integer', 'min:1'],
+            'gift_pickup_min_order_kopecks' => ['required', 'integer', 'min:0'],
+            'gift_courier_min_order_kopecks' => ['required', 'integer', 'min:0'],
+            'gift_courier_weekdays' => ['sometimes', 'array'],
+            'gift_courier_weekdays.*' => ['integer', 'min:1', 'max:7'],
+            'gift_benefit_active' => ['required', 'boolean'],
+            'delivery_free_threshold_kopecks' => ['required', 'integer', 'min:0'],
+            'delivery_benefit_active' => ['required', 'boolean'],
+            'complement_set_benefit_active' => ['required', 'boolean'],
+            'complement_set_rolls_per_set' => ['required', 'integer', 'min:1'],
+            'complement_set_max_sets' => ['required', 'integer', 'min:1'],
+        ]);
+
+        try {
+            $result = $useCase->execute(new SaveOrderCommercialRulesDto(
+                branchId: (int) $validated['branch_id'],
+                giftPickupMinOrderKopecks: (int) $validated['gift_pickup_min_order_kopecks'],
+                giftCourierMinOrderKopecks: (int) $validated['gift_courier_min_order_kopecks'],
+                giftCourierWeekdays: is_array($validated['gift_courier_weekdays'] ?? null)
+                    ? $validated['gift_courier_weekdays']
+                    : [],
+                giftBenefitActive: (bool) $validated['gift_benefit_active'],
+                deliveryFreeThresholdKopecks: (int) $validated['delivery_free_threshold_kopecks'],
+                deliveryBenefitActive: (bool) $validated['delivery_benefit_active'],
+                complementSetBenefitActive: (bool) $validated['complement_set_benefit_active'],
+                complementSetRollsPerSet: (int) $validated['complement_set_rolls_per_set'],
+                complementSetMaxSets: (int) $validated['complement_set_max_sets'],
+            ));
+        } catch (InvalidArgumentException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
+
+        return response()->json($result, $status);
     }
 }

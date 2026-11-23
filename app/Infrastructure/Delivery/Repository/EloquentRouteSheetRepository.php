@@ -5,8 +5,8 @@ namespace App\Infrastructure\Delivery\Repository;
 use App\Domain\Core\Delivery\Routing\Entity\RouteSheet;
 use App\Domain\Core\Delivery\Routing\Repository\RouteSheetRepository;
 use App\Infrastructure\Delivery\Mapper\RouteSheetMapper;
-use App\Infrastructure\Delivery\Model\DLV_RouteSheet;
-use App\Infrastructure\Delivery\Model\DLV_RouteStop;
+use App\Infrastructure\Delivery\Model\RouteSheetModel;
+use App\Infrastructure\Delivery\Model\RouteStopModel;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
@@ -18,14 +18,14 @@ final class EloquentRouteSheetRepository implements RouteSheetRepository
 
     public function findById(int $id): ?RouteSheet
     {
-        $row = DLV_RouteSheet::query()->with('stops')->find($id);
+        $row = RouteSheetModel::query()->with('stops')->find($id);
 
-        return $row instanceof DLV_RouteSheet ? $this->mapper->toDomain($row) : null;
+        return $row instanceof RouteSheetModel ? $this->mapper->toDomain($row) : null;
     }
 
     public function findOpenByOrderId(int $orderId): ?RouteSheet
     {
-        $stop = DLV_RouteStop::query()
+        $stop = RouteStopModel::query()
             ->where('order_id', $orderId)
             ->where('status', 'pending')
             ->whereHas('sheet', function ($query): void {
@@ -33,7 +33,7 @@ final class EloquentRouteSheetRepository implements RouteSheetRepository
             })
             ->first();
 
-        if (! $stop instanceof DLV_RouteStop) {
+        if (! $stop instanceof RouteStopModel) {
             return null;
         }
 
@@ -86,17 +86,17 @@ final class EloquentRouteSheetRepository implements RouteSheetRepository
     }
 
     /**
-     * @return Builder<DLV_RouteSheet>
+     * @return Builder<RouteSheetModel>
      */
     private function activeQuery(): Builder
     {
-        return DLV_RouteSheet::query()
+        return RouteSheetModel::query()
             ->whereIn('status', ['released', 'in_delivery'])
             ->orderByDesc('id');
     }
 
     /**
-     * @return Builder<DLV_RouteSheet>
+     * @return Builder<RouteSheetModel>
      */
     private function courierQuery(int $courierId): Builder
     {
@@ -104,7 +104,7 @@ final class EloquentRouteSheetRepository implements RouteSheetRepository
     }
 
     /**
-     * @param  Builder<DLV_RouteSheet>  $query
+     * @param  Builder<RouteSheetModel>  $query
      * @return list<RouteSheet>
      */
     private function mapPage(Builder $query, int $offset, int $limit): array
@@ -114,7 +114,7 @@ final class EloquentRouteSheetRepository implements RouteSheetRepository
             ->offset(max(0, $offset))
             ->limit(max(1, $limit))
             ->get()
-            ->map(fn (DLV_RouteSheet $row): RouteSheet => $this->mapper->toDomain($row))
+            ->map(fn (RouteSheetModel $row): RouteSheet => $this->mapper->toDomain($row))
             ->all();
     }
 
@@ -124,15 +124,15 @@ final class EloquentRouteSheetRepository implements RouteSheetRepository
             $payload = $this->mapper->toPersistence($sheet);
 
             if (! $sheet->hasId()) {
-                $row = DLV_RouteSheet::query()->create($payload['sheet']);
+                $row = RouteSheetModel::query()->create($payload['sheet']);
                 $sheet->assignId((int) $row->id);
             } else {
-                DLV_RouteSheet::query()->whereKey($sheet->id())->update($payload['sheet']);
-                DLV_RouteStop::query()->where('route_sheet_id', $sheet->id())->delete();
+                RouteSheetModel::query()->whereKey($sheet->id())->update($payload['sheet']);
+                RouteStopModel::query()->where('route_sheet_id', $sheet->id())->delete();
             }
 
             foreach ($payload['stops'] as $stop) {
-                DLV_RouteStop::query()->create([
+                RouteStopModel::query()->create([
                     ...$stop,
                     'route_sheet_id' => $sheet->id(),
                 ]);

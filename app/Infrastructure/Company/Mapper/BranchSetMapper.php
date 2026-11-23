@@ -4,15 +4,15 @@ namespace App\Infrastructure\Company\Mapper;
 
 use App\Domain\Supporting\Company\Entity\BranchSet;
 use App\Domain\Supporting\Company\ValueObject\BranchSetLine;
-use App\Infrastructure\Company\Model\CMP_BranchSet;
-use App\Infrastructure\Company\Model\CMP_BranchSetLine;
+use App\Infrastructure\Company\Model\BranchSetModel;
+use App\Infrastructure\Company\Model\BranchSetLineModel;
 
 final class BranchSetMapper
 {
     /**
      * @param  list<int>  $tagIds
      */
-    public function toDomain(CMP_BranchSet $row, array $tagIds = []): BranchSet
+    public function toDomain(BranchSetModel $row, array $tagIds = []): BranchSet
     {
         $lines = [];
         foreach ($row->lines as $line) {
@@ -33,7 +33,7 @@ final class BranchSetMapper
         );
     }
 
-    public function lineToDomain(CMP_BranchSetLine $row): BranchSetLine
+    public function lineToDomain(BranchSetLineModel $row): BranchSetLine
     {
         return new BranchSetLine(
             catalogItemId: (int) $row->catalog_item_id,

@@ -2,6 +2,7 @@
 
 namespace App\Domain\Core\Order\Policy;
 
+use App\Domain\Core\Order\Entity\OrderCommercialRules;
 use App\Domain\Core\Order\Enum\OrderLineType;
 use App\Domain\Core\Order\ValueObject\OrderDeliveryInfo;
 use App\Domain\Core\Order\ValueObject\OrderFormationFacts;
@@ -25,7 +26,7 @@ final class OrderFormation
     public static function apply(
         array $baseLines,
         OrderDeliveryInfo $delivery,
-        PromotionPolicy $policy,
+        OrderCommercialRules $rules,
         OrderFormationFacts $facts,
         string $channel,
         DateTimeInterface $at,
@@ -35,9 +36,9 @@ final class OrderFormation
         self::assertBaseLines($baseLines);
 
         $lines = array_values($baseLines);
-        $lines = [...$lines, ...self::complementLines($lines, $policy, $facts)];
-        $lines = [...$lines, ...self::giftLines($lines, $policy, $facts, $channel, $at, $timezone)];
-        $delivery = self::applyDeliveryBenefit($lines, $delivery, $policy, $zoneIsRemote);
+        $lines = [...$lines, ...self::complementLines($lines, $rules, $facts)];
+        $lines = [...$lines, ...self::giftLines($lines, $rules, $facts, $channel, $at, $timezone)];
+        $delivery = self::applyDeliveryBenefit($lines, $delivery, $rules, $zoneIsRemote);
 
         return [
             'lines' => $lines,
@@ -72,10 +73,10 @@ final class OrderFormation
      */
     private static function complementLines(
         array $lines,
-        PromotionPolicy $policy,
+        OrderCommercialRules $rules,
         OrderFormationFacts $facts,
     ): array {
-        $benefit = $policy->complementSetBenefit();
+        $benefit = $rules->complementSetBenefit();
         if (! ($benefit['is_active'] ?? false)) {
             return [];
         }
@@ -129,14 +130,14 @@ final class OrderFormation
      */
     private static function giftLines(
         array $lines,
-        PromotionPolicy $policy,
+        OrderCommercialRules $rules,
         OrderFormationFacts $facts,
         string $channel,
         DateTimeInterface $at,
         string $timezone,
     ): array {
-        $rule = $policy->giftRuleForChannel($channel);
-        if ($rule === null || ! $policy->isGiftRuleAllowedOnDate($rule, $at, $timezone)) {
+        $rule = $rules->giftRuleForChannel($channel);
+        if ($rule === null || ! $rules->isGiftRuleAllowedOnDate($rule, $at, $timezone)) {
             return [];
         }
 
@@ -167,14 +168,14 @@ final class OrderFormation
     private static function applyDeliveryBenefit(
         array $lines,
         OrderDeliveryInfo $delivery,
-        PromotionPolicy $policy,
+        OrderCommercialRules $rules,
         bool $zoneIsRemote,
     ): OrderDeliveryInfo {
         if (! $delivery->isCourier()) {
             return $delivery->withFee(0);
         }
 
-        $benefit = $policy->deliveryBenefit();
+        $benefit = $rules->deliveryBenefit();
         if (! ($benefit['is_active'] ?? false)) {
             return $delivery;
         }

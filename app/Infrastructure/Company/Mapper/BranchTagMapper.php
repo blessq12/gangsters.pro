@@ -3,11 +3,11 @@
 namespace App\Infrastructure\Company\Mapper;
 
 use App\Domain\Supporting\Company\Entity\BranchTag;
-use App\Infrastructure\Company\Model\CMP_BranchTag;
+use App\Infrastructure\Company\Model\BranchTagModel;
 
 final class BranchTagMapper
 {
-    public function toDomain(CMP_BranchTag $row): BranchTag
+    public function toDomain(BranchTagModel $row): BranchTag
     {
         return new BranchTag(
             id: (int) $row->id,

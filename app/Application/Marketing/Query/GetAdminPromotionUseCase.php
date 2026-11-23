@@ -3,7 +3,7 @@
 namespace App\Application\Marketing\Query;
 
 use App\Application\Marketing\Presenter\MarketingPresenter;
-use App\Domain\Supporting\Promotion\Repository\CampaignRepository;
+use App\Domain\Supporting\Marketing\Repository\CampaignRepository;
 
 final class GetAdminPromotionUseCase
 {

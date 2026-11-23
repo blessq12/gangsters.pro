@@ -4,8 +4,8 @@ namespace App\Application\Staff\Query;
 
 use App\Application\Shared\PageParams;
 use App\Application\Staff\Presenter\EmployeePresenter;
-use App\Domain\Generic\Staff\Enum\StaffRole;
-use App\Domain\Generic\Staff\Repository\EmployeeRepository;
+use App\Domain\Supporting\Staff\Enum\StaffRole;
+use App\Domain\Supporting\Staff\Repository\EmployeeRepository;
 
 final class ListEmployeesUseCase
 {

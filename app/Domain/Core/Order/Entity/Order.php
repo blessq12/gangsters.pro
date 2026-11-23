@@ -9,7 +9,7 @@ use App\Domain\Core\Order\Event\OrderConfirmed;
 use App\Domain\Core\Order\Event\OrderPickedUp;
 use App\Domain\Core\Order\Event\OrderPlaced;
 use App\Domain\Core\Order\Policy\OrderFormation;
-use App\Domain\Core\Order\Policy\PromotionPolicy;
+use App\Domain\Core\Order\Entity\OrderCommercialRules;
 use App\Domain\Core\Order\ValueObject\OrderClientSnapshot;
 use App\Domain\Core\Order\ValueObject\OrderDeliveryInfo;
 use App\Domain\Core\Order\ValueObject\OrderFormationFacts;
@@ -134,7 +134,7 @@ final class Order
      * @param  list<OrderLine>  $baseLines  только regular|set; null = взять текущие billable
      */
     public function recalculate(
-        PromotionPolicy $policy,
+        OrderCommercialRules $rules,
         OrderFormationFacts $facts,
         string $channel,
         DateTimeInterface $at,
@@ -155,7 +155,7 @@ final class Order
         $formed = OrderFormation::apply(
             baseLines: $base,
             delivery: $delivery ?? $this->delivery,
-            policy: $policy,
+            rules: $rules,
             facts: $facts,
             channel: $channel,
             at: $at,

@@ -3,7 +3,7 @@
 namespace App\Application\Marketing\Query;
 
 use App\Application\Marketing\Presenter\MarketingPresenter;
-use App\Domain\Supporting\Promotion\Repository\BannerRepository;
+use App\Domain\Supporting\Marketing\Repository\BannerRepository;
 
 final class GetAdminBannerUseCase
 {

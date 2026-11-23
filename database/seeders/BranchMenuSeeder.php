@@ -2,106 +2,179 @@
 
 namespace Database\Seeders;
 
-use App\Domain\Supporting\Catalog\Enum\ProductStatus;
-use App\Domain\Supporting\Company\Enum\BranchMenuEntryKind;
-use App\Infrastructure\Catalog\Model\CAT_Item;
-use App\Infrastructure\Company\Model\CMP_Branch;
-use App\Infrastructure\Company\Model\CMP_BranchCategory;
-use App\Infrastructure\Company\Model\CMP_BranchCategoryItem;
-use App\Infrastructure\Company\Model\CMP_BranchMenuItem;
+use Database\Seeders\Concerns\LoadsSeederJson;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
 /**
- * Меню филиала: все active товары каталога на каждый активный филиал с ценой 0
- * (цены — в админке; существующие цены и доступность не перезаписываются).
- *
- * Теги и сеты не сидятся — их наполняет админка.
- * Категории: если в филиале категорий ещё нет — создаётся одна плейсхолдер-категория «Меню»
- * со всеми товарами. Если категории уже есть — структура не трогается.
+ * Меню филиала Говорова: категории/теги/сеты/цены из снапшота.
  */
 class BranchMenuSeeder extends Seeder
 {
-    private const PLACEHOLDER_CATEGORY_NAME = 'Меню';
-
-    private const PLACEHOLDER_CATEGORY_SLUG = 'menu';
+    use LoadsSeederJson;
 
     public function run(): void
     {
-        $branchIds = CMP_Branch::query()
-            ->where('is_active', true)
-            ->orderBy('id')
-            ->pluck('id')
-            ->all();
+        $payload = $this->loadSeederJson('branch_menu.json');
+        $categories = is_array($payload['categories'] ?? null) ? $payload['categories'] : [];
+        $categoryItems = is_array($payload['category_items'] ?? null) ? $payload['category_items'] : [];
+        $menuItems = is_array($payload['menu_items'] ?? null) ? $payload['menu_items'] : [];
+        $tags = is_array($payload['tags'] ?? null) ? $payload['tags'] : [];
+        $entryTags = is_array($payload['entry_tags'] ?? null) ? $payload['entry_tags'] : [];
+        $sets = is_array($payload['sets'] ?? null) ? $payload['sets'] : [];
+        $setLines = is_array($payload['set_lines'] ?? null) ? $payload['set_lines'] : [];
 
-        if ($branchIds === []) {
-            throw new RuntimeException('Нет активных филиалов: сначала запустите CompanySeeder.');
+        if ($menuItems === [] || $categories === []) {
+            throw new RuntimeException('branch_menu.json: нет меню или категорий.');
         }
 
-        $itemIds = CAT_Item::query()
-            ->where('status', ProductStatus::Active->value)
-            ->orderBy('id')
-            ->pluck('id')
+        $catalogIds = DB::table('CAT_items')->pluck('id')
             ->map(static fn (mixed $id): int => (int) $id)
             ->all();
+        $catalogIdSet = array_fill_keys($catalogIds, true);
 
-        if ($itemIds === []) {
-            throw new RuntimeException('Нет позиций каталога: сначала запустите CatalogSeeder.');
-        }
+        DB::transaction(function () use (
+            $categories,
+            $categoryItems,
+            $menuItems,
+            $tags,
+            $entryTags,
+            $sets,
+            $setLines,
+            $catalogIdSet,
+        ): void {
+            DB::table('CMP_branch_entry_tags')->delete();
+            DB::table('CMP_branch_category_items')->delete();
+            DB::table('CMP_branch_set_lines')->delete();
+            DB::table('CMP_branch_sets')->delete();
+            DB::table('CMP_branch_tags')->delete();
+            DB::table('CMP_branch_categories')->delete();
+            DB::table('CMP_branch_menu_items')->delete();
 
-        DB::transaction(function () use ($branchIds, $itemIds): void {
-            foreach ($branchIds as $branchId) {
-                $this->seedMenuItems((int) $branchId, $itemIds);
-                $this->seedPlaceholderCategory((int) $branchId, $itemIds);
+            foreach ($menuItems as $row) {
+                if (! is_array($row)) {
+                    continue;
+                }
+                $catalogItemId = (int) $row['catalog_item_id'];
+                if (! isset($catalogIdSet[$catalogItemId])) {
+                    continue;
+                }
+                DB::table('CMP_branch_menu_items')->insert([
+                    'id' => (int) $row['id'],
+                    'branch_id' => (int) $row['branch_id'],
+                    'catalog_item_id' => $catalogItemId,
+                    'is_available' => (bool) ($row['is_available'] ?? true),
+                    'price_kopecks' => (int) $row['price_kopecks'],
+                    'created_at' => $row['created_at'] ?? now(),
+                    'updated_at' => $row['updated_at'] ?? now(),
+                ]);
+            }
+
+            foreach ($categories as $row) {
+                if (! is_array($row)) {
+                    continue;
+                }
+                DB::table('CMP_branch_categories')->insert([
+                    'id' => (int) $row['id'],
+                    'branch_id' => (int) $row['branch_id'],
+                    'name' => (string) $row['name'],
+                    'slug' => (string) $row['slug'],
+                    'sort_order' => (int) ($row['sort_order'] ?? 0),
+                    'is_active' => (bool) ($row['is_active'] ?? true),
+                    'is_accompanying' => (bool) ($row['is_accompanying'] ?? false),
+                    'is_complement' => (bool) ($row['is_complement'] ?? false),
+                    'is_gift' => (bool) ($row['is_gift'] ?? false),
+                    'created_at' => $row['created_at'] ?? now(),
+                    'updated_at' => $row['updated_at'] ?? now(),
+                ]);
+            }
+
+            foreach ($categoryItems as $row) {
+                if (! is_array($row)) {
+                    continue;
+                }
+                $entryKind = (string) $row['entry_kind'];
+                $entryId = (int) $row['entry_id'];
+                if ($entryKind === 'product' && ! isset($catalogIdSet[$entryId])) {
+                    continue;
+                }
+                DB::table('CMP_branch_category_items')->insert([
+                    'id' => (int) $row['id'],
+                    'category_id' => (int) $row['category_id'],
+                    'entry_kind' => $entryKind,
+                    'entry_id' => $entryId,
+                    'sort_order' => (int) ($row['sort_order'] ?? 0),
+                ]);
+            }
+
+            foreach ($tags as $row) {
+                if (! is_array($row)) {
+                    continue;
+                }
+                DB::table('CMP_branch_tags')->insert([
+                    'id' => (int) $row['id'],
+                    'branch_id' => (int) $row['branch_id'],
+                    'code' => (string) $row['code'],
+                    'label' => (string) $row['label'],
+                    'color' => (string) $row['color'],
+                    'is_active' => (bool) ($row['is_active'] ?? true),
+                    'sort_order' => (int) ($row['sort_order'] ?? 0),
+                    'created_at' => $row['created_at'] ?? now(),
+                    'updated_at' => $row['updated_at'] ?? now(),
+                ]);
+            }
+
+            foreach ($entryTags as $row) {
+                if (! is_array($row)) {
+                    continue;
+                }
+                $entryKind = (string) $row['entry_kind'];
+                $entryId = (int) $row['entry_id'];
+                if ($entryKind === 'product' && ! isset($catalogIdSet[$entryId])) {
+                    continue;
+                }
+                DB::table('CMP_branch_entry_tags')->insert([
+                    'id' => (int) $row['id'],
+                    'tag_id' => (int) $row['tag_id'],
+                    'entry_kind' => $entryKind,
+                    'entry_id' => $entryId,
+                ]);
+            }
+
+            foreach ($sets as $row) {
+                if (! is_array($row)) {
+                    continue;
+                }
+                DB::table('CMP_branch_sets')->insert([
+                    'id' => (int) $row['id'],
+                    'branch_id' => (int) $row['branch_id'],
+                    'name' => (string) $row['name'],
+                    'slug' => (string) $row['slug'],
+                    'description' => $row['description'] ?? null,
+                    'is_available' => (bool) ($row['is_available'] ?? true),
+                    'price_kopecks' => (int) ($row['price_kopecks'] ?? 0),
+                    'status' => (string) ($row['status'] ?? 'active'),
+                    'created_at' => $row['created_at'] ?? now(),
+                    'updated_at' => $row['updated_at'] ?? now(),
+                ]);
+            }
+
+            foreach ($setLines as $row) {
+                if (! is_array($row)) {
+                    continue;
+                }
+                $catalogItemId = (int) $row['catalog_item_id'];
+                if (! isset($catalogIdSet[$catalogItemId])) {
+                    continue;
+                }
+                DB::table('CMP_branch_set_lines')->insert([
+                    'id' => (int) $row['id'],
+                    'set_id' => (int) $row['set_id'],
+                    'catalog_item_id' => $catalogItemId,
+                    'quantity' => (int) $row['quantity'],
+                ]);
             }
         });
-    }
-
-    /**
-     * @param  list<int>  $itemIds
-     */
-    private function seedMenuItems(int $branchId, array $itemIds): void
-    {
-        foreach ($itemIds as $itemId) {
-            CMP_BranchMenuItem::query()->firstOrCreate(
-                [
-                    'branch_id' => $branchId,
-                    'catalog_item_id' => $itemId,
-                ],
-                [
-                    'is_available' => true,
-                    'price_kopecks' => 0,
-                ],
-            );
-        }
-    }
-
-    /**
-     * @param  list<int>  $itemIds
-     */
-    private function seedPlaceholderCategory(int $branchId, array $itemIds): void
-    {
-        if (CMP_BranchCategory::query()->where('branch_id', $branchId)->exists()) {
-            return;
-        }
-
-        $category = CMP_BranchCategory::query()->create([
-            'branch_id' => $branchId,
-            'name' => self::PLACEHOLDER_CATEGORY_NAME,
-            'slug' => self::PLACEHOLDER_CATEGORY_SLUG,
-            'sort_order' => 0,
-            'is_active' => true,
-            'is_accompanying' => false,
-        ]);
-
-        foreach ($itemIds as $sortOrder => $itemId) {
-            CMP_BranchCategoryItem::query()->create([
-                'category_id' => $category->id,
-                'entry_kind' => BranchMenuEntryKind::Product,
-                'entry_id' => $itemId,
-                'sort_order' => $sortOrder,
-            ]);
-        }
     }
 }

@@ -2,9 +2,9 @@
 
 namespace App\Application\Marketing\Presenter;
 
-use App\Domain\Supporting\Promotion\Entity\Banner;
+use App\Domain\Supporting\Marketing\Entity\Banner;
 use App\Domain\Supporting\Company\Entity\DeliveryConditionsText;
-use App\Domain\Supporting\Promotion\Entity\Campaign;
+use App\Domain\Supporting\Marketing\Entity\Campaign;
 
 final class MarketingPresenter
 {

@@ -7,8 +7,8 @@ use App\Domain\Supporting\Catalog\Enum\ProductStatus;
 use App\Domain\Supporting\Catalog\Repository\CatalogItemRepository;
 use App\Domain\Supporting\Catalog\ValueObject\ProductImage;
 use App\Infrastructure\Catalog\Mapper\CatalogProductMapper;
-use App\Infrastructure\Catalog\Model\CAT_Item;
-use App\Infrastructure\Catalog\Model\CAT_ItemImage;
+use App\Infrastructure\Catalog\Model\CatalogItemModel;
+use App\Infrastructure\Catalog\Model\CatalogItemImageModel;
 use App\Infrastructure\Catalog\Support\CatalogStoredImagePath;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -21,9 +21,9 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
 
     public function findProductById(int $id): ?Product
     {
-        $row = CAT_Item::query()->find($id);
+        $row = CatalogItemModel::query()->find($id);
 
-        if (! $row instanceof CAT_Item) {
+        if (! $row instanceof CatalogItemModel) {
             return null;
         }
 
@@ -39,7 +39,7 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
             return [];
         }
 
-        $rows = CAT_Item::query()
+        $rows = CatalogItemModel::query()
             ->where('status', ProductStatus::Active->value)
             ->whereNull('archived_at')
             ->whereIn('id', $ids)
@@ -57,14 +57,14 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
             return [];
         }
 
-        $rows = CAT_Item::query()
+        $rows = CatalogItemModel::query()
             ->whereIn('id', $ids)
             ->get(['id', 'name']);
 
         $names = [];
 
         foreach ($rows as $row) {
-            if (! $row instanceof CAT_Item) {
+            if (! $row instanceof CatalogItemModel) {
                 continue;
             }
 
@@ -81,7 +81,7 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
 
     public function findArchivedProductIds(): array
     {
-        return CAT_Item::query()
+        return CatalogItemModel::query()
             ->where('status', ProductStatus::Archived->value)
             ->orderBy('id')
             ->pluck('id')
@@ -96,7 +96,7 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
 
     public function listProductsPage(int $offset, int $limit, ?string $q = null): array
     {
-        $query = CAT_Item::query()->orderBy('id');
+        $query = CatalogItemModel::query()->orderBy('id');
         $this->applyItemNameSearch($query, $q);
 
         $rows = $query
@@ -107,7 +107,7 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
         $products = [];
 
         foreach ($rows as $row) {
-            if (! $row instanceof CAT_Item) {
+            if (! $row instanceof CatalogItemModel) {
                 continue;
             }
 
@@ -119,7 +119,7 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
 
     public function countProducts(?string $q = null): int
     {
-        $query = CAT_Item::query();
+        $query = CatalogItemModel::query();
         $this->applyItemNameSearch($query, $q);
 
         return (int) $query->count();
@@ -140,7 +140,7 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
             throw new \InvalidArgumentException('Недопустимый статус.');
         }
 
-        $row = $id === null ? new CAT_Item() : $this->requireItem($id);
+        $row = $id === null ? new CatalogItemModel() : $this->requireItem($id);
         if ($id === null) {
             $row->slug = $this->uniqueItemSlug($name);
             $row->is_system = false;
@@ -186,12 +186,12 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
     {
         $this->requireItem($itemId);
 
-        return CAT_ItemImage::query()
+        return CatalogItemImageModel::query()
             ->where('item_id', $itemId)
             ->orderBy('sort_order')
             ->orderBy('id')
             ->get()
-            ->map(fn (CAT_ItemImage $row): array => $this->presentImageRow($row))
+            ->map(fn (CatalogItemImageModel $row): array => $this->presentImageRow($row))
             ->all();
     }
 
@@ -221,13 +221,13 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
             throw new \InvalidArgumentException('Некорректный путь изображения.');
         }
 
-        $maxSort = (int) CAT_ItemImage::query()->where('item_id', $itemId)->max('sort_order');
+        $maxSort = (int) CatalogItemImageModel::query()->where('item_id', $itemId)->max('sort_order');
         $focus = null;
         if ($focusX !== null && $focusY !== null) {
             $focus = ['x' => $focusX, 'y' => $focusY];
         }
 
-        $row = CAT_ItemImage::query()->create([
+        $row = CatalogItemImageModel::query()->create([
             'item_id' => $itemId,
             'disk' => 'public',
             'path' => $normalized,
@@ -245,11 +245,11 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
         ?float $focusY = null,
         ?int $sortOrder = null,
     ): array {
-        $row = CAT_ItemImage::query()
+        $row = CatalogItemImageModel::query()
             ->where('item_id', $itemId)
             ->whereKey($imageId)
             ->first();
-        if (! $row instanceof CAT_ItemImage) {
+        if (! $row instanceof CatalogItemImageModel) {
             throw new \InvalidArgumentException('Изображение не найдено.');
         }
 
@@ -266,11 +266,11 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
 
     public function deleteItemImage(int $itemId, int $imageId): void
     {
-        $row = CAT_ItemImage::query()
+        $row = CatalogItemImageModel::query()
             ->where('item_id', $itemId)
             ->whereKey($imageId)
             ->first();
-        if (! $row instanceof CAT_ItemImage) {
+        if (! $row instanceof CatalogItemImageModel) {
             throw new \InvalidArgumentException('Изображение не найдено.');
         }
 
@@ -289,9 +289,9 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
         }
 
         $paths = [];
-        $images = CAT_ItemImage::query()->where('item_id', $id)->get();
+        $images = CatalogItemImageModel::query()->where('item_id', $id)->get();
         foreach ($images as $image) {
-            if (! $image instanceof CAT_ItemImage) {
+            if (! $image instanceof CatalogItemImageModel) {
                 continue;
             }
             $path = CatalogStoredImagePath::normalize($image->path);
@@ -342,7 +342,7 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
             return [];
         }
 
-        $rows = CAT_ItemImage::query()
+        $rows = CatalogItemImageModel::query()
             ->whereIn('item_id', $itemIds)
             ->orderBy('item_id')
             ->orderBy('sort_order')
@@ -352,7 +352,7 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
         $map = [];
 
         foreach ($rows as $row) {
-            if (! $row instanceof CAT_ItemImage) {
+            if (! $row instanceof CatalogItemImageModel) {
                 continue;
             }
 
@@ -376,7 +376,7 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
     }
 
     /**
-     * @param  iterable<CAT_Item>  $rows
+     * @param  iterable<CatalogItemModel>  $rows
      * @param  list<int>  $order
      * @param  array<int, list<ProductImage>>  $imagesByItem
      * @return list<Product>
@@ -386,7 +386,7 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
         $byId = [];
 
         foreach ($rows as $row) {
-            if (! $row instanceof CAT_Item) {
+            if (! $row instanceof CatalogItemModel) {
                 continue;
             }
 
@@ -407,7 +407,7 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
     /**
      * @return array{0: ?float, 1: ?float}
      */
-    private function resolveImageFocus(CAT_ItemImage $row): array
+    private function resolveImageFocus(CatalogItemImageModel $row): array
     {
         $focus = is_array($row->focus) ? $row->focus : null;
         if ($focus === null) {
@@ -434,7 +434,7 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
     /**
      * @return array{id: int, url: string, path: string, sort_order: int, focus_x: float|null, focus_y: float|null}
      */
-    private function presentImageRow(CAT_ItemImage $row): array
+    private function presentImageRow(CatalogItemImageModel $row): array
     {
         $path = CatalogStoredImagePath::normalize($row->path) ?? '';
         [$focusX, $focusY] = $this->resolveImageFocus($row);
@@ -449,10 +449,10 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
         ];
     }
 
-    private function requireItem(int $itemId): CAT_Item
+    private function requireItem(int $itemId): CatalogItemModel
     {
-        $row = CAT_Item::query()->find($itemId);
-        if (! $row instanceof CAT_Item) {
+        $row = CatalogItemModel::query()->find($itemId);
+        if (! $row instanceof CatalogItemModel) {
             throw new \InvalidArgumentException('Товар не найден.');
         }
 
@@ -477,7 +477,7 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
 
         $slug = $base;
         $suffix = 2;
-        while (CAT_Item::query()->where('slug', $slug)->exists()) {
+        while (CatalogItemModel::query()->where('slug', $slug)->exists()) {
             $slug = $base.'-'.$suffix;
             $suffix++;
         }

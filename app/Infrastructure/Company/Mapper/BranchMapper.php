@@ -4,11 +4,11 @@ namespace App\Infrastructure\Company\Mapper;
 
 use App\Domain\Supporting\Company\Support\ScheduleNormalizer;
 use App\Domain\Supporting\Company\Entity\Branch;
-use App\Infrastructure\Company\Model\CMP_Branch;
+use App\Infrastructure\Company\Model\BranchModel;
 
 final class BranchMapper
 {
-    public function toDomain(CMP_Branch $row): Branch
+    public function toDomain(BranchModel $row): Branch
     {
         return new Branch(
             id: (int) $row->id,

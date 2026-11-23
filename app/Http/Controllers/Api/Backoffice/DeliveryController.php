@@ -17,9 +17,9 @@ use App\Application\Delivery\Query\GetAdminDeliveryUseCase;
 use App\Application\Delivery\Query\GetRouteSheetUseCase;
 use App\Application\Delivery\Query\ListActiveRouteSheetsUseCase;
 use App\Application\Delivery\Query\ListAdminDeliveryZonesUseCase;
-use App\Domain\Generic\Staff\Enum\StaffRole;
+use App\Domain\Supporting\Staff\Enum\StaffRole;
 use App\Http\Controllers\Controller;
-use App\Infrastructure\Staff\Model\STF_Employee;
+use App\Infrastructure\Staff\Model\EmployeeModel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use InvalidArgumentException;
@@ -120,7 +120,7 @@ final class DeliveryController extends Controller
     {
         $forCourierId = null;
         $user = $request->user('sanctum');
-        if ($user instanceof STF_Employee && (string) $user->role === StaffRole::Courier->value) {
+        if ($user instanceof EmployeeModel && (string) $user->role === StaffRole::Courier->value) {
             $forCourierId = (int) $user->id;
         }
 

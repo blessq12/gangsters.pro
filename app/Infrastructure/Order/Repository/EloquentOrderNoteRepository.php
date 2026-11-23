@@ -3,18 +3,18 @@
 namespace App\Infrastructure\Order\Repository;
 
 use App\Domain\Core\Order\Repository\OrderNoteRepository;
-use App\Infrastructure\Order\Model\ORD_OrderNote;
+use App\Infrastructure\Order\Model\OrderNoteModel;
 use DateTimeImmutable;
 
 final class EloquentOrderNoteRepository implements OrderNoteRepository
 {
     public function listByOrderId(int $orderId): array
     {
-        return ORD_OrderNote::query()
+        return OrderNoteModel::query()
             ->where('order_id', $orderId)
             ->orderByDesc('id')
             ->get()
-            ->map(fn (ORD_OrderNote $row): array => $this->present($row))
+            ->map(fn (OrderNoteModel $row): array => $this->present($row))
             ->all();
     }
 
@@ -25,7 +25,7 @@ final class EloquentOrderNoteRepository implements OrderNoteRepository
             throw new \InvalidArgumentException('Текст пометки обязателен.');
         }
 
-        $row = ORD_OrderNote::query()->create([
+        $row = OrderNoteModel::query()->create([
             'order_id' => $orderId,
             'body' => $trimmed,
             'author_employee_id' => $authorEmployeeId !== null && $authorEmployeeId > 0
@@ -40,7 +40,7 @@ final class EloquentOrderNoteRepository implements OrderNoteRepository
     /**
      * @return array{id: int, body: string, author_employee_id: int|null, created_at: string}
      */
-    private function present(ORD_OrderNote $row): array
+    private function present(OrderNoteModel $row): array
     {
         $createdAt = $row->created_at;
         $iso = $createdAt instanceof \DateTimeInterface

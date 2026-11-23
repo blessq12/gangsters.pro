@@ -3,7 +3,7 @@
 namespace App\Infrastructure\Order\Adapter;
 
 use App\Domain\Core\Order\Port\OrderClientLookupPort;
-use App\Domain\Supporting\Customer\Repository\ClientRepository;
+use App\Domain\Supporting\Client\Repository\ClientRepository;
 
 /**
  * ACL: Order ищет клиента через ClientRepository (CRM/Customer) в Infrastructure.

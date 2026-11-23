@@ -4,7 +4,7 @@ namespace App\Application\Marketing\Command;
 
 use App\Application\Marketing\DTO\SavePromotionMediaDto;
 use App\Application\Marketing\Presenter\MarketingPresenter;
-use App\Domain\Supporting\Promotion\Repository\CampaignRepository;
+use App\Domain\Supporting\Marketing\Repository\CampaignRepository;
 use App\Infrastructure\Marketing\Support\MarketingMediaStore;
 use App\Infrastructure\Marketing\Support\MarketingStoredMedia;
 use Illuminate\Support\Facades\DB;

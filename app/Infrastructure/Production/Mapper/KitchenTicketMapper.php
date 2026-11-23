@@ -5,13 +5,13 @@ namespace App\Infrastructure\Production\Mapper;
 use App\Domain\Core\Production\Entity\KitchenTicket;
 use App\Domain\Core\Production\Enum\KitchenTicketStatus;
 use App\Domain\Core\Production\ValueObject\KitchenTicketLine;
-use App\Infrastructure\Production\Model\KIT_Ticket;
-use App\Infrastructure\Production\Model\KIT_TicketLine;
+use App\Infrastructure\Production\Model\KitchenTicketModel;
+use App\Infrastructure\Production\Model\KitchenTicketLineModel;
 use DateTimeImmutable;
 
 final class KitchenTicketMapper
 {
-    public function toDomain(KIT_Ticket $row): KitchenTicket
+    public function toDomain(KitchenTicketModel $row): KitchenTicket
     {
         $status = KitchenTicketStatus::from((string) $row->status);
 
@@ -21,7 +21,7 @@ final class KitchenTicketMapper
             : $row->lines()->get();
 
         foreach ($lineRows as $lineRow) {
-            if (! $lineRow instanceof KIT_TicketLine) {
+            if (! $lineRow instanceof KitchenTicketLineModel) {
                 continue;
             }
 

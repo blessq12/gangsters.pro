@@ -6,8 +6,8 @@ use App\Domain\Core\Production\Entity\KitchenTicket;
 use App\Domain\Core\Production\Enum\KitchenTicketStatus;
 use App\Domain\Core\Production\Repository\KitchenTicketRepository;
 use App\Infrastructure\Production\Mapper\KitchenTicketMapper;
-use App\Infrastructure\Production\Model\KIT_Ticket;
-use App\Infrastructure\Production\Model\KIT_TicketLine;
+use App\Infrastructure\Production\Model\KitchenTicketModel;
+use App\Infrastructure\Production\Model\KitchenTicketLineModel;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
@@ -19,12 +19,12 @@ final class EloquentKitchenTicketRepository implements KitchenTicketRepository
 
     public function findByOrderId(int $orderId): ?KitchenTicket
     {
-        $row = KIT_Ticket::query()
+        $row = KitchenTicketModel::query()
             ->with('lines')
             ->where('order_id', $orderId)
             ->first();
 
-        return $row instanceof KIT_Ticket ? $this->mapper->toDomain($row) : null;
+        return $row instanceof KitchenTicketModel ? $this->mapper->toDomain($row) : null;
     }
 
     public function enqueue(KitchenTicket $ticket): void
@@ -35,7 +35,7 @@ final class EloquentKitchenTicketRepository implements KitchenTicketRepository
 
         DB::transaction(function () use ($ticket): void {
             $payload = $this->mapper->toPersistence($ticket);
-            $row = KIT_Ticket::query()->create($payload['ticket']);
+            $row = KitchenTicketModel::query()->create($payload['ticket']);
             $ticket->assignId((int) $row->id);
             $this->replaceLines($ticket->id(), $payload['lines']);
         });
@@ -49,7 +49,7 @@ final class EloquentKitchenTicketRepository implements KitchenTicketRepository
 
         DB::transaction(function () use ($ticket): void {
             $payload = $this->mapper->toPersistence($ticket);
-            KIT_Ticket::query()
+            KitchenTicketModel::query()
                 ->whereKey($ticket->id())
                 ->update($payload['ticket']);
             $this->replaceLines($ticket->id(), $payload['lines']);
@@ -63,8 +63,8 @@ final class EloquentKitchenTicketRepository implements KitchenTicketRepository
         }
 
         DB::transaction(function () use ($ticket): void {
-            KIT_TicketLine::query()->where('ticket_id', $ticket->id())->delete();
-            KIT_Ticket::query()->whereKey($ticket->id())->delete();
+            KitchenTicketLineModel::query()->where('ticket_id', $ticket->id())->delete();
+            KitchenTicketModel::query()->whereKey($ticket->id())->delete();
         });
     }
 
@@ -81,7 +81,7 @@ final class EloquentKitchenTicketRepository implements KitchenTicketRepository
             ->offset(max(0, $offset))
             ->limit(max(1, $limit))
             ->get()
-            ->map(fn (KIT_Ticket $row): KitchenTicket => $this->mapper->toDomain($row))
+            ->map(fn (KitchenTicketModel $row): KitchenTicket => $this->mapper->toDomain($row))
             ->all();
     }
 
@@ -98,7 +98,7 @@ final class EloquentKitchenTicketRepository implements KitchenTicketRepository
             ->offset(max(0, $offset))
             ->limit(max(1, $limit))
             ->get()
-            ->map(fn (KIT_Ticket $row): KitchenTicket => $this->mapper->toDomain($row))
+            ->map(fn (KitchenTicketModel $row): KitchenTicket => $this->mapper->toDomain($row))
             ->all();
     }
 
@@ -109,20 +109,20 @@ final class EloquentKitchenTicketRepository implements KitchenTicketRepository
 
     public function listMineStartedByBranch(int $branchId, int $employeeId): array
     {
-        return KIT_Ticket::query()
+        return KitchenTicketModel::query()
             ->with('lines')
             ->where('branch_id', $branchId)
             ->where('status', KitchenTicketStatus::Started->value)
             ->where('assignee_employee_id', $employeeId)
             ->orderBy('id')
             ->get()
-            ->map(fn (KIT_Ticket $row): KitchenTicket => $this->mapper->toDomain($row))
+            ->map(fn (KitchenTicketModel $row): KitchenTicket => $this->mapper->toDomain($row))
             ->all();
     }
 
     public function countActiveByStatus(?int $branchId = null): array
     {
-        $query = KIT_Ticket::query()
+        $query = KitchenTicketModel::query()
             ->whereIn('status', [
                 KitchenTicketStatus::Queued->value,
                 KitchenTicketStatus::Started->value,
@@ -155,11 +155,11 @@ final class EloquentKitchenTicketRepository implements KitchenTicketRepository
     }
 
     /**
-     * @return Builder<KIT_Ticket>
+     * @return Builder<KitchenTicketModel>
      */
     private function activeByBranchQuery(int $branchId): Builder
     {
-        return KIT_Ticket::query()
+        return KitchenTicketModel::query()
             ->where('branch_id', $branchId)
             ->whereIn('status', [
                 KitchenTicketStatus::Queued->value,
@@ -168,11 +168,11 @@ final class EloquentKitchenTicketRepository implements KitchenTicketRepository
     }
 
     /**
-     * @return Builder<KIT_Ticket>
+     * @return Builder<KitchenTicketModel>
      */
     private function queuedByBranchQuery(int $branchId): Builder
     {
-        return KIT_Ticket::query()
+        return KitchenTicketModel::query()
             ->where('branch_id', $branchId)
             ->where('status', KitchenTicketStatus::Queued->value);
     }
@@ -182,10 +182,10 @@ final class EloquentKitchenTicketRepository implements KitchenTicketRepository
      */
     private function replaceLines(int $ticketId, array $lines): void
     {
-        KIT_TicketLine::query()->where('ticket_id', $ticketId)->delete();
+        KitchenTicketLineModel::query()->where('ticket_id', $ticketId)->delete();
 
         foreach ($lines as $line) {
-            KIT_TicketLine::query()->create([
+            KitchenTicketLineModel::query()->create([
                 ...$line,
                 'ticket_id' => $ticketId,
             ]);

@@ -3,9 +3,9 @@
 namespace App\Infrastructure\Marketing\Provider;
 
 use App\Domain\Supporting\Company\Repository\DeliveryConditionsTextRepository;
-use App\Domain\Supporting\Promotion\Port\MarketingDeliveryConditionsPort;
-use App\Domain\Supporting\Promotion\Repository\BannerRepository;
-use App\Domain\Supporting\Promotion\Repository\CampaignRepository;
+use App\Domain\Supporting\Marketing\Port\MarketingDeliveryConditionsPort;
+use App\Domain\Supporting\Marketing\Repository\BannerRepository;
+use App\Domain\Supporting\Marketing\Repository\CampaignRepository;
 use App\Infrastructure\Marketing\Adapter\EloquentMarketingDeliveryConditionsPort;
 use App\Infrastructure\Marketing\Repository\EloquentBannerRepository;
 use App\Infrastructure\Marketing\Repository\EloquentDeliveryConditionsRepository;

@@ -5,7 +5,7 @@ namespace App\Infrastructure\Payment\Repository;
 use App\Domain\Supporting\Payment\Entity\Payment;
 use App\Domain\Supporting\Payment\Repository\PaymentRepository;
 use App\Infrastructure\Payment\Mapper\PaymentMapper;
-use App\Infrastructure\Payment\Model\PAY_Payment;
+use App\Infrastructure\Payment\Model\PaymentModel;
 use App\Shared\Enum\PaymentMethod;
 use DateTimeImmutable;
 use Illuminate\Database\Eloquent\Builder;
@@ -18,18 +18,18 @@ final class EloquentPaymentRepository implements PaymentRepository
 
     public function findById(int $id): ?Payment
     {
-        $row = PAY_Payment::query()->find($id);
+        $row = PaymentModel::query()->find($id);
 
-        return $row instanceof PAY_Payment ? $this->mapper->toDomain($row) : null;
+        return $row instanceof PaymentModel ? $this->mapper->toDomain($row) : null;
     }
 
     public function findByOrderId(int $orderId): ?Payment
     {
-        $row = PAY_Payment::query()
+        $row = PaymentModel::query()
             ->where('order_id', $orderId)
             ->first();
 
-        return $row instanceof PAY_Payment ? $this->mapper->toDomain($row) : null;
+        return $row instanceof PaymentModel ? $this->mapper->toDomain($row) : null;
     }
 
     public function add(Payment $payment): void
@@ -38,7 +38,7 @@ final class EloquentPaymentRepository implements PaymentRepository
             throw new \InvalidArgumentException('Платёж уже сохранён — используй save.');
         }
 
-        $row = PAY_Payment::query()->create($this->mapper->toPersistence($payment));
+        $row = PaymentModel::query()->create($this->mapper->toPersistence($payment));
         $payment->assignId((int) $row->id);
     }
 
@@ -48,7 +48,7 @@ final class EloquentPaymentRepository implements PaymentRepository
             throw new \InvalidArgumentException('Платёж ещё не создан — используй add.');
         }
 
-        PAY_Payment::query()
+        PaymentModel::query()
             ->whereKey($payment->id())
             ->update($this->mapper->toPersistence($payment));
     }
@@ -69,7 +69,7 @@ final class EloquentPaymentRepository implements PaymentRepository
 
         $items = [];
         foreach ($rows as $row) {
-            if ($row instanceof PAY_Payment) {
+            if ($row instanceof PaymentModel) {
                 $items[] = $this->mapper->toDomain($row);
             }
         }
@@ -138,7 +138,7 @@ final class EloquentPaymentRepository implements PaymentRepository
     }
 
     /**
-     * @return Builder<PAY_Payment>
+     * @return Builder<PaymentModel>
      */
     private function filteredQuery(
         ?DateTimeImmutable $createdFrom,
@@ -147,7 +147,7 @@ final class EloquentPaymentRepository implements PaymentRepository
         ?string $method,
         ?int $branchId = null,
     ): Builder {
-        $query = PAY_Payment::query();
+        $query = PaymentModel::query();
 
         if ($createdFrom !== null) {
             $query->where('created_at', '>=', $createdFrom->format('Y-m-d H:i:s'));

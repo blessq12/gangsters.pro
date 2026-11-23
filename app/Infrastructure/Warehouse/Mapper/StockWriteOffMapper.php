@@ -3,12 +3,12 @@
 namespace App\Infrastructure\Warehouse\Mapper;
 
 use App\Domain\Supporting\Warehouse\Entity\StockWriteOff;
-use App\Infrastructure\Warehouse\Model\WH_StockWriteOff;
+use App\Infrastructure\Warehouse\Model\StockWriteOffModel;
 use DateTimeImmutable;
 
 final class StockWriteOffMapper
 {
-    public function toDomain(WH_StockWriteOff $row): StockWriteOff
+    public function toDomain(StockWriteOffModel $row): StockWriteOff
     {
         return StockWriteOff::restore(
             id: (int) $row->id,

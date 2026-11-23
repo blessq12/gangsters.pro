@@ -5,8 +5,8 @@ namespace App\Infrastructure\Catalog\Repository;
 use App\Domain\Supporting\Catalog\Entity\TechCard;
 use App\Domain\Supporting\Catalog\Repository\TechCardRepository;
 use App\Infrastructure\Catalog\Mapper\TechCardMapper;
-use App\Infrastructure\Catalog\Model\CAT_TechCard;
-use App\Infrastructure\Catalog\Model\CAT_TechCardLine;
+use App\Infrastructure\Catalog\Model\TechCardModel;
+use App\Infrastructure\Catalog\Model\TechCardLineModel;
 use Illuminate\Support\Facades\DB;
 
 final class EloquentTechCardRepository implements TechCardRepository
@@ -17,12 +17,12 @@ final class EloquentTechCardRepository implements TechCardRepository
 
     public function findByProductId(int $productId): ?TechCard
     {
-        $row = CAT_TechCard::query()
+        $row = TechCardModel::query()
             ->with('lines')
             ->where('product_id', $productId)
             ->first();
 
-        return $row instanceof CAT_TechCard ? $this->mapper->toDomain($row) : null;
+        return $row instanceof TechCardModel ? $this->mapper->toDomain($row) : null;
     }
 
     public function findByProductIds(array $productIds): array
@@ -36,13 +36,13 @@ final class EloquentTechCardRepository implements TechCardRepository
         }
 
         $result = [];
-        $rows = CAT_TechCard::query()
+        $rows = TechCardModel::query()
             ->with('lines')
             ->whereIn('product_id', $ids)
             ->get();
 
         foreach ($rows as $row) {
-            if (! $row instanceof CAT_TechCard) {
+            if (! $row instanceof TechCardModel) {
                 continue;
             }
             $card = $this->mapper->toDomain($row);
@@ -61,13 +61,13 @@ final class EloquentTechCardRepository implements TechCardRepository
                 return;
             }
 
-            $card = CAT_TechCard::query()->firstOrCreate(
+            $card = TechCardModel::query()->firstOrCreate(
                 ['product_id' => $techCard->productId()],
             );
-            CAT_TechCardLine::query()->where('tech_card_id', $card->id)->delete();
+            TechCardLineModel::query()->where('tech_card_id', $card->id)->delete();
 
             foreach (array_values($techCard->lines()) as $index => $line) {
-                CAT_TechCardLine::query()->create([
+                TechCardLineModel::query()->create([
                     'tech_card_id' => (int) $card->id,
                     'ingredient_ref' => $line->ingredientRef(),
                     'quantity' => $line->quantity(),
@@ -80,6 +80,6 @@ final class EloquentTechCardRepository implements TechCardRepository
 
     public function deleteByProductId(int $productId): void
     {
-        CAT_TechCard::query()->where('product_id', $productId)->delete();
+        TechCardModel::query()->where('product_id', $productId)->delete();
     }
 }

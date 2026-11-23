@@ -56,8 +56,22 @@ export const useCatalogStore = defineStore("catalog", {
         mobileCardViewMode: resolveDefaultMobileCardViewMode(),
     }),
     getters: {
-        flatProducts(state) {
-            return state.categories.flatMap((entry) => entry.products || []);
+        /**
+         * Основное меню = обычные категории + сопутствующие (флаг is_accompanying).
+         * Upsell чекаута по-прежнему читает accompanyingCategories отдельно.
+         */
+        menuCategoryEntries(state) {
+            const main = Array.isArray(state.categories) ? state.categories : [];
+            const accompanying = Array.isArray(state.accompanyingCategories)
+                ? state.accompanyingCategories
+                : [];
+            return [...main, ...accompanying].sort(
+                (a, b) =>
+                    (a?.category?.sort_order ?? 0) - (b?.category?.sort_order ?? 0),
+            );
+        },
+        flatProducts() {
+            return this.menuCategoryEntries.flatMap((entry) => entry.products || []);
         },
         filteredProducts(state) {
             if (state.selectedCategoryId == null || state.selectedCategoryId === "") {
@@ -65,7 +79,7 @@ export const useCatalogStore = defineStore("catalog", {
             }
 
             const selected = state.selectedCategoryId;
-            const entry = state.categories.find((c) => {
+            const entry = this.menuCategoryEntries.find((c) => {
                 const id = c.category.id;
                 const slug = c.category.slug;
                 return (
@@ -80,10 +94,10 @@ export const useCatalogStore = defineStore("catalog", {
             return entry.products || [];
         },
         /**
-         * Лента меню: все категории; фильтр только по тегу.
+         * Лента меню: все категории (включая сопутствующие); фильтр только по тегу.
          * Активная категория бара — scroll-spy, не фильтр ленты.
          */
-        menuSections(state) {
+        menuSections() {
             const selectedTag = this.selectedTag;
             const byTag = (product) => {
                 if (!selectedTag) return true;
@@ -91,14 +105,15 @@ export const useCatalogStore = defineStore("catalog", {
                 return tags.some((tag) => String(tag?.code) === String(selectedTag));
             };
 
+            const entries = this.menuCategoryEntries;
             const orderMap = new Map(
-                state.categories.map((entry, index) => [
+                entries.map((entry, index) => [
                     entry?.category?.id ?? entry?.category?.slug ?? null,
                     index,
                 ]),
             );
 
-            return state.categories
+            return entries
                 .map((entry) => {
                     const base = Array.isArray(entry?.products) ? entry.products : [];
                     const products = base.filter((p) => byTag(p));
@@ -114,8 +129,8 @@ export const useCatalogStore = defineStore("catalog", {
         menuProducts() {
             return this.menuSections.flatMap((section) => section.products);
         },
-        categoryTabs(state) {
-            return state.categories.map((entry) => ({
+        categoryTabs() {
+            return this.menuCategoryEntries.map((entry) => ({
                 id: entry.category.id,
                 name: entry.category.name,
                 uri: entry.category.slug,
@@ -216,7 +231,7 @@ export const useCatalogStore = defineStore("catalog", {
          * они больше не существуют (иначе menuProducts пустой при живых данных).
          */
         sanitizePersistedFiltersAfterLoad() {
-            const categories = this.categories;
+            const categories = this.menuCategoryEntries;
             if (!Array.isArray(categories) || categories.length === 0) {
                 return;
             }

@@ -4,16 +4,16 @@ namespace App\Infrastructure\Catalog\Mapper;
 
 use App\Domain\Supporting\Catalog\Entity\TechCard;
 use App\Domain\Supporting\Catalog\ValueObject\TechCardLine;
-use App\Infrastructure\Catalog\Model\CAT_TechCard;
-use App\Infrastructure\Catalog\Model\CAT_TechCardLine;
+use App\Infrastructure\Catalog\Model\TechCardModel;
+use App\Infrastructure\Catalog\Model\TechCardLineModel;
 
 final class TechCardMapper
 {
-    public function toDomain(CAT_TechCard $row): TechCard
+    public function toDomain(TechCardModel $row): TechCard
     {
         $lines = [];
         foreach ($row->lines as $lineRow) {
-            if (! $lineRow instanceof CAT_TechCardLine) {
+            if (! $lineRow instanceof TechCardLineModel) {
                 continue;
             }
             $lines[] = new TechCardLine(

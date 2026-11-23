@@ -3,11 +3,11 @@
 namespace App\Infrastructure\Marketing\Mapper;
 
 use App\Domain\Supporting\Company\Entity\DeliveryConditionsText;
-use App\Infrastructure\Marketing\Model\MKT_DeliveryConditions;
+use App\Infrastructure\Marketing\Model\MarketingDeliveryConditionsModel;
 
 final class DeliveryConditionsMapper
 {
-    public function toDomain(MKT_DeliveryConditions $row): DeliveryConditionsText
+    public function toDomain(MarketingDeliveryConditionsModel $row): DeliveryConditionsText
     {
         return new DeliveryConditionsText(
             id: (int) $row->id,

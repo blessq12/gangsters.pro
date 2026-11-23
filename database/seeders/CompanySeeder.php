@@ -2,130 +2,104 @@
 
 namespace Database\Seeders;
 
-use App\Domain\Supporting\Company\Repository\CompanyRepository;
-use App\Infrastructure\Company\Model\CMP_Branch;
-use App\Infrastructure\Company\Model\CMP_Company;
-use App\Infrastructure\Company\Model\CMP_CompanyDocument;
-use App\Infrastructure\Company\Model\CMP_CompanyLegal;
+use Database\Seeders\Concerns\LoadsSeederJson;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
 /**
- * Компания + филиал (адрес и координаты в самом филиале) из /api/content → CMP_*.
+ * Компания + единственный боевой филиал (Говорова 50/1). Смоленский не сидируется.
  */
 class CompanySeeder extends Seeder
 {
-    private const CONTENT_SOURCE_URL = 'https://gangsta-sushi.ru/api/content';
+    use LoadsSeederJson;
 
     public function run(): void
     {
-        $payload = $this->fetchContentPayload();
-        $companyBlock = is_array($payload['company'] ?? null) ? $payload['company'] : [];
-        $deliveryBlock = is_array($payload['delivery'] ?? null) ? $payload['delivery'] : [];
+        $companyPayload = $this->loadSeederJson('company.json');
+        $branch = $this->loadSeederJson('branch.json');
 
-        $main = is_array($companyBlock['main'] ?? null) ? $companyBlock['main'] : [];
-        $legal = is_array($companyBlock['legals'] ?? null) ? $companyBlock['legals'] : [];
-        $documents = is_array($companyBlock['documents'] ?? null) ? $companyBlock['documents'] : [];
+        $company = is_array($companyPayload['company'] ?? null) ? $companyPayload['company'] : null;
+        $legal = is_array($companyPayload['legal'] ?? null) ? $companyPayload['legal'] : null;
+        $documents = is_array($companyPayload['documents'] ?? null) ? $companyPayload['documents'] : [];
 
-        $companyId = CompanyRepository::SINGLETON_ID;
+        if ($company === null || $branch === []) {
+            throw new RuntimeException('company.json / branch.json повреждены.');
+        }
 
-        CMP_Company::query()->updateOrCreate(
-            ['id' => $companyId],
-            [
-                'name' => (string) ($main['name'] ?? 'Гангстерс Суши'),
-                'description' => $main['description'] ?? null,
-                'phone' => $main['phone'] ?? null,
-                'email' => $main['email'] ?? null,
-                'socials' => is_array($main['socials'] ?? null) ? $main['socials'] : [],
-            ],
-        );
+        DB::transaction(function () use ($company, $legal, $documents, $branch): void {
+            DB::table('CMP_company_documents')->delete();
+            DB::table('CMP_company_legal')->delete();
+            DB::table('CMP_branches')->delete();
+            DB::table('CMP_companies')->delete();
 
-        CMP_CompanyLegal::query()->updateOrCreate(
-            ['company_id' => $companyId],
-            [
-                'full_name' => $legal['full_name'] ?? null,
-                'inn' => $legal['inn'] ?? null,
-                'ogrn' => $legal['ogrn'] ?? null,
-            ],
-        );
+            DB::table('CMP_companies')->insert([
+                'id' => (int) $company['id'],
+                'name' => (string) $company['name'],
+                'description' => $company['description'] ?? null,
+                'phone' => $company['phone'] ?? null,
+                'email' => $company['email'] ?? null,
+                'socials' => $this->encodeJson($company['socials'] ?? null),
+                'created_at' => $company['created_at'] ?? now(),
+                'updated_at' => $company['updated_at'] ?? now(),
+            ]);
 
-        $keptSlugs = [];
-        foreach ($documents as $document) {
-            if (! is_array($document)) {
-                continue;
+            if ($legal !== null) {
+                DB::table('CMP_company_legal')->insert([
+                    'id' => (int) $legal['id'],
+                    'company_id' => (int) $legal['company_id'],
+                    'full_name' => $legal['full_name'] ?? null,
+                    'inn' => $legal['inn'] ?? null,
+                    'ogrn' => $legal['ogrn'] ?? null,
+                    'created_at' => $legal['created_at'] ?? now(),
+                    'updated_at' => $legal['updated_at'] ?? now(),
+                ]);
             }
 
-            $slug = trim((string) ($document['slug'] ?? ''));
-            if ($slug === '') {
-                continue;
-            }
-
-            $keptSlugs[] = $slug;
-
-            CMP_CompanyDocument::query()->updateOrCreate(
-                [
-                    'company_id' => $companyId,
-                    'slug' => $slug,
-                ],
-                [
-                    'name' => (string) ($document['name'] ?? $slug),
+            foreach ($documents as $document) {
+                if (! is_array($document)) {
+                    continue;
+                }
+                DB::table('CMP_company_documents')->insert([
+                    'id' => (int) $document['id'],
+                    'company_id' => (int) $document['company_id'],
+                    'slug' => (string) $document['slug'],
+                    'name' => (string) $document['name'],
                     'content' => $document['content'] ?? null,
                     'path' => $document['path'] ?? null,
-                ],
-            );
-        }
+                    'created_at' => $document['created_at'] ?? now(),
+                    'updated_at' => $document['updated_at'] ?? now(),
+                ]);
+            }
 
-        if ($keptSlugs !== []) {
-            CMP_CompanyDocument::query()
-                ->where('company_id', $companyId)
-                ->whereNotIn('slug', $keptSlugs)
-                ->delete();
-        }
-
-        $zone = is_array($deliveryBlock['zone'] ?? null) ? $deliveryBlock['zone'] : [];
-        $address = is_array($zone['kitchen_address'] ?? null) ? $zone['kitchen_address'] : [];
-
-        CMP_Branch::query()->updateOrCreate(
-            [
-                'company_id' => $companyId,
-                'name' => 'Томск',
-            ],
-            [
-                'is_active' => true,
-                'schedule' => is_array($main['schedule'] ?? null) ? $main['schedule'] : [],
-                'city' => $address['city'] ?? 'Томск',
-                'street' => $address['street'] ?? 'ул. Говорова',
-                'house' => $address['house'] ?? '50/1',
-                'comment' => $address['comment'] ?? null,
-                'latitude' => isset($zone['kitchen_latitude']) ? (float) $zone['kitchen_latitude'] : 56.513432,
-                'longitude' => isset($zone['kitchen_longitude']) ? (float) $zone['kitchen_longitude'] : 84.986366,
-                'phone' => $main['phone'] ?? null,
-            ],
-        );
+            DB::table('CMP_branches')->insert([
+                'id' => (int) $branch['id'],
+                'company_id' => (int) $branch['company_id'],
+                'name' => (string) $branch['name'],
+                'is_active' => (bool) ($branch['is_active'] ?? true),
+                'schedule' => $this->encodeJson($branch['schedule'] ?? null),
+                'city' => $branch['city'] ?? null,
+                'street' => $branch['street'] ?? null,
+                'house' => $branch['house'] ?? null,
+                'comment' => $branch['comment'] ?? null,
+                'latitude' => $branch['latitude'] ?? null,
+                'longitude' => $branch['longitude'] ?? null,
+                'phone' => $branch['phone'] ?? null,
+                'created_at' => $branch['created_at'] ?? now(),
+                'updated_at' => $branch['updated_at'] ?? now(),
+            ]);
+        });
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    private function fetchContentPayload(): array
+    private function encodeJson(mixed $value): ?string
     {
-        $response = Http::timeout(60)
-            ->acceptJson()
-            ->retry(2, 500)
-            ->get(self::CONTENT_SOURCE_URL);
-
-        if (! $response->successful()) {
-            throw new RuntimeException(
-                'Не удалось загрузить content: HTTP '.$response->status(),
-            );
+        if ($value === null || $value === '') {
+            return null;
+        }
+        if (is_string($value)) {
+            return $value;
         }
 
-        $payload = $response->json();
-        if (! is_array($payload)) {
-            throw new RuntimeException('Некорректный формат content API.');
-        }
-
-        return $payload;
+        return json_encode($value, JSON_UNESCAPED_UNICODE);
     }
 }

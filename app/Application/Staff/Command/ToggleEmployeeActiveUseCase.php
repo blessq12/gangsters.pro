@@ -3,7 +3,7 @@
 namespace App\Application\Staff\Command;
 
 use App\Application\Staff\Presenter\EmployeePresenter;
-use App\Domain\Generic\Staff\Repository\EmployeeRepository;
+use App\Domain\Supporting\Staff\Repository\EmployeeRepository;
 
 final class ToggleEmployeeActiveUseCase
 {

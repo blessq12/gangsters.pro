@@ -6,8 +6,8 @@ use App\Domain\Supporting\Company\Entity\BranchTag;
 use App\Domain\Supporting\Company\Enum\BranchMenuEntryKind;
 use App\Domain\Supporting\Company\Repository\BranchTagRepository;
 use App\Infrastructure\Company\Mapper\BranchTagMapper;
-use App\Infrastructure\Company\Model\CMP_BranchEntryTag;
-use App\Infrastructure\Company\Model\CMP_BranchTag;
+use App\Infrastructure\Company\Model\BranchEntryTagModel;
+use App\Infrastructure\Company\Model\BranchTagModel;
 use Illuminate\Support\Facades\DB;
 
 final class EloquentBranchTagRepository implements BranchTagRepository
@@ -18,35 +18,35 @@ final class EloquentBranchTagRepository implements BranchTagRepository
 
     public function listByBranch(int $branchId): array
     {
-        return CMP_BranchTag::query()
+        return BranchTagModel::query()
             ->where('branch_id', $branchId)
             ->orderBy('sort_order')
             ->orderBy('id')
             ->get()
-            ->map(fn (CMP_BranchTag $row) => $this->mapper->toDomain($row))
+            ->map(fn (BranchTagModel $row) => $this->mapper->toDomain($row))
             ->all();
     }
 
     public function listActiveOrderedByBranch(int $branchId): array
     {
-        return CMP_BranchTag::query()
+        return BranchTagModel::query()
             ->where('branch_id', $branchId)
             ->where('is_active', true)
             ->orderBy('sort_order')
             ->orderBy('id')
             ->get()
-            ->map(fn (CMP_BranchTag $row) => $this->mapper->toDomain($row))
+            ->map(fn (BranchTagModel $row) => $this->mapper->toDomain($row))
             ->all();
     }
 
     public function findById(int $branchId, int $id): ?BranchTag
     {
-        $row = CMP_BranchTag::query()
+        $row = BranchTagModel::query()
             ->where('branch_id', $branchId)
             ->where('id', $id)
             ->first();
 
-        return $row instanceof CMP_BranchTag ? $this->mapper->toDomain($row) : null;
+        return $row instanceof BranchTagModel ? $this->mapper->toDomain($row) : null;
     }
 
     public function save(
@@ -60,7 +60,7 @@ final class EloquentBranchTagRepository implements BranchTagRepository
     ): BranchTag {
         $code = trim($code);
 
-        $exists = CMP_BranchTag::query()
+        $exists = BranchTagModel::query()
             ->where('branch_id', $branchId)
             ->where('code', $code)
             ->when($id !== null, fn ($query) => $query->where('id', '!=', $id))
@@ -70,14 +70,14 @@ final class EloquentBranchTagRepository implements BranchTagRepository
         }
 
         if ($id === null) {
-            $row = new CMP_BranchTag();
+            $row = new BranchTagModel();
             $row->branch_id = $branchId;
         } else {
-            $row = CMP_BranchTag::query()
+            $row = BranchTagModel::query()
                 ->where('branch_id', $branchId)
                 ->where('id', $id)
                 ->first();
-            if (! $row instanceof CMP_BranchTag) {
+            if (! $row instanceof BranchTagModel) {
                 throw new \InvalidArgumentException('Тег не найден.');
             }
         }
@@ -97,15 +97,15 @@ final class EloquentBranchTagRepository implements BranchTagRepository
     public function delete(int $branchId, int $id): void
     {
         DB::transaction(function () use ($branchId, $id): void {
-            $row = CMP_BranchTag::query()
+            $row = BranchTagModel::query()
                 ->where('branch_id', $branchId)
                 ->where('id', $id)
                 ->first();
-            if (! $row instanceof CMP_BranchTag) {
+            if (! $row instanceof BranchTagModel) {
                 return;
             }
 
-            CMP_BranchEntryTag::query()->where('tag_id', $row->id)->delete();
+            BranchEntryTagModel::query()->where('tag_id', $row->id)->delete();
             $row->delete();
         });
     }
@@ -115,14 +115,14 @@ final class EloquentBranchTagRepository implements BranchTagRepository
         $wanted = $this->normalizeIds($tagIds);
 
         DB::transaction(function () use ($branchId, $kind, $entryId, $wanted): void {
-            $branchTagIds = CMP_BranchTag::query()
+            $branchTagIds = BranchTagModel::query()
                 ->where('branch_id', $branchId)
                 ->pluck('id')
                 ->map(static fn (mixed $id): int => (int) $id)
                 ->all();
 
             if ($branchTagIds !== []) {
-                CMP_BranchEntryTag::query()
+                BranchEntryTagModel::query()
                     ->where('entry_kind', $kind->value)
                     ->where('entry_id', $entryId)
                     ->whereIn('tag_id', $branchTagIds)
@@ -131,7 +131,7 @@ final class EloquentBranchTagRepository implements BranchTagRepository
 
             $allowed = array_values(array_intersect($wanted, $branchTagIds));
             foreach ($allowed as $tagId) {
-                CMP_BranchEntryTag::query()->create([
+                BranchEntryTagModel::query()->create([
                     'tag_id' => $tagId,
                     'entry_kind' => $kind,
                     'entry_id' => $entryId,
@@ -142,7 +142,7 @@ final class EloquentBranchTagRepository implements BranchTagRepository
 
     public function findTagIdsForEntry(BranchMenuEntryKind $kind, int $entryId): array
     {
-        return CMP_BranchEntryTag::query()
+        return BranchEntryTagModel::query()
             ->where('entry_kind', $kind->value)
             ->where('entry_id', $entryId)
             ->orderBy('tag_id')
@@ -159,7 +159,7 @@ final class EloquentBranchTagRepository implements BranchTagRepository
         }
 
         $out = [];
-        $rows = CMP_BranchEntryTag::query()
+        $rows = BranchEntryTagModel::query()
             ->where('entry_kind', $kind->value)
             ->whereIn('entry_id', $ids)
             ->orderBy('tag_id')
@@ -179,13 +179,13 @@ final class EloquentBranchTagRepository implements BranchTagRepository
     public function replaceAllForBranch(int $branchId, array $tags): array
     {
         return DB::transaction(function () use ($branchId, $tags): array {
-            $existingIds = CMP_BranchTag::query()
+            $existingIds = BranchTagModel::query()
                 ->where('branch_id', $branchId)
                 ->pluck('id')
                 ->all();
             if ($existingIds !== []) {
-                CMP_BranchEntryTag::query()->whereIn('tag_id', $existingIds)->delete();
-                CMP_BranchTag::query()->whereIn('id', $existingIds)->delete();
+                BranchEntryTagModel::query()->whereIn('tag_id', $existingIds)->delete();
+                BranchTagModel::query()->whereIn('id', $existingIds)->delete();
             }
 
             $map = [];
@@ -194,7 +194,7 @@ final class EloquentBranchTagRepository implements BranchTagRepository
                     continue;
                 }
 
-                $row = CMP_BranchTag::query()->create([
+                $row = BranchTagModel::query()->create([
                     'branch_id' => $branchId,
                     'code' => $tag->code(),
                     'label' => $tag->label(),

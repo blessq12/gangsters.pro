@@ -3,11 +3,11 @@
 namespace App\Infrastructure\Warehouse\Mapper;
 
 use App\Domain\Supporting\Warehouse\Entity\StockLevel;
-use App\Infrastructure\Warehouse\Model\WH_StockLevel;
+use App\Infrastructure\Warehouse\Model\StockLevelModel;
 
 final class StockLevelMapper
 {
-    public function toDomain(WH_StockLevel $row): StockLevel
+    public function toDomain(StockLevelModel $row): StockLevel
     {
         return new StockLevel(
             branchId: (int) $row->branch_id,

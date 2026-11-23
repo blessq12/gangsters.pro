@@ -26,7 +26,7 @@ return [
     | Sanctum Guards
     |--------------------------------------------------------------------------
     |
-    | Public и Backoffice SPA ходят с Bearer PAT (CRM_Client / User).
+    | Public и Backoffice SPA ходят с Bearer PAT (ClientModel / User).
     | Сессионный web-guard не должен перехватывать auth:sanctum раньше токена —
     | иначе после reload профиль отвечает 401 и FE сносит клиентскую сессию.
     |

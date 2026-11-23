@@ -10,7 +10,7 @@ use App\Application\Production\DTO\StartWorkDto;
 use App\Application\Production\Query\GetTicketUseCase;
 use App\Application\Production\Query\ListQueueUseCase;
 use App\Http\Controllers\Controller;
-use App\Infrastructure\Staff\Model\STF_Employee;
+use App\Infrastructure\Staff\Model\EmployeeModel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use InvalidArgumentException;
@@ -97,7 +97,7 @@ final class ProductionController extends Controller
     private function employeeId(Request $request): ?int
     {
         $user = $request->user('sanctum');
-        if (! $user instanceof STF_Employee) {
+        if (! $user instanceof EmployeeModel) {
             return null;
         }
 

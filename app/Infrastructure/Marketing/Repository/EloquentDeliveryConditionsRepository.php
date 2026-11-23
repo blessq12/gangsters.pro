@@ -5,7 +5,7 @@ namespace App\Infrastructure\Marketing\Repository;
 use App\Domain\Supporting\Company\Entity\DeliveryConditionsText;
 use App\Domain\Supporting\Company\Repository\DeliveryConditionsTextRepository;
 use App\Infrastructure\Marketing\Mapper\DeliveryConditionsMapper;
-use App\Infrastructure\Marketing\Model\MKT_DeliveryConditions;
+use App\Infrastructure\Marketing\Model\MarketingDeliveryConditionsModel;
 
 final class EloquentDeliveryConditionsRepository implements DeliveryConditionsTextRepository
 {
@@ -15,23 +15,23 @@ final class EloquentDeliveryConditionsRepository implements DeliveryConditionsTe
 
     public function findCurrent(): ?DeliveryConditionsText
     {
-        $row = MKT_DeliveryConditions::query()
+        $row = MarketingDeliveryConditionsModel::query()
             ->orderBy('id')
             ->first();
 
-        return $row instanceof MKT_DeliveryConditions
+        return $row instanceof MarketingDeliveryConditionsModel
             ? $this->mapper->toDomain($row)
             : null;
     }
 
     public function findActive(): ?DeliveryConditionsText
     {
-        $row = MKT_DeliveryConditions::query()
+        $row = MarketingDeliveryConditionsModel::query()
             ->where('is_active', true)
             ->orderBy('id')
             ->first();
 
-        return $row instanceof MKT_DeliveryConditions
+        return $row instanceof MarketingDeliveryConditionsModel
             ? $this->mapper->toDomain($row)
             : null;
     }
@@ -44,14 +44,14 @@ final class EloquentDeliveryConditionsRepository implements DeliveryConditionsTe
         }
 
         if ($id !== null) {
-            $row = MKT_DeliveryConditions::query()->find($id);
-            if (! $row instanceof MKT_DeliveryConditions) {
+            $row = MarketingDeliveryConditionsModel::query()->find($id);
+            if (! $row instanceof MarketingDeliveryConditionsModel) {
                 throw new \InvalidArgumentException('Условия доставки не найдены.');
             }
         } else {
-            $row = MKT_DeliveryConditions::query()->orderBy('id')->first();
-            if (! $row instanceof MKT_DeliveryConditions) {
-                $row = new MKT_DeliveryConditions();
+            $row = MarketingDeliveryConditionsModel::query()->orderBy('id')->first();
+            if (! $row instanceof MarketingDeliveryConditionsModel) {
+                $row = new MarketingDeliveryConditionsModel();
             }
         }
 

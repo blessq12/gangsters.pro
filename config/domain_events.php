@@ -81,7 +81,7 @@ return [
             AttachPaymentOnPaymentInitiated::class,
         ],
 
-        // Роли и PRM_zones больше не участвуют в продаже:
+        // DeliveryZonesChanged: снимок зон для Promotion удалён с BC.
         // флаги (вкл. подарок) — в Catalog; зоны/надбавка вне зоны — в Delivery.
         DeliveryZonesChanged::class => [],
     ],

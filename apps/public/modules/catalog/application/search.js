@@ -391,12 +391,12 @@ function persistQueryToHistory(value = query.value) {
 function refreshDiscoverFeed(seed = discoverSeed) {
     const catalogStore = useCatalogStore();
 
-    if (!catalogStore.hasLoaded || catalogStore.categories.length === 0) {
+    if (!catalogStore.hasLoaded || catalogStore.menuCategoryEntries.length === 0) {
         discover.clearFeed();
         return;
     }
 
-    discover.resetFeed(catalogStore.categories, seed);
+    discover.resetFeed(catalogStore.menuCategoryEntries, seed);
 }
 
 function isSearchIdleState() {
@@ -457,7 +457,7 @@ export function useCatalogSearch() {
     const hasQuery = computed(() => query.value.trim().length > 0);
 
     const results = computed(() =>
-        searchCatalogItems(catalogStore.categories, query.value),
+        searchCatalogItems(catalogStore.menuCategoryEntries, query.value),
     );
 
     const loading = computed(

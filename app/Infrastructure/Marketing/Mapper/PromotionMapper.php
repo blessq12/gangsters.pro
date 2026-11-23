@@ -2,13 +2,13 @@
 
 namespace App\Infrastructure\Marketing\Mapper;
 
-use App\Domain\Supporting\Promotion\Entity\Campaign;
-use App\Infrastructure\Marketing\Model\MKT_Promotion;
+use App\Domain\Supporting\Marketing\Entity\Campaign;
+use App\Infrastructure\Marketing\Model\PromotionMediaModel;
 use App\Infrastructure\Marketing\Support\PublicMediaUrl;
 
 final class PromotionMapper
 {
-    public function toDomain(MKT_Promotion $row): Campaign
+    public function toDomain(PromotionMediaModel $row): Campaign
     {
         return new Campaign(
             id: (int) $row->id,

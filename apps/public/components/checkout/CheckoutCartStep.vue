@@ -5,6 +5,7 @@ import { useAppDesign } from "../../design/useAppDesign";
 import { useCatalogStore } from "../../modules/catalog/store";
 import { useCheckoutFlowContext } from "../../modules/checkout/application/flowContext";
 import { CHECKOUT_NAV_LABELS } from "../../modules/checkout/application/session";
+import { resolveCartLineImageUrl } from "../../modules/checkout/domain/cartLineImage.js";
 import { useCheckoutStore } from "../../modules/checkout/store";
 import CheckoutComplementOffers from "./CheckoutComplementOffers.vue";
 import CheckoutSection from "./CheckoutSection.vue";
@@ -19,30 +20,53 @@ const { checkoutState, handleStartCheckout } = useCheckoutFlowContext();
 const catalogStore = useCatalogStore();
 const cartStore = useCheckoutStore();
 const { userItems: userCartItems } = storeToRefs(cartStore);
-const { complementProducts } = storeToRefs(catalogStore);
+const { complementProducts, accompanyingCategories } = storeToRefs(catalogStore);
 
 const { formatPrice } = checkoutState;
 
-const complementRelatedProductIds = computed(() => {
+const complementProductIds = computed(() => {
     const ids = new Set();
     for (const product of complementProducts.value || []) {
-        if (product?.id != null) ids.add(Number(product.id));
-        const twinId = Number(product?.paidTwinProductId);
-        if (Number.isFinite(twinId) && twinId > 0) ids.add(twinId);
+        if (product?.id != null) {
+            ids.add(Number(product.id));
+        }
     }
     return ids;
 });
 
-/** Комплектные и их платные близнецы — только в блоке комплекта. */
-const menuUserCartItems = computed(() =>
+/** Основные блюда меню (без комплектных). */
+const menuFoodItems = computed(() =>
     (userCartItems.value || []).filter(
-        (item) => !complementRelatedProductIds.value.has(Number(item.productId)),
+        (item) => !complementProductIds.value.has(Number(item.productId)),
     ),
 );
 
+/** Комплектные, добавленные как платные ordinary-линии. */
+const paidComplementItems = computed(() =>
+    (userCartItems.value || []).filter((item) =>
+        complementProductIds.value.has(Number(item.productId)),
+    ),
+);
+
+/** Все платные линии корзины: блюда + докупленные комплектные. */
+const displayCartItems = computed(() => [
+    ...menuFoodItems.value,
+    ...paidComplementItems.value,
+]);
+
 const isCartEmpty = computed(() => (userCartItems.value || []).length === 0);
-const hasUserLines = computed(() => menuUserCartItems.value.length > 0);
-const canStartCheckout = computed(() => (userCartItems.value || []).length > 0);
+const hasMenuFood = computed(() => menuFoodItems.value.length > 0);
+const canStartCheckout = computed(() => hasMenuFood.value);
+
+const catalogImageSource = computed(() => ({
+    flatProducts: catalogStore.flatProducts,
+    accompanyingCategories: accompanyingCategories.value,
+    complementProducts: complementProducts.value,
+}));
+
+function lineImageUrl(item) {
+    return resolveCartLineImageUrl(item, catalogImageSource.value);
+}
 
 function decrementCart(productId) {
     void cartStore.decrementCart(productId);
@@ -58,7 +82,9 @@ function removeFromCart(productId) {
 
 function unitPriceRub(item) {
     const kopecks = Number(item?.pricing?.finalUnitPriceKopecks);
-    if (Number.isFinite(kopecks)) return kopecks / 100;
+    if (Number.isFinite(kopecks)) {
+        return kopecks / 100;
+    }
     return Number(item?.productSnapshot?.price) || 0;
 }
 </script>
@@ -67,14 +93,25 @@ function unitPriceRub(item) {
     <CheckoutStepFrame group="cart">
         <div v-if="isCartEmpty" :class="c.emptyState">Корзина пуста</div>
 
-        <CheckoutSection v-else-if="hasUserLines" title="">
+        <CheckoutSection v-else-if="displayCartItems.length > 0" title="">
             <ul :class="c.userList">
                 <li
-                    v-for="item in menuUserCartItems"
+                    v-for="item in displayCartItems"
                     :key="item.lineKey"
                     :class="c.userLineItem"
                 >
-                    <div class="min-w-0">
+                    <div :class="c.lineThumb" aria-hidden="true">
+                        <img
+                            v-if="lineImageUrl(item)"
+                            :src="lineImageUrl(item)"
+                            :alt="item.productSnapshot?.name || ''"
+                            :class="c.lineThumbImg"
+                            loading="lazy"
+                        >
+                        <span v-else :class="c.lineThumbPlaceholder">—</span>
+                    </div>
+
+                    <div class="min-w-0 flex-1">
                         <p :class="c.lineTitle">
                             {{
                                 item.productSnapshot?.name ||

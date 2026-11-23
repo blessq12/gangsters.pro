@@ -3,11 +3,11 @@
 namespace App\Infrastructure\Warehouse\Mapper;
 
 use App\Domain\Supporting\Warehouse\Entity\Ingredient;
-use App\Infrastructure\Warehouse\Model\WH_Ingredient;
+use App\Infrastructure\Warehouse\Model\IngredientModel;
 
 final class IngredientMapper
 {
-    public function toDomain(WH_Ingredient $row): Ingredient
+    public function toDomain(IngredientModel $row): Ingredient
     {
         return Ingredient::restore(
             id: (int) $row->id,
