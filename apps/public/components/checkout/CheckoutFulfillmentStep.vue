@@ -40,12 +40,16 @@ const {
     setDeliveryPersons,
     guestAddressDraft,
     patchGuestAddressDraft,
+    applyGuestSuggestion,
+    clearGuestCoords,
     scheduleDeliveryPreview,
     setPaymentMethod,
 } = useCheckoutFlowContext();
 const { totals } = useOrderPreview();
 
-const { deliveryFacts } = storeToRefs(useContentStore());
+const contentStore = useContentStore();
+const { deliveryFacts } = storeToRefs(contentStore);
+const branchCity = computed(() => String(contentStore.branch?.city ?? "").trim());
 
 onMounted(() => {
     scheduleDeliveryPreview();
@@ -152,6 +156,9 @@ const canIncrementPersons = computed(
                 :entrance="guestAddressDraft.entrance"
                 :floor="guestAddressDraft.floor"
                 :apartment="guestAddressDraft.apartment"
+                :latitude="guestAddressDraft.latitude"
+                :longitude="guestAddressDraft.longitude"
+                :branch-city="branchCity"
                 :street-error="deliveryFieldErrors.get('street')"
                 :house-error="deliveryFieldErrors.get('house')"
                 @update:street="patchGuestAddressDraft({ street: $event })"
@@ -159,6 +166,8 @@ const canIncrementPersons = computed(
                 @update:entrance="patchGuestAddressDraft({ entrance: $event })"
                 @update:floor="patchGuestAddressDraft({ floor: $event })"
                 @update:apartment="patchGuestAddressDraft({ apartment: $event })"
+                @apply-suggestion="applyGuestSuggestion"
+                @clear-coords="clearGuestCoords"
             />
         </CheckoutSection>
 

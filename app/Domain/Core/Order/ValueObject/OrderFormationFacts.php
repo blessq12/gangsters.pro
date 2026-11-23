@@ -13,6 +13,7 @@ final readonly class OrderFormationFacts
      * @param  list<array{product_id: int, name: string}>  $giftCandidates
      * @param  array{product_id: int, name: string}|null  $gift выбранный кандидат
      * @param  array<int, int>  $rollsPerUnitByLineId  сколько роллов даёт 1 шт. линии (товар или сет)
+     * @param  array<int, int>  $complementSelections  productId → выбранное кол-во комплектного; пусто = максимум
      */
     public function __construct(
         private array $isRollByProductId,
@@ -20,11 +21,26 @@ final readonly class OrderFormationFacts
         private array $giftCandidates = [],
         private ?array $gift = null,
         private array $rollsPerUnitByLineId = [],
+        private array $complementSelections = [],
     ) {}
 
     public static function empty(): self
     {
-        return new self([], [], [], null, []);
+        return new self([], [], [], null, [], []);
+    }
+
+    /**
+     * Сколько штук комплектного положить при праве на $entitledSets.
+     */
+    public function complementQuantity(int $productId, int $entitledSets): int
+    {
+        if ($this->complementSelections === []) {
+            return $entitledSets;
+        }
+
+        $selected = (int) ($this->complementSelections[$productId] ?? 0);
+
+        return max(0, min($entitledSets, $selected));
     }
 
     public function isRoll(int $productId): bool

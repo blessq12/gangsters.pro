@@ -36,4 +36,9 @@ interface OrderBranchMenuSnapshotPort
      * @return array<int, OrderBranchSetSnapshot> keyed by set id
      */
     public function findAvailableSetsByBranchAndIds(int $branchId, array $ids): array;
+
+    /**
+     * @return array<int, OrderBranchSetSnapshot> keyed by set id
+     */
+    public function listAvailableSetsByBranch(int $branchId): array;
 }

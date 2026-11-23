@@ -107,6 +107,8 @@ final class ClientController extends Controller
                 apartment: $validated['apartment'] ?? null,
                 comment: $validated['comment'] ?? null,
                 makeDefault: (bool) ($validated['make_default'] ?? false),
+                lat: isset($validated['lat']) ? (float) $validated['lat'] : null,
+                lng: isset($validated['lng']) ? (float) $validated['lng'] : null,
             ));
         } catch (InvalidArgumentException $exception) {
             return response()->json(['message' => $exception->getMessage()], 422);
@@ -137,6 +139,8 @@ final class ClientController extends Controller
                 makeDefault: array_key_exists('make_default', $validated)
                     ? (bool) $validated['make_default']
                     : null,
+                lat: isset($validated['lat']) ? (float) $validated['lat'] : null,
+                lng: isset($validated['lng']) ? (float) $validated['lng'] : null,
             ));
         } catch (InvalidArgumentException $exception) {
             return response()->json(['message' => $exception->getMessage()], 422);
@@ -187,6 +191,8 @@ final class ClientController extends Controller
             'floor' => ['nullable', 'string', 'max:64'],
             'apartment' => ['nullable', 'string', 'max:64'],
             'comment' => ['nullable', 'string', 'max:1000'],
+            'lat' => ['nullable', 'numeric'],
+            'lng' => ['nullable', 'numeric'],
             'make_default' => ['sometimes', 'boolean'],
         ]);
     }

@@ -33,6 +33,8 @@ final class UpdateClientAddressUseCase
             floor: $dto->floor,
             apartment: $dto->apartment,
             comment: $dto->comment,
+            lat: $dto->lat,
+            lng: $dto->lng,
         );
 
         if ($dto->makeDefault === true) {

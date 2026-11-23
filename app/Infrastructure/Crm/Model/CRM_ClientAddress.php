@@ -22,6 +22,8 @@ final class CRM_ClientAddress extends Model
         'entrance',
         'floor',
         'comment',
+        'lat',
+        'lng',
         'is_default',
     ];
 
@@ -30,6 +32,8 @@ final class CRM_ClientAddress extends Model
      */
     protected $casts = [
         'client_id' => 'integer',
+        'lat' => 'float',
+        'lng' => 'float',
         'is_default' => 'boolean',
     ];
 }

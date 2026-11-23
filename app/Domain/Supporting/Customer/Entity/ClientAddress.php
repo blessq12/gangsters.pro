@@ -2,7 +2,7 @@
 
 namespace App\Domain\Supporting\Customer\Entity;
 
-/** Адрес как часть агрегата Client (JSON в таблице клиента). */
+/** Адрес как часть агрегата Client. */
 final class ClientAddress
 {
     private function __construct(
@@ -16,6 +16,8 @@ final class ClientAddress
         private ?string $apartment,
         private ?string $comment,
         private bool $isDefault,
+        private ?float $lat = null,
+        private ?float $lng = null,
     ) {}
 
     public static function create(
@@ -28,6 +30,8 @@ final class ClientAddress
         ?string $apartment,
         ?string $comment,
         bool $makeDefault,
+        ?float $lat = null,
+        ?float $lng = null,
     ): self {
         $street = trim($street);
         $house = trim($house);
@@ -35,6 +39,8 @@ final class ClientAddress
         if ($street === '' || $house === '') {
             throw new \InvalidArgumentException('Улица и дом обязательны.');
         }
+
+        self::assertCoordsPair($lat, $lng);
 
         return new self(
             id: bin2hex(random_bytes(8)),
@@ -47,6 +53,8 @@ final class ClientAddress
             apartment: self::normalizeOptional($apartment),
             comment: self::normalizeOptional($comment),
             isDefault: $makeDefault,
+            lat: $lat,
+            lng: $lng,
         );
     }
 
@@ -61,10 +69,14 @@ final class ClientAddress
         ?string $apartment,
         ?string $comment,
         bool $isDefault,
+        ?float $lat = null,
+        ?float $lng = null,
     ): self {
         if ($id === '') {
             throw new \InvalidArgumentException('id адреса обязателен.');
         }
+
+        self::assertCoordsPair($lat, $lng);
 
         return new self(
             id: $id,
@@ -77,6 +89,8 @@ final class ClientAddress
             apartment: $apartment,
             comment: $comment,
             isDefault: $isDefault,
+            lat: $lat,
+            lng: $lng,
         );
     }
 
@@ -130,6 +144,16 @@ final class ClientAddress
         return $this->isDefault;
     }
 
+    public function lat(): ?float
+    {
+        return $this->lat;
+    }
+
+    public function lng(): ?float
+    {
+        return $this->lng;
+    }
+
     public function update(
         ?string $type,
         ?string $title,
@@ -139,6 +163,8 @@ final class ClientAddress
         ?string $floor,
         ?string $apartment,
         ?string $comment,
+        ?float $lat = null,
+        ?float $lng = null,
     ): void {
         $street = trim($street);
         $house = trim($house);
@@ -146,6 +172,8 @@ final class ClientAddress
         if ($street === '' || $house === '') {
             throw new \InvalidArgumentException('Улица и дом обязательны.');
         }
+
+        self::assertCoordsPair($lat, $lng);
 
         $this->type = self::normalizeOptional($type);
         $this->title = self::normalizeOptional($title);
@@ -155,6 +183,8 @@ final class ClientAddress
         $this->floor = self::normalizeOptional($floor);
         $this->apartment = self::normalizeOptional($apartment);
         $this->comment = self::normalizeOptional($comment);
+        $this->lat = $lat;
+        $this->lng = $lng;
     }
 
     public function markDefault(): void
@@ -165,6 +195,17 @@ final class ClientAddress
     public function markNotDefault(): void
     {
         $this->isDefault = false;
+    }
+
+    private static function assertCoordsPair(?float $lat, ?float $lng): void
+    {
+        if (($lat === null) !== ($lng === null)) {
+            throw new \InvalidArgumentException('Координаты адреса должны быть парой lat/lng.');
+        }
+
+        if ($lat !== null && (! is_finite($lat) || ! is_finite((float) $lng))) {
+            throw new \InvalidArgumentException('Некорректные координаты адреса.');
+        }
     }
 
     private static function normalizeOptional(?string $value): ?string

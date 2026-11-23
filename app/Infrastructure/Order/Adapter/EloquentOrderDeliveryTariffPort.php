@@ -63,7 +63,7 @@ final class EloquentOrderDeliveryTariffPort implements OrderDeliveryTariffPort
     }
 
     /**
-     * @return array{id: string, name: string, fee_kopecks: int, is_remote: bool}
+     * @return array{id: string, name: string, fee_kopecks: int, is_remote: bool, geometry: array<string, mixed>}
      */
     private function zoneSnapshot(DeliveryZone $zone): array
     {
@@ -72,6 +72,7 @@ final class EloquentOrderDeliveryTariffPort implements OrderDeliveryTariffPort
             'name' => $zone->name(),
             'fee_kopecks' => $zone->deliveryFeeKopecks(),
             'is_remote' => $zone->isRemote(),
+            'geometry' => $zone->geometry(),
         ];
     }
 }

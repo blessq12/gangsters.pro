@@ -30,6 +30,8 @@ final class ClientMapper
                 apartment: $addressRow->apartment !== null ? (string) $addressRow->apartment : null,
                 comment: $addressRow->comment !== null ? (string) $addressRow->comment : null,
                 isDefault: (bool) $addressRow->is_default,
+                lat: $addressRow->lat !== null ? (float) $addressRow->lat : null,
+                lng: $addressRow->lng !== null ? (float) $addressRow->lng : null,
             );
         }
 
@@ -90,6 +92,8 @@ final class ClientMapper
                 'floor' => $address->floor(),
                 'apartment' => $address->apartment(),
                 'comment' => $address->comment(),
+                'lat' => $address->lat(),
+                'lng' => $address->lng(),
                 'is_default' => $address->isDefault(),
             ]);
         }

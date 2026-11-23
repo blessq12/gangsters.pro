@@ -11,6 +11,7 @@
         "sync:pwa:public": "mkdir -p public/pwa/public && cp apps/public/pwa/manifest.webmanifest apps/public/pwa/sw.js public/pwa/public/",
         "sync:pwa:backoffice": "mkdir -p public/pwa/backoffice && cp apps/backoffice/pwa/manifest.webmanifest apps/backoffice/pwa/sw.js public/pwa/backoffice/",
         "test:backoffice-guard": "node --test apps/backoffice/shell/guard/resolveGuardTarget.test.js",
+        "test:public-formation": "node --test apps/public/modules/checkout/domain/formation/formCheckout.test.js",
         "lint:backoffice-roles": "eslint \"apps/backoffice/roles/**/*.js\" \"apps/backoffice/shell/**/*.js\" \"apps/backoffice/router/**/*.js\" apps/backoffice/app.js"
     },
     "devDependencies": {

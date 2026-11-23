@@ -106,11 +106,16 @@ final class OrderFormation
 
         $result = [];
         foreach ($complements as $complement) {
+            $productId = (int) $complement['product_id'];
+            $quantity = $facts->complementQuantity($productId, $sets);
+            if ($quantity < 1) {
+                continue;
+            }
             $result[] = new OrderLine(
-                productId: (int) $complement['product_id'],
+                productId: $productId,
                 name: (string) $complement['name'],
                 unitPriceKopecks: 0,
-                quantity: $sets,
+                quantity: $quantity,
                 lineType: OrderLineType::Complement,
             );
         }

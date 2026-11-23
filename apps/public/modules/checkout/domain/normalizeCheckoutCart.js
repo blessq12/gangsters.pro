@@ -299,6 +299,7 @@ export function normalizeCheckoutCartBlock(cart) {
                 isSystem,
                 lineKind,
                 productId,
+                kind: payload?.catalog_kind === "set" ? "set" : "product",
                 qty,
                 productSnapshot: {
                     id: productId,

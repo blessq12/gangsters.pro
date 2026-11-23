@@ -3,6 +3,8 @@
 namespace App\Application\Order\Command;
 
 use App\Application\Order\Checkout\CheckoutQuote;
+use App\Application\Order\Checkout\CheckoutRulesChangedException;
+use App\Application\Order\Checkout\CheckoutRulesVersion;
 use App\Application\Order\DTO\CreateOrderDto;
 use App\Application\Order\Presenter\OrderPresenter;
 use App\Application\Shared\DomainEventPublisher;
@@ -27,6 +29,7 @@ final class CreateOrderUseCase
         private readonly DomainEventPublisher $events,
         private readonly TransactionManager $transaction,
         private readonly CheckoutQuote $quotes,
+        private readonly CheckoutRulesVersion $rulesVersion,
     ) {}
 
     /**
@@ -43,6 +46,14 @@ final class CreateOrderUseCase
             throw new \InvalidArgumentException('Заказ с таким client_request_id уже существует.');
         }
 
+        if ($dto->rulesVersion !== null
+            && $dto->rulesVersion !== $this->rulesVersion->forBranch($dto->checkout->branchId)) {
+            throw new CheckoutRulesChangedException(
+                CheckoutRulesChangedException::REASON_RULES_CHANGED,
+                $dto->checkout->branchId,
+            );
+        }
+
         $snapshot = $this->quotes->execute($dto->checkout);
         $cart = is_array($snapshot['cart'] ?? null) ? $snapshot['cart'] : [];
         $clientRaw = is_array($snapshot['client'] ?? null) ? $snapshot['client'] : [];
@@ -52,6 +63,14 @@ final class CreateOrderUseCase
         $totals = is_array($snapshot['totals'] ?? null)
             ? $snapshot['totals']
             : (is_array($cart['totals'] ?? null) ? $cart['totals'] : []);
+
+        if ($dto->expectedTotalKopecks !== null
+            && $dto->expectedTotalKopecks !== (int) ($totals['grand_total'] ?? -1)) {
+            throw new CheckoutRulesChangedException(
+                CheckoutRulesChangedException::REASON_TOTAL_MISMATCH,
+                $dto->checkout->branchId,
+            );
+        }
 
         if (($deliveryRaw['method'] ?? '') === DeliveryMethod::Courier->value && ($deliveryRaw['in_zone'] ?? false) !== true) {
             throw new \InvalidArgumentException('Доставка по этому адресу невозможна.');

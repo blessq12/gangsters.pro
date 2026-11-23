@@ -15,5 +15,7 @@ final readonly class UpdateClientAddressDto
         public ?string $apartment,
         public ?string $comment,
         public ?bool $makeDefault,
+        public ?float $lat = null,
+        public ?float $lng = null,
     ) {}
 }

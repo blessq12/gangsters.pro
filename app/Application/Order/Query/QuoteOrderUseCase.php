@@ -88,6 +88,7 @@ final class QuoteOrderUseCase implements CheckoutQuote
             $at,
             $zoneIsRemote,
             $dto->giftProductId,
+            $dto->complementSelections,
         );
         $cartLines = $this->presentLines($formed['lines'], $cartLines);
         $itemsTotalKopecks = 0;
@@ -384,14 +385,10 @@ final class QuoteOrderUseCase implements CheckoutQuote
         }
 
         $giftLine = null;
-        $complementQty = 0;
         $rollCount = 0;
         foreach ($lines as $line) {
             if ($line->lineType() === OrderLineType::Gift && $giftLine === null) {
                 $giftLine = $line;
-            }
-            if ($line->lineType() === OrderLineType::Complement) {
-                $complementQty = max($complementQty, $line->quantity());
             }
             if ($line->isBillable()) {
                 $rollCount += $facts->rollUnitsPerLineUnit($line->productId()) * $line->quantity();
@@ -420,7 +417,7 @@ final class QuoteOrderUseCase implements CheckoutQuote
             'rolls_per_set' => $rollsPerSet,
             'complement_max_sets' => $maxSets,
             'roll_count' => $rollCount,
-            'complement_entitled' => $complementQty > 0 ? $complementQty : $entitled,
+            'complement_entitled' => $entitled,
             'remaining_roll_count' => max(0, ($entitled + 1) * $rollsPerSet - $rollCount),
             'complement_active' => (bool) ($complement['is_active'] ?? false),
             'delivery_active' => (bool) ($deliveryBenefit['is_active'] ?? false),

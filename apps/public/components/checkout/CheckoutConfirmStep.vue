@@ -14,7 +14,6 @@ import {
     formatServerDeliveryLine,
     formatServerPaymentLine,
 } from "../../modules/checkout/domain/checkoutServerMappers";
-import { refreshOrderDraftPreview } from "../../modules/checkout/application/session";
 import { useCheckoutStore } from "../../modules/checkout/store";
 import { useOrderPreview } from "../../modules/checkout/application/preview";
 import { useCheckoutNavTotal } from "../../modules/checkout/application/preview";
@@ -43,14 +42,14 @@ const {
 } = useCheckoutFlowContext();
 
 const checkoutStore = useCheckoutStore();
-const { serverClient, serverDelivery, serverPayment } = storeToRefs(checkoutStore);
+const { formedClient, formedDelivery, formedPayment } = storeToRefs(checkoutStore);
 const { previewLoading } = useOrderPreview();
 const { navTotalLabel } = useCheckoutNavTotal();
 
 const { formatPrice, formatPhone, isGuestCheckout } = checkoutState;
 
 const deliveryMethodLabel = computed(() => {
-    const method = serverDelivery.value?.method;
+    const method = formedDelivery.value?.method;
     if (method === "courier" || method === "pickup") {
         return CHECKOUT_DELIVERY_METHOD_META[method]?.label ?? method;
     }
@@ -58,39 +57,39 @@ const deliveryMethodLabel = computed(() => {
 });
 
 const isCourierDelivery = computed(
-    () => serverDelivery.value?.method === "courier",
+    () => formedDelivery.value?.method === "courier",
 );
 
 const deliveryAddressLine = computed(() => {
     if (!isCourierDelivery.value) {
         return "";
     }
-    return formatServerDeliveryLine(serverDelivery.value);
+    return formatServerDeliveryLine(formedDelivery.value);
 });
 
 const paymentLine = computed(() =>
-    formatServerPaymentLine(serverPayment.value, formatPrice),
+    formatServerPaymentLine(formedPayment.value, formatPrice),
 );
 
 const clientName = computed(() => {
-    const name = String(serverClient.value?.name || "").trim();
+    const name = String(formedClient.value?.name || "").trim();
     return name || "—";
 });
 
 const clientPhone = computed(() => {
-    const phone = serverClient.value?.phone;
+    const phone = formedClient.value?.phone;
     return phone ? formatPhone(String(phone)) : "—";
 });
 
 const deliveryComment = computed(() => {
-    const comment = serverDelivery.value?.comment;
+    const comment = formedDelivery.value?.comment;
     return typeof comment === "string" && comment.trim() !== ""
         ? comment.trim()
         : null;
 });
 
 const personsLabel = computed(() => {
-    const persons = Number(serverDelivery.value?.persons);
+    const persons = Number(formedDelivery.value?.persons);
     if (!Number.isFinite(persons) || persons < 1) {
         return null;
     }
@@ -99,7 +98,7 @@ const personsLabel = computed(() => {
 
 onMounted(() => {
     if (checkoutStore.hasCartItems) {
-        void refreshOrderDraftPreview(checkoutStore).catch(() => {});
+        void checkoutStore.recompute();
     }
 });
 </script>

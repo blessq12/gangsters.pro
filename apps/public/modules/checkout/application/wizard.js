@@ -134,7 +134,7 @@ export function useCheckoutWizard({
         isGuestCheckout.value = false;
         activeStep.value = firstCheckoutStep();
         deliveryStep.ensureAuthAddressUi();
-        void checkoutIntent.flushClientToServer({
+        void checkoutIntent.recompute(null, {
             clientId: userStore.profile.id,
         });
     }
@@ -309,7 +309,7 @@ export function useCheckoutWizard({
         if (!guestStep.validateGuestStep()) {
             return;
         }
-        await checkoutIntent.flushClientToServer({ isGuest: true });
+        await checkoutIntent.recompute(null, { isGuest: true });
         activeStep.value = "fulfillment";
     }
 

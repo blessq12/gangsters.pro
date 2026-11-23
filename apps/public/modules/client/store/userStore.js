@@ -13,6 +13,7 @@ import {
     fetchClientProfileRequest,
     updateClientProfileRequest,
     addClientAddressRequest,
+    logoutClientRequest,
     deleteClientAddressRequest,
     requestPasswordResetRequest,
 } from "../../../api/client";
@@ -121,6 +122,14 @@ export const useUserStore = defineStore("user", {
             this.persist();
         },
         async clearAuth() {
+            const token = this.token;
+            if (token) {
+                try {
+                    await logoutClientRequest();
+                } catch {
+                    /* revoke best-effort */
+                }
+            }
             this.setToken(null);
             this.profile = emptyClientProfile();
             this.addresses = [];
@@ -308,6 +317,20 @@ export const useUserStore = defineStore("user", {
                     this.selectAddress(data.client.default_address_id);
                 } else {
                     this.ensureSelectedAddress();
+                }
+            } else {
+                const address = data?.address && typeof data.address === "object"
+                    ? data.address
+                    : data;
+                if (address && typeof address === "object" && address.id != null) {
+                    const next = [
+                        ...this.addresses.filter((row) => String(row.id) !== String(address.id)),
+                        address,
+                    ];
+                    this.setAddresses(next);
+                    if (address.is_default || this.selectedAddressId == null) {
+                        this.selectAddress(address.id);
+                    }
                 }
             }
 

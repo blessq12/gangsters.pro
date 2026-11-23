@@ -58,6 +58,8 @@ final class ClientPresenter
             'floor' => $address->floor(),
             'apartment' => $address->apartment(),
             'comment' => $address->comment(),
+            'lat' => $address->lat(),
+            'lng' => $address->lng(),
             'is_default' => $address->isDefault(),
         ];
     }

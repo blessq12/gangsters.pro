@@ -34,6 +34,8 @@ final class AddClientAddressUseCase
             apartment: $dto->apartment,
             comment: $dto->comment,
             makeDefault: $dto->makeDefault || $client->addresses() === [],
+            lat: $dto->lat,
+            lng: $dto->lng,
         );
 
         $client->addAddress($address);

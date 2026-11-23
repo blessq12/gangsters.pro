@@ -9,13 +9,15 @@ function unwrapData(response) {
     return payload ?? {};
 }
 
-/** POST /api/public/order/quote */
-export async function quoteOrderRequest(body) {
-    const response = await http.post("/order/quote", body);
+/** GET /api/public/checkout/context — всё для локального расчёта корзины филиала. */
+export async function fetchCheckoutContextRequest(branchId) {
+    const response = await http.get("/checkout/context", {
+        params: { branch_id: branchId },
+    });
     return unwrapData(response);
 }
 
-/** POST /api/public/order */
+/** POST /api/public/order — слепок намерения клиента. */
 export async function placeOrderRequest(body) {
     const response = await http.post("/order", body);
     return unwrapData(response);

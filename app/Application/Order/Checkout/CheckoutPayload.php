@@ -49,6 +49,7 @@ final class CheckoutPayload
             'payment_method' => $input['payment_method'] ?? $input['paymentMethod'] ?? null,
             'change_from_rubles' => $input['change_from_rubles'] ?? $input['changeFrom'] ?? null,
             'gift_product_id' => $input['gift_product_id'] ?? $input['giftProductId'] ?? null,
+            'complement_selections' => $input['complement_selections'] ?? null,
         ];
     }
 
@@ -93,7 +94,7 @@ final class CheckoutPayload
             paymentMethod: (string) $validated['payment_method'],
             changeFrom: isset($validated['change_from_rubles']) ? (int) $validated['change_from_rubles'] : null,
             giftProductId: $giftProductId,
-            complementSelections: [],
+            complementSelections: self::complementSelections($validated['complement_selections'] ?? null),
             promoCode: null,
         );
     }
@@ -129,6 +130,26 @@ final class CheckoutPayload
             'payment_method' => ['required', 'string', 'in:cash,card_courier,card_online'],
             'change_from_rubles' => ['nullable', 'integer', 'min:0'],
             'gift_product_id' => ['nullable', 'integer', 'min:1'],
+            'complement_selections' => ['nullable', 'array'],
+            'complement_selections.*.product_id' => ['required', 'integer', 'min:1'],
+            'complement_selections.*.quantity' => ['required', 'integer', 'min:0'],
         ];
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    private static function complementSelections(mixed $raw): array
+    {
+        if (! is_array($raw)) {
+            return [];
+        }
+
+        $selections = [];
+        foreach ($raw as $row) {
+            $selections[(int) $row['product_id']] = (int) $row['quantity'];
+        }
+
+        return $selections;
     }
 }

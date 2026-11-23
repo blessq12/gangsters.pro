@@ -29,6 +29,7 @@ export function useSessionLifecycleProcess() {
             }),
             subscribeDomainEvent(DOMAIN_EVENTS.BRANCH_CHANGED, () => {
                 void useCatalogStore().fetchAll();
+                void useCheckoutStore().recompute();
             }),
             subscribeDomainEvent(DOMAIN_EVENTS.ORDER_CREATED, () => {
                 useCheckoutStore().clearAfterCompleted();

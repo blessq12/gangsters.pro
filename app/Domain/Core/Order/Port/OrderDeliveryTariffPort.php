@@ -9,7 +9,8 @@ namespace App\Domain\Core\Order\Port;
  *     id: string,
  *     name: string,
  *     fee_kopecks: int,
- *     is_remote: bool
+ *     is_remote: bool,
+ *     geometry: array<string, mixed>
  * }
  * @phpstan-type OrderDeliveryConfigSnapshot array{
  *     min_order_kopecks: int|null,

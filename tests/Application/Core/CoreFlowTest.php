@@ -10,6 +10,7 @@ use App\Application\Delivery\DTO\SettleStopDto;
 use App\Application\Delivery\DTO\TakeRouteSheetDto;
 use App\Application\Delivery\Presenter\RouteSheetPresenter;
 use App\Application\Order\Checkout\CheckoutQuote;
+use App\Application\Order\Checkout\CheckoutRulesVersion;
 use App\Application\Order\Command\AcceptOrderUseCase;
 use App\Application\Order\Command\CancelOrderUseCase;
 use App\Application\Order\Command\CompletePickupOrderUseCase;
@@ -288,6 +289,13 @@ final class CoreFlowTest extends TestCase
             $this->events,
             $this->transaction,
             $quote,
+            new class implements CheckoutRulesVersion
+            {
+                public function forBranch(int $branchId): string
+                {
+                    return 'v1';
+                }
+            },
         ))->execute(new CreateOrderDto(
             $requestId,
             new QuoteOrderDto(

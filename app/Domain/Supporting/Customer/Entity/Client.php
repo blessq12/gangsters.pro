@@ -276,6 +276,8 @@ final class Client
         ?string $floor,
         ?string $apartment,
         ?string $comment,
+        ?float $lat = null,
+        ?float $lng = null,
     ): ClientAddress {
         foreach ($this->addresses as $address) {
             if ($address->id() !== $addressId) {
@@ -291,6 +293,8 @@ final class Client
                 floor: $floor,
                 apartment: $apartment,
                 comment: $comment,
+                lat: $lat,
+                lng: $lng,
             );
 
             return $address;

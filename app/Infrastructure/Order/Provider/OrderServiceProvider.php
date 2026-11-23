@@ -3,6 +3,8 @@
 namespace App\Infrastructure\Order\Provider;
 
 use App\Application\Order\Checkout\CheckoutQuote;
+use App\Application\Order\Checkout\CheckoutRulesVersion;
+use App\Application\Order\Query\GetCheckoutContextUseCase;
 use App\Application\Order\Query\QuoteOrderUseCase;
 use App\Domain\Core\Order\Port\OrderBranchLookupPort;
 use App\Domain\Core\Order\Port\OrderBranchMenuSnapshotPort;
@@ -35,6 +37,7 @@ final class OrderServiceProvider extends ServiceProvider
         $this->app->bind(OrderRepository::class, EloquentOrderRepository::class);
         $this->app->bind(OrderNoteRepository::class, EloquentOrderNoteRepository::class);
         $this->app->bind(CheckoutQuote::class, QuoteOrderUseCase::class);
+        $this->app->bind(CheckoutRulesVersion::class, GetCheckoutContextUseCase::class);
         $this->app->bind(OrderPaymentSnapshotPort::class, EloquentOrderPaymentSnapshotPort::class);
         $this->app->bind(OrderCatalogSnapshotPort::class, EloquentOrderCatalogSnapshotPort::class);
         $this->app->bind(OrderBranchMenuSnapshotPort::class, EloquentOrderBranchMenuSnapshotPort::class);

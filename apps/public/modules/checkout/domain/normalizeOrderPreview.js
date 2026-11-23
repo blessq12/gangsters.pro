@@ -177,12 +177,12 @@ export function normalizeOrderPreview(orderPreview) {
 }
 
 /**
- * Адаптер ответа POST /api/public/order/quote → формат checkoutStore.applyFromServer.
+ * Адаптер результата formCheckout → формат checkoutStore.applyFormation.
  *
  * @param {object|null|undefined} quote
  * @returns {object|null}
  */
-export function adaptQuoteToCheckoutSnapshot(quote) {
+export function adaptFormationToCheckoutSnapshot(quote) {
     if (!quote || typeof quote !== "object") {
         return null;
     }
@@ -299,7 +299,7 @@ export function adaptQuoteToCheckoutSnapshot(quote) {
     const phone = String(client.phone || "").trim();
     const placeholderPhone = phone === "" || phone.includes("000) 000-00-00");
 
-    if (placeholderPhone && client.kind !== "registered") {
+    if (placeholderPhone && client.kind !== "client") {
         missingBlocks.push("client");
     }
     if (!delivery.method) {
@@ -448,7 +448,6 @@ export function adaptQuoteToCheckoutSnapshot(quote) {
         },
     };
 
-    // Плейсхолдер телефона с quote не затирает локальный guestContact.
     if (!placeholderPhone) {
         snapshot.client = quote.client ?? null;
     }

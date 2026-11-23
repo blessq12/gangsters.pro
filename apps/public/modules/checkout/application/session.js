@@ -5,7 +5,10 @@ import {
 } from "../../../platform/moneyFormat";
 import { useUserStore } from "../../client/store/userStore";
 import { useContentStore } from "../../content/store";
-import { placeOrderRequest, quoteOrderRequest } from "../../../api/order";
+import {
+    fetchCheckoutContextRequest,
+    placeOrderRequest,
+} from "../../../api/order";
 import {
     buildClientPayload,
     buildDeliveryPayload,
@@ -13,9 +16,12 @@ import {
     normalizeDeliveryComment,
     normalizePersonsCount,
 } from "../domain/checkoutServerMappers";
+import { formCheckout } from "../domain/formation/formCheckout.js";
 import { giftCourierWeekdaysLabel } from "../domain/giftWeekdaysLabel";
-import { adaptQuoteToCheckoutSnapshot } from "../domain/normalizeOrderPreview";
+import { adaptFormationToCheckoutSnapshot } from "../domain/normalizeOrderPreview";
 import { useCheckoutStore } from "../store";
+
+const HTTP_CONFLICT = 409;
 
 export const CHECKOUT_LOADING_LABELS = Object.freeze({
     zoneCheck: "Проверяем адрес…",
@@ -160,25 +166,13 @@ export function normalizeCheckoutSessionForms(forms) {
 }
 
 export function buildCheckoutSessionSnapshot(store) {
-    const deliveryInfo = store.deliveryInfo;
-    let deliveryInfoForSession = deliveryInfo;
-
-    if (deliveryInfo?.address && typeof deliveryInfo.address === "object") {
-        const { latitude, longitude, ...addressWithoutCoords } =
-            deliveryInfo.address;
-        deliveryInfoForSession = {
-            ...deliveryInfo,
-            address: addressWithoutCoords,
-        };
-    }
-
     return {
         clientRequestId: store.clientRequestId,
         localCart: store.cartItems.filter((item) => !item.isSystem),
         complementSelections: store.complementSelections,
         complementEntitledSnapshot: store.complementEntitledSnapshot,
         forms: {
-            deliveryInfo: deliveryInfoForSession,
+            deliveryInfo: store.deliveryInfo,
             paymentInfo: store.paymentInfo,
             guestContact: store.guestContact,
             promotions: store.promotions,
@@ -248,8 +242,8 @@ function resolveRegisteredClientId(store, options = {}) {
         return Number(options.clientId);
     }
 
-    if (store.serverClient?.client_id != null) {
-        return Number(store.serverClient.client_id);
+    if (store.formedClient?.client_id != null) {
+        return Number(store.formedClient.client_id);
     }
 
     const userStore = useUserStore();
@@ -272,9 +266,11 @@ function resolveCoords(selectedAddress, store) {
         return { latitude: null, longitude: null };
     }
 
-    const latitude = source.latitude != null ? Number(source.latitude) : null;
+    const latitudeRaw = source.latitude ?? source.lat;
+    const longitudeRaw = source.longitude ?? source.lng;
+    const latitude = latitudeRaw != null && latitudeRaw !== "" ? Number(latitudeRaw) : null;
     const longitude =
-        source.longitude != null ? Number(source.longitude) : null;
+        longitudeRaw != null && longitudeRaw !== "" ? Number(longitudeRaw) : null;
 
     return {
         latitude: Number.isFinite(latitude) ? latitude : null,
@@ -282,7 +278,23 @@ function resolveCoords(selectedAddress, store) {
     };
 }
 
-export function buildQuoteOrderPayload(
+function buildComplementSelections(store) {
+    const known = new Set(
+        (store.context?.promotions?.complements ?? []).map((row) => Number(row.product_id)),
+    );
+
+    return Object.entries(store.complementSelections ?? {})
+        .map(([productId, quantity]) => ({
+            product_id: Number(productId),
+            quantity: Math.max(0, Number(quantity) || 0),
+        }))
+        .filter((row) => known.has(row.product_id));
+}
+
+/**
+ * Слепок намерения клиента (Memento): тот же body считает локальный движок и принимает POST /order.
+ */
+export function buildCheckoutIntent(
     store,
     selectedAddress = null,
     options = {},
@@ -335,55 +347,66 @@ export function buildQuoteOrderPayload(
         latitude: coords.latitude,
         longitude: coords.longitude,
         gift_product_id: giftProductId > 0 ? giftProductId : null,
+        complement_selections: buildComplementSelections(store),
     };
 }
 
-/** @deprecated используй buildQuoteOrderPayload */
-export function buildOrderDraftPayload(
-    store,
-    selectedAddress = null,
-    options = {},
-) {
-    return buildQuoteOrderPayload(store, selectedAddress, options);
+/**
+ * Контекст филиала грузится один раз на филиал; повторно — по 409 или смене филиала.
+ */
+export async function ensureCheckoutContext(store, { force = false } = {}) {
+    const branchId = await useContentStore().ensureSelectedBranchId();
+    if (branchId == null) {
+        return null;
+    }
+    if (!force && store.context && store.context.branch_id === branchId) {
+        return store.context;
+    }
+
+    store.flushing = true;
+    try {
+        store.setContext(await fetchCheckoutContextRequest(branchId));
+        return store.context;
+    } finally {
+        store.flushing = false;
+    }
 }
 
-export async function refreshOrderDraftPreview(
+/**
+ * Локальный пересчёт корзины по правилам из контекста (без сети, кроме первой загрузки контекста).
+ */
+export async function recomputeCheckout(
     store,
     selectedAddress = null,
     options = {},
 ) {
     ensureCheckoutSessionActive(store);
-
-    const requestSeq = ++store.previewRequestSeq;
-    store.flushing = true;
     store.error = null;
-    const previewAddress = effectivePreviewAddress(store, selectedAddress);
 
     try {
-        const quote = await quoteOrderRequest(
-            buildQuoteOrderPayload(store, previewAddress, options),
-        );
-
-        if (requestSeq !== store.previewRequestSeq) {
-            return quote;
-        }
-
-        const snapshot = adaptQuoteToCheckoutSnapshot(quote);
-        store.applyFromServer(snapshot);
-        store.persistSession();
-        return quote;
+        await ensureCheckoutContext(store);
     } catch (e) {
-        const status = e?.response?.status;
         store.error =
-            e?.response?.data?.message || "Не удалось пересчитать оформление.";
-        // 422 — ожидаемая валидация неполного черновика, не логируем и не валим UI.
-        if (status === 422) {
-            return null;
-        }
-        throw e;
-    } finally {
-        store.flushing = false;
+            e?.response?.data?.message || "Не удалось загрузить условия заказа.";
+        return null;
     }
+    if (!store.context) {
+        return null;
+    }
+
+    const previewAddress = effectivePreviewAddress(store, selectedAddress);
+    const intent = buildCheckoutIntent(store, previewAddress, options);
+    const formation = formCheckout(store.context, intent);
+    if (formation === null) {
+        if (store.hasCartItems) {
+            store.resetQuoteState();
+            store.persistSession();
+        }
+        return null;
+    }
+
+    store.applyFormation(adaptFormationToCheckoutSnapshot(formation));
+    return formation;
 }
 
 export async function bootstrapCheckoutStoreSession(store) {
@@ -413,11 +436,7 @@ export async function bootstrapCheckoutStoreSession(store) {
     store.sessionReady = true;
 
     if (store.hasCartItems) {
-        try {
-            await refreshOrderDraftPreview(store);
-        } catch {
-            // preview optional on bootstrap
-        }
+        await recomputeCheckout(store);
     }
 }
 
@@ -489,75 +508,54 @@ export async function setCheckoutPromotionGift(store, productId) {
     store.persistSession();
 
     if (store.hasCartItems) {
-        await refreshOrderDraftPreview(store);
+        await recomputeCheckout(store);
     }
 }
 
-export async function flushClientToServer(store, options = {}) {
-    if (store.hasCartItems) {
-        await refreshOrderDraftPreview(store, null, options);
-    }
+function checkoutError(message) {
+    const error = new Error(message);
+    error.response = { data: { message } };
+    return error;
 }
 
-export async function flushDeliveryToServer(store, selectedAddress = null) {
-    await refreshOrderDraftPreview(store, selectedAddress);
-}
-
-export async function flushPaymentToServer(store) {
-    if (store.hasCartItems) {
-        await refreshOrderDraftPreview(store);
-    }
-}
-
-export async function flushCheckoutToServer(store, options = {}) {
-    const { selectedAddress = null } = options;
-    await refreshOrderDraftPreview(store, selectedAddress);
-}
-
+/**
+ * Command: отправка слепка намерения. Сервер пересчитывает тем же OrderFormation;
+ * на 409 подменяем контекст, пересчитываем корзину и показываем клиенту обновлённый заказ.
+ */
 export async function placeOrderOnServer(store, selectedAddress = null) {
-    store.previewRequestSeq += 1;
+    const previewAddress = effectivePreviewAddress(store, selectedAddress);
+    const formation = await recomputeCheckout(store, previewAddress);
+    if (formation === null) {
+        throw checkoutError(store.error || "Корзина пуста.");
+    }
+
+    if (formation.delivery.method === "courier" && formation.delivery.in_zone !== true) {
+        throw checkoutError(
+            formation.delivery.in_zone === false
+                ? "Доставка по этому адресу невозможна. Укажи адрес ближе или выбери самовывоз."
+                : "Выбери адрес из подсказок — нужны координаты.",
+        );
+    }
+
+    const body = {
+        client_request_id: store.clientRequestId || resolveClientRequestId(),
+        ...buildCheckoutIntent(store, previewAddress),
+        rules_version: store.context.rules_version,
+        expected_total_kopecks: formation.totals.grand_total,
+    };
+
     store.flushing = true;
     store.error = null;
-    const previewAddress = effectivePreviewAddress(store, selectedAddress);
-
     try {
-        const checkout = buildQuoteOrderPayload(store, previewAddress);
-        const quote = await quoteOrderRequest(checkout);
-
-        const delivery = quote?.delivery && typeof quote.delivery === "object"
-            ? quote.delivery
-            : {};
-        const deliveryUnavailable =
-            delivery.method === "courier"
-            && (
-                delivery.delivery_available === false
-                || delivery.in_zone === false
-            );
-
-        if (deliveryUnavailable) {
-            const error = new Error(
-                "Доставка по этому адресу невозможна. Укажи адрес ближе или выбери самовывоз.",
-            );
-            error.response = {
-                data: {
-                    message:
-                        "Доставка по этому адресу невозможна. Укажи адрес ближе или выбери самовывоз.",
-                },
-            };
-            throw error;
-        }
-
-        const body = {
-            client_request_id:
-                store.clientRequestId || resolveClientRequestId(),
-            ...checkout,
-        };
-
         const data = await placeOrderRequest(body);
         store.clearAfterCompleted();
         return { order: data };
     } catch (e) {
-        console.error("placeOrderOnServer", e);
+        const freshContext = e?.response?.data?.context;
+        if (e?.response?.status === HTTP_CONFLICT && freshContext) {
+            store.setContext(freshContext);
+            await recomputeCheckout(store, previewAddress);
+        }
         store.error =
             e?.response?.data?.message || "Не удалось оформить заказ.";
         throw e;
@@ -577,36 +575,6 @@ export function persistCheckoutSession(payload) {
 export async function bootstrapCheckoutSession() {
     const checkoutStore = useCheckoutStore();
     await checkoutStore.bootstrapSession();
-}
-
-/**
- * Debounced вызов preview для шага доставки.
- */
-export function createOrderDraftPreviewScheduler(store) {
-    let timer = null;
-
-    return {
-        schedule(selectedAddress = null, delayMs = 700) {
-            clearTimeout(timer);
-            timer = setTimeout(() => {
-                void refreshOrderDraftPreview(store, selectedAddress).catch(
-                    () => {},
-                );
-            }, delayMs);
-        },
-
-        cancel() {
-            clearTimeout(timer);
-            timer = null;
-        },
-
-        flush(selectedAddress = null) {
-            clearTimeout(timer);
-            timer = null;
-
-            return refreshOrderDraftPreview(store, selectedAddress);
-        },
-    };
 }
 
 function emptyMoneyBenefit() {
