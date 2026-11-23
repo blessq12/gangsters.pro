@@ -140,6 +140,11 @@ export const checkoutDesign = {
         qtyLabel: "px-2 font-bold tabular-nums",
         userLineItem:
             "flex items-center justify-between gap-3 rounded-none bg-app-accent-soft-bg px-3 py-2.5",
+        lineThumb:
+            "h-12 w-12 shrink-0 overflow-hidden rounded-none bg-black/20",
+        lineThumbImg: "h-full w-full object-cover",
+        lineThumbPlaceholder:
+            "flex h-full w-full items-center justify-center text-[10px] font-medium uppercase tracking-wide text-app-muted",
         lineTitle: "truncate text-sm font-semibold text-app-canvas-fg",
         lineSub: "mt-0.5 text-xs text-app-muted",
         lineActions: "flex items-center gap-3",

@@ -2,10 +2,13 @@
 
 namespace App\Infrastructure\Delivery\Repository;
 
-use App\Domain\Delivery\Entity\DeliveryConfiguration;
-use App\Domain\Delivery\Repository\DeliveryConfigurationRepository;
+use App\Domain\Core\Delivery\Tariff\Entity\DeliveryConfiguration;
+use App\Domain\Core\Delivery\Tariff\Repository\DeliveryConfigurationRepository;
+use App\Domain\Core\Delivery\Tariff\ValueObject\DeliveryZone;
 use App\Infrastructure\Delivery\Mapper\DeliveryConfigurationMapper;
-use App\Infrastructure\Delivery\Model\DLV_Configuration;
+use App\Infrastructure\Delivery\Model\DeliveryConfigurationModel;
+use App\Infrastructure\Delivery\Model\DeliveryZoneModel;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 final class EloquentDeliveryConfigurationRepository implements DeliveryConfigurationRepository
@@ -14,11 +17,42 @@ final class EloquentDeliveryConfigurationRepository implements DeliveryConfigura
         private readonly DeliveryConfigurationMapper $mapper,
     ) {}
 
-    public function findPublic(): ?DeliveryConfiguration
+    public function findByBranch(int $branchId): ?DeliveryConfiguration
     {
-        $row = DLV_Configuration::query()->find(self::SINGLETON_ID);
+        $row = DeliveryConfigurationModel::query()
+            ->with(['zones' => static fn ($q) => $q->orderBy('sort_order')->orderBy('id')])
+            ->where('branch_id', $branchId)
+            ->first();
 
-        return $row instanceof DLV_Configuration ? $this->mapper->toDomain($row) : null;
+        return $row instanceof DeliveryConfigurationModel ? $this->mapper->toDomain($row) : null;
+    }
+
+    public function listZonesPageByBranch(int $branchId, int $offset, int $limit): array
+    {
+        $zones = [];
+        $rows = DeliveryZoneModel::query()
+            ->whereIn('configuration_id', $this->configurationIdsByBranch($branchId))
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->offset(max(0, $offset))
+            ->limit(max(1, $limit))
+            ->get();
+
+        foreach ($rows as $row) {
+            $zone = $this->mapper->zoneToDomain($row);
+            if ($zone instanceof DeliveryZone) {
+                $zones[] = $zone;
+            }
+        }
+
+        return $zones;
+    }
+
+    public function countZonesByBranch(int $branchId): int
+    {
+        return (int) DeliveryZoneModel::query()
+            ->whereIn('configuration_id', $this->configurationIdsByBranch($branchId))
+            ->count();
     }
 
     /**
@@ -30,151 +64,120 @@ final class EloquentDeliveryConfigurationRepository implements DeliveryConfigura
      *     geometry?: array<string, mixed>|null
      * }>  $zones
      */
-    public function saveSettings(
+    public function saveSettingsForBranch(
+        int $branchId,
         ?int $minOrderAmountKopecks,
         ?int $averageDeliveryTimeMinutes,
-        ?string $city,
-        ?string $street,
-        ?string $house,
-        ?string $comment,
-        ?string $searchLine,
         array $zones,
     ): DeliveryConfiguration {
-        $row = DLV_Configuration::query()->find(self::SINGLETON_ID);
-        if (! $row instanceof DLV_Configuration) {
-            throw new \InvalidArgumentException('Настройки доставки не найдены.');
-        }
-
-        $stored = is_array($row->delivery_zones) ? $row->delivery_zones : [];
-        $indexed = [];
-        foreach ($stored as $storedZone) {
-            if (! is_array($storedZone)) {
-                continue;
-            }
-            $id = trim((string) ($storedZone['id'] ?? ''));
-            if ($id === '') {
-                continue;
-            }
-            $indexed[$id] = $storedZone;
-        }
-
-        foreach ($zones as $zone) {
-            if (! is_array($zone)) {
-                continue;
+        return DB::transaction(function () use (
+            $branchId,
+            $minOrderAmountKopecks,
+            $averageDeliveryTimeMinutes,
+            $zones,
+        ): DeliveryConfiguration {
+            $row = DeliveryConfigurationModel::query()->where('branch_id', $branchId)->first();
+            if (! $row instanceof DeliveryConfigurationModel) {
+                $row = new DeliveryConfigurationModel();
             }
 
-            $id = trim((string) ($zone['id'] ?? ''));
-            $name = trim((string) ($zone['name'] ?? ''));
-            $feeRubles = max(0, (int) ($zone['fee_rubles'] ?? 0));
-            $isRemote = (bool) ($zone['is_remote'] ?? false);
-            $geometry = $zone['geometry'] ?? null;
-            $hasGeometry = is_array($geometry);
+            $row->fill([
+                'min_order_amount_kopecks' => $minOrderAmountKopecks,
+                'average_delivery_time_minutes' => $averageDeliveryTimeMinutes,
+                'branch_id' => $branchId,
+            ]);
+            $row->save();
 
-            if ($id !== '' && isset($indexed[$id])) {
-                $indexed[$id]['name'] = $name !== '' ? $name : (string) ($indexed[$id]['name'] ?? 'Зона');
-                $indexed[$id]['delivery_fee_kopecks'] = $feeRubles * 100;
-                $indexed[$id]['is_remote'] = $isRemote;
-                if ($hasGeometry) {
-                    $indexed[$id]['geometry'] = $geometry;
+            $existing = DeliveryZoneModel::query()
+                ->where('configuration_id', $row->id)
+                ->get()
+                ->keyBy(static fn (DeliveryZoneModel $zone): string => (string) $zone->zone_key);
+
+            $keptKeys = [];
+            $sortOrder = 0;
+
+            foreach ($zones as $zone) {
+                if (! is_array($zone)) {
+                    continue;
                 }
-                continue;
+
+                $id = trim((string) ($zone['id'] ?? ''));
+                $name = trim((string) ($zone['name'] ?? ''));
+                $feeRubles = max(0, (int) ($zone['fee_rubles'] ?? 0));
+                $isRemote = (bool) ($zone['is_remote'] ?? false);
+                $geometry = $zone['geometry'] ?? null;
+                $hasGeometry = is_array($geometry);
+
+                if ($id !== '' && $existing->has($id)) {
+                    /** @var DeliveryZoneModel $zoneRow */
+                    $zoneRow = $existing->get($id);
+                    $zoneRow->fill([
+                        'name' => $name !== '' ? $name : (string) $zoneRow->name,
+                        'fee_kopecks' => $feeRubles * 100,
+                        'is_remote' => $isRemote,
+                        'sort_order' => $sortOrder,
+                    ]);
+                    if ($hasGeometry) {
+                        $zoneRow->geojson = $geometry;
+                    }
+                    $zoneRow->save();
+                    $keptKeys[$id] = true;
+                    $sortOrder++;
+
+                    continue;
+                }
+
+                if (! $hasGeometry) {
+                    throw new \InvalidArgumentException(
+                        $id === ''
+                            ? 'Для новой зоны нужен geometry (GeoJSON).'
+                            : 'В списке есть зона, которой нет на карте.',
+                    );
+                }
+
+                if ($name === '') {
+                    throw new \InvalidArgumentException('У новой зоны нужно название.');
+                }
+
+                $newId = $id !== '' ? $id : (string) Str::uuid();
+                DeliveryZoneModel::query()->create([
+                    'configuration_id' => (int) $row->id,
+                    'zone_key' => $newId,
+                    'name' => $name,
+                    'fee_kopecks' => $feeRubles * 100,
+                    'is_remote' => $isRemote,
+                    'geojson' => $geometry,
+                    'delivery_product_id' => null,
+                    'sort_order' => $sortOrder,
+                ]);
+                $keptKeys[$newId] = true;
+                $sortOrder++;
             }
 
-            if (! $hasGeometry) {
-                throw new \InvalidArgumentException(
-                    $id === ''
-                        ? 'Для новой зоны нужен geometry (GeoJSON).'
-                        : 'В списке есть зона, которой нет на карте.',
-                );
+            foreach ($existing as $zoneKey => $zoneRow) {
+                if (! isset($keptKeys[$zoneKey])) {
+                    $zoneRow->delete();
+                }
             }
 
-            if ($name === '') {
-                throw new \InvalidArgumentException('У новой зоны нужно название.');
-            }
+            $row->load(['zones' => static fn ($q) => $q->orderBy('sort_order')->orderBy('id')]);
 
-            $newId = $id !== '' ? $id : (string) Str::uuid();
-            $indexed[$newId] = [
-                'id' => $newId,
-                'name' => $name,
-                'delivery_fee_kopecks' => $feeRubles * 100,
-                'is_remote' => $isRemote,
-                'geometry' => $geometry,
-                'delivery_product_id' => null,
-            ];
-        }
-
-        $merged = array_values($indexed);
-
-        $row->fill([
-            'min_order_amount_kopecks' => $minOrderAmountKopecks,
-            'average_delivery_time_minutes' => $averageDeliveryTimeMinutes,
-            'kitchen_city' => $city,
-            'kitchen_street' => $street,
-            'kitchen_house' => $house,
-            'kitchen_address_comment' => $comment,
-            'kitchen_address' => $searchLine,
-            'delivery_zones' => $merged,
-            'delivery_zone_geojson' => $this->buildUnionGeoJson($merged),
-            'delivery_fee_kopecks' => $this->minFeeKopecks($merged),
-        ]);
-        $row->save();
-
-        return $this->mapper->toDomain($row);
+            return $this->mapper->toDomain($row);
+        });
     }
 
     /**
-     * @param  list<array<string, mixed>>  $zones
-     * @return array<string, mixed>|null
+     * Id конфигураций филиала (одна конфигурация на филиал).
+     *
+     * @return list<int>
      */
-    private function buildUnionGeoJson(array $zones): ?array
+    private function configurationIdsByBranch(int $branchId): array
     {
-        $polygons = [];
-        foreach ($zones as $zone) {
-            $geometry = is_array($zone['geometry'] ?? null) ? $zone['geometry'] : null;
-            if ($geometry === null) {
-                continue;
-            }
-            $type = $geometry['type'] ?? null;
-            if ($type === 'Polygon') {
-                $polygons[] = $geometry['coordinates'] ?? [];
-            } elseif ($type === 'MultiPolygon') {
-                foreach ($geometry['coordinates'] ?? [] as $polygonCoordinates) {
-                    $polygons[] = $polygonCoordinates;
-                }
-            }
-        }
-
-        if ($polygons === []) {
-            return null;
-        }
-
-        if (count($polygons) === 1) {
-            return [
-                'type' => 'Polygon',
-                'coordinates' => $polygons[0],
-            ];
-        }
-
-        return [
-            'type' => 'MultiPolygon',
-            'coordinates' => $polygons,
-        ];
-    }
-
-    /**
-     * @param  list<array<string, mixed>>  $zones
-     */
-    private function minFeeKopecks(array $zones): ?int
-    {
-        if ($zones === []) {
-            return null;
-        }
-
-        $fees = [];
-        foreach ($zones as $zone) {
-            $fees[] = max(0, (int) ($zone['delivery_fee_kopecks'] ?? 0));
-        }
-
-        return min($fees);
+        return DeliveryConfigurationModel::query()
+            ->where('branch_id', $branchId)
+            ->pluck('id')
+            ->map(static fn ($id): int => (int) $id)
+            ->values()
+            ->all();
     }
 }

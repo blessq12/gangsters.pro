@@ -2,13 +2,16 @@
 import { computed, ref, watch } from "vue";
 import { useAppDesign } from "../../design/useAppDesign";
 import { useUserStore } from "../../modules/client/store/userStore";
+import { useContentStore } from "../../modules/content/store";
 import { applyApiFieldErrors } from "../../platform/extractApiFieldErrors";
 import { mapApiError } from "../../platform/mapApiError";
 import { useFormFieldErrors } from "../../platform/useFormFieldErrors";
-import FormField from "../ui/FormField.vue";
+import CheckoutAddressFormFields from "../checkout/CheckoutAddressFormFields.vue";
 
 const userStore = useUserStore();
+const contentStore = useContentStore();
 const fieldErrors = useFormFieldErrors();
+const branchCity = computed(() => String(contentStore.branch?.city ?? "").trim());
 
 const cli = useAppDesign().components.client;
 const s = cli.shared;
@@ -21,6 +24,8 @@ const form = ref({
     floor: "",
     apartment: "",
     make_default: false,
+    latitude: null,
+    longitude: null,
 });
 
 const loading = ref(false);
@@ -57,7 +62,34 @@ function resetForm() {
         floor: "",
         apartment: "",
         make_default: false,
+        latitude: null,
+        longitude: null,
     };
+}
+
+function readCoord(value) {
+    if (value === null || value === undefined || value === "") {
+        return null;
+    }
+    const number = Number(value);
+    return Number.isFinite(number) ? number : null;
+}
+
+function applySuggestion(hit) {
+    form.value = {
+        ...form.value,
+        street: String(hit.street ?? ""),
+        house: String(hit.house ?? ""),
+        entrance: String(hit.entrance ?? form.value.entrance ?? ""),
+        floor: String(hit.floor ?? form.value.floor ?? ""),
+        apartment: String(hit.apartment ?? form.value.apartment ?? ""),
+        latitude: readCoord(hit.lat),
+        longitude: readCoord(hit.lng),
+    };
+}
+
+function clearCoords() {
+    form.value = { ...form.value, latitude: null, longitude: null };
 }
 
 async function addAddress() {
@@ -68,6 +100,9 @@ async function addAddress() {
     }
     if (!String(form.value.house || "").trim()) {
         fieldErrors.setFieldError("house", "Укажи дом.");
+    }
+    if (!fieldErrors.hasAny.value && (form.value.latitude === null || form.value.longitude === null)) {
+        fieldErrors.setFieldError("street", "Выбери адрес из подсказок — нужны координаты.");
     }
     if (fieldErrors.hasAny.value) {
         return;
@@ -83,6 +118,8 @@ async function addAddress() {
             floor: form.value.floor || null,
             apartment: form.value.apartment || null,
             make_default: form.value.make_default,
+            lat: form.value.latitude,
+            lng: form.value.longitude,
         });
 
         resetForm();
@@ -216,79 +253,28 @@ function useAddress(id) {
                     :class="ad.addForm"
                     @submit.prevent="addAddress"
                 >
-                    <FormField :error="fieldErrors.get('street')">
-                        <template
-                            #default="{
-                                id,
-                                invalid,
-                                invalidClass,
-                                describedBy,
-                                ariaInvalid,
-                            }"
-                        >
-                            <input
-                                :id="id"
-                                v-model="form.street"
-                                type="text"
-                                placeholder="Улица"
-                                :class="[s.input, invalid && invalidClass]"
-                                :aria-invalid="ariaInvalid"
-                                :aria-describedby="describedBy"
-                            />
-                        </template>
-                    </FormField>
-
-                    <div :class="s.addressDetailsGrid">
-                        <FormField :error="fieldErrors.get('house')">
-                            <template
-                                #default="{
-                                    id,
-                                    invalid,
-                                    invalidClass,
-                                    describedBy,
-                                    ariaInvalid,
-                                }"
-                            >
-                                <input
-                                    :id="id"
-                                    v-model="form.house"
-                                    type="text"
-                                    placeholder="Дом"
-                                    :class="[
-                                        s.inputGrid11,
-                                        'w-full',
-                                        invalid && invalidClass,
-                                    ]"
-                                    :aria-invalid="ariaInvalid"
-                                    :aria-describedby="describedBy"
-                                />
-                            </template>
-                        </FormField>
-
-                        <input
-                            v-model="form.entrance"
-                            type="text"
-                            placeholder="Подъезд"
-                            :class="[s.inputGrid11, 'w-full']"
-                        />
-                        <input
-                            v-model="form.floor"
-                            type="text"
-                            placeholder="Этаж"
-                            :class="[s.inputGrid11, 'w-full']"
-                        />
-                        <input
-                            v-model="form.apartment"
-                            type="text"
-                            placeholder="Квартира"
-                            :class="[s.inputGrid11, 'w-full']"
-                        />
-                    </div>
-
-                    <label :class="s.checkboxRow11">
-                        <AppCheckbox v-model="form.make_default" size="sm" />
-                        <span>Сделать основным адресом</span>
-                    </label>
+                    <CheckoutAddressFormFields
+                        show-default-checkbox
+                        :street="form.street"
+                        :house="form.house"
+                        :entrance="form.entrance"
+                        :floor="form.floor"
+                        :apartment="form.apartment"
+                        :make-default="form.make_default"
+                        :latitude="form.latitude"
+                        :longitude="form.longitude"
+                        :branch-city="branchCity"
+                        :street-error="fieldErrors.get('street')"
+                        :house-error="fieldErrors.get('house')"
+                        @update:street="form.street = $event"
+                        @update:house="form.house = $event"
+                        @update:entrance="form.entrance = $event"
+                        @update:floor="form.floor = $event"
+                        @update:apartment="form.apartment = $event"
+                        @update:make-default="form.make_default = $event"
+                        @apply-suggestion="applySuggestion"
+                        @clear-coords="clearCoords"
+                    />
 
                     <p v-if="fieldErrors.formError" :class="s.error11">
                         {{ fieldErrors.formError }}

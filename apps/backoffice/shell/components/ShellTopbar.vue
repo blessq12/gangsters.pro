@@ -1,11 +1,38 @@
 <script setup>
-import { RouterLink, useRouter } from "vue-router";
+import { computed } from "vue";
+import { useRouter } from "vue-router";
 import { useAuthStore } from "../store/authStore";
 import { useSessionStore } from "../store/sessionStore";
+
+const props = defineProps({
+    collapsed: { type: Boolean, default: false },
+    isDesktop: { type: Boolean, default: true },
+    mobileOpen: { type: Boolean, default: false },
+});
+
+const emit = defineEmits(["toggle-sidebar"]);
 
 const auth = useAuthStore();
 const session = useSessionStore();
 const router = useRouter();
+
+const roleLabels = {
+    owner: "Владелец",
+    administrator: "Администратор",
+    kitchen: "Кухня",
+    courier: "Курьер",
+};
+
+const roleLabel = computed(() => roleLabels[auth.role] ?? "");
+
+const userInitial = computed(() => String(auth.employee?.name ?? "").trim().charAt(0).toUpperCase());
+
+const toggleLabel = computed(() => {
+    if (props.isDesktop) {
+        return props.collapsed ? "Развернуть меню" : "Свернуть меню";
+    }
+    return props.mobileOpen ? "Закрыть меню" : "Открыть меню";
+});
 
 async function logout() {
     await auth.logout();
@@ -15,40 +42,57 @@ async function logout() {
 </script>
 
 <template>
-    <header class="flex h-12 shrink-0 items-center gap-4 border-b border-slate-200 bg-white px-4 text-slate-900">
-        <span class="text-sm font-medium">Backoffice</span>
-        <nav
-            v-if="session.navItems.length > 0"
-            class="flex items-center gap-1 overflow-x-auto"
-            aria-label="Role navigation"
+    <header
+        class="sticky top-0 z-20 flex h-16 shrink-0 items-center gap-4 border-b border-bo-border bg-bo-canvas/80 px-4 backdrop-blur-md sm:px-6 lg:px-10"
+    >
+        <button
+            type="button"
+            class="flex h-10 w-10 items-center justify-center text-bo-muted transition-colors hover:bg-white/[0.06] hover:text-bo-fg"
+            :aria-label="toggleLabel"
+            :title="toggleLabel"
+            @click="emit('toggle-sidebar')"
         >
-            <RouterLink
-                v-for="item in session.navItems"
-                :key="item.routeName"
-                :to="{ name: item.routeName }"
-                class="inline-flex h-9 items-center rounded px-3 text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                active-class="bg-slate-200 font-medium text-slate-900"
+            <span class="flex flex-col gap-[5px]" aria-hidden="true">
+                <span class="block h-px w-5 bg-current" />
+                <span class="block h-px w-5 bg-current" />
+                <span class="block h-px w-3.5 bg-current" />
+            </span>
+        </button>
+
+        <div class="flex min-w-0 items-center gap-2.5 lg:hidden">
+            <img
+                src="/images/load_logo.svg"
+                alt="Gangsters"
+                class="h-8 w-auto shrink-0"
             >
-                {{ item.label }}
-            </RouterLink>
-        </nav>
-        <div class="ml-auto flex items-center gap-3 text-sm text-slate-600">
-            <span v-if="auth.employee">{{ auth.employee.name }}</span>
+            <img
+                src="/images/logo_text.svg"
+                alt=""
+                class="hidden h-4 w-auto min-w-0 min-[400px]:block"
+            >
+        </div>
+
+        <div class="ml-auto flex min-w-0 items-center gap-4">
+            <div v-if="auth.employee" class="flex min-w-0 items-center gap-3">
+                <div class="hidden min-w-0 text-right sm:block">
+                    <p class="truncate text-sm font-medium text-bo-fg">{{ auth.employee.name }}</p>
+                    <p v-if="roleLabel" class="truncate text-xs text-bo-muted">{{ roleLabel }}</p>
+                </div>
+                <span
+                    class="flex h-10 w-10 shrink-0 items-center justify-center bg-bo-elevated text-sm font-semibold text-bo-fg"
+                    aria-hidden="true"
+                >
+                    {{ userInitial }}
+                </span>
+            </div>
+            <span class="hidden h-6 w-px bg-bo-border sm:block" aria-hidden="true" />
             <button
-                v-if="auth.authRequired || auth.employee"
                 type="button"
-                class="underline"
+                class="inline-flex h-10 items-center px-4 text-sm font-medium text-bo-muted transition-colors hover:bg-bo-accent-soft hover:text-bo-fg"
                 @click="logout"
             >
-                Logout
+                Выход
             </button>
-            <RouterLink
-                v-else
-                :to="{ name: 'backoffice-login' }"
-                class="underline"
-            >
-                Login
-            </RouterLink>
         </div>
     </header>
 </template>

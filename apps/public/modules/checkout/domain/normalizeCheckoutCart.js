@@ -299,11 +299,18 @@ export function normalizeCheckoutCartBlock(cart) {
                 isSystem,
                 lineKind,
                 productId,
+                kind: payload?.catalog_kind === "set" ? "set" : "product",
                 qty,
                 productSnapshot: {
                     id: productId,
                     name: row.product_name ? String(row.product_name) : "",
                     price: unitRub,
+                    imageUrl:
+                        typeof row.image_url === "string" && row.image_url.trim() !== ""
+                            ? row.image_url.trim()
+                            : typeof row.productSnapshot?.imageUrl === "string"
+                              ? row.productSnapshot.imageUrl
+                              : null,
                 },
                 pricing: {
                     listUnitPriceKopecks: unitKopecks,

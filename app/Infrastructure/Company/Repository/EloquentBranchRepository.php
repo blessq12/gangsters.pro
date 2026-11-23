@@ -2,10 +2,10 @@
 
 namespace App\Infrastructure\Company\Repository;
 
-use App\Domain\Company\Entity\Branch;
-use App\Domain\Company\Repository\BranchRepository;
+use App\Domain\Supporting\Company\Entity\Branch;
+use App\Domain\Supporting\Company\Repository\BranchRepository;
 use App\Infrastructure\Company\Mapper\BranchMapper;
-use App\Infrastructure\Company\Model\CMP_Branch;
+use App\Infrastructure\Company\Model\BranchModel;
 
 final class EloquentBranchRepository implements BranchRepository
 {
@@ -15,28 +15,45 @@ final class EloquentBranchRepository implements BranchRepository
 
     public function findById(int $id): ?Branch
     {
-        $row = CMP_Branch::query()->find($id);
+        $row = BranchModel::query()->find($id);
 
-        return $row instanceof CMP_Branch ? $this->mapper->toDomain($row) : null;
+        return $row instanceof BranchModel ? $this->mapper->toDomain($row) : null;
     }
 
     public function listByCompany(int $companyId): array
     {
-        return CMP_Branch::query()
+        return BranchModel::query()
             ->where('company_id', $companyId)
             ->orderBy('id')
             ->get()
-            ->map(fn (CMP_Branch $row) => $this->mapper->toDomain($row))
+            ->map(fn (BranchModel $row) => $this->mapper->toDomain($row))
             ->all();
+    }
+
+    public function listPageByCompany(int $companyId, int $offset, int $limit): array
+    {
+        return BranchModel::query()
+            ->where('company_id', $companyId)
+            ->orderBy('id')
+            ->offset(max(0, $offset))
+            ->limit(max(1, $limit))
+            ->get()
+            ->map(fn (BranchModel $row) => $this->mapper->toDomain($row))
+            ->all();
+    }
+
+    public function countByCompany(int $companyId): int
+    {
+        return (int) BranchModel::query()->where('company_id', $companyId)->count();
     }
 
     public function save(Branch $branch): Branch
     {
         if ($branch->id() < 1) {
-            $row = new CMP_Branch();
+            $row = new BranchModel();
         } else {
-            $row = CMP_Branch::query()->find($branch->id());
-            if (! $row instanceof CMP_Branch) {
+            $row = BranchModel::query()->find($branch->id());
+            if (! $row instanceof BranchModel) {
                 throw new \InvalidArgumentException('Филиал не найден.');
             }
         }
@@ -45,6 +62,14 @@ final class EloquentBranchRepository implements BranchRepository
             'company_id' => $branch->companyId(),
             'name' => $branch->name(),
             'is_active' => $branch->isActive(),
+            'schedule' => $branch->schedule(),
+            'city' => $branch->city(),
+            'street' => $branch->street(),
+            'house' => $branch->house(),
+            'comment' => $branch->comment(),
+            'latitude' => $branch->latitude(),
+            'longitude' => $branch->longitude(),
+            'phone' => $branch->phone(),
         ]);
         $row->save();
 

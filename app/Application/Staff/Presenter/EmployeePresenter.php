@@ -2,7 +2,7 @@
 
 namespace App\Application\Staff\Presenter;
 
-use App\Domain\Staff\Entity\Employee;
+use App\Domain\Supporting\Staff\Entity\Employee;
 
 final class EmployeePresenter
 {
@@ -17,6 +17,7 @@ final class EmployeePresenter
             'email' => $employee->email(),
             'phone' => $employee->phone(),
             'role' => $employee->role()->value,
+            'branch_id' => $employee->branchId(),
             'is_active' => $employee->isActive(),
             'created_at' => $employee->createdAt()->format(DATE_ATOM),
         ];

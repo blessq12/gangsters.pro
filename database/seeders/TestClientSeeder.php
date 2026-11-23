@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Infrastructure\Crm\Model\CRM_Client;
+use App\Infrastructure\Client\Model\ClientModel;
 use App\Shared\ValueObject\PhoneNumber;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -20,12 +20,12 @@ class TestClientSeeder extends Seeder
 
         $phone = PhoneNumber::formatFromRaw('+79000000000');
 
-        CRM_Client::query()->updateOrCreate(
+        ClientModel::query()->updateOrCreate(
             ['email' => 'client@gangsters.test'],
             [
                 'name' => 'Тестовый Клиент',
                 'phone' => $phone,
-                'password' => Hash::make('password'),
+                'password_hash' => Hash::make('password'),
                 'consent_personal_data' => true,
                 'consent_marketing' => false,
             ],

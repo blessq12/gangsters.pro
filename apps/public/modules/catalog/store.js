@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { fetchCatalog } from "../../api/catalog";
 import { mapCatalogTreeFromPayload } from "./domain/buildCatalogTree";
 import { mapApiError } from "../../platform/mapApiError";
+import { useContentStore } from "../content/store";
 
 const CATALOG_STORAGE_KEY = "gangsters_catalog";
 const DESKTOP_CARDS_PER_ROW_DEFAULT = 4;
@@ -37,6 +38,9 @@ function normalizeMobileCardViewMode(value) {
         : resolveDefaultMobileCardViewMode();
 }
 
+/** Защита от гонки: результат применяется только у последнего запроса (смена филиала). */
+let catalogFetchSeq = 0;
+
 export const useCatalogStore = defineStore("catalog", {
     state: () => ({
         categories: [],
@@ -52,8 +56,22 @@ export const useCatalogStore = defineStore("catalog", {
         mobileCardViewMode: resolveDefaultMobileCardViewMode(),
     }),
     getters: {
-        flatProducts(state) {
-            return state.categories.flatMap((entry) => entry.products || []);
+        /**
+         * Основное меню = обычные категории + сопутствующие (флаг is_accompanying).
+         * Upsell чекаута по-прежнему читает accompanyingCategories отдельно.
+         */
+        menuCategoryEntries(state) {
+            const main = Array.isArray(state.categories) ? state.categories : [];
+            const accompanying = Array.isArray(state.accompanyingCategories)
+                ? state.accompanyingCategories
+                : [];
+            return [...main, ...accompanying].sort(
+                (a, b) =>
+                    (a?.category?.sort_order ?? 0) - (b?.category?.sort_order ?? 0),
+            );
+        },
+        flatProducts() {
+            return this.menuCategoryEntries.flatMap((entry) => entry.products || []);
         },
         filteredProducts(state) {
             if (state.selectedCategoryId == null || state.selectedCategoryId === "") {
@@ -61,7 +79,7 @@ export const useCatalogStore = defineStore("catalog", {
             }
 
             const selected = state.selectedCategoryId;
-            const entry = state.categories.find((c) => {
+            const entry = this.menuCategoryEntries.find((c) => {
                 const id = c.category.id;
                 const slug = c.category.slug;
                 return (
@@ -76,10 +94,10 @@ export const useCatalogStore = defineStore("catalog", {
             return entry.products || [];
         },
         /**
-         * Лента меню: все категории; фильтр только по тегу.
+         * Лента меню: все категории (включая сопутствующие); фильтр только по тегу.
          * Активная категория бара — scroll-spy, не фильтр ленты.
          */
-        menuSections(state) {
+        menuSections() {
             const selectedTag = this.selectedTag;
             const byTag = (product) => {
                 if (!selectedTag) return true;
@@ -87,14 +105,15 @@ export const useCatalogStore = defineStore("catalog", {
                 return tags.some((tag) => String(tag?.code) === String(selectedTag));
             };
 
+            const entries = this.menuCategoryEntries;
             const orderMap = new Map(
-                state.categories.map((entry, index) => [
+                entries.map((entry, index) => [
                     entry?.category?.id ?? entry?.category?.slug ?? null,
                     index,
                 ]),
             );
 
-            return state.categories
+            return entries
                 .map((entry) => {
                     const base = Array.isArray(entry?.products) ? entry.products : [];
                     const products = base.filter((p) => byTag(p));
@@ -110,8 +129,8 @@ export const useCatalogStore = defineStore("catalog", {
         menuProducts() {
             return this.menuSections.flatMap((section) => section.products);
         },
-        categoryTabs(state) {
-            return state.categories.map((entry) => ({
+        categoryTabs() {
+            return this.menuCategoryEntries.map((entry) => ({
                 id: entry.category.id,
                 name: entry.category.name,
                 uri: entry.category.slug,
@@ -212,7 +231,7 @@ export const useCatalogStore = defineStore("catalog", {
          * они больше не существуют (иначе menuProducts пустой при живых данных).
          */
         sanitizePersistedFiltersAfterLoad() {
-            const categories = this.categories;
+            const categories = this.menuCategoryEntries;
             if (!Array.isArray(categories) || categories.length === 0) {
                 return;
             }
@@ -253,11 +272,21 @@ export const useCatalogStore = defineStore("catalog", {
         },
 
         async fetchAll() {
+            const seq = ++catalogFetchSeq;
             this.loading = true;
             this.error = null;
 
             try {
-                const response = { data: await fetchCatalog() };
+                const branchId =
+                    await useContentStore().ensureSelectedBranchId();
+                if (branchId == null) {
+                    throw new Error("Нет доступных филиалов.");
+                }
+
+                const response = { data: await fetchCatalog(branchId) };
+                if (seq !== catalogFetchSeq) {
+                    return;
+                }
                 const tree = mapCatalogTreeFromPayload(response?.data || {});
                 this.categories = Array.isArray(tree?.categories)
                     ? tree.categories
@@ -274,13 +303,18 @@ export const useCatalogStore = defineStore("catalog", {
 
                 this.hasLoaded = true;
             } catch (e) {
+                if (seq !== catalogFetchSeq) {
+                    return;
+                }
                 console.error("Failed to fetch catalog", e);
                 this.error = mapApiError(
                     e,
                     "Не удалось загрузить каталог. Попробуйте обновить страницу.",
                 );
             } finally {
-                this.loading = false;
+                if (seq === catalogFetchSeq) {
+                    this.loading = false;
+                }
             }
         },
     },

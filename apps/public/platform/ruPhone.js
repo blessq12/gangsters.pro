@@ -3,19 +3,14 @@
  * Канон: +7 (XXX) XXX-XX-XX (согласовано с App\Domain\Client\ValueObject\PhoneNumber).
  */
 
-/**
- * Первая цифра после «+7 (» не может быть 7 или 8 — литерал +7 уже в маске.
- * Паттерн: цифры 0–6 и 9 (без 7 и 8).
- */
-export const RU_PHONE_MASKA_TOKENS_ATTR = "F:[01234569]";
+/** Кастомные токены не нужны: канон `+7 (###) ###-##-##`. */
+export const RU_PHONE_MASKA_TOKENS_ATTR = "";
 
 /** Те же токены для `new Mask({ tokens })` в JS. */
-export const RU_PHONE_MASKA_TOKENS = Object.freeze({
-    F: { pattern: /[01234569]/ },
-});
+export const RU_PHONE_MASKA_TOKENS = Object.freeze({});
 
 /** Маска Maska для шаблона `data-maska` / опций Mask. */
-export const RU_PHONE_MASKA_PATTERN = "+7 (F##) ###-##-##";
+export const RU_PHONE_MASKA_PATTERN = "+7 (###) ###-##-##";
 
 /** @type {Readonly<{ required: string; incomplete: string }>} */
 export const RU_PHONE_MESSAGES = Object.freeze({

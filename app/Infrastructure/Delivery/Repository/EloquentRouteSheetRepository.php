@@ -2,33 +2,38 @@
 
 namespace App\Infrastructure\Delivery\Repository;
 
-use App\Domain\Delivery\Entity\RouteSheet;
-use App\Domain\Delivery\Entity\RouteStop;
-use App\Domain\Delivery\Repository\RouteSheetRepository;
-use App\Infrastructure\Delivery\Model\DLV_RouteSheet;
-use App\Infrastructure\Delivery\Model\DLV_RouteStop;
-use DateTimeImmutable;
+use App\Domain\Core\Delivery\Routing\Entity\RouteSheet;
+use App\Domain\Core\Delivery\Routing\Repository\RouteSheetRepository;
+use App\Infrastructure\Delivery\Mapper\RouteSheetMapper;
+use App\Infrastructure\Delivery\Model\RouteSheetModel;
+use App\Infrastructure\Delivery\Model\RouteStopModel;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 final class EloquentRouteSheetRepository implements RouteSheetRepository
 {
+    public function __construct(
+        private readonly RouteSheetMapper $mapper,
+    ) {}
+
     public function findById(int $id): ?RouteSheet
     {
-        $row = DLV_RouteSheet::query()->with('stops')->find($id);
+        $row = RouteSheetModel::query()->with('stops')->find($id);
 
-        return $row instanceof DLV_RouteSheet ? $this->toDomain($row) : null;
+        return $row instanceof RouteSheetModel ? $this->mapper->toDomain($row) : null;
     }
 
     public function findOpenByOrderId(int $orderId): ?RouteSheet
     {
-        $stop = DLV_RouteStop::query()
+        $stop = RouteStopModel::query()
             ->where('order_id', $orderId)
-            ->where('outcome', 'pending')
+            ->where('status', 'pending')
             ->whereHas('sheet', function ($query): void {
                 $query->whereIn('status', ['released', 'in_delivery']);
             })
             ->first();
 
-        if (! $stop instanceof DLV_RouteStop) {
+        if (! $stop instanceof RouteStopModel) {
             return null;
         }
 
@@ -37,63 +42,101 @@ final class EloquentRouteSheetRepository implements RouteSheetRepository
 
     public function listActive(): array
     {
-        /** @var \Illuminate\Database\Eloquent\Collection<int, DLV_RouteSheet> $rows */
-        $rows = DLV_RouteSheet::query()
-            ->with('stops')
-            ->whereIn('status', ['released', 'in_delivery'])
-            ->orderByDesc('id')
-            ->get();
+        return $this->listActivePage(0, max(1, $this->countActive()));
+    }
 
-        return $rows
-            ->map(fn (DLV_RouteSheet $row): RouteSheet => $this->toDomain($row))
+    public function listActivePage(int $offset, int $limit): array
+    {
+        return $this->mapPage($this->activeQuery(), $offset, $limit);
+    }
+
+    public function countActive(): int
+    {
+        return (int) $this->activeQuery()->count();
+    }
+
+    public function listActivePageByBranch(int $branchId, int $offset, int $limit): array
+    {
+        return $this->mapPage($this->activeQuery()->where('branch_id', $branchId), $offset, $limit);
+    }
+
+    public function countActiveByBranch(int $branchId): int
+    {
+        return (int) $this->activeQuery()->where('branch_id', $branchId)->count();
+    }
+
+    public function countOpen(?int $branchId = null): int
+    {
+        $query = $this->activeQuery();
+        if ($branchId !== null && $branchId > 0) {
+            $query->where('branch_id', $branchId);
+        }
+
+        return (int) $query->count();
+    }
+
+    public function listVisibleToCourierPage(int $courierId, int $offset, int $limit): array
+    {
+        return $this->mapPage($this->courierQuery($courierId), $offset, $limit);
+    }
+
+    public function countVisibleToCourier(int $courierId): int
+    {
+        return (int) $this->courierQuery($courierId)->count();
+    }
+
+    /**
+     * @return Builder<RouteSheetModel>
+     */
+    private function activeQuery(): Builder
+    {
+        return RouteSheetModel::query()
+            ->whereIn('status', ['released', 'in_delivery'])
+            ->orderByDesc('id');
+    }
+
+    /**
+     * @return Builder<RouteSheetModel>
+     */
+    private function courierQuery(int $courierId): Builder
+    {
+        return $this->activeQuery()->where('courier_id', $courierId);
+    }
+
+    /**
+     * @param  Builder<RouteSheetModel>  $query
+     * @return list<RouteSheet>
+     */
+    private function mapPage(Builder $query, int $offset, int $limit): array
+    {
+        return $query
+            ->with('stops')
+            ->offset(max(0, $offset))
+            ->limit(max(1, $limit))
+            ->get()
+            ->map(fn (RouteSheetModel $row): RouteSheet => $this->mapper->toDomain($row))
             ->all();
     }
 
     public function save(RouteSheet $sheet): void
     {
-        if (! $sheet->hasId()) {
-            $row = DLV_RouteSheet::query()->create([
-                'status' => $sheet->status(),
-                'courier_id' => $sheet->courierId(),
-                'created_at' => new DateTimeImmutable(),
-            ]);
-            $sheet->assignId((int) $row->id);
-        } else {
-            DLV_RouteSheet::query()->whereKey($sheet->id())->update([
-                'status' => $sheet->status(),
-                'courier_id' => $sheet->courierId(),
-            ]);
-            DLV_RouteStop::query()->where('route_sheet_id', $sheet->id())->delete();
-        }
+        DB::transaction(function () use ($sheet): void {
+            $payload = $this->mapper->toPersistence($sheet);
 
-        foreach ($sheet->stops() as $stop) {
-            DLV_RouteStop::query()->create([
-                'route_sheet_id' => $sheet->id(),
-                'order_id' => $stop->orderId(),
-                'position' => $stop->position(),
-                'outcome' => $stop->outcome(),
-                'reason' => $stop->reason(),
-            ]);
-        }
-    }
+            if (! $sheet->hasId()) {
+                $row = RouteSheetModel::query()->create($payload['sheet']);
+                $sheet->assignId((int) $row->id);
+            } else {
+                RouteSheetModel::query()->whereKey($sheet->id())->update($payload['sheet']);
+                RouteStopModel::query()->where('route_sheet_id', $sheet->id())->delete();
+            }
 
-    private function toDomain(DLV_RouteSheet $row): RouteSheet
-    {
-        $stops = [];
-        foreach ($row->stops as $stop) {
-            $stops[] = new RouteStop(
-                (int) $stop->order_id,
-                (int) $stop->position,
-                (string) $stop->outcome,
-                (string) $stop->reason,
-            );
-        }
-
-        return RouteSheet::restore(
-            (int) $row->id,
-            (string) $row->status,
-            $stops,
-            $row->courier_id !== null ? (int) $row->courier_id : null,
-        );
+            foreach ($payload['stops'] as $stop) {
+                RouteStopModel::query()->create([
+                    ...$stop,
+                    'route_sheet_id' => $sheet->id(),
+                ]);
+            }
+        });
     }
 }

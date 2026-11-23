@@ -2,29 +2,20 @@
 
 namespace App\Infrastructure\Delivery\Mapper;
 
-use App\Domain\Delivery\Entity\DeliveryConfiguration;
-use App\Domain\Delivery\ValueObject\DeliveryZone;
-use App\Domain\Delivery\ValueObject\KitchenAddress;
-use App\Infrastructure\Delivery\Model\DLV_Configuration;
-use Illuminate\Support\Str;
+use App\Domain\Core\Delivery\Tariff\Entity\DeliveryConfiguration;
+use App\Domain\Core\Delivery\Tariff\ValueObject\DeliveryZone;
+use App\Infrastructure\Delivery\Model\DeliveryConfigurationModel;
+use App\Infrastructure\Delivery\Model\DeliveryZoneModel;
 
 final class DeliveryConfigurationMapper
 {
-    public function toDomain(DLV_Configuration $row): DeliveryConfiguration
+    public function toDomain(DeliveryConfigurationModel $row): DeliveryConfiguration
     {
         return new DeliveryConfiguration(
             id: (int) $row->id,
             minOrderAmountKopecks: $this->nullableInt($row->min_order_amount_kopecks),
             averageDeliveryTimeMinutes: $this->nullableInt($row->average_delivery_time_minutes),
-            kitchenAddress: new KitchenAddress(
-                city: $this->nullableString($row->kitchen_city),
-                street: $this->nullableString($row->kitchen_street),
-                house: $this->nullableString($row->kitchen_house),
-                comment: $this->nullableString($row->kitchen_address_comment),
-                searchLine: $this->nullableString($row->kitchen_address),
-            ),
-            kitchenLatitude: $this->nullableFloat($row->kitchen_latitude),
-            kitchenLongitude: $this->nullableFloat($row->kitchen_longitude),
+            branchId: $this->nullableInt($row->branch_id),
             zones: $this->resolveZones($row),
         );
     }
@@ -32,70 +23,53 @@ final class DeliveryConfigurationMapper
     /**
      * @return list<DeliveryZone>
      */
-    private function resolveZones(DLV_Configuration $row): array
+    private function resolveZones(DeliveryConfigurationModel $row): array
     {
-        $rawZones = $row->delivery_zones;
-        if (is_array($rawZones) && $rawZones !== []) {
-            $zones = [];
-            foreach ($rawZones as $rawZone) {
-                $zone = $this->mapZone($rawZone);
-                if ($zone instanceof DeliveryZone) {
-                    $zones[] = $zone;
-                }
+        $zones = [];
+
+        $zoneRows = $row->relationLoaded('zones')
+            ? $row->zones
+            : DeliveryZoneModel::query()
+                ->where('configuration_id', $row->id)
+                ->orderBy('sort_order')
+                ->orderBy('id')
+                ->get();
+
+        foreach ($zoneRows as $zoneRow) {
+            if (! $zoneRow instanceof DeliveryZoneModel) {
+                continue;
             }
 
-            if ($zones !== []) {
-                return $zones;
+            $zone = $this->mapZoneRow($zoneRow);
+            if ($zone instanceof DeliveryZone) {
+                $zones[] = $zone;
             }
         }
 
-        // Legacy fallback: один полигон + скалярный тариф.
-        $geometry = $this->resolveGeoJson($row->delivery_zone_geojson);
-        if ($geometry === null) {
-            return [];
-        }
-
-        return [
-            new DeliveryZone(
-                id: (string) Str::uuid(),
-                name: 'Основная',
-                deliveryFeeKopecks: max(0, (int) ($row->delivery_fee_kopecks ?? 0)),
-                isRemote: false,
-                geometry: $geometry,
-            ),
-        ];
+        return $zones;
     }
 
-    private function mapZone(mixed $raw): ?DeliveryZone
+    public function zoneToDomain(DeliveryZoneModel $row): ?DeliveryZone
     {
-        if (! is_array($raw)) {
-            return null;
-        }
+        return $this->mapZoneRow($row);
+    }
 
-        $geometry = $this->resolveGeoJson($raw['geometry'] ?? null);
+    private function mapZoneRow(DeliveryZoneModel $row): ?DeliveryZone
+    {
+        $geometry = $this->resolveGeoJson($row->geojson);
         if ($geometry === null) {
             return null;
         }
 
-        $id = trim((string) ($raw['id'] ?? ''));
-        if ($id === '') {
-            $id = (string) Str::uuid();
-        }
-
-        $name = trim((string) ($raw['name'] ?? ''));
-        if ($name === '') {
-            $name = 'Зона';
-        }
-
-        $deliveryProductId = isset($raw['delivery_product_id'])
-            ? (int) $raw['delivery_product_id']
+        $deliveryProductId = $row->delivery_product_id !== null
+            ? (int) $row->delivery_product_id
             : 0;
 
         return new DeliveryZone(
-            id: $id,
-            name: $name,
-            deliveryFeeKopecks: max(0, (int) ($raw['delivery_fee_kopecks'] ?? 0)),
-            isRemote: (bool) ($raw['is_remote'] ?? false),
+            id: (string) $row->zone_key,
+            name: (string) $row->name,
+            deliveryFeeKopecks: max(0, (int) $row->fee_kopecks),
+            isRemote: (bool) $row->is_remote,
             geometry: $geometry,
             deliveryProductId: $deliveryProductId > 0 ? $deliveryProductId : null,
         );
@@ -107,27 +81,9 @@ final class DeliveryConfigurationMapper
             return null;
         }
 
-        return (int) $value;
-    }
+        $int = (int) $value;
 
-    private function nullableFloat(mixed $value): ?float
-    {
-        if ($value === null || $value === '') {
-            return null;
-        }
-
-        return (float) $value;
-    }
-
-    private function nullableString(mixed $value): ?string
-    {
-        if ($value === null) {
-            return null;
-        }
-
-        $trimmed = trim((string) $value);
-
-        return $trimmed !== '' ? $trimmed : null;
+        return $int > 0 ? $int : null;
     }
 
     /**

@@ -15,9 +15,9 @@ import {
     CHECKOUT_PERSONS_MIN,
 } from "../../modules/checkout/domain/checkoutServerMappers";
 import { useContentStore } from "../../modules/content/store";
-import { kitchenAddressLabelOrFallback } from "../../modules/content/application/company";
+import { branchAddressLabelOrFallback } from "../../modules/content/application/company";
 import FormField from "../ui/FormField.vue";
-import ContactsKitchenMap from "../contacts/ContactsKitchenMap.vue";
+import ContactsBranchMap from "../contacts/ContactsBranchMap.vue";
 import CheckoutAddressFormFields from "./CheckoutAddressFormFields.vue";
 import CheckoutAuthAddressSection from "./CheckoutAuthAddressSection.vue";
 import CheckoutDeliveryZoneStatus from "./CheckoutDeliveryZoneStatus.vue";
@@ -40,12 +40,16 @@ const {
     setDeliveryPersons,
     guestAddressDraft,
     patchGuestAddressDraft,
+    applyGuestSuggestion,
+    clearGuestCoords,
     scheduleDeliveryPreview,
     setPaymentMethod,
 } = useCheckoutFlowContext();
 const { totals } = useOrderPreview();
 
-const { deliveryFacts } = storeToRefs(useContentStore());
+const contentStore = useContentStore();
+const { deliveryFacts } = storeToRefs(contentStore);
+const branchCity = computed(() => String(contentStore.branch?.city ?? "").trim());
 
 onMounted(() => {
     scheduleDeliveryPreview();
@@ -68,8 +72,8 @@ const isPickup = computed(
     () => checkoutIntent.deliveryInfo.method === "pickup",
 );
 
-const kitchenAddressLabel = computed(() =>
-    kitchenAddressLabelOrFallback(deliveryFacts.value),
+const branchAddressLabel = computed(() =>
+    branchAddressLabelOrFallback(deliveryFacts.value),
 );
 
 const paymentOptions = computed(() =>
@@ -152,6 +156,9 @@ const canIncrementPersons = computed(
                 :entrance="guestAddressDraft.entrance"
                 :floor="guestAddressDraft.floor"
                 :apartment="guestAddressDraft.apartment"
+                :latitude="guestAddressDraft.latitude"
+                :longitude="guestAddressDraft.longitude"
+                :branch-city="branchCity"
                 :street-error="deliveryFieldErrors.get('street')"
                 :house-error="deliveryFieldErrors.get('house')"
                 @update:street="patchGuestAddressDraft({ street: $event })"
@@ -159,6 +166,8 @@ const canIncrementPersons = computed(
                 @update:entrance="patchGuestAddressDraft({ entrance: $event })"
                 @update:floor="patchGuestAddressDraft({ floor: $event })"
                 @update:apartment="patchGuestAddressDraft({ apartment: $event })"
+                @apply-suggestion="applyGuestSuggestion"
+                @clear-coords="clearGuestCoords"
             />
         </CheckoutSection>
 
@@ -173,9 +182,9 @@ const canIncrementPersons = computed(
             title="Адрес кухни"
         >
             <p :class="s.stepHint">
-                {{ kitchenAddressLabel }}
+                {{ branchAddressLabel }}
             </p>
-            <ContactsKitchenMap />
+            <ContactsBranchMap />
         </CheckoutSection>
 
         <CheckoutSection title="Количество персон">

@@ -5,12 +5,12 @@ const module = {
     role: "administrator",
     home: "administrator-live-orders",
     nav: [
-        { label: "Live orders", routeName: "administrator-live-orders", order: 1 },
-        { label: "Manual order", routeName: "administrator-manual-order", order: 2 },
-        { label: "Logistics", routeName: "administrator-logistics", order: 3 },
-        { label: "Clients", routeName: "administrator-clients", order: 4 },
-        { label: "Production", routeName: "administrator-production", order: 5 },
-        { label: "Catalog", routeName: "administrator-catalog", order: 6 },
+        { label: "Дашборд", routeName: "administrator-dashboard", icon: "dashboard", order: 0 },
+        { label: "Заказы", routeName: "administrator-live-orders", icon: "live", order: 1 },
+        { label: "Маршрутные листы", routeName: "administrator-logistics", icon: "logistics", order: 2 },
+        { label: "Клиенты", routeName: "administrator-clients", icon: "clients", order: 3 },
+        { label: "Тикеты", routeName: "administrator-production", icon: "production", order: 4 },
+        { label: "Каталог", routeName: "administrator-catalog", icon: "catalog", order: 5 },
     ],
     routes: [
         {
@@ -20,9 +20,21 @@ const module = {
             children: [
                 { path: "", redirect: { name: "administrator-live-orders" } },
                 {
+                    path: "dashboard",
+                    name: "administrator-dashboard",
+                    component: () => import("./screens/DashboardScreen.vue"),
+                    meta: { role: "administrator" },
+                },
+                {
                     path: "live-orders",
                     name: "administrator-live-orders",
                     component: () => import("./screens/LiveOrdersScreen.vue"),
+                    meta: { role: "administrator" },
+                },
+                {
+                    path: "orders/:id",
+                    name: "administrator-order",
+                    component: () => import("./screens/OrderCardScreen.vue"),
                     meta: { role: "administrator" },
                 },
                 {
@@ -35,6 +47,12 @@ const module = {
                     path: "logistics",
                     name: "administrator-logistics",
                     component: () => import("./screens/LogisticsScreen.vue"),
+                    meta: { role: "administrator" },
+                },
+                {
+                    path: "logistics/assemble",
+                    name: "administrator-logistics-assemble",
+                    component: () => import("./screens/RouteSheetAssembleScreen.vue"),
                     meta: { role: "administrator" },
                 },
                 {

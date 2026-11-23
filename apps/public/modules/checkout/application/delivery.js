@@ -1,4 +1,4 @@
-import { computed, onBeforeUnmount, ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useFormFieldErrors } from "../../../platform/useFormFieldErrors";
 import { applyApiFieldErrors } from "../../../platform/extractApiFieldErrors";
@@ -9,7 +9,7 @@ import { useCheckoutFlowContext } from "./flowContext";
 import { useOrderPreview } from "./preview";
 import {
     CHECKOUT_LOADING_LABELS,
-    createOrderDraftPreviewScheduler,
+    recomputeCheckout,
 } from "./session";
 import {
     normalizeDeliveryComment,
@@ -24,7 +24,17 @@ function createEmptyGuestAddressDraft() {
         entrance: "",
         floor: "",
         apartment: "",
+        latitude: null,
+        longitude: null,
     };
+}
+
+function readCoord(value) {
+    if (value === null || value === undefined || value === "") {
+        return null;
+    }
+    const number = Number(value);
+    return Number.isFinite(number) ? number : null;
 }
 
 function readGuestAddressDraftFromStore(checkoutIntent) {
@@ -39,7 +49,15 @@ function readGuestAddressDraftFromStore(checkoutIntent) {
         entrance: address.entrance ?? "",
         floor: address.floor ?? "",
         apartment: address.apartment ?? "",
+        latitude: readCoord(address.latitude ?? address.lat),
+        longitude: readCoord(address.longitude ?? address.lng),
     };
+}
+
+function addressHasCoords(address) {
+    const lat = readCoord(address?.latitude ?? address?.lat);
+    const lng = readCoord(address?.longitude ?? address?.lng);
+    return lat !== null && lng !== null;
 }
 
 export function useCheckoutDeliveryStep({
@@ -49,7 +67,6 @@ export function useCheckoutDeliveryStep({
     isAuthenticated,
 }) {
     const addressSelection = useClientAddressSelectionModel();
-    const previewScheduler = createOrderDraftPreviewScheduler(checkoutIntent);
     const deliveryFieldErrors = useFormFieldErrors();
     const newAddressFieldErrors = useFormFieldErrors();
 
@@ -61,6 +78,8 @@ export function useCheckoutDeliveryStep({
         apartment: "",
         comment: "",
         make_default: true,
+        latitude: null,
+        longitude: null,
     });
     const newAddressLoading = ref(false);
     const isNewAddressOpen = ref(false);
@@ -83,43 +102,15 @@ export function useCheckoutDeliveryStep({
         return addressSelection.selectedAddress.value ?? null;
     }
 
-    function canPreviewDelivery() {
-        const method = checkoutIntent.deliveryInfo.method;
-        if (!method) {
-            return false;
-        }
-
-        if (method === "pickup") {
-            return true;
+    function scheduleDeliveryPreview() {
+        if (!checkoutIntent.deliveryInfo.method) {
+            return;
         }
 
         if (isGuestCheckout.value) {
-            const address = guestAddressDraft.value;
-            return (
-                String(address?.street || "").trim() !== ""
-                && String(address?.house || "").trim() !== ""
-            );
+            syncGuestAddressDraftToStore();
         }
-
-        return Boolean(addressSelection.selectedAddress.value);
-    }
-
-    function scheduleDeliveryPreview() {
-        if (!canPreviewDelivery()) {
-            return;
-        }
-
-        syncGuestAddressDraftToStore();
-        previewScheduler.schedule(resolvePreviewAddress());
-    }
-
-    function scheduleZonePreview() {
-        if (!canPreviewDelivery()) {
-            return;
-        }
-
-        syncGuestAddressDraftToStore();
-        previewScheduler.schedule(resolvePreviewAddress());
+        void recomputeCheckout(checkoutIntent, resolvePreviewAddress());
     }
 
     function validateDeliveryStep(selectedAddress) {
@@ -146,6 +137,15 @@ export function useCheckoutDeliveryStep({
             if (!String(address?.house || "").trim()) {
                 deliveryFieldErrors.setFieldError("house", "Укажи дом.");
             }
+            if (
+                !deliveryFieldErrors.hasAny.value
+                && !addressHasCoords(address)
+            ) {
+                deliveryFieldErrors.setFieldError(
+                    "street",
+                    "Выбери адрес из подсказок — нужны координаты.",
+                );
+            }
             return !deliveryFieldErrors.hasAny.value;
         }
 
@@ -157,6 +157,15 @@ export function useCheckoutDeliveryStep({
             if (!String(newAddressForm.value.house || "").trim()) {
                 newAddressFieldErrors.setFieldError("house", "Укажи дом.");
             }
+            if (
+                !newAddressFieldErrors.hasAny.value
+                && !addressHasCoords(newAddressForm.value)
+            ) {
+                newAddressFieldErrors.setFieldError(
+                    "street",
+                    "Выбери адрес из подсказок — нужны координаты.",
+                );
+            }
             if (!newAddressFieldErrors.hasAny.value) {
                 deliveryFieldErrors.setFormError("Сохрани адрес перед продолжением.");
             }
@@ -167,6 +176,14 @@ export function useCheckoutDeliveryStep({
             deliveryFieldErrors.setFieldError(
                 "selectedAddress",
                 "Выбери адрес доставки или добавь новый.",
+            );
+            return false;
+        }
+
+        if (!addressHasCoords(selectedAddress)) {
+            deliveryFieldErrors.setFieldError(
+                "selectedAddress",
+                "У адреса нет координат — добавь новый через подсказки.",
             );
             return false;
         }
@@ -240,7 +257,11 @@ export function useCheckoutDeliveryStep({
         }
 
         const touchesZone = Object.keys(partial).some((key) =>
-            GUEST_ADDRESS_ZONE_KEYS.has(key),
+            GUEST_ADDRESS_ZONE_KEYS.has(key)
+            || key === "latitude"
+            || key === "longitude"
+            || key === "lat"
+            || key === "lng",
         );
 
         syncGuestAddressDraftToStore();
@@ -249,15 +270,62 @@ export function useCheckoutDeliveryStep({
             return;
         }
 
-        checkoutIntent.setDeliveryAddressDraftDirty(true);
-        checkoutIntent.invalidateDeliveryZoneResolve();
-        scheduleZonePreview();
+        scheduleDeliveryPreview();
+    }
+
+    /**
+     * @param {Record<string, unknown>} hit
+     */
+    function applyGuestSuggestion(hit) {
+        const lat = readCoord(hit.lat);
+        const lng = readCoord(hit.lng);
+        patchGuestAddressDraft({
+            street: String(hit.street ?? ""),
+            house: String(hit.house ?? ""),
+            entrance: String(hit.entrance ?? guestAddressDraft.value.entrance ?? ""),
+            floor: String(hit.floor ?? guestAddressDraft.value.floor ?? ""),
+            apartment: String(hit.apartment ?? guestAddressDraft.value.apartment ?? ""),
+            latitude: lat,
+            longitude: lng,
+        });
+    }
+
+    function clearGuestCoords() {
+        patchGuestAddressDraft({ latitude: null, longitude: null });
+    }
+
+    /**
+     * @param {Record<string, unknown>} hit
+     */
+    function applyNewAddressSuggestion(hit) {
+        const lat = readCoord(hit.lat);
+        const lng = readCoord(hit.lng);
+        newAddressForm.value = {
+            ...newAddressForm.value,
+            street: String(hit.street ?? ""),
+            house: String(hit.house ?? ""),
+            entrance: String(hit.entrance ?? newAddressForm.value.entrance ?? ""),
+            floor: String(hit.floor ?? newAddressForm.value.floor ?? ""),
+            apartment: String(hit.apartment ?? newAddressForm.value.apartment ?? ""),
+            latitude: lat,
+            longitude: lng,
+        };
+        newAddressFieldErrors.clearField("street");
+        newAddressFieldErrors.clearField("house");
+    }
+
+    function clearNewAddressCoords() {
+        newAddressForm.value = {
+            ...newAddressForm.value,
+            latitude: null,
+            longitude: null,
+        };
     }
 
     function selectAddress(addressId) {
         userStore.selectAddress(addressId);
         deliveryFieldErrors.clearField("selectedAddress");
-        previewScheduler.schedule(resolvePreviewAddress(), 200);
+        scheduleDeliveryPreview();
     }
 
     function clearNewAddressField(key) {
@@ -267,10 +335,7 @@ export function useCheckoutDeliveryStep({
     watch(
         () => checkoutIntent.deliveryInfo.address,
         () => {
-            if (
-                isGuestCheckout.value
-                && !checkoutIntent.deliveryAddressDraftDirty
-            ) {
+            if (isGuestCheckout.value) {
                 guestAddressDraft.value = readGuestAddressDraftFromStore(
                     checkoutIntent,
                 );
@@ -307,6 +372,14 @@ export function useCheckoutDeliveryStep({
 
         newAddressLoading.value = true;
 
+        if (!addressHasCoords(newAddressForm.value)) {
+            newAddressFieldErrors.setFieldError(
+                "street",
+                "Выбери адрес из подсказок — нужны координаты.",
+            );
+            return;
+        }
+
         try {
             const data = await userStore.addClientAddress({
                 street: newAddressForm.value.street,
@@ -316,6 +389,8 @@ export function useCheckoutDeliveryStep({
                 apartment: newAddressForm.value.apartment || null,
                 comment: newAddressForm.value.comment || null,
                 make_default: newAddressForm.value.make_default,
+                lat: newAddressForm.value.latitude,
+                lng: newAddressForm.value.longitude,
             });
 
             isNewAddressOpen.value = false;
@@ -338,9 +413,11 @@ export function useCheckoutDeliveryStep({
                 apartment: "",
                 comment: "",
                 make_default: true,
+                latitude: null,
+                longitude: null,
             };
 
-            previewScheduler.schedule(resolvePreviewAddress(), 200);
+            scheduleDeliveryPreview();
         } catch (e) {
             console.error(e);
             if (
@@ -364,16 +441,8 @@ export function useCheckoutDeliveryStep({
             syncGuestAddressDraftToStore();
         }
 
-        const result = await previewScheduler.flush(resolvePreviewAddress());
-        if (isGuestCheckout.value) {
-            checkoutIntent.setDeliveryAddressDraftDirty(false);
-        }
-        return result;
+        return recomputeCheckout(checkoutIntent, resolvePreviewAddress());
     }
-
-    onBeforeUnmount(() => {
-        previewScheduler.cancel();
-    });
 
     return {
         addressSelection,
@@ -391,6 +460,10 @@ export function useCheckoutDeliveryStep({
         setDeliveryComment,
         setDeliveryPersons,
         patchGuestAddressDraft,
+        applyGuestSuggestion,
+        clearGuestCoords,
+        applyNewAddressSuggestion,
+        clearNewAddressCoords,
         selectAddress,
         handleCreateAddress,
         scheduleDeliveryPreview,

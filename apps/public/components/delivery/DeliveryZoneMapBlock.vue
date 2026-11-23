@@ -17,15 +17,15 @@ const {
     mapContainerRef,
     zoneMapMountFailed,
     showZonePolygonHint,
-    showKitchenPlacemarkHint,
+    showBranchPlacemarkHint,
     showZoneClickHint,
 } = useDeliveryZoneReadonlyMap({
     facts,
     deliveryLoading,
 });
 
-const kitchenAddress = computed(() => formatCompanyAddressLine(facts.value));
-const hasKitchenAddress = computed(() => kitchenAddress.value.trim() !== "");
+const branchAddress = computed(() => formatCompanyAddressLine(facts.value));
+const hasBranchAddress = computed(() => branchAddress.value.trim() !== "");
 </script>
 
 <template>
@@ -84,14 +84,14 @@ const hasKitchenAddress = computed(() => kitchenAddress.value.trim() !== "");
         </div>
 
         <div
-            v-if="hasKitchenAddress"
+            v-if="hasBranchAddress"
             :class="dm.pickupCaption"
         >
             <p :class="dm.pickupCaptionNote">
                 Забрать заказ можно по адресу
             </p>
             <p :class="dm.pickupCaptionAddress">
-                {{ kitchenAddress }}
+                {{ branchAddress }}
             </p>
         </div>
 
@@ -108,7 +108,7 @@ const hasKitchenAddress = computed(() => kitchenAddress.value.trim() !== "");
             Зона на карте не отображается — проверьте полигон в админке.
         </p>
         <p
-            v-if="showKitchenPlacemarkHint"
+            v-if="showBranchPlacemarkHint"
             :class="dm.zoneMapHint"
         >
             Точка самовывоза не отображается — проверьте координаты кухни в админке.

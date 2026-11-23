@@ -7,19 +7,19 @@ defineProps({
 </script>
 
 <template>
-    <label class="block text-sm text-slate-700">
-        <span v-if="label" class="mb-1 block font-medium">
-            {{ label }}
-            <span v-if="required" class="text-rose-600">*</span>
-        </span>
+    <div class="block text-sm text-bo-fg">
         <div
-            class="rounded"
-            :class="error ? 'ring-2 ring-rose-300' : ''"
+            v-if="label"
+            class="mb-2 block text-xs font-medium uppercase tracking-[0.1em] text-bo-muted"
         >
+            {{ label }}
+            <span v-if="required" class="text-bo-accent">*</span>
+        </div>
+        <div :class="error ? 'ring-1 ring-bo-accent' : ''">
             <slot />
         </div>
-        <span v-if="error" class="mt-1 block text-xs text-rose-600">
+        <span v-if="error" class="mt-2 block text-xs text-red-300">
             {{ error }}
         </span>
-    </label>
+    </div>
 </template>

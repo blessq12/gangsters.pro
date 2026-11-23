@@ -1,245 +1,303 @@
 <script setup>
-import { computed, onMounted, ref, watch } from "vue";
-import { useRouter } from "vue-router";
-import {
-    acceptOrder,
-    changeOrderStatus,
-    completePickup,
-    getOrder,
-    listOrders,
-} from "../../../api/orders.js";
+import { onMounted, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { acceptOrder, completePickup, listOrders } from "../../../api/orders.js";
 import { useApi } from "../../../shell/composables/useApi.js";
+import { usePagedList } from "../../../shell/composables/usePagedList.js";
 import { useToast } from "../../../shell/composables/useToast.js";
+import ShellIcon from "../../../shell/components/ShellIcon.vue";
 import UiBadge from "../../../shell/components/ui/UiBadge.vue";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
 import UiCard from "../../../shell/components/ui/UiCard.vue";
 import UiConfirmDialog from "../../../shell/components/ui/UiConfirmDialog.vue";
-import UiModal from "../../../shell/components/ui/UiModal.vue";
 import UiPagination from "../../../shell/components/ui/UiPagination.vue";
 import UiTable from "../../../shell/components/ui/UiTable.vue";
+import {
+    ORDER_STATUSES,
+    administratorCommands,
+    deliveryMethodLabel,
+    formatRubles,
+    orderNumberOf,
+    orderStatusLabel,
+    orderStatusVariant,
+    paymentStatusLabel,
+    paymentStatusVariant,
+    shortStage,
+} from "../../../shell/domain/orderStage.js";
 
+const route = useRoute();
 const router = useRouter();
 const toast = useToast();
 const listApi = useApi();
-const detailApi = useApi();
 const actionApi = useApi();
+const {
+    page,
+    perPage,
+    total,
+    items: rows,
+    offset,
+    resetPage,
+    applyPayload,
+} = usePagedList();
 
-const page = ref(1);
-const perPage = 20;
-const total = ref(0);
 const statusFilter = ref("");
-const rows = ref([]);
-const detailOpen = ref(false);
-const detail = ref(null);
-const cancelConfirmOpen = ref(false);
 
-const statusOptions = [
-    "",
-    "new",
-    "confirmed",
-    "preparing",
-    "ready",
-    "in_transit",
-    "delivered",
-    "completed",
-    "cancelled",
+function statusFromQuery() {
+    const raw = route.query.status;
+    const value = Array.isArray(raw) ? raw[0] : raw;
+    if (typeof value !== "string" || value === "") {
+        return "";
+    }
+    return ORDER_STATUSES.includes(value) ? value : "";
+}
+
+/** @type {import('vue').Ref<'confirm'|'pickup'|null>} */
+const pendingAction = ref(null);
+/** @type {import('vue').Ref<number|string|null>} */
+const pendingOrderId = ref(null);
+
+/** Быстрые фильтры по ключевым этапам жизни заказа. */
+const QUICK_STATUS_FILTERS = [
+    { value: "", label: "Все" },
+    { value: "new", label: "Новый" },
+    { value: "ready", label: "Готов" },
+    { value: "in_transit", label: "В пути" },
 ];
 
 const columns = [
-    { key: "id", label: "ID", width: "72px" },
-    { key: "status", label: "Статус", width: "120px" },
-    { key: "client_name", label: "Клиент" },
-    { key: "delivery_method", label: "Доставка", width: "110px" },
-    { key: "total", label: "Сумма", width: "100px" },
-    { key: "created_at", label: "Создан" },
+    { key: "number", label: "Заказ", width: "132px" },
+    { key: "status", label: "Этап", width: "118px" },
+    { key: "next", label: "Дальше", truncate: true },
+    { key: "client", label: "Клиент", truncate: true },
+    { key: "delivery_method", label: "Тип", width: "52px", align: "center" },
+    { key: "payment", label: "Платёж", width: "110px" },
+    { key: "total", label: "Сумма", width: "88px", align: "right" },
+    { key: "actions", label: "Действия", width: "168px" },
 ];
 
-const statusVariant = {
-    new: "neutral",
-    confirmed: "warning",
-    preparing: "warning",
-    ready: "success",
-    in_transit: "warning",
-    delivered: "success",
-    completed: "success",
-    cancelled: "danger",
-};
-
-const detailLines = computed(() => detail.value?.cart?.lines ?? []);
-const detailStatus = computed(() => detail.value?.status ?? "");
-const deliveryMethod = computed(() => detail.value?.delivery?.method ?? "");
-
-const canAccept = computed(() => detailStatus.value === "new");
-const canPreparing = computed(() => detailStatus.value === "confirmed");
-const canCompletePickup = computed(
-    () => detailStatus.value === "ready" && deliveryMethod.value === "pickup",
-);
-const canToRoute = computed(
-    () => detailStatus.value === "ready"
-        && (deliveryMethod.value === "courier" || deliveryMethod.value === "delivery"),
-);
-const canCancel = computed(
-    () => detail.value
-        && !["completed", "cancelled"].includes(detailStatus.value),
-);
-
-function formatTotal(order) {
-    const rubles = order?.totals?.grand_total_rubles
-        ?? order?.total
-        ?? Math.floor(Number(order?.totals?.grand_total ?? 0) / 100);
-    return `${rubles} ₽`;
+function clientLine(order) {
+    const name = String(order?.client?.name ?? "").trim();
+    const phone = String(order?.client?.phone ?? "").trim();
+    if (name && phone) {
+        return `${name} · ${phone}`;
+    }
+    return name || phone || "—";
 }
 
-function formatDate(value) {
-    if (!value) {
-        return "—";
-    }
-    try {
-        return new Date(value).toLocaleString("ru-RU");
-    } catch {
-        return String(value);
-    }
+function deliveryIcon(method) {
+    return method === "pickup" ? "pickup" : "delivery";
+}
+
+/**
+ * Только подтверждение и выдача самовывоза — остальное на полной карточке.
+ * @param {{ status?: string, delivery_method?: string }} row
+ */
+function quickActionsFor(row) {
+    return administratorCommands({
+        status: row.status,
+        delivery: { method: row.delivery_method },
+    }).filter((command) => command.id === "confirm" || command.id === "pickup");
 }
 
 async function load() {
     try {
         const payload = await listApi.run(() => listOrders({
-            offset: (page.value - 1) * perPage,
+            offset: offset.value,
             limit: perPage,
             status: statusFilter.value || undefined,
         }));
-        total.value = Number(payload?.total ?? 0);
-        rows.value = (payload?.items ?? []).map((order) => ({
+        applyPayload(payload, (order) => ({
             id: order.id,
+            number: orderNumberOf(order),
             status: order.status,
-            client_name: order.client?.name ?? "—",
-            delivery_method: order.delivery?.method ?? "—",
-            total: formatTotal(order),
-            created_at: formatDate(order.created_at),
-            _raw: order,
+            next: shortStage(order),
+            client: clientLine(order),
+            delivery_method: order.delivery?.method ?? "",
+            payment: order.payment?.status ?? "",
+            total: formatRubles(order),
         }));
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось загрузить заказы");
     }
 }
 
-async function openDetail(row) {
-    detailOpen.value = true;
-    detail.value = null;
-    try {
-        detail.value = await detailApi.run(() => getOrder(row.id));
-    } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Не удалось загрузить заказ");
-        detailOpen.value = false;
-    }
+function openFull(row) {
+    router.push({ name: "administrator-order", params: { id: String(row.id) } });
 }
 
-async function refreshDetail() {
-    if (!detail.value?.id) {
+function openCreate() {
+    router.push({ name: "administrator-manual-order" });
+}
+
+/**
+ * @param {MouseEvent} event
+ * @param {{ id: number|string }} row
+ * @param {'confirm'|'pickup'} actionId
+ */
+function askQuickAction(event, row, actionId) {
+    event.stopPropagation();
+    pendingOrderId.value = row.id;
+    pendingAction.value = actionId;
+}
+
+function closePending() {
+    pendingAction.value = null;
+    pendingOrderId.value = null;
+}
+
+async function submitPending() {
+    const orderId = pendingOrderId.value;
+    const action = pendingAction.value;
+    closePending();
+    if (!orderId || !action) {
         return;
     }
-    detail.value = await detailApi.run(() => getOrder(detail.value.id));
-    await load();
-}
-
-async function onAccept() {
     try {
-        await actionApi.run(() => acceptOrder(detail.value.id));
-        toast.success("Заказ принят");
-        await refreshDetail();
+        if (action === "confirm") {
+            await actionApi.run(() => acceptOrder(orderId));
+            toast.success("Заказ подтверждён. Тикет и платёж созданы.");
+        } else if (action === "pickup") {
+            await actionApi.run(() => completePickup(orderId));
+            toast.success("Заказ выдан. Платёж оплачен.");
+        } else {
+            const _exhaustive = action;
+            void _exhaustive;
+            return;
+        }
+        await load();
     } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Ошибка");
-    }
-}
-
-async function onPreparing() {
-    try {
-        await actionApi.run(() => changeOrderStatus(detail.value.id, {
-            target_status: "preparing",
-        }));
-        toast.success("Статус: preparing");
-        await refreshDetail();
-    } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Ошибка");
-    }
-}
-
-async function onCompletePickup() {
-    try {
-        await actionApi.run(() => completePickup(detail.value.id));
-        toast.success("Выдан");
-        await refreshDetail();
-    } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Ошибка");
-    }
-}
-
-function onToRoute() {
-    toast.success("Открой Logistics и создай маршрутный лист");
-    router.push({ name: "administrator-logistics" });
-}
-
-function askCancel() {
-    cancelConfirmOpen.value = true;
-}
-
-async function confirmCancel() {
-    cancelConfirmOpen.value = false;
-    try {
-        await actionApi.run(() => changeOrderStatus(detail.value.id, {
-            target_status: "cancelled",
-        }));
-        toast.success("Отменён");
-        await refreshDetail();
-    } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Ошибка");
+        toast.error(err instanceof Error ? err.message : "Не удалось выполнить действие");
     }
 }
 
 watch(statusFilter, () => {
-    page.value = 1;
+    resetPage();
     load();
 });
 watch(page, load);
-onMounted(load);
+watch(
+    () => route.query.status,
+    () => {
+        const next = statusFromQuery();
+        if (statusFilter.value !== next) {
+            statusFilter.value = next;
+        }
+    },
+);
+onMounted(() => {
+    const next = statusFromQuery();
+    if (statusFilter.value !== next) {
+        statusFilter.value = next;
+        return;
+    }
+    load();
+});
 </script>
 
 <template>
-    <div class="space-y-4 p-4 md:p-6">
-        <UiCard title="Live orders">
-            <div class="mb-4 max-w-xs">
-                <label class="mb-1 block text-sm text-slate-600">Статус</label>
-                <select
-                    v-model="statusFilter"
-                    class="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm"
-                >
-                    <option value="">Все</option>
-                    <option
-                        v-for="status in statusOptions.filter(Boolean)"
-                        :key="status"
-                        :value="status"
+    <div class="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
+        <UiCard title="Заказы">
+            <template #actions>
+                <UiButton @click="openCreate">+ Заказ</UiButton>
+            </template>
+            <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end">
+                <div class="min-w-0 flex-1">
+                    <p class="mb-1 text-sm text-bo-muted">
+                        Быстрый фильтр
+                    </p>
+                    <div class="flex flex-wrap gap-2">
+                        <button
+                            v-for="item in QUICK_STATUS_FILTERS"
+                            :key="item.value || 'all'"
+                            type="button"
+                            class="h-11 px-4 text-sm font-medium transition-colors duration-150"
+                            :class="statusFilter === item.value
+                                ? 'bg-bo-accent text-white'
+                                : 'bg-white/[0.04] text-bo-muted hover:bg-white/[0.08] hover:text-bo-fg'"
+                            @click="statusFilter = item.value"
+                        >
+                            {{ item.label }}
+                        </button>
+                    </div>
+                </div>
+                <div class="w-full max-w-xs sm:shrink-0">
+                    <label
+                        class="mb-1 block text-sm text-bo-muted"
+                        for="order-stage-filter"
+                    >Этап</label>
+                    <select
+                        id="order-stage-filter"
+                        v-model="statusFilter"
+                        class="w-full border border-bo-border bg-bo-field px-4 py-2.5 text-sm transition-colors hover:border-bo-border-strong focus:border-bo-accent focus:outline-none"
                     >
-                        {{ status }}
-                    </option>
-                </select>
+                        <option value="">Все</option>
+                        <option
+                            v-for="status in ORDER_STATUSES"
+                            :key="status"
+                            :value="status"
+                        >
+                            {{ orderStatusLabel(status) }}
+                        </option>
+                    </select>
+                </div>
             </div>
 
-            <UiTable
-                :columns="columns"
-                :rows="rows"
-                :loading="listApi.loading"
-                empty-text="Заказов нет"
-                @row-click="openDetail"
-            >
-                <template #cell-status="{ value }">
-                    <UiBadge
-                        :variant="statusVariant[value] || 'neutral'"
-                        :text="String(value || '—')"
-                    />
-                </template>
-            </UiTable>
+            <div class="overflow-hidden">
+                <UiTable
+                    :columns="columns"
+                    :rows="rows"
+                    :loading="listApi.loading"
+                    empty-text="Заказов нет"
+                    @row-click="openFull"
+                >
+                    <template #cell-status="{ value }">
+                        <UiBadge
+                            :variant="orderStatusVariant(value)"
+                            :text="orderStatusLabel(value)"
+                        />
+                    </template>
+                    <template #cell-delivery_method="{ value }">
+                        <span
+                            v-if="value"
+                            class="inline-flex text-bo-muted"
+                            :title="deliveryMethodLabel(value)"
+                        >
+                            <ShellIcon
+                                :name="deliveryIcon(value)"
+                                class="h-5 w-5"
+                            />
+                        </span>
+                        <span v-else class="text-bo-muted">—</span>
+                    </template>
+                    <template #cell-payment="{ value }">
+                        <UiBadge
+                            v-if="value"
+                            :variant="paymentStatusVariant(value)"
+                            :text="paymentStatusLabel(value)"
+                        />
+                        <span v-else class="text-bo-muted">—</span>
+                    </template>
+                    <template #cell-actions="{ row }">
+                        <div
+                            v-if="quickActionsFor(row).length"
+                            class="flex flex-wrap gap-2"
+                        >
+                            <UiButton
+                                v-for="command in quickActionsFor(row)"
+                                :key="command.id"
+                                class="!h-9 !px-3 !text-xs"
+                                :disabled="actionApi.loading"
+                                @click="askQuickAction($event, row, command.id)"
+                            >
+                                {{ command.label }}
+                            </UiButton>
+                        </div>
+                        <span v-else class="text-bo-muted">—</span>
+                    </template>
+                </UiTable>
+            </div>
 
-            <div class="mt-4">
+            <div class="mt-6">
                 <UiPagination
                     :page="page"
                     :per-page="perPage"
@@ -249,83 +307,20 @@ onMounted(load);
             </div>
         </UiCard>
 
-        <UiModal :open="detailOpen" title="Заказ" @close="detailOpen = false">
-            <div v-if="detailApi.loading" class="text-sm text-slate-500">
-                Загрузка…
-            </div>
-            <div v-else-if="detail" class="space-y-3 text-sm text-slate-800">
-                <p><span class="text-slate-500">ID:</span> {{ detail.id }}</p>
-                <p>
-                    <span class="text-slate-500">Статус:</span>
-                    <UiBadge
-                        class="ml-2"
-                        :variant="statusVariant[detail.status] || 'neutral'"
-                        :text="String(detail.status)"
-                    />
-                </p>
-                <p>
-                    <span class="text-slate-500">Клиент:</span>
-                    {{ detail.client?.name || "—" }} · {{ detail.client?.phone || "" }}
-                </p>
-                <p>
-                    <span class="text-slate-500">Доставка:</span>
-                    {{ detail.delivery?.method || "—" }}
-                </p>
-                <p><span class="text-slate-500">Сумма:</span> {{ formatTotal(detail) }}</p>
-                <p><span class="text-slate-500">Создан:</span> {{ formatDate(detail.created_at) }}</p>
-                <div>
-                    <p class="mb-1 font-medium text-slate-700">Позиции</p>
-                    <ul class="list-inside list-disc text-slate-600">
-                        <li v-for="(line, idx) in detailLines" :key="idx">
-                            {{ line.product_name || line.product_id }} × {{ line.quantity }}
-                            ({{ line.line_total_rubles ?? 0 }} ₽)
-                        </li>
-                    </ul>
-                </div>
-            </div>
-
-            <template #footer>
-                <UiButton @click="detailOpen = false">Закрыть</UiButton>
-                <UiButton
-                    v-if="canAccept"
-                    :disabled="actionApi.loading"
-                    @click="onAccept"
-                >
-                    Принять
-                </UiButton>
-                <UiButton
-                    v-if="canPreparing"
-                    :disabled="actionApi.loading"
-                    @click="onPreparing"
-                >
-                    Готовится
-                </UiButton>
-                <UiButton
-                    v-if="canCompletePickup"
-                    :disabled="actionApi.loading"
-                    @click="onCompletePickup"
-                >
-                    Выдан
-                </UiButton>
-                <UiButton v-if="canToRoute" @click="onToRoute">
-                    В маршрут
-                </UiButton>
-                <UiButton
-                    v-if="canCancel"
-                    :disabled="actionApi.loading"
-                    @click="askCancel"
-                >
-                    Отменить
-                </UiButton>
-            </template>
-        </UiModal>
+        <UiConfirmDialog
+            :open="pendingAction === 'confirm'"
+            title="Подтвердить заказ?"
+            message="Филиал уже на заказе. Появятся тикет в очереди и платёж в ожидании."
+            @confirm="submitPending"
+            @cancel="closePending"
+        />
 
         <UiConfirmDialog
-            :open="cancelConfirmOpen"
-            title="Отменить заказ?"
-            message="Статус станет cancelled."
-            @confirm="confirmCancel"
-            @cancel="cancelConfirmOpen = false"
+            :open="pendingAction === 'pickup'"
+            title="Выдать самовывоз?"
+            message="Заказ станет выданным, платёж — оплаченным. В маршрутный лист он не попадёт."
+            @confirm="submitPending"
+            @cancel="closePending"
         />
     </div>
 </template>

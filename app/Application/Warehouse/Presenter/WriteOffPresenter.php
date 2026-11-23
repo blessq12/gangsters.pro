@@ -2,7 +2,7 @@
 
 namespace App\Application\Warehouse\Presenter;
 
-use App\Domain\Warehouse\Entity\StockWriteOff;
+use App\Domain\Supporting\Warehouse\Entity\StockWriteOff;
 
 final class WriteOffPresenter
 {
@@ -13,6 +13,7 @@ final class WriteOffPresenter
     {
         return [
             'id' => $writeOff->hasId() ? $writeOff->id() : null,
+            'branch_id' => $writeOff->branchId(),
             'ingredient_id' => $writeOff->ingredientId(),
             'quantity' => $writeOff->quantity(),
             'reason' => $writeOff->reason(),

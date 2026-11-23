@@ -3,14 +3,16 @@
 namespace App\Application\Marketing\Query;
 
 use App\Application\Marketing\Presenter\MarketingPresenter;
-use App\Domain\Marketing\Repository\BannerRepository;
-use App\Domain\Marketing\Repository\PromotionRepository;
+use App\Domain\Supporting\Marketing\Port\MarketingDeliveryConditionsPort;
+use App\Domain\Supporting\Marketing\Repository\BannerRepository;
+use App\Domain\Supporting\Marketing\Repository\CampaignRepository;
 
 final class GetPublicMarketingUseCase
 {
     public function __construct(
         private readonly BannerRepository $banners,
-        private readonly PromotionRepository $promotions,
+        private readonly CampaignRepository $promotions,
+        private readonly MarketingDeliveryConditionsPort $deliveryConditions,
         private readonly MarketingPresenter $presenter,
     ) {}
 
@@ -22,8 +24,7 @@ final class GetPublicMarketingUseCase
         return $this->presenter->present(
             banners: $this->banners->findActiveOrdered(),
             promotions: $this->promotions->findActiveOrdered(),
-            contact: null,
-            deliveryConditions: null,
+            deliveryConditions: $this->deliveryConditions->findActive(),
         );
     }
 }

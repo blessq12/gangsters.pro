@@ -1,89 +1,40 @@
 <script setup>
-import { computed, onMounted, reactive, ref } from "vue";
+import { onMounted, reactive, ref, watch } from "vue";
 import {
     getDelivery,
-    getRouteSheet,
-    listRouteSheets,
+    replaceZones,
     storeDelivery,
-    storeZone,
     updateDelivery,
-    updateZone,
 } from "../../../api/delivery.js";
+import DeliveryZonesMapEditor from "../components/delivery/DeliveryZonesMapEditor.vue";
+import OwnerBranchSelector from "../components/branch/OwnerBranchSelector.vue";
+import { useOwnerBranchContext } from "../composables/useOwnerBranchContext.js";
 import { useApi } from "../../../shell/composables/useApi.js";
 import { useToast } from "../../../shell/composables/useToast.js";
-import UiBadge from "../../../shell/components/ui/UiBadge.vue";
+import { hasRenderableGeometry } from "../../../shell/maps/yandexGeoJsonCoords.js";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
 import UiCard from "../../../shell/components/ui/UiCard.vue";
 import UiFormField from "../../../shell/components/ui/UiFormField.vue";
 import UiInput from "../../../shell/components/ui/UiInput.vue";
-import UiModal from "../../../shell/components/ui/UiModal.vue";
-import UiTable from "../../../shell/components/ui/UiTable.vue";
 
 const toast = useToast();
 const loadApi = useApi();
 const saveApi = useApi();
-const detailApi = useApi();
 
-const tab = ref("settings");
 const deliveryExists = ref(false);
-const zones = ref([]);
-const routeSheets = ref([]);
-const sheetDetail = ref(null);
-const sheetModalOpen = ref(false);
+const { selectedBranchId, ensureLoaded } = useOwnerBranchContext();
+const zonesEditor = ref(null);
 
 const settingsForm = reactive({
     min_order_rubles: "",
     average_delivery_time_minutes: "",
-    city: "",
-    street: "",
-    house: "",
-    comment: "",
-    search_line: "",
 });
 const settingsErrors = reactive({});
 
-const zoneModalOpen = ref(false);
-const editingZoneId = ref(null);
-const zoneErrors = reactive({});
-const zoneForm = reactive({
-    name: "",
-    fee: "",
-    is_remote: false,
-    geometryJson: "",
-});
-
-const tabs = [
-    { id: "settings", label: "Настройки доставки" },
-    { id: "zones", label: "Зоны" },
-    { id: "routes", label: "Маршрутные листы" },
-];
-
-const zoneColumns = [
-    { key: "id", label: "ID", width: "120px" },
-    { key: "name", label: "Название" },
-    { key: "fee", label: "Тариф", width: "90px" },
-    { key: "is_remote", label: "Удалённая", width: "110px" },
-    { key: "actions", label: "", width: "120px" },
-];
-
-const routeColumns = [
-    { key: "id", label: "ID", width: "64px" },
-    { key: "status", label: "Статус", width: "120px" },
-    { key: "courier", label: "Курьер", width: "100px" },
-    { key: "stops_count", label: "Остановки", width: "100px" },
-];
-
-const routeRows = computed(() =>
-    routeSheets.value.map((row) => ({
-        ...row,
-        courier: row.courier_id ?? "—",
-        stops_count: Array.isArray(row.stops) ? row.stops.length : 0,
-    })),
-);
-
-const zoneModalTitle = computed(() =>
-    editingZoneId.value ? "Редактировать зону" : "Новая зона",
-);
+/** @type {import('vue').Ref<Array<Record<string, unknown>>>} */
+const draftZones = ref([]);
+/** @type {import('vue').Ref<[number, number]|null>} */
+const branchCenter = ref(null);
 
 function clearErrors(target) {
     Object.keys(target).forEach((key) => {
@@ -91,8 +42,19 @@ function clearErrors(target) {
     });
 }
 
+function applyBranchCenter(payload) {
+    const address = payload?.branch_address;
+    const lat = address?.latitude != null ? Number(address.latitude) : null;
+    const lng = address?.longitude != null ? Number(address.longitude) : null;
+    if (Number.isFinite(lat) && Number.isFinite(lng)) {
+        branchCenter.value = [lat, lng];
+        return;
+    }
+    branchCenter.value = null;
+}
+
 function applyDelivery(payload) {
-    deliveryExists.value = Boolean(payload?.settings || payload?.kitchen_address);
+    deliveryExists.value = Boolean(payload?.settings);
     settingsForm.min_order_rubles =
         payload?.settings?.min_order_rubles != null
             ? String(payload.settings.min_order_rubles)
@@ -101,29 +63,35 @@ function applyDelivery(payload) {
         payload?.settings?.average_delivery_time_minutes != null
             ? String(payload.settings.average_delivery_time_minutes)
             : "";
-    settingsForm.city = payload?.kitchen_address?.city ?? "";
-    settingsForm.street = payload?.kitchen_address?.street ?? "";
-    settingsForm.house = payload?.kitchen_address?.house ?? "";
-    settingsForm.comment = payload?.kitchen_address?.comment ?? "";
-    settingsForm.search_line = payload?.kitchen_address?.search_line ?? "";
-    zones.value = payload?.zones ?? [];
+    applyBranchCenter(payload);
+    draftZones.value = Array.isArray(payload?.zones)
+        ? payload.zones.map((zone) => ({
+            id: zone.id,
+            name: zone.name,
+            fee: zone.fee ?? zone.fee_rubles ?? 0,
+            is_remote: Boolean(zone.is_remote),
+            geometry: zone.geometry ?? null,
+        }))
+        : [];
 }
 
 async function loadDelivery() {
-    try {
-        const payload = await loadApi.run(() => getDelivery());
-        applyDelivery(payload);
-    } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Не удалось загрузить доставку");
+    const branchId = selectedBranchId.value;
+    if (!branchId) {
+        applyDelivery(null);
+        return;
     }
-}
-
-async function loadRouteSheets() {
     try {
-        const payload = await loadApi.run(() => listRouteSheets());
-        routeSheets.value = Array.isArray(payload) ? payload : (payload?.items ?? []);
+        const payload = await loadApi.run(() => getDelivery(branchId));
+        if (branchId === selectedBranchId.value) {
+            applyDelivery(payload);
+        }
     } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Не удалось загрузить маршрутные листы");
+        if (err?.status === 404) {
+            applyDelivery(null);
+            return;
+        }
+        toast.error(err instanceof Error ? err.message : "Не удалось загрузить доставку");
     }
 }
 
@@ -141,293 +109,133 @@ function validateSettings() {
     return Object.keys(settingsErrors).length === 0;
 }
 
-async function saveSettings() {
+/**
+ * @returns {Array<Record<string, unknown>>|null}
+ */
+function collectZonesOrNull() {
+    const zones = zonesEditor.value?.snapshotZones?.() ?? draftZones.value;
+    const incomplete = zones.some((zone) => !hasRenderableGeometry(zone.geometry));
+    if (incomplete) {
+        toast.error("Есть зоны без контура — нарисуй или удали");
+        return null;
+    }
+    return zones.map((zone) => ({
+        id: zone.id,
+        name: zone.name,
+        fee: Number(zone.fee) || 0,
+        is_remote: Boolean(zone.is_remote),
+        geometry: zone.geometry,
+    }));
+}
+
+async function saveAll() {
+    if (!selectedBranchId.value) {
+        toast.error("Выбери филиал");
+        return;
+    }
     if (!validateSettings()) {
-        toast.error("Проверьте поля");
+        toast.error("Проверьте поля настроек");
         return;
     }
 
-    const body = {
+    const zones = collectZonesOrNull();
+    if (zones === null) {
+        return;
+    }
+
+    const settingsBody = {
         min_order_rubles: settingsForm.min_order_rubles === ""
             ? null
             : Number(settingsForm.min_order_rubles),
         average_delivery_time_minutes: settingsForm.average_delivery_time_minutes === ""
             ? null
             : Number(settingsForm.average_delivery_time_minutes),
-        kitchen: {
-            city: settingsForm.city || null,
-            street: settingsForm.street || null,
-            house: settingsForm.house || null,
-            comment: settingsForm.comment || null,
-            search_line: settingsForm.search_line || null,
-        },
+        branch_id: Number(selectedBranchId.value),
     };
 
     try {
-        await saveApi.run(() =>
-            deliveryExists.value ? updateDelivery(body) : storeDelivery(body),
-        );
-        toast.success("Настройки сохранены");
-        await loadDelivery();
-    } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Ошибка сохранения");
-    }
-}
-
-function resetZoneForm() {
-    zoneForm.name = "";
-    zoneForm.fee = "";
-    zoneForm.is_remote = false;
-    zoneForm.geometryJson = "";
-    clearErrors(zoneErrors);
-}
-
-function openCreateZone() {
-    editingZoneId.value = null;
-    resetZoneForm();
-    zoneModalOpen.value = true;
-}
-
-function openEditZone(row) {
-    editingZoneId.value = row.id;
-    resetZoneForm();
-    zoneForm.name = row.name ?? "";
-    zoneForm.fee = row.fee != null ? String(row.fee) : "";
-    zoneForm.is_remote = Boolean(row.is_remote);
-    zoneForm.geometryJson = row.geometry ? JSON.stringify(row.geometry, null, 2) : "";
-    zoneModalOpen.value = true;
-}
-
-function validateZone() {
-    clearErrors(zoneErrors);
-    if (!String(zoneForm.name).trim()) {
-        zoneErrors.name = "Обязательное поле";
-    }
-    if (zoneForm.fee === "" || Number.isNaN(Number(zoneForm.fee))) {
-        zoneErrors.fee = "Укажите тариф";
-    }
-    if (!editingZoneId.value && !zoneForm.geometryJson.trim()) {
-        zoneErrors.geometry = "GeoJSON обязателен при создании";
-    }
-    if (zoneForm.geometryJson.trim()) {
-        try {
-            const parsed = JSON.parse(zoneForm.geometryJson);
-            if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-                zoneErrors.geometry = "Ожидается объект GeoJSON";
+        await saveApi.run(async () => {
+            if (deliveryExists.value) {
+                await updateDelivery(settingsBody);
+            } else {
+                await storeDelivery(settingsBody);
             }
-        } catch {
-            zoneErrors.geometry = "Невалидный JSON";
-        }
-    }
-    return Object.keys(zoneErrors).length === 0;
-}
-
-async function saveZone() {
-    if (!validateZone()) {
-        toast.error("Проверьте обязательные поля");
-        return;
-    }
-
-    const body = {
-        name: zoneForm.name.trim(),
-        fee: Number(zoneForm.fee),
-        is_remote: Boolean(zoneForm.is_remote),
-    };
-    if (zoneForm.geometryJson.trim()) {
-        body.geometry = JSON.parse(zoneForm.geometryJson);
-    }
-
-    try {
-        await saveApi.run(() =>
-            editingZoneId.value
-                ? updateZone(editingZoneId.value, body)
-                : storeZone(body),
-        );
-        toast.success(editingZoneId.value ? "Зона сохранена" : "Зона создана");
-        zoneModalOpen.value = false;
+            return replaceZones({
+                branch_id: Number(selectedBranchId.value),
+                zones,
+            });
+        });
+        toast.success("Сохранено");
         await loadDelivery();
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Ошибка сохранения");
     }
 }
 
-async function openRouteSheet(row) {
-    sheetDetail.value = null;
-    sheetModalOpen.value = true;
-    try {
-        sheetDetail.value = await detailApi.run(() => getRouteSheet(row.id));
-    } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Не удалось загрузить лист");
-        sheetModalOpen.value = false;
-    }
-}
-
-async function onTab(id) {
-    tab.value = id;
-    if (id === "routes" && routeSheets.value.length === 0) {
-        await loadRouteSheets();
-    }
-}
+watch(selectedBranchId, loadDelivery);
 
 onMounted(async () => {
+    await ensureLoaded();
     await loadDelivery();
 });
 </script>
 
 <template>
-    <div class="space-y-4 p-4 md:p-6">
-        <UiCard title="Доставка">
-            <div class="mb-4 flex flex-wrap gap-2">
-                <button
-                    v-for="item in tabs"
-                    :key="item.id"
-                    type="button"
-                    class="rounded px-3 py-1.5 text-sm"
-                    :class="tab === item.id
-                        ? 'bg-slate-900 text-white'
-                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
-                    @click="onTab(item.id)"
+    <div class="mx-auto w-full max-w-7xl space-y-4 px-4 py-5 sm:px-6 lg:px-10 lg:py-7">
+        <div class="space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <h1 class="text-2xl font-semibold tracking-tight text-bo-fg">
+                    Доставка
+                </h1>
+                <UiButton
+                    :disabled="!selectedBranchId || saveApi.loading || loadApi.loading"
+                    @click="saveAll"
                 >
-                    {{ item.label }}
-                </button>
-            </div>
-
-            <div v-if="tab === 'settings'" class="space-y-3">
-                <UiFormField
-                    label="Мин. заказ (₽)"
-                    :error="settingsErrors.min_order_rubles"
-                >
-                    <UiInput v-model="settingsForm.min_order_rubles" type="number" />
-                </UiFormField>
-                <UiFormField
-                    label="Среднее время (мин)"
-                    :error="settingsErrors.average_delivery_time_minutes"
-                >
-                    <UiInput
-                        v-model="settingsForm.average_delivery_time_minutes"
-                        type="number"
-                    />
-                </UiFormField>
-                <UiFormField label="Кухня: город">
-                    <UiInput v-model="settingsForm.city" />
-                </UiFormField>
-                <UiFormField label="Кухня: улица">
-                    <UiInput v-model="settingsForm.street" />
-                </UiFormField>
-                <UiFormField label="Кухня: дом">
-                    <UiInput v-model="settingsForm.house" />
-                </UiFormField>
-                <UiFormField label="Кухня: комментарий">
-                    <UiInput v-model="settingsForm.comment" />
-                </UiFormField>
-                <UiFormField label="Кухня: search_line">
-                    <UiInput v-model="settingsForm.search_line" />
-                </UiFormField>
-                <UiButton :disabled="saveApi.loading" @click="saveSettings">
                     Сохранить
                 </UiButton>
             </div>
+            <OwnerBranchSelector />
+        </div>
 
-            <div v-else-if="tab === 'zones'" class="space-y-3">
-                <div class="flex justify-end">
-                    <UiButton @click="openCreateZone">+ Зона</UiButton>
-                </div>
-                <UiTable
-                    :columns="zoneColumns"
-                    :rows="zones"
-                    :loading="loadApi.loading"
-                    empty-text="Нет зон"
-                >
-                    <template #cell-is_remote="{ value }">
-                        <UiBadge
-                            :variant="value ? 'warning' : 'neutral'"
-                            :text="value ? 'да' : 'нет'"
-                        />
-                    </template>
-                    <template #cell-actions="{ row }">
-                        <UiButton @click.stop="openEditZone(row)">Редактировать</UiButton>
-                    </template>
-                </UiTable>
-            </div>
+        <p v-if="!selectedBranchId" class="text-sm text-bo-muted">
+            Выбери филиал, чтобы настроить доставку.
+        </p>
 
-            <div v-else class="space-y-3">
-                <UiTable
-                    :columns="routeColumns"
-                    :rows="routeRows"
-                    :loading="loadApi.loading"
-                    empty-text="Нет маршрутных листов"
-                    @row-click="openRouteSheet"
-                >
-                    <template #cell-status="{ value }">
-                        <UiBadge variant="neutral" :text="String(value ?? '—')" />
-                    </template>
-                </UiTable>
-            </div>
-        </UiCard>
-
-        <UiModal
-            :open="zoneModalOpen"
-            :title="zoneModalTitle"
-            @close="zoneModalOpen = false"
-        >
-            <div class="space-y-3">
-                <UiFormField label="Название" required :error="zoneErrors.name">
-                    <UiInput v-model="zoneForm.name" />
-                </UiFormField>
-                <UiFormField label="Тариф (₽)" required :error="zoneErrors.fee">
-                    <UiInput v-model="zoneForm.fee" type="number" />
-                </UiFormField>
-                <UiFormField label="Удалённая зона">
-                    <input v-model="zoneForm.is_remote" type="checkbox" class="mt-2">
-                </UiFormField>
-                <UiFormField
-                    label="Geometry (GeoJSON)"
-                    :required="!editingZoneId"
-                    :error="zoneErrors.geometry"
-                >
-                    <textarea
-                        v-model="zoneForm.geometryJson"
-                        rows="8"
-                        class="mt-1 w-full rounded border border-slate-300 bg-white px-3 py-2 font-mono text-xs"
-                    />
-                </UiFormField>
-            </div>
-            <template #footer>
-                <UiButton @click="zoneModalOpen = false">Отмена</UiButton>
-                <UiButton :disabled="saveApi.loading" @click="saveZone">Сохранить</UiButton>
-            </template>
-        </UiModal>
-
-        <UiModal
-            :open="sheetModalOpen"
-            title="Маршрутный лист"
-            @close="sheetModalOpen = false"
-        >
-            <div v-if="detailApi.loading" class="text-sm text-slate-500">
+        <template v-else>
+            <p v-if="loadApi.loading" class="text-sm text-bo-muted">
                 Загрузка…
-            </div>
-            <div v-else-if="sheetDetail" class="space-y-2 text-sm">
-                <p><span class="text-slate-500">ID:</span> {{ sheetDetail.id }}</p>
-                <p><span class="text-slate-500">Статус:</span> {{ sheetDetail.status }}</p>
-                <p><span class="text-slate-500">Курьер:</span> {{ sheetDetail.courier_id ?? "—" }}</p>
-                <div>
-                    <p class="mb-1 font-medium">Остановки</p>
-                    <ul class="space-y-1">
-                        <li
-                            v-for="stop in (sheetDetail.stops ?? [])"
-                            :key="`${stop.order_id}-${stop.position}`"
-                            class="rounded border border-slate-100 px-2 py-1"
+            </p>
+
+            <template v-else>
+                <UiCard title="Настройки">
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <UiFormField
+                            label="Мин. заказ (₽)"
+                            :error="settingsErrors.min_order_rubles"
                         >
-                            #{{ stop.order_id }}
-                            · pos {{ stop.position }}
-                            · {{ stop.outcome ?? "—" }}
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            <template #footer>
-                <UiButton @click="sheetModalOpen = false">Закрыть</UiButton>
+                            <UiInput v-model="settingsForm.min_order_rubles" type="number" />
+                        </UiFormField>
+                        <UiFormField
+                            label="Среднее время (мин)"
+                            :error="settingsErrors.average_delivery_time_minutes"
+                        >
+                            <UiInput
+                                v-model="settingsForm.average_delivery_time_minutes"
+                                type="number"
+                            />
+                        </UiFormField>
+                    </div>
+                </UiCard>
+
+                <UiCard title="Зоны доставки">
+                    <DeliveryZonesMapEditor
+                        ref="zonesEditor"
+                        :zones="draftZones"
+                        :branch-center="branchCenter"
+                        :disabled="saveApi.loading"
+                    />
+                </UiCard>
             </template>
-        </UiModal>
+        </template>
     </div>
 </template>

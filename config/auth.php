@@ -62,12 +62,12 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => App\Models\User::class,
+            'model' => App\Infrastructure\Staff\Model\EmployeeModel::class,
         ],
 
         'clients' => [
             'driver' => 'eloquent',
-            'model' => App\Infrastructure\Crm\Model\CRM_Client::class,
+            'model' => App\Infrastructure\Client\Model\ClientModel::class,
         ],
     ],
 

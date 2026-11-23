@@ -2,7 +2,7 @@
 
 namespace App\Application\Warehouse\Presenter;
 
-use App\Domain\Warehouse\Entity\StockLevel;
+use App\Domain\Supporting\Warehouse\Entity\StockLevel;
 
 final class StockLevelPresenter
 {
@@ -12,6 +12,7 @@ final class StockLevelPresenter
     public function present(StockLevel $level): array
     {
         return [
+            'branch_id' => $level->branchId(),
             'ingredient_id' => $level->ingredientId(),
             'quantity' => $level->quantity(),
         ];

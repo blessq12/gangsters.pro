@@ -1,5 +1,5 @@
 <template>
-    <div class="flex items-center justify-center p-8 text-sm text-slate-500">
-        Loading…
+    <div class="flex items-center justify-center p-8 text-sm text-bo-muted">
+        Загрузка…
     </div>
 </template>

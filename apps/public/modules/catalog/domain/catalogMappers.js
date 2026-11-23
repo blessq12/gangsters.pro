@@ -58,6 +58,22 @@ export function parseOptionalCatalogPriceRubles(price) {
 }
 
 /**
+ * Цена нужного типа из массива prices Catalog (regular / old / promo).
+ * @param {unknown} prices
+ * @param {string} type
+ * @returns {number|null}
+ */
+function priceAmountByType(prices, type) {
+    if (!Array.isArray(prices)) return null;
+    const row = prices.find((item) => item && item.type === type);
+    if (!row) return null;
+    if (row.amount_rubles != null) return Number(row.amount_rubles);
+    if (row.amount != null) return Number(row.amount);
+    if (row.amount_kopecks != null) return Number(row.amount_kopecks) / 100;
+    return null;
+}
+
+/**
  * Старая цена для витрины: только если строго больше актуальной.
  * @param {number} price
  * @param {number|null|undefined} oldPrice
@@ -165,7 +181,9 @@ export function normalizeCatalogProduct(apiProduct) {
     const oldPrice = resolveDisplayOldPrice(
         price,
         parseOptionalCatalogPriceRubles(
-            apiProduct.old_price ?? apiProduct.oldPrice,
+            apiProduct.old_price
+                ?? apiProduct.oldPrice
+                ?? priceAmountByType(apiProduct.prices, "old"),
         ),
     );
     const { imageUrl, imageSrcset, imageFocus } = normalizeCatalogImages(
@@ -235,7 +253,11 @@ export function normalizeCatalogSet(apiSet) {
     const price = parseCatalogPriceRubles(apiSet.price);
     const oldPrice = resolveDisplayOldPrice(
         price,
-        parseOptionalCatalogPriceRubles(apiSet.old_price ?? apiSet.oldPrice),
+        parseOptionalCatalogPriceRubles(
+            apiSet.old_price
+                ?? apiSet.oldPrice
+                ?? priceAmountByType(apiSet.prices, "old"),
+        ),
     );
     const { imageUrl, imageSrcset, imageFocus } = normalizeCatalogImages(
         apiSet.images,

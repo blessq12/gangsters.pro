@@ -2,45 +2,43 @@
 
 namespace App\Application\Production\Presenter;
 
-use App\Domain\Order\Entity\Order;
-use App\Domain\Production\Entity\KitchenTicket;
+use App\Domain\Core\Production\Entity\KitchenTicket;
 
 final class KitchenTicketPresenter
 {
     /**
+     * @param  array{
+     *     id: int,
+     *     number: string|null,
+     *     branch_id: int|null,
+     *     status: string,
+     *     comment: string|null,
+     *     lines: list<array{product_id: int, name: string, quantity: int, line_type: string}>
+     * }|null  $order
      * @return array<string, mixed>
      */
-    public function present(KitchenTicket $ticket, ?Order $order = null): array
+    public function present(KitchenTicket $ticket, ?array $order = null): array
     {
+        $ticketLines = [];
+        foreach ($ticket->lines() as $line) {
+            $ticketLines[] = [
+                'product_id' => $line->productId(),
+                'name' => $line->name(),
+                'quantity' => $line->quantity(),
+            ];
+        }
+
         return [
             'id' => $ticket->hasId() ? $ticket->id() : null,
             'order_id' => $ticket->orderId(),
+            'order_number' => $order['number'] ?? null,
+            'branch_id' => $ticket->branchId(),
+            'assignee_employee_id' => $ticket->assigneeEmployeeId(),
             'status' => $ticket->status()->value,
+            'lines' => $ticketLines,
             'started_at' => $ticket->startedAt()?->format(DATE_ATOM),
             'completed_at' => $ticket->completedAt()?->format(DATE_ATOM),
-            'order' => $order !== null ? $this->orderSnapshot($order) : null,
-        ];
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function orderSnapshot(Order $order): array
-    {
-        $delivery = $order->delivery();
-        $comment = null;
-        if (is_array($delivery['address'] ?? null)) {
-            $comment = $delivery['address']['comment'] ?? null;
-        }
-        if ($comment === null || $comment === '') {
-            $comment = $delivery['comment'] ?? null;
-        }
-
-        return [
-            'id' => $order->hasId() ? $order->id() : null,
-            'status' => $order->status()->value,
-            'lines' => is_array($order->cart()['lines'] ?? null) ? $order->cart()['lines'] : [],
-            'comment' => $comment,
+            'order' => $order,
         ];
     }
 }

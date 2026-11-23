@@ -14,7 +14,56 @@ export function listClients(query = {}) {
     return request("GET", `/clients${qs ? `?${qs}` : ""}`);
 }
 
+/**
+ * Найти или создать клиента по телефону (POS / ручной заказ).
+ * @param {{ name: string, phone: string }} data
+ */
+export function ensureClient(data) {
+    return request("POST", "/clients/ensure", data);
+}
+
 /** @param {number|string} id */
 export function getClient(id) {
     return request("GET", `/clients/${id}`);
+}
+
+/**
+ * @param {number|string} id
+ * @param {Record<string, unknown>} data
+ */
+export function updateClientProfile(id, data) {
+    return request("PATCH", `/clients/${id}`, data);
+}
+
+/**
+ * @param {number|string} clientId
+ * @param {Record<string, unknown>} data
+ */
+export function addClientAddress(clientId, data) {
+    return request("POST", `/clients/${clientId}/addresses`, data);
+}
+
+/**
+ * @param {number|string} clientId
+ * @param {string} addressId
+ * @param {Record<string, unknown>} data
+ */
+export function updateClientAddress(clientId, addressId, data) {
+    return request("PUT", `/clients/${clientId}/addresses/${addressId}`, data);
+}
+
+/**
+ * @param {number|string} clientId
+ * @param {string} addressId
+ */
+export function deleteClientAddress(clientId, addressId) {
+    return request("DELETE", `/clients/${clientId}/addresses/${addressId}`);
+}
+
+/**
+ * @param {number|string} clientId
+ * @param {string} addressId
+ */
+export function setDefaultClientAddress(clientId, addressId) {
+    return request("POST", `/clients/${clientId}/addresses/${addressId}/default`);
 }

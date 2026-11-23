@@ -7,6 +7,7 @@ export const DOMAIN_EVENTS = Object.freeze({
     CLIENT_ADDRESS_CREATED: "client.address_created",
     CLIENT_ADDRESS_DELETED: "client.address_deleted",
     CLIENT_ADDRESS_SELECTED: "client.address_selected",
+    BRANCH_CHANGED: "branch.changed",
     CART_ADD_REQUESTED: "cart.add_requested",
     CART_INCREMENT_REQUESTED: "cart.increment_requested",
     CART_DECREMENT_REQUESTED: "cart.decrement_requested",

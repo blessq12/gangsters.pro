@@ -4,9 +4,7 @@ import ProductionLayout from "./layouts/ProductionLayout.vue";
 const module = {
     role: "kitchen",
     home: "production-queue",
-    nav: [
-        { label: "Queue", routeName: "production-queue", order: 1 },
-    ],
+    nav: [],
     layout: ProductionLayout,
     routes: [
         {

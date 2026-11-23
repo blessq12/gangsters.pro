@@ -1,29 +1,31 @@
 <script setup>
 import { onMounted, ref, watch } from "vue";
-import { getClient, listClients } from "../../../api/clients.js";
+import { useRouter } from "vue-router";
+import { listClients } from "../../../api/clients.js";
 import { useApi } from "../../../shell/composables/useApi.js";
+import { usePagedList } from "../../../shell/composables/usePagedList.js";
 import { useToast } from "../../../shell/composables/useToast.js";
-import UiBadge from "../../../shell/components/ui/UiBadge.vue";
+import ShellIcon from "../../../shell/components/ShellIcon.vue";
+import UiButton from "../../../shell/components/ui/UiButton.vue";
 import UiCard from "../../../shell/components/ui/UiCard.vue";
 import UiInput from "../../../shell/components/ui/UiInput.vue";
-import UiModal from "../../../shell/components/ui/UiModal.vue";
 import UiPagination from "../../../shell/components/ui/UiPagination.vue";
 import UiTable from "../../../shell/components/ui/UiTable.vue";
-import UiButton from "../../../shell/components/ui/UiButton.vue";
 
+const router = useRouter();
 const toast = useToast();
 const listApi = useApi();
-const detailApi = useApi();
+const {
+    page,
+    perPage,
+    total,
+    items: rows,
+    offset,
+    resetPage,
+    applyPayload,
+} = usePagedList();
 
-const page = ref(1);
-const perPage = 20;
-const total = ref(0);
 const q = ref("");
-const rows = ref([]);
-
-const detailOpen = ref(false);
-const detailClient = ref(null);
-const detailOrders = ref([]);
 
 const columns = [
     { key: "id", label: "ID", width: "64px" },
@@ -31,13 +33,7 @@ const columns = [
     { key: "phone", label: "Телефон", width: "140px" },
     { key: "email", label: "Email" },
     { key: "created_at", label: "Создан", width: "160px" },
-];
-
-const orderColumns = [
-    { key: "id", label: "ID", width: "64px" },
-    { key: "status", label: "Статус", width: "120px" },
-    { key: "total", label: "Сумма", width: "90px" },
-    { key: "created_at", label: "Создан" },
+    { key: "actions", label: "", width: "88px" },
 ];
 
 function formatDate(value) {
@@ -54,45 +50,28 @@ function formatDate(value) {
 async function load() {
     try {
         const payload = await listApi.run(() => listClients({
-            offset: (page.value - 1) * perPage,
+            offset: offset.value,
             limit: perPage,
             q: q.value.trim() || undefined,
         }));
-        total.value = Number(payload?.total ?? 0);
-        rows.value = (payload?.items ?? []).map((client) => ({
+        applyPayload(payload, (client) => ({
             ...client,
             created_at: formatDate(client.created_at),
-            _raw: client,
         }));
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось загрузить клиентов");
     }
 }
 
-async function openDetail(row) {
-    detailClient.value = null;
-    detailOrders.value = [];
-    detailOpen.value = true;
-    try {
-        const payload = await detailApi.run(() => getClient(row.id));
-        detailClient.value = payload?.client ?? null;
-        detailOrders.value = (payload?.orders ?? []).map((order) => ({
-            id: order.id,
-            status: order.status,
-            total: `${order.total ?? 0} ₽`,
-            created_at: formatDate(order.created_at),
-        }));
-    } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Не удалось загрузить клиента");
-        detailOpen.value = false;
-    }
+function openClient(row) {
+    router.push({ name: "owner-client", params: { id: String(row.id) } });
 }
 
 let searchTimer = null;
 watch(q, () => {
     clearTimeout(searchTimer);
     searchTimer = setTimeout(() => {
-        page.value = 1;
+        resetPage();
         load();
     }, 300);
 });
@@ -102,11 +81,12 @@ onMounted(load);
 </script>
 
 <template>
-    <div class="space-y-4 p-4 md:p-6">
+    <div class="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
         <UiCard title="Клиенты">
-            <div class="mb-4 max-w-md">
+            <div class="mb-6 max-w-md">
                 <UiInput
                     v-model="q"
+                    type="search"
                     placeholder="Поиск: имя / телефон / email"
                 />
             </div>
@@ -116,10 +96,19 @@ onMounted(load);
                 :rows="rows"
                 :loading="listApi.loading"
                 empty-text="Нет клиентов"
-                @row-click="openDetail"
-            />
+                @row-click="openClient"
+            >
+                <template #cell-actions="{ row }">
+                    <UiButton
+                        class="!h-9 !px-2.5"
+                        @click.stop="openClient(row)"
+                    >
+                        <ShellIcon name="edit" class="h-4 w-4" />
+                    </UiButton>
+                </template>
+            </UiTable>
 
-            <div class="mt-4">
+            <div class="mt-6">
                 <UiPagination
                     :page="page"
                     :per-page="perPage"
@@ -128,43 +117,5 @@ onMounted(load);
                 />
             </div>
         </UiCard>
-
-        <UiModal
-            :open="detailOpen"
-            title="Клиент"
-            @close="detailOpen = false"
-        >
-            <div v-if="detailApi.loading" class="text-sm text-slate-500">
-                Загрузка…
-            </div>
-            <div v-else-if="detailClient" class="space-y-4 text-sm">
-                <div class="space-y-1">
-                    <p><span class="text-slate-500">ID:</span> {{ detailClient.id }}</p>
-                    <p><span class="text-slate-500">Имя:</span> {{ detailClient.name }}</p>
-                    <p><span class="text-slate-500">Телефон:</span> {{ detailClient.phone }}</p>
-                    <p><span class="text-slate-500">Email:</span> {{ detailClient.email ?? "—" }}</p>
-                    <p>
-                        <span class="text-slate-500">Создан:</span>
-                        {{ formatDate(detailClient.created_at) }}
-                    </p>
-                </div>
-
-                <div>
-                    <p class="mb-2 font-medium">История заказов</p>
-                    <UiTable
-                        :columns="orderColumns"
-                        :rows="detailOrders"
-                        empty-text="Нет заказов"
-                    >
-                        <template #cell-status="{ value }">
-                            <UiBadge variant="neutral" :text="String(value)" />
-                        </template>
-                    </UiTable>
-                </div>
-            </div>
-            <template #footer>
-                <UiButton @click="detailOpen = false">Закрыть</UiButton>
-            </template>
-        </UiModal>
     </div>
 </template>

@@ -75,7 +75,31 @@ export function normalizeCompanyProfile(apiProfile) {
         phone: safeTrim(apiProfile.phone) || null,
         email: safeTrim(apiProfile.email) || null,
         socials: normalizeSocials(apiProfile.socials),
-        schedule: normalizeScheduleObject(apiProfile.schedule),
+    };
+}
+
+/**
+ * Филиал (владелец расписания).
+ * @param {unknown} apiBranch
+ * @returns {object|null}
+ */
+export function normalizeBranch(apiBranch) {
+    if (!apiBranch || typeof apiBranch !== "object") {
+        return null;
+    }
+
+    const id = apiBranch.id;
+    if (id == null) {
+        return null;
+    }
+
+    return {
+        id,
+        company_id: apiBranch.company_id ?? null,
+        name: safeTrim(apiBranch.name) || null,
+        is_active: apiBranch.is_active !== false,
+        schedule: normalizeScheduleObject(apiBranch.schedule),
+        phone: safeTrim(apiBranch.phone) || null,
     };
 }
 
@@ -138,7 +162,7 @@ export function toDeliveryFactsView(delivery) {
 
     const settings = delivery.settings || {};
     const zone = delivery.zone || {};
-    const kitchen = zone.kitchen_address || {};
+    const branch = delivery.branch_address || zone.branch_address || {};
 
     return {
         min_order_amount_kopecks: settings.min_order_amount_kopecks ?? null,
@@ -147,15 +171,18 @@ export function toDeliveryFactsView(delivery) {
             settings.outside_zone_delivery_fee_kopecks ?? null,
         average_delivery_time_minutes:
             settings.average_delivery_time_minutes ?? null,
-        city: kitchen.city,
-        street: kitchen.street,
-        house: kitchen.house,
-        address_comment: kitchen.comment,
-        kitchen_latitude: zone.kitchen_latitude ?? null,
-        kitchen_longitude: zone.kitchen_longitude ?? null,
-        delivery_zone_geojson: zone.delivery_zone_geojson ?? null,
-        delivery_zones: Array.isArray(zone.delivery_zones)
-            ? zone.delivery_zones
-            : [],
+        city: branch.city,
+        street: branch.street,
+        house: branch.house,
+        address_comment: branch.comment,
+        branch_latitude: branch.latitude ?? zone.branch_latitude ?? null,
+        branch_longitude: branch.longitude ?? zone.branch_longitude ?? null,
+        delivery_zone_geojson:
+            delivery.zone_geojson ?? zone.delivery_zone_geojson ?? null,
+        delivery_zones: Array.isArray(delivery.zones)
+            ? delivery.zones
+            : Array.isArray(zone.delivery_zones)
+              ? zone.delivery_zones
+              : [],
     };
 }

@@ -2,54 +2,71 @@
 
 namespace Database\Seeders;
 
-use App\Domain\Delivery\Repository\DeliveryConfigurationRepository;
-use App\Infrastructure\Delivery\Model\DLV_Configuration;
+use Database\Seeders\Concerns\LoadsSeederJson;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use RuntimeException;
 
+/**
+ * Тариф и зоны доставки филиала Говорова из снапшота.
+ */
 class DeliverySeeder extends Seeder
 {
+    use LoadsSeederJson;
+
     public function run(): void
     {
-        $kitchenLatitude = 56.5129000;
-        $kitchenLongitude = 84.9861000;
+        $payload = $this->loadSeederJson('branch_delivery.json');
+        $config = is_array($payload['configuration'] ?? null) ? $payload['configuration'] : null;
+        $zones = is_array($payload['zones'] ?? null) ? $payload['zones'] : [];
 
-        $geometry = [
-            'type' => 'Polygon',
-            'coordinates' => [
-                [
-                    [$kitchenLongitude - 0.04, $kitchenLatitude - 0.03],
-                    [$kitchenLongitude + 0.04, $kitchenLatitude - 0.03],
-                    [$kitchenLongitude + 0.04, $kitchenLatitude + 0.03],
-                    [$kitchenLongitude - 0.04, $kitchenLatitude + 0.03],
-                    [$kitchenLongitude - 0.04, $kitchenLatitude - 0.03],
-                ],
-            ],
-        ];
+        if ($config === null || $zones === []) {
+            throw new RuntimeException('branch_delivery.json повреждён.');
+        }
 
-        DLV_Configuration::query()->updateOrCreate(
-            ['id' => DeliveryConfigurationRepository::SINGLETON_ID],
-            [
-                'min_order_amount_kopecks' => 100_000,
-                'delivery_fee_kopecks' => 40_000,
-                'outside_zone_delivery_fee_kopecks' => null,
-                'average_delivery_time_minutes' => 90,
-                'kitchen_city' => 'Томск',
-                'kitchen_street' => 'ул. Говорова',
-                'kitchen_house' => '50',
-                'kitchen_address' => 'Россия, Томская область, Томск, ул. Говорова, 50',
-                'kitchen_latitude' => $kitchenLatitude,
-                'kitchen_longitude' => $kitchenLongitude,
-                'delivery_zone_geojson' => $geometry,
-                'delivery_zones' => [
-                    [
-                        'id' => 'zone-main',
-                        'name' => 'Основная',
-                        'delivery_fee_kopecks' => 40_000,
-                        'is_remote' => false,
-                        'geometry' => $geometry,
-                    ],
-                ],
-            ],
-        );
+        DB::transaction(function () use ($config, $zones): void {
+            DB::table('DLV_zones')->delete();
+            DB::table('DLV_configurations')->delete();
+
+            DB::table('DLV_configurations')->insert([
+                'id' => (int) $config['id'],
+                'branch_id' => (int) $config['branch_id'],
+                'min_order_amount_kopecks' => $config['min_order_amount_kopecks'] ?? null,
+                'average_delivery_time_minutes' => $config['average_delivery_time_minutes'] ?? null,
+                'created_at' => $config['created_at'] ?? now(),
+                'updated_at' => $config['updated_at'] ?? now(),
+            ]);
+
+            foreach ($zones as $zone) {
+                if (! is_array($zone)) {
+                    continue;
+                }
+                DB::table('DLV_zones')->insert([
+                    'id' => (int) $zone['id'],
+                    'configuration_id' => (int) $zone['configuration_id'],
+                    'zone_key' => (string) $zone['zone_key'],
+                    'name' => (string) $zone['name'],
+                    'fee_kopecks' => (int) ($zone['fee_kopecks'] ?? 0),
+                    'is_remote' => (bool) ($zone['is_remote'] ?? false),
+                    'geojson' => $this->encodeJson($zone['geojson'] ?? null),
+                    'delivery_product_id' => $zone['delivery_product_id'] ?? null,
+                    'sort_order' => (int) ($zone['sort_order'] ?? 0),
+                    'created_at' => $zone['created_at'] ?? now(),
+                    'updated_at' => $zone['updated_at'] ?? now(),
+                ]);
+            }
+        });
+    }
+
+    private function encodeJson(mixed $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+        if (is_string($value)) {
+            return $value;
+        }
+
+        return json_encode($value, JSON_UNESCAPED_UNICODE);
     }
 }

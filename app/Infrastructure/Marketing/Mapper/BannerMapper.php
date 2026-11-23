@@ -2,13 +2,13 @@
 
 namespace App\Infrastructure\Marketing\Mapper;
 
-use App\Domain\Marketing\Entity\Banner;
-use App\Infrastructure\Marketing\Model\MKT_Banner;
+use App\Domain\Supporting\Marketing\Entity\Banner;
+use App\Infrastructure\Marketing\Model\BannerModel;
 use App\Infrastructure\Marketing\Support\PublicMediaUrl;
 
 final class BannerMapper
 {
-    public function toDomain(MKT_Banner $row): Banner
+    public function toDomain(BannerModel $row): Banner
     {
         return new Banner(
             id: (int) $row->id,

@@ -1,17 +1,23 @@
 import { request } from "../http/transport.js";
 
-export function getQueue() {
-    return request("GET", "/production/queue");
+/**
+ * @param {number|string} branchId
+ * @param {{ offset?: number, limit?: number }} [query]
+ */
+export function getQueue(branchId, query = {}) {
+    const params = new URLSearchParams({ branch_id: String(branchId) });
+    if (query.offset !== undefined) {
+        params.set("offset", String(query.offset));
+    }
+    if (query.limit !== undefined) {
+        params.set("limit", String(query.limit));
+    }
+    return request("GET", `/production/queue?${params}`);
 }
 
 /** @param {number|string} orderId */
 export function getTicket(orderId) {
     return request("GET", `/production/tickets/${orderId}`);
-}
-
-/** @param {number|string} orderId */
-export function enqueueTicket(orderId) {
-    return request("POST", `/production/tickets/${orderId}/queue`);
 }
 
 /** @param {number|string} orderId */

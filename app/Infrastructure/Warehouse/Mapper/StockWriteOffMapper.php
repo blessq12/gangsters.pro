@@ -2,16 +2,17 @@
 
 namespace App\Infrastructure\Warehouse\Mapper;
 
-use App\Domain\Warehouse\Entity\StockWriteOff;
-use App\Infrastructure\Warehouse\Model\WH_StockWriteOff;
+use App\Domain\Supporting\Warehouse\Entity\StockWriteOff;
+use App\Infrastructure\Warehouse\Model\StockWriteOffModel;
 use DateTimeImmutable;
 
 final class StockWriteOffMapper
 {
-    public function toDomain(WH_StockWriteOff $row): StockWriteOff
+    public function toDomain(StockWriteOffModel $row): StockWriteOff
     {
         return StockWriteOff::restore(
             id: (int) $row->id,
+            branchId: (int) $row->branch_id,
             ingredientId: (int) $row->ingredient_id,
             quantity: (float) $row->quantity,
             reason: (string) $row->reason,
@@ -28,11 +29,12 @@ final class StockWriteOffMapper
     public function toPersistence(StockWriteOff $writeOff): array
     {
         return [
+            'branch_id' => $writeOff->branchId(),
             'ingredient_id' => $writeOff->ingredientId(),
             'quantity' => $writeOff->quantity(),
             'reason' => $writeOff->reason(),
             'kitchen_ticket_id' => $writeOff->kitchenTicketId(),
-            'occurred_at' => $writeOff->occurredAt(),
+            'occurred_at' => $writeOff->occurredAt()->format('Y-m-d H:i:s'),
         ];
     }
 }

@@ -5,17 +5,16 @@ const module = {
     role: "owner",
     home: "owner-dashboard",
     nav: [
-        { label: "Dashboard", routeName: "owner-dashboard", order: 1 },
-        { label: "Orders", routeName: "owner-orders", order: 2 },
-        { label: "Catalog", routeName: "owner-catalog", order: 3 },
-        { label: "Company", routeName: "owner-company", order: 4 },
-        { label: "Delivery", routeName: "owner-delivery", order: 5 },
-        { label: "Promotion", routeName: "owner-promotion", order: 6 },
-        { label: "Marketing", routeName: "owner-marketing", order: 7 },
-        { label: "Staff", routeName: "owner-staff", order: 8 },
-        { label: "Clients", routeName: "owner-clients", order: 9 },
-        { label: "Warehouse", routeName: "owner-warehouse", order: 10 },
-        { label: "Finance", routeName: "owner-finance", order: 11 },
+        { label: "Дашборд", routeName: "owner-dashboard", icon: "dashboard", order: 1 },
+        { label: "Заказы", routeName: "owner-orders", icon: "orders", order: 2 },
+        { label: "Каталог", routeName: "owner-menu", icon: "menu", order: 3 },
+        { label: "Компания", routeName: "owner-company", icon: "company", order: 4 },
+        { label: "Доставка", routeName: "owner-delivery", icon: "delivery", order: 5 },
+        { label: "Маркетинг", routeName: "owner-marketing", icon: "marketing", order: 6 },
+        { label: "Сотрудники", routeName: "owner-staff", icon: "staff", order: 7 },
+        { label: "Клиенты", routeName: "owner-clients", icon: "clients", order: 8 },
+        { label: "Склад", routeName: "owner-warehouse", icon: "warehouse", order: 9 },
+        { label: "Финансы", routeName: "owner-finance", icon: "finance", order: 10 },
     ],
     routes: [
         {
@@ -33,13 +32,33 @@ const module = {
                 {
                     path: "orders",
                     name: "owner-orders",
-                    component: () => import("./screens/OrdersScreen.vue"),
+                    component: () => import("./screens/OrdersHubScreen.vue"),
+                    meta: { role: "owner" },
+                },
+                {
+                    path: "promotion",
+                    redirect: { name: "owner-orders", query: { section: "rules" } },
+                },
+                {
+                    path: "orders/:id",
+                    name: "owner-order",
+                    component: () => import("./screens/OrderCardScreen.vue"),
+                    meta: { role: "owner" },
+                },
+                {
+                    path: "menu",
+                    name: "owner-menu",
+                    component: () => import("./screens/CatalogMenuHubScreen.vue"),
                     meta: { role: "owner" },
                 },
                 {
                     path: "catalog",
-                    name: "owner-catalog",
-                    component: () => import("./screens/CatalogScreen.vue"),
+                    redirect: { name: "owner-menu" },
+                },
+                {
+                    path: "catalog/products/:id",
+                    name: "owner-catalog-product",
+                    component: () => import("./screens/ProductEditScreen.vue"),
                     meta: { role: "owner" },
                 },
                 {
@@ -49,15 +68,21 @@ const module = {
                     meta: { role: "owner" },
                 },
                 {
-                    path: "delivery",
-                    name: "owner-delivery",
-                    component: () => import("./screens/DeliveryScreen.vue"),
+                    path: "company/branches/:id",
+                    name: "owner-company-branch",
+                    component: () => import("./screens/BranchEditScreen.vue"),
                     meta: { role: "owner" },
                 },
                 {
-                    path: "promotion",
-                    name: "owner-promotion",
-                    component: () => import("./screens/PromotionScreen.vue"),
+                    path: "company/documents/:id",
+                    name: "owner-company-document",
+                    component: () => import("./screens/DocumentEditScreen.vue"),
+                    meta: { role: "owner" },
+                },
+                {
+                    path: "delivery",
+                    name: "owner-delivery",
+                    component: () => import("./screens/DeliveryScreen.vue"),
                     meta: { role: "owner" },
                 },
                 {
@@ -67,9 +92,27 @@ const module = {
                     meta: { role: "owner" },
                 },
                 {
+                    path: "marketing/banners/:id",
+                    name: "owner-marketing-banner",
+                    component: () => import("./screens/BannerEditScreen.vue"),
+                    meta: { role: "owner" },
+                },
+                {
+                    path: "marketing/promotions/:id",
+                    name: "owner-marketing-promotion",
+                    component: () => import("./screens/PromotionEditScreen.vue"),
+                    meta: { role: "owner" },
+                },
+                {
                     path: "staff",
                     name: "owner-staff",
                     component: () => import("./screens/StaffScreen.vue"),
+                    meta: { role: "owner" },
+                },
+                {
+                    path: "staff/:id",
+                    name: "owner-staff-employee",
+                    component: () => import("./screens/StaffEditScreen.vue"),
                     meta: { role: "owner" },
                 },
                 {
@@ -79,9 +122,27 @@ const module = {
                     meta: { role: "owner" },
                 },
                 {
+                    path: "clients/:id",
+                    name: "owner-client",
+                    component: () => import("./screens/ClientEditScreen.vue"),
+                    meta: { role: "owner" },
+                },
+                {
                     path: "warehouse",
                     name: "owner-warehouse",
                     component: () => import("./screens/WarehouseScreen.vue"),
+                    meta: { role: "owner" },
+                },
+                {
+                    path: "warehouse/ingredients/:id",
+                    name: "owner-warehouse-ingredient",
+                    component: () => import("./screens/WarehouseIngredientScreen.vue"),
+                    meta: { role: "owner" },
+                },
+                {
+                    path: "warehouse/branches/:branchId/items/:id",
+                    name: "owner-warehouse-branch-item",
+                    component: () => import("./screens/WarehouseBranchItemScreen.vue"),
                     meta: { role: "owner" },
                 },
                 {

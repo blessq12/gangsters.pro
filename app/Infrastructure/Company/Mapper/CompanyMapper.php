@@ -2,15 +2,13 @@
 
 namespace App\Infrastructure\Company\Mapper;
 
-use App\Domain\Company\Entity\Company;
-use App\Domain\Company\ValueObject\CompanySocials;
-use App\Infrastructure\Company\Model\CMP_Company;
+use App\Domain\Supporting\Company\Entity\Company;
+use App\Domain\Supporting\Company\ValueObject\CompanySocials;
+use App\Infrastructure\Company\Model\CompanyModel;
 
 final class CompanyMapper
 {
-    private const DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
-
-    public function toDomain(CMP_Company $row): Company
+    public function toDomain(CompanyModel $row): Company
     {
         return new Company(
             id: (int) $row->id,
@@ -19,7 +17,6 @@ final class CompanyMapper
             phone: $this->nullableString($row->phone),
             email: $this->nullableString($row->email),
             socials: $this->mapSocials($row->socials),
-            schedule: $this->mapSchedule($row->schedule),
         );
     }
 
@@ -34,35 +31,6 @@ final class CompanyMapper
             siteUrl: $this->nullableString($data['site_url'] ?? null),
             whatsapp: $this->nullableString($data['whatsapp'] ?? null),
         );
-    }
-
-    /**
-     * @return array<string, array{work: ?string, is_day_off: bool}>
-     */
-    private function mapSchedule(mixed $raw): array
-    {
-        $data = is_array($raw) ? $raw : [];
-        $out = [];
-
-        foreach (self::DAYS as $day) {
-            $row = $data[$day] ?? null;
-            if (! is_array($row)) {
-                $out[$day] = [
-                    'work' => null,
-                    'is_day_off' => false,
-                ];
-                continue;
-            }
-
-            $out[$day] = [
-                'work' => $this->nullableString($row['work'] ?? null),
-                'is_day_off' => $row['is_day_off'] === true
-                    || $row['is_day_off'] === 1
-                    || $row['is_day_off'] === '1',
-            ];
-        }
-
-        return $out;
     }
 
     private function nullableString(mixed $value): ?string

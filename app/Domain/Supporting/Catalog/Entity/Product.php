@@ -1,0 +1,103 @@
+<?php
+
+namespace App\Domain\Supporting\Catalog\Entity;
+
+use App\Domain\Supporting\Catalog\Enum\ProductStatus;
+use App\Domain\Supporting\Catalog\ValueObject\Nutrition;
+use App\Domain\Supporting\Catalog\ValueObject\ProductImage;
+
+/**
+ * Товар каталога — справочник без цен, категорий, тегов и сетов.
+ */
+final class Product
+{
+    /**
+     * @param  list<string>  $ingredients
+     * @param  list<ProductImage>  $images
+     */
+    public function __construct(
+        private readonly int $id,
+        private readonly string $name,
+        private readonly string $slug,
+        private readonly ?string $sku,
+        private readonly ProductStatus $status,
+        private readonly bool $isSystem,
+        private readonly bool $isRoll,
+        private readonly ?string $description,
+        private readonly ?Nutrition $nutrition,
+        private readonly array $ingredients = [],
+        private readonly array $images = [],
+        private readonly ?int $weight = null,
+    ) {}
+
+    public function id(): int
+    {
+        return $this->id;
+    }
+
+    public function name(): string
+    {
+        return $this->name;
+    }
+
+    public function slug(): string
+    {
+        return $this->slug;
+    }
+
+    public function sku(): ?string
+    {
+        return $this->sku;
+    }
+
+    public function status(): ProductStatus
+    {
+        return $this->status;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->status->isActive();
+    }
+
+    public function isSystem(): bool
+    {
+        return $this->isSystem;
+    }
+
+    public function isRoll(): bool
+    {
+        return $this->isRoll;
+    }
+
+    public function weight(): ?int
+    {
+        return $this->weight;
+    }
+
+    public function description(): ?string
+    {
+        return $this->description;
+    }
+
+    public function nutrition(): ?Nutrition
+    {
+        return $this->nutrition;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function ingredients(): array
+    {
+        return $this->ingredients;
+    }
+
+    /**
+     * @return list<ProductImage>
+     */
+    public function images(): array
+    {
+        return $this->images;
+    }
+}

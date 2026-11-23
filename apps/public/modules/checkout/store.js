@@ -1,21 +1,15 @@
 import { defineStore } from "pinia";
 import {
     bootstrapCheckoutStoreSession,
-    flushClientToServer,
-    flushDeliveryToServer,
-    flushPaymentToServer,
     persistCheckoutSession,
     placeOrderOnServer,
-    refreshOrderDraftPreview,
+    recomputeCheckout,
     setCheckoutPromotionGift,
     upsertLocalCartLine,
 } from "./application/session";
 import {
     buildCatalogCartLinePayload,
     CHECKOUT_PERSONS_DEFAULT,
-    mapClientToGuestContact,
-    mapDeliveryToLocal,
-    mapPaymentToLocal,
     normalizePaymentPatch,
 } from "./domain/checkoutServerMappers";
 import {
@@ -49,12 +43,15 @@ function resolveComplementProductIds() {
 export const useCheckoutStore = defineStore("checkout", {
     state: () => ({
         clientRequestId: null,
+        /** GET /checkout/context: меню, правила акций, зоны, rules_version. */
+        context: null,
         cartItems: [],
         itemsTotalRubles: 0,
         itemsSubtotalRubles: 0,
-        serverClient: null,
-        serverDelivery: null,
-        serverPayment: null,
+        /** Снимки локально сформированного заказа (для экрана подтверждения). */
+        formedClient: null,
+        formedDelivery: null,
+        formedPayment: null,
         deliveryInfo: {
             method: null,
             address: null,
@@ -91,10 +88,6 @@ export const useCheckoutStore = defineStore("checkout", {
         cartError: null,
         error: null,
         sessionReady: false,
-        /** Инкремент при сбросе сессии — отсекает устаревшие preview-ответы. */
-        previewRequestSeq: 0,
-        /** Гостевой адрес в черновике — не перезаписывать текст полей из preview. */
-        deliveryAddressDraftDirty: false,
     }),
     getters: {
         isDraft() {
@@ -181,12 +174,18 @@ export const useCheckoutStore = defineStore("checkout", {
         },
     },
     actions: {
-        applyFromServer(data) {
+        setContext(context) {
+            this.context = context && typeof context === "object" ? context : null;
+        },
+
+        /**
+         * Применяет локально сформированный заказ. Формы клиента (доставка, оплата, контакт) —
+         * это намерение, поэтому здесь не перезаписываются.
+         */
+        applyFormation(data) {
             if (!data || typeof data !== "object") {
                 return;
             }
-
-            this.clientRequestId = data.client_request_id ?? this.clientRequestId;
 
             const cart = normalizeCheckoutCartBlock(data.cart);
             this.cartItems = cart.items;
@@ -194,41 +193,13 @@ export const useCheckoutStore = defineStore("checkout", {
             this.itemsSubtotalRubles = cart.itemsSubtotalRubles;
 
             if (Object.prototype.hasOwnProperty.call(data, "client")) {
-                this.serverClient = data.client ?? null;
-                if (data.client?.kind === "guest") {
-                    this.guestContact = mapClientToGuestContact(data.client);
-                }
+                this.formedClient = data.client ?? null;
             }
-
-            if (Object.prototype.hasOwnProperty.call(data, "delivery")) {
-                this.serverDelivery = data.delivery ?? null;
-                if (data.delivery && typeof data.delivery === "object") {
-                    const mapped = mapDeliveryToLocal(data.delivery);
-                    if (this.deliveryAddressDraftDirty) {
-                        this.deliveryInfo = {
-                            ...this.deliveryInfo,
-                            method: mapped.method ?? this.deliveryInfo.method,
-                            comment: mapped.comment ?? this.deliveryInfo.comment,
-                            persons:
-                                mapped.persons ?? this.deliveryInfo.persons,
-                            scheduledAt:
-                                mapped.scheduledAt ?? this.deliveryInfo.scheduledAt,
-                        };
-                    } else {
-                        this.deliveryInfo = mapped;
-                    }
-                }
-            }
-
-            if (Object.prototype.hasOwnProperty.call(data, "payment")) {
-                this.serverPayment = data.payment ?? null;
-                if (data.payment && typeof data.payment === "object") {
-                    this.paymentInfo = mapPaymentToLocal(data.payment);
-                }
-            }
+            this.formedDelivery = data.delivery ?? null;
+            this.formedPayment = data.payment ?? null;
 
             this._applyCartPromoSnapshot(data.cart ?? null);
-            this._syncSelectedGiftFromServer();
+            this._syncSelectedGift();
             if (Object.prototype.hasOwnProperty.call(data, "delivery_pricing")) {
                 this._applyDeliveryPricingSnapshot(data.delivery_pricing);
             }
@@ -260,7 +231,7 @@ export const useCheckoutStore = defineStore("checkout", {
                     : {};
         },
 
-        _syncSelectedGiftFromServer() {
+        _syncSelectedGift() {
             const giftLine = selectedGiftCartLine(this.cartItems);
             if (giftLine) {
                 this.promotions = {
@@ -434,14 +405,13 @@ export const useCheckoutStore = defineStore("checkout", {
         },
 
         clearAfterCompleted() {
-            this.previewRequestSeq += 1;
             this.clientRequestId = null;
             this.cartItems = [];
             this.itemsTotalRubles = 0;
             this.itemsSubtotalRubles = 0;
-            this.serverClient = null;
-            this.serverDelivery = null;
-            this.serverPayment = null;
+            this.formedClient = null;
+            this.formedDelivery = null;
+            this.formedPayment = null;
             this.promoState = {};
             this.deliveryPricing = null;
             this.benefitsProgress = null;
@@ -460,7 +430,6 @@ export const useCheckoutStore = defineStore("checkout", {
         },
 
         clearLocalForms() {
-            this.deliveryAddressDraftDirty = false;
             this.deliveryInfo = {
                 method: null,
                 address: null,
@@ -495,7 +464,7 @@ export const useCheckoutStore = defineStore("checkout", {
                 [id]: nextQty,
             };
             this.persistSession();
-            await refreshOrderDraftPreview(this);
+            await recomputeCheckout(this);
         },
 
         patchLocal(partial) {
@@ -547,6 +516,8 @@ export const useCheckoutStore = defineStore("checkout", {
             if (streetChanged || houseChanged) {
                 delete next.latitude;
                 delete next.longitude;
+                delete next.lat;
+                delete next.lng;
             }
 
             this.deliveryInfo = {
@@ -555,35 +526,12 @@ export const useCheckoutStore = defineStore("checkout", {
             };
         },
 
-        setDeliveryAddressDraftDirty(dirty = true) {
-            this.deliveryAddressDraftDirty = Boolean(dirty);
-        },
-
-        invalidateDeliveryZoneResolve() {
-            if (this.deliveryPricing) {
-                this.deliveryPricing = {
-                    ...this.deliveryPricing,
-                    inZone: null,
-                };
-            }
-
-            if (this.orderPreview?.totals) {
-                this.orderPreview = {
-                    ...this.orderPreview,
-                    totals: {
-                        ...this.orderPreview.totals,
-                        inZone: null,
-                    },
-                };
-            }
-        },
-
         updateCartLine(product, quantity, payload = null) {
             upsertLocalCartLine(this, product, quantity, payload);
             if (!this.hasMenuUserItems) {
                 return this.clearCart();
             }
-            return refreshOrderDraftPreview(this);
+            return recomputeCheckout(this);
         },
 
         async addToCart(product, qty = 1) {
@@ -652,7 +600,7 @@ export const useCheckoutStore = defineStore("checkout", {
                     await this.clearCart();
                     return;
                 }
-                await refreshOrderDraftPreview(this);
+                await recomputeCheckout(this);
             } catch (e) {
                 this.cartError =
                     e?.response?.data?.message || "Не удалось обновить корзину.";
@@ -679,11 +627,10 @@ export const useCheckoutStore = defineStore("checkout", {
         },
 
         /**
-         * Сброс корзины и quote-снимка (комплекты, promo, pricing).
+         * Сброс корзины и сформированного заказа (комплекты, promo, pricing).
          * Формы доставки/оплаты/гостя не трогает.
          */
         resetQuoteState() {
-            this.previewRequestSeq += 1;
             this.cartItems = [];
             this.itemsTotalRubles = 0;
             this.itemsSubtotalRubles = 0;
@@ -697,9 +644,9 @@ export const useCheckoutStore = defineStore("checkout", {
             this.suggestedStep = null;
             this.wizardCanConfirm = false;
             this.wizardMissingBlocks = [];
-            this.serverClient = null;
-            this.serverDelivery = null;
-            this.serverPayment = null;
+            this.formedClient = null;
+            this.formedDelivery = null;
+            this.formedPayment = null;
             this.cartError = null;
             this.error = null;
         },
@@ -713,7 +660,7 @@ export const useCheckoutStore = defineStore("checkout", {
                     await this.clearCart();
                     return;
                 }
-                await refreshOrderDraftPreview(this);
+                await recomputeCheckout(this);
             } catch (e) {
                 this.cartError =
                     e?.response?.data?.message || "Не удалось обновить корзину.";
@@ -723,16 +670,8 @@ export const useCheckoutStore = defineStore("checkout", {
             }
         },
 
-        flushClientToServer(options = {}) {
-            return flushClientToServer(this, options);
-        },
-
-        flushDeliveryToServer(selectedAddress = null) {
-            return flushDeliveryToServer(this, selectedAddress);
-        },
-
-        flushPaymentToServer() {
-            return flushPaymentToServer(this);
+        recompute(selectedAddress = null, options = {}) {
+            return recomputeCheckout(this, selectedAddress, options);
         },
 
         confirmCheckout() {

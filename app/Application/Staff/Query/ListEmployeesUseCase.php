@@ -2,9 +2,10 @@
 
 namespace App\Application\Staff\Query;
 
+use App\Application\Shared\PageParams;
 use App\Application\Staff\Presenter\EmployeePresenter;
-use App\Domain\Staff\Enum\StaffRole;
-use App\Domain\Staff\Repository\EmployeeRepository;
+use App\Domain\Supporting\Staff\Enum\StaffRole;
+use App\Domain\Supporting\Staff\Repository\EmployeeRepository;
 
 final class ListEmployeesUseCase
 {
@@ -14,10 +15,17 @@ final class ListEmployeesUseCase
     ) {}
 
     /**
-     * @return list<array<string, mixed>>
+     * @return array{items: list<array<string, mixed>>, total: int, offset: int, limit: int}
      */
-    public function execute(?string $role = null, ?bool $isActive = null): array
-    {
+    public function execute(
+        ?string $role = null,
+        ?bool $isActive = null,
+        ?int $branchId = null,
+        int $offset = 0,
+        int $limit = PageParams::DEFAULT_LIMIT,
+    ): array {
+        ['offset' => $offset, 'limit' => $limit] = PageParams::normalize($offset, $limit);
+
         $staffRole = null;
         if ($role !== null && trim($role) !== '') {
             $staffRole = StaffRole::tryFrom(trim($role));
@@ -26,8 +34,17 @@ final class ListEmployeesUseCase
             }
         }
 
-        return $this->presenter->presentList(
-            $this->employees->list($staffRole, $isActive),
+        if ($branchId !== null && $branchId < 1) {
+            throw new \InvalidArgumentException('Некорректный филиал.');
+        }
+
+        return PageParams::wrap(
+            $this->presenter->presentList(
+                $this->employees->listPage($offset, $limit, $staffRole, $isActive, $branchId),
+            ),
+            $this->employees->count($staffRole, $isActive, $branchId),
+            $offset,
+            $limit,
         );
     }
 }

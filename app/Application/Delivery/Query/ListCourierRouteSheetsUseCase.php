@@ -3,7 +3,8 @@
 namespace App\Application\Delivery\Query;
 
 use App\Application\Delivery\Presenter\RouteSheetPresenter;
-use App\Domain\Delivery\Repository\RouteSheetRepository;
+use App\Application\Shared\PageParams;
+use App\Domain\Core\Delivery\Routing\Repository\RouteSheetRepository;
 
 final class ListCourierRouteSheetsUseCase
 {
@@ -13,21 +14,29 @@ final class ListCourierRouteSheetsUseCase
     ) {}
 
     /**
-     * @return list<array<string, mixed>>
+     * Активные листы, назначенные на этого курьера.
+     *
+     * @return array{items: list<array<string, mixed>>, total: int, offset: int, limit: int}
      */
-    public function execute(int $courierId): array
-    {
+    public function execute(
+        int $courierId,
+        int $offset = 0,
+        int $limit = PageParams::DEFAULT_LIMIT,
+    ): array {
         if ($courierId < 1) {
             throw new \InvalidArgumentException('courierId должен быть положительным.');
         }
 
-        $own = [];
-        foreach ($this->sheets->listActive() as $sheet) {
-            if ($sheet->courierId() === $courierId) {
-                $own[] = $sheet;
-            }
-        }
+        ['offset' => $offset, 'limit' => $limit] = PageParams::normalize($offset, $limit);
 
-        return $this->presenter->presentList($own);
+        return PageParams::wrap(
+            $this->presenter->presentList(
+                $this->sheets->listVisibleToCourierPage($courierId, $offset, $limit),
+                hideCancelled: true,
+            ),
+            $this->sheets->countVisibleToCourier($courierId),
+            $offset,
+            $limit,
+        );
     }
 }

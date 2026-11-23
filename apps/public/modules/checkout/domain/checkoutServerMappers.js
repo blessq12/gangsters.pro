@@ -81,18 +81,6 @@ export const CHECKOUT_DELIVERY_METHOD_META = {
     },
 };
 
-export function mapClientToGuestContact(client) {
-    if (!client || typeof client !== "object") {
-        return { name: "", phone: "", email: "" };
-    }
-
-    return {
-        name: typeof client.name === "string" ? client.name : "",
-        phone: typeof client.phone === "string" ? client.phone : "",
-        email: typeof client.email === "string" ? client.email : "",
-    };
-}
-
 export const CHECKOUT_PERSONS_MIN = 1;
 export const CHECKOUT_PERSONS_MAX = 99;
 export const CHECKOUT_PERSONS_DEFAULT = 1;
@@ -112,43 +100,6 @@ export function normalizePersonsCount(value) {
         CHECKOUT_PERSONS_MAX,
         Math.max(CHECKOUT_PERSONS_MIN, Math.trunc(n)),
     );
-}
-
-export function mapDeliveryToLocal(delivery) {
-    if (!delivery || typeof delivery !== "object") {
-        return {
-            method: null,
-            address: null,
-            comment: "",
-            persons: CHECKOUT_PERSONS_DEFAULT,
-            scheduledAt: null,
-        };
-    }
-
-    return {
-        method: delivery.method ?? null,
-        address: delivery.address ?? null,
-        comment: normalizeDeliveryComment(delivery.comment),
-        persons: normalizePersonsCount(delivery.persons),
-        scheduledAt: delivery.scheduled_at ?? null,
-    };
-}
-
-export function mapPaymentToLocal(payment) {
-    if (!payment || typeof payment !== "object") {
-        return {
-            method: null,
-            changeFrom: null,
-        };
-    }
-
-    return {
-        method:
-            payment.method != null
-                ? fromServerCheckoutPaymentMethod(payment.method)
-                : null,
-        changeFrom: payment.change_from_rubles ?? null,
-    };
 }
 
 export function buildClientPayload(store, { clientId = null, isGuest = false, profile = null } = {}) {
@@ -184,10 +135,21 @@ export function buildClientPayload(store, { clientId = null, isGuest = false, pr
     };
 }
 
+function toCoordOrNull(value) {
+    if (value === null || value === undefined || value === "") {
+        return null;
+    }
+    const number = Number(value);
+    return Number.isFinite(number) ? number : null;
+}
+
 function buildDeliveryAddressPayload(source) {
     if (!source || typeof source !== "object") {
         return null;
     }
+
+    const lat = toCoordOrNull(source.lat ?? source.latitude);
+    const lng = toCoordOrNull(source.lng ?? source.longitude);
 
     return {
         street: source.street ?? "",
@@ -195,6 +157,8 @@ function buildDeliveryAddressPayload(source) {
         entrance: source.entrance ?? null,
         floor: source.floor ?? null,
         apartment: source.apartment ?? null,
+        lat,
+        lng,
     };
 }
 

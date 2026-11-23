@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Backoffice;
 use App\Application\Delivery\Command\CreateRouteSheetUseCase;
 use App\Application\Delivery\Command\SaveDeliveryConfigurationUseCase;
 use App\Application\Delivery\Command\SaveDeliveryZoneUseCase;
+use App\Application\Delivery\Command\SaveDeliveryZonesUseCase;
 use App\Application\Delivery\Command\SettleStopUseCase;
 use App\Application\Delivery\Command\TakeRouteSheetUseCase;
 use App\Application\Delivery\DTO\CreateRouteSheetDto;
@@ -15,17 +16,24 @@ use App\Application\Delivery\DTO\TakeRouteSheetDto;
 use App\Application\Delivery\Query\GetAdminDeliveryUseCase;
 use App\Application\Delivery\Query\GetRouteSheetUseCase;
 use App\Application\Delivery\Query\ListActiveRouteSheetsUseCase;
+use App\Application\Delivery\Query\ListAdminDeliveryZonesUseCase;
+use App\Domain\Supporting\Staff\Enum\StaffRole;
 use App\Http\Controllers\Controller;
+use App\Infrastructure\Staff\Model\EmployeeModel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use InvalidArgumentException;
 
 final class DeliveryController extends Controller
 {
-    public function show(GetAdminDeliveryUseCase $useCase): JsonResponse
+    public function show(Request $request, GetAdminDeliveryUseCase $useCase): JsonResponse
     {
+        $validated = $request->validate([
+            'branch_id' => ['required', 'integer', 'min:1'],
+        ]);
+
         try {
-            return response()->json($useCase->execute());
+            return response()->json($useCase->execute((int) $validated['branch_id']));
         } catch (InvalidArgumentException $exception) {
             return response()->json(['message' => $exception->getMessage()], 404);
         }
@@ -41,6 +49,31 @@ final class DeliveryController extends Controller
         return $this->saveConfiguration($request, $useCase, 200);
     }
 
+    public function replaceZones(Request $request, SaveDeliveryZonesUseCase $useCase): JsonResponse
+    {
+        $validated = $request->validate([
+            'branch_id' => ['required', 'integer', 'min:1'],
+            'zones' => ['required', 'array'],
+            'zones.*.id' => ['nullable', 'string', 'max:64'],
+            'zones.*.name' => ['required', 'string', 'max:255'],
+            'zones.*.fee' => ['nullable', 'integer', 'min:0'],
+            'zones.*.fee_rubles' => ['nullable', 'integer', 'min:0'],
+            'zones.*.is_remote' => ['sometimes', 'boolean'],
+            'zones.*.geometry' => ['required', 'array'],
+            'zones.*.geometry.type' => ['required', 'string', 'in:Polygon,MultiPolygon'],
+            'zones.*.geometry.coordinates' => ['required', 'array'],
+        ]);
+
+        try {
+            return response()->json($useCase->execute(
+                branchId: (int) $validated['branch_id'],
+                zones: $validated['zones'],
+            ));
+        } catch (InvalidArgumentException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
+    }
+
     public function storeZone(Request $request, SaveDeliveryZoneUseCase $useCase): JsonResponse
     {
         return $this->saveZone($request, $useCase, null);
@@ -51,15 +84,48 @@ final class DeliveryController extends Controller
         return $this->saveZone($request, $useCase, $id);
     }
 
-    public function listRouteSheets(ListActiveRouteSheetsUseCase $useCase): JsonResponse
+    public function listZones(Request $request, ListAdminDeliveryZonesUseCase $useCase): JsonResponse
     {
-        return response()->json($useCase->execute());
+        $validated = $request->validate([
+            'branch_id' => ['required', 'integer', 'min:1'],
+        ]);
+
+        return response()->json($useCase->execute(
+            branchId: (int) $validated['branch_id'],
+            offset: (int) $request->query('offset', 0),
+            limit: (int) $request->query('limit', 20),
+        ));
     }
 
-    public function showRouteSheet(int $id, GetRouteSheetUseCase $useCase): JsonResponse
+    public function listRouteSheets(Request $request, ListActiveRouteSheetsUseCase $useCase): JsonResponse
     {
+        $validated = $request->validate([
+            'branch_id' => ['required', 'integer', 'min:1'],
+            'offset' => ['sometimes', 'integer', 'min:0'],
+            'limit' => ['sometimes', 'integer', 'min:1', 'max:100'],
+        ]);
+
         try {
-            return response()->json($useCase->execute($id));
+            return response()->json($useCase->execute(
+                branchId: (int) $validated['branch_id'],
+                offset: (int) ($validated['offset'] ?? 0),
+                limit: (int) ($validated['limit'] ?? 20),
+            ));
+        } catch (InvalidArgumentException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
+    }
+
+    public function showRouteSheet(Request $request, int $id, GetRouteSheetUseCase $useCase): JsonResponse
+    {
+        $forCourierId = null;
+        $user = $request->user('sanctum');
+        if ($user instanceof EmployeeModel && (string) $user->role === StaffRole::Courier->value) {
+            $forCourierId = (int) $user->id;
+        }
+
+        try {
+            return response()->json($useCase->execute($id, $forCourierId));
         } catch (InvalidArgumentException $exception) {
             return response()->json(['message' => $exception->getMessage()], 404);
         }
@@ -108,7 +174,7 @@ final class DeliveryController extends Controller
         SettleStopUseCase $useCase,
     ): JsonResponse {
         $validated = $request->validate([
-            'outcome' => ['required', 'string', 'in:delivered,failed'],
+            'outcome' => ['required', 'string', 'in:delivered,written_off'],
             'reason' => ['nullable', 'string', 'max:500'],
         ]);
 
@@ -134,18 +200,14 @@ final class DeliveryController extends Controller
         $validated = $request->validate([
             'min_order_rubles' => ['nullable', 'integer', 'min:0'],
             'average_delivery_time_minutes' => ['nullable', 'integer', 'min:0'],
-            'kitchen' => ['sometimes', 'array'],
-            'kitchen.city' => ['nullable', 'string', 'max:255'],
-            'kitchen.street' => ['nullable', 'string', 'max:255'],
-            'kitchen.house' => ['nullable', 'string', 'max:64'],
-            'kitchen.comment' => ['nullable', 'string'],
-            'kitchen.search_line' => ['nullable', 'string', 'max:255'],
+            'branch_id' => ['required', 'integer', 'min:1'],
             'zones' => ['sometimes', 'array'],
             'zones.*.id' => ['required', 'string', 'max:64'],
             'zones.*.name' => ['required', 'string', 'max:255'],
             'zones.*.fee' => ['nullable', 'integer', 'min:0'],
             'zones.*.fee_rubles' => ['nullable', 'integer', 'min:0'],
             'zones.*.is_remote' => ['sometimes', 'boolean'],
+            'zones.*.geometry' => ['sometimes', 'array'],
         ]);
 
         try {
@@ -156,8 +218,8 @@ final class DeliveryController extends Controller
                 averageDeliveryTimeMinutes: isset($validated['average_delivery_time_minutes'])
                     ? (int) $validated['average_delivery_time_minutes']
                     : null,
-                kitchen: is_array($validated['kitchen'] ?? null) ? $validated['kitchen'] : [],
-                zones: is_array($validated['zones'] ?? null) ? $validated['zones'] : [],
+                branchId: (int) $validated['branch_id'],
+                zones: array_key_exists('zones', $validated) ? $validated['zones'] : null,
             ));
         } catch (InvalidArgumentException $exception) {
             return response()->json(['message' => $exception->getMessage()], 422);
@@ -172,6 +234,7 @@ final class DeliveryController extends Controller
         ?string $id,
     ): JsonResponse {
         $validated = $request->validate([
+            'branch_id' => ['required', 'integer', 'min:1'],
             'name' => ['required', 'string', 'max:255'],
             'fee' => ['required', 'integer', 'min:0'],
             'is_remote' => ['sometimes', 'boolean'],
@@ -182,6 +245,7 @@ final class DeliveryController extends Controller
 
         try {
             $result = $useCase->execute(new SaveDeliveryZoneDto(
+                branchId: (int) $validated['branch_id'],
                 id: $id,
                 name: $validated['name'],
                 feeRubles: (int) $validated['fee'],

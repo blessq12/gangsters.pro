@@ -4,9 +4,9 @@ namespace App\Application\Warehouse\Command;
 
 use App\Application\Warehouse\DTO\AdjustStockLevelDto;
 use App\Application\Warehouse\Presenter\StockLevelPresenter;
-use App\Domain\Warehouse\Entity\StockLevel;
-use App\Domain\Warehouse\Repository\IngredientRepository;
-use App\Domain\Warehouse\Repository\StockLevelRepository;
+use App\Domain\Supporting\Warehouse\Entity\StockLevel;
+use App\Domain\Supporting\Warehouse\Repository\IngredientRepository;
+use App\Domain\Supporting\Warehouse\Repository\StockLevelRepository;
 
 final class AdjustStockLevelUseCase
 {
@@ -25,7 +25,7 @@ final class AdjustStockLevelUseCase
             throw new \InvalidArgumentException('Ингредиент не найден.');
         }
 
-        $current = $this->levels->findByIngredientId($dto->ingredientId);
+        $current = $this->levels->findByBranchAndIngredient($dto->branchId, $dto->ingredientId);
         $currentQty = $current?->quantity() ?? 0.0;
         $nextQty = $currentQty + $dto->delta;
 
@@ -33,7 +33,7 @@ final class AdjustStockLevelUseCase
             throw new \InvalidArgumentException('Остаток не может стать отрицательным.');
         }
 
-        $level = new StockLevel($dto->ingredientId, $nextQty);
+        $level = new StockLevel($dto->branchId, $dto->ingredientId, $nextQty);
         $this->levels->save($level);
 
         return $this->presenter->present($level);

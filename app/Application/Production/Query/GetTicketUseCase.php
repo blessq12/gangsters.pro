@@ -3,14 +3,14 @@
 namespace App\Application\Production\Query;
 
 use App\Application\Production\Presenter\KitchenTicketPresenter;
-use App\Domain\Order\Repository\OrderRepository;
-use App\Domain\Production\Repository\KitchenTicketRepository;
+use App\Domain\Core\Production\Port\ProductionOrderSnapshotPort;
+use App\Domain\Core\Production\Repository\KitchenTicketRepository;
 
 final class GetTicketUseCase
 {
     public function __construct(
         private readonly KitchenTicketRepository $tickets,
-        private readonly OrderRepository $orders,
+        private readonly ProductionOrderSnapshotPort $orders,
         private readonly KitchenTicketPresenter $presenter,
     ) {}
 
@@ -24,8 +24,6 @@ final class GetTicketUseCase
             throw new \InvalidArgumentException('Тикет не найден.');
         }
 
-        $order = $this->orders->findById($orderId);
-
-        return $this->presenter->present($ticket, $order);
+        return $this->presenter->present($ticket, $this->orders->find($orderId));
     }
 }

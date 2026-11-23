@@ -2,10 +2,10 @@
 
 namespace App\Infrastructure\Staff\Repository;
 
-use App\Domain\Staff\Entity\Employee;
-use App\Domain\Staff\Enum\StaffRole;
-use App\Domain\Staff\Repository\EmployeeRepository;
-use App\Models\User;
+use App\Domain\Supporting\Staff\Entity\Employee;
+use App\Domain\Supporting\Staff\Enum\StaffRole;
+use App\Domain\Supporting\Staff\Repository\EmployeeRepository;
+use App\Infrastructure\Staff\Model\EmployeeModel;
 use DateTimeImmutable;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -13,45 +13,77 @@ final class EloquentEmployeeRepository implements EmployeeRepository
 {
     public function save(Employee $employee): void
     {
-        $user = $employee->hasId()
-            ? User::query()->find($employee->id())
-            : new User();
+        $row = $employee->hasId()
+            ? EmployeeModel::query()->find($employee->id())
+            : new EmployeeModel();
 
-        if (! $user instanceof User) {
+        if (! $row instanceof EmployeeModel) {
             throw new \InvalidArgumentException('Сотрудник не найден.');
         }
 
-        $user->name = $employee->name();
-        $user->email = $employee->email();
-        $user->tel = $employee->phone();
-        $user->role = $employee->role()->value;
-        $user->is_active = $employee->isActive();
-        $user->password = $employee->passwordHash();
-        $user->save();
+        $row->name = $employee->name();
+        $row->email = $employee->email();
+        $row->phone = $employee->phone();
+        $row->role = $employee->role()->value;
+        $row->branch_id = $employee->branchId();
+        $row->is_active = $employee->isActive();
+        $row->password_hash = $employee->passwordHash();
+        $row->save();
 
         if (! $employee->hasId()) {
-            $employee->assignId((int) $user->id);
+            $employee->assignId((int) $row->id);
         }
     }
 
     public function findById(int $id): ?Employee
     {
-        $user = User::query()->find($id);
+        $row = EmployeeModel::query()->find($id);
 
-        return $user instanceof User ? $this->map($user) : null;
+        return $row instanceof EmployeeModel ? $this->map($row) : null;
     }
 
     public function findByEmail(string $email): ?Employee
     {
-        $user = User::query()->where('email', trim($email))->first();
+        $row = EmployeeModel::query()->where('email', trim($email))->first();
 
-        return $user instanceof User ? $this->map($user) : null;
+        return $row instanceof EmployeeModel ? $this->map($row) : null;
     }
 
-    public function list(?StaffRole $role = null, ?bool $isActive = null): array
+    public function list(?StaffRole $role = null, ?bool $isActive = null, ?int $branchId = null): array
     {
-        /** @var Builder<User> $query */
-        $query = User::query()->orderBy('id');
+        return $this->listPage(0, max(1, $this->count($role, $isActive, $branchId)), $role, $isActive, $branchId);
+    }
+
+    public function listPage(
+        int $offset,
+        int $limit,
+        ?StaffRole $role = null,
+        ?bool $isActive = null,
+        ?int $branchId = null,
+    ): array {
+        return $this->filteredQuery($role, $isActive, $branchId)
+            ->offset(max(0, $offset))
+            ->limit(max(1, $limit))
+            ->get()
+            ->map(fn (EmployeeModel $row): Employee => $this->map($row))
+            ->all();
+    }
+
+    public function count(?StaffRole $role = null, ?bool $isActive = null, ?int $branchId = null): int
+    {
+        return (int) $this->filteredQuery($role, $isActive, $branchId)->count();
+    }
+
+    /**
+     * @return Builder<EmployeeModel>
+     */
+    private function filteredQuery(
+        ?StaffRole $role = null,
+        ?bool $isActive = null,
+        ?int $branchId = null,
+    ): Builder {
+        /** @var Builder<EmployeeModel> $query */
+        $query = EmployeeModel::query()->orderBy('id');
 
         if ($role instanceof StaffRole) {
             $query->where('role', $role->value);
@@ -59,35 +91,27 @@ final class EloquentEmployeeRepository implements EmployeeRepository
         if ($isActive !== null) {
             $query->where('is_active', $isActive);
         }
-
-        return $query->get()
-            ->map(fn (User $user): Employee => $this->map($user))
-            ->all();
-    }
-
-    public function delete(int $id): void
-    {
-        $user = User::query()->find($id);
-        if (! $user instanceof User) {
-            throw new \InvalidArgumentException('Сотрудник не найден.');
+        if ($branchId !== null) {
+            $query->where('branch_id', $branchId);
         }
 
-        $user->delete();
+        return $query;
     }
 
-    private function map(User $user): Employee
+    private function map(EmployeeModel $row): Employee
     {
-        $role = StaffRole::tryFrom((string) $user->role) ?? StaffRole::Administrator;
+        $role = StaffRole::tryFrom((string) $row->role) ?? StaffRole::Administrator;
 
         return Employee::restore(
-            id: (int) $user->id,
-            name: (string) $user->name,
-            email: (string) $user->email,
-            phone: $user->tel !== null && $user->tel !== '' ? (string) $user->tel : null,
+            id: (int) $row->id,
+            name: (string) $row->name,
+            email: (string) $row->email,
+            phone: $row->phone !== null && $row->phone !== '' ? (string) $row->phone : null,
             role: $role,
-            passwordHash: (string) $user->getAuthPassword(),
-            isActive: (bool) $user->is_active,
-            createdAt: $user->created_at?->toDateTimeImmutable() ?? new DateTimeImmutable(),
+            passwordHash: (string) $row->password_hash,
+            isActive: (bool) $row->is_active,
+            createdAt: $row->created_at?->toDateTimeImmutable() ?? new DateTimeImmutable(),
+            branchId: $row->branch_id !== null ? (int) $row->branch_id : null,
         );
     }
 }

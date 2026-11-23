@@ -2,12 +2,12 @@
 
 namespace App\Infrastructure\Marketing\Repository;
 
-use App\Domain\Marketing\Entity\Promotion;
-use App\Domain\Marketing\Repository\PromotionRepository;
+use App\Domain\Supporting\Marketing\Entity\Campaign;
+use App\Domain\Supporting\Marketing\Repository\CampaignRepository;
 use App\Infrastructure\Marketing\Mapper\PromotionMapper;
-use App\Infrastructure\Marketing\Model\MKT_Promotion;
+use App\Infrastructure\Marketing\Model\PromotionMediaModel;
 
-final class EloquentPromotionRepository implements PromotionRepository
+final class EloquentPromotionRepository implements CampaignRepository
 {
     public function __construct(
         private readonly PromotionMapper $mapper,
@@ -15,29 +15,65 @@ final class EloquentPromotionRepository implements PromotionRepository
 
     public function findActiveOrdered(): array
     {
-        return MKT_Promotion::query()
+        return PromotionMediaModel::query()
             ->where('is_active', true)
             ->orderBy('sort_order')
             ->orderBy('id')
             ->get()
-            ->map(fn (MKT_Promotion $row) => $this->mapper->toDomain($row))
+            ->map(fn (PromotionMediaModel $row) => $this->mapper->toDomain($row))
             ->all();
     }
 
     public function findAllOrdered(): array
     {
-        return MKT_Promotion::query()
+        return PromotionMediaModel::query()
             ->orderBy('sort_order')
             ->orderBy('id')
             ->get()
-            ->map(fn (MKT_Promotion $row) => $this->mapper->toDomain($row))
+            ->map(fn (PromotionMediaModel $row) => $this->mapper->toDomain($row))
             ->all();
     }
 
-    public function save(?int $id, string $title, ?string $body, bool $isActive, ?string $imagePath): Promotion
+    public function listPage(int $offset, int $limit): array
     {
-        $row = $id === null ? new MKT_Promotion() : MKT_Promotion::query()->find($id);
-        if (! $row instanceof MKT_Promotion) {
+        return PromotionMediaModel::query()
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->offset(max(0, $offset))
+            ->limit(max(1, $limit))
+            ->get()
+            ->map(fn (PromotionMediaModel $row) => $this->mapper->toDomain($row))
+            ->all();
+    }
+
+    public function countAll(): int
+    {
+        return (int) PromotionMediaModel::query()->count();
+    }
+
+    public function findById(int $id): ?Campaign
+    {
+        $row = PromotionMediaModel::query()->find($id);
+
+        return $row instanceof PromotionMediaModel ? $this->mapper->toDomain($row) : null;
+    }
+
+    public function findStoredImagePath(int $id): ?string
+    {
+        $row = PromotionMediaModel::query()->find($id);
+        if (! $row instanceof PromotionMediaModel) {
+            return null;
+        }
+
+        $path = trim((string) ($row->image ?? ''));
+
+        return $path !== '' ? $path : null;
+    }
+
+    public function save(?int $id, string $title, ?string $body, bool $isActive, ?string $imagePath): Campaign
+    {
+        $row = $id === null ? new PromotionMediaModel() : PromotionMediaModel::query()->find($id);
+        if (! $row instanceof PromotionMediaModel) {
             throw new \InvalidArgumentException('Акция не найдена.');
         }
 

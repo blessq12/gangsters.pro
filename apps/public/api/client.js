@@ -116,18 +116,34 @@ export function buildUpdateClientProfilePayload(data = {}) {
 }
 
 export function buildClientAddressPayload(data = {}) {
+    const latRaw = data.lat ?? data.latitude;
+    const lngRaw = data.lng ?? data.longitude;
+    const lat = latRaw === null || latRaw === undefined || latRaw === ""
+        ? null
+        : Number(latRaw);
+    const lng = lngRaw === null || lngRaw === undefined || lngRaw === ""
+        ? null
+        : Number(lngRaw);
+
     return {
         type: data.type ?? undefined,
-        title: null,
+        title: data.title ?? null,
         street: data.street ?? "",
         house: data.house ?? "",
         entrance: data.entrance ?? null,
         floor: data.floor ?? null,
         apartment: data.apartment ?? null,
         comment: data.comment ?? null,
+        lat: Number.isFinite(lat) ? lat : null,
+        lng: Number.isFinite(lng) ? lng : null,
         make_default:
             "make_default" in data ? Boolean(data.make_default) : undefined,
     };
+}
+
+export async function logoutClientRequest() {
+    const response = await http.post("/client/logout");
+    return response.data;
 }
 
 export function buildToggleClientFavoritePayload(product = {}) {

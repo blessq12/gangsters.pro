@@ -1,83 +1,71 @@
 <script setup>
-import { onMounted, onUnmounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
-import {
-    completeTicket,
-    getQueue,
-    startTicket,
-} from "../../../api/production.js";
+import { storeToRefs } from "pinia";
+import { getQueue, startTicket } from "../../../api/production.js";
 import { useApi } from "../../../shell/composables/useApi.js";
 import { useToast } from "../../../shell/composables/useToast.js";
+import { useAuthStore } from "../../../shell/store/authStore.js";
 import UiBadge from "../../../shell/components/ui/UiBadge.vue";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
 import UiCard from "../../../shell/components/ui/UiCard.vue";
+import UiPagination from "../../../shell/components/ui/UiPagination.vue";
+import { ticketStatusLabel, ticketStatusVariant } from "../../../shell/domain/orderStage.js";
 
 const router = useRouter();
 const toast = useToast();
+const auth = useAuthStore();
+const { employee } = storeToRefs(auth);
 const listApi = useApi();
 const actionApi = useApi();
 
-const tickets = ref([]);
+const branchId = computed(() => {
+    const raw = employee.value?.branch_id;
+    const id = Number(raw);
+    return Number.isFinite(id) && id > 0 ? id : null;
+});
+
+const page = ref(1);
+const perPage = 20;
+const poolTotal = ref(0);
+const pool = ref(/** @type {Array<Record<string, unknown>>} */ ([]));
+
+const offset = computed(() => (page.value - 1) * perPage);
+
 /** @type {ReturnType<typeof setInterval>|null} */
 let pollTimer = null;
 const POLL_MS = 12000;
 
-function asList(payload) {
-    return Array.isArray(payload) ? payload : (payload?.items ?? []);
-}
-
-function formatDate(value) {
-    if (!value) {
-        return "";
-    }
-    try {
-        return new Date(value).toLocaleTimeString("ru-RU", {
-            hour: "2-digit",
-            minute: "2-digit",
-        });
-    } catch {
-        return String(value);
-    }
-}
-
-function statusVariant(status) {
-    if (status === "queued") {
-        return "warning";
-    }
-    if (status === "started") {
-        return "neutral";
-    }
-    if (status === "completed") {
-        return "success";
-    }
-    if (status === "cancelled") {
-        return "danger";
-    }
-    return "neutral";
-}
-
-function statusClass(status) {
-    if (status === "started") {
-        return "!bg-sky-500 !text-white";
-    }
-    if (status === "queued") {
-        return "!bg-amber-400 !text-slate-900";
-    }
-    return "";
-}
-
 async function load(silent = false) {
+    if (!branchId.value) {
+        pool.value = [];
+        poolTotal.value = 0;
+        return;
+    }
     try {
-        const payload = await listApi.run(() => getQueue());
-        tickets.value = asList(payload);
+        const payload = await listApi.run(() => getQueue(branchId.value, {
+            offset: offset.value,
+            limit: perPage,
+        }));
+        const poolPage = payload?.pool && typeof payload.pool === "object" ? payload.pool : {};
+        pool.value = Array.isArray(poolPage.items) ? poolPage.items : [];
+        poolTotal.value = Number(poolPage.total ?? 0);
+
+        const lastPage = Math.max(1, Math.ceil(poolTotal.value / perPage) || 1);
+        if (page.value > lastPage) {
+            page.value = lastPage;
+        }
     } catch (err) {
         if (!silent) {
-            toast.error(err instanceof Error ? err.message : "Не удалось загрузить очередь");
+            toast.error(err instanceof Error ? err.message : "Не удалось загрузить тикеты");
         }
     }
 }
 
-function openTicket(orderId) {
+/**
+ * @param {number|string} orderId
+ */
+function goTicket(orderId) {
     router.push({ name: "production-ticket", params: { orderId: String(orderId) } });
 }
 
@@ -85,27 +73,31 @@ async function onStart(orderId, event) {
     event.stopPropagation();
     try {
         await actionApi.run(() => startTicket(orderId));
-        toast.success(`#${orderId} взяли`);
-        await load(true);
+        toast.success("Взято в работу");
+        goTicket(orderId);
     } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Ошибка");
+        toast.error(err instanceof Error ? err.message : "Не удалось начать тикет");
+        await load(true);
     }
 }
 
-async function onComplete(orderId, event) {
-    event.stopPropagation();
-    try {
-        await actionApi.run(() => completeTicket(orderId));
-        toast.success(`#${orderId} готово`);
-        await load(true);
-    } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Ошибка");
+function restartPoll() {
+    if (pollTimer) {
+        clearInterval(pollTimer);
     }
-}
-
-onMounted(() => {
-    load();
     pollTimer = setInterval(() => load(true), POLL_MS);
+}
+
+watch(page, () => {
+    load();
+});
+
+onMounted(async () => {
+    if (!auth.bootstrapped) {
+        await auth.bootstrap();
+    }
+    await load();
+    restartPoll();
 });
 
 onUnmounted(() => {
@@ -117,68 +109,76 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="space-y-6">
+    <div class="space-y-8">
         <h1 class="text-4xl font-bold tracking-tight md:text-5xl">
-            Очередь кухни
+            Очередь
         </h1>
 
-        <div
-            v-if="!listApi.loading && tickets.length === 0"
-            class="rounded-2xl border border-slate-700 bg-slate-900/60 px-8 py-16 text-center text-4xl font-semibold text-slate-300 md:text-5xl"
+        <p
+            v-if="!branchId"
+            class="text-2xl text-bo-muted"
         >
-            Очередь пуста
-        </div>
+            У сотрудника не указан филиал смены — очередь недоступна.
+        </p>
 
-        <div
-            v-else
-            class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3"
-        >
-            <UiCard
-                v-for="ticket in tickets"
-                :key="ticket.order_id"
-                class="!cursor-pointer !border-slate-700 !bg-slate-900 !text-slate-50 !shadow-none transition hover:!border-slate-500"
-                @click="openTicket(ticket.order_id)"
+        <template v-else>
+            <div
+                v-if="!listApi.loading && pool.length === 0"
+                class="border border-bo-border bg-bo-elevated px-6 py-10 text-center text-2xl text-bo-muted"
             >
-                <div class="space-y-5">
-                    <div class="flex items-start justify-between gap-3">
-                        <p class="text-5xl font-black leading-none md:text-6xl">
-                            #{{ ticket.order_id }}
-                        </p>
-                        <UiBadge
-                            class="!px-3 !py-1 !text-base"
-                            :class="statusClass(ticket.status)"
-                            :variant="statusVariant(ticket.status)"
-                            :text="String(ticket.status || '—')"
-                        />
-                    </div>
-
-                    <p
-                        v-if="ticket.status === 'started' && ticket.started_at"
-                        class="text-xl text-slate-300"
-                    >
-                        Старт {{ formatDate(ticket.started_at) }}
-                    </p>
-
-                    <div class="flex flex-wrap gap-3" @click.stop>
-                        <UiButton
-                            v-if="ticket.status === 'queued'"
-                            class="!h-16 !min-w-[10rem] !bg-amber-400 !px-8 !text-2xl !font-bold !text-slate-900"
-                            :disabled="actionApi.loading"
-                            @click="onStart(ticket.order_id, $event)"
+                Пул пуст
+            </div>
+            <div
+                v-else
+                class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3"
+            >
+                <UiCard
+                    v-for="ticket in pool"
+                    :key="`pool-${ticket.order_id}`"
+                    class="!cursor-pointer !border-bo-border !bg-bo-elevated !text-bo-fg !shadow-none transition hover:!border-bo-accent"
+                    @click="goTicket(ticket.order_id)"
+                >
+                    <div class="space-y-4">
+                        <div class="flex items-start justify-between gap-3">
+                            <p class="text-3xl font-black leading-none tracking-tight md:text-4xl">
+                                {{ ticket.order_number || ticket.order?.number || `#${ticket.order_id}` }}
+                            </p>
+                            <UiBadge
+                                class="!px-3 !py-1 !text-base"
+                                :variant="ticketStatusVariant(ticket.status)"
+                                :text="ticketStatusLabel(ticket.status)"
+                            />
+                        </div>
+                        <ul class="space-y-1 text-xl">
+                            <li
+                                v-for="(line, idx) in (ticket.lines ?? []).slice(0, 4)"
+                                :key="idx"
+                            >
+                                {{ line.name || `Позиция #${line.product_id}` }} × {{ line.quantity }}
+                            </li>
+                        </ul>
+                        <div
+                            class="flex flex-wrap gap-3"
+                            @click.stop
                         >
-                            Взять
-                        </UiButton>
-                        <UiButton
-                            v-if="ticket.status === 'started'"
-                            class="!h-16 !min-w-[10rem] !bg-emerald-500 !px-8 !text-2xl !font-bold !text-white"
-                            :disabled="actionApi.loading"
-                            @click="onComplete(ticket.order_id, $event)"
-                        >
-                            Готово
-                        </UiButton>
+                            <UiButton
+                                class="!h-16 !min-w-[10rem] !bg-amber-400 !px-8 !text-2xl !font-bold !text-slate-900"
+                                :disabled="actionApi.loading"
+                                @click="onStart(ticket.order_id, $event)"
+                            >
+                                Старт
+                            </UiButton>
+                        </div>
                     </div>
-                </div>
-            </UiCard>
-        </div>
+                </UiCard>
+            </div>
+
+            <UiPagination
+                :page="page"
+                :per-page="perPage"
+                :total="poolTotal"
+                @update:page="page = $event"
+            />
+        </template>
     </div>
 </template>

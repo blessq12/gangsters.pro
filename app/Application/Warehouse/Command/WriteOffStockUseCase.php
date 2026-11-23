@@ -4,11 +4,11 @@ namespace App\Application\Warehouse\Command;
 
 use App\Application\Warehouse\DTO\WriteOffStockDto;
 use App\Application\Warehouse\Presenter\WriteOffPresenter;
-use App\Domain\Warehouse\Entity\StockLevel;
-use App\Domain\Warehouse\Entity\StockWriteOff;
-use App\Domain\Warehouse\Repository\IngredientRepository;
-use App\Domain\Warehouse\Repository\StockLevelRepository;
-use App\Domain\Warehouse\Repository\StockWriteOffRepository;
+use App\Domain\Supporting\Warehouse\Entity\StockLevel;
+use App\Domain\Supporting\Warehouse\Entity\StockWriteOff;
+use App\Domain\Supporting\Warehouse\Repository\IngredientRepository;
+use App\Domain\Supporting\Warehouse\Repository\StockLevelRepository;
+use App\Domain\Supporting\Warehouse\Repository\StockWriteOffRepository;
 
 final class WriteOffStockUseCase
 {
@@ -28,13 +28,14 @@ final class WriteOffStockUseCase
             throw new \InvalidArgumentException('Ингредиент не найден.');
         }
 
-        $current = $this->levels->findByIngredientId($dto->ingredientId);
+        $current = $this->levels->findByBranchAndIngredient($dto->branchId, $dto->ingredientId);
         $currentQty = $current?->quantity() ?? 0.0;
         if ($currentQty < $dto->quantity) {
             throw new \InvalidArgumentException('Недостаточно остатка для списания.');
         }
 
         $writeOff = StockWriteOff::record(
+            branchId: $dto->branchId,
             ingredientId: $dto->ingredientId,
             quantity: $dto->quantity,
             reason: $dto->reason,
@@ -43,6 +44,7 @@ final class WriteOffStockUseCase
         $this->writeOffs->save($writeOff);
 
         $this->levels->save(new StockLevel(
+            branchId: $dto->branchId,
             ingredientId: $dto->ingredientId,
             quantity: $currentQty - $dto->quantity,
         ));

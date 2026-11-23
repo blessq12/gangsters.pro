@@ -6,5 +6,6 @@ final readonly class StartWorkDto
 {
     public function __construct(
         public int $orderId,
+        public int $employeeId,
     ) {}
 }

@@ -9,6 +9,15 @@ const appRoot = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(appRoot, "../..");
 
 function manualChunks(id) {
+    if (
+        id.includes("node_modules/@tiptap/")
+        || id.includes("node_modules/prosemirror")
+        || id.includes("node_modules/orderedmap")
+        || id.includes("node_modules/w3c-keyname")
+        || id.includes("node_modules/rope-sequence")
+    ) {
+        return "vendor-tiptap";
+    }
     if (id.includes("/roles/courier/")) {
         return "role-courier";
     }

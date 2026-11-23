@@ -2,7 +2,7 @@
 
 namespace App\Application\Warehouse\Presenter;
 
-use App\Domain\Warehouse\Entity\Ingredient;
+use App\Domain\Supporting\Warehouse\Entity\Ingredient;
 
 final class IngredientPresenter
 {
@@ -14,7 +14,6 @@ final class IngredientPresenter
         return [
             'id' => $ingredient->hasId() ? $ingredient->id() : null,
             'name' => $ingredient->name(),
-            'sku' => $ingredient->sku(),
             'unit' => $ingredient->unit(),
         ];
     }

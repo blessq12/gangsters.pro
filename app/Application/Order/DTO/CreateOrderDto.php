@@ -5,10 +5,13 @@ namespace App\Application\Order\DTO;
 final readonly class CreateOrderDto
 {
     /**
-     * @param  array<string, mixed>  $quoteSnapshot
+     * @param  string|null  $rulesVersion  версия контекста, по которой фронт считал корзину
+     * @param  int|null  $expectedTotalKopecks  итог, который видел клиент
      */
     public function __construct(
         public string $clientRequestId,
-        public array $quoteSnapshot,
+        public QuoteOrderDto $checkout,
+        public ?string $rulesVersion = null,
+        public ?int $expectedTotalKopecks = null,
     ) {}
 }

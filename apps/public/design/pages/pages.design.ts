@@ -176,16 +176,16 @@ export const pagesDesign = {
             "text-[11px] uppercase tracking-[0.22em] text-app-muted",
         coverageBody: `mt-2 text-sm ${nestedFg}`,
         siteLinkPara: "mt-4 text-sm",
-        kitchenMapStage:
+        branchMapStage:
             "relative mt-4 min-h-[16rem] w-full overflow-hidden rounded-none border border-app-border-on-surface sm:min-h-[18rem]",
-        kitchenMapLayer: "absolute inset-0 z-0",
-        kitchenMapCanvas: "h-full min-h-[16rem] w-full border-0 sm:min-h-[18rem]",
-        kitchenMapFallback:
+        branchMapLayer: "absolute inset-0 z-0",
+        branchMapCanvas: "h-full min-h-[16rem] w-full border-0 sm:min-h-[18rem]",
+        branchMapFallback:
             "grid min-h-[16rem] place-content-center bg-app-glass-fill px-4 py-8 text-center text-sm text-app-muted sm:min-h-[18rem]",
-        kitchenMapFallbackProse: "mx-auto max-w-prose leading-relaxed",
-        kitchenMapLoading:
+        branchMapFallbackProse: "mx-auto max-w-prose leading-relaxed",
+        branchMapLoading:
             "grid min-h-[16rem] place-content-center bg-app-glass-fill text-sm text-app-muted sm:min-h-[18rem]",
-        kitchenMapHint: "mt-3 text-xs text-app-muted",
+        branchMapHint: "mt-3 text-xs text-app-muted",
         scheduleList: "divide-y divide-app-border-on-surface",
         scheduleRow:
             "flex items-baseline justify-between gap-4 py-2.5 first:pt-0 last:pb-0",

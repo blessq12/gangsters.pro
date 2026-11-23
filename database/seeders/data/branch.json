@@ -1,0 +1,16 @@
+{
+    "id": 1,
+    "company_id": 1,
+    "name": "Томск",
+    "is_active": 1,
+    "schedule": "{\"fri\": {\"work\": \"11:00-23:00\", \"is_day_off\": false}, \"mon\": {\"work\": \"11:00-22:00\", \"is_day_off\": false}, \"sat\": {\"work\": \"11:00-23:00\", \"is_day_off\": false}, \"sun\": {\"work\": \"11:00-22:00\", \"is_day_off\": false}, \"thu\": {\"work\": \"11:00-22:00\", \"is_day_off\": false}, \"tue\": {\"work\": \"11:00-22:00\", \"is_day_off\": false}, \"wed\": {\"work\": \"11:00-22:00\", \"is_day_off\": false}}",
+    "created_at": "2026-11-19 18:11:10",
+    "updated_at": "2026-11-20 18:29:12",
+    "city": "Томск",
+    "street": "улица Говорова",
+    "house": "50\/1",
+    "comment": null,
+    "latitude": "56.5134320",
+    "longitude": "84.9863660",
+    "phone": "+7 (983) 234-84-84"
+}

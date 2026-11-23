@@ -2,119 +2,104 @@
 
 namespace Database\Seeders;
 
-use App\Domain\Company\Repository\CompanyRepository;
-use App\Infrastructure\Company\Model\CMP_Company;
-use App\Infrastructure\Company\Model\CMP_CompanyDocument;
-use App\Infrastructure\Company\Model\CMP_CompanyLegal;
+use Database\Seeders\Concerns\LoadsSeederJson;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use RuntimeException;
 
+/**
+ * Компания + единственный боевой филиал (Говорова 50/1). Смоленский не сидируется.
+ */
 class CompanySeeder extends Seeder
 {
+    use LoadsSeederJson;
+
     public function run(): void
     {
-        $companyId = CompanyRepository::SINGLETON_ID;
+        $companyPayload = $this->loadSeederJson('company.json');
+        $branch = $this->loadSeederJson('branch.json');
 
-        $work = '10:00–20:00';
-        $schedule = [];
-        foreach (['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as $day) {
-            $schedule[$day] = [
-                'work' => $work,
-                'is_day_off' => false,
-            ];
+        $company = is_array($companyPayload['company'] ?? null) ? $companyPayload['company'] : null;
+        $legal = is_array($companyPayload['legal'] ?? null) ? $companyPayload['legal'] : null;
+        $documents = is_array($companyPayload['documents'] ?? null) ? $companyPayload['documents'] : [];
+
+        if ($company === null || $branch === []) {
+            throw new RuntimeException('company.json / branch.json повреждены.');
         }
 
-        CMP_Company::query()->updateOrCreate(
-            ['id' => $companyId],
-            [
-                'name' => 'Гангстерс Суши',
-                'description' => 'Мы предлагаем свежие и вкусные блюда, приготовленные с любовью и вниманием к деталям. Наслаждайтесь японской кухней, не выходя из дома! Быстрая доставка и отличное качество',
-                'phone' => '+7 (983) 234-84-84',
-                'email' => 'gangstasushi@mail.ru',
-                'socials' => [
-                    'telegram' => null,
-                    'vk' => 'https://vk.com/gangsters_sushi',
-                    'inst' => 'https://www.instagram.com/gangsters_sushi',
-                    'site_url' => null,
-                    'whatsapp' => null,
-                ],
-                'schedule' => $schedule,
-            ],
-        );
+        DB::transaction(function () use ($company, $legal, $documents, $branch): void {
+            DB::table('CMP_company_documents')->delete();
+            DB::table('CMP_company_legal')->delete();
+            DB::table('CMP_branches')->delete();
+            DB::table('CMP_companies')->delete();
 
-        CMP_CompanyLegal::query()->updateOrCreate(
-            ['company_id' => $companyId],
-            [
-                'full_name' => "Gangster's Sushi",
-                'inn' => '701717375759',
-                'ogrn' => '325700000011686',
-            ],
-        );
+            DB::table('CMP_companies')->insert([
+                'id' => (int) $company['id'],
+                'name' => (string) $company['name'],
+                'description' => $company['description'] ?? null,
+                'phone' => $company['phone'] ?? null,
+                'email' => $company['email'] ?? null,
+                'socials' => $this->encodeJson($company['socials'] ?? null),
+                'created_at' => $company['created_at'] ?? now(),
+                'updated_at' => $company['updated_at'] ?? now(),
+            ]);
 
-        $documents = [
-            [
-                'slug' => 'public_offer',
-                'name' => 'Публичная оферта',
-                'content' => $this->documentHtml([
-                    'Настоящий документ является публичной офертой в соответствии со ст. 437 Гражданского кодекса РФ. Оформление заказа на сайте означает акцепт оферты и заключение договора купли-продажи на условиях, изложенных ниже.',
-                    'Исполнитель — Gangsters (реквизиты указаны в разделе «Контакты»). Заказчик — физическое лицо, оформившее заказ. Договор считается заключённым с момента подтверждения заказа исполнителем.',
-                    'Цены указаны в рублях РФ. Итоговая сумма формируется при подтверждении заказа и может отличаться при изменении состава. Оплата — наличными при получении или безналичным способом согласно информации на сайте. Условия доставки и возврата — в соответствии с ЗоЗПП и разделом «Оплата и доставка».',
-                    'Обработка персональных данных осуществляется в соответствии с документом «Конфиденциальность». Споры разрешаются путём переговоров; при недостижении согласия — в суде по месту нахождения исполнителя.',
-                ]),
-            ],
-            [
-                'slug' => 'user_agreement',
-                'name' => 'Пользовательское соглашение',
-                'content' => $this->documentHtml([
-                    'Сервис Gangsters предназначен для заказа еды и сопутствующих товаров. Использование регулируется Законом РФ «О защите прав потребителей» № 2300-1, Правилами продажи товаров дистанционным способом (ПП РФ № 612), законодательством о персональных данных.',
-                    'Запрещается: использование сайта в незаконных целях, размещение оскорбительного контента, спам, действия, нарушающие работу сервиса или права третьих лиц. Нарушение влечёт блокировку и ответственность по законодательству РФ.',
-                    'Информация о минимальной сумме заказа, зонах и сроках доставки размещена на сайте. Заказ считается принятым после подтверждения оператором. Потребитель вправе отказаться от заказа до его передачи; после получения — в течение 7 дней (ст. 26.1 ЗоЗПП).',
-                    'Претензии по качеству, составу или доставке заказа направляются в службу поддержки в разумный срок.',
-                ]),
-            ],
-            [
-                'slug' => 'privacy',
-                'name' => 'Конфиденциальность',
-                'content' => $this->documentHtml([
-                    'Настоящий документ разработан в соответствии с Федеральным законом от 27.07.2006 № 152-ФЗ «О персональных данных» и определяет порядок обработки персональных данных оператором Gangsters.',
-                    'Цели обработки: оформление и исполнение заказов, доставка, связь с клиентом, улучшение качества сервиса. Правовое основание — согласие субъекта, исполнение договора (ст. 6 152-ФЗ).',
-                    'Обрабатываемые данные: ФИО, контактный телефон, адрес доставки, электронная почта, данные о заказах. Срок хранения — не более срока, необходимого для целей обработки, но не более 3 лет с момента последнего взаимодействия.',
-                    'Субъект персональных данных вправе получить доступ к своим данным, потребовать их уточнения, блокирования или уничтожения, отозвать согласие.',
-                ]),
-            ],
-            [
-                'slug' => 'personal_data_consent',
-                'name' => 'Согласие на ПДн',
-                'content' => null,
-            ],
-            [
-                'slug' => 'cookie',
-                'name' => 'Cookie',
-                'content' => null,
-            ],
-        ];
+            if ($legal !== null) {
+                DB::table('CMP_company_legal')->insert([
+                    'id' => (int) $legal['id'],
+                    'company_id' => (int) $legal['company_id'],
+                    'full_name' => $legal['full_name'] ?? null,
+                    'inn' => $legal['inn'] ?? null,
+                    'ogrn' => $legal['ogrn'] ?? null,
+                    'created_at' => $legal['created_at'] ?? now(),
+                    'updated_at' => $legal['updated_at'] ?? now(),
+                ]);
+            }
 
-        foreach ($documents as $document) {
-            CMP_CompanyDocument::query()->updateOrCreate(
-                [
-                    'company_id' => $companyId,
-                    'slug' => $document['slug'],
-                ],
-                [
-                    'name' => $document['name'],
-                    'content' => $document['content'],
-                ],
-            );
-        }
+            foreach ($documents as $document) {
+                if (! is_array($document)) {
+                    continue;
+                }
+                DB::table('CMP_company_documents')->insert([
+                    'id' => (int) $document['id'],
+                    'company_id' => (int) $document['company_id'],
+                    'slug' => (string) $document['slug'],
+                    'name' => (string) $document['name'],
+                    'content' => $document['content'] ?? null,
+                    'path' => $document['path'] ?? null,
+                    'created_at' => $document['created_at'] ?? now(),
+                    'updated_at' => $document['updated_at'] ?? now(),
+                ]);
+            }
+
+            DB::table('CMP_branches')->insert([
+                'id' => (int) $branch['id'],
+                'company_id' => (int) $branch['company_id'],
+                'name' => (string) $branch['name'],
+                'is_active' => (bool) ($branch['is_active'] ?? true),
+                'schedule' => $this->encodeJson($branch['schedule'] ?? null),
+                'city' => $branch['city'] ?? null,
+                'street' => $branch['street'] ?? null,
+                'house' => $branch['house'] ?? null,
+                'comment' => $branch['comment'] ?? null,
+                'latitude' => $branch['latitude'] ?? null,
+                'longitude' => $branch['longitude'] ?? null,
+                'phone' => $branch['phone'] ?? null,
+                'created_at' => $branch['created_at'] ?? now(),
+                'updated_at' => $branch['updated_at'] ?? now(),
+            ]);
+        });
     }
 
-    /**
-     * @param  list<string>  $paragraphs
-     */
-    private function documentHtml(array $paragraphs): string
+    private function encodeJson(mixed $value): ?string
     {
-        return implode('', array_map(
-            static fn (string $paragraph): string => '<p>'.e($paragraph).'</p>',
-            $paragraphs,
-        ));
+        if ($value === null || $value === '') {
+            return null;
+        }
+        if (is_string($value)) {
+            return $value;
+        }
+
+        return json_encode($value, JSON_UNESCAPED_UNICODE);
     }
 }

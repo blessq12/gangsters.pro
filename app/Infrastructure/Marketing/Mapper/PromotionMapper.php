@@ -2,15 +2,15 @@
 
 namespace App\Infrastructure\Marketing\Mapper;
 
-use App\Domain\Marketing\Entity\Promotion;
-use App\Infrastructure\Marketing\Model\MKT_Promotion;
+use App\Domain\Supporting\Marketing\Entity\Campaign;
+use App\Infrastructure\Marketing\Model\PromotionMediaModel;
 use App\Infrastructure\Marketing\Support\PublicMediaUrl;
 
 final class PromotionMapper
 {
-    public function toDomain(MKT_Promotion $row): Promotion
+    public function toDomain(PromotionMediaModel $row): Campaign
     {
-        return new Promotion(
+        return new Campaign(
             id: (int) $row->id,
             title: (string) $row->title,
             body: $this->nullableString($row->body),

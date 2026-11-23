@@ -1,3 +1,4 @@
+import { vMaska } from "maska";
 import { createPinia } from "pinia";
 import { createApp } from "vue";
 import "./css/style.css";
@@ -13,6 +14,7 @@ const pinia = createPinia();
 
 app.use(pinia);
 app.use(router);
+app.directive("maska", vMaska);
 
 setUnauthorizedHandler(() => {
     const auth = useAuthStore(pinia);

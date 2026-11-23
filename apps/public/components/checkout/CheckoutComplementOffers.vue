@@ -26,8 +26,6 @@ const {
     hasCartItems,
     hasRollsInCart,
     complement,
-    complementLabel,
-    complementProgressPercent,
     showComplementProgress,
 } = useOrderPreview();
 
@@ -35,7 +33,6 @@ const entitledSetCount = computed(
     () => Number(complement.value?.entitledSetCount) || 0,
 );
 
-/** ceil(rollCount / 2): показываем товары при entitledSets >= 1. */
 const hasEntitledComplementSet = computed(() => {
     if (entitledSetCount.value > 0) {
         return true;
@@ -45,8 +42,12 @@ const hasEntitledComplementSet = computed(() => {
     );
 });
 
+/**
+ * Комплектные всегда в корзине при наличии позиций:
+ * бесплатные по акции + можно докупить тот же товар как обычную линию.
+ */
 const complementRows = computed(() => {
-    if (!hasCartItems.value || !hasEntitledComplementSet.value) {
+    if (!hasCartItems.value) {
         return [];
     }
 
@@ -62,28 +63,16 @@ const showApproachProgress = computed(
         hasCartItems.value
         && showComplementProgress.value
         && !hasEntitledComplementSet.value
-        && hasRollsInCart.value,
+        && hasRollsInCart.value
+        && complementRows.value.length === 0,
 );
 
 const showBlock = computed(
     () => complementRows.value.length > 0 || showApproachProgress.value,
 );
 
-function paidTwinId(row) {
-    const id = Number(row?.paidTwinProductId);
-    return Number.isFinite(id) && id > 0 ? id : null;
-}
-
-function paidTwinProduct(row) {
-    return row?.paidTwin ?? null;
-}
-
 function paidQty(row) {
-    const twinId = paidTwinId(row);
-    if (twinId == null) {
-        return 0;
-    }
-    return cartStore.cartQuantityByProduct(twinId);
+    return cartStore.cartQuantityByProduct(row.id);
 }
 
 function selectedFreeQty(row) {
@@ -94,27 +83,20 @@ function displayQty(row) {
     return selectedFreeQty(row) + paidQty(row);
 }
 
-/** FREE — только бесплатная часть комплекта, без докупки. */
 function showFreeBadge(row) {
     return selectedFreeQty(row) > 0 && paidQty(row) <= 0;
 }
 
 function unitPriceRub(row) {
-    const product = paidTwinProduct(row);
-    if (!product) {
-        return 0;
-    }
-    return Number(product?.price?.amount ?? product?.price) || 0;
+    return Number(row.product?.price?.amount ?? row.product?.price) || 0;
 }
 
-/** Стоимость сверх комплекта — бейдж на месте FREE. */
 function paidBadgeLabel(row) {
     const paid = paidQty(row);
     if (paid <= 0) {
         return "";
     }
-    const total = unitPriceRub(row) * paid;
-    return `+${formatPrice(total)} ₽`;
+    return `+${formatPrice(unitPriceRub(row) * paid)} ₽`;
 }
 
 function canDecrement(row) {
@@ -126,44 +108,35 @@ function canIncrementFree(row) {
 }
 
 function canIncrementPaid(row) {
-    return paidTwinId(row) != null && Boolean(paidTwinProduct(row));
+    return Boolean(row.product) && unitPriceRub(row) >= 0;
 }
 
 function canIncrement(row) {
-    return Boolean(row.product) && (canIncrementFree(row) || canIncrementPaid(row));
+    return canIncrementFree(row) || canIncrementPaid(row);
 }
 
 async function incrementProduct(row) {
-    const id = row.product?.id ?? row.id;
-    if (id == null) {
-        return;
-    }
-
     if (canIncrementFree(row)) {
-        await cartStore.setComplementSelection(id, selectedFreeQty(row) + 1);
+        await cartStore.setComplementSelection(row.id, selectedFreeQty(row) + 1);
         return;
     }
 
-    const twinId = paidTwinId(row);
-    const twinProduct = paidTwinProduct(row);
-    if (twinId == null || !twinProduct) {
+    if (!row.product) {
         return;
     }
 
     if (paidQty(row) <= 0) {
-        await cartStore.addToCart(twinProduct, 1);
+        await cartStore.addToCart(row.product, 1);
         return;
     }
 
-    await cartStore.incrementCart(twinId);
+    await cartStore.incrementCart(row.id);
 }
 
 async function decrementProduct(row) {
-    const twinId = paidTwinId(row);
-
     // Сначала платные (бьют в сумму), бесплатные — только после обнуления paid.
-    if (twinId != null && paidQty(row) > 0) {
-        await cartStore.decrementCart(twinId);
+    if (paidQty(row) > 0) {
+        await cartStore.decrementCart(row.id);
         return;
     }
 
@@ -197,6 +170,12 @@ async function decrementProduct(row) {
                             :class="s.offerPaidBadge"
                         >
                             {{ paidBadgeLabel(row) }}
+                        </span>
+                        <span
+                            v-else-if="unitPriceRub(row) > 0"
+                            :class="s.offerPaidBadge"
+                        >
+                            {{ formatPrice(unitPriceRub(row)) }} ₽
                         </span>
                     </div>
                 </div>

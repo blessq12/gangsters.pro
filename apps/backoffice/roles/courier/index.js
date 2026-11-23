@@ -4,9 +4,7 @@ import CourierLayout from "./layouts/CourierLayout.vue";
 const module = {
     role: "courier",
     home: "courier-deliveries",
-    nav: [
-        { label: "Deliveries", routeName: "courier-deliveries", order: 1 },
-    ],
+    nav: [],
     layout: CourierLayout,
     routes: [
         {
@@ -22,6 +20,12 @@ const module = {
                     path: "deliveries",
                     name: "courier-deliveries",
                     component: () => import("./screens/DeliveriesScreen.vue"),
+                    meta: { role: "courier" },
+                },
+                {
+                    path: "deliveries/:id",
+                    name: "courier-route-sheet",
+                    component: () => import("./screens/CourierRouteSheetScreen.vue"),
                     meta: { role: "courier" },
                 },
             ],

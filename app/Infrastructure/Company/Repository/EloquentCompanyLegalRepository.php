@@ -2,11 +2,11 @@
 
 namespace App\Infrastructure\Company\Repository;
 
-use App\Domain\Company\Entity\CompanyLegalInfo;
-use App\Domain\Company\Repository\CompanyLegalRepository;
-use App\Domain\Company\Repository\CompanyRepository;
+use App\Domain\Supporting\Company\Entity\CompanyLegalInfo;
+use App\Domain\Supporting\Company\Repository\CompanyLegalRepository;
+use App\Domain\Supporting\Company\Repository\CompanyRepository;
 use App\Infrastructure\Company\Mapper\CompanyLegalMapper;
-use App\Infrastructure\Company\Model\CMP_CompanyLegal;
+use App\Infrastructure\Company\Model\CompanyLegalModel;
 
 final class EloquentCompanyLegalRepository implements CompanyLegalRepository
 {
@@ -16,16 +16,16 @@ final class EloquentCompanyLegalRepository implements CompanyLegalRepository
 
     public function findPublic(): ?CompanyLegalInfo
     {
-        $row = CMP_CompanyLegal::query()
+        $row = CompanyLegalModel::query()
             ->where('company_id', CompanyRepository::SINGLETON_ID)
             ->first();
 
-        return $row instanceof CMP_CompanyLegal ? $this->mapper->toDomain($row) : null;
+        return $row instanceof CompanyLegalModel ? $this->mapper->toDomain($row) : null;
     }
 
     public function save(CompanyLegalInfo $info): void
     {
-        $row = CMP_CompanyLegal::query()->firstOrNew([
+        $row = CompanyLegalModel::query()->firstOrNew([
             'company_id' => CompanyRepository::SINGLETON_ID,
         ]);
         $row->fill([

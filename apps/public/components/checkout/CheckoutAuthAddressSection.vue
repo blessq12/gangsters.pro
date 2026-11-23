@@ -4,6 +4,7 @@ import { storeToRefs } from "pinia";
 import { useAppDesign } from "../../design/useAppDesign";
 import { useCheckoutFlowContext } from "../../modules/checkout/application/flowContext";
 import { CHECKOUT_LOADING_LABELS } from "../../modules/checkout/application/session";
+import { useContentStore } from "../../modules/content/store";
 import { useUserStore } from "../../modules/client/store/userStore";
 import FormField from "../ui/FormField.vue";
 import CheckoutAddressFormFields from "./CheckoutAddressFormFields.vue";
@@ -14,7 +15,9 @@ const s = chk.shared;
 const o = chk.optionCard;
 
 const userStore = useUserStore();
+const contentStore = useContentStore();
 const { addresses } = storeToRefs(userStore);
+const branchCity = computed(() => String(contentStore.branch?.city ?? "").trim());
 
 const {
     checkoutState,
@@ -25,6 +28,8 @@ const {
     isNewAddressOpen,
     newAddressForm,
     newAddressLoading,
+    applyNewAddressSuggestion,
+    clearNewAddressCoords,
 } = useCheckoutFlowContext();
 
 const { deliveryFieldErrors, newAddressFieldErrors } = checkoutState;
@@ -67,15 +72,20 @@ function formatAddressLine(address) {
             :apartment="newAddressForm.apartment"
             :comment="newAddressForm.comment"
             :make-default="newAddressForm.make_default"
+            :latitude="newAddressForm.latitude"
+            :longitude="newAddressForm.longitude"
+            :branch-city="branchCity"
             :street-error="newAddressFieldErrors.get('street')"
             :house-error="newAddressFieldErrors.get('house')"
-            @update:street="newAddressForm.street = $event"
-            @update:house="newAddressForm.house = $event"
+            @update:street="newAddressForm.street = $event; clearNewAddressCoords()"
+            @update:house="newAddressForm.house = $event; clearNewAddressCoords()"
             @update:entrance="newAddressForm.entrance = $event"
             @update:floor="newAddressForm.floor = $event"
             @update:apartment="newAddressForm.apartment = $event"
             @update:comment="newAddressForm.comment = $event"
             @update:make-default="newAddressForm.make_default = $event"
+            @apply-suggestion="applyNewAddressSuggestion"
+            @clear-coords="clearNewAddressCoords"
         />
 
         <p
@@ -165,15 +175,20 @@ function formatAddressLine(address) {
                         :apartment="newAddressForm.apartment"
                         :comment="newAddressForm.comment"
                         :make-default="newAddressForm.make_default"
+                        :latitude="newAddressForm.latitude"
+                        :longitude="newAddressForm.longitude"
+                        :branch-city="branchCity"
                         :street-error="newAddressFieldErrors.get('street')"
                         :house-error="newAddressFieldErrors.get('house')"
-                        @update:street="newAddressForm.street = $event"
-                        @update:house="newAddressForm.house = $event"
+                        @update:street="newAddressForm.street = $event; clearNewAddressCoords()"
+                        @update:house="newAddressForm.house = $event; clearNewAddressCoords()"
                         @update:entrance="newAddressForm.entrance = $event"
                         @update:floor="newAddressForm.floor = $event"
                         @update:apartment="newAddressForm.apartment = $event"
                         @update:comment="newAddressForm.comment = $event"
                         @update:make-default="newAddressForm.make_default = $event"
+                        @apply-suggestion="applyNewAddressSuggestion"
+                        @clear-coords="clearNewAddressCoords"
                     />
 
                     <p

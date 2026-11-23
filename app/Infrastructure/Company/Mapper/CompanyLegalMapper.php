@@ -2,12 +2,12 @@
 
 namespace App\Infrastructure\Company\Mapper;
 
-use App\Domain\Company\Entity\CompanyLegalInfo;
-use App\Infrastructure\Company\Model\CMP_CompanyLegal;
+use App\Domain\Supporting\Company\Entity\CompanyLegalInfo;
+use App\Infrastructure\Company\Model\CompanyLegalModel;
 
 final class CompanyLegalMapper
 {
-    public function toDomain(CMP_CompanyLegal $row): CompanyLegalInfo
+    public function toDomain(CompanyLegalModel $row): CompanyLegalInfo
     {
         return new CompanyLegalInfo(
             id: (int) $row->id,

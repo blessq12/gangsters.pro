@@ -1,7 +1,28 @@
 import { request } from "../http/transport.js";
 
-export function listIngredients() {
-    return request("GET", "/warehouse/ingredients");
+/**
+ * @param {{ offset?: number, limit?: number }} [query]
+ */
+function withPage(path, query = {}) {
+    const params = new URLSearchParams();
+    if (query.offset !== undefined) {
+        params.set("offset", String(query.offset));
+    }
+    if (query.limit !== undefined) {
+        params.set("limit", String(query.limit));
+    }
+    const qs = params.toString();
+    return request("GET", `${path}${qs ? `?${qs}` : ""}`);
+}
+
+/** @param {{ offset?: number, limit?: number }} [query] */
+export function listIngredients(query = {}) {
+    return withPage("/warehouse/ingredients", query);
+}
+
+/** @param {number|string} id */
+export function getIngredient(id) {
+    return request("GET", `/warehouse/ingredients/${id}`);
 }
 
 /** @param {Record<string, unknown>} data */
@@ -14,20 +35,42 @@ export function updateIngredient(id, data) {
     return request("PUT", `/warehouse/ingredients/${id}`, data);
 }
 
-export function getStock() {
-    return request("GET", "/warehouse/stock");
+/**
+ * @param {number|string} branchId
+ * @param {{ offset?: number, limit?: number }} [query]
+ */
+export function getBranchStock(branchId, query = {}) {
+    return withPage(`/warehouse/branches/${branchId}/stock`, query);
 }
 
-/** @param {Record<string, unknown>} data */
-export function adjustStock(data) {
-    return request("POST", "/warehouse/stock/adjust", data);
+/**
+ * @param {number|string} branchId
+ * @param {number|string} ingredientId
+ */
+export function getBranchIngredient(branchId, ingredientId) {
+    return request("GET", `/warehouse/branches/${branchId}/ingredients/${ingredientId}`);
 }
 
-export function listWriteOffs() {
-    return request("GET", "/warehouse/write-offs");
+/**
+ * @param {number|string} branchId
+ * @param {Record<string, unknown>} data
+ */
+export function adjustBranchStock(branchId, data) {
+    return request("POST", `/warehouse/branches/${branchId}/stock/adjust`, data);
 }
 
-/** @param {Record<string, unknown>} data */
-export function storeWriteOff(data) {
-    return request("POST", "/warehouse/write-offs", data);
+/**
+ * @param {number|string} branchId
+ * @param {{ offset?: number, limit?: number }} [query]
+ */
+export function listBranchWriteOffs(branchId, query = {}) {
+    return withPage(`/warehouse/branches/${branchId}/write-offs`, query);
+}
+
+/**
+ * @param {number|string} branchId
+ * @param {Record<string, unknown>} data
+ */
+export function storeBranchWriteOff(branchId, data) {
+    return request("POST", `/warehouse/branches/${branchId}/write-offs`, data);
 }

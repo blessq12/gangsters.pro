@@ -2,12 +2,13 @@
 
 namespace App\Application\Delivery\Presenter;
 
-use App\Domain\Delivery\Entity\DeliveryConfiguration;
-use App\Domain\Delivery\ValueObject\DeliveryZone;
-use App\Domain\Delivery\ValueObject\KitchenAddress;
+use App\Domain\Core\Delivery\Tariff\Entity\DeliveryConfiguration;
+use App\Domain\Core\Delivery\Tariff\ValueObject\DeliveryZone;
+use App\Domain\Supporting\Company\Entity\Branch;
 
 /**
  * Единый формат ответа Delivery для витрины и админки.
+ * Адрес филиала собирается из Company при необходимости.
  */
 final class DeliveryPresenter
 {
@@ -16,10 +17,11 @@ final class DeliveryPresenter
      *     settings: array<string, mixed>,
      *     zones: list<array<string, mixed>>,
      *     zone_geojson: array<string, mixed>|null,
-     *     kitchen_address: array<string, mixed>
+     *     branch_id: int|null,
+     *     branch_address: array<string, mixed>|null
      * }
      */
-    public function present(DeliveryConfiguration $configuration): array
+    public function present(DeliveryConfiguration $configuration, ?Branch $branch = null): array
     {
         return [
             'settings' => $this->settings($configuration),
@@ -28,11 +30,10 @@ final class DeliveryPresenter
                 $configuration->zones(),
             ),
             'zone_geojson' => $configuration->deliveryZoneGeoJson(),
-            'kitchen_address' => $this->kitchenAddress(
-                $configuration->kitchenAddress(),
-                $configuration->kitchenLatitude(),
-                $configuration->kitchenLongitude(),
-            ),
+            'branch_id' => $configuration->branchId(),
+            'branch_address' => $branch instanceof Branch
+                ? $this->branchAddress($branch)
+                : null,
         ];
     }
 
@@ -71,19 +72,22 @@ final class DeliveryPresenter
     /**
      * @return array<string, mixed>
      */
-    public function kitchenAddress(
-        KitchenAddress $address,
-        ?float $latitude,
-        ?float $longitude,
-    ): array {
+    public function branchAddress(Branch $branch): array
+    {
+        $parts = array_values(array_filter([
+            $branch->city(),
+            $branch->street(),
+            $branch->house(),
+        ], static fn (?string $part): bool => $part !== null && trim($part) !== ''));
+
         return [
-            'city' => $address->city(),
-            'street' => $address->street(),
-            'house' => $address->house(),
-            'comment' => $address->comment(),
-            'search_line' => $address->searchLine(),
-            'latitude' => $latitude,
-            'longitude' => $longitude,
+            'city' => $branch->city(),
+            'street' => $branch->street(),
+            'house' => $branch->house(),
+            'comment' => $branch->comment(),
+            'search_line' => $parts !== [] ? implode(', ', $parts) : null,
+            'latitude' => $branch->latitude(),
+            'longitude' => $branch->longitude(),
         ];
     }
 }

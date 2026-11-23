@@ -19,11 +19,15 @@ router.beforeEach(async (to) => {
     await auth.bootstrap();
 
     if (auth.authRequired && auth.isAuthenticated && auth.role && isRegisteredRole(auth.role)) {
-        if (session.routesMountedFor !== auth.role) {
+        const routesJustMounted = session.routesMountedFor !== auth.role;
+        if (routesJustMounted) {
             await session.activateRole(auth.role, router);
         }
         if (session.homeRouteName && isForeignRolePath(auth.role, to.path)) {
             return { name: session.homeRouteName };
+        }
+        if (routesJustMounted) {
+            return to.fullPath;
         }
     }
 

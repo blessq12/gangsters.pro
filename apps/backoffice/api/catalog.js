@@ -1,45 +1,117 @@
-import { request } from "../http/transport.js";
+import { request, requestForm, requestMultipart } from "../http/transport.js";
 
 export function getCatalog() {
     return request("GET", "/catalog");
 }
 
-/** @param {Record<string, unknown>} data */
-export function storeProduct(data) {
-    return request("POST", "/catalog/products", data);
+/**
+ * @param {{ offset?: number, limit?: number, q?: string }} [query]
+ */
+export function listProducts(query = {}) {
+    const params = new URLSearchParams();
+    if (query.offset !== undefined) {
+        params.set("offset", String(query.offset));
+    }
+    if (query.limit !== undefined) {
+        params.set("limit", String(query.limit));
+    }
+    if (query.q) {
+        params.set("q", query.q);
+    }
+    const qs = params.toString();
+    return request("GET", `/catalog/products${qs ? `?${qs}` : ""}`);
 }
 
-/** @param {number|string} id @param {Record<string, unknown>} data */
-export function updateProduct(id, data) {
-    return request("PUT", `/catalog/products/${id}`, data);
+/** @param {number|string} id */
+export function getProduct(id) {
+    return request("GET", `/catalog/products/${id}`);
 }
 
-/** @param {Record<string, unknown>} data */
-export function storeCategory(data) {
-    return request("POST", "/catalog/categories", data);
+/**
+ * @param {Record<string, unknown>} payload
+ * @param {{
+ *   newImages?: Array<{ file: File, focus_x: number, focus_y: number, sort_order?: number }>,
+ *   existingImages?: Array<{ id: number, focus_x: number, focus_y: number, sort_order: number }>,
+ *   deletedImageIds?: number[],
+ * }} [images]
+ */
+function buildCatalogItemFormData(payload, images = {}) {
+    const formData = new FormData();
+    formData.append("payload", JSON.stringify(payload));
+    formData.append(
+        "images_meta",
+        JSON.stringify((images.newImages ?? []).map((row) => ({
+            focus_x: row.focus_x,
+            focus_y: row.focus_y,
+            sort_order: row.sort_order ?? null,
+        }))),
+    );
+    formData.append("existing_images", JSON.stringify(images.existingImages ?? []));
+    formData.append("deleted_image_ids", JSON.stringify(images.deletedImageIds ?? []));
+    for (const row of images.newImages ?? []) {
+        formData.append("images[]", row.file);
+    }
+    return formData;
 }
 
-/** @param {number|string} id @param {Record<string, unknown>} data */
-export function updateCategory(id, data) {
-    return request("PUT", `/catalog/categories/${id}`, data);
+/**
+ * @param {Record<string, unknown>} payload
+ * @param {{
+ *   newImages?: Array<{ file: File, focus_x: number, focus_y: number }>,
+ *   existingImages?: Array<{ id: number, focus_x: number, focus_y: number, sort_order: number }>,
+ *   deletedImageIds?: number[],
+ * }} [images]
+ */
+export function storeProduct(payload, images = {}) {
+    return requestMultipart("POST", "/catalog/products", buildCatalogItemFormData(payload, images));
 }
 
-/** @param {Record<string, unknown>} data */
-export function storeSet(data) {
-    return request("POST", "/catalog/sets", data);
+/**
+ * @param {number|string} id
+ * @param {Record<string, unknown>} payload
+ * @param {{
+ *   newImages?: Array<{ file: File, focus_x: number, focus_y: number }>,
+ *   existingImages?: Array<{ id: number, focus_x: number, focus_y: number, sort_order: number }>,
+ *   deletedImageIds?: number[],
+ * }} [images]
+ */
+export function updateProduct(id, payload, images = {}) {
+    // PHP парсит multipart только на POST; Laravel принимает _method=PUT.
+    const formData = buildCatalogItemFormData(payload, images);
+    formData.append("_method", "PUT");
+    return requestMultipart("POST", `/catalog/products/${id}`, formData);
 }
 
-/** @param {number|string} id @param {Record<string, unknown>} data */
-export function updateSet(id, data) {
-    return request("PUT", `/catalog/sets/${id}`, data);
+/** @param {number|string} id */
+export function deleteProduct(id) {
+    return request("DELETE", `/catalog/products/${id}`);
 }
 
-/** @param {Record<string, unknown>} data */
-export function storeTag(data) {
-    return request("POST", "/catalog/tags", data);
+/**
+ * @param {number|string} itemId
+ * @param {File} file
+ * @param {{ focus_x?: number, focus_y?: number }} [focus]
+ */
+export function storeItemImage(itemId, file, focus = {}) {
+    const formData = new FormData();
+    formData.append("file", file);
+    if (focus.focus_x != null && focus.focus_y != null) {
+        formData.append("focus_x", String(focus.focus_x));
+        formData.append("focus_y", String(focus.focus_y));
+    }
+    return requestForm(`/catalog/items/${itemId}/images`, formData);
 }
 
-/** @param {number|string} id @param {Record<string, unknown>} data */
-export function updateTag(id, data) {
-    return request("PUT", `/catalog/tags/${id}`, data);
+/**
+ * @param {number|string} itemId
+ * @param {number|string} imageId
+ * @param {Record<string, unknown>} data
+ */
+export function updateItemImage(itemId, imageId, data) {
+    return request("PATCH", `/catalog/items/${itemId}/images/${imageId}`, data);
+}
+
+/** @param {number|string} itemId @param {number|string} imageId */
+export function deleteItemImage(itemId, imageId) {
+    return request("DELETE", `/catalog/items/${itemId}/images/${imageId}`);
 }

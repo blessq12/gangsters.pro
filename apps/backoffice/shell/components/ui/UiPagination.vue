@@ -21,7 +21,7 @@ function go(next) {
 </script>
 
 <template>
-    <div class="flex items-center justify-between gap-3 text-sm text-slate-600">
+    <div class="flex items-center justify-between gap-4 pt-2 text-sm text-bo-muted">
         <span>
             Стр. {{ page }} / {{ totalPages }} · всего {{ total }}
         </span>

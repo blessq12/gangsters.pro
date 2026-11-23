@@ -2,12 +2,12 @@
 
 use App\Infrastructure\Catalog\Provider\CatalogServiceProvider;
 use App\Infrastructure\Company\Provider\CompanyServiceProvider;
-use App\Infrastructure\Crm\Provider\CrmServiceProvider;
+use App\Infrastructure\Client\Provider\ClientServiceProvider;
 use App\Infrastructure\Delivery\Provider\DeliveryServiceProvider;
 use App\Infrastructure\Marketing\Provider\MarketingServiceProvider;
 use App\Infrastructure\Order\Provider\OrderServiceProvider;
+use App\Infrastructure\Payment\Provider\PaymentServiceProvider;
 use App\Infrastructure\Production\Provider\ProductionServiceProvider;
-use App\Infrastructure\Promotion\Provider\PromotionServiceProvider;
 use App\Infrastructure\Staff\Provider\StaffServiceProvider;
 use App\Infrastructure\Warehouse\Provider\WarehouseServiceProvider;
 use App\Shared\Provider\SharedProvider;
@@ -194,9 +194,9 @@ return [
         CompanyServiceProvider::class,
         MarketingServiceProvider::class,
         DeliveryServiceProvider::class,
-        PromotionServiceProvider::class,
-        CrmServiceProvider::class,
+        ClientServiceProvider::class,
         OrderServiceProvider::class,
+        PaymentServiceProvider::class,
         ProductionServiceProvider::class,
         WarehouseServiceProvider::class,
         StaffServiceProvider::class,

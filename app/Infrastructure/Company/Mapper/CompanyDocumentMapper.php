@@ -2,12 +2,12 @@
 
 namespace App\Infrastructure\Company\Mapper;
 
-use App\Domain\Company\Entity\CompanyDocument;
-use App\Infrastructure\Company\Model\CMP_CompanyDocument;
+use App\Domain\Supporting\Company\Entity\CompanyDocument;
+use App\Infrastructure\Company\Model\CompanyDocumentModel;
 
 final class CompanyDocumentMapper
 {
-    public function toDomain(CMP_CompanyDocument $row): CompanyDocument
+    public function toDomain(CompanyDocumentModel $row): CompanyDocument
     {
         return new CompanyDocument(
             id: (int) $row->id,

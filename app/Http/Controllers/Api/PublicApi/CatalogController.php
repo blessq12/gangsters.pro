@@ -2,14 +2,24 @@
 
 namespace App\Http\Controllers\Api\PublicApi;
 
-use App\Application\Catalog\Query\GetCatalogUseCase;
+use App\Application\Company\Query\GetCatalogUseCase;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use InvalidArgumentException;
 
 final class CatalogController extends Controller
 {
-    public function show(GetCatalogUseCase $useCase): JsonResponse
+    public function show(Request $request, GetCatalogUseCase $useCase): JsonResponse
     {
-        return response()->json($useCase->execute());
+        $validated = $request->validate([
+            'branch_id' => ['required', 'integer', 'min:1'],
+        ]);
+
+        try {
+            return response()->json($useCase->execute((int) $validated['branch_id']));
+        } catch (InvalidArgumentException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 404);
+        }
     }
 }

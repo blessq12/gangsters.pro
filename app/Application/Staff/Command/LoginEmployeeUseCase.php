@@ -5,8 +5,8 @@ namespace App\Application\Staff\Command;
 use App\Application\Staff\DTO\LoginEmployeeDto;
 use App\Application\Staff\Presenter\EmployeePresenter;
 use App\Application\Staff\Support\EmployeeAccessToken;
-use App\Domain\Staff\Entity\Employee;
-use App\Domain\Staff\Repository\EmployeeRepository;
+use App\Domain\Supporting\Staff\Entity\Employee;
+use App\Domain\Supporting\Staff\Repository\EmployeeRepository;
 
 final class LoginEmployeeUseCase
 {

@@ -2,33 +2,29 @@
 
 namespace App\Application\Marketing\Presenter;
 
-use App\Domain\Marketing\Entity\Banner;
-use App\Domain\Marketing\Entity\ContactBlock;
-use App\Domain\Marketing\Entity\DeliveryConditionsText;
-use App\Domain\Marketing\Entity\Promotion;
+use App\Domain\Supporting\Marketing\Entity\Banner;
+use App\Domain\Supporting\Company\Entity\DeliveryConditionsText;
+use App\Domain\Supporting\Marketing\Entity\Campaign;
 
 final class MarketingPresenter
 {
     /**
      * @param  list<Banner>  $banners
-     * @param  list<Promotion>  $promotions
+     * @param  list<Campaign>  $promotions
      * @return array{
      *     banners: list<array<string, mixed>>,
      *     promotions: list<array<string, mixed>>,
-     *     contact: array<string, mixed>|null,
      *     delivery_conditions_text: array<string, mixed>|null
      * }
      */
     public function present(
         array $banners,
         array $promotions,
-        ?ContactBlock $contact = null,
         ?DeliveryConditionsText $deliveryConditions = null,
     ): array {
         return [
             'banners' => array_map(fn (Banner $banner): array => $this->banner($banner), $banners),
-            'promotions' => array_map(fn (Promotion $promotion): array => $this->promotion($promotion), $promotions),
-            'contact' => $contact !== null ? $this->contact($contact) : null,
+            'promotions' => array_map(fn (Campaign $promotion): array => $this->promotion($promotion), $promotions),
             'delivery_conditions_text' => $deliveryConditions !== null
                 ? $this->deliveryConditions($deliveryConditions)
                 : null,
@@ -52,7 +48,7 @@ final class MarketingPresenter
     /**
      * @return array<string, mixed>
      */
-    public function promotion(Promotion $promotion): array
+    public function promotion(Campaign $promotion): array
     {
         return [
             'id' => $promotion->id(),
@@ -61,19 +57,6 @@ final class MarketingPresenter
             'image' => $promotion->image(),
             'sort_order' => $promotion->sortOrder(),
             'is_active' => $promotion->isActive(),
-        ];
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    public function contact(ContactBlock $contact): array
-    {
-        return [
-            'id' => $contact->id(),
-            'phone' => $contact->phone(),
-            'email' => $contact->email(),
-            'extra' => $contact->extra(),
         ];
     }
 

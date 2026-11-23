@@ -2,40 +2,36 @@
 
 namespace App\Application\Order\Query;
 
+use App\Application\Order\Checkout\CheckoutQuote;
+use App\Application\Order\Checkout\FormOrderCommercialRules;
 use App\Application\Order\DTO\QuoteOrderDto;
-use App\Application\Promotion\DTO\ResolvePromotionsDto;
-use App\Application\Promotion\Query\ResolvePromotionsUseCase;
-use App\Domain\Catalog\Entity\Product;
-use App\Domain\Catalog\Entity\ProductSet;
-use App\Domain\Catalog\Repository\CatalogItemRepository;
-use App\Domain\Company\Repository\BranchRepository;
-use App\Domain\Company\Repository\CompanyRepository;
-use App\Domain\Company\Repository\KitchenRepository;
-use App\Domain\Crm\Repository\ClientRepository;
-use App\Domain\Delivery\Entity\DeliveryConfiguration;
-use App\Domain\Delivery\Repository\DeliveryConfigurationRepository;
-use App\Domain\Delivery\ValueObject\DeliveryZone;
+use App\Domain\Core\Order\Enum\OrderLineType;
+use App\Domain\Core\Order\Entity\OrderCommercialRules;
+use App\Domain\Core\Order\Port\OrderBranchLookupPort;
+use App\Domain\Core\Order\Port\OrderBranchMenuSnapshotPort;
+use App\Domain\Core\Order\Port\OrderCatalogSnapshotPort;
+use App\Domain\Core\Order\Port\OrderClientLookupPort;
+use App\Domain\Core\Order\Port\OrderDeliveryTariffPort;
+use App\Domain\Core\Order\ValueObject\OrderDeliveryAddress;
+use App\Domain\Core\Order\ValueObject\OrderDeliveryInfo;
+use App\Domain\Core\Order\ValueObject\OrderLine;
 use App\Shared\Enum\DeliveryMethod;
-use App\Shared\Geo\AddressGeocoder;
-use App\Shared\Geo\DeliveryZoneMatcher;
 use App\Shared\ValueObject\PhoneNumber;
 use DateTimeImmutable;
 use Illuminate\Support\Str;
 
 /**
- * Quote: снимки Catalog/Client/Delivery/Company + ResolvePromotions → snapshot для place.
+ * Quote считает корзину тем же OrderFormation, что и создание заказа.
  */
-final class QuoteOrderUseCase
+final class QuoteOrderUseCase implements CheckoutQuote
 {
     public function __construct(
-        private readonly CatalogItemRepository $catalog,
-        private readonly ClientRepository $clients,
-        private readonly DeliveryConfigurationRepository $deliveryConfigs,
-        private readonly CompanyRepository $companies,
-        private readonly BranchRepository $branches,
-        private readonly KitchenRepository $kitchens,
-        private readonly ResolvePromotionsUseCase $resolvePromotions,
-        private readonly AddressGeocoder $geocoder,
+        private readonly OrderCatalogSnapshotPort $catalog,
+        private readonly OrderClientLookupPort $clients,
+        private readonly OrderDeliveryTariffPort $deliveryTariffs,
+        private readonly OrderBranchLookupPort $branches,
+        private readonly OrderBranchMenuSnapshotPort $menu,
+        private readonly FormOrderCommercialRules $commercialRules,
     ) {}
 
     /**
@@ -50,17 +46,17 @@ final class QuoteOrderUseCase
         $deliveryMethod = $this->normalizeDeliveryMethod($dto->deliveryMethod);
         $paymentMethod = $this->normalizePaymentMethod($dto->paymentMethod);
 
-        [$cartLines, $itemsTotalRubles, $promoLines] = $this->buildUserLines($dto->lines);
-        $itemsTotalKopecks = $itemsTotalRubles * 100;
+        $branch = $this->branches->requireActiveBranch($dto->branchId);
+        [$cartLines] = $this->buildUserLines($branch['id'], $dto->lines);
 
-        $deliveryConfig = $this->deliveryConfigs->findPublic();
+        $deliveryConfig = $this->deliveryTariffs->findConfigByBranch($branch['id']);
         if ($deliveryConfig === null) {
-            throw new \InvalidArgumentException('Конфигурация доставки не найдена.');
+            throw new \InvalidArgumentException('Конфигурация доставки филиала не найдена.');
         }
 
-        [$latitude, $longitude] = $this->resolveCoordinates($deliveryMethod, $dto, $deliveryConfig);
+        [$latitude, $longitude] = $this->resolveCoordinates($deliveryMethod, $dto);
         $zone = $deliveryMethod === DeliveryMethod::Courier->value
-            ? DeliveryZoneMatcher::match($deliveryConfig->zones(), $latitude, $longitude)
+            ? $this->deliveryTariffs->matchZoneByCoordinates($branch['id'], $latitude, $longitude)
             : null;
 
         [$deliveryAvailable, $inZone] = $this->resolveDeliveryAvailability(
@@ -71,84 +67,89 @@ final class QuoteOrderUseCase
         );
 
         $scheduledAt = $this->parseScheduledAt($dto->scheduledAt);
+        $at = $scheduledAt ?? new DateTimeImmutable;
 
-        $applied = $this->resolvePromotions->execute(new ResolvePromotionsDto(
-            lines: $promoLines,
-            deliveryMethod: $deliveryMethod,
-            deliveryZoneId: $zone?->id(),
-            currentTotalKopecks: $itemsTotalKopecks,
-            scheduledAt: $scheduledAt,
-        ));
-
-        $cartLines = $this->applyGiftLine($cartLines, $applied, $dto->giftProductId);
-        $cartLines = $this->applyComplementLines($cartLines, $applied, $dto->complementSelections);
-
-        $baseFeeKopecks = $deliveryMethod === DeliveryMethod::Courier->value && $zone !== null
-            ? $zone->deliveryFeeKopecks()
-            : 0;
-        $deliveryDiscountKopecks = (int) ($applied['delivery_discount_kopecks'] ?? 0);
-        $freeDelivery = (bool) ($applied['free_delivery'] ?? false);
-        $deliveryFeeKopecks = $freeDelivery
-            ? 0
-            : max(0, $baseFeeKopecks - $deliveryDiscountKopecks);
-        $deliveryFeeRubles = intdiv($deliveryFeeKopecks, 100);
-
-        if ($deliveryFeeRubles > 0 && $zone !== null) {
-            $deliveryLine = $this->resolveDeliveryFeeLine($zone);
-            if ($deliveryLine !== null) {
-                $cartLines[] = $deliveryLine;
-            }
+        if ($deliveryMethod === DeliveryMethod::Courier->value) {
+            $deliveryInfo = OrderDeliveryInfo::courier(
+                address: $this->deliveryAddress($dto, $latitude, $longitude),
+                zoneId: $zone !== null ? $zone['id'] : 'outside',
+                feeKopecks: $zone !== null ? $zone['fee_kopecks'] : 0,
+            );
+            $zoneIsRemote = $zone === null || $zone['is_remote'];
+        } else {
+            $deliveryInfo = OrderDeliveryInfo::pickup();
+            $zoneIsRemote = false;
         }
 
-        $discountKopecks = $deliveryDiscountKopecks;
+        $formed = $this->commercialRules->apply(
+            $branch['id'],
+            $this->toBaseLines($cartLines),
+            $deliveryInfo,
+            $at,
+            $zoneIsRemote,
+            $dto->giftProductId,
+            $dto->complementSelections,
+        );
+        $cartLines = $this->presentLines($formed['lines'], $cartLines);
+        $itemsTotalKopecks = 0;
+        foreach ($formed['lines'] as $formedLine) {
+            if ($formedLine->isBillable()) {
+                $itemsTotalKopecks += $formedLine->lineTotalKopecks();
+            }
+        }
+        $deliveryFeeKopecks = $formed['delivery']->feeKopecks();
+        $deliveryFeeRubles = intdiv($deliveryFeeKopecks, 100);
+        $benefits = $this->benefits(
+            $formed['rules'],
+            $formed['facts'],
+            $formed['lines'],
+            $deliveryMethod,
+            $at,
+            $itemsTotalKopecks,
+            $deliveryFeeKopecks,
+        );
+
+        $itemsTotalRubles = intdiv($itemsTotalKopecks, 100);
         $grandTotalKopecks = $itemsTotalKopecks + $deliveryFeeKopecks;
         $grandTotalRubles = intdiv($grandTotalKopecks, 100);
 
         $totals = [
             'items_total' => $itemsTotalKopecks,
-            'discount' => $discountKopecks,
+            'discount' => 0,
             'delivery_fee' => $deliveryFeeKopecks,
             'grand_total' => $grandTotalKopecks,
+            'items_rubles' => $itemsTotalRubles,
             'items_total_rubles' => $itemsTotalRubles,
             'delivery_fee_rubles' => $deliveryFeeRubles,
             'grand_total_rubles' => $grandTotalRubles,
         ];
 
-        $kitchen = $deliveryConfig->kitchenAddress();
-        $companySnapshot = $this->resolveCompanySnapshot();
+        $branchId = $branch['id'];
 
         $client = $this->resolveClientSnapshot($dto->client);
 
         $delivery = [
             'method' => $deliveryMethod,
-            'address' => $deliveryMethod === DeliveryMethod::Courier->value ? $dto->address : null,
+            'address' => $deliveryMethod === DeliveryMethod::Courier->value
+                ? $this->presentQuoteAddress($dto->address, $latitude, $longitude)
+                : null,
             'scheduled_at' => $dto->scheduledAt,
             'delivery_fee_rubles' => $deliveryFeeRubles,
             'delivery_fee_kopecks' => $deliveryFeeKopecks,
             'delivery_available' => $deliveryAvailable,
             'in_zone' => $inZone,
             'zone' => $zone !== null ? [
-                'id' => $zone->id(),
-                'name' => $zone->name(),
-                'fee_kopecks' => $zone->deliveryFeeKopecks(),
-                'is_remote' => $zone->isRemote(),
+                'id' => $zone['id'],
+                'name' => $zone['name'],
+                'fee_kopecks' => $zone['fee_kopecks'],
+                'is_remote' => $zone['is_remote'],
             ] : null,
-            'zone_id' => $zone?->id(),
-            'zone_name' => $zone?->name(),
-            'is_remote' => $zone?->isRemote(),
+            'zone_id' => $zone !== null ? $zone['id'] : null,
+            'zone_name' => $zone !== null ? $zone['name'] : null,
+            'is_remote' => $zoneIsRemote,
             'fee' => $deliveryFeeKopecks,
-            'min_order_kopecks' => $deliveryConfig->minOrderAmountKopecks(),
-            'kitchen_address' => [
-                'city' => $kitchen->city(),
-                'street' => $kitchen->street(),
-                'house' => $kitchen->house(),
-                'comment' => $kitchen->comment(),
-                'search_line' => $kitchen->searchLine(),
-                'latitude' => $deliveryConfig->kitchenLatitude(),
-                'longitude' => $deliveryConfig->kitchenLongitude(),
-            ],
-            'branch_id' => $companySnapshot['branch_id'],
-            'kitchen_id' => $companySnapshot['kitchen_id'],
+            'min_order_kopecks' => $deliveryConfig['min_order_kopecks'],
+            'branch_id' => $branchId,
             'latitude' => $latitude,
             'longitude' => $longitude,
         ];
@@ -161,15 +162,13 @@ final class QuoteOrderUseCase
         $clientRequestId = (string) Str::uuid();
 
         return [
+            'branch_id' => $branchId,
             'cart' => [
                 'lines' => $cartLines,
                 'items_total' => $itemsTotalKopecks,
-                'discounts' => [
-                    'delivery_discount_kopecks' => $deliveryDiscountKopecks,
-                ],
-                'applied_promotions' => $applied,
                 'totals' => $totals,
             ],
+            'benefits' => $benefits,
             'client' => $client,
             'delivery' => $delivery,
             'payment' => $payment,
@@ -180,54 +179,73 @@ final class QuoteOrderUseCase
     }
 
     /**
-     * @param  list<array{product_id: int, quantity: int}>  $lines
+     * Цены и доступность — только из меню филиала / сетов филиала.
+     *
+     * @param  list<array{product_id?: int, id?: int, quantity: int, kind?: string}>  $lines
      * @return array{0: list<array<string, mixed>>, 1: int, 2: list<array{product_id: int, quantity: int}>}
      */
-    private function buildUserLines(array $lines): array
+    private function buildUserLines(int $branchId, array $lines): array
     {
-        $ids = [];
+        $productIds = [];
+        $setIds = [];
         foreach ($lines as $line) {
-            $productId = (int) ($line['product_id'] ?? 0);
+            $id = (int) ($line['id'] ?? $line['product_id'] ?? 0);
             $quantity = (int) ($line['quantity'] ?? 0);
-            if ($productId < 1 || $quantity < 1) {
+            $kind = (string) ($line['kind'] ?? 'product');
+            if ($id < 1 || $quantity < 1) {
                 throw new \InvalidArgumentException('Некорректная строка корзины.');
             }
-            $ids[] = $productId;
+            if ($kind === 'set') {
+                $setIds[] = $id;
+            } else {
+                $productIds[] = $id;
+            }
         }
 
-        $uniqueIds = array_values(array_unique($ids));
-        $products = $this->indexProducts($this->catalog->findActiveProductsByIds($uniqueIds));
-        $sets = $this->indexSets($this->catalog->findActiveSetsByIds($uniqueIds));
+        $menuById = $this->menu->findByBranchAndItemIds($branchId, array_values(array_unique($productIds)));
+        $products = $this->catalog->findActiveProductsByIds(array_values(array_unique($productIds)));
+        $sets = $this->menu->findAvailableSetsByBranchAndIds($branchId, array_values(array_unique($setIds)));
 
         $cartLines = [];
         $itemsTotalRubles = 0;
         $promoLines = [];
 
         foreach ($lines as $line) {
-            $catalogId = (int) $line['product_id'];
-            $quantity = (int) $line['quantity'];
+            $id = (int) ($line['id'] ?? $line['product_id'] ?? 0);
+            $quantity = (int) ($line['quantity'] ?? 0);
+            $kind = (string) ($line['kind'] ?? 'product');
 
-            if (isset($products[$catalogId])) {
-                $product = $products[$catalogId];
-                $unit = $product->price()->amountRubles();
+            if ($kind === 'set') {
+                $set = $sets[$id] ?? null;
+                if ($set === null || ! ($set['is_available'] ?? false)) {
+                    throw new \InvalidArgumentException(sprintf('Сет #%d недоступен в меню филиала.', $id));
+                }
+                $unitKopecks = (int) $set['price_kopecks'];
+                $unit = intdiv($unitKopecks, 100);
                 $itemsTotalRubles += $unit * $quantity;
-                $cartLines[] = $this->productLine($product, $quantity, $unit, 'user');
-                $promoLines[] = ['product_id' => $catalogId, 'quantity' => $quantity];
+                $cartLine = $this->setLine($set, $quantity, $unit, 'set');
+                $cartLine['unit_price_kopecks'] = $unitKopecks;
+                $cartLines[] = $cartLine;
+                $promoLines[] = ['product_id' => $id, 'quantity' => $quantity];
 
                 continue;
             }
 
-            if (isset($sets[$catalogId])) {
-                $set = $sets[$catalogId];
-                $unit = $set->price()->amountRubles();
-                $itemsTotalRubles += $unit * $quantity;
-                $cartLines[] = $this->setLine($set, $quantity, $unit, 'user');
-                $promoLines[] = ['product_id' => $catalogId, 'quantity' => $quantity];
-
-                continue;
+            $menuItem = $menuById[$id] ?? null;
+            if ($menuItem === null || ! ($menuItem['is_available'] ?? false)) {
+                throw new \InvalidArgumentException(sprintf('Товар #%d недоступен в меню филиала.', $id));
             }
-
-            throw new \InvalidArgumentException(sprintf('Товар #%d недоступен.', $catalogId));
+            $product = $products[$id] ?? null;
+            if ($product === null) {
+                throw new \InvalidArgumentException(sprintf('Товар #%d недоступен.', $id));
+            }
+            $unitKopecks = (int) $menuItem['price_kopecks'];
+            $unit = intdiv($unitKopecks, 100);
+            $itemsTotalRubles += $unit * $quantity;
+            $cartLine = $this->productLine($product, $quantity, $unit, 'regular');
+            $cartLine['unit_price_kopecks'] = $unitKopecks;
+            $cartLines[] = $cartLine;
+            $promoLines[] = ['product_id' => $id, 'quantity' => $quantity];
         }
 
         return [$cartLines, $itemsTotalRubles, $promoLines];
@@ -235,118 +253,181 @@ final class QuoteOrderUseCase
 
     /**
      * @param  list<array<string, mixed>>  $cartLines
-     * @param  array<string, mixed>  $applied
-     * @return list<array<string, mixed>>
+     * @return list<OrderLine>
      */
-    private function applyGiftLine(array $cartLines, array $applied, ?int $giftProductId): array
+    private function toBaseLines(array $cartLines): array
     {
-        $gift = is_array($applied['gift'] ?? null) ? $applied['gift'] : null;
-        if ($gift === null || $giftProductId === null || $giftProductId < 1) {
-            return $cartLines;
+        $lines = [];
+        foreach ($cartLines as $raw) {
+            $payload = is_array($raw['payload'] ?? null) ? $raw['payload'] : [];
+            $kind = (string) ($payload['kind'] ?? 'regular');
+            $type = $kind === 'set' ? OrderLineType::Set : OrderLineType::Regular;
+            $kopecks = isset($raw['unit_price_kopecks'])
+                ? (int) $raw['unit_price_kopecks']
+                : (int) ($raw['unit_price_rubles'] ?? 0) * 100;
+            $lines[] = new OrderLine(
+                productId: (int) $raw['product_id'],
+                name: (string) ($raw['product_name'] ?? ''),
+                unitPriceKopecks: $kopecks,
+                quantity: max(1, (int) ($raw['quantity'] ?? 1)),
+                lineType: $type,
+            );
         }
 
-        $selectedId = $giftProductId;
-        if ((int) ($gift['product_id'] ?? 0) !== $giftProductId) {
-            $product = $this->catalog->findProductById($giftProductId);
-            if ($product === null || ! $product->isActive()) {
-                throw new \InvalidArgumentException('Подарок недоступен.');
-            }
-            $name = $product->name();
-            $sku = $product->sku();
-            $images = $this->imagePaths($product);
-        } else {
-            $name = (string) ($gift['name'] ?? 'Подарок');
-            $sku = null;
-            $images = [];
-            $product = $this->catalog->findProductById($selectedId);
-            if ($product !== null) {
-                $sku = $product->sku();
-                $images = $this->imagePaths($product);
-            }
-        }
+        return $lines;
+    }
 
-        $cartLines[] = [
-            'product_id' => $selectedId,
-            'product_name' => $name,
-            'quantity' => 1,
-            'unit_price_rubles' => 0,
-            'line_total_rubles' => 0,
-            'sku' => $sku,
-            'images' => $images,
-            'payload' => [
-                'kind' => 'gift',
-                'catalog_kind' => 'product',
-            ],
-        ];
+    private function deliveryAddress(QuoteOrderDto $dto, ?float $latitude, ?float $longitude): OrderDeliveryAddress
+    {
+        $address = $dto->address ?? [];
 
-        return $cartLines;
+        return OrderDeliveryAddress::create(
+            street: (string) ($address['street'] ?? ''),
+            house: (string) ($address['house'] ?? ''),
+            entrance: isset($address['entrance']) ? (string) $address['entrance'] : null,
+            floor: isset($address['floor']) ? (string) $address['floor'] : null,
+            apartment: isset($address['apartment']) ? (string) $address['apartment'] : null,
+            comment: isset($address['comment']) ? (string) $address['comment'] : null,
+            lat: $latitude,
+            lng: $longitude,
+        );
     }
 
     /**
-     * @param  list<array<string, mixed>>  $cartLines
-     * @param  array<string, mixed>  $applied
-     * @param  array<int, int>  $selections
-     * @return list<array<string, mixed>>
+     * @param  array<string, mixed>|null  $address
+     * @return array<string, mixed>|null
      */
-    private function applyComplementLines(array $cartLines, array $applied, array $selections): array
+    private function presentQuoteAddress(?array $address, ?float $latitude, ?float $longitude): ?array
     {
-        $complements = is_array($applied['complements'] ?? null) ? $applied['complements'] : [];
-        $entitled = (int) ($applied['complement_entitled'] ?? 0);
-        if ($entitled < 1 || $complements === []) {
-            return $cartLines;
+        if ($address === null) {
+            return null;
         }
 
-        foreach ($complements as $complement) {
-            if (! is_array($complement)) {
-                continue;
-            }
-            $productId = (int) ($complement['product_id'] ?? 0);
-            if ($productId < 1) {
-                continue;
-            }
+        return [
+            ...$address,
+            'lat' => $latitude,
+            'lng' => $longitude,
+        ];
+    }
 
-            $qty = array_key_exists($productId, $selections)
-                ? min(max(0, (int) $selections[$productId]), $entitled)
-                : min((int) ($complement['quantity'] ?? $entitled), $entitled);
+    /**
+     * @param  list<OrderLine>  $lines
+     * @param  list<array<string, mixed>>  $sources
+     * @return list<array<string, mixed>>
+     */
+    private function presentLines(array $lines, array $sources): array
+    {
+        $byId = [];
+        foreach ($sources as $source) {
+            $byId[(int) ($source['product_id'] ?? 0)] = $source;
+        }
 
-            if ($qty < 1) {
-                continue;
-            }
-
-            $cartLines[] = [
-                'product_id' => $productId,
-                'product_name' => (string) ($complement['name'] ?? 'Комплект'),
-                'quantity' => $qty,
-                'unit_price_rubles' => 0,
-                'line_total_rubles' => 0,
+        $presented = [];
+        foreach ($lines as $line) {
+            $source = $byId[$line->productId()] ?? null;
+            $kind = $line->lineType()->value;
+            $presented[] = [
+                'product_id' => $line->productId(),
+                'product_name' => $line->name(),
+                'quantity' => $line->quantity(),
+                'unit_price_kopecks' => $line->unitPriceKopecks(),
+                'unit_price_rubles' => intdiv($line->unitPriceKopecks(), 100),
+                'line_total_rubles' => intdiv($line->lineTotalKopecks(), 100),
+                'sku' => is_array($source) ? ($source['sku'] ?? null) : null,
+                'images' => is_array($source) && is_array($source['images'] ?? null) ? $source['images'] : [],
                 'payload' => [
-                    'kind' => 'complement',
-                    'catalog_kind' => 'product',
+                    'kind' => $kind,
+                    'catalog_kind' => $kind === OrderLineType::Set->value ? 'set' : 'product',
                 ],
             ];
         }
 
-        return $cartLines;
+        return $presented;
     }
 
     /**
-     * @return array<string, mixed>|null
+     * @param  list<OrderLine>  $lines
+     * @return array<string, mixed>
      */
-    private function resolveDeliveryFeeLine(DeliveryZone $zone): ?array
-    {
-        $productId = $zone->deliveryProductId();
-        if ($productId === null || $productId < 1) {
-            return null;
+    private function benefits(
+        OrderCommercialRules $rules,
+        \App\Domain\Core\Order\ValueObject\OrderFormationFacts $facts,
+        array $lines,
+        string $channel,
+        \DateTimeInterface $at,
+        int $itemsTotalKopecks,
+        int $deliveryFeeKopecks,
+    ): array {
+        $giftRule = $rules->giftRuleForChannel($channel) ?? [];
+        $weekdayOk = $giftRule !== [] && $rules->isGiftRuleAllowedOnDate(
+            $giftRule,
+            $at,
+            (string) config('app.timezone', 'UTC'),
+        );
+        $giftThreshold = (int) ($giftRule['min_order_amount_kopecks'] ?? 0);
+        $thresholdMet = $itemsTotalKopecks >= $giftThreshold;
+        $giftCandidatesRaw = $facts->giftCandidates();
+        $giftRuleOk = $weekdayOk && $thresholdMet && $giftCandidatesRaw !== [];
+
+        $giftCandidates = [];
+        if ($giftRuleOk) {
+            foreach ($giftCandidatesRaw as $candidate) {
+                $productId = (int) ($candidate['product_id'] ?? 0);
+                if ($productId < 1) {
+                    continue;
+                }
+                $giftCandidates[] = [
+                    'id' => $productId,
+                    'product_id' => $productId,
+                    'name' => (string) ($candidate['name'] ?? ''),
+                ];
+            }
         }
 
-        $product = $this->catalog->findProductById($productId);
-        if ($product === null || ! $product->isActive()) {
-            return null;
+        $giftLine = null;
+        $rollCount = 0;
+        foreach ($lines as $line) {
+            if ($line->lineType() === OrderLineType::Gift && $giftLine === null) {
+                $giftLine = $line;
+            }
+            if ($line->isBillable()) {
+                $rollCount += $facts->rollUnitsPerLineUnit($line->productId()) * $line->quantity();
+            }
         }
 
-        $unit = $product->price()->amountRubles();
+        $complement = $rules->complementSetBenefit();
+        $deliveryBenefit = $rules->deliveryBenefit();
+        $threshold = (int) ($deliveryBenefit['free_delivery_threshold_kopecks'] ?? 0);
+        $rollsPerSet = max(1, (int) ($complement['rolls_per_set'] ?? 1));
+        $maxSets = (int) ($complement['max_sets'] ?? 0);
+        $entitled = (int) ($complement['is_active'] ?? false)
+            ? min(intdiv($rollCount, $rollsPerSet), $maxSets)
+            : 0;
 
-        return $this->productLine($product, 1, $unit, 'delivery');
+        return [
+            'gift_active' => (bool) ($giftRule['is_active'] ?? false),
+            'gift_weekday_ok' => $weekdayOk,
+            'gift_allowed_weekdays' => $giftRule['allowed_weekdays'] ?? [],
+            'gift_eligible' => $giftRuleOk,
+            'gift_selected' => $giftLine !== null,
+            'gift_threshold_kopecks' => $giftThreshold,
+            'gift_current_kopecks' => $itemsTotalKopecks,
+            'gift_remaining_kopecks' => max(0, $giftThreshold - $itemsTotalKopecks),
+            'gift_candidates' => $giftCandidates,
+            'rolls_per_set' => $rollsPerSet,
+            'complement_max_sets' => $maxSets,
+            'roll_count' => $rollCount,
+            'complement_entitled' => $entitled,
+            'remaining_roll_count' => max(0, ($entitled + 1) * $rollsPerSet - $rollCount),
+            'complement_active' => (bool) ($complement['is_active'] ?? false),
+            'delivery_active' => (bool) ($deliveryBenefit['is_active'] ?? false),
+            'delivery_reached' => $channel === DeliveryMethod::Courier->value
+                && (bool) ($deliveryBenefit['is_active'] ?? false)
+                && $itemsTotalKopecks >= $threshold
+                && $deliveryFeeKopecks === 0,
+            'free_delivery_threshold_kopecks' => $threshold,
+            'remaining_to_free_kopecks' => max(0, $threshold - $itemsTotalKopecks),
+        ];
     }
 
     /**
@@ -370,10 +451,11 @@ final class QuoteOrderUseCase
 
             return [
                 'kind' => 'client',
-                'client_id' => $found->id(),
-                'name' => $found->name(),
-                'phone' => $found->phone(),
-                'email' => $found->email(),
+                'id' => $found['id'],
+                'client_id' => $found['id'],
+                'name' => $found['name'],
+                'phone' => $found['phone'],
+                'email' => $found['email'],
             ];
         }
 
@@ -385,6 +467,7 @@ final class QuoteOrderUseCase
 
         $snapshot = [
             'kind' => 'guest',
+            'id' => null,
             'client_id' => null,
             'name' => $name,
             'phone' => PhoneNumber::formatFromRaw($phoneRaw),
@@ -402,68 +485,38 @@ final class QuoteOrderUseCase
     }
 
     /**
-     * @return array{branch_id: int|null, kitchen_id: int|null}
-     */
-    private function resolveCompanySnapshot(): array
-    {
-        $company = $this->companies->findPublic();
-        if ($company === null) {
-            return ['branch_id' => null, 'kitchen_id' => null];
-        }
-
-        $branchId = null;
-        foreach ($this->branches->listByCompany($company->id()) as $branch) {
-            if ($branch->isActive()) {
-                $branchId = $branch->id();
-                break;
-            }
-        }
-
-        $kitchenId = null;
-        if ($branchId !== null) {
-            foreach ($this->kitchens->listByCompany($company->id()) as $kitchen) {
-                if ($kitchen->branchId() === $branchId) {
-                    $kitchenId = $kitchen->id();
-                    break;
-                }
-            }
-        }
-
-        return [
-            'branch_id' => $branchId,
-            'kitchen_id' => $kitchenId,
-        ];
-    }
-
-    /**
+     * Координаты приходят с клиента (ДаДата / карта). Серверный геокод не используем.
+     *
      * @return array{0: ?float, 1: ?float}
      */
     private function resolveCoordinates(
         string $deliveryMethod,
         QuoteOrderDto $dto,
-        DeliveryConfiguration $config,
     ): array {
         if ($deliveryMethod !== DeliveryMethod::Courier->value) {
             return [null, null];
         }
 
         $address = $dto->address ?? [];
-        $lat = isset($address['lat']) ? (float) $address['lat'] : null;
-        $lng = isset($address['lng']) ? (float) $address['lng'] : null;
-        if ($lat !== null && $lng !== null) {
-            return [$lat, $lng];
-        }
-
         $street = trim((string) ($address['street'] ?? ''));
         $house = trim((string) ($address['house'] ?? ''));
         if ($street === '' || $house === '') {
             throw new \InvalidArgumentException('Для курьера нужны street и house.');
         }
 
-        $city = $config->kitchenAddress()->city();
-        $coords = $this->geocoder->geocode($street, $house, $city);
+        $latRaw = $address['lat'] ?? null;
+        $lngRaw = $address['lng'] ?? null;
+        if ($latRaw === null || $latRaw === '' || $lngRaw === null || $lngRaw === '') {
+            throw new \InvalidArgumentException('Для курьера нужны координаты адреса (выбери подсказку или точку на карте).');
+        }
 
-        return [$coords['latitude'] ?? null, $coords['longitude'] ?? null];
+        $lat = (float) $latRaw;
+        $lng = (float) $lngRaw;
+        if (! is_finite($lat) || ! is_finite($lng)) {
+            throw new \InvalidArgumentException('Некорректные координаты адреса.');
+        }
+
+        return [$lat, $lng];
     }
 
     /**
@@ -521,103 +574,45 @@ final class QuoteOrderUseCase
     }
 
     /**
-     * @param  list<Product>  $products
-     * @return array<int, Product>
-     */
-    private function indexProducts(array $products): array
-    {
-        $indexed = [];
-        foreach ($products as $product) {
-            $indexed[$product->id()] = $product;
-        }
-
-        return $indexed;
-    }
-
-    /**
-     * @param  list<ProductSet>  $sets
-     * @return array<int, ProductSet>
-     */
-    private function indexSets(array $sets): array
-    {
-        $indexed = [];
-        foreach ($sets as $set) {
-            $indexed[$set->id()] = $set;
-        }
-
-        return $indexed;
-    }
-
-    /**
+     * @param  array{id: int, name: string, sku: string|null, images: list<string>}  $product
      * @return array<string, mixed>
      */
-    private function productLine(Product $product, int $quantity, int $unitPriceRubles, string $kind): array
+    private function productLine(array $product, int $quantity, int $unitPriceRubles, string $kind): array
     {
-        $line = [
-            'product_id' => $product->id(),
-            'product_name' => $product->name(),
+        return [
+            'product_id' => $product['id'],
+            'product_name' => $product['name'],
             'quantity' => $quantity,
             'unit_price_rubles' => $unitPriceRubles,
             'line_total_rubles' => $unitPriceRubles * $quantity,
-            'sku' => $product->sku(),
-            'images' => $this->imagePaths($product),
+            'sku' => $product['sku'],
+            'images' => $product['images'],
             'payload' => [
                 'kind' => $kind,
                 'catalog_kind' => 'product',
             ],
         ];
-
-        return $line;
     }
 
     /**
+     * @param  array{id: int, name: string, price_kopecks: int, composition: list<array{product_id: int, quantity: int}>}  $set
      * @return array<string, mixed>
      */
-    private function setLine(ProductSet $set, int $quantity, int $unitPriceRubles, string $kind): array
+    private function setLine(array $set, int $quantity, int $unitPriceRubles, string $kind): array
     {
-        $composition = [];
-        foreach ($set->lines() as $setLine) {
-            $composition[] = [
-                'product_id' => $setLine->productId(),
-                'quantity' => $setLine->quantity(),
-            ];
-        }
-
         return [
-            'product_id' => $set->id(),
-            'product_name' => $set->name(),
+            'product_id' => $set['id'],
+            'product_name' => $set['name'],
             'quantity' => $quantity,
             'unit_price_rubles' => $unitPriceRubles,
             'line_total_rubles' => $unitPriceRubles * $quantity,
-            'sku' => $set->sku(),
-            'images' => $this->imagePathsFromList($set->images()),
+            'sku' => null,
+            'images' => [],
             'payload' => [
                 'kind' => $kind,
                 'catalog_kind' => 'set',
-                'composition' => $composition,
+                'composition' => $set['composition'],
             ],
         ];
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function imagePaths(Product $product): array
-    {
-        return $this->imagePathsFromList($product->images());
-    }
-
-    /**
-     * @param  list<\App\Domain\Catalog\ValueObject\ProductImage>  $images
-     * @return list<string>
-     */
-    private function imagePathsFromList(array $images): array
-    {
-        $paths = [];
-        foreach ($images as $image) {
-            $paths[] = $image->path();
-        }
-
-        return $paths;
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Application\Order\Presenter;
 
-use App\Domain\Order\Entity\Order;
+use App\Domain\Core\Order\Entity\Order;
 
 final class AdminOrderPresenter
 {

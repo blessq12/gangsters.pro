@@ -2,11 +2,11 @@
 
 namespace App\Infrastructure\Company\Repository;
 
-use App\Domain\Company\Entity\CompanyDocument;
-use App\Domain\Company\Repository\CompanyDocumentRepository;
-use App\Domain\Company\Repository\CompanyRepository;
+use App\Domain\Supporting\Company\Entity\CompanyDocument;
+use App\Domain\Supporting\Company\Repository\CompanyDocumentRepository;
+use App\Domain\Supporting\Company\Repository\CompanyRepository;
 use App\Infrastructure\Company\Mapper\CompanyDocumentMapper;
-use App\Infrastructure\Company\Model\CMP_CompanyDocument;
+use App\Infrastructure\Company\Model\CompanyDocumentModel;
 use Illuminate\Support\Str;
 
 final class EloquentCompanyDocumentRepository implements CompanyDocumentRepository
@@ -15,26 +15,54 @@ final class EloquentCompanyDocumentRepository implements CompanyDocumentReposito
         private readonly CompanyDocumentMapper $mapper,
     ) {}
 
+    public function findById(int $id): ?CompanyDocument
+    {
+        $row = CompanyDocumentModel::query()
+            ->where('company_id', CompanyRepository::SINGLETON_ID)
+            ->find($id);
+
+        return $row instanceof CompanyDocumentModel ? $this->mapper->toDomain($row) : null;
+    }
+
     public function findAllOrdered(): array
     {
-        return CMP_CompanyDocument::query()
+        return CompanyDocumentModel::query()
             ->where('company_id', CompanyRepository::SINGLETON_ID)
             ->orderBy('id')
             ->get()
-            ->map(fn (CMP_CompanyDocument $row) => $this->mapper->toDomain($row))
+            ->map(fn (CompanyDocumentModel $row) => $this->mapper->toDomain($row))
             ->all();
+    }
+
+    public function listPage(int $offset, int $limit): array
+    {
+        return CompanyDocumentModel::query()
+            ->where('company_id', CompanyRepository::SINGLETON_ID)
+            ->orderBy('id')
+            ->offset(max(0, $offset))
+            ->limit(max(1, $limit))
+            ->get()
+            ->map(fn (CompanyDocumentModel $row) => $this->mapper->toDomain($row))
+            ->all();
+    }
+
+    public function countAll(): int
+    {
+        return (int) CompanyDocumentModel::query()
+            ->where('company_id', CompanyRepository::SINGLETON_ID)
+            ->count();
     }
 
     public function save(?int $id, string $name, ?string $content): CompanyDocument
     {
         $row = $id === null
-            ? new CMP_CompanyDocument([
+            ? new CompanyDocumentModel([
                 'company_id' => CompanyRepository::SINGLETON_ID,
                 'slug' => $this->uniqueSlug($name),
             ])
-            : CMP_CompanyDocument::query()->find($id);
+            : CompanyDocumentModel::query()->find($id);
 
-        if (! $row instanceof CMP_CompanyDocument) {
+        if (! $row instanceof CompanyDocumentModel) {
             throw new \InvalidArgumentException('Документ не найден.');
         }
 
@@ -56,7 +84,7 @@ final class EloquentCompanyDocumentRepository implements CompanyDocumentReposito
 
         $slug = $base;
         $suffix = 2;
-        while (CMP_CompanyDocument::query()->where('slug', $slug)->exists()) {
+        while (CompanyDocumentModel::query()->where('slug', $slug)->exists()) {
             $slug = $base.'-'.$suffix;
             $suffix++;
         }

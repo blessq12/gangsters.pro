@@ -3,7 +3,7 @@
 namespace App\Application\Delivery\Query;
 
 use App\Application\Delivery\Presenter\RouteSheetPresenter;
-use App\Domain\Delivery\Repository\RouteSheetRepository;
+use App\Domain\Core\Delivery\Routing\Repository\RouteSheetRepository;
 
 final class GetRouteSheetUseCase
 {
@@ -15,10 +15,14 @@ final class GetRouteSheetUseCase
     /**
      * @return array<string, mixed>
      */
-    public function execute(int $sheetId): array
+    public function execute(int $sheetId, ?int $forCourierId = null): array
     {
         $sheet = $this->sheets->findById($sheetId);
         if ($sheet === null) {
+            throw new \InvalidArgumentException('Маршрутный лист не найден.');
+        }
+
+        if ($forCourierId !== null && $sheet->courierId() !== $forCourierId) {
             throw new \InvalidArgumentException('Маршрутный лист не найден.');
         }
 

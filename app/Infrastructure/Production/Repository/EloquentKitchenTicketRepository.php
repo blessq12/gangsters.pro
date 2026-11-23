@@ -2,11 +2,14 @@
 
 namespace App\Infrastructure\Production\Repository;
 
-use App\Domain\Production\Entity\KitchenTicket;
-use App\Domain\Production\Enum\KitchenTicketStatus;
-use App\Domain\Production\Repository\KitchenTicketRepository;
+use App\Domain\Core\Production\Entity\KitchenTicket;
+use App\Domain\Core\Production\Enum\KitchenTicketStatus;
+use App\Domain\Core\Production\Repository\KitchenTicketRepository;
 use App\Infrastructure\Production\Mapper\KitchenTicketMapper;
-use App\Infrastructure\Production\Model\PRD_KitchenTicket;
+use App\Infrastructure\Production\Model\KitchenTicketModel;
+use App\Infrastructure\Production\Model\KitchenTicketLineModel;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 final class EloquentKitchenTicketRepository implements KitchenTicketRepository
 {
@@ -16,11 +19,12 @@ final class EloquentKitchenTicketRepository implements KitchenTicketRepository
 
     public function findByOrderId(int $orderId): ?KitchenTicket
     {
-        $row = PRD_KitchenTicket::query()
+        $row = KitchenTicketModel::query()
+            ->with('lines')
             ->where('order_id', $orderId)
             ->first();
 
-        return $row instanceof PRD_KitchenTicket ? $this->mapper->toDomain($row) : null;
+        return $row instanceof KitchenTicketModel ? $this->mapper->toDomain($row) : null;
     }
 
     public function enqueue(KitchenTicket $ticket): void
@@ -29,8 +33,12 @@ final class EloquentKitchenTicketRepository implements KitchenTicketRepository
             throw new \InvalidArgumentException('Тикет уже сохранён — используй save.');
         }
 
-        $row = PRD_KitchenTicket::query()->create($this->mapper->toPersistence($ticket));
-        $ticket->assignId((int) $row->id);
+        DB::transaction(function () use ($ticket): void {
+            $payload = $this->mapper->toPersistence($ticket);
+            $row = KitchenTicketModel::query()->create($payload['ticket']);
+            $ticket->assignId((int) $row->id);
+            $this->replaceLines($ticket->id(), $payload['lines']);
+        });
     }
 
     public function save(KitchenTicket $ticket): void
@@ -39,21 +47,148 @@ final class EloquentKitchenTicketRepository implements KitchenTicketRepository
             throw new \InvalidArgumentException('Тикет ещё не в очереди — используй enqueue.');
         }
 
-        PRD_KitchenTicket::query()
-            ->whereKey($ticket->id())
-            ->update($this->mapper->toPersistence($ticket));
+        DB::transaction(function () use ($ticket): void {
+            $payload = $this->mapper->toPersistence($ticket);
+            KitchenTicketModel::query()
+                ->whereKey($ticket->id())
+                ->update($payload['ticket']);
+            $this->replaceLines($ticket->id(), $payload['lines']);
+        });
     }
 
-    public function listActive(): array
+    public function delete(KitchenTicket $ticket): void
     {
-        return PRD_KitchenTicket::query()
+        if (! $ticket->hasId()) {
+            throw new \InvalidArgumentException('Нельзя удалить тикет без id.');
+        }
+
+        DB::transaction(function () use ($ticket): void {
+            KitchenTicketLineModel::query()->where('ticket_id', $ticket->id())->delete();
+            KitchenTicketModel::query()->whereKey($ticket->id())->delete();
+        });
+    }
+
+    public function listActiveByBranch(int $branchId): array
+    {
+        return $this->listActiveByBranchPage($branchId, 0, max(1, $this->countActiveByBranch($branchId)));
+    }
+
+    public function listActiveByBranchPage(int $branchId, int $offset, int $limit): array
+    {
+        return $this->activeByBranchQuery($branchId)
+            ->with('lines')
+            ->orderBy('id')
+            ->offset(max(0, $offset))
+            ->limit(max(1, $limit))
+            ->get()
+            ->map(fn (KitchenTicketModel $row): KitchenTicket => $this->mapper->toDomain($row))
+            ->all();
+    }
+
+    public function countActiveByBranch(int $branchId): int
+    {
+        return (int) $this->activeByBranchQuery($branchId)->count();
+    }
+
+    public function listQueuedByBranchPage(int $branchId, int $offset, int $limit): array
+    {
+        return $this->queuedByBranchQuery($branchId)
+            ->with('lines')
+            ->orderBy('id')
+            ->offset(max(0, $offset))
+            ->limit(max(1, $limit))
+            ->get()
+            ->map(fn (KitchenTicketModel $row): KitchenTicket => $this->mapper->toDomain($row))
+            ->all();
+    }
+
+    public function countQueuedByBranch(int $branchId): int
+    {
+        return (int) $this->queuedByBranchQuery($branchId)->count();
+    }
+
+    public function listMineStartedByBranch(int $branchId, int $employeeId): array
+    {
+        return KitchenTicketModel::query()
+            ->with('lines')
+            ->where('branch_id', $branchId)
+            ->where('status', KitchenTicketStatus::Started->value)
+            ->where('assignee_employee_id', $employeeId)
+            ->orderBy('id')
+            ->get()
+            ->map(fn (KitchenTicketModel $row): KitchenTicket => $this->mapper->toDomain($row))
+            ->all();
+    }
+
+    public function countActiveByStatus(?int $branchId = null): array
+    {
+        $query = KitchenTicketModel::query()
             ->whereIn('status', [
                 KitchenTicketStatus::Queued->value,
                 KitchenTicketStatus::Started->value,
-            ])
-            ->orderBy('id')
-            ->get()
-            ->map(fn (PRD_KitchenTicket $row): KitchenTicket => $this->mapper->toDomain($row))
-            ->all();
+            ]);
+        if ($branchId !== null && $branchId > 0) {
+            $query->where('branch_id', $branchId);
+        }
+
+        $queued = 0;
+        $started = 0;
+        $rows = $query
+            ->selectRaw('status, COUNT(*) as aggregate')
+            ->groupBy('status')
+            ->get();
+        foreach ($rows as $row) {
+            $status = (string) $row->status;
+            $count = (int) $row->aggregate;
+            if ($status === KitchenTicketStatus::Queued->value) {
+                $queued = $count;
+            }
+            if ($status === KitchenTicketStatus::Started->value) {
+                $started = $count;
+            }
+        }
+
+        return [
+            'queued' => $queued,
+            'started' => $started,
+        ];
+    }
+
+    /**
+     * @return Builder<KitchenTicketModel>
+     */
+    private function activeByBranchQuery(int $branchId): Builder
+    {
+        return KitchenTicketModel::query()
+            ->where('branch_id', $branchId)
+            ->whereIn('status', [
+                KitchenTicketStatus::Queued->value,
+                KitchenTicketStatus::Started->value,
+            ]);
+    }
+
+    /**
+     * @return Builder<KitchenTicketModel>
+     */
+    private function queuedByBranchQuery(int $branchId): Builder
+    {
+        return KitchenTicketModel::query()
+            ->where('branch_id', $branchId)
+            ->where('status', KitchenTicketStatus::Queued->value);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $lines
+     */
+    private function replaceLines(int $ticketId, array $lines): void
+    {
+        KitchenTicketLineModel::query()->where('ticket_id', $ticketId)->delete();
+
+        foreach ($lines as $line) {
+            KitchenTicketLineModel::query()->create([
+                ...$line,
+                'ticket_id' => $ticketId,
+            ]);
+        }
     }
 }

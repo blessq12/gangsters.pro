@@ -6,7 +6,6 @@ final readonly class SaveCompanyDto
 {
     /**
      * @param  array<string, mixed>  $socials
-     * @param  array<string, mixed>  $schedule
      * @param  array<string, mixed>  $legal
      */
     public function __construct(
@@ -15,7 +14,6 @@ final readonly class SaveCompanyDto
         public ?string $phone,
         public ?string $email,
         public array $socials,
-        public array $schedule,
         public array $legal,
     ) {}
 }

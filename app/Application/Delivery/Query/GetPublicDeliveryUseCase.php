@@ -3,33 +3,35 @@
 namespace App\Application\Delivery\Query;
 
 use App\Application\Delivery\Presenter\DeliveryPresenter;
-use App\Domain\Delivery\Repository\DeliveryConfigurationRepository;
+use App\Domain\Supporting\Company\Repository\BranchRepository;
+use App\Domain\Core\Delivery\Tariff\Repository\DeliveryConfigurationRepository;
 
 /**
  * Публичный срез доставки для витрины.
+ * Адрес филиала при необходимости читается из Company.
  */
 final class GetPublicDeliveryUseCase
 {
     public function __construct(
         private readonly DeliveryConfigurationRepository $delivery,
+        private readonly BranchRepository $branches,
         private readonly DeliveryPresenter $presenter,
     ) {}
 
     /**
-     * @return array{
-     *     settings: array<string, mixed>,
-     *     zones: list<array<string, mixed>>,
-     *     zone_geojson: array<string, mixed>|null,
-     *     kitchen_address: array<string, mixed>
-     * }
+     * @return array<string, mixed>
      */
-    public function execute(): array
+    public function execute(int $branchId): array
     {
-        $configuration = $this->delivery->findPublic();
+        $configuration = $this->delivery->findByBranch($branchId);
         if ($configuration === null) {
-            throw new \InvalidArgumentException('Настройки доставки не найдены.');
+            throw new \InvalidArgumentException('Настройки доставки филиала не найдены.');
         }
 
-        return $this->presenter->present($configuration);
+        $branch = $configuration->branchId() !== null
+            ? $this->branches->findById($configuration->branchId())
+            : null;
+
+        return $this->presenter->present($configuration, $branch);
     }
 }

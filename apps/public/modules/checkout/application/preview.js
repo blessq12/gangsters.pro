@@ -32,7 +32,7 @@ export function useCheckoutBenefitVisibility() {
             return false;
         }
 
-        if (intent.serverDelivery?.method) {
+        if (intent.formedDelivery?.method) {
             return true;
         }
 
@@ -63,7 +63,7 @@ export function useCheckoutBenefitVisibility() {
             return false;
         }
 
-        return Boolean(intent.serverDelivery?.method);
+        return Boolean(intent.formedDelivery?.method);
     });
 
     return {

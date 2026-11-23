@@ -2,10 +2,10 @@
 
 namespace App\Infrastructure\Company\Repository;
 
-use App\Domain\Company\Entity\Company;
-use App\Domain\Company\Repository\CompanyRepository;
+use App\Domain\Supporting\Company\Entity\Company;
+use App\Domain\Supporting\Company\Repository\CompanyRepository;
 use App\Infrastructure\Company\Mapper\CompanyMapper;
-use App\Infrastructure\Company\Model\CMP_Company;
+use App\Infrastructure\Company\Model\CompanyModel;
 
 final class EloquentCompanyRepository implements CompanyRepository
 {
@@ -15,19 +15,18 @@ final class EloquentCompanyRepository implements CompanyRepository
 
     public function findPublic(): ?Company
     {
-        $row = CMP_Company::query()->find(self::SINGLETON_ID);
+        $row = CompanyModel::query()->find(self::SINGLETON_ID);
 
-        return $row instanceof CMP_Company ? $this->mapper->toDomain($row) : null;
+        return $row instanceof CompanyModel ? $this->mapper->toDomain($row) : null;
     }
 
     public function save(Company $company): void
     {
-        $row = CMP_Company::query()->firstOrCreate(
+        $row = CompanyModel::query()->firstOrCreate(
             ['id' => self::SINGLETON_ID],
             [
                 'name' => $company->name(),
                 'socials' => [],
-                'schedule' => [],
             ],
         );
         $row->fill([
@@ -36,7 +35,6 @@ final class EloquentCompanyRepository implements CompanyRepository
             'phone' => $company->phone(),
             'email' => $company->email(),
             'socials' => $company->socials()->toArray(),
-            'schedule' => $company->schedule(),
         ]);
         $row->save();
     }
