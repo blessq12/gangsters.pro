@@ -126,7 +126,7 @@ function openFull(row) {
 }
 
 function openCreate() {
-    router.push({ name: "administrator-manual-order" });
+    router.push({ name: "administrator-order-new" });
 }
 
 /**

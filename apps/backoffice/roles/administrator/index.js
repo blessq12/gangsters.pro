@@ -32,16 +32,20 @@ const module = {
                     meta: { role: "administrator" },
                 },
                 {
+                    path: "orders/new",
+                    name: "administrator-order-new",
+                    component: () => import("./screens/OrderWorkspaceScreen.vue"),
+                    meta: { role: "administrator" },
+                },
+                {
                     path: "orders/:id",
                     name: "administrator-order",
-                    component: () => import("./screens/OrderCardScreen.vue"),
+                    component: () => import("./screens/OrderWorkspaceScreen.vue"),
                     meta: { role: "administrator" },
                 },
                 {
                     path: "manual-order",
-                    name: "administrator-manual-order",
-                    component: () => import("./screens/ManualOrderScreen.vue"),
-                    meta: { role: "administrator" },
+                    redirect: { name: "administrator-order-new" },
                 },
                 {
                     path: "logistics",
@@ -59,6 +63,12 @@ const module = {
                     path: "clients",
                     name: "administrator-clients",
                     component: () => import("./screens/ClientsScreen.vue"),
+                    meta: { role: "administrator" },
+                },
+                {
+                    path: "clients/:id",
+                    name: "administrator-client",
+                    component: () => import("./screens/ClientCardScreen.vue"),
                     meta: { role: "administrator" },
                 },
                 {

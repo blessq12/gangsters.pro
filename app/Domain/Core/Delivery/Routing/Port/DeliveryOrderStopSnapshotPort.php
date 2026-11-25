@@ -11,6 +11,7 @@ namespace App\Domain\Core\Delivery\Routing\Port;
  *     number: string|null,
  *     status: string,
  *     method: string,
+ *     payment_method: string|null,
  *     address: array{
  *         street: string,
  *         house: string,

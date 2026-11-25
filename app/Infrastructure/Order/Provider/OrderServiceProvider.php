@@ -12,6 +12,7 @@ use App\Domain\Core\Order\Port\OrderCatalogSnapshotPort;
 use App\Domain\Core\Order\Port\OrderClientLookupPort;
 use App\Domain\Core\Order\Port\OrderDeliveryTariffPort;
 use App\Domain\Core\Order\Port\OrderPaymentSnapshotPort;
+use App\Domain\Core\Order\Repository\OrderAuditRepository;
 use App\Domain\Core\Order\Repository\OrderCommercialRulesRepository;
 use App\Domain\Core\Order\Repository\OrderNoteRepository;
 use App\Domain\Core\Order\Repository\OrderRepository;
@@ -21,6 +22,7 @@ use App\Infrastructure\Order\Adapter\EloquentOrderCatalogSnapshotPort;
 use App\Infrastructure\Order\Adapter\EloquentOrderClientLookupPort;
 use App\Infrastructure\Order\Adapter\EloquentOrderDeliveryTariffPort;
 use App\Infrastructure\Order\Adapter\EloquentOrderPaymentSnapshotPort;
+use App\Infrastructure\Order\Repository\EloquentOrderAuditRepository;
 use App\Infrastructure\Order\Repository\EloquentOrderCommercialRulesRepository;
 use App\Infrastructure\Order\Repository\EloquentOrderNoteRepository;
 use App\Infrastructure\Order\Repository\EloquentOrderRepository;
@@ -32,6 +34,7 @@ final class OrderServiceProvider extends ServiceProvider
     {
         $this->app->bind(OrderRepository::class, EloquentOrderRepository::class);
         $this->app->bind(OrderNoteRepository::class, EloquentOrderNoteRepository::class);
+        $this->app->bind(OrderAuditRepository::class, EloquentOrderAuditRepository::class);
         $this->app->bind(CheckoutQuote::class, QuoteOrderUseCase::class);
         $this->app->bind(CheckoutRulesVersion::class, GetCheckoutContextUseCase::class);
         $this->app->bind(OrderPaymentSnapshotPort::class, EloquentOrderPaymentSnapshotPort::class);

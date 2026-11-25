@@ -2,9 +2,12 @@
 
 namespace App\Domain\Core\Production\Entity;
 
+use App\Domain\Core\Production\Enum\KitchenTicketLineStatus;
 use App\Domain\Core\Production\Enum\KitchenTicketStatus;
 use App\Domain\Core\Production\Event\KitchenTicketCancelled;
 use App\Domain\Core\Production\Event\KitchenTicketCompleted;
+use App\Domain\Core\Production\Event\KitchenTicketLineDone;
+use App\Domain\Core\Production\Event\KitchenTicketLinePacked;
 use App\Domain\Core\Production\Event\KitchenTicketStarted;
 use App\Domain\Core\Production\ValueObject\KitchenTicketLine;
 use DateTimeImmutable;
@@ -12,7 +15,8 @@ use DateTimeImmutable;
 /**
  * Кухонный тикет: единица работы филиала по заказу со снимком позиций.
  * Связь с Order — только orderId.
- * assigneeEmployeeId — повар, взявший тикет в работу (null пока queued).
+ * Готовность — по линиям (свободный пул поваров филиала).
+ * assigneeEmployeeId — кто первым взял тикет в работу (null пока queued).
  */
 final class KitchenTicket
 {
@@ -26,7 +30,7 @@ final class KitchenTicket
         private ?int $id,
         private readonly int $orderId,
         private readonly int $branchId,
-        private readonly array $lines,
+        private array $lines,
         private KitchenTicketStatus $status,
         private ?int $assigneeEmployeeId,
         private ?DateTimeImmutable $startedAt,
@@ -130,6 +134,17 @@ final class KitchenTicket
         return $this->lines;
     }
 
+    public function lineById(int $lineId): KitchenTicketLine
+    {
+        foreach ($this->lines as $line) {
+            if ($line->hasId() && $line->id() === $lineId) {
+                return $line;
+            }
+        }
+
+        throw new \InvalidArgumentException('Позиция тикета не найдена.');
+    }
+
     public function status(): KitchenTicketStatus
     {
         return $this->status;
@@ -182,6 +197,92 @@ final class KitchenTicket
         }
     }
 
+    /**
+     * Свободный пул: любой повар филиала отмечает линию готовой.
+     * Первый done авто-стартует тикет; все активные линии done → complete.
+     */
+    public function markLineDone(
+        int $lineId,
+        int $employeeId,
+        ?int $orderBranchId = null,
+        ?DateTimeImmutable $at = null,
+    ): void {
+        if ($this->status === KitchenTicketStatus::Completed || $this->status === KitchenTicketStatus::Cancelled) {
+            throw new \LogicException('Тикет уже завершён или отменён.');
+        }
+
+        if ($this->status === KitchenTicketStatus::Queued) {
+            $this->start($employeeId, $orderBranchId ?? $this->branchId, $at);
+        }
+
+        $line = $this->lineById($lineId);
+        $doneAt = $at ?? new DateTimeImmutable();
+        $line->markDone($employeeId, $doneAt);
+
+        if ($this->id !== null) {
+            $this->record(new KitchenTicketLineDone(
+                orderId: $this->orderId,
+                ticketId: $this->id,
+                lineId: $lineId,
+                employeeId: $employeeId,
+                doneAt: $doneAt,
+            ));
+        }
+
+        if ($this->allActiveLinesDone()) {
+            $this->completeAfterLines($employeeId, $doneAt);
+        }
+    }
+
+    /**
+     * Админ подтверждает, что приготовленная позиция на месте.
+     */
+    public function markLinePacked(
+        int $lineId,
+        int $employeeId,
+        ?DateTimeImmutable $at = null,
+    ): void {
+        if ($this->status === KitchenTicketStatus::Cancelled) {
+            throw new \LogicException('Нельзя собирать отменённый тикет.');
+        }
+
+        $line = $this->lineById($lineId);
+        $packedAt = $at ?? new DateTimeImmutable();
+        $line->markPacked($employeeId, $packedAt);
+
+        $allPacked = $this->allActiveLinesPacked();
+
+        if ($this->id !== null) {
+            $this->record(new KitchenTicketLinePacked(
+                orderId: $this->orderId,
+                ticketId: $this->id,
+                lineId: $lineId,
+                employeeId: $employeeId,
+                packedAt: $packedAt,
+                allLinesPacked: $allPacked,
+            ));
+        }
+    }
+
+    public function allActiveLinesPacked(): bool
+    {
+        $active = 0;
+        foreach ($this->lines as $line) {
+            if ($line->status() === KitchenTicketLineStatus::Cancelled) {
+                continue;
+            }
+            $active++;
+            if (! $line->isPacked()) {
+                return false;
+            }
+        }
+
+        return $active > 0;
+    }
+
+    /**
+     * @deprecated Используй markLineDone; оставлен для совместимости старых вызовов.
+     */
     public function complete(int $employeeId, ?DateTimeImmutable $at = null): void
     {
         if ($employeeId < 1) {
@@ -192,20 +293,13 @@ final class KitchenTicket
             throw new \LogicException('Завершить можно только тикет в работе.');
         }
 
-        if ($this->assigneeEmployeeId !== $employeeId) {
-            throw new \LogicException('Тикет закреплён за другим поваром.');
+        foreach ($this->lines as $line) {
+            if ($line->status() === KitchenTicketLineStatus::Queued) {
+                $line->markDone($employeeId, $at);
+            }
         }
 
-        $this->status = KitchenTicketStatus::Completed;
-        $this->completedAt = $at ?? new DateTimeImmutable();
-
-        if ($this->id !== null) {
-            $this->record(new KitchenTicketCompleted(
-                orderId: $this->orderId,
-                ticketId: $this->id,
-                completedAt: $this->completedAt,
-            ));
-        }
+        $this->completeAfterLines($employeeId, $at);
     }
 
     public function cancel(): void
@@ -225,6 +319,30 @@ final class KitchenTicket
     }
 
     /**
+     * Полная пересборка позиций после правки заказа. Статусы линий сбрасываются.
+     * Completed → Started (тикет снова в работе); Cancelled не трогаем.
+     *
+     * @param  list<KitchenTicketLine>  $lines
+     */
+    public function resyncProductionLines(array $lines): void
+    {
+        if ($this->status === KitchenTicketStatus::Cancelled) {
+            throw new \LogicException('Нельзя пересобирать отменённый тикет.');
+        }
+
+        self::assertLines($lines);
+        $this->lines = array_values($lines);
+
+        if ($this->status === KitchenTicketStatus::Completed) {
+            $this->status = KitchenTicketStatus::Started;
+            $this->completedAt = null;
+            if ($this->startedAt === null) {
+                $this->startedAt = new DateTimeImmutable();
+            }
+        }
+    }
+
+    /**
      * @return list<object>
      */
     public function pullDomainEvents(): array
@@ -233,6 +351,48 @@ final class KitchenTicket
         $this->domainEvents = [];
 
         return $events;
+    }
+
+    private function completeAfterLines(int $employeeId, ?DateTimeImmutable $at = null): void
+    {
+        if ($this->status === KitchenTicketStatus::Completed) {
+            return;
+        }
+
+        if ($this->status !== KitchenTicketStatus::Started) {
+            throw new \LogicException('Завершить можно только тикет в работе.');
+        }
+
+        if ($employeeId < 1) {
+            throw new \InvalidArgumentException('employeeId должен быть положительным.');
+        }
+
+        $this->status = KitchenTicketStatus::Completed;
+        $this->completedAt = $at ?? new DateTimeImmutable();
+
+        if ($this->id !== null) {
+            $this->record(new KitchenTicketCompleted(
+                orderId: $this->orderId,
+                ticketId: $this->id,
+                completedAt: $this->completedAt,
+            ));
+        }
+    }
+
+    private function allActiveLinesDone(): bool
+    {
+        $active = 0;
+        foreach ($this->lines as $line) {
+            if ($line->status() === KitchenTicketLineStatus::Cancelled) {
+                continue;
+            }
+            $active++;
+            if ($line->status() !== KitchenTicketLineStatus::Done) {
+                return false;
+            }
+        }
+
+        return $active > 0;
     }
 
     private function record(object $event): void

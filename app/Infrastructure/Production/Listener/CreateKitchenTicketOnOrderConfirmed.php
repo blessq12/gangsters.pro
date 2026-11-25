@@ -45,7 +45,7 @@ final class CreateKitchenTicketOnOrderConfirmed
     {
         $lines = [];
         foreach ($snapshots as $snapshot) {
-            $lines[] = new KitchenTicketLine(
+            $lines[] = KitchenTicketLine::snapshot(
                 productId: (int) $snapshot['product_id'],
                 name: (string) $snapshot['name'],
                 quantity: (int) $snapshot['quantity'],

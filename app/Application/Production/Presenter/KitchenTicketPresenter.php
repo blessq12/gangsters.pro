@@ -22,9 +22,15 @@ final class KitchenTicketPresenter
         $ticketLines = [];
         foreach ($ticket->lines() as $line) {
             $ticketLines[] = [
+                'id' => $line->hasId() ? $line->id() : null,
                 'product_id' => $line->productId(),
                 'name' => $line->name(),
                 'quantity' => $line->quantity(),
+                'status' => $line->status()->value,
+                'done_by' => $line->doneBy(),
+                'done_at' => $line->doneAt()?->format(DATE_ATOM),
+                'packed_by' => $line->packedBy(),
+                'packed_at' => $line->packedAt()?->format(DATE_ATOM),
             ];
         }
 

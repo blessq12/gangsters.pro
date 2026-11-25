@@ -2,7 +2,7 @@ import { request } from "../http/transport.js";
 
 /**
  * @param {string} path
- * @param {{ offset?: number, limit?: number, branch_id?: number|string }} [query]
+ * @param {{ offset?: number, limit?: number, branch_id?: number|string, status?: string }} [query]
  */
 function withPage(path, query = {}) {
     const params = new URLSearchParams();
@@ -14,6 +14,9 @@ function withPage(path, query = {}) {
     }
     if (query.limit !== undefined) {
         params.set("limit", String(query.limit));
+    }
+    if (query.status !== undefined && query.status !== null && query.status !== "") {
+        params.set("status", String(query.status));
     }
     const qs = params.toString();
     return request("GET", `${path}${qs ? `?${qs}` : ""}`);
@@ -62,7 +65,7 @@ export function listRouteSheets(query = {}) {
     return withPage("/delivery/route-sheets", query);
 }
 
-/** @param {{ offset?: number, limit?: number }} [query] */
+/** @param {{ offset?: number, limit?: number, status?: string }} [query] */
 export function listCourierRouteSheets(query = {}) {
     return withPage("/courier/route-sheets", query);
 }
@@ -85,7 +88,7 @@ export function takeRouteSheet(id, data) {
 /**
  * @param {number|string} sheetId
  * @param {number|string} orderId
- * @param {{ outcome: string, reason?: string|null }} data
+ * @param {{ outcome: string, reason?: string|null, payment_method?: string|null }} data
  */
 export function settleStop(sheetId, orderId, data) {
     return request(

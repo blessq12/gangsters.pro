@@ -3,6 +3,7 @@
 namespace App\Application\Order\Query;
 
 use App\Application\Order\Presenter\AdminOrderPresenter;
+use App\Domain\Core\Order\Repository\OrderAuditRepository;
 use App\Domain\Core\Order\Repository\OrderNoteRepository;
 use App\Domain\Core\Order\Repository\OrderRepository;
 
@@ -11,6 +12,7 @@ final class GetAdminOrderUseCase
     public function __construct(
         private readonly OrderRepository $orders,
         private readonly OrderNoteRepository $notes,
+        private readonly OrderAuditRepository $audits,
         private readonly AdminOrderPresenter $presenter,
     ) {}
 
@@ -26,6 +28,7 @@ final class GetAdminOrderUseCase
 
         $payload = $this->presenter->present($order);
         $payload['notes'] = $this->notes->listByOrderId($orderId);
+        $payload['audits'] = $this->audits->listByOrderId($orderId);
 
         return $payload;
     }

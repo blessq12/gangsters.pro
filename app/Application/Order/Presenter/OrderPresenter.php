@@ -81,8 +81,11 @@ final class OrderPresenter
                 ],
             ],
             'payment_id' => $order->paymentId(),
+            'payment_method' => $order->paymentMethod(),
+            'change_from_rubles' => $order->changeFromRubles(),
             'payment' => $this->payment($order),
             'totals' => $totals,
+            'scheduled_at' => $order->scheduledAt()?->format(DATE_ATOM),
             'created_at' => $order->createdAt()->format(DATE_ATOM),
             'client_request_id' => $order->clientRequestId(),
         ];

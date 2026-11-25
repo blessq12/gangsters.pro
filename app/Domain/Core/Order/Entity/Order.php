@@ -6,6 +6,8 @@ use App\Domain\Core\Order\Enum\OrderLineType;
 use App\Domain\Core\Order\Enum\OrderStatus;
 use App\Domain\Core\Order\Event\OrderCancelled;
 use App\Domain\Core\Order\Event\OrderConfirmed;
+use App\Domain\Core\Order\Event\OrderLinesChanged;
+use App\Domain\Core\Order\Event\OrderPacked;
 use App\Domain\Core\Order\Event\OrderPickedUp;
 use App\Domain\Core\Order\Event\OrderPlaced;
 use App\Domain\Core\Order\Policy\OrderFormation;
@@ -45,6 +47,7 @@ final class Order
         private ?int $paymentId = null,
         private ?string $paymentMethod = null,
         private ?int $changeFromRubles = null,
+        private ?DateTimeImmutable $scheduledAt = null,
     ) {
         self::assertLines($this->lines);
     }
@@ -88,6 +91,7 @@ final class Order
             delivery: $delivery,
             createdAt: $createdAt,
             branchId: $branchId,
+            scheduledAt: $scheduledAt,
         );
     }
 
@@ -109,6 +113,7 @@ final class Order
         ?int $paymentId = null,
         ?string $paymentMethod = null,
         ?int $changeFromRubles = null,
+        ?DateTimeImmutable $scheduledAt = null,
     ): self {
         return new self(
             id: $id,
@@ -125,6 +130,7 @@ final class Order
             paymentId: $paymentId,
             paymentMethod: $paymentMethod,
             changeFromRubles: $changeFromRubles,
+            scheduledAt: $scheduledAt,
         );
     }
 
@@ -277,6 +283,83 @@ final class Order
         return $this->delivery;
     }
 
+    /**
+     * Админ-правка: клиент в любом статусе.
+     */
+    public function replaceClient(OrderClientSnapshot $client): void
+    {
+        $this->client = $client;
+    }
+
+    /**
+     * Админ-правка: доставка в любом статусе.
+     */
+    public function replaceDelivery(OrderDeliveryInfo $delivery): void
+    {
+        $this->delivery = $delivery;
+    }
+
+    /**
+     * Админ-правка: способ оплаты и сдача в любом статусе.
+     */
+    public function replacePaymentTerms(string $paymentMethod, ?int $changeFromRubles = null): void
+    {
+        if (trim($paymentMethod) === '') {
+            throw new \InvalidArgumentException('Способ оплаты обязателен.');
+        }
+
+        $this->paymentMethod = $paymentMethod;
+        $this->changeFromRubles = $changeFromRubles;
+    }
+
+    /**
+     * Админ-правка: полный состав позиций. Пишет OrderLinesChanged.
+     *
+     * @param  list<OrderLine>  $lines
+     */
+    public function replaceLines(array $lines): void
+    {
+        self::assertLines($lines);
+        $this->lines = array_values($lines);
+
+        if ($this->id !== null) {
+            $this->record(new OrderLinesChanged(orderId: $this->id));
+        }
+    }
+
+    /**
+     * После синка тикета: статус заказа по факту линий кухни/сборки.
+     * Не трогает cancelled.
+     */
+    public function syncStatusFromKitchenProgress(bool $allDone, bool $allPacked): void
+    {
+        if ($this->status === OrderStatus::Cancelled) {
+            return;
+        }
+
+        if ($allPacked && $allDone) {
+            $this->status = OrderStatus::Packed;
+
+            return;
+        }
+
+        if ($allDone) {
+            $this->status = OrderStatus::Ready;
+
+            return;
+        }
+
+        if (in_array($this->status, [
+            OrderStatus::New,
+            OrderStatus::Preorder,
+            OrderStatus::Confirmed,
+        ], true)) {
+            return;
+        }
+
+        $this->status = OrderStatus::Preparing;
+    }
+
     public function branchId(): ?int
     {
         return $this->branchId;
@@ -290,6 +373,16 @@ final class Order
     public function createdAt(): DateTimeImmutable
     {
         return $this->createdAt;
+    }
+
+    public function scheduledAt(): ?DateTimeImmutable
+    {
+        return $this->scheduledAt;
+    }
+
+    public function replaceScheduledAt(?DateTimeImmutable $scheduledAt): void
+    {
+        $this->scheduledAt = $scheduledAt;
     }
 
     public function clientId(): ?int
@@ -407,6 +500,9 @@ final class Order
             changeFromRubles: $this->changeFromRubles,
             productionLines: $this->productionLineSnapshots(),
         ));
+
+        // После подтверждения сразу «готовится»: тикет в пуле, кухня отмечает позиции.
+        $this->startPreparing();
     }
 
     /**
@@ -428,6 +524,10 @@ final class Order
 
     public function startPreparing(): void
     {
+        if ($this->status === OrderStatus::Preparing) {
+            return;
+        }
+
         $this->transition(OrderStatus::Confirmed, OrderStatus::Preparing, 'startPreparing');
     }
 
@@ -440,9 +540,18 @@ final class Order
         );
     }
 
+    public function markPacked(): void
+    {
+        $this->transition(OrderStatus::Ready, OrderStatus::Packed, 'markPacked');
+
+        if ($this->id !== null) {
+            $this->record(new OrderPacked(orderId: $this->id));
+        }
+    }
+
     public function canBeAssignedToRoute(): bool
     {
-        return $this->status === OrderStatus::Ready && $this->delivery->isCourier();
+        return $this->status === OrderStatus::Packed && $this->delivery->isCourier();
     }
 
     public function assignToRoute(): void
@@ -451,7 +560,7 @@ final class Order
             throw new \InvalidArgumentException('Заказ на самовывоз нельзя класть в маршрутный лист.');
         }
 
-        $this->transition(OrderStatus::Ready, OrderStatus::AssignedToRoute, 'assignToRoute');
+        $this->transition(OrderStatus::Packed, OrderStatus::AssignedToRoute, 'assignToRoute');
     }
 
     public function markDeliveredPickup(): void
@@ -460,7 +569,7 @@ final class Order
             throw new \InvalidArgumentException('Заказ с доставкой нельзя выдать как самовывоз.');
         }
 
-        $this->transition(OrderStatus::Ready, OrderStatus::Delivered, 'markDeliveredPickup');
+        $this->transition(OrderStatus::Packed, OrderStatus::Delivered, 'markDeliveredPickup');
 
         if ($this->id !== null) {
             $this->record(new OrderPickedUp(orderId: $this->id));
@@ -498,6 +607,7 @@ final class Order
             OrderStatus::Confirmed,
             OrderStatus::Preparing,
             OrderStatus::Ready,
+            OrderStatus::Packed,
             OrderStatus::AssignedToRoute,
         ];
 

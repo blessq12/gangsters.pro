@@ -220,4 +220,18 @@ final class EloquentOrderRepository implements OrderRepository
 
         return $query;
     }
+
+    public function listDuePreorders(DateTimeImmutable $at, int $limit = 100): array
+    {
+        return OrderModel::query()
+            ->with('lines')
+            ->where('status', 'preorder')
+            ->whereNotNull('scheduled_at')
+            ->where('scheduled_at', '<=', $at->format('Y-m-d H:i:s'))
+            ->orderBy('scheduled_at')
+            ->limit(max(1, $limit))
+            ->get()
+            ->map(fn (OrderModel $row): Order => $this->mapper->toDomain($row))
+            ->all();
+    }
 }

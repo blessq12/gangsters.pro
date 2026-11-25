@@ -4,8 +4,12 @@ namespace App\Http\Controllers\Api\Backoffice;
 
 use App\Application\Order\Command\CancelOrderUseCase;
 use App\Application\Production\Command\CompleteWorkUseCase;
+use App\Application\Production\Command\MarkTicketLineDoneUseCase;
+use App\Application\Production\Command\MarkTicketLinePackedUseCase;
 use App\Application\Production\Command\StartWorkUseCase;
 use App\Application\Production\DTO\CompleteWorkDto;
+use App\Application\Production\DTO\MarkTicketLineDoneDto;
+use App\Application\Production\DTO\MarkTicketLinePackedDto;
 use App\Application\Production\DTO\StartWorkDto;
 use App\Application\Production\Query\GetTicketUseCase;
 use App\Application\Production\Query\ListQueueUseCase;
@@ -21,6 +25,7 @@ final class ProductionController extends Controller
     {
         $validated = $request->validate([
             'branch_id' => ['required', 'integer', 'min:1'],
+            'scope' => ['sometimes', 'string', 'in:queued,active'],
         ]);
 
         $employeeId = $this->employeeId($request);
@@ -33,6 +38,7 @@ final class ProductionController extends Controller
             employeeId: $employeeId,
             offset: (int) $request->query('offset', 0),
             limit: (int) $request->query('limit', 20),
+            scope: (string) ($validated['scope'] ?? 'queued'),
         ));
     }
 
@@ -74,6 +80,54 @@ final class ProductionController extends Controller
         try {
             $result = $useCase->execute(new CompleteWorkDto(
                 orderId: $orderId,
+                employeeId: $employeeId,
+            ));
+        } catch (InvalidArgumentException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
+
+        return response()->json($result);
+    }
+
+    public function markLineDone(
+        Request $request,
+        int $orderId,
+        int $lineId,
+        MarkTicketLineDoneUseCase $useCase,
+    ): JsonResponse {
+        $employeeId = $this->employeeId($request);
+        if ($employeeId === null) {
+            return response()->json(['message' => 'Нужна авторизация сотрудника.'], 401);
+        }
+
+        try {
+            $result = $useCase->execute(new MarkTicketLineDoneDto(
+                orderId: $orderId,
+                lineId: $lineId,
+                employeeId: $employeeId,
+            ));
+        } catch (InvalidArgumentException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
+
+        return response()->json($result);
+    }
+
+    public function markLinePacked(
+        Request $request,
+        int $orderId,
+        int $lineId,
+        MarkTicketLinePackedUseCase $useCase,
+    ): JsonResponse {
+        $employeeId = $this->employeeId($request);
+        if ($employeeId === null) {
+            return response()->json(['message' => 'Нужна авторизация сотрудника.'], 401);
+        }
+
+        try {
+            $result = $useCase->execute(new MarkTicketLinePackedDto(
+                orderId: $orderId,
+                lineId: $lineId,
                 employeeId: $employeeId,
             ));
         } catch (InvalidArgumentException $exception) {

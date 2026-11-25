@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { onMounted, onUnmounted, ref, watch, computed } from "vue";
 import { useRoute } from "vue-router";
 import { useAuthStore } from "../store/authStore";
 import ShellSidebar from "../components/ShellSidebar.vue";
@@ -20,11 +20,6 @@ const isDesktop = ref(true);
 let media = null;
 
 const showChrome = computed(() => !route.meta.guest && auth.isAuthenticated);
-
-/** Курьер / кухня — без shell sidebar/topbar (свой layout). */
-const isChromeLessApp = computed(() =>
-    showChrome.value && (auth.role === "courier" || auth.role === "kitchen"),
-);
 
 function readCollapsed() {
     try {
@@ -80,13 +75,6 @@ onUnmounted(() => {
         >
             <RouterView />
         </main>
-
-        <div
-            v-else-if="isChromeLessApp"
-            class="flex h-dvh flex-col overflow-hidden"
-        >
-            <RouterView />
-        </div>
 
         <div
             v-else

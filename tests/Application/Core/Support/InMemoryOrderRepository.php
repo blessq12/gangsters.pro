@@ -3,6 +3,7 @@
 namespace Tests\Application\Core\Support;
 
 use App\Domain\Core\Order\Entity\Order;
+use App\Domain\Core\Order\Enum\OrderStatus;
 use App\Domain\Core\Order\Repository\OrderRepository;
 use App\Domain\Core\Order\ValueObject\OrderNumber;
 use DateTimeImmutable;
@@ -136,5 +137,22 @@ final class InMemoryOrderRepository implements OrderRepository
         }
 
         $this->orders[$order->id()] = $order;
+    }
+
+    public function listDuePreorders(DateTimeImmutable $at, int $limit = 100): array
+    {
+        $due = [];
+        foreach ($this->orders as $order) {
+            if ($order->status() !== OrderStatus::Preorder) {
+                continue;
+            }
+            $scheduled = $order->scheduledAt();
+            if ($scheduled === null || $scheduled > $at) {
+                continue;
+            }
+            $due[] = $order;
+        }
+
+        return array_slice($due, 0, max(1, $limit));
     }
 }

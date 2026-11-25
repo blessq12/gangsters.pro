@@ -33,13 +33,18 @@ interface RouteSheetRepository
     public function countOpen(?int $branchId = null): int;
 
     /**
-     * Активные листы, назначенные на курьера.
+     * Листы курьера: released / in_delivery / completed (или один статус через $status).
      *
      * @return list<RouteSheet>
      */
-    public function listVisibleToCourierPage(int $courierId, int $offset, int $limit): array;
+    public function listVisibleToCourierPage(
+        int $courierId,
+        int $offset,
+        int $limit,
+        ?string $status = null,
+    ): array;
 
-    public function countVisibleToCourier(int $courierId): int;
+    public function countVisibleToCourier(int $courierId, ?string $status = null): int;
 
     public function save(RouteSheet $sheet): void;
 }

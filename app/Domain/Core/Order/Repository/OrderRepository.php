@@ -67,4 +67,11 @@ interface OrderRepository
     public function listPage(int $offset, int $limit, array $filters = []): array;
 
     public function save(Order $order): void;
+
+    /**
+     * Предзаказы, у которых наступил scheduled_at.
+     *
+     * @return list<Order>
+     */
+    public function listDuePreorders(DateTimeImmutable $at, int $limit = 100): array;
 }

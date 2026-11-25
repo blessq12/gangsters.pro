@@ -60,6 +60,7 @@ Route::prefix('backoffice')->middleware(EnsureBackofficeEnabled::class)->group(f
             Route::post('orders/quote', [OrderController::class, 'quote']);
             Route::post('orders', [OrderController::class, 'store']);
             Route::get('orders/{id}', [OrderController::class, 'show'])->whereNumber('id');
+            Route::put('orders/{id}', [OrderController::class, 'update'])->whereNumber('id');
             Route::post('orders/{id}/accept', [OrderController::class, 'accept'])->whereNumber('id');
             Route::post('orders/{id}/status', [OrderController::class, 'changeStatus'])->whereNumber('id');
             Route::post('orders/{id}/complete-pickup', [OrderController::class, 'completePickup'])
@@ -74,6 +75,12 @@ Route::prefix('backoffice')->middleware(EnsureBackofficeEnabled::class)->group(f
                 ->whereNumber('orderId');
             Route::post('production/tickets/{orderId}/complete', [ProductionController::class, 'complete'])
                 ->whereNumber('orderId');
+            Route::post('production/tickets/{orderId}/lines/{lineId}/done', [ProductionController::class, 'markLineDone'])
+                ->whereNumber('orderId')
+                ->whereNumber('lineId');
+            Route::post('production/tickets/{orderId}/lines/{lineId}/pack', [ProductionController::class, 'markLinePacked'])
+                ->whereNumber('orderId')
+                ->whereNumber('lineId');
             Route::post('production/tickets/{orderId}/cancel', [ProductionController::class, 'cancel'])
                 ->whereNumber('orderId');
 

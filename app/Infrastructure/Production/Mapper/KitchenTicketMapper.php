@@ -3,6 +3,7 @@
 namespace App\Infrastructure\Production\Mapper;
 
 use App\Domain\Core\Production\Entity\KitchenTicket;
+use App\Domain\Core\Production\Enum\KitchenTicketLineStatus;
 use App\Domain\Core\Production\Enum\KitchenTicketStatus;
 use App\Domain\Core\Production\ValueObject\KitchenTicketLine;
 use App\Infrastructure\Production\Model\KitchenTicketModel;
@@ -25,10 +26,32 @@ final class KitchenTicketMapper
                 continue;
             }
 
-            $lines[] = new KitchenTicketLine(
+            $doneBy = $lineRow->done_by !== null ? (int) $lineRow->done_by : null;
+            if ($doneBy !== null && $doneBy < 1) {
+                $doneBy = null;
+            }
+            $packedBy = $lineRow->packed_by !== null ? (int) $lineRow->packed_by : null;
+            if ($packedBy !== null && $packedBy < 1) {
+                $packedBy = null;
+            }
+
+            $statusValue = (string) ($lineRow->status ?? KitchenTicketLineStatus::Queued->value);
+            $lineStatus = KitchenTicketLineStatus::tryFrom($statusValue) ?? KitchenTicketLineStatus::Queued;
+
+            $lines[] = KitchenTicketLine::restore(
+                id: (int) $lineRow->id,
                 productId: (int) $lineRow->product_id,
                 name: (string) $lineRow->name,
                 quantity: (int) $lineRow->quantity,
+                status: $lineStatus,
+                doneBy: $doneBy,
+                doneAt: $lineRow->done_at !== null
+                    ? DateTimeImmutable::createFromInterface($lineRow->done_at)
+                    : null,
+                packedBy: $packedBy,
+                packedAt: $lineRow->packed_at !== null
+                    ? DateTimeImmutable::createFromInterface($lineRow->packed_at)
+                    : null,
             );
         }
 
@@ -60,12 +83,21 @@ final class KitchenTicketMapper
     {
         $lines = [];
         foreach (array_values($ticket->lines()) as $index => $line) {
-            $lines[] = [
+            $row = [
                 'product_id' => $line->productId(),
                 'name' => $line->name(),
                 'quantity' => $line->quantity(),
                 'position' => $index,
+                'status' => $line->status()->value,
+                'done_by' => $line->doneBy(),
+                'done_at' => $line->doneAt()?->format('Y-m-d H:i:s'),
+                'packed_by' => $line->packedBy(),
+                'packed_at' => $line->packedAt()?->format('Y-m-d H:i:s'),
             ];
+            if ($line->hasId()) {
+                $row['id'] = $line->id();
+            }
+            $lines[] = $row;
         }
 
         return [

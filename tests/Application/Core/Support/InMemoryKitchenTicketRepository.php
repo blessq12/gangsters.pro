@@ -25,6 +25,7 @@ final class InMemoryKitchenTicketRepository implements KitchenTicketRepository
         }
 
         $ticket->assignId($this->nextId++);
+        $this->assignLineIds($ticket);
         $this->byOrderId[$ticket->orderId()] = $ticket;
     }
 
@@ -34,7 +35,17 @@ final class InMemoryKitchenTicketRepository implements KitchenTicketRepository
             throw new \InvalidArgumentException('Тикет ещё не в очереди — используй enqueue.');
         }
 
+        $this->assignLineIds($ticket);
         $this->byOrderId[$ticket->orderId()] = $ticket;
+    }
+
+    private function assignLineIds(KitchenTicket $ticket): void
+    {
+        foreach ($ticket->lines() as $line) {
+            if (! $line->hasId()) {
+                $line->assignId($this->nextId++);
+            }
+        }
     }
 
     public function delete(KitchenTicket $ticket): void

@@ -5,12 +5,14 @@ namespace App\Application\Client\Query;
 use App\Application\Client\Presenter\AdminClientPresenter;
 use App\Application\Shared\PageParams;
 use App\Domain\Supporting\Client\Entity\Client;
+use App\Domain\Supporting\Client\Port\ClientOrdersPort;
 use App\Domain\Supporting\Client\Repository\ClientRepository;
 
 final class ListAdminClientsUseCase
 {
     public function __construct(
         private readonly ClientRepository $clients,
+        private readonly ClientOrdersPort $clientOrders,
         private readonly AdminClientPresenter $presenter,
     ) {}
 
@@ -23,10 +25,10 @@ final class ListAdminClientsUseCase
         $query = trim((string) ($q ?? ''));
 
         if ($query === '') {
+            $page = $this->clients->listPage($offset, $limit);
+
             return PageParams::wrap(
-                $this->presenter->presentList(
-                    $this->clients->listPage($offset, $limit),
-                ),
+                $this->presenter->presentList($page, $this->summariesFor($page)),
                 $this->clients->count(),
                 $offset,
                 $limit,
@@ -43,11 +45,27 @@ final class ListAdminClientsUseCase
         $page = array_slice($filtered, $offset, $limit);
 
         return PageParams::wrap(
-            $this->presenter->presentList($page),
+            $this->presenter->presentList($page, $this->summariesFor($page)),
             $total,
             $offset,
             $limit,
         );
+    }
+
+    /**
+     * @param  list<Client>  $clients
+     * @return array<int, array{orders_count: int, last_order_at: string|null}>
+     */
+    private function summariesFor(array $clients): array
+    {
+        $ids = [];
+        foreach ($clients as $client) {
+            if ($client->hasId()) {
+                $ids[] = $client->id();
+            }
+        }
+
+        return $this->clientOrders->summariesByClientIds($ids);
     }
 
     private function matches(Client $client, string $query): bool

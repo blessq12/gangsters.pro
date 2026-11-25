@@ -9,5 +9,7 @@ final readonly class SettleStopDto
         public int $orderId,
         public string $outcome,
         public ?string $reason = null,
+        public ?string $paymentMethod = null,
+        public ?int $authorEmployeeId = null,
     ) {}
 }

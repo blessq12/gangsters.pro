@@ -9,9 +9,11 @@ use App\Application\Order\Command\CancelOrderUseCase;
 use App\Application\Order\Command\CompletePickupOrderUseCase;
 use App\Application\Order\Command\CreateOrderUseCase;
 use App\Application\Order\Command\SaveOrderCommercialRulesUseCase;
+use App\Application\Order\Command\UpdateAdminOrderUseCase;
 use App\Application\Order\DTO\AcceptOrderDto;
 use App\Application\Order\DTO\CreateOrderDto;
 use App\Application\Order\DTO\SaveOrderCommercialRulesDto;
+use App\Application\Order\DTO\UpdateAdminOrderDto;
 use App\Application\Order\Query\GetAdminOrderUseCase;
 use App\Application\Order\Query\GetOrderCommercialRulesUseCase;
 use App\Application\Order\Query\ListAdminOrdersUseCase;
@@ -93,6 +95,69 @@ final class OrderController extends Controller
         }
 
         return response()->json($result, 201);
+    }
+
+    public function update(
+        Request $request,
+        int $id,
+        UpdateAdminOrderUseCase $useCase,
+    ): JsonResponse {
+        $validated = $request->validate([
+            'client' => ['sometimes', 'array'],
+            'client.name' => ['sometimes', 'string', 'max:255'],
+            'client.phone' => ['sometimes', 'string', 'max:32'],
+            'client.id' => ['sometimes', 'nullable', 'integer', 'min:1'],
+            'delivery' => ['sometimes', 'array'],
+            'delivery.method' => ['sometimes', 'string', 'in:pickup,courier'],
+            'delivery.zone_id' => ['sometimes', 'nullable', 'string', 'max:64'],
+            'delivery.fee_kopecks' => ['sometimes', 'integer', 'min:0'],
+            'delivery.address' => ['sometimes', 'nullable', 'array'],
+            'delivery.address.street' => ['sometimes', 'string', 'max:255'],
+            'delivery.address.house' => ['sometimes', 'string', 'max:64'],
+            'delivery.address.entrance' => ['sometimes', 'nullable', 'string', 'max:64'],
+            'delivery.address.floor' => ['sometimes', 'nullable', 'string', 'max:64'],
+            'delivery.address.apartment' => ['sometimes', 'nullable', 'string', 'max:64'],
+            'delivery.address.comment' => ['sometimes', 'nullable', 'string', 'max:1000'],
+            'delivery.address.lat' => ['sometimes', 'nullable', 'numeric'],
+            'delivery.address.lng' => ['sometimes', 'nullable', 'numeric'],
+            'payment_method' => ['sometimes', 'string', 'max:32'],
+            'change_from_rubles' => ['sometimes', 'nullable', 'integer', 'min:0'],
+            'scheduled_at' => ['sometimes', 'nullable', 'string', 'max:64'],
+            'lines' => ['sometimes', 'array', 'min:1'],
+            'lines.*.product_id' => ['required_with:lines', 'integer', 'min:1'],
+            'lines.*.name' => ['required_with:lines', 'string', 'max:255'],
+            'lines.*.unit_price_kopecks' => ['required_with:lines', 'integer', 'min:0'],
+            'lines.*.quantity' => ['required_with:lines', 'integer', 'min:1'],
+            'lines.*.line_type' => ['required_with:lines', 'string', 'max:32'],
+        ]);
+
+        $user = $request->user('sanctum');
+        $authorId = $user instanceof EmployeeModel ? (int) $user->id : null;
+
+        try {
+            $result = $useCase->execute(new UpdateAdminOrderDto(
+                orderId: $id,
+                authorEmployeeId: $authorId,
+                client: is_array($validated['client'] ?? null) ? $validated['client'] : null,
+                delivery: is_array($validated['delivery'] ?? null) ? $validated['delivery'] : null,
+                paymentMethod: array_key_exists('payment_method', $validated)
+                    ? (string) $validated['payment_method']
+                    : null,
+                changeFromRubles: array_key_exists('change_from_rubles', $validated)
+                    ? ($validated['change_from_rubles'] !== null ? (int) $validated['change_from_rubles'] : null)
+                    : null,
+                changeFromRublesProvided: array_key_exists('change_from_rubles', $validated),
+                lines: is_array($validated['lines'] ?? null) ? $validated['lines'] : null,
+                scheduledAt: array_key_exists('scheduled_at', $validated)
+                    ? ($validated['scheduled_at'] !== null ? (string) $validated['scheduled_at'] : null)
+                    : null,
+                scheduledAtProvided: array_key_exists('scheduled_at', $validated),
+            ));
+        } catch (InvalidArgumentException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
+
+        return response()->json($result);
     }
 
     public function accept(int $id, AcceptOrderUseCase $useCase): JsonResponse

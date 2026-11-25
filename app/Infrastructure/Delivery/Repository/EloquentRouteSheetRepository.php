@@ -75,14 +75,18 @@ final class EloquentRouteSheetRepository implements RouteSheetRepository
         return (int) $query->count();
     }
 
-    public function listVisibleToCourierPage(int $courierId, int $offset, int $limit): array
-    {
-        return $this->mapPage($this->courierQuery($courierId), $offset, $limit);
+    public function listVisibleToCourierPage(
+        int $courierId,
+        int $offset,
+        int $limit,
+        ?string $status = null,
+    ): array {
+        return $this->mapPage($this->courierQuery($courierId, $status), $offset, $limit);
     }
 
-    public function countVisibleToCourier(int $courierId): int
+    public function countVisibleToCourier(int $courierId, ?string $status = null): int
     {
-        return (int) $this->courierQuery($courierId)->count();
+        return (int) $this->courierQuery($courierId, $status)->count();
     }
 
     /**
@@ -98,9 +102,17 @@ final class EloquentRouteSheetRepository implements RouteSheetRepository
     /**
      * @return Builder<RouteSheetModel>
      */
-    private function courierQuery(int $courierId): Builder
+    private function courierQuery(int $courierId, ?string $status = null): Builder
     {
-        return $this->activeQuery()->where('courier_id', $courierId);
+        $query = RouteSheetModel::query()
+            ->where('courier_id', $courierId)
+            ->orderByDesc('id');
+
+        if ($status !== null && $status !== '') {
+            return $query->where('status', $status);
+        }
+
+        return $query->whereIn('status', ['released', 'in_delivery', 'completed']);
     }
 
     /**

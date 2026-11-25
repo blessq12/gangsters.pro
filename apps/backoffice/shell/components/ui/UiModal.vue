@@ -1,12 +1,28 @@
 <script setup>
-import { watch } from "vue";
+import { computed, watch } from "vue";
 
 const props = defineProps({
     open: { type: Boolean, default: false },
     title: { type: String, default: "" },
+    /** md — узкое, lg — шире, xl — двухколоночные карточки */
+    size: {
+        type: String,
+        default: "md",
+        validator: (value) => ["md", "lg", "xl"].includes(value),
+    },
 });
 
 const emit = defineEmits(["close"]);
+
+const sizeClass = computed(() => {
+    if (props.size === "xl") {
+        return "max-w-6xl";
+    }
+    if (props.size === "lg") {
+        return "max-w-4xl";
+    }
+    return "max-w-xl";
+});
 
 watch(
     () => props.open,
@@ -24,7 +40,8 @@ watch(
             @click.self="emit('close')"
         >
             <div
-                class="max-h-[90vh] w-full max-w-xl overflow-auto border border-bo-border-strong bg-bo-elevated text-bo-fg shadow-bo-lg"
+                class="max-h-[90vh] w-full overflow-auto border border-bo-border-strong bg-bo-elevated text-bo-fg shadow-bo-lg"
+                :class="sizeClass"
                 role="dialog"
                 aria-modal="true"
             >

@@ -82,7 +82,7 @@ async function loadCouriers() {
 
 async function loadReadyOrders() {
     try {
-        const payload = await loadApi.run(() => listOrders({ status: "ready", offset: 0, limit: 100 }));
+        const payload = await loadApi.run(() => listOrders({ status: "packed", offset: 0, limit: 100 }));
         readyOrders.value = (payload?.items ?? []).filter(
             (order) => order.delivery?.method === "courier",
         );

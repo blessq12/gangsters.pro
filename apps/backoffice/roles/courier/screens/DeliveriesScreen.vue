@@ -1,13 +1,16 @@
 <script setup>
-import { computed, onMounted, onUnmounted, watch } from "vue";
+import { onMounted, onUnmounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { listCourierRouteSheets } from "../../../api/delivery.js";
 import { useApi } from "../../../shell/composables/useApi.js";
 import { usePagedList } from "../../../shell/composables/usePagedList.js";
 import { useToast } from "../../../shell/composables/useToast.js";
 import UiBadge from "../../../shell/components/ui/UiBadge.vue";
+import UiCard from "../../../shell/components/ui/UiCard.vue";
 import UiPagination from "../../../shell/components/ui/UiPagination.vue";
+import UiTable from "../../../shell/components/ui/UiTable.vue";
 import {
+    sheetHint,
     sheetStatusLabel,
     sheetStatusVariant,
 } from "../../../shell/domain/orderStage.js";
@@ -16,37 +19,48 @@ const router = useRouter();
 const toast = useToast();
 const listApi = useApi();
 
+const STATUS_FILTERS = [
+    { value: "", label: "Все" },
+    { value: "released", label: "Выпущен" },
+    { value: "in_delivery", label: "В доставке" },
+    { value: "completed", label: "Завершён" },
+];
+
+const statusFilter = ref("");
+
 const {
     page,
     perPage,
     total,
-    items: sheets,
+    items: rows,
     offset,
     applyPayload,
-} = usePagedList({ perPage: 10 });
+} = usePagedList();
+
+const columns = [
+    { key: "id", label: "Лист", width: "90px" },
+    { key: "status", label: "Этап", width: "140px" },
+    { key: "stops", label: "Остановки", width: "140px" },
+    { key: "next", label: "Дальше", truncate: true },
+];
 
 /** @type {ReturnType<typeof setInterval>|null} */
 let pollTimer = null;
 const POLL_MS = 18000;
 
-const empty = computed(() => !listApi.loading && sheets.value.length === 0);
-
 /**
  * @param {Record<string, unknown>} sheet
  */
-function stopsCount(sheet) {
-    return Array.isArray(sheet.stops) ? sheet.stops.length : 0;
-}
-
-/**
- * @param {Record<string, unknown>} sheet
- */
-function openStopsCount(sheet) {
+function stopsLabel(sheet) {
     const stops = Array.isArray(sheet.stops) ? sheet.stops : [];
-    return stops.filter((stop) => {
+    const open = stops.filter((stop) => {
         const outcome = String(stop?.outcome ?? "pending");
         return outcome === "pending" || outcome === "";
     }).length;
+    if (open > 0) {
+        return `${stops.length} · открыто ${open}`;
+    }
+    return String(stops.length);
 }
 
 async function load(silent = false) {
@@ -54,9 +68,16 @@ async function load(silent = false) {
         const payload = await listApi.run(() => listCourierRouteSheets({
             offset: offset.value,
             limit: perPage,
+            status: statusFilter.value || undefined,
         }));
-        applyPayload(payload);
-        const lastPage = Math.max(1, Math.ceil(total.value / perPage));
+        applyPayload(payload, (sheet) => ({
+            id: sheet.id,
+            status: sheet.status,
+            stops: stopsLabel(sheet),
+            next: sheetHint(sheet),
+            _raw: sheet,
+        }));
+        const lastPage = Math.max(1, Math.ceil(total.value / perPage) || 1);
         if (page.value > lastPage) {
             page.value = lastPage;
         }
@@ -68,13 +89,32 @@ async function load(silent = false) {
 }
 
 /**
- * @param {number|string} sheetId
+ * @param {{ id: number|string }} row
  */
-function openSheet(sheetId) {
-    router.push({ name: "courier-route-sheet", params: { id: String(sheetId) } });
+function openSheet(row) {
+    router.push({ name: "courier-route-sheet", params: { id: String(row.id) } });
+}
+
+/**
+ * @param {string} value
+ */
+function setStatusFilter(value) {
+    if (statusFilter.value === value) {
+        return;
+    }
+    statusFilter.value = value;
+    if (page.value !== 1) {
+        page.value = 1;
+        return;
+    }
+    load();
 }
 
 watch(page, () => load());
+watch(statusFilter, () => {
+    /* page reset handled in setStatusFilter */
+});
+
 onMounted(() => {
     load();
     pollTimer = setInterval(() => load(true), POLL_MS);
@@ -89,64 +129,52 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="mx-auto w-full max-w-lg space-y-4 px-4 py-4">
-        <h1 class="text-xl font-bold tracking-tight text-bo-fg">
-            Мои листы
-        </h1>
-
-        <div
-            v-if="listApi.loading && sheets.length === 0"
-            class="border border-bo-border bg-bo-elevated px-4 py-12 text-center text-base text-bo-muted"
-        >
-            Загрузка…
-        </div>
-
-        <div
-            v-else-if="empty"
-            class="border border-bo-border bg-bo-elevated px-4 py-16 text-center text-lg font-semibold text-bo-muted"
-        >
-            Листов нет
-        </div>
-
-        <div
-            v-else
-            class="space-y-3"
-        >
-            <button
-                v-for="sheet in sheets"
-                :key="sheet.id"
-                type="button"
-                class="flex w-full flex-col gap-3 border border-bo-border bg-bo-elevated p-4 text-left active:bg-white/[0.06]"
-                @click="openSheet(sheet.id)"
-            >
-                <div class="flex items-start justify-between gap-3">
-                    <p class="text-2xl font-black leading-none text-bo-fg">
-                        Лист #{{ sheet.id }}
-                    </p>
-                    <UiBadge
-                        class="!px-3 !py-1 !text-sm"
-                        :variant="sheetStatusVariant(sheet.status)"
-                        :text="sheetStatusLabel(sheet.status)"
-                    />
-                </div>
-                <p class="text-base font-medium text-bo-fg">
-                    {{ stopsCount(sheet) }} ост.
-                    <span
-                        v-if="openStopsCount(sheet) > 0"
-                        class="font-normal text-bo-muted"
-                    >
-                        · открыто {{ openStopsCount(sheet) }}
-                    </span>
+    <div class="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
+        <UiCard title="Мои листы">
+            <div class="mb-6">
+                <p class="mb-1 text-sm text-bo-muted">
+                    Статус
                 </p>
-            </button>
-        </div>
+                <div class="flex flex-wrap gap-2">
+                    <button
+                        v-for="filter in STATUS_FILTERS"
+                        :key="filter.value || 'all'"
+                        type="button"
+                        class="h-11 px-4 text-sm font-medium transition-colors duration-150"
+                        :class="statusFilter === filter.value
+                            ? 'bg-bo-accent text-white'
+                            : 'bg-white/[0.04] text-bo-muted hover:bg-white/[0.08] hover:text-bo-fg'"
+                        @click="setStatusFilter(filter.value)"
+                    >
+                        {{ filter.label }}
+                    </button>
+                </div>
+            </div>
 
-        <UiPagination
-            v-if="total > perPage"
-            :page="page"
-            :per-page="perPage"
-            :total="total"
-            @update:page="page = $event"
-        />
+            <UiTable
+                :columns="columns"
+                :rows="rows"
+                :loading="listApi.loading"
+                empty-text="Листов нет"
+                row-key="id"
+                @row-click="openSheet"
+            >
+                <template #cell-status="{ value }">
+                    <UiBadge
+                        :variant="sheetStatusVariant(value)"
+                        :text="sheetStatusLabel(value)"
+                    />
+                </template>
+            </UiTable>
+
+            <div class="mt-6">
+                <UiPagination
+                    :page="page"
+                    :per-page="perPage"
+                    :total="total"
+                    @update:page="page = $event"
+                />
+            </div>
+        </UiCard>
     </div>
 </template>

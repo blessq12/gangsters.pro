@@ -40,6 +40,15 @@ export function getOrder(id) {
 }
 
 /**
+ * Частичная правка заказа (клиент / доставка / оплата / линии).
+ * @param {number|string} id
+ * @param {Record<string, unknown>} data
+ */
+export function updateOrder(id, data) {
+    return request("PUT", `/orders/${id}`, data);
+}
+
+/**
  * Подтверждение: accept + confirm → OrderConfirmed (филиал уже на заказе).
  * @param {number|string} id
  */

@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref, watch } from "vue";
-import { getQueue, getTicket } from "../../../api/production.js";
+import { getQueue, getTicket, markTicketLinePacked } from "../../../api/production.js";
 import { useApi } from "../../../shell/composables/useApi.js";
 import { usePagedList } from "../../../shell/composables/usePagedList.js";
 import { useBranchChoice } from "../../../shell/composables/useBranchChoice.js";
@@ -22,6 +22,7 @@ import {
 const toast = useToast();
 const listApi = useApi();
 const detailApi = useApi();
+const actionApi = useApi();
 const {
     branches,
     branchId,
@@ -71,8 +72,10 @@ async function load() {
         const payload = await listApi.run(() => getQueue(branchId.value, {
             offset: offset.value,
             limit: perPage,
+            scope: "active",
         }));
-        applyPayload(payload);
+        const pool = payload?.pool && typeof payload.pool === "object" ? payload.pool : payload;
+        applyPayload(pool);
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось загрузить тикеты");
     }
@@ -86,6 +89,26 @@ async function openDetail(row) {
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось открыть тикет");
         detailOpen.value = false;
+    }
+}
+
+function canPackLine(line) {
+    return detail.value?.order?.status === "ready"
+        && line?.id
+        && line.status === "done"
+        && !line.packed_by;
+}
+
+async function onPackLine(line) {
+    if (!canPackLine(line) || !detail.value?.order_id) {
+        return;
+    }
+    try {
+        detail.value = await actionApi.run(() => markTicketLinePacked(detail.value.order_id, line.id));
+        toast.success("Позиция собрана");
+        await load();
+    } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Не удалось отметить сборку");
     }
 }
 
@@ -107,7 +130,7 @@ onMounted(async () => {
     <div class="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
         <UiCard title="Тикеты">
             <p class="mb-4 text-sm text-bo-muted">
-                Просмотр очереди. Старт и завершение делает кухня, отсюда статус тикета не переключается.
+                Тикеты филиала в работе (очередь + готовка) со статусами. Готовность позиций — у кухни; сборку ready-заказа можно отметить здесь.
             </p>
             <label class="mb-6 block max-w-md text-sm text-bo-muted" for="admin-branch">
                 Филиал
@@ -190,11 +213,29 @@ onMounted(async () => {
                 </p>
                 <ul class="space-y-2">
                     <li
-                        v-for="(line, idx) in (detail.lines ?? [])"
-                        :key="idx"
-                        class="border border-bo-border px-3 py-2"
+                        v-for="line in (detail.lines ?? [])"
+                        :key="line.id ?? `${line.product_id}-${line.name}`"
+                        class="flex flex-wrap items-center justify-between gap-2 border border-bo-border px-3 py-2"
                     >
-                        {{ line.name || `Позиция #${line.product_id}` }} × {{ line.quantity }}
+                        <span>
+                            {{ line.name || `Позиция #${line.product_id}` }} × {{ line.quantity }}
+                            <span class="ml-2 text-bo-muted">{{ line.status || "queued" }}</span>
+                            <span
+                                v-if="line.done_by"
+                                class="ml-2 text-emerald-300"
+                            >кухня #{{ line.done_by }}</span>
+                            <span
+                                v-if="line.packed_by"
+                                class="ml-2 text-amber-300"
+                            >сборка #{{ line.packed_by }}</span>
+                        </span>
+                        <UiButton
+                            v-if="canPackLine(line)"
+                            :disabled="actionApi.loading"
+                            @click="onPackLine(line)"
+                        >
+                            На месте
+                        </UiButton>
                     </li>
                 </ul>
                 <p v-if="detail.order?.comment" class="text-bo-muted">

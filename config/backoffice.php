@@ -13,13 +13,16 @@ return [
         ['method' => 'POST', 'path' => 'orders/*/accept', 'roles' => ['administrator']],
         ['method' => 'POST', 'path' => 'orders/*/status', 'roles' => ['owner', 'administrator']],
         ['method' => 'POST', 'path' => 'orders/*/complete-pickup', 'roles' => ['administrator']],
-        ['method' => 'POST', 'path' => 'orders/*/notes', 'roles' => ['owner', 'administrator']],
+        ['method' => 'POST', 'path' => 'orders/*/notes', 'roles' => ['owner', 'administrator', 'kitchen', 'courier']],
+        ['method' => 'PUT', 'path' => 'orders/*', 'roles' => ['owner', 'administrator']],
         ['method' => 'POST', 'path' => 'orders/quote', 'roles' => ['administrator']],
         ['method' => 'POST', 'path' => 'orders', 'roles' => ['administrator']],
-        ['method' => 'GET', 'path' => 'orders/*', 'roles' => ['owner', 'administrator']],
+        ['method' => 'GET', 'path' => 'orders/*', 'roles' => ['owner', 'administrator', 'kitchen', 'courier']],
         ['method' => 'GET', 'path' => 'orders', 'roles' => ['owner', 'administrator']],
 
         // production
+        ['method' => 'POST', 'path' => 'production/tickets/*/lines/*/done', 'roles' => ['kitchen']],
+        ['method' => 'POST', 'path' => 'production/tickets/*/lines/*/pack', 'roles' => ['owner', 'administrator']],
         ['method' => 'POST', 'path' => 'production/tickets/*/*', 'roles' => ['kitchen']],
         ['method' => 'GET', 'path' => 'production/queue', 'roles' => ['owner', 'administrator', 'kitchen']],
         ['method' => 'GET', 'path' => 'production/tickets/*', 'roles' => ['owner', 'administrator', 'kitchen']],
@@ -131,15 +134,15 @@ return [
         ['method' => 'GET', 'path' => 'clients/*', 'roles' => ['owner', 'administrator']],
         ['method' => 'GET', 'path' => 'clients', 'roles' => ['owner', 'administrator']],
 
-        // warehouse
+        // warehouse (мутации — только owner; read склада филиала — ещё kitchen)
         ['method' => 'POST', 'path' => 'warehouse/branches/*/stock/adjust', 'roles' => ['owner']],
         ['method' => 'POST', 'path' => 'warehouse/branches/*/write-offs', 'roles' => ['owner']],
-        ['method' => 'GET', 'path' => 'warehouse/branches/*/ingredients/*', 'roles' => ['owner']],
-        ['method' => 'GET', 'path' => 'warehouse/branches/*/stock', 'roles' => ['owner']],
-        ['method' => 'GET', 'path' => 'warehouse/branches/*/write-offs', 'roles' => ['owner']],
+        ['method' => 'GET', 'path' => 'warehouse/branches/*/ingredients/*', 'roles' => ['owner', 'kitchen']],
+        ['method' => 'GET', 'path' => 'warehouse/branches/*/stock', 'roles' => ['owner', 'kitchen']],
+        ['method' => 'GET', 'path' => 'warehouse/branches/*/write-offs', 'roles' => ['owner', 'kitchen']],
         ['method' => 'POST', 'path' => 'warehouse/*', 'roles' => ['owner']],
         ['method' => 'PUT', 'path' => 'warehouse/*/*', 'roles' => ['owner']],
-        ['method' => 'GET', 'path' => 'warehouse/ingredients/*', 'roles' => ['owner']],
-        ['method' => 'GET', 'path' => 'warehouse/*', 'roles' => ['owner']],
+        ['method' => 'GET', 'path' => 'warehouse/ingredients/*', 'roles' => ['owner', 'kitchen']],
+        ['method' => 'GET', 'path' => 'warehouse/*', 'roles' => ['owner', 'kitchen']],
     ],
 ];

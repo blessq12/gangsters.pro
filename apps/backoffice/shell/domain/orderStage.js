@@ -9,6 +9,7 @@ export const ORDER_STATUSES = [
     "confirmed",
     "preparing",
     "ready",
+    "packed",
     "assigned_to_route",
     "in_transit",
     "delivered",
@@ -22,6 +23,7 @@ const ORDER_STATUS_LABEL = {
     confirmed: "Подтверждён",
     preparing: "Готовится",
     ready: "Готов",
+    packed: "Собран",
     assigned_to_route: "В маршрутном листе",
     in_transit: "В пути",
     delivered: "Выдан",
@@ -34,7 +36,8 @@ const ORDER_STATUS_VARIANT = {
     preorder: "neutral",
     confirmed: "warning",
     preparing: "warning",
-    ready: "success",
+    ready: "warning",
+    packed: "success",
     assigned_to_route: "warning",
     in_transit: "warning",
     delivered: "success",
@@ -108,10 +111,16 @@ const CANCELLABLE = [
     "confirmed",
     "preparing",
     "ready",
+    "packed",
     "assigned_to_route",
 ];
 
-const CLOSED_ORDER = ["delivered", "written_off", "cancelled"];
+export const CLOSED_ORDER = ["delivered", "written_off", "cancelled"];
+
+/** @param {string|null|undefined} status */
+export function isClosedOrder(status) {
+    return CLOSED_ORDER.includes(status);
+}
 
 /** @param {string|null|undefined} status */
 export function orderStatusLabel(status) {
@@ -289,17 +298,19 @@ export function shortStage(order) {
         case "preorder":
             return "Подтвердить";
         case "confirmed":
-            return "Старт тикета";
+            return "Кухня берёт позиции";
         case "preparing":
-            return "Завершить тикет";
+            return "Закрыть позиции тикета";
         case "ready":
+            return "Собрать позиции";
+        case "packed":
             if (method === "pickup") {
                 return "Выдать самовывоз";
             }
             if (method === "courier") {
                 return "Собрать маршрутный лист";
             }
-            return "Готов";
+            return "Собран";
         case "assigned_to_route":
             return "Взять маршрутный лист";
         case "in_transit":
@@ -328,17 +339,19 @@ export function stageHint(order) {
         case "preorder":
             return "Предзаказ. Следующее действие администратора — подтвердить и назначить филиал.";
         case "confirmed":
-            return "Подтверждён, тикет стоит в очереди. Следующее действие кухни — старт тикета.";
+            return "Подтверждён. Заказ сразу уходит в «готовится», кухня отмечает позиции.";
         case "preparing":
-            return "Кухня готовит. Следующее действие — завершить тикет, заказ станет готов.";
+            return "Кухня готовит по позициям. Когда все позиции готовы, заказ станет «готов».";
         case "ready":
+            return "Кухня закончила. Следующее действие администратора — подтвердить сборку каждой позиции (packed).";
+        case "packed":
             if (method === "pickup") {
-                return "Готов к выдаче. Следующее действие — выдать самовывоз. Платёж закроется вместе с выдачей.";
+                return "Собран. Следующее действие — выдать самовывоз. Платёж закроется вместе с выдачей.";
             }
             if (method === "courier") {
-                return "Готов к доставке. Следующее действие — собрать маршрутный лист. Самовывозом такой заказ не выдаётся.";
+                return "Собран. Следующее действие — собрать маршрутный лист. Самовывозом такой заказ не выдаётся.";
             }
-            return "Заказ готов.";
+            return "Заказ собран.";
         case "assigned_to_route":
             return "Заказ в маршрутном листе. Следующее действие — курьер берёт лист, заказ уйдёт в путь.";
         case "in_transit":
@@ -368,10 +381,10 @@ export function administratorCommands(order) {
     if (status === "new" || status === "preorder") {
         commands.push({ id: "confirm", label: "Подтвердить" });
     }
-    if (status === "ready" && method === "pickup") {
+    if (status === "packed" && method === "pickup") {
         commands.push({ id: "pickup", label: "Выдать самовывоз" });
     }
-    if (status === "ready" && method === "courier") {
+    if (status === "packed" && method === "courier") {
         commands.push({ id: "toRoute", label: "В маршрутный лист" });
     }
     if (CANCELLABLE.includes(status)) {
@@ -434,11 +447,11 @@ export function paymentLooksStuck(order) {
 export function ticketHint(status) {
     switch (status) {
         case "queued":
-            return "Тикет в очереди. Следующее действие — старт. Заказ перейдёт в «Готовится».";
+            return "Тикет в пуле. Отмечай позиции «Готово» — заказ уже «Готовится».";
         case "started":
-            return "Тикет в работе. Следующее действие — завершить. Заказ станет «Готов».";
+            return "Позиции в работе. Когда все отмечены готовыми, заказ станет «Готов».";
         case "completed":
-            return "Тикет завершён. Дальше заказ забирает администратор или маршрутный лист.";
+            return "Все позиции готовы. Дальше сборка у администратора.";
         case "cancelled":
             return "Тикет отменён вместе с заказом.";
         default:

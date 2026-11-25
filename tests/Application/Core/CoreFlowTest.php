@@ -20,9 +20,11 @@ use App\Application\Order\DTO\CreateOrderDto;
 use App\Application\Order\DTO\QuoteOrderDto;
 use App\Application\Order\Presenter\AdminOrderPresenter;
 use App\Application\Order\Presenter\OrderPresenter;
-use App\Application\Production\Command\CompleteWorkUseCase;
+use App\Application\Production\Command\MarkTicketLineDoneUseCase;
+use App\Application\Production\Command\MarkTicketLinePackedUseCase;
 use App\Application\Production\Command\StartWorkUseCase;
-use App\Application\Production\DTO\CompleteWorkDto;
+use App\Application\Production\DTO\MarkTicketLineDoneDto;
+use App\Application\Production\DTO\MarkTicketLinePackedDto;
 use App\Application\Production\DTO\StartWorkDto;
 use App\Application\Production\Presenter\KitchenTicketPresenter;
 use App\Domain\Core\Delivery\Event\OrderAddedToRoute;
@@ -35,12 +37,15 @@ use App\Domain\Core\Order\Event\OrderConfirmed;
 use App\Domain\Core\Order\Event\OrderPickedUp;
 use App\Domain\Core\Order\Event\OrderPlaced;
 use App\Domain\Core\Production\Event\KitchenTicketCompleted;
+use App\Domain\Core\Production\Event\KitchenTicketLineDone;
+use App\Domain\Core\Production\Event\KitchenTicketLinePacked;
 use App\Domain\Core\Production\Event\KitchenTicketStarted;
 use App\Domain\Supporting\Staff\Entity\Employee;
 use App\Domain\Supporting\Staff\Enum\StaffRole;
 use App\Domain\Supporting\Company\Entity\Branch;
 use App\Infrastructure\Delivery\Listener\CancelRouteStopOnOrderCancelled;
 use App\Infrastructure\Order\Listener\MarkOrderAssignedToRouteOnOrderAddedToRoute;
+use App\Infrastructure\Order\Listener\MarkOrderPackedOnKitchenTicketFullyPacked;
 use App\Infrastructure\Order\Listener\MarkOrderPreparingOnKitchenTicketStarted;
 use App\Infrastructure\Order\Listener\MarkOrderReadyOnKitchenTicketCompleted;
 use App\Infrastructure\Order\Listener\MarkOrdersInTransitOnRouteSheetTaken;
@@ -52,11 +57,12 @@ use Illuminate\Container\Container;
 use Illuminate\Events\Dispatcher;
 use PHPUnit\Framework\TestCase;
 use Tests\Application\Core\Support\ImmediateTransactionManager;
+use Tests\Application\Core\Support\InMemoryBranchRepository;
 use Tests\Application\Core\Support\InMemoryDeliveryOrderStopSnapshotPort;
 use Tests\Application\Core\Support\InMemoryDeliveryRouteOrderEligibilityPort;
 use Tests\Application\Core\Support\InMemoryEmployeeRepository;
-use Tests\Application\Core\Support\InMemoryBranchRepository;
 use Tests\Application\Core\Support\InMemoryKitchenTicketRepository;
+use Tests\Application\Core\Support\InMemoryOrderAuditRepository;
 use Tests\Application\Core\Support\InMemoryOrderPaymentSnapshotPort;
 use Tests\Application\Core\Support\InMemoryOrderRepository;
 use Tests\Application\Core\Support\InMemoryPaymentRepository;
@@ -119,14 +125,14 @@ final class CoreFlowTest extends TestCase
         $orderId = $this->place('courier-1', 'courier', 20000);
 
         $this->accept($orderId, 2);
-        $this->assertSame(OrderStatus::Confirmed, $this->orders->findById($orderId)->status());
-        $this->assertNotNull($this->tickets->findByOrderId($orderId));
-
-        $this->start($orderId);
         $this->assertSame(OrderStatus::Preparing, $this->orders->findById($orderId)->status());
+        $this->assertNotNull($this->tickets->findByOrderId($orderId));
 
         $this->complete($orderId);
         $this->assertSame(OrderStatus::Ready, $this->orders->findById($orderId)->status());
+
+        $this->pack($orderId);
+        $this->assertSame(OrderStatus::Packed, $this->orders->findById($orderId)->status());
 
         $sheetId = $this->releaseRoute([$orderId]);
         $this->assertSame(OrderStatus::AssignedToRoute, $this->orders->findById($orderId)->status());
@@ -143,7 +149,9 @@ final class CoreFlowTest extends TestCase
                 OrderPlaced::class,
                 OrderConfirmed::class,
                 KitchenTicketStarted::class,
+                KitchenTicketLineDone::class,
                 KitchenTicketCompleted::class,
+                KitchenTicketLinePacked::class,
                 RouteSheetCreated::class,
                 OrderAddedToRoute::class,
                 RouteSheetTaken::class,
@@ -161,7 +169,7 @@ final class CoreFlowTest extends TestCase
         $this->queueTicket($orderId);
         $this->start($orderId);
 
-        $this->assertSame(OrderStatus::Confirmed, $this->orders->findById($orderId)->status());
+        $this->assertSame(OrderStatus::Preparing, $this->orders->findById($orderId)->status());
         $this->assertInstanceOf(KitchenTicketStarted::class, $this->events->events[array_key_last($this->events->events)]);
     }
 
@@ -169,8 +177,8 @@ final class CoreFlowTest extends TestCase
     {
         $orderId = $this->place('pickup-1', 'pickup', 0);
         $this->accept($orderId, 2);
-        $this->start($orderId);
         $this->complete($orderId);
+        $this->pack($orderId);
 
         (new CompletePickupOrderUseCase(
             $this->orders,
@@ -187,7 +195,6 @@ final class CoreFlowTest extends TestCase
     {
         $orderId = $this->place('cancel-1', 'courier', 15000);
         $this->accept($orderId, 2);
-        $this->start($orderId);
 
         (new CancelOrderUseCase(
             $this->orders,
@@ -205,8 +212,8 @@ final class CoreFlowTest extends TestCase
     {
         $orderId = $this->place('cancel-route-1', 'courier', 15000);
         $this->accept($orderId, 2);
-        $this->start($orderId);
         $this->complete($orderId);
+        $this->pack($orderId);
         $sheetId = $this->releaseRoute([$orderId]);
 
         (new CancelOrderUseCase(
@@ -224,8 +231,8 @@ final class CoreFlowTest extends TestCase
     {
         $orderId = $this->place('writeoff-1', 'courier', 10000);
         $this->accept($orderId, 2);
-        $this->start($orderId);
         $this->complete($orderId);
+        $this->pack($orderId);
         $sheetId = $this->releaseRoute([$orderId]);
         $this->take($sheetId, 7);
 
@@ -330,11 +337,16 @@ final class CoreFlowTest extends TestCase
         ))->execute(new AcceptOrderDto($orderId));
     }
 
+    private function productionOrders(): InMemoryProductionOrderSnapshotPort
+    {
+        return new InMemoryProductionOrderSnapshotPort($this->orders);
+    }
+
     private function start(int $orderId): void
     {
         (new StartWorkUseCase(
             $this->tickets,
-            $this->orders,
+            $this->productionOrders(),
             new KitchenTicketPresenter,
             $this->events,
             $this->transaction,
@@ -343,13 +355,46 @@ final class CoreFlowTest extends TestCase
 
     private function complete(int $orderId): void
     {
-        (new CompleteWorkUseCase(
+        $ticket = $this->tickets->findByOrderId($orderId);
+        $this->assertNotNull($ticket);
+
+        $useCase = new MarkTicketLineDoneUseCase(
             $this->tickets,
-            $this->orders,
+            $this->productionOrders(),
             new KitchenTicketPresenter,
             $this->events,
             $this->transaction,
-        ))->execute(new CompleteWorkDto(orderId: $orderId, employeeId: 1));
+        );
+
+        foreach ($ticket->lines() as $line) {
+            $useCase->execute(new MarkTicketLineDoneDto(
+                orderId: $orderId,
+                lineId: $line->id(),
+                employeeId: 1,
+            ));
+        }
+    }
+
+    private function pack(int $orderId): void
+    {
+        $ticket = $this->tickets->findByOrderId($orderId);
+        $this->assertNotNull($ticket);
+
+        $useCase = new MarkTicketLinePackedUseCase(
+            $this->tickets,
+            $this->productionOrders(),
+            new KitchenTicketPresenter,
+            $this->events,
+            $this->transaction,
+        );
+
+        foreach ($ticket->lines() as $line) {
+            $useCase->execute(new MarkTicketLinePackedDto(
+                orderId: $orderId,
+                lineId: $line->id(),
+                employeeId: 1,
+            ));
+        }
     }
 
     /**
@@ -359,8 +404,8 @@ final class CoreFlowTest extends TestCase
     {
         $result = (new CreateRouteSheetUseCase(
             $this->sheets,
-            $this->orders,
-            new RouteSheetPresenter($this->orders),
+            new InMemoryDeliveryRouteOrderEligibilityPort($this->orders),
+            new RouteSheetPresenter(new InMemoryDeliveryOrderStopSnapshotPort($this->orders)),
             $this->events,
             $this->transaction,
         ))->execute(new CreateRouteSheetDto($orderIds));
@@ -373,7 +418,7 @@ final class CoreFlowTest extends TestCase
         (new TakeRouteSheetUseCase(
             $this->sheets,
             $this->employees,
-            new RouteSheetPresenter($this->orders),
+            new RouteSheetPresenter(new InMemoryDeliveryOrderStopSnapshotPort($this->orders)),
             $this->events,
             $this->transaction,
         ))->execute(new TakeRouteSheetDto($sheetId, $courierId));
@@ -383,10 +428,19 @@ final class CoreFlowTest extends TestCase
     {
         (new SettleStopUseCase(
             $this->sheets,
-            new RouteSheetPresenter($this->orders),
+            $this->orders,
+            new InMemoryOrderAuditRepository,
+            new RouteSheetPresenter(new InMemoryDeliveryOrderStopSnapshotPort($this->orders)),
             $this->events,
             $this->transaction,
-        ))->execute(new SettleStopDto($sheetId, $orderId, $outcome, $reason));
+        ))->execute(new SettleStopDto(
+            sheetId: $sheetId,
+            orderId: $orderId,
+            outcome: $outcome,
+            reason: $reason,
+            paymentMethod: $outcome === RouteStopSettled::OUTCOME_DELIVERED ? 'cash' : null,
+            authorEmployeeId: 7,
+        ));
     }
 
     private function queueTicket(int $orderId): void
@@ -399,18 +453,18 @@ final class CoreFlowTest extends TestCase
         }
 
         $this->assertInstanceOf(OrderConfirmed::class, $confirmed);
-        (new CreateKitchenTicketOnOrderConfirmed($this->orders, $this->tickets))->handle($confirmed);
+        (new CreateKitchenTicketOnOrderConfirmed($this->tickets))->handle($confirmed);
     }
 
     private function orderPresenter(): OrderPresenter
     {
-        return new OrderPresenter(new InMemoryPaymentRepository, new PaymentPresenter);
+        return new OrderPresenter(new InMemoryOrderPaymentSnapshotPort(new InMemoryPaymentRepository));
     }
 
     private function react(object $event): void
     {
         if ($event instanceof OrderConfirmed) {
-            (new CreateKitchenTicketOnOrderConfirmed($this->orders, $this->tickets))->handle($event);
+            (new CreateKitchenTicketOnOrderConfirmed($this->tickets))->handle($event);
         }
 
         if ($event instanceof KitchenTicketStarted) {
@@ -419,6 +473,10 @@ final class CoreFlowTest extends TestCase
 
         if ($event instanceof KitchenTicketCompleted) {
             (new MarkOrderReadyOnKitchenTicketCompleted($this->orders))->handle($event);
+        }
+
+        if ($event instanceof KitchenTicketLinePacked) {
+            (new MarkOrderPackedOnKitchenTicketFullyPacked($this->orders))->handle($event);
         }
 
         if ($event instanceof OrderAddedToRoute) {

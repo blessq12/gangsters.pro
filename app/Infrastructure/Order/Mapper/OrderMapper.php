@@ -62,6 +62,9 @@ final class OrderMapper
             paymentId: $row->payment_id !== null ? (int) $row->payment_id : null,
             paymentMethod: $this->nullableString($row->payment_method),
             changeFromRubles: $row->change_from_rubles !== null ? (int) $row->change_from_rubles : null,
+            scheduledAt: $row->scheduled_at !== null
+                ? DateTimeImmutable::createFromInterface($row->scheduled_at)
+                : null,
         );
     }
 
@@ -99,6 +102,7 @@ final class OrderMapper
                 'payment_method' => $order->paymentMethod(),
                 'change_from_rubles' => $order->changeFromRubles(),
                 'total_kopecks' => $order->grandTotalKopecks(),
+                'scheduled_at' => $order->scheduledAt()?->format('Y-m-d H:i:s'),
                 'created_at' => $order->createdAt()->format('Y-m-d H:i:s'),
                 'updated_at' => now()->format('Y-m-d H:i:s'),
             ],

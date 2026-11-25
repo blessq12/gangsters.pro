@@ -176,7 +176,11 @@ final class DeliveryController extends Controller
         $validated = $request->validate([
             'outcome' => ['required', 'string', 'in:delivered,written_off'],
             'reason' => ['nullable', 'string', 'max:500'],
+            'payment_method' => ['nullable', 'string', 'in:cash,card_courier,card_online'],
         ]);
+
+        $user = $request->user();
+        $authorId = $user instanceof EmployeeModel ? (int) $user->id : null;
 
         try {
             $result = $useCase->execute(new SettleStopDto(
@@ -184,6 +188,10 @@ final class DeliveryController extends Controller
                 orderId: $orderId,
                 outcome: $validated['outcome'],
                 reason: $validated['reason'] ?? null,
+                paymentMethod: isset($validated['payment_method'])
+                    ? (string) $validated['payment_method']
+                    : null,
+                authorEmployeeId: $authorId,
             ));
         } catch (InvalidArgumentException $exception) {
             return response()->json(['message' => $exception->getMessage()], 422);

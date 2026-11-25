@@ -1,15 +1,16 @@
-import CourierLayout from "./layouts/CourierLayout.vue";
+import RoleOutlet from "../../shell/layouts/RoleOutlet.vue";
 
 /** @type {import('../../shell/roles/contract.js').RoleModule} */
 const module = {
     role: "courier",
     home: "courier-deliveries",
-    nav: [],
-    layout: CourierLayout,
+    nav: [
+        { label: "Листы", routeName: "courier-deliveries", icon: "logistics", order: 0 },
+    ],
     routes: [
         {
             path: "/courier",
-            component: CourierLayout,
+            component: RoleOutlet,
             meta: { role: "courier" },
             children: [
                 {

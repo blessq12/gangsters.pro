@@ -48,6 +48,7 @@ final class EloquentDeliveryOrderStopSnapshotPort implements DeliveryOrderStopSn
             'number' => $id > 0 ? OrderNumber::format($id, $order->createdAt()) : null,
             'status' => $order->status()->value,
             'method' => $delivery->type()->value,
+            'payment_method' => $order->paymentMethod(),
             'address' => $address === null ? null : [
                 'street' => $address->street(),
                 'house' => $address->house(),

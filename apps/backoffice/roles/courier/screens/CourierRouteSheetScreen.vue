@@ -10,19 +10,28 @@ import {
 import { useApi } from "../../../shell/composables/useApi.js";
 import { useToast } from "../../../shell/composables/useToast.js";
 import { useAuthStore } from "../../../shell/store/authStore.js";
+import OrderNotesDropdown from "../../../shell/components/order/OrderNotesDropdown.vue";
 import RouteOrdersMap from "../../../shell/components/order/RouteOrdersMap.vue";
 import UiBadge from "../../../shell/components/ui/UiBadge.vue";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
+import UiCard from "../../../shell/components/ui/UiCard.vue";
 import UiFormField from "../../../shell/components/ui/UiFormField.vue";
 import UiModal from "../../../shell/components/ui/UiModal.vue";
 import {
     formatAddress,
+    paymentMethodLabel,
     sheetStatusLabel,
     sheetStatusVariant,
     stopIsOpen,
     stopOutcomeLabel,
     stopOutcomeVariant,
 } from "../../../shell/domain/orderStage.js";
+
+const PAYMENT_OPTIONS = [
+    { value: "cash", label: "Наличные" },
+    { value: "card_courier", label: "Карта курьеру" },
+    { value: "card_online", label: "Карта онлайн" },
+];
 
 const route = useRoute();
 const router = useRouter();
@@ -36,6 +45,9 @@ const sheet = ref(/** @type {Record<string, unknown>|null} */ (null));
 const writeOffOpen = ref(false);
 const writeOffOrderId = ref(/** @type {number|null} */ (null));
 const writeOffReason = ref("");
+const deliverOpen = ref(false);
+const deliverOrderId = ref(/** @type {number|null} */ (null));
+const deliverPaymentMethod = ref("cash");
 const mapShell = ref(/** @type {HTMLElement|null} */ (null));
 const mapRef = ref(/** @type {{ refreshViewport?: () => void }|null} */ (null));
 const mapFullscreen = ref(false);
@@ -99,13 +111,38 @@ function goBack() {
     router.push({ name: "courier-deliveries" });
 }
 
-async function onDelivered(orderId) {
-    if (!sheetId.value) {
+/**
+ * @param {number|string} orderId
+ */
+function askDelivered(orderId) {
+    const stop = (Array.isArray(sheet.value?.stops) ? sheet.value.stops : [])
+        .find((row) => Number(row?.order_id) === Number(orderId));
+    const current = String(
+        stop?.order?.payment_method
+        ?? stop?.order?.payment?.method
+        ?? "cash",
+    );
+    deliverOrderId.value = Number(orderId);
+    deliverPaymentMethod.value = PAYMENT_OPTIONS.some((row) => row.value === current)
+        ? current
+        : "cash";
+    deliverOpen.value = true;
+}
+
+async function confirmDelivered() {
+    if (!sheetId.value || !deliverOrderId.value) {
         return;
     }
+    if (!deliverPaymentMethod.value) {
+        toast.error("Выбери способ оплаты");
+        return;
+    }
+    const orderId = deliverOrderId.value;
+    deliverOpen.value = false;
     try {
         sheet.value = await actionApi.run(() => settleStop(sheetId.value, orderId, {
             outcome: "delivered",
+            payment_method: deliverPaymentMethod.value,
         }));
         toast.success("Доставлен");
     } catch (err) {
@@ -222,22 +259,20 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <div class="mx-auto w-full max-w-lg space-y-4 px-4 py-4">
-        <div class="sticky top-0 z-10 -mx-4 border-b border-bo-border bg-bo-canvas/95 px-4 py-3 backdrop-blur">
-            <button
-                type="button"
-                class="inline-flex h-11 items-center text-base text-bo-muted active:text-bo-fg"
-                @click="goBack"
-            >
-                ← К листам
-            </button>
-            <div class="mt-1 flex items-center justify-between gap-3">
-                <h1 class="text-xl font-bold text-bo-fg">
+    <div class="mx-auto w-full max-w-7xl space-y-6 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex flex-wrap items-center gap-3">
+                <UiButton
+                    class="!bg-white/10 !text-bo-fg"
+                    @click="goBack"
+                >
+                    К листам
+                </UiButton>
+                <h1 class="text-lg font-semibold tracking-tight text-bo-fg">
                     Лист #{{ sheetId || "—" }}
                 </h1>
                 <UiBadge
                     v-if="sheet"
-                    class="!px-3 !py-1 !text-sm"
                     :variant="sheetStatusVariant(sheet.status)"
                     :text="sheetStatusLabel(sheet.status)"
                 />
@@ -246,98 +281,145 @@ onBeforeUnmount(() => {
 
         <p
             v-if="detailApi.loading && !sheet"
-            class="text-bo-muted"
+            class="text-sm text-bo-muted"
         >
             Загрузка…
         </p>
 
         <template v-else-if="sheet">
-            <div
-                ref="mapShell"
-                class="relative overflow-hidden border border-bo-border bg-bo-field"
-                :class="mapFullscreen ? 'h-full w-full' : 'h-[42vh] min-h-[14rem]'"
-            >
-                <RouteOrdersMap
-                    ref="mapRef"
-                    :orders="mapOrders"
-                    :selected-ids="[]"
-                    :default-city="branchCity"
-                />
-                <div class="absolute bottom-3 right-3 z-20 flex gap-2">
-                    <UiButton
-                        v-if="fullscreenSupported"
-                        class="!h-12 !bg-bo-surface/95 !px-4 !text-bo-fg shadow-bo"
-                        @click="toggleMapFullscreen"
+            <div class="grid gap-4 lg:grid-cols-5">
+                <div class="lg:col-span-2">
+                    <div
+                        ref="mapShell"
+                        class="relative overflow-hidden border border-bo-border bg-bo-field"
+                        :class="mapFullscreen ? 'h-full w-full' : 'h-[22rem]'"
                     >
-                        {{ mapFullscreen ? "Свернуть" : "На весь экран" }}
-                    </UiButton>
+                        <RouteOrdersMap
+                            ref="mapRef"
+                            :orders="mapOrders"
+                            :selected-ids="[]"
+                            :default-city="branchCity"
+                        />
+                        <div class="absolute bottom-3 right-3 z-20 flex gap-2">
+                            <UiButton
+                                v-if="fullscreenSupported"
+                                class="!bg-bo-surface/95 !text-bo-fg shadow-bo"
+                                @click="toggleMapFullscreen"
+                            >
+                                {{ mapFullscreen ? "Свернуть" : "На весь экран" }}
+                            </UiButton>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-3 lg:col-span-3">
+                    <h2 class="text-sm font-medium text-bo-muted">
+                        Остановки
+                    </h2>
+                    <UiCard
+                        v-for="stop in (sheet.stops ?? [])"
+                        :key="`${stop.order_id}-${stop.position}`"
+                        :title="`${stop.position}. ${stop.order?.number || `Заказ #${stop.order_id}`}`"
+                    >
+                        <template #actions>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <OrderNotesDropdown :order-id="stop.order_id" />
+                                <UiBadge
+                                    :variant="stopOutcomeVariant(stop.outcome)"
+                                    :text="stopOutcomeLabel(stop.outcome)"
+                                />
+                            </div>
+                        </template>
+
+                        <div class="space-y-2 text-sm">
+                            <p class="text-bo-fg">
+                                {{ formatAddress(stop.order?.address) || "Адрес не указан" }}
+                            </p>
+                            <p class="text-bo-muted">
+                                {{ stop.order?.client?.name || "—" }}
+                                <template v-if="stop.order?.client?.phone">
+                                    · {{ stop.order.client.phone }}
+                                </template>
+                            </p>
+                            <p class="text-bo-muted">
+                                Оплата: {{ paymentMethodLabel(stop.order?.payment_method ?? stop.order?.payment?.method) }}
+                            </p>
+                            <p
+                                v-if="stop.reason"
+                                class="text-bo-muted"
+                            >
+                                Причина: {{ stop.reason }}
+                            </p>
+
+                            <div class="flex flex-wrap gap-2 pt-2">
+                                <a
+                                    v-if="stop.order?.client?.phone && clientPhoneHref(stop.order.client.phone)"
+                                    :href="clientPhoneHref(stop.order.client.phone)"
+                                    class="inline-flex h-11 items-center border border-bo-border bg-white/10 px-4 text-sm font-medium text-bo-fg hover:bg-white/[0.08]"
+                                >
+                                    Позвонить
+                                </a>
+                                <template v-if="sheet.status === 'in_delivery' && stopIsOpen(stop.outcome)">
+                                    <UiButton
+                                        class="!bg-emerald-600"
+                                        :disabled="actionApi.loading"
+                                        @click="askDelivered(stop.order_id)"
+                                    >
+                                        Доставлен
+                                    </UiButton>
+                                    <UiButton
+                                        class="!bg-white/10 !text-bo-fg"
+                                        :disabled="actionApi.loading"
+                                        @click="askWriteOff(stop.order_id)"
+                                    >
+                                        Списать
+                                    </UiButton>
+                                </template>
+                            </div>
+                        </div>
+                    </UiCard>
                 </div>
             </div>
-
-            <div class="space-y-3">
-                <h2 class="text-lg font-semibold text-bo-fg">
-                    Остановки
-                </h2>
-                <article
-                    v-for="stop in (sheet.stops ?? [])"
-                    :key="`${stop.order_id}-${stop.position}`"
-                    class="space-y-3 border border-bo-border bg-bo-elevated p-4"
-                >
-                    <div class="flex items-start justify-between gap-2">
-                        <p class="text-lg font-semibold text-bo-fg">
-                            {{ stop.position }}. {{ stop.order?.number || `Заказ #${stop.order_id}` }}
-                        </p>
-                        <UiBadge
-                            :variant="stopOutcomeVariant(stop.outcome)"
-                            :text="stopOutcomeLabel(stop.outcome)"
-                        />
-                    </div>
-
-                    <p class="text-base leading-snug text-bo-fg">
-                        {{ formatAddress(stop.order?.address) || "Адрес не указан" }}
-                    </p>
-
-                    <p class="text-sm text-bo-muted">
-                        {{ stop.order?.client?.name || "—" }}
-                    </p>
-
-                    <a
-                        v-if="stop.order?.client?.phone && clientPhoneHref(stop.order.client.phone)"
-                        :href="clientPhoneHref(stop.order.client.phone)"
-                        class="inline-flex h-12 w-full items-center justify-center border border-bo-border bg-white/[0.04] text-base font-medium text-bo-fg active:bg-white/[0.08]"
-                    >
-                        Позвонить · {{ stop.order.client.phone }}
-                    </a>
-
-                    <p
-                        v-if="stop.reason"
-                        class="text-sm text-bo-muted"
-                    >
-                        Причина: {{ stop.reason }}
-                    </p>
-
-                    <div
-                        v-if="sheet.status === 'in_delivery' && stopIsOpen(stop.outcome)"
-                        class="flex flex-col gap-2"
-                    >
-                        <UiButton
-                            class="!h-14 !w-full !bg-emerald-600 !text-lg !font-bold"
-                            :disabled="actionApi.loading"
-                            @click="onDelivered(stop.order_id)"
-                        >
-                            Доставлен
-                        </UiButton>
-                        <UiButton
-                            class="!h-14 !w-full !bg-white/10 !text-lg !font-bold !text-bo-fg"
-                            :disabled="actionApi.loading"
-                            @click="askWriteOff(stop.order_id)"
-                        >
-                            Списать
-                        </UiButton>
-                    </div>
-                </article>
-            </div>
         </template>
+
+        <UiModal
+            :open="deliverOpen"
+            title="Способ оплаты"
+            @close="deliverOpen = false"
+        >
+            <UiFormField
+                label="Факт оплаты"
+                required
+            >
+                <select
+                    v-model="deliverPaymentMethod"
+                    class="mt-1 h-11 w-full border border-bo-border bg-bo-field px-4 text-sm focus:border-bo-accent focus:outline-none"
+                >
+                    <option
+                        v-for="option in PAYMENT_OPTIONS"
+                        :key="option.value"
+                        :value="option.value"
+                    >
+                        {{ option.label }}
+                    </option>
+                </select>
+            </UiFormField>
+            <template #footer>
+                <UiButton
+                    class="!bg-white/10 !text-bo-fg"
+                    @click="deliverOpen = false"
+                >
+                    Закрыть
+                </UiButton>
+                <UiButton
+                    class="!bg-emerald-600"
+                    :disabled="actionApi.loading"
+                    @click="confirmDelivered"
+                >
+                    Доставлен
+                </UiButton>
+            </template>
+        </UiModal>
 
         <UiModal
             :open="writeOffOpen"
@@ -351,19 +433,18 @@ onBeforeUnmount(() => {
                 <textarea
                     v-model="writeOffReason"
                     rows="4"
-                    class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-3 text-base focus:border-bo-accent focus:outline-none"
+                    class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-3 text-sm focus:border-bo-accent focus:outline-none"
                     placeholder="Почему заказ не доставлен"
                 />
             </UiFormField>
             <template #footer>
                 <UiButton
-                    class="!h-12 !bg-white/10 !text-bo-fg"
+                    class="!bg-white/10 !text-bo-fg"
                     @click="writeOffOpen = false"
                 >
                     Закрыть
                 </UiButton>
                 <UiButton
-                    class="!h-12"
                     :disabled="actionApi.loading"
                     @click="confirmWriteOff"
                 >

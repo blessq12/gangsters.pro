@@ -14,6 +14,7 @@ use App\Application\Warehouse\Query\ListIngredientsUseCase;
 use App\Application\Warehouse\Query\ListStockLevelsUseCase;
 use App\Application\Warehouse\Query\ListWriteOffsUseCase;
 use App\Http\Controllers\Controller;
+use App\Infrastructure\Staff\Model\EmployeeModel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use InvalidArgumentException;
@@ -49,6 +50,10 @@ final class WarehouseController extends Controller
 
     public function branchStock(Request $request, int $branchId, ListStockLevelsUseCase $useCase): JsonResponse
     {
+        if ($denied = $this->denyIfKitchenForeignBranch($request, $branchId)) {
+            return $denied;
+        }
+
         return response()->json($useCase->execute(
             branchId: $branchId,
             offset: (int) $request->query('offset', 0),
@@ -57,10 +62,15 @@ final class WarehouseController extends Controller
     }
 
     public function showBranchIngredient(
+        Request $request,
         int $branchId,
         int $id,
         GetBranchIngredientStockUseCase $useCase,
     ): JsonResponse {
+        if ($denied = $this->denyIfKitchenForeignBranch($request, $branchId)) {
+            return $denied;
+        }
+
         try {
             return response()->json($useCase->execute($branchId, $id));
         } catch (InvalidArgumentException $exception) {
@@ -93,6 +103,10 @@ final class WarehouseController extends Controller
 
     public function branchWriteOffs(Request $request, int $branchId, ListWriteOffsUseCase $useCase): JsonResponse
     {
+        if ($denied = $this->denyIfKitchenForeignBranch($request, $branchId)) {
+            return $denied;
+        }
+
         return response()->json($useCase->execute(
             branchId: $branchId,
             offset: (int) $request->query('offset', 0),
@@ -127,6 +141,32 @@ final class WarehouseController extends Controller
         }
 
         return response()->json($result, 201);
+    }
+
+    /**
+     * Кухня читает только склад своего филиала смены.
+     */
+    private function denyIfKitchenForeignBranch(Request $request, int $branchId): ?JsonResponse
+    {
+        if (! config('backoffice.auth_required')) {
+            return null;
+        }
+
+        $user = $request->user('sanctum');
+        if (! $user instanceof EmployeeModel) {
+            return null;
+        }
+
+        if ((string) $user->role !== 'kitchen') {
+            return null;
+        }
+
+        $ownBranchId = (int) ($user->branch_id ?? 0);
+        if ($ownBranchId <= 0 || $ownBranchId !== $branchId) {
+            return response()->json(['message' => 'Недостаточно прав.'], 403);
+        }
+
+        return null;
     }
 
     private function saveIngredient(

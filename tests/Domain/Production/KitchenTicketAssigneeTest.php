@@ -12,7 +12,7 @@ final class KitchenTicketAssigneeTest extends TestCase
     public function testСтартЗакрепляетПовара(): void
     {
         $ticket = KitchenTicket::queue(10, 2, [
-            new KitchenTicketLine(1, 'Ролл', 1),
+            KitchenTicketLine::snapshot(1, 'Ролл', 1),
         ]);
         $ticket->assignId(5);
         $ticket->start(77, 2);
@@ -21,28 +21,30 @@ final class KitchenTicketAssigneeTest extends TestCase
         $this->assertSame(77, $ticket->assigneeEmployeeId());
     }
 
-    public function testЧужойНеМожетЗавершить(): void
+    public function testЧужойПоварМожетЗакрытьЛинииСвободныйПул(): void
     {
-        $ticket = KitchenTicket::queue(10, 2, [
-            new KitchenTicketLine(1, 'Ролл', 1),
-        ]);
+        $line = KitchenTicketLine::snapshot(1, 'Ролл', 1);
+        $line->assignId(101);
+        $ticket = KitchenTicket::queue(10, 2, [$line]);
         $ticket->assignId(5);
         $ticket->start(77, 2);
 
-        $this->expectException(\LogicException::class);
-        $this->expectExceptionMessage('Тикет закреплён за другим поваром.');
-        $ticket->complete(99);
+        $ticket->markLineDone(101, 99, 2);
+
+        $this->assertSame(KitchenTicketStatus::Completed, $ticket->status());
+        $this->assertSame(99, $ticket->lineById(101)->doneBy());
     }
 
-    public function testAssigneeЗавершает(): void
+    public function testCompleteПомещаетОставшиесяЛинииВDone(): void
     {
-        $ticket = KitchenTicket::queue(10, 2, [
-            new KitchenTicketLine(1, 'Ролл', 1),
-        ]);
+        $line = KitchenTicketLine::snapshot(1, 'Ролл', 1);
+        $line->assignId(101);
+        $ticket = KitchenTicket::queue(10, 2, [$line]);
         $ticket->assignId(5);
         $ticket->start(77, 2);
         $ticket->complete(77);
 
         $this->assertSame(KitchenTicketStatus::Completed, $ticket->status());
+        $this->assertSame(77, $ticket->lineById(101)->doneBy());
     }
 }

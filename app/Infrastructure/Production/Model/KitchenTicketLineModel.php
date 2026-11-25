@@ -20,6 +20,11 @@ final class KitchenTicketLineModel extends Model
         'name',
         'quantity',
         'position',
+        'status',
+        'done_by',
+        'done_at',
+        'packed_by',
+        'packed_at',
     ];
 
     /**
@@ -30,6 +35,10 @@ final class KitchenTicketLineModel extends Model
         'product_id' => 'integer',
         'quantity' => 'integer',
         'position' => 'integer',
+        'done_by' => 'integer',
+        'packed_by' => 'integer',
+        'done_at' => 'datetime',
+        'packed_at' => 'datetime',
     ];
 
     public function ticket(): BelongsTo

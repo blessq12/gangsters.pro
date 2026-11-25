@@ -37,7 +37,7 @@ final class EloquentKitchenTicketRepository implements KitchenTicketRepository
             $payload = $this->mapper->toPersistence($ticket);
             $row = KitchenTicketModel::query()->create($payload['ticket']);
             $ticket->assignId((int) $row->id);
-            $this->replaceLines($ticket->id(), $payload['lines']);
+            $this->syncLines($ticket);
         });
     }
 
@@ -52,7 +52,7 @@ final class EloquentKitchenTicketRepository implements KitchenTicketRepository
             KitchenTicketModel::query()
                 ->whereKey($ticket->id())
                 ->update($payload['ticket']);
-            $this->replaceLines($ticket->id(), $payload['lines']);
+            $this->syncLines($ticket);
         });
     }
 
@@ -177,18 +177,44 @@ final class EloquentKitchenTicketRepository implements KitchenTicketRepository
             ->where('status', KitchenTicketStatus::Queued->value);
     }
 
-    /**
-     * @param  list<array<string, mixed>>  $lines
-     */
-    private function replaceLines(int $ticketId, array $lines): void
+    private function syncLines(KitchenTicket $ticket): void
     {
-        KitchenTicketLineModel::query()->where('ticket_id', $ticketId)->delete();
+        $ticketId = $ticket->id();
+        $keepIds = [];
 
-        foreach ($lines as $line) {
-            KitchenTicketLineModel::query()->create([
-                ...$line,
+        foreach (array_values($ticket->lines()) as $index => $line) {
+            $payload = [
                 'ticket_id' => $ticketId,
-            ]);
+                'product_id' => $line->productId(),
+                'name' => $line->name(),
+                'quantity' => $line->quantity(),
+                'position' => $index,
+                'status' => $line->status()->value,
+                'done_by' => $line->doneBy(),
+                'done_at' => $line->doneAt()?->format('Y-m-d H:i:s'),
+                'packed_by' => $line->packedBy(),
+                'packed_at' => $line->packedAt()?->format('Y-m-d H:i:s'),
+            ];
+
+            if ($line->hasId()) {
+                $id = $line->id();
+                KitchenTicketLineModel::query()
+                    ->whereKey($id)
+                    ->where('ticket_id', $ticketId)
+                    ->update($payload);
+                $keepIds[] = $id;
+                continue;
+            }
+
+            $row = KitchenTicketLineModel::query()->create($payload);
+            $line->assignId((int) $row->id);
+            $keepIds[] = (int) $row->id;
         }
+
+        $deleteQuery = KitchenTicketLineModel::query()->where('ticket_id', $ticketId);
+        if ($keepIds !== []) {
+            $deleteQuery->whereNotIn('id', $keepIds);
+        }
+        $deleteQuery->delete();
     }
 }

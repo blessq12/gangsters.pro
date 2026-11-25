@@ -26,10 +26,14 @@ final class ListQueueUseCase
         int $employeeId,
         int $offset = 0,
         int $limit = PageParams::DEFAULT_LIMIT,
+        string $scope = 'queued',
     ): array {
         ['offset' => $offset, 'limit' => $limit] = PageParams::normalize($offset, $limit);
+        $activeScope = $scope === 'active';
 
-        $poolTickets = $this->tickets->listQueuedByBranchPage($branchId, $offset, $limit);
+        $poolTickets = $activeScope
+            ? $this->tickets->listActiveByBranchPage($branchId, $offset, $limit)
+            : $this->tickets->listQueuedByBranchPage($branchId, $offset, $limit);
         $mineTickets = $employeeId > 0
             ? $this->tickets->listMineStartedByBranch($branchId, $employeeId)
             : [];
@@ -56,11 +60,14 @@ final class ListQueueUseCase
         return [
             'pool' => PageParams::wrap(
                 $poolItems,
-                $this->tickets->countQueuedByBranch($branchId),
+                $activeScope
+                    ? $this->tickets->countActiveByBranch($branchId)
+                    : $this->tickets->countQueuedByBranch($branchId),
                 $offset,
                 $limit,
             ),
             'mine' => $mineItems,
+            'scope' => $activeScope ? 'active' : 'queued',
         ];
     }
 }

@@ -7,17 +7,21 @@ use App\Domain\Core\Delivery\Event\RouteSheetTaken;
 use App\Domain\Core\Delivery\Event\RouteStopSettled;
 use App\Domain\Core\Order\Event\OrderCancelled;
 use App\Domain\Core\Order\Event\OrderConfirmed;
+use App\Domain\Core\Order\Event\OrderLinesChanged;
 use App\Domain\Core\Order\Event\OrderPickedUp;
 use App\Domain\Core\Order\Event\OrderPlaced;
 use App\Domain\Core\Production\Event\KitchenTicketCompleted;
+use App\Domain\Core\Production\Event\KitchenTicketLinePacked;
 use App\Domain\Core\Production\Event\KitchenTicketStarted;
 use App\Domain\Supporting\Payment\Event\PaymentInitiated;
 use App\Infrastructure\Delivery\Listener\CancelRouteStopOnOrderCancelled;
 use App\Infrastructure\Order\Listener\AttachPaymentOnPaymentInitiated;
 use App\Infrastructure\Order\Listener\MarkOrderAssignedToRouteOnOrderAddedToRoute;
 use App\Infrastructure\Order\Listener\MarkOrderPreparingOnKitchenTicketStarted;
+use App\Infrastructure\Order\Listener\MarkOrderPackedOnKitchenTicketFullyPacked;
 use App\Infrastructure\Order\Listener\MarkOrderReadyOnKitchenTicketCompleted;
 use App\Infrastructure\Order\Listener\MarkOrdersInTransitOnRouteSheetTaken;
+use App\Infrastructure\Order\Listener\ResyncKitchenTicketOnOrderLinesChanged;
 use App\Infrastructure\Order\Listener\SettleOrderOnRouteStopSettled;
 use App\Infrastructure\Payment\Listener\ClosePaymentOnOrderCancelled;
 use App\Infrastructure\Payment\Listener\InitiatePaymentOnOrderConfirmed;
@@ -43,6 +47,10 @@ return [
             InitiatePaymentOnOrderConfirmed::class,
         ],
 
+        OrderLinesChanged::class => [
+            ResyncKitchenTicketOnOrderLinesChanged::class,
+        ],
+
         OrderPickedUp::class => [
             MarkPaymentPaidOnOrderPickedUp::class,
         ],
@@ -54,6 +62,10 @@ return [
         KitchenTicketCompleted::class => [
             MarkOrderReadyOnKitchenTicketCompleted::class,
             WriteOffStockOnKitchenTicketCompleted::class,
+        ],
+
+        KitchenTicketLinePacked::class => [
+            MarkOrderPackedOnKitchenTicketFullyPacked::class,
         ],
 
         RouteSheetCreated::class => [],

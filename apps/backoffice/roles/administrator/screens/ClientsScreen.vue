@@ -1,20 +1,18 @@
 <script setup>
 import { onMounted, ref, watch } from "vue";
-import { getClient, listClients } from "../../../api/clients.js";
+import { useRouter } from "vue-router";
+import { listClients } from "../../../api/clients.js";
 import { useApi } from "../../../shell/composables/useApi.js";
 import { usePagedList } from "../../../shell/composables/usePagedList.js";
 import { useToast } from "../../../shell/composables/useToast.js";
-import UiBadge from "../../../shell/components/ui/UiBadge.vue";
-import UiButton from "../../../shell/components/ui/UiButton.vue";
 import UiCard from "../../../shell/components/ui/UiCard.vue";
 import UiInput from "../../../shell/components/ui/UiInput.vue";
-import UiModal from "../../../shell/components/ui/UiModal.vue";
 import UiPagination from "../../../shell/components/ui/UiPagination.vue";
 import UiTable from "../../../shell/components/ui/UiTable.vue";
 
+const router = useRouter();
 const toast = useToast();
 const listApi = useApi();
-const detailApi = useApi();
 const {
     page,
     perPage,
@@ -27,23 +25,14 @@ const {
 
 const q = ref("");
 
-const detailOpen = ref(false);
-const detailClient = ref(null);
-const detailOrders = ref([]);
-
 const columns = [
-    { key: "id", label: "ID", width: "64px" },
-    { key: "name", label: "Имя" },
+    { key: "name", label: "Клиент" },
     { key: "phone", label: "Телефон", width: "140px" },
-    { key: "email", label: "Email" },
+    { key: "email", label: "Email", truncate: true },
+    { key: "default_address", label: "Адрес", truncate: true },
+    { key: "orders_count", label: "Заказов", width: "88px", align: "right" },
+    { key: "last_order_at", label: "Последний заказ", width: "170px" },
     { key: "created_at", label: "Создан", width: "160px" },
-];
-
-const orderColumns = [
-    { key: "number", label: "Заказ", width: "140px" },
-    { key: "status", label: "Статус", width: "120px" },
-    { key: "total", label: "Сумма", width: "90px", align: "right" },
-    { key: "created_at", label: "Создан" },
 ];
 
 function formatDate(value) {
@@ -65,7 +54,13 @@ async function load() {
             q: q.value.trim() || undefined,
         }));
         applyPayload(payload, (client) => ({
-            ...client,
+            id: client.id,
+            name: client.name || "—",
+            phone: client.phone || "—",
+            email: client.email || "—",
+            default_address: client.default_address || "—",
+            orders_count: Number(client.orders_count ?? 0),
+            last_order_at: formatDate(client.last_order_at),
             created_at: formatDate(client.created_at),
             _raw: client,
         }));
@@ -74,24 +69,11 @@ async function load() {
     }
 }
 
-async function openDetail(row) {
-    detailClient.value = null;
-    detailOrders.value = [];
-    detailOpen.value = true;
-    try {
-        const payload = await detailApi.run(() => getClient(row.id));
-        detailClient.value = payload?.client ?? null;
-        detailOrders.value = (payload?.orders ?? []).map((order) => ({
-            id: order.id,
-            number: order.number || `ORD-${String(order.id).padStart(4, "0")}`,
-            status: order.status,
-            total: `${order.total ?? 0} ₽`,
-            created_at: formatDate(order.created_at),
-        }));
-    } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Не удалось загрузить клиента");
-        detailOpen.value = false;
-    }
+/**
+ * @param {{ id: number|string }} row
+ */
+function openClient(row) {
+    router.push({ name: "administrator-client", params: { id: String(row.id) } });
 }
 
 let searchTimer = null;
@@ -122,7 +104,7 @@ onMounted(load);
                 :rows="rows"
                 :loading="listApi.loading"
                 empty-text="Нет клиентов"
-                @row-click="openDetail"
+                @row-click="openClient"
             />
 
             <div class="mt-6">
@@ -134,43 +116,5 @@ onMounted(load);
                 />
             </div>
         </UiCard>
-
-        <UiModal
-            :open="detailOpen"
-            title="Клиент"
-            @close="detailOpen = false"
-        >
-            <div v-if="detailApi.loading" class="text-sm text-bo-muted">
-                Загрузка…
-            </div>
-            <div v-else-if="detailClient" class="space-y-4 text-sm">
-                <div class="space-y-1">
-                    <p><span class="text-bo-muted">ID:</span> {{ detailClient.id }}</p>
-                    <p><span class="text-bo-muted">Имя:</span> {{ detailClient.name }}</p>
-                    <p><span class="text-bo-muted">Телефон:</span> {{ detailClient.phone }}</p>
-                    <p><span class="text-bo-muted">Email:</span> {{ detailClient.email ?? "—" }}</p>
-                    <p>
-                        <span class="text-bo-muted">Создан:</span>
-                        {{ formatDate(detailClient.created_at) }}
-                    </p>
-                </div>
-
-                <div>
-                    <p class="mb-2 font-medium">История заказов</p>
-                    <UiTable
-                        :columns="orderColumns"
-                        :rows="detailOrders"
-                        empty-text="Нет заказов"
-                    >
-                        <template #cell-status="{ value }">
-                            <UiBadge variant="neutral" :text="String(value)" />
-                        </template>
-                    </UiTable>
-                </div>
-            </div>
-            <template #footer>
-                <UiButton @click="detailOpen = false">Закрыть</UiButton>
-            </template>
-        </UiModal>
     </div>
 </template>

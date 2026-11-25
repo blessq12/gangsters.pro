@@ -82,24 +82,38 @@ final class InMemoryRouteSheetRepository implements RouteSheetRepository
         ));
     }
 
-    public function listVisibleToCourierPage(int $courierId, int $offset, int $limit): array
-    {
-        return array_slice($this->visibleToCourier($courierId), $offset, $limit);
+    public function listVisibleToCourierPage(
+        int $courierId,
+        int $offset,
+        int $limit,
+        ?string $status = null,
+    ): array {
+        return array_slice($this->visibleToCourier($courierId, $status), $offset, $limit);
     }
 
-    public function countVisibleToCourier(int $courierId): int
+    public function countVisibleToCourier(int $courierId, ?string $status = null): int
     {
-        return count($this->visibleToCourier($courierId));
+        return count($this->visibleToCourier($courierId, $status));
     }
 
     /**
      * @return list<RouteSheet>
      */
-    private function visibleToCourier(int $courierId): array
+    private function visibleToCourier(int $courierId, ?string $status = null): array
     {
+        $allowed = $status !== null && $status !== ''
+            ? [$status]
+            : ['released', 'in_delivery', 'completed'];
+
         return array_values(array_filter(
-            $this->listActive(),
-            static fn (RouteSheet $sheet): bool => $sheet->courierId() === $courierId,
+            array_values($this->sheets),
+            static function (RouteSheet $sheet) use ($courierId, $allowed): bool {
+                if ($sheet->courierId() !== $courierId) {
+                    return false;
+                }
+
+                return in_array($sheet->status(), $allowed, true);
+            },
         ));
     }
 
