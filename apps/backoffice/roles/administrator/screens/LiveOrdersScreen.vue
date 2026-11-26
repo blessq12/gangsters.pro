@@ -1,10 +1,11 @@
 <script setup>
-import { onMounted, ref, watch } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { acceptOrder, completePickup, listOrders } from "../../../api/orders.js";
 import { useApi } from "../../../shell/composables/useApi.js";
 import { usePagedList } from "../../../shell/composables/usePagedList.js";
 import { useToast } from "../../../shell/composables/useToast.js";
+import PeriodRangePicker from "../../../shell/components/PeriodRangePicker.vue";
 import ShellIcon from "../../../shell/components/ShellIcon.vue";
 import UiBadge from "../../../shell/components/ui/UiBadge.vue";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
@@ -16,6 +17,7 @@ import {
     ORDER_STATUSES,
     administratorCommands,
     deliveryMethodLabel,
+    formatPreorderRemaining,
     formatRubles,
     orderNumberOf,
     orderStatusLabel,
@@ -41,6 +43,29 @@ const {
 } = usePagedList();
 
 const statusFilter = ref("");
+const searchOpen = ref(false);
+const searchInput = ref("");
+const q = ref("");
+/** @type {import('vue').Ref<HTMLElement | null>} */
+const searchWrapRef = ref(null);
+const period = reactive({ from: "", to: "" });
+/** @type {import('vue').Ref<Record<string, number>>} */
+const statusCounts = ref({});
+/** Тик для пересчёта «через N» у предзаказов. */
+const nowTick = ref(Date.now());
+/** @type {ReturnType<typeof setInterval> | null} */
+let tickTimer = null;
+/** @type {ReturnType<typeof setTimeout> | null} */
+let searchTimer = null;
+
+/** Чипы статусов: «Все» + полный список этапов. */
+const STATUS_CHIPS = [
+    { value: "", label: "Все" },
+    ...ORDER_STATUSES.map((status) => ({
+        value: status,
+        label: orderStatusLabel(status),
+    })),
+];
 
 function statusFromQuery() {
     const raw = route.query.status;
@@ -56,17 +81,9 @@ const pendingAction = ref(null);
 /** @type {import('vue').Ref<number|string|null>} */
 const pendingOrderId = ref(null);
 
-/** Быстрые фильтры по ключевым этапам жизни заказа. */
-const QUICK_STATUS_FILTERS = [
-    { value: "", label: "Все" },
-    { value: "new", label: "Новый" },
-    { value: "ready", label: "Готов" },
-    { value: "in_transit", label: "В пути" },
-];
-
 const columns = [
     { key: "number", label: "Заказ", width: "132px" },
-    { key: "status", label: "Этап", width: "118px" },
+    { key: "status", label: "Этап", width: "148px" },
     { key: "next", label: "Дальше", truncate: true },
     { key: "client", label: "Клиент", truncate: true },
     { key: "delivery_method", label: "Тип", width: "52px", align: "center" },
@@ -74,6 +91,21 @@ const columns = [
     { key: "total", label: "Сумма", width: "88px", align: "right" },
     { key: "actions", label: "Действия", width: "168px" },
 ];
+
+const allCount = computed(() => {
+    const counts = statusCounts.value;
+    return Object.values(counts).reduce((sum, value) => sum + Number(value || 0), 0);
+});
+
+/**
+ * @param {string} value
+ */
+function chipCount(value) {
+    if (value === "") {
+        return allCount.value;
+    }
+    return Number(statusCounts.value[value] || 0);
+}
 
 function clientLine(order) {
     const name = String(order?.client?.name ?? "").trim();
@@ -99,26 +131,82 @@ function quickActionsFor(row) {
     }).filter((command) => command.id === "confirm" || command.id === "pickup");
 }
 
+/**
+ * @param {Record<string, unknown>} order
+ */
+function mapListRow(order) {
+    const scheduledAt = order.scheduled_at ?? null;
+    const remaining = order.status === "preorder"
+        ? formatPreorderRemaining(scheduledAt, nowTick.value)
+        : "";
+    return {
+        id: order.id,
+        number: orderNumberOf(order),
+        status: order.status,
+        scheduled_at: scheduledAt,
+        preorder_remaining: remaining,
+        preorder_overdue: remaining.startsWith("просрочен") || remaining === "слот наступил",
+        next: shortStage(order, nowTick.value),
+        client: clientLine(order),
+        delivery_method: order.delivery?.method ?? "",
+        payment: order.payment?.status ?? "",
+        total: formatRubles(order),
+    };
+}
+
+function pad(n) {
+    return String(n).padStart(2, "0");
+}
+
+function toDateInput(date) {
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+async function toggleSearch() {
+    searchOpen.value = !searchOpen.value;
+    if (searchOpen.value) {
+        await nextTick();
+        const input = searchWrapRef.value?.querySelector("input");
+        input?.focus();
+    }
+}
+
 async function load() {
     try {
         const payload = await listApi.run(() => listOrders({
             offset: offset.value,
             limit: perPage,
             status: statusFilter.value || undefined,
+            from: period.from || undefined,
+            to: period.to || undefined,
+            q: q.value.trim() || undefined,
         }));
-        applyPayload(payload, (order) => ({
-            id: order.id,
-            number: orderNumberOf(order),
-            status: order.status,
-            next: shortStage(order),
-            client: clientLine(order),
-            delivery_method: order.delivery?.method ?? "",
-            payment: order.payment?.status ?? "",
-            total: formatRubles(order),
-        }));
+        const counts = payload?.status_counts;
+        statusCounts.value = counts && typeof counts === "object" ? counts : {};
+        applyPayload(payload, mapListRow);
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось загрузить заказы");
     }
+}
+
+function refreshPreorderLabels() {
+    nowTick.value = Date.now();
+    rows.value = rows.value.map((row) => {
+        if (row.status !== "preorder") {
+            return row;
+        }
+        const remaining = formatPreorderRemaining(row.scheduled_at, nowTick.value);
+        return {
+            ...row,
+            preorder_remaining: remaining,
+            preorder_overdue: remaining.startsWith("просрочен") || remaining === "слот наступил",
+            next: shortStage({
+                status: row.status,
+                scheduled_at: row.scheduled_at,
+                delivery: { method: row.delivery_method },
+            }, nowTick.value),
+        };
+    });
 }
 
 function openFull(row) {
@@ -176,6 +264,23 @@ watch(statusFilter, () => {
 });
 watch(page, load);
 watch(
+    () => [period.from, period.to],
+    () => {
+        resetPage();
+        load();
+    },
+);
+watch(searchInput, () => {
+    if (searchTimer) {
+        clearTimeout(searchTimer);
+    }
+    searchTimer = setTimeout(() => {
+        q.value = searchInput.value.trim();
+        resetPage();
+        load();
+    }, 300);
+});
+watch(
     () => route.query.status,
     () => {
         const next = statusFromQuery();
@@ -185,12 +290,25 @@ watch(
     },
 );
 onMounted(() => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    period.from = toDateInput(today);
+    period.to = toDateInput(today);
     const next = statusFromQuery();
     if (statusFilter.value !== next) {
         statusFilter.value = next;
-        return;
     }
-    load();
+    tickTimer = setInterval(refreshPreorderLabels, 30000);
+});
+onUnmounted(() => {
+    if (tickTimer) {
+        clearInterval(tickTimer);
+        tickTimer = null;
+    }
+    if (searchTimer) {
+        clearTimeout(searchTimer);
+        searchTimer = null;
+    }
 });
 </script>
 
@@ -200,46 +318,61 @@ onMounted(() => {
             <template #actions>
                 <UiButton @click="openCreate">+ Заказ</UiButton>
             </template>
-            <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end">
-                <div class="min-w-0 flex-1">
-                    <p class="mb-1 text-sm text-bo-muted">
-                        Быстрый фильтр
-                    </p>
-                    <div class="flex flex-wrap gap-2">
-                        <button
-                            v-for="item in QUICK_STATUS_FILTERS"
-                            :key="item.value || 'all'"
-                            type="button"
-                            class="h-11 px-4 text-sm font-medium transition-colors duration-150"
-                            :class="statusFilter === item.value
-                                ? 'bg-bo-accent text-white'
-                                : 'bg-white/[0.04] text-bo-muted hover:bg-white/[0.08] hover:text-bo-fg'"
-                            @click="statusFilter = item.value"
-                        >
-                            {{ item.label }}
-                        </button>
-                    </div>
-                </div>
-                <div class="w-full max-w-xs sm:shrink-0">
-                    <label
-                        class="mb-1 block text-sm text-bo-muted"
-                        for="order-stage-filter"
-                    >Этап</label>
-                    <select
-                        id="order-stage-filter"
-                        v-model="statusFilter"
-                        class="w-full border border-bo-border bg-bo-field px-4 py-2.5 text-sm transition-colors hover:border-bo-border-strong focus:border-bo-accent focus:outline-none"
+            <div class="mb-4 flex flex-wrap items-center gap-2">
+                <PeriodRangePicker
+                    v-model:from="period.from"
+                    v-model:to="period.to"
+                />
+                <div class="ml-auto flex items-center gap-1">
+                    <div
+                        ref="searchWrapRef"
+                        class="overflow-hidden transition-[max-width,opacity] duration-200 ease-out"
+                        :class="searchOpen
+                            ? 'max-w-[16rem] opacity-100'
+                            : 'max-w-0 opacity-0'"
                     >
-                        <option value="">Все</option>
-                        <option
-                            v-for="status in ORDER_STATUSES"
-                            :key="status"
-                            :value="status"
+                        <input
+                            v-model="searchInput"
+                            type="text"
+                            class="h-11 min-w-[14rem] border border-bo-border bg-bo-field px-4 text-sm text-bo-fg transition-colors placeholder:text-bo-muted/60 hover:border-bo-border-strong focus:border-bo-accent focus:outline-none"
+                            placeholder="Номер заказа (ORD-…)"
                         >
-                            {{ orderStatusLabel(status) }}
-                        </option>
-                    </select>
+                    </div>
+                    <button
+                        type="button"
+                        class="inline-flex h-11 w-11 shrink-0 items-center justify-center border border-bo-border bg-bo-field text-bo-muted transition-colors hover:border-bo-border-strong hover:text-bo-fg"
+                        :class="searchOpen || q ? 'border-bo-accent text-bo-accent' : ''"
+                        :aria-expanded="searchOpen"
+                        aria-label="Поиск по номеру заказа"
+                        @click="toggleSearch"
+                    >
+                        <ShellIcon
+                            name="search"
+                            class="h-5 w-5"
+                        />
+                    </button>
                 </div>
+            </div>
+
+            <div class="mb-6 flex flex-wrap gap-2">
+                <button
+                    v-for="item in STATUS_CHIPS"
+                    :key="item.value || 'all'"
+                    type="button"
+                    class="inline-flex h-11 items-center gap-2 px-4 text-sm font-medium transition-colors duration-150"
+                    :class="statusFilter === item.value
+                        ? 'bg-bo-accent text-white'
+                        : 'bg-white/[0.04] text-bo-muted hover:bg-white/[0.08] hover:text-bo-fg'"
+                    @click="statusFilter = item.value"
+                >
+                    <span>{{ item.label }}</span>
+                    <span
+                        class="min-w-[1.25rem] rounded-sm px-1.5 text-center text-xs font-semibold tabular-nums"
+                        :class="statusFilter === item.value
+                            ? 'bg-white/20 text-white'
+                            : 'bg-white/10 text-bo-fg'"
+                    >{{ chipCount(item.value) }}</span>
+                </button>
             </div>
 
             <div class="overflow-hidden">
@@ -250,11 +383,18 @@ onMounted(() => {
                     empty-text="Заказов нет"
                     @row-click="openFull"
                 >
-                    <template #cell-status="{ value }">
-                        <UiBadge
-                            :variant="orderStatusVariant(value)"
-                            :text="orderStatusLabel(value)"
-                        />
+                    <template #cell-status="{ row, value }">
+                        <div class="flex min-w-0 flex-col gap-1">
+                            <UiBadge
+                                :variant="orderStatusVariant(value)"
+                                :text="orderStatusLabel(value)"
+                            />
+                            <span
+                                v-if="row.preorder_remaining"
+                                class="text-xs tabular-nums"
+                                :class="row.preorder_overdue ? 'text-red-300' : 'text-bo-muted'"
+                            >{{ row.preorder_remaining }}</span>
+                        </div>
                     </template>
                     <template #cell-delivery_method="{ value }">
                         <span

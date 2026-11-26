@@ -33,7 +33,7 @@ const ORDER_STATUS_LABEL = {
 
 const ORDER_STATUS_VARIANT = {
     new: "neutral",
-    preorder: "neutral",
+    preorder: "warning",
     confirmed: "warning",
     preparing: "warning",
     ready: "warning",
@@ -287,16 +287,67 @@ export function branchLabel(branch) {
 }
 
 /**
+ * Сколько осталось до слота предзаказа (или насколько просрочен).
+ * @param {string|null|undefined} scheduledAt
+ * @param {Date|number} [now]
+ * @returns {string}
+ */
+export function formatPreorderRemaining(scheduledAt, now = new Date()) {
+    const raw = String(scheduledAt || "").trim();
+    if (!raw) {
+        return "";
+    }
+    const slot = new Date(raw);
+    if (Number.isNaN(slot.getTime())) {
+        return "";
+    }
+    const base = now instanceof Date ? now.getTime() : Number(now);
+    if (!Number.isFinite(base)) {
+        return "";
+    }
+    const diffMs = slot.getTime() - base;
+    const overdue = diffMs < 0;
+    const totalMin = Math.floor(Math.abs(diffMs) / 60000);
+    if (totalMin < 1) {
+        return overdue ? "слот наступил" : "менее минуты";
+    }
+    const days = Math.floor(totalMin / (60 * 24));
+    const hours = Math.floor((totalMin % (60 * 24)) / 60);
+    const minutes = totalMin % 60;
+    /** @type {string[]} */
+    const parts = [];
+    if (days > 0) {
+        parts.push(`${days} д`);
+        if (hours > 0) {
+            parts.push(`${hours} ч`);
+        }
+    } else if (hours > 0) {
+        parts.push(`${hours} ч`);
+        if (minutes > 0) {
+            parts.push(`${minutes} мин`);
+        }
+    } else {
+        parts.push(`${minutes} мин`);
+    }
+    const body = parts.join(" ");
+    return overdue ? `просрочен на ${body}` : `через ${body}`;
+}
+
+/**
  * Коротко: какое следующее действие по заказу.
  * @param {Record<string, unknown>|null|undefined} order
+ * @param {Date|number} [now]
  */
-export function shortStage(order) {
+export function shortStage(order, now = new Date()) {
     const status = order?.status;
     const method = order?.delivery?.method;
     switch (status) {
         case "new":
-        case "preorder":
             return "Подтвердить";
+        case "preorder": {
+            const remaining = formatPreorderRemaining(order?.scheduled_at, now);
+            return remaining ? `Подтвердить · ${remaining}` : "Подтвердить";
+        }
         case "confirmed":
             return "Кухня берёт позиции";
         case "preparing":
@@ -337,7 +388,7 @@ export function stageHint(order) {
         case "new":
             return "Новый заказ. Следующее действие администратора — подтвердить и назначить филиал. После этого появятся тикет и платёж.";
         case "preorder":
-            return "Предзаказ. Следующее действие администратора — подтвердить и назначить филиал.";
+            return "Предзаказ со слотом выполнения. Тикет не создаётся, пока администратор не подтвердит заказ вручную.";
         case "confirmed":
             return "Подтверждён. Заказ сразу уходит в «готовится», кухня отмечает позиции.";
         case "preparing":

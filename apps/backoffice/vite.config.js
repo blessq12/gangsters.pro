@@ -65,6 +65,9 @@ export default defineConfig({
             "@backoffice": appRoot,
         },
     },
+    optimizeDeps: {
+        include: ["vuedraggable", "sortablejs"],
+    },
     build: {
         emptyOutDir: true,
         chunkSizeWarningLimit: 600,

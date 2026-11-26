@@ -6,6 +6,8 @@ import { request } from "../http/transport.js";
  *   limit?: number,
  *   status?: string,
  *   q?: string,
+ *   from?: string,
+ *   to?: string,
  *   branch_id?: number|string,
  *   delivery_method?: string,
  * }} [query]
@@ -23,6 +25,12 @@ export function listOrders(query = {}) {
     }
     if (query.q) {
         params.set("q", query.q);
+    }
+    if (query.from) {
+        params.set("from", query.from);
+    }
+    if (query.to) {
+        params.set("to", query.to);
     }
     if (query.branch_id !== undefined && query.branch_id !== null && query.branch_id !== "") {
         params.set("branch_id", String(query.branch_id));

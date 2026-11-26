@@ -114,6 +114,24 @@ final class EloquentOrderRepository implements OrderRepository
         ];
     }
 
+    public function countByStatusMatching(array $filters = []): array
+    {
+        $scope = $filters;
+        unset($scope['status']);
+
+        $counts = [];
+        $rows = $this->filteredQuery($scope)
+            ->selectRaw('status, COUNT(*) as aggregate')
+            ->groupBy('status')
+            ->get();
+
+        foreach ($rows as $row) {
+            $counts[(string) $row->status] = (int) $row->aggregate;
+        }
+
+        return $counts;
+    }
+
     public function listPage(int $offset, int $limit, array $filters = []): array
     {
         /** @var \Illuminate\Database\Eloquent\Collection<int, OrderModel> $rows */
@@ -176,7 +194,9 @@ final class EloquentOrderRepository implements OrderRepository
      *     status?: string|null,
      *     q?: string|null,
      *     branch_id?: int|null,
-     *     delivery_method?: string|null
+     *     delivery_method?: string|null,
+     *     created_from?: DateTimeImmutable|null,
+     *     created_to?: DateTimeImmutable|null
      * }  $filters
      * @return Builder<OrderModel>
      */
@@ -201,6 +221,7 @@ final class EloquentOrderRepository implements OrderRepository
         }
 
         $q = isset($filters['q']) ? trim((string) $filters['q']) : '';
+        $numberSearch = $this->isOrderNumberSearch($q);
         if ($q !== '') {
             $parsedNumber = OrderNumber::tryParse($q);
             $query->where(function (Builder $inner) use ($q, $parsedNumber): void {
@@ -211,6 +232,8 @@ final class EloquentOrderRepository implements OrderRepository
                 }
                 if (ctype_digit($q)) {
                     $inner->orWhere('id', (int) $q);
+
+                    return;
                 }
                 $like = '%'.$q.'%';
                 $inner->orWhere('client_name', 'like', $like)
@@ -218,20 +241,36 @@ final class EloquentOrderRepository implements OrderRepository
             });
         }
 
+        // Operational day: COALESCE(scheduled_at, created_at). Number-search — без интервала.
+        if (! $numberSearch) {
+            $from = $filters['created_from'] ?? null;
+            $to = $filters['created_to'] ?? null;
+            if ($from instanceof DateTimeImmutable) {
+                $query->whereRaw(
+                    'COALESCE(scheduled_at, created_at) >= ?',
+                    [$from->format('Y-m-d H:i:s')],
+                );
+            }
+            if ($to instanceof DateTimeImmutable) {
+                $query->whereRaw(
+                    'COALESCE(scheduled_at, created_at) <= ?',
+                    [$to->format('Y-m-d H:i:s')],
+                );
+            }
+        }
+
         return $query;
     }
 
-    public function listDuePreorders(DateTimeImmutable $at, int $limit = 100): array
+    private function isOrderNumberSearch(string $q): bool
     {
-        return OrderModel::query()
-            ->with('lines')
-            ->where('status', 'preorder')
-            ->whereNotNull('scheduled_at')
-            ->where('scheduled_at', '<=', $at->format('Y-m-d H:i:s'))
-            ->orderBy('scheduled_at')
-            ->limit(max(1, $limit))
-            ->get()
-            ->map(fn (OrderModel $row): Order => $this->mapper->toDomain($row))
-            ->all();
+        if ($q === '') {
+            return false;
+        }
+        if (OrderNumber::tryParse($q) !== null) {
+            return true;
+        }
+
+        return ctype_digit($q);
     }
 }

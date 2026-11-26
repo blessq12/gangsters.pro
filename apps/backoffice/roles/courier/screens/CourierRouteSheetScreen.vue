@@ -10,7 +10,7 @@ import {
 import { useApi } from "../../../shell/composables/useApi.js";
 import { useToast } from "../../../shell/composables/useToast.js";
 import { useAuthStore } from "../../../shell/store/authStore.js";
-import OrderNotesDropdown from "../../../shell/components/order/OrderNotesDropdown.vue";
+import { OrderNotesTrigger } from "../../../shell/modules/orderNotes/index.js";
 import RouteOrdersMap from "../../../shell/components/order/RouteOrdersMap.vue";
 import UiBadge from "../../../shell/components/ui/UiBadge.vue";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
@@ -323,7 +323,12 @@ onBeforeUnmount(() => {
                     >
                         <template #actions>
                             <div class="flex flex-wrap items-center gap-2">
-                                <OrderNotesDropdown :order-id="stop.order_id" />
+                                <OrderNotesTrigger
+                                    :order-id="stop.order_id"
+                                    :order-status="stop.order?.status || ''"
+                                    :initial-notes="stop.order?.notes ?? []"
+                                    :notes-count="Number(stop.order?.notes_count ?? 0)"
+                                />
                                 <UiBadge
                                     :variant="stopOutcomeVariant(stop.outcome)"
                                     :text="stopOutcomeLabel(stop.outcome)"

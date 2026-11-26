@@ -9,8 +9,9 @@ const module = {
         { label: "Заказы", routeName: "administrator-live-orders", icon: "live", order: 1 },
         { label: "Маршрутные листы", routeName: "administrator-logistics", icon: "logistics", order: 2 },
         { label: "Клиенты", routeName: "administrator-clients", icon: "clients", order: 3 },
-        { label: "Тикеты", routeName: "administrator-production", icon: "production", order: 4 },
-        { label: "Каталог", routeName: "administrator-catalog", icon: "catalog", order: 5 },
+        { label: "Финансы", routeName: "administrator-finance", icon: "finance", order: 4 },
+        { label: "Тикеты", routeName: "administrator-production", icon: "production", order: 5 },
+        { label: "Каталог", routeName: "administrator-catalog", icon: "catalog", order: 6 },
     ],
     routes: [
         {
@@ -69,6 +70,12 @@ const module = {
                     path: "clients/:id",
                     name: "administrator-client",
                     component: () => import("./screens/ClientCardScreen.vue"),
+                    meta: { role: "administrator" },
+                },
+                {
+                    path: "finance",
+                    name: "administrator-finance",
+                    component: () => import("./screens/FinanceScreen.vue"),
                     meta: { role: "administrator" },
                 },
                 {

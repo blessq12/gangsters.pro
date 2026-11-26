@@ -4,6 +4,7 @@ namespace App\Infrastructure\Delivery\Adapter;
 
 use App\Domain\Core\Delivery\Routing\Port\DeliveryOrderStopSnapshotPort;
 use App\Domain\Core\Order\Entity\Order;
+use App\Domain\Core\Order\Repository\OrderNoteRepository;
 use App\Domain\Core\Order\Repository\OrderRepository;
 use App\Domain\Core\Order\ValueObject\OrderNumber;
 
@@ -14,19 +15,26 @@ final class EloquentDeliveryOrderStopSnapshotPort implements DeliveryOrderStopSn
 {
     public function __construct(
         private readonly OrderRepository $orders,
+        private readonly OrderNoteRepository $notes,
     ) {}
 
     public function findMany(array $orderIds): array
     {
-        $map = [];
+        $ids = [];
         foreach ($orderIds as $orderId) {
             $id = (int) $orderId;
-            if ($id < 1) {
-                continue;
+            if ($id > 0) {
+                $ids[] = $id;
             }
+        }
+        $ids = array_values(array_unique($ids));
+        $noteCounts = $this->notes->countsByOrderIds($ids);
+
+        $map = [];
+        foreach ($ids as $id) {
             $order = $this->orders->findById($id);
             if ($order instanceof Order) {
-                $map[$id] = $this->snapshot($order);
+                $map[$id] = $this->snapshot($order, (int) ($noteCounts[$id] ?? 0));
             }
         }
 
@@ -36,7 +44,7 @@ final class EloquentDeliveryOrderStopSnapshotPort implements DeliveryOrderStopSn
     /**
      * @return array<string, mixed>
      */
-    private function snapshot(Order $order): array
+    private function snapshot(Order $order, int $notesCount = 0): array
     {
         $delivery = $order->delivery();
         $client = $order->client();
@@ -61,6 +69,7 @@ final class EloquentDeliveryOrderStopSnapshotPort implements DeliveryOrderStopSn
                 'name' => $client->name(),
                 'phone' => $client->phone(),
             ],
+            'notes_count' => max(0, $notesCount),
         ];
     }
 }

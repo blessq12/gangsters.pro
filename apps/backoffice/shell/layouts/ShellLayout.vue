@@ -5,6 +5,7 @@ import { useAuthStore } from "../store/authStore";
 import ShellSidebar from "../components/ShellSidebar.vue";
 import ShellTopbar from "../components/ShellTopbar.vue";
 import ToastHost from "../components/ToastHost.vue";
+import { OrderNotesHost, closeNotes } from "../modules/orderNotes/index.js";
 
 const COLLAPSE_KEY = "bo-sidebar-collapsed";
 const DESKTOP_QUERY = "(min-width: 1024px)";
@@ -54,6 +55,7 @@ watch(collapsed, (value) => {
 
 watch(() => route.fullPath, () => {
     mobileOpen.value = false;
+    closeNotes();
 });
 
 onMounted(() => {
@@ -100,5 +102,6 @@ onUnmounted(() => {
         </div>
 
         <ToastHost />
+        <OrderNotesHost v-if="showChrome" />
     </div>
 </template>

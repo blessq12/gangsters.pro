@@ -1,13 +1,15 @@
 <script setup>
-import { computed, watch } from "vue";
+import { computed, defineAsyncComponent, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import BranchCategoriesPanel from "../components/menu/BranchCategoriesPanel.vue";
-import BranchSetsPanel from "../components/menu/BranchSetsPanel.vue";
-import BranchTagsPanel from "../components/menu/BranchTagsPanel.vue";
 import OwnerBranchSelector from "../components/branch/OwnerBranchSelector.vue";
 import { useOwnerBranchContext } from "../composables/useOwnerBranchContext.js";
 import CatalogScreen from "./CatalogScreen.vue";
-import MenuScreen from "./MenuScreen.vue";
+
+/** Branch-панели с vuedraggable — лениво, чтобы контекст «Справочник» не падал на outdated optimize dep. */
+const BranchCategoriesPanel = defineAsyncComponent(() => import("../components/menu/BranchCategoriesPanel.vue"));
+const BranchSetsPanel = defineAsyncComponent(() => import("../components/menu/BranchSetsPanel.vue"));
+const BranchTagsPanel = defineAsyncComponent(() => import("../components/menu/BranchTagsPanel.vue"));
+const MenuScreen = defineAsyncComponent(() => import("./MenuScreen.vue"));
 
 const route = useRoute();
 const router = useRouter();

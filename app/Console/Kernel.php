@@ -53,8 +53,6 @@ class Kernel extends ConsoleKernel
                 ]);
             }
         })->everyThreeHours();
-
-        $schedule->command('orders:activate-due-preorders')->everyMinute();
     }
 
     /**

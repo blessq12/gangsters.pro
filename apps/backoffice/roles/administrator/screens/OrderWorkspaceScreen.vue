@@ -22,7 +22,7 @@ import OrderPackChecklist from "../components/order/OrderPackChecklist.vue";
 import OrderPaymentBlock from "../components/order/OrderPaymentBlock.vue";
 import OrderQuoteTotals from "../components/order/OrderQuoteTotals.vue";
 import OrderWorkspaceHeader from "../components/order/OrderWorkspaceHeader.vue";
-import OrderNotesDropdown from "../../../shell/components/order/OrderNotesDropdown.vue";
+import { OrderNotesTrigger } from "../../../shell/modules/orderNotes/index.js";
 import UiCard from "../../../shell/components/ui/UiCard.vue";
 import UiConfirmDialog from "../../../shell/components/ui/UiConfirmDialog.vue";
 import { useApi } from "../../../shell/composables/useApi.js";
@@ -37,6 +37,7 @@ import {
     orderStatusLabel,
     orderStatusVariant,
 } from "../../../shell/domain/orderStage.js";
+import { suggestAddressFromDaData } from "../../../shell/geo/dadataSuggest.js";
 import { isRuPhoneComplete } from "../../../shell/phone/ruPhone.js";
 import { useAuthStore } from "../../../shell/store/authStore.js";
 import { useOrderWorkspaceStore } from "../../../shell/store/orderWorkspaceStore.js";
@@ -152,6 +153,25 @@ const showNotesButton = computed(() => mode.value !== "create" && orderId.value 
 const showRepeat = computed(
     () => mode.value !== "create" && isClosedOrder(sourceOrder.value?.status),
 );
+
+const scheduleCaption = computed(() => {
+    const raw = String(form.value.scheduled_at || sourceOrder.value?.scheduled_at || "").trim();
+    if (!raw) {
+        return "";
+    }
+    const date = new Date(raw);
+    if (Number.isNaN(date.getTime())) {
+        return `Ко времени: ${raw}`;
+    }
+    const formatted = date.toLocaleString("ru-RU", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+    });
+    return `Ко времени: ${formatted}`;
+});
 const initialNotes = computed(() => {
     const list = sourceOrder.value?.notes;
     return Array.isArray(list) ? list : [];
@@ -232,7 +252,7 @@ function validateForm() {
             fieldErrors.house = "Укажи дом";
         }
         if (!fieldErrors.street && !fieldErrors.house && (form.value.lat === "" || form.value.lng === "")) {
-            fieldErrors.street = "Выбери адрес из подсказок или на карте";
+            fieldErrors.street = "Выбери адрес из подсказок";
         }
         if (!fieldErrors.street && !fieldErrors.house && quoteInZone.value === false) {
             fieldErrors.street = "Адрес вне зоны доставки";
@@ -240,6 +260,14 @@ function validateForm() {
     }
     if (!form.value.payment_method) {
         fieldErrors.payment_method = "Обязательное поле";
+    }
+    if (String(form.value.scheduled_at || "").trim()) {
+        const slot = new Date(form.value.scheduled_at);
+        if (Number.isNaN(slot.getTime())) {
+            fieldErrors.scheduled_at = "Некорректная дата";
+        } else if (slot.getTime() <= Date.now()) {
+            fieldErrors.scheduled_at = "Слот должен быть в будущем";
+        }
     }
     return Object.keys(fieldErrors).length === 0;
 }
@@ -262,12 +290,88 @@ function onClearClient() {
 }
 
 /**
+ * @param {unknown} value
+ * @returns {number|null}
+ */
+function toCoordOrNull(value) {
+    if (value === "" || value === null || value === undefined) {
+        return null;
+    }
+    const number = Number(value);
+    return Number.isFinite(number) ? number : null;
+}
+
+/**
+ * Адрес из карточки клиента → только delivery.
+ * Без lat/lng валидатор орёт «обязательные поля» — дотягиваем coords через ДаДату.
+ * @param {Record<string, unknown>} address
+ */
+async function onApplyClientAddress(address) {
+    form.value.method = "courier";
+
+    const street = String(address.street ?? "").trim();
+    const house = String(address.house ?? "").trim();
+    const city = branchCity.value;
+    let lat = toCoordOrNull(address.latitude ?? address.lat);
+    let lng = toCoordOrNull(address.longitude ?? address.lng);
+
+    if ((lat === null || lng === null) && street && house) {
+        try {
+            const hits = await suggestAddressFromDaData({
+                query: [city, street, house].filter(Boolean).join(", "),
+                city: city || null,
+                limit: 8,
+            });
+            const hit = hits.find((row) =>
+                row.lat != null
+                && row.lng != null
+                && String(row.street || "").trim()
+                && String(row.house || "").trim())
+                ?? hits.find((row) => row.lat != null && row.lng != null);
+            if (hit) {
+                lat = hit.lat;
+                lng = hit.lng;
+            }
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Не удалось уточнить координаты адреса");
+        }
+    }
+
+    onAddressUpdate({
+        city,
+        street,
+        house,
+        entrance: String(address.entrance ?? ""),
+        floor: String(address.floor ?? ""),
+        apartment: String(address.apartment ?? ""),
+        comment: String(address.comment ?? ""),
+        latitude: lat === null ? "" : lat,
+        longitude: lng === null ? "" : lng,
+    });
+
+    if (form.value.lat === "" || form.value.lng === "") {
+        toast.error("У адреса нет координат — выбери адрес из подсказок");
+    }
+}
+
+/**
+ * Прошлый заказ → корзина + delivery + payment, клиент сохраняется.
+ * @param {Record<string, unknown>} order
+ */
+function onApplyClientOrder(order) {
+    if (!order || typeof order !== "object") {
+        return;
+    }
+    workspace.applyOrderSnapshot(order, { keepClient: true });
+    scheduleQuote();
+    toast.success("Данные заказа подставлены");
+}
+
+/**
  * @param {Record<string, unknown>} address
  */
 function onAddressUpdate(address) {
-    if (address.city !== undefined) {
-        form.value.city = address.city || "";
-    }
+    form.value.city = branchCity.value;
     if (address.street !== undefined) {
         form.value.street = address.street || "";
         delete fieldErrors.street;
@@ -347,7 +451,7 @@ async function loadBranch() {
     try {
         branch.value = await getBranch(branchId.value);
         const city = String(branch.value?.city ?? "").trim();
-        if (city && !String(form.value.city).trim()) {
+        if (city) {
             form.value.city = city;
         }
     } catch {
@@ -476,9 +580,7 @@ async function submitPrimary() {
                 phone: form.value.phone.trim(),
             },
             payment_method: form.value.payment_method,
-            change_from_rubles: form.value.payment_method === "cash" && form.value.change_from !== ""
-                ? Number(form.value.change_from)
-                : null,
+            change_from_rubles: null,
             scheduled_at: form.value.scheduled_at.trim() || null,
             lines,
         };
@@ -665,7 +767,6 @@ watch(
     () => [
         form.value.method,
         form.value.payment_method,
-        form.value.change_from,
         form.value.scheduled_at,
         form.value.clientId,
     ],
@@ -728,10 +829,12 @@ onMounted(bootstrap);
                     :active="showPack"
                     @pack="onPackLine"
                 />
-                <OrderNotesDropdown
+                <OrderNotesTrigger
                     v-if="showNotesButton"
                     :order-id="orderId"
+                    :order-status="sourceOrder?.status || ''"
                     :initial-notes="initialNotes"
+                    :notes-count="initialNotes.length"
                 />
             </template>
         </OrderWorkspaceHeader>
@@ -746,6 +849,10 @@ onMounted(bootstrap);
         <template v-else>
             <p class="text-sm text-bo-muted">
                 {{ branchTitle }}
+                <span
+                    v-if="scheduleCaption"
+                    class="ml-2 text-bo-fg"
+                >· {{ scheduleCaption }}</span>
             </p>
 
             <div class="grid gap-4 lg:grid-cols-3">
@@ -761,10 +868,11 @@ onMounted(bootstrap);
                         @update:phone="form.phone = $event"
                         @select-client="onSelectClient"
                         @clear-client="onClearClient"
+                        @apply-address="onApplyClientAddress"
+                        @apply-order="onApplyClientOrder"
                     />
                     <OrderDeliveryBlock
                         :method="form.method"
-                        :city="form.city"
                         :street="form.street"
                         :house="form.house"
                         :entrance="form.entrance"
@@ -780,16 +888,6 @@ onMounted(bootstrap);
                         :readonly="isReadonly"
                         @update:method="form.method = $event; scheduleQuote()"
                         @address-update="onAddressUpdate"
-                    />
-                    <OrderPaymentBlock
-                        :payment-method="form.payment_method"
-                        :change-from="form.change_from"
-                        :scheduled-at="form.scheduled_at"
-                        :payment-error="fieldErrors.payment_method || ''"
-                        :readonly="isReadonly"
-                        @update:payment-method="form.payment_method = $event"
-                        @update:change-from="form.change_from = $event"
-                        @update:scheduled-at="form.scheduled_at = $event"
                     />
                     <UiCard
                         v-if="audits.length"
@@ -808,6 +906,15 @@ onMounted(bootstrap);
                 </div>
 
                 <div class="space-y-4 lg:col-span-2">
+                    <OrderPaymentBlock
+                        :payment-method="form.payment_method"
+                        :scheduled-at="form.scheduled_at"
+                        :payment-error="fieldErrors.payment_method || ''"
+                        :schedule-error="fieldErrors.scheduled_at || ''"
+                        :readonly="isReadonly"
+                        @update:payment-method="form.payment_method = $event"
+                        @update:scheduled-at="form.scheduled_at = $event; delete fieldErrors.scheduled_at"
+                    />
                     <UiCard title="Корзина">
                         <p
                             v-if="fieldErrors.lines"

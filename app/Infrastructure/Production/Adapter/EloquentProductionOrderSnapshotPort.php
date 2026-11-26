@@ -3,6 +3,7 @@
 namespace App\Infrastructure\Production\Adapter;
 
 use App\Domain\Core\Order\Entity\Order;
+use App\Domain\Core\Order\Repository\OrderNoteRepository;
 use App\Domain\Core\Order\Repository\OrderRepository;
 use App\Domain\Core\Order\ValueObject\OrderNumber;
 use App\Domain\Core\Production\Port\ProductionOrderSnapshotPort;
@@ -14,26 +15,35 @@ final class EloquentProductionOrderSnapshotPort implements ProductionOrderSnapsh
 {
     public function __construct(
         private readonly OrderRepository $orders,
+        private readonly OrderNoteRepository $notes,
     ) {}
 
     public function find(int $orderId): ?array
     {
         $order = $this->orders->findById($orderId);
 
-        return $order instanceof Order ? $this->snapshot($order) : null;
+        return $order instanceof Order
+            ? $this->snapshot($order, $this->notes->countByOrderId($orderId))
+            : null;
     }
 
     public function findMany(array $orderIds): array
     {
-        $map = [];
+        $ids = [];
         foreach ($orderIds as $orderId) {
             $id = (int) $orderId;
-            if ($id < 1) {
-                continue;
+            if ($id > 0) {
+                $ids[] = $id;
             }
-            $snapshot = $this->find($id);
-            if ($snapshot !== null) {
-                $map[$id] = $snapshot;
+        }
+        $ids = array_values(array_unique($ids));
+        $noteCounts = $this->notes->countsByOrderIds($ids);
+
+        $map = [];
+        foreach ($ids as $id) {
+            $order = $this->orders->findById($id);
+            if ($order instanceof Order) {
+                $map[$id] = $this->snapshot($order, (int) ($noteCounts[$id] ?? 0));
             }
         }
 
@@ -43,7 +53,7 @@ final class EloquentProductionOrderSnapshotPort implements ProductionOrderSnapsh
     /**
      * @return array<string, mixed>
      */
-    private function snapshot(Order $order): array
+    private function snapshot(Order $order, int $notesCount = 0): array
     {
         $delivery = $order->delivery();
         $comment = $delivery->address()?->comment();
@@ -67,6 +77,7 @@ final class EloquentProductionOrderSnapshotPort implements ProductionOrderSnapsh
             'status' => $order->status()->value,
             'comment' => $comment,
             'lines' => $lines,
+            'notes_count' => max(0, $notesCount),
         ];
     }
 }

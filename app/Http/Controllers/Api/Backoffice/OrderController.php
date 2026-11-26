@@ -21,6 +21,7 @@ use App\Application\Order\Query\QuoteOrderUseCase;
 use App\Domain\Core\Order\Enum\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Infrastructure\Staff\Model\EmployeeModel;
+use DateTimeImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -36,6 +37,7 @@ final class OrderController extends Controller
         $deliveryMethod = $request->query('delivery_method');
         $offset = (int) $request->query('offset', 0);
         $limit = (int) $request->query('limit', 20);
+        [$from, $to] = $this->parsePeriod($request);
 
         return response()->json($useCase->execute(
             status: is_string($status) ? $status : null,
@@ -44,6 +46,8 @@ final class OrderController extends Controller
             q: is_string($q) ? $q : null,
             branchId: is_numeric($branchId) ? (int) $branchId : null,
             deliveryMethod: is_string($deliveryMethod) ? $deliveryMethod : null,
+            createdFrom: $from,
+            createdTo: $to,
         ));
     }
 
@@ -288,5 +292,41 @@ final class OrderController extends Controller
         }
 
         return response()->json($result, $status);
+    }
+
+    /**
+     * @return array{0: DateTimeImmutable|null, 1: DateTimeImmutable|null}
+     */
+    private function parsePeriod(Request $request): array
+    {
+        $fromRaw = $request->query('from');
+        $toRaw = $request->query('to');
+
+        $from = is_string($fromRaw) && trim($fromRaw) !== ''
+            ? $this->parseDayStart(trim($fromRaw))
+            : null;
+        $to = is_string($toRaw) && trim($toRaw) !== ''
+            ? $this->parseDayEnd(trim($toRaw))
+            : null;
+
+        return [$from, $to];
+    }
+
+    private function parseDayStart(string $value): DateTimeImmutable
+    {
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $value) === 1) {
+            return new DateTimeImmutable($value.' 00:00:00');
+        }
+
+        return new DateTimeImmutable($value);
+    }
+
+    private function parseDayEnd(string $value): DateTimeImmutable
+    {
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $value) === 1) {
+            return new DateTimeImmutable($value.' 23:59:59');
+        }
+
+        return new DateTimeImmutable($value);
     }
 }

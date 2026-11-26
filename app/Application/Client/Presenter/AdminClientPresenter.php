@@ -100,7 +100,8 @@ final class AdminClientPresenter
      *     number: string|null,
      *     status: string,
      *     created_at: string,
-     *     grand_total_kopecks: int
+     *     grand_total_kopecks: int,
+     *     lines?: list<array{name: string, quantity: int, line_type: string}>
      * }>  $orders
      * @return array{client: array<string, mixed>, orders: list<array<string, mixed>>}
      */
@@ -108,12 +109,21 @@ final class AdminClientPresenter
     {
         $orderItems = [];
         foreach ($orders as $order) {
+            $lines = [];
+            foreach ($order['lines'] ?? [] as $line) {
+                $lines[] = [
+                    'name' => (string) ($line['name'] ?? ''),
+                    'quantity' => (int) ($line['quantity'] ?? 0),
+                    'line_type' => (string) ($line['line_type'] ?? 'regular'),
+                ];
+            }
             $orderItems[] = [
                 'id' => $order['id'],
                 'number' => $order['number'],
                 'status' => $order['status'],
                 'total' => intdiv((int) $order['grand_total_kopecks'], 100),
                 'created_at' => $order['created_at'],
+                'lines' => $lines,
             ];
         }
 

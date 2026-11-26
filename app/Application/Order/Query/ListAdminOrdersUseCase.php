@@ -5,6 +5,7 @@ namespace App\Application\Order\Query;
 use App\Application\Order\Presenter\AdminOrderPresenter;
 use App\Application\Shared\PageParams;
 use App\Domain\Core\Order\Repository\OrderRepository;
+use DateTimeImmutable;
 
 final class ListAdminOrdersUseCase
 {
@@ -14,7 +15,13 @@ final class ListAdminOrdersUseCase
     ) {}
 
     /**
-     * @return array{items: list<array<string, mixed>>, total: int, offset: int, limit: int}
+     * @return array{
+     *     items: list<array<string, mixed>>,
+     *     total: int,
+     *     offset: int,
+     *     limit: int,
+     *     status_counts: array<string, int>
+     * }
      */
     public function execute(
         ?string $status = null,
@@ -23,6 +30,8 @@ final class ListAdminOrdersUseCase
         ?string $q = null,
         ?int $branchId = null,
         ?string $deliveryMethod = null,
+        ?DateTimeImmutable $createdFrom = null,
+        ?DateTimeImmutable $createdTo = null,
     ): array {
         ['offset' => $offset, 'limit' => $limit] = PageParams::normalize($offset, $limit);
 
@@ -33,9 +42,11 @@ final class ListAdminOrdersUseCase
             'delivery_method' => $deliveryMethod !== null && trim($deliveryMethod) !== ''
                 ? trim($deliveryMethod)
                 : null,
+            'created_from' => $createdFrom,
+            'created_to' => $createdTo,
         ];
 
-        return PageParams::wrap(
+        $page = PageParams::wrap(
             $this->presenter->presentList(
                 $this->orders->listPage($offset, $limit, $filters),
             ),
@@ -43,5 +54,12 @@ final class ListAdminOrdersUseCase
             $offset,
             $limit,
         );
+
+        // Счётчики в том же scope (без status): interval/branch/q; number-search — без дат на уровне repo.
+        $countFilters = $filters;
+        unset($countFilters['status']);
+        $page['status_counts'] = $this->orders->countByStatusMatching($countFilters);
+
+        return $page;
     }
 }

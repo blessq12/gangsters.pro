@@ -16,7 +16,6 @@ function emptyForm() {
         lat: "",
         lng: "",
         payment_method: "cash",
-        change_from: "",
         scheduled_at: "",
     };
 }
@@ -115,9 +114,6 @@ export const useOrderWorkspaceStore = defineStore("order-workspace", {
             this.form.lat = address.lat != null && address.lat !== "" ? String(address.lat) : "";
             this.form.lng = address.lng != null && address.lng !== "" ? String(address.lng) : "";
             this.form.payment_method = String(order.payment_method ?? order.payment?.method ?? "cash");
-            this.form.change_from = order.change_from_rubles != null
-                ? String(order.change_from_rubles)
-                : "";
             const scheduled = order.scheduled_at;
             if (typeof scheduled === "string" && scheduled.trim() !== "") {
                 // datetime-local: YYYY-MM-DDTHH:mm
@@ -155,6 +151,56 @@ export const useOrderWorkspaceStore = defineStore("order-workspace", {
             this.giftDecision = null;
             this.giftPromptedForEligible = false;
             this.clientRequestId = newRequestId();
+        },
+        /**
+         * Снимок заказа в текущий workspace (корзина + delivery + payment).
+         * Не меняет mode / orderId / sourceOrder.
+         *
+         * @param {Record<string, unknown>} order
+         * @param {{ keepClient?: boolean }} [options]
+         */
+        applyOrderSnapshot(order, options = {}) {
+            const keepClient = Boolean(options.keepClient);
+            const keptClient = keepClient
+                ? {
+                    name: this.form.name,
+                    phone: this.form.phone,
+                    clientId: this.form.clientId,
+                }
+                : null;
+
+            const client = order?.client && typeof order.client === "object" ? order.client : {};
+            const delivery = order?.delivery && typeof order.delivery === "object" ? order.delivery : {};
+            const address = delivery.address && typeof delivery.address === "object" ? delivery.address : {};
+
+            if (!keepClient) {
+                this.form.name = String(client.name ?? "");
+                this.form.phone = String(client.phone ?? "");
+                this.form.clientId = client.id != null ? Number(client.id) : null;
+            }
+
+            this.form.method = delivery.method === "courier" ? "courier" : "pickup";
+            this.form.street = String(address.street ?? "");
+            this.form.house = String(address.house ?? "");
+            this.form.entrance = String(address.entrance ?? "");
+            this.form.floor = String(address.floor ?? "");
+            this.form.apartment = String(address.apartment ?? "");
+            this.form.comment = String(address.comment ?? "");
+            this.form.lat = address.lat != null && address.lat !== "" ? String(address.lat) : "";
+            this.form.lng = address.lng != null && address.lng !== "" ? String(address.lng) : "";
+            this.form.payment_method = String(order.payment_method ?? order.payment?.method ?? "cash");
+            this.form.scheduled_at = "";
+
+            this.cart = cartFromOrder(order);
+            this.giftDecision = null;
+            this.giftPromptedForEligible = false;
+            this.clientRequestId = newRequestId();
+
+            if (keptClient) {
+                this.form.name = keptClient.name;
+                this.form.phone = keptClient.phone;
+                this.form.clientId = keptClient.clientId;
+            }
         },
         reset() {
             this.active = false;
@@ -240,9 +286,7 @@ export const useOrderWorkspaceStore = defineStore("order-workspace", {
                         phone: this.form.phone.trim() || null,
                     },
                 payment_method: this.form.payment_method,
-                change_from_rubles: this.form.payment_method === "cash" && this.form.change_from !== ""
-                    ? Number(this.form.change_from)
-                    : null,
+                change_from_rubles: null,
                 gift_product_id: giftProductId,
                 scheduled_at: this.form.scheduled_at.trim() || null,
                 address: null,

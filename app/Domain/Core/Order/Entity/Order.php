@@ -380,9 +380,27 @@ final class Order
         return $this->scheduledAt;
     }
 
+    /**
+     * Слот выполнения/получения. На статусах new|preorder синхронизирует тип:
+     * будущее → preorder, иначе ASAP (null + new).
+     */
     public function replaceScheduledAt(?DateTimeImmutable $scheduledAt): void
     {
-        $this->scheduledAt = $scheduledAt;
+        if (! in_array($this->status, [OrderStatus::New, OrderStatus::Preorder], true)) {
+            $this->scheduledAt = $scheduledAt;
+
+            return;
+        }
+
+        if ($scheduledAt !== null && $scheduledAt > $this->createdAt) {
+            $this->scheduledAt = $scheduledAt;
+            $this->status = OrderStatus::Preorder;
+
+            return;
+        }
+
+        $this->scheduledAt = null;
+        $this->status = OrderStatus::New;
     }
 
     public function clientId(): ?int

@@ -63,6 +63,20 @@ final class InMemoryOrderRepository implements OrderRepository
         return $this->countByStatus();
     }
 
+    public function countByStatusMatching(array $filters = []): array
+    {
+        $scope = $filters;
+        unset($scope['status']);
+        $rows = $this->listPage(0, PHP_INT_MAX, $scope);
+        $counts = [];
+        foreach ($rows as $order) {
+            $key = $order->status()->value;
+            $counts[$key] = ($counts[$key] ?? 0) + 1;
+        }
+
+        return $counts;
+    }
+
     public function countOpsSnapshot(?int $branchId = null): array
     {
         $byStatus = $this->countByStatus();
@@ -107,6 +121,7 @@ final class InMemoryOrderRepository implements OrderRepository
         }
 
         $q = isset($filters['q']) ? trim((string) $filters['q']) : '';
+        $numberSearch = $q !== '' && (OrderNumber::tryParse($q) !== null || ctype_digit($q));
         if ($q !== '') {
             $parsedNumber = OrderNumber::tryParse($q);
             $rows = array_values(array_filter(
@@ -127,6 +142,27 @@ final class InMemoryOrderRepository implements OrderRepository
             ));
         }
 
+        if (! $numberSearch) {
+            $from = $filters['created_from'] ?? null;
+            $to = $filters['created_to'] ?? null;
+            if ($from instanceof DateTimeImmutable || $to instanceof DateTimeImmutable) {
+                $rows = array_values(array_filter(
+                    $rows,
+                    static function (Order $order) use ($from, $to): bool {
+                        $operational = $order->scheduledAt() ?? $order->createdAt();
+                        if ($from instanceof DateTimeImmutable && $operational < $from) {
+                            return false;
+                        }
+                        if ($to instanceof DateTimeImmutable && $operational > $to) {
+                            return false;
+                        }
+
+                        return true;
+                    },
+                ));
+            }
+        }
+
         return array_slice($rows, $offset, $limit);
     }
 
@@ -137,22 +173,5 @@ final class InMemoryOrderRepository implements OrderRepository
         }
 
         $this->orders[$order->id()] = $order;
-    }
-
-    public function listDuePreorders(DateTimeImmutable $at, int $limit = 100): array
-    {
-        $due = [];
-        foreach ($this->orders as $order) {
-            if ($order->status() !== OrderStatus::Preorder) {
-                continue;
-            }
-            $scheduled = $order->scheduledAt();
-            if ($scheduled === null || $scheduled > $at) {
-                continue;
-            }
-            $due[] = $order;
-        }
-
-        return array_slice($due, 0, max(1, $limit));
     }
 }

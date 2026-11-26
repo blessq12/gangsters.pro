@@ -6,6 +6,7 @@ import { RU_PHONE_MASKA_PATTERN } from "../../phone/ruPhoneMask.js";
 const props = defineProps({
     modelValue: { type: String, default: "" },
     type: { type: String, default: "text" },
+    name: { type: String, default: "" },
     required: { type: Boolean, default: false },
     autocomplete: { type: String, default: "off" },
     placeholder: { type: String, default: "" },
@@ -77,8 +78,9 @@ function onInput(event) {
         :data-maska="RU_PHONE_MASKA_PATTERN"
         type="tel"
         inputmode="tel"
+        :name="name || undefined"
         :required="required"
-        :autocomplete="autocomplete || 'tel'"
+        :autocomplete="autocomplete"
         :placeholder="resolvedPlaceholder"
         :disabled="disabled"
         class="mt-2 h-11 w-full border border-bo-border bg-bo-field px-4 text-bo-fg transition-colors placeholder:text-bo-muted/60 hover:border-bo-border-strong focus:border-bo-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-40"
@@ -86,6 +88,7 @@ function onInput(event) {
     <input
         v-else
         :type="type"
+        :name="name || undefined"
         :value="modelValue"
         :required="required"
         :autocomplete="autocomplete"

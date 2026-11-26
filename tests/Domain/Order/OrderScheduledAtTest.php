@@ -18,7 +18,76 @@ final class OrderScheduledAtTest extends TestCase
         $created = new DateTimeImmutable('2026-11-25 12:00:00');
         $scheduled = new DateTimeImmutable('2026-11-25 18:00:00');
 
-        $order = Order::compose(
+        $order = $this->compose($created, $scheduled);
+
+        $this->assertSame(OrderStatus::Preorder, $order->status());
+        $this->assertEquals($scheduled, $order->scheduledAt());
+    }
+
+    public function testComposeБезScheduledAtДаётNewAsap(): void
+    {
+        $created = new DateTimeImmutable('2026-11-25 12:00:00');
+        $order = $this->compose($created, null);
+
+        $this->assertSame(OrderStatus::New, $order->status());
+        $this->assertNull($order->scheduledAt());
+    }
+
+    public function testComposeСПрошлымScheduledAtДаётNew(): void
+    {
+        $created = new DateTimeImmutable('2026-11-25 12:00:00');
+        $scheduled = new DateTimeImmutable('2026-11-25 10:00:00');
+        $order = $this->compose($created, $scheduled);
+
+        $this->assertSame(OrderStatus::New, $order->status());
+        $this->assertEquals($scheduled, $order->scheduledAt());
+    }
+
+    public function testReplaceScheduledAtСинхронизируетPreorderИNew(): void
+    {
+        $created = new DateTimeImmutable('2026-11-25 12:00:00');
+        $order = $this->compose($created, null);
+        $this->assertSame(OrderStatus::New, $order->status());
+
+        $slot = new DateTimeImmutable('2026-11-26 18:00:00');
+        $order->replaceScheduledAt($slot);
+        $this->assertSame(OrderStatus::Preorder, $order->status());
+        $this->assertEquals($slot, $order->scheduledAt());
+
+        $order->replaceScheduledAt(null);
+        $this->assertSame(OrderStatus::New, $order->status());
+        $this->assertNull($order->scheduledAt());
+    }
+
+    public function testReplaceScheduledAtНаПозднемСтатусеНеМеняетStatus(): void
+    {
+        $created = new DateTimeImmutable('2026-11-25 12:00:00');
+        $order = $this->compose($created, null);
+        $order->assignId(42);
+        $order->accept();
+        $this->assertSame(OrderStatus::Confirmed, $order->status());
+
+        $slot = new DateTimeImmutable('2026-11-26 18:00:00');
+        $order->replaceScheduledAt($slot);
+        $this->assertSame(OrderStatus::Confirmed, $order->status());
+        $this->assertEquals($slot, $order->scheduledAt());
+    }
+
+    public function testAcceptИзPreorderВConfirmed(): void
+    {
+        $created = new DateTimeImmutable('2026-11-25 12:00:00');
+        $slot = new DateTimeImmutable('2026-11-26 18:00:00');
+        $order = $this->compose($created, $slot);
+        $order->assignId(7);
+
+        $order->accept();
+        $this->assertSame(OrderStatus::Confirmed, $order->status());
+        $this->assertEquals($slot, $order->scheduledAt());
+    }
+
+    private function compose(DateTimeImmutable $created, ?DateTimeImmutable $scheduled): Order
+    {
+        return Order::compose(
             checkoutId: 'req-1',
             client: new OrderClientSnapshot(1, 'Анна', '+79990000000'),
             delivery: OrderDeliveryInfo::pickup(),
@@ -28,8 +97,5 @@ final class OrderScheduledAtTest extends TestCase
             scheduledAt: $scheduled,
             source: 'backoffice',
         );
-
-        $this->assertSame(OrderStatus::Preorder, $order->status());
-        $this->assertEquals($scheduled, $order->scheduledAt());
     }
 }

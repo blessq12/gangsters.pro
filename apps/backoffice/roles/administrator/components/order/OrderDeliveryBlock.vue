@@ -1,12 +1,9 @@
 <script setup>
-import { ref } from "vue";
 import UiCard from "../../../../shell/components/ui/UiCard.vue";
 import DeliveryAddressFields from "./DeliveryAddressFields.vue";
-import DeliveryAddressMapPicker from "./DeliveryAddressMapPicker.vue";
 
 defineProps({
     method: { type: String, default: "pickup" },
-    city: { type: String, default: "" },
     street: { type: String, default: "" },
     house: { type: String, default: "" },
     entrance: { type: String, default: "" },
@@ -23,8 +20,6 @@ defineProps({
 });
 
 const emit = defineEmits(["update:method", "address-update"]);
-
-const mapOpen = ref(false);
 
 /**
  * @param {Record<string, unknown>} patch
@@ -44,6 +39,12 @@ function onAddressUpdate(patch) {
                 {{ method === 'courier' ? 'Курьер' : 'Самовывоз' }}
             </p>
             <template v-if="method === 'courier'">
+                <p
+                    v-if="branchCity"
+                    class="text-bo-muted"
+                >
+                    {{ branchCity }}
+                </p>
                 <p class="text-bo-fg">
                     {{ [street, house].filter(Boolean).join(', ') || '—' }}
                 </p>
@@ -90,33 +91,22 @@ function onAddressUpdate(patch) {
                 </button>
             </div>
 
-            <template v-if="method === 'courier'">
-                <DeliveryAddressFields
-                    :city="city"
-                    :street="street"
-                    :house="house"
-                    :entrance="entrance"
-                    :floor="floor"
-                    :apartment="apartment"
-                    :comment="comment"
-                    :latitude="latitude"
-                    :longitude="longitude"
-                    :branch-city="branchCity"
-                    :street-error="streetError"
-                    :house-error="houseError"
-                    :zone-status="zoneStatus"
-                    :map-open="mapOpen"
-                    @update="onAddressUpdate"
-                    @toggle-map="mapOpen = !mapOpen"
-                />
-                <DeliveryAddressMapPicker
-                    v-if="mapOpen"
-                    :city="city || branchCity"
-                    :latitude="latitude"
-                    :longitude="longitude"
-                    @update="onAddressUpdate"
-                />
-            </template>
+            <DeliveryAddressFields
+                v-if="method === 'courier'"
+                :street="street"
+                :house="house"
+                :entrance="entrance"
+                :floor="floor"
+                :apartment="apartment"
+                :comment="comment"
+                :latitude="latitude"
+                :longitude="longitude"
+                :branch-city="branchCity"
+                :street-error="streetError"
+                :house-error="houseError"
+                :zone-status="zoneStatus"
+                @update="onAddressUpdate"
+            />
         </div>
     </UiCard>
 </template>

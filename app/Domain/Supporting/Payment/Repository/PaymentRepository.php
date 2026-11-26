@@ -28,6 +28,7 @@ interface PaymentRepository
         ?DateTimeImmutable $createdTo = null,
         ?string $status = null,
         ?string $method = null,
+        ?int $branchId = null,
     ): array;
 
     public function countFiltered(
@@ -35,6 +36,7 @@ interface PaymentRepository
         ?DateTimeImmutable $createdTo = null,
         ?string $status = null,
         ?string $method = null,
+        ?int $branchId = null,
     ): int;
 
     /**

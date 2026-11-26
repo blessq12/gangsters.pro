@@ -31,15 +31,18 @@ final class GetPaymentSummaryUseCase
         ?DateTimeImmutable $createdTo = null,
         ?string $status = null,
         ?string $method = null,
+        ?int $branchId = null,
     ): array {
         $statusFilter = $status !== null && trim($status) !== '' ? trim($status) : null;
         $methodFilter = $method !== null && trim($method) !== '' ? trim($method) : null;
+        $branchFilter = $branchId !== null && $branchId > 0 ? $branchId : null;
 
         $summary = $this->payments->summarizeFiltered(
             $createdFrom,
             $createdTo,
             $statusFilter,
             $methodFilter,
+            $branchFilter,
         );
 
         return [

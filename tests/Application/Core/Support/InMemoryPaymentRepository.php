@@ -29,6 +29,7 @@ final class InMemoryPaymentRepository implements PaymentRepository
         ?DateTimeImmutable $createdTo = null,
         ?string $status = null,
         ?string $method = null,
+        ?int $branchId = null,
     ): array {
         return [];
     }
@@ -38,6 +39,7 @@ final class InMemoryPaymentRepository implements PaymentRepository
         ?DateTimeImmutable $createdTo = null,
         ?string $status = null,
         ?string $method = null,
+        ?int $branchId = null,
     ): int {
         return 0;
     }

@@ -4,7 +4,7 @@ import { useRoute, useRouter } from "vue-router";
 import { getTicket, markTicketLineDone } from "../../../api/production.js";
 import { useApi } from "../../../shell/composables/useApi.js";
 import { useToast } from "../../../shell/composables/useToast.js";
-import OrderNotesDropdown from "../../../shell/components/order/OrderNotesDropdown.vue";
+import { OrderNotesTrigger } from "../../../shell/modules/orderNotes/index.js";
 import UiBadge from "../../../shell/components/ui/UiBadge.vue";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
 import UiCard from "../../../shell/components/ui/UiCard.vue";
@@ -83,10 +83,12 @@ onMounted(load);
             <UiButton @click="goQueue">
                 К очереди
             </UiButton>
-            <OrderNotesDropdown
+            <OrderNotesTrigger
                 v-if="ticket?.order_id"
                 :order-id="ticket.order_id"
+                :order-status="ticket.order?.status || ''"
                 :initial-notes="ticket.order?.notes ?? []"
+                :notes-count="Number(ticket.order?.notes_count ?? 0)"
             />
         </div>
 

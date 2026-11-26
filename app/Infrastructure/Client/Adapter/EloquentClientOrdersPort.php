@@ -22,12 +22,24 @@ final class EloquentClientOrdersPort implements ClientOrdersPort
         $rows = [];
         foreach ($this->orders->listByClientId($clientId) as $order) {
             $id = $order->hasId() ? $order->id() : 0;
+            $lines = [];
+            foreach ($order->lines() as $line) {
+                if (! $line->isBillable()) {
+                    continue;
+                }
+                $lines[] = [
+                    'name' => $line->name(),
+                    'quantity' => $line->quantity(),
+                    'line_type' => $line->lineType()->value,
+                ];
+            }
             $rows[] = [
                 'id' => $id,
                 'number' => $id > 0 ? OrderNumber::format($id, $order->createdAt()) : null,
                 'status' => $order->status()->value,
                 'created_at' => $order->createdAt()->format(DATE_ATOM),
                 'grand_total_kopecks' => $order->grandTotalKopecks(),
+                'lines' => $lines,
             ];
         }
 

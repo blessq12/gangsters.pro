@@ -11,7 +11,14 @@ defineProps({
     readonly: { type: Boolean, default: false },
 });
 
-defineEmits(["update:name", "update:phone", "select-client", "clear-client"]);
+defineEmits([
+    "update:name",
+    "update:phone",
+    "select-client",
+    "clear-client",
+    "apply-address",
+    "apply-order",
+]);
 </script>
 
 <template>
@@ -21,12 +28,20 @@ defineEmits(["update:name", "update:phone", "select-client", "clear-client"]);
             class="grid gap-3"
         >
             <div>
-                <dt class="text-xs uppercase tracking-wide text-bo-muted">Имя</dt>
-                <dd class="mt-1 text-sm text-bo-fg">{{ name || "—" }}</dd>
+                <dt class="text-xs uppercase tracking-wide text-bo-muted">
+                    Имя
+                </dt>
+                <dd class="mt-1 text-sm text-bo-fg">
+                    {{ name || "—" }}
+                </dd>
             </div>
             <div>
-                <dt class="text-xs uppercase tracking-wide text-bo-muted">Телефон</dt>
-                <dd class="mt-1 text-sm text-bo-fg">{{ phone || "—" }}</dd>
+                <dt class="text-xs uppercase tracking-wide text-bo-muted">
+                    Телефон
+                </dt>
+                <dd class="mt-1 text-sm text-bo-fg">
+                    {{ phone || "—" }}
+                </dd>
             </div>
         </dl>
         <ClientSearchField
@@ -40,6 +55,8 @@ defineEmits(["update:name", "update:phone", "select-client", "clear-client"]);
             @update:phone="$emit('update:phone', $event)"
             @select-client="$emit('select-client', $event)"
             @clear-client="$emit('clear-client')"
+            @apply-address="$emit('apply-address', $event)"
+            @apply-order="$emit('apply-order', $event)"
         />
     </UiCard>
 </template>

@@ -60,8 +60,9 @@ final class EloquentPaymentRepository implements PaymentRepository
         ?DateTimeImmutable $createdTo = null,
         ?string $status = null,
         ?string $method = null,
+        ?int $branchId = null,
     ): array {
-        $rows = $this->filteredQuery($createdFrom, $createdTo, $status, $method)
+        $rows = $this->filteredQuery($createdFrom, $createdTo, $status, $method, $branchId)
             ->orderByDesc('id')
             ->offset($offset)
             ->limit($limit)
@@ -82,8 +83,9 @@ final class EloquentPaymentRepository implements PaymentRepository
         ?DateTimeImmutable $createdTo = null,
         ?string $status = null,
         ?string $method = null,
+        ?int $branchId = null,
     ): int {
-        return $this->filteredQuery($createdFrom, $createdTo, $status, $method)->count();
+        return $this->filteredQuery($createdFrom, $createdTo, $status, $method, $branchId)->count();
     }
 
     public function summarizeFiltered(

@@ -21,7 +21,9 @@ interface OrderRepository
      *     status?: string|null,
      *     q?: string|null,
      *     branch_id?: int|null,
-     *     delivery_method?: string|null
+     *     delivery_method?: string|null,
+     *     created_from?: DateTimeImmutable|null,
+     *     created_to?: DateTimeImmutable|null
      * }  $filters
      */
     public function count(array $filters = []): int;
@@ -43,6 +45,20 @@ interface OrderRepository
     ): array;
 
     /**
+     * Счётчики по статусам в том же scope, что listPage/count (без ключа status).
+     *
+     * @param  array{
+     *     q?: string|null,
+     *     branch_id?: int|null,
+     *     delivery_method?: string|null,
+     *     created_from?: DateTimeImmutable|null,
+     *     created_to?: DateTimeImmutable|null
+     * }  $filters
+     * @return array<string, int>
+     */
+    public function countByStatusMatching(array $filters = []): array;
+
+    /**
      * Снимок операционных статусов «сейчас».
      *
      * @return array{
@@ -60,18 +76,13 @@ interface OrderRepository
      *     status?: string|null,
      *     q?: string|null,
      *     branch_id?: int|null,
-     *     delivery_method?: string|null
+     *     delivery_method?: string|null,
+     *     created_from?: DateTimeImmutable|null,
+     *     created_to?: DateTimeImmutable|null
      * }  $filters
      * @return list<Order>
      */
     public function listPage(int $offset, int $limit, array $filters = []): array;
 
     public function save(Order $order): void;
-
-    /**
-     * Предзаказы, у которых наступил scheduled_at.
-     *
-     * @return list<Order>
-     */
-    public function listDuePreorders(DateTimeImmutable $at, int $limit = 100): array;
 }

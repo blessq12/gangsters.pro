@@ -8,6 +8,7 @@ import { request } from "../http/transport.js";
  *   to?: string,
  *   status?: string,
  *   method?: string,
+ *   branch_id?: number|string,
  * }} [query]
  */
 export function listPayments(query = {}) {
@@ -30,6 +31,9 @@ export function listPayments(query = {}) {
     if (query.method) {
         params.set("method", query.method);
     }
+    if (query.branch_id !== undefined && query.branch_id !== null && query.branch_id !== "") {
+        params.set("branch_id", String(query.branch_id));
+    }
     const qs = params.toString();
     return request("GET", `/payments${qs ? `?${qs}` : ""}`);
 }
@@ -40,6 +44,7 @@ export function listPayments(query = {}) {
  *   to?: string,
  *   status?: string,
  *   method?: string,
+ *   branch_id?: number|string,
  * }} [query]
  */
 export function getPaymentSummary(query = {}) {
@@ -55,6 +60,9 @@ export function getPaymentSummary(query = {}) {
     }
     if (query.method) {
         params.set("method", query.method);
+    }
+    if (query.branch_id !== undefined && query.branch_id !== null && query.branch_id !== "") {
+        params.set("branch_id", String(query.branch_id));
     }
     const qs = params.toString();
     return request("GET", `/payments/summary${qs ? `?${qs}` : ""}`);

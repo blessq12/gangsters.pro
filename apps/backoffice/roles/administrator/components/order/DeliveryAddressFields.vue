@@ -2,12 +2,10 @@
 import { computed, onBeforeUnmount, ref, watch } from "vue";
 import { suggestAddressFromDaData } from "../../../../shell/geo/dadataSuggest.js";
 import { useToast } from "../../../../shell/composables/useToast.js";
-import UiButton from "../../../../shell/components/ui/UiButton.vue";
 import UiFormField from "../../../../shell/components/ui/UiFormField.vue";
 import UiInput from "../../../../shell/components/ui/UiInput.vue";
 
 const props = defineProps({
-    city: { type: String, default: "" },
     street: { type: String, default: "" },
     house: { type: String, default: "" },
     entrance: { type: String, default: "" },
@@ -16,16 +14,15 @@ const props = defineProps({
     comment: { type: String, default: "" },
     latitude: { type: [String, Number], default: "" },
     longitude: { type: [String, Number], default: "" },
-    /** Город филиала — bias для ДаДата. */
+    /** Город филиала — единственный источник города + bias ДаДата. */
     branchCity: { type: String, default: "" },
     streetError: { type: String, default: "" },
     houseError: { type: String, default: "" },
     /** Статус зоны из quote после выбора адреса. */
     zoneStatus: { type: String, default: "" },
-    mapOpen: { type: Boolean, default: false },
 });
 
-const emit = defineEmits(["update", "toggle-map"]);
+const emit = defineEmits(["update"]);
 
 const toast = useToast();
 
@@ -40,7 +37,7 @@ let timer = /** @type {ReturnType<typeof setTimeout>|null} */ (null);
 let requestToken = 0;
 
 /**
- * @param {'city'|'street'|'house'|'entrance'|'floor'|'apartment'|'comment'} key
+ * @param {'street'|'house'|'entrance'|'floor'|'apartment'|'comment'} key
  */
 function fieldModel(key) {
     return computed({
@@ -49,7 +46,6 @@ function fieldModel(key) {
     });
 }
 
-const cityModel = fieldModel("city");
 const streetModel = fieldModel("street");
 const houseModel = fieldModel("house");
 const entranceModel = fieldModel("entrance");
@@ -68,7 +64,7 @@ const coordsStatus = computed(() => {
         return "Координаты получены";
     }
     if (String(props.street).trim() && String(props.house).trim()) {
-        return "Нет координат — выбери подсказку или точку на карте";
+        return "Нет координат — выбери адрес из подсказок";
     }
     return "Адрес не выбран";
 });
@@ -90,7 +86,7 @@ function toNumberOrNull(value) {
  */
 function emitAddress(patch) {
     emit("update", {
-        city: patch.city !== undefined ? String(patch.city ?? "") : props.city,
+        city: props.branchCity,
         street: patch.street !== undefined ? String(patch.street ?? "") : props.street,
         house: patch.house !== undefined ? String(patch.house ?? "") : props.house,
         entrance: patch.entrance !== undefined ? String(patch.entrance ?? "") : props.entrance,
@@ -103,13 +99,12 @@ function emitAddress(patch) {
 }
 
 /**
- * Ручная правка: coords сбрасываем только если меняют город/улицу/дом.
- * Подъезд/этаж/кв/комментарий не трогают геокод.
+ * Ручная правка: coords сбрасываем только если меняют улицу/дом.
  * @param {Record<string, string>} patch
  */
 function patchManual(patch) {
     const keys = Object.keys(patch);
-    const clearsCoords = keys.some((key) => key === "city" || key === "street" || key === "house");
+    const clearsCoords = keys.some((key) => key === "street" || key === "house");
     emitAddress({
         ...patch,
         ...(clearsCoords
@@ -125,7 +120,7 @@ function patchManual(patch) {
  * @param {Record<string, unknown>} hit
  */
 function pickSuggestion(hit) {
-    const city = String(hit.city ?? props.branchCity ?? "");
+    const city = props.branchCity;
     const street = String(hit.street ?? "");
     const house = String(hit.house ?? "");
     const entrance = String(hit.entrance ?? "");
@@ -146,13 +141,11 @@ function pickSuggestion(hit) {
     searchQuery.value = String(hit.value ?? [city, street, house].filter(Boolean).join(", "));
 
     const payload = {
-        city,
         street,
         house,
         entrance,
         floor,
         apartment,
-        // комментарий ДаДата не даёт — не затираем руками введённый
         latitude: lat === null ? "" : lat,
         longitude: lng === null ? "" : lng,
     };
@@ -164,7 +157,7 @@ function pickSuggestion(hit) {
     }
 
     if (lat === null || lng === null) {
-        toast.error("У этой подсказки нет координат — выбери другую или карту");
+        toast.error("У этой подсказки нет координат — выбери другую");
         emitAddress(payload);
         return;
     }
@@ -227,6 +220,31 @@ watch(searchQuery, (value) => {
     timer = setTimeout(() => runSuggest(value), 280);
 });
 
+/** Внешняя подстановка (карточка клиента / повтор) — синхронизируем строку поиска. */
+watch(
+    () => [props.branchCity, props.street, props.house, props.latitude, props.longitude],
+    () => {
+        const street = String(props.street || "").trim();
+        const house = String(props.house || "").trim();
+        if (!street && !house) {
+            return;
+        }
+        if (!hasCoordinates.value) {
+            return;
+        }
+        const label = [props.branchCity, street, house]
+            .map((part) => String(part || "").trim())
+            .filter(Boolean)
+            .join(", ");
+        if (!label || searchQuery.value === label) {
+            return;
+        }
+        suppressSuggest = true;
+        searchQuery.value = label;
+    },
+    { immediate: true },
+);
+
 function onSearchFocus() {
     if (hits.value.length > 0) {
         open.value = true;
@@ -243,37 +261,36 @@ onBeforeUnmount(() => {
 
 <template>
     <div class="space-y-3">
+        <p
+            v-if="branchCity"
+            class="text-xs text-bo-muted"
+        >
+            Город: {{ branchCity }}
+        </p>
+
         <UiFormField label="Поиск адреса">
-            <div class="mt-2 flex flex-col gap-2 sm:flex-row sm:items-start">
-                <div class="relative min-w-0 flex-1">
-                    <input
-                        v-model="searchQuery"
-                        type="text"
-                        autocomplete="off"
-                        placeholder="Начни вводить улицу и дом…"
-                        class="h-11 w-full border border-bo-border bg-bo-field px-4 text-sm text-bo-fg transition-colors placeholder:text-bo-muted/60 hover:border-bo-border-strong focus:border-bo-accent focus:outline-none"
-                        @focus="onSearchFocus"
-                    >
-                    <ul
-                        v-if="open && hits.length > 0"
-                        class="absolute z-20 mt-1 max-h-56 w-full overflow-auto border border-bo-border bg-bo-elevated shadow-bo"
-                    >
-                        <li
-                            v-for="(hit, index) in hits"
-                            :key="`${hit.value}-${index}`"
-                            class="cursor-pointer px-3 py-2 text-sm text-bo-fg hover:bg-white/10"
-                            @mousedown.prevent="pickSuggestion(hit)"
-                        >
-                            {{ hit.value }}
-                        </li>
-                    </ul>
-                </div>
-                <UiButton
-                    class="!shrink-0 !bg-white/10 !text-bo-fg sm:!px-4"
-                    @click="emit('toggle-map')"
+            <div class="relative mt-2">
+                <input
+                    v-model="searchQuery"
+                    type="text"
+                    autocomplete="off"
+                    placeholder="Начни вводить улицу и дом…"
+                    class="h-11 w-full border border-bo-border bg-bo-field px-4 text-sm text-bo-fg transition-colors placeholder:text-bo-muted/60 hover:border-bo-border-strong focus:border-bo-accent focus:outline-none"
+                    @focus="onSearchFocus"
                 >
-                    {{ mapOpen ? 'Скрыть карту' : 'Указать на карте' }}
-                </UiButton>
+                <ul
+                    v-if="open && hits.length > 0"
+                    class="absolute z-20 mt-1 max-h-56 w-full overflow-auto border border-bo-border bg-bo-elevated shadow-bo"
+                >
+                    <li
+                        v-for="(hit, index) in hits"
+                        :key="`${hit.value}-${index}`"
+                        class="cursor-pointer px-3 py-2 text-sm text-bo-fg hover:bg-white/10"
+                        @mousedown.prevent="pickSuggestion(hit)"
+                    >
+                        {{ hit.value }}
+                    </li>
+                </ul>
             </div>
             <p
                 v-if="searching"
@@ -284,9 +301,6 @@ onBeforeUnmount(() => {
         </UiFormField>
 
         <div class="grid gap-3 sm:grid-cols-2">
-            <UiFormField label="Город">
-                <UiInput v-model="cityModel" />
-            </UiFormField>
             <UiFormField
                 label="Улица"
                 required
@@ -318,9 +332,6 @@ onBeforeUnmount(() => {
 
         <p class="text-xs text-bo-muted">
             {{ coordsStatus }}
-            <template v-if="city">
-                · {{ city }}
-            </template>
         </p>
         <p
             v-if="zoneStatus"

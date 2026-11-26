@@ -30,8 +30,9 @@ return [
         // dashboard
         ['method' => 'GET', 'path' => 'dashboard/summary', 'roles' => ['owner', 'administrator']],
 
-        // payments
-        ['method' => 'POST', 'path' => 'payments/*/*', 'roles' => ['owner', 'administrator']],
+        // payments — refund только owner; paid доступен admin
+        ['method' => 'POST', 'path' => 'payments/*/refund', 'roles' => ['owner']],
+        ['method' => 'POST', 'path' => 'payments/*/paid', 'roles' => ['owner', 'administrator']],
         ['method' => 'GET', 'path' => 'payments/summary', 'roles' => ['owner', 'administrator']],
         ['method' => 'GET', 'path' => 'payments/*', 'roles' => ['owner', 'administrator']],
         ['method' => 'GET', 'path' => 'payments', 'roles' => ['owner', 'administrator']],
