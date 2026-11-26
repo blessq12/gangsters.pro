@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
 
 final class OrderMapperTest extends TestCase
 {
-    public function testСтарыйКурьерскийЗаказБезУлицыДомаИЗоныЧитается(): void
+    public function test_старый_курьерский_заказ_без_улицы_дома_и_зоны_читается(): void
     {
         $row = new OrderModel;
         $row->timestamps = false;

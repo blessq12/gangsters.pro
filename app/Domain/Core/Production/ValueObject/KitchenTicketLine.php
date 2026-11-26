@@ -161,7 +161,7 @@ final class KitchenTicketLine
 
         $this->status = KitchenTicketLineStatus::Done;
         $this->doneBy = $employeeId;
-        $this->doneAt = $at ?? new DateTimeImmutable();
+        $this->doneAt = $at ?? new DateTimeImmutable;
     }
 
     public function markPacked(int $employeeId, ?DateTimeImmutable $at = null): void
@@ -179,7 +179,7 @@ final class KitchenTicketLine
         }
 
         $this->packedBy = $employeeId;
-        $this->packedAt = $at ?? new DateTimeImmutable();
+        $this->packedAt = $at ?? new DateTimeImmutable;
     }
 
     public function markCancelled(): void

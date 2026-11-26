@@ -28,9 +28,7 @@ const {
     isRepeatingOrder,
 } = useRepeatOrder();
 
-const ordersForTab = computed(() =>
-    orders.value.slice(0, HISTORY_TAB_LIMIT),
-);
+const ordersForTab = computed(() => orders.value.slice(0, HISTORY_TAB_LIMIT));
 
 const totalOrdersLoaded = computed(() => orders.value.length);
 
@@ -73,41 +71,19 @@ async function handleReplaceChoice() {
 
 <template>
     <div :class="oh.root">
-        <div
-            v-if="loading"
-            :class="oh.stateLoading"
-        >
-            Загружаем заказы…
-        </div>
+        <div v-if="loading" :class="oh.stateLoading">Загружаем заказы…</div>
 
-        <div
-            v-else-if="error"
-            :class="oh.stateError"
-        >
+        <div v-else-if="error" :class="oh.stateError">
             {{ error }}
         </div>
 
-        <div
-            v-else-if="!orders.length"
-            :class="oh.stateEmpty"
-        >
+        <div v-else-if="!orders.length" :class="oh.stateEmpty">
             Заказов пока нет. Собери корзину — и тут появится первая история.
         </div>
 
-        <ul
-            v-else
-            :class="oh.list"
-        >
-            <li
-                v-for="order in ordersForTab"
-                :key="order.id"
-                :class="oh.card"
-            >
-                <button
-                    type="button"
-                    :class="oh.cardHeadBtn"
-                    @click="toggleExpanded(order.id)"
-                >
+        <ul v-else :class="oh.list">
+            <li v-for="order in ordersForTab" :key="order.id" :class="oh.card">
+                <button type="button" :class="oh.cardHeadBtn" @click="toggleExpanded(order.id)">
                     <div :class="oh.cardHeadMain">
                         <p :class="oh.monoId">
                             {{ formatOrderNumber(order) }}
@@ -117,10 +93,7 @@ async function handleReplaceChoice() {
                         </p>
                         <p :class="oh.statusLine">
                             {{ formatOrderStatusRu(order.status) }}
-                            <span
-                                v-if="order.delivery?.method"
-                                :class="oh.mutedInline"
-                            >
+                            <span v-if="order.delivery?.method" :class="oh.mutedInline">
                                 ·
                                 {{ formatDeliveryMethodRu(order.delivery.method) }}
                             </span>
@@ -136,10 +109,7 @@ async function handleReplaceChoice() {
                     </div>
                 </button>
 
-                <div
-                    v-if="isExpanded(order.id)"
-                    :class="oh.cardBody"
-                >
+                <div v-if="isExpanded(order.id)" :class="oh.cardBody">
                     <ul :class="oh.itemsList">
                         <li
                             v-for="row in order.items"
@@ -148,25 +118,17 @@ async function handleReplaceChoice() {
                         >
                             <span :class="oh.itemName">
                                 {{ row.product?.name || "Товар" }}
-                                <span
-                                    v-if="isPromoLine(row)"
-                                    :class="oh.promoBadge"
-                                >
+                                <span v-if="isPromoLine(row)" :class="oh.promoBadge">
                                     ({{ row.kind === "gift" ? "подарок" : "комплект" }})
                                 </span>
-                                <span :class="oh.itemQtyMuted">
-                                    × {{ row.quantity }}
-                                </span>
+                                <span :class="oh.itemQtyMuted">× {{ row.quantity }}</span>
                             </span>
                             <span :class="oh.itemPrice">
                                 {{ formatOrderMoneyRubles(row.row_total) }}&nbsp;₽
                             </span>
                         </li>
                     </ul>
-                    <p
-                        v-if="order.payment?.method"
-                        :class="oh.paymentFoot"
-                    >
+                    <p v-if="order.payment?.method" :class="oh.paymentFoot">
                         Оплата:
                         {{ formatPaymentMethodRu(order.payment.method) }}
                     </p>
@@ -177,20 +139,13 @@ async function handleReplaceChoice() {
                         :disabled="isRepeatingOrder(order.id)"
                         @click="handleRepeatOrder(order.id)"
                     >
-                        {{
-                            isRepeatingOrder(order.id)
-                                ? "Собираем корзину…"
-                                : "Повторить заказ"
-                        }}
+                        {{ isRepeatingOrder(order.id) ? "Собираем корзину…" : "Повторить заказ" }}
                     </button>
                 </div>
             </li>
         </ul>
 
-        <p
-            v-if="totalOrdersLoaded > HISTORY_TAB_LIMIT"
-            :class="oh.moreHint"
-        >
+        <p v-if="totalOrdersLoaded > HISTORY_TAB_LIMIT" :class="oh.moreHint">
             Показаны {{ HISTORY_TAB_LIMIT }} последних из {{ totalOrdersLoaded }} заказов.
         </p>
 

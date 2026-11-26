@@ -15,7 +15,7 @@ final class EloquentEmployeeRepository implements EmployeeRepository
     {
         $row = $employee->hasId()
             ? EmployeeModel::query()->find($employee->id())
-            : new EmployeeModel();
+            : new EmployeeModel;
 
         if (! $row instanceof EmployeeModel) {
             throw new \InvalidArgumentException('Сотрудник не найден.');
@@ -110,7 +110,7 @@ final class EloquentEmployeeRepository implements EmployeeRepository
             role: $role,
             passwordHash: (string) $row->password_hash,
             isActive: (bool) $row->is_active,
-            createdAt: $row->created_at?->toDateTimeImmutable() ?? new DateTimeImmutable(),
+            createdAt: $row->created_at?->toDateTimeImmutable() ?? new DateTimeImmutable,
             branchId: $row->branch_id !== null ? (int) $row->branch_id : null,
         );
     }

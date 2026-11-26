@@ -130,11 +130,7 @@ export function useCompanyClosedNoticeProcess() {
         }
 
         closedNoticeStopWatch = watch(
-            () => [
-                shellStore.isInteractive,
-                contentStore.loaded,
-                contentStore.branch,
-            ],
+            () => [shellStore.isInteractive, contentStore.loaded, contentStore.branch],
             () => scheduleNoticeAfterShellReady(),
             { immediate: true },
         );

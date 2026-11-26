@@ -153,10 +153,7 @@ onBeforeUnmount(() => {
         </div>
 
         <div :class="jVar.innerWrap">
-            <div
-                v-if="isLoading"
-                :class="jVar.loadingRow"
-            >
+            <div v-if="isLoading" :class="jVar.loadingRow">
                 <div :class="jShared.loadingSlot"></div>
             </div>
 
@@ -186,9 +183,7 @@ onBeforeUnmount(() => {
                         <div :class="jShared.cardFrame">
                             <div
                                 :class="
-                                    isMobile
-                                        ? jShared.mediaSlotMobile
-                                        : jShared.mediaSlotDesktop
+                                    isMobile ? jShared.mediaSlotMobile : jShared.mediaSlotDesktop
                                 "
                             >
                                 <img
@@ -210,10 +205,7 @@ onBeforeUnmount(() => {
                 </SwiperSlide>
             </Swiper>
 
-            <div
-                v-if="!isMobile && slides.length > 1"
-                :class="jShared.navRail"
-            >
+            <div v-if="!isMobile && slides.length > 1" :class="jShared.navRail">
                 <button
                     type="button"
                     :class="jShared.navBtn"
@@ -232,10 +224,7 @@ onBeforeUnmount(() => {
                 </button>
             </div>
 
-            <div
-                v-if="!isLoading && !slides.length"
-                :class="jShared.emptyState"
-            >
+            <div v-if="!isLoading && !slides.length" :class="jShared.emptyState">
                 Баннеры скоро появятся.
             </div>
         </div>

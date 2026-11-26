@@ -40,31 +40,26 @@ export const workScheduleDesign = {
     panelStatic:
         "fixed z-[80] overflow-y-auto rounded-none border px-4 py-3 backdrop-blur-sm sm:px-5 sm:py-3.5",
 
-    panelParagraphToday:
-        "mb-3 pb-2.5 text-xs leading-snug",
+    panelParagraphToday: "mb-3 pb-2.5 text-xs leading-snug",
 
     panelParagraphByDays: "mb-3 text-xs",
 
-    panelFallbackParagraph:
-        "text-sm leading-relaxed tabular-nums",
+    panelFallbackParagraph: "text-sm leading-relaxed tabular-nums",
 
     ulSchedule: "divide-y text-sm",
 
-    liScheduleRow:
-        "flex items-baseline justify-between gap-4 py-2 first:pt-0 last:pb-0",
+    liScheduleRow: "flex items-baseline justify-between gap-4 py-2 first:pt-0 last:pb-0",
 
     dayCell: "w-8 shrink-0 text-xs font-medium tabular-nums",
 
-    workCell:
-        "min-w-0 text-right text-sm tabular-nums",
+    workCell: "min-w-0 text-right text-sm tabular-nums",
 
     emptyState: "text-sm leading-relaxed",
 
     srOnlyToday: "sr-only",
 
     theme: {
-        barSurface:
-            "border-black/12 bg-app-canvas hover:bg-black/[0.06]",
+        barSurface: "border-black/12 bg-app-canvas hover:bg-black/[0.06]",
         panelSurface:
             "border-app-border-on-surface bg-[rgba(0,0,0,0.88)] shadow-xl backdrop-blur-lg",
         panelDivide: "divide-black/15",
@@ -76,5 +71,3 @@ export const workScheduleDesign = {
         todayDayLabel: "text-app-accent",
     },
 } as const;
-
-export type WorkScheduleDesign = typeof workScheduleDesign;

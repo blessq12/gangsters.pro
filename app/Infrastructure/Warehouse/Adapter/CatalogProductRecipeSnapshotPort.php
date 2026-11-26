@@ -38,6 +38,7 @@ final class CatalogProductRecipeSnapshotPort implements ProductRecipeSnapshotPor
                 $key = $need['ingredient_ref'].'|'.$need['unit'];
                 if (! isset($aggregated[$key])) {
                     $aggregated[$key] = $need;
+
                     continue;
                 }
                 $aggregated[$key]['quantity'] += $need['quantity'];

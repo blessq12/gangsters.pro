@@ -2,9 +2,9 @@
 
 namespace Tests\Domain\Order;
 
+use App\Domain\Core\Order\Entity\OrderCommercialRules;
 use App\Domain\Core\Order\Enum\OrderLineType;
 use App\Domain\Core\Order\Policy\OrderFormation;
-use App\Domain\Core\Order\Entity\OrderCommercialRules;
 use App\Domain\Core\Order\ValueObject\OrderDeliveryAddress;
 use App\Domain\Core\Order\ValueObject\OrderDeliveryInfo;
 use App\Domain\Core\Order\ValueObject\OrderFormationFacts;

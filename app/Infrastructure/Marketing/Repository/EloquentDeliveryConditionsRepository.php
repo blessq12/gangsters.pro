@@ -51,7 +51,7 @@ final class EloquentDeliveryConditionsRepository implements DeliveryConditionsTe
         } else {
             $row = MarketingDeliveryConditionsModel::query()->orderBy('id')->first();
             if (! $row instanceof MarketingDeliveryConditionsModel) {
-                $row = new MarketingDeliveryConditionsModel();
+                $row = new MarketingDeliveryConditionsModel;
             }
         }
 

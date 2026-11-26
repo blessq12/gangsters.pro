@@ -3,7 +3,21 @@
 namespace App\Infrastructure\Delivery\Model;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property int $configuration_id
+ * @property string $zone_key
+ * @property string $name
+ * @property int $fee_kopecks
+ * @property bool $is_remote
+ * @property array $geojson
+ * @property int $delivery_product_id
+ * @property int $sort_order
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
 final class DeliveryZoneModel extends Model
 {
     protected $table = 'DLV_zones';

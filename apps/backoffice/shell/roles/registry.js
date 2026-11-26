@@ -13,7 +13,7 @@ export const roleRegistry = {
 };
 
 /** URL prefix owned by each API role (for foreign-path redirects). */
-export const rolePathPrefix = {
+const rolePathPrefix = {
     owner: "/owner",
     administrator: "/administrator",
     kitchen: "/production",

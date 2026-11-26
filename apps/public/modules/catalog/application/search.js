@@ -9,7 +9,7 @@ const MIN_QUERY_LENGTH = 2;
 /**
  * @returns {string[]}
  */
-export function readCatalogSearchHistory() {
+function readCatalogSearchHistory() {
     if (typeof window === "undefined") {
         return [];
     }
@@ -38,7 +38,7 @@ export function readCatalogSearchHistory() {
  * @param {string} query
  * @returns {string[]}
  */
-export function rememberCatalogSearchQuery(query) {
+function rememberCatalogSearchQuery(query) {
     const normalized = String(query ?? "").trim();
     if (normalized.length < MIN_QUERY_LENGTH) {
         return readCatalogSearchHistory();
@@ -130,7 +130,7 @@ function collectSearchableParts(product, categoryNames) {
  * @param {Array<{ category?: object, products?: object[] }>} categories
  * @returns {Array<{ product: object, categoryNames: string[] }>}
  */
-export function flattenCatalogForSearch(categories) {
+function flattenCatalogForSearch(categories) {
     if (!Array.isArray(categories)) {
         return [];
     }
@@ -198,10 +198,7 @@ function scoreCatalogSearchHit(product, query, parts) {
     }
 
     const tokens = q.split(/\s+/).filter(Boolean);
-    if (
-        tokens.length > 1
-        && tokens.every((token) => parts.some((part) => part.includes(token)))
-    ) {
+    if (tokens.length > 1 && tokens.every((token) => parts.some((part) => part.includes(token)))) {
         return 30;
     }
 
@@ -213,7 +210,7 @@ function scoreCatalogSearchHit(product, query, parts) {
  * @param {string} query
  * @returns {object[]}
  */
-export function searchCatalogItems(categories, query) {
+function searchCatalogItems(categories, query) {
     const trimmed = String(query ?? "").trim();
     if (!trimmed) {
         return [];
@@ -232,10 +229,7 @@ export function searchCatalogItems(categories, query) {
                 return b.score - a.score;
             }
 
-            return String(a.product?.name || "").localeCompare(
-                String(b.product?.name || ""),
-                "ru",
-            );
+            return String(a.product?.name || "").localeCompare(String(b.product?.name || ""), "ru");
         });
 
     return hits.map((entry) => entry.product);
@@ -262,7 +256,7 @@ function createSeededRandom(seed) {
  * @param {number} seed
  * @returns {T[]}
  */
-export function shuffleCatalogDiscoverPool(items, seed) {
+function shuffleCatalogDiscoverPool(items, seed) {
     if (!Array.isArray(items) || items.length <= 1) {
         return Array.isArray(items) ? [...items] : [];
     }
@@ -282,7 +276,7 @@ export function shuffleCatalogDiscoverPool(items, seed) {
  * @param {Array<{ category?: object, products?: object[] }>} categories
  * @returns {object[]}
  */
-export function buildCatalogDiscoverPool(categories) {
+function buildCatalogDiscoverPool(categories) {
     return flattenCatalogForSearch(categories).map((entry) => entry.product);
 }
 
@@ -290,7 +284,7 @@ export function buildCatalogDiscoverPool(categories) {
  * @param {object[]} pool
  * @param {number} [seed]
  */
-export function createCatalogDiscoverIterator(pool, seed = Date.now()) {
+function createCatalogDiscoverIterator(pool, seed = Date.now()) {
     const ordered = shuffleCatalogDiscoverPool(pool, seed);
     let cursor = 0;
 
@@ -354,7 +348,7 @@ function clearFeed() {
     visibleItems.value = [];
 }
 
-export function useCatalogSearchDiscover() {
+function useCatalogSearchDiscover() {
     return {
         visibleItems,
         hasFeed,
@@ -436,10 +430,10 @@ function bindCatalogSearchWatchers() {
         () => useCatalogStore().hasLoaded,
         (loaded) => {
             if (
-                loaded
-                && useUiStore().catalogSearchOpen
-                && isSearchIdleState()
-                && !discover.hasFeed.value
+                loaded &&
+                useUiStore().catalogSearchOpen &&
+                isSearchIdleState() &&
+                !discover.hasFeed.value
             ) {
                 refreshDiscoverFeed(discoverSeed);
             }
@@ -460,9 +454,7 @@ export function useCatalogSearch() {
         searchCatalogItems(catalogStore.menuCategoryEntries, query.value),
     );
 
-    const loading = computed(
-        () => !catalogStore.hasLoaded && catalogStore.loading,
-    );
+    const loading = computed(() => !catalogStore.hasLoaded && catalogStore.loading);
 
     /** @type {import('vue').ComputedRef<CatalogSearchBodyState>} */
     const bodyState = computed(() => {

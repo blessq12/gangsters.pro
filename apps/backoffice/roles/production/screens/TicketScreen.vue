@@ -80,9 +80,7 @@ onMounted(load);
 <template>
     <div class="mx-auto w-full max-w-7xl space-y-6 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
         <div class="flex flex-wrap items-center justify-between gap-3">
-            <UiButton @click="goQueue">
-                К очереди
-            </UiButton>
+            <UiButton @click="goQueue">К очереди</UiButton>
             <OrderNotesTrigger
                 v-if="ticket?.order_id"
                 :order-id="ticket.order_id"
@@ -92,17 +90,9 @@ onMounted(load);
             />
         </div>
 
-        <p
-            v-if="detailApi.loading"
-            class="text-sm text-bo-muted"
-        >
-            Загрузка…
-        </p>
+        <p v-if="detailApi.loading" class="text-sm text-bo-muted">Загрузка…</p>
 
-        <UiCard
-            v-else-if="ticket"
-            :title="String(orderNumber)"
-        >
+        <UiCard v-else-if="ticket" :title="String(orderNumber)">
             <template #actions>
                 <UiBadge
                     :variant="ticketStatusVariant(ticket.status)"
@@ -125,19 +115,11 @@ onMounted(load);
                             {{ line.name || `Позиция #${line.product_id}` }}
                         </span>
                         <span class="ml-2 text-bo-muted">× {{ line.quantity }}</span>
-                        <span
-                            v-if="line.status === 'done'"
-                            class="ml-2 text-emerald-300"
-                        >
+                        <span v-if="line.status === 'done'" class="ml-2 text-emerald-300">
                             готово
-                            <template v-if="line.done_by">
-                                · #{{ line.done_by }}
-                            </template>
+                            <template v-if="line.done_by">· #{{ line.done_by }}</template>
                         </span>
-                        <span
-                            v-else-if="line.status === 'cancelled'"
-                            class="ml-2 text-bo-muted"
-                        >
+                        <span v-else-if="line.status === 'cancelled'" class="ml-2 text-bo-muted">
                             отменена
                         </span>
                     </div>
@@ -150,18 +132,11 @@ onMounted(load);
                     </UiButton>
                 </li>
             </ul>
-            <p
-                v-if="lines.length === 0"
-                class="text-sm text-bo-muted"
-            >
-                Нет позиций
-            </p>
+            <p v-if="lines.length === 0" class="text-sm text-bo-muted">Нет позиций</p>
 
-            <p
-                v-if="canWorkLines"
-                class="mt-6 text-sm text-bo-muted"
-            >
-                Отмечай позиции по готовности — любой повар филиала. Когда все готовы, заказ станет «Готов».
+            <p v-if="canWorkLines" class="mt-6 text-sm text-bo-muted">
+                Отмечай позиции по готовности — любой повар филиала. Когда все готовы, заказ станет
+                «Готов».
             </p>
         </UiCard>
     </div>

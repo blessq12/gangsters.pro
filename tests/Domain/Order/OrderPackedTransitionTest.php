@@ -15,7 +15,7 @@ use PHPUnit\Framework\TestCase;
 
 final class OrderPackedTransitionTest extends TestCase
 {
-    public function testMarkPackedИзReady(): void
+    public function test_mark_packed_из_ready(): void
     {
         $order = $this->orderAt(OrderStatus::Ready, pickup: true);
         $order->markPacked();
@@ -25,7 +25,7 @@ final class OrderPackedTransitionTest extends TestCase
         $this->assertInstanceOf(OrderPacked::class, $events[0]);
     }
 
-    public function testСамовывозТолькоИзPacked(): void
+    public function test_самовывоз_только_из_packed(): void
     {
         $order = $this->orderAt(OrderStatus::Ready, pickup: true);
 
@@ -33,7 +33,7 @@ final class OrderPackedTransitionTest extends TestCase
         $order->markDeliveredPickup();
     }
 
-    public function testСамовывозИзPackedОк(): void
+    public function test_самовывоз_из_packed_ок(): void
     {
         $order = $this->orderAt(OrderStatus::Packed, pickup: true);
         $order->markDeliveredPickup();
@@ -41,7 +41,7 @@ final class OrderPackedTransitionTest extends TestCase
         $this->assertSame(OrderStatus::Delivered, $order->status());
     }
 
-    public function testМаршрутТолькоИзPacked(): void
+    public function test_маршрут_только_из_packed(): void
     {
         $order = $this->orderAt(OrderStatus::Ready, pickup: false);
         $this->assertFalse($order->canBeAssignedToRoute());

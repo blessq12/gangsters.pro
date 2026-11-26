@@ -43,15 +43,11 @@ const emit = defineEmits(["back", "primary"]);
 const n = useAppDesign().components.checkout.nav;
 
 const primaryClass = computed(() =>
-    props.primaryLoading || props.primaryDisabled
-        ? n.btnPrimaryBusy
-        : n.btnPrimary,
+    props.primaryLoading || props.primaryDisabled ? n.btnPrimaryBusy : n.btnPrimary,
 );
 
 const primaryText = computed(() =>
-    props.primaryLoading && props.primaryBusyLabel
-        ? props.primaryBusyLabel
-        : props.primaryLabel,
+    props.primaryLoading && props.primaryBusyLabel ? props.primaryBusyLabel : props.primaryLabel,
 );
 </script>
 
@@ -77,10 +73,7 @@ const primaryText = computed(() =>
             <span :class="n.sheen" aria-hidden="true" />
             <span :class="n.primaryContent">
                 <span :class="n.primaryLabel">{{ primaryText }}</span>
-                <span
-                    v-if="showNavTotal && totalLabel"
-                    :class="n.totalLabel"
-                >
+                <span v-if="showNavTotal && totalLabel" :class="n.totalLabel">
                     {{ totalLabel }}
                 </span>
             </span>

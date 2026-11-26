@@ -48,7 +48,16 @@ const toast = useToast();
 const auth = useAuthStore();
 const { employee } = storeToRefs(auth);
 const workspace = useOrderWorkspaceStore();
-const { form, cart, giftDecision, giftPromptedForEligible, mode, orderId, sourceOrder, isReadonly } = storeToRefs(workspace);
+const {
+    form,
+    cart,
+    giftDecision,
+    giftPromptedForEligible,
+    mode,
+    orderId,
+    sourceOrder,
+    isReadonly,
+} = storeToRefs(workspace);
 
 const detailApi = useApi();
 const actionApi = useApi();
@@ -62,7 +71,7 @@ const menuItems = computed(() => {
     /** @type {Array<Record<string, unknown>>} */
     const flat = [];
     for (const category of categories.value) {
-        for (const item of (category.items || [])) {
+        for (const item of category.items || []) {
             flat.push(item);
         }
     }
@@ -197,7 +206,8 @@ const {
         }
         if (form.value.method === "courier") {
             const hasCoords = form.value.lat !== "" && form.value.lng !== "";
-            const hasStreetHouse = form.value.street.trim() !== "" && form.value.house.trim() !== "";
+            const hasStreetHouse =
+                form.value.street.trim() !== "" && form.value.house.trim() !== "";
             if (!hasCoords || !hasStreetHouse) {
                 return false;
             }
@@ -251,7 +261,11 @@ function validateForm() {
         if (!String(form.value.house).trim()) {
             fieldErrors.house = "Укажи дом";
         }
-        if (!fieldErrors.street && !fieldErrors.house && (form.value.lat === "" || form.value.lng === "")) {
+        if (
+            !fieldErrors.street &&
+            !fieldErrors.house &&
+            (form.value.lat === "" || form.value.lng === "")
+        ) {
             fieldErrors.street = "Выбери адрес из подсказок";
         }
         if (!fieldErrors.street && !fieldErrors.house && quoteInZone.value === false) {
@@ -315,26 +329,32 @@ async function onApplyClientAddress(address) {
     let lat = toCoordOrNull(address.latitude ?? address.lat);
     let lng = toCoordOrNull(address.longitude ?? address.lng);
 
-    if ((lat === null || lng === null) && street && house) {
+    if ((lat === null || lng === null) && street && house && city) {
         try {
             const hits = await suggestAddressFromDaData({
                 query: [city, street, house].filter(Boolean).join(", "),
-                city: city || null,
+                city,
                 limit: 8,
             });
-            const hit = hits.find((row) =>
-                row.lat != null
-                && row.lng != null
-                && String(row.street || "").trim()
-                && String(row.house || "").trim())
-                ?? hits.find((row) => row.lat != null && row.lng != null);
+            const hit =
+                hits.find(
+                    (row) =>
+                        row.lat != null &&
+                        row.lng != null &&
+                        String(row.street || "").trim() &&
+                        String(row.house || "").trim(),
+                ) ?? hits.find((row) => row.lat != null && row.lng != null);
             if (hit) {
                 lat = hit.lat;
                 lng = hit.lng;
             }
         } catch (err) {
-            toast.error(err instanceof Error ? err.message : "Не удалось уточнить координаты адреса");
+            toast.error(
+                err instanceof Error ? err.message : "Не удалось уточнить координаты адреса",
+            );
         }
+    } else if ((lat === null || lng === null) && street && house && !city) {
+        toast.error("Нет города филиала — не удалось уточнить координаты адреса");
     }
 
     onAddressUpdate({
@@ -393,15 +413,13 @@ function onAddressUpdate(address) {
         form.value.comment = address.comment || "";
     }
     if (address.latitude !== undefined) {
-        form.value.lat = address.latitude === "" || address.latitude === null
-            ? ""
-            : String(address.latitude);
+        form.value.lat =
+            address.latitude === "" || address.latitude === null ? "" : String(address.latitude);
         delete fieldErrors.street;
     }
     if (address.longitude !== undefined) {
-        form.value.lng = address.longitude === "" || address.longitude === null
-            ? ""
-            : String(address.longitude);
+        form.value.lng =
+            address.longitude === "" || address.longitude === null ? "" : String(address.longitude);
         delete fieldErrors.street;
     }
     scheduleQuote();
@@ -413,10 +431,12 @@ async function ensureClientRecord() {
         return false;
     }
     try {
-        const result = await ensureApi.run(() => ensureClient({
-            name: form.value.name.trim(),
-            phone: form.value.phone.trim(),
-        }));
+        const result = await ensureApi.run(() =>
+            ensureClient({
+                name: form.value.name.trim(),
+                phone: form.value.phone.trim(),
+            }),
+        );
         const client = result?.client;
         if (!client?.id) {
             throw new Error("Клиент не получен");
@@ -473,9 +493,12 @@ async function bootstrapCreate() {
     }
     clearQuote();
     ticket.value = null;
-    await Promise.all([loadBranch(), loadMenu(branchId.value).catch((err) => {
-        toast.error(err instanceof Error ? err.message : "Не удалось загрузить меню");
-    })]);
+    await Promise.all([
+        loadBranch(),
+        loadMenu(branchId.value).catch((err) => {
+            toast.error(err instanceof Error ? err.message : "Не удалось загрузить меню");
+        }),
+    ]);
     queueMicrotask(() => {
         suppressWatchers = false;
         scheduleQuote();
@@ -590,10 +613,10 @@ async function submitPrimary() {
                 method: "courier",
                 zone_id: fresh?.delivery?.zone_id ?? sourceOrder.value?.delivery?.zone_id ?? null,
                 fee_kopecks: Number(
-                    fresh?.totals?.delivery_fee
-                    ?? fresh?.delivery?.delivery_fee_kopecks
-                    ?? sourceOrder.value?.delivery?.fee_kopecks
-                    ?? 0,
+                    fresh?.totals?.delivery_fee ??
+                        fresh?.delivery?.delivery_fee_kopecks ??
+                        sourceOrder.value?.delivery?.fee_kopecks ??
+                        0,
                 ),
                 address: {
                     street: form.value.street.trim(),
@@ -817,10 +840,7 @@ onMounted(bootstrap);
             @secondary="repeatOrder"
             @command="onCommand"
         >
-            <template
-                v-if="showPack || showNotesButton"
-                #actions
-            >
+            <template v-if="showPack || showNotesButton" #actions>
                 <OrderPackChecklist
                     v-if="showPack"
                     :lines="ticket?.lines ?? []"
@@ -849,10 +869,7 @@ onMounted(bootstrap);
         <template v-else>
             <p class="text-sm text-bo-muted">
                 {{ branchTitle }}
-                <span
-                    v-if="scheduleCaption"
-                    class="ml-2 text-bo-fg"
-                >· {{ scheduleCaption }}</span>
+                <span v-if="scheduleCaption" class="ml-2 text-bo-fg">· {{ scheduleCaption }}</span>
             </p>
 
             <div class="grid gap-4 lg:grid-cols-3">
@@ -886,18 +903,15 @@ onMounted(bootstrap);
                         :house-error="fieldErrors.house || ''"
                         :zone-status="addressZoneStatus"
                         :readonly="isReadonly"
-                        @update:method="form.method = $event; scheduleQuote()"
+                        @update:method="
+                            form.method = $event;
+                            scheduleQuote();
+                        "
                         @address-update="onAddressUpdate"
                     />
-                    <UiCard
-                        v-if="audits.length"
-                        title="Аудит"
-                    >
+                    <UiCard v-if="audits.length" title="Аудит">
                         <ul class="space-y-2 text-xs text-bo-muted">
-                            <li
-                                v-for="audit in audits"
-                                :key="audit.id"
-                            >
+                            <li v-for="audit in audits" :key="audit.id">
                                 {{ audit.created_at }}
                                 · правки: {{ (audit.changes ?? []).map((c) => c.field).join(", ") }}
                             </li>
@@ -913,19 +927,20 @@ onMounted(bootstrap);
                         :schedule-error="fieldErrors.scheduled_at || ''"
                         :readonly="isReadonly"
                         @update:payment-method="form.payment_method = $event"
-                        @update:scheduled-at="form.scheduled_at = $event; delete fieldErrors.scheduled_at"
+                        @update:scheduled-at="
+                            form.scheduled_at = $event;
+                            delete fieldErrors.scheduled_at;
+                        "
                     />
                     <UiCard title="Корзина">
-                        <p
-                            v-if="fieldErrors.lines"
-                            class="mb-2 text-xs text-red-300"
-                        >
+                        <p v-if="fieldErrors.lines" class="mb-2 text-xs text-red-300">
                             {{ fieldErrors.lines }}
                         </p>
                         <OrderCartPanel
                             :cart="cart"
                             :free-complement-lines="freeComplementLines"
                             :gift-lines="giftLines"
+                            :categories="categories"
                             :menu-items="menuItems"
                             :menu-loading="menuApi.loading"
                             :readonly="isReadonly"

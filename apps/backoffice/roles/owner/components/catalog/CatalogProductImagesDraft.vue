@@ -50,9 +50,9 @@ function onFileChange(event) {
 function setFocus(localKey, focusX, focusY) {
     const x = Math.min(100, Math.max(0, focusX));
     const y = Math.min(100, Math.max(0, focusY));
-    images.value = images.value.map((row) => (
-        row.localKey === localKey ? { ...row, focus_x: x, focus_y: y } : row
-    ));
+    images.value = images.value.map((row) =>
+        row.localKey === localKey ? { ...row, focus_x: x, focus_y: y } : row,
+    );
 }
 
 function focusFromEvent(localKey, rect, clientX, clientY) {
@@ -120,9 +120,7 @@ onBeforeUnmount(() => {
 <template>
     <div class="space-y-4">
         <div class="flex flex-wrap items-center gap-3">
-            <UiButton @click="fileInput?.click()">
-                + Фото
-            </UiButton>
+            <UiButton @click="fileInput?.click()">+ Фото</UiButton>
             <input
                 ref="fileInput"
                 type="file"
@@ -130,7 +128,7 @@ onBeforeUnmount(() => {
                 multiple
                 class="hidden"
                 @change="onFileChange"
-            >
+            />
         </div>
 
         <div
@@ -157,9 +155,7 @@ onBeforeUnmount(() => {
                         >
                             <span aria-hidden="true">⋮⋮</span>
                         </button>
-                        <UiButton @click="removeImage(element)">
-                            Убрать
-                        </UiButton>
+                        <UiButton @click="removeImage(element)">Убрать</UiButton>
                     </div>
 
                     <div

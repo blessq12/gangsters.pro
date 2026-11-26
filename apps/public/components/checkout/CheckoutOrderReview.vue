@@ -51,9 +51,7 @@ const giftLineForOrder = computed(() => {
 
 const hasGiftInSummary = computed(() => giftLineForOrder.value.length > 0);
 
-const autoLines = computed(() =>
-    wizardNonComplementSystemItems(systemLines.value),
-);
+const autoLines = computed(() => wizardNonComplementSystemItems(systemLines.value));
 
 function unitPriceRub(item) {
     const kopecks = Number(item?.pricing?.finalUnitPriceKopecks);
@@ -71,11 +69,7 @@ function linePriceLabel(item) {
 
 <template>
     <ul :class="cf.orderList">
-        <li
-            v-for="item in userLines"
-            :key="item.lineKey"
-            :class="cf.orderLineRow"
-        >
+        <li v-for="item in userLines" :key="item.lineKey" :class="cf.orderLineRow">
             <span :class="cf.orderLineTruncate">
                 {{ item.productSnapshot?.name || `Товар #${item.productId}` }}
             </span>
@@ -84,46 +78,35 @@ function linePriceLabel(item) {
             </span>
         </li>
 
-        <li
-            v-for="item in complementLines"
-            :key="item.lineKey"
-            :class="cf.orderLineRow"
-        >
+        <li v-for="item in complementLines" :key="item.lineKey" :class="cf.orderLineRow">
             <span :class="cf.orderLineTruncate">
                 {{ item.productSnapshot?.name || `Товар #${item.productId}` }}
                 <span :class="cf.badgeTiny">комплект</span>
             </span>
-            <span :class="cf.orderLineMuted">
-                {{ item.qty }} × {{ linePriceLabel(item) }}
-            </span>
+            <span :class="cf.orderLineMuted">{{ item.qty }} × {{ linePriceLabel(item) }}</span>
         </li>
 
-        <li
-            v-for="gift in giftLineForOrder"
-            :key="gift.key"
-            :class="cf.orderLineRow"
-        >
+        <li v-for="gift in giftLineForOrder" :key="gift.key" :class="cf.orderLineRow">
             <span :class="cf.orderLineTruncate">
                 {{ gift.name }}
                 <span :class="cf.badgeTiny">подарок</span>
             </span>
         </li>
 
-        <li
-            v-for="item in autoLines"
-            :key="item.lineKey"
-            :class="cf.orderLineRow"
-        >
+        <li v-for="item in autoLines" :key="item.lineKey" :class="cf.orderLineRow">
             <span :class="cf.orderLineTruncate">
                 {{ item.productSnapshot?.name || `Товар #${item.productId}` }}
             </span>
-            <span :class="cf.orderLineMuted">
-                {{ item.qty }} × {{ linePriceLabel(item) }}
-            </span>
+            <span :class="cf.orderLineMuted">{{ item.qty }} × {{ linePriceLabel(item) }}</span>
         </li>
 
         <li
-            v-if="!userLines.length && !complementLines.length && !autoLines.length && !hasGiftInSummary"
+            v-if="
+                !userLines.length &&
+                !complementLines.length &&
+                !autoLines.length &&
+                !hasGiftInSummary
+            "
             :class="s.textMutedLine"
         >
             Пусто

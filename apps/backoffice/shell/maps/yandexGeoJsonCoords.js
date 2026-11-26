@@ -1,6 +1,3 @@
-/** Томск — [широта, долгота] для Яндекс.Карт. */
-export const TOMSK_CENTER = [56.49771, 84.97437];
-
 export const TOMSK_ZOOM = 12;
 
 /** Ограничение pan примерно областью Томска. */
@@ -35,17 +32,13 @@ function looksLikeLongitude(value) {
  * @param {unknown} coords
  * @returns {coords is [number, number]}
  */
-export function isValidYmapsCenter(coords) {
+function isValidYmapsCenter(coords) {
     if (!Array.isArray(coords) || coords.length < 2) {
         return false;
     }
     const lat = Number(coords[0]);
     const lng = Number(coords[1]);
-    return (
-        isFinitePair(lat, lng)
-        && looksLikeLatitude(lat)
-        && looksLikeLongitude(lng)
-    );
+    return isFinitePair(lat, lng) && looksLikeLatitude(lat) && looksLikeLongitude(lng);
 }
 
 /**
@@ -53,7 +46,7 @@ export function isValidYmapsCenter(coords) {
  * @param {unknown} position
  * @returns {[number, number]|null}
  */
-export function geoJsonPositionToYmaps(position) {
+function geoJsonPositionToYmaps(position) {
     if (!Array.isArray(position) || position.length < 2) {
         return null;
     }
@@ -78,7 +71,7 @@ export function geoJsonPositionToYmaps(position) {
  * @param {unknown} position
  * @returns {[number, number]|null}
  */
-export function ymapsPositionToGeoJson(position) {
+function ymapsPositionToGeoJson(position) {
     if (!Array.isArray(position) || position.length < 2) {
         return null;
     }

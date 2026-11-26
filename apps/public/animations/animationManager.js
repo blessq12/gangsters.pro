@@ -2,26 +2,26 @@ import { onBeforeUnmount, onMounted } from "vue";
 import { gsap } from "gsap";
 
 /** Тайминг входа основного блока навбара (см. useEnterSlide в AppNavbar*). */
-export const NAVBAR_ENTER_DELAY = 0.8;
-export const NAVBAR_ENTER_DURATION = 0.6;
-export const NAVBAR_ENTER_Y = -40;
-export const NAVBAR_ENTER_EASE = "power3.out";
+const NAVBAR_ENTER_DELAY = 0.8;
+const NAVBAR_ENTER_DURATION = 0.6;
+const NAVBAR_ENTER_Y = -40;
+const NAVBAR_ENTER_EASE = "power3.out";
 
 /** Задержка до момента, когда анимация навбара завершилась (delay + duration). */
-export function navbarEnterCompleteDelay() {
+function navbarEnterCompleteDelay() {
     return NAVBAR_ENTER_DELAY + NAVBAR_ENTER_DURATION;
 }
 
 /** Сцена интро: логотип + оверлей + радиальный глоу снизу (accent). */
-export const INTRO_LOGO_IN_DURATION = 0.7;
-export const INTRO_LOGO_HOLD_DURATION = 0.6;
-export const INTRO_LOGO_OUT_DURATION = 0.65;
-export const INTRO_MAIN_FADE_DURATION = 0.55;
-export const INTRO_OVERLAY_FADE_DURATION = 0.55;
+const INTRO_LOGO_IN_DURATION = 0.7;
+const INTRO_LOGO_HOLD_DURATION = 0.6;
+const INTRO_LOGO_OUT_DURATION = 0.65;
+const INTRO_MAIN_FADE_DURATION = 0.55;
+const INTRO_OVERLAY_FADE_DURATION = 0.55;
 /** Секунды: fade main начинает до конца предыдущего блока. */
-export const INTRO_MAIN_FADE_OVERLAP = 0.38;
+const INTRO_MAIN_FADE_OVERLAP = 0.38;
 /** Секунды: fade оверлея — overlap к предыдущему tween. */
-export const INTRO_OVERLAY_FADE_OVERLAP = 0.42;
+const INTRO_OVERLAY_FADE_OVERLAP = 0.42;
 
 /**
  * Пауза после onComplete fade оверлея интро (оверлей полностью скрыт) до reveal dock.
@@ -79,13 +79,7 @@ export function revealShellMainContent(mainEl, { animate = false } = {}) {
     gsap.set(mainEl, { opacity: 1 });
 }
 
-export function playIntroScene({
-    introOverlay,
-    introLogo,
-    main,
-    introGlow,
-    onComplete,
-}) {
+export function playIntroScene({ introOverlay, introLogo, main, introGlow, onComplete }) {
     if (!main) {
         onComplete?.();
         return;
@@ -174,11 +168,7 @@ export function playModalOpen({ backdrop, card }) {
 
     const tl = gsap.timeline();
 
-    tl.fromTo(
-        backdrop,
-        { opacity: 0 },
-        { opacity: 1, duration: 0.2, ease: "power2.out" },
-    ).fromTo(
+    tl.fromTo(backdrop, { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "power2.out" }).fromTo(
         card,
         { y: 20, opacity: 0, scale: 0.96 },
         {
@@ -271,7 +261,7 @@ export function playPageLeave(el, done) {
     });
 }
 
-export function playFloatLoop({ elements, options = {} }) {
+function playFloatLoop({ elements, options = {} }) {
     const targets = (elements || []).filter(Boolean);
     if (!targets.length) {
         return {
@@ -279,14 +269,7 @@ export function playFloatLoop({ elements, options = {} }) {
         };
     }
 
-    const {
-        y = 12,
-        x = 0,
-        duration = 3,
-        delay = 0,
-        stagger = 0.18,
-        ease = "sine.inOut",
-    } = options;
+    const { y = 12, x = 0, duration = 3, delay = 0, stagger = 0.18, ease = "sine.inOut" } = options;
 
     const tweens = targets.map((el, index) => {
         const directionX = index % 2 === 0 ? 1 : -1;
@@ -393,19 +376,14 @@ export function playBottomBarHide(bar, onComplete, variant = "mobile") {
     });
 }
 
-export function prefersReducedMotion() {
-    if (typeof window === "undefined") return false;
-    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-}
-
 /**
  * @param {HTMLElement|null|undefined} container
  * @param {{ onlyItems?: HTMLElement[] }} [options]
  */
 export function playCatalogItemsEnter(container, options = {}) {
-    const items = (options.onlyItems ?? Array.from(
-        container?.querySelectorAll(".catalog-item") ?? [],
-    )).filter((el) => el?.isConnected);
+    const items = (
+        options.onlyItems ?? Array.from(container?.querySelectorAll(".catalog-item") ?? [])
+    ).filter((el) => el?.isConnected);
 
     if (!items.length) return;
 
@@ -471,7 +449,6 @@ export function playDockContentHide(panel, onComplete, variant = "mobile") {
         onComplete,
     });
 }
-
 
 export function playProductDetailInfoEnter(panel, options = {}) {
     if (!panel) return;
@@ -585,7 +562,6 @@ export function playSearchPanelCrossfade(panel, onComplete) {
     );
 }
 
-
 export function useEnterSlide(targetRef, options = {}) {
     onMounted(() => {
         if (!targetRef.value) return;
@@ -607,8 +583,6 @@ export function useEnterSlide(targetRef, options = {}) {
         });
     });
 }
-
-
 
 export function useFloatLoop(targetsRef, options = {}) {
     let controller = null;

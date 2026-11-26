@@ -49,7 +49,7 @@ final class StockWriteOff
             quantity: $quantity,
             reason: $reason,
             kitchenTicketId: $kitchenTicketId,
-            occurredAt: $occurredAt ?? new DateTimeImmutable(),
+            occurredAt: $occurredAt ?? new DateTimeImmutable,
         );
     }
 

@@ -1,11 +1,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import {
-    getBanner,
-    storeBanner,
-    updateBanner,
-} from "../../../api/marketing.js";
+import { getBanner, storeBanner, updateBanner } from "../../../api/marketing.js";
 import MarketingImageField from "../components/marketing/MarketingImageField.vue";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
 import UiCard from "../../../shell/components/ui/UiCard.vue";
@@ -87,11 +83,11 @@ async function save() {
             desktop: desktopFile.value,
             mobile: mobileFile.value,
         };
-        const result = await saveApi.run(async () => (
+        const result = await saveApi.run(async () =>
             bannerId.value
                 ? updateBanner(bannerId.value, payload, files)
-                : storeBanner(payload, files)
-        ));
+                : storeBanner(payload, files),
+        );
         toast.success(bannerId.value ? "Сохранено" : "Создано");
         if (isNew.value && result?.id) {
             await router.replace({ name: "owner-marketing-banner", params: { id: result.id } });
@@ -126,9 +122,7 @@ onMounted(load);
             </UiButton>
         </div>
 
-        <p v-if="loadApi.loading" class="text-sm text-bo-muted">
-            Загрузка…
-        </p>
+        <p v-if="loadApi.loading" class="text-sm text-bo-muted">Загрузка…</p>
 
         <div v-else class="space-y-4">
             <UiCard title="Основное">

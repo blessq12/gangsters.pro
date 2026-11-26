@@ -113,10 +113,7 @@ onMounted(async () => {
 <template>
     <div class="mx-auto w-full max-w-7xl space-y-4 px-4 py-5 sm:px-6 lg:px-10 lg:py-7">
         <div class="flex flex-wrap items-center gap-3">
-            <UiButton
-                class="!bg-white/10 !text-bo-fg"
-                @click="backToWarehouse"
-            >
+            <UiButton class="!bg-white/10 !text-bo-fg" @click="backToWarehouse">
                 К складу филиала
             </UiButton>
             <h1 class="text-lg font-semibold tracking-tight text-bo-fg">
@@ -124,24 +121,13 @@ onMounted(async () => {
             </h1>
         </div>
 
-        <p
-            v-if="loadApi.loading"
-            class="text-sm text-bo-muted"
-        >
-            Загрузка…
-        </p>
+        <p v-if="loadApi.loading" class="text-sm text-bo-muted">Загрузка…</p>
 
-        <div
-            v-else
-            class="space-y-4"
-        >
+        <div v-else class="space-y-4">
             <UiCard title="Остаток">
                 <p class="text-xl font-semibold text-bo-fg">
                     {{ quantity }}
-                    <span
-                        v-if="unit"
-                        class="text-sm font-normal text-bo-muted"
-                    >
+                    <span v-if="unit" class="text-sm font-normal text-bo-muted">
                         {{ unit }}
                     </span>
                 </p>
@@ -149,11 +135,7 @@ onMounted(async () => {
 
             <UiCard title="История списаний">
                 <div class="mb-4 max-w-md">
-                    <UiInput
-                        v-model="historySearch"
-                        type="search"
-                        placeholder="Поиск по причине"
-                    />
+                    <UiInput v-model="historySearch" type="search" placeholder="Поиск по причине" />
                 </div>
                 <UiTable
                     :columns="historyColumns"

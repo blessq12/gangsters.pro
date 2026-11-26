@@ -16,12 +16,9 @@ const emit = defineEmits(["imageClick"]);
 const m = useAppDesign().components.catalog.cards.mobileGrid;
 const cs = useAppDesign().components.catalog.cards.shared;
 
-const {
-    primaryThumb,
-    imageSrcset,
-    imageObjectPosition,
-    primaryTag,
-} = useCatalogCardView(computed(() => props.product));
+const { primaryThumb, imageSrcset, imageObjectPosition, primaryTag } = useCatalogCardView(
+    computed(() => props.product),
+);
 
 const imageSizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw";
 
@@ -75,10 +72,7 @@ function handleDecrement() {
 
 <template>
     <article :class="m.article">
-        <span
-            :class="m.srOnlyAria"
-            aria-live="polite"
-        >{{ liveMessage }}</span>
+        <span :class="m.srOnlyAria" aria-live="polite">{{ liveMessage }}</span>
         <div :class="m.mediaWrap">
             <img
                 v-if="primaryThumb"
@@ -91,10 +85,7 @@ function handleDecrement() {
                 loading="lazy"
                 fetchpriority="low"
             />
-            <div
-                v-else
-                :class="m.placeholder"
-            >
+            <div v-else :class="m.placeholder">
                 {{ cs.noPhotoText }}
             </div>
 
@@ -106,11 +97,7 @@ function handleDecrement() {
                 @click.stop="emit('imageClick', product)"
             />
 
-            <CatalogCardBadges
-                :product="product"
-                :primary-tag="primaryTag"
-                variant="mobileGrid"
-            />
+            <CatalogCardBadges :product="product" :primary-tag="primaryTag" variant="mobileGrid" />
 
             <button
                 type="button"
@@ -135,16 +122,10 @@ function handleDecrement() {
                 />
             </button>
 
-            <div
-                :class="m.mediaFooterGradient"
-                aria-hidden="true"
-            />
+            <div :class="m.mediaFooterGradient" aria-hidden="true" />
 
             <div :class="m.mediaFooterStack">
-                <h3
-                    :class="m.titleUnderPhoto"
-                    :title="product.name"
-                >
+                <h3 :class="m.titleUnderPhoto" :title="product.name">
                     {{ product.name }}
                 </h3>
 

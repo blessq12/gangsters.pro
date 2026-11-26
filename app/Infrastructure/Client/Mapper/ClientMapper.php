@@ -4,9 +4,9 @@ namespace App\Infrastructure\Client\Mapper;
 
 use App\Domain\Supporting\Client\Entity\Client;
 use App\Domain\Supporting\Client\Entity\ClientAddress;
-use App\Infrastructure\Client\Model\ClientModel;
 use App\Infrastructure\Client\Model\ClientAddressModel;
 use App\Infrastructure\Client\Model\ClientFavoriteModel;
+use App\Infrastructure\Client\Model\ClientModel;
 use DateTimeImmutable;
 
 final class ClientMapper

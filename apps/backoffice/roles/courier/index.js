@@ -4,9 +4,7 @@ import RoleOutlet from "../../shell/layouts/RoleOutlet.vue";
 const module = {
     role: "courier",
     home: "courier-deliveries",
-    nav: [
-        { label: "Листы", routeName: "courier-deliveries", icon: "logistics", order: 0 },
-    ],
+    nav: [{ label: "Листы", routeName: "courier-deliveries", icon: "logistics", order: 0 }],
     routes: [
         {
             path: "/courier",

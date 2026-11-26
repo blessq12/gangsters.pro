@@ -43,7 +43,7 @@ export function normalizeCheckoutPaymentMethod(method) {
  * @param {unknown} method
  * @returns {string}
  */
-export function toServerCheckoutPaymentMethod(method) {
+function toServerCheckoutPaymentMethod(method) {
     const normalized = normalizeCheckoutPaymentMethod(method);
     return normalized === "cash" ? "cash" : "card_courier";
 }
@@ -52,7 +52,7 @@ export function toServerCheckoutPaymentMethod(method) {
  * @param {unknown} method
  * @returns {"cash"|"card"}
  */
-export function fromServerCheckoutPaymentMethod(method) {
+function fromServerCheckoutPaymentMethod(method) {
     if (method === "cash") {
         return "cash";
     }
@@ -96,13 +96,13 @@ export function normalizePersonsCount(value) {
         return CHECKOUT_PERSONS_DEFAULT;
     }
 
-    return Math.min(
-        CHECKOUT_PERSONS_MAX,
-        Math.max(CHECKOUT_PERSONS_MIN, Math.trunc(n)),
-    );
+    return Math.min(CHECKOUT_PERSONS_MAX, Math.max(CHECKOUT_PERSONS_MIN, Math.trunc(n)));
 }
 
-export function buildClientPayload(store, { clientId = null, isGuest = false, profile = null } = {}) {
+export function buildClientPayload(
+    store,
+    { clientId = null, isGuest = false, profile = null } = {},
+) {
     if (clientId != null) {
         const name = String(profile?.name || store.guestContact?.name || "").trim();
         const phone = String(profile?.phone || store.guestContact?.phone || "").trim();
@@ -175,9 +175,7 @@ export function buildDeliveryPayload(store, selectedAddress = null) {
     return {
         method,
         address: method === "courier" ? address : null,
-        comment:
-            normalizeDeliveryComment(store.deliveryInfo.comment).trim() ||
-            undefined,
+        comment: normalizeDeliveryComment(store.deliveryInfo.comment).trim() || undefined,
         persons: normalizePersonsCount(store.deliveryInfo.persons),
         scheduled_at: store.deliveryInfo.scheduledAt || undefined,
     };
@@ -187,9 +185,7 @@ export function buildPaymentPayload(store) {
     return {
         method: toServerCheckoutPaymentMethod(store.paymentInfo.method),
         change_from_rubles:
-            store.paymentInfo.changeFrom != null
-                ? Number(store.paymentInfo.changeFrom)
-                : undefined,
+            store.paymentInfo.changeFrom != null ? Number(store.paymentInfo.changeFrom) : undefined,
     };
 }
 
@@ -227,21 +223,6 @@ export function formatServerDeliveryLine(delivery) {
     ]
         .filter(Boolean)
         .join(", ");
-}
-
-/**
- * @param {object|null|undefined} client
- * @param {(phone: string) => string} formatPhone
- */
-export function formatServerClientLine(client, formatPhone) {
-    if (!client || typeof client !== "object") {
-        return "—";
-    }
-
-    const name = String(client.name || "").trim() || "—";
-    const phone = client.phone ? formatPhone(String(client.phone)) : "—";
-
-    return `${name}, ${phone}`;
 }
 
 /**

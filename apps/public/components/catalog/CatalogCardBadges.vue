@@ -19,7 +19,8 @@ const props = defineProps({
 });
 
 const cs = useAppDesign().components.catalog.cards.shared;
-const tokens = useAppDesign().components.catalog.cards[props.variant === "desktop" ? "desktop" : "mobileGrid"];
+const tokens =
+    useAppDesign().components.catalog.cards[props.variant === "desktop" ? "desktop" : "mobileGrid"];
 
 const displayWeight = computed(() => {
     const grams = Number(props.product?.weight);
@@ -28,23 +29,19 @@ const displayWeight = computed(() => {
 });
 
 function tagToneClass(color) {
-    const c = String(color || "").trim().toLowerCase();
+    const c = String(color || "")
+        .trim()
+        .toLowerCase();
     return cs.tagTone[c] ?? cs.tagTone.default;
 }
 </script>
 
 <template>
     <div :class="tokens.badgesCol">
-        <div
-            v-if="displayWeight != null"
-            :class="tokens.weightPill"
-        >
+        <div v-if="displayWeight != null" :class="tokens.weightPill">
             {{ displayWeight }}&nbsp;г
         </div>
-        <span
-            v-if="primaryTag"
-            :class="[tokens.tagPill, tagToneClass(primaryTag.color)]"
-        >
+        <span v-if="primaryTag" :class="[tokens.tagPill, tagToneClass(primaryTag.color)]">
             {{ primaryTag.label }}
         </span>
     </div>

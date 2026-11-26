@@ -22,16 +22,10 @@ function go(next) {
 
 <template>
     <div class="flex items-center justify-between gap-4 pt-2 text-sm text-bo-muted">
-        <span>
-            Стр. {{ page }} / {{ totalPages }} · всего {{ total }}
-        </span>
+        <span>Стр. {{ page }} / {{ totalPages }} · всего {{ total }}</span>
         <div class="flex gap-2">
-            <UiButton :disabled="page <= 1" @click="go(page - 1)">
-                Назад
-            </UiButton>
-            <UiButton :disabled="page >= totalPages" @click="go(page + 1)">
-                Вперёд
-            </UiButton>
+            <UiButton :disabled="page <= 1" @click="go(page - 1)">Назад</UiButton>
+            <UiButton :disabled="page >= totalPages" @click="go(page + 1)">Вперёд</UiButton>
         </div>
     </div>
 </template>

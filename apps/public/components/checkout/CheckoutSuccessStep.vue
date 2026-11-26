@@ -9,8 +9,7 @@ import CheckoutStepNav from "./CheckoutStepNav.vue";
 const s = useAppDesign().components.checkout.shared;
 const su = useAppDesign().components.checkout.success;
 
-const { goToCart, lastCreatedOrder, successSummary, checkoutState } =
-    useCheckoutFlowContext();
+const { goToCart, lastCreatedOrder, successSummary, checkoutState } = useCheckoutFlowContext();
 const { formatPrice } = checkoutState;
 
 const orderNumber = computed(() => {
@@ -22,9 +21,7 @@ const orderNumber = computed(() => {
     if (order?.number) {
         return String(order.number);
     }
-    const id =
-        successSummary.value?.orderId ??
-        order?.id;
+    const id = successSummary.value?.orderId ?? order?.id;
     if (id == null || id === "") {
         return null;
     }
@@ -61,22 +58,10 @@ const recapLines = computed(() => {
 
 <template>
     <CheckoutStepFrame group="success">
-        <h2
-            v-if="orderNumber"
-            :class="su.orderTitle"
-        >
-            Заказ №{{ orderNumber }}
-        </h2>
+        <h2 v-if="orderNumber" :class="su.orderTitle">Заказ №{{ orderNumber }}</h2>
 
-        <ul
-            v-if="recapLines.length"
-            class="space-y-2"
-        >
-            <li
-                v-for="line in recapLines"
-                :key="line.label"
-                :class="s.offerCard"
-            >
+        <ul v-if="recapLines.length" class="space-y-2">
+            <li v-for="line in recapLines" :key="line.label" :class="s.offerCard">
                 <div class="min-w-0 flex-1">
                     <p :class="s.offerCardMeta">
                         {{ line.label }}
@@ -88,10 +73,7 @@ const recapLines = computed(() => {
             </li>
         </ul>
 
-        <p
-            v-if="orderNumber"
-            :class="su.supportHint"
-        >
+        <p v-if="orderNumber" :class="su.supportHint">
             Сохрани номер — назови его и телефон, если захочешь уточнить статус.
         </p>
 

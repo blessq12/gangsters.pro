@@ -29,9 +29,7 @@ const promos = computed(() =>
 const loopReady = computed(() => promos.value.length >= 3);
 const rewindEnabled = computed(() => promos.value.length > 1 && !loopReady.value);
 
-const isLoading = computed(
-    () => loading.value && promotions.value.length === 0,
-);
+const isLoading = computed(() => loading.value && promotions.value.length === 0);
 
 const showModal = ref(false);
 const activePromo = ref(null);
@@ -44,17 +42,11 @@ const openPromo = (promo) => {
 
 <template>
     <section :class="hpShared.section">
-        <h2 :class="hpMob.heading">
-            Актуальные акции
-        </h2>
+        <h2 :class="hpMob.heading">Актуальные акции</h2>
 
         <template v-if="isLoading">
             <div :class="hpMob.loadingRow">
-                <div
-                    v-for="index in 3"
-                    :key="index"
-                    :class="hpMob.loadingCard"
-                >
+                <div v-for="index in 3" :key="index" :class="hpMob.loadingCard">
                     <div :class="hpShared.pulseInner" />
                 </div>
             </div>
@@ -75,16 +67,9 @@ const openPromo = (promo) => {
                 :class="hpShared.swiperHook"
             >
                 <SwiperSlide v-for="(promo, index) in promos" :key="promo.id ?? index">
-                    <article
-                        :class="hpMob.article"
-                        @click="openPromo(promo)"
-                    >
+                    <article :class="hpMob.article" @click="openPromo(promo)">
                         <div :class="hpShared.thumbWrap">
-                            <img
-                                :src="promo.image"
-                                :alt="promo.title"
-                                :class="hpShared.thumbImg"
-                            />
+                            <img :src="promo.image" :alt="promo.title" :class="hpShared.thumbImg" />
                         </div>
                     </article>
                 </SwiperSlide>
@@ -92,9 +77,7 @@ const openPromo = (promo) => {
         </template>
 
         <template v-else>
-            <div :class="hpShared.emptyText">
-                Акции скоро появятся.
-            </div>
+            <div :class="hpShared.emptyText">Акции скоро появятся.</div>
         </template>
 
         <BaseModal v-model="showModal" v-if="activePromo">
@@ -112,10 +95,7 @@ const openPromo = (promo) => {
                     :class="hpShared.modalText"
                     v-html="activePromo.body"
                 />
-                <p
-                    v-else-if="activePromo.description"
-                    :class="hpShared.modalText"
-                >
+                <p v-else-if="activePromo.description" :class="hpShared.modalText">
                     {{ activePromo.description }}
                 </p>
             </div>

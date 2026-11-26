@@ -1,11 +1,7 @@
 <script setup>
 import { computed, onMounted, reactive, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import {
-    getDocument,
-    storeDocument,
-    updateDocument,
-} from "../../../api/company.js";
+import { getDocument, storeDocument, updateDocument } from "../../../api/company.js";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
 import UiCard from "../../../shell/components/ui/UiCard.vue";
 import UiFormField from "../../../shell/components/ui/UiFormField.vue";
@@ -97,9 +93,9 @@ async function save() {
             name: form.name.trim(),
             content: normalizeHtmlContent(form.content),
         };
-        const result = await saveApi.run(async () => (
-            documentId.value ? updateDocument(documentId.value, body) : storeDocument(body)
-        ));
+        const result = await saveApi.run(async () =>
+            documentId.value ? updateDocument(documentId.value, body) : storeDocument(body),
+        );
         toast.success(documentId.value ? "Сохранено" : "Создано");
         if (isNew.value && result?.id) {
             await router.replace({ name: "owner-company-document", params: { id: result.id } });
@@ -134,17 +130,12 @@ onMounted(load);
             </UiButton>
         </div>
 
-        <p v-if="loadApi.loading" class="text-sm text-bo-muted">
-            Загрузка…
-        </p>
+        <p v-if="loadApi.loading" class="text-sm text-bo-muted">Загрузка…</p>
 
         <div v-else class="space-y-4">
             <UiCard title="Основное">
                 <div class="space-y-4">
-                    <UiFormField
-                        v-if="!isNew"
-                        label="Slug"
-                    >
+                    <UiFormField v-if="!isNew" label="Slug">
                         <UiInput v-model="form.slug" disabled />
                     </UiFormField>
                     <UiFormField label="Название" required :error="fieldErrors.name">

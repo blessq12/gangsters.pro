@@ -186,7 +186,7 @@ final class KitchenTicket
 
         $this->status = KitchenTicketStatus::Started;
         $this->assigneeEmployeeId = $employeeId;
-        $this->startedAt = $at ?? new DateTimeImmutable();
+        $this->startedAt = $at ?? new DateTimeImmutable;
 
         if ($this->id !== null) {
             $this->record(new KitchenTicketStarted(
@@ -216,7 +216,7 @@ final class KitchenTicket
         }
 
         $line = $this->lineById($lineId);
-        $doneAt = $at ?? new DateTimeImmutable();
+        $doneAt = $at ?? new DateTimeImmutable;
         $line->markDone($employeeId, $doneAt);
 
         if ($this->id !== null) {
@@ -247,7 +247,7 @@ final class KitchenTicket
         }
 
         $line = $this->lineById($lineId);
-        $packedAt = $at ?? new DateTimeImmutable();
+        $packedAt = $at ?? new DateTimeImmutable;
         $line->markPacked($employeeId, $packedAt);
 
         $allPacked = $this->allActiveLinesPacked();
@@ -337,7 +337,7 @@ final class KitchenTicket
             $this->status = KitchenTicketStatus::Started;
             $this->completedAt = null;
             if ($this->startedAt === null) {
-                $this->startedAt = new DateTimeImmutable();
+                $this->startedAt = new DateTimeImmutable;
             }
         }
     }
@@ -368,7 +368,7 @@ final class KitchenTicket
         }
 
         $this->status = KitchenTicketStatus::Completed;
-        $this->completedAt = $at ?? new DateTimeImmutable();
+        $this->completedAt = $at ?? new DateTimeImmutable;
 
         if ($this->id !== null) {
             $this->record(new KitchenTicketCompleted(

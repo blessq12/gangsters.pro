@@ -7,7 +7,12 @@ const module = {
     nav: [
         { label: "Дашборд", routeName: "administrator-dashboard", icon: "dashboard", order: 0 },
         { label: "Заказы", routeName: "administrator-live-orders", icon: "live", order: 1 },
-        { label: "Маршрутные листы", routeName: "administrator-logistics", icon: "logistics", order: 2 },
+        {
+            label: "Маршрутные листы",
+            routeName: "administrator-logistics",
+            icon: "logistics",
+            order: 2,
+        },
         { label: "Клиенты", routeName: "administrator-clients", icon: "clients", order: 3 },
         { label: "Финансы", routeName: "administrator-finance", icon: "finance", order: 4 },
         { label: "Тикеты", routeName: "administrator-production", icon: "production", order: 5 },

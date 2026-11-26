@@ -23,15 +23,7 @@ const auth = useAuthStore();
 const { employee } = storeToRefs(auth);
 const listApi = useApi();
 
-const {
-    page,
-    perPage,
-    total,
-    items: rows,
-    offset,
-    applyPayload,
-    clearItems,
-} = usePagedList();
+const { page, perPage, total, items: rows, offset, applyPayload, clearItems } = usePagedList();
 
 const branchId = computed(() => {
     const raw = employee.value?.branch_id;
@@ -58,10 +50,12 @@ function linesPreview(lines) {
     if (list.length === 0) {
         return "—";
     }
-    return list
-        .slice(0, 3)
-        .map((line) => `${line.name || `Позиция #${line.product_id}`} × ${line.quantity ?? 1}`)
-        .join(", ") + (list.length > 3 ? ` +${list.length - 3}` : "");
+    return (
+        list
+            .slice(0, 3)
+            .map((line) => `${line.name || `Позиция #${line.product_id}`} × ${line.quantity ?? 1}`)
+            .join(", ") + (list.length > 3 ? ` +${list.length - 3}` : "")
+    );
 }
 
 async function load(silent = false) {
@@ -70,10 +64,12 @@ async function load(silent = false) {
         return;
     }
     try {
-        const payload = await listApi.run(() => getQueue(branchId.value, {
-            offset: offset.value,
-            limit: perPage,
-        }));
+        const payload = await listApi.run(() =>
+            getQueue(branchId.value, {
+                offset: offset.value,
+                limit: perPage,
+            }),
+        );
         const pool = payload?.pool && typeof payload.pool === "object" ? payload.pool : payload;
         applyPayload(pool, (ticket) => ({
             order_id: ticket.order_id,
@@ -131,10 +127,7 @@ onUnmounted(() => {
 <template>
     <div class="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
         <UiCard title="Очередь">
-            <p
-                v-if="!branchId"
-                class="text-sm text-bo-muted"
-            >
+            <p v-if="!branchId" class="text-sm text-bo-muted">
                 У сотрудника не указан филиал смены — очередь недоступна.
             </p>
 

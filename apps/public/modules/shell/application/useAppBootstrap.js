@@ -1,12 +1,13 @@
 /**
  * Медленное соединение или режим экономии трафика.
  */
-export function isSlowConnection() {
+function isSlowConnection() {
     if (typeof navigator === "undefined") {
         return false;
     }
 
-    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    const connection =
+        navigator.connection || navigator.mozConnection || navigator.webkitConnection;
     if (!connection) {
         return false;
     }
@@ -23,7 +24,7 @@ export function isSlowConnection() {
  * @param {() => void} task
  * @param {{ timeoutMs?: number }} [options]
  */
-export function scheduleIdleTask(task, { timeoutMs = 3000 } = {}) {
+function scheduleIdleTask(task, { timeoutMs = 3000 } = {}) {
     if (typeof window === "undefined" || typeof task !== "function") {
         return;
     }
@@ -47,7 +48,7 @@ const PRIORITY_DOCK_PANEL_IDS = ["cart", "profile"];
 /**
  * Prefetch chunk'ов панелей дока в idle (не на slow connection).
  */
-export function prefetchDockPanels(panelIds = Object.keys(DOCK_PANEL_LOADERS)) {
+function prefetchDockPanels(panelIds = Object.keys(DOCK_PANEL_LOADERS)) {
     if (typeof window === "undefined") {
         return;
     }
@@ -65,9 +66,12 @@ export function scheduleIdlePrefetchDockPanels() {
         prefetchDockPanels(PRIORITY_DOCK_PANEL_IDS);
     });
 
-    scheduleIdleTask(() => {
-        prefetchDockPanels(["favorites"]);
-    }, { timeoutMs: 5000 });
+    scheduleIdleTask(
+        () => {
+            prefetchDockPanels(["favorites"]);
+        },
+        { timeoutMs: 5000 },
+    );
 }
 
 import { useCatalogStore } from "../../catalog/store";

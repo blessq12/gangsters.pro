@@ -10,7 +10,7 @@ import {
 import { buildMergeGuestFavoritesPayload } from "../../../api/client";
 import { isAxiosUnauthorized } from "../../../platform/mapApiError";
 
-export const FAVORITES_STORAGE_KEY = "gangsters_favorites";
+const FAVORITES_STORAGE_KEY = "gangsters_favorites";
 
 function normalizeProductSnapshot(product) {
     if (!product || typeof product !== "object") {
@@ -199,9 +199,8 @@ export const useFavoritesStore = defineStore("favorites", {
             }
 
             const guestItems = readJsonLocalStorage(FAVORITES_STORAGE_KEY)?.items;
-            const localItems = Array.isArray(guestItems) && guestItems.length > 0
-                ? guestItems
-                : this.items;
+            const localItems =
+                Array.isArray(guestItems) && guestItems.length > 0 ? guestItems : this.items;
 
             this.loading = true;
             this.error = null;
@@ -226,7 +225,8 @@ export const useFavoritesStore = defineStore("favorites", {
                 }
 
                 console.error("mergeGuestIntoServer", error);
-                this.error = error?.response?.data?.message || "Не удалось синхронизировать избранное.";
+                this.error =
+                    error?.response?.data?.message || "Не удалось синхронизировать избранное.";
                 throw error;
             } finally {
                 this.loading = false;

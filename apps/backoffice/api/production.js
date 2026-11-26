@@ -23,16 +23,6 @@ export function getTicket(orderId) {
     return request("GET", `/production/tickets/${orderId}`);
 }
 
-/** @param {number|string} orderId */
-export function startTicket(orderId) {
-    return request("POST", `/production/tickets/${orderId}/start`);
-}
-
-/** @param {number|string} orderId */
-export function completeTicket(orderId) {
-    return request("POST", `/production/tickets/${orderId}/complete`);
-}
-
 /**
  * @param {number|string} orderId
  * @param {number|string} lineId
@@ -47,9 +37,4 @@ export function markTicketLineDone(orderId, lineId) {
  */
 export function markTicketLinePacked(orderId, lineId) {
     return request("POST", `/production/tickets/${orderId}/lines/${lineId}/pack`);
-}
-
-/** @param {number|string} orderId */
-export function cancelTicket(orderId) {
-    return request("POST", `/production/tickets/${orderId}/cancel`);
 }

@@ -35,30 +35,17 @@ const stepMeta = computed(() => {
 
 const showProgress = computed(() => {
     const meta = stepMeta.value;
-    return (
-        meta
-        && Number(meta.n) >= 1
-        && Number(meta.total) >= 1
-    );
+    return meta && Number(meta.n) >= 1 && Number(meta.total) >= 1;
 });
 </script>
 
 <template>
     <div :class="s.flowBody">
-        <div
-            v-if="showProgress || waiterLine"
-            :class="s.storyHeader"
-        >
-            <p
-                v-if="showProgress"
-                :class="s.storyProgress"
-            >
+        <div v-if="showProgress || waiterLine" :class="s.storyHeader">
+            <p v-if="showProgress" :class="s.storyProgress">
                 Шаг {{ stepMeta.n }} из {{ stepMeta.total }}
             </p>
-            <p
-                v-if="waiterLine"
-                :class="s.storyWaiterLine"
-            >
+            <p v-if="waiterLine" :class="s.storyWaiterLine">
                 {{ waiterLine }}
             </p>
         </div>

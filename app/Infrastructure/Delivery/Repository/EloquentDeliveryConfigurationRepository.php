@@ -78,7 +78,7 @@ final class EloquentDeliveryConfigurationRepository implements DeliveryConfigura
         ): DeliveryConfiguration {
             $row = DeliveryConfigurationModel::query()->where('branch_id', $branchId)->first();
             if (! $row instanceof DeliveryConfigurationModel) {
-                $row = new DeliveryConfigurationModel();
+                $row = new DeliveryConfigurationModel;
             }
 
             $row->fill([

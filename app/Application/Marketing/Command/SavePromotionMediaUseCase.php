@@ -33,7 +33,7 @@ final class SavePromotionMediaUseCase
         $storedPaths = [];
 
         try {
-            $promotion = DB::transaction(function () use ($dto, $title, $body, $isCreate, &$storedPaths) {
+            $promotion = DB::transaction(function () use ($dto, $title, $body, &$storedPaths) {
                 $previousPath = $dto->id !== null
                     ? $this->promotions->findStoredImagePath($dto->id)
                     : null;

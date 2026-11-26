@@ -7,8 +7,8 @@ use App\Domain\Supporting\Catalog\Enum\ProductStatus;
 use App\Domain\Supporting\Catalog\Repository\CatalogItemRepository;
 use App\Domain\Supporting\Catalog\ValueObject\ProductImage;
 use App\Infrastructure\Catalog\Mapper\CatalogProductMapper;
-use App\Infrastructure\Catalog\Model\CatalogItemModel;
 use App\Infrastructure\Catalog\Model\CatalogItemImageModel;
+use App\Infrastructure\Catalog\Model\CatalogItemModel;
 use App\Infrastructure\Catalog\Support\CatalogStoredImagePath;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -140,7 +140,7 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
             throw new \InvalidArgumentException('Недопустимый статус.');
         }
 
-        $row = $id === null ? new CatalogItemModel() : $this->requireItem($id);
+        $row = $id === null ? new CatalogItemModel : $this->requireItem($id);
         if ($id === null) {
             $row->slug = $this->uniqueItemSlug($name);
             $row->is_system = false;
@@ -193,6 +193,43 @@ final class EloquentCatalogItemRepository implements CatalogItemRepository
             ->get()
             ->map(fn (CatalogItemImageModel $row): array => $this->presentImageRow($row))
             ->all();
+    }
+
+    public function findPrimaryImagesByItemIds(array $itemIds): array
+    {
+        $itemIds = $this->normalizeIds($itemIds);
+        if ($itemIds === []) {
+            return [];
+        }
+
+        $rows = CatalogItemImageModel::query()
+            ->whereIn('item_id', $itemIds)
+            ->orderBy('item_id')
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
+
+        $result = [];
+        foreach ($rows as $row) {
+            if (! $row instanceof CatalogItemImageModel) {
+                continue;
+            }
+            $itemId = (int) $row->item_id;
+            if (isset($result[$itemId])) {
+                continue;
+            }
+            $presented = $this->presentImageRow($row);
+            if ($presented['url'] === '') {
+                continue;
+            }
+            $result[$itemId] = [
+                'url' => $presented['url'],
+                'focus_x' => $presented['focus_x'],
+                'focus_y' => $presented['focus_y'],
+            ];
+        }
+
+        return $result;
     }
 
     public function listProductImages(int $productId): array

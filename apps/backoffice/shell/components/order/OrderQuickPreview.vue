@@ -45,16 +45,16 @@ const branchText = computed(() => {
     if (!order.value) {
         return "—";
     }
-    return labelOf(order.value.branch_id)
-        || (order.value.branch_id ? `Филиал #${order.value.branch_id}` : "Ещё не назначен");
+    return (
+        labelOf(order.value.branch_id) ||
+        (order.value.branch_id ? `Филиал #${order.value.branch_id}` : "Ещё не назначен")
+    );
 });
 
 const clientPhone = computed(() => String(order.value?.client?.phone ?? "").trim());
 const clientName = computed(() => String(order.value?.client?.name ?? "").trim() || "Без имени");
 const clientComment = computed(() => {
-    const raw = order.value?.delivery?.address?.comment
-        ?? order.value?.delivery?.comment
-        ?? "";
+    const raw = order.value?.delivery?.address?.comment ?? order.value?.delivery?.comment ?? "";
     return String(raw).trim();
 });
 
@@ -129,12 +129,8 @@ watch(
 
 <template>
     <UiModal :open="open" :title="title" @close="emit('close')">
-        <div v-if="detailApi.loading" class="text-sm text-bo-muted">
-            Загрузка…
-        </div>
-        <div v-else-if="!order" class="text-sm text-bo-muted">
-            Заказ не найден.
-        </div>
+        <div v-if="detailApi.loading" class="text-sm text-bo-muted">Загрузка…</div>
+        <div v-else-if="!order" class="text-sm text-bo-muted">Заказ не найден.</div>
         <div v-else class="space-y-4 text-sm">
             <section class="space-y-1.5">
                 <div class="flex flex-wrap items-center gap-2">
@@ -143,10 +139,7 @@ watch(
                         :text="orderStatusLabel(order.status)"
                     />
                 </div>
-                <p
-                    class="font-medium text-bo-fg"
-                    :class="stuck ? 'text-red-300' : ''"
-                >
+                <p class="font-medium text-bo-fg" :class="stuck ? 'text-red-300' : ''">
                     {{ hint }}
                 </p>
             </section>
@@ -188,10 +181,7 @@ watch(
                     />
                     <span v-else class="text-bo-muted">Нет платежа</span>
                 </p>
-                <p
-                    v-if="order.payment"
-                    :class="stuck ? 'text-red-300' : 'text-bo-muted'"
-                >
+                <p v-if="order.payment" :class="stuck ? 'text-red-300' : 'text-bo-muted'">
                     {{ paymentText }}
                 </p>
             </section>
@@ -203,12 +193,8 @@ watch(
         </div>
 
         <template #footer>
-            <UiButton class="!bg-white/10 !text-bo-fg" @click="emit('close')">
-                Закрыть
-            </UiButton>
-            <UiButton :disabled="!orderId" @click="onOpenFull">
-                Открыть карточку
-            </UiButton>
+            <UiButton class="!bg-white/10 !text-bo-fg" @click="emit('close')">Закрыть</UiButton>
+            <UiButton :disabled="!orderId" @click="onOpenFull">Открыть карточку</UiButton>
         </template>
     </UiModal>
 </template>

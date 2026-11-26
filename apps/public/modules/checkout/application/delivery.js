@@ -7,14 +7,8 @@ import { useCheckoutStore } from "../store";
 import { useUserStore } from "../../client/store/userStore";
 import { useCheckoutFlowContext } from "./flowContext";
 import { useOrderPreview } from "./preview";
-import {
-    CHECKOUT_LOADING_LABELS,
-    recomputeCheckout,
-} from "./session";
-import {
-    normalizeDeliveryComment,
-    normalizePersonsCount,
-} from "../domain/checkoutServerMappers";
+import { CHECKOUT_LOADING_LABELS, recomputeCheckout } from "./session";
+import { normalizeDeliveryComment, normalizePersonsCount } from "../domain/checkoutServerMappers";
 const GUEST_ADDRESS_ZONE_KEYS = new Set(["street", "house"]);
 
 function createEmptyGuestAddressDraft() {
@@ -137,10 +131,7 @@ export function useCheckoutDeliveryStep({
             if (!String(address?.house || "").trim()) {
                 deliveryFieldErrors.setFieldError("house", "Укажи дом.");
             }
-            if (
-                !deliveryFieldErrors.hasAny.value
-                && !addressHasCoords(address)
-            ) {
+            if (!deliveryFieldErrors.hasAny.value && !addressHasCoords(address)) {
                 deliveryFieldErrors.setFieldError(
                     "street",
                     "Выбери адрес из подсказок — нужны координаты.",
@@ -157,10 +148,7 @@ export function useCheckoutDeliveryStep({
             if (!String(newAddressForm.value.house || "").trim()) {
                 newAddressFieldErrors.setFieldError("house", "Укажи дом.");
             }
-            if (
-                !newAddressFieldErrors.hasAny.value
-                && !addressHasCoords(newAddressForm.value)
-            ) {
+            if (!newAddressFieldErrors.hasAny.value && !addressHasCoords(newAddressForm.value)) {
                 newAddressFieldErrors.setFieldError(
                     "street",
                     "Выбери адрес из подсказок — нужны координаты.",
@@ -256,12 +244,13 @@ export function useCheckoutDeliveryStep({
             deliveryFieldErrors.clearField("house");
         }
 
-        const touchesZone = Object.keys(partial).some((key) =>
-            GUEST_ADDRESS_ZONE_KEYS.has(key)
-            || key === "latitude"
-            || key === "longitude"
-            || key === "lat"
-            || key === "lng",
+        const touchesZone = Object.keys(partial).some(
+            (key) =>
+                GUEST_ADDRESS_ZONE_KEYS.has(key) ||
+                key === "latitude" ||
+                key === "longitude" ||
+                key === "lat" ||
+                key === "lng",
         );
 
         syncGuestAddressDraftToStore();
@@ -328,17 +317,11 @@ export function useCheckoutDeliveryStep({
         scheduleDeliveryPreview();
     }
 
-    function clearNewAddressField(key) {
-        newAddressFieldErrors.clearField(key);
-    }
-
     watch(
         () => checkoutIntent.deliveryInfo.address,
         () => {
             if (isGuestCheckout.value) {
-                guestAddressDraft.value = readGuestAddressDraftFromStore(
-                    checkoutIntent,
-                );
+                guestAddressDraft.value = readGuestAddressDraftFromStore(checkoutIntent);
             }
         },
         { deep: true },
@@ -427,8 +410,7 @@ export function useCheckoutDeliveryStep({
                 })
             ) {
                 newAddressFieldErrors.setFormError(
-                    e?.response?.data?.message ||
-                        "Не удалось сохранить адрес. Попробуй ещё раз.",
+                    e?.response?.data?.message || "Не удалось сохранить адрес. Попробуй ещё раз.",
                 );
             }
         } finally {
@@ -499,7 +481,7 @@ export const DELIVERY_ZONE_PHASE = Object.freeze({
  * }} input
  * @returns {string}
  */
-export function resolveDeliveryZonePhase({
+function resolveDeliveryZonePhase({
     method,
     addressReady,
     previewLoading,
@@ -552,17 +534,14 @@ export function resolveDeliveryZonePhase({
  * }} input
  * @returns {string | null}
  */
-export function resolveDeliveryZoneMessage({
-    phase,
-    deliveryFeeRubles = null,
-    formatPrice = null,
-}) {
+function resolveDeliveryZoneMessage({ phase, deliveryFeeRubles = null, formatPrice = null }) {
     const fee = Number(deliveryFeeRubles);
-    const feeLabel = Number.isFinite(fee) && fee > 0
-        ? (typeof formatPrice === "function"
-            ? `${formatPrice(fee)} ₽`
-            : `${Math.round(fee)} ₽`)
-        : null;
+    const feeLabel =
+        Number.isFinite(fee) && fee > 0
+            ? typeof formatPrice === "function"
+                ? `${formatPrice(fee)} ₽`
+                : `${Math.round(fee)} ₽`
+            : null;
 
     switch (phase) {
         case DELIVERY_ZONE_PHASE.IDLE:
@@ -576,9 +555,7 @@ export function resolveDeliveryZoneMessage({
                 ? `Доплата за отдалённый район — ${feeLabel}`
                 : "Доплата за отдалённый район";
         case DELIVERY_ZONE_PHASE.PAID:
-            return feeLabel
-                ? `Доставка — ${feeLabel}`
-                : "Доставка платная";
+            return feeLabel ? `Доставка — ${feeLabel}` : "Доставка платная";
         case DELIVERY_ZONE_PHASE.UNAVAILABLE:
             return "Доставка по этому адресу невозможна. Укажи адрес ближе к зоне доставки или забери заказ самовывозом.";
         case DELIVERY_ZONE_PHASE.UNKNOWN:
@@ -640,9 +617,9 @@ export function useDeliveryZoneStatus() {
 
     const showPanel = computed(
         () =>
-            deliveryInfo.value.method === "courier"
-            && phase.value !== DELIVERY_ZONE_PHASE.HIDDEN
-            && phase.value !== DELIVERY_ZONE_PHASE.PICKUP,
+            deliveryInfo.value.method === "courier" &&
+            phase.value !== DELIVERY_ZONE_PHASE.HIDDEN &&
+            phase.value !== DELIVERY_ZONE_PHASE.PICKUP,
     );
 
     return {

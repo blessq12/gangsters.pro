@@ -33,9 +33,7 @@ function isActive(name) {
             :to="{ name: item.routeName }"
             :class="[
                 navbar.shared.linkTransition,
-                isActive(item.routeName)
-                    ? navbar.shared.linkActive
-                    : navbar.shared.linkInactive,
+                isActive(item.routeName) ? navbar.shared.linkActive : navbar.shared.linkInactive,
             ]"
         >
             {{ item.label }}

@@ -48,15 +48,8 @@ const heroStats = computed(() => props.stats.slice(0, 3));
         </div>
 
         <div :class="sp.heroCard">
-            <div
-                v-if="heroImage"
-                :class="sp.heroImageLayer"
-            >
-                <img
-                    :src="heroImage"
-                    :alt="title"
-                    :class="sp.heroImage"
-                />
+            <div v-if="heroImage" :class="sp.heroImageLayer">
+                <img :src="heroImage" :alt="title" :class="sp.heroImage" />
                 <div :class="sp.heroScrim"></div>
             </div>
 
@@ -67,14 +60,8 @@ const heroStats = computed(() => props.stats.slice(0, 3));
 
             <div :class="sp.contentPad">
                 <div :class="sp.textCol">
-                    <nav
-                        v-if="breadcrumbs.length"
-                        :class="sp.breadcrumbsNav"
-                    >
-                        <template
-                            v-for="(crumb, index) in breadcrumbs"
-                            :key="index"
-                        >
+                    <nav v-if="breadcrumbs.length" :class="sp.breadcrumbsNav">
+                        <template v-for="(crumb, index) in breadcrumbs" :key="index">
                             <RouterLink
                                 v-if="index === 0"
                                 :to="{ name: 'home' }"
@@ -82,23 +69,14 @@ const heroStats = computed(() => props.stats.slice(0, 3));
                             >
                                 {{ crumb }}
                             </RouterLink>
-                            <span
-                                v-else
-                                :class="sp.breadcrumbText"
-                            >{{ crumb }}</span>
-                            <span
-                                v-if="index < breadcrumbs.length - 1"
-                                :class="sp.breadcrumbSep"
-                            >
+                            <span v-else :class="sp.breadcrumbText">{{ crumb }}</span>
+                            <span v-if="index < breadcrumbs.length - 1" :class="sp.breadcrumbSep">
                                 /
                             </span>
                         </template>
                     </nav>
 
-                    <div
-                        v-if="eyebrow"
-                        :class="sp.eyebrow"
-                    >
+                    <div v-if="eyebrow" :class="sp.eyebrow">
                         {{ eyebrow }}
                     </div>
 
@@ -106,22 +84,12 @@ const heroStats = computed(() => props.stats.slice(0, 3));
                         {{ title }}
                     </h1>
 
-                    <p
-                        v-if="description"
-                        :class="sp.description"
-                    >
+                    <p v-if="description" :class="sp.description">
                         {{ description }}
                     </p>
 
-                    <div
-                        v-if="heroStats.length"
-                        :class="sp.statsGrid"
-                    >
-                        <div
-                            v-for="(stat, index) in heroStats"
-                            :key="index"
-                            :class="sp.statCard"
-                        >
+                    <div v-if="heroStats.length" :class="sp.statsGrid">
+                        <div v-for="(stat, index) in heroStats" :key="index" :class="sp.statCard">
                             <p :class="sp.statLabel">
                                 {{ stat.label }}
                             </p>

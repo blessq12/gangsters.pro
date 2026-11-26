@@ -4,7 +4,18 @@ namespace App\Infrastructure\Catalog\Model;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property int $tech_card_id
+ * @property string $ingredient_ref
+ * @property float $quantity
+ * @property string $unit
+ * @property int $sort_order
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
 final class TechCardLineModel extends Model
 {
     protected $table = 'CAT_tech_card_lines';

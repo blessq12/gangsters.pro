@@ -26,7 +26,7 @@ defineEmits(["open"]);
             class="!h-9 !bg-white/10 !px-3 !text-sm !text-bo-fg"
             @click="$emit('open')"
         >
-            {{ giftDecision === null ? 'Выбрать подарок' : 'Изменить' }}
+            {{ giftDecision === null ? "Выбрать подарок" : "Изменить" }}
         </UiButton>
     </div>
 </template>

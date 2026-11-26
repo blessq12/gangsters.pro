@@ -56,10 +56,7 @@ const emit = defineEmits(["applyQuery"]);
                     :class="cs.chipHistory"
                     @click="emit('applyQuery', entry)"
                 >
-                    <i
-                        :class="cs.chipHistoryIcon"
-                        aria-hidden="true"
-                    />
+                    <i :class="cs.chipHistoryIcon" aria-hidden="true" />
                     <span :class="cs.chipHistoryText">{{ entry }}</span>
                 </button>
             </div>

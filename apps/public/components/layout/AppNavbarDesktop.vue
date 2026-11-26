@@ -16,10 +16,7 @@ useEnterSlide(containerRef);
 <template>
     <header :class="navbar.shared.header">
         <div :class="navbar.desktop.inner">
-            <div
-                ref="containerRef"
-                :class="navbar.desktop.bar"
-            >
+            <div ref="containerRef" :class="navbar.desktop.bar">
                 <div :class="navbar.desktop.leftZone">
                     <NavbarLinkGroup
                         :links="NAV_LINKS_LEFT_PRIMARY"

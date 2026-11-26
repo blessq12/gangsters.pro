@@ -7,7 +7,6 @@ use App\Domain\Supporting\Catalog\Entity\Product;
 use App\Domain\Supporting\Catalog\Repository\CatalogItemRepository;
 use App\Domain\Supporting\Company\Entity\Branch;
 use App\Domain\Supporting\Company\Entity\BranchCategory;
-use App\Domain\Supporting\Company\Entity\BranchCategoryItem;
 use App\Domain\Supporting\Company\Entity\BranchMenuItem;
 use App\Domain\Supporting\Company\Entity\BranchSet;
 use App\Domain\Supporting\Company\Entity\BranchTag;
@@ -65,6 +64,7 @@ final class GetCatalogUseCase
                         $complementProducts[] = $item;
                     }
                 }
+
                 continue;
             }
             if ($category->isGift()) {

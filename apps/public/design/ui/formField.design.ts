@@ -11,5 +11,3 @@ export const formFieldDesign = {
     inputInvalid:
         "border-red-500/70 ring-1 ring-red-500/40 focus:border-red-500 focus:ring-red-500/50",
 } as const;
-
-export type FormFieldDesign = typeof formFieldDesign;

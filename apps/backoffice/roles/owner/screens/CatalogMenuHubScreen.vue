@@ -6,9 +6,15 @@ import { useOwnerBranchContext } from "../composables/useOwnerBranchContext.js";
 import CatalogScreen from "./CatalogScreen.vue";
 
 /** Branch-панели с vuedraggable — лениво, чтобы контекст «Справочник» не падал на outdated optimize dep. */
-const BranchCategoriesPanel = defineAsyncComponent(() => import("../components/menu/BranchCategoriesPanel.vue"));
-const BranchSetsPanel = defineAsyncComponent(() => import("../components/menu/BranchSetsPanel.vue"));
-const BranchTagsPanel = defineAsyncComponent(() => import("../components/menu/BranchTagsPanel.vue"));
+const BranchCategoriesPanel = defineAsyncComponent(
+    () => import("../components/menu/BranchCategoriesPanel.vue"),
+);
+const BranchSetsPanel = defineAsyncComponent(
+    () => import("../components/menu/BranchSetsPanel.vue"),
+);
+const BranchTagsPanel = defineAsyncComponent(
+    () => import("../components/menu/BranchTagsPanel.vue"),
+);
 const MenuScreen = defineAsyncComponent(() => import("./MenuScreen.vue"));
 
 const route = useRoute();
@@ -38,9 +44,7 @@ const context = computed(() =>
 );
 
 const branchSection = computed(() =>
-    branchSectionIds.includes(String(route.query.section))
-        ? String(route.query.section)
-        : "prices",
+    branchSectionIds.includes(String(route.query.section)) ? String(route.query.section) : "prices",
 );
 
 function setContext(id) {
@@ -85,9 +89,7 @@ watch(
 <template>
     <div class="mx-auto w-full max-w-7xl space-y-6 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
         <div class="space-y-3">
-            <h1 class="text-2xl font-semibold tracking-tight text-bo-fg">
-                Каталог
-            </h1>
+            <h1 class="text-2xl font-semibold tracking-tight text-bo-fg">Каталог</h1>
 
             <div class="flex flex-wrap gap-2">
                 <button
@@ -95,9 +97,11 @@ watch(
                     :key="item.id"
                     type="button"
                     class="h-11 px-4 text-sm font-medium transition-colors duration-150"
-                    :class="context === item.id
-                        ? 'bg-bo-accent text-white'
-                        : 'bg-white/[0.04] text-bo-muted hover:bg-white/[0.08] hover:text-bo-fg'"
+                    :class="
+                        context === item.id
+                            ? 'bg-bo-accent text-white'
+                            : 'bg-white/[0.04] text-bo-muted hover:bg-white/[0.08] hover:text-bo-fg'
+                    "
                     @click="setContext(item.id)"
                 >
                     {{ item.label }}
@@ -116,9 +120,11 @@ watch(
                     :key="item.id"
                     type="button"
                     class="h-10 px-3.5 text-sm font-medium transition-colors duration-150"
-                    :class="branchSection === item.id
-                        ? 'bg-white/15 text-bo-fg'
-                        : 'bg-transparent text-bo-muted hover:bg-white/[0.06] hover:text-bo-fg'"
+                    :class="
+                        branchSection === item.id
+                            ? 'bg-white/15 text-bo-fg'
+                            : 'bg-transparent text-bo-muted hover:bg-white/[0.06] hover:text-bo-fg'
+                    "
                     @click="setBranchSection(item.id)"
                 >
                     {{ item.label }}

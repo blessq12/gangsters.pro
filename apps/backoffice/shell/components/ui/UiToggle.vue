@@ -19,9 +19,11 @@ defineEmits(["update:modelValue"]);
         :aria-label="ariaLabel || undefined"
         :disabled="disabled"
         class="inline-flex h-11 items-center justify-center gap-2.5 px-5 text-sm font-medium transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-40"
-        :class="modelValue
-            ? 'bg-white/10 text-bo-fg hover:bg-white/[0.14]'
-            : 'bg-white/[0.04] text-bo-muted hover:bg-white/[0.08] hover:text-bo-fg'"
+        :class="
+            modelValue
+                ? 'bg-white/10 text-bo-fg hover:bg-white/[0.14]'
+                : 'bg-white/[0.04] text-bo-muted hover:bg-white/[0.08] hover:text-bo-fg'
+        "
         @click="$emit('update:modelValue', !modelValue)"
     >
         <span
@@ -36,7 +38,7 @@ defineEmits(["update:modelValue"]);
         <span class="inline-flex items-center">
             <slot :on="modelValue">
                 <template v-if="labelOn || labelOff">
-                    {{ modelValue ? (labelOn || label) : (labelOff || label) }}
+                    {{ modelValue ? labelOn || label : labelOff || label }}
                 </template>
                 <template v-else>
                     {{ label }}

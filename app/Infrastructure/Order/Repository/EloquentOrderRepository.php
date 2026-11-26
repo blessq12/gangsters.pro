@@ -6,10 +6,11 @@ use App\Domain\Core\Order\Entity\Order;
 use App\Domain\Core\Order\Repository\OrderRepository;
 use App\Domain\Core\Order\ValueObject\OrderNumber;
 use App\Infrastructure\Order\Mapper\OrderMapper;
-use App\Infrastructure\Order\Model\OrderModel;
 use App\Infrastructure\Order\Model\OrderLineModel;
+use App\Infrastructure\Order\Model\OrderModel;
 use DateTimeImmutable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
 final class EloquentOrderRepository implements OrderRepository
@@ -134,7 +135,7 @@ final class EloquentOrderRepository implements OrderRepository
 
     public function listPage(int $offset, int $limit, array $filters = []): array
     {
-        /** @var \Illuminate\Database\Eloquent\Collection<int, OrderModel> $rows */
+        /** @var Collection<int, OrderModel> $rows */
         $rows = $this->filteredQuery($filters)
             ->with('lines')
             ->orderByDesc('id')
@@ -149,7 +150,7 @@ final class EloquentOrderRepository implements OrderRepository
 
     public function listByClientId(int $clientId): array
     {
-        /** @var \Illuminate\Database\Eloquent\Collection<int, OrderModel> $rows */
+        /** @var Collection<int, OrderModel> $rows */
         $rows = OrderModel::query()
             ->with('lines')
             ->where('client_id', $clientId)

@@ -33,9 +33,7 @@ const primaryLabel = computed(() => {
     const hasAny = accompanyingSections.value.some((entry) =>
         (entry.products || []).some((p) => paidQty(p.id) > 0),
     );
-    return hasAny
-        ? CHECKOUT_NAV_LABELS.upsellPrimary
-        : CHECKOUT_NAV_LABELS.upsellSkip;
+    return hasAny ? CHECKOUT_NAV_LABELS.upsellPrimary : CHECKOUT_NAV_LABELS.upsellSkip;
 });
 
 function paidQty(productId) {
@@ -90,20 +88,13 @@ async function decrementProduct(productId) {
                         :alt="product.name || ''"
                         :class="c.drinkUpsellThumb"
                         loading="lazy"
-                    >
-                    <div
-                        v-else
-                        :class="c.drinkUpsellThumbPlaceholder"
-                    >
-                        —
-                    </div>
+                    />
+                    <div v-else :class="c.drinkUpsellThumbPlaceholder">—</div>
                     <div class="min-w-0 flex-1">
                         <p :class="s.offerCardTitle">
                             {{ product.name || `Товар #${product.id}` }}
                         </p>
-                        <p :class="s.offerCardMeta">
-                            {{ formatPrice(unitPriceRub(product)) }} ₽
-                        </p>
+                        <p :class="s.offerCardMeta">{{ formatPrice(unitPriceRub(product)) }} ₽</p>
                     </div>
                     <div :class="c.qtyBar">
                         <button
@@ -117,11 +108,7 @@ async function decrementProduct(productId) {
                         <span :class="c.qtyLabel">
                             {{ paidQty(product.id) }}
                         </span>
-                        <button
-                            type="button"
-                            :class="c.qtyBtn"
-                            @click="incrementProduct(product)"
-                        >
+                        <button type="button" :class="c.qtyBtn" @click="incrementProduct(product)">
                             +
                         </button>
                     </div>

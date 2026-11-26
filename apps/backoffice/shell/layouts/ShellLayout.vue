@@ -53,10 +53,13 @@ watch(collapsed, (value) => {
     }
 });
 
-watch(() => route.fullPath, () => {
-    mobileOpen.value = false;
-    closeNotes();
-});
+watch(
+    () => route.fullPath,
+    () => {
+        mobileOpen.value = false;
+        closeNotes();
+    },
+);
 
 onMounted(() => {
     media = window.matchMedia(DESKTOP_QUERY);
@@ -71,17 +74,11 @@ onUnmounted(() => {
 
 <template>
     <div class="min-h-screen bg-bo-canvas text-bo-fg">
-        <main
-            v-if="!showChrome"
-            class="flex min-h-screen items-center justify-center p-4"
-        >
+        <main v-if="!showChrome" class="flex min-h-screen items-center justify-center p-4">
             <RouterView />
         </main>
 
-        <div
-            v-else
-            class="flex h-screen overflow-hidden"
-        >
+        <div v-else class="flex h-screen overflow-hidden">
             <ShellSidebar
                 :collapsed="collapsed && isDesktop"
                 :mobile-open="mobileOpen"

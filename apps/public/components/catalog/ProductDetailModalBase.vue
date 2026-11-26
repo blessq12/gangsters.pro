@@ -56,12 +56,11 @@ const close = () => {
 };
 
 const swipeEnabled = computed(() => isMobile.value && props.modelValue);
-const { onTouchStart: onPanelSwipeStart, onTouchEnd: onPanelSwipeEnd } =
-    useSwipeDownToClose({
-        boundaryRef: panelRef,
-        enabled: swipeEnabled,
-        onClose: close,
-    });
+const { onTouchStart: onPanelSwipeStart, onTouchEnd: onPanelSwipeEnd } = useSwipeDownToClose({
+    boundaryRef: panelRef,
+    enabled: swipeEnabled,
+    onClose: close,
+});
 
 watch(
     () => props.modelValue,
@@ -122,9 +121,7 @@ function handleModalIncrement() {
                 @click="close"
             />
 
-            <div
-                :class="[ds.content, isMobile ? ds.contentMobile : ds.contentDesktop]"
-            >
+            <div :class="[ds.content, isMobile ? ds.contentMobile : ds.contentDesktop]">
                 <div :class="[ds.wrapper, isMobile ? ds.wrapperMobile : '']">
                     <div
                         ref="panelRef"
@@ -144,22 +141,19 @@ function handleModalIncrement() {
 
                         <template v-if="product">
                             <div :class="ds.body">
-                                <div
-                                    :class="ds.mediaZone"
-                                >
+                                <div :class="ds.mediaZone">
                                     <ProductGallerySlider
                                         :images="galleryImages"
                                         :alt="product.name"
                                     />
                                 </div>
                                 <div
-                                    :class="isMobile ? ds.mediaOverlayMobile : ds.mediaOverlayDesktop"
+                                    :class="
+                                        isMobile ? ds.mediaOverlayMobile : ds.mediaOverlayDesktop
+                                    "
                                     aria-hidden="true"
                                 />
-                                <div
-                                    ref="infoRef"
-                                    :class="ds.infoOverlay"
-                                >
+                                <div ref="infoRef" :class="ds.infoOverlay">
                                     <div
                                         :class="[
                                             ds.infoHeader,
@@ -170,18 +164,36 @@ function handleModalIncrement() {
                                             <div :class="di.titleTopRow">
                                                 <button
                                                     type="button"
-                                                    :class="[di.favBtn, isFav ? di.favBtnActive : '']"
+                                                    :class="[
+                                                        di.favBtn,
+                                                        isFav ? di.favBtnActive : '',
+                                                    ]"
                                                     aria-label="Избранное"
                                                     @click.stop="toggleFavorite"
                                                 >
-                                                    <i :class="[di.favIcon, isFav ? 'mdi-heart' : 'mdi-heart-outline']" />
+                                                    <i
+                                                        :class="[
+                                                            di.favIcon,
+                                                            isFav
+                                                                ? 'mdi-heart'
+                                                                : 'mdi-heart-outline',
+                                                        ]"
+                                                    />
                                                 </button>
                                                 <div :class="di.headerContentCol">
                                                     <h2
                                                         :class="di.title"
-                                                        :title="product.name || product.raw?.name || 'Без названия'"
+                                                        :title="
+                                                            product.name ||
+                                                            product.raw?.name ||
+                                                            'Без названия'
+                                                        "
                                                     >
-                                                        {{ product.name || product.raw?.name || "Без названия" }}
+                                                        {{
+                                                            product.name ||
+                                                            product.raw?.name ||
+                                                            "Без названия"
+                                                        }}
                                                     </h2>
                                                     <ProductDetailHeaderMeta :product="product" />
                                                 </div>

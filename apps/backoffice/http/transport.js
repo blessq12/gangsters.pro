@@ -49,9 +49,7 @@ function handleHttpError(status, payload) {
         persistBackofficeAuthToken(null);
         unauthorizedHandler?.();
     }
-    const message = status === 403
-        ? (payload?.message || "Forbidden.")
-        : messageFrom(payload);
+    const message = status === 403 ? payload?.message || "Forbidden." : messageFrom(payload);
     throw Object.assign(new Error(message), { status });
 }
 
@@ -59,9 +57,7 @@ function handleHttpError(status, payload) {
  * HTTP transport for the backoffice SPA (own contour, base /api/backoffice).
  */
 export async function request(method, path, body) {
-    const headers = buildHeaders(
-        body !== undefined ? { "Content-Type": "application/json" } : {},
-    );
+    const headers = buildHeaders(body !== undefined ? { "Content-Type": "application/json" } : {});
 
     const response = await fetch(buildUrl(path), {
         method,
@@ -73,10 +69,6 @@ export async function request(method, path, body) {
         handleHttpError(response.status, payload);
     }
     return payload;
-}
-
-export async function requestForm(path, formData) {
-    return requestMultipart("POST", path, formData);
 }
 
 /**

@@ -4,10 +4,7 @@ import { useAppDesign } from "../../design/useAppDesign";
 import { useRuPhoneModel } from "../../modules/client/application/useRuPhoneModel";
 import { useCheckoutFlowContext } from "../../modules/checkout/application/flowContext";
 import { CHECKOUT_NAV_LABELS } from "../../modules/checkout/application/session";
-import {
-    formatRuPhoneCanonical,
-    RU_PHONE_MASKA_PATTERN,
-} from "../../platform/ruPhone";
+import { formatRuPhoneCanonical, RU_PHONE_MASKA_PATTERN } from "../../platform/ruPhone";
 import { CONSENT_PERSONAL_DATA_LABEL } from "../../platform/consentPersonalData";
 import FormField from "../ui/FormField.vue";
 import CheckoutSection from "./CheckoutSection.vue";
@@ -73,31 +70,18 @@ watch(
                     :key="benefit"
                     :class="s.registerPitchListItem"
                 >
-                    <span
-                        :class="s.registerPitchListMark"
-                        aria-hidden="true"
-                    >•</span>
+                    <span :class="s.registerPitchListMark" aria-hidden="true">•</span>
                     <span>{{ benefit }}</span>
                 </li>
             </ul>
 
-            <button
-                type="button"
-                :class="s.registerPitchBtn"
-                @click="openProfileDock"
-            >
+            <button type="button" :class="s.registerPitchBtn" @click="openProfileDock">
                 {{ CHECKOUT_NAV_LABELS.authRegisterCta }}
             </button>
         </div>
 
-        <CheckoutSection
-            title="Или оформить как гость"
-            variant="inset"
-        >
-            <FormField
-                label="Имя"
-                :error="guestFieldErrors.get('name')"
-            >
+        <CheckoutSection title="Или оформить как гость" variant="inset">
+            <FormField label="Имя" :error="guestFieldErrors.get('name')">
                 <template #default="{ id, invalid, invalidClass, describedBy, ariaInvalid }">
                     <input
                         :id="id"
@@ -112,10 +96,7 @@ watch(
                 </template>
             </FormField>
 
-            <FormField
-                label="Телефон"
-                :error="guestFieldErrors.get('phone')"
-            >
+            <FormField label="Телефон" :error="guestFieldErrors.get('phone')">
                 <template #default="{ id, invalid, invalidClass, describedBy, ariaInvalid }">
                     <input
                         :id="id"
@@ -131,10 +112,7 @@ watch(
                 </template>
             </FormField>
 
-            <FormField
-                error-size="xs"
-                :error="guestFieldErrors.get('consent_personal_data')"
-            >
+            <FormField error-size="xs" :error="guestFieldErrors.get('consent_personal_data')">
                 <template #default>
                     <label :class="s.checkboxLabelRow">
                         <AppCheckbox

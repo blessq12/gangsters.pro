@@ -20,11 +20,7 @@ onMounted(ensureLoaded);
                 @change="select($event.target.value)"
             >
                 <option value="">Выбери филиал</option>
-                <option
-                    v-for="branch in branches"
-                    :key="branch.id"
-                    :value="String(branch.id)"
-                >
+                <option v-for="branch in branches" :key="branch.id" :value="String(branch.id)">
                     {{ branchLabel(branch) }}
                 </option>
             </select>

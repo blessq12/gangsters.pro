@@ -4,7 +4,18 @@ namespace App\Infrastructure\Delivery\Model;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property int $route_sheet_id
+ * @property int $order_id
+ * @property int $position
+ * @property string $status
+ * @property string $settlement_note
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
 final class RouteStopModel extends Model
 {
     protected $table = 'DLV_route_stops';

@@ -50,7 +50,7 @@ final class EloquentBranchRepository implements BranchRepository
     public function save(Branch $branch): Branch
     {
         if ($branch->id() < 1) {
-            $row = new BranchModel();
+            $row = new BranchModel;
         } else {
             $row = BranchModel::query()->find($branch->id());
             if (! $row instanceof BranchModel) {

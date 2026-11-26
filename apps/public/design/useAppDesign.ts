@@ -11,9 +11,7 @@ export function useAppDesign(): AppDesign {
     }
 
     if (import.meta.env?.DEV) {
-        console.warn(
-            "[useAppDesign] провайдер не найден — используется appDesign из модуля",
-        );
+        console.warn("[useAppDesign] провайдер не найден — используется appDesign из модуля");
     }
 
     return appDesign;

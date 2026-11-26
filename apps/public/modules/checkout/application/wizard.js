@@ -1,10 +1,11 @@
 import { computed, ref, watch } from "vue";
 import { useFormFieldErrors } from "../../../platform/useFormFieldErrors";
-import {
-    CONSENT_PERSONAL_DATA_REQUIRED_MESSAGE,
-} from "../../../platform/consentPersonalData";
+import { CONSENT_PERSONAL_DATA_REQUIRED_MESSAGE } from "../../../platform/consentPersonalData";
 import { validateRuPhoneForSubmit } from "../../../platform/ruPhone";
-import { isCheckoutPaymentMethod, normalizeCheckoutPaymentMethod } from "../domain/checkoutServerMappers";
+import {
+    isCheckoutPaymentMethod,
+    normalizeCheckoutPaymentMethod,
+} from "../domain/checkoutServerMappers";
 import { storeToRefs } from "pinia";
 import { formatMoneyRublesRu } from "../../../platform/moneyFormat";
 import { formatRuPhone } from "../../../platform/ruPhone";
@@ -15,21 +16,10 @@ import { useUserStore } from "../../client/store/userStore";
 import { useUiStore } from "../../shell/store/uiStore";
 import { useCheckoutStore } from "../store";
 import { resolveGiftSelectionRequired, isCheckoutUpsellStepAvailable } from "./preview";
-import { useOrderPreview } from "./preview";
 import { useCheckoutSession } from "./session";
-import {
-    CHECKOUT_LOADING_LABELS,
-    CHECKOUT_NAV_LABELS,
-    CHECKOUT_STEP_HINTS,
-    CHECKOUT_WAITER_LINES,
-    CHECKOUT_WIZARD_GROUPS,
-} from "./session";
+import { CHECKOUT_WAITER_LINES, CHECKOUT_WIZARD_GROUPS } from "./session";
 import { useCheckoutDeliveryStep } from "./delivery";
-import { useCheckoutFlowContext } from "./flowContext";
-import {
-    formatServerDeliveryLine,
-    formatServerPaymentLine,
-} from "../domain/checkoutServerMappers";
+import { formatServerDeliveryLine } from "../domain/checkoutServerMappers";
 import { CHECKOUT_PAYMENT_METHOD_LABELS } from "../domain/checkoutServerMappers";
 import { CHECKOUT_DELIVERY_METHOD_META } from "../domain/checkoutServerMappers";
 import CheckoutCartStep from "../../../components/checkout/CheckoutCartStep.vue";
@@ -39,38 +29,109 @@ import CheckoutFulfillmentStep from "../../../components/checkout/CheckoutFulfil
 import CheckoutConfirmStep from "../../../components/checkout/CheckoutConfirmStep.vue";
 import CheckoutSuccessStep from "../../../components/checkout/CheckoutSuccessStep.vue";
 
-export {
-    CHECKOUT_LOADING_LABELS,
-    CHECKOUT_NAV_LABELS,
-    CHECKOUT_STEP_HINTS,
-    CHECKOUT_WAITER_LINES,
-    CHECKOUT_WIZARD_GROUPS,
-};
-
-export const CHECKOUT_WIZARD_FLOW_GUEST = Object.freeze(["upsell", "guest", "fulfillment", "confirm"]);
-export const CHECKOUT_WIZARD_FLOW_AUTH = Object.freeze(["upsell", "fulfillment", "confirm"]);
-export function mapServerWizardStep(serverStep) { if (serverStep == null || serverStep === "") return null; if (["upsell", "guest", "fulfillment", "confirm"].includes(serverStep)) return serverStep; return ({ delivery: "fulfillment", payment: "fulfillment", drinks: "upsell" })[serverStep] ?? null; }
-export function resolveWizardFlowSteps(isGuestCheckout, options = {}) { const base = isGuestCheckout ? CHECKOUT_WIZARD_FLOW_GUEST : CHECKOUT_WIZARD_FLOW_AUTH; return options.includeUpsell === false ? Object.freeze(base.filter((step) => step !== "upsell")) : base; }
-export function resolveWizardStepMeta(step, isGuestCheckout, options = {}) { const flow = resolveWizardFlowSteps(isGuestCheckout, options); const index = flow.indexOf(step); return index === -1 ? null : { n: index + 1, total: flow.length, label: CHECKOUT_WIZARD_GROUPS[step] }; }
-export function resolveCheckoutDockTitle(step) { return CHECKOUT_WIZARD_GROUPS[step] ?? CHECKOUT_WIZARD_GROUPS.cart; }
-export { useCheckoutNavTotal } from "./preview";
-export function defineCheckoutWizardStep(definition) { if (!definition || typeof definition !== "object" || !definition.id || !definition.component || !definition.title) throw new Error("Invalid checkout wizard step"); return Object.freeze({ id: definition.id, component: definition.component, title: definition.title, hint: definition.hint ?? null }); }
+const CHECKOUT_WIZARD_FLOW_GUEST = Object.freeze(["upsell", "guest", "fulfillment", "confirm"]);
+const CHECKOUT_WIZARD_FLOW_AUTH = Object.freeze(["upsell", "fulfillment", "confirm"]);
+export function mapServerWizardStep(serverStep) {
+    if (serverStep == null || serverStep === "") return null;
+    if (["upsell", "guest", "fulfillment", "confirm"].includes(serverStep)) return serverStep;
+    return (
+        { delivery: "fulfillment", payment: "fulfillment", drinks: "upsell" }[serverStep] ?? null
+    );
+}
+function resolveWizardFlowSteps(isGuestCheckout, options = {}) {
+    const base = isGuestCheckout ? CHECKOUT_WIZARD_FLOW_GUEST : CHECKOUT_WIZARD_FLOW_AUTH;
+    return options.includeUpsell === false
+        ? Object.freeze(base.filter((step) => step !== "upsell"))
+        : base;
+}
+function resolveWizardStepMeta(step, isGuestCheckout, options = {}) {
+    const flow = resolveWizardFlowSteps(isGuestCheckout, options);
+    const index = flow.indexOf(step);
+    return index === -1
+        ? null
+        : { n: index + 1, total: flow.length, label: CHECKOUT_WIZARD_GROUPS[step] };
+}
+export function resolveCheckoutDockTitle(step) {
+    return CHECKOUT_WIZARD_GROUPS[step] ?? CHECKOUT_WIZARD_GROUPS.cart;
+}
+function defineCheckoutWizardStep(definition) {
+    if (
+        !definition ||
+        typeof definition !== "object" ||
+        !definition.id ||
+        !definition.component ||
+        !definition.title
+    )
+        throw new Error("Invalid checkout wizard step");
+    return Object.freeze({
+        id: definition.id,
+        component: definition.component,
+        title: definition.title,
+        hint: definition.hint ?? null,
+    });
+}
 const stepsById = new Map([
-    ["cart", defineCheckoutWizardStep({ id: "cart", component: CheckoutCartStep, title: CHECKOUT_WIZARD_GROUPS.cart, hint: CHECKOUT_WAITER_LINES.cart })],
-    ["upsell", defineCheckoutWizardStep({ id: "upsell", component: CheckoutUpsellStep, title: CHECKOUT_WIZARD_GROUPS.upsell, hint: CHECKOUT_WAITER_LINES.upsell })],
-    ["guest", defineCheckoutWizardStep({ id: "guest", component: CheckoutGuestStep, title: CHECKOUT_WIZARD_GROUPS.guest, hint: CHECKOUT_WAITER_LINES.guest })],
-    ["fulfillment", defineCheckoutWizardStep({ id: "fulfillment", component: CheckoutFulfillmentStep, title: CHECKOUT_WIZARD_GROUPS.fulfillment, hint: CHECKOUT_WAITER_LINES.fulfillment })],
-    ["confirm", defineCheckoutWizardStep({ id: "confirm", component: CheckoutConfirmStep, title: CHECKOUT_WIZARD_GROUPS.confirm, hint: CHECKOUT_WAITER_LINES.confirm })],
-    ["success", defineCheckoutWizardStep({ id: "success", component: CheckoutSuccessStep, title: CHECKOUT_WIZARD_GROUPS.success, hint: CHECKOUT_WAITER_LINES.success })],
+    [
+        "cart",
+        defineCheckoutWizardStep({
+            id: "cart",
+            component: CheckoutCartStep,
+            title: CHECKOUT_WIZARD_GROUPS.cart,
+            hint: CHECKOUT_WAITER_LINES.cart,
+        }),
+    ],
+    [
+        "upsell",
+        defineCheckoutWizardStep({
+            id: "upsell",
+            component: CheckoutUpsellStep,
+            title: CHECKOUT_WIZARD_GROUPS.upsell,
+            hint: CHECKOUT_WAITER_LINES.upsell,
+        }),
+    ],
+    [
+        "guest",
+        defineCheckoutWizardStep({
+            id: "guest",
+            component: CheckoutGuestStep,
+            title: CHECKOUT_WIZARD_GROUPS.guest,
+            hint: CHECKOUT_WAITER_LINES.guest,
+        }),
+    ],
+    [
+        "fulfillment",
+        defineCheckoutWizardStep({
+            id: "fulfillment",
+            component: CheckoutFulfillmentStep,
+            title: CHECKOUT_WIZARD_GROUPS.fulfillment,
+            hint: CHECKOUT_WAITER_LINES.fulfillment,
+        }),
+    ],
+    [
+        "confirm",
+        defineCheckoutWizardStep({
+            id: "confirm",
+            component: CheckoutConfirmStep,
+            title: CHECKOUT_WIZARD_GROUPS.confirm,
+            hint: CHECKOUT_WAITER_LINES.confirm,
+        }),
+    ],
+    [
+        "success",
+        defineCheckoutWizardStep({
+            id: "success",
+            component: CheckoutSuccessStep,
+            title: CHECKOUT_WIZARD_GROUPS.success,
+            hint: CHECKOUT_WAITER_LINES.success,
+        }),
+    ],
 ]);
-export function registerCheckoutWizardStep(step) { if (!step?.id) throw new Error("registerCheckoutWizardStep: step.id required"); stepsById.set(step.id, step); }
-export function getCheckoutWizardStep(id) { return id ? stepsById.get(id) ?? null : null; }
-export function listCheckoutWizardSteps() { return Object.freeze([...stepsById.values()]); }
-export function hasCheckoutWizardStep(id) { return stepsById.has(id); }
+export function getCheckoutWizardStep(id) {
+    return id ? (stepsById.get(id) ?? null) : null;
+}
 
-export function useCheckoutWizard({
+function useCheckoutWizard({
     checkoutIntent,
-    orderStore,
     userStore,
     uiStore,
     isAuthenticated,
@@ -142,11 +203,7 @@ export function useCheckoutWizard({
     watch(
         () => [checkoutIntent.checkoutId, checkoutIntent.status],
         ([checkoutId, status]) => {
-            if (
-                checkoutId
-                && status === "draft"
-                && activeStep.value === "success"
-            ) {
+            if (checkoutId && status === "draft" && activeStep.value === "success") {
                 activeStep.value = "cart";
                 isGuestCheckout.value = false;
             }
@@ -159,13 +216,8 @@ export function useCheckoutWizard({
         }
     });
 
-    const {
-        orderPreview,
-        promoState,
-        wizardMissingBlocks,
-        cartItems,
-        wizardCanConfirm,
-    } = storeToRefs(checkoutIntent);
+    const { orderPreview, promoState, wizardMissingBlocks, cartItems, wizardCanConfirm } =
+        storeToRefs(checkoutIntent);
 
     const giftSelectionRequired = computed(() =>
         resolveGiftSelectionRequired({
@@ -178,24 +230,25 @@ export function useCheckoutWizard({
     );
 
     const canConfirmOrder = computed(
-        () =>
-            hasCartItems.value
-            && wizardCanConfirm.value
-            && !giftSelectionRequired.value,
+        () => hasCartItems.value && wizardCanConfirm.value && !giftSelectionRequired.value,
     );
 
-    watch(activeStep, (step) => {
-        uiStore.setCheckoutWizardStep(step);
-        if (step !== "confirm") {
-            uiStore.closeGiftSelectionModal({ dismissAuto: false });
-        }
-        if (step === "fulfillment") {
-            deliveryStep.ensureAuthAddressUi();
-        }
-        if (step === "confirm" && giftSelectionRequired.value) {
-            uiStore.openGiftSelectionModal({ source: "auto" });
-        }
-    }, { immediate: true });
+    watch(
+        activeStep,
+        (step) => {
+            uiStore.setCheckoutWizardStep(step);
+            if (step !== "confirm") {
+                uiStore.closeGiftSelectionModal({ dismissAuto: false });
+            }
+            if (step === "fulfillment") {
+                deliveryStep.ensureAuthAddressUi();
+            }
+            if (step === "confirm" && giftSelectionRequired.value) {
+                uiStore.openGiftSelectionModal({ source: "auto" });
+            }
+        },
+        { immediate: true },
+    );
 
     watch(includeUpsellStep, (available) => {
         if (!available && activeStep.value === "upsell") {
@@ -333,9 +386,8 @@ export function useCheckoutWizard({
         }
 
         const deliveryMethod = checkoutIntent.deliveryInfo?.method;
-        const inZone = orderPreview.value?.totals?.inZone
-            ?? checkoutIntent.deliveryPricing?.inZone
-            ?? null;
+        const inZone =
+            orderPreview.value?.totals?.inZone ?? checkoutIntent.deliveryPricing?.inZone ?? null;
         if (deliveryMethod === "courier" && inZone === false) {
             deliveryStep.deliveryFieldErrors.setFormError(
                 "Доставка по этому адресу невозможна. Укажи адрес ближе или выбери самовывоз.",
@@ -379,10 +431,7 @@ export function useCheckoutWizard({
         try {
             const confirmed = await checkoutIntent.confirmCheckout();
             lastCreatedOrder.value = confirmed.order ?? null;
-            successSummary.value = buildSuccessSummary(
-                lastCreatedOrder.value,
-                checkoutIntent,
-            );
+            successSummary.value = buildSuccessSummary(lastCreatedOrder.value, checkoutIntent);
             emitDomainEvent(DOMAIN_EVENTS.ORDER_CREATED, {
                 order: lastCreatedOrder.value,
             });
@@ -427,7 +476,6 @@ export function useCheckoutWizard({
     };
 }
 
-
 export function useCheckout() {
     const checkoutIntent = useCheckoutStore();
     const orderStore = useOrderStore();
@@ -449,7 +497,6 @@ export function useCheckout() {
     });
     const wizard = useCheckoutWizard({
         checkoutIntent,
-        orderStore,
         userStore,
         uiStore,
         isAuthenticated,
@@ -473,7 +520,7 @@ export function useCheckout() {
         ...paymentStep,
     };
 }
-export function useCheckoutPaymentStep(checkoutIntent) {
+function useCheckoutPaymentStep(checkoutIntent) {
     const paymentFieldErrors = useFormFieldErrors();
 
     function validatePaymentStep() {
@@ -489,9 +536,7 @@ export function useCheckoutPaymentStep(checkoutIntent) {
     function ensurePaymentDefaults() {
         if (!isCheckoutPaymentMethod(checkoutIntent.paymentInfo.method)) {
             checkoutIntent.setPaymentInfo({
-                method: normalizeCheckoutPaymentMethod(
-                    checkoutIntent.paymentInfo.method,
-                ),
+                method: normalizeCheckoutPaymentMethod(checkoutIntent.paymentInfo.method),
             });
         }
     }
@@ -516,14 +561,14 @@ export function useCheckoutPaymentStep(checkoutIntent) {
     };
 }
 
-export function isGuestContactComplete(guestContact) {
+function isGuestContactComplete(guestContact) {
     const name = String(guestContact?.name || "").trim();
     const phone = String(guestContact?.phone || "").trim();
 
     return name !== "" && phone !== "";
 }
 
-export function useCheckoutGuestStep(checkoutIntent) {
+function useCheckoutGuestStep(checkoutIntent) {
     const guestFieldErrors = useFormFieldErrors();
     const consentPersonalData = ref(true);
 

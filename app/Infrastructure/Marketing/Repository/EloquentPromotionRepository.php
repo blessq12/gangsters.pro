@@ -72,7 +72,7 @@ final class EloquentPromotionRepository implements CampaignRepository
 
     public function save(?int $id, string $title, ?string $body, bool $isActive, ?string $imagePath): Campaign
     {
-        $row = $id === null ? new PromotionMediaModel() : PromotionMediaModel::query()->find($id);
+        $row = $id === null ? new PromotionMediaModel : PromotionMediaModel::query()->find($id);
         if (! $row instanceof PromotionMediaModel) {
             throw new \InvalidArgumentException('Акция не найдена.');
         }

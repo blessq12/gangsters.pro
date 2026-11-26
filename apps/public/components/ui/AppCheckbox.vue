@@ -26,17 +26,11 @@ const emit = defineEmits(["update:modelValue"]);
 
 const fc = useAppDesign().components.uiPrimitives.formControls;
 
-const rootClass = computed(() =>
-    props.size === "sm" ? fc.rootSm : fc.rootMd,
-);
+const rootClass = computed(() => (props.size === "sm" ? fc.rootSm : fc.rootMd));
 
-const boxClass = computed(() =>
-    props.size === "sm" ? fc.checkboxSm : fc.checkbox,
-);
+const boxClass = computed(() => (props.size === "sm" ? fc.checkboxSm : fc.checkbox));
 
-const iconClass = computed(() =>
-    props.size === "sm" ? fc.checkIconSm : fc.checkIcon,
-);
+const iconClass = computed(() => (props.size === "sm" ? fc.checkIconSm : fc.checkIcon));
 
 function onChange(event) {
     emit("update:modelValue", event.target.checked);
@@ -53,14 +47,8 @@ function onChange(event) {
             :disabled="disabled"
             @change="onChange"
         />
-        <span
-            :class="[fc.controlDecorLayer, boxClass, fc.checkboxCheckedPeer]"
-            aria-hidden="true"
-        >
-            <i
-                :class="iconClass"
-                aria-hidden="true"
-            />
+        <span :class="[fc.controlDecorLayer, boxClass, fc.checkboxCheckedPeer]" aria-hidden="true">
+            <i :class="iconClass" aria-hidden="true" />
         </span>
     </span>
 </template>

@@ -5,10 +5,7 @@ import { useRuPhoneModel } from "../../modules/client/application/useRuPhoneMode
 import { useUserStore } from "../../modules/client/store/userStore";
 import { applyApiFieldErrors } from "../../platform/extractApiFieldErrors";
 import { mapApiError } from "../../platform/mapApiError";
-import {
-    RU_PHONE_MASKA_PATTERN,
-    validateRuPhoneForSubmit,
-} from "../../platform/ruPhone";
+import { RU_PHONE_MASKA_PATTERN, validateRuPhoneForSubmit } from "../../platform/ruPhone";
 import { useFormFieldErrors } from "../../platform/useFormFieldErrors";
 import FormField from "../ui/FormField.vue";
 
@@ -16,7 +13,6 @@ const emit = defineEmits(["updated", "logout"]);
 
 const cli = useAppDesign().components.client;
 const s = cli.shared;
-const pv = cli.profileView;
 
 const userStore = useUserStore();
 const fieldErrors = useFormFieldErrors();
@@ -80,40 +76,20 @@ async function submit() {
         console.error(e);
         if (!applyApiFieldErrors(fieldErrors, e)) {
             fieldErrors.setFormError(
-                mapApiError(
-                    e,
-                    "Не удалось сохранить профиль. Попробуйте ещё раз.",
-                ),
+                mapApiError(e, "Не удалось сохранить профиль. Попробуйте ещё раз."),
             );
         }
     } finally {
         loading.value = false;
     }
 }
-
-function handleLogoutClick() {
-    userStore.clearAuth();
-    emit("logout");
-}
 </script>
 
 <template>
     <form :class="s.formRoot" @submit.prevent="submit">
         <div :class="s.fieldStack">
-            <FormField
-                label="Имя"
-                error-size="xs"
-                :error="fieldErrors.get('name')"
-            >
-                <template
-                    #default="{
-                        id,
-                        invalid,
-                        invalidClass,
-                        describedBy,
-                        ariaInvalid,
-                    }"
-                >
+            <FormField label="Имя" error-size="xs" :error="fieldErrors.get('name')">
+                <template #default="{ id, invalid, invalidClass, describedBy, ariaInvalid }">
                     <input
                         :id="id"
                         v-model="form.name"
@@ -126,20 +102,8 @@ function handleLogoutClick() {
                 </template>
             </FormField>
 
-            <FormField
-                label="Телефон"
-                error-size="xs"
-                :error="fieldErrors.get('phone')"
-            >
-                <template
-                    #default="{
-                        id,
-                        invalid,
-                        invalidClass,
-                        describedBy,
-                        ariaInvalid,
-                    }"
-                >
+            <FormField label="Телефон" error-size="xs" :error="fieldErrors.get('phone')">
+                <template #default="{ id, invalid, invalidClass, describedBy, ariaInvalid }">
                     <input
                         :id="id"
                         v-model="phoneMask.masked"
@@ -154,20 +118,8 @@ function handleLogoutClick() {
                 </template>
             </FormField>
 
-            <FormField
-                label="Email"
-                error-size="xs"
-                :error="fieldErrors.get('email')"
-            >
-                <template
-                    #default="{
-                        id,
-                        invalid,
-                        invalidClass,
-                        describedBy,
-                        ariaInvalid,
-                    }"
-                >
+            <FormField label="Email" error-size="xs" :error="fieldErrors.get('email')">
+                <template #default="{ id, invalid, invalidClass, describedBy, ariaInvalid }">
                     <input
                         :id="id"
                         v-model="form.email"
@@ -180,20 +132,8 @@ function handleLogoutClick() {
                 </template>
             </FormField>
 
-            <FormField
-                label="Дата рождения"
-                error-size="xs"
-                :error="fieldErrors.get('birth_date')"
-            >
-                <template
-                    #default="{
-                        id,
-                        invalid,
-                        invalidClass,
-                        describedBy,
-                        ariaInvalid,
-                    }"
-                >
+            <FormField label="Дата рождения" error-size="xs" :error="fieldErrors.get('birth_date')">
+                <template #default="{ id, invalid, invalidClass, describedBy, ariaInvalid }">
                     <input
                         :id="id"
                         v-model="form.birth_date"

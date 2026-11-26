@@ -33,15 +33,7 @@ const loadApi = useApi();
 const saveApi = useApi();
 const { selectedBranchId, ensureLoaded } = useOwnerBranchContext();
 
-const {
-    searchQuery,
-    page,
-    perPage,
-    total,
-    pageItems,
-    setItems,
-    allItems,
-} = useClientList({
+const { searchQuery, page, perPage, total, pageItems, setItems, allItems } = useClientList({
     perPage: 20,
     getHaystack: (row) => `${row.code ?? ""} ${row.label ?? ""}`,
 });
@@ -151,9 +143,9 @@ async function save() {
         sort_order: Number(form.sort_order),
     };
     try {
-        await saveApi.run(() => (
-            id ? updateBranchTag(branchId, id, body) : storeBranchTag(branchId, body)
-        ));
+        await saveApi.run(() =>
+            id ? updateBranchTag(branchId, id, body) : storeBranchTag(branchId, body),
+        );
         toast.success(id ? "Сохранено" : "Создано");
         modalOpen.value = false;
         await load();
@@ -190,9 +182,7 @@ onMounted(async () => {
         <template #actions>
             <div class="flex flex-wrap items-center gap-2">
                 <OwnerBranchSelector v-if="!embedded" />
-                <UiButton :disabled="!selectedBranchId" @click="openCreate">
-                    + Тег
-                </UiButton>
+                <UiButton :disabled="!selectedBranchId" @click="openCreate">+ Тег</UiButton>
             </div>
         </template>
 
@@ -279,9 +269,7 @@ onMounted(async () => {
                 <UiButton class="!bg-white/10 !text-bo-fg" @click="modalOpen = false">
                     Отмена
                 </UiButton>
-                <UiButton :disabled="saveApi.loading" @click="save">
-                    Сохранить
-                </UiButton>
+                <UiButton :disabled="saveApi.loading" @click="save">Сохранить</UiButton>
             </template>
         </UiModal>
 

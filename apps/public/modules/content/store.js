@@ -31,10 +31,7 @@ function writeStoredBranchId(branchId) {
         if (branchId == null) {
             window.localStorage.removeItem(SELECTED_BRANCH_STORAGE_KEY);
         } else {
-            window.localStorage.setItem(
-                SELECTED_BRANCH_STORAGE_KEY,
-                String(branchId),
-            );
+            window.localStorage.setItem(SELECTED_BRANCH_STORAGE_KEY, String(branchId));
         }
     } catch (e) {
         console.error("Failed to persist selected branch id", e);
@@ -62,7 +59,7 @@ function toBranchSummary(apiBranch) {
  * @param {number|null} currentId
  * @returns {number|null}
  */
-export function resolveSelectedBranchId(branches, currentId = null) {
+function resolveSelectedBranchId(branches, currentId = null) {
     const activeIds = branches.filter((b) => b.is_active).map((b) => b.id);
 
     for (const candidate of [currentId, readStoredBranchId()]) {
@@ -106,15 +103,12 @@ export const useContentStore = defineStore("content", {
 
         /** Выбранный филиал: телефон/название из списка, расписание — если пришло подробностями. */
         branch(state) {
-            const summary = state.branches.find(
-                (b) => b.id === state.selectedBranchId,
-            );
+            const summary = state.branches.find((b) => b.id === state.selectedBranchId);
             if (!summary) {
                 return null;
             }
 
-            const detail =
-                state.branchDetail?.id === summary.id ? state.branchDetail : {};
+            const detail = state.branchDetail?.id === summary.id ? state.branchDetail : {};
 
             return normalizeBranch({ ...detail, ...summary });
         },
@@ -131,27 +125,18 @@ export const useContentStore = defineStore("content", {
                 return;
             }
 
-            this.profile = payload.company
-                ? normalizeCompanyProfile(payload.company)
-                : null;
-            this.legal = payload.legal
-                ? normalizeCompanyLegal(payload.legal)
-                : null;
+            this.profile = payload.company ? normalizeCompanyProfile(payload.company) : null;
+            this.legal = payload.legal ? normalizeCompanyLegal(payload.legal) : null;
             this.documents = Array.isArray(payload.documents)
                 ? payload.documents.map(normalizeCompanyDocument).filter(Boolean)
                 : [];
-            this.branchDetail = payload.branch
-                ? normalizeBranch(payload.branch)
-                : null;
+            this.branchDetail = payload.branch ? normalizeBranch(payload.branch) : null;
 
             this.branches = Array.isArray(payload.branches)
                 ? payload.branches.map(toBranchSummary).filter(Boolean)
                 : [];
 
-            const resolvedId = resolveSelectedBranchId(
-                this.branches,
-                this.selectedBranchId,
-            );
+            const resolvedId = resolveSelectedBranchId(this.branches, this.selectedBranchId);
             this.selectedBranchId = resolvedId;
             writeStoredBranchId(resolvedId);
         },
@@ -243,10 +228,7 @@ export const useContentStore = defineStore("content", {
             this.error = null;
 
             try {
-                const [, marketing] = await Promise.all([
-                    this.loadCompany(),
-                    fetchMarketing(),
-                ]);
+                const [, marketing] = await Promise.all([this.loadCompany(), fetchMarketing()]);
                 this.applyMarketing(marketing);
                 await this.loadDelivery();
                 this.loaded = true;
@@ -254,10 +236,7 @@ export const useContentStore = defineStore("content", {
                 console.error("Failed to fetch content bootstrap", e);
 
                 if (!this.loaded) {
-                    this.error = mapApiError(
-                        e,
-                        "Не удалось загрузить контент сайта.",
-                    );
+                    this.error = mapApiError(e, "Не удалось загрузить контент сайта.");
                     throw e;
                 }
             } finally {

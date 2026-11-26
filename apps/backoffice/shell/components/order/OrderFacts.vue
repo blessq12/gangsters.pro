@@ -2,7 +2,7 @@
 import { computed } from "vue";
 import UiBadge from "../ui/UiBadge.vue";
 import UiCard from "../ui/UiCard.vue";
-import OrderDeliveryMap from "./OrderDeliveryMap.vue";
+import OrderDeliveryMap from "../maps/OrderDeliveryMap.vue";
 import {
     deliveryMethodLabel,
     formatAddress,
@@ -28,18 +28,20 @@ const totals = computed(() => props.order?.totals ?? props.order?.cart?.totals ?
 const isCourier = computed(() => String(props.order?.delivery?.method ?? "") === "courier");
 const address = computed(() => formatAddress(props.order?.delivery?.address));
 const addressRaw = computed(() => props.order?.delivery?.address ?? null);
-const branchText = computed(() =>
-    props.branchTitle
-        || (props.order?.branch_id ? `Филиал #${props.order.branch_id}` : "Ещё не назначен"),
+const branchText = computed(
+    () =>
+        props.branchTitle ||
+        (props.order?.branch_id ? `Филиал #${props.order.branch_id}` : "Ещё не назначен"),
 );
 
 const clientName = computed(() => String(props.order?.client?.name ?? "").trim() || "Без имени");
 const clientPhone = computed(() => String(props.order?.client?.phone ?? "").trim());
 const clientComment = computed(() => {
-    const raw = props.order?.delivery?.address?.comment
-        ?? props.order?.delivery?.comment
-        ?? props.order?.client_comment
-        ?? "";
+    const raw =
+        props.order?.delivery?.address?.comment ??
+        props.order?.delivery?.comment ??
+        props.order?.client_comment ??
+        "";
     return String(raw).trim();
 });
 
@@ -51,18 +53,26 @@ const paymentLine = computed(() => {
     return `${paymentMethodLabel(payment.method)} · ${formatKopecks(payment.amount_kopecks)}`;
 });
 
-const allLines = computed(() => (Array.isArray(props.order?.cart?.lines) ? props.order.cart.lines : []));
+const allLines = computed(() =>
+    Array.isArray(props.order?.cart?.lines) ? props.order.cart.lines : [],
+);
 /** Наборы (set) показываем как обычные товары — без отдельного блока. */
-const productLines = computed(() => allLines.value.filter((line) => {
-    const type = lineTypeOf(line);
-    return type === "regular" || type === "set";
-}));
+const productLines = computed(() =>
+    allLines.value.filter((line) => {
+        const type = lineTypeOf(line);
+        return type === "regular" || type === "set";
+    }),
+);
 const giftLines = computed(() => allLines.value.filter((line) => lineTypeOf(line) === "gift"));
-const complementLines = computed(() => allLines.value.filter((line) => lineTypeOf(line) === "complement"));
-const otherLines = computed(() => allLines.value.filter((line) => {
-    const type = lineTypeOf(line);
-    return type !== "regular" && type !== "set" && type !== "gift" && type !== "complement";
-}));
+const complementLines = computed(() =>
+    allLines.value.filter((line) => lineTypeOf(line) === "complement"),
+);
+const otherLines = computed(() =>
+    allLines.value.filter((line) => {
+        const type = lineTypeOf(line);
+        return type !== "regular" && type !== "set" && type !== "gift" && type !== "complement";
+    }),
+);
 
 const cartSummary = computed(() => {
     const parts = [];
@@ -109,15 +119,10 @@ function rublesOf(key) {
                     <p class="text-sm text-bo-muted">
                         {{ clientName }}
                     </p>
-                    <p
-                        v-if="clientComment"
-                        class="whitespace-pre-wrap text-sm text-bo-fg"
-                    >
+                    <p v-if="clientComment" class="whitespace-pre-wrap text-sm text-bo-fg">
                         {{ clientComment }}
                     </p>
-                    <p v-else class="text-sm text-bo-muted">
-                        Без комментария
-                    </p>
+                    <p v-else class="text-sm text-bo-muted">Без комментария</p>
                 </div>
             </UiCard>
 
@@ -129,8 +134,7 @@ function rublesOf(key) {
                         </p>
                         <p class="text-sm text-bo-muted">
                             {{ deliveryMethodLabel(order.delivery?.method) }}
-                            · {{ branchText }}
-                            · {{ formatKopecks(order.delivery?.fee_kopecks) }}
+                            · {{ branchText }} · {{ formatKopecks(order.delivery?.fee_kopecks) }}
                             <template v-if="order.delivery?.zone_id">
                                 · зона {{ order.delivery.zone_id }}
                             </template>
@@ -181,9 +185,13 @@ function rublesOf(key) {
                             >
                                 <span class="min-w-0 font-medium text-bo-fg">
                                     {{ line.name || `Позиция #${line.product_id}` }}
-                                    <span class="font-normal text-bo-muted">× {{ line.quantity }}</span>
+                                    <span class="font-normal text-bo-muted">
+                                        × {{ line.quantity }}
+                                    </span>
                                 </span>
-                                <span class="shrink-0 text-bo-muted">{{ formatLineRubles(line) }}</span>
+                                <span class="shrink-0 text-bo-muted">
+                                    {{ formatLineRubles(line) }}
+                                </span>
                             </li>
                         </ul>
                         <p v-else class="text-bo-muted">Нет позиций</p>
@@ -201,9 +209,13 @@ function rublesOf(key) {
                             >
                                 <span class="min-w-0 font-medium text-bo-fg">
                                     {{ line.name || `Подарок #${line.product_id}` }}
-                                    <span class="font-normal text-bo-muted">× {{ line.quantity }}</span>
+                                    <span class="font-normal text-bo-muted">
+                                        × {{ line.quantity }}
+                                    </span>
                                 </span>
-                                <span class="shrink-0 text-bo-muted">{{ formatLineRubles(line) }}</span>
+                                <span class="shrink-0 text-bo-muted">
+                                    {{ formatLineRubles(line) }}
+                                </span>
                             </li>
                         </ul>
                     </div>
@@ -220,9 +232,13 @@ function rublesOf(key) {
                             >
                                 <span class="min-w-0 font-medium text-bo-fg">
                                     {{ line.name || `Дополнение #${line.product_id}` }}
-                                    <span class="font-normal text-bo-muted">× {{ line.quantity }}</span>
+                                    <span class="font-normal text-bo-muted">
+                                        × {{ line.quantity }}
+                                    </span>
                                 </span>
-                                <span class="shrink-0 text-bo-muted">{{ formatLineRubles(line) }}</span>
+                                <span class="shrink-0 text-bo-muted">
+                                    {{ formatLineRubles(line) }}
+                                </span>
                             </li>
                         </ul>
                     </div>
@@ -243,7 +259,9 @@ function rublesOf(key) {
                                         · {{ lineTypeOf(line) }} × {{ line.quantity }}
                                     </span>
                                 </span>
-                                <span class="shrink-0 text-bo-muted">{{ formatLineRubles(line) }}</span>
+                                <span class="shrink-0 text-bo-muted">
+                                    {{ formatLineRubles(line) }}
+                                </span>
                             </li>
                         </ul>
                     </div>
@@ -264,11 +282,9 @@ function rublesOf(key) {
                         {{ formatRubles(order) }}
                     </p>
                     <p class="text-sm text-bo-muted">
-                        Позиции {{ rublesOf('items_total_rubles') || "—" }}
-                        · Доставка {{ rublesOf('delivery_fee_rubles') || "—" }}
-                        <template v-if="order.payment">
-                            · {{ paymentLine }}
-                        </template>
+                        Позиции {{ rublesOf("items_total_rubles") || "—" }} · Доставка
+                        {{ rublesOf("delivery_fee_rubles") || "—" }}
+                        <template v-if="order.payment">· {{ paymentLine }}</template>
                     </p>
                     <p
                         v-if="order.payment"

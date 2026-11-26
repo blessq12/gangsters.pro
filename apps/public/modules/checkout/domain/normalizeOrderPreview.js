@@ -128,12 +128,7 @@ function normalizeTotals(totals) {
         grandTotalRubles,
         isDeliveryFree: Boolean(totals.is_delivery_free),
         isDeliveryPreview: Boolean(totals.is_delivery_preview),
-        inZone:
-            totals.in_zone === true
-                ? true
-                : totals.in_zone === false
-                  ? false
-                  : null,
+        inZone: totals.in_zone === true ? true : totals.in_zone === false ? false : null,
         isRemote: Boolean(totals.is_remote),
     };
 }
@@ -195,8 +190,7 @@ export function adaptFormationToCheckoutSnapshot(quote) {
 
     const itemsRubles = Number(totals.items_rubles) || 0;
     const deliveryFeeRubles = Number(totals.delivery_fee_rubles) || 0;
-    const grandTotalRubles =
-        Number(totals.grand_total_rubles) || itemsRubles + deliveryFeeRubles;
+    const grandTotalRubles = Number(totals.grand_total_rubles) || itemsRubles + deliveryFeeRubles;
 
     const itemsTotalKopecks = Math.round(itemsRubles * 100);
     const deliveryFeeKopecks = Math.round(deliveryFeeRubles * 100);
@@ -266,19 +260,13 @@ export function adaptFormationToCheckoutSnapshot(quote) {
             : null;
 
     const giftThresholdKopecks =
-        benefits.gift_threshold_kopecks != null
-            ? Number(benefits.gift_threshold_kopecks)
-            : null;
-    const giftCurrentKopecks =
-        Number(benefits.gift_current_kopecks) || itemsTotalKopecks;
+        benefits.gift_threshold_kopecks != null ? Number(benefits.gift_threshold_kopecks) : null;
+    const giftCurrentKopecks = Number(benefits.gift_current_kopecks) || itemsTotalKopecks;
     const giftRemainingKopecks = Number(benefits.gift_remaining_kopecks) || 0;
 
-    const rollsPerSet =
-        benefits.rolls_per_set != null ? Number(benefits.rolls_per_set) : null;
+    const rollsPerSet = benefits.rolls_per_set != null ? Number(benefits.rolls_per_set) : null;
     const maxSets =
-        benefits.complement_max_sets != null
-            ? Number(benefits.complement_max_sets)
-            : null;
+        benefits.complement_max_sets != null ? Number(benefits.complement_max_sets) : null;
     const rollCount = Number(benefits.roll_count) || 0;
     const entitledSets = Number(benefits.complement_entitled) || 0;
     const remainingRollCount = Number(benefits.remaining_roll_count) || 0;
@@ -286,12 +274,7 @@ export function adaptFormationToCheckoutSnapshot(quote) {
 
     const deliveryActive = Boolean(benefits.delivery_active);
     const deliveryReached = Boolean(benefits.delivery_reached);
-    const inZone =
-        delivery.in_zone === true
-            ? true
-            : delivery.in_zone === false
-              ? false
-              : null;
+    const inZone = delivery.in_zone === true ? true : delivery.in_zone === false ? false : null;
 
     const missingBlocks = [];
     const client = quote.client && typeof quote.client === "object" ? quote.client : {};
@@ -305,10 +288,7 @@ export function adaptFormationToCheckoutSnapshot(quote) {
     if (!delivery.method) {
         missingBlocks.push("delivery");
     }
-    if (
-        delivery.method === "courier"
-        && !(delivery.address?.street && delivery.address?.house)
-    ) {
+    if (delivery.method === "courier" && !(delivery.address?.street && delivery.address?.house)) {
         missingBlocks.push("delivery");
     }
     if (delivery.method === "courier" && inZone === false) {
@@ -402,9 +382,7 @@ export function adaptFormationToCheckoutSnapshot(quote) {
                 delivery_fee_rubles: deliveryFeeRubles,
                 grand_total_rubles: grandTotalRubles,
                 is_delivery_free:
-                    deliveryFeeKopecks === 0
-                    && delivery.method === "courier"
-                    && inZone === true,
+                    deliveryFeeKopecks === 0 && delivery.method === "courier" && inZone === true,
                 is_delivery_preview: delivery.method !== "pickup" && inZone == null,
                 in_zone: inZone,
                 is_remote: delivery.is_remote === true,

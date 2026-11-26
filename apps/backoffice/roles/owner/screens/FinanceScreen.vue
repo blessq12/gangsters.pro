@@ -31,15 +31,7 @@ const toast = useToast();
 const listApi = useApi();
 const summaryApi = useApi();
 const actionApi = useApi();
-const {
-    page,
-    perPage,
-    total,
-    items: rows,
-    offset,
-    resetPage,
-    applyPayload,
-} = usePagedList();
+const { page, perPage, total, items: rows, offset, resetPage, applyPayload } = usePagedList();
 
 /** @type {import('vue').Ref<Record<string, unknown>|null>} */
 const summary = ref(null);
@@ -146,15 +138,18 @@ async function loadSummary() {
 
 async function loadList() {
     try {
-        const payload = await listApi.run(() => listPayments({
-            ...queryParams(),
-            offset: offset.value,
-            limit: perPage,
-        }));
+        const payload = await listApi.run(() =>
+            listPayments({
+                ...queryParams(),
+                offset: offset.value,
+                limit: perPage,
+            }),
+        );
         applyPayload(payload, (payment) => ({
             id: payment.id,
             order_id: payment.order_id,
-            order_number: payment.order_number || `ORD-${String(payment.order_id).padStart(4, "0")}`,
+            order_number:
+                payment.order_number || `ORD-${String(payment.order_id).padStart(4, "0")}`,
             created_at: formatDateTime(payment.created_at),
             method: payment.method,
             amount: formatKopecks(payment.amount_kopecks),
@@ -244,18 +239,10 @@ watch(page, loadList);
 
             <div class="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <UiFormField label="С">
-                    <UiInput
-                        v-model="filters.from"
-                        type="date"
-                        @change="onFilterCommit"
-                    />
+                    <UiInput v-model="filters.from" type="date" @change="onFilterCommit" />
                 </UiFormField>
                 <UiFormField label="По">
-                    <UiInput
-                        v-model="filters.to"
-                        type="date"
-                        @change="onFilterCommit"
-                    />
+                    <UiInput v-model="filters.to" type="date" @change="onFilterCommit" />
                 </UiFormField>
                 <UiFormField label="Статус">
                     <select
@@ -263,21 +250,11 @@ watch(page, loadList);
                         class="mt-2 h-11 w-full border border-bo-border bg-bo-field px-4 text-bo-fg"
                         @change="onFilterCommit"
                     >
-                        <option value="">
-                            Все
-                        </option>
-                        <option value="pending">
-                            Ожидает
-                        </option>
-                        <option value="paid">
-                            Оплачен
-                        </option>
-                        <option value="refunded">
-                            Возврат
-                        </option>
-                        <option value="cancelled">
-                            Отменён
-                        </option>
+                        <option value="">Все</option>
+                        <option value="pending">Ожидает</option>
+                        <option value="paid">Оплачен</option>
+                        <option value="refunded">Возврат</option>
+                        <option value="cancelled">Отменён</option>
                     </select>
                 </UiFormField>
                 <UiFormField label="Метод">
@@ -286,18 +263,10 @@ watch(page, loadList);
                         class="mt-2 h-11 w-full border border-bo-border bg-bo-field px-4 text-bo-fg"
                         @change="onFilterCommit"
                     >
-                        <option value="">
-                            Все
-                        </option>
-                        <option value="cash">
-                            Наличные
-                        </option>
-                        <option value="card_courier">
-                            Карта курьеру
-                        </option>
-                        <option value="card_online">
-                            Онлайн
-                        </option>
+                        <option value="">Все</option>
+                        <option value="cash">Наличные</option>
+                        <option value="card_courier">Карта курьеру</option>
+                        <option value="card_online">Онлайн</option>
                     </select>
                 </UiFormField>
             </div>
@@ -307,20 +276,14 @@ watch(page, loadList);
                 :class="{ 'opacity-50': summaryApi.loading }"
             >
                 <div class="border border-bo-border bg-bo-field px-4 py-3">
-                    <div class="text-xs text-bo-muted">
-                        Оплачено
-                    </div>
+                    <div class="text-xs text-bo-muted">Оплачено</div>
                     <div class="mt-1 text-lg text-bo-fg">
                         {{ formatKopecks(summary?.paid_kopecks) }}
                     </div>
-                    <div class="mt-1 text-xs text-bo-muted">
-                        {{ summary?.paid_count ?? 0 }} шт.
-                    </div>
+                    <div class="mt-1 text-xs text-bo-muted">{{ summary?.paid_count ?? 0 }} шт.</div>
                 </div>
                 <div class="border border-bo-border bg-bo-field px-4 py-3">
-                    <div class="text-xs text-bo-muted">
-                        Возвраты
-                    </div>
+                    <div class="text-xs text-bo-muted">Возвраты</div>
                     <div class="mt-1 text-lg text-bo-fg">
                         {{ formatKopecks(summary?.refunded_kopecks) }}
                     </div>
@@ -329,26 +292,23 @@ watch(page, loadList);
                     </div>
                 </div>
                 <div class="border border-bo-border bg-bo-field px-4 py-3">
-                    <div class="text-xs text-bo-muted">
-                        Ожидает
-                    </div>
+                    <div class="text-xs text-bo-muted">Ожидает</div>
                     <div class="mt-1 text-lg text-bo-fg">
                         {{ formatKopecks(summary?.pending_kopecks) }}
                     </div>
                     <div class="mt-1 text-xs text-bo-muted">
-                        {{ summary?.pending_count ?? 0 }} шт. · отменённых {{ summary?.cancelled_count ?? 0 }}
+                        {{ summary?.pending_count ?? 0 }} шт. · отменённых
+                        {{ summary?.cancelled_count ?? 0 }}
                     </div>
                 </div>
                 <div class="border border-bo-border bg-bo-field px-4 py-3">
-                    <div class="text-xs text-bo-muted">
-                        Средний чек (paid)
-                    </div>
+                    <div class="text-xs text-bo-muted">Средний чек (paid)</div>
                     <div class="mt-1 text-lg text-bo-fg">
                         {{ formatKopecks(summary?.average_paid_kopecks) }}
                     </div>
                     <div class="mt-2 space-y-0.5 text-xs text-bo-muted">
                         <div
-                            v-for="(kopecks, method) in (summary?.paid_by_method ?? {})"
+                            v-for="(kopecks, method) in summary?.paid_by_method ?? {}"
                             :key="method"
                         >
                             {{ paymentMethodLabel(method) }}: {{ formatKopecks(kopecks) }}
@@ -428,7 +388,10 @@ watch(page, loadList);
             title="Подтверждение"
             :message="confirmMessage"
             @confirm="confirmAction"
-            @cancel="confirmOpen = false; actionTarget = null"
+            @cancel="
+                confirmOpen = false;
+                actionTarget = null;
+            "
         />
     </div>
 </template>

@@ -15,8 +15,7 @@ export const clientDesign = {
         headingH3: "text-lg font-normal text-app-canvas-fg sm:text-xl",
         leadMuted: "text-xs text-app-muted",
         tabRow: "flex flex-wrap gap-2",
-        tabPillBase:
-            "rounded-none px-3 py-1 text-[11px] font-medium transition",
+        tabPillBase: "rounded-none px-3 py-1 text-[11px] font-medium transition",
         tabPillActive: "bg-app-accent text-white ",
         tabPillInactive: "bg-black/5 text-app-canvas-fg hover:bg-black/8",
         label: "mb-1 block text-xs font-medium text-app-muted",
@@ -62,12 +61,9 @@ export const clientDesign = {
         statGrid: "grid grid-cols-2 gap-2",
         statCard: `${nestedCard} px-3 py-3`,
         statCardWide: `col-span-2 ${nestedCard} px-3 py-3`,
-        statLabel:
-            "text-[10px] font-medium uppercase tracking-wide text-app-muted",
-        statValueAccent:
-            "mt-1 text-xl font-semibold tabular-nums text-app-accent",
-        statValueMain:
-            "mt-1 text-lg font-semibold tabular-nums text-app-canvas-fg",
+        statLabel: "text-[10px] font-medium uppercase tracking-wide text-app-muted",
+        statValueAccent: "mt-1 text-xl font-semibold tabular-nums text-app-accent",
+        statValueMain: "mt-1 text-lg font-semibold tabular-nums text-app-canvas-fg",
         offersBlock: `${profileStateEmpty} space-y-1.5 px-3 py-4`,
         offersTitle: "text-xs font-medium text-app-muted",
         offersHint: "text-[11px] leading-snug text-app-muted/80",

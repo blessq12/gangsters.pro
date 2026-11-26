@@ -23,9 +23,7 @@ const justAdded = ref(false);
 let flashTimer = null;
 let unsubscribeAdd = null;
 
-const amountLabel = computed(
-    () => `${formatMoneyRublesRu(cartStore.cartTotalAmount)} ₽`,
-);
+const amountLabel = computed(() => `${formatMoneyRublesRu(cartStore.cartTotalAmount)} ₽`);
 
 const qtyLabel = computed(() => `${cartStore.cartTotalItems} шт`);
 
@@ -57,12 +55,9 @@ function onClick() {
 }
 
 onMounted(() => {
-    unsubscribeAdd = subscribeDomainEvent(
-        DOMAIN_EVENTS.CART_ADD_REQUESTED,
-        () => {
-            showAddedFlash();
-        },
-    );
+    unsubscribeAdd = subscribeDomainEvent(DOMAIN_EVENTS.CART_ADD_REQUESTED, () => {
+        showAddedFlash();
+    });
 });
 
 onUnmounted(() => {
@@ -92,12 +87,7 @@ onUnmounted(() => {
         <span :class="ds.sheen" aria-hidden="true" />
 
         <span :class="ds.content">
-            <span
-                :class="[
-                    ds.idleLayer,
-                    justAdded ? ds.idleLayerHidden : '',
-                ]"
-            >
+            <span :class="[ds.idleLayer, justAdded ? ds.idleLayerHidden : '']">
                 <template v-if="isEmpty">
                     <span :class="ds.emptyWrap">
                         <i :class="ds.emptyIcon" aria-hidden="true" />
@@ -111,10 +101,7 @@ onUnmounted(() => {
             </span>
 
             <Transition name="dock-cart-added">
-                <span
-                    v-if="justAdded"
-                    :class="ds.flashLayer"
-                >
+                <span v-if="justAdded" :class="ds.flashLayer">
                     <span :class="ds.flashLabel">добавлено</span>
                 </span>
             </Transition>

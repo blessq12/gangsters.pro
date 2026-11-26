@@ -19,10 +19,7 @@ function rubles(value) {
             <span>{{ cartCount }} шт.</span>
             <span>{{ rubles(itemsRubles) }}</span>
         </div>
-        <div
-            v-if="showDelivery"
-            class="flex justify-between text-bo-muted"
-        >
+        <div v-if="showDelivery" class="flex justify-between text-bo-muted">
             <span>Доставка</span>
             <span>{{ rubles(deliveryRubles) }}</span>
         </div>
@@ -30,11 +27,6 @@ function rubles(value) {
             <span>Итого</span>
             <span>{{ rubles(grandRubles || itemsRubles) }}</span>
         </div>
-        <p
-            v-if="loading"
-            class="text-xs text-bo-muted"
-        >
-            Пересчёт…
-        </p>
+        <p v-if="loading" class="text-xs text-bo-muted">Пересчёт…</p>
     </div>
 </template>

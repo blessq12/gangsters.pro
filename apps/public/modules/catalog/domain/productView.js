@@ -39,7 +39,7 @@ export function normalizeImageFocus(rawFocus) {
  * @param {unknown} rawFocus
  * @returns {string}
  */
-export function focusToObjectPosition(rawFocus) {
+function focusToObjectPosition(rawFocus) {
     const focus = normalizeImageFocus(rawFocus);
     return `${focus.x}% ${focus.y}%`;
 }
@@ -55,13 +55,8 @@ export function buildProductGallerySlides(product) {
         return rawImages
             .map((img) => {
                 const variants = img?.variants || [];
-                const bySize = (s) =>
-                    variants.find((v) => v?.size === s && v?.path);
-                const v =
-                    bySize("large") ||
-                    bySize("medium") ||
-                    bySize("thumb") ||
-                    variants[0];
+                const bySize = (s) => variants.find((v) => v?.size === s && v?.path);
+                const v = bySize("large") || bySize("medium") || bySize("thumb") || variants[0];
                 const url = v ? toCatalogStorageUrl(v.path) : null;
                 if (!url) return null;
 
@@ -82,9 +77,7 @@ export function buildProductGallerySlides(product) {
                 if (entry?.url) {
                     return {
                         url: entry.url,
-                        objectPosition: focusToObjectPosition(
-                            entry.focus ?? product.imageFocus,
-                        ),
+                        objectPosition: focusToObjectPosition(entry.focus ?? product.imageFocus),
                     };
                 }
                 return null;
@@ -111,7 +104,5 @@ export function getProductNutritionNumbers(product) {
 
 export function hasProductNutrition(product) {
     const n = getProductNutritionNumbers(product);
-    return Boolean(
-        n && (n.calories || n.proteins || n.fats || n.carbs),
-    );
+    return Boolean(n && (n.calories || n.proteins || n.fats || n.carbs));
 }

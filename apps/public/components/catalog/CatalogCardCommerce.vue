@@ -61,15 +61,13 @@ const addButtonClass = computed(() => {
 
 const showAddIcon = computed(
     () =>
-        props.variant === "horizontal"
-        || props.variant === "mobileGrid"
-        || (props.variant === "desktop" && props.compact),
+        props.variant === "horizontal" ||
+        props.variant === "mobileGrid" ||
+        (props.variant === "desktop" && props.compact),
 );
 
 const showAddLabel = computed(
-    () =>
-        props.variant === "desktop" && !props.compact
-        || props.variant === "mobileGrid",
+    () => (props.variant === "desktop" && !props.compact) || props.variant === "mobileGrid",
 );
 
 const qtyBarClass = computed(() => tokens.value.qtyBar || tokens.value.qtyCluster);
@@ -144,7 +142,10 @@ function handleDecrement() {
             >
                 <span
                     v-if="variant === 'mobileGrid'"
-                    :class="[tokens.feedbackCartRing, { 'pc-feedback-ring--active': justAddedToCart }]"
+                    :class="[
+                        tokens.feedbackCartRing,
+                        { 'pc-feedback-ring--active': justAddedToCart },
+                    ]"
                     aria-hidden="true"
                 />
                 <i
@@ -157,14 +158,8 @@ function handleDecrement() {
                 <span v-if="showAddLabel">В корзину</span>
             </button>
 
-            <div
-                v-if="formattedPrice"
-                :class="commerce.priceChip[variant]"
-            >
-                <span
-                    v-if="formattedOldPrice"
-                    :class="commerce.oldPrice[variant]"
-                >
+            <div v-if="formattedPrice" :class="commerce.priceChip[variant]">
+                <span v-if="formattedOldPrice" :class="commerce.oldPrice[variant]">
                     {{ formattedOldPrice }}
                 </span>
                 <span :class="commerce.priceIdle[variant]">
@@ -202,14 +197,8 @@ function handleDecrement() {
                 </button>
             </div>
 
-            <div
-                v-if="formattedPrice"
-                :class="commerce.priceChip[variant]"
-            >
-                <span
-                    v-if="formattedOldPrice"
-                    :class="commerce.oldPrice[variant]"
-                >
+            <div v-if="formattedPrice" :class="commerce.priceChip[variant]">
+                <span v-if="formattedOldPrice" :class="commerce.oldPrice[variant]">
                     {{ formattedOldPrice }}
                 </span>
                 <span :class="commerce.priceInCart[variant]">

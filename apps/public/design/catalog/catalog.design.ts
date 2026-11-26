@@ -9,18 +9,15 @@ import { catalogModalDesign } from "./catalogModal.design";
 import { catalogSearchDesign } from "./catalogSearch.design";
 
 const { chromePillInactive } = dockDesign.shared;
-const categoryPillBase =
-    "whitespace-nowrap rounded-none border transition-colors backdrop-blur";
+const categoryPillBase = "whitespace-nowrap rounded-none border transition-colors backdrop-blur";
 /** Активная категория: красный фон, белый текст — сильный акцент. */
-const categoryPillActive =
-    "border-app-accent bg-app-accent font-semibold text-white";
+const categoryPillActive = "border-app-accent bg-app-accent font-semibold text-white";
 
 export const catalogDesign = {
     /** CatalogCategoriesBase: остров и пиллы категорий (desktop/mobile через variant). */
     categories: {
         outer: "relative mb-10 w-full min-w-0 max-w-full",
-        island:
-            "min-w-0 max-w-full rounded-none border border-app-accent/40 bg-app-canvas backdrop-blur",
+        island: "min-w-0 max-w-full rounded-none border border-app-accent/40 bg-app-canvas backdrop-blur",
         /** Fixed-копия при pinOnScroll (геометрия — inline style). */
         islandFixed: "pointer-events-auto fixed z-20 shadow-lg shadow-black/40",
         islandScrollDimTransition: "transition-opacity duration-300 ease-out",
@@ -40,21 +37,17 @@ export const catalogDesign = {
     /** CatalogViewControls * */
     viewControls: {
         desktop: {
-            wrapper:
-                "inline-flex items-center gap-2 bg-app-glass-fill p-1 backdrop-blur",
+            wrapper: "inline-flex items-center gap-2 bg-app-glass-fill p-1 backdrop-blur",
             label: "px-2 text-xs font-medium text-app-muted",
             btn: "px-3 py-1.5 text-xs font-semibold transition",
             btnActive: "bg-app-accent text-white",
-            btnInactive:
-                "text-app-muted hover:bg-black/8 hover:text-app-canvas-fg",
+            btnInactive: "text-app-muted hover:bg-black/8 hover:text-app-canvas-fg",
         },
         mobile: {
-            wrapper:
-                "inline-flex w-full items-center bg-app-glass-fill p-1 backdrop-blur",
+            wrapper: "inline-flex w-full items-center bg-app-glass-fill p-1 backdrop-blur",
             btn: "flex-1 px-3 py-2 text-xs font-semibold transition",
             btnActive: "bg-app-accent text-white",
-            btnInactive:
-                "text-app-muted hover:bg-black/8 hover:text-app-canvas-fg",
+            btnInactive: "text-app-muted hover:bg-black/8 hover:text-app-canvas-fg",
         },
     },
 
@@ -74,5 +67,3 @@ export const catalogDesign = {
     modal: catalogModalDesign,
     search: catalogSearchDesign,
 } as const;
-
-export type CatalogDesign = typeof catalogDesign;

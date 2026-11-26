@@ -38,9 +38,7 @@ const count = computed(() => store.countFor(props.orderId, propCount.value));
 
 const hasNotes = computed(() => count.value > 0);
 
-const isActive = computed(
-    () => store.isOpen && String(store.orderId) === String(props.orderId),
-);
+const isActive = computed(() => store.isOpen && String(store.orderId) === String(props.orderId));
 
 watch(
     () => [props.orderId, propCount.value],
@@ -75,13 +73,11 @@ function onClick() {
             isActive
                 ? 'border-bo-accent bg-bo-accent/20 text-bo-fg'
                 : hasNotes
-                    ? 'order-notes-trigger--has-notes border-bo-accent/70 bg-bo-accent/15 text-bo-fg hover:bg-bo-accent/25'
-                    : 'border-bo-border bg-white/10 text-bo-fg hover:bg-white/[0.08]',
+                  ? 'order-notes-trigger--has-notes border-bo-accent/70 bg-bo-accent/15 text-bo-fg hover:bg-bo-accent/25'
+                  : 'border-bo-border bg-white/10 text-bo-fg hover:bg-white/[0.08]',
         ]"
         :aria-expanded="isActive"
-        :aria-label="hasNotes
-            ? `Комментарии к заказу, ${count}`
-            : 'Комментарии к заказу'"
+        :aria-label="hasNotes ? `Комментарии к заказу, ${count}` : 'Комментарии к заказу'"
         @click.stop="onClick"
     >
         <ShellIcon
@@ -91,9 +87,7 @@ function onClick() {
         />
         <span
             class="inline-flex min-w-[1.25rem] items-center justify-center rounded-sm px-1.5 text-xs font-semibold tabular-nums"
-            :class="hasNotes
-                ? 'bg-bo-accent/35 text-bo-fg'
-                : 'bg-white/10 text-bo-muted'"
+            :class="hasNotes ? 'bg-bo-accent/35 text-bo-fg' : 'bg-white/10 text-bo-muted'"
         >
             {{ count }}
         </span>

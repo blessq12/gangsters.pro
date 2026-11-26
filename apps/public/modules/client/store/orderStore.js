@@ -1,5 +1,4 @@
 import { defineStore } from "pinia";
-import { DOMAIN_EVENTS, emitDomainEvent } from "../../../platform/domainEvents";
 import { fetchOrdersRequest } from "../../../api/client";
 
 export const useOrderStore = defineStore("order", {
@@ -58,15 +57,14 @@ export const useOrderStore = defineStore("order", {
             try {
                 const data = await fetchOrdersRequest();
 
-                const orders = Array.isArray(data?.data ?? data) ? data.data ?? data : [];
+                const orders = Array.isArray(data?.data ?? data) ? (data.data ?? data) : [];
                 this.setOrders(orders);
 
                 return orders;
             } catch (e) {
                 console.error("Failed to fetch orders", e);
                 this.error.list =
-                    e?.response?.data?.message ||
-                    "Не удалось загрузить заказы. Попробуйте позже.";
+                    e?.response?.data?.message || "Не удалось загрузить заказы. Попробуйте позже.";
                 throw e;
             } finally {
                 this.loading.list = false;

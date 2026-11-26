@@ -2,7 +2,7 @@
  * @param {unknown} error
  * @returns {Record<string, string>}
  */
-export function extractApiFieldErrors(error) {
+function extractApiFieldErrors(error) {
     const raw = error?.response?.data?.errors;
     if (!raw || typeof raw !== "object") {
         return {};

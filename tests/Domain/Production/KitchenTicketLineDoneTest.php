@@ -13,7 +13,7 @@ use PHPUnit\Framework\TestCase;
 
 final class KitchenTicketLineDoneTest extends TestCase
 {
-    public function testПоварОтмечаетЛиниюГотовой(): void
+    public function test_повар_отмечает_линию_готовой(): void
     {
         $ticket = $this->ticketWithLines([
             $this->line(101, 1, 'Ролл', 1),
@@ -32,7 +32,7 @@ final class KitchenTicketLineDoneTest extends TestCase
         $this->assertInstanceOf(KitchenTicketLineDone::class, $events[1]);
     }
 
-    public function testДругойПоварМожетЗакрытьДругуюЛинию(): void
+    public function test_другой_повар_может_закрыть_другую_линию(): void
     {
         $ticket = $this->ticketWithLines([
             $this->line(101, 1, 'Ролл', 1),
@@ -51,7 +51,7 @@ final class KitchenTicketLineDoneTest extends TestCase
         $this->assertInstanceOf(KitchenTicketCompleted::class, $events[1]);
     }
 
-    public function testПовторныйDoneЗапрещён(): void
+    public function test_повторный_done_запрещён(): void
     {
         $ticket = $this->ticketWithLines([
             $this->line(101, 1, 'Ролл', 1),
@@ -64,7 +64,7 @@ final class KitchenTicketLineDoneTest extends TestCase
         $ticket->markLineDone(101, 88, 2);
     }
 
-    public function testАдминПакуетЛинииПослеDone(): void
+    public function test_админ_пакует_линии_после_done(): void
     {
         $ticket = $this->ticketWithLines([
             $this->line(101, 1, 'Ролл', 1),

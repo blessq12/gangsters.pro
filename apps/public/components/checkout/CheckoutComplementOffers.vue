@@ -21,25 +21,16 @@ const { formatPrice } = checkoutState;
 const catalogStore = useCatalogStore();
 const cartStore = useCheckoutStore();
 const { complementProducts } = storeToRefs(catalogStore);
-const {
-    complementLines,
-    hasCartItems,
-    hasRollsInCart,
-    complement,
-    showComplementProgress,
-} = useOrderPreview();
+const { complementLines, hasCartItems, hasRollsInCart, complement, showComplementProgress } =
+    useOrderPreview();
 
-const entitledSetCount = computed(
-    () => Number(complement.value?.entitledSetCount) || 0,
-);
+const entitledSetCount = computed(() => Number(complement.value?.entitledSetCount) || 0);
 
 const hasEntitledComplementSet = computed(() => {
     if (entitledSetCount.value > 0) {
         return true;
     }
-    return complementLines.value.some(
-        (line) => (Number(line?.quantity) || 0) > 0,
-    );
+    return complementLines.value.some((line) => (Number(line?.quantity) || 0) > 0);
 });
 
 /**
@@ -51,25 +42,21 @@ const complementRows = computed(() => {
         return [];
     }
 
-    return buildComplementOfferRows(
-        complementLines.value,
-        complementProducts.value,
-        { includeCatalogProducts: true },
-    );
+    return buildComplementOfferRows(complementLines.value, complementProducts.value, {
+        includeCatalogProducts: true,
+    });
 });
 
 const showApproachProgress = computed(
     () =>
-        hasCartItems.value
-        && showComplementProgress.value
-        && !hasEntitledComplementSet.value
-        && hasRollsInCart.value
-        && complementRows.value.length === 0,
+        hasCartItems.value &&
+        showComplementProgress.value &&
+        !hasEntitledComplementSet.value &&
+        hasRollsInCart.value &&
+        complementRows.value.length === 0,
 );
 
-const showBlock = computed(
-    () => complementRows.value.length > 0 || showApproachProgress.value,
-);
+const showBlock = computed(() => complementRows.value.length > 0 || showApproachProgress.value);
 
 function paidQty(row) {
     return cartStore.cartQuantityByProduct(row.id);
@@ -159,22 +146,11 @@ async function decrementProduct(row) {
                         <p :class="[s.offerCardTitle, 'min-w-0 flex-1']">
                             {{ row.name }}
                         </p>
-                        <span
-                            v-if="showFreeBadge(row)"
-                            :class="s.offerFreeBadge"
-                        >
-                            0 ₽
-                        </span>
-                        <span
-                            v-else-if="paidBadgeLabel(row)"
-                            :class="s.offerPaidBadge"
-                        >
+                        <span v-if="showFreeBadge(row)" :class="s.offerFreeBadge">0 ₽</span>
+                        <span v-else-if="paidBadgeLabel(row)" :class="s.offerPaidBadge">
                             {{ paidBadgeLabel(row) }}
                         </span>
-                        <span
-                            v-else-if="unitPriceRub(row) > 0"
-                            :class="s.offerPaidBadge"
-                        >
+                        <span v-else-if="unitPriceRub(row) > 0" :class="s.offerPaidBadge">
                             {{ formatPrice(unitPriceRub(row)) }} ₽
                         </span>
                     </div>

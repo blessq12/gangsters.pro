@@ -50,7 +50,7 @@ final class Employee
             branchId: $branchId,
             passwordHash: $passwordHash,
             isActive: true,
-            createdAt: new DateTimeImmutable(),
+            createdAt: new DateTimeImmutable,
         );
     }
 

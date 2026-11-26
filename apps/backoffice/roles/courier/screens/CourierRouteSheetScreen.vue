@@ -3,15 +3,12 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue"
 import { useRoute, useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { getBranch } from "../../../api/company.js";
-import {
-    getRouteSheet,
-    settleStop,
-} from "../../../api/delivery.js";
+import { getRouteSheet, settleStop } from "../../../api/delivery.js";
 import { useApi } from "../../../shell/composables/useApi.js";
 import { useToast } from "../../../shell/composables/useToast.js";
 import { useAuthStore } from "../../../shell/store/authStore.js";
 import { OrderNotesTrigger } from "../../../shell/modules/orderNotes/index.js";
-import RouteOrdersMap from "../../../shell/components/order/RouteOrdersMap.vue";
+import RouteOrdersMap from "../../../shell/components/maps/RouteOrdersMap.vue";
 import UiBadge from "../../../shell/components/ui/UiBadge.vue";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
 import UiCard from "../../../shell/components/ui/UiCard.vue";
@@ -115,13 +112,10 @@ function goBack() {
  * @param {number|string} orderId
  */
 function askDelivered(orderId) {
-    const stop = (Array.isArray(sheet.value?.stops) ? sheet.value.stops : [])
-        .find((row) => Number(row?.order_id) === Number(orderId));
-    const current = String(
-        stop?.order?.payment_method
-        ?? stop?.order?.payment?.method
-        ?? "cash",
+    const stop = (Array.isArray(sheet.value?.stops) ? sheet.value.stops : []).find(
+        (row) => Number(row?.order_id) === Number(orderId),
     );
+    const current = String(stop?.order?.payment_method ?? stop?.order?.payment?.method ?? "cash");
     deliverOrderId.value = Number(orderId);
     deliverPaymentMethod.value = PAYMENT_OPTIONS.some((row) => row.value === current)
         ? current
@@ -140,10 +134,12 @@ async function confirmDelivered() {
     const orderId = deliverOrderId.value;
     deliverOpen.value = false;
     try {
-        sheet.value = await actionApi.run(() => settleStop(sheetId.value, orderId, {
-            outcome: "delivered",
-            payment_method: deliverPaymentMethod.value,
-        }));
+        sheet.value = await actionApi.run(() =>
+            settleStop(sheetId.value, orderId, {
+                outcome: "delivered",
+                payment_method: deliverPaymentMethod.value,
+            }),
+        );
         toast.success("Доставлен");
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось закрыть остановку");
@@ -167,10 +163,12 @@ async function confirmWriteOff() {
     const orderId = writeOffOrderId.value;
     writeOffOpen.value = false;
     try {
-        sheet.value = await actionApi.run(() => settleStop(sheetId.value, orderId, {
-            outcome: "written_off",
-            reason: writeOffReason.value.trim(),
-        }));
+        sheet.value = await actionApi.run(() =>
+            settleStop(sheetId.value, orderId, {
+                outcome: "written_off",
+                reason: writeOffReason.value.trim(),
+            }),
+        );
         toast.success("Списан");
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось списать заказ");
@@ -178,8 +176,9 @@ async function confirmWriteOff() {
 }
 
 function syncFullscreenState() {
-    const active = document.fullscreenElement === mapShell.value
-        || document.webkitFullscreenElement === mapShell.value;
+    const active =
+        document.fullscreenElement === mapShell.value ||
+        document.webkitFullscreenElement === mapShell.value;
     mapFullscreen.value = Boolean(active);
     nextTick(() => {
         mapRef.value?.refreshViewport?.();
@@ -233,8 +232,8 @@ watch(sheetId, () => {
 
 onMounted(async () => {
     fullscreenSupported.value = Boolean(
-        document.documentElement.requestFullscreen
-        || document.documentElement.webkitRequestFullscreen,
+        document.documentElement.requestFullscreen ||
+        document.documentElement.webkitRequestFullscreen,
     );
     document.addEventListener("fullscreenchange", syncFullscreenState);
     document.addEventListener("webkitfullscreenchange", syncFullscreenState);
@@ -262,12 +261,7 @@ onBeforeUnmount(() => {
     <div class="mx-auto w-full max-w-7xl space-y-6 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div class="flex flex-wrap items-center gap-3">
-                <UiButton
-                    class="!bg-white/10 !text-bo-fg"
-                    @click="goBack"
-                >
-                    К листам
-                </UiButton>
+                <UiButton class="!bg-white/10 !text-bo-fg" @click="goBack">К листам</UiButton>
                 <h1 class="text-lg font-semibold tracking-tight text-bo-fg">
                     Лист #{{ sheetId || "—" }}
                 </h1>
@@ -279,12 +273,7 @@ onBeforeUnmount(() => {
             </div>
         </div>
 
-        <p
-            v-if="detailApi.loading && !sheet"
-            class="text-sm text-bo-muted"
-        >
-            Загрузка…
-        </p>
+        <p v-if="detailApi.loading && !sheet" class="text-sm text-bo-muted">Загрузка…</p>
 
         <template v-else-if="sheet">
             <div class="grid gap-4 lg:grid-cols-5">
@@ -298,7 +287,7 @@ onBeforeUnmount(() => {
                             ref="mapRef"
                             :orders="mapOrders"
                             :selected-ids="[]"
-                            :default-city="branchCity"
+                            :bias-city="branchCity"
                         />
                         <div class="absolute bottom-3 right-3 z-20 flex gap-2">
                             <UiButton
@@ -313,11 +302,9 @@ onBeforeUnmount(() => {
                 </div>
 
                 <div class="space-y-3 lg:col-span-3">
-                    <h2 class="text-sm font-medium text-bo-muted">
-                        Остановки
-                    </h2>
+                    <h2 class="text-sm font-medium text-bo-muted">Остановки</h2>
                     <UiCard
-                        v-for="stop in (sheet.stops ?? [])"
+                        v-for="stop in sheet.stops ?? []"
                         :key="`${stop.order_id}-${stop.position}`"
                         :title="`${stop.position}. ${stop.order?.number || `Заказ #${stop.order_id}`}`"
                     >
@@ -347,24 +334,33 @@ onBeforeUnmount(() => {
                                 </template>
                             </p>
                             <p class="text-bo-muted">
-                                Оплата: {{ paymentMethodLabel(stop.order?.payment_method ?? stop.order?.payment?.method) }}
+                                Оплата:
+                                {{
+                                    paymentMethodLabel(
+                                        stop.order?.payment_method ?? stop.order?.payment?.method,
+                                    )
+                                }}
                             </p>
-                            <p
-                                v-if="stop.reason"
-                                class="text-bo-muted"
-                            >
+                            <p v-if="stop.reason" class="text-bo-muted">
                                 Причина: {{ stop.reason }}
                             </p>
 
                             <div class="flex flex-wrap gap-2 pt-2">
                                 <a
-                                    v-if="stop.order?.client?.phone && clientPhoneHref(stop.order.client.phone)"
+                                    v-if="
+                                        stop.order?.client?.phone &&
+                                        clientPhoneHref(stop.order.client.phone)
+                                    "
                                     :href="clientPhoneHref(stop.order.client.phone)"
                                     class="inline-flex h-11 items-center border border-bo-border bg-white/10 px-4 text-sm font-medium text-bo-fg hover:bg-white/[0.08]"
                                 >
                                     Позвонить
                                 </a>
-                                <template v-if="sheet.status === 'in_delivery' && stopIsOpen(stop.outcome)">
+                                <template
+                                    v-if="
+                                        sheet.status === 'in_delivery' && stopIsOpen(stop.outcome)
+                                    "
+                                >
                                     <UiButton
                                         class="!bg-emerald-600"
                                         :disabled="actionApi.loading"
@@ -387,15 +383,8 @@ onBeforeUnmount(() => {
             </div>
         </template>
 
-        <UiModal
-            :open="deliverOpen"
-            title="Способ оплаты"
-            @close="deliverOpen = false"
-        >
-            <UiFormField
-                label="Факт оплаты"
-                required
-            >
+        <UiModal :open="deliverOpen" title="Способ оплаты" @close="deliverOpen = false">
+            <UiFormField label="Факт оплаты" required>
                 <select
                     v-model="deliverPaymentMethod"
                     class="mt-1 h-11 w-full border border-bo-border bg-bo-field px-4 text-sm focus:border-bo-accent focus:outline-none"
@@ -410,10 +399,7 @@ onBeforeUnmount(() => {
                 </select>
             </UiFormField>
             <template #footer>
-                <UiButton
-                    class="!bg-white/10 !text-bo-fg"
-                    @click="deliverOpen = false"
-                >
+                <UiButton class="!bg-white/10 !text-bo-fg" @click="deliverOpen = false">
                     Закрыть
                 </UiButton>
                 <UiButton
@@ -426,15 +412,8 @@ onBeforeUnmount(() => {
             </template>
         </UiModal>
 
-        <UiModal
-            :open="writeOffOpen"
-            title="Списать заказ"
-            @close="writeOffOpen = false"
-        >
-            <UiFormField
-                label="Причина"
-                required
-            >
+        <UiModal :open="writeOffOpen" title="Списать заказ" @close="writeOffOpen = false">
+            <UiFormField label="Причина" required>
                 <textarea
                     v-model="writeOffReason"
                     rows="4"
@@ -443,18 +422,10 @@ onBeforeUnmount(() => {
                 />
             </UiFormField>
             <template #footer>
-                <UiButton
-                    class="!bg-white/10 !text-bo-fg"
-                    @click="writeOffOpen = false"
-                >
+                <UiButton class="!bg-white/10 !text-bo-fg" @click="writeOffOpen = false">
                     Закрыть
                 </UiButton>
-                <UiButton
-                    :disabled="actionApi.loading"
-                    @click="confirmWriteOff"
-                >
-                    Списать
-                </UiButton>
+                <UiButton :disabled="actionApi.loading" @click="confirmWriteOff">Списать</UiButton>
             </template>
         </UiModal>
     </div>

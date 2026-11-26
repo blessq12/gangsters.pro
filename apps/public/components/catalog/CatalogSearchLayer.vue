@@ -1,13 +1,5 @@
 <script setup>
-import {
-    computed,
-    nextTick,
-    onBeforeUnmount,
-    onMounted,
-    provide,
-    ref,
-    watch,
-} from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, provide, ref, watch } from "vue";
 import {
     playCatalogSearchClose,
     playCatalogSearchOpen,
@@ -17,10 +9,7 @@ import { useAppDesign } from "../../design/useAppDesign";
 import { CatalogSearchActionSourceKey } from "../../modules/catalog/application/search";
 import { useCatalogSearch } from "../../modules/catalog/application/search";
 import { useUiStore } from "../../modules/shell/store/uiStore";
-import {
-    pushBodyScrollLock,
-    popBodyScrollLock,
-} from "../../platform/document";
+import { pushBodyScrollLock, popBodyScrollLock } from "../../platform/document";
 import CatalogSearchDiscoverFeed from "./CatalogSearchDiscoverFeed.vue";
 import CatalogSearchEmptyPanel from "./CatalogSearchEmptyPanel.vue";
 import CatalogSearchIdlePanel from "./CatalogSearchIdlePanel.vue";
@@ -223,16 +212,10 @@ defineExpose({ openSearch: _openSearch });
                         <i class="mdi mdi-arrow-left text-lg" />
                     </button>
 
-                    <p :class="cs.headerTitle">
-                        Поиск
-                    </p>
+                    <p :class="cs.headerTitle">Поиск</p>
 
                     <div :class="cs.searchWrap">
-                        <i
-                            class="mdi mdi-magnify"
-                            :class="cs.searchIcon"
-                            aria-hidden="true"
-                        />
+                        <i class="mdi mdi-magnify" :class="cs.searchIcon" aria-hidden="true" />
                         <input
                             ref="searchInputRef"
                             v-model="query"
@@ -256,14 +239,8 @@ defineExpose({ openSearch: _openSearch });
                 </div>
             </header>
 
-            <div
-                ref="bodyScrollRef"
-                :class="cs.body"
-            >
-                <div
-                    ref="bodyPanelRef"
-                    :class="cs.bodyInner"
-                >
+            <div ref="bodyScrollRef" :class="cs.body">
+                <div ref="bodyPanelRef" :class="cs.bodyInner">
                     <template v-if="bodyState === 'idle'">
                         <CatalogSearchIdlePanel
                             :title="idleHint.title"
@@ -285,10 +262,7 @@ defineExpose({ openSearch: _openSearch });
                         />
                     </template>
 
-                    <div
-                        v-else-if="bodyState === 'loading'"
-                        :class="cs.loadingWrap"
-                    >
+                    <div v-else-if="bodyState === 'loading'" :class="cs.loadingWrap">
                         Загружаем меню…
                     </div>
 
@@ -303,10 +277,7 @@ defineExpose({ openSearch: _openSearch });
                     />
 
                     <template v-else>
-                        <p
-                            v-if="resultsCountLabel"
-                            :class="cs.resultsMeta"
-                        >
+                        <p v-if="resultsCountLabel" :class="cs.resultsMeta">
                             {{ resultsCountLabel }}
                         </p>
 

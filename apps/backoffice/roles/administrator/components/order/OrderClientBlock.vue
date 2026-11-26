@@ -23,22 +23,15 @@ defineEmits([
 
 <template>
     <UiCard title="Клиент">
-        <dl
-            v-if="readonly"
-            class="grid gap-3"
-        >
+        <dl v-if="readonly" class="grid gap-3">
             <div>
-                <dt class="text-xs uppercase tracking-wide text-bo-muted">
-                    Имя
-                </dt>
+                <dt class="text-xs uppercase tracking-wide text-bo-muted">Имя</dt>
                 <dd class="mt-1 text-sm text-bo-fg">
                     {{ name || "—" }}
                 </dd>
             </div>
             <div>
-                <dt class="text-xs uppercase tracking-wide text-bo-muted">
-                    Телефон
-                </dt>
+                <dt class="text-xs uppercase tracking-wide text-bo-muted">Телефон</dt>
                 <dd class="mt-1 text-sm text-bo-fg">
                     {{ phone || "—" }}
                 </dd>

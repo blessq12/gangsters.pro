@@ -10,6 +10,11 @@ const props = defineProps({
         default: "md",
         validator: (value) => ["md", "lg", "xl"].includes(value),
     },
+    /**
+     * Фиксированная высота диалога (не сжимается под контент).
+     * Слот получает flex-колонку с overflow внутри.
+     */
+    fixed: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(["close"]);
@@ -22,6 +27,13 @@ const sizeClass = computed(() => {
         return "max-w-4xl";
     }
     return "max-w-xl";
+});
+
+const shellClass = computed(() => {
+    if (props.fixed) {
+        return "flex h-[min(52rem,90vh)] w-full flex-col overflow-hidden border border-bo-border-strong bg-bo-elevated text-bo-fg shadow-bo-lg";
+    }
+    return "max-h-[90vh] w-full overflow-auto border border-bo-border-strong bg-bo-elevated text-bo-fg shadow-bo-lg";
 });
 
 watch(
@@ -39,13 +51,8 @@ watch(
             class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-md sm:p-6"
             @click.self="emit('close')"
         >
-            <div
-                class="max-h-[90vh] w-full overflow-auto border border-bo-border-strong bg-bo-elevated text-bo-fg shadow-bo-lg"
-                :class="sizeClass"
-                role="dialog"
-                aria-modal="true"
-            >
-                <header class="flex items-center justify-between px-6 pb-2 pt-6">
+            <div :class="[shellClass, sizeClass]" role="dialog" aria-modal="true">
+                <header class="flex shrink-0 items-center justify-between px-6 pb-2 pt-6">
                     <h3 class="text-lg font-semibold tracking-tight text-bo-fg">
                         {{ title }}
                     </h3>
@@ -58,12 +65,15 @@ watch(
                         ×
                     </button>
                 </header>
-                <div class="px-6 py-5">
+                <div
+                    class="min-h-0 px-6 py-5"
+                    :class="fixed ? 'flex flex-1 flex-col overflow-hidden' : ''"
+                >
                     <slot />
                 </div>
                 <footer
                     v-if="$slots.footer"
-                    class="flex justify-end gap-3 border-t border-bo-border px-6 py-4"
+                    class="flex shrink-0 justify-end gap-3 border-t border-bo-border px-6 py-4"
                 >
                     <slot name="footer" />
                 </footer>

@@ -8,8 +8,8 @@ use App\Domain\Core\Order\ValueObject\OrderClientSnapshot;
 use App\Domain\Core\Order\ValueObject\OrderDeliveryAddress;
 use App\Domain\Core\Order\ValueObject\OrderDeliveryInfo;
 use App\Domain\Core\Order\ValueObject\OrderLine;
-use App\Infrastructure\Order\Model\OrderModel;
 use App\Infrastructure\Order\Model\OrderLineModel;
+use App\Infrastructure\Order\Model\OrderModel;
 use App\Shared\Enum\DeliveryMethod;
 use DateTimeImmutable;
 

@@ -51,10 +51,7 @@ function onLeave() {
 </script>
 
 <template>
-    <BaseModal
-        v-model="isOpen"
-        :closable="false"
-    >
+    <BaseModal v-model="isOpen" :closable="false">
         <div :class="d.contentWrap">
             <h2 :class="d.title">
                 {{ title }}
@@ -64,18 +61,10 @@ function onLeave() {
             </p>
 
             <div :class="d.actions">
-                <button
-                    type="button"
-                    :class="d.primaryBtn"
-                    @click="onStay"
-                >
+                <button type="button" :class="d.primaryBtn" @click="onStay">
                     {{ cancelLabel }}
                 </button>
-                <button
-                    type="button"
-                    :class="d.secondaryBtn"
-                    @click="onLeave"
-                >
+                <button type="button" :class="d.secondaryBtn" @click="onLeave">
                     {{ confirmLabel }}
                 </button>
             </div>

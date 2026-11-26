@@ -115,7 +115,7 @@ const CANCELLABLE = [
     "assigned_to_route",
 ];
 
-export const CLOSED_ORDER = ["delivered", "written_off", "cancelled"];
+const CLOSED_ORDER = ["delivered", "written_off", "cancelled"];
 
 /** @param {string|null|undefined} status */
 export function isClosedOrder(status) {
@@ -195,7 +195,7 @@ export function deliveryMethodLabel(method) {
  * @param {number|string|null|undefined} id
  * @param {string|Date|null|undefined} createdAt
  */
-export function formatOrderNumber(id, createdAt) {
+function formatOrderNumber(id, createdAt) {
     const numericId = Number(id);
     if (!Number.isFinite(numericId) || numericId < 1) {
         return "—";
@@ -515,7 +515,9 @@ export function ticketHint(status) {
  */
 export function sheetHint(sheet) {
     const status = sheet?.status;
-    const pending = (sheet?.stops ?? []).some((stop) => !stop.outcome || stop.outcome === "pending");
+    const pending = (sheet?.stops ?? []).some(
+        (stop) => !stop.outcome || stop.outcome === "pending",
+    );
     if (status === "released") {
         return "Лист выпущен. Следующее действие — взять его. Заказы уйдут в путь.";
     }

@@ -3,8 +3,8 @@
 namespace App\Application\Delivery\Query;
 
 use App\Application\Delivery\Presenter\DeliveryPresenter;
-use App\Domain\Supporting\Company\Repository\BranchRepository;
 use App\Domain\Core\Delivery\Tariff\Repository\DeliveryConfigurationRepository;
+use App\Domain\Supporting\Company\Repository\BranchRepository;
 
 /**
  * Публичный срез доставки для витрины.

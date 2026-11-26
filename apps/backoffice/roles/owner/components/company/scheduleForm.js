@@ -1,4 +1,4 @@
-export const SCHEDULE_DAYS = [
+const SCHEDULE_DAYS = [
     { key: "mon", label: "Понедельник" },
     { key: "tue", label: "Вторник" },
     { key: "wed", label: "Среда" },
@@ -23,11 +23,14 @@ export function emptyScheduleRows() {
  * @param {string|null|undefined} work
  * @returns {{ open: string, close: string }}
  */
-export function parseWorkWindow(work) {
+function parseWorkWindow(work) {
     if (!work || typeof work !== "string") {
         return { open: "", close: "" };
     }
-    const parts = work.split(/[-–—]/u).map((part) => part.trim()).filter(Boolean);
+    const parts = work
+        .split(/[-–—]/u)
+        .map((part) => part.trim())
+        .filter(Boolean);
     return {
         open: parts[0] ?? "",
         close: parts[1] ?? "",
@@ -78,7 +81,10 @@ export function validateScheduleRows(rows) {
         if (row.is_day_off) {
             continue;
         }
-        if (!timeRe.test(String(row.open || "").trim()) || !timeRe.test(String(row.close || "").trim())) {
+        if (
+            !timeRe.test(String(row.open || "").trim()) ||
+            !timeRe.test(String(row.close || "").trim())
+        ) {
             return `Проверьте время для «${row.label}» (ЧЧ:ММ)`;
         }
     }

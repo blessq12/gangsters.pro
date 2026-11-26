@@ -19,15 +19,8 @@ const footer = useAppDesign().components.footer;
 
 const year = new Date().getFullYear();
 const contentStore = useContentStore();
-const {
-    documents,
-    profile,
-    branch,
-    deliveryFacts,
-    legal,
-    activeBranches,
-    selectedBranchId,
-} = storeToRefs(contentStore);
+const { documents, profile, branch, deliveryFacts, legal, activeBranches, selectedBranchId } =
+    storeToRefs(contentStore);
 
 const showBranchSelect = computed(() => activeBranches.value.length > 1);
 
@@ -60,9 +53,7 @@ const legalModalOpen = computed({
     },
 });
 
-const activeLegalModalTitle = computed(
-    () => safeTrim(activeDocument.value?.name) || "",
-);
+const activeLegalModalTitle = computed(() => safeTrim(activeDocument.value?.name) || "");
 
 const activeLegalModalDoc = computed(() => {
     const doc = activeDocument.value;
@@ -92,9 +83,7 @@ const companyTitle = computed(() => {
     return safeTrim(c.name) || "";
 });
 
-const todayScheduleLine = computed(() =>
-    formatTodayWorkScheduleLine(branch.value, new Date()),
-);
+const todayScheduleLine = computed(() => formatTodayWorkScheduleLine(branch.value, new Date()));
 
 const phoneRaw = computed(() => branch.value?.phone || profile.value?.phone || "");
 const phoneDisplay = computed(() => formatRuPhone(phoneRaw.value));
@@ -151,21 +140,13 @@ function socialProfileHref(raw, host) {
     return path ? `https://${host}/${path}` : null;
 }
 
-const vkHref = computed(() =>
-    socialProfileHref(socials.value.vk, "vk.com"),
-);
+const vkHref = computed(() => socialProfileHref(socials.value.vk, "vk.com"));
 
-const instHref = computed(() =>
-    socialProfileHref(socials.value.inst, "instagram.com"),
-);
+const instHref = computed(() => socialProfileHref(socials.value.inst, "instagram.com"));
 
-const addressLine = computed(() =>
-    formatCompanyAddressLine(deliveryFacts.value),
-);
+const addressLine = computed(() => formatCompanyAddressLine(deliveryFacts.value));
 
-const deliveryStats = computed(() =>
-    buildDefinedDeliveryStats(deliveryFacts.value),
-);
+const deliveryStats = computed(() => buildDefinedDeliveryStats(deliveryFacts.value));
 
 const legalName = computed(() => safeTrim(legal.value?.full_name) || "");
 
@@ -185,21 +166,13 @@ const hasContactsCol = computed(
         Boolean(todayScheduleLine.value),
 );
 
-const hasServiceCol = computed(
-    () => Boolean(addressLine.value) || deliveryStats.value.length > 0,
-);
+const hasServiceCol = computed(() => Boolean(addressLine.value) || deliveryStats.value.length > 0);
 
-const hasLegalIds = computed(
-    () => Boolean(legalInn.value) || Boolean(legalOgrnValue.value),
-);
+const hasLegalIds = computed(() => Boolean(legalInn.value) || Boolean(legalOgrnValue.value));
 
-const hasSocials = computed(
-    () => Boolean(vkHref.value) || Boolean(instHref.value),
-);
+const hasSocials = computed(() => Boolean(vkHref.value) || Boolean(instHref.value));
 
-const copyrightName = computed(
-    () => companyTitle.value || legalName.value || "Gangsters",
-);
+const copyrightName = computed(() => companyTitle.value || legalName.value || "Gangsters");
 </script>
 
 <template>
@@ -207,13 +180,8 @@ const copyrightName = computed(
         <div :class="footer.inner">
             <div ref="containerRef" :class="footer.bar">
                 <div :class="footer.columns">
-                    <div
-                        v-if="legalDocuments.length"
-                        :class="footer.column"
-                    >
-                        <p :class="footer.columnTitle">
-                            Юридическая информация
-                        </p>
+                    <div v-if="legalDocuments.length" :class="footer.column">
+                        <p :class="footer.columnTitle">Юридическая информация</p>
                         <div :class="footer.linkStack">
                             <button
                                 v-for="doc in legalDocuments"
@@ -270,11 +238,7 @@ const copyrightName = computed(
                             >
                                 WhatsApp
                             </a>
-                            <a
-                                v-if="emailHref"
-                                :href="emailHref"
-                                :class="footer.contactLink"
-                            >
+                            <a v-if="emailHref" :href="emailHref" :class="footer.contactLink">
                                 {{ emailDisplay }}
                             </a>
                             <template v-if="hasSocials">
@@ -297,10 +261,7 @@ const copyrightName = computed(
                                     Instagram*
                                 </a>
                             </template>
-                            <p
-                                v-if="todayScheduleLine"
-                                :class="footer.contactMeta"
-                            >
+                            <p v-if="todayScheduleLine" :class="footer.contactMeta">
                                 {{ todayScheduleLine }}
                             </p>
                         </div>
@@ -338,26 +299,18 @@ const copyrightName = computed(
                 </div>
 
                 <div :class="footer.legalFooter">
-                    <div
-                        v-if="hasLegalIds || legalName"
-                        :class="footer.legalBar"
-                    >
+                    <div v-if="hasLegalIds || legalName" :class="footer.legalBar">
                         <p v-if="hasLegalIds" :class="footer.legalIds">
                             <span v-if="legalInn">ИНН {{ legalInn }}</span>
-                            <span v-if="legalOgrnValue">
-                                ОГРН {{ legalOgrnValue }}
-                            </span>
+                            <span v-if="legalOgrnValue">ОГРН {{ legalOgrnValue }}</span>
                         </p>
-                        <p :class="footer.copyright">
-                            © {{ copyrightName }}, {{ year }}
-                        </p>
+                        <p :class="footer.copyright">© {{ copyrightName }}, {{ year }}</p>
                     </div>
 
                     <p v-if="instHref" :class="footer.footnote">
-                        * Meta Platforms Inc. (социальные сети Facebook и
-                        Instagram) — организация, деятельность которой признана
-                        экстремистской и запрещена на территории Российской
-                        Федерации.
+                        * Meta Platforms Inc. (социальные сети Facebook и Instagram) — организация,
+                        деятельность которой признана экстремистской и запрещена на территории
+                        Российской Федерации.
                     </p>
                 </div>
             </div>

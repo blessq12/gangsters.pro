@@ -3,10 +3,7 @@ import { ref, watch } from "vue";
 import { useUserStore } from "../../modules/client/store/userStore";
 import { useRuPhoneModel } from "../../modules/client/application/useRuPhoneModel";
 import { useFormFieldErrors } from "../../platform/useFormFieldErrors";
-import {
-    RU_PHONE_MASKA_PATTERN,
-    validateRuPhoneForSubmit,
-} from "../../platform/ruPhone";
+import { RU_PHONE_MASKA_PATTERN, validateRuPhoneForSubmit } from "../../platform/ruPhone";
 import { mapApiError } from "../../platform/mapApiError";
 import { applyApiFieldErrors } from "../../platform/extractApiFieldErrors";
 import {
@@ -94,10 +91,7 @@ async function submit() {
     }
 
     if (!form.value.consent_personal_data) {
-        fieldErrors.setFieldError(
-            "consent_personal_data",
-            CONSENT_PERSONAL_DATA_REQUIRED_MESSAGE,
-        );
+        fieldErrors.setFieldError("consent_personal_data", CONSENT_PERSONAL_DATA_REQUIRED_MESSAGE);
     }
 
     if (fieldErrors.hasAny.value) {
@@ -121,10 +115,7 @@ async function submit() {
         console.error(e);
         if (!applyApiFieldErrors(fieldErrors, e)) {
             fieldErrors.setFormError(
-                mapApiError(
-                    e,
-                    "Не удалось завершить регистрацию. Попробуйте ещё раз.",
-                ),
+                mapApiError(e, "Не удалось завершить регистрацию. Попробуйте ещё раз."),
             );
         }
     } finally {
@@ -134,16 +125,9 @@ async function submit() {
 </script>
 
 <template>
-    <form
-        :class="s.formRoot"
-        @submit.prevent="submit"
-    >
+    <form :class="s.formRoot" @submit.prevent="submit">
         <div :class="s.fieldStack">
-            <FormField
-                label="Имя"
-                error-size="xs"
-                :error="fieldErrors.get('name')"
-            >
+            <FormField label="Имя" error-size="xs" :error="fieldErrors.get('name')">
                 <template #default="{ id, invalid, invalidClass, describedBy, ariaInvalid }">
                     <input
                         :id="id"
@@ -157,11 +141,7 @@ async function submit() {
                 </template>
             </FormField>
 
-            <FormField
-                label="Телефон"
-                error-size="xs"
-                :error="fieldErrors.get('phone')"
-            >
+            <FormField label="Телефон" error-size="xs" :error="fieldErrors.get('phone')">
                 <template #default="{ id, invalid, invalidClass, describedBy, ariaInvalid }">
                     <input
                         :id="id"
@@ -177,11 +157,7 @@ async function submit() {
                 </template>
             </FormField>
 
-            <FormField
-                label="Email"
-                error-size="xs"
-                :error="fieldErrors.get('email')"
-            >
+            <FormField label="Email" error-size="xs" :error="fieldErrors.get('email')">
                 <template #default="{ id, invalid, invalidClass, describedBy, ariaInvalid }">
                     <input
                         :id="id"
@@ -196,11 +172,7 @@ async function submit() {
                 </template>
             </FormField>
 
-            <FormField
-                label="Пароль"
-                error-size="xs"
-                :error="fieldErrors.get('password')"
-            >
+            <FormField label="Пароль" error-size="xs" :error="fieldErrors.get('password')">
                 <template #default="{ id, invalid, invalidClass, describedBy, ariaInvalid }">
                     <input
                         :id="id"
@@ -233,10 +205,7 @@ async function submit() {
             </FormField>
 
             <div class="space-y-1">
-                <FormField
-                    error-size="xs"
-                    :error="fieldErrors.get('consent_personal_data')"
-                >
+                <FormField error-size="xs" :error="fieldErrors.get('consent_personal_data')">
                     <template #default>
                         <label :class="s.checkboxRow">
                             <AppCheckbox v-model="form.consent_personal_data" />
@@ -251,18 +220,11 @@ async function submit() {
             </div>
         </div>
 
-        <p
-            v-if="fieldErrors.formError"
-            :class="s.errorXs"
-        >
+        <p v-if="fieldErrors.formError" :class="s.errorXs">
             {{ fieldErrors.formError }}
         </p>
 
-        <button
-            type="submit"
-            :disabled="loading"
-            :class="s.btnPrimaryWide"
-        >
+        <button type="submit" :disabled="loading" :class="s.btnPrimaryWide">
             <span v-if="!loading">Зарегистрироваться</span>
             <span v-else>Создаём аккаунт…</span>
         </button>

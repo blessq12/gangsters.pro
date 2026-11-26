@@ -14,9 +14,7 @@ const d = useAppDesign().components.checkout.delivery;
 const { phase, message, showPanel } = useDeliveryZoneStatus();
 const { setDeliveryMethod } = useCheckoutFlowContext();
 
-const isUnavailable = computed(
-    () => phase.value === DELIVERY_ZONE_PHASE.UNAVAILABLE,
-);
+const isUnavailable = computed(() => phase.value === DELIVERY_ZONE_PHASE.UNAVAILABLE);
 
 const panelClass = computed(() => {
     switch (phase.value) {
@@ -61,11 +59,7 @@ function switchToPickup() {
             <p :class="d.zoneUnavailableBody">
                 {{ DELIVERY_UNAVAILABLE_COPY.body }}
             </p>
-            <button
-                type="button"
-                :class="d.zoneUnavailableCta"
-                @click="switchToPickup"
-            >
+            <button type="button" :class="d.zoneUnavailableCta" @click="switchToPickup">
                 {{ DELIVERY_UNAVAILABLE_COPY.pickupCta }}
             </button>
         </template>

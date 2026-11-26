@@ -98,10 +98,6 @@ watch(
             @product-image-click="emit('productImageClick', $event)"
         />
 
-        <div
-            ref="sentinelRef"
-            :class="cs.discoverSentinel"
-            aria-hidden="true"
-        />
+        <div ref="sentinelRef" :class="cs.discoverSentinel" aria-hidden="true" />
     </section>
 </template>

@@ -9,8 +9,8 @@ use App\Domain\Supporting\Company\Repository\BranchTagRepository;
 use App\Domain\Supporting\Company\ValueObject\BranchSetLine;
 use App\Infrastructure\Company\Mapper\BranchSetMapper;
 use App\Infrastructure\Company\Model\BranchCategoryItemModel;
-use App\Infrastructure\Company\Model\BranchSetModel;
 use App\Infrastructure\Company\Model\BranchSetLineModel;
+use App\Infrastructure\Company\Model\BranchSetModel;
 use App\Infrastructure\Company\Support\BranchSlugGenerator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -107,7 +107,7 @@ final class EloquentBranchSetRepository implements BranchSetRepository
             $slug = trim($slug);
 
             if ($id === null) {
-                $row = new BranchSetModel();
+                $row = new BranchSetModel;
                 $row->branch_id = $branchId;
                 if ($slug === '') {
                     $slug = $this->slugs->generate($scope, $name, $branchId, 'set');

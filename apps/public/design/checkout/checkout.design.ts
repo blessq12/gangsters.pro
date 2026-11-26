@@ -3,11 +3,7 @@
  */
 
 import { dockDesign } from "../layout/dock.design";
-import {
-    secondarySurfaces,
-    shellColorRoles,
-    shellTypography,
-} from "../layout/shell.design";
+import { secondarySurfaces, shellColorRoles, shellTypography } from "../layout/shell.design";
 const nestedCard = secondarySurfaces.nestedCard;
 const chromePillInactive = dockDesign.shared.chromePillInactive;
 
@@ -18,8 +14,7 @@ export const checkoutDesign = {
         flowBody: `${shellTypography.body.checkoutFlowBody} ${shellColorRoles.canvasFg}`,
         headingSm: `${shellTypography.body.checkoutHeadingSm} ${shellColorRoles.accent}`,
         /** Заголовки ключевых секций визарда — акцент, не muted. */
-        headingCardMuted:
-            "text-xs font-bold uppercase tracking-[0.12em] text-app-accent",
+        headingCardMuted: "text-xs font-bold uppercase tracking-[0.12em] text-app-accent",
         subsectionKickerSm: `${shellTypography.body.checkoutSubsectionKicker} ${shellColorRoles.muted}`,
         subsectionKickerXs:
             "pt-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-app-muted",
@@ -32,10 +27,8 @@ export const checkoutDesign = {
         introMuted: "text-sm text-app-muted",
         stepHint: "text-sm leading-snug text-app-muted",
         storyHeader: "space-y-2 border-b border-app-accent/25 pb-3",
-        storyProgress:
-            "text-xs font-bold uppercase tracking-[0.14em] text-app-accent",
-        storyWaiterLine:
-            "text-base font-medium leading-snug text-app-canvas-fg sm:text-lg",
+        storyProgress: "text-xs font-bold uppercase tracking-[0.14em] text-app-accent",
+        storyWaiterLine: "text-base font-medium leading-snug text-app-canvas-fg sm:text-lg",
         offerCard:
             "flex items-center gap-3 rounded-none border border-app-accent/20 bg-app-accent/8 px-3 py-2.5",
         offerCardCompact:
@@ -56,10 +49,8 @@ export const checkoutDesign = {
         teaserCardAccent: "font-medium text-app-accent",
         registerPitchCard:
             "space-y-3 rounded-none border border-app-accent/30 bg-app-accent/8 px-3.5 py-3.5",
-        registerPitchEyebrow:
-            "text-[11px] font-bold uppercase tracking-[0.14em] text-app-accent",
-        registerPitchTitle:
-            "text-base font-semibold leading-snug text-app-canvas-fg",
+        registerPitchEyebrow: "text-[11px] font-bold uppercase tracking-[0.14em] text-app-accent",
+        registerPitchTitle: "text-base font-semibold leading-snug text-app-canvas-fg",
         registerPitchList: "space-y-1.5 text-sm leading-snug text-app-muted",
         registerPitchListItem: "flex gap-2",
         registerPitchListMark: "mt-0.5 shrink-0 text-app-accent",
@@ -79,8 +70,7 @@ export const checkoutDesign = {
         labelAddress: "flex-1 cursor-pointer text-sm text-app-canvas-fg",
         addressTitle: "block font-medium text-app-canvas-fg",
         addressMeta: "block text-xs text-app-muted",
-        borderSectionTop:
-            "space-y-2 border-t border-app-divider-on-canvas pt-3",
+        borderSectionTop: "space-y-2 border-t border-app-divider-on-canvas pt-3",
         expandRowBtn:
             "flex w-full items-center justify-between rounded-none bg-black/5 px-3 py-2.5 text-sm font-medium text-app-canvas-fg hover:bg-black/8",
         expandRowChevronMuted: "text-xs text-app-muted",
@@ -98,8 +88,7 @@ export const checkoutDesign = {
         checkboxLabelRow: "flex items-center gap-2 text-sm text-app-muted",
         saveSecondaryBtn:
             "inline-flex w-full items-center justify-center rounded-none bg-black/5 px-3 py-2 text-sm font-medium text-app-canvas-fg transition hover:bg-black/8 disabled:opacity-50",
-        navFooterRow:
-            "mt-2 flex items-center justify-between text-xs text-app-muted",
+        navFooterRow: "mt-2 flex items-center justify-between text-xs text-app-muted",
         linkUnderline:
             "text-sm underline-offset-2 hover:underline text-app-accent hover:text-app-accent",
         btnPrimarySm:
@@ -132,16 +121,14 @@ export const checkoutDesign = {
     },
 
     cart: {
-        emptyState:
-            "rounded-none bg-app-accent-soft-bg px-4 py-5 text-base text-app-muted",
+        emptyState: "rounded-none bg-app-accent-soft-bg px-4 py-5 text-base text-app-muted",
         userList: "space-y-2 text-sm text-app-canvas-fg",
         qtyBar: "inline-flex items-center justify-between rounded-none border border-app-accent/60 bg-neutral-950/88 px-2 py-1.5 text-sm text-app-canvas-fg",
         qtyBtn: "flex h-7 w-7 items-center justify-center rounded-none bg-neutral-950/88 text-base",
         qtyLabel: "px-2 font-bold tabular-nums",
         userLineItem:
             "flex items-center justify-between gap-3 rounded-none bg-app-accent-soft-bg px-3 py-2.5",
-        lineThumb:
-            "h-12 w-12 shrink-0 overflow-hidden rounded-none bg-black/20",
+        lineThumb: "h-12 w-12 shrink-0 overflow-hidden rounded-none bg-black/20",
         lineThumbImg: "h-full w-full object-cover",
         lineThumbPlaceholder:
             "flex h-full w-full items-center justify-center text-[10px] font-medium uppercase tracking-wide text-app-muted",
@@ -152,8 +139,7 @@ export const checkoutDesign = {
             "shrink-0 text-xs font-medium text-app-muted transition-colors hover:text-red-400",
         systemList:
             "mt-2 rounded-none border border-app-accent/25 bg-app-accent/8 px-2.5 py-2 text-sm text-app-canvas-fg",
-        systemLine:
-            "mt-1 flex items-center justify-between gap-2 rounded-none px-1 py-0.5",
+        systemLine: "mt-1 flex items-center justify-between gap-2 rounded-none px-1 py-0.5",
         systemLineName: "min-w-0 truncate text-app-canvas-fg",
         systemLineMeta: "shrink-0 text-app-muted",
         totalsCard:
@@ -162,8 +148,7 @@ export const checkoutDesign = {
         totalsLabelMuted: "text-app-muted",
         totalsLabelStrong: "font-semibold text-app-canvas-fg",
         totalsValue: "font-medium text-app-canvas-fg",
-        totalsDivider:
-            "flex items-center justify-between border-t border-app-accent/30 pt-2",
+        totalsDivider: "flex items-center justify-between border-t border-app-accent/30 pt-2",
         grandTotal: "text-base font-bold text-app-accent",
         giftCard:
             "mt-3 rounded-none border border-app-accent/30 bg-app-accent/10 px-3 py-2.5 text-sm",
@@ -187,27 +172,20 @@ export const checkoutDesign = {
         giftModalList: "space-y-3",
         giftCandidateCard:
             "group relative flex w-full cursor-pointer overflow-hidden border bg-black/5 text-left shadow-[0_10px_32px_rgba(0,0,0,0.45)] transition hover:border-app-accent/50",
-        giftCandidateCardSelected:
-            "border-app-accent ring-1 ring-app-accent/60",
+        giftCandidateCardSelected: "border-app-accent ring-1 ring-app-accent/60",
         giftCandidateCardIdle: "border-app-border-on-surface",
         drinkUpsellList: "space-y-2 text-xs sm:text-sm text-app-canvas-fg",
-        drinkUpsellRow:
-            "flex items-center gap-3 rounded-none bg-app-accent-soft-bg px-3 py-2",
+        drinkUpsellRow: "flex items-center gap-3 rounded-none bg-app-accent-soft-bg px-3 py-2",
         drinkUpsellThumb: "h-12 w-12 shrink-0 object-cover bg-black/20",
         drinkUpsellThumbPlaceholder:
             "flex h-12 w-12 shrink-0 items-center justify-center bg-black/20 text-[10px] text-app-muted",
-        giftCandidateThumbCol:
-            "relative w-28 shrink-0 overflow-hidden aspect-[4/3] sm:w-32",
-        giftCandidateBody:
-            "flex min-w-0 flex-1 flex-col justify-center gap-1.5 p-2.5 sm:p-3",
-        giftCandidateTitle:
-            "text-sm font-medium leading-snug text-app-canvas-fg",
-        giftCandidateComposition:
-            "text-[11px] leading-snug text-app-muted line-clamp-3",
+        giftCandidateThumbCol: "relative w-28 shrink-0 overflow-hidden aspect-[4/3] sm:w-32",
+        giftCandidateBody: "flex min-w-0 flex-1 flex-col justify-center gap-1.5 p-2.5 sm:p-3",
+        giftCandidateTitle: "text-sm font-medium leading-snug text-app-canvas-fg",
+        giftCandidateComposition: "text-[11px] leading-snug text-app-muted line-clamp-3",
         giftCandidateBadge:
             "absolute right-2 top-2 inline-flex items-center border border-app-accent/50 bg-app-accent/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-app-accent",
-        giftFooterRow:
-            "flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between",
+        giftFooterRow: "flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between",
         giftFooterHint: "text-xs text-app-muted",
         giftApplyBtn:
             "relative flex min-h-14 flex-1 items-center justify-center overflow-hidden rounded-none bg-app-accent py-4 text-white transition hover:bg-app-accent-hover",
@@ -219,16 +197,14 @@ export const checkoutDesign = {
         btn: "inline-flex flex-1 items-center justify-center border px-3 py-2 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-accent/60",
         btnIdle:
             "border-app-border-on-surface bg-black/5 text-app-canvas-fg hover:border-app-accent/40 hover:bg-black/10",
-        btnSelected:
-            "border-app-accent bg-app-accent/15 text-app-accent ring-1 ring-app-accent/50",
+        btnSelected: "border-app-accent bg-app-accent/15 text-app-accent ring-1 ring-app-accent/50",
     },
 
     /** Один dual-state контрол (оплата / получение), не набор чипов. */
     methodState: {
         shell: "flex flex-row overflow-hidden rounded-none border border-app-accent/35 bg-black/10",
         cell: "relative flex min-h-[2.75rem] flex-1 flex-row items-center justify-center gap-1.5 px-2 py-2 text-center transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-app-accent/60 md:min-h-[3.75rem] md:gap-2 md:px-3 md:py-3",
-        cellIdle:
-            "bg-transparent text-app-muted hover:bg-black/10 hover:text-app-canvas-fg",
+        cellIdle: "bg-transparent text-app-muted hover:bg-black/10 hover:text-app-canvas-fg",
         cellSelected: "bg-app-accent text-white",
         cellDivider: "border-r border-app-border-on-surface last:border-r-0",
         icon: "shrink-0 text-lg leading-none md:text-2xl",
@@ -238,15 +214,12 @@ export const checkoutDesign = {
     optionCard: {
         listStack: "flex flex-col gap-2",
         card: "group relative flex w-full cursor-pointer border text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-accent/60",
-        cardSelected:
-            "border-app-accent bg-app-accent/10 ring-1 ring-app-accent/50 ",
+        cardSelected: "border-app-accent bg-app-accent/10 ring-1 ring-app-accent/50 ",
         cardIdle:
             "border-app-border-on-surface bg-app-glass-fill hover:border-app-accent/40 hover:bg-black/5",
         inner: "flex w-full items-start gap-3 px-3 py-3 sm:px-4 sm:py-3.5",
-        iconWrap:
-            "flex h-10 w-10 shrink-0 items-center justify-center border text-lg transition",
-        iconWrapIdle:
-            "border-app-border-on-surface bg-black/10 text-app-canvas-fg",
+        iconWrap: "flex h-10 w-10 shrink-0 items-center justify-center border text-lg transition",
+        iconWrapIdle: "border-app-border-on-surface bg-black/10 text-app-canvas-fg",
         iconWrapSelected: "border-app-accent bg-app-accent/15 text-app-accent",
         body: "min-w-0 flex-1 space-y-0.5",
         title: "text-sm font-semibold leading-snug text-app-canvas-fg",
@@ -265,11 +238,9 @@ export const checkoutDesign = {
             "flex h-auto w-12 shrink-0 items-center justify-center rounded-none border border-app-accent/50 bg-neutral-950/88 text-app-canvas-fg transition hover:border-app-accent hover:text-app-accent",
         backIcon: "mdi mdi-arrow-left text-2xl leading-none",
         sheen: "checkout-wizard-cta-sheen pointer-events-none absolute inset-0 z-0",
-        primaryContent:
-            "relative z-10 flex w-full items-center justify-center gap-3 px-4",
+        primaryContent: "relative z-10 flex w-full items-center justify-center gap-3 px-4",
         primaryLabel: "text-base font-bold leading-none",
-        totalLabel:
-            "text-base font-bold tabular-nums leading-none text-white/85",
+        totalLabel: "text-base font-bold tabular-nums leading-none text-white/85",
         btnPrimary:
             "checkout-wizard-cta relative flex min-h-14 flex-1 items-center justify-center overflow-hidden rounded-none bg-app-accent py-4 text-white transition hover:bg-app-accent-hover",
         btnPrimaryBusy:
@@ -300,18 +271,12 @@ export const checkoutDesign = {
 
     delivery: {
         zonePanel: "rounded-none border px-3 py-2.5 text-sm leading-snug",
-        zoneStatusIdle:
-            "border-app-border-on-surface bg-black/5 text-app-muted",
-        zoneStatusPending:
-            "border-app-border-on-surface bg-black/5 text-app-muted animate-pulse",
-        zoneStatusFree:
-            "border-emerald-500/30 bg-emerald-950/20 text-emerald-200",
-        zoneStatusRemote:
-            "border-orange-500/35 bg-orange-950/25 text-orange-100",
-        zoneStatusPaid:
-            "border-sky-500/30 bg-sky-950/20 text-sky-100",
-        zoneStatusUnavailable:
-            "space-y-2 border-rose-500/35 bg-rose-950/25 text-rose-100",
+        zoneStatusIdle: "border-app-border-on-surface bg-black/5 text-app-muted",
+        zoneStatusPending: "border-app-border-on-surface bg-black/5 text-app-muted animate-pulse",
+        zoneStatusFree: "border-emerald-500/30 bg-emerald-950/20 text-emerald-200",
+        zoneStatusRemote: "border-orange-500/35 bg-orange-950/25 text-orange-100",
+        zoneStatusPaid: "border-sky-500/30 bg-sky-950/20 text-sky-100",
+        zoneStatusUnavailable: "space-y-2 border-rose-500/35 bg-rose-950/25 text-rose-100",
         zoneUnavailableTitle: "text-sm font-bold text-rose-50",
         zoneUnavailableBody: "text-sm leading-snug text-rose-100/90",
         zoneUnavailableCta:
@@ -320,8 +285,7 @@ export const checkoutDesign = {
         emptyHero: `${nestedCard} space-y-3 border border-app-accent/25 bg-app-accent/8 px-4 py-4`,
         emptyTitle: `${shellTypography.body.checkoutHeadingSm} ${shellColorRoles.accent}`,
         emptyLead: "text-sm leading-snug text-app-muted",
-        profileLink:
-            "text-sm text-app-accent underline-offset-2 hover:underline",
+        profileLink: "text-sm text-app-accent underline-offset-2 hover:underline",
         savePrimaryBtn:
             "inline-flex w-full items-center justify-center rounded-none bg-app-accent px-3 py-2.5 text-sm font-bold text-white transition hover:bg-app-accent-hover disabled:opacity-60",
         listSection: "space-y-2",
@@ -337,22 +301,18 @@ export const checkoutDesign = {
         benefitLine: "text-sm text-app-canvas-fg",
         benefitLineMuted: "text-sm text-app-muted",
         orderList: "divide-y divide-app-divider-on-canvas text-sm",
-        orderLineRow:
-            "flex items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0",
+        orderLineRow: "flex items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0",
         orderLineTruncate: "min-w-0 truncate text-base text-app-canvas-fg",
         orderLineMuted: "shrink-0 text-sm tabular-nums text-app-muted",
-        systemLineAccent:
-            "flex items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0",
+        systemLineAccent: "flex items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0",
         badgeTiny: "ml-1 text-xs font-bold text-app-accent",
         totalsCard:
             "space-y-2 rounded-none border border-app-accent/25 bg-white/[0.07] px-3.5 py-3 text-sm",
-        totalsInset:
-            "mt-2 space-y-1 border-t border-app-divider-on-canvas pt-2 text-sm",
+        totalsInset: "mt-2 space-y-1 border-t border-app-divider-on-canvas pt-2 text-sm",
         blockMuted:
             "space-y-1 rounded-none border border-app-border-on-surface/80 bg-white/[0.07] px-3 py-3",
         metaRow: "grid grid-cols-1 gap-3 md:grid-cols-2",
-        giftCard:
-            "rounded-none border border-app-accent/35 bg-app-accent/10 px-3.5 py-3 text-sm",
+        giftCard: "rounded-none border border-app-accent/35 bg-app-accent/10 px-3.5 py-3 text-sm",
         giftCardPrompt: "checkout-gift-prompt",
         mutedInline: "ml-1 text-app-muted",
     },

@@ -17,7 +17,7 @@ final class CatalogPresenter
      * @param  list<array{code: string, label: string, color: string}>  $tags  теги приходят снаружи (из меню филиала)
      * @return array<string, mixed>
      */
-    public function product(Product $product, array $tags = []): array
+    public function product(Product $product, array $tags = [], ?TechCard $techCard = null): array
     {
         return [
             'id' => $product->id(),
@@ -32,9 +32,30 @@ final class CatalogPresenter
             'description' => $product->description(),
             'nutrition' => $this->nutrition($product->nutrition()),
             'ingredients' => $product->ingredients(),
+            'tech_card_search' => $this->techCardSearchText($techCard),
             'tags' => $tags,
             'images' => $this->images($product->images()),
         ];
+    }
+
+    /**
+     * Плоская строка для клиентского поиска по техкарте (имена ingredient_ref).
+     */
+    public function techCardSearchText(?TechCard $techCard): string
+    {
+        if (! $techCard instanceof TechCard || $techCard->isEmpty()) {
+            return '';
+        }
+
+        $parts = [];
+        foreach ($techCard->lines() as $line) {
+            $ref = trim($line->ingredientRef());
+            if ($ref !== '') {
+                $parts[] = $ref;
+            }
+        }
+
+        return implode(' ', $parts);
     }
 
     /**

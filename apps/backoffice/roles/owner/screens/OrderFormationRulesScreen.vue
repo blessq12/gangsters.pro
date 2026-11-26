@@ -1,10 +1,6 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from "vue";
-import {
-    getOrderPolicy,
-    storeOrderPolicy,
-    updateOrderPolicy,
-} from "../../../api/orderPolicy.js";
+import { getOrderPolicy, storeOrderPolicy, updateOrderPolicy } from "../../../api/orderPolicy.js";
 import { useApi } from "../../../shell/composables/useApi.js";
 import { useToast } from "../../../shell/composables/useToast.js";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
@@ -182,9 +178,7 @@ async function savePolicy() {
 
     try {
         await saveApi.run(() =>
-            policyExists.value
-                ? updateOrderPolicy(body)
-                : storeOrderPolicy(body),
+            policyExists.value ? updateOrderPolicy(body) : storeOrderPolicy(body),
         );
         toast.success("Сохранено");
         await loadPolicy();
@@ -207,21 +201,16 @@ defineExpose({
 
 <template>
     <div
-        :class="props.embedded
-            ? 'space-y-4'
-            : 'mx-auto w-full max-w-7xl space-y-4 px-4 py-5 sm:px-6 lg:px-10 lg:py-7'"
+        :class="
+            props.embedded
+                ? 'space-y-4'
+                : 'mx-auto w-full max-w-7xl space-y-4 px-4 py-5 sm:px-6 lg:px-10 lg:py-7'
+        "
     >
         <div class="space-y-3">
-            <div
-                v-if="!props.embedded"
-                class="flex flex-wrap items-center justify-between gap-3"
-            >
-                <h2 class="text-2xl font-semibold tracking-tight text-bo-fg">
-                    Правила оформления
-                </h2>
-                <UiButton :disabled="!canSave" @click="savePolicy">
-                    Сохранить
-                </UiButton>
+            <div v-if="!props.embedded" class="flex flex-wrap items-center justify-between gap-3">
+                <h2 class="text-2xl font-semibold tracking-tight text-bo-fg">Правила оформления</h2>
+                <UiButton :disabled="!canSave" @click="savePolicy">Сохранить</UiButton>
             </div>
             <OwnerBranchSelector />
         </div>
@@ -231,9 +220,7 @@ defineExpose({
         </p>
 
         <template v-else>
-            <p v-if="loadApi.loading" class="text-sm text-bo-muted">
-                Загрузка…
-            </p>
+            <p v-if="loadApi.loading" class="text-sm text-bo-muted">Загрузка…</p>
 
             <template v-else>
                 <UiCard title="Подарок">
@@ -245,7 +232,8 @@ defineExpose({
                         />
                     </template>
                     <p class="mb-4 text-sm text-bo-muted">
-                        Товар-подарок задаётся флагом в каталоге филиала. Здесь — только пороги и дни.
+                        Товар-подарок задаётся флагом в каталоге филиала. Здесь — только пороги и
+                        дни.
                     </p>
                     <div class="grid gap-4 sm:grid-cols-2">
                         <UiFormField
@@ -253,14 +241,24 @@ defineExpose({
                             required
                             :error="policyErrors.gift_pickup_min_order_rubles"
                         >
-                            <UiInput v-model="policyForm.gift_pickup_min_order_rubles" type="number" min="0" step="1" />
+                            <UiInput
+                                v-model="policyForm.gift_pickup_min_order_rubles"
+                                type="number"
+                                min="0"
+                                step="1"
+                            />
                         </UiFormField>
                         <UiFormField
                             label="Порог courier (₽)"
                             required
                             :error="policyErrors.gift_courier_min_order_rubles"
                         >
-                            <UiInput v-model="policyForm.gift_courier_min_order_rubles" type="number" min="0" step="1" />
+                            <UiInput
+                                v-model="policyForm.gift_courier_min_order_rubles"
+                                type="number"
+                                min="0"
+                                step="1"
+                            />
                         </UiFormField>
                     </div>
                     <UiFormField class="mt-4" label="Дни недели (courier)">
@@ -275,7 +273,7 @@ defineExpose({
                                     class="accent-bo-accent"
                                     :checked="policyForm.gift_courier_weekdays.includes(day.value)"
                                     @change="toggleWeekday(day.value)"
-                                >
+                                />
                                 {{ day.label }}
                             </label>
                         </div>
@@ -295,7 +293,12 @@ defineExpose({
                         required
                         :error="policyErrors.delivery_free_threshold_rubles"
                     >
-                        <UiInput v-model="policyForm.delivery_free_threshold_rubles" type="number" min="0" step="1" />
+                        <UiInput
+                            v-model="policyForm.delivery_free_threshold_rubles"
+                            type="number"
+                            min="0"
+                            step="1"
+                        />
                     </UiFormField>
                 </UiCard>
 
@@ -313,7 +316,10 @@ defineExpose({
                             required
                             :error="policyErrors.complement_set_rolls_per_set"
                         >
-                            <UiInput v-model="policyForm.complement_set_rolls_per_set" type="number" />
+                            <UiInput
+                                v-model="policyForm.complement_set_rolls_per_set"
+                                type="number"
+                            />
                         </UiFormField>
                         <UiFormField
                             label="Макс. комплектов"

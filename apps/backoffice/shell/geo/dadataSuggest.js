@@ -3,7 +3,7 @@ const ENDPOINT = "https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/a
 /**
  * @returns {string}
  */
-export function readDaDataApiKey() {
+function readDaDataApiKey() {
     const key = import.meta.env?.VITE_DADATA_API_KEY;
     return typeof key === "string" ? key.trim() : "";
 }
@@ -29,8 +29,7 @@ function asText(value) {
 }
 
 /**
- * @param {Record<string, unknown>} item
- * @returns {{
+ * @typedef {{
  *   value: string,
  *   city: string,
  *   street: string,
@@ -40,11 +39,19 @@ function asText(value) {
  *   apartment: string,
  *   lat: number|null,
  *   lng: number|null,
- * }|null}
+ * }} DaDataAddressHit
+ */
+
+/**
+ * @param {Record<string, unknown>} item
+ * @returns {DaDataAddressHit|null}
  */
 function mapSuggestion(item) {
     const value = asText(item.value ?? item.unrestricted_value);
-    const data = item.data && typeof item.data === "object" ? /** @type {Record<string, unknown>} */ (item.data) : {};
+    const data =
+        item.data && typeof item.data === "object"
+            ? /** @type {Record<string, unknown>} */ (item.data)
+            : {};
 
     const city = asText(data.city ?? data.settlement);
     let street = asText(data.street_with_type ?? data.street);
@@ -80,23 +87,19 @@ function mapSuggestion(item) {
 
 /**
  * Подсказки адресов ДаДата с фронта (без бэкенд-прокси).
+ * Город филиала обязателен — без него запрос не уходит (иначе чужие города).
  *
- * @param {{ query: string, city?: string|null, limit?: number }} params
- * @returns {Promise<Array<{
- *   value: string,
- *   city: string,
- *   street: string,
- *   house: string,
- *   entrance: string,
- *   floor: string,
- *   apartment: string,
- *   lat: number|null,
- *   lng: number|null,
- * }>>}
+ * @param {{ query: string, city: string, limit?: number }} params
+ * @returns {Promise<DaDataAddressHit[]>}
  */
 export async function suggestAddressFromDaData(params) {
     const query = String(params.query ?? "").trim();
     if (query.length < 2) {
+        return [];
+    }
+
+    const city = String(params.city ?? "").trim();
+    if (!city) {
         return [];
     }
 
@@ -106,18 +109,16 @@ export async function suggestAddressFromDaData(params) {
     }
 
     const limit = Math.max(1, Math.min(20, Number(params.limit) || 8));
-    const city = String(params.city ?? "").trim();
 
     /** @type {Record<string, unknown>} */
     const body = {
         query,
         count: limit,
         language: "ru",
+        locations: [{ city }],
+        locations_boost: [{ city }],
+        restrict_value: true,
     };
-    if (city) {
-        body.locations = [{ city }];
-        body.restrict_value = true;
-    }
 
     const response = await fetch(ENDPOINT, {
         method: "POST",
@@ -135,17 +136,7 @@ export async function suggestAddressFromDaData(params) {
 
     const payload = await response.json();
     const raw = Array.isArray(payload?.suggestions) ? payload.suggestions : [];
-    /** @type {Array<{
-     *   value: string,
-     *   city: string,
-     *   street: string,
-     *   house: string,
-     *   entrance: string,
-     *   floor: string,
-     *   apartment: string,
-     *   lat: number|null,
-     *   lng: number|null,
-     * }>} */
+    /** @type {DaDataAddressHit[]} */
     const mapped = [];
     for (const item of raw) {
         if (!item || typeof item !== "object") {

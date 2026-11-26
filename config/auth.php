@@ -1,5 +1,8 @@
 <?php
 
+use App\Infrastructure\Client\Model\ClientModel;
+use App\Infrastructure\Staff\Model\EmployeeModel;
+
 return [
 
     /*
@@ -62,12 +65,12 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => App\Infrastructure\Staff\Model\EmployeeModel::class,
+            'model' => EmployeeModel::class,
         ],
 
         'clients' => [
             'driver' => 'eloquent',
-            'model' => App\Infrastructure\Client\Model\ClientModel::class,
+            'model' => ClientModel::class,
         ],
     ],
 

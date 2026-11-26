@@ -69,11 +69,6 @@ export function getPaymentSummary(query = {}) {
 }
 
 /** @param {number|string} id */
-export function getPayment(id) {
-    return request("GET", `/payments/${id}`);
-}
-
-/** @param {number|string} id */
 export function markPaymentPaid(id) {
     return request("POST", `/payments/${id}/paid`);
 }

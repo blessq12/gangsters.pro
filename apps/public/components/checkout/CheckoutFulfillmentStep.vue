@@ -55,26 +55,15 @@ onMounted(() => {
     scheduleDeliveryPreview();
 });
 
-const {
-    checkoutIntent,
-    deliveryFieldErrors,
-    paymentFieldErrors,
-    isGuestCheckout,
-} = checkoutState;
+const { checkoutIntent, deliveryFieldErrors, paymentFieldErrors, isGuestCheckout } = checkoutState;
 const { flushing } = storeToRefs(checkoutIntent);
 const { navTotalLabel } = useCheckoutNavTotal();
 
-const isCourier = computed(
-    () => checkoutIntent.deliveryInfo.method === "courier",
-);
+const isCourier = computed(() => checkoutIntent.deliveryInfo.method === "courier");
 
-const isPickup = computed(
-    () => checkoutIntent.deliveryInfo.method === "pickup",
-);
+const isPickup = computed(() => checkoutIntent.deliveryInfo.method === "pickup");
 
-const branchAddressLabel = computed(() =>
-    branchAddressLabelOrFallback(deliveryFacts.value),
-);
+const branchAddressLabel = computed(() => branchAddressLabelOrFallback(deliveryFacts.value));
 
 const paymentOptions = computed(() =>
     CHECKOUT_PAYMENT_METHOD_IDS.map((id) => {
@@ -98,21 +87,15 @@ const deliveryOptions = computed(() =>
     }),
 );
 
-const deliveryUnavailable = computed(
-    () => isCourier.value && totals.value.inZone === false,
+const deliveryUnavailable = computed(() => isCourier.value && totals.value.inZone === false);
+
+const personsCount = computed(
+    () => Number(checkoutIntent.deliveryInfo.persons) || CHECKOUT_PERSONS_MIN,
 );
 
-const personsCount = computed(() =>
-    Number(checkoutIntent.deliveryInfo.persons) || CHECKOUT_PERSONS_MIN,
-);
+const canDecrementPersons = computed(() => personsCount.value > CHECKOUT_PERSONS_MIN);
 
-const canDecrementPersons = computed(
-    () => personsCount.value > CHECKOUT_PERSONS_MIN,
-);
-
-const canIncrementPersons = computed(
-    () => personsCount.value < CHECKOUT_PERSONS_MAX,
-);
+const canIncrementPersons = computed(() => personsCount.value < CHECKOUT_PERSONS_MAX);
 </script>
 
 <template>
@@ -145,11 +128,7 @@ const canIncrementPersons = computed(
             </FormField>
         </div>
 
-        <CheckoutSection
-            v-if="isCourier && isGuestCheckout"
-            title="Куда доставить"
-            variant="form"
-        >
+        <CheckoutSection v-if="isCourier && isGuestCheckout" title="Куда доставить" variant="form">
             <CheckoutAddressFormFields
                 :street="guestAddressDraft.street"
                 :house="guestAddressDraft.house"
@@ -171,16 +150,11 @@ const canIncrementPersons = computed(
             />
         </CheckoutSection>
 
-        <CheckoutAuthAddressSection
-            v-if="isCourier && !isGuestCheckout"
-        />
+        <CheckoutAuthAddressSection v-if="isCourier && !isGuestCheckout" />
 
         <CheckoutDeliveryZoneStatus v-if="isCourier" />
 
-        <CheckoutSection
-            v-if="isPickup"
-            title="Адрес кухни"
-        >
+        <CheckoutSection v-if="isPickup" title="Адрес кухни">
             <p :class="s.stepHint">
                 {{ branchAddressLabel }}
             </p>
@@ -222,10 +196,7 @@ const canIncrementPersons = computed(
             />
         </CheckoutSection>
 
-        <p
-            v-if="deliveryFieldErrors.formError"
-            :class="s.errorLine"
-        >
+        <p v-if="deliveryFieldErrors.formError" :class="s.errorLine">
             {{ deliveryFieldErrors.formError }}
         </p>
 

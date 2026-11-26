@@ -7,9 +7,7 @@ import {
     CHECKOUT_LOADING_LABELS,
     CHECKOUT_NAV_LABELS,
 } from "../../modules/checkout/application/session";
-import {
-    CHECKOUT_DELIVERY_METHOD_META,
-} from "../../modules/checkout/domain/checkoutServerMappers";
+import { CHECKOUT_DELIVERY_METHOD_META } from "../../modules/checkout/domain/checkoutServerMappers";
 import {
     formatServerDeliveryLine,
     formatServerPaymentLine,
@@ -56,9 +54,7 @@ const deliveryMethodLabel = computed(() => {
     return "—";
 });
 
-const isCourierDelivery = computed(
-    () => formedDelivery.value?.method === "courier",
-);
+const isCourierDelivery = computed(() => formedDelivery.value?.method === "courier");
 
 const deliveryAddressLine = computed(() => {
     if (!isCourierDelivery.value) {
@@ -67,9 +63,7 @@ const deliveryAddressLine = computed(() => {
     return formatServerDeliveryLine(formedDelivery.value);
 });
 
-const paymentLine = computed(() =>
-    formatServerPaymentLine(formedPayment.value, formatPrice),
-);
+const paymentLine = computed(() => formatServerPaymentLine(formedPayment.value, formatPrice));
 
 const clientName = computed(() => {
     const name = String(formedClient.value?.name || "").trim();
@@ -83,9 +77,7 @@ const clientPhone = computed(() => {
 
 const deliveryComment = computed(() => {
     const comment = formedDelivery.value?.comment;
-    return typeof comment === "string" && comment.trim() !== ""
-        ? comment.trim()
-        : null;
+    return typeof comment === "string" && comment.trim() !== "" ? comment.trim() : null;
 });
 
 const personsLabel = computed(() => {
@@ -106,24 +98,15 @@ onMounted(() => {
 <template>
     <CheckoutStepFrame group="confirm">
         <div :class="cf.stack">
-            <p
-                v-if="previewLoading"
-                :class="c.previewLoading"
-            >
+            <p v-if="previewLoading" :class="c.previewLoading">
                 {{ CHECKOUT_LOADING_LABELS.orderRecalc }}
             </p>
 
-            <CheckoutSection
-                title="Состав"
-                variant="form"
-            >
+            <CheckoutSection title="Состав" variant="form">
                 <CheckoutOrderReview />
             </CheckoutSection>
 
-            <CheckoutSection
-                title="Получение"
-                variant="form"
-            >
+            <CheckoutSection title="Получение" variant="form">
                 <div :class="cf.summaryList">
                     <CheckoutSummaryRow
                         label="Способ"
@@ -151,21 +134,11 @@ onMounted(() => {
                 </div>
             </CheckoutSection>
 
-            <CheckoutSection
-                title="Оплата"
-                variant="form"
-            >
-                <CheckoutSummaryRow
-                    label="Способ"
-                    :value="paymentLine"
-                    @edit="goToFulfillment"
-                />
+            <CheckoutSection title="Оплата" variant="form">
+                <CheckoutSummaryRow label="Способ" :value="paymentLine" @edit="goToFulfillment" />
             </CheckoutSection>
 
-            <CheckoutSection
-                title="Контакт"
-                variant="form"
-            >
+            <CheckoutSection title="Контакт" variant="form">
                 <div :class="cf.summaryList">
                     <CheckoutSummaryRow
                         label="Имя"
@@ -184,21 +157,11 @@ onMounted(() => {
 
             <CheckoutPromoStrip variant="confirm" />
 
-            <CheckoutSection
-                title="Сумма"
-                variant="form"
-            >
-                <CheckoutTotalsBlock
-                    depth="full"
-                    surface="light"
-                    :wrap-section="false"
-                />
+            <CheckoutSection title="Сумма" variant="form">
+                <CheckoutTotalsBlock depth="full" surface="light" :wrap-section="false" />
             </CheckoutSection>
 
-            <div
-                v-if="confirmError"
-                :class="s.errorBanner"
-            >
+            <div v-if="confirmError" :class="s.errorBanner">
                 {{ confirmError }}
             </div>
         </div>

@@ -42,20 +42,13 @@ const { activeDockItem, getBadge, dockItems } = useBottomDockState({
 /** Nav tabs only — cart / favorites / profile имеют свои компоненты. */
 const navDockItems = computed(() =>
     dockItems.filter(
-        (item) =>
-            item.id !== "cart" &&
-            item.id !== "favorites" &&
-            item.id !== "profile",
+        (item) => item.id !== "cart" && item.id !== "favorites" && item.id !== "profile",
     ),
 );
 
-const favoritesDockItem = computed(
-    () => dockItems.find((item) => item.id === "favorites") ?? null,
-);
+const favoritesDockItem = computed(() => dockItems.find((item) => item.id === "favorites") ?? null);
 
-const profileDockItem = computed(
-    () => dockItems.find((item) => item.id === "profile") ?? null,
-);
+const profileDockItem = computed(() => dockItems.find((item) => item.id === "profile") ?? null);
 
 const isMobile = computed(() => uiStore.deviceMode === "mobile");
 
@@ -72,22 +65,16 @@ useDockMobileInteractions(uiStore, () => isMobile.value);
 
 const isPanelOpen = computed(() => Boolean(activeDockItem.value));
 
-const isDockChromeVisible = computed(
-    () => uiStore.showBottomNav && !uiStore.dockBlockedByFooter,
-);
+const isDockChromeVisible = computed(() => uiStore.showBottomNav && !uiStore.dockBlockedByFooter);
 
 const dockIslandClasses = computed(() => [
     chrome.dockIsland,
     dock.shared.scrollDimTransition,
-    uiStore.chromeScrollDimmed && !isPanelOpen.value
-        ? dock.shared.scrollDimmed
-        : "",
+    uiStore.chromeScrollDimmed && !isPanelOpen.value ? dock.shared.scrollDimmed : "",
 ]);
 
 function tabIconTone(id) {
-    return uiStore.dockActiveId === id
-        ? dock.shared.tabIconActive
-        : dock.shared.tabIconInactive;
+    return uiStore.dockActiveId === id ? dock.shared.tabIconActive : dock.shared.tabIconInactive;
 }
 
 function handleDockClick(id) {
@@ -138,17 +125,10 @@ function handlePanelLeave(el, done) {
 
     <!-- Bottom dock: panel above horizontal island -->
     <div :class="chrome.fixedRoot">
-        <Transition
-            name="bottom-bar"
-            @enter="handleChromeEnter"
-            @leave="handleChromeLeave"
-        >
+        <Transition name="bottom-bar" @enter="handleChromeEnter" @leave="handleChromeLeave">
             <div
                 v-if="isDockChromeVisible"
-                :class="[
-                    chrome.visibleInner,
-                    isPanelOpen ? chrome.visibleInnerWithPanel : '',
-                ]"
+                :class="[chrome.visibleInner, isPanelOpen ? chrome.visibleInnerWithPanel : '']"
             >
                 <Transition
                     name="dock-panel"
@@ -194,19 +174,10 @@ function handlePanelLeave(el, done) {
                             @click="handleDockClick(item.id)"
                         >
                             <span
-                                :class="[
-                                    chrome.tabIconWrap,
-                                    tabIconTone(item.id),
-                                ]"
+                                :class="[chrome.tabIconWrap, tabIconTone(item.id)]"
                                 :data-dock-bump-root="item.id"
                             >
-                                <i
-                                    :class="[
-                                        'mdi',
-                                        item.iconClass,
-                                        chrome.tabIconMdiSize,
-                                    ]"
-                                />
+                                <i :class="['mdi', item.iconClass, chrome.tabIconMdiSize]" />
                                 <span
                                     v-if="getBadge(item.id) > 0"
                                     :class="dock.shared.badge"

@@ -55,7 +55,6 @@ Route::prefix('backoffice')->middleware(EnsureBackofficeEnabled::class)->group(f
             Route::post('clients/{id}/addresses/{addressId}/default', [ClientController::class, 'setDefaultAddress'])
                 ->whereNumber('id');
 
-
             Route::get('orders', [OrderController::class, 'index']);
             Route::post('orders/quote', [OrderController::class, 'quote']);
             Route::post('orders', [OrderController::class, 'store']);
@@ -66,7 +65,6 @@ Route::prefix('backoffice')->middleware(EnsureBackofficeEnabled::class)->group(f
             Route::post('orders/{id}/complete-pickup', [OrderController::class, 'completePickup'])
                 ->whereNumber('id');
             Route::post('orders/{id}/notes', [OrderController::class, 'addNote'])->whereNumber('id');
-
 
             Route::get('production/queue', [ProductionController::class, 'queue']);
             Route::get('production/tickets/{orderId}', [ProductionController::class, 'show'])

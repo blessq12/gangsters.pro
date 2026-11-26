@@ -3,10 +3,7 @@ import { onMounted, onUnmounted, watch } from "vue";
 import { useRoute } from "vue-router";
 import { playPageEnter, playPageLeave } from "../animations/animationManager";
 import { useShellIntroDockTimeline } from "../modules/shell/application/dockIntro";
-import {
-    useChromeScrollDim,
-    useDockFooterCollision,
-} from "../modules/shell/application/dockUi";
+import { useChromeScrollDim, useDockFooterCollision } from "../modules/shell/application/dockUi";
 import { useAppDesign } from "../design/useAppDesign";
 import { useShellStore } from "../modules/shell/store/shellStore";
 import { useContentStore } from "../modules/content/store";
@@ -118,20 +115,10 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div
-        :class="[sh.shared.root, sh.shared.typographyRoot, sh.shared.themeDark]"
-    >
+    <div :class="[sh.shared.root, sh.shared.typographyRoot, sh.shared.themeDark]">
         <!-- 1) стартовый оверлей с логотипом -->
-        <div
-            v-if="showIntro"
-            ref="introOverlayRef"
-            :class="sh.shared.introOverlay"
-        >
-            <div
-                ref="introGlowRef"
-                :class="sh.shared.introRadialGlow"
-                aria-hidden="true"
-            />
+        <div v-if="showIntro" ref="introOverlayRef" :class="sh.shared.introOverlay">
+            <div ref="introGlowRef" :class="sh.shared.introRadialGlow" aria-hidden="true" />
             <img
                 ref="introLogoRef"
                 src="/images/load_logo.svg"
@@ -144,13 +131,13 @@ onUnmounted(() => {
         <MobileMenu />
         <main :class="sh.shared.mainGrow">
             <div ref="mainRef" :class="sh.mobile.mainContainer">
-                <router-view v-slot="{ Component, route }">
+                <router-view v-slot="{ Component, route: viewRoute }">
                     <Transition
                         mode="out-in"
                         @enter="(el, done) => playPageEnter(el, done)"
                         @leave="(el, done) => playPageLeave(el, done)"
                     >
-                        <div :key="route.fullPath">
+                        <div :key="viewRoute.fullPath">
                             <component :is="Component" />
                         </div>
                     </Transition>
@@ -188,11 +175,7 @@ onUnmounted(() => {
     --app-muted: #a3a3a3;
     --app-glass-fill: rgba(0, 0, 0, 0.55);
     --app-accent-soft-bg: rgba(198, 36, 36, 0.12);
-    --app-border-on-surface: color-mix(
-        in srgb,
-        var(--app-canvas-fg) 18%,
-        transparent
-    );
+    --app-border-on-surface: color-mix(in srgb, var(--app-canvas-fg) 18%, transparent);
     background: var(--app-canvas);
 }
 </style>

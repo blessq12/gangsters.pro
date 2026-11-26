@@ -32,9 +32,7 @@ const chk = useAppDesign().components.checkout;
 const c = chk.cart;
 const cf = chk.confirm;
 
-const totalsCardClass = computed(() =>
-    props.surface === "light" ? cf.totalsCard : c.totalsCard,
-);
+const totalsCardClass = computed(() => (props.surface === "light" ? cf.totalsCard : c.totalsCard));
 const { checkoutState } = useCheckoutFlowContext();
 const { formatPrice, checkoutIntent } = checkoutState;
 
@@ -52,14 +50,12 @@ const {
 
 const showDeliveryRows = computed(
     () =>
-        (props.depth === "delivery" || props.depth === "full")
-        && checkoutIntent.deliveryInfo.method === "courier",
+        (props.depth === "delivery" || props.depth === "full") &&
+        checkoutIntent.deliveryInfo.method === "courier",
 );
 
 const grandTotalRubles = computed(() =>
-    props.depth === "items"
-        ? totals.value.itemsTotalRubles
-        : displayGrandTotalRubles.value,
+    props.depth === "items" ? totals.value.itemsTotalRubles : displayGrandTotalRubles.value,
 );
 
 const visible = computed(() => {
@@ -74,21 +70,13 @@ const visible = computed(() => {
 </script>
 
 <template>
-    <CheckoutSection
-        v-if="visible && wrapSection"
-        :title="title"
-    >
+    <CheckoutSection v-if="visible && wrapSection" :title="title">
         <div :class="totalsCardClass">
             <div :class="c.totalsRow">
                 <span :class="c.totalsLabelMuted">Товары</span>
-                <span :class="c.totalsValue">
-                    {{ formatPrice(totals.itemsTotalRubles) }} ₽
-                </span>
+                <span :class="c.totalsValue">{{ formatPrice(totals.itemsTotalRubles) }} ₽</span>
             </div>
-            <div
-                v-if="giftSummary"
-                :class="c.totalsRow"
-            >
+            <div v-if="giftSummary" :class="c.totalsRow">
                 <span :class="c.totalsLabelMuted">Подарок</span>
                 <span :class="c.totalsValue">
                     {{ giftSummary.name }}
@@ -99,16 +87,8 @@ const visible = computed(() => {
                 :class="c.totalsRow"
             >
                 <span :class="c.totalsLabelMuted">Доставка</span>
-                <span
-                    v-if="isBaseDeliveryFree"
-                    :class="c.totalsValue"
-                >
-                    Бесплатно
-                </span>
-                <span
-                    v-else
-                    :class="c.totalsValue"
-                >
+                <span v-if="isBaseDeliveryFree" :class="c.totalsValue">Бесплатно</span>
+                <span v-else :class="c.totalsValue">
                     {{ formatPrice(baseDeliveryFeeRubles) }} ₽
                 </span>
             </div>
@@ -123,27 +103,17 @@ const visible = computed(() => {
             </div>
             <div :class="c.totalsDivider">
                 <span :class="c.totalsLabelStrong">Итого</span>
-                <span :class="c.grandTotal">
-                    {{ formatPrice(grandTotalRubles) }} ₽
-                </span>
+                <span :class="c.grandTotal">{{ formatPrice(grandTotalRubles) }} ₽</span>
             </div>
         </div>
     </CheckoutSection>
 
-    <div
-        v-else-if="visible"
-        :class="totalsCardClass"
-    >
+    <div v-else-if="visible" :class="totalsCardClass">
         <div :class="c.totalsRow">
             <span :class="c.totalsLabelMuted">Товары</span>
-            <span :class="c.totalsValue">
-                {{ formatPrice(totals.itemsTotalRubles) }} ₽
-            </span>
+            <span :class="c.totalsValue">{{ formatPrice(totals.itemsTotalRubles) }} ₽</span>
         </div>
-        <div
-            v-if="giftSummary"
-            :class="c.totalsRow"
-        >
+        <div v-if="giftSummary" :class="c.totalsRow">
             <span :class="c.totalsLabelMuted">Подарок</span>
             <span :class="c.totalsValue">
                 {{ giftSummary.name }}
@@ -154,18 +124,8 @@ const visible = computed(() => {
             :class="c.totalsRow"
         >
             <span :class="c.totalsLabelMuted">Доставка</span>
-            <span
-                v-if="isBaseDeliveryFree"
-                :class="c.totalsValue"
-            >
-                Бесплатно
-            </span>
-            <span
-                v-else
-                :class="c.totalsValue"
-            >
-                {{ formatPrice(baseDeliveryFeeRubles) }} ₽
-            </span>
+            <span v-if="isBaseDeliveryFree" :class="c.totalsValue">Бесплатно</span>
+            <span v-else :class="c.totalsValue">{{ formatPrice(baseDeliveryFeeRubles) }} ₽</span>
         </div>
         <div
             v-if="showDeliveryRows && hasDeliveryPricing && showOutsideZoneSurcharge"
@@ -178,9 +138,7 @@ const visible = computed(() => {
         </div>
         <div :class="c.totalsDivider">
             <span :class="c.totalsLabelStrong">Итого</span>
-            <span :class="c.grandTotal">
-                {{ formatPrice(grandTotalRubles) }} ₽
-            </span>
+            <span :class="c.grandTotal">{{ formatPrice(grandTotalRubles) }} ₽</span>
         </div>
     </div>
 </template>

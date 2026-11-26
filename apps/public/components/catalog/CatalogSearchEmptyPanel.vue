@@ -27,27 +27,18 @@ const emit = defineEmits(["applyQuery", "clearQuery"]);
 
 <template>
     <div :class="cs.panelHero">
-        <div
-            :class="cs.panelGlow"
-            aria-hidden="true"
-        />
+        <div :class="cs.panelGlow" aria-hidden="true" />
         <div :class="cs.panelContent">
             <p :class="cs.kicker">
                 {{ title }}
             </p>
-            <p :class="cs.title">
-                «{{ query }}»
-            </p>
+            <p :class="cs.title">«{{ query }}»</p>
             <p :class="cs.lead">
                 {{ lead }}
             </p>
 
             <div :class="cs.chips">
-                <button
-                    type="button"
-                    :class="cs.chip"
-                    @click="emit('clearQuery')"
-                >
+                <button type="button" :class="cs.chip" @click="emit('clearQuery')">
                     Сбросить запрос
                 </button>
                 <button

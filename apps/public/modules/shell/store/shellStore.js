@@ -3,7 +3,7 @@ import { useUiStore } from "./uiStore";
 
 /** @typedef {'mounting' | 'dataLoading' | 'dataReady' | 'shellVisible' | 'interactive'} ShellPhase */
 
-export const SHELL_PHASE = {
+const SHELL_PHASE = {
     mounting: "mounting",
     dataLoading: "dataLoading",
     dataReady: "dataReady",
@@ -23,9 +23,9 @@ export const useShellStore = defineStore("shell", {
     getters: {
         isInteractive: (state) => state.phase === SHELL_PHASE.interactive,
         isDataReady: (state) =>
-            state.phase === SHELL_PHASE.dataReady
-            || state.phase === SHELL_PHASE.shellVisible
-            || state.phase === SHELL_PHASE.interactive,
+            state.phase === SHELL_PHASE.dataReady ||
+            state.phase === SHELL_PHASE.shellVisible ||
+            state.phase === SHELL_PHASE.interactive,
     },
     actions: {
         beginIntro() {
@@ -35,9 +35,9 @@ export const useShellStore = defineStore("shell", {
 
         markDataLoading() {
             if (
-                this.phase === SHELL_PHASE.dataReady
-                || this.phase === SHELL_PHASE.shellVisible
-                || this.phase === SHELL_PHASE.interactive
+                this.phase === SHELL_PHASE.dataReady ||
+                this.phase === SHELL_PHASE.shellVisible ||
+                this.phase === SHELL_PHASE.interactive
             ) {
                 return;
             }
@@ -46,10 +46,7 @@ export const useShellStore = defineStore("shell", {
         },
 
         markDataReady() {
-            if (
-                this.phase === SHELL_PHASE.shellVisible
-                || this.phase === SHELL_PHASE.interactive
-            ) {
+            if (this.phase === SHELL_PHASE.shellVisible || this.phase === SHELL_PHASE.interactive) {
                 return;
             }
 

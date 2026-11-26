@@ -5,20 +5,12 @@
  * Размеры для `h1–h6` без классов — см. `@layer base` в resources/css/style.css (Snowstorm 400); утилита `.font-heading` — для заголовочного текста не на `h*`.
  */
 
-/** Должны совпадать с `font-family` в resources/css/fonts.css (`@font-face`). */
-export const appFontFamilies = {
-    body: "Onest",
-    /** Snowstorm: один файл 400 в fonts.css; вес заголовков — `font-normal`. */
-    heading: "Snowstorm",
-} as const;
-
 /**
  * Ступенчатая шкала (только размер/weight/leading/tracking), без семантики цвета.
  */
 const shellTypographyScale = {
     heading: {
-        display:
-            "text-5xl font-normal leading-none tracking-tight sm:text-6xl lg:text-7xl",
+        display: "text-5xl font-normal leading-none tracking-tight sm:text-6xl lg:text-7xl",
         h1: "text-4xl font-normal leading-tight sm:text-5xl lg:text-6xl",
         h2: "text-3xl font-normal leading-tight sm:text-4xl lg:text-5xl",
         h3: "text-2xl font-normal leading-snug sm:text-3xl lg:text-4xl",
@@ -61,8 +53,7 @@ export const shellTypography = {
         mobileMenuTagline: "mt-0.5 line-clamp-2 text-xs leading-snug",
         mobileMenuMeta: `${shellTypographyScale.body.caption} leading-snug`,
         mobileMenuPhone: "mt-2.5 inline-flex text-xs font-medium",
-        dockTabRow:
-            "group flex flex-col items-center gap-1.5 text-xs sm:text-xs transition-colors",
+        dockTabRow: "group flex flex-col items-center gap-1.5 text-xs sm:text-xs transition-colors",
         dockTabLabelDesktop: "hidden lg:block text-[11px]",
         checkoutFlowBody: "space-y-3.5 text-sm sm:text-base",
         checkoutHeadingSm: "text-sm font-bold tracking-wide",
@@ -88,13 +79,11 @@ export const shellColorRoles = {
 
 /** Острова на тёмном канвасе (вторичные страницы, контент-блоки). */
 export const secondarySurfaces = {
-    island:
-        "rounded-none border border-app-accent/20 bg-app-glass-fill shadow-[0_16px_50px_rgba(0,0,0,0.35)] backdrop-blur-md",
+    island: "rounded-none border border-app-accent/20 bg-app-glass-fill shadow-[0_16px_50px_rgba(0,0,0,0.35)] backdrop-blur-md",
     islandPad: "px-4 py-6 sm:px-6 sm:py-8 lg:px-8",
     gradientIsland:
         "overflow-hidden rounded-none border border-app-accent/20 bg-[linear-gradient(180deg,rgba(198,36,36,0.1),var(--app-glass-fill))] backdrop-blur-md",
-    nestedCard:
-        "rounded-none border border-app-accent/20 bg-app-glass-fill backdrop-blur-md",
+    nestedCard: "rounded-none border border-app-accent/20 bg-app-glass-fill backdrop-blur-md",
     onIslandFg: shellColorRoles.canvasFg,
     onIslandMuted: shellColorRoles.muted,
     onNestedFg: shellColorRoles.canvasFg,
@@ -112,21 +101,18 @@ export const layoutShellDesign = {
         introOverlay:
             "pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-app-canvas",
         /** Хук для scoped radial-gradient (`--app-accent`); слой под логотипом интро. */
-        introRadialGlow:
-            "intro-radial-glow pointer-events-none absolute inset-0 z-0",
+        introRadialGlow: "intro-radial-glow pointer-events-none absolute inset-0 z-0",
         mainGrow: "relative z-[1] flex-1",
     },
 
     core: {
         introLogo: "h-48 w-auto md:h-[14.4rem]",
-        mainContainer:
-            "mx-auto max-w-7xl px-4 pb-5 pt-0 opacity-0 sm:px-6 lg:px-8",
+        mainContainer: "mx-auto max-w-7xl px-4 pb-5 pt-0 opacity-0 sm:px-6 lg:px-8",
     },
 
     desktop: {
         introLogo: "h-[13.2rem] w-auto md:h-[15.6rem]",
-        mainContainer:
-            "mx-auto max-w-7xl px-6 pb-7 pt-0 opacity-0 lg:px-8",
+        mainContainer: "mx-auto max-w-7xl px-6 pb-7 pt-0 opacity-0 lg:px-8",
     },
 
     mobile: {
@@ -149,12 +135,10 @@ export const layoutShellDesign = {
         innerAmbient: "hidden",
         innerGlowA: "hidden",
         innerGlowB: "hidden",
-        contentPad:
-            "relative px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12",
+        contentPad: "relative px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12",
         textCol: "min-w-0",
         breadcrumbsNav: `${shellTypography.body.breadcrumbsRow} ${shellColorRoles.muted}`,
-        breadcrumbHomeLink:
-            "transition-colors hover:text-app-accent",
+        breadcrumbHomeLink: "transition-colors hover:text-app-accent",
         breadcrumbText: shellColorRoles.muted,
         breadcrumbSep: "opacity-60",
         eyebrow: `mb-3 inline-flex rounded-none border border-app-accent/30 bg-app-accent-soft-bg px-3 py-1 ${shellTypographyScale.body.overlineEyebrow} ${shellColorRoles.accent} backdrop-blur`,

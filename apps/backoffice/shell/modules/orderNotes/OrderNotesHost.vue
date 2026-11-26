@@ -14,17 +14,8 @@ const ROLE_LABELS = {
 
 const store = useOrderNotesStore();
 const toast = useToast();
-const {
-    isOpen,
-    orderId,
-    loading,
-    posting,
-    draft,
-    canCompose,
-    threadNotes,
-    scrollToken,
-    error,
-} = storeToRefs(store);
+const { isOpen, orderId, loading, posting, draft, canCompose, threadNotes, scrollToken, error } =
+    storeToRefs(store);
 
 const threadEl = ref(/** @type {HTMLElement|null} */ (null));
 const panelEl = ref(/** @type {HTMLElement|null} */ (null));
@@ -153,15 +144,12 @@ function onBackdropClick(event) {
                 class="flex h-full w-full max-w-md flex-col border border-bo-border bg-bo-elevated shadow-bo-lg"
                 @click.stop
             >
-                <div class="flex items-center justify-between gap-2 border-b border-bo-border px-4 py-3">
+                <div
+                    class="flex items-center justify-between gap-2 border-b border-bo-border px-4 py-3"
+                >
                     <div class="min-w-0">
-                        <p class="text-sm font-medium text-bo-fg">
-                            Комментарии
-                        </p>
-                        <p
-                            v-if="orderId != null"
-                            class="text-xs text-bo-muted"
-                        >
+                        <p class="text-sm font-medium text-bo-fg">Комментарии</p>
+                        <p v-if="orderId != null" class="text-xs text-bo-muted">
                             Заказ #{{ orderId }}
                         </p>
                     </div>
@@ -176,23 +164,13 @@ function onBackdropClick(event) {
                 </div>
 
                 <div class="flex min-h-0 flex-1 flex-col px-4 py-3">
-                    <p
-                        v-if="loading"
-                        class="mb-3 text-sm text-bo-muted"
-                    >
-                        Загрузка…
-                    </p>
+                    <p v-if="loading" class="mb-3 text-sm text-bo-muted">Загрузка…</p>
                     <div
                         v-else
                         ref="threadEl"
                         class="mb-3 min-h-0 flex-1 space-y-2 overflow-y-auto text-sm"
                     >
-                        <p
-                            v-if="threadNotes.length === 0"
-                            class="text-bo-muted"
-                        >
-                            Пока пусто
-                        </p>
+                        <p v-if="threadNotes.length === 0" class="text-bo-muted">Пока пусто</p>
                         <div
                             v-for="note in threadNotes"
                             :key="note.id"
@@ -201,16 +179,22 @@ function onBackdropClick(event) {
                         >
                             <div
                                 class="w-fit max-w-[85%] px-3 py-2"
-                                :class="store.isMine(note)
-                                    ? 'rounded-2xl rounded-br-md bg-bo-accent/25 text-bo-fg'
-                                    : 'rounded-2xl rounded-bl-md bg-black/25 text-bo-fg'"
+                                :class="
+                                    store.isMine(note)
+                                        ? 'rounded-2xl rounded-br-md bg-bo-accent/25 text-bo-fg'
+                                        : 'rounded-2xl rounded-bl-md bg-black/25 text-bo-fg'
+                                "
                             >
                                 <p class="whitespace-pre-wrap break-words">
                                     {{ note.body }}
                                 </p>
                                 <p
                                     class="mt-1 text-[0.7rem] leading-tight"
-                                    :class="store.isMine(note) ? 'text-bo-fg/60 text-right' : 'text-bo-muted'"
+                                    :class="
+                                        store.isMine(note)
+                                            ? 'text-bo-fg/60 text-right'
+                                            : 'text-bo-muted'
+                                    "
                                 >
                                     {{ metaLine(note) }}
                                 </p>
@@ -218,10 +202,7 @@ function onBackdropClick(event) {
                         </div>
                     </div>
 
-                    <div
-                        v-if="canCompose"
-                        class="flex gap-2"
-                    >
+                    <div v-if="canCompose" class="flex gap-2">
                         <input
                             v-model="draft"
                             class="min-w-0 flex-1 border border-bo-border bg-bo-field px-3 py-2 text-sm text-bo-fg"
@@ -229,7 +210,7 @@ function onBackdropClick(event) {
                             maxlength="4000"
                             placeholder="Новый комментарий…"
                             @keydown.enter.prevent="onSubmit"
-                        >
+                        />
                         <UiButton
                             :disabled="posting || !String(draft || '').trim()"
                             @click="onSubmit"
@@ -237,10 +218,7 @@ function onBackdropClick(event) {
                             Отправить
                         </UiButton>
                     </div>
-                    <p
-                        v-else
-                        class="text-xs text-bo-muted"
-                    >
+                    <p v-else class="text-xs text-bo-muted">
                         К выданному заказу комментарии закрыты
                     </p>
                 </div>

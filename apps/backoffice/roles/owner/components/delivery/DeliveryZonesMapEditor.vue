@@ -53,7 +53,7 @@ let lastSyncedZonesKey = "";
 const localZones = ref(/** @type {Array<Record<string, any>>} */ ([]));
 
 const selectedZone = computed(() =>
-    selectedIndex.value >= 0 ? localZones.value[selectedIndex.value] ?? null : null,
+    selectedIndex.value >= 0 ? (localZones.value[selectedIndex.value] ?? null) : null,
 );
 
 function createZoneId() {
@@ -70,10 +70,10 @@ function zoneColor(index) {
 function resolveCenter() {
     const center = props.branchCenter;
     if (
-        Array.isArray(center)
-        && center.length >= 2
-        && Number.isFinite(Number(center[0]))
-        && Number.isFinite(Number(center[1]))
+        Array.isArray(center) &&
+        center.length >= 2 &&
+        Number.isFinite(Number(center[0])) &&
+        Number.isFinite(Number(center[1]))
     ) {
         return [Number(center[0]), Number(center[1])];
     }
@@ -192,16 +192,20 @@ function createPolygonForZone(zone, index, { editable = false } = {}) {
         return null;
     }
     const color = zoneColor(index);
-    const polygon = new window.ymaps.Polygon(ymapsCoords, {
-        hintContent: zone.name,
-    }, {
-        editorDrawingCursor: "crosshair",
-        editorMaxPoints: 80,
-        fillColor: `${color}44`,
-        strokeColor: color,
-        strokeWidth: editable ? 3 : 2,
-        draggable: false,
-    });
+    const polygon = new window.ymaps.Polygon(
+        ymapsCoords,
+        {
+            hintContent: zone.name,
+        },
+        {
+            editorDrawingCursor: "crosshair",
+            editorMaxPoints: 80,
+            fillColor: `${color}44`,
+            strokeColor: color,
+            strokeWidth: editable ? 3 : 2,
+            draggable: false,
+        },
+    );
     map.geoObjects.add(polygon);
     polygonById.set(zone.id, polygon);
     attachPolygonListeners(zone, polygon);
@@ -382,9 +386,10 @@ function deleteSelectedZone() {
     }
     polygonById.delete(zone.id);
     localZones.value.splice(selectedIndex.value, 1);
-    selectedIndex.value = localZones.value.length > 0
-        ? Math.min(selectedIndex.value, localZones.value.length - 1)
-        : -1;
+    selectedIndex.value =
+        localZones.value.length > 0
+            ? Math.min(selectedIndex.value, localZones.value.length - 1)
+            : -1;
     syncFormFromSelected();
     rebuildPolygons({ fitBounds: true, preserveEditing: true });
     statusText.value = localZones.value.length ? "Зона удалена." : "Все зоны удалены.";
@@ -408,13 +413,17 @@ function startRedrawSelected() {
 
     drawing = true;
     const color = zoneColor(selectedIndex.value);
-    const polygon = new window.ymaps.Polygon([], {}, {
-        editorDrawingCursor: "crosshair",
-        editorMaxPoints: 80,
-        fillColor: `${color}44`,
-        strokeColor: color,
-        strokeWidth: 3,
-    });
+    const polygon = new window.ymaps.Polygon(
+        [],
+        {},
+        {
+            editorDrawingCursor: "crosshair",
+            editorMaxPoints: 80,
+            fillColor: `${color}44`,
+            strokeColor: color,
+            strokeWidth: 3,
+        },
+    );
     map.geoObjects.add(polygon);
     polygonById.set(zone.id, polygon);
 
@@ -504,13 +513,17 @@ async function bootstrap() {
         if (destroyed || !mapHost.value) {
             return;
         }
-        map = new window.ymaps.Map(mapHost.value, {
-            center: resolveCenter(),
-            zoom: TOMSK_ZOOM,
-            controls: ["zoomControl", "typeSelector"],
-        }, {
-            restrictMapArea: TOMSK_RESTRICT_AREA,
-        });
+        map = new window.ymaps.Map(
+            mapHost.value,
+            {
+                center: resolveCenter(),
+                zoom: TOMSK_ZOOM,
+                controls: ["zoomControl", "typeSelector"],
+            },
+            {
+                restrictMapArea: TOMSK_RESTRICT_AREA,
+            },
+        );
         statusText.value = "Карта загружена.";
         syncFromProps();
     } catch (err) {
@@ -549,28 +562,25 @@ onBeforeUnmount(() => {
     <div class="grid gap-4 lg:grid-cols-[minmax(18rem,22rem)_minmax(0,1fr)]">
         <aside class="space-y-4 border border-bo-border bg-bo-card p-4">
             <div>
-                <h2 class="text-base font-semibold text-bo-fg">
-                    Зоны доставки
-                </h2>
+                <h2 class="text-base font-semibold text-bo-fg">Зоны доставки</h2>
                 <p class="mt-1 text-xs text-bo-muted">
                     Выбери зону, задай параметры и контур на карте, затем сохрани.
                 </p>
             </div>
 
             <ul class="max-h-56 overflow-y-auto border border-bo-border">
-                <li
-                    v-if="localZones.length === 0"
-                    class="px-3 py-4 text-sm text-bo-muted"
-                >
+                <li v-if="localZones.length === 0" class="px-3 py-4 text-sm text-bo-muted">
                     Зон пока нет. Нажми «Добавить зону».
                 </li>
                 <li
                     v-for="(zone, index) in localZones"
                     :key="zone.id"
                     class="cursor-pointer border-b border-bo-border px-3 py-2.5 last:border-b-0"
-                    :class="index === selectedIndex
-                        ? 'bg-bo-accent/15 shadow-[inset_3px_0_0_theme(colors.bo-accent)]'
-                        : 'hover:bg-white/[0.03]'"
+                    :class="
+                        index === selectedIndex
+                            ? 'bg-bo-accent/15 shadow-[inset_3px_0_0_theme(colors.bo-accent)]'
+                            : 'hover:bg-white/[0.03]'
+                    "
                     @click="selectZone(index)"
                 >
                     <div class="flex items-center gap-2 text-sm font-medium text-bo-fg">
@@ -581,9 +591,8 @@ onBeforeUnmount(() => {
                         {{ zone.name }}
                     </div>
                     <div class="mt-0.5 text-xs text-bo-muted">
-                        {{ feeRubles(zone) }} ₽
-                        · {{ zone.is_remote ? "отдалённый" : "обычный" }}
-                        · {{ hasRenderableGeometry(zone.geometry) ? "контур задан" : "нет контура" }}
+                        {{ feeRubles(zone) }} ₽ · {{ zone.is_remote ? "отдалённый" : "обычный" }} ·
+                        {{ hasRenderableGeometry(zone.geometry) ? "контур задан" : "нет контура" }}
                     </div>
                 </li>
             </ul>
@@ -631,7 +640,7 @@ onBeforeUnmount(() => {
                         class="accent-bo-accent"
                         :disabled="disabled || selectedIndex < 0"
                         @change="onFormFieldChange"
-                    >
+                    />
                     Отдалённый район
                 </label>
                 <p class="text-xs text-bo-muted">
@@ -657,9 +666,13 @@ onBeforeUnmount(() => {
             </div>
         </aside>
 
-        <div class="relative min-h-[32rem] overflow-hidden border border-bo-border bg-bo-field lg:min-h-[40rem]">
+        <div
+            class="relative min-h-[32rem] overflow-hidden border border-bo-border bg-bo-field lg:min-h-[40rem]"
+        >
             <div ref="mapHost" class="absolute inset-0" />
-            <p class="pointer-events-none absolute bottom-3 left-3 right-3 z-10 border border-bo-border bg-bo-card/95 px-3 py-2 text-xs text-bo-muted">
+            <p
+                class="pointer-events-none absolute bottom-3 left-3 right-3 z-10 border border-bo-border bg-bo-card/95 px-3 py-2 text-xs text-bo-muted"
+            >
                 {{ statusText }}
             </p>
         </div>

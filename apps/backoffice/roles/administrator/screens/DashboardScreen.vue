@@ -37,9 +37,11 @@ async function load() {
         return;
     }
     try {
-        summary.value = await summaryApi.run(() => getDashboardSummary({
-            ...queryParams(),
-        }));
+        summary.value = await summaryApi.run(() =>
+            getDashboardSummary({
+                ...queryParams(),
+            }),
+        );
     } catch (err) {
         summary.value = null;
         toast.error(err instanceof Error ? err.message : "Не удалось загрузить дашборд");
@@ -61,16 +63,9 @@ onMounted(async () => {
 
 <template>
     <div class="mx-auto w-full max-w-7xl space-y-6 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
-        <h1 class="text-2xl font-semibold tracking-tight text-bo-fg">
-            Дашборд
-        </h1>
+        <h1 class="text-2xl font-semibold tracking-tight text-bo-fg">Дашборд</h1>
 
-        <p
-            v-if="!branchId"
-            class="text-sm text-bo-muted"
-        >
-            Нет филиала смены
-        </p>
+        <p v-if="!branchId" class="text-sm text-bo-muted">Нет филиала смены</p>
 
         <template v-else>
             <UiCard title="Сейчас">
@@ -113,7 +108,10 @@ onMounted(async () => {
                     v-for="preset in presets"
                     :key="preset.key"
                     class="!h-9 !px-3"
-                    @click="applyPreset(preset.key); load()"
+                    @click="
+                        applyPreset(preset.key);
+                        load();
+                    "
                 >
                     {{ preset.label }}
                 </UiButton>
@@ -121,18 +119,10 @@ onMounted(async () => {
 
             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <UiFormField label="С">
-                    <UiInput
-                        v-model="filters.from"
-                        type="date"
-                        @change="onFilterCommit"
-                    />
+                    <UiInput v-model="filters.from" type="date" @change="onFilterCommit" />
                 </UiFormField>
                 <UiFormField label="По">
-                    <UiInput
-                        v-model="filters.to"
-                        type="date"
-                        @change="onFilterCommit"
-                    />
+                    <UiInput v-model="filters.to" type="date" @change="onFilterCommit" />
                 </UiFormField>
             </div>
 
@@ -146,10 +136,7 @@ onMounted(async () => {
                         label="Средний чек"
                         :value="formatKopecks(money.average_paid_kopecks)"
                     />
-                    <DashboardMetricCard
-                        label="Оплачено"
-                        :value="Number(money.paid_count ?? 0)"
-                    />
+                    <DashboardMetricCard label="Оплачено" :value="Number(money.paid_count ?? 0)" />
                     <DashboardMetricCard
                         label="Ожидает оплаты"
                         :value="formatKopecks(money.pending_kopecks)"

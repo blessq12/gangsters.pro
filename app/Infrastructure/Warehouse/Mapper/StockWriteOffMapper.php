@@ -19,7 +19,7 @@ final class StockWriteOffMapper
             kitchenTicketId: $row->kitchen_ticket_id !== null ? (int) $row->kitchen_ticket_id : null,
             occurredAt: $row->occurred_at !== null
                 ? DateTimeImmutable::createFromInterface($row->occurred_at)
-                : new DateTimeImmutable(),
+                : new DateTimeImmutable,
         );
     }
 

@@ -33,9 +33,7 @@ const stripRootClass = computed(() =>
     isNavbarCompact.value ? ws.navbarCompactRoot : ws.stripRoot,
 );
 
-const { openNow, statusHint } = useCompanyOpenStatus(
-    () => contentStore.branch,
-);
+const { openNow, statusHint } = useCompanyOpenStatus(() => contentStore.branch);
 
 const stripEnterRef = ref(null);
 const triggerRef = ref(null);
@@ -74,9 +72,7 @@ const summaryLine = computed(() => {
 const titleAttr = computed(() => {
     if (isLoading.value) return "Загрузка расписания…";
     if (!hasCompany.value) return "Расписание недоступно";
-    return expanded.value
-        ? "Скрыть расписание на неделю"
-        : "Показать расписание на неделю";
+    return expanded.value ? "Скрыть расписание на неделю" : "Показать расписание на неделю";
 });
 
 const ariaLabel = computed(() => titleAttr.value);
@@ -118,17 +114,11 @@ function updatePanelPosition() {
     const rect = triggerRef.value.getBoundingClientRect();
     const w = panelWidthPx();
     let left = rect.left + rect.width / 2 - w / 2;
-    left = Math.max(
-        TOOLTIP_PAD,
-        Math.min(left, window.innerWidth - w - TOOLTIP_PAD),
-    );
+    left = Math.max(TOOLTIP_PAD, Math.min(left, window.innerWidth - w - TOOLTIP_PAD));
     const top = rect.bottom + TOOLTIP_PAD;
     const maxH = Math.max(
         120,
-        Math.min(
-            window.innerHeight * 0.7,
-            window.innerHeight - top - TOOLTIP_PAD,
-        ),
+        Math.min(window.innerHeight * 0.7, window.innerHeight - top - TOOLTIP_PAD),
     );
     panelPos.value = {
         top: `${top}px`,
@@ -230,23 +220,13 @@ onUnmounted(() => {
                     @click.stop="toggleExpanded"
                 >
                     <span :class="[ws.dotSize, dotClass]" role="presentation" />
-                    <span
-                        :class="[ws.summaryTruncate, scheduleTheme.summaryLine]"
-                    >
+                    <span :class="[ws.summaryTruncate, scheduleTheme.summaryLine]">
                         {{ summaryLine }}
                     </span>
-                    <span
-                        :class="[
-                            ws.accentToggleHidden,
-                            scheduleTheme.panelAccent,
-                        ]"
-                    >
+                    <span :class="[ws.accentToggleHidden, scheduleTheme.panelAccent]">
                         {{ expanded ? "Свернуть" : "Неделя" }}
                     </span>
-                    <i
-                        :class="[ws.chevronIcon, { 'rotate-180': expanded }]"
-                        aria-hidden="true"
-                    />
+                    <i :class="[ws.chevronIcon, { 'rotate-180': expanded }]" aria-hidden="true" />
                 </button>
             </div>
         </template>
@@ -286,13 +266,8 @@ onUnmounted(() => {
                 @click.stop
             >
                 <p
-                    v-if="
-                        scheduleRows.length && scheduleRows[0].isFallbackString
-                    "
-                    :class="[
-                        ws.panelFallbackParagraph,
-                        scheduleTheme.panelPrimaryText,
-                    ]"
+                    v-if="scheduleRows.length && scheduleRows[0].isFallbackString"
+                    :class="[ws.panelFallbackParagraph, scheduleTheme.panelPrimaryText]"
                 >
                     {{ scheduleRows[0].work }}
                 </p>
@@ -315,20 +290,15 @@ onUnmounted(() => {
                             ]"
                         >
                             {{ row.dayLabel }}
-                            <span
-                                v-if="isScheduleToday(row.dayKey)"
-                                :class="ws.srOnlyToday"
-                            >
-                                (сегодня)</span
-                            >
+                            <span v-if="isScheduleToday(row.dayKey)" :class="ws.srOnlyToday">
+                                (сегодня)
+                            </span>
                         </span>
                         <span
                             :class="[
                                 ws.workCell,
                                 scheduleTheme.panelPrimaryText,
-                                isScheduleToday(row.dayKey)
-                                    ? 'font-medium'
-                                    : '',
+                                isScheduleToday(row.dayKey) ? 'font-medium' : '',
                             ]"
                         >
                             <template v-if="row.isDayOff">Выходной</template>
@@ -337,10 +307,7 @@ onUnmounted(() => {
                     </li>
                 </ul>
 
-                <p
-                    v-else
-                    :class="[ws.emptyState, scheduleTheme.panelMutedText]"
-                >
+                <p v-else :class="[ws.emptyState, scheduleTheme.panelMutedText]">
                     Нет данных о графике.
                 </p>
             </div>

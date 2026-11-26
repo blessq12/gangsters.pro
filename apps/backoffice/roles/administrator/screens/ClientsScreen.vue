@@ -13,15 +13,7 @@ import UiTable from "../../../shell/components/ui/UiTable.vue";
 const router = useRouter();
 const toast = useToast();
 const listApi = useApi();
-const {
-    page,
-    perPage,
-    total,
-    items: rows,
-    offset,
-    resetPage,
-    applyPayload,
-} = usePagedList();
+const { page, perPage, total, items: rows, offset, resetPage, applyPayload } = usePagedList();
 
 const q = ref("");
 
@@ -48,11 +40,13 @@ function formatDate(value) {
 
 async function load() {
     try {
-        const payload = await listApi.run(() => listClients({
-            offset: offset.value,
-            limit: perPage,
-            q: q.value.trim() || undefined,
-        }));
+        const payload = await listApi.run(() =>
+            listClients({
+                offset: offset.value,
+                limit: perPage,
+                q: q.value.trim() || undefined,
+            }),
+        );
         applyPayload(payload, (client) => ({
             id: client.id,
             name: client.name || "—",
@@ -93,10 +87,7 @@ onMounted(load);
     <div class="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
         <UiCard title="Клиенты">
             <div class="mb-6 max-w-md">
-                <UiInput
-                    v-model="q"
-                    placeholder="Поиск: имя / телефон / email"
-                />
+                <UiInput v-model="q" placeholder="Поиск: имя / телефон / email" />
             </div>
 
             <UiTable

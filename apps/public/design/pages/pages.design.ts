@@ -17,8 +17,7 @@ export const pagesDesign = {
             root: "home-page mt-4 space-y-10",
             menuHeader: "mb-4 flex items-end justify-between gap-4",
             menuTitleBlock: "block",
-            menuTitle:
-                "text-2xl font-normal leading-tight text-app-accent sm:text-3xl lg:text-4xl",
+            menuTitle: "text-2xl font-normal leading-tight text-app-accent sm:text-3xl lg:text-4xl",
             menuSubtitle: "text-sm text-app-muted",
             searchCol: "w-full max-w-xs shrink-0",
             srOnlyLabel: "sr-only",
@@ -33,8 +32,7 @@ export const pagesDesign = {
         mobile: {
             root: "home-page mt-4 space-y-8",
             menuHeader: "mb-4 flex flex-col gap-3",
-            menuTitle:
-                "text-2xl font-normal text-app-accent sm:text-3xl lg:text-4xl",
+            menuTitle: "text-2xl font-normal text-app-accent sm:text-3xl lg:text-4xl",
             menuSubtitle: "text-sm text-app-muted",
             srOnlyLabel: "sr-only",
             searchWrapOuter: "w-full",
@@ -67,30 +65,25 @@ export const pagesDesign = {
         brandLogoWrap: "flex items-center justify-center lg:justify-start",
         brandLogo: "h-28 w-auto sm:h-32 lg:h-36",
         brandCopy: "min-w-0",
-        brandOverline:
-            "mb-3 text-[11px] uppercase tracking-[0.28em] text-app-accent",
+        brandOverline: "mb-3 text-[11px] uppercase tracking-[0.28em] text-app-accent",
         brandTitle:
             "font-heading text-3xl font-normal leading-tight text-app-canvas-fg sm:text-4xl",
-        brandBody:
-            "mt-3 max-w-2xl text-sm leading-relaxed text-app-muted sm:text-base",
+        brandBody: "mt-3 max-w-2xl text-sm leading-relaxed text-app-muted sm:text-base",
         sectionHead: "mb-8 max-w-2xl sm:mb-10",
-        sectionOverline:
-            "mb-3 text-[11px] uppercase tracking-[0.28em] text-app-accent",
+        sectionOverline: "mb-3 text-[11px] uppercase tracking-[0.28em] text-app-accent",
         sectionTitle:
             "font-heading text-3xl font-normal leading-tight text-app-canvas-fg sm:text-4xl lg:text-5xl",
         offerList: "grid gap-4 sm:grid-cols-2 lg:grid-cols-3",
         offerCard: `${nestedCard} group flex h-full flex-col p-5 sm:p-6`,
         offerIndex:
             "font-heading text-4xl font-normal leading-none text-app-accent/45 transition-colors group-hover:text-app-accent sm:text-5xl",
-        offerTitle:
-            "mt-5 text-xl font-normal text-app-canvas-fg sm:text-2xl",
+        offerTitle: "mt-5 text-xl font-normal text-app-canvas-fg sm:text-2xl",
         offerBody: "mt-2 text-sm leading-relaxed text-app-muted sm:text-base",
         qualityPanel: `${gradientIsland} px-4 py-8 sm:px-8 sm:py-10 lg:px-10`,
         qualityGrid:
             "mt-8 grid gap-8 border-t border-app-accent/20 pt-8 md:grid-cols-3 md:gap-0 md:divide-x md:divide-app-accent/20",
         qualityCol: "md:px-6 lg:px-8 first:md:pl-0 last:md:pr-0",
-        qualityTitle:
-            "font-heading text-2xl font-normal text-app-accent sm:text-3xl",
+        qualityTitle: "font-heading text-2xl font-normal text-app-accent sm:text-3xl",
         qualityBody: "mt-3 text-sm leading-relaxed text-app-muted sm:text-base",
         stepsGrid: "grid gap-4 sm:grid-cols-2 lg:grid-cols-4",
         stepCard: `${nestedCard} flex h-full flex-col p-5`,
@@ -101,15 +94,11 @@ export const pagesDesign = {
     },
 
     delivery: {
-        gridTop:
-            "grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]",
+        gridTop: "grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]",
         factsStack: "grid gap-4",
-        highlightCard:
-            "rounded-none border border-app-border-on-surface bg-app-glass-fill p-5",
-        highlightKicker:
-            "text-[11px] uppercase tracking-[0.22em] text-app-muted",
-        highlightValue:
-            "font-heading mt-3 text-4xl font-normal text-app-accent sm:text-5xl",
+        highlightCard: "rounded-none border border-app-border-on-surface bg-app-glass-fill p-5",
+        highlightKicker: "text-[11px] uppercase tracking-[0.22em] text-app-muted",
+        highlightValue: "font-heading mt-3 text-4xl font-normal text-app-accent sm:text-5xl",
         highlightSub: "mt-1 text-sm text-app-muted",
         stepsGrid: "grid gap-4 md:grid-cols-4",
         stepCard: `${nestedCard} p-5`,
@@ -117,14 +106,12 @@ export const pagesDesign = {
             "mb-4 flex h-10 w-10 items-center justify-center rounded-none bg-app-accent text-black",
         stepTitle: `font-medium ${nestedFg}`,
         stepBody: "mt-2 text-sm text-app-muted",
-        gridBottom:
-            "grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]",
+        gridBottom: "grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]",
         paymentRow: `flex items-start gap-4 ${nestedCard} p-4`,
         paymentRowUnavailable: `flex items-start gap-4 ${nestedCard} p-4 opacity-55`,
         paymentTitle: `font-medium ${nestedFg}`,
         paymentBody: "mt-1 text-sm text-app-muted",
-        paymentBadge:
-            "mt-2 inline-flex text-[11px] uppercase tracking-[0.18em] text-app-accent",
+        paymentBadge: "mt-2 inline-flex text-[11px] uppercase tracking-[0.18em] text-app-accent",
         importantArticle: `${gradientIsland} p-6`,
         importantEyebrow: "text-xs uppercase tracking-[0.26em] text-app-accent",
         importantTitle:
@@ -155,25 +142,20 @@ export const pagesDesign = {
             "rounded-none border border-app-border-on-surface bg-app-glass-fill p-5 shadow-[0_16px_50px_rgba(0,0,0,0.35)]",
         channelIconWrap:
             "mb-4 flex h-11 w-11 items-center justify-center rounded-none bg-app-accent text-black",
-        channelLabel:
-            "text-xs uppercase tracking-[0.22em] text-app-muted",
+        channelLabel: "text-xs uppercase tracking-[0.22em] text-app-muted",
         channelLoading: "mt-2 text-sm text-app-muted",
-        channelValueRow:
-            "font-heading mt-2 text-xl font-normal text-app-accent sm:text-2xl",
+        channelValueRow: "font-heading mt-2 text-xl font-normal text-app-accent sm:text-2xl",
         channelLinkHover: "transition-colors hover:text-app-accent",
         channelMutedValue: "text-app-muted",
         channelSubMuted: "mt-1 text-sm text-app-muted",
         channelLead: "mt-2 text-sm text-app-muted",
-        waLink:
-            "text-app-accent/90 underline-offset-2 hover:underline",
+        waLink: "text-app-accent/90 underline-offset-2 hover:underline",
         emailLink: "break-all transition-colors hover:text-app-accent",
-        mainGrid:
-            "grid gap-6 lg:grid-cols-2",
+        mainGrid: "grid gap-6 lg:grid-cols-2",
         addressLoading: "text-sm text-app-muted",
         addressLineSpaced: "mt-3",
         coverageBox: `mt-4 ${nestedCard} p-4`,
-        coverageKicker:
-            "text-[11px] uppercase tracking-[0.22em] text-app-muted",
+        coverageKicker: "text-[11px] uppercase tracking-[0.22em] text-app-muted",
         coverageBody: `mt-2 text-sm ${nestedFg}`,
         siteLinkPara: "mt-4 text-sm",
         branchMapStage:
@@ -187,28 +169,22 @@ export const pagesDesign = {
             "grid min-h-[16rem] place-content-center bg-app-glass-fill text-sm text-app-muted sm:min-h-[18rem]",
         branchMapHint: "mt-3 text-xs text-app-muted",
         scheduleList: "divide-y divide-app-border-on-surface",
-        scheduleRow:
-            "flex items-baseline justify-between gap-4 py-2.5 first:pt-0 last:pb-0",
+        scheduleRow: "flex items-baseline justify-between gap-4 py-2.5 first:pt-0 last:pb-0",
         scheduleDay: "w-8 shrink-0 text-xs font-medium text-app-muted tabular-nums",
-        scheduleDayToday:
-            "w-8 shrink-0 text-xs font-medium text-app-accent tabular-nums",
-        scheduleWork:
-            "min-w-0 text-right tabular-nums text-app-canvas-fg",
-        scheduleWorkToday:
-            "min-w-0 text-right font-medium tabular-nums text-app-canvas-fg",
+        scheduleDayToday: "w-8 shrink-0 text-xs font-medium text-app-accent tabular-nums",
+        scheduleWork: "min-w-0 text-right tabular-nums text-app-canvas-fg",
+        scheduleWorkToday: "min-w-0 text-right font-medium tabular-nums text-app-canvas-fg",
         scheduleFallback: "text-sm leading-relaxed text-app-muted",
         scheduleLoading: "text-sm text-app-muted",
         scheduleEmpty: "text-sm leading-relaxed text-app-muted",
         tipsGrid: "grid gap-4 md:grid-cols-3",
         tipTile: `${nestedCard} p-5`,
-        tipKicker:
-            "text-[11px] uppercase tracking-[0.22em] text-app-muted",
+        tipKicker: "text-[11px] uppercase tracking-[0.22em] text-app-muted",
         tipTitle: `mt-2 font-medium ${nestedFg}`,
         tipBody: "mt-1 text-sm text-app-muted",
         legalList: "space-y-3",
         legalRow: "grid gap-1 sm:grid-cols-[8rem_minmax(0,1fr)] sm:items-baseline sm:gap-4",
-        legalLabel:
-            "text-[11px] uppercase tracking-[0.22em] text-app-muted",
+        legalLabel: "text-[11px] uppercase tracking-[0.22em] text-app-muted",
         legalValue: `text-sm sm:text-base ${nestedFg}`,
         legalEmpty: "text-sm text-app-muted",
         legalLoading: "text-sm text-app-muted",

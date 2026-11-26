@@ -15,8 +15,9 @@ const WEEKDAY_SHORT = {
  */
 export function giftCourierWeekdaysLabel(days) {
     const list = Array.isArray(days)
-        ? [...new Set(days.map((day) => Number(day)).filter((day) => day >= 1 && day <= 7))]
-            .sort((a, b) => a - b)
+        ? [...new Set(days.map((day) => Number(day)).filter((day) => day >= 1 && day <= 7))].sort(
+              (a, b) => a - b,
+          )
         : [];
 
     if (list.length === 0) {

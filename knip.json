@@ -1,0 +1,18 @@
+{
+    "$schema": "https://unpkg.com/knip@6/schema.json",
+    "entry": [
+        "apps/backoffice/app.js",
+        "apps/backoffice/pwa/sw.js",
+        "apps/backoffice/shell/**/*.test.js",
+        "apps/public/app.js",
+        "apps/public/pwa/sw.js",
+        "apps/public/**/*.test.js"
+    ],
+    "project": [
+        "apps/backoffice/**/*.{js,vue,css,scss,sass}",
+        "apps/public/**/*.{js,vue,css,scss,sass}"
+    ],
+    "vite": {
+        "config": ["apps/backoffice/vite.config.js", "apps/public/vite.config.js"]
+    }
+}

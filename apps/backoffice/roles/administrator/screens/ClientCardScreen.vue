@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from "vue";
+import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 import {
     addClientAddress,
@@ -9,6 +10,7 @@ import {
     updateClientAddress,
     updateClientProfile,
 } from "../../../api/clients.js";
+import { getBranch } from "../../../api/company.js";
 import { getOrder } from "../../../api/orders.js";
 import { useApi } from "../../../shell/composables/useApi.js";
 import { useToast } from "../../../shell/composables/useToast.js";
@@ -18,6 +20,7 @@ import {
     orderStatusLabel,
     orderStatusVariant,
 } from "../../../shell/domain/orderStage.js";
+import { useAuthStore } from "../../../shell/store/authStore.js";
 import { useOrderWorkspaceStore } from "../../../shell/store/orderWorkspaceStore.js";
 import DeliveryAddressFields from "../components/order/DeliveryAddressFields.vue";
 import ShellIcon from "../../../shell/components/ShellIcon.vue";
@@ -33,6 +36,8 @@ import UiTable from "../../../shell/components/ui/UiTable.vue";
 const route = useRoute();
 const router = useRouter();
 const toast = useToast();
+const auth = useAuthStore();
+const { employee } = storeToRefs(auth);
 const workspace = useOrderWorkspaceStore();
 const loadApi = useApi();
 const profileApi = useApi();
@@ -40,6 +45,13 @@ const addressApi = useApi();
 const repeatApi = useApi();
 
 const clientId = computed(() => Number(route.params.id));
+const branchCity = ref("");
+
+const branchId = computed(() => {
+    const raw = employee.value?.branch_id;
+    const id = Number(raw);
+    return Number.isFinite(id) && id > 0 ? id : null;
+});
 
 const profile = reactive({
     name: "",
@@ -171,14 +183,10 @@ function onAddressFieldsUpdate(patch) {
         addressForm.comment = String(patch.comment ?? "");
     }
     if (patch.latitude !== undefined) {
-        addressForm.lat = patch.latitude === "" || patch.latitude === null
-            ? ""
-            : patch.latitude;
+        addressForm.lat = patch.latitude === "" || patch.latitude === null ? "" : patch.latitude;
     }
     if (patch.longitude !== undefined) {
-        addressForm.lng = patch.longitude === "" || patch.longitude === null
-            ? ""
-            : patch.longitude;
+        addressForm.lng = patch.longitude === "" || patch.longitude === null ? "" : patch.longitude;
     }
 }
 
@@ -202,6 +210,19 @@ function applyPayload(payload) {
         _raw: order,
     }));
     loaded.value = true;
+}
+
+async function loadBranchCity() {
+    if (!branchId.value) {
+        branchCity.value = "";
+        return;
+    }
+    try {
+        const branch = await getBranch(branchId.value);
+        branchCity.value = String(branch?.city ?? "").trim();
+    } catch {
+        branchCity.value = "";
+    }
 }
 
 async function load() {
@@ -229,12 +250,14 @@ function goBack() {
 
 async function saveProfile() {
     try {
-        const payload = await profileApi.run(() => updateClientProfile(clientId.value, {
-            name: profile.name,
-            phone: profile.phone,
-            email: profile.email || null,
-            birth_date: profile.birth_date || null,
-        }));
+        const payload = await profileApi.run(() =>
+            updateClientProfile(clientId.value, {
+                name: profile.name,
+                phone: profile.phone,
+                email: profile.email || null,
+                birth_date: profile.birth_date || null,
+            }),
+        );
         if (payload?.client) {
             profile.name = payload.client.name ?? profile.name;
             profile.phone = payload.client.phone ?? profile.phone;
@@ -353,11 +376,9 @@ async function saveAddress() {
     };
     try {
         if (addressEditingId.value) {
-            await addressApi.run(() => updateClientAddress(
-                clientId.value,
-                addressEditingId.value,
-                body,
-            ));
+            await addressApi.run(() =>
+                updateClientAddress(clientId.value, addressEditingId.value, body),
+            );
         } else {
             await addressApi.run(() => addClientAddress(clientId.value, body));
         }
@@ -374,10 +395,9 @@ async function saveAddress() {
  */
 async function makeDefault(address) {
     try {
-        const payload = await addressApi.run(() => setDefaultClientAddress(
-            clientId.value,
-            String(address.id),
-        ));
+        const payload = await addressApi.run(() =>
+            setDefaultClientAddress(clientId.value, String(address.id)),
+        );
         if (Array.isArray(payload?.client?.addresses)) {
             addresses.value = [...payload.client.addresses];
         } else {
@@ -396,10 +416,7 @@ async function confirmDeleteAddress() {
         return;
     }
     try {
-        const payload = await addressApi.run(() => deleteClientAddress(
-            clientId.value,
-            target.id,
-        ));
+        const payload = await addressApi.run(() => deleteClientAddress(clientId.value, target.id));
         if (Array.isArray(payload?.client?.addresses)) {
             addresses.value = [...payload.client.addresses];
         } else {
@@ -412,19 +429,17 @@ async function confirmDeleteAddress() {
 }
 
 watch(() => route.params.id, load);
-onMounted(load);
+onMounted(() => {
+    loadBranchCity();
+    load();
+});
 </script>
 
 <template>
     <div class="mx-auto w-full max-w-7xl space-y-4 px-4 py-5 sm:px-6 lg:px-10 lg:py-7">
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div class="flex flex-wrap items-center gap-3">
-                <UiButton
-                    class="!bg-white/10 !text-bo-fg"
-                    @click="goBack"
-                >
-                    К клиентам
-                </UiButton>
+                <UiButton class="!bg-white/10 !text-bo-fg" @click="goBack">К клиентам</UiButton>
                 <h1 class="text-lg font-semibold tracking-tight text-bo-fg">
                     {{ title }}
                 </h1>
@@ -446,12 +461,7 @@ onMounted(load);
             </div>
         </div>
 
-        <p
-            v-if="loadApi.loading && !loaded"
-            class="text-sm text-bo-muted"
-        >
-            Загрузка…
-        </p>
+        <p v-if="loadApi.loading && !loaded" class="text-sm text-bo-muted">Загрузка…</p>
 
         <template v-else-if="loaded">
             <div class="grid gap-4 lg:grid-cols-3">
@@ -462,22 +472,13 @@ onMounted(load);
                                 <UiInput v-model="profile.name" />
                             </UiFormField>
                             <UiFormField label="Телефон">
-                                <UiInput
-                                    v-model="profile.phone"
-                                    type="tel"
-                                />
+                                <UiInput v-model="profile.phone" type="tel" />
                             </UiFormField>
                             <UiFormField label="Email">
-                                <UiInput
-                                    v-model="profile.email"
-                                    type="email"
-                                />
+                                <UiInput v-model="profile.email" type="email" />
                             </UiFormField>
                             <UiFormField label="Дата рождения">
-                                <UiInput
-                                    v-model="profile.birth_date"
-                                    type="date"
-                                />
+                                <UiInput v-model="profile.birth_date" type="date" />
                             </UiFormField>
                             <p class="text-xs text-bo-muted">
                                 Создан: {{ formatDate(profile.created_at) }}
@@ -487,18 +488,12 @@ onMounted(load);
 
                     <UiCard title="Адреса">
                         <template #actions>
-                            <UiButton
-                                class="!h-9 !px-3"
-                                @click="openCreateAddress"
-                            >
+                            <UiButton class="!h-9 !px-3" @click="openCreateAddress">
                                 + Адрес
                             </UiButton>
                         </template>
 
-                        <ul
-                            v-if="addresses.length"
-                            class="space-y-3"
-                        >
+                        <ul v-if="addresses.length" class="space-y-3">
                             <li
                                 v-for="address in addresses"
                                 :key="address.id"
@@ -514,22 +509,18 @@ onMounted(load);
                                         text="основной"
                                     />
                                 </div>
-                                <p
-                                    v-if="address.title"
-                                    class="text-xs text-bo-muted"
-                                >
+                                <p v-if="address.title" class="text-xs text-bo-muted">
                                     {{ address.title }}
                                 </p>
-                                <p
-                                    v-if="address.comment"
-                                    class="text-xs text-bo-muted"
-                                >
+                                <p v-if="address.comment" class="text-xs text-bo-muted">
                                     {{ address.comment }}
                                 </p>
                                 <div class="flex flex-wrap gap-1">
                                     <UiButton
                                         class="!h-8 !px-2 !text-xs"
-                                        :disabled="addressApi.loading || Boolean(address.is_default)"
+                                        :disabled="
+                                            addressApi.loading || Boolean(address.is_default)
+                                        "
                                         @click="makeDefault(address)"
                                     >
                                         Основной
@@ -544,22 +535,19 @@ onMounted(load);
                                     <UiButton
                                         class="!h-8 !px-2 !text-xs"
                                         :disabled="addressApi.loading"
-                                        @click="deleteAddressTarget = {
-                                            id: String(address.id),
-                                            label: formatAddressLabel(address),
-                                        }"
+                                        @click="
+                                            deleteAddressTarget = {
+                                                id: String(address.id),
+                                                label: formatAddressLabel(address),
+                                            }
+                                        "
                                     >
                                         Удалить
                                     </UiButton>
                                 </div>
                             </li>
                         </ul>
-                        <p
-                            v-else
-                            class="text-sm text-bo-muted"
-                        >
-                            Адресов нет
-                        </p>
+                        <p v-else class="text-sm text-bo-muted">Адресов нет</p>
                     </UiCard>
                 </div>
 
@@ -587,15 +575,9 @@ onMounted(load);
                                     title="Повторить заказ"
                                     @click="repeatOrder($event, row)"
                                 >
-                                    <ShellIcon
-                                        name="undo"
-                                        class="h-4 w-4"
-                                    />
+                                    <ShellIcon name="undo" class="h-4 w-4" />
                                 </button>
-                                <span
-                                    v-else
-                                    class="text-bo-muted"
-                                >—</span>
+                                <span v-else class="text-bo-muted">—</span>
                             </template>
                         </UiTable>
                     </UiCard>
@@ -610,14 +592,12 @@ onMounted(load);
         >
             <div class="space-y-4">
                 <UiFormField label="Название">
-                    <UiInput
-                        v-model="addressForm.title"
-                        placeholder="Дом / Работа"
-                    />
+                    <UiInput v-model="addressForm.title" placeholder="Дом / Работа" />
                 </UiFormField>
 
                 <DeliveryAddressFields
                     :key="addressFieldsKey"
+                    :branch-city="branchCity"
                     :street="addressForm.street"
                     :house="addressForm.house"
                     :entrance="addressForm.entrance"
@@ -636,23 +616,15 @@ onMounted(load);
                         v-model="addressForm.make_default"
                         type="checkbox"
                         class="accent-bo-accent"
-                    >
+                    />
                     Сделать основным
                 </label>
             </div>
             <template #footer>
-                <UiButton
-                    class="!bg-white/10 !text-bo-fg"
-                    @click="addressModalOpen = false"
-                >
+                <UiButton class="!bg-white/10 !text-bo-fg" @click="addressModalOpen = false">
                     Отмена
                 </UiButton>
-                <UiButton
-                    :disabled="addressApi.loading"
-                    @click="saveAddress"
-                >
-                    Сохранить
-                </UiButton>
+                <UiButton :disabled="addressApi.loading" @click="saveAddress">Сохранить</UiButton>
             </template>
         </UiModal>
 

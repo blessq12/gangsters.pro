@@ -85,11 +85,7 @@ function clear() {
                 <UiButton :disabled="disabled" @click="pick">
                     {{ displayUrl ? "Заменить" : "Выбрать файл" }}
                 </UiButton>
-                <UiButton
-                    v-if="clearable && displayUrl"
-                    :disabled="disabled"
-                    @click="clear"
-                >
+                <UiButton v-if="clearable && displayUrl" :disabled="disabled" @click="clear">
                     Убрать
                 </UiButton>
             </div>
@@ -99,23 +95,13 @@ function clear() {
                 accept="image/*"
                 class="hidden"
                 @change="onFileChange"
-            >
+            />
         </div>
 
-        <div
-            v-if="displayUrl"
-            class="overflow-hidden border border-bo-border bg-black/20"
-        >
-            <img
-                :src="displayUrl"
-                alt=""
-                class="max-h-64 w-full object-contain"
-            >
+        <div v-if="displayUrl" class="overflow-hidden border border-bo-border bg-black/20">
+            <img :src="displayUrl" alt="" class="max-h-64 w-full object-contain" />
         </div>
-        <div
-            v-else
-            class="border border-dashed border-bo-border px-4 py-8 text-sm text-bo-muted"
-        >
+        <div v-else class="border border-dashed border-bo-border px-4 py-8 text-sm text-bo-muted">
             Файл не выбран
         </div>
         <p v-if="error" class="text-sm text-red-400">

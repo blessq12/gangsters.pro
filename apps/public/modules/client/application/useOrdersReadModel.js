@@ -35,24 +35,15 @@ export function useOrdersReadModel({ autoload = false } = {}) {
             void refresh().catch(() => {});
         }
 
-        unsubscribeOrderCreated = subscribeDomainEvent(
-            DOMAIN_EVENTS.ORDER_CREATED,
-            () => {
-                void refresh().catch(() => {});
-            },
-        );
-        unsubscribeClientLogin = subscribeDomainEvent(
-            DOMAIN_EVENTS.CLIENT_LOGGED_IN,
-            () => {
-                void refresh().catch(() => {});
-            },
-        );
-        unsubscribeClientLogout = subscribeDomainEvent(
-            DOMAIN_EVENTS.CLIENT_LOGGED_OUT,
-            () => {
-                orderStore.setOrders([]);
-            },
-        );
+        unsubscribeOrderCreated = subscribeDomainEvent(DOMAIN_EVENTS.ORDER_CREATED, () => {
+            void refresh().catch(() => {});
+        });
+        unsubscribeClientLogin = subscribeDomainEvent(DOMAIN_EVENTS.CLIENT_LOGGED_IN, () => {
+            void refresh().catch(() => {});
+        });
+        unsubscribeClientLogout = subscribeDomainEvent(DOMAIN_EVENTS.CLIENT_LOGGED_OUT, () => {
+            orderStore.setOrders([]);
+        });
     });
 
     onUnmounted(() => {

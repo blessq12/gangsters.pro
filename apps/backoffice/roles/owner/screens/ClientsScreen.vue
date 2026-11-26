@@ -15,15 +15,7 @@ import UiTable from "../../../shell/components/ui/UiTable.vue";
 const router = useRouter();
 const toast = useToast();
 const listApi = useApi();
-const {
-    page,
-    perPage,
-    total,
-    items: rows,
-    offset,
-    resetPage,
-    applyPayload,
-} = usePagedList();
+const { page, perPage, total, items: rows, offset, resetPage, applyPayload } = usePagedList();
 
 const q = ref("");
 
@@ -49,11 +41,13 @@ function formatDate(value) {
 
 async function load() {
     try {
-        const payload = await listApi.run(() => listClients({
-            offset: offset.value,
-            limit: perPage,
-            q: q.value.trim() || undefined,
-        }));
+        const payload = await listApi.run(() =>
+            listClients({
+                offset: offset.value,
+                limit: perPage,
+                q: q.value.trim() || undefined,
+            }),
+        );
         applyPayload(payload, (client) => ({
             ...client,
             created_at: formatDate(client.created_at),
@@ -84,11 +78,7 @@ onMounted(load);
     <div class="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
         <UiCard title="Клиенты">
             <div class="mb-6 max-w-md">
-                <UiInput
-                    v-model="q"
-                    type="search"
-                    placeholder="Поиск: имя / телефон / email"
-                />
+                <UiInput v-model="q" type="search" placeholder="Поиск: имя / телефон / email" />
             </div>
 
             <UiTable
@@ -99,10 +89,7 @@ onMounted(load);
                 @row-click="openClient"
             >
                 <template #cell-actions="{ row }">
-                    <UiButton
-                        class="!h-9 !px-2.5"
-                        @click.stop="openClient(row)"
-                    >
+                    <UiButton class="!h-9 !px-2.5" @click.stop="openClient(row)">
                         <ShellIcon name="edit" class="h-4 w-4" />
                     </UiButton>
                 </template>

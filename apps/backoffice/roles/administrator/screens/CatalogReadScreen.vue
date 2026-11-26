@@ -15,14 +15,7 @@ import UiTable from "../../../shell/components/ui/UiTable.vue";
 const toast = useToast();
 const catalogApi = useApi();
 const detailApi = useApi();
-const {
-    page,
-    perPage,
-    total,
-    items,
-    offset,
-    applyPayload,
-} = usePagedList();
+const { page, perPage, total, items, offset, applyPayload } = usePagedList();
 
 const searchQuery = ref("");
 let searchTimer = /** @type {ReturnType<typeof setTimeout>|null} */ (null);
@@ -40,15 +33,17 @@ const columns = [
     { key: "status", label: "Статус", width: "110px" },
 ];
 
-const rows = computed(() => items.value.map((item) => ({
-    id: item.id,
-    name: item.name,
-    sku: item.sku || "—",
-    weight: item.weight != null ? item.weight : "—",
-    is_roll: Boolean(item.is_roll),
-    is_system: Boolean(item.is_system),
-    is_active: item.is_active ?? item.status === "active",
-})));
+const rows = computed(() =>
+    items.value.map((item) => ({
+        id: item.id,
+        name: item.name,
+        sku: item.sku || "—",
+        weight: item.weight != null ? item.weight : "—",
+        is_roll: Boolean(item.is_roll),
+        is_system: Boolean(item.is_system),
+        is_active: item.is_active ?? item.status === "active",
+    })),
+);
 
 const modalTitle = computed(() => {
     const name = String(product.value?.name ?? "").trim();
@@ -99,11 +94,13 @@ const basisLabel = computed(() => {
 async function load() {
     try {
         const q = searchQuery.value.trim();
-        const payload = await catalogApi.run(() => listProducts({
-            offset: offset.value,
-            limit: perPage,
-            q: q || undefined,
-        }));
+        const payload = await catalogApi.run(() =>
+            listProducts({
+                offset: offset.value,
+                limit: perPage,
+                q: q || undefined,
+            }),
+        );
         applyPayload(payload);
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось загрузить каталог");
@@ -204,10 +201,7 @@ onBeforeUnmount(() => {
                 @row-click="openProduct"
             >
                 <template #cell-is_roll="{ value }">
-                    <UiBadge
-                        variant="neutral"
-                        :text="value ? 'да' : 'нет'"
-                    />
+                    <UiBadge variant="neutral" :text="value ? 'да' : 'нет'" />
                 </template>
                 <template #cell-is_system="{ value }">
                     <UiBadge
@@ -233,18 +227,8 @@ onBeforeUnmount(() => {
             </div>
         </UiCard>
 
-        <UiModal
-            :open="modalOpen"
-            :title="modalTitle"
-            size="xl"
-            @close="closeModal"
-        >
-            <p
-                v-if="detailApi.loading && !product"
-                class="text-sm text-bo-muted"
-            >
-                Загрузка…
-            </p>
+        <UiModal :open="modalOpen" :title="modalTitle" size="xl" @close="closeModal">
+            <p v-if="detailApi.loading && !product" class="text-sm text-bo-muted">Загрузка…</p>
             <div
                 v-else-if="product"
                 class="grid gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]"
@@ -256,10 +240,7 @@ onBeforeUnmount(() => {
                     >
                         Нет фото
                     </p>
-                    <div
-                        v-else
-                        class="space-y-3"
-                    >
+                    <div v-else class="space-y-3">
                         <div class="relative overflow-hidden border border-bo-border bg-bo-field">
                             <img
                                 v-if="currentImage?.url"
@@ -269,7 +250,7 @@ onBeforeUnmount(() => {
                                 :style="{
                                     objectPosition: `${Number(currentImage.focus_x ?? 50)}% ${Number(currentImage.focus_y ?? 50)}%`,
                                 }"
-                            >
+                            />
                             <template v-if="images.length > 1">
                                 <button
                                     type="button"
@@ -287,23 +268,24 @@ onBeforeUnmount(() => {
                                 >
                                     ›
                                 </button>
-                                <p class="absolute bottom-2 right-2 border border-bo-border bg-bo-elevated/90 px-2 py-1 text-xs text-bo-muted">
+                                <p
+                                    class="absolute bottom-2 right-2 border border-bo-border bg-bo-elevated/90 px-2 py-1 text-xs text-bo-muted"
+                                >
                                     {{ imageIndex + 1 }} / {{ images.length }}
                                 </p>
                             </template>
                         </div>
-                        <div
-                            v-if="images.length > 1"
-                            class="flex flex-wrap gap-2"
-                        >
+                        <div v-if="images.length > 1" class="flex flex-wrap gap-2">
                             <button
                                 v-for="(image, index) in images"
                                 :key="image.id ?? index"
                                 type="button"
                                 class="h-14 w-14 overflow-hidden border"
-                                :class="index === imageIndex
-                                    ? 'border-bo-accent'
-                                    : 'border-bo-border opacity-70 hover:opacity-100'"
+                                :class="
+                                    index === imageIndex
+                                        ? 'border-bo-accent'
+                                        : 'border-bo-border opacity-70 hover:opacity-100'
+                                "
                                 @click="goToImage(index)"
                             >
                                 <img
@@ -314,7 +296,7 @@ onBeforeUnmount(() => {
                                     :style="{
                                         objectPosition: `${Number(image.focus_x ?? 50)}% ${Number(image.focus_y ?? 50)}%`,
                                     }"
-                                >
+                                />
                             </button>
                         </div>
                     </div>
@@ -326,16 +308,8 @@ onBeforeUnmount(() => {
                             :variant="isActiveDetail ? 'success' : 'neutral'"
                             :text="isActiveDetail ? 'активен' : 'в архиве'"
                         />
-                        <UiBadge
-                            v-if="product.is_roll"
-                            variant="neutral"
-                            text="ролл"
-                        />
-                        <UiBadge
-                            v-if="product.is_system"
-                            variant="warning"
-                            text="системный"
-                        />
+                        <UiBadge v-if="product.is_roll" variant="neutral" text="ролл" />
+                        <UiBadge v-if="product.is_system" variant="warning" text="системный" />
                     </div>
 
                     <dl class="grid gap-3 sm:grid-cols-2">
@@ -357,16 +331,10 @@ onBeforeUnmount(() => {
 
                     <div>
                         <h4 class="mb-2 text-sm font-medium text-bo-fg">Состав</h4>
-                        <p
-                            v-if="ingredients.length === 0"
-                            class="text-sm text-bo-muted"
-                        >
+                        <p v-if="ingredients.length === 0" class="text-sm text-bo-muted">
                             Не указан
                         </p>
-                        <ul
-                            v-else
-                            class="flex flex-wrap gap-2"
-                        >
+                        <ul v-else class="flex flex-wrap gap-2">
                             <li
                                 v-for="item in ingredients"
                                 :key="item"
@@ -379,25 +347,15 @@ onBeforeUnmount(() => {
 
                     <div>
                         <h4 class="mb-2 text-sm font-medium text-bo-fg">Техкарта</h4>
-                        <p
-                            v-if="techLines.length === 0"
-                            class="text-sm text-bo-muted"
-                        >
-                            Пусто
-                        </p>
-                        <ul
-                            v-else
-                            class="divide-y divide-bo-border border border-bo-border"
-                        >
+                        <p v-if="techLines.length === 0" class="text-sm text-bo-muted">Пусто</p>
+                        <ul v-else class="divide-y divide-bo-border border border-bo-border">
                             <li
                                 v-for="(row, index) in techLines"
                                 :key="`${row.ingredient_ref}-${index}`"
                                 class="flex flex-wrap items-center justify-between gap-2 px-3 py-2.5 text-sm text-bo-fg"
                             >
                                 <span>{{ row.ingredient_ref || "—" }}</span>
-                                <span class="text-bo-muted">
-                                    {{ row.quantity }} {{ row.unit }}
-                                </span>
+                                <span class="text-bo-muted">{{ row.quantity }} {{ row.unit }}</span>
                             </li>
                         </ul>
                     </div>
@@ -411,31 +369,36 @@ onBeforeUnmount(() => {
                             </div>
                             <div>
                                 <dt class="text-xs uppercase tracking-wide text-bo-muted">Ккал</dt>
-                                <dd class="mt-1 text-sm text-bo-fg">{{ nutrition?.calories ?? "—" }}</dd>
+                                <dd class="mt-1 text-sm text-bo-fg">
+                                    {{ nutrition?.calories ?? "—" }}
+                                </dd>
                             </div>
                             <div>
                                 <dt class="text-xs uppercase tracking-wide text-bo-muted">Белки</dt>
-                                <dd class="mt-1 text-sm text-bo-fg">{{ nutrition?.proteins ?? "—" }}</dd>
+                                <dd class="mt-1 text-sm text-bo-fg">
+                                    {{ nutrition?.proteins ?? "—" }}
+                                </dd>
                             </div>
                             <div>
                                 <dt class="text-xs uppercase tracking-wide text-bo-muted">Жиры</dt>
-                                <dd class="mt-1 text-sm text-bo-fg">{{ nutrition?.fats ?? "—" }}</dd>
+                                <dd class="mt-1 text-sm text-bo-fg">
+                                    {{ nutrition?.fats ?? "—" }}
+                                </dd>
                             </div>
                             <div>
-                                <dt class="text-xs uppercase tracking-wide text-bo-muted">Углеводы</dt>
-                                <dd class="mt-1 text-sm text-bo-fg">{{ nutrition?.carbs ?? "—" }}</dd>
+                                <dt class="text-xs uppercase tracking-wide text-bo-muted">
+                                    Углеводы
+                                </dt>
+                                <dd class="mt-1 text-sm text-bo-fg">
+                                    {{ nutrition?.carbs ?? "—" }}
+                                </dd>
                             </div>
                         </dl>
                     </div>
                 </div>
             </div>
             <template #footer>
-                <UiButton
-                    class="!bg-white/10 !text-bo-fg"
-                    @click="closeModal"
-                >
-                    Закрыть
-                </UiButton>
+                <UiButton class="!bg-white/10 !text-bo-fg" @click="closeModal">Закрыть</UiButton>
             </template>
         </UiModal>
     </div>

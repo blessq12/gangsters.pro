@@ -37,19 +37,13 @@ function toggleMobileMenu() {
 <template>
     <header :class="navbar.shared.header">
         <div :class="navbar.mobile.inner">
-            <div
-                ref="containerRef"
-                :class="navbar.mobile.bar"
-            >
+            <div ref="containerRef" :class="navbar.mobile.bar">
                 <div :class="navbar.mobile.scheduleZone">
                     <WorkScheduleStrip layout="navbarCompact" />
                 </div>
 
                 <NavbarBrand variant="mobile">
-                    <span
-                        ref="logoPulseRef"
-                        :class="navbar.mobile.logoPulseWrap"
-                    >
+                    <span ref="logoPulseRef" :class="navbar.mobile.logoPulseWrap">
                         <img
                             src="/images/load_logo.svg"
                             alt="Gangsters"

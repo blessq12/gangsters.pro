@@ -73,7 +73,7 @@ final class EloquentBannerRepository implements BannerRepository
 
     public function save(?int $id, bool $isActive, ?string $desktopPath, ?string $mobilePath): Banner
     {
-        $row = $id === null ? new BannerModel() : BannerModel::query()->find($id);
+        $row = $id === null ? new BannerModel : BannerModel::query()->find($id);
         if (! $row instanceof BannerModel) {
             throw new \InvalidArgumentException('Баннер не найден.');
         }

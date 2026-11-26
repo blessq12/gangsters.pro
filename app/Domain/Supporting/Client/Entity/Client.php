@@ -8,8 +8,8 @@ use DateTimeImmutable;
 final class Client
 {
     /**
-     * @param list<ClientAddress> $addresses
-     * @param list<int> $favoriteProductIds
+     * @param  list<ClientAddress>  $addresses
+     * @param  list<int>  $favoriteProductIds
      */
     private function __construct(
         private ?int $id,
@@ -60,7 +60,7 @@ final class Client
             consentMarketing: $consentMarketing,
             addresses: [],
             favoriteProductIds: [],
-            createdAt: new DateTimeImmutable(),
+            createdAt: new DateTimeImmutable,
         );
     }
 
@@ -84,8 +84,8 @@ final class Client
     }
 
     /**
-     * @param list<ClientAddress> $addresses
-     * @param list<int> $favoriteProductIds
+     * @param  list<ClientAddress>  $addresses
+     * @param  list<int>  $favoriteProductIds
      */
     public static function restore(
         int $id,

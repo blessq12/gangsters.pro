@@ -23,23 +23,14 @@ defineProps({
         </div>
 
         <div :class="cb.inner">
-            <div
-                v-if="title || subtitle"
-                :class="cb.headerRow"
-            >
+            <div v-if="title || subtitle" :class="cb.headerRow">
                 <div>
                     <p :class="cb.accentBar"></p>
-                    <h2
-                        v-if="title"
-                        :class="cb.title"
-                    >
+                    <h2 v-if="title" :class="cb.title">
                         {{ title }}
                     </h2>
                 </div>
-                <p
-                    v-if="subtitle"
-                    :class="cb.subtitle"
-                >
+                <p v-if="subtitle" :class="cb.subtitle">
                     {{ subtitle }}
                 </p>
             </div>

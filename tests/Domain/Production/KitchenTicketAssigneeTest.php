@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 
 final class KitchenTicketAssigneeTest extends TestCase
 {
-    public function testСтартЗакрепляетПовара(): void
+    public function test_старт_закрепляет_повара(): void
     {
         $ticket = KitchenTicket::queue(10, 2, [
             KitchenTicketLine::snapshot(1, 'Ролл', 1),
@@ -21,7 +21,7 @@ final class KitchenTicketAssigneeTest extends TestCase
         $this->assertSame(77, $ticket->assigneeEmployeeId());
     }
 
-    public function testЧужойПоварМожетЗакрытьЛинииСвободныйПул(): void
+    public function test_чужой_повар_может_закрыть_линии_свободный_пул(): void
     {
         $line = KitchenTicketLine::snapshot(1, 'Ролл', 1);
         $line->assignId(101);
@@ -35,7 +35,7 @@ final class KitchenTicketAssigneeTest extends TestCase
         $this->assertSame(99, $ticket->lineById(101)->doneBy());
     }
 
-    public function testCompleteПомещаетОставшиесяЛинииВDone(): void
+    public function test_complete_помещает_оставшиеся_линии_в_done(): void
     {
         $line = KitchenTicketLine::snapshot(1, 'Ролл', 1);
         $line->assignId(101);

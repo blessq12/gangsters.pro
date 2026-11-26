@@ -122,5 +122,4 @@ class MarketingContentSeeder extends Seeder
 
         return $payload;
     }
-
 }

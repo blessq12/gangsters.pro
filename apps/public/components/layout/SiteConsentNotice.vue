@@ -26,20 +26,12 @@ function accept() {
     >
         <div :class="notice.panel">
             <p :class="notice.text">
-                Мы используем необходимые cookie для работы сайта.
-                Аналитические cookie (Яндекс.Метрика и др.)<span
-                    :class="notice.textConsentSuffix"
-                >
-                    включаем только с вашего согласия</span
-                >.
+                Мы используем необходимые cookie для работы сайта. Аналитические cookie
+                (Яндекс.Метрика и др.)
+                <span :class="notice.textConsentSuffix">включаем только с вашего согласия</span>
+                .
             </p>
-            <button
-                type="button"
-                :class="notice.action"
-                @click="accept"
-            >
-                Принять
-            </button>
+            <button type="button" :class="notice.action" @click="accept">Принять</button>
         </div>
     </div>
 </template>

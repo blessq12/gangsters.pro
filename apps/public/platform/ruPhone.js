@@ -3,9 +3,6 @@
  * Канон: +7 (XXX) XXX-XX-XX (согласовано с App\Domain\Client\ValueObject\PhoneNumber).
  */
 
-/** Кастомные токены не нужны: канон `+7 (###) ###-##-##`. */
-export const RU_PHONE_MASKA_TOKENS_ATTR = "";
-
 /** Те же токены для `new Mask({ tokens })` в JS. */
 export const RU_PHONE_MASKA_TOKENS = Object.freeze({});
 
@@ -13,7 +10,7 @@ export const RU_PHONE_MASKA_TOKENS = Object.freeze({});
 export const RU_PHONE_MASKA_PATTERN = "+7 (###) ###-##-##";
 
 /** @type {Readonly<{ required: string; incomplete: string }>} */
-export const RU_PHONE_MESSAGES = Object.freeze({
+const RU_PHONE_MESSAGES = Object.freeze({
     required: "Введите номер телефона",
     incomplete: "Введите номер полностью — 10 цифр",
 });
@@ -25,17 +22,10 @@ export const RU_PHONE_MESSAGES = Object.freeze({
  */
 export function normalizeRuPhoneDigits(raw) {
     let digits = String(raw ?? "").replace(/\D/g, "");
-    if (
-        digits.length === 11 &&
-        (digits[0] === "7" || digits[0] === "8")
-    ) {
+    if (digits.length === 11 && (digits[0] === "7" || digits[0] === "8")) {
         digits = digits.slice(1);
     }
-    while (
-        digits.length > 0 &&
-        digits.length < 11 &&
-        (digits[0] === "7" || digits[0] === "8")
-    ) {
+    while (digits.length > 0 && digits.length < 11 && (digits[0] === "7" || digits[0] === "8")) {
         digits = digits.slice(1);
     }
     return digits.slice(0, 10);
@@ -58,7 +48,7 @@ export function formatRuPhoneCanonical(raw) {
  * @param {string} digits — уже нормализованные цифры
  * @returns {boolean}
  */
-export function isRuPhoneComplete(digits) {
+function isRuPhoneComplete(digits) {
     return normalizeRuPhoneDigits(digits).length === 10;
 }
 
@@ -76,7 +66,6 @@ export function validateRuPhoneForSubmit(raw) {
     }
     return { ok: true, digits, formatted: formatRuPhoneCanonical(digits) };
 }
-
 
 /**
  * Человекочитаемый российский номер из произвольной строки.
@@ -100,9 +89,7 @@ export function phoneToTelHref(raw) {
     if (digits.length !== 10) {
         const loose = String(raw).replace(/\D/g, "");
         if (!loose.length) return null;
-        return loose.startsWith("7") && loose.length === 11
-            ? `tel:+${loose}`
-            : `tel:+${loose}`;
+        return loose.startsWith("7") && loose.length === 11 ? `tel:+${loose}` : `tel:+${loose}`;
     }
     return `tel:+7${digits}`;
 }

@@ -44,9 +44,8 @@ export function resolveGuardTarget(input) {
         return { type: "redirect", name: "backoffice-login" };
     }
 
-    const allowed = allowedRouteNames instanceof Set
-        ? allowedRouteNames
-        : new Set(allowedRouteNames);
+    const allowed =
+        allowedRouteNames instanceof Set ? allowedRouteNames : new Set(allowedRouteNames);
 
     if (routeName && !allowed.has(routeName)) {
         return { type: "redirect", name: homeRouteName };

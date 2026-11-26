@@ -27,7 +27,9 @@ async function submit() {
 </script>
 
 <template>
-    <section class="w-full max-w-sm border border-bo-border bg-bo-glass p-6 shadow-bo-lg backdrop-blur-md sm:p-8">
+    <section
+        class="w-full max-w-sm border border-bo-border bg-bo-glass p-6 shadow-bo-lg backdrop-blur-md sm:p-8"
+    >
         <h1 class="text-xl font-semibold text-bo-fg">Восстановление пароля</h1>
         <p class="mt-1 text-sm text-bo-muted">Пока заглушка — письмо не отправляется.</p>
         <p
@@ -36,29 +38,15 @@ async function submit() {
         >
             {{ error }}
         </p>
-        <p
-            v-if="message"
-            class="mt-4 border border-bo-border px-3 py-2 text-sm text-bo-fg"
-        >
+        <p v-if="message" class="mt-4 border border-bo-border px-3 py-2 text-sm text-bo-fg">
             {{ message }}
         </p>
-        <form
-            class="mt-6 space-y-4"
-            @submit.prevent="submit"
-        >
+        <form class="mt-6 space-y-4" @submit.prevent="submit">
             <label class="block text-sm">
                 <span class="text-bo-muted">Email</span>
-                <UiInput
-                    v-model="email"
-                    type="email"
-                    required
-                />
+                <UiInput v-model="email" type="email" required />
             </label>
-            <UiButton
-                type="submit"
-                class="w-full justify-center"
-                :disabled="submitting"
-            >
+            <UiButton type="submit" class="w-full justify-center" :disabled="submitting">
                 Отправить
             </UiButton>
         </form>

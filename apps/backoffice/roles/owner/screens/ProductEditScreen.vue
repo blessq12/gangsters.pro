@@ -1,11 +1,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import {
-    getProduct,
-    storeProduct,
-    updateProduct,
-} from "../../../api/catalog.js";
+import { getProduct, storeProduct, updateProduct } from "../../../api/catalog.js";
 import { listIngredients } from "../../../api/warehouse.js";
 import CatalogProductImagesDraft from "../components/catalog/CatalogProductImagesDraft.vue";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
@@ -113,11 +109,13 @@ function applyDetail(payload) {
     draftImages.value = mapImages(payload);
     deletedImageIds.value = [];
     techCardLines.value = Array.isArray(payload?.tech_card?.lines)
-        ? payload.tech_card.lines.map((row) => ({
-            ingredient_ref: String(row.ingredient_ref ?? ""),
-            quantity: row.quantity != null ? String(row.quantity) : "",
-            unit: String(row.unit ?? ""),
-        })).filter((row) => row.ingredient_ref !== "")
+        ? payload.tech_card.lines
+              .map((row) => ({
+                  ingredient_ref: String(row.ingredient_ref ?? ""),
+                  quantity: row.quantity != null ? String(row.quantity) : "",
+                  unit: String(row.unit ?? ""),
+              }))
+              .filter((row) => row.ingredient_ref !== "")
         : [];
     addIngredientId.value = "";
 }
@@ -139,10 +137,9 @@ async function load() {
         return;
     }
     try {
-        const [payload] = await loadApi.run(() => Promise.all([
-            getProduct(productId.value),
-            loadWarehouseIngredients(),
-        ]));
+        const [payload] = await loadApi.run(() =>
+            Promise.all([getProduct(productId.value), loadWarehouseIngredients()]),
+        );
         applyDetail(payload);
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось загрузить товар");
@@ -184,8 +181,9 @@ function validate() {
 }
 
 function buildPayload() {
-    const nutritionEmpty = [form.calories, form.proteins, form.fats, form.carbs]
-        .every((value) => value === "");
+    const nutritionEmpty = [form.calories, form.proteins, form.fats, form.carbs].every(
+        (value) => value === "",
+    );
 
     return {
         name: form.name.trim(),
@@ -198,12 +196,12 @@ function buildPayload() {
         nutrition: nutritionEmpty
             ? null
             : {
-                calories: Number(form.calories || 0),
-                proteins: Number(form.proteins || 0),
-                fats: Number(form.fats || 0),
-                carbs: Number(form.carbs || 0),
-                basis: form.basis || "per_100g",
-            },
+                  calories: Number(form.calories || 0),
+                  proteins: Number(form.proteins || 0),
+                  fats: Number(form.fats || 0),
+                  carbs: Number(form.carbs || 0),
+                  basis: form.basis || "per_100g",
+              },
         tech_card: {
             lines: techCardLines.value.map((row) => ({
                 ingredient_ref: String(row.ingredient_ref),
@@ -251,11 +249,11 @@ async function save() {
     try {
         const payload = buildPayload();
         const images = buildImageBundle();
-        const result = await saveApi.run(async () => (
+        const result = await saveApi.run(async () =>
             productId.value
                 ? updateProduct(productId.value, payload, images)
-                : storeProduct(payload, images)
-        ));
+                : storeProduct(payload, images),
+        );
         toast.success(productId.value ? "Сохранено" : "Создано");
         if (isNew.value && result?.id) {
             await router.replace({ name: "owner-catalog-product", params: { id: result.id } });
@@ -275,7 +273,10 @@ onMounted(load);
     <div class="product-edit mx-auto w-full max-w-7xl space-y-4 px-4 py-5 sm:px-6 lg:px-10 lg:py-7">
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div class="flex flex-wrap items-center gap-3">
-                <UiButton class="!bg-white/10 !text-bo-fg" @click="router.push({ name: 'owner-menu' })">
+                <UiButton
+                    class="!bg-white/10 !text-bo-fg"
+                    @click="router.push({ name: 'owner-menu' })"
+                >
                     К каталогу
                 </UiButton>
                 <h1 class="text-lg font-semibold tracking-tight text-bo-fg">
@@ -295,9 +296,7 @@ onMounted(load);
             </div>
         </div>
 
-        <p v-if="loadApi.loading" class="text-sm text-bo-muted">
-            Загрузка…
-        </p>
+        <p v-if="loadApi.loading" class="text-sm text-bo-muted">Загрузка…</p>
 
         <div v-else class="space-y-4">
             <UiCard title="Основное">
@@ -325,10 +324,7 @@ onMounted(load);
 
             <UiCard title="Состав">
                 <UiFormField label="Ингредиенты">
-                    <UiChipInput
-                        v-model="form.ingredients"
-                        placeholder="Введи и нажми Enter"
-                    />
+                    <UiChipInput v-model="form.ingredients" placeholder="Введи и нажми Enter" />
                 </UiFormField>
             </UiCard>
 
@@ -347,7 +343,11 @@ onMounted(load);
                                 {{ ingredientLabel(row.ingredient_ref) }}
                             </div>
                             <div class="w-28">
-                                <UiInput v-model="row.quantity" type="number" placeholder="Кол-во" />
+                                <UiInput
+                                    v-model="row.quantity"
+                                    type="number"
+                                    placeholder="Кол-во"
+                                />
                             </div>
                             <div class="w-24">
                                 <UiInput v-model="row.unit" placeholder="Ед." />

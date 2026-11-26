@@ -5,8 +5,8 @@ namespace App\Infrastructure\Catalog\Repository;
 use App\Domain\Supporting\Catalog\Entity\TechCard;
 use App\Domain\Supporting\Catalog\Repository\TechCardRepository;
 use App\Infrastructure\Catalog\Mapper\TechCardMapper;
-use App\Infrastructure\Catalog\Model\TechCardModel;
 use App\Infrastructure\Catalog\Model\TechCardLineModel;
+use App\Infrastructure\Catalog\Model\TechCardModel;
 use Illuminate\Support\Facades\DB;
 
 final class EloquentTechCardRepository implements TechCardRepository

@@ -1,8 +1,7 @@
 import { siteMeta } from "../../../config/site";
 
 function absoluteUrl(pathOrUrl) {
-    const normalizedPath =
-        pathOrUrl == null || pathOrUrl === "" ? "/" : String(pathOrUrl);
+    const normalizedPath = pathOrUrl == null || pathOrUrl === "" ? "/" : String(pathOrUrl);
 
     if (typeof window === "undefined") return normalizedPath;
     if (/^https?:\/\//i.test(normalizedPath)) return normalizedPath;
@@ -31,10 +30,7 @@ function resolveSeo(route) {
     const title = seo?.title ?? siteMeta.defaultTitle;
     const description = seo?.description ?? siteMeta.defaultDescription;
     const robots = seo?.robots ?? siteMeta.defaultRobots;
-    const ogImagePath =
-        seo?.ogImage ??
-        siteMeta.ogImageSocialPath ??
-        siteMeta.ogImagePath;
+    const ogImagePath = seo?.ogImage ?? siteMeta.ogImageSocialPath ?? siteMeta.ogImagePath;
 
     return {
         title,
@@ -53,8 +49,7 @@ function resolveSeo(route) {
 export function applyPageHead(route) {
     if (typeof document === "undefined") return;
 
-    const { title, description, robots, canonicalUrl, ogImageUrl } =
-        resolveSeo(route);
+    const { title, description, robots, canonicalUrl, ogImageUrl } = resolveSeo(route);
 
     document.title = title;
 

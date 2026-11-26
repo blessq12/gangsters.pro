@@ -2,10 +2,7 @@ import { computed, unref } from "vue";
 import { storeToRefs } from "pinia";
 import { useCheckoutStore } from "../store";
 import { formatKopecksToRub } from "../../../platform/moneyFormat";
-import {
-    selectedGiftCartLine,
-    resolveSelectedGiftSummary,
-} from "../domain/normalizeCheckoutCart";
+import { selectedGiftCartLine, resolveSelectedGiftSummary } from "../domain/normalizeCheckoutCart";
 import { giftCourierWeekdaysLabel } from "../domain/giftWeekdaysLabel";
 import { useCheckoutSession } from "./session";
 import { useCheckoutFlowContext } from "./flowContext";
@@ -22,7 +19,7 @@ export function useCheckoutNavTotal() {
     return { navTotalLabel };
 }
 
-export function useCheckoutBenefitVisibility() {
+function useCheckoutBenefitVisibility() {
     const { checkoutState, userStore } = useCheckoutFlowContext();
     const { checkoutIntent, isGuestCheckout } = checkoutState;
 
@@ -117,8 +114,7 @@ function rollWord(count) {
  */
 export function useOrderPreview() {
     const checkoutStore = useCheckoutStore();
-    const { orderPreview, hasCartItems, benefitsProgress, flushing } =
-        storeToRefs(checkoutStore);
+    const { orderPreview, hasCartItems, benefitsProgress, flushing } = storeToRefs(checkoutStore);
     const { showGiftProgress } = useCheckoutBenefitVisibility();
 
     const preview = computed(() => orderPreview.value);
@@ -148,10 +144,7 @@ export function useOrderPreview() {
             emptyMoneyBenefit(),
     );
     const gift = computed(
-        () =>
-            preview.value?.benefits?.gift ??
-            benefitsProgress.value?.gift ??
-            emptyMoneyBenefit(),
+        () => preview.value?.benefits?.gift ?? benefitsProgress.value?.gift ?? emptyMoneyBenefit(),
     );
     const complement = computed(
         () =>
@@ -161,14 +154,10 @@ export function useOrderPreview() {
     );
 
     const hasComplementLines = computed(() => complementLines.value.length > 0);
-    const hasRollsInCart = computed(
-        () => (Number(complement.value.currentRollCount) || 0) > 0,
-    );
+    const hasRollsInCart = computed(() => (Number(complement.value.currentRollCount) || 0) > 0);
     const hasAutoLines = computed(() => autoLines.value.length > 0);
     const hasDeliveryPricing = computed(
-        () =>
-            !totals.value.isDeliveryPreview
-            && totals.value.deliveryFeeRubles != null,
+        () => !totals.value.isDeliveryPreview && totals.value.deliveryFeeRubles != null,
     );
     const showOutsideZoneSurcharge = computed(() => false);
     const showBaseDeliveryFee = computed(() => {
@@ -235,10 +224,7 @@ export function useOrderPreview() {
 
         return Math.min(
             100,
-            Math.max(
-                0,
-                Math.round(((rollsPerSet - remaining) / rollsPerSet) * 100),
-            ),
+            Math.max(0, Math.round(((rollsPerSet - remaining) / rollsPerSet) * 100)),
         );
     });
 
@@ -311,9 +297,7 @@ export function useOrderPreview() {
         }
 
         const fee = Number(totals.value.deliveryFeeRubles);
-        return Number.isFinite(fee) && fee > 0
-            ? `Доставка — ${fee} ₽`
-            : "Доставка платная";
+        return Number.isFinite(fee) && fee > 0 ? `Доставка — ${fee} ₽` : "Доставка платная";
     });
 
     const canShowBenefits = computed(() => {
@@ -322,23 +306,17 @@ export function useOrderPreview() {
         }
 
         const deliveryVisible = delivery.value.isActive && deliveryLabel.value;
-        const giftVisible =
-            showGiftProgress.value && gift.value.isActive && giftLabel.value;
+        const giftVisible = showGiftProgress.value && gift.value.isActive && giftLabel.value;
 
         return deliveryVisible || giftVisible;
     });
 
     const showComplementProgress = computed(
-        () =>
-            complement.value.isActive
-            && Boolean(complementLabel.value)
-            && hasRollsInCart.value,
+        () => complement.value.isActive && Boolean(complementLabel.value) && hasRollsInCart.value,
     );
 
     const isGiftEligible = computed(() => giftCta.value?.eligible === true);
-    const hasGiftSelected = computed(
-        () => Number(giftCta.value?.selectedProductId) > 0,
-    );
+    const hasGiftSelected = computed(() => Number(giftCta.value?.selectedProductId) > 0);
     const giftCtaLabel = computed(() =>
         hasGiftSelected.value ? "Изменить подарок" : "Выбрать подарок",
     );
@@ -412,11 +390,7 @@ export function useOrderPreview() {
  *   paidTwin: object|null,
  * }>}
  */
-export function buildComplementOfferRows(
-    complementLines,
-    complementProducts,
-    options = {},
-) {
+export function buildComplementOfferRows(complementLines, complementProducts, options = {}) {
     const freeById = new Map();
     const lines = Array.isArray(complementLines) ? complementLines : [];
 
@@ -435,9 +409,7 @@ export function buildComplementOfferRows(
 
     const includeCatalogProducts = options.includeCatalogProducts === true;
     const products =
-        includeCatalogProducts && Array.isArray(complementProducts)
-            ? complementProducts
-            : [];
+        includeCatalogProducts && Array.isArray(complementProducts) ? complementProducts : [];
     const productById = new Map();
 
     for (const product of products) {
@@ -452,13 +424,9 @@ export function buildComplementOfferRows(
     for (const id of ids) {
         const free = freeById.get(id);
         const product = productById.get(id) ?? null;
-        const name =
-            String(product?.name || "").trim()
-            || free?.name
-            || `Товар #${id}`;
+        const name = String(product?.name || "").trim() || free?.name || `Товар #${id}`;
         const paidTwin = product?.paidTwin ?? null;
-        const paidTwinProductIdRaw =
-            product?.paidTwinProductId ?? paidTwin?.id ?? null;
+        const paidTwinProductIdRaw = product?.paidTwinProductId ?? paidTwin?.id ?? null;
         const paidTwinProductId = Number(paidTwinProductIdRaw);
 
         rows.push({
@@ -480,7 +448,7 @@ export function buildComplementOfferRows(
 /**
  * @param {{ eligible?: boolean, phase?: string|null, selectedProductId?: number|null }|null|undefined} giftCta
  */
-export function isGiftSelectionRequired(giftCta) {
+function isGiftSelectionRequired(giftCta) {
     if (!giftCta || typeof giftCta !== "object" || !giftCta.eligible) {
         return false;
     }
@@ -495,16 +463,13 @@ export function isGiftSelectionRequired(giftCta) {
 /**
  * @param {{ gift_promotion?: { eligible?: boolean, phase?: string, selected_product_id?: number|null } }|null|undefined} promoState
  */
-export function isGiftSelectionRequiredFromPromoState(promoState) {
+function isGiftSelectionRequiredFromPromoState(promoState) {
     const giftPromotion = promoState?.gift_promotion;
     if (!giftPromotion || typeof giftPromotion !== "object" || giftPromotion.eligible !== true) {
         return false;
     }
 
-    if (
-        Number(giftPromotion.selected_product_id) > 0
-        || giftPromotion.phase === "selected"
-    ) {
+    if (Number(giftPromotion.selected_product_id) > 0 || giftPromotion.phase === "selected") {
         return false;
     }
 
@@ -597,12 +562,7 @@ export function useSelectedGiftSummary() {
  * @param {unknown} accompanyingCategories
  */
 export function isCheckoutUpsellStepAvailable(accompanyingCategories) {
-    const nodes = Array.isArray(accompanyingCategories)
-        ? accompanyingCategories
-        : [];
+    const nodes = Array.isArray(accompanyingCategories) ? accompanyingCategories : [];
 
-    return nodes.some(
-        (entry) =>
-            Array.isArray(entry?.products) && entry.products.length > 0,
-    );
+    return nodes.some((entry) => Array.isArray(entry?.products) && entry.products.length > 0);
 }

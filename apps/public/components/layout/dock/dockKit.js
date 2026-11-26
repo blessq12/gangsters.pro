@@ -9,16 +9,16 @@ export const DOCK_PANEL_LOADERS = {
 
 /**
  * Единый список вкладок дока (метаданные без привязки к платформе).
- * @type {ReadonlyArray<{ id: string, label: string, iconClass: string }>} 
+ * @type {ReadonlyArray<{ id: string, label: string, iconClass: string }>}
  */
-export const DOCK_META = Object.freeze([
+const DOCK_META = Object.freeze([
     { id: "cart", label: "Корзина", iconClass: "mdi-cart-outline" },
     { id: "profile", label: "Профиль", iconClass: "mdi-account-circle-outline" },
     { id: "favorites", label: "Избранное", iconClass: "mdi-heart-outline" },
 ]);
 
 /** Единый список вкладок дока для мобильной и десктопной разметки. */
-export function createDockItems() {
+function createDockItems() {
     return DOCK_META.map((meta) => {
         const load = DOCK_PANEL_LOADERS[meta.id];
         if (!load) {

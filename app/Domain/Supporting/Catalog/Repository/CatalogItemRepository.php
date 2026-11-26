@@ -59,6 +59,14 @@ interface CatalogItemRepository
     public function listItemImages(int $itemId): array;
 
     /**
+     * Первое фото по каждому item_id (для списков/меню без N+1).
+     *
+     * @param  list<int>  $itemIds
+     * @return array<int, array{url: string, focus_x: float|null, focus_y: float|null}>
+     */
+    public function findPrimaryImagesByItemIds(array $itemIds): array;
+
+    /**
      * @return list<array{id: int, url: string, focus_x: float|null, focus_y: float|null}>
      */
     public function listProductImages(int $productId): array;

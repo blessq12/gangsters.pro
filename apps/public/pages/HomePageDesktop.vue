@@ -64,12 +64,8 @@ watch(
         <section>
             <header :class="d.menuHeader">
                 <div :class="d.menuTitleBlock">
-                    <h2 :class="d.menuTitle">
-                        Меню
-                    </h2>
-                    <p :class="d.menuSubtitle">
-                        Категории или поиск — как удобнее.
-                    </p>
+                    <h2 :class="d.menuTitle">Меню</h2>
+                    <p :class="d.menuSubtitle">Категории или поиск — как удобнее.</p>
                 </div>
 
                 <div :class="d.searchCol">

@@ -18,16 +18,9 @@ const logoImgClass = computed(() => navbar[props.variant].logoImg);
 
 <template>
     <div :class="rowClass">
-        <RouterLink
-            :to="{ name: 'home' }"
-            :class="navbar.shared.logoLink"
-        >
+        <RouterLink :to="{ name: 'home' }" :class="navbar.shared.logoLink">
             <slot>
-                <img
-                    src="/images/load_logo.svg"
-                    alt="Gangsters"
-                    :class="logoImgClass"
-                />
+                <img src="/images/load_logo.svg" alt="Gangsters" :class="logoImgClass" />
             </slot>
         </RouterLink>
     </div>

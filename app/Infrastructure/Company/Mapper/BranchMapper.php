@@ -2,8 +2,8 @@
 
 namespace App\Infrastructure\Company\Mapper;
 
-use App\Domain\Supporting\Company\Support\ScheduleNormalizer;
 use App\Domain\Supporting\Company\Entity\Branch;
+use App\Domain\Supporting\Company\Support\ScheduleNormalizer;
 use App\Infrastructure\Company\Model\BranchModel;
 
 final class BranchMapper

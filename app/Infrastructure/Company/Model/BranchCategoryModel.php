@@ -4,7 +4,21 @@ namespace App\Infrastructure\Company\Model;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property int $branch_id
+ * @property string $name
+ * @property string $slug
+ * @property int $sort_order
+ * @property bool $is_active
+ * @property bool $is_accompanying
+ * @property bool $is_complement
+ * @property bool $is_gift
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
 final class BranchCategoryModel extends Model
 {
     protected $table = 'CMP_branch_categories';

@@ -5,7 +5,7 @@ import { useApi } from "./useApi.js";
 /**
  * @param {Record<string, unknown>|null|undefined} line
  */
-export function quoteLineKind(line) {
+function quoteLineKind(line) {
     return String(line?.payload?.kind ?? line?.line_type ?? "regular");
 }
 
@@ -143,14 +143,16 @@ export function useOrderQuote(options) {
  * @param {Record<string, unknown>[]} lines
  */
 export function mapQuoteLinesToUpdate(lines) {
-    return lines.map((line) => {
-        const kind = quoteLineKind(line);
-        return {
-            product_id: Number(line.product_id),
-            name: String(line.product_name ?? line.name ?? ""),
-            unit_price_kopecks: Number(line.unit_price_kopecks ?? 0),
-            quantity: Math.max(1, Number(line.quantity) || 1),
-            line_type: kind,
-        };
-    }).filter((line) => Number.isFinite(line.product_id) && line.product_id > 0);
+    return lines
+        .map((line) => {
+            const kind = quoteLineKind(line);
+            return {
+                product_id: Number(line.product_id),
+                name: String(line.product_name ?? line.name ?? ""),
+                unit_price_kopecks: Number(line.unit_price_kopecks ?? 0),
+                quantity: Math.max(1, Number(line.quantity) || 1),
+                line_type: kind,
+            };
+        })
+        .filter((line) => Number.isFinite(line.product_id) && line.product_id > 0);
 }

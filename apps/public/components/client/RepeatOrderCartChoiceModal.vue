@@ -37,9 +37,7 @@ function chooseReplace() {
         :model-value="props.modelValue"
         @update:model-value="emit('update:modelValue', $event)"
     >
-        <template #header>
-            Корзина не пустая
-        </template>
+        <template #header>Корзина не пустая</template>
 
         <p :class="modal.lead">
             Добавить позиции из заказа к текущей корзине или заменить её полностью?

@@ -20,15 +20,11 @@ const props = defineProps({
 const slots = useSlots();
 const layout = useAppDesign().components.dockPanels.shared.layout;
 
-const bodyClasses = computed(() =>
-    [layout.body, props.bodyClass].filter(Boolean),
-);
+const bodyClasses = computed(() => [layout.body, props.bodyClass].filter(Boolean));
 
 const hasDescriptionSlot = computed(() => Boolean(slots.description));
 const hasDescriptionProp = computed(() => props.description.trim().length > 0);
-const showDescription = computed(
-    () => hasDescriptionSlot.value || hasDescriptionProp.value,
-);
+const showDescription = computed(() => hasDescriptionSlot.value || hasDescriptionProp.value);
 const hasFooter = computed(() => Boolean(slots.footer));
 </script>
 
@@ -39,39 +35,24 @@ const hasFooter = computed(() => Boolean(slots.footer));
                 <h2 :class="layout.title">
                     {{ title }}
                 </h2>
-                <div
-                    v-if="$slots.headerActions"
-                    class="shrink-0"
-                >
+                <div v-if="$slots.headerActions" class="shrink-0">
                     <slot name="headerActions" />
                 </div>
             </div>
 
-            <div
-                v-if="showDescription"
-                :class="layout.description"
-            >
-                <slot
-                    v-if="hasDescriptionSlot"
-                    name="description"
-                />
+            <div v-if="showDescription" :class="layout.description">
+                <slot v-if="hasDescriptionSlot" name="description" />
                 <p v-else>
                     {{ description }}
                 </p>
             </div>
         </header>
 
-        <div
-            :class="bodyClasses"
-            data-dock-panel-scroll
-        >
+        <div :class="bodyClasses" data-dock-panel-scroll>
             <slot />
         </div>
 
-        <footer
-            v-if="hasFooter"
-            :class="layout.footer"
-        >
+        <footer v-if="hasFooter" :class="layout.footer">
             <slot name="footer" />
         </footer>
     </div>

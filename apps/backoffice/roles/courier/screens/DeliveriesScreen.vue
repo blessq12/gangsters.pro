@@ -28,14 +28,7 @@ const STATUS_FILTERS = [
 
 const statusFilter = ref("");
 
-const {
-    page,
-    perPage,
-    total,
-    items: rows,
-    offset,
-    applyPayload,
-} = usePagedList();
+const { page, perPage, total, items: rows, offset, applyPayload } = usePagedList();
 
 const columns = [
     { key: "id", label: "Лист", width: "90px" },
@@ -65,11 +58,13 @@ function stopsLabel(sheet) {
 
 async function load(silent = false) {
     try {
-        const payload = await listApi.run(() => listCourierRouteSheets({
-            offset: offset.value,
-            limit: perPage,
-            status: statusFilter.value || undefined,
-        }));
+        const payload = await listApi.run(() =>
+            listCourierRouteSheets({
+                offset: offset.value,
+                limit: perPage,
+                status: statusFilter.value || undefined,
+            }),
+        );
         applyPayload(payload, (sheet) => ({
             id: sheet.id,
             status: sheet.status,
@@ -83,7 +78,9 @@ async function load(silent = false) {
         }
     } catch (err) {
         if (!silent) {
-            toast.error(err instanceof Error ? err.message : "Не удалось загрузить маршрутные листы");
+            toast.error(
+                err instanceof Error ? err.message : "Не удалось загрузить маршрутные листы",
+            );
         }
     }
 }
@@ -132,18 +129,18 @@ onUnmounted(() => {
     <div class="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
         <UiCard title="Мои листы">
             <div class="mb-6">
-                <p class="mb-1 text-sm text-bo-muted">
-                    Статус
-                </p>
+                <p class="mb-1 text-sm text-bo-muted">Статус</p>
                 <div class="flex flex-wrap gap-2">
                     <button
                         v-for="filter in STATUS_FILTERS"
                         :key="filter.value || 'all'"
                         type="button"
                         class="h-11 px-4 text-sm font-medium transition-colors duration-150"
-                        :class="statusFilter === filter.value
-                            ? 'bg-bo-accent text-white'
-                            : 'bg-white/[0.04] text-bo-muted hover:bg-white/[0.08] hover:text-bo-fg'"
+                        :class="
+                            statusFilter === filter.value
+                                ? 'bg-bo-accent text-white'
+                                : 'bg-white/[0.04] text-bo-muted hover:bg-white/[0.08] hover:text-bo-fg'
+                        "
                         @click="setStatusFilter(filter.value)"
                     >
                         {{ filter.label }}
@@ -160,10 +157,7 @@ onUnmounted(() => {
                 @row-click="openSheet"
             >
                 <template #cell-status="{ value }">
-                    <UiBadge
-                        :variant="sheetStatusVariant(value)"
-                        :text="sheetStatusLabel(value)"
-                    />
+                    <UiBadge :variant="sheetStatusVariant(value)" :text="sheetStatusLabel(value)" />
                 </template>
             </UiTable>
 

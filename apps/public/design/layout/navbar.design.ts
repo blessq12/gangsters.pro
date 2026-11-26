@@ -20,16 +20,14 @@ export const navbarDesign = {
     responsive: {
         inner: "mx-auto max-w-7xl px-4 sm:px-6 lg:px-8",
         bar: "flex h-[70px] min-h-[70px] items-center justify-between gap-4 overflow-visible rounded-none border border-app-accent/40 bg-app-canvas px-4 py-0 backdrop-blur sm:px-6 lg:px-8",
-        leftZone:
-            "flex min-w-0 items-center gap-2 sm:gap-3 w-24 sm:w-auto",
+        leftZone: "flex min-w-0 items-center gap-2 sm:gap-3 w-24 sm:w-auto",
         balanceSpacer: "w-10 shrink-0 md:hidden",
         desktopNavGate: "hidden min-w-0 items-center md:flex",
         navLeft: `flex items-center gap-4 ${shellTypography.body.navRow}`,
         logoRow: `${shellTypography.heading.logoMark} relative z-[2] min-w-0 flex-1 self-stretch`,
         logoImg:
             "mx-auto h-[6.25rem] w-auto max-w-[10.5rem] object-contain transition-transform duration-200 group-hover:scale-105 sm:h-[7rem] sm:max-w-[12rem] md:h-[7.75rem] md:max-w-[13.5rem]",
-        rightZone:
-            "flex items-center justify-end gap-2 sm:gap-3 w-24 sm:w-auto",
+        rightZone: "flex items-center justify-end gap-2 sm:gap-3 w-24 sm:w-auto",
         burgerButton:
             "flex h-9 w-9 items-center justify-center rounded-none border border-black/20 bg-neutral-950/88 text-app-canvas-fg transition-colors md:hidden",
         navRight: `hidden md:flex items-center gap-4 justify-end ${shellTypography.body.navRow}`,
@@ -50,11 +48,9 @@ export const navbarDesign = {
     mobile: {
         inner: "mx-auto max-w-7xl px-4",
         bar: "flex h-[70px] min-h-[70px] items-center justify-between gap-4 overflow-visible rounded-none border border-app-accent/40 bg-app-canvas px-4 py-0 backdrop-blur",
-        scheduleZone:
-            "flex shrink-0 items-center justify-start pr-1",
+        scheduleZone: "flex shrink-0 items-center justify-start pr-1",
         logoRow: `${shellTypography.heading.logoMark} relative z-[2] min-w-0 flex-1 self-stretch`,
-        logoPulseWrap:
-            "inline-flex origin-center will-change-transform",
+        logoPulseWrap: "inline-flex origin-center will-change-transform",
         logoImg:
             "mx-auto h-[6.25rem] w-auto max-w-[10rem] object-contain transition-transform duration-200 group-hover:scale-105 sm:h-[7rem] sm:max-w-[12rem]",
         burgerZone: "flex items-center justify-end gap-2",
@@ -63,10 +59,8 @@ export const navbarDesign = {
     },
 
     mobileMenu: {
-        overlayRoot:
-            "pointer-events-none fixed inset-x-0 top-0 z-30 md:hidden pt-28 sm:pt-32",
-        innerContainer:
-            "mx-auto mt-3 max-w-7xl px-4 sm:px-6 lg:px-8",
+        overlayRoot: "pointer-events-none fixed inset-x-0 top-0 z-30 md:hidden pt-28 sm:pt-32",
+        innerContainer: "mx-auto mt-3 max-w-7xl px-4 sm:px-6 lg:px-8",
         sheetNav:
             "pointer-events-auto overflow-hidden rounded-none border border-app-border-on-surface bg-app-canvas text-sm font-medium text-app-canvas-fg shadow-[0_20px_50px_rgba(0,0,0,0.75)]",
         companySection: "border-b border-app-border-on-surface px-4 py-3",
@@ -76,9 +70,6 @@ export const navbarDesign = {
         companyAddress: `mt-1.5 ${shellTypography.body.mobileMenuMeta} ${shellColorRoles.muted}`,
         phoneLink: `${shellTypography.body.mobileMenuPhone} ${shellColorRoles.accent95} hover:text-app-accent`,
         linksRegion: "space-y-0.5 px-2 py-2",
-        routerLinkItem:
-            "block rounded-none px-3 py-2.5 text-app-canvas-fg hover:bg-black/5",
+        routerLinkItem: "block rounded-none px-3 py-2.5 text-app-canvas-fg hover:bg-black/5",
     },
 } as const;
-
-export type NavbarDesign = typeof navbarDesign;

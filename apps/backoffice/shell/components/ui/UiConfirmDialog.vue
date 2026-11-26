@@ -17,12 +17,8 @@ const emit = defineEmits(["confirm", "cancel"]);
             {{ message }}
         </p>
         <template #footer>
-            <UiButton @click="emit('cancel')">
-                Отмена
-            </UiButton>
-            <UiButton @click="emit('confirm')">
-                Подтвердить
-            </UiButton>
+            <UiButton @click="emit('cancel')">Отмена</UiButton>
+            <UiButton @click="emit('confirm')">Подтвердить</UiButton>
         </template>
     </UiModal>
 </template>

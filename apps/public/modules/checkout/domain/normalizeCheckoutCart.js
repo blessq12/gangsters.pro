@@ -137,7 +137,7 @@ export function isGiftCartLine(item) {
 /**
  * @param {object|null|undefined} item
  */
-export function isDeliveryCartLine(item) {
+function isDeliveryCartLine(item) {
     if (!item || typeof item !== "object") {
         return false;
     }
@@ -155,21 +155,6 @@ export function isDeliveryCartLine(item) {
 }
 
 /**
- * Системные строки визарда без подарка (подарок — в саммари).
- *
- * @param {object[]|null|undefined} items
- */
-export function wizardVisibleSystemItems(items) {
-    if (!Array.isArray(items)) {
-        return [];
-    }
-
-    return items.filter(
-        (item) => !isGiftCartLine(item) && !isDeliveryCartLine(item),
-    );
-}
-
-/**
  * @param {object[]|null|undefined} items
  */
 export function wizardNonComplementSystemItems(items) {
@@ -178,10 +163,7 @@ export function wizardNonComplementSystemItems(items) {
     }
 
     return items.filter(
-        (item) =>
-            !isComplementCartLine(item)
-            && !isGiftCartLine(item)
-            && !isDeliveryCartLine(item),
+        (item) => !isComplementCartLine(item) && !isGiftCartLine(item) && !isDeliveryCartLine(item),
     );
 }
 
@@ -279,19 +261,17 @@ export function normalizeCheckoutCartBlock(cart) {
             const lineRub = roundRubles2(Number(row.line_total_rubles) || unitRub * qty);
             const unitKopecks = Math.round(unitRub * 100);
             const lineKopecks = Math.round(lineRub * 100);
-            const payload =
-                row.payload && typeof row.payload === "object" ? row.payload : null;
-            const lineKind = payload?.kind === "gift"
-                ? "gift"
-                : payload?.kind === "complement"
-                  ? "complement"
-                  : payload?.kind === "delivery"
-                    ? "delivery"
-                    : "user";
+            const payload = row.payload && typeof row.payload === "object" ? row.payload : null;
+            const lineKind =
+                payload?.kind === "gift"
+                    ? "gift"
+                    : payload?.kind === "complement"
+                      ? "complement"
+                      : payload?.kind === "delivery"
+                        ? "delivery"
+                        : "user";
             const isSystem =
-                lineKind === "gift"
-                || lineKind === "complement"
-                || lineKind === "delivery";
+                lineKind === "gift" || lineKind === "complement" || lineKind === "delivery";
 
             return {
                 lineKey: `${lineKind}:${productId}`,

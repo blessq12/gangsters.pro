@@ -5,7 +5,7 @@ const faviconBase = "/favicon";
 /**
  * Публичный конфиг сайта / SEO-дефолты SPA.
  */
-export const site = {
+const site = {
     defaultTitle: seoPages["/"].title,
     defaultDescription: seoPages["/"].description,
     defaultRobots: "index,follow",
@@ -21,7 +21,6 @@ export function readYandexMapsApiKey() {
     const key = import.meta.env?.VITE_YANDEX_MAPS_API_KEY;
     return typeof key === "string" && key.trim() !== "" ? key.trim() : null;
 }
-
 
 export const siteMeta = {
     defaultTitle: site.defaultTitle,

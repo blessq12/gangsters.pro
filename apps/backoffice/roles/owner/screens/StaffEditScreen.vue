@@ -39,9 +39,7 @@ const form = reactive({
 });
 
 const roles = ["owner", "administrator", "kitchen", "courier"];
-const branchRequired = computed(
-    () => form.role === "kitchen" || form.role === "courier",
-);
+const branchRequired = computed(() => form.role === "kitchen" || form.role === "courier");
 
 const title = computed(() => {
     if (isNew.value) {
@@ -126,11 +124,9 @@ async function save() {
     }
 
     try {
-        const result = await saveApi.run(() => (
-            employeeId.value
-                ? updateEmployee(employeeId.value, body)
-                : storeEmployee(body)
-        ));
+        const result = await saveApi.run(() =>
+            employeeId.value ? updateEmployee(employeeId.value, body) : storeEmployee(body),
+        );
         toast.success(employeeId.value ? "Сохранено" : "Создано");
         if (isNew.value && result?.id) {
             await router.replace({
@@ -213,9 +209,7 @@ onMounted(async () => {
             </div>
         </div>
 
-        <p v-if="loadApi.loading" class="text-sm text-bo-muted">
-            Загрузка…
-        </p>
+        <p v-if="loadApi.loading" class="text-sm text-bo-muted">Загрузка…</p>
 
         <UiCard v-else title="Карточка">
             <div class="grid gap-4 sm:grid-cols-2">
@@ -259,11 +253,7 @@ onMounted(async () => {
                         </option>
                     </select>
                 </UiFormField>
-                <UiFormField
-                    label="Пароль"
-                    :required="isNew"
-                    :error="fieldErrors.password"
-                >
+                <UiFormField label="Пароль" :required="isNew" :error="fieldErrors.password">
                     <UiInput
                         v-model="form.password"
                         type="password"

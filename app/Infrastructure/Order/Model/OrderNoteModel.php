@@ -3,7 +3,16 @@
 namespace App\Infrastructure\Order\Model;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property int $order_id
+ * @property string $body
+ * @property int $author_employee_id
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
 final class OrderNoteModel extends Model
 {
     public $timestamps = false;

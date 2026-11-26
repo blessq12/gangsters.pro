@@ -26,9 +26,7 @@ const isOpen = computed({
     },
 });
 
-const notice = computed(() =>
-    buildClosedOrdersNotice(contentStore.branch, new Date()),
-);
+const notice = computed(() => buildClosedOrdersNotice(contentStore.branch, new Date()));
 
 function dismiss() {
     markClosedNoticeDismissedThisSession();
@@ -39,9 +37,7 @@ function dismiss() {
 <template>
     <BaseModal v-model="isOpen">
         <div :class="cn.contentWrap">
-            <p :class="cn.kicker">
-                Закрыто
-            </p>
+            <p :class="cn.kicker">Закрыто</p>
             <h1 :class="cn.title">
                 {{ notice.title }}
             </h1>
@@ -49,26 +45,15 @@ function dismiss() {
                 {{ notice.lead }}
             </p>
 
-            <div
-                v-if="notice.todayLine"
-                :class="cn.todayBlock"
-            >
-                <p :class="cn.todayLabel">
-                    Сегодня
-                </p>
+            <div v-if="notice.todayLine" :class="cn.todayBlock">
+                <p :class="cn.todayLabel">Сегодня</p>
                 <p :class="cn.todayLine">
                     {{ notice.todayLine }}
                 </p>
             </div>
 
             <div :class="cn.actions">
-                <button
-                    type="button"
-                    :class="cn.confirmBtn"
-                    @click="dismiss"
-                >
-                    Понятно
-                </button>
+                <button type="button" :class="cn.confirmBtn" @click="dismiss">Понятно</button>
             </div>
         </div>
     </BaseModal>

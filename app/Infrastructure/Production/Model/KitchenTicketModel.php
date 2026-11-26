@@ -4,7 +4,19 @@ namespace App\Infrastructure\Production\Model;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property int $order_id
+ * @property int $branch_id
+ * @property int $assignee_employee_id
+ * @property string $status
+ * @property Carbon|null $started_at
+ * @property Carbon|null $completed_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
 final class KitchenTicketModel extends Model
 {
     protected $table = 'PRD_tickets';

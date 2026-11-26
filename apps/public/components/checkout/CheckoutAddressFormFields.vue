@@ -159,10 +159,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <FormField
-        v-if="showTitle"
-        label="Название"
-    >
+    <FormField v-if="showTitle" label="Название">
         <template #default="{ id, invalidClass }">
             <input
                 :id="id"
@@ -191,10 +188,7 @@ onBeforeUnmount(() => {
                     v-if="open && hits.length > 0"
                     class="absolute z-20 mt-1 max-h-56 w-full overflow-auto border border-white/10 bg-zinc-950 py-1 text-sm shadow-lg"
                 >
-                    <li
-                        v-for="(hit, idx) in hits"
-                        :key="`${hit.value}-${idx}`"
-                    >
+                    <li v-for="(hit, idx) in hits" :key="`${hit.value}-${idx}`">
                         <button
                             type="button"
                             class="block w-full px-3 py-2 text-left hover:bg-white/10"
@@ -205,31 +199,17 @@ onBeforeUnmount(() => {
                     </li>
                 </ul>
             </div>
-            <p
-                v-if="searching"
-                class="mt-1 text-xs opacity-60"
-            >
-                Ищем…
-            </p>
-            <p
-                v-else-if="suggestError"
-                class="mt-1 text-xs text-red-300"
-            >
+            <p v-if="searching" class="mt-1 text-xs opacity-60">Ищем…</p>
+            <p v-else-if="suggestError" class="mt-1 text-xs text-red-300">
                 {{ suggestError }}
             </p>
-            <p
-                v-else
-                class="mt-1 text-xs opacity-60"
-            >
+            <p v-else class="mt-1 text-xs opacity-60">
                 {{ coordsHint }}
             </p>
         </template>
     </FormField>
 
-    <FormField
-        label="Улица"
-        :error="streetError"
-    >
+    <FormField label="Улица" :error="streetError">
         <template #default="{ id, invalid, invalidClass, describedBy, ariaInvalid }">
             <input
                 :id="id"
@@ -245,10 +225,7 @@ onBeforeUnmount(() => {
     </FormField>
 
     <div :class="s.grid4">
-        <FormField
-            label="Дом"
-            :error="houseError"
-        >
+        <FormField label="Дом" :error="houseError">
             <template #default="{ id, invalid, invalidClass, describedBy, ariaInvalid }">
                 <input
                     :id="id"
@@ -303,10 +280,7 @@ onBeforeUnmount(() => {
         </FormField>
     </div>
 
-    <FormField
-        v-if="showComment"
-        label="Комментарий к адресу"
-    >
+    <FormField v-if="showComment" label="Комментарий к адресу">
         <template #default="{ id }">
             <textarea
                 :id="id"
@@ -319,10 +293,7 @@ onBeforeUnmount(() => {
         </template>
     </FormField>
 
-    <label
-        v-if="showDefaultCheckbox"
-        :class="s.checkboxLabelRow"
-    >
+    <label v-if="showDefaultCheckbox" :class="s.checkboxLabelRow">
         <AppCheckbox
             :model-value="makeDefault"
             size="sm"

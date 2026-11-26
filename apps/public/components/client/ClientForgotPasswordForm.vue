@@ -42,10 +42,7 @@ async function submit() {
         console.error(e);
         if (!applyApiFieldErrors(fieldErrors, e)) {
             fieldErrors.setFormError(
-                mapApiError(
-                    e,
-                    "Не удалось отправить запрос. Попробуй позже.",
-                ),
+                mapApiError(e, "Не удалось отправить запрос. Попробуй позже."),
             );
         }
     } finally {
@@ -55,16 +52,9 @@ async function submit() {
 </script>
 
 <template>
-    <form
-        :class="s.formRoot"
-        @submit.prevent="submit"
-    >
+    <form :class="s.formRoot" @submit.prevent="submit">
         <div :class="s.fieldStack">
-            <FormField
-                label="Email"
-                error-size="xs"
-                :error="fieldErrors.get('email')"
-            >
+            <FormField label="Email" error-size="xs" :error="fieldErrors.get('email')">
                 <template #default="{ id, invalid, invalidClass, describedBy, ariaInvalid }">
                     <input
                         :id="id"
@@ -80,28 +70,17 @@ async function submit() {
             </FormField>
         </div>
 
-        <p
-            v-if="fieldErrors.formError"
-            :class="s.errorXs"
-        >
+        <p v-if="fieldErrors.formError" :class="s.errorXs">
             {{ fieldErrors.formError }}
         </p>
 
-        <button
-            type="submit"
-            :disabled="loading"
-            :class="s.btnPrimaryWide"
-        >
+        <button type="submit" :disabled="loading" :class="s.btnPrimaryWide">
             <span v-if="!loading">Отправить</span>
             <span v-else>Отправляем…</span>
         </button>
 
         <div :class="s.loginFooter">
-            <button
-                type="button"
-                :class="s.loginFooterLink"
-                @click="emit('go-login')"
-            >
+            <button type="button" :class="s.loginFooterLink" @click="emit('go-login')">
                 Назад ко входу
             </button>
         </div>

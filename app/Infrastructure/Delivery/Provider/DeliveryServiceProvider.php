@@ -4,8 +4,8 @@ namespace App\Infrastructure\Delivery\Provider;
 
 use App\Domain\Core\Delivery\Routing\Port\DeliveryOrderStopSnapshotPort;
 use App\Domain\Core\Delivery\Routing\Port\DeliveryRouteOrderEligibilityPort;
-use App\Domain\Core\Delivery\Tariff\Repository\DeliveryConfigurationRepository;
 use App\Domain\Core\Delivery\Routing\Repository\RouteSheetRepository;
+use App\Domain\Core\Delivery\Tariff\Repository\DeliveryConfigurationRepository;
 use App\Infrastructure\Delivery\Adapter\EloquentDeliveryOrderStopSnapshotPort;
 use App\Infrastructure\Delivery\Adapter\EloquentDeliveryRouteOrderEligibilityPort;
 use App\Infrastructure\Delivery\Repository\EloquentDeliveryConfigurationRepository;

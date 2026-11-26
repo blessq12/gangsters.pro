@@ -31,12 +31,7 @@ const wrapClass = computed(() => {
     if (justAdded.value) {
         return [ft.wrap, ft.wrapFlash];
     }
-    return [
-        ft.wrap,
-        isActive.value
-            ? dock.shared.tabIconActive
-            : dock.shared.tabIconInactive,
-    ];
+    return [ft.wrap, isActive.value ? dock.shared.tabIconActive : dock.shared.tabIconInactive];
 });
 
 function clearFlashTimer() {
@@ -60,12 +55,9 @@ function onClick() {
 }
 
 onMounted(() => {
-    unsubscribeAdd = subscribeDomainEvent(
-        DOMAIN_EVENTS.FAVORITE_ADD_REQUESTED,
-        () => {
-            showAddedFlash();
-        },
-    );
+    unsubscribeAdd = subscribeDomainEvent(DOMAIN_EVENTS.FAVORITE_ADD_REQUESTED, () => {
+        showAddedFlash();
+    });
 });
 
 onUnmounted(() => {
@@ -87,31 +79,14 @@ onUnmounted(() => {
         data-dock-target="favorites"
         @click="onClick"
     >
-        <span
-            :class="wrapClass"
-            data-dock-bump-root="favorites"
-        >
-            <span
-                :class="[
-                    ft.idleLayer,
-                    justAdded ? ft.idleLayerHidden : '',
-                ]"
-            >
-                <i
-                    :class="['mdi', props.iconClass, ft.iconMdiSize]"
-                    aria-hidden="true"
-                />
+        <span :class="wrapClass" data-dock-bump-root="favorites">
+            <span :class="[ft.idleLayer, justAdded ? ft.idleLayerHidden : '']">
+                <i :class="['mdi', props.iconClass, ft.iconMdiSize]" aria-hidden="true" />
             </span>
 
             <Transition name="dock-fav-added">
-                <span
-                    v-if="justAdded"
-                    :class="ft.flashLayer"
-                >
-                    <i
-                        :class="ft.flashIcon"
-                        aria-hidden="true"
-                    />
+                <span v-if="justAdded" :class="ft.flashLayer">
+                    <i :class="ft.flashIcon" aria-hidden="true" />
                 </span>
             </Transition>
         </span>

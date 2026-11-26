@@ -2,9 +2,9 @@
 
 Two independent SPA/PWA clients against one Laravel core.
 
-| App | Sources | Vite | Build | HTTP | API |
-|---|---|---|---|---|---|
-| Public | `apps/public` | `apps/public/vite.config.js` | `public/build/public` | `apps/public/http/` | `/api/public/*` |
+| App        | Sources           | Vite                             | Build                     | HTTP                    | API                               |
+| ---------- | ----------------- | -------------------------------- | ------------------------- | ----------------------- | --------------------------------- |
+| Public     | `apps/public`     | `apps/public/vite.config.js`     | `public/build/public`     | `apps/public/http/`     | `/api/public/*`                   |
 | Backoffice | `apps/backoffice` | `apps/backoffice/vite.config.js` | `public/build/backoffice` | `apps/backoffice/http/` | `/api/backoffice/*` (auth + ping) |
 
 ## Backoffice: shell + role modules
@@ -15,6 +15,7 @@ Two independent SPA/PWA clients against one Laravel core.
 - Adding a role: new folder under `roles/` + one registry line
 
 Rules:
+
 - no imports between role folders
 - shell must not import `roles/*` except via registry
 - role routes load lazily (dynamic import)

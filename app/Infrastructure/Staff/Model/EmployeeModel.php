@@ -4,9 +4,23 @@ namespace App\Infrastructure\Staff\Model;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 use Laravel\Sanctum\HasApiTokens;
 
-/** Физическая модель сотрудника Staff. */
+/**
+ * Физическая модель сотрудника Staff.
+ *
+ * @property int $id
+ * @property string $name
+ * @property string $email
+ * @property string $phone
+ * @property string $role
+ * @property int $branch_id
+ * @property string $password_hash
+ * @property bool $is_active
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
 final class EmployeeModel extends Authenticatable
 {
     use HasApiTokens;

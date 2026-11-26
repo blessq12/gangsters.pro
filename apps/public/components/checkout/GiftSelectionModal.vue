@@ -58,9 +58,7 @@ function mapCandidateItem(item) {
         name: item.name ? String(item.name) : "",
         priceRub: Number(item.price_rub ?? item.priceRub) || 0,
         imageUrl:
-            (item.image_url ?? item.imageUrl)
-                ? String(item.image_url ?? item.imageUrl)
-                : null,
+            (item.image_url ?? item.imageUrl) ? String(item.image_url ?? item.imageUrl) : null,
         composition: composition.map((part) => String(part)).filter(Boolean),
     };
 }
@@ -75,9 +73,7 @@ const giftCandidates = computed(() => {
                 priceRub: Number(item.priceRub) || 0,
                 imageUrl: item.imageUrl ? String(item.imageUrl) : null,
                 composition: Array.isArray(item.composition)
-                    ? item.composition
-                          .map((part) => String(part))
-                          .filter(Boolean)
+                    ? item.composition.map((part) => String(part)).filter(Boolean)
                     : [],
             }))
             .filter((item) => item.id > 0);
@@ -86,16 +82,12 @@ const giftCandidates = computed(() => {
     const promo = giftPromotion.value;
     if (!promo) return [];
 
-    const candidateItems = Array.isArray(promo.candidate_items)
-        ? promo.candidate_items
-        : [];
+    const candidateItems = Array.isArray(promo.candidate_items) ? promo.candidate_items : [];
     if (candidateItems.length > 0) {
         return candidateItems.map(mapCandidateItem).filter(Boolean);
     }
 
-    const ids = Array.isArray(promo.candidate_product_ids)
-        ? promo.candidate_product_ids
-        : [];
+    const ids = Array.isArray(promo.candidate_product_ids) ? promo.candidate_product_ids : [];
     return ids
         .map((id) => Number(id) || 0)
         .filter((id) => id > 0)
@@ -109,9 +101,7 @@ const giftCandidates = computed(() => {
 });
 
 const canApplyGiftSelection = computed(() =>
-    giftCandidates.value.some(
-        (item) => item.id === Number(selectedGiftProductId.value),
-    ),
+    giftCandidates.value.some((item) => item.id === Number(selectedGiftProductId.value)),
 );
 
 const isOpen = computed({
@@ -139,27 +129,18 @@ watch(
     (opened) => {
         if (!opened) return;
 
-        const selectedFromPreview =
-            Number(orderPreview.value?.giftCta?.selectedProductId) || 0;
-        const selectedFromPromo =
-            Number(giftPromotion.value?.selected_product_id) || 0;
-        const selectedFromStore =
-            Number(checkoutStore.promotions?.freeRollGiftProductId) || 0;
+        const selectedFromPreview = Number(orderPreview.value?.giftCta?.selectedProductId) || 0;
+        const selectedFromPromo = Number(giftPromotion.value?.selected_product_id) || 0;
+        const selectedFromStore = Number(checkoutStore.promotions?.freeRollGiftProductId) || 0;
         selectedGiftProductId.value =
-            selectedFromPreview ||
-            selectedFromPromo ||
-            selectedFromStore ||
-            null;
+            selectedFromPreview || selectedFromPromo || selectedFromStore || null;
     },
     { immediate: true },
 );
 
 async function applyGiftSelection(productId = selectedGiftProductId.value) {
     const normalizedId = Number(productId) || 0;
-    if (
-        !giftCandidates.value.some((item) => item.id === normalizedId) ||
-        giftApplying.value
-    ) {
+    if (!giftCandidates.value.some((item) => item.id === normalizedId) || giftApplying.value) {
         return;
     }
 
@@ -189,10 +170,7 @@ function handleCandidateSelect(item) {
     <BaseModal v-model="isOpen" :closable="!isGiftSelectionMandatory">
         <template #header>Выбери подарок</template>
 
-        <div
-            v-if="isGiftEligible && giftCandidates.length"
-            :class="c.giftModalList"
-        >
+        <div v-if="isGiftEligible && giftCandidates.length" :class="c.giftModalList">
             <GiftCandidateCard
                 v-for="item in giftCandidates"
                 :key="item.id"
@@ -202,9 +180,7 @@ function handleCandidateSelect(item) {
                 @select="handleCandidateSelect"
             />
         </div>
-        <p v-else class="text-sm text-app-muted">
-            Сейчас список подарков недоступен.
-        </p>
+        <p v-else class="text-sm text-app-muted">Сейчас список подарков недоступен.</p>
 
         <p v-if="error" class="mt-3 text-sm text-red-300">
             {{ error }}

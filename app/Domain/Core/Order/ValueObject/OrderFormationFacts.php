@@ -11,7 +11,7 @@ final readonly class OrderFormationFacts
      * @param  array<int, bool>  $isRollByProductId  флаги is_roll по id товара
      * @param  list<array{product_id: int, name: string}>  $complements
      * @param  list<array{product_id: int, name: string}>  $giftCandidates
-     * @param  array{product_id: int, name: string}|null  $gift выбранный кандидат
+     * @param  array{product_id: int, name: string}|null  $gift  выбранный кандидат
      * @param  array<int, int>  $rollsPerUnitByLineId  сколько роллов даёт 1 шт. линии (товар или сет)
      * @param  array<int, int>  $complementSelections  productId → выбранное кол-во комплектного; пусто = максимум
      */

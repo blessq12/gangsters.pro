@@ -29,24 +29,14 @@ function decline() {
 </script>
 
 <template>
-    <UiModal
-        :open="open"
-        title="Выберите подарок"
-        @close="emit('close')"
-    >
+    <UiModal :open="open" title="Выберите подарок" @close="emit('close')">
         <p class="mb-4 text-sm text-bo-muted">
             Порог подарка достигнут. Выбери позицию или откажись от подарка.
         </p>
-        <div
-            v-if="candidates.length === 0"
-            class="text-sm text-bo-muted"
-        >
+        <div v-if="candidates.length === 0" class="text-sm text-bo-muted">
             Нет доступных кандидатов в меню филиала.
         </div>
-        <div
-            v-else
-            class="grid gap-2"
-        >
+        <div v-else class="grid gap-2">
             <button
                 v-for="item in candidates"
                 :key="String(item.product_id ?? item.id)"
@@ -58,12 +48,7 @@ function decline() {
             </button>
         </div>
         <div class="mt-5 flex flex-wrap justify-end gap-3">
-            <UiButton
-                class="!bg-white/10 !text-bo-fg"
-                @click="decline"
-            >
-                Без подарка
-            </UiButton>
+            <UiButton class="!bg-white/10 !text-bo-fg" @click="decline">Без подарка</UiButton>
         </div>
     </UiModal>
 </template>

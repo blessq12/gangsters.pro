@@ -4,7 +4,16 @@ namespace App\Infrastructure\Company\Model;
 
 use App\Domain\Supporting\Company\Enum\BranchMenuEntryKind;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property int $tag_id
+ * @property string $entry_kind
+ * @property int $entry_id
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
 final class BranchEntryTagModel extends Model
 {
     public $timestamps = false;

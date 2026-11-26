@@ -80,7 +80,9 @@ const form = reactive({
     items: [],
 });
 
-const modalTitle = computed(() => (editingId.value ? "Редактировать категорию" : "Новая категория"));
+const modalTitle = computed(() =>
+    editingId.value ? "Редактировать категорию" : "Новая категория",
+);
 const confirmMessage = computed(() =>
     deleteTarget.value ? `Удалить категорию «${deleteTarget.value.name}»?` : "",
 );
@@ -94,7 +96,11 @@ const filteredCategories = computed(() => {
     if (q === "") {
         return categories.value;
     }
-    return categories.value.filter((row) => String(row.name ?? "").toLowerCase().includes(q));
+    return categories.value.filter((row) =>
+        String(row.name ?? "")
+            .toLowerCase()
+            .includes(q),
+    );
 });
 
 const total = computed(() => filteredCategories.value.length);
@@ -126,7 +132,9 @@ const entryOptions = computed(() => [
     })),
 ]);
 
-const optionByKey = computed(() => new Map(entryOptions.value.map((option) => [option.key, option])));
+const optionByKey = computed(
+    () => new Map(entryOptions.value.map((option) => [option.key, option])),
+);
 
 const availableOptions = computed(() => {
     const used = new Set(form.items.map((item) => `${item.entry_kind}:${item.entry_id}`));
@@ -134,8 +142,10 @@ const availableOptions = computed(() => {
 });
 
 function itemLabel(item) {
-    return optionByKey.value.get(`${item.entry_kind}:${item.entry_id}`)?.label
-        ?? `${item.entry_kind === "set" ? "Набор" : "Товар"} #${item.entry_id}`;
+    return (
+        optionByKey.value.get(`${item.entry_kind}:${item.entry_id}`)?.label ??
+        `${item.entry_kind === "set" ? "Набор" : "Товар"} #${item.entry_id}`
+    );
 }
 
 function clearErrors() {
@@ -151,11 +161,13 @@ async function load() {
         return;
     }
     try {
-        const [categoriesPayload, setsPayload, allProducts] = await loadApi.run(() => Promise.all([
-            listBranchCategories(branchId),
-            listBranchSets(branchId),
-            fetchAllProducts(),
-        ]));
+        const [categoriesPayload, setsPayload, allProducts] = await loadApi.run(() =>
+            Promise.all([
+                listBranchCategories(branchId),
+                listBranchSets(branchId),
+                fetchAllProducts(),
+            ]),
+        );
         if (branchId !== selectedBranchId.value) {
             return;
         }
@@ -256,9 +268,9 @@ async function save() {
         })),
     };
     try {
-        await saveApi.run(() => (
-            id ? updateBranchCategory(branchId, id, body) : storeBranchCategory(branchId, body)
-        ));
+        await saveApi.run(() =>
+            id ? updateBranchCategory(branchId, id, body) : storeBranchCategory(branchId, body),
+        );
         toast.success(id ? "Сохранено" : "Создано");
         modalOpen.value = false;
         await load();
@@ -289,10 +301,12 @@ async function onReorder() {
         return;
     }
     try {
-        await reorderApi.run(() => reorderBranchCategories(
-            branchId,
-            categories.value.map((row) => Number(row.id)),
-        ));
+        await reorderApi.run(() =>
+            reorderBranchCategories(
+                branchId,
+                categories.value.map((row) => Number(row.id)),
+            ),
+        );
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось сохранить порядок");
         await load();
@@ -311,19 +325,13 @@ onMounted(async () => {
         <template #actions>
             <div class="flex flex-wrap items-center gap-2">
                 <OwnerBranchSelector v-if="!embedded" />
-                <UiButton :disabled="!selectedBranchId" @click="openCreate">
-                    + Категория
-                </UiButton>
+                <UiButton :disabled="!selectedBranchId" @click="openCreate">+ Категория</UiButton>
             </div>
         </template>
 
         <template v-if="selectedBranchId">
             <div class="mb-4 max-w-md">
-                <UiInput
-                    v-model="searchQuery"
-                    type="search"
-                    placeholder="Поиск по названию"
-                />
+                <UiInput v-model="searchQuery" type="search" placeholder="Поиск по названию" />
             </div>
             <p v-if="loadApi.loading" class="px-4 py-12 text-center text-sm text-bo-muted">
                 Загрузка…
@@ -344,8 +352,12 @@ onMounted(async () => {
                 @end="onReorder"
             >
                 <template #item="{ element }">
-                    <div class="flex flex-wrap items-center gap-3 px-4 py-3.5 transition-colors hover:bg-white/[0.03]">
-                        <span class="drag-handle cursor-grab select-none text-bo-muted active:cursor-grabbing">
+                    <div
+                        class="flex flex-wrap items-center gap-3 px-4 py-3.5 transition-colors hover:bg-white/[0.03]"
+                    >
+                        <span
+                            class="drag-handle cursor-grab select-none text-bo-muted active:cursor-grabbing"
+                        >
                             ⋮⋮
                         </span>
                         <span class="min-w-0 flex-1 text-sm text-bo-fg">
@@ -354,7 +366,11 @@ onMounted(async () => {
                                 {{ element.items.length }} поз.
                             </span>
                         </span>
-                        <UiBadge v-if="element.is_accompanying" variant="warning" text="сопутствующая" />
+                        <UiBadge
+                            v-if="element.is_accompanying"
+                            variant="warning"
+                            text="сопутствующая"
+                        />
                         <UiBadge v-if="element.is_complement" variant="warning" text="комплемент" />
                         <UiBadge v-if="element.is_gift" variant="warning" text="подарок" />
                         <UiBadge
@@ -382,10 +398,7 @@ onMounted(async () => {
                     </div>
                 </template>
             </draggable>
-            <div
-                v-else
-                class="divide-y divide-bo-border border border-bo-border"
-            >
+            <div v-else class="divide-y divide-bo-border border border-bo-border">
                 <div
                     v-for="element in pageItems"
                     :key="element.id"
@@ -397,7 +410,11 @@ onMounted(async () => {
                             {{ element.items.length }} поз.
                         </span>
                     </span>
-                    <UiBadge v-if="element.is_accompanying" variant="warning" text="сопутствующая" />
+                    <UiBadge
+                        v-if="element.is_accompanying"
+                        variant="warning"
+                        text="сопутствующая"
+                    />
                     <UiBadge v-if="element.is_complement" variant="warning" text="комплемент" />
                     <UiBadge v-if="element.is_gift" variant="warning" text="подарок" />
                     <UiBadge
@@ -490,14 +507,16 @@ onMounted(async () => {
                             >
                                 ↓
                             </UiButton>
-                            <UiButton class="!h-8 !px-2" aria-label="Убрать" @click="removeItem(index)">
+                            <UiButton
+                                class="!h-8 !px-2"
+                                aria-label="Убрать"
+                                @click="removeItem(index)"
+                            >
                                 ×
                             </UiButton>
                         </li>
                     </ul>
-                    <p v-else class="mb-3 text-sm text-bo-muted">
-                        Позиций пока нет
-                    </p>
+                    <p v-else class="mb-3 text-sm text-bo-muted">Позиций пока нет</p>
                     <div class="flex gap-2">
                         <select
                             v-model="addKey"
@@ -512,9 +531,7 @@ onMounted(async () => {
                                 {{ option.label }}
                             </option>
                         </select>
-                        <UiButton :disabled="!addKey" @click="addItem">
-                            Добавить
-                        </UiButton>
+                        <UiButton :disabled="!addKey" @click="addItem">Добавить</UiButton>
                     </div>
                 </UiFormField>
             </div>
@@ -523,9 +540,7 @@ onMounted(async () => {
                 <UiButton class="!bg-white/10 !text-bo-fg" @click="modalOpen = false">
                     Отмена
                 </UiButton>
-                <UiButton :disabled="saveApi.loading" @click="save">
-                    Сохранить
-                </UiButton>
+                <UiButton :disabled="saveApi.loading" @click="save">Сохранить</UiButton>
             </template>
         </UiModal>
 

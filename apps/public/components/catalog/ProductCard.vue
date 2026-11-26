@@ -20,12 +20,9 @@ const emit = defineEmits(["imageClick"]);
 const d = useAppDesign().components.catalog.cards.desktop;
 const cs = useAppDesign().components.catalog.cards.shared;
 
-const {
-    primaryThumb,
-    imageSrcset,
-    imageObjectPosition,
-    primaryTag,
-} = useCatalogCardView(computed(() => props.product));
+const { primaryThumb, imageSrcset, imageObjectPosition, primaryTag } = useCatalogCardView(
+    computed(() => props.product),
+);
 
 const imageSizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw";
 
@@ -55,20 +52,13 @@ function handleIncrement() {
                 loading="lazy"
                 fetchpriority="low"
             />
-            <div
-                v-else
-                :class="d.placeholder"
-            >
+            <div v-else :class="d.placeholder">
                 {{ cs.noPhotoText }}
             </div>
 
             <div :class="d.gradient" />
 
-            <CatalogCardBadges
-                :product="product"
-                :primary-tag="primaryTag"
-                variant="desktop"
-            />
+            <CatalogCardBadges :product="product" :primary-tag="primaryTag" variant="desktop" />
 
             <div
                 :class="d.imageHit"
@@ -76,10 +66,7 @@ function handleIncrement() {
                 @click.stop="emit('imageClick', product)"
             />
 
-            <div
-                :class="d.mediaFooterGradient"
-                aria-hidden="true"
-            />
+            <div :class="d.mediaFooterGradient" aria-hidden="true" />
 
             <div :class="d.mediaFooterStack">
                 <div :class="d.titleRow">
@@ -94,12 +81,7 @@ function handleIncrement() {
                         aria-label="Избранное"
                         @click.stop="toggleFavorite"
                     >
-                        <i
-                            :class="[
-                                'mdi',
-                                isFav ? 'mdi-heart' : 'mdi-heart-outline',
-                            ]"
-                        />
+                        <i :class="['mdi', isFav ? 'mdi-heart' : 'mdi-heart-outline']" />
                     </button>
                 </div>
 

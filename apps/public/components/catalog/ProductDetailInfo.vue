@@ -15,11 +15,7 @@ const props = defineProps({
     },
 });
 
-const emit = defineEmits([
-    "add-to-cart",
-    "increment",
-    "decrement",
-]);
+const emit = defineEmits(["add-to-cart", "increment", "decrement"]);
 
 const di = useAppDesign().components.catalog.modal.detailInfo;
 const tagTone = useAppDesign().components.catalog.cards.shared.tagTone;
@@ -48,14 +44,18 @@ const tags = computed(() => {
             return {
                 code,
                 label: String(tag?.label || code).trim(),
-                color: String(tag?.color || "amber").trim().toLowerCase(),
+                color: String(tag?.color || "amber")
+                    .trim()
+                    .toLowerCase(),
             };
         })
         .filter(Boolean);
 });
 
 function tagToneClass(color) {
-    const c = String(color || "").trim().toLowerCase();
+    const c = String(color || "")
+        .trim()
+        .toLowerCase();
     return tagTone[c] ?? tagTone.default;
 }
 
@@ -81,18 +81,9 @@ function handleDecrement() {
 </script>
 
 <template>
-    <div
-        v-if="product"
-        :class="di.card"
-    >
-        <div
-            v-if="tags.length || description"
-            :class="di.titleCol"
-        >
-            <div
-                v-if="tags.length"
-                :class="di.tagsRow"
-            >
+    <div v-if="product" :class="di.card">
+        <div v-if="tags.length || description" :class="di.titleCol">
+            <div v-if="tags.length" :class="di.tagsRow">
                 <span
                     v-for="tag in tags"
                     :key="tag.code"
@@ -101,30 +92,23 @@ function handleDecrement() {
                     {{ tag.label }}
                 </span>
             </div>
-            <p
-                v-if="description"
-                :class="di.description"
-            >
+            <p v-if="description" :class="di.description">
                 {{ description }}
             </p>
         </div>
 
         <div :class="di.controlsRow">
             <div :class="di.actionIsland">
-                <div
-                    v-if="product.price != null"
-                    :class="di.priceHeaderChip"
-                >
-                    <span
-                        v-if="formattedOldPrice"
-                        :class="di.oldPriceHeader"
-                    >
+                <div v-if="product.price != null" :class="di.priceHeaderChip">
+                    <span v-if="formattedOldPrice" :class="di.oldPriceHeader">
                         {{ formattedOldPrice }}
                     </span>
                     <button
                         type="button"
                         :class="di.priceHeaderBtn"
-                        :aria-label="qtyInCart === 0 ? 'Добавить в корзину' : 'Увеличить количество'"
+                        :aria-label="
+                            qtyInCart === 0 ? 'Добавить в корзину' : 'Увеличить количество'
+                        "
                         @click.stop="handlePriceClick"
                     >
                         {{ formatMoneyRublesRu(product.price) }}&nbsp;₽
@@ -141,10 +125,7 @@ function handleDecrement() {
                     >
                         В корзину
                     </button>
-                    <div
-                        v-else
-                        :class="di.qtyCluster"
-                    >
+                    <div v-else :class="di.qtyCluster">
                         <button
                             type="button"
                             :class="di.qtyMiniBtn"

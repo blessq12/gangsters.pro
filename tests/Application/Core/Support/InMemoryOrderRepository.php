@@ -3,7 +3,6 @@
 namespace Tests\Application\Core\Support;
 
 use App\Domain\Core\Order\Entity\Order;
-use App\Domain\Core\Order\Enum\OrderStatus;
 use App\Domain\Core\Order\Repository\OrderRepository;
 use App\Domain\Core\Order\ValueObject\OrderNumber;
 use DateTimeImmutable;

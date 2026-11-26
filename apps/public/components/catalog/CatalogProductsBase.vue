@@ -36,9 +36,7 @@ const emit = defineEmits(["productImageClick"]);
 const dp = useAppDesign().components.catalog.products;
 
 const loadingCopy = computed(() => dp.loadingText);
-const emptyCopy = computed(
-    () => props.emptyMessage || dp.emptyText,
-);
+const emptyCopy = computed(() => props.emptyMessage || dp.emptyText);
 
 const containerRef = ref(null);
 const isHorizontalMobileMode = computed(
@@ -50,9 +48,7 @@ const gridClass = computed(() => {
     }
     return "catalog-grid--mobile-1";
 });
-const isDesktopCardCompact = computed(
-    () => props.variant === "desktop" && props.cardsPerRow === 4,
-);
+const isDesktopCardCompact = computed(() => props.variant === "desktop" && props.cardsPerRow === 4);
 
 defineExpose({
     sectionsRoot: containerRef,
@@ -108,12 +104,7 @@ watch(
             {{ emptyCopy }}
         </div>
 
-        <div
-            v-else
-            ref="containerRef"
-            :class="dp.sectionsStack"
-            data-catalog-products-root
-        >
+        <div v-else ref="containerRef" :class="dp.sectionsStack" data-catalog-products-root>
             <section
                 v-for="section in sections"
                 :key="section.id ?? section.name"

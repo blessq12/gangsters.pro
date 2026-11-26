@@ -234,7 +234,9 @@ function applyImage() {
 }
 
 function insertTable() {
-    run(() => editor.value.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run());
+    run(() =>
+        editor.value.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
+    );
 }
 
 function addColumnAfter() {
@@ -274,67 +276,169 @@ function toolClass(active) {
 <template>
     <div class="border border-bo-border bg-bo-field">
         <div class="flex flex-wrap gap-1 border-b border-bo-border p-2">
-            <button type="button" :class="toolClass(isActive('bold'))" :disabled="!canUse" title="Жирный" @click="toggleBold">
+            <button
+                type="button"
+                :class="toolClass(isActive('bold'))"
+                :disabled="!canUse"
+                title="Жирный"
+                @click="toggleBold"
+            >
                 B
             </button>
-            <button type="button" :class="toolClass(isActive('italic'))" :disabled="!canUse" title="Курсив" @click="toggleItalic">
+            <button
+                type="button"
+                :class="toolClass(isActive('italic'))"
+                :disabled="!canUse"
+                title="Курсив"
+                @click="toggleItalic"
+            >
                 <span class="italic">I</span>
             </button>
-            <button type="button" :class="toolClass(isActive('underline'))" :disabled="!canUse" title="Подчёркивание" @click="toggleUnderline">
+            <button
+                type="button"
+                :class="toolClass(isActive('underline'))"
+                :disabled="!canUse"
+                title="Подчёркивание"
+                @click="toggleUnderline"
+            >
                 <span class="underline">U</span>
             </button>
 
             <span class="mx-1 w-px self-stretch bg-bo-border" />
 
-            <button type="button" :class="toolClass(isActive('paragraph'))" :disabled="!canUse" title="Абзац" @click="setParagraph">
+            <button
+                type="button"
+                :class="toolClass(isActive('paragraph'))"
+                :disabled="!canUse"
+                title="Абзац"
+                @click="setParagraph"
+            >
                 P
             </button>
-            <button type="button" :class="toolClass(isActive('heading', { level: 2 }))" :disabled="!canUse" title="Заголовок H2" @click="toggleHeading(2)">
+            <button
+                type="button"
+                :class="toolClass(isActive('heading', { level: 2 }))"
+                :disabled="!canUse"
+                title="Заголовок H2"
+                @click="toggleHeading(2)"
+            >
                 H2
             </button>
-            <button type="button" :class="toolClass(isActive('heading', { level: 3 }))" :disabled="!canUse" title="Заголовок H3" @click="toggleHeading(3)">
+            <button
+                type="button"
+                :class="toolClass(isActive('heading', { level: 3 }))"
+                :disabled="!canUse"
+                title="Заголовок H3"
+                @click="toggleHeading(3)"
+            >
                 H3
             </button>
 
             <span class="mx-1 w-px self-stretch bg-bo-border" />
 
-            <button type="button" :class="toolClass(isActive('bulletList'))" :disabled="!canUse" title="Маркированный список" @click="toggleBulletList">
+            <button
+                type="button"
+                :class="toolClass(isActive('bulletList'))"
+                :disabled="!canUse"
+                title="Маркированный список"
+                @click="toggleBulletList"
+            >
                 • Список
             </button>
-            <button type="button" :class="toolClass(isActive('orderedList'))" :disabled="!canUse" title="Нумерованный список" @click="toggleOrderedList">
+            <button
+                type="button"
+                :class="toolClass(isActive('orderedList'))"
+                :disabled="!canUse"
+                title="Нумерованный список"
+                @click="toggleOrderedList"
+            >
                 1. Список
             </button>
-            <button type="button" :class="toolClass(isActive('blockquote'))" :disabled="!canUse" title="Цитата" @click="toggleBlockquote">
+            <button
+                type="button"
+                :class="toolClass(isActive('blockquote'))"
+                :disabled="!canUse"
+                title="Цитата"
+                @click="toggleBlockquote"
+            >
                 «»
             </button>
-            <button type="button" :class="toolClass(false)" :disabled="!canUse" title="Линия" @click="setHorizontalRule">
+            <button
+                type="button"
+                :class="toolClass(false)"
+                :disabled="!canUse"
+                title="Линия"
+                @click="setHorizontalRule"
+            >
                 ―
             </button>
 
             <span class="mx-1 w-px self-stretch bg-bo-border" />
 
-            <button type="button" :class="toolClass(isActive({ textAlign: 'left' }))" :disabled="!canUse" title="По левому краю" @click="setTextAlign('left')">
+            <button
+                type="button"
+                :class="toolClass(isActive({ textAlign: 'left' }))"
+                :disabled="!canUse"
+                title="По левому краю"
+                @click="setTextAlign('left')"
+            >
                 ⟸
             </button>
-            <button type="button" :class="toolClass(isActive({ textAlign: 'center' }))" :disabled="!canUse" title="По центру" @click="setTextAlign('center')">
+            <button
+                type="button"
+                :class="toolClass(isActive({ textAlign: 'center' }))"
+                :disabled="!canUse"
+                title="По центру"
+                @click="setTextAlign('center')"
+            >
                 ⇔
             </button>
-            <button type="button" :class="toolClass(isActive({ textAlign: 'right' }))" :disabled="!canUse" title="По правому краю" @click="setTextAlign('right')">
+            <button
+                type="button"
+                :class="toolClass(isActive({ textAlign: 'right' }))"
+                :disabled="!canUse"
+                title="По правому краю"
+                @click="setTextAlign('right')"
+            >
                 ⟹
             </button>
-            <button type="button" :class="toolClass(isActive({ textAlign: 'justify' }))" :disabled="!canUse" title="По ширине" @click="setTextAlign('justify')">
+            <button
+                type="button"
+                :class="toolClass(isActive({ textAlign: 'justify' }))"
+                :disabled="!canUse"
+                title="По ширине"
+                @click="setTextAlign('justify')"
+            >
                 ≡
             </button>
 
             <span class="mx-1 w-px self-stretch bg-bo-border" />
 
-            <button type="button" :class="toolClass(isActive('link'))" :disabled="!canUse" title="Ссылка" @click="openLinkModal">
+            <button
+                type="button"
+                :class="toolClass(isActive('link'))"
+                :disabled="!canUse"
+                title="Ссылка"
+                @click="openLinkModal"
+            >
                 Ссылка
             </button>
-            <button type="button" :class="toolClass(false)" :disabled="!canUse" title="Убрать ссылку" @click="unsetLink">
+            <button
+                type="button"
+                :class="toolClass(false)"
+                :disabled="!canUse"
+                title="Убрать ссылку"
+                @click="unsetLink"
+            >
                 ⌫Ссылка
             </button>
-            <button type="button" :class="toolClass(false)" :disabled="!canUse" title="Картинка по URL" @click="openImageModal">
+            <button
+                type="button"
+                :class="toolClass(false)"
+                :disabled="!canUse"
+                title="Картинка по URL"
+                @click="openImageModal"
+            >
                 Картинка
             </button>
 
@@ -348,57 +452,87 @@ function toolClass(active) {
                     class="h-5 w-5 cursor-pointer border-0 bg-transparent p-0"
                     :disabled="!canUse"
                     @input="onColorInput"
-                >
+                />
             </label>
 
             <span class="mx-1 w-px self-stretch bg-bo-border" />
 
-            <button type="button" :class="toolClass(false)" :disabled="!canUse" title="Таблица 3×3" @click="insertTable">
+            <button
+                type="button"
+                :class="toolClass(false)"
+                :disabled="!canUse"
+                title="Таблица 3×3"
+                @click="insertTable"
+            >
                 Таблица
             </button>
-            <button type="button" :class="toolClass(false)" :disabled="!canUse" title="Столбец +" @click="addColumnAfter">
+            <button
+                type="button"
+                :class="toolClass(false)"
+                :disabled="!canUse"
+                title="Столбец +"
+                @click="addColumnAfter"
+            >
                 Ст+
             </button>
-            <button type="button" :class="toolClass(false)" :disabled="!canUse" title="Столбец −" @click="deleteColumn">
+            <button
+                type="button"
+                :class="toolClass(false)"
+                :disabled="!canUse"
+                title="Столбец −"
+                @click="deleteColumn"
+            >
                 Ст−
             </button>
-            <button type="button" :class="toolClass(false)" :disabled="!canUse" title="Строка +" @click="addRowAfter">
+            <button
+                type="button"
+                :class="toolClass(false)"
+                :disabled="!canUse"
+                title="Строка +"
+                @click="addRowAfter"
+            >
                 Стр+
             </button>
-            <button type="button" :class="toolClass(false)" :disabled="!canUse" title="Строка −" @click="deleteRow">
+            <button
+                type="button"
+                :class="toolClass(false)"
+                :disabled="!canUse"
+                title="Строка −"
+                @click="deleteRow"
+            >
                 Стр−
             </button>
-            <button type="button" :class="toolClass(false)" :disabled="!canUse" title="Удалить таблицу" @click="deleteTable">
+            <button
+                type="button"
+                :class="toolClass(false)"
+                :disabled="!canUse"
+                title="Удалить таблицу"
+                @click="deleteTable"
+            >
                 ⌫Табл
             </button>
 
             <span class="mx-1 w-px self-stretch bg-bo-border" />
 
-            <button type="button" :class="toolClass(false)" :disabled="!canUse" title="Очистить формат" @click="clearFormat">
+            <button
+                type="button"
+                :class="toolClass(false)"
+                :disabled="!canUse"
+                title="Очистить формат"
+                @click="clearFormat"
+            >
                 Очистить
             </button>
         </div>
 
-        <EditorContent
-            :editor="editor"
-            class="ui-rich-text-editor"
-        />
+        <EditorContent :editor="editor" class="ui-rich-text-editor" />
     </div>
 
-    <UiModal
-        :open="linkModalOpen"
-        title="Ссылка"
-        @close="linkModalOpen = false"
-    >
+    <UiModal :open="linkModalOpen" title="Ссылка" @close="linkModalOpen = false">
         <div class="space-y-4">
-            <UiInput
-                v-model="linkUrl"
-                placeholder="https://"
-            />
+            <UiInput v-model="linkUrl" placeholder="https://" />
             <div class="flex flex-wrap gap-2">
-                <UiButton @click="applyLink">
-                    Применить
-                </UiButton>
+                <UiButton @click="applyLink">Применить</UiButton>
                 <UiButton class="!bg-white/10 !text-bo-fg" @click="unsetLink">
                     Убрать ссылку
                 </UiButton>
@@ -406,19 +540,10 @@ function toolClass(active) {
         </div>
     </UiModal>
 
-    <UiModal
-        :open="imageModalOpen"
-        title="Картинка по URL"
-        @close="imageModalOpen = false"
-    >
+    <UiModal :open="imageModalOpen" title="Картинка по URL" @close="imageModalOpen = false">
         <div class="space-y-4">
-            <UiInput
-                v-model="imageUrl"
-                placeholder="https://…"
-            />
-            <UiButton @click="applyImage">
-                Вставить
-            </UiButton>
+            <UiInput v-model="imageUrl" placeholder="https://…" />
+            <UiButton @click="applyImage">Вставить</UiButton>
         </div>
     </UiModal>
 </template>

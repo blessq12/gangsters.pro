@@ -21,7 +21,3 @@ export async function loadRoleModule(role) {
     cache.set(role, module);
     return module;
 }
-
-export function clearRoleModuleCache() {
-    cache.clear();
-}

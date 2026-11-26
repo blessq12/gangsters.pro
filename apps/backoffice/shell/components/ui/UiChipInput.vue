@@ -18,7 +18,10 @@ const chips = computed({
 });
 
 function normalizeToken(raw) {
-    return String(raw ?? "").trim().replace(/^,+|,+$/g, "").trim();
+    return String(raw ?? "")
+        .trim()
+        .replace(/^,+|,+$/g, "")
+        .trim();
 }
 
 function commitDraft() {
@@ -115,6 +118,6 @@ function onRemoveClick(event, index) {
             @blur="commitDraft"
             @paste="onPaste"
             @click.stop
-        >
+        />
     </div>
 </template>

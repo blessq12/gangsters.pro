@@ -25,13 +25,9 @@ const companyTitle = computed(() => {
     return safeTrim(c.name) || "";
 });
 
-const todayScheduleLine = computed(() =>
-    formatTodayWorkScheduleLine(branch.value, new Date()),
-);
+const todayScheduleLine = computed(() => formatTodayWorkScheduleLine(branch.value, new Date()));
 
-const addressLine = computed(() =>
-    formatCompanyAddressLine(deliveryFacts.value),
-);
+const addressLine = computed(() => formatCompanyAddressLine(deliveryFacts.value));
 
 const phoneRaw = computed(() => branch.value?.phone || profile.value?.phone || "");
 
@@ -74,39 +70,22 @@ function handleNavClick() {
 
 <template>
     <Transition name="mobile-menu-fade">
-        <div
-            v-if="uiStore.isMobileMenuOpen"
-            :class="mm.overlayRoot"
-        >
+        <div v-if="uiStore.isMobileMenuOpen" :class="mm.overlayRoot">
             <div :class="mm.innerContainer">
                 <nav :class="mm.sheetNav">
                     <div
-                        v-if="
-                            companyTitle ||
-                            todayScheduleLine ||
-                            addressLine ||
-                            phoneHref
-                        "
+                        v-if="companyTitle || todayScheduleLine || addressLine || phoneHref"
                         :class="mm.companySection"
                     >
-                        <p
-                            v-if="companyTitle"
-                            :class="mm.companyTitle"
-                        >
+                        <p v-if="companyTitle" :class="mm.companyTitle">
                             {{ companyTitle }}
                         </p>
 
-                        <p
-                            v-if="todayScheduleLine"
-                            :class="mm.companySchedule"
-                        >
+                        <p v-if="todayScheduleLine" :class="mm.companySchedule">
                             {{ todayScheduleLine }}
                         </p>
 
-                        <p
-                            v-if="addressLine"
-                            :class="mm.companyAddress"
-                        >
+                        <p v-if="addressLine" :class="mm.companyAddress">
                             {{ addressLine }}
                         </p>
 

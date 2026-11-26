@@ -4,8 +4,8 @@ namespace App\Infrastructure\Company\Mapper;
 
 use App\Domain\Supporting\Company\Entity\BranchSet;
 use App\Domain\Supporting\Company\ValueObject\BranchSetLine;
-use App\Infrastructure\Company\Model\BranchSetModel;
 use App\Infrastructure\Company\Model\BranchSetLineModel;
+use App\Infrastructure\Company\Model\BranchSetModel;
 
 final class BranchSetMapper
 {

@@ -2,6 +2,7 @@
 
 namespace App\Application\Order\Checkout;
 
+use App\Domain\Core\Order\Entity\OrderCommercialRules;
 use App\Domain\Core\Order\Enum\OrderLineType;
 use App\Domain\Core\Order\Policy\OrderFormation;
 use App\Domain\Core\Order\Port\OrderBranchMenuSnapshotPort;
@@ -33,7 +34,7 @@ final class FormOrderCommercialRules
      * @return array{
      *     lines: list<OrderLine>,
      *     delivery: OrderDeliveryInfo,
-     *     rules: \App\Domain\Core\Order\Entity\OrderCommercialRules,
+     *     rules: OrderCommercialRules,
      *     facts: OrderFormationFacts
      * }
      */
@@ -118,6 +119,7 @@ final class FormOrderCommercialRules
                     'product_id' => $product['id'],
                     'name' => $product['name'],
                 ];
+
                 continue;
             }
             $names = $this->catalog->findProductNamesByIds([$catalogItemId]);
@@ -207,6 +209,7 @@ final class FormOrderCommercialRules
                     }
                 }
                 $rollsPerUnitByLineId[$lineId] = $rolls;
+
                 continue;
             }
             $rollsPerUnitByLineId[$lineId] = ($isRollByProductId[$lineId] ?? false) ? 1 : 0;

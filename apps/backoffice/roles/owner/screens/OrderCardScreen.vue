@@ -28,7 +28,9 @@ const cancelOpen = ref(false);
 const orderId = computed(() => route.params.id);
 const branchTitle = computed(() => labelOf(order.value?.branch_id));
 const branchCity = computed(() => {
-    const branch = branches.value.find((item) => String(item.id) === String(order.value?.branch_id ?? ""));
+    const branch = branches.value.find(
+        (item) => String(item.id) === String(order.value?.branch_id ?? ""),
+    );
     return String(branch?.city ?? "").trim();
 });
 const commands = computed(() => ownerCommands(order.value));
@@ -136,18 +138,9 @@ onMounted(async () => {
             </div>
         </div>
 
-        <p v-if="detailApi.loading" class="text-sm text-bo-muted">
-            Загрузка…
-        </p>
-        <p v-else-if="!order" class="text-sm text-bo-muted">
-            Заказ не найден.
-        </p>
-        <OrderFacts
-            v-else
-            :order="order"
-            :branch-title="branchTitle"
-            :branch-city="branchCity"
-        />
+        <p v-if="detailApi.loading" class="text-sm text-bo-muted">Загрузка…</p>
+        <p v-else-if="!order" class="text-sm text-bo-muted">Заказ не найден.</p>
+        <OrderFacts v-else :order="order" :branch-title="branchTitle" :branch-city="branchCity" />
 
         <UiConfirmDialog
             :open="cancelOpen"

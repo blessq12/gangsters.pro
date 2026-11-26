@@ -18,7 +18,7 @@ export function readYandexMapsApiKey() {
  * @param {string|null|undefined} city
  * @returns {string}
  */
-export function biasQueryWithCity(query, city) {
+function biasQueryWithCity(query, city) {
     const text = String(query ?? "").trim();
     if (!text) {
         return "";
@@ -161,12 +161,11 @@ export function parseYandexGeoObject(geoObject) {
         return null;
     }
 
-    const meta = geoObject.properties?.get?.("metaDataProperty.GeocoderMetaData")
-        ?? geoObject.properties?.get?.("metaDataProperty")?.GeocoderMetaData
-        ?? null;
-    const components = Array.isArray(meta?.Address?.Components)
-        ? meta.Address.Components
-        : [];
+    const meta =
+        geoObject.properties?.get?.("metaDataProperty.GeocoderMetaData") ??
+        geoObject.properties?.get?.("metaDataProperty")?.GeocoderMetaData ??
+        null;
+    const components = Array.isArray(meta?.Address?.Components) ? meta.Address.Components : [];
 
     /** @type {Record<string, string>} */
     const byKind = {};
@@ -179,10 +178,7 @@ export function parseYandexGeoObject(geoObject) {
     }
 
     const label = String(
-        meta?.text
-        ?? geoObject.getAddressLine?.()
-        ?? geoObject.properties?.get?.("text")
-        ?? "",
+        meta?.text ?? geoObject.getAddressLine?.() ?? geoObject.properties?.get?.("text") ?? "",
     ).trim();
 
     return {

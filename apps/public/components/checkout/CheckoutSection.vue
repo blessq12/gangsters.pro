@@ -43,10 +43,7 @@ const titleClass = computed(() =>
 
 <template>
     <section :class="sectionClass">
-        <p
-            v-if="title"
-            :class="titleClass"
-        >
+        <p v-if="title" :class="titleClass">
             {{ title }}
         </p>
         <slot />

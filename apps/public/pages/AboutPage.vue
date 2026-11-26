@@ -76,23 +76,16 @@ const orderSteps = [
         <div :class="a.stack">
             <section :class="a.brandPanel">
                 <div :class="a.brandLogoWrap">
-                    <img
-                        src="/images/load_logo.svg"
-                        alt="Gangsters"
-                        :class="a.brandLogo"
-                    />
+                    <img src="/images/load_logo.svg" alt="Gangsters" :class="a.brandLogo" />
                 </div>
                 <div :class="a.brandCopy">
                     <p :class="a.brandOverline">Gangsters</p>
-                    <h2 :class="a.brandTitle">
-                        Своя кухня. Свои правила.
-                    </h2>
+                    <h2 :class="a.brandTitle">Своя кухня. Свои правила.</h2>
                     <p :class="a.brandBody">
-                        Предлагаем свежие и вкусные блюда японской кухни —
-                        с любовью к делу и вниманием к деталям. Готовим из
-                        продуктов проверенных поставщиков, следим за качеством
-                        и весом порций: в коробке еда, а не воздух, плюс полный
-                        комплект к заказу. Быстрая доставка — не выходя из дома.
+                        Предлагаем свежие и вкусные блюда японской кухни — с любовью к делу и
+                        вниманием к деталям. Готовим из продуктов проверенных поставщиков, следим за
+                        качеством и весом порций: в коробке еда, а не воздух, плюс полный комплект к
+                        заказу. Быстрая доставка — не выходя из дома.
                     </p>
                 </div>
             </section>
@@ -103,11 +96,7 @@ const orderSteps = [
                 </header>
 
                 <ul :class="a.offerList">
-                    <li
-                        v-for="item in offer"
-                        :key="item.index"
-                        :class="a.offerCard"
-                    >
+                    <li v-for="item in offer" :key="item.index" :class="a.offerCard">
                         <span :class="a.offerIndex">{{ item.index }}</span>
                         <h3 :class="a.offerTitle">
                             {{ item.title }}
@@ -126,11 +115,7 @@ const orderSteps = [
                 </header>
 
                 <div :class="a.qualityGrid">
-                    <article
-                        v-for="item in quality"
-                        :key="item.title"
-                        :class="a.qualityCol"
-                    >
+                    <article v-for="item in quality" :key="item.title" :class="a.qualityCol">
                         <h3 :class="a.qualityTitle">
                             {{ item.title }}
                         </h3>
@@ -147,16 +132,9 @@ const orderSteps = [
                 </header>
 
                 <div :class="a.stepsGrid">
-                    <article
-                        v-for="step in orderSteps"
-                        :key="step.title"
-                        :class="a.stepCard"
-                    >
+                    <article v-for="step in orderSteps" :key="step.title" :class="a.stepCard">
                         <div :class="a.stepIconWrap">
-                            <i
-                                class="text-xl"
-                                :class="step.icon"
-                            ></i>
+                            <i class="text-xl" :class="step.icon"></i>
                         </div>
                         <p :class="a.stepTitle">
                             {{ step.title }}

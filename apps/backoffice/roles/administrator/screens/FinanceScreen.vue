@@ -2,11 +2,7 @@
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
-import {
-    getPaymentSummary,
-    listPayments,
-    markPaymentPaid,
-} from "../../../api/payments.js";
+import { getPaymentSummary, listPayments, markPaymentPaid } from "../../../api/payments.js";
 import { useApi } from "../../../shell/composables/useApi.js";
 import { usePagedList } from "../../../shell/composables/usePagedList.js";
 import { useToast } from "../../../shell/composables/useToast.js";
@@ -155,15 +151,18 @@ async function loadList() {
         return;
     }
     try {
-        const payload = await listApi.run(() => listPayments({
-            ...queryParams(),
-            offset: offset.value,
-            limit: perPage,
-        }));
+        const payload = await listApi.run(() =>
+            listPayments({
+                ...queryParams(),
+                offset: offset.value,
+                limit: perPage,
+            }),
+        );
         applyPayload(payload, (payment) => ({
             id: payment.id,
             order_id: payment.order_id,
-            order_number: payment.order_number || `ORD-${String(payment.order_id).padStart(4, "0")}`,
+            order_number:
+                payment.order_number || `ORD-${String(payment.order_id).padStart(4, "0")}`,
             created_at: formatDateTime(payment.created_at),
             method: payment.method,
             amount: formatKopecks(payment.amount_kopecks),
@@ -237,16 +236,14 @@ onMounted(() => {
 <template>
     <div class="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
         <UiCard title="Финансы · касса смены">
-            <p
-                v-if="!branchId"
-                class="text-sm text-bo-muted"
-            >
+            <p v-if="!branchId" class="text-sm text-bo-muted">
                 У сотрудника не назначен филиал — касса недоступна.
             </p>
 
             <template v-else>
                 <p class="mb-4 text-sm text-bo-muted">
-                    Платежи филиала #{{ branchId }}. Период — по дате создания поручения. Возвраты делает владелец.
+                    Платежи филиала #{{ branchId }}. Период — по дате создания поручения. Возвраты
+                    делает владелец.
                 </p>
 
                 <div class="mb-4 flex flex-wrap gap-2">
@@ -267,21 +264,11 @@ onMounted(() => {
                             class="mt-2 h-11 w-full border border-bo-border bg-bo-field px-4 text-bo-fg"
                             @change="onFilterCommit"
                         >
-                            <option value="">
-                                Все
-                            </option>
-                            <option value="pending">
-                                Ожидает
-                            </option>
-                            <option value="paid">
-                                Оплачен
-                            </option>
-                            <option value="refunded">
-                                Возврат
-                            </option>
-                            <option value="cancelled">
-                                Отменён
-                            </option>
+                            <option value="">Все</option>
+                            <option value="pending">Ожидает</option>
+                            <option value="paid">Оплачен</option>
+                            <option value="refunded">Возврат</option>
+                            <option value="cancelled">Отменён</option>
                         </select>
                     </UiFormField>
                     <UiFormField label="Метод">
@@ -290,18 +277,10 @@ onMounted(() => {
                             class="mt-2 h-11 w-full border border-bo-border bg-bo-field px-4 text-bo-fg"
                             @change="onFilterCommit"
                         >
-                            <option value="">
-                                Все
-                            </option>
-                            <option value="cash">
-                                Наличные
-                            </option>
-                            <option value="card_courier">
-                                Карта курьеру
-                            </option>
-                            <option value="card_online">
-                                Онлайн
-                            </option>
+                            <option value="">Все</option>
+                            <option value="cash">Наличные</option>
+                            <option value="card_courier">Карта курьеру</option>
+                            <option value="card_online">Онлайн</option>
                         </select>
                     </UiFormField>
                 </div>
@@ -311,9 +290,7 @@ onMounted(() => {
                     :class="{ 'opacity-50': summaryApi.loading }"
                 >
                     <div class="border border-bo-border bg-bo-field px-4 py-3">
-                        <div class="text-xs text-bo-muted">
-                            Оплачено
-                        </div>
+                        <div class="text-xs text-bo-muted">Оплачено</div>
                         <div class="mt-1 text-lg text-bo-fg">
                             {{ formatKopecks(summary?.paid_kopecks) }}
                         </div>
@@ -322,20 +299,17 @@ onMounted(() => {
                         </div>
                     </div>
                     <div class="border border-bo-border bg-bo-field px-4 py-3">
-                        <div class="text-xs text-bo-muted">
-                            Ожидает
-                        </div>
+                        <div class="text-xs text-bo-muted">Ожидает</div>
                         <div class="mt-1 text-lg text-bo-fg">
                             {{ formatKopecks(summary?.pending_kopecks) }}
                         </div>
                         <div class="mt-1 text-xs text-bo-muted">
-                            {{ summary?.pending_count ?? 0 }} шт. · отменённых {{ summary?.cancelled_count ?? 0 }}
+                            {{ summary?.pending_count ?? 0 }} шт. · отменённых
+                            {{ summary?.cancelled_count ?? 0 }}
                         </div>
                     </div>
                     <div class="border border-bo-border bg-bo-field px-4 py-3">
-                        <div class="text-xs text-bo-muted">
-                            Возвраты
-                        </div>
+                        <div class="text-xs text-bo-muted">Возвраты</div>
                         <div class="mt-1 text-lg text-bo-fg">
                             {{ formatKopecks(summary?.refunded_kopecks) }}
                         </div>
@@ -344,12 +318,10 @@ onMounted(() => {
                         </div>
                     </div>
                     <div class="border border-bo-border bg-bo-field px-4 py-3">
-                        <div class="text-xs text-bo-muted">
-                            По методам (paid)
-                        </div>
+                        <div class="text-xs text-bo-muted">По методам (paid)</div>
                         <div class="mt-2 space-y-0.5 text-xs text-bo-muted">
                             <div
-                                v-for="(kopecks, method) in (summary?.paid_by_method ?? {})"
+                                v-for="(kopecks, method) in summary?.paid_by_method ?? {}"
                                 :key="method"
                             >
                                 {{ paymentMethodLabel(method) }}: {{ formatKopecks(kopecks) }}
@@ -390,10 +362,7 @@ onMounted(() => {
                                 aria-label="Открыть заказ"
                                 @click.stop="openOrder(row.order_id)"
                             >
-                                <ShellIcon
-                                    name="external"
-                                    class="h-4 w-4"
-                                />
+                                <ShellIcon name="external" class="h-4 w-4" />
                             </UiButton>
                             <UiButton
                                 class="!h-9 !px-2.5"
@@ -402,10 +371,7 @@ onMounted(() => {
                                 :disabled="row.raw_status !== 'pending' || actionApi.loading"
                                 @click.stop="askMarkPaid(row)"
                             >
-                                <ShellIcon
-                                    name="check"
-                                    class="h-4 w-4"
-                                />
+                                <ShellIcon name="check" class="h-4 w-4" />
                             </UiButton>
                         </div>
                     </template>
@@ -427,7 +393,10 @@ onMounted(() => {
             title="Подтверждение"
             :message="confirmMessage"
             @confirm="confirmMarkPaid"
-            @cancel="confirmOpen = false; paidTarget = null"
+            @cancel="
+                confirmOpen = false;
+                paidTarget = null;
+            "
         />
     </div>
 </template>

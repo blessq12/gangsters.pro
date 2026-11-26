@@ -9,23 +9,13 @@ import { getCheckoutWizardStep } from "./wizard";
  */
 const { activeStep } = useCheckoutFlowContext();
 
-const activeStepDefinition = computed(() =>
-    getCheckoutWizardStep(unref(activeStep)),
-);
+const activeStepDefinition = computed(() => getCheckoutWizardStep(unref(activeStep)));
 
-const ActiveStepComponent = computed(
-    () => activeStepDefinition.value?.component ?? null,
-);
+const ActiveStepComponent = computed(() => activeStepDefinition.value?.component ?? null);
 
-const activeStepKey = computed(
-    () => activeStepDefinition.value?.id ?? "unknown",
-);
+const activeStepKey = computed(() => activeStepDefinition.value?.id ?? "unknown");
 </script>
 
 <template>
-    <component
-        :is="ActiveStepComponent"
-        v-if="ActiveStepComponent"
-        :key="activeStepKey"
-    />
+    <component :is="ActiveStepComponent" v-if="ActiveStepComponent" :key="activeStepKey" />
 </template>

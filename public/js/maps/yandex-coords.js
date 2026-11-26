@@ -30,11 +30,7 @@
         }
         const lat = Number(coords[0]);
         const lng = Number(coords[1]);
-        return (
-            isFinitePair(lat, lng) &&
-            looksLikeLatitude(lat) &&
-            looksLikeLongitude(lng)
-        );
+        return isFinitePair(lat, lng) && looksLikeLatitude(lat) && looksLikeLongitude(lng);
     }
 
     function isNearTomskArea(coords) {
@@ -110,9 +106,7 @@
         } else if (geometry.type === "MultiPolygon") {
             ring = geometry.coordinates[0]?.[0] || [];
         }
-        return ring
-            .map((pos) => geoJsonPositionToYmaps(pos))
-            .filter((c) => c !== null);
+        return ring.map((pos) => geoJsonPositionToYmaps(pos)).filter((c) => c !== null);
     }
 
     function ringIsNearTomsk(ring) {

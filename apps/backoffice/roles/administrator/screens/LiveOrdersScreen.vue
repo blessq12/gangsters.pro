@@ -32,15 +32,7 @@ const router = useRouter();
 const toast = useToast();
 const listApi = useApi();
 const actionApi = useApi();
-const {
-    page,
-    perPage,
-    total,
-    items: rows,
-    offset,
-    resetPage,
-    applyPayload,
-} = usePagedList();
+const { page, perPage, total, items: rows, offset, resetPage, applyPayload } = usePagedList();
 
 const statusFilter = ref("");
 const searchOpen = ref(false);
@@ -136,9 +128,8 @@ function quickActionsFor(row) {
  */
 function mapListRow(order) {
     const scheduledAt = order.scheduled_at ?? null;
-    const remaining = order.status === "preorder"
-        ? formatPreorderRemaining(scheduledAt, nowTick.value)
-        : "";
+    const remaining =
+        order.status === "preorder" ? formatPreorderRemaining(scheduledAt, nowTick.value) : "";
     return {
         id: order.id,
         number: orderNumberOf(order),
@@ -173,14 +164,16 @@ async function toggleSearch() {
 
 async function load() {
     try {
-        const payload = await listApi.run(() => listOrders({
-            offset: offset.value,
-            limit: perPage,
-            status: statusFilter.value || undefined,
-            from: period.from || undefined,
-            to: period.to || undefined,
-            q: q.value.trim() || undefined,
-        }));
+        const payload = await listApi.run(() =>
+            listOrders({
+                offset: offset.value,
+                limit: perPage,
+                status: statusFilter.value || undefined,
+                from: period.from || undefined,
+                to: period.to || undefined,
+                q: q.value.trim() || undefined,
+            }),
+        );
         const counts = payload?.status_counts;
         statusCounts.value = counts && typeof counts === "object" ? counts : {};
         applyPayload(payload, mapListRow);
@@ -200,11 +193,14 @@ function refreshPreorderLabels() {
             ...row,
             preorder_remaining: remaining,
             preorder_overdue: remaining.startsWith("просрочен") || remaining === "слот наступил",
-            next: shortStage({
-                status: row.status,
-                scheduled_at: row.scheduled_at,
-                delivery: { method: row.delivery_method },
-            }, nowTick.value),
+            next: shortStage(
+                {
+                    status: row.status,
+                    scheduled_at: row.scheduled_at,
+                    delivery: { method: row.delivery_method },
+                },
+                nowTick.value,
+            ),
         };
     });
 }
@@ -319,24 +315,19 @@ onUnmounted(() => {
                 <UiButton @click="openCreate">+ Заказ</UiButton>
             </template>
             <div class="mb-4 flex flex-wrap items-center gap-2">
-                <PeriodRangePicker
-                    v-model:from="period.from"
-                    v-model:to="period.to"
-                />
+                <PeriodRangePicker v-model:from="period.from" v-model:to="period.to" />
                 <div class="ml-auto flex items-center gap-1">
                     <div
                         ref="searchWrapRef"
                         class="overflow-hidden transition-[max-width,opacity] duration-200 ease-out"
-                        :class="searchOpen
-                            ? 'max-w-[16rem] opacity-100'
-                            : 'max-w-0 opacity-0'"
+                        :class="searchOpen ? 'max-w-[16rem] opacity-100' : 'max-w-0 opacity-0'"
                     >
                         <input
                             v-model="searchInput"
                             type="text"
                             class="h-11 min-w-[14rem] border border-bo-border bg-bo-field px-4 text-sm text-bo-fg transition-colors placeholder:text-bo-muted/60 hover:border-bo-border-strong focus:border-bo-accent focus:outline-none"
                             placeholder="Номер заказа (ORD-…)"
-                        >
+                        />
                     </div>
                     <button
                         type="button"
@@ -346,10 +337,7 @@ onUnmounted(() => {
                         aria-label="Поиск по номеру заказа"
                         @click="toggleSearch"
                     >
-                        <ShellIcon
-                            name="search"
-                            class="h-5 w-5"
-                        />
+                        <ShellIcon name="search" class="h-5 w-5" />
                     </button>
                 </div>
             </div>
@@ -360,18 +348,24 @@ onUnmounted(() => {
                     :key="item.value || 'all'"
                     type="button"
                     class="inline-flex h-11 items-center gap-2 px-4 text-sm font-medium transition-colors duration-150"
-                    :class="statusFilter === item.value
-                        ? 'bg-bo-accent text-white'
-                        : 'bg-white/[0.04] text-bo-muted hover:bg-white/[0.08] hover:text-bo-fg'"
+                    :class="
+                        statusFilter === item.value
+                            ? 'bg-bo-accent text-white'
+                            : 'bg-white/[0.04] text-bo-muted hover:bg-white/[0.08] hover:text-bo-fg'
+                    "
                     @click="statusFilter = item.value"
                 >
                     <span>{{ item.label }}</span>
                     <span
                         class="min-w-[1.25rem] rounded-sm px-1.5 text-center text-xs font-semibold tabular-nums"
-                        :class="statusFilter === item.value
-                            ? 'bg-white/20 text-white'
-                            : 'bg-white/10 text-bo-fg'"
-                    >{{ chipCount(item.value) }}</span>
+                        :class="
+                            statusFilter === item.value
+                                ? 'bg-white/20 text-white'
+                                : 'bg-white/10 text-bo-fg'
+                        "
+                    >
+                        {{ chipCount(item.value) }}
+                    </span>
                 </button>
             </div>
 
@@ -393,7 +387,9 @@ onUnmounted(() => {
                                 v-if="row.preorder_remaining"
                                 class="text-xs tabular-nums"
                                 :class="row.preorder_overdue ? 'text-red-300' : 'text-bo-muted'"
-                            >{{ row.preorder_remaining }}</span>
+                            >
+                                {{ row.preorder_remaining }}
+                            </span>
                         </div>
                     </template>
                     <template #cell-delivery_method="{ value }">
@@ -402,10 +398,7 @@ onUnmounted(() => {
                             class="inline-flex text-bo-muted"
                             :title="deliveryMethodLabel(value)"
                         >
-                            <ShellIcon
-                                :name="deliveryIcon(value)"
-                                class="h-5 w-5"
-                            />
+                            <ShellIcon :name="deliveryIcon(value)" class="h-5 w-5" />
                         </span>
                         <span v-else class="text-bo-muted">—</span>
                     </template>
@@ -418,10 +411,7 @@ onUnmounted(() => {
                         <span v-else class="text-bo-muted">—</span>
                     </template>
                     <template #cell-actions="{ row }">
-                        <div
-                            v-if="quickActionsFor(row).length"
-                            class="flex flex-wrap gap-2"
-                        >
+                        <div v-if="quickActionsFor(row).length" class="flex flex-wrap gap-2">
                             <UiButton
                                 v-for="command in quickActionsFor(row)"
                                 :key="command.id"

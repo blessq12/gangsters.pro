@@ -101,7 +101,10 @@ async function addAddress() {
     if (!String(form.value.house || "").trim()) {
         fieldErrors.setFieldError("house", "Укажи дом.");
     }
-    if (!fieldErrors.hasAny.value && (form.value.latitude === null || form.value.longitude === null)) {
+    if (
+        !fieldErrors.hasAny.value &&
+        (form.value.latitude === null || form.value.longitude === null)
+    ) {
         fieldErrors.setFieldError("street", "Выбери адрес из подсказок — нужны координаты.");
     }
     if (fieldErrors.hasAny.value) {
@@ -146,9 +149,7 @@ async function removeAddress(id) {
         await userStore.deleteClientAddress(id);
     } catch (e) {
         console.error(e);
-        fieldErrors.setFormError(
-            mapApiError(e, "Не удалось удалить адрес. Попробуй ещё раз."),
-        );
+        fieldErrors.setFormError(mapApiError(e, "Не удалось удалить адрес. Попробуй ещё раз."));
     }
 }
 
@@ -160,52 +161,26 @@ function useAddress(id) {
 <template>
     <div :class="ad.root">
         <div v-if="hasAddresses" :class="ad.listStack">
-            <div
-                v-for="address in userStore.addresses"
-                :key="address.id"
-                :class="ad.card"
-            >
+            <div v-for="address in userStore.addresses" :key="address.id" :class="ad.card">
                 <div :class="ad.cardRow">
                     <div>
-                        <p :class="ad.titleStrong">
-                            {{ address.street }}, д. {{ address.house }}
-                        </p>
+                        <p :class="ad.titleStrong">{{ address.street }}, д. {{ address.house }}</p>
                         <p
                             v-if="address.entrance || address.floor || address.apartment"
                             :class="ad.metaLine"
                         >
-                            <span v-if="address.entrance">
-                                подъезд {{ address.entrance }}
-                            </span>
-                            <span
-                                v-if="address.entrance && (address.floor || address.apartment)"
-                            >
+                            <span v-if="address.entrance">подъезд {{ address.entrance }}</span>
+                            <span v-if="address.entrance && (address.floor || address.apartment)">
                                 ,
                             </span>
-                            <span v-if="address.floor">
-                                эт. {{ address.floor }}
-                            </span>
-                            <span
-                                v-if="address.floor && address.apartment"
-                            >
-                                ,
-                            </span>
-                            <span v-if="address.apartment">
-                                кв. {{ address.apartment }}
-                            </span>
+                            <span v-if="address.floor">эт. {{ address.floor }}</span>
+                            <span v-if="address.floor && address.apartment">,</span>
+                            <span v-if="address.apartment">кв. {{ address.apartment }}</span>
                         </p>
                     </div>
                     <div :class="ad.actionsCol">
-                        <button
-                            type="button"
-                            :class="ad.btnSelect"
-                            @click="useAddress(address.id)"
-                        >
-                            {{
-                                userStore.selectedAddressId === address.id
-                                    ? "Выбран"
-                                    : "Выбрать"
-                            }}
+                        <button type="button" :class="ad.btnSelect" @click="useAddress(address.id)">
+                            {{ userStore.selectedAddressId === address.id ? "Выбран" : "Выбрать" }}
                         </button>
                         <button
                             type="button"
@@ -223,14 +198,10 @@ function useAddress(id) {
         </div>
 
         <p v-else :class="ad.emptyHint">
-            Добавь адрес один раз — при следующих заказах не придётся вводить
-            его снова.
+            Добавь адрес один раз — при следующих заказах не придётся вводить его снова.
         </p>
 
-        <p
-            v-if="fieldErrors.formError && hasAddresses && !showAddForm"
-            :class="s.error11"
-        >
+        <p v-if="fieldErrors.formError && hasAddresses && !showAddForm" :class="s.error11">
             {{ fieldErrors.formError }}
         </p>
 
@@ -248,11 +219,7 @@ function useAddress(id) {
             </button>
 
             <Transition name="fade">
-                <form
-                    v-if="showAddForm"
-                    :class="ad.addForm"
-                    @submit.prevent="addAddress"
-                >
+                <form v-if="showAddForm" :class="ad.addForm" @submit.prevent="addAddress">
                     <CheckoutAddressFormFields
                         show-default-checkbox
                         :street="form.street"
@@ -280,11 +247,7 @@ function useAddress(id) {
                         {{ fieldErrors.formError }}
                     </p>
 
-                    <button
-                        type="submit"
-                        :disabled="loading"
-                        :class="s.btnPrimaryCompact"
-                    >
+                    <button type="submit" :disabled="loading" :class="s.btnPrimaryCompact">
                         <span v-if="!loading">Сохранить адрес</span>
                         <span v-else>Сохраняем…</span>
                     </button>

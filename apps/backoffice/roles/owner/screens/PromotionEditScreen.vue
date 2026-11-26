@@ -1,11 +1,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import {
-    getPromotion,
-    storePromotion,
-    updatePromotion,
-} from "../../../api/marketing.js";
+import { getPromotion, storePromotion, updatePromotion } from "../../../api/marketing.js";
 import MarketingImageField from "../components/marketing/MarketingImageField.vue";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
 import UiCard from "../../../shell/components/ui/UiCard.vue";
@@ -94,11 +90,11 @@ async function save() {
             remove_image: Boolean(removeImage.value) && !(imageFile.value instanceof File),
         };
         const files = { image: imageFile.value };
-        const result = await saveApi.run(async () => (
+        const result = await saveApi.run(async () =>
             promotionId.value
                 ? updatePromotion(promotionId.value, payload, files)
-                : storePromotion(payload, files)
-        ));
+                : storePromotion(payload, files),
+        );
         toast.success(promotionId.value ? "Сохранено" : "Создано");
         if (isNew.value && result?.id) {
             await router.replace({ name: "owner-marketing-promotion", params: { id: result.id } });
@@ -133,9 +129,7 @@ onMounted(load);
             </UiButton>
         </div>
 
-        <p v-if="loadApi.loading" class="text-sm text-bo-muted">
-            Загрузка…
-        </p>
+        <p v-if="loadApi.loading" class="text-sm text-bo-muted">Загрузка…</p>
 
         <div v-else class="space-y-4">
             <UiCard title="Основное">

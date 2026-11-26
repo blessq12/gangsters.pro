@@ -1,4 +1,4 @@
-import { request, requestForm, requestMultipart } from "../http/transport.js";
+import { request, requestMultipart } from "../http/transport.js";
 
 export function getCatalog() {
     return request("GET", "/catalog");
@@ -40,11 +40,13 @@ function buildCatalogItemFormData(payload, images = {}) {
     formData.append("payload", JSON.stringify(payload));
     formData.append(
         "images_meta",
-        JSON.stringify((images.newImages ?? []).map((row) => ({
-            focus_x: row.focus_x,
-            focus_y: row.focus_y,
-            sort_order: row.sort_order ?? null,
-        }))),
+        JSON.stringify(
+            (images.newImages ?? []).map((row) => ({
+                focus_x: row.focus_x,
+                focus_y: row.focus_y,
+                sort_order: row.sort_order ?? null,
+            })),
+        ),
     );
     formData.append("existing_images", JSON.stringify(images.existingImages ?? []));
     formData.append("deleted_image_ids", JSON.stringify(images.deletedImageIds ?? []));
@@ -85,33 +87,4 @@ export function updateProduct(id, payload, images = {}) {
 /** @param {number|string} id */
 export function deleteProduct(id) {
     return request("DELETE", `/catalog/products/${id}`);
-}
-
-/**
- * @param {number|string} itemId
- * @param {File} file
- * @param {{ focus_x?: number, focus_y?: number }} [focus]
- */
-export function storeItemImage(itemId, file, focus = {}) {
-    const formData = new FormData();
-    formData.append("file", file);
-    if (focus.focus_x != null && focus.focus_y != null) {
-        formData.append("focus_x", String(focus.focus_x));
-        formData.append("focus_y", String(focus.focus_y));
-    }
-    return requestForm(`/catalog/items/${itemId}/images`, formData);
-}
-
-/**
- * @param {number|string} itemId
- * @param {number|string} imageId
- * @param {Record<string, unknown>} data
- */
-export function updateItemImage(itemId, imageId, data) {
-    return request("PATCH", `/catalog/items/${itemId}/images/${imageId}`, data);
-}
-
-/** @param {number|string} itemId @param {number|string} imageId */
-export function deleteItemImage(itemId, imageId) {
-    return request("DELETE", `/catalog/items/${itemId}/images/${imageId}`);
 }

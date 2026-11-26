@@ -20,9 +20,7 @@ function resolveDefaultMobileCardViewMode() {
     }
 
     try {
-        return window.matchMedia(DESKTOP_MEDIA_QUERY).matches
-            ? "grid"
-            : "horizontal";
+        return window.matchMedia(DESKTOP_MEDIA_QUERY).matches ? "grid" : "horizontal";
     } catch {
         return "horizontal";
     }
@@ -33,9 +31,7 @@ function normalizeDesktopCardsPerRow(value) {
 }
 
 function normalizeMobileCardViewMode(value) {
-    return value === "grid" || value === "horizontal"
-        ? value
-        : resolveDefaultMobileCardViewMode();
+    return value === "grid" || value === "horizontal" ? value : resolveDefaultMobileCardViewMode();
 }
 
 /** Защита от гонки: результат применяется только у последнего запроса (смена филиала). */
@@ -66,8 +62,7 @@ export const useCatalogStore = defineStore("catalog", {
                 ? state.accompanyingCategories
                 : [];
             return [...main, ...accompanying].sort(
-                (a, b) =>
-                    (a?.category?.sort_order ?? 0) - (b?.category?.sort_order ?? 0),
+                (a, b) => (a?.category?.sort_order ?? 0) - (b?.category?.sort_order ?? 0),
             );
         },
         flatProducts() {
@@ -83,7 +78,7 @@ export const useCatalogStore = defineStore("catalog", {
                 const id = c.category.id;
                 const slug = c.category.slug;
                 return (
-                    id != null && Number(selected) === Number(id) ||
+                    (id != null && Number(selected) === Number(id)) ||
                     (slug && String(selected) === String(slug))
                 );
             });
@@ -180,15 +175,18 @@ export const useCatalogStore = defineStore("catalog", {
                     this.selectedTag = parsed.selectedTag ?? null;
                 }
                 if ("desktopCardsPerRow" in parsed) {
-                    this.desktopCardsPerRow = normalizeDesktopCardsPerRow(parsed.desktopCardsPerRow);
+                    this.desktopCardsPerRow = normalizeDesktopCardsPerRow(
+                        parsed.desktopCardsPerRow,
+                    );
                 }
                 if ("mobileCardViewMode" in parsed) {
-                    this.mobileCardViewMode = normalizeMobileCardViewMode(parsed.mobileCardViewMode);
+                    this.mobileCardViewMode = normalizeMobileCardViewMode(
+                        parsed.mobileCardViewMode,
+                    );
                 } else {
                     this.mobileCardViewMode = resolveDefaultMobileCardViewMode();
                     this.persist();
                 }
-
             } catch (e) {
                 console.error("Failed to init catalog store from localStorage", e);
             }
@@ -277,8 +275,7 @@ export const useCatalogStore = defineStore("catalog", {
             this.error = null;
 
             try {
-                const branchId =
-                    await useContentStore().ensureSelectedBranchId();
+                const branchId = await useContentStore().ensureSelectedBranchId();
                 if (branchId == null) {
                     throw new Error("Нет доступных филиалов.");
                 }
@@ -288,12 +285,8 @@ export const useCatalogStore = defineStore("catalog", {
                     return;
                 }
                 const tree = mapCatalogTreeFromPayload(response?.data || {});
-                this.categories = Array.isArray(tree?.categories)
-                    ? tree.categories
-                    : [];
-                this.accompanyingCategories = Array.isArray(
-                    tree?.accompanyingCategories,
-                )
+                this.categories = Array.isArray(tree?.categories) ? tree.categories : [];
+                this.accompanyingCategories = Array.isArray(tree?.accompanyingCategories)
                     ? tree.accompanyingCategories
                     : [];
                 this.complementProducts = Array.isArray(tree?.complementProducts)
@@ -319,4 +312,3 @@ export const useCatalogStore = defineStore("catalog", {
         },
     },
 });
-

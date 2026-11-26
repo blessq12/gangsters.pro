@@ -2,8 +2,8 @@
 
 namespace App\Application\Delivery\Event;
 
-use App\Domain\Core\Delivery\Tariff\Entity\DeliveryConfiguration;
 use App\Domain\Core\Delivery\Event\DeliveryZonesChanged;
+use App\Domain\Core\Delivery\Tariff\Entity\DeliveryConfiguration;
 
 /**
  * Снимок зон для события; событие создаётся, только если снимок изменился.

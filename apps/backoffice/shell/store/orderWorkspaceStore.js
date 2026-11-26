@@ -98,8 +98,10 @@ export const useOrderWorkspaceStore = defineStore("order-workspace", {
             this.orderId = Number.isFinite(id) && id > 0 ? id : null;
 
             const client = order?.client && typeof order.client === "object" ? order.client : {};
-            const delivery = order?.delivery && typeof order.delivery === "object" ? order.delivery : {};
-            const address = delivery.address && typeof delivery.address === "object" ? delivery.address : {};
+            const delivery =
+                order?.delivery && typeof order.delivery === "object" ? order.delivery : {};
+            const address =
+                delivery.address && typeof delivery.address === "object" ? delivery.address : {};
 
             this.form.name = String(client.name ?? "");
             this.form.phone = String(client.phone ?? "");
@@ -113,7 +115,9 @@ export const useOrderWorkspaceStore = defineStore("order-workspace", {
             this.form.comment = String(address.comment ?? "");
             this.form.lat = address.lat != null && address.lat !== "" ? String(address.lat) : "";
             this.form.lng = address.lng != null && address.lng !== "" ? String(address.lng) : "";
-            this.form.payment_method = String(order.payment_method ?? order.payment?.method ?? "cash");
+            this.form.payment_method = String(
+                order.payment_method ?? order.payment?.method ?? "cash",
+            );
             const scheduled = order.scheduled_at;
             if (typeof scheduled === "string" && scheduled.trim() !== "") {
                 // datetime-local: YYYY-MM-DDTHH:mm
@@ -130,11 +134,10 @@ export const useOrderWorkspaceStore = defineStore("order-workspace", {
 
             this.cart = cartFromOrder(order);
 
-            const giftLine = (Array.isArray(order?.cart?.lines) ? order.cart.lines : [])
-                .find((line) => String(line?.line_type) === "gift");
-            this.giftDecision = giftLine?.product_id != null
-                ? Number(giftLine.product_id)
-                : null;
+            const giftLine = (Array.isArray(order?.cart?.lines) ? order.cart.lines : []).find(
+                (line) => String(line?.line_type) === "gift",
+            );
+            this.giftDecision = giftLine?.product_id != null ? Number(giftLine.product_id) : null;
             this.giftPromptedForEligible = false;
             this.clientRequestId = newRequestId();
         },
@@ -163,15 +166,17 @@ export const useOrderWorkspaceStore = defineStore("order-workspace", {
             const keepClient = Boolean(options.keepClient);
             const keptClient = keepClient
                 ? {
-                    name: this.form.name,
-                    phone: this.form.phone,
-                    clientId: this.form.clientId,
-                }
+                      name: this.form.name,
+                      phone: this.form.phone,
+                      clientId: this.form.clientId,
+                  }
                 : null;
 
             const client = order?.client && typeof order.client === "object" ? order.client : {};
-            const delivery = order?.delivery && typeof order.delivery === "object" ? order.delivery : {};
-            const address = delivery.address && typeof delivery.address === "object" ? delivery.address : {};
+            const delivery =
+                order?.delivery && typeof order.delivery === "object" ? order.delivery : {};
+            const address =
+                delivery.address && typeof delivery.address === "object" ? delivery.address : {};
 
             if (!keepClient) {
                 this.form.name = String(client.name ?? "");
@@ -188,7 +193,9 @@ export const useOrderWorkspaceStore = defineStore("order-workspace", {
             this.form.comment = String(address.comment ?? "");
             this.form.lat = address.lat != null && address.lat !== "" ? String(address.lat) : "";
             this.form.lng = address.lng != null && address.lng !== "" ? String(address.lng) : "";
-            this.form.payment_method = String(order.payment_method ?? order.payment?.method ?? "cash");
+            this.form.payment_method = String(
+                order.payment_method ?? order.payment?.method ?? "cash",
+            );
             this.form.scheduled_at = "";
 
             this.cart = cartFromOrder(order);
@@ -273,18 +280,19 @@ export const useOrderWorkspaceStore = defineStore("order-workspace", {
                     kind: line.kind === "set" ? "set" : "product",
                 })),
                 delivery_method: this.form.method,
-                client: clientId != null && clientId > 0
-                    ? {
-                        kind: "client",
-                        id: clientId,
-                        name: this.form.name.trim() || null,
-                        phone: this.form.phone.trim() || null,
-                    }
-                    : {
-                        kind: "guest",
-                        name: this.form.name.trim() || null,
-                        phone: this.form.phone.trim() || null,
-                    },
+                client:
+                    clientId != null && clientId > 0
+                        ? {
+                              kind: "client",
+                              id: clientId,
+                              name: this.form.name.trim() || null,
+                              phone: this.form.phone.trim() || null,
+                          }
+                        : {
+                              kind: "guest",
+                              name: this.form.name.trim() || null,
+                              phone: this.form.phone.trim() || null,
+                          },
                 payment_method: this.form.payment_method,
                 change_from_rubles: null,
                 gift_product_id: giftProductId,

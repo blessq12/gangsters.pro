@@ -15,8 +15,9 @@ function pointInRing(longitude, latitude, ring) {
         const xj = Number(ring[previous]?.[0] ?? 0);
         const yj = Number(ring[previous]?.[1] ?? 0);
 
-        const intersects = (yi > latitude) !== (yj > latitude)
-            && longitude < ((xj - xi) * (latitude - yi)) / ((yj - yi) || 1e-12) + xi;
+        const intersects =
+            yi > latitude !== yj > latitude &&
+            longitude < ((xj - xi) * (latitude - yi)) / (yj - yi || 1e-12) + xi;
 
         if (intersects) {
             inside = !inside;
@@ -47,7 +48,7 @@ function pointInPolygonCoordinates(longitude, latitude, polygonCoordinates) {
 /**
  * @returns {boolean|null} null — геометрия не поддерживается
  */
-export function geoJsonContains(geoJson, latitude, longitude) {
+function geoJsonContains(geoJson, latitude, longitude) {
     if (!geoJson || latitude == null || longitude == null) {
         return null;
     }
@@ -81,5 +82,7 @@ export function matchDeliveryZone(zones, latitude, longitude) {
         return null;
     }
 
-    return zones.find((zone) => geoJsonContains(zone.geometry, latitude, longitude) === true) ?? null;
+    return (
+        zones.find((zone) => geoJsonContains(zone.geometry, latitude, longitude) === true) ?? null
+    );
 }

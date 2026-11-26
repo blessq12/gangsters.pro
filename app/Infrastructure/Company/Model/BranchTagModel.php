@@ -3,7 +3,19 @@
 namespace App\Infrastructure\Company\Model;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property int $branch_id
+ * @property string $code
+ * @property string $label
+ * @property string $color
+ * @property bool $is_active
+ * @property int $sort_order
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
 final class BranchTagModel extends Model
 {
     protected $table = 'CMP_branch_tags';

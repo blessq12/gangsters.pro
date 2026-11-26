@@ -1,11 +1,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import {
-    getBranchStock,
-    listBranchWriteOffs,
-    listIngredients,
-} from "../../../api/warehouse.js";
+import { getBranchStock, listBranchWriteOffs, listIngredients } from "../../../api/warehouse.js";
 import OwnerBranchSelector from "../components/branch/OwnerBranchSelector.vue";
 import { useOwnerBranchContext } from "../composables/useOwnerBranchContext.js";
 import { useApi } from "../../../shell/composables/useApi.js";
@@ -44,9 +40,7 @@ const context = computed(() =>
 );
 
 const branchSection = computed(() =>
-    branchSectionIds.includes(String(route.query.section))
-        ? String(route.query.section)
-        : "stock",
+    branchSectionIds.includes(String(route.query.section)) ? String(route.query.section) : "stock",
 );
 
 function setContext(id) {
@@ -162,31 +156,35 @@ async function fetchAllPages(fetchPage) {
 }
 
 function rebuildCatalog() {
-    setCatalogRows(allIngredients.value.map((item) => ({
-        id: Number(item.id),
-        name: item.name,
-        unit: item.unit ?? "",
-    })));
+    setCatalogRows(
+        allIngredients.value.map((item) => ({
+            id: Number(item.id),
+            name: item.name,
+            unit: item.unit ?? "",
+        })),
+    );
 }
 
 function rebuildBranchLists() {
     const qtyMap = quantityByIngredientId.value;
-    setStockRows(allIngredients.value.map((item) => ({
-        id: Number(item.id),
-        name: item.name,
-        unit: item.unit ?? "",
-        quantity: qtyMap.get(Number(item.id)) ?? 0,
-    })));
-
-    const nameById = new Map(
-        allIngredients.value.map((item) => [Number(item.id), item.name]),
+    setStockRows(
+        allIngredients.value.map((item) => ({
+            id: Number(item.id),
+            name: item.name,
+            unit: item.unit ?? "",
+            quantity: qtyMap.get(Number(item.id)) ?? 0,
+        })),
     );
-    setWriteOffItems(allWriteOffs.value.map((row) => ({
-        ...row,
-        ingredient_id: Number(row.ingredient_id),
-        ingredient_name: nameById.get(Number(row.ingredient_id)) ?? `#${row.ingredient_id}`,
-        occurred_at: formatDate(row.occurred_at),
-    })));
+
+    const nameById = new Map(allIngredients.value.map((item) => [Number(item.id), item.name]));
+    setWriteOffItems(
+        allWriteOffs.value.map((row) => ({
+            ...row,
+            ingredient_id: Number(row.ingredient_id),
+            ingredient_name: nameById.get(Number(row.ingredient_id)) ?? `#${row.ingredient_id}`,
+            occurred_at: formatDate(row.occurred_at),
+        })),
+    );
 }
 
 async function loadCatalog() {
@@ -208,11 +206,13 @@ async function loadBranch() {
         return;
     }
     try {
-        const [ingredients, stockLevels, writeOffs] = await loadApi.run(() => Promise.all([
-            fetchAllPages(listIngredients),
-            fetchAllPages((query) => getBranchStock(branchId, query)),
-            fetchAllPages((query) => listBranchWriteOffs(branchId, query)),
-        ]));
+        const [ingredients, stockLevels, writeOffs] = await loadApi.run(() =>
+            Promise.all([
+                fetchAllPages(listIngredients),
+                fetchAllPages((query) => getBranchStock(branchId, query)),
+                fetchAllPages((query) => listBranchWriteOffs(branchId, query)),
+            ]),
+        );
         allIngredients.value = ingredients;
         const qty = new Map();
         for (const row of stockLevels) {
@@ -289,18 +289,18 @@ onMounted(loadCurrent);
 <template>
     <div class="mx-auto w-full max-w-7xl space-y-6 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
         <div class="space-y-3">
-            <h1 class="text-2xl font-semibold tracking-tight text-bo-fg">
-                Склад
-            </h1>
+            <h1 class="text-2xl font-semibold tracking-tight text-bo-fg">Склад</h1>
             <div class="flex flex-wrap gap-2">
                 <button
                     v-for="item in contexts"
                     :key="item.id"
                     type="button"
                     class="h-11 px-4 text-sm font-medium transition-colors duration-150"
-                    :class="context === item.id
-                        ? 'bg-bo-accent text-white'
-                        : 'bg-white/[0.04] text-bo-muted hover:bg-white/[0.08] hover:text-bo-fg'"
+                    :class="
+                        context === item.id
+                            ? 'bg-bo-accent text-white'
+                            : 'bg-white/[0.04] text-bo-muted hover:bg-white/[0.08] hover:text-bo-fg'
+                    "
                     @click="setContext(item.id)"
                 >
                     {{ item.label }}
@@ -311,9 +311,7 @@ onMounted(loadCurrent);
         <template v-if="context === 'catalog'">
             <UiCard title="Ингредиенты">
                 <template #actions>
-                    <UiButton @click="openCreateIngredient">
-                        + Ингредиент
-                    </UiButton>
+                    <UiButton @click="openCreateIngredient">+ Ингредиент</UiButton>
                 </template>
 
                 <div class="mb-4 max-w-md">
@@ -352,9 +350,11 @@ onMounted(loadCurrent);
                     :key="item.id"
                     type="button"
                     class="h-10 px-3.5 text-sm font-medium transition-colors duration-150"
-                    :class="branchSection === item.id
-                        ? 'bg-white/15 text-bo-fg'
-                        : 'bg-transparent text-bo-muted hover:bg-white/[0.06] hover:text-bo-fg'"
+                    :class="
+                        branchSection === item.id
+                            ? 'bg-white/15 text-bo-fg'
+                            : 'bg-transparent text-bo-muted hover:bg-white/[0.06] hover:text-bo-fg'
+                    "
                     @click="setBranchSection(item.id)"
                 >
                     {{ item.label }}

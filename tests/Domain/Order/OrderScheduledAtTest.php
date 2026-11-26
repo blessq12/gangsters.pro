@@ -13,7 +13,7 @@ use PHPUnit\Framework\TestCase;
 
 final class OrderScheduledAtTest extends TestCase
 {
-    public function testComposeСБудущимScheduledAtДаётPreorder(): void
+    public function test_compose_с_будущим_scheduled_at_даёт_preorder(): void
     {
         $created = new DateTimeImmutable('2026-11-25 12:00:00');
         $scheduled = new DateTimeImmutable('2026-11-25 18:00:00');
@@ -24,7 +24,7 @@ final class OrderScheduledAtTest extends TestCase
         $this->assertEquals($scheduled, $order->scheduledAt());
     }
 
-    public function testComposeБезScheduledAtДаётNewAsap(): void
+    public function test_compose_без_scheduled_at_даёт_new_asap(): void
     {
         $created = new DateTimeImmutable('2026-11-25 12:00:00');
         $order = $this->compose($created, null);
@@ -33,7 +33,7 @@ final class OrderScheduledAtTest extends TestCase
         $this->assertNull($order->scheduledAt());
     }
 
-    public function testComposeСПрошлымScheduledAtДаётNew(): void
+    public function test_compose_с_прошлым_scheduled_at_даёт_new(): void
     {
         $created = new DateTimeImmutable('2026-11-25 12:00:00');
         $scheduled = new DateTimeImmutable('2026-11-25 10:00:00');
@@ -43,7 +43,7 @@ final class OrderScheduledAtTest extends TestCase
         $this->assertEquals($scheduled, $order->scheduledAt());
     }
 
-    public function testReplaceScheduledAtСинхронизируетPreorderИNew(): void
+    public function test_replace_scheduled_at_синхронизирует_preorder_и_new(): void
     {
         $created = new DateTimeImmutable('2026-11-25 12:00:00');
         $order = $this->compose($created, null);
@@ -59,7 +59,7 @@ final class OrderScheduledAtTest extends TestCase
         $this->assertNull($order->scheduledAt());
     }
 
-    public function testReplaceScheduledAtНаПозднемСтатусеНеМеняетStatus(): void
+    public function test_replace_scheduled_at_на_позднем_статусе_не_меняет_status(): void
     {
         $created = new DateTimeImmutable('2026-11-25 12:00:00');
         $order = $this->compose($created, null);
@@ -73,7 +73,7 @@ final class OrderScheduledAtTest extends TestCase
         $this->assertEquals($slot, $order->scheduledAt());
     }
 
-    public function testAcceptИзPreorderВConfirmed(): void
+    public function test_accept_из_preorder_в_confirmed(): void
     {
         $created = new DateTimeImmutable('2026-11-25 12:00:00');
         $slot = new DateTimeImmutable('2026-11-26 18:00:00');

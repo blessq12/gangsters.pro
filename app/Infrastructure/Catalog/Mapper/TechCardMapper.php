@@ -4,8 +4,8 @@ namespace App\Infrastructure\Catalog\Mapper;
 
 use App\Domain\Supporting\Catalog\Entity\TechCard;
 use App\Domain\Supporting\Catalog\ValueObject\TechCardLine;
-use App\Infrastructure\Catalog\Model\TechCardModel;
 use App\Infrastructure\Catalog\Model\TechCardLineModel;
+use App\Infrastructure\Catalog\Model\TechCardModel;
 
 final class TechCardMapper
 {

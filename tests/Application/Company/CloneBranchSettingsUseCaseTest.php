@@ -5,14 +5,14 @@ namespace Tests\Application\Company;
 use App\Application\Company\Command\CloneBranchSettingsUseCase;
 use App\Application\Company\DTO\CloneBranchSettingsDto;
 use App\Domain\Supporting\Company\Entity\Branch;
-use App\Domain\Supporting\Company\Port\CompanyDeliveryConfigClonePort;
-use App\Domain\Supporting\Company\Port\CompanyOrderCommercialRulesClonePort;
 use App\Domain\Supporting\Company\Entity\BranchCategory;
 use App\Domain\Supporting\Company\Entity\BranchCategoryItem;
 use App\Domain\Supporting\Company\Entity\BranchMenuItem;
 use App\Domain\Supporting\Company\Entity\BranchSet;
 use App\Domain\Supporting\Company\Entity\BranchTag;
 use App\Domain\Supporting\Company\Enum\BranchMenuEntryKind;
+use App\Domain\Supporting\Company\Port\CompanyDeliveryConfigClonePort;
+use App\Domain\Supporting\Company\Port\CompanyOrderCommercialRulesClonePort;
 use App\Domain\Supporting\Company\Repository\BranchCategoryRepository;
 use App\Domain\Supporting\Company\Repository\BranchMenuRepository;
 use App\Domain\Supporting\Company\Repository\BranchRepository;
@@ -331,7 +331,7 @@ final class CloneBranchSettingsUseCaseTest extends TestCase
             sets: $sets ?? $this->createMock(BranchSetRepository::class),
             commercialRulesClone: $this->createMock(CompanyOrderCommercialRulesClonePort::class),
             deliveryClone: $this->createMock(CompanyDeliveryConfigClonePort::class),
-            transaction: new ImmediateTransactionManager(),
+            transaction: new ImmediateTransactionManager,
         );
     }
 }

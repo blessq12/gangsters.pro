@@ -13,9 +13,9 @@ import {
  */
 function isPolygonGeometry(geometry) {
     return (
-        geometry
-        && typeof geometry === "object"
-        && (geometry.type === "Polygon" || geometry.type === "MultiPolygon")
+        geometry &&
+        typeof geometry === "object" &&
+        (geometry.type === "Polygon" || geometry.type === "MultiPolygon")
     );
 }
 
@@ -25,10 +25,8 @@ function isPolygonGeometry(geometry) {
  * @param {object|null|undefined} company
  * @returns {object[]}
  */
-export function resolveDeliveryZones(company) {
-    const zones = Array.isArray(company?.delivery_zones)
-        ? company.delivery_zones
-        : [];
+function resolveDeliveryZones(company) {
+    const zones = Array.isArray(company?.delivery_zones) ? company.delivery_zones : [];
     const fromZones = zones.filter((zone) => isPolygonGeometry(zone?.geometry));
 
     if (fromZones.length > 0) {
@@ -54,7 +52,7 @@ export function resolveDeliveryZones(company) {
  * @param {object|null|undefined} company
  * @returns {object[]}
  */
-export function resolveDeliveryZoneGeometries(company) {
+function resolveDeliveryZoneGeometries(company) {
     return resolveDeliveryZones(company)
         .map((zone) => zone?.geometry)
         .filter((geometry) => isPolygonGeometry(geometry));
@@ -63,7 +61,7 @@ export function resolveDeliveryZoneGeometries(company) {
 /**
  * @param {object|null|undefined} company
  */
-export function hasDeliveryZoneGeometry(company) {
+function hasDeliveryZoneGeometry(company) {
     return resolveDeliveryZoneGeometries(company).length > 0;
 }
 
@@ -71,11 +69,8 @@ export function hasDeliveryZoneGeometry(company) {
  * @param {object|null|undefined} company
  * @returns {[number, number]|null}
  */
-export function branchMapCenterOrNull(company) {
-    return pairToYmapsCenter(
-        company?.branch_latitude,
-        company?.branch_longitude,
-    );
+function branchMapCenterOrNull(company) {
+    return pairToYmapsCenter(company?.branch_latitude, company?.branch_longitude);
 }
 
 /**
@@ -83,7 +78,7 @@ export function branchMapCenterOrNull(company) {
  * @param {object|null|undefined} company
  * @returns {Promise<{ destroy: () => void, refit: () => void, polygonShown: boolean, placemarkShown: boolean }|null>}
  */
-export async function mountCompanyDeliveryZoneReadonlyMap(container, company) {
+async function mountCompanyDeliveryZoneReadonlyMap(container, company) {
     const apiKey = readYandexMapsApiKeyFromSite();
 
     if (!apiKey) {
@@ -108,7 +103,6 @@ export async function mountCompanyDeliveryZoneReadonlyMap(container, company) {
     });
 }
 
-
 /**
  * Режим карты в доке «Оплата и доставка».
  *
@@ -123,7 +117,7 @@ export async function mountCompanyDeliveryZoneReadonlyMap(container, company) {
  * }} input
  * @returns {DeliveryDockMapMode}
  */
-export function resolveDeliveryDockMapMode(input) {
+function resolveDeliveryDockMapMode(input) {
     if (input.hasApiKey) {
         return "zone-sdk";
     }
@@ -136,13 +130,12 @@ export function resolveDeliveryDockMapMode(input) {
     return "fallback";
 }
 
-
 /**
  * @param {HTMLElement} container
  * @param {object|null|undefined} company
  * @returns {Promise<{ destroy: () => void, refit: () => void, placemarkShown: boolean }|null>}
  */
-export async function mountCompanyBranchPlacemarkReadonlyMap(container, company) {
+async function mountCompanyBranchPlacemarkReadonlyMap(container, company) {
     const apiKey = readYandexMapsApiKeyFromSite();
 
     if (!apiKey) {
@@ -156,9 +149,8 @@ export async function mountCompanyBranchPlacemarkReadonlyMap(container, company)
     });
 }
 
-
 /** Томск — [широта, долгота] для Яндекс.Карт. Синхронизировать с public/js/maps/yandexGeoJsonCoords.js */
-export const TOMSK_CENTER = [56.49771, 84.97437];
+const TOMSK_CENTER = [56.49771, 84.97437];
 
 const TOMSK_AREA = {
     latMin: 55.0,
@@ -179,20 +171,16 @@ function looksLikeLongitude(value) {
     return value >= 19 && value <= 180;
 }
 
-export function isValidYmapsCenter(coords) {
+function isValidYmapsCenter(coords) {
     if (!coords || coords.length < 2) {
         return false;
     }
     const lat = Number(coords[0]);
     const lng = Number(coords[1]);
-    return (
-        isFinitePair(lat, lng) &&
-        looksLikeLatitude(lat) &&
-        looksLikeLongitude(lng)
-    );
+    return isFinitePair(lat, lng) && looksLikeLatitude(lat) && looksLikeLongitude(lng);
 }
 
-export function isNearTomskArea(coords) {
+function isNearTomskArea(coords) {
     if (!isValidYmapsCenter(coords)) {
         return false;
     }
@@ -206,7 +194,7 @@ export function isNearTomskArea(coords) {
     );
 }
 
-export function geoJsonPositionToYmaps(position) {
+function geoJsonPositionToYmaps(position) {
     if (!position || position.length < 2) {
         return null;
     }
@@ -229,7 +217,7 @@ export function geoJsonPositionToYmaps(position) {
     return null;
 }
 
-export function pairToYmapsCenter(first, second) {
+function pairToYmapsCenter(first, second) {
     if (first == null || second == null) {
         return null;
     }
@@ -252,7 +240,7 @@ export function pairToYmapsCenter(first, second) {
     return null;
 }
 
-export function geometryToYmapsRing(geometry) {
+function geometryToYmapsRing(geometry) {
     if (!geometry?.coordinates) {
         return [];
     }
@@ -262,18 +250,15 @@ export function geometryToYmapsRing(geometry) {
     } else if (geometry.type === "MultiPolygon") {
         ring = geometry.coordinates[0]?.[0] || [];
     }
-    return ring
-        .map((pos) => geoJsonPositionToYmaps(pos))
-        .filter((c) => c !== null);
+    return ring.map((pos) => geoJsonPositionToYmaps(pos)).filter((c) => c !== null);
 }
 
-export function ringIsNearTomsk(ring) {
+function ringIsNearTomsk(ring) {
     if (!ring || ring.length < 3) {
         return false;
     }
     return ring.every((coords) => isNearTomskArea(coords));
 }
-
 
 const SCRIPT_ID = "gangsters-yandex-maps-api";
 
@@ -339,7 +324,7 @@ function resolveMapCenter(explicitCenter, geometry) {
  * }} options
  * @returns {Promise<{ destroy: () => void, refit: () => void, polygonShown: boolean, placemarkShown: boolean }>}
  */
-export async function mountYandexDeliveryZoneReadonlyMap(container, options) {
+async function mountYandexDeliveryZoneReadonlyMap(container, options) {
     const {
         apiKey,
         geometry = null,
@@ -356,18 +341,19 @@ export async function mountYandexDeliveryZoneReadonlyMap(container, options) {
 
     await loadYandexMapsApi(apiKey);
 
-    const resolvedZones = Array.isArray(zones) && zones.length > 0
-        ? zones.filter((zone) => isPolygonGeometry(zone?.geometry))
-        : (Array.isArray(geometries) && geometries.length > 0
-            ? geometries
-            : geometry
-              ? [geometry]
-              : []
-          ).map((item) =>
-              isPolygonGeometry(item)
-                  ? { geometry: item, name: "Зона доставки" }
-                  : null,
-          ).filter(Boolean);
+    const resolvedZones =
+        Array.isArray(zones) && zones.length > 0
+            ? zones.filter((zone) => isPolygonGeometry(zone?.geometry))
+            : (Array.isArray(geometries) && geometries.length > 0
+                  ? geometries
+                  : geometry
+                    ? [geometry]
+                    : []
+              )
+                  .map((item) =>
+                      isPolygonGeometry(item) ? { geometry: item, name: "Зона доставки" } : null,
+                  )
+                  .filter(Boolean);
 
     const drawableZones = resolvedZones
         .map((zone) => ({
@@ -377,14 +363,9 @@ export async function mountYandexDeliveryZoneReadonlyMap(container, options) {
         .filter(({ ring }) => ring.length >= 3);
     const primaryGeometry = drawableZones[0]?.zone?.geometry ?? null;
     const mapCenter = resolveMapCenter(center, primaryGeometry);
-    const nearTomskZones = drawableZones.filter(({ ring }) =>
-        ringIsNearTomsk(ring),
-    );
+    const nearTomskZones = drawableZones.filter(({ ring }) => ringIsNearTomsk(ring));
     const canShowPolygon = nearTomskZones.length > 0;
-    const canShowPlacemark =
-        branchPlacemark === true
-        && center != null
-        && isNearTomskArea(center);
+    const canShowPlacemark = branchPlacemark === true && center != null && isNearTomskArea(center);
 
     // API 2.1 has no native dark theme; tiles are darkened via CSS on this class.
     container.classList.add("yandex-map-theme-dark");
@@ -446,8 +427,7 @@ export async function mountYandexDeliveryZoneReadonlyMap(container, options) {
             center,
             {
                 balloonContentHeader: balloonContentHeader || undefined,
-                balloonContentBody:
-                    balloonContentBody || balloonContent || undefined,
+                balloonContentBody: balloonContentBody || balloonContent || undefined,
                 balloonContent: balloonContent || undefined,
             },
             {
@@ -486,18 +466,12 @@ export async function mountYandexDeliveryZoneReadonlyMap(container, options) {
  * }} options
  * @returns {Promise<{ destroy: () => void, refit: () => void, placemarkShown: boolean }>}
  */
-export async function mountYandexBranchPlacemarkReadonlyMap(container, options) {
-    const {
-        apiKey,
-        center = null,
-        balloonContent = "",
-        zoom = 16,
-    } = options;
+async function mountYandexBranchPlacemarkReadonlyMap(container, options) {
+    const { apiKey, center = null, balloonContent = "", zoom = 16 } = options;
 
     await loadYandexMapsApi(apiKey);
 
-    const mapCenter =
-        center && isNearTomskArea(center) ? center : TOMSK_CENTER;
+    const mapCenter = center && isNearTomskArea(center) ? center : TOMSK_CENTER;
     const canShowPlacemark = center != null && isNearTomskArea(center);
 
     // API 2.1 has no native dark theme; tiles are darkened via CSS on this class.
@@ -545,10 +519,9 @@ export async function mountYandexBranchPlacemarkReadonlyMap(container, options) 
 /**
  * @returns {string|null}
  */
-export function readYandexMapsApiKeyFromSite() {
+function readYandexMapsApiKeyFromSite() {
     return readYandexMapsApiKey();
 }
-
 
 /**
  * Readonly-карта зоны доставки (Яндекс SDK / виджет / fallback).
@@ -559,16 +532,10 @@ export function readYandexMapsApiKeyFromSite() {
  *   mountDelayMs?: number,
  * }} options
  */
-export function useDeliveryZoneReadonlyMap({
-    facts,
-    deliveryLoading,
-    mountDelayMs = 0,
-}) {
+export function useDeliveryZoneReadonlyMap({ facts, deliveryLoading, mountDelayMs = 0 }) {
     const mapUrl = computed(() => buildYandexMapWidgetSearchUrl(facts.value));
 
-    const hasZoneGeometry = computed(() =>
-        hasDeliveryZoneGeometry(facts.value),
-    );
+    const hasZoneGeometry = computed(() => hasDeliveryZoneGeometry(facts.value));
 
     const hasMapsApiKey = computed(() => Boolean(readYandexMapsApiKeyFromSite()));
 
@@ -594,9 +561,7 @@ export function useDeliveryZoneReadonlyMap({
     /** @type {ReturnType<typeof setTimeout>|null} */
     let mountDelayTimer = null;
 
-    const hasBranchCoords = computed(
-        () => branchMapCenterOrNull(facts.value) != null,
-    );
+    const hasBranchCoords = computed(() => branchMapCenterOrNull(facts.value) != null);
 
     const showZonePolygonHint = computed(
         () =>
@@ -728,7 +693,6 @@ export function useDeliveryZoneReadonlyMap({
     };
 }
 
-
 /**
  * Readonly-карта адреса кухни (Яндекс SDK / виджет / fallback).
  *
@@ -740,9 +704,7 @@ export function useDeliveryZoneReadonlyMap({
 export function useBranchAddressReadonlyMap({ facts, deliveryLoading }) {
     const mapUrl = computed(() => buildYandexMapBranchPointWidgetUrl(facts.value));
 
-    const addressLabel = computed(() =>
-        branchAddressLabelOrFallback(facts.value),
-    );
+    const addressLabel = computed(() => branchAddressLabelOrFallback(facts.value));
 
     const hasBranchPoint = computed(() => Boolean(addressLabel.value));
 

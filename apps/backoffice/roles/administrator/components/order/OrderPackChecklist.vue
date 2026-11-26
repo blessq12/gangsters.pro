@@ -23,13 +23,9 @@ function canPack(line) {
     return Boolean(line?.id) && line.status === "done" && !line.packed_by;
 }
 
-const pendingCount = computed(() =>
-    props.lines.filter((line) => canPack(line)).length,
-);
+const pendingCount = computed(() => props.lines.filter((line) => canPack(line)).length);
 
-const packedCount = computed(() =>
-    props.lines.filter((line) => Boolean(line?.packed_by)).length,
-);
+const packedCount = computed(() => props.lines.filter((line) => Boolean(line?.packed_by)).length);
 
 const attention = computed(() => props.active && pendingCount.value > 0);
 
@@ -64,29 +60,25 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <div
-        ref="rootEl"
-        class="relative"
-    >
+    <div ref="rootEl" class="relative">
         <button
             type="button"
             class="pack-trigger relative inline-flex h-11 items-center gap-2 border px-3 text-bo-fg"
-            :class="attention
-                ? 'pack-trigger--attention border-bo-accent bg-bo-accent/25'
-                : 'border-bo-border bg-white/10 hover:bg-white/[0.08]'"
+            :class="
+                attention
+                    ? 'pack-trigger--attention border-bo-accent bg-bo-accent/25'
+                    : 'border-bo-border bg-white/10 hover:bg-white/[0.08]'
+            "
             :aria-expanded="open"
             aria-label="Сборка позиций"
             @click.stop="toggle"
         >
-            <ShellIcon
-                name="pack"
-                class="h-5 w-5"
-            />
+            <ShellIcon name="pack" class="h-5 w-5" />
             <span
                 class="inline-flex min-w-[1.25rem] items-center justify-center rounded-sm px-1.5 text-xs font-semibold"
-                :class="pendingCount > 0
-                    ? 'bg-bo-accent/30 text-bo-fg'
-                    : 'bg-white/10 text-bo-muted'"
+                :class="
+                    pendingCount > 0 ? 'bg-bo-accent/30 text-bo-fg' : 'bg-white/10 text-bo-muted'
+                "
             >
                 {{ pendingCount }}
             </span>
@@ -99,9 +91,7 @@ onBeforeUnmount(() => {
         >
             <div class="mb-3 flex items-center justify-between gap-2">
                 <div>
-                    <p class="text-sm font-medium text-bo-fg">
-                        Сборка позиций
-                    </p>
+                    <p class="text-sm font-medium text-bo-fg">Сборка позиций</p>
                     <p class="text-xs text-bo-muted">
                         На месте: {{ packedCount }} / {{ lines.length }}
                     </p>
@@ -120,16 +110,8 @@ onBeforeUnmount(() => {
                 Подтверди, что каждая позиция на месте. После всех отметок заказ станет «собран».
             </p>
 
-            <p
-                v-if="loading"
-                class="text-sm text-bo-muted"
-            >
-                Загрузка тикета…
-            </p>
-            <ul
-                v-else-if="lines.length"
-                class="max-h-72 space-y-2 overflow-y-auto text-sm"
-            >
+            <p v-if="loading" class="text-sm text-bo-muted">Загрузка тикета…</p>
+            <ul v-else-if="lines.length" class="max-h-72 space-y-2 overflow-y-auto text-sm">
                 <li
                     v-for="line in lines"
                     :key="line.id ?? `${line.product_id}-${line.name}`"
@@ -138,14 +120,10 @@ onBeforeUnmount(() => {
                     <span>
                         {{ line.name || `Позиция #${line.product_id}` }}
                         × {{ line.quantity }}
-                        <span
-                            v-if="line.packed_by"
-                            class="ml-2 text-emerald-300"
-                        >собрано</span>
-                        <span
-                            v-else-if="line.status !== 'done'"
-                            class="ml-2 text-bo-muted"
-                        >ещё на кухне</span>
+                        <span v-if="line.packed_by" class="ml-2 text-emerald-300">собрано</span>
+                        <span v-else-if="line.status !== 'done'" class="ml-2 text-bo-muted">
+                            ещё на кухне
+                        </span>
                     </span>
                     <UiButton
                         v-if="canPack(line)"
@@ -156,12 +134,7 @@ onBeforeUnmount(() => {
                     </UiButton>
                 </li>
             </ul>
-            <p
-                v-else
-                class="text-sm text-bo-muted"
-            >
-                Тикет не найден.
-            </p>
+            <p v-else class="text-sm text-bo-muted">Тикет не найден.</p>
         </div>
     </div>
 </template>

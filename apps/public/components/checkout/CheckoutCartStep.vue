@@ -49,10 +49,7 @@ const paidComplementItems = computed(() =>
 );
 
 /** Все платные линии корзины: блюда + докупленные комплектные. */
-const displayCartItems = computed(() => [
-    ...menuFoodItems.value,
-    ...paidComplementItems.value,
-]);
+const displayCartItems = computed(() => [...menuFoodItems.value, ...paidComplementItems.value]);
 
 const isCartEmpty = computed(() => (userCartItems.value || []).length === 0);
 const hasMenuFood = computed(() => menuFoodItems.value.length > 0);
@@ -95,11 +92,7 @@ function unitPriceRub(item) {
 
         <CheckoutSection v-else-if="displayCartItems.length > 0" title="">
             <ul :class="c.userList">
-                <li
-                    v-for="item in displayCartItems"
-                    :key="item.lineKey"
-                    :class="c.userLineItem"
-                >
+                <li v-for="item in displayCartItems" :key="item.lineKey" :class="c.userLineItem">
                     <div :class="c.lineThumb" aria-hidden="true">
                         <img
                             v-if="lineImageUrl(item)"
@@ -107,20 +100,15 @@ function unitPriceRub(item) {
                             :alt="item.productSnapshot?.name || ''"
                             :class="c.lineThumbImg"
                             loading="lazy"
-                        >
+                        />
                         <span v-else :class="c.lineThumbPlaceholder">—</span>
                     </div>
 
                     <div class="min-w-0 flex-1">
                         <p :class="c.lineTitle">
-                            {{
-                                item.productSnapshot?.name ||
-                                `Товар #${item.productId}`
-                            }}
+                            {{ item.productSnapshot?.name || `Товар #${item.productId}` }}
                         </p>
-                        <p :class="c.lineSub">
-                            {{ formatPrice(unitPriceRub(item)) }} ₽
-                        </p>
+                        <p :class="c.lineSub">{{ formatPrice(unitPriceRub(item)) }} ₽</p>
                     </div>
 
                     <div :class="c.lineActions">
@@ -156,9 +144,7 @@ function unitPriceRub(item) {
             </ul>
         </CheckoutSection>
 
-        <p v-else-if="!isCartEmpty" :class="chk.shared.introMuted">
-            Добавь блюда из меню
-        </p>
+        <p v-else-if="!isCartEmpty" :class="chk.shared.introMuted">Добавь блюда из меню</p>
 
         <CheckoutComplementOffers />
 

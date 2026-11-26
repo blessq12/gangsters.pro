@@ -42,7 +42,9 @@ async function submit() {
 </script>
 
 <template>
-    <section class="w-full max-w-sm border border-bo-border bg-bo-glass p-6 shadow-bo-lg backdrop-blur-md sm:p-8">
+    <section
+        class="w-full max-w-sm border border-bo-border bg-bo-glass p-6 shadow-bo-lg backdrop-blur-md sm:p-8"
+    >
         <h1 class="text-xl font-semibold text-bo-fg">Вход в бэкофис</h1>
         <p class="mt-1 text-sm text-bo-muted">Только для сотрудников.</p>
         <p
@@ -51,18 +53,10 @@ async function submit() {
         >
             {{ error }}
         </p>
-        <form
-            class="mt-6 space-y-4"
-            @submit.prevent="submit"
-        >
+        <form class="mt-6 space-y-4" @submit.prevent="submit">
             <label class="block text-sm">
                 <span class="text-bo-muted">Email</span>
-                <UiInput
-                    v-model="email"
-                    type="email"
-                    required
-                    autocomplete="username"
-                />
+                <UiInput v-model="email" type="email" required autocomplete="username" />
             </label>
             <label class="block text-sm">
                 <span class="text-bo-muted">Пароль</span>
@@ -73,11 +67,7 @@ async function submit() {
                     autocomplete="current-password"
                 />
             </label>
-            <UiButton
-                type="submit"
-                class="w-full justify-center"
-                :disabled="submitting"
-            >
+            <UiButton type="submit" class="w-full justify-center" :disabled="submitting">
                 Войти
             </UiButton>
         </form>

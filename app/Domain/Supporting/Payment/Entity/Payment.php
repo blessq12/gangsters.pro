@@ -163,7 +163,7 @@ final class Payment
         }
 
         $this->status = PaymentStatus::Paid;
-        $this->paidAt = $at ?? new DateTimeImmutable();
+        $this->paidAt = $at ?? new DateTimeImmutable;
         $this->record(new PaymentPaid(
             paymentId: $this->id(),
             orderId: $this->orderId,
@@ -178,7 +178,7 @@ final class Payment
         }
 
         $this->status = PaymentStatus::Refunded;
-        $this->refundedAt = $at ?? new DateTimeImmutable();
+        $this->refundedAt = $at ?? new DateTimeImmutable;
         $this->record(new PaymentRefunded(
             paymentId: $this->id(),
             orderId: $this->orderId,
@@ -195,7 +195,7 @@ final class Payment
             throw new \LogicException('Отменить можно только ожидающий платёж.');
         }
 
-        $cancelledAt = $at ?? new DateTimeImmutable();
+        $cancelledAt = $at ?? new DateTimeImmutable;
         $this->status = PaymentStatus::Cancelled;
         $this->record(new PaymentCancelled(
             paymentId: $this->id(),

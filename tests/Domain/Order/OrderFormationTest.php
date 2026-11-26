@@ -2,9 +2,9 @@
 
 namespace Tests\Domain\Order;
 
+use App\Domain\Core\Order\Entity\OrderCommercialRules;
 use App\Domain\Core\Order\Enum\OrderLineType;
 use App\Domain\Core\Order\Policy\OrderFormation;
-use App\Domain\Core\Order\Entity\OrderCommercialRules;
 use App\Domain\Core\Order\ValueObject\OrderDeliveryAddress;
 use App\Domain\Core\Order\ValueObject\OrderDeliveryInfo;
 use App\Domain\Core\Order\ValueObject\OrderFormationFacts;
@@ -14,7 +14,7 @@ use PHPUnit\Framework\TestCase;
 
 final class OrderFormationTest extends TestCase
 {
-    public function testПодарокИВсеКомплектыДобавляютсяПоПолитике(): void
+    public function test_подарок_и_все_комплекты_добавляются_по_политике(): void
     {
         $formed = OrderFormation::apply(
             baseLines: [
@@ -54,7 +54,7 @@ final class OrderFormationTest extends TestCase
         $this->assertSame(0, $formed['delivery']->feeKopecks());
     }
 
-    public function testРоллыВнутриНабораДаютКомплекты(): void
+    public function test_роллы_внутри_набора_дают_комплекты(): void
     {
         // 1 сет × 3 ролла в составе + 1 отдельный ролл = 4 ролла → 1 комплект при 4/1
         $formed = OrderFormation::apply(
@@ -92,7 +92,7 @@ final class OrderFormationTest extends TestCase
         ], $types);
     }
 
-    public function testПлатныйКомплектВКорзинеНеМешаетБесплатнойДобавке(): void
+    public function test_платный_комплект_в_корзине_не_мешает_бесплатной_добавке(): void
     {
         $formed = OrderFormation::apply(
             baseLines: [
@@ -125,21 +125,21 @@ final class OrderFormationTest extends TestCase
         ], $types);
     }
 
-    public function testВЗонеНижеПорогаОстаётсяБазовыйТариф(): void
+    public function test_в_зоне_ниже_порога_остаётся_базовый_тариф(): void
     {
         $formed = $this->formCourier(subtotalKopecks: 10000, threshold: 50000, remote: false, baseFee: 20000, surcharge: 5000);
 
         $this->assertSame(20000, $formed['delivery']->feeKopecks());
     }
 
-    public function testВЗонеОтПорогаДоставкаБесплатная(): void
+    public function test_в_зоне_от_порога_доставка_бесплатная(): void
     {
         $formed = $this->formCourier(subtotalKopecks: 50000, threshold: 50000, remote: false, baseFee: 20000, surcharge: 5000);
 
         $this->assertSame(0, $formed['delivery']->feeKopecks());
     }
 
-    public function testВнеЗоныОтПорогаНадбавкаИзАкцийБольшеНеБерётся(): void
+    public function test_вне_зоны_от_порога_надбавка_из_акций_больше_не_берётся(): void
     {
         $formed = $this->formCourier(subtotalKopecks: 80000, threshold: 50000, remote: true, baseFee: 20000, surcharge: 5000);
 

@@ -46,11 +46,7 @@
         }
         const lat = Number(coords[0]);
         const lng = Number(coords[1]);
-        return (
-            isFinitePair(lat, lng) &&
-            looksLikeLatitude(lat) &&
-            looksLikeLongitude(lng)
-        );
+        return isFinitePair(lat, lng) && looksLikeLatitude(lat) && looksLikeLongitude(lng);
     }
 
     function ymapsPositionToGeoJson(position) {
@@ -81,9 +77,7 @@
             ring = geometry.coordinates[0]?.[0] || [];
         }
 
-        const ymapsRing = ring
-            .map((pos) => geoJsonPositionToYmaps(pos))
-            .filter((c) => c !== null);
+        const ymapsRing = ring.map((pos) => geoJsonPositionToYmaps(pos)).filter((c) => c !== null);
 
         return ymapsRing.length >= 3 ? [ymapsRing] : [];
     }

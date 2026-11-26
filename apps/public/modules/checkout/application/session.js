@@ -1,14 +1,8 @@
 import { computed } from "vue";
-import {
-    formatKopecksToRub,
-    roundRubles2,
-} from "../../../platform/moneyFormat";
+import { formatKopecksToRub, roundRubles2 } from "../../../platform/moneyFormat";
 import { useUserStore } from "../../client/store/userStore";
 import { useContentStore } from "../../content/store";
-import {
-    fetchCheckoutContextRequest,
-    placeOrderRequest,
-} from "../../../api/order";
+import { fetchCheckoutContextRequest, placeOrderRequest } from "../../../api/order";
 import {
     buildClientPayload,
     buildDeliveryPayload,
@@ -49,8 +43,6 @@ export const CHECKOUT_WAITER_LINES = Object.freeze({
     success: "Заказ принят. Готовим",
 });
 
-export const CHECKOUT_STEP_HINTS = CHECKOUT_WAITER_LINES;
-
 export const CHECKOUT_NAV_LABELS = Object.freeze({
     back: "Назад",
     cartPrimary: "Далее",
@@ -72,7 +64,7 @@ export const CHECKOUT_NAV_LABELS = Object.freeze({
     editFulfillment: "Изменить доставку и оплату",
 });
 
-export const CHECKOUT_SESSION_KEY = "gangsters_order_draft_v1";
+const CHECKOUT_SESSION_KEY = "gangsters_order_draft_v1";
 
 export const CHECKOUT_WIZARD_STEPS = [
     "cart",
@@ -83,7 +75,7 @@ export const CHECKOUT_WIZARD_STEPS = [
     "success",
 ];
 
-export function readCheckoutSessionPayload() {
+function readCheckoutSessionPayload() {
     if (typeof window === "undefined") {
         return null;
     }
@@ -100,15 +92,12 @@ export function readCheckoutSessionPayload() {
     }
 }
 
-export function writeCheckoutSessionPayload(payload) {
+function writeCheckoutSessionPayload(payload) {
     if (typeof window === "undefined") {
         return;
     }
 
-    window.sessionStorage.setItem(
-        CHECKOUT_SESSION_KEY,
-        JSON.stringify(payload),
-    );
+    window.sessionStorage.setItem(CHECKOUT_SESSION_KEY, JSON.stringify(payload));
 }
 
 export function clearCheckoutSessionPayload() {
@@ -125,21 +114,18 @@ export function clearCheckoutSessionPayload() {
  * @param {Record<string, unknown>} forms
  * @returns {Record<string, unknown>}
  */
-export function normalizeCheckoutSessionForms(forms) {
+function normalizeCheckoutSessionForms(forms) {
     if (!forms || typeof forms !== "object") {
         return {};
     }
 
     const normalized = { ...forms };
     const legacyComment =
-        typeof normalized.customerComment === "string"
-            ? normalized.customerComment.trim()
-            : "";
+        typeof normalized.customerComment === "string" ? normalized.customerComment.trim() : "";
 
     if (legacyComment) {
         const delivery =
-            normalized.deliveryInfo &&
-            typeof normalized.deliveryInfo === "object"
+            normalized.deliveryInfo && typeof normalized.deliveryInfo === "object"
                 ? { ...normalized.deliveryInfo }
                 : {};
         const existing = String(delivery.comment || "").trim();
@@ -181,7 +167,7 @@ export function buildCheckoutSessionSnapshot(store) {
     };
 }
 
-export function resolveClientRequestId() {
+function resolveClientRequestId() {
     if (typeof window === "undefined") {
         return crypto.randomUUID();
     }
@@ -210,14 +196,12 @@ function ensureCheckoutSessionActive(store) {
  * Адрес профиля для preview/place: auth + courier + выбранный адрес.
  * Гость использует deliveryInfo.address из store.
  */
-export function resolveCheckoutPreviewAddress(store) {
+function resolveCheckoutPreviewAddress(store) {
     if (store.deliveryInfo?.method !== "courier") {
         return null;
     }
 
-    const isGuest = Boolean(
-        store.guestContact?.name && store.guestContact?.phone,
-    );
+    const isGuest = Boolean(store.guestContact?.name && store.guestContact?.phone);
     if (isGuest) {
         return null;
     }
@@ -258,8 +242,7 @@ function resolveRegisteredClientId(store, options = {}) {
 function resolveCoords(selectedAddress, store) {
     const source =
         selectedAddress ??
-        (store.deliveryInfo?.address &&
-        typeof store.deliveryInfo.address === "object"
+        (store.deliveryInfo?.address && typeof store.deliveryInfo.address === "object"
             ? store.deliveryInfo.address
             : null);
 
@@ -270,8 +253,7 @@ function resolveCoords(selectedAddress, store) {
     const latitudeRaw = source.latitude ?? source.lat;
     const longitudeRaw = source.longitude ?? source.lng;
     const latitude = latitudeRaw != null && latitudeRaw !== "" ? Number(latitudeRaw) : null;
-    const longitude =
-        longitudeRaw != null && longitudeRaw !== "" ? Number(longitudeRaw) : null;
+    const longitude = longitudeRaw != null && longitudeRaw !== "" ? Number(longitudeRaw) : null;
 
     return {
         latitude: Number.isFinite(latitude) ? latitude : null,
@@ -295,11 +277,7 @@ function buildComplementSelections(store) {
 /**
  * Слепок намерения клиента (Memento): тот же body считает локальный движок и принимает POST /order.
  */
-export function buildCheckoutIntent(
-    store,
-    selectedAddress = null,
-    options = {},
-) {
+function buildCheckoutIntent(store, selectedAddress = null, options = {}) {
     const userLines = store.userItems.map((item) => ({
         product_id: item.productId,
         kind: item.kind === "set" ? "set" : "product",
@@ -308,25 +286,21 @@ export function buildCheckoutIntent(
 
     const clientId = resolveRegisteredClientId(store, options);
     const isGuest = Boolean(
-        options.isGuest ||
-        (store.guestContact?.name && store.guestContact?.phone),
+        options.isGuest || (store.guestContact?.name && store.guestContact?.phone),
     );
 
     const userStore = useUserStore();
     const clientPayload = buildClientPayload(store, {
         clientId,
         isGuest: isGuest || clientId == null,
-        profile:
-            clientId != null && userStore.token ? userStore.profile : null,
+        profile: clientId != null && userStore.token ? userStore.profile : null,
     });
 
     const deliveryPayload = store.deliveryInfo.method
         ? buildDeliveryPayload(store, selectedAddress)
         : null;
 
-    const paymentPayload = store.paymentInfo.method
-        ? buildPaymentPayload(store)
-        : null;
+    const paymentPayload = store.paymentInfo.method ? buildPaymentPayload(store) : null;
 
     const coords = resolveCoords(selectedAddress, store);
     const giftProductId = Number(store.promotions?.freeRollGiftProductId) || 0;
@@ -334,14 +308,11 @@ export function buildCheckoutIntent(
     return {
         branch_id: useContentStore().selectedBranchId,
         lines: userLines,
-        delivery_method:
-            deliveryPayload?.method ?? store.deliveryInfo.method ?? "courier",
+        delivery_method: deliveryPayload?.method ?? store.deliveryInfo.method ?? "courier",
         client: clientPayload,
         address: deliveryPayload?.address ?? null,
         delivery_comment: deliveryPayload?.comment,
-        persons:
-            deliveryPayload?.persons ??
-            normalizePersonsCount(store.deliveryInfo?.persons),
+        persons: deliveryPayload?.persons ?? normalizePersonsCount(store.deliveryInfo?.persons),
         scheduled_at: deliveryPayload?.scheduled_at,
         payment_method: paymentPayload?.method ?? "cash",
         change_from_rubles: paymentPayload?.change_from_rubles,
@@ -355,7 +326,7 @@ export function buildCheckoutIntent(
 /**
  * Контекст филиала грузится один раз на филиал; повторно — по 409 или смене филиала.
  */
-export async function ensureCheckoutContext(store, { force = false } = {}) {
+async function ensureCheckoutContext(store, { force = false } = {}) {
     const branchId = await useContentStore().ensureSelectedBranchId();
     if (branchId == null) {
         return null;
@@ -376,19 +347,14 @@ export async function ensureCheckoutContext(store, { force = false } = {}) {
 /**
  * Локальный пересчёт корзины по правилам из контекста (без сети, кроме первой загрузки контекста).
  */
-export async function recomputeCheckout(
-    store,
-    selectedAddress = null,
-    options = {},
-) {
+export async function recomputeCheckout(store, selectedAddress = null, options = {}) {
     ensureCheckoutSessionActive(store);
     store.error = null;
 
     try {
         await ensureCheckoutContext(store);
     } catch (e) {
-        store.error =
-            e?.response?.data?.message || "Не удалось загрузить условия заказа.";
+        store.error = e?.response?.data?.message || "Не удалось загрузить условия заказа.";
         return null;
     }
     if (!store.context) {
@@ -422,15 +388,11 @@ export async function bootstrapCheckoutStoreSession(store) {
     if (saved?.forms) {
         store.patchLocal(normalizeCheckoutSessionForms(saved.forms));
     }
-    if (
-        saved?.complementSelections
-        && typeof saved.complementSelections === "object"
-    ) {
+    if (saved?.complementSelections && typeof saved.complementSelections === "object") {
         store.complementSelections = { ...saved.complementSelections };
     }
     if (saved?.complementEntitledSnapshot != null) {
-        store.complementEntitledSnapshot =
-            Number(saved.complementEntitledSnapshot) || 0;
+        store.complementEntitledSnapshot = Number(saved.complementEntitledSnapshot) || 0;
     }
 
     store.clientRequestId = saved?.clientRequestId ?? resolveClientRequestId();
@@ -441,12 +403,10 @@ export async function bootstrapCheckoutStoreSession(store) {
     }
 }
 
-export function buildLocalCartItem(product, qty, payload = null) {
+function buildLocalCartItem(product, qty, payload = null) {
     const productId = Number(product?.id);
     const quantity = Math.max(1, Number(qty) || 1);
-    const unitRub = roundRubles2(
-        Number(product?.price?.amount ?? product?.price) || 0,
-    );
+    const unitRub = roundRubles2(Number(product?.price?.amount ?? product?.price) || 0);
     const unitKopecks = Math.round(unitRub * 100);
     const lineKopecks = unitKopecks * quantity;
 
@@ -474,7 +434,7 @@ export function buildLocalCartItem(product, qty, payload = null) {
     };
 }
 
-export function recalculateLocalCartTotals(store) {
+function recalculateLocalCartTotals(store) {
     const userLines = store.userItems;
     const subtotalKopecks = userLines.reduce(
         (sum, item) => sum + (Number(item.pricing?.lineTotalKopecks) || 0),
@@ -503,8 +463,7 @@ export function upsertLocalCartLine(store, product, quantity, payload = null) {
 export async function setCheckoutPromotionGift(store, productId) {
     store.patchLocal({
         promotions: {
-            freeRollGiftProductId:
-                productId != null ? Number(productId) || null : null,
+            freeRollGiftProductId: productId != null ? Number(productId) || null : null,
         },
     });
     store.persistSession();
@@ -558,8 +517,7 @@ export async function placeOrderOnServer(store, selectedAddress = null) {
             store.setContext(freshContext);
             await recomputeCheckout(store, previewAddress);
         }
-        store.error =
-            e?.response?.data?.message || "Не удалось оформить заказ.";
+        store.error = e?.response?.data?.message || "Не удалось оформить заказ.";
         throw e;
     } finally {
         store.flushing = false;
@@ -600,18 +558,14 @@ export function useCheckoutSession() {
     const userItems = computed(() => session.userItems);
     const systemItems = computed(() => session.systemItems);
     const totalAmount = computed(() =>
-        session.hasDeliveryPricing
-            ? session.grandTotalWithDelivery
-            : session.cartTotalAmount,
+        session.hasDeliveryPricing ? session.grandTotalWithDelivery : session.cartTotalAmount,
     );
     const hasCartItems = computed(() => userItems.value.length > 0);
     const promoState = computed(() => session.promoState);
     const deliveryPricing = computed(() => session.deliveryPricing);
     const itemsTotalAmount = computed(() => session.itemsTotalAmount);
     const deliveryFeeAmount = computed(() => session.deliveryFeeAmount);
-    const grandTotalWithDelivery = computed(
-        () => session.grandTotalWithDelivery,
-    );
+    const grandTotalWithDelivery = computed(() => session.grandTotalWithDelivery);
     const isDeliveryFree = computed(() => session.isDeliveryFree);
     const hasDeliveryPricing = computed(() => session.hasDeliveryPricing);
     const benefitsProgress = computed(() => session.benefitsProgress);
@@ -619,20 +573,13 @@ export function useCheckoutSession() {
     const totalItems = computed(() => session.cartTotalItems);
     const systemItemsCount = computed(() => session.cartSystemItemsCount);
 
-    const delivery = computed(
-        () => benefitsProgress.value?.delivery ?? emptyMoneyBenefit(),
-    );
-    const gift = computed(
-        () => benefitsProgress.value?.gift ?? emptyMoneyBenefit(),
-    );
+    const delivery = computed(() => benefitsProgress.value?.delivery ?? emptyMoneyBenefit());
+    const gift = computed(() => benefitsProgress.value?.gift ?? emptyMoneyBenefit());
     const hasActiveBenefits = computed(() =>
         Boolean(delivery.value.isActive || gift.value.isActive),
     );
     const canShowBenefitsBanner = computed(
-        () =>
-            totalItems.value > 0 &&
-            hasBenefitsProgress.value &&
-            hasActiveBenefits.value,
+        () => totalItems.value > 0 && hasBenefitsProgress.value && hasActiveBenefits.value,
     );
 
     const deliveryProgressPercent = computed(() => {
@@ -641,10 +588,7 @@ export function useCheckoutSession() {
         if (!Number.isFinite(threshold) || threshold <= 0) {
             return delivery.value.isReached ? 100 : 0;
         }
-        return Math.min(
-            100,
-            Math.max(0, Math.round((current / threshold) * 100)),
-        );
+        return Math.min(100, Math.max(0, Math.round((current / threshold) * 100)));
     });
 
     const giftProgressPercent = computed(() => {
@@ -653,10 +597,7 @@ export function useCheckoutSession() {
         if (!Number.isFinite(threshold) || threshold <= 0) {
             return gift.value.isReached ? 100 : 0;
         }
-        return Math.min(
-            100,
-            Math.max(0, Math.round((current / threshold) * 100)),
-        );
+        return Math.min(100, Math.max(0, Math.round((current / threshold) * 100)));
     });
 
     const deliveryLabel = computed(() => {
@@ -686,9 +627,7 @@ export function useCheckoutSession() {
         return `Ещё ${remaining} ₽ до подарка`;
     });
 
-    const benefitLines = computed(() =>
-        [deliveryLabel.value, giftLabel.value].filter(Boolean),
-    );
+    const benefitLines = computed(() => [deliveryLabel.value, giftLabel.value].filter(Boolean));
 
     function quantityByProduct(productId) {
         return session.cartQuantityByProduct(productId);

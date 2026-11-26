@@ -3,7 +3,24 @@
 namespace App\Infrastructure\Company\Model;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property int $company_id
+ * @property string $name
+ * @property bool $is_active
+ * @property array $schedule
+ * @property string $city
+ * @property string $street
+ * @property string $house
+ * @property string $comment
+ * @property float $latitude
+ * @property float $longitude
+ * @property string $phone
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
 final class BranchModel extends Model
 {
     protected $table = 'CMP_branches';

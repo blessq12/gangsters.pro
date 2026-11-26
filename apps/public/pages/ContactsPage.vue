@@ -125,10 +125,7 @@ const co = useAppDesign().components.pages.contacts;
         hero-image="/images/contact_banner.jpg"
         :stats="heroStats"
     >
-        <p
-            v-if="errors.profile"
-            :class="co.apiError"
-        >
+        <p v-if="errors.profile" :class="co.apiError">
             {{ errors.profile }}
         </p>
 
@@ -137,29 +134,15 @@ const co = useAppDesign().components.pages.contacts;
                 <div :class="co.channelIconWrap">
                     <i class="mdi mdi-phone-outline text-xl" />
                 </div>
-                <p :class="co.channelLabel">
-                    Телефон
-                </p>
-                <p
-                    v-if="loadingProfile && !phoneDisplay"
-                    :class="co.channelLoading"
-                >
-                    Загрузка…
-                </p>
+                <p :class="co.channelLabel">Телефон</p>
+                <p v-if="loadingProfile && !phoneDisplay" :class="co.channelLoading">Загрузка…</p>
                 <template v-else>
                     <p :class="co.channelValueRow">
-                        <a
-                            v-if="phoneTel"
-                            :href="phoneTel"
-                            :class="co.channelLinkHover"
-                        >
+                        <a v-if="phoneTel" :href="phoneTel" :class="co.channelLinkHover">
                             {{ phoneDisplay }}
                         </a>
                         <span v-else-if="phoneDisplay">{{ phoneDisplay }}</span>
-                        <span
-                            v-else
-                            :class="co.channelMutedValue"
-                        >Уточняется</span>
+                        <span v-else :class="co.channelMutedValue">Уточняется</span>
                     </p>
                 </template>
             </article>
@@ -168,19 +151,9 @@ const co = useAppDesign().components.pages.contacts;
                 <div :class="co.channelIconWrap">
                     <i class="mdi mdi-send-outline text-xl" />
                 </div>
-                <p :class="co.channelLabel">
-                    Telegram
-                </p>
-                <p
-                    v-if="loadingProfile && !telegramLabel"
-                    :class="co.channelLoading"
-                >
-                    Загрузка…
-                </p>
-                <p
-                    v-else
-                    :class="co.channelValueRow"
-                >
+                <p :class="co.channelLabel">Telegram</p>
+                <p v-if="loadingProfile && !telegramLabel" :class="co.channelLoading">Загрузка…</p>
+                <p v-else :class="co.channelValueRow">
                     <a
                         v-if="telegramHref"
                         :href="telegramHref"
@@ -190,15 +163,9 @@ const co = useAppDesign().components.pages.contacts;
                     >
                         {{ telegramLabel || "Написать в Telegram" }}
                     </a>
-                    <span
-                        v-else
-                        :class="co.channelMutedValue"
-                    >Уточняется</span>
+                    <span v-else :class="co.channelMutedValue">Уточняется</span>
                 </p>
-                <p
-                    v-if="whatsappHref"
-                    class="mt-3 text-sm"
-                >
+                <p v-if="whatsappHref" class="mt-3 text-sm">
                     <a
                         :href="whatsappHref"
                         target="_blank"
@@ -214,30 +181,13 @@ const co = useAppDesign().components.pages.contacts;
                 <div :class="co.channelIconWrap">
                     <i class="mdi mdi-email-outline text-xl" />
                 </div>
-                <p :class="co.channelLabel">
-                    Эл. почта
-                </p>
-                <p
-                    v-if="loadingProfile && !emailDisplay"
-                    :class="co.channelLoading"
-                >
-                    Загрузка…
-                </p>
-                <p
-                    v-else
-                    :class="co.channelValueRow"
-                >
-                    <a
-                        v-if="emailHref"
-                        :href="emailHref"
-                        :class="co.emailLink"
-                    >
+                <p :class="co.channelLabel">Эл. почта</p>
+                <p v-if="loadingProfile && !emailDisplay" :class="co.channelLoading">Загрузка…</p>
+                <p v-else :class="co.channelValueRow">
+                    <a v-if="emailHref" :href="emailHref" :class="co.emailLink">
                         {{ emailDisplay }}
                     </a>
-                    <span
-                        v-else
-                        :class="co.channelMutedValue"
-                    >Уточняется</span>
+                    <span v-else :class="co.channelMutedValue">Уточняется</span>
                 </p>
             </article>
         </div>
@@ -245,9 +195,7 @@ const co = useAppDesign().components.pages.contacts;
         <div :class="co.mainGrid">
             <SecondaryContentBlock title="Адрес">
                 <template v-if="loadingDelivery && !hasAddress">
-                    <p :class="co.addressLoading">
-                        Загрузка адреса…
-                    </p>
+                    <p :class="co.addressLoading">Загрузка адреса…</p>
                 </template>
                 <template v-else-if="hasAddress">
                     <p
@@ -258,32 +206,19 @@ const co = useAppDesign().components.pages.contacts;
                         {{ line }}
                     </p>
                 </template>
-                <p v-else>
-                    Адрес уточняется.
-                </p>
+                <p v-else>Адрес уточняется.</p>
 
                 <ContactsBranchMap />
 
-                <p
-                    v-if="siteUrl"
-                    :class="co.siteLinkPara"
-                >
-                    <a
-                        :href="siteUrl"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        :class="co.waLink"
-                    >
+                <p v-if="siteUrl" :class="co.siteLinkPara">
+                    <a :href="siteUrl" target="_blank" rel="noopener noreferrer" :class="co.waLink">
                         Сайт
                     </a>
                 </p>
             </SecondaryContentBlock>
 
             <SecondaryContentBlock title="Режим работы">
-                <p
-                    v-if="loadingProfile && !scheduleRows.length"
-                    :class="co.scheduleLoading"
-                >
+                <p v-if="loadingProfile && !scheduleRows.length" :class="co.scheduleLoading">
                     Загрузка…
                 </p>
                 <p
@@ -292,10 +227,7 @@ const co = useAppDesign().components.pages.contacts;
                 >
                     {{ scheduleRows[0].work }}
                 </p>
-                <ul
-                    v-else-if="scheduleRows.length"
-                    :class="co.scheduleList"
-                >
+                <ul v-else-if="scheduleRows.length" :class="co.scheduleList">
                     <li
                         v-for="(row, idx) in scheduleRows"
                         :key="row.dayKey || `row-${idx}`"
@@ -303,18 +235,14 @@ const co = useAppDesign().components.pages.contacts;
                     >
                         <span
                             :class="
-                                isScheduleToday(row.dayKey)
-                                    ? co.scheduleDayToday
-                                    : co.scheduleDay
+                                isScheduleToday(row.dayKey) ? co.scheduleDayToday : co.scheduleDay
                             "
                         >
                             {{ row.dayLabel }}
                         </span>
                         <span
                             :class="
-                                isScheduleToday(row.dayKey)
-                                    ? co.scheduleWorkToday
-                                    : co.scheduleWork
+                                isScheduleToday(row.dayKey) ? co.scheduleWorkToday : co.scheduleWork
                             "
                         >
                             <template v-if="row.isDayOff">Выходной</template>
@@ -322,92 +250,47 @@ const co = useAppDesign().components.pages.contacts;
                         </span>
                     </li>
                 </ul>
-                <p
-                    v-else
-                    :class="co.scheduleEmpty"
-                >
-                    Режим уточняется.
-                </p>
+                <p v-else :class="co.scheduleEmpty">Режим уточняется.</p>
             </SecondaryContentBlock>
         </div>
 
         <SecondaryContentBlock title="Как лучше связаться">
             <div :class="co.tipsGrid">
                 <div :class="co.tipTile">
-                    <p :class="co.tipKicker">
-                        01
-                    </p>
-                    <p :class="co.tipTitle">
-                        По заказу
-                    </p>
-                    <p :class="co.tipBody">
-                        Сайт или телефон.
-                    </p>
+                    <p :class="co.tipKicker">01</p>
+                    <p :class="co.tipTitle">По заказу</p>
+                    <p :class="co.tipBody">Сайт или телефон.</p>
                 </div>
                 <div :class="co.tipTile">
-                    <p :class="co.tipKicker">
-                        02
-                    </p>
-                    <p :class="co.tipTitle">
-                        По сотрудничеству
-                    </p>
-                    <p :class="co.tipBody">
-                        Электронная почта.
-                    </p>
+                    <p :class="co.tipKicker">02</p>
+                    <p :class="co.tipTitle">По сотрудничеству</p>
+                    <p :class="co.tipBody">Электронная почта.</p>
                 </div>
                 <div :class="co.tipTile">
-                    <p :class="co.tipKicker">
-                        03
-                    </p>
-                    <p :class="co.tipTitle">
-                        По информации
-                    </p>
-                    <p :class="co.tipBody">
-                        Telegram-канал или Telegram-бот.
-                    </p>
+                    <p :class="co.tipKicker">03</p>
+                    <p :class="co.tipTitle">По информации</p>
+                    <p :class="co.tipBody">Telegram-канал или Telegram-бот.</p>
                 </div>
             </div>
         </SecondaryContentBlock>
 
         <SecondaryContentBlock title="Юридическая информация">
-            <p
-                v-if="loadingLegal && !hasLegal"
-                :class="co.legalLoading"
-            >
-                Загрузка…
-            </p>
-            <div
-                v-else-if="hasLegal"
-                :class="co.legalList"
-            >
-                <div
-                    v-if="legalName"
-                    :class="co.legalRow"
-                >
+            <p v-if="loadingLegal && !hasLegal" :class="co.legalLoading">Загрузка…</p>
+            <div v-else-if="hasLegal" :class="co.legalList">
+                <div v-if="legalName" :class="co.legalRow">
                     <span :class="co.legalLabel">Наименование</span>
                     <span :class="co.legalValue">{{ legalName }}</span>
                 </div>
-                <div
-                    v-if="legalInn"
-                    :class="co.legalRow"
-                >
+                <div v-if="legalInn" :class="co.legalRow">
                     <span :class="co.legalLabel">ИНН</span>
                     <span :class="co.legalValue">{{ legalInn }}</span>
                 </div>
-                <div
-                    v-if="legalOgrn"
-                    :class="co.legalRow"
-                >
+                <div v-if="legalOgrn" :class="co.legalRow">
                     <span :class="co.legalLabel">ОГРН</span>
                     <span :class="co.legalValue">{{ legalOgrn }}</span>
                 </div>
             </div>
-            <p
-                v-else
-                :class="co.legalEmpty"
-            >
-                Юридические реквизиты уточняются.
-            </p>
+            <p v-else :class="co.legalEmpty">Юридические реквизиты уточняются.</p>
         </SecondaryContentBlock>
     </SecondaryPageLayout>
 </template>

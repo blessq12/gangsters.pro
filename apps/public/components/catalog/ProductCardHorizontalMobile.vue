@@ -16,12 +16,9 @@ const emit = defineEmits(["imageClick"]);
 const h = useAppDesign().components.catalog.cards.horizontalMobile;
 const cs = useAppDesign().components.catalog.cards.shared;
 
-const {
-    primaryThumb,
-    imageSrcset,
-    imageObjectPosition,
-    primaryTag,
-} = useCatalogCardView(computed(() => props.product));
+const { primaryThumb, imageSrcset, imageObjectPosition, primaryTag } = useCatalogCardView(
+    computed(() => props.product),
+);
 
 const imageSizes = "(max-width: 640px) 40vw, 240px";
 
@@ -43,17 +40,16 @@ function handleIncrement() {
 }
 
 function tagToneClass(color) {
-    const c = String(color || "").trim().toLowerCase();
+    const c = String(color || "")
+        .trim()
+        .toLowerCase();
     return cs.tagTone[c] ?? cs.tagTone.default;
 }
 </script>
 
 <template>
     <article :class="h.article">
-        <div
-            :class="h.thumbCol"
-            @click.stop="emit('imageClick', product)"
-        >
+        <div :class="h.thumbCol" @click.stop="emit('imageClick', product)">
             <img
                 v-if="primaryThumb"
                 :src="primaryThumb"
@@ -65,10 +61,7 @@ function tagToneClass(color) {
                 loading="lazy"
                 fetchpriority="low"
             />
-            <div
-                v-else
-                :class="h.thumbPlaceholder"
-            >
+            <div v-else :class="h.thumbPlaceholder">
                 {{ cs.noPhotoText }}
             </div>
             <div :class="h.thumbGradient" />
@@ -76,16 +69,10 @@ function tagToneClass(color) {
 
         <div :class="h.body">
             <div :class="h.titleRow">
-                <p
-                    :class="h.title"
-                    :title="product.name"
-                >
+                <p :class="h.title" :title="product.name">
                     {{ product.name }}
                 </p>
-                <span
-                    v-if="displayWeight != null"
-                    :class="h.weightInline"
-                >
+                <span v-if="displayWeight != null" :class="h.weightInline">
                     {{ displayWeight }}&nbsp;г
                 </span>
             </div>

@@ -156,10 +156,7 @@ export const useUserStore = defineStore("user", {
         ensureSelectedAddress(options = {}) {
             const persist = options.persist !== false;
             const emit = options.emit !== false;
-            const nextId = resolvePreferredAddressId(
-                this.addresses,
-                this.selectedAddressId,
-            );
+            const nextId = resolvePreferredAddressId(this.addresses, this.selectedAddressId);
 
             if (this.selectedAddressId === nextId) {
                 if (persist) {
@@ -319,9 +316,8 @@ export const useUserStore = defineStore("user", {
                     this.ensureSelectedAddress();
                 }
             } else {
-                const address = data?.address && typeof data.address === "object"
-                    ? data.address
-                    : data;
+                const address =
+                    data?.address && typeof data.address === "object" ? data.address : data;
                 if (address && typeof address === "object" && address.id != null) {
                     const next = [
                         ...this.addresses.filter((row) => String(row.id) !== String(address.id)),

@@ -24,15 +24,9 @@ function normalizeScheduleObject(raw) {
     for (const day of VALID_DAYS) {
         const row = raw[day];
         if (!row || typeof row !== "object") continue;
-        const isDayOff =
-            row.is_day_off === true ||
-            row.is_day_off === 1 ||
-            row.is_day_off === "1";
+        const isDayOff = row.is_day_off === true || row.is_day_off === 1 || row.is_day_off === "1";
         const workRaw = row.work;
-        const work =
-            typeof workRaw === "string" && workRaw.trim() !== ""
-                ? workRaw.trim()
-                : null;
+        const work = typeof workRaw === "string" && workRaw.trim() !== "" ? workRaw.trim() : null;
         out[day] = { work, is_day_off: isDayOff };
     }
 
@@ -137,10 +131,7 @@ export function normalizeCompanyDocument(apiDocument) {
     }
 
     const content = apiDocument.content;
-    const normalizedContent =
-        typeof content === "string" && content.trim() !== ""
-            ? content
-            : null;
+    const normalizedContent = typeof content === "string" && content.trim() !== "" ? content : null;
 
     return {
         id: apiDocument.id ?? null,
@@ -167,18 +158,15 @@ export function toDeliveryFactsView(delivery) {
     return {
         min_order_amount_kopecks: settings.min_order_amount_kopecks ?? null,
         delivery_fee_kopecks: settings.delivery_fee_kopecks ?? null,
-        outside_zone_delivery_fee_kopecks:
-            settings.outside_zone_delivery_fee_kopecks ?? null,
-        average_delivery_time_minutes:
-            settings.average_delivery_time_minutes ?? null,
+        outside_zone_delivery_fee_kopecks: settings.outside_zone_delivery_fee_kopecks ?? null,
+        average_delivery_time_minutes: settings.average_delivery_time_minutes ?? null,
         city: branch.city,
         street: branch.street,
         house: branch.house,
         address_comment: branch.comment,
         branch_latitude: branch.latitude ?? zone.branch_latitude ?? null,
         branch_longitude: branch.longitude ?? zone.branch_longitude ?? null,
-        delivery_zone_geojson:
-            delivery.zone_geojson ?? zone.delivery_zone_geojson ?? null,
+        delivery_zone_geojson: delivery.zone_geojson ?? zone.delivery_zone_geojson ?? null,
         delivery_zones: Array.isArray(delivery.zones)
             ? delivery.zones
             : Array.isArray(zone.delivery_zones)

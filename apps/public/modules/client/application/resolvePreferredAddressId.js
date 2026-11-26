@@ -15,10 +15,7 @@ export function resolvePreferredAddressId(addresses, currentId = null) {
         return null;
     }
 
-    if (
-        currentId != null
-        && list.some((address) => address?.id === currentId)
-    ) {
+    if (currentId != null && list.some((address) => address?.id === currentId)) {
         return currentId;
     }
 

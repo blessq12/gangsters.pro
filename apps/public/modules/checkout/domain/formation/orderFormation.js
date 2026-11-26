@@ -27,7 +27,7 @@ export function lineTotalKopecks(line) {
     return line.unitPriceKopecks * line.quantity;
 }
 
-export function billableSubtotal(lines) {
+function billableSubtotal(lines) {
     return lines.reduce((sum, line) => (isBillable(line) ? sum + lineTotalKopecks(line) : sum), 0);
 }
 
@@ -37,17 +37,24 @@ export function billableSubtotal(lines) {
  * @param {Date|string} at
  * @param {string} timezone
  */
-export function isoWeekdayAt(at, timezone) {
+function isoWeekdayAt(at, timezone) {
     if (typeof at === "string") {
-        const wallDate = /^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::\d{2}(?:\.\d+)?)?)?$/.exec(at.trim());
+        const wallDate =
+            /^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::\d{2}(?:\.\d+)?)?)?$/.exec(
+                at.trim(),
+            );
         if (wallDate) {
-            const day = new Date(Date.UTC(Number(wallDate[1]), Number(wallDate[2]) - 1, Number(wallDate[3]))).getUTCDay();
+            const day = new Date(
+                Date.UTC(Number(wallDate[1]), Number(wallDate[2]) - 1, Number(wallDate[3])),
+            ).getUTCDay();
             return day === 0 ? 7 : day;
         }
     }
 
     const date = at instanceof Date ? at : new Date(at);
-    const short = new Intl.DateTimeFormat("en-US", { timeZone: timezone, weekday: "short" }).format(date);
+    const short = new Intl.DateTimeFormat("en-US", { timeZone: timezone, weekday: "short" }).format(
+        date,
+    );
 
     return WEEKDAY_ISO[short];
 }
@@ -85,7 +92,8 @@ function complementLines(lines, policy, facts) {
     }
 
     const rollCount = lines.reduce(
-        (sum, line) => (isBillable(line) ? sum + facts.rollUnitsPerLineUnit(line) * line.quantity : sum),
+        (sum, line) =>
+            isBillable(line) ? sum + facts.rollUnitsPerLineUnit(line) * line.quantity : sum,
         0,
     );
     const sets = Math.min(maxSets, Math.floor(rollCount / rollsPerSet));
@@ -125,13 +133,15 @@ function giftLines(lines, policy, facts, channel, at, timezone) {
         return [];
     }
 
-    return [{
-        productId: facts.gift.product_id,
-        name: facts.gift.name,
-        unitPriceKopecks: 0,
-        quantity: 1,
-        lineType: LINE_TYPE.GIFT,
-    }];
+    return [
+        {
+            productId: facts.gift.product_id,
+            name: facts.gift.name,
+            unitPriceKopecks: 0,
+            quantity: 1,
+            lineType: LINE_TYPE.GIFT,
+        },
+    ];
 }
 
 function feeByMode(mode, baseFeeKopecks, surchargeKopecks) {
@@ -164,7 +174,9 @@ function applyDeliveryBenefit(lines, delivery, policy, zoneIsRemote) {
     const mode = !atThreshold
         ? String(benefit.below_threshold_fee_mode ?? FEE_MODE.BASE_TARIFF)
         : zoneIsRemote
-          ? String(benefit.outside_zone_at_threshold_fee_mode ?? FEE_MODE.OUTSIDE_ZONE_SURCHARGE_ONLY)
+          ? String(
+                benefit.outside_zone_at_threshold_fee_mode ?? FEE_MODE.OUTSIDE_ZONE_SURCHARGE_ONLY,
+            )
           : String(benefit.in_zone_at_threshold_fee_mode ?? FEE_MODE.FREE);
 
     // Надбавка вне зоны — ответственность Delivery, не Promotion Policy.
@@ -189,7 +201,16 @@ function applyDeliveryBenefit(lines, delivery, policy, zoneIsRemote) {
  * }} input
  */
 export function applyOrderFormation(input) {
-    const { baseLines, delivery, policy, facts, channel, at, timezone, zoneIsRemote = false } = input;
+    const {
+        baseLines,
+        delivery,
+        policy,
+        facts,
+        channel,
+        at,
+        timezone,
+        zoneIsRemote = false,
+    } = input;
 
     if (baseLines.length === 0) {
         throw new Error("Заказ нельзя создать с пустой корзиной.");

@@ -8,8 +8,7 @@ const dockChromeIslandSurface =
     "rounded-none border border-app-accent/40 bg-app-canvas backdrop-blur";
 
 /** Pill / icon on chrome island (dock tabs, category bar). */
-const chromePillActive =
-    "border-app-accent/70 bg-neutral-950/88 text-app-accent";
+const chromePillActive = "border-app-accent/70 bg-neutral-950/88 text-app-accent";
 const chromePillInactive =
     "border-black/20 bg-neutral-950/88 text-app-canvas-fg hover:border-app-accent/50 hover:text-app-accent";
 
@@ -19,7 +18,7 @@ export const dockDesign = {
         chromePillActive,
         chromePillInactive,
         tabIconActive: chromePillActive,
-        tabIconInactive:         chromePillInactive,
+        tabIconInactive: chromePillInactive,
         /** Полупрозрачность chrome при скролле каталога. */
         scrollDimTransition: "transition-opacity duration-300 ease-out",
         scrollDimmed: "opacity-40",
@@ -28,8 +27,7 @@ export const dockDesign = {
     },
 
     chrome: {
-        fixedRoot:
-            "pointer-events-none fixed inset-x-0 bottom-4 z-30 md:bottom-6",
+        fixedRoot: "pointer-events-none fixed inset-x-0 bottom-4 z-30 md:bottom-6",
         visibleInner:
             "mx-auto flex w-full max-w-7xl flex-col items-center px-4 sm:px-6 md:px-6 lg:px-8",
         visibleInnerWithPanel:
@@ -63,8 +61,7 @@ export const dockDesign = {
             "w-full text-center text-sm font-semibold uppercase tracking-wide leading-tight sm:text-base",
         emptyWrap: "flex items-center gap-2",
         emptyIcon: "mdi mdi-cart-outline text-lg leading-none sm:text-xl",
-        emptyLabel:
-            "max-w-[7rem] text-[11px] leading-snug sm:max-w-[8rem] sm:text-xs",
+        emptyLabel: "max-w-[7rem] text-[11px] leading-snug sm:max-w-[8rem] sm:text-xs",
     },
 
     /** Flash «добавлено» на табе избранного — как cartSummary, вместо текста иконка сердца. */
@@ -83,10 +80,7 @@ export const dockDesign = {
     profileTab: {
         wrap: "relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-none border transition-[color,background-color,border-color] duration-200 ease-out sm:h-12 sm:w-12",
         wrapAuthed: "border-app-accent bg-app-accent text-white",
-        monogram:
-            "text-sm font-semibold uppercase leading-none tracking-wide sm:text-base",
+        monogram: "text-sm font-semibold uppercase leading-none tracking-wide sm:text-base",
         iconMdiSize: "text-lg sm:text-xl",
     },
 } as const;
-
-export type DockDesign = typeof dockDesign;

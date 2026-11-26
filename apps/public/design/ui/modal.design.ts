@@ -1,23 +1,18 @@
 /** Общее модальное окно приложения ({@link BaseModal.vue}). */
 
 export const modalDesign = {
-    root:
-        "fixed inset-0 z-[9999] flex items-center justify-center",
-    backdrop:
-        "absolute inset-0 bg-[rgba(0,0,0,0.72)] backdrop-blur-sm",
+    root: "fixed inset-0 z-[9999] flex items-center justify-center",
+    backdrop: "absolute inset-0 bg-[rgba(0,0,0,0.72)] backdrop-blur-sm",
     content: "pointer-events-none relative z-[1] w-full",
     sizes: {
         md: {
             innerWrap: "relative z-10 mx-auto w-full max-w-lg px-4 sm:px-6 lg:px-8",
-            card:
-                "pointer-events-auto rounded-none border border-app-border-on-surface bg-app-canvas px-4 sm:px-6 lg:px-8 py-5 shadow-2xl shadow-black/70 backdrop-blur-xl",
+            card: "pointer-events-auto rounded-none border border-app-border-on-surface bg-app-canvas px-4 sm:px-6 lg:px-8 py-5 shadow-2xl shadow-black/70 backdrop-blur-xl",
             body: "space-y-4 text-sm leading-relaxed text-app-canvas-fg",
         },
         lg: {
-            innerWrap:
-                "relative z-10 mx-auto w-full max-w-3xl px-4 sm:max-w-4xl sm:px-6 lg:px-8",
-            card:
-                "pointer-events-auto flex max-h-[min(90vh,52rem)] flex-col rounded-none border border-app-border-on-surface bg-app-canvas px-4 sm:px-6 lg:px-8 py-5 shadow-2xl shadow-black/70 backdrop-blur-xl",
+            innerWrap: "relative z-10 mx-auto w-full max-w-3xl px-4 sm:max-w-4xl sm:px-6 lg:px-8",
+            card: "pointer-events-auto flex max-h-[min(90vh,52rem)] flex-col rounded-none border border-app-border-on-surface bg-app-canvas px-4 sm:px-6 lg:px-8 py-5 shadow-2xl shadow-black/70 backdrop-blur-xl",
             body: "min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain pr-1 text-sm leading-relaxed text-app-canvas-fg",
         },
     },

@@ -61,9 +61,7 @@ const formatPrice = (value) => formatMoneyRublesRu(value);
             <p :class="f.productName">
                 {{ item.productSnapshot?.name || `Товар #${item.productId}` }}
             </p>
-            <p :class="f.productPrice">
-                {{ formatPrice(item.productSnapshot?.price) }} ₽
-            </p>
+            <p :class="f.productPrice">{{ formatPrice(item.productSnapshot?.price) }} ₽</p>
         </div>
 
         <div :class="f.actionRow">
@@ -76,11 +74,7 @@ const formatPrice = (value) => formatMoneyRublesRu(value);
                 В корзину
             </button>
 
-            <div
-                v-else
-                :class="f.qtyBar"
-                :aria-label="`В корзине ${qtyInCart} шт`"
-            >
+            <div v-else :class="f.qtyBar" :aria-label="`В корзине ${qtyInCart} шт`">
                 <button
                     type="button"
                     :class="f.qtyBtn"
@@ -89,12 +83,7 @@ const formatPrice = (value) => formatMoneyRublesRu(value);
                 >
                     –
                 </button>
-                <span
-                    :class="[
-                        f.qtyLabel,
-                        qtyPulse ? f.qtyLabelPulse : '',
-                    ]"
-                >
+                <span :class="[f.qtyLabel, qtyPulse ? f.qtyLabelPulse : '']">
                     {{ qtyInCart }} шт
                 </span>
                 <button

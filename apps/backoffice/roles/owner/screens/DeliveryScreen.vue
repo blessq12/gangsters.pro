@@ -1,11 +1,6 @@
 <script setup>
 import { onMounted, reactive, ref, watch } from "vue";
-import {
-    getDelivery,
-    replaceZones,
-    storeDelivery,
-    updateDelivery,
-} from "../../../api/delivery.js";
+import { getDelivery, replaceZones, storeDelivery, updateDelivery } from "../../../api/delivery.js";
 import DeliveryZonesMapEditor from "../components/delivery/DeliveryZonesMapEditor.vue";
 import OwnerBranchSelector from "../components/branch/OwnerBranchSelector.vue";
 import { useOwnerBranchContext } from "../composables/useOwnerBranchContext.js";
@@ -66,12 +61,12 @@ function applyDelivery(payload) {
     applyBranchCenter(payload);
     draftZones.value = Array.isArray(payload?.zones)
         ? payload.zones.map((zone) => ({
-            id: zone.id,
-            name: zone.name,
-            fee: zone.fee ?? zone.fee_rubles ?? 0,
-            is_remote: Boolean(zone.is_remote),
-            geometry: zone.geometry ?? null,
-        }))
+              id: zone.id,
+              name: zone.name,
+              fee: zone.fee ?? zone.fee_rubles ?? 0,
+              is_remote: Boolean(zone.is_remote),
+              geometry: zone.geometry ?? null,
+          }))
         : [];
 }
 
@@ -97,12 +92,15 @@ async function loadDelivery() {
 
 function validateSettings() {
     clearErrors(settingsErrors);
-    if (settingsForm.min_order_rubles !== "" && Number.isNaN(Number(settingsForm.min_order_rubles))) {
+    if (
+        settingsForm.min_order_rubles !== "" &&
+        Number.isNaN(Number(settingsForm.min_order_rubles))
+    ) {
         settingsErrors.min_order_rubles = "Число";
     }
     if (
-        settingsForm.average_delivery_time_minutes !== ""
-        && Number.isNaN(Number(settingsForm.average_delivery_time_minutes))
+        settingsForm.average_delivery_time_minutes !== "" &&
+        Number.isNaN(Number(settingsForm.average_delivery_time_minutes))
     ) {
         settingsErrors.average_delivery_time_minutes = "Число";
     }
@@ -144,12 +142,12 @@ async function saveAll() {
     }
 
     const settingsBody = {
-        min_order_rubles: settingsForm.min_order_rubles === ""
-            ? null
-            : Number(settingsForm.min_order_rubles),
-        average_delivery_time_minutes: settingsForm.average_delivery_time_minutes === ""
-            ? null
-            : Number(settingsForm.average_delivery_time_minutes),
+        min_order_rubles:
+            settingsForm.min_order_rubles === "" ? null : Number(settingsForm.min_order_rubles),
+        average_delivery_time_minutes:
+            settingsForm.average_delivery_time_minutes === ""
+                ? null
+                : Number(settingsForm.average_delivery_time_minutes),
         branch_id: Number(selectedBranchId.value),
     };
 
@@ -184,9 +182,7 @@ onMounted(async () => {
     <div class="mx-auto w-full max-w-7xl space-y-4 px-4 py-5 sm:px-6 lg:px-10 lg:py-7">
         <div class="space-y-3">
             <div class="flex flex-wrap items-center justify-between gap-3">
-                <h1 class="text-2xl font-semibold tracking-tight text-bo-fg">
-                    Доставка
-                </h1>
+                <h1 class="text-2xl font-semibold tracking-tight text-bo-fg">Доставка</h1>
                 <UiButton
                     :disabled="!selectedBranchId || saveApi.loading || loadApi.loading"
                     @click="saveAll"
@@ -202,9 +198,7 @@ onMounted(async () => {
         </p>
 
         <template v-else>
-            <p v-if="loadApi.loading" class="text-sm text-bo-muted">
-                Загрузка…
-            </p>
+            <p v-if="loadApi.loading" class="text-sm text-bo-muted">Загрузка…</p>
 
             <template v-else>
                 <UiCard title="Настройки">

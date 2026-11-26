@@ -1,11 +1,7 @@
 <script setup>
 import { computed, onMounted, reactive, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import {
-    getIngredient,
-    storeIngredient,
-    updateIngredient,
-} from "../../../api/warehouse.js";
+import { getIngredient, storeIngredient, updateIngredient } from "../../../api/warehouse.js";
 import { useApi } from "../../../shell/composables/useApi.js";
 import { useToast } from "../../../shell/composables/useToast.js";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
@@ -83,11 +79,9 @@ async function save() {
         unit: form.unit.trim(),
     };
     try {
-        const result = await saveApi.run(() => (
-            ingredientId.value
-                ? updateIngredient(ingredientId.value, body)
-                : storeIngredient(body)
-        ));
+        const result = await saveApi.run(() =>
+            ingredientId.value ? updateIngredient(ingredientId.value, body) : storeIngredient(body),
+        );
         toast.success(ingredientId.value ? "Сохранено" : "Создано");
         if (isNew.value && result?.id) {
             await router.replace({
@@ -125,9 +119,7 @@ onMounted(load);
             </UiButton>
         </div>
 
-        <p v-if="loadApi.loading" class="text-sm text-bo-muted">
-            Загрузка…
-        </p>
+        <p v-if="loadApi.loading" class="text-sm text-bo-muted">Загрузка…</p>
 
         <UiCard v-else title="Карточка">
             <div class="grid gap-4 sm:grid-cols-2">

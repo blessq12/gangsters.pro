@@ -33,12 +33,14 @@ export const useUiStore = defineStore("ui", {
         catalogSearchOpen: false,
     }),
     getters: {
-        resolvedDockBadges: (state) => (cartCount = 0, favoritesCount = 0) => ({
-            ...state.dockBadges,
-            profile: 0,
-            cart: Number(cartCount) || 0,
-            favorites: Number(favoritesCount) || 0,
-        }),
+        resolvedDockBadges:
+            (state) =>
+            (cartCount = 0, favoritesCount = 0) => ({
+                ...state.dockBadges,
+                profile: 0,
+                cart: Number(cartCount) || 0,
+                favorites: Number(favoritesCount) || 0,
+            }),
     },
     actions: {
         initFromStorage() {
@@ -233,4 +235,3 @@ export const useUiStore = defineStore("ui", {
         },
     },
 });
-

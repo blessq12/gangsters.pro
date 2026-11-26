@@ -70,7 +70,7 @@ final class EloquentBranchTagRepository implements BranchTagRepository
         }
 
         if ($id === null) {
-            $row = new BranchTagModel();
+            $row = new BranchTagModel;
             $row->branch_id = $branchId;
         } else {
             $row = BranchTagModel::query()

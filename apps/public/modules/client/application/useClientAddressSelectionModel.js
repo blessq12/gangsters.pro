@@ -13,12 +13,7 @@ export function useClientAddressSelectionModel() {
         try {
             return await userStore.addClientAddress(payload);
         } catch (error) {
-            throw new Error(
-                mapApiError(
-                    error,
-                    "Не удалось сохранить адрес. Попробуй ещё раз.",
-                ),
-            );
+            throw new Error(mapApiError(error, "Не удалось сохранить адрес. Попробуй ещё раз."));
         }
     }
 

@@ -25,9 +25,7 @@ const saveApi = useApi();
 
 const allowedTabs = ["banners", "promotions", "conditions"];
 const tab = ref(
-    allowedTabs.includes(String(route.query.tab ?? ""))
-        ? String(route.query.tab)
-        : "banners",
+    allowedTabs.includes(String(route.query.tab ?? "")) ? String(route.query.tab) : "banners",
 );
 const {
     page: bannersPage,
@@ -100,10 +98,12 @@ async function loadConditions() {
 
 async function loadBanners() {
     try {
-        const payload = await loadApi.run(() => listBanners({
-            offset: bannersOffset.value,
-            limit: bannersPerPage,
-        }));
+        const payload = await loadApi.run(() =>
+            listBanners({
+                offset: bannersOffset.value,
+                limit: bannersPerPage,
+            }),
+        );
         applyBanners(payload);
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось загрузить баннеры");
@@ -112,10 +112,12 @@ async function loadBanners() {
 
 async function loadPromotions() {
     try {
-        const payload = await loadApi.run(() => listPromotions({
-            offset: promotionsOffset.value,
-            limit: promotionsPerPage,
-        }));
+        const payload = await loadApi.run(() =>
+            listPromotions({
+                offset: promotionsOffset.value,
+                limit: promotionsPerPage,
+            }),
+        );
         applyPromotions(payload);
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось загрузить акции");
@@ -194,9 +196,11 @@ onMounted(loadMarketing);
                     :key="item.id"
                     type="button"
                     class="h-10 px-4 text-sm font-medium transition-colors duration-150"
-                    :class="tab === item.id
-                        ? 'bg-bo-accent text-white'
-                        : 'bg-white/[0.04] text-bo-muted hover:bg-white/[0.08] hover:text-bo-fg'"
+                    :class="
+                        tab === item.id
+                            ? 'bg-bo-accent text-white'
+                            : 'bg-white/[0.04] text-bo-muted hover:bg-white/[0.08] hover:text-bo-fg'
+                    "
                     @click="setTab(item.id)"
                 >
                     {{ item.label }}
@@ -219,7 +223,7 @@ onMounted(loadMarketing);
                             :src="row.image_desktop || row.image_mobile"
                             alt=""
                             class="h-12 w-20 object-cover"
-                        >
+                        />
                         <span v-else class="text-bo-muted">—</span>
                     </template>
                     <template #cell-is_active="{ value }">
@@ -256,7 +260,7 @@ onMounted(loadMarketing);
                             :src="row.image"
                             alt=""
                             class="h-12 w-20 object-cover"
-                        >
+                        />
                         <span v-else class="text-bo-muted">—</span>
                     </template>
                     <template #cell-is_active="{ value }">
@@ -286,7 +290,7 @@ onMounted(loadMarketing);
                     />
                 </UiFormField>
                 <UiFormField label="Активно">
-                    <input v-model="conditionsForm.is_active" type="checkbox" class="mt-2">
+                    <input v-model="conditionsForm.is_active" type="checkbox" class="mt-2" />
                 </UiFormField>
                 <UiButton :disabled="saveApi.loading" @click="saveConditionsForm">
                     Сохранить

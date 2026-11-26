@@ -3,7 +3,17 @@
 namespace App\Infrastructure\Order\Model;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property int $branch_id
+ * @property array $gift_rules
+ * @property array $delivery_benefit
+ * @property array $complement_set_benefit
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
 final class BranchCommercialRulesModel extends Model
 {
     protected $table = 'ORD_branch_commercial_rules';

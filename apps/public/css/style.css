@@ -60,17 +60,11 @@
 }
 
 .app-shell.theme-dark::before {
-    background-image: linear-gradient(
-        rgba(255, 255, 255, 0.045),
-        rgba(255, 255, 255, 0.045)
-    );
+    background-image: linear-gradient(rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.045));
 }
 
 .app-shell.theme-light::before {
-    background-image: linear-gradient(
-        rgba(255, 255, 255, 0.12),
-        rgba(255, 255, 255, 0.12)
-    );
+    background-image: linear-gradient(rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.12));
 }
 
 .app-shell.theme-dark::after {
@@ -81,14 +75,15 @@
     pointer-events: none;
     opacity: 0.01;
     background-image:
-        linear-gradient(
-            rgba(255, 255, 255, 0.07),
-            rgba(255, 255, 255, 0.07)
-        ),
+        linear-gradient(rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.07)),
         url("../images/back_pattern.svg");
     background-repeat: no-repeat, repeat-y;
-    background-size: 100% 100%, 100% auto;
-    background-position: 0 0, center top;
+    background-size:
+        100% 100%,
+        100% auto;
+    background-position:
+        0 0,
+        center top;
     background-blend-mode: soft-light, normal;
     filter: grayscale(0.55) saturate(0.65) brightness(1.06);
 }
@@ -101,14 +96,15 @@
     pointer-events: none;
     opacity: 0.09;
     background-image:
-        linear-gradient(
-            rgba(255, 255, 255, 0.28),
-            rgba(255, 255, 255, 0.28)
-        ),
+        linear-gradient(rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.28)),
         url("../images/back_pattern.svg");
     background-repeat: no-repeat, repeat-y;
-    background-size: 100% 100%, 100% auto;
-    background-position: 0 0, center top;
+    background-size:
+        100% 100%,
+        100% auto;
+    background-position:
+        0 0,
+        center top;
     background-blend-mode: soft-light, normal;
     filter: grayscale(0.4) saturate(0.72) brightness(1.03);
 }
@@ -122,10 +118,7 @@
     background-repeat: no-repeat;
     background-size: auto;
     background-position: 0 0;
-    background-image: linear-gradient(
-        rgba(255, 255, 255, 0.045),
-        rgba(255, 255, 255, 0.045)
-    );
+    background-image: linear-gradient(rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.045));
 }
 
 .dock-panel-shell::after {
@@ -136,19 +129,19 @@
     pointer-events: none;
     opacity: 0.01;
     background-image:
-        linear-gradient(
-            rgba(255, 255, 255, 0.07),
-            rgba(255, 255, 255, 0.07)
-        ),
+        linear-gradient(rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.07)),
         url("../images/back_pattern.svg");
     background-repeat: no-repeat, repeat-y;
-    background-size: 100% 100%, 100% auto;
-    background-position: 0 0, center top;
+    background-size:
+        100% 100%,
+        100% auto;
+    background-position:
+        0 0,
+        center top;
     background-blend-mode: soft-light, normal;
     filter: grayscale(0.55) saturate(0.65) brightness(1.06);
 }
 
 .yandex-map-theme-dark [class*="ground-pane"] {
-    filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.92)
-        saturate(0.55);
+    filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.92) saturate(0.55);
 }

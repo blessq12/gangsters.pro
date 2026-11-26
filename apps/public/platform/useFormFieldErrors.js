@@ -9,11 +9,7 @@ export function useFormFieldErrors() {
     const fields = ref({});
     const formError = ref("");
 
-    const hasAny = computed(
-        () =>
-            Object.keys(fields.value).length > 0
-            || Boolean(formError.value),
-    );
+    const hasAny = computed(() => Object.keys(fields.value).length > 0 || Boolean(formError.value));
 
     function get(key) {
         return fields.value[key] || "";

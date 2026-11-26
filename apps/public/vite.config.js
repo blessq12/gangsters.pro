@@ -21,10 +21,7 @@ function manualChunks(id) {
     if (id.includes("node_modules/pinia")) {
         return "pinia";
     }
-    if (
-        id.includes("node_modules/vue/") ||
-        id.includes("node_modules/@vue/")
-    ) {
+    if (id.includes("node_modules/vue/") || id.includes("node_modules/@vue/")) {
         return "vue-core";
     }
     if (id.includes("node_modules/gsap")) {
@@ -44,18 +41,6 @@ function manualChunks(id) {
     }
     if (id.includes("node_modules/axios")) {
         return "axios";
-    }
-    if (id.includes("node_modules/moment")) {
-        return "moment";
-    }
-    if (id.includes("node_modules/isotope-layout")) {
-        return "isotope-layout";
-    }
-    if (
-        id.includes("node_modules/yup") ||
-        id.includes("node_modules/@vee-validate")
-    ) {
-        return "vee-yup";
     }
     return "vendor-misc";
 }

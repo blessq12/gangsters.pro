@@ -1,7 +1,4 @@
-import {
-    normalizeCatalogCategory,
-    normalizeCatalogItem,
-} from "./catalogMappers";
+import { normalizeCatalogCategory, normalizeCatalogItem } from "./catalogMappers";
 
 function mapCategoryNode(item) {
     const rawItems = Array.isArray(item?.items) ? item.items : [];
@@ -12,8 +9,8 @@ function mapCategoryNode(item) {
             .filter(Boolean)
             .filter(
                 (product) =>
-                    !Boolean(product?.promotion_meta?.complement_set)
-                    && !Boolean(product?.raw?.promotion_meta?.complement_set),
+                    !product?.promotion_meta?.complement_set &&
+                    !product?.raw?.promotion_meta?.complement_set,
             ),
     };
 }
@@ -59,17 +56,13 @@ function enrichCatalogSetLineNames(categoryNodes) {
             if (product?.kind !== "set") continue;
 
             if (Array.isArray(product.lines)) {
-                product.lines = product.lines.map((line) =>
-                    enrichSetLineName(line, nameById),
-                );
+                product.lines = product.lines.map((line) => enrichSetLineName(line, nameById));
             }
 
             if (product.raw && Array.isArray(product.raw.lines)) {
                 product.raw = {
                     ...product.raw,
-                    lines: product.raw.lines.map((line) =>
-                        enrichSetLineName(line, nameById),
-                    ),
+                    lines: product.raw.lines.map((line) => enrichSetLineName(line, nameById)),
                 };
             }
         }
@@ -79,23 +72,18 @@ function enrichCatalogSetLineNames(categoryNodes) {
 }
 
 function sortCategoryNodes(nodes) {
-    return [...nodes].sort(
-        (a, b) => (a.category.sort_order ?? 0) - (b.category.sort_order ?? 0),
-    );
+    return [...nodes].sort((a, b) => (a.category.sort_order ?? 0) - (b.category.sort_order ?? 0));
 }
 
 export function mapCatalogTreeFromPayload(payload) {
     const menuNodes = sortCategoryNodes(
-        (Array.isArray(payload?.categories) ? payload.categories : []).map(
-            mapCategoryNode,
-        ),
+        (Array.isArray(payload?.categories) ? payload.categories : []).map(mapCategoryNode),
     );
 
     const accompanyingNodes = sortCategoryNodes(
-        (
-            Array.isArray(payload?.accompanying_categories)
-                ? payload.accompanying_categories
-                : []
+        (Array.isArray(payload?.accompanying_categories)
+            ? payload.accompanying_categories
+            : []
         ).map(mapCategoryNode),
     );
 
@@ -103,9 +91,7 @@ export function mapCatalogTreeFromPayload(payload) {
     enrichCatalogSetLineNames(nameIndexSource);
 
     const complementProducts = (
-        Array.isArray(payload?.complement_products)
-            ? payload.complement_products
-            : []
+        Array.isArray(payload?.complement_products) ? payload.complement_products : []
     )
         .map((row) => normalizeCatalogItem(row))
         .filter(Boolean);
@@ -116,4 +102,3 @@ export function mapCatalogTreeFromPayload(payload) {
         complementProducts,
     };
 }
-

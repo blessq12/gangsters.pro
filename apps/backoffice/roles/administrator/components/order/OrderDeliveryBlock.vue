@@ -31,50 +31,37 @@ function onAddressUpdate(patch) {
 
 <template>
     <UiCard title="Доставка">
-        <div
-            v-if="readonly"
-            class="space-y-3 text-sm"
-        >
+        <div v-if="readonly" class="space-y-3 text-sm">
             <p class="text-bo-fg">
-                {{ method === 'courier' ? 'Курьер' : 'Самовывоз' }}
+                {{ method === "courier" ? "Курьер" : "Самовывоз" }}
             </p>
             <template v-if="method === 'courier'">
-                <p
-                    v-if="branchCity"
-                    class="text-bo-muted"
-                >
+                <p v-if="branchCity" class="text-bo-muted">
                     {{ branchCity }}
                 </p>
                 <p class="text-bo-fg">
-                    {{ [street, house].filter(Boolean).join(', ') || '—' }}
+                    {{ [street, house].filter(Boolean).join(", ") || "—" }}
                 </p>
-                <p
-                    v-if="apartment || entrance || floor"
-                    class="text-bo-muted"
-                >
-                    <template v-if="entrance">под. {{ entrance }} </template>
-                    <template v-if="floor">эт. {{ floor }} </template>
+                <p v-if="apartment || entrance || floor" class="text-bo-muted">
+                    <template v-if="entrance">под. {{ entrance }}</template>
+                    <template v-if="floor">эт. {{ floor }}</template>
                     <template v-if="apartment">кв. {{ apartment }}</template>
                 </p>
-                <p
-                    v-if="comment"
-                    class="text-bo-muted"
-                >
+                <p v-if="comment" class="text-bo-muted">
                     {{ comment }}
                 </p>
             </template>
         </div>
-        <div
-            v-else
-            class="space-y-4"
-        >
+        <div v-else class="space-y-4">
             <div class="flex flex-wrap gap-2">
                 <button
                     type="button"
                     class="h-10 border px-4 text-sm font-medium"
-                    :class="method === 'pickup'
-                        ? 'border-bo-accent bg-bo-accent/15 text-bo-fg'
-                        : 'border-bo-border bg-bo-field text-bo-muted'"
+                    :class="
+                        method === 'pickup'
+                            ? 'border-bo-accent bg-bo-accent/15 text-bo-fg'
+                            : 'border-bo-border bg-bo-field text-bo-muted'
+                    "
                     @click="$emit('update:method', 'pickup')"
                 >
                     Самовывоз
@@ -82,9 +69,11 @@ function onAddressUpdate(patch) {
                 <button
                     type="button"
                     class="h-10 border px-4 text-sm font-medium"
-                    :class="method === 'courier'
-                        ? 'border-bo-accent bg-bo-accent/15 text-bo-fg'
-                        : 'border-bo-border bg-bo-field text-bo-muted'"
+                    :class="
+                        method === 'courier'
+                            ? 'border-bo-accent bg-bo-accent/15 text-bo-fg'
+                            : 'border-bo-border bg-bo-field text-bo-muted'
+                    "
                     @click="$emit('update:method', 'courier')"
                 >
                     Курьер

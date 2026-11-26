@@ -2,8 +2,7 @@
  * Согласие на аналитику/storage: флаг в localStorage на клиенте.
  */
 
-export const SITE_CONSENT_NOTICE_STORAGE_KEY =
-    "gangsters_cookie_consent_accepted_v1";
+const SITE_CONSENT_NOTICE_STORAGE_KEY = "gangsters_cookie_consent_accepted_v1";
 
 /**
  * @returns {boolean}
@@ -14,9 +13,7 @@ export function hasAcceptedSiteConsentNotice() {
     }
 
     try {
-        return (
-            window.localStorage.getItem(SITE_CONSENT_NOTICE_STORAGE_KEY) === "1"
-        );
+        return window.localStorage.getItem(SITE_CONSENT_NOTICE_STORAGE_KEY) === "1";
     } catch {
         return false;
     }

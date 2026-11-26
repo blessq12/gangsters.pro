@@ -4,7 +4,10 @@ import { describe, it } from "node:test";
 import { formCheckout } from "./formCheckout.js";
 
 const fixture = JSON.parse(
-    readFileSync(new URL("../../../../../../tests/fixtures/order-formation/cases.json", import.meta.url), "utf8"),
+    readFileSync(
+        new URL("../../../../../../tests/fixtures/order-formation/cases.json", import.meta.url),
+        "utf8",
+    ),
 );
 
 describe("formCheckout ↔ OrderFormation (общие эталоны)", () => {
@@ -13,7 +16,9 @@ describe("formCheckout ↔ OrderFormation (общие эталоны)", () => {
             const result = formCheckout(fixture.context, testCase.intent, new Date(testCase.now));
 
             assert.deepEqual(
-                result.cart.lines.map((line) => `${line.payload.kind}:${line.product_id}x${line.quantity}`),
+                result.cart.lines.map(
+                    (line) => `${line.payload.kind}:${line.product_id}x${line.quantity}`,
+                ),
                 testCase.expected.lines,
             );
             assert.equal(result.totals.items_total, testCase.expected.items_total);

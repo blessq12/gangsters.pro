@@ -72,12 +72,17 @@ function buildBaseLines(context, intentLines) {
 function buildFacts(context, intent) {
     const commercialRules = context.commercial_rules;
     const giftProductId = Number(intent.gift_product_id) || 0;
-    const gift = giftProductId > 0
-        ? commercialRules.gift_candidates.find((candidate) => candidate.product_id === giftProductId) ?? null
-        : null;
+    const gift =
+        giftProductId > 0
+            ? (commercialRules.gift_candidates.find(
+                  (candidate) => candidate.product_id === giftProductId,
+              ) ?? null)
+            : null;
 
     const selections = new Map();
-    for (const row of Array.isArray(intent.complement_selections) ? intent.complement_selections : []) {
+    for (const row of Array.isArray(intent.complement_selections)
+        ? intent.complement_selections
+        : []) {
         selections.set(Number(row.product_id), Number(row.quantity) || 0);
     }
 
@@ -115,7 +120,8 @@ function benefits(context, facts, lines, channel, at, itemsTotalKopecks, deliver
     const giftRule = giftRuleForChannel({ giftRules: commercialRules.gift_rules }, channel);
     const weekdayOk = giftRule !== null && isGiftRuleAllowedOnDate(giftRule, at, context.timezone);
     const giftThreshold = Number(giftRule?.min_order_amount_kopecks) || 0;
-    const giftRuleOk = weekdayOk && itemsTotalKopecks >= giftThreshold && facts.giftCandidates.length > 0;
+    const giftRuleOk =
+        weekdayOk && itemsTotalKopecks >= giftThreshold && facts.giftCandidates.length > 0;
 
     const giftCandidates = giftRuleOk
         ? facts.giftCandidates.map((candidate) => ({
@@ -141,7 +147,9 @@ function benefits(context, facts, lines, channel, at, itemsTotalKopecks, deliver
     const threshold = Number(deliveryBenefit.free_delivery_threshold_kopecks) || 0;
     const rollsPerSet = Math.max(1, Number(complement.rolls_per_set) || 1);
     const maxSets = Number(complement.max_sets) || 0;
-    const entitled = complement.is_active ? Math.min(Math.floor(rollCount / rollsPerSet), maxSets) : 0;
+    const entitled = complement.is_active
+        ? Math.min(Math.floor(rollCount / rollsPerSet), maxSets)
+        : 0;
 
     return {
         gift_active: Boolean(giftRule?.is_active),
@@ -160,10 +168,11 @@ function benefits(context, facts, lines, channel, at, itemsTotalKopecks, deliver
         remaining_roll_count: Math.max(0, (entitled + 1) * rollsPerSet - rollCount),
         complement_active: Boolean(complement.is_active),
         delivery_active: Boolean(deliveryBenefit.is_active),
-        delivery_reached: channel === "courier"
-            && Boolean(deliveryBenefit.is_active)
-            && itemsTotalKopecks >= threshold
-            && deliveryFeeKopecks === 0,
+        delivery_reached:
+            channel === "courier" &&
+            Boolean(deliveryBenefit.is_active) &&
+            itemsTotalKopecks >= threshold &&
+            deliveryFeeKopecks === 0,
         free_delivery_threshold_kopecks: threshold,
         remaining_to_free_kopecks: Math.max(0, threshold - itemsTotalKopecks),
     };
@@ -197,10 +206,14 @@ export function formCheckout(context, intent, now = new Date()) {
     }
 
     const deliveryMethod = intent.delivery_method === "pickup" ? "pickup" : "courier";
-    const { latitude, longitude } = resolveCoordinates({ ...intent, delivery_method: deliveryMethod });
-    const zone = deliveryMethod === "courier"
-        ? matchDeliveryZone(context.delivery.zones, latitude, longitude)
-        : null;
+    const { latitude, longitude } = resolveCoordinates({
+        ...intent,
+        delivery_method: deliveryMethod,
+    });
+    const zone =
+        deliveryMethod === "courier"
+            ? matchDeliveryZone(context.delivery.zones, latitude, longitude)
+            : null;
     const hasCoords = latitude !== null && longitude !== null;
 
     const deliveryAvailable = deliveryMethod === "pickup" ? true : hasCoords ? zone !== null : null;
@@ -209,10 +222,12 @@ export function formCheckout(context, intent, now = new Date()) {
     const scheduledAt = intent.scheduled_at ? String(intent.scheduled_at).trim() : "";
     const at = scheduledAt !== "" ? scheduledAt : now;
 
-    const delivery = deliveryMethod === "courier"
-        ? { method: "courier", feeKopecks: zone?.fee_kopecks ?? 0 }
-        : { method: "pickup", feeKopecks: 0 };
-    const zoneIsRemote = deliveryMethod === "courier" ? (zone === null ? hasCoords : zone.is_remote) : false;
+    const delivery =
+        deliveryMethod === "courier"
+            ? { method: "courier", feeKopecks: zone?.fee_kopecks ?? 0 }
+            : { method: "pickup", feeKopecks: 0 };
+    const zoneIsRemote =
+        deliveryMethod === "courier" ? (zone === null ? hasCoords : zone.is_remote) : false;
 
     const facts = buildFacts(context, intent);
     const formed = applyOrderFormation({
@@ -257,13 +272,22 @@ export function formCheckout(context, intent, now = new Date()) {
             items_total: itemsTotalKopecks,
             totals,
         },
-        benefits: benefits(context, facts, formed.lines, deliveryMethod, at, itemsTotalKopecks, deliveryFeeKopecks),
+        benefits: benefits(
+            context,
+            facts,
+            formed.lines,
+            deliveryMethod,
+            at,
+            itemsTotalKopecks,
+            deliveryFeeKopecks,
+        ),
         client: clientSnapshot(intent.client),
         delivery: {
             method: deliveryMethod,
-            address: deliveryMethod === "courier" && intent.address
-                ? { ...intent.address, lat: latitude, lng: longitude }
-                : null,
+            address:
+                deliveryMethod === "courier" && intent.address
+                    ? { ...intent.address, lat: latitude, lng: longitude }
+                    : null,
             comment: intent.delivery_comment ?? null,
             persons: intent.persons ?? null,
             scheduled_at: intent.scheduled_at ?? null,
@@ -272,7 +296,12 @@ export function formCheckout(context, intent, now = new Date()) {
             delivery_available: deliveryAvailable,
             in_zone: inZone,
             zone: zone
-                ? { id: zone.id, name: zone.name, fee_kopecks: zone.fee_kopecks, is_remote: zone.is_remote }
+                ? {
+                      id: zone.id,
+                      name: zone.name,
+                      fee_kopecks: zone.fee_kopecks,
+                      is_remote: zone.is_remote,
+                  }
                 : null,
             zone_id: zone?.id ?? null,
             zone_name: zone?.name ?? null,

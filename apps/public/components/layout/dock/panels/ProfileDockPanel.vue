@@ -55,9 +55,7 @@ function openForgot() {
 }
 
 const panelTitle = computed(() =>
-    isAuthenticated.value
-        ? userStore.profile.name || "Гость"
-        : "Стань частью семьи",
+    isAuthenticated.value ? userStore.profile.name || "Гость" : "Стань частью семьи",
 );
 
 const panelSubtitle = computed(() => {
@@ -69,21 +67,14 @@ const panelSubtitle = computed(() => {
 
 function isSegmentSelected(name) {
     if (name === PROFILE_TAB_LOGIN) {
-        return (
-            activeTab.value === PROFILE_TAB_LOGIN ||
-            activeTab.value === PROFILE_TAB_FORGOT
-        );
+        return activeTab.value === PROFILE_TAB_LOGIN || activeTab.value === PROFILE_TAB_FORGOT;
     }
     return activeTab.value === name;
 }
 
 function segmentCellClasses(name) {
     const a = p.segmentSelector;
-    return [
-        a.cell,
-        a.cellDivider,
-        isSegmentSelected(name) ? a.cellSelected : a.cellIdle,
-    ];
+    return [a.cell, a.cellDivider, isSegmentSelected(name) ? a.cellSelected : a.cellIdle];
 }
 
 function logout() {
@@ -93,21 +84,9 @@ function logout() {
 </script>
 
 <template>
-    <DockPanelLayout
-        :title="panelTitle"
-        :description="panelSubtitle"
-    >
-        <template
-            v-if="isAuthenticated"
-            #headerActions
-        >
-            <button
-                type="button"
-                :class="p.headerLogout"
-                @click="logout"
-            >
-                Выйти
-            </button>
+    <DockPanelLayout :title="panelTitle" :description="panelSubtitle">
+        <template v-if="isAuthenticated" #headerActions>
+            <button type="button" :class="p.headerLogout" @click="logout">Выйти</button>
         </template>
         <div
             v-if="!isAuthenticated"
@@ -199,18 +178,11 @@ function logout() {
                 @go-login="goLoginFromForgot"
             />
 
-            <ClientProfileView
-                v-else-if="activeTab === PROFILE_TAB_OVERVIEW"
-            />
+            <ClientProfileView v-else-if="activeTab === PROFILE_TAB_OVERVIEW" />
 
-            <ClientAddressesManager
-                v-else-if="activeTab === PROFILE_TAB_ADDRESSES"
-            />
+            <ClientAddressesManager v-else-if="activeTab === PROFILE_TAB_ADDRESSES" />
 
-            <div
-                v-else-if="activeTab === PROFILE_TAB_ORDERS"
-                :class="p.ordersMinHeight"
-            >
+            <div v-else-if="activeTab === PROFILE_TAB_ORDERS" :class="p.ordersMinHeight">
                 <ClientOrderHistory />
             </div>
 

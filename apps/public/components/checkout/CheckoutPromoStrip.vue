@@ -51,18 +51,13 @@ const {
 
 const cartExpanded = ref(false);
 
-const hasComplementProducts = computed(
-    () => (complementProducts.value?.length ?? 0) > 0,
-);
+const hasComplementProducts = computed(() => (complementProducts.value?.length ?? 0) > 0);
 
 /** Cart-upsell перенесён на шаг upsell; strip на cart больше не показываем. */
 const showCartToggle = computed(() => false);
 
 const showGiftCta = computed(
-    () =>
-        props.variant === "confirm"
-        && isGiftEligible.value
-        && giftCandidates.value.length > 0,
+    () => props.variant === "confirm" && isGiftEligible.value && giftCandidates.value.length > 0,
 );
 
 function paidQty(productId) {
@@ -105,15 +100,8 @@ function openGiftModal() {
 </script>
 
 <template>
-    <div
-        v-if="showCartToggle"
-        :class="p.wrap"
-    >
-        <button
-            type="button"
-            :class="s.expandRowBtn"
-            @click="cartExpanded = !cartExpanded"
-        >
+    <div v-if="showCartToggle" :class="p.wrap">
+        <button type="button" :class="s.expandRowBtn" @click="cartExpanded = !cartExpanded">
             <span>Акции и дополнения</span>
             <span :class="s.expandRowChevronMuted">
                 {{ cartExpanded ? "Скрыть" : "Показать" }}
@@ -121,14 +109,8 @@ function openGiftModal() {
         </button>
 
         <Transition name="checkout-fade">
-            <div
-                v-if="cartExpanded"
-                :class="p.cartBody"
-            >
-                <div
-                    v-if="showComplementProgress"
-                    :class="c.complementProgressCard"
-                >
+            <div v-if="cartExpanded" :class="p.cartBody">
+                <div v-if="showComplementProgress" :class="c.complementProgressCard">
                     <div class="flex items-center justify-between gap-2 text-xs text-app-muted">
                         <span>Комплект к роллам</span>
                         <span>{{ complementProgressPercent }}%</span>
@@ -140,19 +122,18 @@ function openGiftModal() {
                         />
                     </div>
                     <p
-                        :class="complement.isReached ? 'text-sm text-app-accent' : 'text-sm text-app-muted'"
+                        :class="
+                            complement.isReached
+                                ? 'text-sm text-app-accent'
+                                : 'text-sm text-app-muted'
+                        "
                     >
                         {{ complementLabel }}
                     </p>
                 </div>
 
-                <ul
-                    v-if="hasRollsInCart && hasComplementLines"
-                    :class="c.systemList"
-                >
-                    <li :class="s.subsectionKickerSm">
-                        Комплект
-                    </li>
+                <ul v-if="hasRollsInCart && hasComplementLines" :class="c.systemList">
+                    <li :class="s.subsectionKickerSm">Комплект</li>
                     <li
                         v-for="line in complementLines"
                         :key="`complement:${line.productId}`"
@@ -168,13 +149,8 @@ function openGiftModal() {
                     </li>
                 </ul>
 
-                <ul
-                    v-if="hasComplementProducts"
-                    :class="[c.systemList, 'space-y-2']"
-                >
-                    <li :class="s.subsectionKickerSm">
-                        Докупить
-                    </li>
+                <ul v-if="hasComplementProducts" :class="[c.systemList, 'space-y-2']">
+                    <li :class="s.subsectionKickerSm">Докупить</li>
                     <li
                         v-for="product in complementProducts"
                         :key="`paid-complement:${product.id}`"
@@ -184,9 +160,7 @@ function openGiftModal() {
                             <p :class="c.lineTitle">
                                 {{ product.name || `Товар #${product.id}` }}
                             </p>
-                            <p :class="c.lineSub">
-                                {{ formatPrice(unitPriceRub(product)) }} ₽
-                            </p>
+                            <p :class="c.lineSub">{{ formatPrice(unitPriceRub(product)) }} ₽</p>
                         </div>
 
                         <div :class="c.qtyBar">
@@ -212,10 +186,7 @@ function openGiftModal() {
                     </li>
                 </ul>
 
-                <CheckoutSection
-                    v-if="hasAutoLines"
-                    title="Автодобавления"
-                >
+                <CheckoutSection v-if="hasAutoLines" title="Автодобавления">
                     <ul :class="c.systemList">
                         <li
                             v-for="line in autoLines"
@@ -235,11 +206,7 @@ function openGiftModal() {
         </Transition>
     </div>
 
-    <CheckoutSection
-        v-if="showGiftCta"
-        title="Подарок"
-        variant="form"
-    >
+    <CheckoutSection v-if="showGiftCta" title="Подарок" variant="form">
         <div :class="chk.confirm.giftCard">
             <div :class="c.giftRow">
                 <div class="min-w-0">
@@ -247,11 +214,7 @@ function openGiftModal() {
                         {{ hasGiftSelected ? selectedGiftName : "Выберите подарок" }}
                     </p>
                 </div>
-                <button
-                    type="button"
-                    :class="c.giftCta"
-                    @click="openGiftModal"
-                >
+                <button type="button" :class="c.giftCta" @click="openGiftModal">
                     {{ giftCtaLabel }}
                 </button>
             </div>

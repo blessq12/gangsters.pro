@@ -113,7 +113,11 @@ function buildPromotionFormData(payload, files = {}) {
  * @param {{ image?: File|null }} [files]
  */
 export function storePromotion(payload, files = {}) {
-    return requestMultipart("POST", "/marketing/promotions", buildPromotionFormData(payload, files));
+    return requestMultipart(
+        "POST",
+        "/marketing/promotions",
+        buildPromotionFormData(payload, files),
+    );
 }
 
 /**

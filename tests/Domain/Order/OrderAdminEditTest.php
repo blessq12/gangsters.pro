@@ -14,7 +14,7 @@ use PHPUnit\Framework\TestCase;
 
 final class OrderAdminEditTest extends TestCase
 {
-    public function testПравкаКлиентаИОплатыВЛюбомСтатусе(): void
+    public function test_правка_клиента_и_оплаты_в_любом_статусе(): void
     {
         $order = $this->order(OrderStatus::InTransit);
         $order->replaceClient(new OrderClientSnapshot(2, 'Борис', '+79991112233'));
@@ -25,7 +25,7 @@ final class OrderAdminEditTest extends TestCase
         $this->assertSame(5000, $order->changeFromRubles());
     }
 
-    public function testЗаменаЛинийПишетOrderLinesChanged(): void
+    public function test_замена_линий_пишет_order_lines_changed(): void
     {
         $order = $this->order(OrderStatus::Preparing);
         $order->replaceLines([
@@ -38,7 +38,7 @@ final class OrderAdminEditTest extends TestCase
         $this->assertSame(42, $events[0]->orderId);
     }
 
-    public function testСинкСтатусаПоКухне(): void
+    public function test_синк_статуса_по_кухне(): void
     {
         $order = $this->order(OrderStatus::Packed);
         $order->syncStatusFromKitchenProgress(allDone: false, allPacked: false);
@@ -51,7 +51,7 @@ final class OrderAdminEditTest extends TestCase
         $this->assertSame(OrderStatus::Packed, $order->status());
     }
 
-    public function testПравкаСлотаПредзаказа(): void
+    public function test_правка_слота_предзаказа(): void
     {
         $order = $this->order(OrderStatus::Confirmed);
         $slot = new DateTimeImmutable('2026-12-01 18:30:00');

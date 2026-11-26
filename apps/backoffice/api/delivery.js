@@ -37,27 +37,12 @@ export function updateDelivery(data) {
     return request("PUT", "/delivery", data);
 }
 
-/** @param {Record<string, unknown>} data включает branch_id */
-export function storeZone(data) {
-    return request("POST", "/delivery/zones", data);
-}
-
-/** @param {number|string} id @param {Record<string, unknown>} data включает branch_id */
-export function updateZone(id, data) {
-    return request("PUT", `/delivery/zones/${id}`, data);
-}
-
 /**
  * Полная замена зон филиала (с геометрией).
  * @param {{ branch_id: number|string, zones: Array<Record<string, unknown>> }} data
  */
 export function replaceZones(data) {
     return request("PUT", "/delivery/zones", data);
-}
-
-/** @param {number|string} branchId @param {{ offset?: number, limit?: number }} [query] */
-export function listZones(branchId, query = {}) {
-    return withPage("/delivery/zones", { ...query, branch_id: branchId });
 }
 
 /** @param {{ offset?: number, limit?: number }} [query] */
@@ -91,9 +76,5 @@ export function takeRouteSheet(id, data) {
  * @param {{ outcome: string, reason?: string|null, payment_method?: string|null }} data
  */
 export function settleStop(sheetId, orderId, data) {
-    return request(
-        "POST",
-        `/delivery/route-sheets/${sheetId}/stops/${orderId}/settle`,
-        data,
-    );
+    return request("POST", `/delivery/route-sheets/${sheetId}/stops/${orderId}/settle`, data);
 }

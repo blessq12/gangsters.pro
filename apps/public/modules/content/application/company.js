@@ -34,7 +34,7 @@ function parseHHMM(segment) {
  * @param {string|null|undefined} workRaw
  * @returns {{ start: number, end: number }|null}
  */
-export function parseWorkWindow(workRaw) {
+function parseWorkWindow(workRaw) {
     if (workRaw == null || typeof workRaw !== "string") return null;
     const s = workRaw.trim();
     if (!s) return null;
@@ -52,7 +52,7 @@ export function parseWorkWindow(workRaw) {
 /**
  * @param {unknown} row
  */
-export function isScheduleDayOff(row) {
+function isScheduleDayOff(row) {
     if (!row || typeof row !== "object") return true;
     const v = row.is_day_off;
     return v === "1" || v === 1 || v === true;
@@ -62,15 +62,11 @@ export function isScheduleDayOff(row) {
  * @param {unknown} schedule — объект по дням или (legacy) массив
  * @param {string} dayKey
  */
-export function findScheduleRowForDay(schedule, dayKey) {
+function findScheduleRowForDay(schedule, dayKey) {
     if (!schedule || !dayKey) return null;
 
     if (Array.isArray(schedule)) {
-        return (
-            schedule.find(
-                (r) => r && typeof r === "object" && r.day === dayKey,
-            ) || null
-        );
+        return schedule.find((r) => r && typeof r === "object" && r.day === dayKey) || null;
     }
 
     if (typeof schedule !== "object") return null;
@@ -89,7 +85,7 @@ export function findScheduleRowForDay(schedule, dayKey) {
  * @param {object|null|undefined} branch
  * @returns {unknown}
  */
-export function branchScheduleOf(branch) {
+function branchScheduleOf(branch) {
     return branch?.schedule ?? null;
 }
 
@@ -99,7 +95,7 @@ export function branchScheduleOf(branch) {
  * @param {number} startMin
  * @param {number} endMin
  */
-export function isTimeWithinWorkWindow(now, startMin, endMin) {
+function isTimeWithinWorkWindow(now, startMin, endMin) {
     const mins = now.getHours() * 60 + now.getMinutes();
     return mins >= startMin && mins <= endMin;
 }
@@ -108,7 +104,7 @@ export function isTimeWithinWorkWindow(now, startMin, endMin) {
  * Нет строки расписания: сб/вс считаем закрытыми, пн–пт — открытыми (без проверки часов).
  * @param {Date} now
  */
-export function isOpenByWeekendFallback(now) {
+function isOpenByWeekendFallback(now) {
     const d = now.getDay();
     return d !== 0 && d !== 6;
 }
@@ -139,11 +135,7 @@ export function isCompanyOpenNow(branch, now = new Date()) {
         return isOpenByWeekendFallback(now);
     }
 
-    if (
-        schedule &&
-        typeof schedule === "object" &&
-        Object.keys(schedule).length > 0
-    ) {
+    if (schedule && typeof schedule === "object" && Object.keys(schedule).length > 0) {
         return isOpenByWeekendFallback(now);
     }
 
@@ -155,7 +147,7 @@ export function isCompanyOpenNow(branch, now = new Date()) {
  * @param {Date} [now]
  * @returns {{ open: boolean, hint: string }}
  */
-export function getCompanyOpenStatusHint(branch, now = new Date()) {
+function getCompanyOpenStatusHint(branch, now = new Date()) {
     const open = isCompanyOpenNow(branch, now);
     // Статус «Открыто/Закрыто» рисует UI; доп. hint (время) не отдаём.
     return { open, hint: "" };
@@ -225,12 +217,8 @@ export function getWorkScheduleRows(schedule) {
             if (!row || typeof row !== "object") return null;
             const dayKey = typeof row.day === "string" ? row.day : null;
             const dayLabel = (dayKey && DAY_LABELS[dayKey]) || dayKey || "—";
-            const off =
-                row.is_day_off === "1" ||
-                row.is_day_off === 1 ||
-                row.is_day_off === true;
-            const workRaw =
-                typeof row.work === "string" ? row.work.trim() : row.work || "";
+            const off = row.is_day_off === "1" || row.is_day_off === 1 || row.is_day_off === true;
+            const workRaw = typeof row.work === "string" ? row.work.trim() : row.work || "";
             const work = workRaw ? String(workRaw) : null;
             return {
                 dayKey,
@@ -261,54 +249,6 @@ export function safeTrim(value) {
     return String(value).trim();
 }
 
-function scheduleRowToDisplayLine(row) {
-    if (!row || typeof row !== "object") return "";
-    const dayKey = row.day;
-    const day = DAY_LABELS[dayKey] || dayKey || "—";
-    const off =
-        row.is_day_off === "1" ||
-        row.is_day_off === 1 ||
-        row.is_day_off === true;
-    if (off) {
-        return `${day}: выходной`;
-    }
-    const work =
-        typeof row.work === "string" ? row.work.trim() : row.work || "";
-    if (work) {
-        return `${day}: ${work}`;
-    }
-    return `${day}: —`;
-}
-
-/**
- * Строки по дням для списка (например поповер в навбаре).
- * @param {unknown} schedule
- * @returns {string[]}
- */
-export function getWorkScheduleLines(schedule) {
-    if (schedule == null) return [];
-    if (typeof schedule === "string") {
-        const t = schedule.trim();
-        return t ? [t] : [];
-    }
-
-    const rows = getWorkScheduleRows(schedule);
-    return rows.map((row) => {
-        const day = row.dayLabel || "—";
-        if (row.isDayOff) return `${day}: выходной`;
-        if (row.work) return `${day}: ${row.work}`;
-        return `${day}: —`;
-    });
-}
-
-/**
- * Расписание из API: объект по дням (или legacy-массив).
- */
-export function formatWorkScheduleForDisplay(schedule) {
-    const lines = getWorkScheduleLines(schedule);
-    return lines.length ? lines.join(" · ") : "";
-}
-
 /**
  * Одна строка: режим работы филиала на указанный день.
  * @param {object|null|undefined} branch
@@ -329,8 +269,7 @@ export function formatTodayWorkScheduleLine(branch, date = new Date()) {
         return `${dayLabel}: выходной`;
     }
 
-    const work =
-        typeof row.work === "string" ? row.work.trim() : row.work || "";
+    const work = typeof row.work === "string" ? row.work.trim() : row.work || "";
     if (work) {
         return `${dayLabel}: ${work}`;
     }
@@ -361,7 +300,7 @@ export function formatCompanyAddressLine(company) {
  * @param {unknown} kopecks
  * @returns {number|null}
  */
-export function kopecksToRublesOptional(kopecks) {
+function kopecksToRublesOptional(kopecks) {
     if (kopecks == null) return null;
     const n = Number(kopecks);
     if (!Number.isFinite(n)) return null;
@@ -394,18 +333,8 @@ export function formatAverageDeliveryLine(company) {
  * @param {object|null|undefined} company
  * @returns {string}
  */
-export function formatMinOrderRublesLine(company) {
+function formatMinOrderRublesLine(company) {
     const rub = kopecksToRublesOptional(company?.min_order_amount_kopecks);
-    if (rub == null) return "—";
-    return `${formatMoneyRublesRu(rub)} ₽`;
-}
-
-/**
- * @param {object|null|undefined} company
- * @returns {string}
- */
-export function formatDeliveryFeeRublesLine(company) {
-    const rub = kopecksToRublesOptional(company?.delivery_fee_kopecks);
     if (rub == null) return "—";
     return `${formatMoneyRublesRu(rub)} ₽`;
 }
@@ -464,29 +393,15 @@ export function buildDeliveryZoneBalloonContent(zone, options = {}) {
 /**
  * @param {object|null|undefined} company
  */
-export function hasAverageDelivery(company) {
+function hasAverageDelivery(company) {
     return averageDeliveryMinutesOrNull(company) != null;
 }
 
 /**
  * @param {object|null|undefined} company
  */
-export function hasMinOrder(company) {
+function hasMinOrder(company) {
     return kopecksToRublesOptional(company?.min_order_amount_kopecks) != null;
-}
-
-/**
- * @param {object|null|undefined} company
- */
-export function hasDeliveryFee(company) {
-    return kopecksToRublesOptional(company?.delivery_fee_kopecks) != null;
-}
-
-/**
- * @param {object|null|undefined} company
- */
-export function hasBranchAddressLine(company) {
-    return branchAddressLine(company).trim() !== "";
 }
 
 /**
@@ -512,85 +427,11 @@ export function buildDefinedDeliveryStats(company) {
 }
 
 /**
- * Строки блока «Условия» в доке — только при наличии значений.
- * @param {object|null|undefined} company
- * @returns {{ label: string, value: string }[]}
- */
-export function buildDefinedConditionRows(company) {
-    const rows = [];
-    if (hasMinOrder(company)) {
-        rows.push({
-            label: "Мин. заказ",
-            value: formatMinOrderRublesLine(company),
-        });
-    }
-    if (hasDeliveryFee(company)) {
-        rows.push({
-            label: "Доставка от",
-            value: formatDeliveryFeeRublesLine(company),
-        });
-    }
-    return rows;
-}
-
-/**
- * Статистика для SecondaryPageLayout / дока (только данные из API).
- * @param {object|null|undefined} company
- * @returns {{ label: string, value: string }[]}
- */
-export function buildDeliveryHeroStats(company) {
-    return [
-        { label: "Срок", value: formatAverageDeliveryLine(company) },
-        { label: "Мин. заказ", value: formatMinOrderRublesLine(company) },
-    ];
-}
-
-/**
- * Крупное число для карточки «срок» (минуты или «—»).
- * @param {object|null|undefined} company
- * @returns {string}
- */
-export function deliveryHighlightMinutesHeadline(company) {
-    const n = averageDeliveryMinutesOrNull(company);
-    return n != null ? String(n) : "—";
-}
-
-/**
- * @param {object|null|undefined} company
- * @returns {string}
- */
-export function deliveryHighlightMinutesSubline(company) {
-    return averageDeliveryMinutesOrNull(company) != null
-        ? "минут — ориентировочное время доставки по данным сервиса."
-        : "Точный срок зависит от адреса и загрузки — увидите при оформлении.";
-}
-
-/**
- * @param {object|null|undefined} company
- * @returns {string}
- */
-export function deliveryHighlightMinOrderHeadline(company) {
-    const rub = kopecksToRublesOptional(company?.min_order_amount_kopecks);
-    if (rub == null) return "—";
-    return `${formatMoneyRublesRu(rub)} ₽`;
-}
-
-/**
- * @param {object|null|undefined} company
- * @returns {string}
- */
-export function deliveryHighlightMinOrderSubline(company) {
-    return kopecksToRublesOptional(company?.min_order_amount_kopecks) != null
-        ? "минимальная сумма заказа."
-        : "Минимальная сумма уточняется при оформлении.";
-}
-
-/**
  * Адрес базы / кухни для карты и подписей.
  * @param {object|null|undefined} company
  * @returns {string}
  */
-export function branchAddressLine(company) {
+function branchAddressLine(company) {
     return formatCompanyAddressLine(company);
 }
 
@@ -663,8 +504,7 @@ export function buildCheckoutAlignedPaymentInfoBlocks() {
     ];
 }
 
-export const CLOSED_NOTICE_DISMISSED_KEY =
-    "gangsters_closed_notice_dismissed_v1";
+const CLOSED_NOTICE_DISMISSED_KEY = "gangsters_closed_notice_dismissed_v1";
 
 export function wasClosedNoticeDismissedThisSession() {
     if (typeof window === "undefined") {

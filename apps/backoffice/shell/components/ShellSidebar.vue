@@ -46,13 +46,13 @@ const session = useSessionStore();
                 alt="Гангстерс Суши"
                 class="aspect-square shrink-0"
                 :class="collapsed ? 'h-12 w-12 lg:h-14 lg:w-14' : 'h-12 w-12'"
-            >
+            />
             <img
                 src="/images/logo_text.svg"
                 alt=""
                 class="h-11 w-auto min-w-0"
                 :class="collapsed ? 'lg:hidden' : ''"
-            >
+            />
         </div>
 
         <p
@@ -76,10 +76,7 @@ const session = useSessionStore();
                     :name="item.icon"
                     class="h-5 w-5 shrink-0 transition-colors group-hover:text-bo-fg"
                 />
-                <span
-                    class="truncate"
-                    :class="collapsed ? 'lg:hidden' : ''"
-                >
+                <span class="truncate" :class="collapsed ? 'lg:hidden' : ''">
                     {{ item.label }}
                 </span>
             </RouterLink>

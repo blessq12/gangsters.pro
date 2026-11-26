@@ -10,11 +10,11 @@ const repoRoot = path.resolve(appRoot, "../..");
 
 function manualChunks(id) {
     if (
-        id.includes("node_modules/@tiptap/")
-        || id.includes("node_modules/prosemirror")
-        || id.includes("node_modules/orderedmap")
-        || id.includes("node_modules/w3c-keyname")
-        || id.includes("node_modules/rope-sequence")
+        id.includes("node_modules/@tiptap/") ||
+        id.includes("node_modules/prosemirror") ||
+        id.includes("node_modules/orderedmap") ||
+        id.includes("node_modules/w3c-keyname") ||
+        id.includes("node_modules/rope-sequence")
     ) {
         return "vendor-tiptap";
     }

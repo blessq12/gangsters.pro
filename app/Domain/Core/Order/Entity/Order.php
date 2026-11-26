@@ -11,7 +11,6 @@ use App\Domain\Core\Order\Event\OrderPacked;
 use App\Domain\Core\Order\Event\OrderPickedUp;
 use App\Domain\Core\Order\Event\OrderPlaced;
 use App\Domain\Core\Order\Policy\OrderFormation;
-use App\Domain\Core\Order\Entity\OrderCommercialRules;
 use App\Domain\Core\Order\ValueObject\OrderClientSnapshot;
 use App\Domain\Core\Order\ValueObject\OrderDeliveryInfo;
 use App\Domain\Core\Order\ValueObject\OrderFormationFacts;

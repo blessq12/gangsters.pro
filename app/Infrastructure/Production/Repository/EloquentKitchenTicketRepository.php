@@ -6,8 +6,8 @@ use App\Domain\Core\Production\Entity\KitchenTicket;
 use App\Domain\Core\Production\Enum\KitchenTicketStatus;
 use App\Domain\Core\Production\Repository\KitchenTicketRepository;
 use App\Infrastructure\Production\Mapper\KitchenTicketMapper;
-use App\Infrastructure\Production\Model\KitchenTicketModel;
 use App\Infrastructure\Production\Model\KitchenTicketLineModel;
+use App\Infrastructure\Production\Model\KitchenTicketModel;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
@@ -203,6 +203,7 @@ final class EloquentKitchenTicketRepository implements KitchenTicketRepository
                     ->where('ticket_id', $ticketId)
                     ->update($payload);
                 $keepIds[] = $id;
+
                 continue;
             }
 

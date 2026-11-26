@@ -5,7 +5,12 @@
         "timezone": "Asia/Tomsk",
         "menu": {
             "products": [
-                { "id": 11, "name": "Филадельфия классик", "price_kopecks": 28000, "rolls_per_unit": 1 },
+                {
+                    "id": 11,
+                    "name": "Филадельфия классик",
+                    "price_kopecks": 28000,
+                    "rolls_per_unit": 1
+                },
                 { "id": 50, "name": "Суп мисо", "price_kopecks": 25000, "rolls_per_unit": 0 }
             ],
             "sets": [
@@ -14,8 +19,18 @@
         },
         "commercial_rules": {
             "gift_rules": [
-                { "order_channel": "pickup", "min_order_amount_kopecks": 100000, "is_active": true, "allowed_weekdays": [] },
-                { "order_channel": "courier", "min_order_amount_kopecks": 180000, "is_active": true, "allowed_weekdays": [1, 2, 3, 4] }
+                {
+                    "order_channel": "pickup",
+                    "min_order_amount_kopecks": 100000,
+                    "is_active": true,
+                    "allowed_weekdays": []
+                },
+                {
+                    "order_channel": "courier",
+                    "min_order_amount_kopecks": 180000,
+                    "is_active": true,
+                    "allowed_weekdays": [1, 2, 3, 4]
+                }
             ],
             "delivery_benefit": {
                 "is_active": true,
@@ -42,14 +57,38 @@
                     "name": "Город",
                     "fee_kopecks": 20000,
                     "is_remote": false,
-                    "geometry": { "type": "Polygon", "coordinates": [[[84.9, 56.45], [85.0, 56.45], [85.0, 56.5], [84.9, 56.5], [84.9, 56.45]]] }
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [
+                            [
+                                [84.9, 56.45],
+                                [85.0, 56.45],
+                                [85.0, 56.5],
+                                [84.9, 56.5],
+                                [84.9, 56.45]
+                            ]
+                        ]
+                    }
                 },
                 {
                     "id": "zone-remote",
                     "name": "Пригород",
                     "fee_kopecks": 20000,
                     "is_remote": true,
-                    "geometry": { "type": "MultiPolygon", "coordinates": [[[[85.0, 56.45], [85.1, 56.45], [85.1, 56.5], [85.0, 56.5], [85.0, 56.45]]]] }
+                    "geometry": {
+                        "type": "MultiPolygon",
+                        "coordinates": [
+                            [
+                                [
+                                    [85.0, 56.45],
+                                    [85.1, 56.45],
+                                    [85.1, 56.5],
+                                    [85.0, 56.5],
+                                    [85.0, 56.45]
+                                ]
+                            ]
+                        ]
+                    }
                 }
             ]
         }
@@ -67,7 +106,13 @@
                 "gift_product_id": 14
             },
             "expected": {
-                "lines": ["regular:11x4", "set:1x1", "complement:93x3", "complement:94x3", "gift:14x1"],
+                "lines": [
+                    "regular:11x4",
+                    "set:1x1",
+                    "complement:93x3",
+                    "complement:94x3",
+                    "gift:14x1"
+                ],
                 "items_total": 243000,
                 "delivery_fee": 0,
                 "grand_total": 243000,
@@ -125,7 +170,13 @@
                 "gift_product_id": 15
             },
             "expected": {
-                "lines": ["set:1x1", "regular:50x2", "complement:93x2", "complement:94x2", "gift:15x1"],
+                "lines": [
+                    "set:1x1",
+                    "regular:50x2",
+                    "complement:93x2",
+                    "complement:94x2",
+                    "gift:15x1"
+                ],
                 "items_total": 181000,
                 "delivery_fee": 0,
                 "grand_total": 181000,

@@ -10,7 +10,7 @@ use PHPUnit\Framework\TestCase;
 
 final class KitchenTicketResyncTest extends TestCase
 {
-    public function testResyncСбрасываетГотовностьИПереоткрываетCompleted(): void
+    public function test_resync_сбрасывает_готовность_и_переоткрывает_completed(): void
     {
         $old = KitchenTicketLine::snapshot(1, 'Ролл', 1);
         $old->assignId(10);

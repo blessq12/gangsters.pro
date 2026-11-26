@@ -16,8 +16,8 @@ const { activeStep, handleStartCheckout } = flow;
 
 const dockTitle = computed(
     () =>
-        getCheckoutWizardStep(activeStep.value)?.title
-        ?? resolveCheckoutDockTitle(activeStep.value),
+        getCheckoutWizardStep(activeStep.value)?.title ??
+        resolveCheckoutDockTitle(activeStep.value),
 );
 
 function tryConsumeCheckoutStart() {

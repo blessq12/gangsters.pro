@@ -3,7 +3,7 @@ const STORAGE_KEY = "gangsters_backoffice_auth";
 
 let backofficeToken = null;
 
-export function setBackofficeAuthToken(value) {
+function setBackofficeAuthToken(value) {
     backofficeToken = value || null;
 }
 

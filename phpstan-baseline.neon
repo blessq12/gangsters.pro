@@ -1,0 +1,340 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Application/Catalog/Command/SaveProductUseCase.php
+
+		-
+			message: '#^Anonymous function has an unused use \$isCreate\.$#'
+			identifier: closure.unusedUse
+			count: 1
+			path: app/Application/Marketing/Command/SavePromotionMediaUseCase.php
+
+		-
+			message: '''
+				#^Call to deprecated method complete\(\) of class App\\Domain\\Core\\Production\\Entity\\KitchenTicket\:
+				Используй markLineDone; оставлен для совместимости старых вызовов\.$#
+			'''
+			identifier: method.deprecated
+			count: 1
+			path: app/Application/Production/Command/CompleteWorkUseCase.php
+
+		-
+			message: '#^Parameter \#2 \$default of method Illuminate\\Http\\Request\:\:query\(\) expects array\|string\|null, int given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Http/Controllers/Api/Backoffice/CatalogController.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Http/Controllers/Api/Backoffice/CatalogController.php
+
+		-
+			message: '#^Parameter \#2 \$default of method Illuminate\\Http\\Request\:\:query\(\) expects array\|string\|null, int given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Http/Controllers/Api/Backoffice/ClientController.php
+
+		-
+			message: '#^Parameter \#2 \$default of method Illuminate\\Http\\Request\:\:query\(\) expects array\|string\|null, int given\.$#'
+			identifier: argument.type
+			count: 4
+			path: app/Http/Controllers/Api/Backoffice/CompanyController.php
+
+		-
+			message: '#^Parameter \#2 \$default of method Illuminate\\Http\\Request\:\:query\(\) expects array\|string\|null, int given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Http/Controllers/Api/Backoffice/CourierController.php
+
+		-
+			message: '#^Parameter \#2 \$default of method Illuminate\\Http\\Request\:\:query\(\) expects array\|string\|null, int given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Http/Controllers/Api/Backoffice/DeliveryController.php
+
+		-
+			message: '#^Parameter \#2 \$default of method Illuminate\\Http\\Request\:\:query\(\) expects array\|string\|null, int given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Http/Controllers/Api/Backoffice/EmployeeController.php
+
+		-
+			message: '#^Parameter \#2 \$default of method Illuminate\\Http\\Request\:\:query\(\) expects array\|string\|null, int given\.$#'
+			identifier: argument.type
+			count: 4
+			path: app/Http/Controllers/Api/Backoffice/MarketingController.php
+
+		-
+			message: '#^Parameter \#2 \$default of method Illuminate\\Http\\Request\:\:query\(\) expects array\|string\|null, int given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Http/Controllers/Api/Backoffice/OrderController.php
+
+		-
+			message: '#^Parameter \#2 \$default of method Illuminate\\Http\\Request\:\:query\(\) expects array\|string\|null, int given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Http/Controllers/Api/Backoffice/PaymentController.php
+
+		-
+			message: '#^Parameter \#2 \$default of method Illuminate\\Http\\Request\:\:query\(\) expects array\|string\|null, int given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Http/Controllers/Api/Backoffice/ProductionController.php
+
+		-
+			message: '#^Parameter \#2 \$default of method Illuminate\\Http\\Request\:\:query\(\) expects array\|string\|null, int given\.$#'
+			identifier: argument.type
+			count: 6
+			path: app/Http/Controllers/Api/Backoffice/WarehouseController.php
+
+		-
+			message: '#^Access to an undefined property App\\Infrastructure\\Catalog\\Model\\TechCardModel\:\:\$lines\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Infrastructure/Catalog/Mapper/TechCardMapper.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Catalog\\Model\\TechCardModel\:\:lines\(\) should return Illuminate\\Database\\Eloquent\\Relations\\HasMany but returns Illuminate\\Database\\Query\\Builder\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Infrastructure/Catalog/Model/TechCardModel.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Contracts\\Filesystem\\Filesystem\:\:url\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Infrastructure/Catalog/Repository/EloquentCatalogItemRepository.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,stdClass\>\:\:map\(\) expects callable\(stdClass, int\)\: array\{id\: int, url\: string, path\: string, sort_order\: int, focus_x\: float\|null, focus_y\: float\|null\}, Closure\(App\\Infrastructure\\Catalog\\Model\\CatalogItemImageModel\)\: array\{id\: int, url\: string, path\: string, sort_order\: int, focus_x\: float\|null, focus_y\: float\|null\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Infrastructure/Catalog/Repository/EloquentCatalogItemRepository.php
+
+		-
+			message: '#^Parameter \#1 \$rows of method App\\Infrastructure\\Catalog\\Repository\\EloquentCatalogItemRepository\:\:mapProductsPreservingOrder\(\) expects iterable\<App\\Infrastructure\\Catalog\\Model\\CatalogItemModel\>, Illuminate\\Support\\Collection\<int, stdClass\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Infrastructure/Catalog/Repository/EloquentCatalogItemRepository.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,stdClass\>\:\:map\(\) expects callable\(stdClass, int\)\: App\\Domain\\Supporting\\Client\\Entity\\Client, Closure\(App\\Infrastructure\\Client\\Model\\ClientModel\)\: App\\Domain\\Supporting\\Client\\Entity\\Client given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Infrastructure/Client/Repository/EloquentClientRepository.php
+
+		-
+			message: '#^Parameter \$entryKind of class App\\Domain\\Supporting\\Company\\Entity\\BranchCategoryItem constructor expects App\\Domain\\Supporting\\Company\\Enum\\BranchMenuEntryKind, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Infrastructure/Company/Mapper/BranchCategoryMapper.php
+
+		-
+			message: '#^Access to an undefined property App\\Infrastructure\\Company\\Model\\BranchSetModel\:\:\$lines\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Infrastructure/Company/Mapper/BranchSetMapper.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Company\\Model\\BranchSetModel\:\:lines\(\) should return Illuminate\\Database\\Eloquent\\Relations\\HasMany\<App\\Infrastructure\\Company\\Model\\BranchSetLineModel, \$this\(App\\Infrastructure\\Company\\Model\\BranchSetModel\)\> but returns Illuminate\\Database\\Query\\Builder\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Infrastructure/Company/Model/BranchSetModel.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,stdClass\>\:\:map\(\) expects callable\(stdClass, int\)\: App\\Domain\\Supporting\\Company\\Entity\\BranchCategory, Closure\(App\\Infrastructure\\Company\\Model\\BranchCategoryModel\)\: App\\Domain\\Supporting\\Company\\Entity\\BranchCategory given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Infrastructure/Company/Repository/EloquentBranchCategoryRepository.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,stdClass\>\:\:map\(\) expects callable\(stdClass, int\)\: App\\Domain\\Supporting\\Company\\Entity\\BranchCategoryItem, Closure\(App\\Infrastructure\\Company\\Model\\BranchCategoryItemModel\)\: App\\Domain\\Supporting\\Company\\Entity\\BranchCategoryItem given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Infrastructure/Company/Repository/EloquentBranchCategoryRepository.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,stdClass\>\:\:map\(\) expects callable\(stdClass, int\)\: App\\Domain\\Supporting\\Company\\Entity\\BranchMenuItem, Closure\(App\\Infrastructure\\Company\\Model\\BranchMenuItemModel\)\: App\\Domain\\Supporting\\Company\\Entity\\BranchMenuItem given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Infrastructure/Company/Repository/EloquentBranchMenuRepository.php
+
+		-
+			message: '#^Parameter \#1 \$row of method App\\Infrastructure\\Company\\Mapper\\BranchMenuMapper\:\:toDomain\(\) expects App\\Infrastructure\\Company\\Model\\BranchMenuItemModel, stdClass given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Infrastructure/Company/Repository/EloquentBranchMenuRepository.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,stdClass\>\:\:map\(\) expects callable\(stdClass, int\)\: App\\Domain\\Supporting\\Company\\Entity\\Branch, Closure\(App\\Infrastructure\\Company\\Model\\BranchModel\)\: App\\Domain\\Supporting\\Company\\Entity\\Branch given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Infrastructure/Company/Repository/EloquentBranchRepository.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,stdClass\>\:\:map\(\) expects callable\(stdClass, int\)\: App\\Domain\\Supporting\\Company\\Entity\\BranchTag, Closure\(App\\Infrastructure\\Company\\Model\\BranchTagModel\)\: App\\Domain\\Supporting\\Company\\Entity\\BranchTag given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Infrastructure/Company/Repository/EloquentBranchTagRepository.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,stdClass\>\:\:map\(\) expects callable\(stdClass, int\)\: App\\Domain\\Supporting\\Company\\Entity\\CompanyDocument, Closure\(App\\Infrastructure\\Company\\Model\\CompanyDocumentModel\)\: App\\Domain\\Supporting\\Company\\Entity\\CompanyDocument given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Infrastructure/Company/Repository/EloquentCompanyDocumentRepository.php
+
+		-
+			message: '#^Access to an undefined property App\\Infrastructure\\Delivery\\Model\\DeliveryConfigurationModel\:\:\$zones\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Infrastructure/Delivery/Mapper/DeliveryConfigurationMapper.php
+
+		-
+			message: '#^Access to an undefined property App\\Infrastructure\\Delivery\\Model\\RouteSheetModel\:\:\$stops\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Infrastructure/Delivery/Mapper/RouteSheetMapper.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Delivery\\Model\\RouteSheetModel\:\:stops\(\) should return Illuminate\\Database\\Eloquent\\Relations\\HasMany but returns Illuminate\\Database\\Query\\Builder\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Infrastructure/Delivery/Model/RouteSheetModel.php
+
+		-
+			message: '#^Parameter \#1 \$row of method App\\Infrastructure\\Delivery\\Mapper\\DeliveryConfigurationMapper\:\:zoneToDomain\(\) expects App\\Infrastructure\\Delivery\\Model\\DeliveryZoneModel, stdClass given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Infrastructure/Delivery/Repository/EloquentDeliveryConfigurationRepository.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Delivery\\Repository\\EloquentRouteSheetRepository\:\:activeQuery\(\) should return Illuminate\\Database\\Eloquent\\Builder\<App\\Infrastructure\\Delivery\\Model\\RouteSheetModel\> but returns Illuminate\\Database\\Query\\Builder\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Infrastructure/Delivery/Repository/EloquentRouteSheetRepository.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Delivery\\Repository\\EloquentRouteSheetRepository\:\:courierQuery\(\) should return Illuminate\\Database\\Eloquent\\Builder\<App\\Infrastructure\\Delivery\\Model\\RouteSheetModel\> but returns Illuminate\\Database\\Query\\Builder\.$#'
+			identifier: return.type
+			count: 2
+			path: app/Infrastructure/Delivery/Repository/EloquentRouteSheetRepository.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,stdClass\>\:\:map\(\) expects callable\(stdClass, int\)\: App\\Domain\\Core\\Delivery\\Routing\\Entity\\RouteSheet, Closure\(App\\Infrastructure\\Delivery\\Model\\RouteSheetModel\)\: App\\Domain\\Core\\Delivery\\Routing\\Entity\\RouteSheet given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Infrastructure/Delivery/Repository/EloquentRouteSheetRepository.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,stdClass\>\:\:map\(\) expects callable\(stdClass, int\)\: App\\Domain\\Supporting\\Marketing\\Entity\\Banner, Closure\(App\\Infrastructure\\Marketing\\Model\\BannerModel\)\: App\\Domain\\Supporting\\Marketing\\Entity\\Banner given\.$#'
+			identifier: argument.type
+			count: 3
+			path: app/Infrastructure/Marketing/Repository/EloquentBannerRepository.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,stdClass\>\:\:map\(\) expects callable\(stdClass, int\)\: App\\Domain\\Supporting\\Marketing\\Entity\\Campaign, Closure\(App\\Infrastructure\\Marketing\\Model\\PromotionMediaModel\)\: App\\Domain\\Supporting\\Marketing\\Entity\\Campaign given\.$#'
+			identifier: argument.type
+			count: 3
+			path: app/Infrastructure/Marketing/Repository/EloquentPromotionRepository.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Contracts\\Filesystem\\Filesystem\:\:url\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Infrastructure/Marketing/Support/PublicMediaUrl.php
+
+		-
+			message: '#^Cannot access offset ''name'' on App\\Domain\\Core\\Order\\ValueObject\\OrderLine\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: app/Infrastructure/Order/Listener/ResyncKitchenTicketOnOrderLinesChanged.php
+
+		-
+			message: '#^Cannot access offset ''product_id'' on App\\Domain\\Core\\Order\\ValueObject\\OrderLine\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: app/Infrastructure/Order/Listener/ResyncKitchenTicketOnOrderLinesChanged.php
+
+		-
+			message: '#^Cannot access offset ''quantity'' on App\\Domain\\Core\\Order\\ValueObject\\OrderLine\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: app/Infrastructure/Order/Listener/ResyncKitchenTicketOnOrderLinesChanged.php
+
+		-
+			message: '#^Access to an undefined property App\\Infrastructure\\Order\\Model\\OrderModel\:\:\$lines\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Infrastructure/Order/Mapper/OrderMapper.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Order\\Model\\OrderModel\:\:lines\(\) should return Illuminate\\Database\\Eloquent\\Relations\\HasMany but returns Illuminate\\Database\\Query\\Builder\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Infrastructure/Order/Model/OrderModel.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,stdClass\>\:\:map\(\) expects callable\(stdClass, int\)\: array\{id\: int, order_id\: int, author_employee_id\: int\|null, changes\: list\<array\{field\: string, old\: mixed, new\: mixed\}\>, created_at\: string\}, Closure\(App\\Infrastructure\\Order\\Model\\OrderAuditModel\)\: array\{id\: int, order_id\: int, author_employee_id\: int\|null, changes\: list\<array\{field\: string, old\: mixed, new\: mixed\}\>, created_at\: string\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Infrastructure/Order/Repository/EloquentOrderAuditRepository.php
+
+		-
+			message: '#^Cannot unset offset ''status'' on array\{q\?\: string\|null, branch_id\?\: int\|null, delivery_method\?\: string\|null, created_from\?\: DateTimeImmutable\|null, created_to\?\: DateTimeImmutable\|null\}\.$#'
+			identifier: unset.offset
+			count: 1
+			path: app/Infrastructure/Order/Repository/EloquentOrderRepository.php
+
+		-
+			message: '#^Access to an undefined property App\\Infrastructure\\Production\\Model\\KitchenTicketModel\:\:\$lines\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Infrastructure/Production/Mapper/KitchenTicketMapper.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Production\\Model\\KitchenTicketModel\:\:lines\(\) should return Illuminate\\Database\\Eloquent\\Relations\\HasMany but returns Illuminate\\Database\\Query\\Builder\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Infrastructure/Production/Model/KitchenTicketModel.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Production\\Repository\\EloquentKitchenTicketRepository\:\:activeByBranchQuery\(\) should return Illuminate\\Database\\Eloquent\\Builder\<App\\Infrastructure\\Production\\Model\\KitchenTicketModel\> but returns Illuminate\\Database\\Query\\Builder\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Infrastructure/Production/Repository/EloquentKitchenTicketRepository.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,stdClass\>\:\:map\(\) expects callable\(stdClass, int\)\: App\\Domain\\Core\\Production\\Entity\\KitchenTicket, Closure\(App\\Infrastructure\\Production\\Model\\KitchenTicketModel\)\: App\\Domain\\Core\\Production\\Entity\\KitchenTicket given\.$#'
+			identifier: argument.type
+			count: 3
+			path: app/Infrastructure/Production/Repository/EloquentKitchenTicketRepository.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,stdClass\>\:\:map\(\) expects callable\(stdClass, int\)\: App\\Domain\\Supporting\\Staff\\Entity\\Employee, Closure\(App\\Infrastructure\\Staff\\Model\\EmployeeModel\)\: App\\Domain\\Supporting\\Staff\\Entity\\Employee given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Infrastructure/Staff/Repository/EloquentEmployeeRepository.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,stdClass\>\:\:map\(\) expects callable\(stdClass, int\)\: App\\Domain\\Supporting\\Warehouse\\Entity\\Ingredient, Closure\(App\\Infrastructure\\Warehouse\\Model\\IngredientModel\)\: App\\Domain\\Supporting\\Warehouse\\Entity\\Ingredient given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Infrastructure/Warehouse/Repository/EloquentIngredientRepository.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,stdClass\>\:\:map\(\) expects callable\(stdClass, int\)\: App\\Domain\\Supporting\\Warehouse\\Entity\\StockLevel, Closure\(App\\Infrastructure\\Warehouse\\Model\\StockLevelModel\)\: App\\Domain\\Supporting\\Warehouse\\Entity\\StockLevel given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Infrastructure/Warehouse/Repository/EloquentStockLevelRepository.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,stdClass\>\:\:map\(\) expects callable\(stdClass, int\)\: App\\Domain\\Supporting\\Warehouse\\Entity\\StockWriteOff, Closure\(App\\Infrastructure\\Warehouse\\Model\\StockWriteOffModel\)\: App\\Domain\\Supporting\\Warehouse\\Entity\\StockWriteOff given\.$#'
+			identifier: argument.type
+			count: 3
+			path: app/Infrastructure/Warehouse/Repository/EloquentStockWriteOffRepository.php

@@ -40,11 +40,7 @@ const slotBindings = computed(() => ({
 
 <template>
     <div :class="ff.root">
-        <label
-            v-if="label"
-            :class="ff.label"
-            :for="controlId"
-        >
+        <label v-if="label" :class="ff.label" :for="controlId">
             {{ label }}
         </label>
         <slot v-bind="slotBindings" />

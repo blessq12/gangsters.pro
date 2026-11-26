@@ -37,9 +37,7 @@ function pickSetLinesSource(product) {
 
     return topLevel.map((line) => {
         const productId = line?.product_id ?? line?.productId ?? null;
-        const topName = String(
-            line?.product_name || line?.productName || line?.name || "",
-        ).trim();
+        const topName = String(line?.product_name || line?.productName || line?.name || "").trim();
         const rawName = productId != null ? rawNameById.get(Number(productId)) : "";
 
         return {
@@ -54,9 +52,7 @@ function resolveLineProductName(line, nameById) {
     const productId = line?.product_id ?? line?.productId ?? null;
     if (productId == null) return null;
 
-    const explicitName = String(
-        line?.product_name || line?.productName || line?.name || "",
-    ).trim();
+    const explicitName = String(line?.product_name || line?.productName || line?.name || "").trim();
     if (explicitName) return explicitName;
 
     const catalogName = nameById.get(Number(productId));
@@ -100,10 +96,7 @@ export function useCatalogItemDisplay(productSource) {
                 return {
                     productId: Number(productId),
                     quantity: Number(line.quantity) || 0,
-                    productName: resolveLineProductName(
-                        line,
-                        catalogProductNameById.value,
-                    ),
+                    productName: resolveLineProductName(line, catalogProductNameById.value),
                 };
             })
             .filter(Boolean);
@@ -122,18 +115,14 @@ export function useCatalogItemDisplay(productSource) {
     });
 
     const description = computed(() => {
-        const raw =
-            product.value?.description ??
-            product.value?.raw?.description;
+        const raw = product.value?.description ?? product.value?.raw?.description;
         if (typeof raw !== "string") return null;
 
         const trimmed = raw.trim();
         return trimmed !== "" ? trimmed : null;
     });
 
-    const hasSetComposition = computed(
-        () => isSet.value && setLines.value.length > 0,
-    );
+    const hasSetComposition = computed(() => isSet.value && setLines.value.length > 0);
 
     return {
         isSet,
@@ -164,7 +153,9 @@ function normalizeProductTags(product) {
             return {
                 code,
                 label: String(tag?.label || code).trim(),
-                color: String(tag?.color || "amber").trim().toLowerCase(),
+                color: String(tag?.color || "amber")
+                    .trim()
+                    .toLowerCase(),
             };
         })
         .filter(Boolean);
@@ -203,11 +194,7 @@ export function useCatalogCardView(productSource) {
 
     const primaryTag = computed(() => normalizeProductTags(product.value)[0] ?? null);
 
-    const {
-        isSet,
-        isProduct,
-        setCountLabel,
-    } = useCatalogItemDisplay(product);
+    const { isSet, isProduct, setCountLabel } = useCatalogItemDisplay(product);
 
     return {
         product,
@@ -270,13 +257,8 @@ export function useProductMeta(productSource) {
 
 export function useCatalogPageModel() {
     const catalogStore = useCatalogStore();
-    const {
-        menuSections,
-        menuProducts,
-        categoryTabs,
-        tagTabs,
-        loading,
-    } = storeToRefs(catalogStore);
+    const { menuSections, menuProducts, categoryTabs, tagTabs, loading } =
+        storeToRefs(catalogStore);
 
     onMounted(() => {
         if (!catalogStore.hasLoaded && !catalogStore.loading) {
@@ -317,9 +299,7 @@ export function useCatalogPageModel() {
 
     const selectedProduct = computed(() => catalogStore.selectedProduct);
 
-    const catalogEmptyMessage = computed(() =>
-        "Тут пока тихо. Выберите другую категорию.",
-    );
+    const catalogEmptyMessage = computed(() => "Тут пока тихо. Выберите другую категорию.");
 
     return {
         showProductDetailModal,

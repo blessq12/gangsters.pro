@@ -5,8 +5,8 @@ namespace App\Application\Order\Query;
 use App\Application\Order\Checkout\CheckoutQuote;
 use App\Application\Order\Checkout\FormOrderCommercialRules;
 use App\Application\Order\DTO\QuoteOrderDto;
-use App\Domain\Core\Order\Enum\OrderLineType;
 use App\Domain\Core\Order\Entity\OrderCommercialRules;
+use App\Domain\Core\Order\Enum\OrderLineType;
 use App\Domain\Core\Order\Port\OrderBranchLookupPort;
 use App\Domain\Core\Order\Port\OrderBranchMenuSnapshotPort;
 use App\Domain\Core\Order\Port\OrderCatalogSnapshotPort;
@@ -14,6 +14,7 @@ use App\Domain\Core\Order\Port\OrderClientLookupPort;
 use App\Domain\Core\Order\Port\OrderDeliveryTariffPort;
 use App\Domain\Core\Order\ValueObject\OrderDeliveryAddress;
 use App\Domain\Core\Order\ValueObject\OrderDeliveryInfo;
+use App\Domain\Core\Order\ValueObject\OrderFormationFacts;
 use App\Domain\Core\Order\ValueObject\OrderLine;
 use App\Shared\Enum\DeliveryMethod;
 use App\Shared\ValueObject\PhoneNumber;
@@ -351,7 +352,7 @@ final class QuoteOrderUseCase implements CheckoutQuote
      */
     private function benefits(
         OrderCommercialRules $rules,
-        \App\Domain\Core\Order\ValueObject\OrderFormationFacts $facts,
+        OrderFormationFacts $facts,
         array $lines,
         string $channel,
         \DateTimeInterface $at,

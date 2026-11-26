@@ -7,6 +7,7 @@ use App\Domain\Core\Order\ValueObject\OrderNumber;
 use App\Domain\Supporting\Client\Port\ClientOrdersPort;
 use App\Infrastructure\Order\Model\OrderModel;
 use DateTimeImmutable;
+use Illuminate\Support\Collection;
 
 /**
  * ACL: Client читает историю заказов через OrderRepository в Infrastructure.
@@ -57,7 +58,7 @@ final class EloquentClientOrdersPort implements ClientOrdersPort
             return [];
         }
 
-        /** @var \Illuminate\Support\Collection<int, object{client_id: mixed, orders_count: mixed, last_order_at: mixed}> $rows */
+        /** @var Collection<int, object{client_id: mixed, orders_count: mixed, last_order_at: mixed}> $rows */
         $rows = OrderModel::query()
             ->selectRaw('client_id, COUNT(*) as orders_count, MAX(created_at) as last_order_at')
             ->whereIn('client_id', $ids)

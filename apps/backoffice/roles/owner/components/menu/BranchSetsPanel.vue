@@ -35,14 +35,7 @@ const loadApi = useApi();
 const saveApi = useApi();
 const { selectedBranchId, ensureLoaded } = useOwnerBranchContext();
 
-const {
-    searchQuery,
-    page,
-    perPage,
-    total,
-    pageItems,
-    setItems,
-} = useClientList({
+const { searchQuery, page, perPage, total, pageItems, setItems } = useClientList({
     perPage: 20,
     getHaystack: (row) => `${row.name ?? ""} ${row.slug ?? ""}`,
 });
@@ -103,7 +96,9 @@ function clearErrors() {
 
 /** Рубли из поля ввода → копейки; null, если значение некорректно. */
 function rublesToKopecks(value) {
-    const text = String(value ?? "").trim().replace(",", ".");
+    const text = String(value ?? "")
+        .trim()
+        .replace(",", ".");
     if (text === "" || Number.isNaN(Number(text)) || Number(text) < 0) {
         return null;
     }
@@ -117,11 +112,9 @@ async function load() {
         return;
     }
     try {
-        const [setsPayload, tagsPayload, allProducts] = await loadApi.run(() => Promise.all([
-            listBranchSets(branchId),
-            listBranchTags(branchId),
-            fetchAllProducts(),
-        ]));
+        const [setsPayload, tagsPayload, allProducts] = await loadApi.run(() =>
+            Promise.all([listBranchSets(branchId), listBranchTags(branchId), fetchAllProducts()]),
+        );
         if (branchId !== selectedBranchId.value) {
             return;
         }
@@ -196,7 +189,11 @@ function validate() {
     }
     if (form.lines.length === 0) {
         fieldErrors.lines = "Добавь хотя бы один товар";
-    } else if (form.lines.some((line) => !Number.isInteger(Number(line.quantity)) || Number(line.quantity) < 1)) {
+    } else if (
+        form.lines.some(
+            (line) => !Number.isInteger(Number(line.quantity)) || Number(line.quantity) < 1,
+        )
+    ) {
         fieldErrors.lines = "Количество — целое число ≥ 1";
     }
     return Object.keys(fieldErrors).length === 0;
@@ -227,9 +224,9 @@ async function save() {
         tag_ids: form.tag_ids,
     };
     try {
-        await saveApi.run(() => (
-            id ? updateBranchSet(branchId, id, body) : storeBranchSet(branchId, body)
-        ));
+        await saveApi.run(() =>
+            id ? updateBranchSet(branchId, id, body) : storeBranchSet(branchId, body),
+        );
         toast.success(id ? "Сохранено" : "Создано");
         modalOpen.value = false;
         await load();
@@ -266,19 +263,13 @@ onMounted(async () => {
         <template #actions>
             <div class="flex flex-wrap items-center gap-2">
                 <OwnerBranchSelector v-if="!embedded" />
-                <UiButton :disabled="!selectedBranchId" @click="openCreate">
-                    + Набор
-                </UiButton>
+                <UiButton :disabled="!selectedBranchId" @click="openCreate">+ Набор</UiButton>
             </div>
         </template>
 
         <template v-if="selectedBranchId">
             <div class="mb-4 max-w-md">
-                <UiInput
-                    v-model="searchQuery"
-                    type="search"
-                    placeholder="Поиск по названию"
-                />
+                <UiInput v-model="searchQuery" type="search" placeholder="Поиск по названию" />
             </div>
 
             <UiTable
@@ -288,12 +279,8 @@ onMounted(async () => {
                 empty-text="Ничего не найдено"
                 @row-click="openEdit"
             >
-                <template #cell-price_rubles="{ value }">
-                    {{ value }} ₽
-                </template>
-                <template #cell-lines="{ value }">
-                    {{ value.length }} поз.
-                </template>
+                <template #cell-price_rubles="{ value }">{{ value }} ₽</template>
+                <template #cell-lines="{ value }">{{ value.length }} поз.</template>
                 <template #cell-is_available="{ value }">
                     <UiBadge
                         :variant="value ? 'success' : 'neutral'"
@@ -377,7 +364,11 @@ onMounted(async () => {
                             <div class="w-24">
                                 <UiInput v-model="line.quantity" type="number" />
                             </div>
-                            <UiButton class="!h-8 !px-2" aria-label="Убрать" @click="removeLine(index)">
+                            <UiButton
+                                class="!h-8 !px-2"
+                                aria-label="Убрать"
+                                @click="removeLine(index)"
+                            >
                                 ×
                             </UiButton>
                         </li>
@@ -396,9 +387,7 @@ onMounted(async () => {
                                 {{ item.name }}
                             </option>
                         </select>
-                        <UiButton :disabled="!addProductId" @click="addLine">
-                            Добавить
-                        </UiButton>
+                        <UiButton :disabled="!addProductId" @click="addLine">Добавить</UiButton>
                     </div>
                 </UiFormField>
 
@@ -409,9 +398,11 @@ onMounted(async () => {
                             :key="tag.id"
                             type="button"
                             class="h-8 px-2.5 text-sm transition-colors"
-                            :class="form.tag_ids.includes(tag.id)
-                                ? 'bg-bo-accent text-white'
-                                : 'bg-white/[0.04] text-bo-muted hover:bg-white/[0.08]'"
+                            :class="
+                                form.tag_ids.includes(tag.id)
+                                    ? 'bg-bo-accent text-white'
+                                    : 'bg-white/[0.04] text-bo-muted hover:bg-white/[0.08]'
+                            "
                             @click="toggleTag(tag.id)"
                         >
                             {{ tag.label || tag.code }}
@@ -427,9 +418,7 @@ onMounted(async () => {
                 <UiButton class="!bg-white/10 !text-bo-fg" @click="modalOpen = false">
                     Отмена
                 </UiButton>
-                <UiButton :disabled="saveApi.loading" @click="save">
-                    Сохранить
-                </UiButton>
+                <UiButton :disabled="saveApi.loading" @click="save">Сохранить</UiButton>
             </template>
         </UiModal>
 

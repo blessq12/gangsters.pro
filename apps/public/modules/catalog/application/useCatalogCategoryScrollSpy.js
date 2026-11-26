@@ -1,16 +1,10 @@
-import {
-    nextTick,
-    onBeforeUnmount,
-    ref,
-    unref,
-    watch,
-} from "vue";
+import { nextTick, onBeforeUnmount, ref, unref, watch } from "vue";
 
 /** Селектор секций ленты ({@link CatalogProductsBase}). */
-export const CATALOG_SECTION_ATTR = "data-catalog-category-section";
+const CATALOG_SECTION_ATTR = "data-catalog-category-section";
 
 /** Селектор пилюль бара ({@link CatalogCategoriesBase}). */
-export const CATALOG_PILL_ATTR = "data-catalog-category-pill";
+const CATALOG_PILL_ATTR = "data-catalog-category-pill";
 
 const STICKY_TOP_PX = 16;
 const CLICK_LOCK_MS = 900;
@@ -89,9 +83,7 @@ export function useCatalogCategoryScrollSpy({
             return sections[0] ?? null;
         }
         const key = String(id);
-        return (
-            sections.find((el) => String(readSectionId(el)) === key) ?? null
-        );
+        return sections.find((el) => String(readSectionId(el)) === key) ?? null;
     }
 
     function findPill(id) {
@@ -145,11 +137,7 @@ export function useCatalogCategoryScrollSpy({
         const el = target ?? root;
         if (!el) return;
 
-        const top =
-            el.getBoundingClientRect().top +
-            window.scrollY -
-            spyOffsetPx() -
-            8;
+        const top = el.getBoundingClientRect().top + window.scrollY - spyOffsetPx() - 8;
 
         window.scrollTo({
             top: Math.max(0, top),

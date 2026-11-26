@@ -1,6 +1,11 @@
 <script setup>
-import { computed, onBeforeUnmount, ref, watch } from "vue";
-import { suggestAddressFromDaData } from "../../../../shell/geo/dadataSuggest.js";
+import { computed, ref, watch } from "vue";
+import {
+    deliveryAddressFromDaDataHit,
+    formatAddressSearchLabel,
+    toCoordOrNull,
+} from "../../../../shell/geo/addressContract.js";
+import AddressSuggestField from "../../../../shell/components/address/AddressSuggestField.vue";
 import { useToast } from "../../../../shell/composables/useToast.js";
 import UiFormField from "../../../../shell/components/ui/UiFormField.vue";
 import UiInput from "../../../../shell/components/ui/UiInput.vue";
@@ -25,16 +30,7 @@ const props = defineProps({
 const emit = defineEmits(["update"]);
 
 const toast = useToast();
-
-const searchQuery = ref("");
-const hits = ref(/** @type {Array<Record<string, unknown>>} */ ([]));
-const open = ref(false);
-const searching = ref(false);
-const suggestFailed = ref(false);
-/** После выбора подсказки не дёргаем suggest от программной записи searchQuery. */
-let suppressSuggest = false;
-let timer = /** @type {ReturnType<typeof setTimeout>|null} */ (null);
-let requestToken = 0;
+const suggestDraft = ref("");
 
 /**
  * @param {'street'|'house'|'entrance'|'floor'|'apartment'|'comment'} key
@@ -54,9 +50,34 @@ const apartmentModel = fieldModel("apartment");
 const commentModel = fieldModel("comment");
 
 const hasCoordinates = computed(() => {
-    const lat = toNumberOrNull(props.latitude);
-    const lng = toNumberOrNull(props.longitude);
+    const lat = toCoordOrNull(props.latitude);
+    const lng = toCoordOrNull(props.longitude);
     return lat !== null && lng !== null;
+});
+
+const searchLabel = computed(() => {
+    const street = String(props.street || "").trim();
+    const house = String(props.house || "").trim();
+    if (!street && !house) {
+        return "";
+    }
+    return formatAddressSearchLabel({
+        city: props.branchCity,
+        street,
+        house,
+    });
+});
+
+const suggestModel = computed({
+    get: () => {
+        if (hasCoordinates.value) {
+            return searchLabel.value;
+        }
+        return suggestDraft.value;
+    },
+    set: (value) => {
+        suggestDraft.value = String(value ?? "");
+    },
 });
 
 const coordsStatus = computed(() => {
@@ -68,18 +89,6 @@ const coordsStatus = computed(() => {
     }
     return "Адрес не выбран";
 });
-
-/**
- * @param {unknown} value
- * @returns {number|null}
- */
-function toNumberOrNull(value) {
-    if (value === "" || value === null || value === undefined) {
-        return null;
-    }
-    const number = Number(value);
-    return Number.isFinite(number) ? number : null;
-}
 
 /**
  * @param {Record<string, unknown>} patch
@@ -99,7 +108,6 @@ function emitAddress(patch) {
 }
 
 /**
- * Ручная правка: coords сбрасываем только если меняют улицу/дом.
  * @param {Record<string, string>} patch
  */
 function patchManual(patch) {
@@ -109,9 +117,9 @@ function patchManual(patch) {
         ...patch,
         ...(clearsCoords
             ? {
-                latitude: "",
-                longitude: "",
-            }
+                  latitude: "",
+                  longitude: "",
+              }
             : {}),
     });
 }
@@ -119,200 +127,60 @@ function patchManual(patch) {
 /**
  * @param {Record<string, unknown>} hit
  */
-function pickSuggestion(hit) {
-    const city = props.branchCity;
-    const street = String(hit.street ?? "");
-    const house = String(hit.house ?? "");
-    const entrance = String(hit.entrance ?? "");
-    const floor = String(hit.floor ?? "");
-    const apartment = String(hit.apartment ?? "");
-    const lat = toNumberOrNull(hit.lat);
-    const lng = toNumberOrNull(hit.lng);
-
-    if (timer) {
-        clearTimeout(timer);
-        timer = null;
-    }
-    requestToken += 1;
-    searching.value = false;
-    open.value = false;
-    hits.value = [];
-    suppressSuggest = true;
-    searchQuery.value = String(hit.value ?? [city, street, house].filter(Boolean).join(", "));
-
+function onSelectSuggestion(hit) {
+    const address = deliveryAddressFromDaDataHit(hit, props.branchCity);
     const payload = {
-        street,
-        house,
-        entrance,
-        floor,
-        apartment,
-        latitude: lat === null ? "" : lat,
-        longitude: lng === null ? "" : lng,
+        street: address.street,
+        house: address.house,
+        entrance: address.entrance || "",
+        floor: address.floor || "",
+        apartment: address.apartment || "",
+        latitude: address.latitude === null ? "" : address.latitude,
+        longitude: address.longitude === null ? "" : address.longitude,
     };
 
-    if (!street || !house) {
+    if (!address.street || !address.house) {
         toast.error("В подсказке нет улицы или дома — уточни запрос");
         emitAddress(payload);
         return;
     }
 
-    if (lat === null || lng === null) {
+    if (address.latitude === null || address.longitude === null) {
         toast.error("У этой подсказки нет координат — выбери другую");
         emitAddress(payload);
         return;
     }
 
+    suggestDraft.value = formatAddressSearchLabel(hit);
     emitAddress(payload);
 }
 
-async function runSuggest(query) {
-    const text = String(query ?? "").trim();
-    if (text.length < 2) {
-        hits.value = [];
-        open.value = false;
-        searching.value = false;
-        return;
-    }
-
-    const token = ++requestToken;
-    searching.value = true;
-    try {
-        const list = await suggestAddressFromDaData({
-            query: text,
-            city: props.branchCity || null,
-            limit: 8,
-        });
-        if (token !== requestToken) {
-            return;
-        }
-        suggestFailed.value = false;
-        hits.value = list;
-        open.value = list.length > 0;
-    } catch (err) {
-        if (token !== requestToken) {
-            return;
-        }
-        hits.value = [];
-        open.value = false;
-        if (!suggestFailed.value) {
-            suggestFailed.value = true;
-            toast.error(err instanceof Error ? err.message : "Подсказки временно недоступны");
-        }
-    } finally {
-        if (token === requestToken) {
-            searching.value = false;
-        }
-    }
-}
-
-watch(searchQuery, (value) => {
-    if (suppressSuggest) {
-        suppressSuggest = false;
-        if (timer) {
-            clearTimeout(timer);
-            timer = null;
-        }
-        return;
-    }
-    if (timer) {
-        clearTimeout(timer);
-    }
-    timer = setTimeout(() => runSuggest(value), 280);
-});
-
-/** Внешняя подстановка (карточка клиента / повтор) — синхронизируем строку поиска. */
 watch(
     () => [props.branchCity, props.street, props.house, props.latitude, props.longitude],
     () => {
-        const street = String(props.street || "").trim();
-        const house = String(props.house || "").trim();
-        if (!street && !house) {
-            return;
+        if (hasCoordinates.value) {
+            suggestDraft.value = searchLabel.value;
         }
-        if (!hasCoordinates.value) {
-            return;
-        }
-        const label = [props.branchCity, street, house]
-            .map((part) => String(part || "").trim())
-            .filter(Boolean)
-            .join(", ");
-        if (!label || searchQuery.value === label) {
-            return;
-        }
-        suppressSuggest = true;
-        searchQuery.value = label;
     },
     { immediate: true },
 );
-
-function onSearchFocus() {
-    if (hits.value.length > 0) {
-        open.value = true;
-    }
-}
-
-onBeforeUnmount(() => {
-    if (timer) {
-        clearTimeout(timer);
-    }
-    requestToken += 1;
-});
 </script>
 
 <template>
     <div class="space-y-3">
-        <p
-            v-if="branchCity"
-            class="text-xs text-bo-muted"
-        >
-            Город: {{ branchCity }}
-        </p>
+        <p v-if="branchCity" class="text-xs text-bo-muted">Город: {{ branchCity }}</p>
 
-        <UiFormField label="Поиск адреса">
-            <div class="relative mt-2">
-                <input
-                    v-model="searchQuery"
-                    type="text"
-                    autocomplete="off"
-                    placeholder="Начни вводить улицу и дом…"
-                    class="h-11 w-full border border-bo-border bg-bo-field px-4 text-sm text-bo-fg transition-colors placeholder:text-bo-muted/60 hover:border-bo-border-strong focus:border-bo-accent focus:outline-none"
-                    @focus="onSearchFocus"
-                >
-                <ul
-                    v-if="open && hits.length > 0"
-                    class="absolute z-20 mt-1 max-h-56 w-full overflow-auto border border-bo-border bg-bo-elevated shadow-bo"
-                >
-                    <li
-                        v-for="(hit, index) in hits"
-                        :key="`${hit.value}-${index}`"
-                        class="cursor-pointer px-3 py-2 text-sm text-bo-fg hover:bg-white/10"
-                        @mousedown.prevent="pickSuggestion(hit)"
-                    >
-                        {{ hit.value }}
-                    </li>
-                </ul>
-            </div>
-            <p
-                v-if="searching"
-                class="mt-1 text-xs text-bo-muted"
-            >
-                Ищем…
-            </p>
-        </UiFormField>
+        <AddressSuggestField
+            v-model="suggestModel"
+            :city="branchCity"
+            @select="onSelectSuggestion"
+        />
 
         <div class="grid gap-3 sm:grid-cols-2">
-            <UiFormField
-                label="Улица"
-                required
-                :error="streetError"
-            >
+            <UiFormField label="Улица" required :error="streetError">
                 <UiInput v-model="streetModel" />
             </UiFormField>
-            <UiFormField
-                label="Дом"
-                required
-                :error="houseError"
-            >
+            <UiFormField label="Дом" required :error="houseError">
                 <UiInput v-model="houseModel" />
             </UiFormField>
             <UiFormField label="Подъезд">

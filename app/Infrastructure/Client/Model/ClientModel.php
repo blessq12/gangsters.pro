@@ -4,8 +4,21 @@ namespace App\Infrastructure\Client\Model;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 use Laravel\Sanctum\HasApiTokens;
 
+/**
+ * @property int $id
+ * @property string $name
+ * @property string $phone
+ * @property string $email
+ * @property mixed $birth_date
+ * @property string $password_hash
+ * @property bool $consent_personal_data
+ * @property bool $consent_marketing
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
 final class ClientModel extends Model
 {
     use HasApiTokens;

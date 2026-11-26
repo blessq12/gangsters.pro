@@ -35,12 +35,7 @@ const r = useAppDesign().components.checkout.summaryRow;
                 {{ value }}
             </p>
         </div>
-        <button
-            v-if="showEdit"
-            type="button"
-            :class="r.editLink"
-            @click="emit('edit')"
-        >
+        <button v-if="showEdit" type="button" :class="r.editLink" @click="emit('edit')">
             {{ editLabel }}
         </button>
     </div>

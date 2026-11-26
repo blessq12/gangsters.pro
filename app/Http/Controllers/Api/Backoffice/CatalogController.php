@@ -291,5 +291,4 @@ final class CatalogController extends Controller
 
         return array_values($decoded);
     }
-
 }

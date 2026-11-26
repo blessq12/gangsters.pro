@@ -20,13 +20,9 @@ const todayScheduleLine = computed(
     () => formatTodayWorkScheduleLine(branch.value, new Date()) || "—",
 );
 
-const averageDeliveryLine = computed(() =>
-    formatAverageDeliveryLine(facts.value),
-);
+const averageDeliveryLine = computed(() => formatAverageDeliveryLine(facts.value));
 
-const averageDeliveryMinutes = computed(() =>
-    averageDeliveryMinutesOrNull(facts.value),
-);
+const averageDeliveryMinutes = computed(() => averageDeliveryMinutesOrNull(facts.value));
 
 const heroDescription = computed(() => {
     const line = formatTodayWorkScheduleLine(branch.value, new Date());
@@ -109,32 +105,25 @@ const deliveryPricingRules = [
         <div :class="dv.gridTop">
             <SecondaryContentBlock title="Зоны и сроки">
                 <p>
-                    Доставка осуществляется в пределах зон на карте ниже.
-                    Нажмите на зону, чтобы увидеть стоимость доставки и условия.
+                    Доставка осуществляется в пределах зон на карте ниже. Нажмите на зону, чтобы
+                    увидеть стоимость доставки и условия.
                 </p>
                 <p>
-                    Мы стараемся доставить ваш заказ максимально быстро: среднее
-                    время доставки — {{ zonesIntroEta }}, в зависимости от
-                    загруженности дорог и удалённости района.
+                    Мы стараемся доставить ваш заказ максимально быстро: среднее время доставки —
+                    {{ zonesIntroEta }}, в зависимости от загруженности дорог и удалённости района.
                 </p>
             </SecondaryContentBlock>
 
             <div :class="dv.factsStack">
                 <article :class="dv.highlightCard">
-                    <p :class="dv.highlightKicker">
-                        Режим
-                    </p>
+                    <p :class="dv.highlightKicker">Режим</p>
                     <p :class="dv.highlightValue">
                         {{ todayScheduleLine }}
                     </p>
-                    <p :class="dv.highlightSub">
-                        Принимаем и доставляем заказы.
-                    </p>
+                    <p :class="dv.highlightSub">Принимаем и доставляем заказы.</p>
                 </article>
                 <article :class="dv.highlightCard">
-                    <p :class="dv.highlightKicker">
-                        Срок
-                    </p>
+                    <p :class="dv.highlightKicker">Срок</p>
                     <p :class="dv.highlightValue">
                         {{
                             averageDeliveryMinutes != null
@@ -153,11 +142,10 @@ const deliveryPricingRules = [
 
         <SecondaryContentBlock title="Правила стоимости доставки">
             <p class="mb-4 text-sm text-app-muted">
-                Стоимость зависит от зоны на карте и суммы заказа.
-                Порог для бесплатной доставки —
-                {{ FREE_DELIVERY_THRESHOLD_RUBLES.toLocaleString("ru-RU") }} ₽.
-                Ниже порога в любой зоне добавляется
-                {{ BELOW_THRESHOLD_DELIVERY_FEE_RUBLES.toLocaleString("ru-RU") }} ₽.
+                Стоимость зависит от зоны на карте и суммы заказа. Порог для бесплатной доставки —
+                {{ FREE_DELIVERY_THRESHOLD_RUBLES.toLocaleString("ru-RU") }}&nbsp;₽. Ниже порога в
+                любой зоне добавляется
+                {{ BELOW_THRESHOLD_DELIVERY_FEE_RUBLES.toLocaleString("ru-RU") }}&nbsp;₽.
             </p>
             <div :class="dv.stepsGrid">
                 <article
@@ -181,23 +169,15 @@ const deliveryPricingRules = [
         <div :class="dv.gridBottom">
             <SecondaryContentBlock title="Способы оплаты">
                 <p class="mb-4 text-sm text-app-muted">
-                    В нашем магазине вы можете оплатить заказ следующими
-                    способами:
+                    В нашем магазине вы можете оплатить заказ следующими способами:
                 </p>
                 <div class="grid gap-3">
                     <div
                         v-for="block in paymentBlocks"
                         :key="block.id"
-                        :class="
-                            block.unavailable
-                                ? dv.paymentRowUnavailable
-                                : dv.paymentRow
-                        "
+                        :class="block.unavailable ? dv.paymentRowUnavailable : dv.paymentRow"
                     >
-                        <i
-                            class="text-2xl text-app-accent"
-                            :class="block.icon"
-                        ></i>
+                        <i class="text-2xl text-app-accent" :class="block.icon"></i>
                         <div>
                             <p :class="dv.paymentTitle">
                                 {{ block.title }}
@@ -205,10 +185,7 @@ const deliveryPricingRules = [
                             <p :class="dv.paymentBody">
                                 {{ block.description }}
                             </p>
-                            <p
-                                v-if="block.unavailable"
-                                :class="dv.paymentBadge"
-                            >
+                            <p v-if="block.unavailable" :class="dv.paymentBadge">
                                 Временно недоступен
                             </p>
                         </div>
@@ -217,9 +194,7 @@ const deliveryPricingRules = [
             </SecondaryContentBlock>
 
             <article :class="dv.importantArticle">
-                <p :class="dv.importantEyebrow">
-                    Важно
-                </p>
+                <p :class="dv.importantEyebrow">Важно</p>
                 <p :class="dv.importantTitle">
                     {{ importantTitle }}
                 </p>

@@ -20,10 +20,7 @@ import {
 import { mapServerWizardStep } from "./application/wizard";
 import { normalizeBenefitsProgress } from "./domain/normalizeCheckoutCart";
 import { normalizeOrderPreview } from "./domain/normalizeOrderPreview";
-import {
-    normalizeCheckoutCartBlock,
-    selectedGiftCartLine,
-} from "./domain/normalizeCheckoutCart";
+import { normalizeCheckoutCartBlock, selectedGiftCartLine } from "./domain/normalizeCheckoutCart";
 import { DOMAIN_EVENTS, emitDomainEvent } from "../../platform/domainEvents";
 import { roundRubles2 } from "../../platform/moneyFormat";
 import { useCatalogStore } from "../catalog/store";
@@ -109,21 +106,14 @@ export const useCheckoutStore = defineStore("checkout", {
         hasMenuUserItems(state) {
             const complementIds = resolveComplementProductIds();
             return state.cartItems.some(
-                (item) =>
-                    !item.isSystem
-                    && !complementIds.has(Number(item.productId)),
+                (item) => !item.isSystem && !complementIds.has(Number(item.productId)),
             );
         },
         cartTotalItems(state) {
-            return state.cartItems.reduce(
-                (sum, item) => sum + (item.isSystem ? 0 : item.qty),
-                0,
-            );
+            return state.cartItems.reduce((sum, item) => sum + (item.isSystem ? 0 : item.qty), 0);
         },
         cartQuantityByProduct: (state) => (id) => {
-            const item = state.cartItems.find(
-                (entry) => entry.productId === id && !entry.isSystem,
-            );
+            const item = state.cartItems.find((entry) => entry.productId === id && !entry.isSystem);
             return item ? item.qty : 0;
         },
         complementSelectionQty: (state) => (productId) => {
@@ -134,10 +124,7 @@ export const useCheckoutStore = defineStore("checkout", {
             return Number(state.complementSelections[id]) || 0;
         },
         cartSystemItemsCount(state) {
-            return state.cartItems.reduce(
-                (sum, item) => sum + (item.isSystem ? item.qty : 0),
-                0,
-            );
+            return state.cartItems.reduce((sum, item) => sum + (item.isSystem ? item.qty : 0), 0);
         },
         cartTotalAmount(state) {
             return state.itemsTotalRubles;
@@ -226,9 +213,7 @@ export const useCheckoutStore = defineStore("checkout", {
             }
 
             this.promoState =
-                cart?.promo_state && typeof cart.promo_state === "object"
-                    ? cart.promo_state
-                    : {};
+                cart?.promo_state && typeof cart.promo_state === "object" ? cart.promo_state : {};
         },
 
         _syncSelectedGift() {
@@ -269,10 +254,7 @@ export const useCheckoutStore = defineStore("checkout", {
                 itemsTotalKopecks + deliveryFeeKopecks;
 
             this.deliveryPricing = {
-                method:
-                    deliveryPricing.method != null
-                        ? String(deliveryPricing.method)
-                        : null,
+                method: deliveryPricing.method != null ? String(deliveryPricing.method) : null,
                 itemsPayableKopecks: Number(deliveryPricing.items_payable_kopecks) || 0,
                 deliveryFeeKopecks,
                 isFree: Boolean(deliveryPricing.is_free),
@@ -315,8 +297,7 @@ export const useCheckoutStore = defineStore("checkout", {
             }
 
             const step = mapServerWizardStep(wizard.suggested_step);
-            this.suggestedStep =
-                step && CHECKOUT_WIZARD_STEPS.includes(step) ? step : null;
+            this.suggestedStep = step && CHECKOUT_WIZARD_STEPS.includes(step) ? step : null;
             this.wizardCanConfirm = Boolean(wizard.can_confirm);
             this.wizardMissingBlocks = Array.isArray(wizard.missing_blocks)
                 ? wizard.missing_blocks.map(String)
@@ -329,9 +310,9 @@ export const useCheckoutStore = defineStore("checkout", {
 
         _syncComplementSelections() {
             const entitled =
-                Number(this.benefitsProgress?.complement?.entitledSetCount)
-                || Number(this.orderPreview?.benefits?.complement?.entitledSetCount)
-                || 0;
+                Number(this.benefitsProgress?.complement?.entitledSetCount) ||
+                Number(this.orderPreview?.benefits?.complement?.entitledSetCount) ||
+                0;
             const prevEntitled = Number(this.complementEntitledSnapshot) || 0;
             const catalogStore = useCatalogStore();
             const productIds = (catalogStore.complementProducts || [])
@@ -454,9 +435,9 @@ export const useCheckoutStore = defineStore("checkout", {
             }
 
             const entitled =
-                Number(this.benefitsProgress?.complement?.entitledSetCount)
-                || Number(this.orderPreview?.benefits?.complement?.entitledSetCount)
-                || 0;
+                Number(this.benefitsProgress?.complement?.entitledSetCount) ||
+                Number(this.orderPreview?.benefits?.complement?.entitledSetCount) ||
+                0;
             const nextQty = Math.max(0, Math.min(entitled, Number(quantity) || 0));
 
             this.complementSelections = {
@@ -499,8 +480,7 @@ export const useCheckoutStore = defineStore("checkout", {
 
         patchDeliveryAddress(partial) {
             const previous =
-                this.deliveryInfo.address &&
-                typeof this.deliveryInfo.address === "object"
+                this.deliveryInfo.address && typeof this.deliveryInfo.address === "object"
                     ? this.deliveryInfo.address
                     : {};
             const next = {
@@ -508,10 +488,8 @@ export const useCheckoutStore = defineStore("checkout", {
                 ...(partial || {}),
             };
 
-            const streetChanged =
-                partial?.street != null && partial.street !== previous.street;
-            const houseChanged =
-                partial?.house != null && partial.house !== previous.house;
+            const streetChanged = partial?.street != null && partial.street !== previous.street;
+            const houseChanged = partial?.house != null && partial.house !== previous.house;
 
             if (streetChanged || houseChanged) {
                 delete next.latitude;
@@ -540,9 +518,7 @@ export const useCheckoutStore = defineStore("checkout", {
             }
             const id = product.id;
             const add = Math.max(1, Number(qty) || 1);
-            const existing = this.cartItems.find(
-                (item) => item.productId === id && !item.isSystem,
-            );
+            const existing = this.cartItems.find((item) => item.productId === id && !item.isSystem);
             const nextQty = (existing ? existing.qty : 0) + add;
             const payload = buildCatalogCartLinePayload(product, existing?.payload);
             await this._upsertCartLine(product, nextQty, payload);
@@ -602,8 +578,7 @@ export const useCheckoutStore = defineStore("checkout", {
                 }
                 await recomputeCheckout(this);
             } catch (e) {
-                this.cartError =
-                    e?.response?.data?.message || "Не удалось обновить корзину.";
+                this.cartError = e?.response?.data?.message || "Не удалось обновить корзину.";
                 throw e;
             } finally {
                 this.cartLoading = false;
@@ -618,8 +593,7 @@ export const useCheckoutStore = defineStore("checkout", {
                 this.persistSession();
                 emitDomainEvent(DOMAIN_EVENTS.CART_CLEARED);
             } catch (e) {
-                this.cartError =
-                    e?.response?.data?.message || "Не удалось очистить корзину.";
+                this.cartError = e?.response?.data?.message || "Не удалось очистить корзину.";
                 throw e;
             } finally {
                 this.cartLoading = false;
@@ -662,8 +636,7 @@ export const useCheckoutStore = defineStore("checkout", {
                 }
                 await recomputeCheckout(this);
             } catch (e) {
-                this.cartError =
-                    e?.response?.data?.message || "Не удалось обновить корзину.";
+                this.cartError = e?.response?.data?.message || "Не удалось обновить корзину.";
                 throw e;
             } finally {
                 this.cartLoading = false;

@@ -85,14 +85,16 @@ function clientLine(order) {
 
 async function load() {
     try {
-        const payload = await listApi.run(() => listOrders({
-            offset: offset.value,
-            limit: perPage,
-            status: statusFilter.value || undefined,
-            q: q.value.trim() || undefined,
-            branch_id: branchFilter.value || undefined,
-            delivery_method: methodFilter.value || undefined,
-        }));
+        const payload = await listApi.run(() =>
+            listOrders({
+                offset: offset.value,
+                limit: perPage,
+                status: statusFilter.value || undefined,
+                q: q.value.trim() || undefined,
+                branch_id: branchFilter.value || undefined,
+                delivery_method: methodFilter.value || undefined,
+            }),
+        );
         applyPayload(payload, (order) => ({
             id: order.id,
             number: orderNumberOf(order),
@@ -144,27 +146,21 @@ onMounted(async () => {
 
 <template>
     <div
-        :class="embedded
-            ? 'space-y-8'
-            : 'mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10'"
+        :class="
+            embedded
+                ? 'space-y-8'
+                : 'mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10'
+        "
     >
         <UiCard :title="embedded ? '' : 'Заказы'">
             <div class="mb-6 grid items-end gap-3 md:grid-cols-2 lg:grid-cols-4">
-                <UiInput
-                    v-model="q"
-                    type="search"
-                    placeholder="ORD-0009-26 / телефон / имя"
-                />
+                <UiInput v-model="q" type="search" placeholder="ORD-0009-26 / телефон / имя" />
                 <select
                     v-model="statusFilter"
                     class="mt-2 h-11 w-full border border-bo-border bg-bo-field px-4 text-sm text-bo-fg transition-colors hover:border-bo-border-strong focus:border-bo-accent focus:outline-none"
                 >
                     <option value="">Все статусы</option>
-                    <option
-                        v-for="status in ORDER_STATUSES"
-                        :key="status"
-                        :value="status"
-                    >
+                    <option v-for="status in ORDER_STATUSES" :key="status" :value="status">
                         {{ orderStatusLabel(status) }}
                     </option>
                 </select>
@@ -173,11 +169,7 @@ onMounted(async () => {
                     class="mt-2 h-11 w-full border border-bo-border bg-bo-field px-4 text-sm text-bo-fg transition-colors hover:border-bo-border-strong focus:border-bo-accent focus:outline-none"
                 >
                     <option value="">Все филиалы</option>
-                    <option
-                        v-for="branch in branches"
-                        :key="branch.id"
-                        :value="String(branch.id)"
-                    >
+                    <option v-for="branch in branches" :key="branch.id" :value="String(branch.id)">
                         {{ branchLabel(branch) }}
                     </option>
                 </select>
@@ -211,10 +203,7 @@ onMounted(async () => {
                             class="inline-flex text-bo-muted"
                             :title="deliveryMethodLabel(value)"
                         >
-                            <ShellIcon
-                                :name="deliveryIcon(value)"
-                                class="h-5 w-5"
-                            />
+                            <ShellIcon :name="deliveryIcon(value)" class="h-5 w-5" />
                         </span>
                         <span v-else class="text-bo-muted">—</span>
                     </template>

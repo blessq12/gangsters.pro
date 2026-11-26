@@ -34,9 +34,7 @@ const {
 
 const { deliveryFieldErrors, newAddressFieldErrors } = checkoutState;
 
-const hasAddresses = computed(
-    () => Array.isArray(addresses.value) && addresses.value.length > 0,
-);
+const hasAddresses = computed(() => Array.isArray(addresses.value) && addresses.value.length > 0);
 
 function formatAddressLine(address) {
     return [
@@ -52,14 +50,8 @@ function formatAddressLine(address) {
 </script>
 
 <template>
-    <CheckoutSection
-        v-if="!hasAddresses"
-        title="Куда доставить"
-        variant="form"
-    >
-        <p :class="s.introMuted">
-            Сохраним адрес в аккаунте для следующих заказов.
-        </p>
+    <CheckoutSection v-if="!hasAddresses" title="Куда доставить" variant="form">
+        <p :class="s.introMuted">Сохраним адрес в аккаунте для следующих заказов.</p>
 
         <CheckoutAddressFormFields
             show-comment
@@ -77,8 +69,14 @@ function formatAddressLine(address) {
             :branch-city="branchCity"
             :street-error="newAddressFieldErrors.get('street')"
             :house-error="newAddressFieldErrors.get('house')"
-            @update:street="newAddressForm.street = $event; clearNewAddressCoords()"
-            @update:house="newAddressForm.house = $event; clearNewAddressCoords()"
+            @update:street="
+                newAddressForm.street = $event;
+                clearNewAddressCoords();
+            "
+            @update:house="
+                newAddressForm.house = $event;
+                clearNewAddressCoords();
+            "
             @update:entrance="newAddressForm.entrance = $event"
             @update:floor="newAddressForm.floor = $event"
             @update:apartment="newAddressForm.apartment = $event"
@@ -88,10 +86,7 @@ function formatAddressLine(address) {
             @clear-coords="clearNewAddressCoords"
         />
 
-        <p
-            v-if="newAddressFieldErrors.formError"
-            :class="s.errorLine"
-        >
+        <p v-if="newAddressFieldErrors.formError" :class="s.errorLine">
             {{ newAddressFieldErrors.formError }}
         </p>
         <button
@@ -103,19 +98,12 @@ function formatAddressLine(address) {
             <span v-if="!newAddressLoading">Сохранить и продолжить</span>
             <span v-else>{{ CHECKOUT_LOADING_LABELS.addressSave }}</span>
         </button>
-        <button
-            type="button"
-            :class="s.linkUnderline"
-            @click="openProfileDock"
-        >
+        <button type="button" :class="s.linkUnderline" @click="openProfileDock">
             Управлять адресами в профиле
         </button>
     </CheckoutSection>
 
-    <CheckoutSection
-        v-else
-        title="Куда доставить"
-    >
+    <CheckoutSection v-else title="Куда доставить">
         <FormField :error="deliveryFieldErrors.get('selectedAddress')">
             <template #default>
                 <div :class="o.listStack">
@@ -132,10 +120,7 @@ function formatAddressLine(address) {
                         :aria-pressed="userStore.selectedAddressId === address.id"
                         @click="selectAddress(address.id)"
                     >
-                        <span
-                            v-if="userStore.selectedAddressId === address.id"
-                            :class="o.badge"
-                        >
+                        <span v-if="userStore.selectedAddressId === address.id" :class="o.badge">
                             Выбрано
                         </span>
                         <span :class="o.addressInner">
@@ -149,11 +134,7 @@ function formatAddressLine(address) {
         </FormField>
 
         <div :class="s.borderSectionTop">
-            <button
-                type="button"
-                :class="s.expandRowBtn"
-                @click="toggleNewAddressOpen"
-            >
+            <button type="button" :class="s.expandRowBtn" @click="toggleNewAddressOpen">
                 <span>Добавить другой адрес</span>
                 <span :class="s.expandRowChevronMuted">
                     {{ isNewAddressOpen ? "Скрыть" : "Развернуть" }}
@@ -161,10 +142,7 @@ function formatAddressLine(address) {
             </button>
 
             <Transition name="checkout-fade">
-                <div
-                    v-if="isNewAddressOpen"
-                    :class="[s.newAddressWrap, s.sectionInset]"
-                >
+                <div v-if="isNewAddressOpen" :class="[s.newAddressWrap, s.sectionInset]">
                     <CheckoutAddressFormFields
                         show-comment
                         show-default-checkbox
@@ -180,8 +158,14 @@ function formatAddressLine(address) {
                         :branch-city="branchCity"
                         :street-error="newAddressFieldErrors.get('street')"
                         :house-error="newAddressFieldErrors.get('house')"
-                        @update:street="newAddressForm.street = $event; clearNewAddressCoords()"
-                        @update:house="newAddressForm.house = $event; clearNewAddressCoords()"
+                        @update:street="
+                            newAddressForm.street = $event;
+                            clearNewAddressCoords();
+                        "
+                        @update:house="
+                            newAddressForm.house = $event;
+                            clearNewAddressCoords();
+                        "
                         @update:entrance="newAddressForm.entrance = $event"
                         @update:floor="newAddressForm.floor = $event"
                         @update:apartment="newAddressForm.apartment = $event"
@@ -191,10 +175,7 @@ function formatAddressLine(address) {
                         @clear-coords="clearNewAddressCoords"
                     />
 
-                    <p
-                        v-if="newAddressFieldErrors.formError"
-                        :class="s.errorLine"
-                    >
+                    <p v-if="newAddressFieldErrors.formError" :class="s.errorLine">
                         {{ newAddressFieldErrors.formError }}
                     </p>
                     <button

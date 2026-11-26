@@ -16,9 +16,7 @@ export const PROFILE_TAB_EDIT = "edit";
  */
 export function useProfileDockTabs(userStore) {
     const activeTab = ref(PROFILE_TAB_LOGIN);
-    const isAuthenticated = computed(
-        () => !!userStore.token && !!userStore.profile.id,
-    );
+    const isAuthenticated = computed(() => !!userStore.token && !!userStore.profile.id);
 
     watch(
         isAuthenticated,

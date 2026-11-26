@@ -66,7 +66,6 @@ export function formatDeliveryMethodRu(method) {
     return DELIVERY_LABELS[method] || method;
 }
 
-
 /** Суммы в API заказа — рубли (number), два знака после запятой */
 export function formatOrderMoneyRubles(rubles) {
     return formatMoneyRublesRu(rubles);
@@ -104,8 +103,7 @@ export function formatMembershipDurationRu(iso) {
     if (Number.isNaN(start.getTime())) return null;
 
     let months =
-        (now.getFullYear() - start.getFullYear()) * 12 +
-        (now.getMonth() - start.getMonth());
+        (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth());
     if (now.getDate() < start.getDate()) {
         months -= 1;
     }
@@ -114,10 +112,7 @@ export function formatMembershipDurationRu(iso) {
     }
 
     if (months === 0) {
-        const days = Math.max(
-            0,
-            Math.floor((now.getTime() - start.getTime()) / 86_400_000),
-        );
+        const days = Math.max(0, Math.floor((now.getTime() - start.getTime()) / 86_400_000));
         if (days <= 0) {
             return "сегодня";
         }

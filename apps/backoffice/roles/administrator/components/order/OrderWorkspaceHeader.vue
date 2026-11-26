@@ -22,25 +22,14 @@ defineEmits(["back", "primary", "secondary", "command"]);
     <div class="space-y-3">
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div class="flex flex-wrap items-center gap-3">
-                <UiButton
-                    class="!bg-white/10 !text-bo-fg"
-                    @click="$emit('back')"
-                >
+                <UiButton class="!bg-white/10 !text-bo-fg" @click="$emit('back')">
                     {{ backLabel }}
                 </UiButton>
                 <h1 class="text-lg font-semibold tracking-tight text-bo-fg">
                     {{ title }}
                 </h1>
-                <UiBadge
-                    v-if="statusLabel"
-                    :variant="statusVariant"
-                    :text="statusLabel"
-                />
-                <UiBadge
-                    v-if="modeLabel"
-                    variant="neutral"
-                    :text="modeLabel"
-                />
+                <UiBadge v-if="statusLabel" :variant="statusVariant" :text="statusLabel" />
+                <UiBadge v-if="modeLabel" variant="neutral" :text="modeLabel" />
             </div>
             <div class="flex flex-wrap items-center gap-2">
                 <slot name="actions" />
@@ -59,11 +48,7 @@ defineEmits(["back", "primary", "secondary", "command"]);
                 >
                     {{ secondaryLabel }}
                 </UiButton>
-                <UiButton
-                    v-if="primaryLabel"
-                    :disabled="primaryDisabled"
-                    @click="$emit('primary')"
-                >
+                <UiButton v-if="primaryLabel" :disabled="primaryDisabled" @click="$emit('primary')">
                     {{ primaryLabel }}
                 </UiButton>
             </div>

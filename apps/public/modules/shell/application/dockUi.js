@@ -7,12 +7,12 @@ import { useUiStore } from "../store/uiStore";
 /**
  * Shell-политика видимости dock chrome (без привязки к route).
  */
-export function ensureDockChromeVisible(uiStore) {
+function ensureDockChromeVisible(uiStore) {
     uiStore.setShowBottomNav(true);
     uiStore.setChromeScrollDimmed(false);
 }
 
-export const DOCK_DISMISS_KIND = Object.freeze({
+const DOCK_DISMISS_KIND = Object.freeze({
     IMMEDIATE: "immediate",
     CONFIRM_CHECKOUT: "confirm_checkout",
     CONFIRM_ORDER: "confirm_order",
@@ -44,11 +44,7 @@ function isGuestStepDirty(checkoutStore) {
         return false;
     }
 
-    return (
-        hasText(guest.name)
-        || hasText(guest.phone)
-        || hasText(guest.email)
-    );
+    return hasText(guest.name) || hasText(guest.phone) || hasText(guest.email);
 }
 
 function isDeliveryStepDirty(checkoutStore) {
@@ -67,11 +63,11 @@ function isDeliveryStepDirty(checkoutStore) {
     }
 
     return (
-        hasText(address.street)
-        || hasText(address.house)
-        || hasText(address.entrance)
-        || hasText(address.floor)
-        || hasText(address.apartment)
+        hasText(address.street) ||
+        hasText(address.house) ||
+        hasText(address.entrance) ||
+        hasText(address.floor) ||
+        hasText(address.apartment)
     );
 }
 
@@ -82,9 +78,9 @@ function isPaymentStepDirty(checkoutStore) {
 
 function isFulfillmentStepDirty(checkoutStore) {
     return (
-        isDeliveryStepDirty(checkoutStore)
-        || isPaymentStepDirty(checkoutStore)
-        || Boolean(checkoutStore?.paymentInfo?.method)
+        isDeliveryStepDirty(checkoutStore) ||
+        isPaymentStepDirty(checkoutStore) ||
+        Boolean(checkoutStore?.paymentInfo?.method)
     );
 }
 
@@ -95,11 +91,7 @@ function isFulfillmentStepDirty(checkoutStore) {
  *   checkoutStore: object,
  * }} context
  */
-export function resolveDockDismissPolicy({
-    dockActiveId,
-    checkoutWizardStep,
-    checkoutStore,
-}) {
+function resolveDockDismissPolicy({ dockActiveId, checkoutWizardStep, checkoutStore }) {
     if (!dockActiveId) {
         return { kind: DOCK_DISMISS_KIND.IMMEDIATE };
     }
@@ -135,8 +127,8 @@ export function resolveDockDismissPolicy({
 
 export function useBottomDockState({ uiStore, cartStore, favoritesStore, dockItems }) {
     const safeDockItems = Array.isArray(dockItems) ? dockItems : [];
-    const activeDockItem = computed(() =>
-        safeDockItems.find((item) => item.id === uiStore.dockActiveId) || null,
+    const activeDockItem = computed(
+        () => safeDockItems.find((item) => item.id === uiStore.dockActiveId) || null,
     );
 
     const resolvedDockBadges = computed(() =>
@@ -152,7 +144,6 @@ export function useBottomDockState({ uiStore, cartStore, favoritesStore, dockIte
     };
 }
 
-
 export function useDockDismiss() {
     const uiStore = useUiStore();
     const checkoutStore = useCheckoutStore();
@@ -160,9 +151,7 @@ export function useDockDismiss() {
 
     const isPanelOpen = computed(() => uiStore.dockActiveId !== null);
 
-    const showScrim = computed(
-        () => isPanelOpen.value && pendingConfirm.value === null,
-    );
+    const showScrim = computed(() => isPanelOpen.value && pendingConfirm.value === null);
 
     const confirmOpen = computed({
         get() {
@@ -177,9 +166,9 @@ export function useDockDismiss() {
 
     function isDismissBlocked() {
         return (
-            uiStore.showGiftSelectionModal
-            || uiStore.showClosedForOrdersModal
-            || uiStore.catalogSearchOpen
+            uiStore.showGiftSelectionModal ||
+            uiStore.showClosedForOrdersModal ||
+            uiStore.catalogSearchOpen
         );
     }
 
@@ -540,23 +529,17 @@ export function useDockCartAffordance() {
 
     const isHome = () => route.name === "home";
 
-    const unsubAdd = subscribeDomainEvent(
-        DOMAIN_EVENTS.CART_ADD_REQUESTED,
-        (payload) => {
-            if (payload?.source !== "catalog") return;
-            if (!isHome()) return;
-            ensureDockChromeVisible(uiStore);
-        },
-    );
+    const unsubAdd = subscribeDomainEvent(DOMAIN_EVENTS.CART_ADD_REQUESTED, (payload) => {
+        if (payload?.source !== "catalog") return;
+        if (!isHome()) return;
+        ensureDockChromeVisible(uiStore);
+    });
 
-    const unsubFavAdd = subscribeDomainEvent(
-        DOMAIN_EVENTS.FAVORITE_ADD_REQUESTED,
-        (payload) => {
-            if (payload?.source !== "catalog") return;
-            if (!isHome()) return;
-            ensureDockChromeVisible(uiStore);
-        },
-    );
+    const unsubFavAdd = subscribeDomainEvent(DOMAIN_EVENTS.FAVORITE_ADD_REQUESTED, (payload) => {
+        if (payload?.source !== "catalog") return;
+        if (!isHome()) return;
+        ensureDockChromeVisible(uiStore);
+    });
 
     return {
         dispose() {

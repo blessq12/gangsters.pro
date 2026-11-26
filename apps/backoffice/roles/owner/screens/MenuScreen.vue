@@ -31,21 +31,9 @@ defineProps({
 const toast = useToast();
 const loadApi = useApi();
 const cloneApi = useApi();
-const {
-    branches,
-    selectedBranchId,
-    ensureLoaded,
-    branchLabel,
-} = useOwnerBranchContext();
+const { branches, selectedBranchId, ensureLoaded, branchLabel } = useOwnerBranchContext();
 
-const {
-    searchQuery,
-    page,
-    perPage,
-    total,
-    pageItems,
-    setItems,
-} = useClientList({
+const { searchQuery, page, perPage, total, pageItems, setItems } = useClientList({
     perPage: 20,
     getHaystack: (row) => `${row.name ?? ""} ${row.id ?? ""}`,
 });
@@ -68,9 +56,7 @@ const columns = [
 ];
 
 const confirmMessage = computed(() =>
-    removeTarget.value
-        ? `Убрать «${removeTarget.value.name}» из меню филиала?`
-        : "",
+    removeTarget.value ? `Убрать «${removeTarget.value.name}» из меню филиала?` : "",
 );
 
 const sourceBranches = computed(() =>
@@ -84,7 +70,9 @@ function kopecksToRubles(kopecks) {
 
 /** Рубли из поля ввода → копейки; null, если значение некорректно. */
 function rublesToKopecks(value) {
-    const text = String(value ?? "").trim().replace(",", ".");
+    const text = String(value ?? "")
+        .trim()
+        .replace(",", ".");
     if (text === "" || Number.isNaN(Number(text)) || Number(text) < 0) {
         return null;
     }
@@ -114,16 +102,17 @@ async function loadMenu() {
         return;
     }
     try {
-        const [products, menu] = await loadApi.run(() => Promise.all([
-            fetchAllProducts(),
-            getBranchMenu(branchId),
-        ]));
+        const [products, menu] = await loadApi.run(() =>
+            Promise.all([fetchAllProducts(), getBranchMenu(branchId)]),
+        );
         if (branchId !== selectedBranchId.value) {
             return;
         }
         const menuByItemId = new Map(
-            (Array.isArray(menu?.items) ? menu.items : [])
-                .map((entry) => [Number(entry.catalog_item_id), entry]),
+            (Array.isArray(menu?.items) ? menu.items : []).map((entry) => [
+                Number(entry.catalog_item_id),
+                entry,
+            ]),
         );
         setItems(products.map((item) => buildRow(item, menuByItemId)));
     } catch (err) {
@@ -132,8 +121,7 @@ async function loadMenu() {
 }
 
 function isDirty(row) {
-    return row.isAvailable !== row.saved.isAvailable
-        || row.priceRubles !== row.saved.priceRubles;
+    return row.isAvailable !== row.saved.isAvailable || row.priceRubles !== row.saved.priceRubles;
 }
 
 async function saveRow(row) {
@@ -223,30 +211,30 @@ async function submitClone() {
         return;
     }
     if (
-        !cloneForm.value.copyMenu
-        && !cloneForm.value.copyPromotions
-        && !cloneForm.value.copyDelivery
+        !cloneForm.value.copyMenu &&
+        !cloneForm.value.copyPromotions &&
+        !cloneForm.value.copyDelivery
     ) {
         toast.error("Выбери хотя бы один блок для копирования");
         return;
     }
 
     try {
-        const result = await cloneApi.run(() => cloneBranchSettings({
-            source_branch_id: sourceId,
-            target_branch_ids: [targetId],
-            copy_menu: cloneForm.value.copyMenu,
-            copy_promotions: cloneForm.value.copyPromotions,
-            copy_delivery: cloneForm.value.copyDelivery,
-            mode: cloneForm.value.mode,
-        }));
+        const result = await cloneApi.run(() =>
+            cloneBranchSettings({
+                source_branch_id: sourceId,
+                target_branch_ids: [targetId],
+                copy_menu: cloneForm.value.copyMenu,
+                copy_promotions: cloneForm.value.copyPromotions,
+                copy_delivery: cloneForm.value.copyDelivery,
+                mode: cloneForm.value.mode,
+            }),
+        );
         cloneOpen.value = false;
         const target = Array.isArray(result?.targets) ? result.targets[0] : null;
         const menuCopied = Number(target?.menu?.copied ?? 0);
         toast.success(
-            menuCopied > 0
-                ? `Склонировано. Меню: ${menuCopied} поз.`
-                : "Клонирование выполнено",
+            menuCopied > 0 ? `Склонировано. Меню: ${menuCopied} поз.` : "Клонирование выполнено",
         );
         await loadMenu();
     } catch (err) {
@@ -263,9 +251,11 @@ onMounted(async () => {
 
 <template>
     <div
-        :class="embedded
-            ? 'space-y-8'
-            : 'mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10'"
+        :class="
+            embedded
+                ? 'space-y-8'
+                : 'mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10'
+        "
     >
         <UiCard title="Цены и доступность">
             <template #actions>
@@ -283,11 +273,7 @@ onMounted(async () => {
 
             <template v-if="selectedBranchId">
                 <div class="mb-4 max-w-md">
-                    <UiInput
-                        v-model="searchQuery"
-                        type="search"
-                        placeholder="Поиск по названию"
-                    />
+                    <UiInput v-model="searchQuery" type="search" placeholder="Поиск по названию" />
                 </div>
 
                 <UiTable
@@ -368,11 +354,7 @@ onMounted(async () => {
             @cancel="removeTarget = null"
         />
 
-        <UiModal
-            :open="cloneOpen"
-            title="Клонировать настройки филиала"
-            @close="cloneOpen = false"
-        >
+        <UiModal :open="cloneOpen" title="Клонировать настройки филиала" @close="cloneOpen = false">
             <label class="mb-4 block text-sm">
                 <span class="mb-1 block text-bo-muted">Филиал-источник</span>
                 <select
@@ -393,15 +375,23 @@ onMounted(async () => {
             <fieldset class="mb-4 space-y-2">
                 <legend class="mb-1 text-sm text-bo-muted">Что копировать</legend>
                 <label class="flex items-center gap-2 text-sm">
-                    <input v-model="cloneForm.copyMenu" type="checkbox" class="accent-bo-accent">
+                    <input v-model="cloneForm.copyMenu" type="checkbox" class="accent-bo-accent" />
                     Меню (доступность и цена)
                 </label>
                 <label class="flex items-center gap-2 text-sm">
-                    <input v-model="cloneForm.copyPromotions" type="checkbox" class="accent-bo-accent">
+                    <input
+                        v-model="cloneForm.copyPromotions"
+                        type="checkbox"
+                        class="accent-bo-accent"
+                    />
                     Коммерческие правила заказа
                 </label>
                 <label class="flex items-center gap-2 text-sm">
-                    <input v-model="cloneForm.copyDelivery" type="checkbox" class="accent-bo-accent">
+                    <input
+                        v-model="cloneForm.copyDelivery"
+                        type="checkbox"
+                        class="accent-bo-accent"
+                    />
                     Доставка и зоны
                 </label>
             </fieldset>
@@ -414,7 +404,7 @@ onMounted(async () => {
                         type="radio"
                         value="overwrite"
                         class="accent-bo-accent"
-                    >
+                    />
                     Перезаписать существующие
                 </label>
                 <label class="flex items-center gap-2 text-sm">
@@ -423,7 +413,7 @@ onMounted(async () => {
                         type="radio"
                         value="skip_existing"
                         class="accent-bo-accent"
-                    >
+                    />
                     Пропустить существующие
                 </label>
             </fieldset>
@@ -432,9 +422,7 @@ onMounted(async () => {
                 <UiButton class="!bg-white/10 !text-bo-fg" @click="cloneOpen = false">
                     Закрыть
                 </UiButton>
-                <UiButton :disabled="cloneApi.loading" @click="submitClone">
-                    Клонировать
-                </UiButton>
+                <UiButton :disabled="cloneApi.loading" @click="submitClone">Клонировать</UiButton>
             </template>
         </UiModal>
     </div>

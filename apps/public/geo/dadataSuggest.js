@@ -3,7 +3,7 @@ const ENDPOINT = "https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/a
 /**
  * @returns {string}
  */
-export function readDaDataApiKey() {
+function readDaDataApiKey() {
     const key = import.meta.env?.VITE_DADATA_API_KEY;
     return typeof key === "string" ? key.trim() : "";
 }
@@ -44,7 +44,10 @@ function asText(value) {
  */
 function mapSuggestion(item) {
     const value = asText(item.value ?? item.unrestricted_value);
-    const data = item.data && typeof item.data === "object" ? /** @type {Record<string, unknown>} */ (item.data) : {};
+    const data =
+        item.data && typeof item.data === "object"
+            ? /** @type {Record<string, unknown>} */ (item.data)
+            : {};
 
     const city = asText(data.city ?? data.settlement);
     let street = asText(data.street_with_type ?? data.street);

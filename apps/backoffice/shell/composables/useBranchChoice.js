@@ -60,7 +60,7 @@ export function useBranchChoice() {
 
     function labelOf(id) {
         const branch = branches.value.find((item) => String(item.id) === String(id));
-        return branch ? branchLabel(branch) : (id ? `Филиал #${id}` : "—");
+        return branch ? branchLabel(branch) : id ? `Филиал #${id}` : "—";
     }
 
     return { branches, branchId, loading, error, load, select, labelOf, branchLabel };

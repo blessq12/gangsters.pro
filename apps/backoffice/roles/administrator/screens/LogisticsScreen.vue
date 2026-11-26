@@ -2,11 +2,7 @@
 import { computed, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
-import {
-    getRouteSheet,
-    listRouteSheets,
-    takeRouteSheet,
-} from "../../../api/delivery.js";
+import { getRouteSheet, listRouteSheets, takeRouteSheet } from "../../../api/delivery.js";
 import { listEmployees } from "../../../api/staff.js";
 import { useApi } from "../../../shell/composables/useApi.js";
 import { usePagedList } from "../../../shell/composables/usePagedList.js";
@@ -41,14 +37,7 @@ const branchId = computed(() => {
     return Number.isFinite(id) && id > 0 ? id : null;
 });
 
-const {
-    page,
-    perPage,
-    total,
-    items: sheets,
-    offset,
-    applyPayload,
-} = usePagedList();
+const { page, perPage, total, items: sheets, offset, applyPayload } = usePagedList();
 const couriers = ref([]);
 const sheet = ref(null);
 const courierId = ref("");
@@ -103,11 +92,13 @@ async function loadSheets() {
         return;
     }
     try {
-        const payload = await listApi.run(() => listRouteSheets({
-            branch_id: branchId.value,
-            offset: offset.value,
-            limit: perPage,
-        }));
+        const payload = await listApi.run(() =>
+            listRouteSheets({
+                branch_id: branchId.value,
+                offset: offset.value,
+                limit: perPage,
+            }),
+        );
         applyPayload(payload);
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось загрузить маршрутные листы");
@@ -135,9 +126,11 @@ async function onAssignCourier() {
         return;
     }
     try {
-        sheet.value = await actionApi.run(() => takeRouteSheet(sheet.value.id, {
-            courier_id: id,
-        }));
+        sheet.value = await actionApi.run(() =>
+            takeRouteSheet(sheet.value.id, {
+                courier_id: id,
+            }),
+        );
         toast.success("Курьер назначен");
         await loadSheets();
     } catch (err) {
@@ -156,9 +149,7 @@ onMounted(async () => {
     <div class="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
         <UiCard title="Маршрутные листы">
             <template #actions>
-                <UiButton @click="openAssemble">
-                    Собрать лист
-                </UiButton>
+                <UiButton @click="openAssemble">Собрать лист</UiButton>
             </template>
 
             <UiTable
@@ -168,14 +159,9 @@ onMounted(async () => {
                 empty-text="Активных маршрутных листов нет"
                 @row-click="openSheet"
             >
-                <template #cell-id="{ value }">
-                    #{{ value }}
-                </template>
+                <template #cell-id="{ value }">#{{ value }}</template>
                 <template #cell-status="{ value }">
-                    <UiBadge
-                        :variant="sheetStatusVariant(value)"
-                        :text="sheetStatusLabel(value)"
-                    />
+                    <UiBadge :variant="sheetStatusVariant(value)" :text="sheetStatusLabel(value)" />
                 </template>
             </UiTable>
             <div class="mt-6">
@@ -188,20 +174,9 @@ onMounted(async () => {
             </div>
         </UiCard>
 
-        <UiCard
-            v-if="sheet"
-            :title="`Маршрутный лист #${sheet.id}`"
-        >
-            <div
-                v-if="detailApi.loading"
-                class="text-sm text-bo-muted"
-            >
-                Загрузка…
-            </div>
-            <div
-                v-else
-                class="space-y-5 text-sm"
-            >
+        <UiCard v-if="sheet" :title="`Маршрутный лист #${sheet.id}`">
+            <div v-if="detailApi.loading" class="text-sm text-bo-muted">Загрузка…</div>
+            <div v-else class="space-y-5 text-sm">
                 <div class="border border-bo-border bg-white/[0.03] px-4 py-3">
                     <p class="text-[11px] font-medium uppercase tracking-[0.12em] text-bo-muted">
                         Где лист
@@ -223,16 +198,9 @@ onMounted(async () => {
                     v-if="canAssignCourier"
                     class="space-y-3 border border-bo-border bg-white/[0.03] p-4"
                 >
-                    <p class="font-medium">
-                        Назначить курьера
-                    </p>
-                    <p class="text-bo-muted">
-                        Лист выпущен без курьера — добей назначение.
-                    </p>
-                    <UiFormField
-                        label="Курьер"
-                        required
-                    >
+                    <p class="font-medium">Назначить курьера</p>
+                    <p class="text-bo-muted">Лист выпущен без курьера — добей назначение.</p>
+                    <UiFormField label="Курьер" required>
                         <select
                             v-model="courierId"
                             class="mt-1 w-full border border-bo-border bg-bo-field px-4 py-2.5 text-sm focus:border-bo-accent focus:outline-none"
@@ -247,43 +215,35 @@ onMounted(async () => {
                             </option>
                         </select>
                     </UiFormField>
-                    <UiButton
-                        :disabled="actionApi.loading"
-                        @click="onAssignCourier"
-                    >
+                    <UiButton :disabled="actionApi.loading" @click="onAssignCourier">
                         Назначить
                     </UiButton>
                 </div>
 
                 <div class="space-y-2">
-                    <p class="font-medium">
-                        Остановки
-                    </p>
+                    <p class="font-medium">Остановки</p>
                     <article
-                        v-for="stop in (sheet.stops ?? [])"
+                        v-for="stop in sheet.stops ?? []"
                         :key="`${stop.order_id}-${stop.position}`"
                         class="border border-bo-border px-4 py-3"
                     >
                         <div class="flex flex-wrap items-start justify-between gap-3">
                             <div class="space-y-1">
                                 <p class="font-semibold">
-                                    Остановка {{ stop.position }} · {{ stop.order?.number || `заказ #${stop.order_id}` }}
+                                    Остановка {{ stop.position }} ·
+                                    {{ stop.order?.number || `заказ #${stop.order_id}` }}
                                 </p>
                                 <p class="text-bo-muted">
                                     {{ stop.order?.client?.name || "—" }}
-                                    <span v-if="stop.order?.client?.phone"> · {{ stop.order.client.phone }}</span>
+                                    <span v-if="stop.order?.client?.phone">
+                                        · {{ stop.order.client.phone }}
+                                    </span>
                                 </p>
                                 <p>{{ formatAddress(stop.order?.address) || "Адрес не указан" }}</p>
-                                <p
-                                    v-if="stop.order?.status"
-                                    class="text-bo-muted"
-                                >
+                                <p v-if="stop.order?.status" class="text-bo-muted">
                                     Заказ: {{ orderStatusLabel(stop.order.status) }}
                                 </p>
-                                <p
-                                    v-if="stop.reason"
-                                    class="text-bo-muted"
-                                >
+                                <p v-if="stop.reason" class="text-bo-muted">
                                     Причина: {{ stop.reason }}
                                 </p>
                             </div>

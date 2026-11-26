@@ -1,10 +1,7 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
 import { playModalClose, playModalOpen } from "../../animations/animationManager";
-import {
-    pushBodyScrollLock,
-    popBodyScrollLock,
-} from "../../platform/document";
+import { pushBodyScrollLock, popBodyScrollLock } from "../../platform/document";
 import { useAppDesign } from "../../design/useAppDesign";
 
 const props = defineProps({
@@ -101,10 +98,7 @@ onBeforeUnmount(() => {
             <div :class="dm.content">
                 <div :class="sizeClasses.innerWrap">
                     <div ref="cardRef" :class="sizeClasses.card">
-                        <div
-                            v-if="$slots.header || props.closable"
-                            :class="dm.headerRow"
-                        >
+                        <div v-if="$slots.header || props.closable" :class="dm.headerRow">
                             <div :class="dm.headerSlot">
                                 <slot name="header" />
                             </div>
@@ -122,10 +116,7 @@ onBeforeUnmount(() => {
                             <slot />
                         </div>
 
-                        <div
-                            v-if="$slots.footer"
-                            :class="dm.footerWrap"
-                        >
+                        <div v-if="$slots.footer" :class="dm.footerWrap">
                             <slot name="footer" />
                         </div>
                     </div>

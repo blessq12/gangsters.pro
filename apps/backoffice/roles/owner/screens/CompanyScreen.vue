@@ -123,10 +123,12 @@ async function loadCompany() {
 
 async function loadBranches() {
     try {
-        const payload = await loadApi.run(() => listBranches({
-            offset: branchesOffset.value,
-            limit: branchesPerPage,
-        }));
+        const payload = await loadApi.run(() =>
+            listBranches({
+                offset: branchesOffset.value,
+                limit: branchesPerPage,
+            }),
+        );
         applyBranches(payload);
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось загрузить филиалы");
@@ -135,10 +137,12 @@ async function loadBranches() {
 
 async function loadDocuments() {
     try {
-        const payload = await loadApi.run(() => listDocuments({
-            offset: documentsOffset.value,
-            limit: documentsPerPage,
-        }));
+        const payload = await loadApi.run(() =>
+            listDocuments({
+                offset: documentsOffset.value,
+                limit: documentsPerPage,
+            }),
+        );
         applyDocuments(payload);
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось загрузить документы");
@@ -146,11 +150,7 @@ async function loadDocuments() {
 }
 
 async function loadAll() {
-    await Promise.all([
-        loadCompany(),
-        loadBranches(),
-        loadDocuments(),
-    ]);
+    await Promise.all([loadCompany(), loadBranches(), loadDocuments()]);
 }
 
 function validateCompany() {
@@ -187,9 +187,7 @@ async function saveCompanyForm() {
     };
 
     try {
-        await saveApi.run(() =>
-            companyExists.value ? updateCompany(body) : storeCompany(body),
-        );
+        await saveApi.run(() => (companyExists.value ? updateCompany(body) : storeCompany(body)));
         toast.success("Компания сохранена");
         await loadCompany();
     } catch (err) {
@@ -227,9 +225,11 @@ onMounted(loadAll);
                     :key="item.id"
                     type="button"
                     class="h-10 px-4 text-sm font-medium transition-colors duration-150"
-                    :class="tab === item.id
-                        ? 'bg-bo-accent text-white'
-                        : 'bg-white/[0.04] text-bo-muted hover:bg-white/[0.08] hover:text-bo-fg'"
+                    :class="
+                        tab === item.id
+                            ? 'bg-bo-accent text-white'
+                            : 'bg-white/[0.04] text-bo-muted hover:bg-white/[0.08] hover:text-bo-fg'
+                    "
                     @click="tab = item.id"
                 >
                     {{ item.label }}
@@ -281,16 +281,12 @@ onMounted(loadAll);
                         <UiInput v-model="companyForm.whatsapp" type="tel" />
                     </UiFormField>
                 </div>
-                <UiButton :disabled="saveApi.loading" @click="saveCompanyForm">
-                    Сохранить
-                </UiButton>
+                <UiButton :disabled="saveApi.loading" @click="saveCompanyForm">Сохранить</UiButton>
             </div>
 
             <div v-else-if="tab === 'branches'" class="space-y-5">
                 <div class="flex justify-end">
-                    <UiButton @click="openCreate('branch')">
-                        + Филиал
-                    </UiButton>
+                    <UiButton @click="openCreate('branch')">+ Филиал</UiButton>
                 </div>
                 <UiTable
                     :columns="branchColumns"
@@ -325,9 +321,7 @@ onMounted(loadAll);
 
             <div v-else class="space-y-5">
                 <div class="flex justify-end">
-                    <UiButton @click="openCreate('document')">
-                        + Документ
-                    </UiButton>
+                    <UiButton @click="openCreate('document')">+ Документ</UiButton>
                 </div>
                 <UiTable
                     :columns="documentColumns"

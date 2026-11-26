@@ -4,7 +4,23 @@ namespace App\Infrastructure\Production\Model;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property int $ticket_id
+ * @property int $product_id
+ * @property string $name
+ * @property int $quantity
+ * @property int $position
+ * @property string $status
+ * @property int $done_by
+ * @property Carbon|null $done_at
+ * @property int $packed_by
+ * @property Carbon|null $packed_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
 final class KitchenTicketLineModel extends Model
 {
     public $timestamps = false;

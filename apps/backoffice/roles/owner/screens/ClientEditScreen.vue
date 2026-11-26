@@ -135,12 +135,14 @@ async function load() {
 
 async function saveProfile() {
     try {
-        const payload = await profileApi.run(() => updateClientProfile(clientId.value, {
-            name: profile.name,
-            phone: profile.phone,
-            email: profile.email || null,
-            birth_date: profile.birth_date || null,
-        }));
+        const payload = await profileApi.run(() =>
+            updateClientProfile(clientId.value, {
+                name: profile.name,
+                phone: profile.phone,
+                email: profile.email || null,
+                birth_date: profile.birth_date || null,
+            }),
+        );
         if (payload?.client) {
             profile.name = payload.client.name ?? profile.name;
             profile.phone = payload.client.phone ?? profile.phone;
@@ -232,11 +234,9 @@ async function saveAddress() {
     };
     try {
         if (addressEditingId.value) {
-            await addressApi.run(() => updateClientAddress(
-                clientId.value,
-                addressEditingId.value,
-                body,
-            ));
+            await addressApi.run(() =>
+                updateClientAddress(clientId.value, addressEditingId.value, body),
+            );
         } else {
             await addressApi.run(() => addClientAddress(clientId.value, body));
         }
@@ -250,10 +250,9 @@ async function saveAddress() {
 
 async function makeDefault(address) {
     try {
-        const payload = await addressApi.run(() => setDefaultClientAddress(
-            clientId.value,
-            String(address.id),
-        ));
+        const payload = await addressApi.run(() =>
+            setDefaultClientAddress(clientId.value, String(address.id)),
+        );
         if (Array.isArray(payload?.client?.addresses)) {
             addresses.value = [...payload.client.addresses];
         } else {
@@ -272,10 +271,7 @@ async function confirmDeleteAddress() {
         return;
     }
     try {
-        const payload = await addressApi.run(() => deleteClientAddress(
-            clientId.value,
-            target.id,
-        ));
+        const payload = await addressApi.run(() => deleteClientAddress(clientId.value, target.id));
         if (Array.isArray(payload?.client?.addresses)) {
             addresses.value = [...payload.client.addresses];
         } else {
@@ -313,18 +309,13 @@ onMounted(load);
                 >
                     Копировать телефон
                 </UiButton>
-                <UiButton
-                    :disabled="profileApi.loading || loadApi.loading"
-                    @click="saveProfile"
-                >
+                <UiButton :disabled="profileApi.loading || loadApi.loading" @click="saveProfile">
                     Сохранить контакты
                 </UiButton>
             </div>
         </div>
 
-        <p v-if="loadApi.loading" class="text-sm text-bo-muted">
-            Загрузка…
-        </p>
+        <p v-if="loadApi.loading" class="text-sm text-bo-muted">Загрузка…</p>
 
         <template v-else>
             <UiCard title="Контакты">
@@ -346,9 +337,7 @@ onMounted(load);
 
             <UiCard title="Адреса">
                 <template #actions>
-                    <UiButton class="!h-9 !px-3" @click="openCreateAddress">
-                        + Адрес
-                    </UiButton>
+                    <UiButton class="!h-9 !px-3" @click="openCreateAddress">+ Адрес</UiButton>
                 </template>
 
                 <div v-if="addresses.length === 0" class="text-sm text-bo-muted">
@@ -396,10 +385,12 @@ onMounted(load);
                             <UiButton
                                 class="!h-9 !px-2.5"
                                 :disabled="addressApi.loading"
-                                @click="deleteAddressTarget = {
-                                    id: String(address.id),
-                                    label: formatAddressLabel(address),
-                                }"
+                                @click="
+                                    deleteAddressTarget = {
+                                        id: String(address.id),
+                                        label: formatAddressLabel(address),
+                                    }
+                                "
                             >
                                 Удалить
                             </UiButton>
@@ -409,21 +400,12 @@ onMounted(load);
             </UiCard>
 
             <UiCard title="История заказов">
-                <UiTable
-                    :columns="orderColumns"
-                    :rows="orders"
-                    empty-text="Нет заказов"
-                >
+                <UiTable :columns="orderColumns" :rows="orders" empty-text="Нет заказов">
                     <template #cell-status="{ value }">
                         <UiBadge variant="neutral" :text="String(value)" />
                     </template>
                     <template #cell-actions="{ row }">
-                        <UiButton
-                            class="!h-9 !px-2.5"
-                            @click="openOrder(row)"
-                        >
-                            Открыть
-                        </UiButton>
+                        <UiButton class="!h-9 !px-2.5" @click="openOrder(row)">Открыть</UiButton>
                     </template>
                 </UiTable>
             </UiCard>
@@ -461,20 +443,15 @@ onMounted(load);
                         v-model="addressForm.make_default"
                         type="checkbox"
                         class="accent-bo-accent"
-                    >
+                    />
                     Сделать основным
                 </label>
             </div>
             <template #footer>
-                <UiButton
-                    class="!bg-white/10 !text-bo-fg"
-                    @click="addressModalOpen = false"
-                >
+                <UiButton class="!bg-white/10 !text-bo-fg" @click="addressModalOpen = false">
                     Отмена
                 </UiButton>
-                <UiButton :disabled="addressApi.loading" @click="saveAddress">
-                    Сохранить
-                </UiButton>
+                <UiButton :disabled="addressApi.loading" @click="saveAddress">Сохранить</UiButton>
             </template>
         </UiModal>
 

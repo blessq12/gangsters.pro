@@ -7,8 +7,8 @@ use App\Domain\Supporting\Company\Entity\BranchCategoryItem;
 use App\Domain\Supporting\Company\Enum\BranchMenuEntryKind;
 use App\Domain\Supporting\Company\Repository\BranchCategoryRepository;
 use App\Infrastructure\Company\Mapper\BranchCategoryMapper;
-use App\Infrastructure\Company\Model\BranchCategoryModel;
 use App\Infrastructure\Company\Model\BranchCategoryItemModel;
+use App\Infrastructure\Company\Model\BranchCategoryModel;
 use App\Infrastructure\Company\Support\BranchSlugGenerator;
 use Illuminate\Support\Facades\DB;
 
@@ -94,7 +94,7 @@ final class EloquentBranchCategoryRepository implements BranchCategoryRepository
             $slug = trim($slug);
 
             if ($id === null) {
-                $row = new BranchCategoryModel();
+                $row = new BranchCategoryModel;
                 $row->branch_id = $branchId;
                 if ($slug === '') {
                     $slug = $this->slugs->generate($scope, $name, $branchId, 'category');

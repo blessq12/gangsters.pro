@@ -9,9 +9,10 @@ import { computed, ref, watch } from "vue";
  */
 export function useClientList(options = {}) {
     const perPage = Number(options.perPage) > 0 ? Number(options.perPage) : 20;
-    const getHaystack = typeof options.getHaystack === "function"
-        ? options.getHaystack
-        : (row) => String(row?.name ?? row?.label ?? row?.code ?? "");
+    const getHaystack =
+        typeof options.getHaystack === "function"
+            ? options.getHaystack
+            : (row) => String(row?.name ?? row?.label ?? row?.code ?? "");
 
     const allItems = ref([]);
     const searchQuery = ref("");

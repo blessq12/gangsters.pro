@@ -1,15 +1,12 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import {
-    administratorCommands,
-    shortStage,
-    ticketHint,
-} from "./orderStage.js";
+import { administratorCommands, shortStage, ticketHint } from "./orderStage.js";
 
 describe("administratorCommands", () => {
     it("новый заказ: подтвердить и отменить, без готовки", () => {
-        const ids = administratorCommands({ status: "new", delivery: { method: "courier" } })
-            .map((command) => command.id);
+        const ids = administratorCommands({ status: "new", delivery: { method: "courier" } }).map(
+            (command) => command.id,
+        );
         assert.deepEqual(ids, ["confirm", "cancel"]);
     });
 
@@ -55,7 +52,10 @@ describe("administratorCommands", () => {
 
     it("в пути и терминальные этапы без команд", () => {
         for (const status of ["in_transit", "delivered", "written_off", "cancelled"]) {
-            assert.deepEqual(administratorCommands({ status, delivery: { method: "courier" } }), []);
+            assert.deepEqual(
+                administratorCommands({ status, delivery: { method: "courier" } }),
+                [],
+            );
         }
     });
 
@@ -70,9 +70,18 @@ describe("administratorCommands", () => {
 
 describe("shortStage", () => {
     it("говорит следующим действием, а не кодом статуса", () => {
-        assert.equal(shortStage({ status: "ready", delivery: { method: "pickup" } }), "Собрать позиции");
-        assert.equal(shortStage({ status: "packed", delivery: { method: "pickup" } }), "Выдать самовывоз");
-        assert.equal(shortStage({ status: "in_transit", delivery: { method: "courier" } }), "Закрыть остановку");
+        assert.equal(
+            shortStage({ status: "ready", delivery: { method: "pickup" } }),
+            "Собрать позиции",
+        );
+        assert.equal(
+            shortStage({ status: "packed", delivery: { method: "pickup" } }),
+            "Выдать самовывоз",
+        );
+        assert.equal(
+            shortStage({ status: "in_transit", delivery: { method: "courier" } }),
+            "Закрыть остановку",
+        );
         assert.equal(ticketHint("queued").includes("старт"), true);
     });
 });

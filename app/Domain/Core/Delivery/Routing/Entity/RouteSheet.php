@@ -167,6 +167,7 @@ final class RouteSheet
         foreach ($this->stops as $stop) {
             if ($stop->orderId() !== $orderId) {
                 $stops[] = $stop;
+
                 continue;
             }
             if ($stop->outcome() !== 'pending') {
@@ -212,6 +213,7 @@ final class RouteSheet
         foreach ($this->stops as $stop) {
             if ($stop->orderId() !== $orderId || $stop->outcome() !== 'pending') {
                 $stops[] = $stop;
+
                 continue;
             }
             $found = true;

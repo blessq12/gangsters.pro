@@ -24,14 +24,7 @@ const router = useRouter();
 const toast = useToast();
 const catalogApi = useApi();
 const deleteApi = useApi();
-const {
-    searchQuery,
-    page,
-    perPage,
-    total,
-    pageItems,
-    setItems,
-} = useClientList({
+const { searchQuery, page, perPage, total, pageItems, setItems } = useClientList({
     perPage: 20,
     getHaystack: (row) => `${row.name ?? ""} ${row.sku ?? ""} ${row.id ?? ""}`,
 });
@@ -102,15 +95,15 @@ onMounted(load);
 
 <template>
     <div
-        :class="embedded
-            ? 'space-y-8'
-            : 'mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10'"
+        :class="
+            embedded
+                ? 'space-y-8'
+                : 'mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10'
+        "
     >
         <UiCard title="Товары справочника">
             <template #actions>
-                <UiButton @click="openCreate">
-                    + Товар
-                </UiButton>
+                <UiButton @click="openCreate">+ Товар</UiButton>
             </template>
 
             <div class="mb-4 max-w-md">
@@ -129,17 +122,8 @@ onMounted(load);
             >
                 <template #cell-flags="{ row }">
                     <div class="flex flex-wrap gap-1">
-                        <UiBadge
-                            v-if="row.is_roll"
-                            variant="neutral"
-                            text="ролл"
-                        />
-                        <span
-                            v-if="!row.is_roll"
-                            class="text-bo-muted"
-                        >
-                            —
-                        </span>
+                        <UiBadge v-if="row.is_roll" variant="neutral" text="ролл" />
+                        <span v-if="!row.is_roll" class="text-bo-muted">—</span>
                     </div>
                 </template>
                 <template #cell-status="{ value }">
@@ -186,7 +170,10 @@ onMounted(load);
             title="Удаление"
             :message="deleteConfirmMessage"
             @confirm="confirmDelete"
-            @cancel="confirmOpen = false; deleteTarget = null"
+            @cancel="
+                confirmOpen = false;
+                deleteTarget = null;
+            "
         />
     </div>
 </template>

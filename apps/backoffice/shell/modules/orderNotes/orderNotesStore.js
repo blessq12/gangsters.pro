@@ -170,7 +170,8 @@ export const useOrderNotesStore = defineStore("backoffice-order-notes", {
                     return;
                 }
                 this.notes = [];
-                this.error = err instanceof Error ? err.message : "Не удалось загрузить комментарии";
+                this.error =
+                    err instanceof Error ? err.message : "Не удалось загрузить комментарии";
             } finally {
                 if (String(this.orderId) === String(loadingFor)) {
                     this.loading = false;
@@ -208,19 +209,6 @@ export const useOrderNotesStore = defineStore("backoffice-order-notes", {
         },
     },
 });
-
-/**
- * Facade: открыть ленту для заказа.
- * @param {{
- *   orderId: number|string,
- *   orderStatus?: string,
- *   initialNotes?: unknown[],
- *   notesCount?: number,
- * }} payload
- */
-export function openNotes(payload) {
-    useOrderNotesStore().open(payload);
-}
 
 /** Facade: закрыть панель. */
 export function closeNotes() {

@@ -4,7 +4,14 @@ namespace App\Infrastructure\Catalog\Model;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property int $product_id
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
 final class TechCardModel extends Model
 {
     protected $table = 'CAT_tech_cards';

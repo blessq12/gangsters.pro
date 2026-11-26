@@ -72,11 +72,11 @@ const phoneComplete = computed(() => isRuPhoneComplete(props.phone));
 /** Полный номер искали, хитов нет — режим нового клиента. */
 const showNewClient = computed(
     () =>
-        !selected.value
-        && phoneComplete.value
-        && lastSearchedDigits.value === phoneDigits.value
-        && !searching.value
-        && hits.value.length === 0,
+        !selected.value &&
+        phoneComplete.value &&
+        lastSearchedDigits.value === phoneDigits.value &&
+        !searching.value &&
+        hits.value.length === 0,
 );
 
 watch(
@@ -112,19 +112,16 @@ watch(
     { immediate: true },
 );
 
-watch(
-    [phoneComplete, hits, selected],
-    () => {
-        if (selected.value) {
-            return;
+watch([phoneComplete, hits, selected], () => {
+    if (selected.value) {
+        return;
+    }
+    if (!phoneComplete.value || hits.value.length > 0) {
+        if (props.name) {
+            emit("update:name", "");
         }
-        if (!phoneComplete.value || hits.value.length > 0) {
-            if (props.name) {
-                emit("update:name", "");
-            }
-        }
-    },
-);
+    }
+});
 
 /**
  * @param {string|null|undefined} value
@@ -267,18 +264,12 @@ function linesPreview(lines) {
     if (list.length === 0) {
         return "Без позиций";
     }
-    return list
-        .map((line) => `${line.name || "Позиция"} × ${line.quantity ?? 1}`)
-        .join(", ");
+    return list.map((line) => `${line.name || "Позиция"} × ${line.quantity ?? 1}`).join(", ");
 }
 </script>
 
 <template>
-    <form
-        class="space-y-3"
-        autocomplete="off"
-        @submit.prevent
-    >
+    <form class="space-y-3" autocomplete="off" @submit.prevent>
         <div
             v-if="selected"
             class="flex flex-wrap items-center justify-between gap-2 border border-bo-border bg-bo-field px-3 py-2 text-sm"
@@ -287,9 +278,7 @@ function linesPreview(lines) {
                 <div class="text-bo-fg">
                     {{ name || "Клиент" }}
                 </div>
-                <div class="text-xs text-bo-muted">
-                    {{ phone || "—" }} · выбранный клиент
-                </div>
+                <div class="text-xs text-bo-muted">{{ phone || "—" }} · выбранный клиент</div>
             </div>
             <button
                 type="button"
@@ -301,11 +290,7 @@ function linesPreview(lines) {
         </div>
 
         <template v-else>
-            <UiFormField
-                label="Телефон"
-                required
-                :error="phoneError"
-            >
+            <UiFormField label="Телефон" required :error="phoneError">
                 <div class="relative">
                     <UiInput
                         v-model="phoneModel"
@@ -340,47 +325,23 @@ function linesPreview(lines) {
             </p>
 
             <template v-if="showNewClient">
-                <p class="text-xs text-bo-muted">
-                    Клиент не найден — оформим заказ на нового.
-                </p>
-                <UiFormField
-                    label="Имя"
-                    required
-                    :error="nameError"
-                >
-                    <UiInput
-                        v-model="nameModel"
-                        name="bo-client-name"
-                        autocomplete="off"
-                    />
+                <p class="text-xs text-bo-muted">Клиент не найден — оформим заказ на нового.</p>
+                <UiFormField label="Имя" required :error="nameError">
+                    <UiInput v-model="nameModel" name="bo-client-name" autocomplete="off" />
                 </UiFormField>
             </template>
         </template>
 
         <template v-if="selected">
-            <p
-                v-if="detailApi.loading"
-                class="text-xs text-bo-muted"
-            >
-                Загрузка истории…
-            </p>
+            <p v-if="detailApi.loading" class="text-xs text-bo-muted">Загрузка истории…</p>
 
-            <div
-                v-else
-                class="space-y-3"
-            >
+            <div v-else class="space-y-3">
                 <div>
                     <p class="mb-1.5 text-xs font-medium uppercase tracking-wide text-bo-muted">
                         Адреса
                     </p>
-                    <ul
-                        v-if="addresses.length"
-                        class="max-h-40 space-y-1 overflow-y-auto"
-                    >
-                        <li
-                            v-for="address in addresses"
-                            :key="String(address.id)"
-                        >
+                    <ul v-if="addresses.length" class="max-h-40 space-y-1 overflow-y-auto">
+                        <li v-for="address in addresses" :key="String(address.id)">
                             <button
                                 type="button"
                                 class="w-full border border-bo-border bg-black/20 px-3 py-2 text-left text-sm transition-colors hover:border-bo-accent hover:bg-white/[0.04]"
@@ -390,40 +351,35 @@ function linesPreview(lines) {
                                 <span
                                     v-if="address.is_default"
                                     class="ml-2 text-xs text-emerald-300"
-                                >основной</span>
+                                >
+                                    основной
+                                </span>
                             </button>
                         </li>
                     </ul>
-                    <p
-                        v-else
-                        class="text-xs text-bo-muted"
-                    >
-                        Сохранённых адресов нет
-                    </p>
+                    <p v-else class="text-xs text-bo-muted">Сохранённых адресов нет</p>
                 </div>
 
                 <div>
                     <p class="mb-1.5 text-xs font-medium uppercase tracking-wide text-bo-muted">
                         Прошлые заказы
                     </p>
-                    <ul
-                        v-if="orders.length"
-                        class="max-h-48 space-y-1 overflow-y-auto"
-                    >
-                        <li
-                            v-for="order in orders"
-                            :key="String(order.id)"
-                        >
+                    <ul v-if="orders.length" class="max-h-48 space-y-1 overflow-y-auto">
+                        <li v-for="order in orders" :key="String(order.id)">
                             <button
                                 type="button"
                                 class="flex w-full flex-col gap-1.5 border border-bo-border bg-black/20 px-3 py-2 text-left text-sm transition-colors hover:border-bo-accent hover:bg-white/[0.04] disabled:opacity-50"
                                 :disabled="orderApi.loading"
                                 @click="onPickOrder(order)"
                             >
-                                <span class="flex w-full flex-wrap items-center justify-between gap-2">
+                                <span
+                                    class="flex w-full flex-wrap items-center justify-between gap-2"
+                                >
                                     <span class="min-w-0">
                                         <span class="text-bo-fg">{{ order.number }}</span>
-                                        <span class="ml-2 text-xs text-bo-muted">{{ formatOrderDate(order.created_at) }}</span>
+                                        <span class="ml-2 text-xs text-bo-muted">
+                                            {{ formatOrderDate(order.created_at) }}
+                                        </span>
                                     </span>
                                     <span class="flex items-center gap-2">
                                         <span class="text-xs text-bo-muted">{{ order.total }}</span>
@@ -444,21 +400,13 @@ function linesPreview(lines) {
                                         {{ line.name || "Позиция" }} × {{ line.quantity ?? 1 }}
                                     </li>
                                 </ul>
-                                <p
-                                    v-else
-                                    class="text-xs text-bo-muted"
-                                >
+                                <p v-else class="text-xs text-bo-muted">
                                     {{ linesPreview(order.lines) }}
                                 </p>
                             </button>
                         </li>
                     </ul>
-                    <p
-                        v-else
-                        class="text-xs text-bo-muted"
-                    >
-                        Заказов пока нет
-                    </p>
+                    <p v-else class="text-xs text-bo-muted">Заказов пока нет</p>
                     <p class="mt-1 text-[0.7rem] text-bo-muted">
                         Клик по заказу подставит корзину, доставку и оплату
                     </p>

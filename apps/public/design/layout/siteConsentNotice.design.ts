@@ -19,5 +19,3 @@ export const siteConsentNoticeDesign = {
         "inline-flex shrink-0 items-center justify-center self-stretch border border-transparent bg-app-accent px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-app-accent-hover " +
         "sm:self-auto md:px-3.5 md:py-1.5 md:text-xs",
 } as const;
-
-export type SiteConsentNoticeDesign = typeof siteConsentNoticeDesign;

@@ -109,11 +109,6 @@ export function listBranchCategories(branchId) {
     return request("GET", `/company/branches/${branchId}/categories`);
 }
 
-/** @param {number|string} branchId @param {number|string} id */
-export function getBranchCategory(branchId, id) {
-    return request("GET", `/company/branches/${branchId}/categories/${id}`);
-}
-
 /**
  * @param {number|string} branchId
  * @param {{
@@ -148,15 +143,6 @@ export function reorderBranchCategories(branchId, ids) {
     return request("PUT", `/company/branches/${branchId}/categories/order`, { ids });
 }
 
-/**
- * @param {number|string} branchId
- * @param {number|string} id
- * @param {Array<{ entry_kind: 'product'|'set', entry_id: number, sort_order: number }>} items
- */
-export function replaceBranchCategoryItems(branchId, id, items) {
-    return request("PUT", `/company/branches/${branchId}/categories/${id}/items`, { items });
-}
-
 /** @param {number|string} branchId */
 export function listBranchTags(branchId) {
     return request("GET", `/company/branches/${branchId}/tags`);
@@ -187,11 +173,6 @@ export function deleteBranchTag(branchId, id) {
 /** @param {number|string} branchId */
 export function listBranchSets(branchId) {
     return request("GET", `/company/branches/${branchId}/sets`);
-}
-
-/** @param {number|string} branchId @param {number|string} id */
-export function getBranchSet(branchId, id) {
-    return request("GET", `/company/branches/${branchId}/sets/${id}`);
 }
 
 /**

@@ -4,7 +4,20 @@ namespace App\Infrastructure\Order\Model;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property int $order_id
+ * @property int $product_id
+ * @property string $name
+ * @property int $unit_price_kopecks
+ * @property int $quantity
+ * @property string $line_type
+ * @property int $position
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
 final class OrderLineModel extends Model
 {
     public $timestamps = false;

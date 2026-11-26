@@ -29,16 +29,7 @@ const footer = useAppDesign().components.footer;
         @update:model-value="$emit('update:modelValue', $event)"
     >
         <template #header>{{ title }}</template>
-        <div
-            v-if="doc.useHtml"
-            :class="footer.legalHtml"
-            v-html="doc.html"
-        />
-        <p
-            v-else
-            :class="footer.modalFallback"
-        >
-            Документ временно недоступен
-        </p>
+        <div v-if="doc.useHtml" :class="footer.legalHtml" v-html="doc.html" />
+        <p v-else :class="footer.modalFallback">Документ временно недоступен</p>
     </BaseModal>
 </template>

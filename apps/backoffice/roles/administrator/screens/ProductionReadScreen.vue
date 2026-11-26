@@ -69,11 +69,13 @@ async function load() {
         return;
     }
     try {
-        const payload = await listApi.run(() => getQueue(branchId.value, {
-            offset: offset.value,
-            limit: perPage,
-            scope: "active",
-        }));
+        const payload = await listApi.run(() =>
+            getQueue(branchId.value, {
+                offset: offset.value,
+                limit: perPage,
+                scope: "active",
+            }),
+        );
         const pool = payload?.pool && typeof payload.pool === "object" ? payload.pool : payload;
         applyPayload(pool);
     } catch (err) {
@@ -93,10 +95,12 @@ async function openDetail(row) {
 }
 
 function canPackLine(line) {
-    return detail.value?.order?.status === "ready"
-        && line?.id
-        && line.status === "done"
-        && !line.packed_by;
+    return (
+        detail.value?.order?.status === "ready" &&
+        line?.id &&
+        line.status === "done" &&
+        !line.packed_by
+    );
 }
 
 async function onPackLine(line) {
@@ -104,7 +108,9 @@ async function onPackLine(line) {
         return;
     }
     try {
-        detail.value = await actionApi.run(() => markTicketLinePacked(detail.value.order_id, line.id));
+        detail.value = await actionApi.run(() =>
+            markTicketLinePacked(detail.value.order_id, line.id),
+        );
         toast.success("Позиция собрана");
         await load();
     } catch (err) {
@@ -130,7 +136,8 @@ onMounted(async () => {
     <div class="mx-auto w-full max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
         <UiCard title="Тикеты">
             <p class="mb-4 text-sm text-bo-muted">
-                Тикеты филиала в работе (очередь + готовка) со статусами. Готовность позиций — у кухни; сборку ready-заказа можно отметить здесь.
+                Тикеты филиала в работе (очередь + готовка) со статусами. Готовность позиций — у
+                кухни; сборку ready-заказа можно отметить здесь.
             </p>
             <label class="mb-6 block max-w-md text-sm text-bo-muted" for="admin-branch">
                 Филиал
@@ -141,11 +148,7 @@ onMounted(async () => {
                     @change="selectBranch($event.target.value)"
                 >
                     <option value="">Выбери филиал</option>
-                    <option
-                        v-for="branch in branches"
-                        :key="branch.id"
-                        :value="String(branch.id)"
-                    >
+                    <option v-for="branch in branches" :key="branch.id" :value="String(branch.id)">
                         {{ branchLabel(branch) }}
                     </option>
                 </select>
@@ -192,14 +195,14 @@ onMounted(async () => {
         </UiCard>
 
         <UiModal :open="detailOpen" title="Тикет" @close="detailOpen = false">
-            <div v-if="detailApi.loading" class="text-sm text-bo-muted">
-                Загрузка…
-            </div>
+            <div v-if="detailApi.loading" class="text-sm text-bo-muted">Загрузка…</div>
             <div v-else-if="detail" class="space-y-3 text-sm">
                 <p class="border border-bo-border bg-white/[0.03] px-4 py-3">
                     {{ ticketHint(detail.status) }}
                 </p>
-                <p>{{ detail.order_number || detail.order?.number || `Заказ #${detail.order_id}` }}</p>
+                <p>
+                    {{ detail.order_number || detail.order?.number || `Заказ #${detail.order_id}` }}
+                </p>
                 <p>
                     Тикет:
                     <UiBadge
@@ -213,21 +216,19 @@ onMounted(async () => {
                 </p>
                 <ul class="space-y-2">
                     <li
-                        v-for="line in (detail.lines ?? [])"
+                        v-for="line in detail.lines ?? []"
                         :key="line.id ?? `${line.product_id}-${line.name}`"
                         class="flex flex-wrap items-center justify-between gap-2 border border-bo-border px-3 py-2"
                     >
                         <span>
                             {{ line.name || `Позиция #${line.product_id}` }} × {{ line.quantity }}
                             <span class="ml-2 text-bo-muted">{{ line.status || "queued" }}</span>
-                            <span
-                                v-if="line.done_by"
-                                class="ml-2 text-emerald-300"
-                            >кухня #{{ line.done_by }}</span>
-                            <span
-                                v-if="line.packed_by"
-                                class="ml-2 text-amber-300"
-                            >сборка #{{ line.packed_by }}</span>
+                            <span v-if="line.done_by" class="ml-2 text-emerald-300">
+                                кухня #{{ line.done_by }}
+                            </span>
+                            <span v-if="line.packed_by" class="ml-2 text-amber-300">
+                                сборка #{{ line.packed_by }}
+                            </span>
                         </span>
                         <UiButton
                             v-if="canPackLine(line)"
@@ -243,9 +244,7 @@ onMounted(async () => {
                 </p>
             </div>
             <template #footer>
-                <UiButton @click="detailOpen = false">
-                    Закрыть
-                </UiButton>
+                <UiButton @click="detailOpen = false">Закрыть</UiButton>
             </template>
         </UiModal>
     </div>

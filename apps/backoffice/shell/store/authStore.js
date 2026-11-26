@@ -1,10 +1,7 @@
 import { defineStore } from "pinia";
 import { request } from "../../http/transport";
 import { readBackofficeAuthRequired } from "../authConfig";
-import {
-    getBackofficeAuthToken,
-    persistBackofficeAuthToken,
-} from "../authToken";
+import { getBackofficeAuthToken, persistBackofficeAuthToken } from "../authToken";
 
 export const useAuthStore = defineStore("backoffice-auth", {
     state: () => ({

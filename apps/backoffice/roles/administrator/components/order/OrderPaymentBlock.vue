@@ -77,10 +77,7 @@ const preorderActive = computed(() => timingMode.value === "scheduled");
 
 <template>
     <UiCard title="Оплата и время">
-        <dl
-            v-if="readonly"
-            class="grid gap-6 text-sm md:grid-cols-2"
-        >
+        <dl v-if="readonly" class="grid gap-6 text-sm md:grid-cols-2">
             <dd class="text-bo-fg">
                 {{ paymentLabel(paymentMethod) }}
             </dd>
@@ -89,10 +86,7 @@ const preorderActive = computed(() => timingMode.value === "scheduled");
             </dd>
         </dl>
 
-        <div
-            v-else
-            class="grid gap-6 md:grid-cols-2 md:gap-8"
-        >
+        <div v-else class="grid gap-6 md:grid-cols-2 md:gap-8">
             <UiFormField :error="paymentError">
                 <select
                     class="h-11 w-full border border-bo-border bg-bo-field px-3 text-sm text-bo-fg transition-colors hover:border-bo-border-strong focus:border-bo-accent focus:outline-none"
@@ -100,30 +94,22 @@ const preorderActive = computed(() => timingMode.value === "scheduled");
                     aria-label="Способ оплаты"
                     @change="$emit('update:paymentMethod', $event.target.value)"
                 >
-                    <option value="cash">
-                        Наличные
-                    </option>
-                    <option value="card_courier">
-                        Карта курьеру
-                    </option>
-                    <option value="card_online">
-                        Карта онлайн
-                    </option>
+                    <option value="cash">Наличные</option>
+                    <option value="card_courier">Карта курьеру</option>
+                    <option value="card_online">Карта онлайн</option>
                 </select>
             </UiFormField>
 
             <UiFormField :error="scheduleError">
-                <div
-                    class="flex w-full"
-                    role="group"
-                    aria-label="Режим времени"
-                >
+                <div class="flex w-full" role="group" aria-label="Режим времени">
                     <button
                         type="button"
                         class="h-11 flex-1 border text-sm font-medium transition-colors"
-                        :class="asapActive
-                            ? 'border-bo-accent bg-bo-accent/15 text-bo-fg'
-                            : 'border-bo-border bg-bo-field text-bo-muted hover:border-bo-border-strong hover:text-bo-fg'"
+                        :class="
+                            asapActive
+                                ? 'border-bo-accent bg-bo-accent/15 text-bo-fg'
+                                : 'border-bo-border bg-bo-field text-bo-muted hover:border-bo-border-strong hover:text-bo-fg'
+                        "
                         :aria-pressed="asapActive"
                         @click="selectAsap"
                     >

@@ -99,7 +99,6 @@ final class OrderCommercialRulesMapper
     }
 
     /**
-     * @param  mixed  $raw
      * @param  list<int>  $fallback
      * @return list<int>
      */

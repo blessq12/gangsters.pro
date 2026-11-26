@@ -4,25 +4,19 @@
 
 export const homeJumbotronDesign = {
     shared: {
-        backdropLayer:
-            "pointer-events-none absolute inset-0 opacity-50 mix-blend-screen",
+        backdropLayer: "pointer-events-none absolute inset-0 opacity-50 mix-blend-screen",
         cardFrame:
             "home-jumbotron-card relative w-full max-w-full overflow-hidden rounded-none border border-transparent bg-neutral-950/72",
         swiperOverflow: "!overflow-visible",
         mediaSlotMobile:
             "home-jumbotron-media home-jumbotron-aspect-slot relative flex items-center justify-center",
-        mediaSlotDesktop:
-            "home-jumbotron-media home-jumbotron-aspect-slot relative",
-        slideImageMobile:
-            "block h-full w-full object-contain object-center",
-        slideImageDesktop:
-            "absolute inset-0 h-full w-full object-cover",
-        loadingSlot:
-            "home-jumbotron-aspect-slot rounded-none bg-neutral-900/65 animate-pulse",
+        mediaSlotDesktop: "home-jumbotron-media home-jumbotron-aspect-slot relative",
+        slideImageMobile: "block h-full w-full object-contain object-center",
+        slideImageDesktop: "absolute inset-0 h-full w-full object-cover",
+        loadingSlot: "home-jumbotron-aspect-slot rounded-none bg-neutral-900/65 animate-pulse",
         navRail:
             "pointer-events-none absolute inset-y-0 left-0 right-0 z-20 hidden items-center justify-between px-5 md:flex lg:px-8",
-        navBtn:
-            "pointer-events-auto inline-flex h-11 w-11 items-center justify-center rounded-none border border-transparent bg-[rgba(0,0,0,0.82)] text-app-canvas-fg backdrop-blur-xl transition hover:border-app-accent/40 hover:text-app-accent",
+        navBtn: "pointer-events-auto inline-flex h-11 w-11 items-center justify-center rounded-none border border-transparent bg-[rgba(0,0,0,0.82)] text-app-canvas-fg backdrop-blur-xl transition hover:border-app-accent/40 hover:text-app-accent",
         emptyState: "mx-auto max-w-4xl py-8 text-center text-xs text-app-muted",
         slideInnerFlex: "flex min-w-0 justify-center px-0.5",
     },

@@ -69,9 +69,7 @@ export async function fetchOrdersRequest() {
 }
 
 export async function fetchRepeatableOrderLinesRequest(orderId) {
-    const response = await http.get(
-        `/client/orders/${orderId}/repeatable-lines`,
-    );
+    const response = await http.get(`/client/orders/${orderId}/repeatable-lines`);
     return response.data;
 }
 
@@ -90,10 +88,7 @@ export function buildRegisterClientPayload(data = {}) {
 /** Pass exactly one identity: phone or email (the other must be null). */
 export function buildLoginClientPayload(data = {}) {
     const rawPhone = data.phone;
-    const formatted =
-        rawPhone == null || rawPhone === ""
-            ? ""
-            : formatRuPhoneCanonical(rawPhone);
+    const formatted = rawPhone == null || rawPhone === "" ? "" : formatRuPhoneCanonical(rawPhone);
     return {
         phone: formatted || null,
         email: data.email ?? null,
@@ -104,26 +99,20 @@ export function buildLoginClientPayload(data = {}) {
 export function buildUpdateClientProfilePayload(data = {}) {
     const payload = {};
     if ("name" in data) payload.name = data.name;
-    if ("phone" in data)
-        payload.phone = formatRuPhoneCanonical(data.phone ?? "");
+    if ("phone" in data) payload.phone = formatRuPhoneCanonical(data.phone ?? "");
     if ("email" in data) payload.email = data.email ?? null;
     if ("birth_date" in data) payload.birth_date = data.birth_date ?? null;
     if ("consent_personal_data" in data)
         payload.consent_personal_data = Boolean(data.consent_personal_data);
-    if ("consent_marketing" in data)
-        payload.consent_marketing = Boolean(data.consent_marketing);
+    if ("consent_marketing" in data) payload.consent_marketing = Boolean(data.consent_marketing);
     return payload;
 }
 
 export function buildClientAddressPayload(data = {}) {
     const latRaw = data.lat ?? data.latitude;
     const lngRaw = data.lng ?? data.longitude;
-    const lat = latRaw === null || latRaw === undefined || latRaw === ""
-        ? null
-        : Number(latRaw);
-    const lng = lngRaw === null || lngRaw === undefined || lngRaw === ""
-        ? null
-        : Number(lngRaw);
+    const lat = latRaw === null || latRaw === undefined || latRaw === "" ? null : Number(latRaw);
+    const lng = lngRaw === null || lngRaw === undefined || lngRaw === "" ? null : Number(lngRaw);
 
     return {
         type: data.type ?? undefined,
@@ -136,22 +125,13 @@ export function buildClientAddressPayload(data = {}) {
         comment: data.comment ?? null,
         lat: Number.isFinite(lat) ? lat : null,
         lng: Number.isFinite(lng) ? lng : null,
-        make_default:
-            "make_default" in data ? Boolean(data.make_default) : undefined,
+        make_default: "make_default" in data ? Boolean(data.make_default) : undefined,
     };
 }
 
 export async function logoutClientRequest() {
     const response = await http.post("/client/logout");
     return response.data;
-}
-
-export function buildToggleClientFavoritePayload(product = {}) {
-    return {
-        name: product.name ?? "",
-        price: Number(product.price) || 0,
-        weight: product.weight ?? null,
-    };
 }
 
 export function buildMergeGuestFavoritesPayload(items = []) {

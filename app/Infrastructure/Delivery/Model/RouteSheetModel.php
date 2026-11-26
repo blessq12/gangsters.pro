@@ -4,7 +4,16 @@ namespace App\Infrastructure\Delivery\Model;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property int $branch_id
+ * @property string $status
+ * @property int $courier_id
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
 final class RouteSheetModel extends Model
 {
     protected $table = 'DLV_route_sheets';

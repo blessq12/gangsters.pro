@@ -24,9 +24,7 @@ const promos = computed(() =>
     })),
 );
 
-const isLoading = computed(
-    () => loading.value && promotions.value.length === 0,
-);
+const isLoading = computed(() => loading.value && promotions.value.length === 0);
 
 const showModal = ref(false);
 const activePromo = ref(null);
@@ -54,17 +52,11 @@ const openPromo = (promo) => {
 
 <template>
     <section :class="hpShared.section">
-        <h2 :class="hpDesk.heading">
-            Актуальные акции
-        </h2>
+        <h2 :class="hpDesk.heading">Актуальные акции</h2>
 
         <div :class="hpDesk.grid">
             <template v-if="isLoading">
-                <div
-                    v-for="index in 4"
-                    :key="index"
-                    :class="hpDesk.skeleton"
-                ></div>
+                <div v-for="index in 4" :key="index" :class="hpDesk.skeleton"></div>
             </template>
 
             <template v-else-if="promos.length">
@@ -76,19 +68,13 @@ const openPromo = (promo) => {
                     @click="openPromo(promo)"
                 >
                     <div :class="hpShared.thumbWrap">
-                        <img
-                            :src="promo.image"
-                            :alt="promo.title"
-                            :class="hpShared.thumbImg"
-                        />
+                        <img :src="promo.image" :alt="promo.title" :class="hpShared.thumbImg" />
                     </div>
                 </article>
             </template>
 
             <template v-else>
-                <div :class="hpDesk.emptySpan">
-                    Акции скоро появятся.
-                </div>
+                <div :class="hpDesk.emptySpan">Акции скоро появятся.</div>
             </template>
         </div>
 
@@ -107,10 +93,7 @@ const openPromo = (promo) => {
                     :class="hpShared.modalText"
                     v-html="activePromo.body"
                 />
-                <p
-                    v-else-if="activePromo.description"
-                    :class="hpShared.modalText"
-                >
+                <p v-else-if="activePromo.description" :class="hpShared.modalText">
                     {{ activePromo.description }}
                 </p>
             </div>

@@ -9,9 +9,7 @@ import {
 
 const ruMask = new Mask({
     mask: RU_PHONE_MASKA_PATTERN,
-    ...(Object.keys(RU_PHONE_MASKA_TOKENS).length > 0
-        ? { tokens: RU_PHONE_MASKA_TOKENS }
-        : {}),
+    ...(Object.keys(RU_PHONE_MASKA_TOKENS).length > 0 ? { tokens: RU_PHONE_MASKA_TOKENS } : {}),
 });
 
 function digitsToMaskedDisplay(digitsNormalized) {
@@ -40,9 +38,7 @@ export function useRuPhoneModel(formRef, fieldKey = "phone") {
         () => phoneMask.unmasked,
         (u) => {
             const n = normalizeRuPhoneDigits(u);
-            const cur = normalizeRuPhoneDigits(
-                String(formRef.value[fieldKey] ?? ""),
-            );
+            const cur = normalizeRuPhoneDigits(String(formRef.value[fieldKey] ?? ""));
             if (cur === n) {
                 return;
             }

@@ -2,11 +2,7 @@
 import { computed, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
-import {
-    getBranchStock,
-    listBranchWriteOffs,
-    listIngredients,
-} from "../../../api/warehouse.js";
+import { getBranchStock, listBranchWriteOffs, listIngredients } from "../../../api/warehouse.js";
 import { useApi } from "../../../shell/composables/useApi.js";
 import { useClientList } from "../../../shell/composables/useClientList.js";
 import { useToast } from "../../../shell/composables/useToast.js";
@@ -38,9 +34,7 @@ const sections = [
 const sectionIds = sections.map((item) => item.id);
 
 const section = computed(() =>
-    sectionIds.includes(String(route.query.section))
-        ? String(route.query.section)
-        : "stock",
+    sectionIds.includes(String(route.query.section)) ? String(route.query.section) : "stock",
 );
 
 function setSection(id) {
@@ -123,22 +117,24 @@ async function fetchAllPages(fetchPage) {
 
 function rebuildLists() {
     const qtyMap = quantityByIngredientId.value;
-    setStockRows(allIngredients.value.map((item) => ({
-        id: Number(item.id),
-        name: item.name,
-        unit: item.unit ?? "",
-        quantity: qtyMap.get(Number(item.id)) ?? 0,
-    })));
-
-    const nameById = new Map(
-        allIngredients.value.map((item) => [Number(item.id), item.name]),
+    setStockRows(
+        allIngredients.value.map((item) => ({
+            id: Number(item.id),
+            name: item.name,
+            unit: item.unit ?? "",
+            quantity: qtyMap.get(Number(item.id)) ?? 0,
+        })),
     );
-    setWriteOffItems(allWriteOffs.value.map((row) => ({
-        ...row,
-        ingredient_id: Number(row.ingredient_id),
-        ingredient_name: nameById.get(Number(row.ingredient_id)) ?? `#${row.ingredient_id}`,
-        occurred_at: formatDate(row.occurred_at),
-    })));
+
+    const nameById = new Map(allIngredients.value.map((item) => [Number(item.id), item.name]));
+    setWriteOffItems(
+        allWriteOffs.value.map((row) => ({
+            ...row,
+            ingredient_id: Number(row.ingredient_id),
+            ingredient_name: nameById.get(Number(row.ingredient_id)) ?? `#${row.ingredient_id}`,
+            occurred_at: formatDate(row.occurred_at),
+        })),
+    );
 }
 
 async function load() {
@@ -151,11 +147,13 @@ async function load() {
     }
     try {
         const id = branchId.value;
-        const [ingredients, stockLevels, writeOffs] = await loadApi.run(() => Promise.all([
-            fetchAllPages(listIngredients),
-            fetchAllPages((query) => getBranchStock(id, query)),
-            fetchAllPages((query) => listBranchWriteOffs(id, query)),
-        ]));
+        const [ingredients, stockLevels, writeOffs] = await loadApi.run(() =>
+            Promise.all([
+                fetchAllPages(listIngredients),
+                fetchAllPages((query) => getBranchStock(id, query)),
+                fetchAllPages((query) => listBranchWriteOffs(id, query)),
+            ]),
+        );
         allIngredients.value = ingredients;
         const qty = new Map();
         for (const row of stockLevels) {
@@ -223,9 +221,7 @@ onMounted(async () => {
 <template>
     <div class="mx-auto w-full max-w-7xl space-y-6 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
         <div class="space-y-3">
-            <h1 class="text-2xl font-semibold tracking-tight text-bo-fg">
-                Склад филиала
-            </h1>
+            <h1 class="text-2xl font-semibold tracking-tight text-bo-fg">Склад филиала</h1>
             <p class="text-sm text-bo-muted">
                 Только просмотр. Изменения остатков и списания — у владельца.
             </p>
@@ -235,9 +231,11 @@ onMounted(async () => {
                     :key="item.id"
                     type="button"
                     class="h-11 px-4 text-sm font-medium transition-colors duration-150"
-                    :class="section === item.id
-                        ? 'bg-bo-accent text-white'
-                        : 'bg-white/[0.04] text-bo-muted hover:bg-white/[0.08] hover:text-bo-fg'"
+                    :class="
+                        section === item.id
+                            ? 'bg-bo-accent text-white'
+                            : 'bg-white/[0.04] text-bo-muted hover:bg-white/[0.08] hover:text-bo-fg'
+                    "
                     @click="setSection(item.id)"
                 >
                     {{ item.label }}
@@ -245,24 +243,14 @@ onMounted(async () => {
             </div>
         </div>
 
-        <p
-            v-if="!branchId"
-            class="text-sm text-bo-muted"
-        >
+        <p v-if="!branchId" class="text-sm text-bo-muted">
             У сотрудника не указан филиал смены — склад недоступен.
         </p>
 
         <template v-else>
-            <UiCard
-                v-if="section === 'stock'"
-                title="Остатки"
-            >
+            <UiCard v-if="section === 'stock'" title="Остатки">
                 <div class="mb-4 max-w-md">
-                    <UiInput
-                        v-model="stockSearch"
-                        type="search"
-                        placeholder="Поиск"
-                    />
+                    <UiInput v-model="stockSearch" type="search" placeholder="Поиск" />
                 </div>
 
                 <UiTable
@@ -283,16 +271,9 @@ onMounted(async () => {
                 </div>
             </UiCard>
 
-            <UiCard
-                v-else
-                title="Списания"
-            >
+            <UiCard v-else title="Списания">
                 <div class="mb-4 max-w-md">
-                    <UiInput
-                        v-model="writeOffsSearch"
-                        type="search"
-                        placeholder="Поиск"
-                    />
+                    <UiInput v-model="writeOffsSearch" type="search" placeholder="Поиск" />
                 </div>
 
                 <UiTable

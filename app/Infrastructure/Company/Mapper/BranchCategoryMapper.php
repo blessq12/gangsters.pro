@@ -4,8 +4,8 @@ namespace App\Infrastructure\Company\Mapper;
 
 use App\Domain\Supporting\Company\Entity\BranchCategory;
 use App\Domain\Supporting\Company\Entity\BranchCategoryItem;
-use App\Infrastructure\Company\Model\BranchCategoryModel;
 use App\Infrastructure\Company\Model\BranchCategoryItemModel;
+use App\Infrastructure\Company\Model\BranchCategoryModel;
 
 final class BranchCategoryMapper
 {

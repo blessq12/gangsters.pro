@@ -63,12 +63,7 @@ function handleSelect() {
         :aria-pressed="selected"
         @click="handleSelect"
     >
-        <span
-            v-if="selected"
-            :class="c.giftCandidateBadge"
-        >
-            Выбран
-        </span>
+        <span v-if="selected" :class="c.giftCandidateBadge">Выбран</span>
 
         <div :class="c.giftCandidateThumbCol">
             <img
@@ -78,10 +73,7 @@ function handleSelect() {
                 :class="d.img"
                 loading="lazy"
             />
-            <div
-                v-else
-                :class="d.placeholder"
-            >
+            <div v-else :class="d.placeholder">
                 {{ cs.noPhotoText }}
             </div>
         </div>
@@ -90,10 +82,7 @@ function handleSelect() {
             <p :class="c.giftCandidateTitle">
                 {{ item.name || `Товар #${item.id}` }}
             </p>
-            <p
-                v-if="compositionLine"
-                :class="c.giftCandidateComposition"
-            >
+            <p v-if="compositionLine" :class="c.giftCandidateComposition">
                 {{ compositionLine }}
             </p>
         </div>

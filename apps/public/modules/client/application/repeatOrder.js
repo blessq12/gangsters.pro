@@ -25,9 +25,7 @@ export function useRepeatOrder() {
         try {
             await applyRepeatableLinesToCart(data.available_lines, { mode });
 
-            const unavailableMessage = formatUnavailableLinesMessage(
-                data.unavailable_lines,
-            );
+            const unavailableMessage = formatUnavailableLinesMessage(data.unavailable_lines);
             if (unavailableMessage) {
                 toast.warning(unavailableMessage);
             }
@@ -57,17 +55,12 @@ export function useRepeatOrder() {
 
         try {
             const data = await fetchRepeatableOrderLinesRequest(orderId);
-            const available = Array.isArray(data?.available_lines)
-                ? data.available_lines
-                : [];
+            const available = Array.isArray(data?.available_lines) ? data.available_lines : [];
 
             if (available.length === 0) {
-                const unavailableMessage = formatUnavailableLinesMessage(
-                    data?.unavailable_lines,
-                );
+                const unavailableMessage = formatUnavailableLinesMessage(data?.unavailable_lines);
                 toast.error(
-                    unavailableMessage ||
-                        "Ни одна позиция из этого заказа сейчас недоступна.",
+                    unavailableMessage || "Ни одна позиция из этого заказа сейчас недоступна.",
                 );
                 return;
             }
@@ -80,9 +73,7 @@ export function useRepeatOrder() {
 
             await finalizeRepeat(data, "merge");
         } catch (e) {
-            toast.error(
-                e?.response?.data?.message || "Не удалось подготовить повтор заказа.",
-            );
+            toast.error(e?.response?.data?.message || "Не удалось подготовить повтор заказа.");
         } finally {
             repeatingOrderId.value = null;
         }
@@ -121,7 +112,6 @@ export function useRepeatOrder() {
     };
 }
 
-
 /**
  * @typedef {'merge' | 'replace'} RepeatCartMode
  */
@@ -133,9 +123,7 @@ export function useRepeatOrder() {
 function buildProductFromRepeatableLine(line) {
     const catalogStore = useCatalogStore();
     const productId = Number(line.product_id);
-    const fromCatalog = catalogStore.flatProducts.find(
-        (entry) => Number(entry.id) === productId,
-    );
+    const fromCatalog = catalogStore.flatProducts.find((entry) => Number(entry.id) === productId);
 
     if (fromCatalog) {
         return fromCatalog;
@@ -153,7 +141,7 @@ function buildProductFromRepeatableLine(line) {
  * @param {Array<object>} lines
  * @param {{ mode: RepeatCartMode }} options
  */
-export async function applyRepeatableLinesToCart(lines, { mode }) {
+async function applyRepeatableLinesToCart(lines, { mode }) {
     const checkoutStore = useCheckoutStore();
 
     if (!Array.isArray(lines) || lines.length === 0) {
@@ -175,7 +163,7 @@ export async function applyRepeatableLinesToCart(lines, { mode }) {
  * @param {Array<object>} unavailableLines
  * @returns {string}
  */
-export function formatUnavailableLinesMessage(unavailableLines) {
+function formatUnavailableLinesMessage(unavailableLines) {
     if (!Array.isArray(unavailableLines) || unavailableLines.length === 0) {
         return "";
     }

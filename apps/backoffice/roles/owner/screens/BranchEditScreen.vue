@@ -1,11 +1,7 @@
 <script setup>
 import { computed, onMounted, reactive, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import {
-    getBranch,
-    storeBranch,
-    updateBranch,
-} from "../../../api/company.js";
+import { getBranch, storeBranch, updateBranch } from "../../../api/company.js";
 import UiButton from "../../../shell/components/ui/UiButton.vue";
 import UiCard from "../../../shell/components/ui/UiCard.vue";
 import UiFormField from "../../../shell/components/ui/UiFormField.vue";
@@ -13,7 +9,7 @@ import UiInput from "../../../shell/components/ui/UiInput.vue";
 import UiToggle from "../../../shell/components/ui/UiToggle.vue";
 import { useApi } from "../../../shell/composables/useApi.js";
 import { useToast } from "../../../shell/composables/useToast.js";
-import BranchAddressMapPicker from "../components/company/BranchAddressMapPicker.vue";
+import AddressMapPicker from "../../../shell/components/maps/AddressMapPicker.vue";
 import {
     emptyScheduleRows,
     rowsToSchedule,
@@ -143,9 +139,9 @@ async function save() {
             latitude: String(form.latitude).trim() === "" ? null : Number(form.latitude),
             longitude: String(form.longitude).trim() === "" ? null : Number(form.longitude),
         };
-        const result = await saveApi.run(async () => (
-            branchId.value ? updateBranch(branchId.value, body) : storeBranch(body)
-        ));
+        const result = await saveApi.run(async () =>
+            branchId.value ? updateBranch(branchId.value, body) : storeBranch(body),
+        );
         toast.success(branchId.value ? "Сохранено" : "Создано");
         if (isNew.value && result?.id) {
             await router.replace({ name: "owner-company-branch", params: { id: result.id } });
@@ -188,9 +184,7 @@ onMounted(load);
             </div>
         </div>
 
-        <p v-if="loadApi.loading" class="text-sm text-bo-muted">
-            Загрузка…
-        </p>
+        <p v-if="loadApi.loading" class="text-sm text-bo-muted">Загрузка…</p>
 
         <div v-else class="space-y-4">
             <UiCard title="Основное">
@@ -199,11 +193,7 @@ onMounted(load);
                         <UiInput v-model="form.name" />
                     </UiFormField>
                     <UiFormField label="Телефон" :error="fieldErrors.phone">
-                        <UiInput
-                            v-model="form.phone"
-                            type="tel"
-                            placeholder="+7 (XXX) XXX-XX-XX"
-                        />
+                        <UiInput v-model="form.phone" type="tel" placeholder="+7 (XXX) XXX-XX-XX" />
                     </UiFormField>
                 </div>
             </UiCard>
@@ -211,39 +201,34 @@ onMounted(load);
             <UiCard title="Адрес">
                 <div class="space-y-4">
                     <div class="text-sm text-bo-fg">
-                        <div class="mb-2 block text-xs font-medium uppercase tracking-[0.1em] text-bo-muted">
+                        <div
+                            class="mb-2 block text-xs font-medium uppercase tracking-[0.1em] text-bo-muted"
+                        >
                             Точка на карте
                             <span class="text-bo-accent">*</span>
                         </div>
-                        <BranchAddressMapPicker
+                        <AddressMapPicker
+                            :bias-city="form.city"
                             :city="form.city"
                             :street="form.street"
                             :house="form.house"
                             :latitude="form.latitude"
                             :longitude="form.longitude"
+                            hint="Найди адрес поиском или кликни / перетащи метку на карте. Город, улица, дом и координаты подставятся сами."
                             @update="onAddressMapUpdate"
                         />
-                        <span
-                            v-if="fieldErrors.address"
-                            class="mt-2 block text-xs text-red-300"
-                        >
+                        <span v-if="fieldErrors.address" class="mt-2 block text-xs text-red-300">
                             {{ fieldErrors.address }}
                         </span>
                     </div>
                     <UiFormField label="Комментарий к адресу">
-                        <UiInput
-                            v-model="form.comment"
-                            placeholder="Подъезд, ориентир…"
-                        />
+                        <UiInput v-model="form.comment" placeholder="Подъезд, ориентир…" />
                     </UiFormField>
                 </div>
             </UiCard>
 
             <UiCard title="Расписание">
-                <p
-                    v-if="fieldErrors.schedule"
-                    class="mb-3 text-sm text-red-400"
-                >
+                <p v-if="fieldErrors.schedule" class="mb-3 text-sm text-red-400">
                     {{ fieldErrors.schedule }}
                 </p>
                 <div class="space-y-2">
@@ -260,16 +245,8 @@ onMounted(load);
                             label-on="Выходной"
                             label-off="Рабочий"
                         />
-                        <UiInput
-                            v-model="row.open"
-                            type="time"
-                            :disabled="row.is_day_off"
-                        />
-                        <UiInput
-                            v-model="row.close"
-                            type="time"
-                            :disabled="row.is_day_off"
-                        />
+                        <UiInput v-model="row.open" type="time" :disabled="row.is_day_off" />
+                        <UiInput v-model="row.close" type="time" :disabled="row.is_day_off" />
                     </div>
                 </div>
             </UiCard>

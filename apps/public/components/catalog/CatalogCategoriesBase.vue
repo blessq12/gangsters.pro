@@ -1,12 +1,5 @@
 <script setup>
-import {
-    computed,
-    nextTick,
-    onBeforeUnmount,
-    onMounted,
-    ref,
-    watch,
-} from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useAppDesign } from "../../design/useAppDesign";
 import { useUiStore } from "../../modules/shell/store/uiStore";
 
@@ -57,10 +50,7 @@ const pinnedStyle = ref({});
 const isMobile = () => props.variant === "mobile";
 
 const islandClasses = computed(() => {
-    const dim =
-        props.pinOnScroll && uiStore.chromeScrollDimmed
-            ? dc.islandScrollDimmed
-            : "";
+    const dim = props.pinOnScroll && uiStore.chromeScrollDimmed ? dc.islandScrollDimmed : "";
     return [
         dc.island,
         dc.islandScrollDimTransition,
@@ -69,9 +59,7 @@ const islandClasses = computed(() => {
     ];
 });
 
-const rowClasses = computed(() =>
-    isMobile() ? dc.rowMobile : dc.rowDesktop,
-);
+const rowClasses = computed(() => (isMobile() ? dc.rowMobile : dc.rowDesktop));
 
 /** Бар, по которому spy скроллит пилюли: fixed-копия или исходный. */
 const activeBarEl = computed(() => {
@@ -213,14 +201,8 @@ defineExpose({
 
 <template>
     <div :class="dc.outer">
-        <div
-            ref="islandRef"
-            :class="islandClasses"
-        >
-            <div
-                ref="rowRef"
-                :class="rowClasses"
-            >
+        <div ref="islandRef" :class="islandClasses">
+            <div ref="rowRef" :class="rowClasses">
                 <button
                     v-if="showAll"
                     type="button"
@@ -252,10 +234,7 @@ defineExpose({
             :class="[islandClasses, dc.islandFixed]"
             :style="pinnedStyle"
         >
-            <div
-                ref="pinnedRowRef"
-                :class="rowClasses"
-            >
+            <div ref="pinnedRowRef" :class="rowClasses">
                 <button
                     v-if="showAll"
                     type="button"

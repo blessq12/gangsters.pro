@@ -6,8 +6,8 @@ use App\Domain\Core\Production\Entity\KitchenTicket;
 use App\Domain\Core\Production\Enum\KitchenTicketLineStatus;
 use App\Domain\Core\Production\Enum\KitchenTicketStatus;
 use App\Domain\Core\Production\ValueObject\KitchenTicketLine;
-use App\Infrastructure\Production\Model\KitchenTicketModel;
 use App\Infrastructure\Production\Model\KitchenTicketLineModel;
+use App\Infrastructure\Production\Model\KitchenTicketModel;
 use DateTimeImmutable;
 
 final class KitchenTicketMapper

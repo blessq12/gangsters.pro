@@ -14,12 +14,7 @@ const props = defineProps({
     },
 });
 
-const emit = defineEmits([
-    "logged-in",
-    "go-register",
-    "go-forgot",
-    "clear-password-reset-notice",
-]);
+const emit = defineEmits(["logged-in", "go-register", "go-forgot", "clear-password-reset-notice"]);
 
 const cli = useAppDesign().components.client;
 const s = cli.shared;
@@ -78,10 +73,7 @@ async function submit() {
         console.error(e);
         if (!applyApiFieldErrors(fieldErrors, e)) {
             fieldErrors.setFormError(
-                mapApiError(
-                    e,
-                    "Не удалось выполнить вход. Проверьте данные и попробуйте ещё раз.",
-                ),
+                mapApiError(e, "Не удалось выполнить вход. Проверьте данные и попробуйте ещё раз."),
             );
         }
     } finally {
@@ -91,24 +83,13 @@ async function submit() {
 </script>
 
 <template>
-    <form
-        :class="s.formRoot"
-        @submit.prevent="submit"
-    >
-        <p
-            v-if="passwordResetNotice"
-            :class="s.passwordResetNotice"
-            role="status"
-        >
+    <form :class="s.formRoot" @submit.prevent="submit">
+        <p v-if="passwordResetNotice" :class="s.passwordResetNotice" role="status">
             Письмо отправлено — проверь почту и войди с новым паролем.
         </p>
 
         <div :class="s.fieldStack">
-            <FormField
-                label="Email"
-                error-size="xs"
-                :error="fieldErrors.get('email')"
-            >
+            <FormField label="Email" error-size="xs" :error="fieldErrors.get('email')">
                 <template #default="{ id, invalid, invalidClass, describedBy, ariaInvalid }">
                     <input
                         :id="id"
@@ -123,11 +104,7 @@ async function submit() {
                 </template>
             </FormField>
 
-            <FormField
-                label="Пароль"
-                error-size="xs"
-                :error="fieldErrors.get('password')"
-            >
+            <FormField label="Пароль" error-size="xs" :error="fieldErrors.get('password')">
                 <template #default="{ id, invalid, invalidClass, describedBy, ariaInvalid }">
                     <input
                         :id="id"
@@ -143,36 +120,21 @@ async function submit() {
             </FormField>
         </div>
 
-        <p
-            v-if="fieldErrors.formError"
-            :class="s.errorXs"
-        >
+        <p v-if="fieldErrors.formError" :class="s.errorXs">
             {{ fieldErrors.formError }}
         </p>
 
-        <button
-            type="submit"
-            :disabled="loading"
-            :class="s.btnPrimaryWide"
-        >
+        <button type="submit" :disabled="loading" :class="s.btnPrimaryWide">
             <span v-if="!loading">Войти</span>
             <span v-else>Входим…</span>
         </button>
 
         <div :class="s.loginFooter">
-            <button
-                type="button"
-                :class="s.loginFooterLink"
-                @click="emit('go-forgot')"
-            >
+            <button type="button" :class="s.loginFooterLink" @click="emit('go-forgot')">
                 Забыли пароль?
             </button>
             <span :class="s.loginFooterSep" aria-hidden="true">·</span>
-            <button
-                type="button"
-                :class="s.loginFooterLink"
-                @click="emit('go-register')"
-            >
+            <button type="button" :class="s.loginFooterLink" @click="emit('go-register')">
                 Регистрация
             </button>
         </div>

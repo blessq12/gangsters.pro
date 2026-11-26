@@ -3,7 +3,16 @@
 namespace App\Infrastructure\Company\Model;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property int $set_id
+ * @property int $catalog_item_id
+ * @property int $quantity
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
 final class BranchSetLineModel extends Model
 {
     public $timestamps = false;

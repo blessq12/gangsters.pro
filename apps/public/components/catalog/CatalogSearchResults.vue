@@ -48,9 +48,7 @@ const gridClass = computed(() => {
     }
     return "catalog-grid--mobile-1";
 });
-const isDesktopCardCompact = computed(
-    () => props.variant === "desktop" && props.cardsPerRow === 4,
-);
+const isDesktopCardCompact = computed(() => props.variant === "desktop" && props.cardsPerRow === 4);
 
 /** @type {ReturnType<typeof setTimeout> | null} */
 let animateTimer = null;
@@ -63,9 +61,7 @@ function catalogItemsInContainer(container) {
 }
 
 function buildResultKey(products) {
-    return products
-        .map((product) => `${product?.kind || "product"}:${product?.id}`)
-        .join("|");
+    return products.map((product) => `${product?.kind || "product"}:${product?.id}`).join("|");
 }
 
 const animateGrid = async () => {
@@ -84,10 +80,7 @@ const animateGrid = async () => {
         return;
     }
 
-    const targets =
-        props.enterAnimation === "append"
-            ? items.slice(lastAnimatedCount)
-            : items;
+    const targets = props.enterAnimation === "append" ? items.slice(lastAnimatedCount) : items;
 
     if (!targets.length) {
         return;
@@ -157,19 +150,11 @@ watch(
 
 <template>
     <div :class="dp.root">
-        <div
-            v-if="loading"
-            :class="dp.loading"
-        >
+        <div v-if="loading" :class="dp.loading">
             {{ loadingCopy }}
         </div>
 
-        <div
-            v-else
-            ref="containerRef"
-            class="catalog-grid"
-            :class="gridClass"
-        >
+        <div v-else ref="containerRef" class="catalog-grid" :class="gridClass">
             <div
                 v-for="product in products"
                 :key="`${product.kind || 'product'}:${product.id}`"

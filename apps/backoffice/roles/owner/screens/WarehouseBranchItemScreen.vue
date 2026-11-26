@@ -112,10 +112,12 @@ async function applyStockDelta() {
         return;
     }
     try {
-        const result = await stockApi.run(() => adjustBranchStock(branchId.value, {
-            ingredient_id: ingredientId.value,
-            delta: Number(stockDelta.value),
-        }));
+        const result = await stockApi.run(() =>
+            adjustBranchStock(branchId.value, {
+                ingredient_id: ingredientId.value,
+                delta: Number(stockDelta.value),
+            }),
+        );
         quantity.value = Number(result?.quantity ?? quantity.value);
         stockDelta.value = "";
         toast.success("Остаток обновлён");
@@ -127,9 +129,9 @@ async function applyStockDelta() {
 function validateWriteOff() {
     clearWriteOffErrors();
     if (
-        writeOffForm.quantity === ""
-        || Number.isNaN(Number(writeOffForm.quantity))
-        || Number(writeOffForm.quantity) <= 0
+        writeOffForm.quantity === "" ||
+        Number.isNaN(Number(writeOffForm.quantity)) ||
+        Number(writeOffForm.quantity) <= 0
     ) {
         writeOffErrors.quantity = "Больше 0";
     }
@@ -145,11 +147,13 @@ async function submitWriteOff() {
         return;
     }
     try {
-        await writeOffApi.run(() => storeBranchWriteOff(branchId.value, {
-            ingredient_id: ingredientId.value,
-            quantity: Number(writeOffForm.quantity),
-            reason: writeOffForm.reason.trim(),
-        }));
+        await writeOffApi.run(() =>
+            storeBranchWriteOff(branchId.value, {
+                ingredient_id: ingredientId.value,
+                quantity: Number(writeOffForm.quantity),
+                reason: writeOffForm.reason.trim(),
+            }),
+        );
         toast.success("Списано");
         await load();
     } catch (err) {
@@ -176,9 +180,7 @@ onMounted(load);
             </h1>
         </div>
 
-        <p v-if="loadApi.loading" class="text-sm text-bo-muted">
-            Загрузка…
-        </p>
+        <p v-if="loadApi.loading" class="text-sm text-bo-muted">Загрузка…</p>
 
         <div v-else class="space-y-4">
             <UiCard title="Остаток">
@@ -223,11 +225,7 @@ onMounted(load);
 
             <UiCard title="История списаний">
                 <div class="mb-4 max-w-md">
-                    <UiInput
-                        v-model="historySearch"
-                        type="search"
-                        placeholder="Поиск по причине"
-                    />
+                    <UiInput v-model="historySearch" type="search" placeholder="Поиск по причине" />
                 </div>
                 <UiTable
                     :columns="historyColumns"

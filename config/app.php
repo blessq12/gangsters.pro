@@ -1,8 +1,8 @@
 <?php
 
 use App\Infrastructure\Catalog\Provider\CatalogServiceProvider;
-use App\Infrastructure\Company\Provider\CompanyServiceProvider;
 use App\Infrastructure\Client\Provider\ClientServiceProvider;
+use App\Infrastructure\Company\Provider\CompanyServiceProvider;
 use App\Infrastructure\Delivery\Provider\DeliveryServiceProvider;
 use App\Infrastructure\Marketing\Provider\MarketingServiceProvider;
 use App\Infrastructure\Order\Provider\OrderServiceProvider;
@@ -10,10 +10,10 @@ use App\Infrastructure\Payment\Provider\PaymentServiceProvider;
 use App\Infrastructure\Production\Provider\ProductionServiceProvider;
 use App\Infrastructure\Staff\Provider\StaffServiceProvider;
 use App\Infrastructure\Warehouse\Provider\WarehouseServiceProvider;
-use App\Shared\Provider\SharedProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\AuthServiceProvider;
 use App\Providers\RouteServiceProvider;
+use App\Shared\Provider\SharedProvider;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\ServiceProvider;
 use Intervention\Image\Facades\Image;

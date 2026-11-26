@@ -17,15 +17,7 @@ const router = useRouter();
 const toast = useToast();
 const listApi = useApi();
 const { branches, ensureLoaded, branchLabel } = useOwnerBranchContext();
-const {
-    page,
-    perPage,
-    total,
-    items: rows,
-    offset,
-    resetPage,
-    applyPayload,
-} = usePagedList();
+const { page, perPage, total, items: rows, offset, resetPage, applyPayload } = usePagedList();
 
 const filterBranchId = ref("");
 
@@ -77,11 +69,13 @@ function roleVariant(role) {
 
 async function loadEmployees() {
     try {
-        const payload = await listApi.run(() => listEmployees({
-            offset: offset.value,
-            limit: perPage,
-            branch_id: filterBranchId.value || undefined,
-        }));
+        const payload = await listApi.run(() =>
+            listEmployees({
+                offset: offset.value,
+                limit: perPage,
+                branch_id: filterBranchId.value || undefined,
+            }),
+        );
         applyPayload(payload);
     } catch (err) {
         toast.error(err instanceof Error ? err.message : "Не удалось загрузить сотрудников");

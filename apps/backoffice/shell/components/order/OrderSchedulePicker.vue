@@ -1,7 +1,6 @@
 <script setup>
 import { computed, ref } from "vue";
 import { VueDatePicker } from "@vuepic/vue-datepicker";
-import { ru } from "date-fns/locale";
 import "@vuepic/vue-datepicker/dist/main.css";
 import ShellIcon from "../ShellIcon.vue";
 
@@ -131,7 +130,7 @@ function onTriggerClick() {
     <VueDatePicker
         ref="pickerRef"
         v-model="pickerValue"
-        :locale="ru"
+        :week-start="1"
         dark
         :time-config="timeConfig"
         :formats="formats"
@@ -149,23 +148,21 @@ function onTriggerClick() {
             <button
                 type="button"
                 class="flex h-11 w-full items-center gap-2 border px-3 text-left text-sm font-medium transition-colors"
-                :class="active || menuOpen
-                    ? 'border-bo-accent bg-bo-accent/15 text-bo-fg'
-                    : 'border-bo-border bg-bo-field text-bo-muted hover:border-bo-border-strong hover:text-bo-fg'"
+                :class="
+                    active || menuOpen
+                        ? 'border-bo-accent bg-bo-accent/15 text-bo-fg'
+                        : 'border-bo-border bg-bo-field text-bo-muted hover:border-bo-border-strong hover:text-bo-fg'
+                "
                 :disabled="disabled"
                 :aria-expanded="menuOpen ? 'true' : 'false'"
                 aria-haspopup="dialog"
                 aria-label="Предзаказ — открыть выбор даты и времени"
                 @click.stop="onTriggerClick"
             >
-                <ShellIcon
-                    name="calendar"
-                    class="h-4 w-4 shrink-0 opacity-80"
-                />
-                <span
-                    class="min-w-0 flex-1 truncate"
-                    :class="hasValue ? 'text-bo-fg' : ''"
-                >{{ buttonLabel }}</span>
+                <ShellIcon name="calendar" class="h-4 w-4 shrink-0 opacity-80" />
+                <span class="min-w-0 flex-1 truncate" :class="hasValue ? 'text-bo-fg' : ''">
+                    {{ buttonLabel }}
+                </span>
                 <ShellIcon
                     name="chevron-down"
                     class="h-4 w-4 shrink-0 opacity-70 transition-transform"
