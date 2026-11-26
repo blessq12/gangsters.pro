@@ -3,18 +3,21 @@
 namespace App\Infrastructure\Order\Adapter;
 
 use App\Domain\Core\Order\Port\OrderBranchMenuSnapshotPort;
-use App\Domain\Supporting\Company\Entity\BranchSet;
-use App\Domain\Supporting\Company\Repository\BranchMenuRepository;
-use App\Domain\Supporting\Company\Repository\BranchSetRepository;
+use App\Domain\Supporting\Menu\Entity\BranchSet;
+use App\Domain\Supporting\Menu\Enum\BranchMenuEntryKind;
+use App\Domain\Supporting\Menu\Repository\BranchCategoryRepository;
+use App\Domain\Supporting\Menu\Repository\BranchMenuRepository;
+use App\Domain\Supporting\Menu\Repository\BranchSetRepository;
 
 /**
- * ACL: Order читает меню/сеты филиала через Company-репозитории в Infrastructure.
+ * ACL: Order читает меню/сеты филиала через Menu-репозитории в Infrastructure.
  */
 final class EloquentOrderBranchMenuSnapshotPort implements OrderBranchMenuSnapshotPort
 {
     public function __construct(
         private readonly BranchMenuRepository $menu,
         private readonly BranchSetRepository $branchSets,
+        private readonly BranchCategoryRepository $categories,
     ) {}
 
     public function listAvailableByBranch(int $branchId): array
@@ -66,6 +69,34 @@ final class EloquentOrderBranchMenuSnapshotPort implements OrderBranchMenuSnapsh
         }
 
         return $indexed;
+    }
+
+    public function listProductIdsByRole(int $branchId, string $role): array
+    {
+        $category = null;
+        foreach ($this->categories->listActiveOrderedByBranch($branchId) as $row) {
+            if ($role === 'complement' && $row->isComplement()) {
+                $category = $row;
+                break;
+            }
+            if ($role === 'gift' && $row->isGift()) {
+                $category = $row;
+                break;
+            }
+        }
+        if ($category === null) {
+            return [];
+        }
+
+        $ids = [];
+        foreach ($this->categories->findItemsByCategoryId($category->id()) as $item) {
+            if ($item->entryKind() !== BranchMenuEntryKind::Product) {
+                continue;
+            }
+            $ids[] = $item->entryId();
+        }
+
+        return array_values(array_unique($ids));
     }
 
     /**

@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Api\Backoffice;
 
 use App\Application\Company\Command\CloneBranchSettingsUseCase;
-use App\Application\Company\Command\DeleteBranchMenuItemUseCase;
-use App\Application\Company\Command\SaveBranchMenuItemUseCase;
 use App\Application\Company\DTO\CloneBranchSettingsDto;
-use App\Application\Company\DTO\SaveBranchMenuItemDto;
-use App\Application\Company\Query\GetAdminBranchMenuUseCase;
+use App\Application\Menu\Command\DeleteBranchMenuItemUseCase;
+use App\Application\Menu\Command\SaveBranchMenuItemUseCase;
+use App\Application\Menu\DTO\SaveBranchMenuItemDto;
+use App\Application\Menu\Query\GetAdminBranchMenuUseCase;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

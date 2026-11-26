@@ -8,14 +8,10 @@ use App\Application\Shared\DomainEventPublisher;
 use App\Domain\Core\Delivery\Event\RouteStopSettled;
 use App\Domain\Core\Delivery\Routing\Entity\RouteSheet;
 use App\Domain\Core\Delivery\Routing\Repository\RouteSheetRepository;
-use App\Domain\Core\Order\Entity\Order;
-use App\Domain\Core\Order\Repository\OrderAuditRepository;
-use App\Domain\Core\Order\Repository\OrderRepository;
 use App\Shared\Transaction\TransactionManager;
 
 /**
- * Исход остановки. Заказ и платёж закрывают слушатели RouteStopSettled.
- * При delivered — overwrite payment_method + аудит до закрытия стопа.
+ * Исход остановки. Order и Payment закрывают слушатели RouteStopSettled.
  */
 final class SettleStopUseCase
 {
@@ -23,8 +19,6 @@ final class SettleStopUseCase
 
     public function __construct(
         private readonly RouteSheetRepository $sheets,
-        private readonly OrderRepository $orders,
-        private readonly OrderAuditRepository $audits,
         private readonly RouteSheetPresenter $presenter,
         private readonly DomainEventPublisher $events,
         private readonly TransactionManager $transaction,
@@ -37,16 +31,15 @@ final class SettleStopUseCase
     {
         return $this->transaction->run(function () use ($dto): array {
             $outcome = trim($dto->outcome);
-
-            if ($outcome === RouteStopSettled::OUTCOME_DELIVERED) {
-                $this->overwritePaymentOnDeliver($dto);
-            }
+            $paymentMethod = $this->normalizePaymentMethod($outcome, $dto->paymentMethod);
 
             $sheet = $this->requireSheet($dto->sheetId);
             $sheet = $sheet->settle(
                 $dto->orderId,
                 $outcome,
                 (string) ($dto->reason ?? ''),
+                $paymentMethod,
+                $dto->authorEmployeeId,
             );
 
             if ($this->everyStopSettled($sheet)) {
@@ -60,48 +53,24 @@ final class SettleStopUseCase
         });
     }
 
-    private function overwritePaymentOnDeliver(SettleStopDto $dto): void
+    private function normalizePaymentMethod(string $outcome, ?string $paymentMethod): ?string
     {
-        $method = trim((string) ($dto->paymentMethod ?? ''));
+        if ($outcome !== RouteStopSettled::OUTCOME_DELIVERED) {
+            return null;
+        }
+
+        $method = trim((string) $paymentMethod);
         if ($method === '' || ! in_array($method, self::ALLOWED_PAYMENT_METHODS, true)) {
             throw new \InvalidArgumentException('Укажи способ оплаты при выдаче.');
         }
 
-        $order = $this->requireOrder($dto->orderId);
-        $before = [
-            'payment_method' => $order->paymentMethod(),
-            'change_from_rubles' => $order->changeFromRubles(),
-        ];
-
-        $changeFrom = $method === 'cash' ? $order->changeFromRubles() : null;
-        $order->replacePaymentTerms($method, $changeFrom);
-
-        $after = [
-            'payment_method' => $order->paymentMethod(),
-            'change_from_rubles' => $order->changeFromRubles(),
-        ];
-
-        $this->orders->save($order);
-
-        if ($before !== $after) {
-            $this->audits->add(
-                $order->id(),
-                $dto->authorEmployeeId,
-                [['field' => 'payment', 'old' => $before, 'new' => $after]],
-            );
-        }
+        return $method;
     }
 
     private function requireSheet(int $sheetId): RouteSheet
     {
         return $this->sheets->findById($sheetId)
             ?? throw new \InvalidArgumentException('Маршрутный лист не найден.');
-    }
-
-    private function requireOrder(int $orderId): Order
-    {
-        return $this->orders->findById($orderId)
-            ?? throw new \InvalidArgumentException('Заказ не найден.');
     }
 
     private function everyStopSettled(RouteSheet $sheet): bool

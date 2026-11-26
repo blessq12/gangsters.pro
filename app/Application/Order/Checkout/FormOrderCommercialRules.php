@@ -5,27 +5,24 @@ namespace App\Application\Order\Checkout;
 use App\Domain\Core\Order\Entity\OrderCommercialRules;
 use App\Domain\Core\Order\Enum\OrderLineType;
 use App\Domain\Core\Order\Policy\OrderFormation;
+use App\Domain\Core\Order\Port\OrderBranchCommercialRulesPort;
 use App\Domain\Core\Order\Port\OrderBranchMenuSnapshotPort;
 use App\Domain\Core\Order\Port\OrderCatalogSnapshotPort;
-use App\Domain\Core\Order\Repository\OrderCommercialRulesRepository;
 use App\Domain\Core\Order\ValueObject\OrderDeliveryInfo;
 use App\Domain\Core\Order\ValueObject\OrderFormationFacts;
 use App\Domain\Core\Order\ValueObject\OrderLine;
-use App\Domain\Supporting\Company\Enum\BranchMenuEntryKind;
-use App\Domain\Supporting\Company\Repository\BranchCategoryRepository;
 use DateTimeInterface;
 
 /**
  * Единственная точка Application, которая применяет коммерческие правила оформления.
- * Комплектные и подарки берутся из ролевых категорий филиала.
+ * Комплектные и подарки — через порт меню своего BC.
  */
 final class FormOrderCommercialRules
 {
     public function __construct(
-        private readonly OrderCommercialRulesRepository $commercialRules,
+        private readonly OrderBranchCommercialRulesPort $commercialRules,
         private readonly OrderCatalogSnapshotPort $catalog,
         private readonly OrderBranchMenuSnapshotPort $menu,
-        private readonly BranchCategoryRepository $categories,
     ) {}
 
     /**
@@ -242,29 +239,6 @@ final class FormOrderCommercialRules
      */
     private function productIdsFromRoleCategory(int $branchId, string $role): array
     {
-        $category = null;
-        foreach ($this->categories->listActiveOrderedByBranch($branchId) as $row) {
-            if ($role === 'complement' && $row->isComplement()) {
-                $category = $row;
-                break;
-            }
-            if ($role === 'gift' && $row->isGift()) {
-                $category = $row;
-                break;
-            }
-        }
-        if ($category === null) {
-            return [];
-        }
-
-        $ids = [];
-        foreach ($this->categories->findItemsByCategoryId($category->id()) as $item) {
-            if ($item->entryKind() !== BranchMenuEntryKind::Product) {
-                continue;
-            }
-            $ids[] = $item->entryId();
-        }
-
-        return array_values(array_unique($ids));
+        return $this->menu->listProductIdsByRole($branchId, $role);
     }
 }

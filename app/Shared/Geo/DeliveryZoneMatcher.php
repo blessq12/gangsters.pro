@@ -2,7 +2,7 @@
 
 namespace App\Shared\Geo;
 
-use App\Domain\Core\Delivery\Tariff\ValueObject\DeliveryZone;
+use App\Domain\Supporting\Branch\ValueObject\DeliveryZone;
 
 /**
  * Выбор первой зоны, в которую попадает точка (зоны не пересекаются).

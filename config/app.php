@@ -1,10 +1,12 @@
 <?php
 
+use App\Infrastructure\Branch\Provider\BranchServiceProvider;
 use App\Infrastructure\Catalog\Provider\CatalogServiceProvider;
 use App\Infrastructure\Client\Provider\ClientServiceProvider;
 use App\Infrastructure\Company\Provider\CompanyServiceProvider;
 use App\Infrastructure\Delivery\Provider\DeliveryServiceProvider;
 use App\Infrastructure\Marketing\Provider\MarketingServiceProvider;
+use App\Infrastructure\Menu\Provider\MenuServiceProvider;
 use App\Infrastructure\Order\Provider\OrderServiceProvider;
 use App\Infrastructure\Payment\Provider\PaymentServiceProvider;
 use App\Infrastructure\Production\Provider\ProductionServiceProvider;
@@ -192,6 +194,8 @@ return [
         SharedProvider::class,
         CatalogServiceProvider::class,
         CompanyServiceProvider::class,
+        BranchServiceProvider::class,
+        MenuServiceProvider::class,
         MarketingServiceProvider::class,
         DeliveryServiceProvider::class,
         ClientServiceProvider::class,

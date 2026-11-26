@@ -3,9 +3,8 @@
 namespace App\Application\Company\Query;
 
 use App\Application\Company\Presenter\CompanyPresenter;
-use App\Domain\Supporting\Company\Entity\Branch;
 use App\Domain\Supporting\Company\Entity\Company;
-use App\Domain\Supporting\Company\Repository\BranchRepository;
+use App\Domain\Supporting\Company\Port\CompanyBranchLookupPort;
 use App\Domain\Supporting\Company\Repository\CompanyDocumentRepository;
 use App\Domain\Supporting\Company\Repository\CompanyLegalRepository;
 use App\Domain\Supporting\Company\Repository\CompanyRepository;
@@ -19,7 +18,7 @@ final class GetPublicCompanyUseCase
         private readonly CompanyRepository $companies,
         private readonly CompanyLegalRepository $legal,
         private readonly CompanyDocumentRepository $documents,
-        private readonly BranchRepository $branches,
+        private readonly CompanyBranchLookupPort $branches,
         private readonly CompanyPresenter $presenter,
     ) {}
 
@@ -37,8 +36,9 @@ final class GetPublicCompanyUseCase
         $company = $this->companies->findPublic();
         $companyId = $company?->id() ?? CompanyRepository::SINGLETON_ID;
 
-        $companyBranches = $this->branches->listByCompany($companyId);
-        $branch = $this->resolvePublicBranch($companyBranches);
+        $summaries = $this->branches->listSummariesByCompany($companyId);
+        $snapshots = $this->branches->listSnapshotsByCompany($companyId);
+        $branch = $this->resolvePublicBranch($snapshots);
 
         return [
             'company' => $company instanceof Company
@@ -49,23 +49,19 @@ final class GetPublicCompanyUseCase
                 fn ($document) => $this->presenter->document($document),
                 $this->documents->findAllOrdered(),
             ),
-            'branch' => $branch instanceof Branch
-                ? $this->presenter->branch($branch)
-                : null,
-            'branches' => array_map(
-                fn (Branch $item): array => $this->presenter->branchSummary($item),
-                $companyBranches,
-            ),
+            'branch' => $branch,
+            'branches' => $summaries,
         ];
     }
 
     /**
-     * @param  list<Branch>  $companyBranches
+     * @param  list<array<string, mixed>>  $companyBranches
+     * @return array<string, mixed>|null
      */
-    private function resolvePublicBranch(array $companyBranches): ?Branch
+    private function resolvePublicBranch(array $companyBranches): ?array
     {
         foreach ($companyBranches as $branch) {
-            if ($branch->isActive()) {
+            if (($branch['is_active'] ?? false) === true) {
                 return $branch;
             }
         }

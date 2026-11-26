@@ -312,7 +312,8 @@ final class Order
     }
 
     /**
-     * Админ-правка: полный состав позиций. Пишет OrderLinesChanged.
+     * Админ-правка: полный состав позиций. Пишет OrderLinesChanged со снимком для Production.
+     * Статус кухни сбрасывается здесь — владение инвариантом заказа, без чужого агрегата.
      *
      * @param  list<OrderLine>  $lines
      */
@@ -320,9 +321,13 @@ final class Order
     {
         self::assertLines($lines);
         $this->lines = array_values($lines);
+        $this->syncStatusFromKitchenProgress(allDone: false, allPacked: false);
 
         if ($this->id !== null) {
-            $this->record(new OrderLinesChanged(orderId: $this->id));
+            $this->record(new OrderLinesChanged(
+                orderId: $this->id,
+                productionLines: $this->productionLineSnapshots(),
+            ));
         }
     }
 

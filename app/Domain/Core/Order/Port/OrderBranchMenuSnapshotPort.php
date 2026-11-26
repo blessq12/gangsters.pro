@@ -41,4 +41,11 @@ interface OrderBranchMenuSnapshotPort
      * @return array<int, OrderBranchSetSnapshot> keyed by set id
      */
     public function listAvailableSetsByBranch(int $branchId): array;
+
+    /**
+     * Product id из ролевой категории меню филиала (complement|gift).
+     *
+     * @return list<int>
+     */
+    public function listProductIdsByRole(int $branchId, string $role): array;
 }

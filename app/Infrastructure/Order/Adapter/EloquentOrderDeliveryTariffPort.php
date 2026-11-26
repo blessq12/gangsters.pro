@@ -2,9 +2,9 @@
 
 namespace App\Infrastructure\Order\Adapter;
 
-use App\Domain\Core\Delivery\Tariff\Repository\DeliveryConfigurationRepository;
-use App\Domain\Core\Delivery\Tariff\ValueObject\DeliveryZone;
 use App\Domain\Core\Order\Port\OrderDeliveryTariffPort;
+use App\Domain\Supporting\Branch\Repository\DeliveryConfigurationRepository;
+use App\Domain\Supporting\Branch\ValueObject\DeliveryZone;
 use App\Shared\Geo\DeliveryZoneMatcher;
 
 /**

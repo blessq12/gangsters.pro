@@ -6,6 +6,7 @@ use App\Application\Order\Checkout\CheckoutQuote;
 use App\Application\Order\Checkout\CheckoutRulesVersion;
 use App\Application\Order\Query\GetCheckoutContextUseCase;
 use App\Application\Order\Query\QuoteOrderUseCase;
+use App\Domain\Core\Order\Port\OrderBranchCommercialRulesPort;
 use App\Domain\Core\Order\Port\OrderBranchLookupPort;
 use App\Domain\Core\Order\Port\OrderBranchMenuSnapshotPort;
 use App\Domain\Core\Order\Port\OrderCatalogSnapshotPort;
@@ -13,9 +14,9 @@ use App\Domain\Core\Order\Port\OrderClientLookupPort;
 use App\Domain\Core\Order\Port\OrderDeliveryTariffPort;
 use App\Domain\Core\Order\Port\OrderPaymentSnapshotPort;
 use App\Domain\Core\Order\Repository\OrderAuditRepository;
-use App\Domain\Core\Order\Repository\OrderCommercialRulesRepository;
 use App\Domain\Core\Order\Repository\OrderNoteRepository;
 use App\Domain\Core\Order\Repository\OrderRepository;
+use App\Infrastructure\Order\Adapter\EloquentOrderBranchCommercialRulesPort;
 use App\Infrastructure\Order\Adapter\EloquentOrderBranchLookupPort;
 use App\Infrastructure\Order\Adapter\EloquentOrderBranchMenuSnapshotPort;
 use App\Infrastructure\Order\Adapter\EloquentOrderCatalogSnapshotPort;
@@ -23,7 +24,6 @@ use App\Infrastructure\Order\Adapter\EloquentOrderClientLookupPort;
 use App\Infrastructure\Order\Adapter\EloquentOrderDeliveryTariffPort;
 use App\Infrastructure\Order\Adapter\EloquentOrderPaymentSnapshotPort;
 use App\Infrastructure\Order\Repository\EloquentOrderAuditRepository;
-use App\Infrastructure\Order\Repository\EloquentOrderCommercialRulesRepository;
 use App\Infrastructure\Order\Repository\EloquentOrderNoteRepository;
 use App\Infrastructure\Order\Repository\EloquentOrderRepository;
 use Illuminate\Support\ServiceProvider;
@@ -43,6 +43,6 @@ final class OrderServiceProvider extends ServiceProvider
         $this->app->bind(OrderDeliveryTariffPort::class, EloquentOrderDeliveryTariffPort::class);
         $this->app->bind(OrderClientLookupPort::class, EloquentOrderClientLookupPort::class);
         $this->app->bind(OrderBranchLookupPort::class, EloquentOrderBranchLookupPort::class);
-        $this->app->bind(OrderCommercialRulesRepository::class, EloquentOrderCommercialRulesRepository::class);
+        $this->app->bind(OrderBranchCommercialRulesPort::class, EloquentOrderBranchCommercialRulesPort::class);
     }
 }

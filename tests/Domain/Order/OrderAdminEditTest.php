@@ -36,6 +36,7 @@ final class OrderAdminEditTest extends TestCase
         $events = $order->pullDomainEvents();
         $this->assertInstanceOf(OrderLinesChanged::class, $events[0]);
         $this->assertSame(42, $events[0]->orderId);
+        $this->assertSame(9, $events[0]->productionLines[0]['product_id']);
     }
 
     public function test_синк_статуса_по_кухне(): void

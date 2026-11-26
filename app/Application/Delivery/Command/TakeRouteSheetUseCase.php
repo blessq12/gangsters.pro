@@ -6,9 +6,8 @@ use App\Application\Delivery\DTO\TakeRouteSheetDto;
 use App\Application\Delivery\Presenter\RouteSheetPresenter;
 use App\Application\Shared\DomainEventPublisher;
 use App\Domain\Core\Delivery\Routing\Entity\RouteSheet;
+use App\Domain\Core\Delivery\Routing\Port\DeliveryCourierLookupPort;
 use App\Domain\Core\Delivery\Routing\Repository\RouteSheetRepository;
-use App\Domain\Supporting\Staff\Enum\StaffRole;
-use App\Domain\Supporting\Staff\Repository\EmployeeRepository;
 use App\Shared\Transaction\TransactionManager;
 
 /**
@@ -18,7 +17,7 @@ final class TakeRouteSheetUseCase
 {
     public function __construct(
         private readonly RouteSheetRepository $sheets,
-        private readonly EmployeeRepository $employees,
+        private readonly DeliveryCourierLookupPort $couriers,
         private readonly RouteSheetPresenter $presenter,
         private readonly DomainEventPublisher $events,
         private readonly TransactionManager $transaction,
@@ -30,16 +29,7 @@ final class TakeRouteSheetUseCase
     public function execute(TakeRouteSheetDto $dto): array
     {
         return $this->transaction->run(function () use ($dto): array {
-            $courier = $this->employees->findById($dto->courierId);
-            if ($courier === null) {
-                throw new \InvalidArgumentException('Курьер не найден.');
-            }
-            if ($courier->role() !== StaffRole::Courier) {
-                throw new \InvalidArgumentException('Сотрудник не является курьером.');
-            }
-            if (! $courier->isActive()) {
-                throw new \InvalidArgumentException('Курьер деактивирован.');
-            }
+            $this->couriers->assertActiveCourier($dto->courierId);
 
             $sheet = $this->requireSheet($dto->sheetId);
             $sheet = $sheet->take($dto->courierId);

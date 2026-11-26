@@ -130,58 +130,58 @@ parameters:
 			path: app/Infrastructure/Client/Repository/EloquentClientRepository.php
 
 		-
-			message: '#^Parameter \$entryKind of class App\\Domain\\Supporting\\Company\\Entity\\BranchCategoryItem constructor expects App\\Domain\\Supporting\\Company\\Enum\\BranchMenuEntryKind, string given\.$#'
+			message: '#^Parameter \$entryKind of class App\\Domain\\Supporting\\Menu\\Entity\\BranchCategoryItem constructor expects App\\Domain\\Supporting\\Menu\\Enum\\BranchMenuEntryKind, string given\.$#'
 			identifier: argument.type
 			count: 1
-			path: app/Infrastructure/Company/Mapper/BranchCategoryMapper.php
+			path: app/Infrastructure/Menu/Mapper/BranchCategoryMapper.php
 
 		-
-			message: '#^Access to an undefined property App\\Infrastructure\\Company\\Model\\BranchSetModel\:\:\$lines\.$#'
+			message: '#^Access to an undefined property App\\Infrastructure\\Menu\\Model\\BranchSetModel\:\:\$lines\.$#'
 			identifier: property.notFound
 			count: 1
-			path: app/Infrastructure/Company/Mapper/BranchSetMapper.php
+			path: app/Infrastructure/Menu/Mapper/BranchSetMapper.php
 
 		-
-			message: '#^Method App\\Infrastructure\\Company\\Model\\BranchSetModel\:\:lines\(\) should return Illuminate\\Database\\Eloquent\\Relations\\HasMany\<App\\Infrastructure\\Company\\Model\\BranchSetLineModel, \$this\(App\\Infrastructure\\Company\\Model\\BranchSetModel\)\> but returns Illuminate\\Database\\Query\\Builder\.$#'
+			message: '#^Method App\\Infrastructure\\Menu\\Model\\BranchSetModel\:\:lines\(\) should return Illuminate\\Database\\Eloquent\\Relations\\HasMany\<App\\Infrastructure\\Menu\\Model\\BranchSetLineModel, \$this\(App\\Infrastructure\\Menu\\Model\\BranchSetModel\)\> but returns Illuminate\\Database\\Query\\Builder\.$#'
 			identifier: return.type
 			count: 1
-			path: app/Infrastructure/Company/Model/BranchSetModel.php
+			path: app/Infrastructure/Menu/Model/BranchSetModel.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,stdClass\>\:\:map\(\) expects callable\(stdClass, int\)\: App\\Domain\\Supporting\\Company\\Entity\\BranchCategory, Closure\(App\\Infrastructure\\Company\\Model\\BranchCategoryModel\)\: App\\Domain\\Supporting\\Company\\Entity\\BranchCategory given\.$#'
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,stdClass\>\:\:map\(\) expects callable\(stdClass, int\)\: App\\Domain\\Supporting\\Menu\\Entity\\BranchCategory, Closure\(App\\Infrastructure\\Menu\\Model\\BranchCategoryModel\)\: App\\Domain\\Supporting\\Menu\\Entity\\BranchCategory given\.$#'
 			identifier: argument.type
 			count: 2
-			path: app/Infrastructure/Company/Repository/EloquentBranchCategoryRepository.php
+			path: app/Infrastructure/Menu/Repository/EloquentBranchCategoryRepository.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,stdClass\>\:\:map\(\) expects callable\(stdClass, int\)\: App\\Domain\\Supporting\\Company\\Entity\\BranchCategoryItem, Closure\(App\\Infrastructure\\Company\\Model\\BranchCategoryItemModel\)\: App\\Domain\\Supporting\\Company\\Entity\\BranchCategoryItem given\.$#'
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,stdClass\>\:\:map\(\) expects callable\(stdClass, int\)\: App\\Domain\\Supporting\\Menu\\Entity\\BranchCategoryItem, Closure\(App\\Infrastructure\\Menu\\Model\\BranchCategoryItemModel\)\: App\\Domain\\Supporting\\Menu\\Entity\\BranchCategoryItem given\.$#'
 			identifier: argument.type
 			count: 1
-			path: app/Infrastructure/Company/Repository/EloquentBranchCategoryRepository.php
+			path: app/Infrastructure/Menu/Repository/EloquentBranchCategoryRepository.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,stdClass\>\:\:map\(\) expects callable\(stdClass, int\)\: App\\Domain\\Supporting\\Company\\Entity\\BranchMenuItem, Closure\(App\\Infrastructure\\Company\\Model\\BranchMenuItemModel\)\: App\\Domain\\Supporting\\Company\\Entity\\BranchMenuItem given\.$#'
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,stdClass\>\:\:map\(\) expects callable\(stdClass, int\)\: App\\Domain\\Supporting\\Menu\\Entity\\BranchMenuItem, Closure\(App\\Infrastructure\\Menu\\Model\\BranchMenuItemModel\)\: App\\Domain\\Supporting\\Menu\\Entity\\BranchMenuItem given\.$#'
 			identifier: argument.type
 			count: 2
-			path: app/Infrastructure/Company/Repository/EloquentBranchMenuRepository.php
+			path: app/Infrastructure/Menu/Repository/EloquentBranchMenuRepository.php
 
 		-
-			message: '#^Parameter \#1 \$row of method App\\Infrastructure\\Company\\Mapper\\BranchMenuMapper\:\:toDomain\(\) expects App\\Infrastructure\\Company\\Model\\BranchMenuItemModel, stdClass given\.$#'
+			message: '#^Parameter \#1 \$row of method App\\Infrastructure\\Menu\\Mapper\\BranchMenuMapper\:\:toDomain\(\) expects App\\Infrastructure\\Menu\\Model\\BranchMenuItemModel, stdClass given\.$#'
 			identifier: argument.type
 			count: 1
-			path: app/Infrastructure/Company/Repository/EloquentBranchMenuRepository.php
+			path: app/Infrastructure/Menu/Repository/EloquentBranchMenuRepository.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,stdClass\>\:\:map\(\) expects callable\(stdClass, int\)\: App\\Domain\\Supporting\\Company\\Entity\\Branch, Closure\(App\\Infrastructure\\Company\\Model\\BranchModel\)\: App\\Domain\\Supporting\\Company\\Entity\\Branch given\.$#'
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,stdClass\>\:\:map\(\) expects callable\(stdClass, int\)\: App\\Domain\\Supporting\\Branch\\Entity\\Branch, Closure\(App\\Infrastructure\\Branch\\Model\\BranchModel\)\: App\\Domain\\Supporting\\Branch\\Entity\\Branch given\.$#'
 			identifier: argument.type
 			count: 2
-			path: app/Infrastructure/Company/Repository/EloquentBranchRepository.php
+			path: app/Infrastructure/Branch/Repository/EloquentBranchRepository.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,stdClass\>\:\:map\(\) expects callable\(stdClass, int\)\: App\\Domain\\Supporting\\Company\\Entity\\BranchTag, Closure\(App\\Infrastructure\\Company\\Model\\BranchTagModel\)\: App\\Domain\\Supporting\\Company\\Entity\\BranchTag given\.$#'
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,stdClass\>\:\:map\(\) expects callable\(stdClass, int\)\: App\\Domain\\Supporting\\Menu\\Entity\\BranchTag, Closure\(App\\Infrastructure\\Menu\\Model\\BranchTagModel\)\: App\\Domain\\Supporting\\Menu\\Entity\\BranchTag given\.$#'
 			identifier: argument.type
 			count: 2
-			path: app/Infrastructure/Company/Repository/EloquentBranchTagRepository.php
+			path: app/Infrastructure/Menu/Repository/EloquentBranchTagRepository.php
 
 		-
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,stdClass\>\:\:map\(\) expects callable\(stdClass, int\)\: App\\Domain\\Supporting\\Company\\Entity\\CompanyDocument, Closure\(App\\Infrastructure\\Company\\Model\\CompanyDocumentModel\)\: App\\Domain\\Supporting\\Company\\Entity\\CompanyDocument given\.$#'
@@ -190,10 +190,10 @@ parameters:
 			path: app/Infrastructure/Company/Repository/EloquentCompanyDocumentRepository.php
 
 		-
-			message: '#^Access to an undefined property App\\Infrastructure\\Delivery\\Model\\DeliveryConfigurationModel\:\:\$zones\.$#'
+			message: '#^Access to an undefined property App\\Infrastructure\\Branch\\Model\\DeliveryConfigurationModel\:\:\$zones\.$#'
 			identifier: property.notFound
 			count: 1
-			path: app/Infrastructure/Delivery/Mapper/DeliveryConfigurationMapper.php
+			path: app/Infrastructure/Branch/Mapper/DeliveryConfigurationMapper.php
 
 		-
 			message: '#^Access to an undefined property App\\Infrastructure\\Delivery\\Model\\RouteSheetModel\:\:\$stops\.$#'
@@ -208,10 +208,10 @@ parameters:
 			path: app/Infrastructure/Delivery/Model/RouteSheetModel.php
 
 		-
-			message: '#^Parameter \#1 \$row of method App\\Infrastructure\\Delivery\\Mapper\\DeliveryConfigurationMapper\:\:zoneToDomain\(\) expects App\\Infrastructure\\Delivery\\Model\\DeliveryZoneModel, stdClass given\.$#'
+			message: '#^Parameter \#1 \$row of method App\\Infrastructure\\Branch\\Mapper\\DeliveryConfigurationMapper\:\:zoneToDomain\(\) expects App\\Infrastructure\\Branch\\Model\\DeliveryZoneModel, stdClass given\.$#'
 			identifier: argument.type
 			count: 1
-			path: app/Infrastructure/Delivery/Repository/EloquentDeliveryConfigurationRepository.php
+			path: app/Infrastructure/Branch/Repository/EloquentDeliveryConfigurationRepository.php
 
 		-
 			message: '#^Method App\\Infrastructure\\Delivery\\Repository\\EloquentRouteSheetRepository\:\:activeQuery\(\) should return Illuminate\\Database\\Eloquent\\Builder\<App\\Infrastructure\\Delivery\\Model\\RouteSheetModel\> but returns Illuminate\\Database\\Query\\Builder\.$#'

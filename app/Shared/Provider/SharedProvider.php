@@ -2,7 +2,9 @@
 
 namespace App\Shared\Provider;
 
+use App\Application\Dashboard\Port\DashboardSummaryPort;
 use App\Application\Shared\DomainEventPublisher;
+use App\Infrastructure\Shared\Adapter\EloquentDashboardSummaryPort;
 use App\Infrastructure\Shared\Event\LaravelDomainEventPublisher;
 use App\Infrastructure\Shared\Transaction\LaravelTransactionManager;
 use App\Shared\Transaction\TransactionManager;
@@ -15,6 +17,7 @@ final class SharedProvider extends ServiceProvider
     {
         $this->app->bind(TransactionManager::class, LaravelTransactionManager::class);
         $this->app->bind(DomainEventPublisher::class, LaravelDomainEventPublisher::class);
+        $this->app->bind(DashboardSummaryPort::class, EloquentDashboardSummaryPort::class);
     }
 
     public function boot(): void

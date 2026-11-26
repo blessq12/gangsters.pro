@@ -4,11 +4,11 @@ namespace App\Application\Order\Query;
 
 use App\Application\Order\Checkout\CheckoutRulesVersion;
 use App\Application\Order\Checkout\FormOrderCommercialRules;
+use App\Domain\Core\Order\Port\OrderBranchCommercialRulesPort;
 use App\Domain\Core\Order\Port\OrderBranchLookupPort;
 use App\Domain\Core\Order\Port\OrderBranchMenuSnapshotPort;
 use App\Domain\Core\Order\Port\OrderCatalogSnapshotPort;
 use App\Domain\Core\Order\Port\OrderDeliveryTariffPort;
-use App\Domain\Core\Order\Repository\OrderCommercialRulesRepository;
 
 /**
  * Всё, по чему фронт сам формирует корзину тем же алгоритмом, что OrderFormation.
@@ -20,7 +20,7 @@ final class GetCheckoutContextUseCase implements CheckoutRulesVersion
         private readonly OrderBranchMenuSnapshotPort $menu,
         private readonly OrderCatalogSnapshotPort $catalog,
         private readonly OrderDeliveryTariffPort $deliveryTariffs,
-        private readonly OrderCommercialRulesRepository $commercialRules,
+        private readonly OrderBranchCommercialRulesPort $commercialRules,
         private readonly FormOrderCommercialRules $formation,
     ) {}
 

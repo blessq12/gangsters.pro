@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers\Api\Backoffice;
 
-use App\Application\Company\Command\SaveBranchUseCase;
+use App\Application\Branch\Command\SaveBranchUseCase;
+use App\Application\Branch\DTO\SaveBranchDto;
+use App\Application\Branch\Query\GetAdminBranchUseCase;
+use App\Application\Branch\Query\ListAdminBranchesUseCase;
 use App\Application\Company\Command\SaveCompanyDocumentUseCase;
 use App\Application\Company\Command\SaveCompanyUseCase;
-use App\Application\Company\DTO\SaveBranchDto;
 use App\Application\Company\DTO\SaveCompanyDocumentDto;
 use App\Application\Company\DTO\SaveCompanyDto;
-use App\Application\Company\Query\GetAdminBranchUseCase;
 use App\Application\Company\Query\GetAdminCompanyUseCase;
 use App\Application\Company\Query\GetAdminDocumentUseCase;
-use App\Application\Company\Query\ListAdminBranchesUseCase;
 use App\Application\Company\Query\ListAdminDocumentsUseCase;
 use App\Domain\Supporting\Company\Repository\CompanyRepository;
 use App\Http\Controllers\Controller;

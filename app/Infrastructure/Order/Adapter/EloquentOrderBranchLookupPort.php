@@ -3,11 +3,11 @@
 namespace App\Infrastructure\Order\Adapter;
 
 use App\Domain\Core\Order\Port\OrderBranchLookupPort;
-use App\Domain\Supporting\Company\Entity\Branch;
-use App\Domain\Supporting\Company\Repository\BranchRepository;
+use App\Domain\Supporting\Branch\Entity\Branch;
+use App\Domain\Supporting\Branch\Repository\BranchRepository;
 
 /**
- * ACL: Order проверяет активный филиал через BranchRepository в Infrastructure.
+ * ACL: Order проверяет активный филиал через Branch BC.
  */
 final class EloquentOrderBranchLookupPort implements OrderBranchLookupPort
 {

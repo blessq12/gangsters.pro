@@ -2,6 +2,8 @@
 /node_modules
 # /public/build
 /public/hot
+/public/hot-backoffice
+/public/hot-public
 /public/uploads
 /public/storage
 /storage/*.key

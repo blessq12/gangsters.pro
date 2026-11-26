@@ -3,9 +3,8 @@
 namespace App\Application\Company\Query;
 
 use App\Application\Company\Presenter\CompanyPresenter;
-use App\Domain\Supporting\Company\Entity\Branch;
 use App\Domain\Supporting\Company\Entity\Company;
-use App\Domain\Supporting\Company\Repository\BranchRepository;
+use App\Domain\Supporting\Company\Port\CompanyBranchLookupPort;
 use App\Domain\Supporting\Company\Repository\CompanyDocumentRepository;
 use App\Domain\Supporting\Company\Repository\CompanyLegalRepository;
 use App\Domain\Supporting\Company\Repository\CompanyRepository;
@@ -19,7 +18,7 @@ final class GetAdminCompanyUseCase
         private readonly CompanyRepository $companies,
         private readonly CompanyLegalRepository $legal,
         private readonly CompanyDocumentRepository $documents,
-        private readonly BranchRepository $branches,
+        private readonly CompanyBranchLookupPort $branches,
         private readonly CompanyPresenter $presenter,
     ) {}
 
@@ -37,8 +36,7 @@ final class GetAdminCompanyUseCase
         $company = $this->companies->findPublic();
         $companyId = $company?->id() ?? CompanyRepository::SINGLETON_ID;
 
-        $allBranches = $this->branches->listByCompany($companyId);
-
+        $allBranches = $this->branches->listSnapshotsByCompany($companyId);
         $primaryBranch = $this->resolvePrimaryBranch($allBranches);
 
         return [
@@ -50,23 +48,19 @@ final class GetAdminCompanyUseCase
                 fn ($document) => $this->presenter->document($document),
                 $this->documents->findAllOrdered(),
             ),
-            'branch' => $primaryBranch instanceof Branch
-                ? $this->presenter->branch($primaryBranch)
-                : null,
-            'branches' => array_map(
-                fn (Branch $branch) => $this->presenter->branch($branch),
-                $allBranches,
-            ),
+            'branch' => $primaryBranch,
+            'branches' => $allBranches,
         ];
     }
 
     /**
-     * @param  list<Branch>  $branches
+     * @param  list<array<string, mixed>>  $branches
+     * @return array<string, mixed>|null
      */
-    private function resolvePrimaryBranch(array $branches): ?Branch
+    private function resolvePrimaryBranch(array $branches): ?array
     {
         foreach ($branches as $branch) {
-            if ($branch->isActive()) {
+            if (($branch['is_active'] ?? false) === true) {
                 return $branch;
             }
         }

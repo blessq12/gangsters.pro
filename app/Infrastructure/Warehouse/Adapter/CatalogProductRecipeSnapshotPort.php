@@ -6,13 +6,13 @@ use App\Domain\Supporting\Catalog\Entity\Product;
 use App\Domain\Supporting\Catalog\Entity\TechCard;
 use App\Domain\Supporting\Catalog\Repository\CatalogItemRepository;
 use App\Domain\Supporting\Catalog\Repository\TechCardRepository;
-use App\Domain\Supporting\Company\Entity\BranchSet;
-use App\Domain\Supporting\Company\Repository\BranchSetRepository;
+use App\Domain\Supporting\Menu\Entity\BranchSet;
+use App\Domain\Supporting\Menu\Repository\BranchSetRepository;
 use App\Domain\Supporting\Warehouse\Port\ProductRecipeSnapshotPort;
 use Illuminate\Support\Facades\Log;
 
 /**
- * ACL: раскрытие техкарт Catalog (+ сеты Company) в потребности ингредиентов для Warehouse.
+ * ACL: раскрытие техкарт Catalog (+ сеты Menu) в потребности ингредиентов для Warehouse.
  */
 final class CatalogProductRecipeSnapshotPort implements ProductRecipeSnapshotPort
 {

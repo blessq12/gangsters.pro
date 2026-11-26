@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\PublicApi;
 
-use App\Application\Delivery\Query\GetPublicDeliveryUseCase;
+use App\Application\Branch\Query\GetPublicDeliveryUseCase;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

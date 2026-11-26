@@ -40,7 +40,7 @@ use App\Domain\Core\Production\Event\KitchenTicketCompleted;
 use App\Domain\Core\Production\Event\KitchenTicketLineDone;
 use App\Domain\Core\Production\Event\KitchenTicketLinePacked;
 use App\Domain\Core\Production\Event\KitchenTicketStarted;
-use App\Domain\Supporting\Company\Entity\Branch;
+use App\Domain\Supporting\Branch\Entity\Branch;
 use App\Domain\Supporting\Staff\Entity\Employee;
 use App\Domain\Supporting\Staff\Enum\StaffRole;
 use App\Infrastructure\Delivery\Listener\CancelRouteStopOnOrderCancelled;
@@ -58,6 +58,7 @@ use Illuminate\Events\Dispatcher;
 use PHPUnit\Framework\TestCase;
 use Tests\Application\Core\Support\ImmediateTransactionManager;
 use Tests\Application\Core\Support\InMemoryBranchRepository;
+use Tests\Application\Core\Support\InMemoryDeliveryCourierLookupPort;
 use Tests\Application\Core\Support\InMemoryDeliveryOrderStopSnapshotPort;
 use Tests\Application\Core\Support\InMemoryDeliveryRouteOrderEligibilityPort;
 use Tests\Application\Core\Support\InMemoryEmployeeRepository;
@@ -417,7 +418,7 @@ final class CoreFlowTest extends TestCase
     {
         (new TakeRouteSheetUseCase(
             $this->sheets,
-            $this->employees,
+            new InMemoryDeliveryCourierLookupPort($this->employees),
             new RouteSheetPresenter(new InMemoryDeliveryOrderStopSnapshotPort($this->orders)),
             $this->events,
             $this->transaction,
@@ -428,8 +429,6 @@ final class CoreFlowTest extends TestCase
     {
         (new SettleStopUseCase(
             $this->sheets,
-            $this->orders,
-            new InMemoryOrderAuditRepository,
             new RouteSheetPresenter(new InMemoryDeliveryOrderStopSnapshotPort($this->orders)),
             $this->events,
             $this->transaction,
@@ -488,7 +487,7 @@ final class CoreFlowTest extends TestCase
         }
 
         if ($event instanceof RouteStopSettled) {
-            (new SettleOrderOnRouteStopSettled($this->orders))->handle($event);
+            (new SettleOrderOnRouteStopSettled($this->orders, new InMemoryOrderAuditRepository))->handle($event);
         }
 
         if ($event instanceof OrderCancelled) {

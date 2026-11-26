@@ -2,6 +2,10 @@
 
 namespace App\Domain\Core\Delivery\Event;
 
+/**
+ * Остановка маршрута закрыта. Order/Payment реагируют своим состоянием.
+ * При delivered paymentMethod — контракт смены условий оплаты на выдаче.
+ */
 final readonly class RouteStopSettled
 {
     public const OUTCOME_DELIVERED = 'delivered';
@@ -16,5 +20,7 @@ final readonly class RouteStopSettled
         public int $orderId,
         public string $outcome,
         public ?string $reason = null,
+        public ?string $paymentMethod = null,
+        public ?int $authorEmployeeId = null,
     ) {}
 }

@@ -147,8 +147,13 @@ final class RouteSheet
         );
     }
 
-    public function settle(int $orderId, string $outcome, string $reason): self
-    {
+    public function settle(
+        int $orderId,
+        string $outcome,
+        string $reason,
+        ?string $paymentMethod = null,
+        ?int $authorEmployeeId = null,
+    ): self {
         if ($this->status !== 'in_delivery') {
             throw new \InvalidArgumentException('Статусы ставятся на листе, который курьер уже взял.');
         }
@@ -160,6 +165,11 @@ final class RouteSheet
         $reason = trim($reason);
         if ($outcome === RouteStopSettled::OUTCOME_WRITTEN_OFF && $reason === '') {
             throw new \InvalidArgumentException('Нужна причина списания заказа.');
+        }
+
+        $paymentMethod = $paymentMethod !== null ? trim($paymentMethod) : null;
+        if ($outcome === RouteStopSettled::OUTCOME_DELIVERED && ($paymentMethod === null || $paymentMethod === '')) {
+            throw new \InvalidArgumentException('Укажи способ оплаты при выдаче.');
         }
 
         $found = false;
@@ -195,6 +205,8 @@ final class RouteSheet
                 orderId: $orderId,
                 outcome: $outcome,
                 reason: $outcome === RouteStopSettled::OUTCOME_WRITTEN_OFF ? $reason : null,
+                paymentMethod: $outcome === RouteStopSettled::OUTCOME_DELIVERED ? $paymentMethod : null,
+                authorEmployeeId: $authorEmployeeId,
             )],
         );
     }

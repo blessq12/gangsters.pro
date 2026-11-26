@@ -2,11 +2,9 @@
 
 namespace App\Application\Company\Presenter;
 
-use App\Domain\Supporting\Company\Entity\Branch;
 use App\Domain\Supporting\Company\Entity\Company;
 use App\Domain\Supporting\Company\Entity\CompanyDocument;
 use App\Domain\Supporting\Company\Entity\CompanyLegalInfo;
-use App\Domain\Supporting\Company\Support\ScheduleNormalizer;
 use App\Shared\ValueObject\PhoneNumber;
 
 /**
@@ -61,42 +59,6 @@ final class CompanyPresenter
             'slug' => $document->slug(),
             'name' => $document->name(),
             'content' => $document->content(),
-        ];
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    public function branch(Branch $branch): array
-    {
-        return [
-            'id' => $branch->id(),
-            'company_id' => $branch->companyId(),
-            'name' => $branch->name(),
-            'is_active' => $branch->isActive(),
-            'schedule' => ScheduleNormalizer::normalize($branch->schedule()),
-            'city' => $branch->city(),
-            'street' => $branch->street(),
-            'house' => $branch->house(),
-            'comment' => $branch->comment(),
-            'latitude' => $branch->latitude(),
-            'longitude' => $branch->longitude(),
-            'phone' => $this->formatOptionalPhone($branch->phone()),
-        ];
-    }
-
-    /**
-     * Краткий снимок филиала для выбора на витрине.
-     *
-     * @return array{id: int, name: string, is_active: bool, phone: string|null}
-     */
-    public function branchSummary(Branch $branch): array
-    {
-        return [
-            'id' => $branch->id(),
-            'name' => $branch->name(),
-            'is_active' => $branch->isActive(),
-            'phone' => $this->formatOptionalPhone($branch->phone()),
         ];
     }
 

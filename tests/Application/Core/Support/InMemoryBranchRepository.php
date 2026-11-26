@@ -2,8 +2,8 @@
 
 namespace Tests\Application\Core\Support;
 
-use App\Domain\Supporting\Company\Entity\Branch;
-use App\Domain\Supporting\Company\Repository\BranchRepository;
+use App\Domain\Supporting\Branch\Entity\Branch;
+use App\Domain\Supporting\Branch\Repository\BranchRepository;
 
 final class InMemoryBranchRepository implements BranchRepository
 {
